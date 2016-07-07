@@ -66,8 +66,7 @@ def update_ad_group_source_state(ad_group_source, conf):
             if any([
                     key == 'state' and ad_group_source_state.state != val,
                     key == 'cpc_cc' and ad_group_source_state.cpc_cc != val,
-                    key == 'daily_budget_cc' and ad_group_source_state.daily_budget_cc != val,
-                ]):
+                    key == 'daily_budget_cc' and ad_group_source_state.daily_budget_cc != val]):
                     need_update = True
                     break
 
@@ -109,8 +108,8 @@ def update_publisher_blacklist_state(args):
 def _clean_existing_publisher_blacklist(key, level, publishers):
     if level != constants.PublisherBlacklistLevel.GLOBAL:
         if constants.PublisherBlacklistLevel.compare(
-            constants.PublisherBlacklistLevel.ACCOUNT,
-            level) <= 0:
+                constants.PublisherBlacklistLevel.ACCOUNT,
+                level) <= 0:
             account_id = key[0]
             campaign_ids = dash.models.Campaign.objects.filter(
                 account_id=account_id
@@ -120,8 +119,8 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
                 campaign__id__in=campaign_ids
             ).values_list('id', flat=True)
         elif constants.PublisherBlacklistLevel.compare(
-            constants.PublisherBlacklistLevel.CAMPAIGN,
-            level) <= 0:
+                constants.PublisherBlacklistLevel.CAMPAIGN,
+                level) <= 0:
             campaign_id = key[0]
             campaign_adgroup_ids = dash.models.AdGroup.objects.filter(
                 campaign__id=campaign_id
@@ -147,8 +146,8 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
             )
         else:
             if constants.PublisherBlacklistLevel.compare(
-                constants.PublisherBlacklistLevel.ACCOUNT,
-                level) <= 0:
+                    constants.PublisherBlacklistLevel.ACCOUNT,
+                    level) <= 0:
                 queryset |= dash.models.PublisherBlacklist.objects.filter(
                     match_publisher_blacklist &
                     Q(
@@ -158,8 +157,8 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
                     )
                 )
             elif constants.PublisherBlacklistLevel.compare(
-                constants.PublisherBlacklistLevel.CAMPAIGN,
-                level) <= 0:
+                    constants.PublisherBlacklistLevel.CAMPAIGN,
+                    level) <= 0:
                 queryset |= dash.models.PublisherBlacklist.objects.filter(
                     match_publisher_blacklist &
                     Q(
@@ -168,8 +167,8 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
                     )
                 )
             elif constants.PublisherBlacklistLevel.compare(
-                constants.PublisherBlacklistLevel.ADGROUP,
-                level) <= 0:
+                    constants.PublisherBlacklistLevel.ADGROUP,
+                    level) <= 0:
 
                 ad_group_id = key[0]
                 queryset |= dash.models.PublisherBlacklist.objects.filter(
@@ -212,7 +211,6 @@ def _update_publisher_blacklist(key, level, publishers):
         elif level == constants.PublisherBlacklistLevel.ADGROUP:
             ad_group = dash.models.AdGroup.objects.get(id=key[0])
             blacklist_entry.ad_group = ad_group
-
 
         blacklist_tuple = (
             level,
@@ -914,7 +912,7 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
     # send actions
     first_ad_group_source = None
     for source_type_id, blacklist in blacklist_per_source.iteritems():
-        filtered_blacklist = [publisher for publisher in blacklist\
+        filtered_blacklist = [publisher for publisher in blacklist
                               if publisher['source'].can_modify_publisher_blacklist_automatically()]
         # we only support per account outbrain blacklist
         if source_type_id == constants.SourceType.OUTBRAIN:
@@ -940,7 +938,7 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
                     'domain': pub['domain'],
                 },
                 filtered_blacklist
-            )
+                )
         )
 
         actions.extend(
@@ -972,7 +970,7 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
     first_ad_group_source = None
     # send actions
     for source_type_id, blacklist in blacklist_per_source.iteritems():
-        filtered_blacklist = [publisher for publisher in blacklist\
+        filtered_blacklist = [publisher for publisher in blacklist
                               if publisher['source'].can_modify_publisher_blacklist_automatically()]
         # we only support per account outbrain blacklist
         if source_type_id == constants.SourceType.OUTBRAIN and\
@@ -1041,6 +1039,7 @@ def _create_blacklist_per_source(publishers):
         blacklist_per_source[source_type_id].append(publisher)
 
     return blacklist_per_source, source_type_cache
+
 
 def _get_manual_action_target_regions_value(ad_group_source, current_settings, new_settings):
     new_country_targeting = new_settings.get_targets_for_region_type(constants.RegionType.COUNTRY)
@@ -1369,6 +1368,7 @@ class AdGroupSourceSettingsWriter(object):
 
         email_helper.send_ad_group_notification_email(
             self.ad_group_source.ad_group, request, '\n'.join(changes_text_parts))
+
 
 def get_content_ad(content_ad_id):
     try:

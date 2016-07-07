@@ -47,7 +47,7 @@ class MigrationTest(TransactionTestCase):
         except CommandError as e:
                 if "does not have migrations (you cannot selectively sync unmigrated apps)" in str(e):
                         raise unittest.SkipTest("Skip migration tests when migrations are disabled")
-                
+
     def tearDown(self):
         super(MigrationTest, self).tearDown()
         call_command('migrate', self.app_name,
@@ -69,5 +69,3 @@ class MigrationTest(TransactionTestCase):
     def run_migration(self):
         call_command('migrate', self.app_name, self.after,
                      no_initial_data=True, verbosity=0)
-
-

@@ -18,7 +18,8 @@ valid_candidate = {
     'brand_name': 'zemanta',
     'description': 'zemanta content ad',
     'call_to_action': 'read more',
-    'tracker_urls': 'https://t.zemanta.com/px1.png https://t.zemanta.com/px2.png',
+    'primary_tracker_url': 'https://example.com/px1.png',
+    'secondary_tracker_url': 'https://example.com/px2.png',
 }
 
 invalid_candidate = {
@@ -27,7 +28,8 @@ invalid_candidate = {
     'image_url': 'file://zemanta.com/test-image.jpg',
     'image_crop': 'landscape',
     'display_url': 'zemanta.com' * 10,
-    'tracker_urls': 'http://t.zemanta.com/px1.png http://t.zemanta.com/px2.png',
+    'primary_tracker_url': 'http://example.com/px1.png',
+    'secondary_tracker_url': 'http://example.com/px2.png',
 }
 
 
@@ -50,7 +52,6 @@ class InsertCandidatesTestCase(TestCase):
         batch = models.UploadBatch.objects.filter(ad_group=ad_group).get()
         self.assertEqual(batch_name, batch.name)
         self.assertEqual(ad_group, batch.ad_group)
-        self.assertEqual(1, batch.batch_size)
         self.assertEqual(filename, batch.original_filename)
 
         candidate = models.ContentAdCandidate.objects.filter(ad_group=ad_group).get()
@@ -63,7 +64,8 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual(valid_candidate['brand_name'], candidate.brand_name)
         self.assertEqual(valid_candidate['description'], candidate.description)
         self.assertEqual(valid_candidate['call_to_action'], candidate.call_to_action)
-        self.assertEqual(valid_candidate['tracker_urls'], candidate.tracker_urls)
+        self.assertEqual(valid_candidate['primary_tracker_url'], candidate.primary_tracker_url)
+        self.assertEqual(valid_candidate['secondary_tracker_url'], candidate.secondary_tracker_url)
 
     def test_empty_candidate(self):
         data = [{}]
@@ -81,7 +83,6 @@ class InsertCandidatesTestCase(TestCase):
         batch = models.UploadBatch.objects.filter(ad_group=ad_group).get()
         self.assertEqual(batch_name, batch.name)
         self.assertEqual(ad_group, batch.ad_group)
-        self.assertEqual(1, batch.batch_size)
         self.assertEqual(filename, batch.original_filename)
 
         candidate = models.ContentAdCandidate.objects.filter(ad_group=ad_group).get()
@@ -91,10 +92,11 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual('', candidate.image_url)
         self.assertEqual('center', candidate.image_crop)
         self.assertEqual('', candidate.display_url)
-        self.assertEqual('', candidate.brand_name)
+        self.assertEqual('Example', candidate.brand_name)
         self.assertEqual('', candidate.description)
-        self.assertEqual('', candidate.call_to_action)
-        self.assertEqual('', candidate.tracker_urls)
+        self.assertEqual('Read more', candidate.call_to_action)
+        self.assertEqual('', candidate.primary_tracker_url)
+        self.assertEqual('', candidate.secondary_tracker_url)
 
 
 class PersistCandidatesTestCase(TestCase):
@@ -114,6 +116,7 @@ class PersistCandidatesTestCase(TestCase):
         self.assertFalse(mock_s3helper_put.called)
 
         content_ad = batch.contentad_set.get()
+        self.assertEqual(1, len(content_ad.contentadsource_set.all()))
 
         self.assertEqual(candidate.label, content_ad.label)
         self.assertEqual(candidate.url, content_ad.url)
@@ -130,8 +133,6 @@ class PersistCandidatesTestCase(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
-        self.assertEqual(0, batch.num_errors)
-        self.assertEqual(None, batch.error_report_key)
 
     @patch.object(utils.s3helpers.S3Helper, 'put')
     def test_invalid_candidates(self, mock_s3helper_put):
@@ -139,25 +140,14 @@ class PersistCandidatesTestCase(TestCase):
         self.assertEqual(1, batch.contentadcandidate_set.count())
         self.assertEqual(0, batch.contentad_set.count())
 
-        upload.persist_candidates(batch)
-        self.assertEqual(0, batch.contentadcandidate_set.count())
+        with self.assertRaises(upload.CandidateErrorsRemaining):
+            upload.persist_candidates(batch)
+
+        self.assertEqual(1, batch.contentadcandidate_set.count())
         self.assertEqual(0, batch.contentad_set.count())
 
-        self.assertTrue(mock_s3helper_put.called)
-
-        s3_key, content = mock_s3helper_put.call_args[0]
-        self.assertTrue(s3_key.startswith('contentads/errors/3/test_upload'))
-        self.assertTrue(s3_key.endswith('.csv'))
-        self.assertEqual(
-            'Url,Title,Image url,Impression trackers,Display url,Brand name,Description,Call to action,Label,'
-            'Image crop,Errors\r\nhttp://zemanta.com/blog,Zemanta blog čšž,'
-            'http://zemanta.com/img.jpg,,zemanta.com,Zemanta,Zemanta blog,Read more,content ad 1,entropy,'
-            '"Content unreachable, Image could not be processed"\r\n', content)
-
         batch.refresh_from_db()
-        self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
-        self.assertEqual(1, batch.num_errors)
-        self.assertEqual(s3_key, batch.error_report_key)
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
     @patch.object(utils.s3helpers.S3Helper, 'put')
     def test_invalid_batch_status(self, mock_s3helper_put):
@@ -207,7 +197,7 @@ class CancelUploadTestCase(TestCase):
             upload.cancel_upload(batch)
 
 
-class ValidateCandidatesTestCase(TestCase):
+class GetCandidatesWithErrorsTestCase(TestCase):
     fixtures = ['test_upload.yaml']
 
     def test_valid_candidate(self):
@@ -217,40 +207,32 @@ class ValidateCandidatesTestCase(TestCase):
         ad_group = models.AdGroup.objects.get(id=1)
         batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
 
-        candidate = candidates[0]
-        candidate.image_status = constants.AsyncUploadJobStatus.OK
-        candidate.url_status = constants.AsyncUploadJobStatus.OK
-        candidate.image_id = '1234'
-        candidate.image_hash = 'abcd'
-        candidate.image_width = 500
-        candidate.image_height = 500
-        candidate.save()
-
-        errors = upload.validate_candidates(candidates)
-        self.assertFalse(errors)
-
-    def test_image_errors(self):
-        data = [valid_candidate]
-
-        # prepare candidate
-        ad_group = models.AdGroup.objects.get(id=1)
-        batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
-
-        candidate = candidates[0]
-        candidate.image_status = constants.AsyncUploadJobStatus.OK
-        candidate.url_status = constants.AsyncUploadJobStatus.OK
-        candidate.image_id = '1234'
-        candidate.image_hash = 'abcd'
-        candidate.image_width = 100
-        candidate.image_height = 100
-        candidate.save()
-
-        errors = upload.validate_candidates(candidates)
-        self.assertEqual(errors, {
-            candidate.id: {
-                'image_url': ['Image too small (minimum size is 300x300 px)']
-            }
-        })
+        result = upload.get_candidates_with_errors(candidates)
+        self.assertEqual([{
+            'label': 'test',
+            'url': 'http://zemanta.com/test-content-ad',
+            'title': 'test content ad',
+            'image_url': 'http://zemanta.com/test-image.jpg',
+            'image_crop': 'faces',
+            'display_url': 'zemanta.com',
+            'brand_name': 'zemanta',
+            'description': 'zemanta content ad',
+            'call_to_action': 'read more',
+            'primary_tracker_url': 'https://example.com/px1.png',
+            'secondary_tracker_url': 'https://example.com/px2.png',
+            'hosted_image_url': None,
+            'image_hash': None,
+            'errors': {
+                '__all__': ['Content ad still processing'],
+            },
+            'image_width': None,
+            'label': 'test',
+            'image_id': None,
+            'image_height': None,
+            'url_status': 1,
+            'image_status': 1,
+            'id': candidates[0].id,
+        }], result)
 
     def test_invalid_candidate(self):
         data = [invalid_candidate]
@@ -259,38 +241,15 @@ class ValidateCandidatesTestCase(TestCase):
         ad_group = models.AdGroup.objects.get(id=1)
         batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
 
-        errors = upload.validate_candidates(candidates)
-        self.assertEquals({
-            candidates[0].id: {
-                '__all__': ['Content ad still processing'],
-                'label': [u'Label too long (max 100 characters)'],
-                'title': [u'Missing title'],
-                'url': [u'Invalid URL'],
-                'image_url': [u'Invalid image URL'],
-                'image_crop': [u'Choose a valid image crop'],
-                'description': [u'Missing description'],
-                'display_url': [u'Display URL too long (max 25 characters)'],
-                'brand_name': [u'Missing brand name'],
-                'call_to_action': [u'Missing call to action'],
-                'tracker_urls': [u'Impression tracker URLs have to be HTTPS']
-            }
-        }, errors)
-
-    def test_get_candidates_with_errors(self):
-        data = [invalid_candidate]
-
-        # prepare candidate
-        ad_group = models.AdGroup.objects.get(id=1)
-        batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
-
+        self.maxDiff = None
         result = upload.get_candidates_with_errors(candidates)
         self.assertEqual([{
             'hosted_image_url': None,
             'image_crop': 'landscape',
-            'primary_tracker_url': '',
+            'primary_tracker_url': 'http://example.com/px1.png',
             'image_hash': None,
             'description': '',
-            'call_to_action': '',
+            'call_to_action': 'Read more',
             'title': '',
             'url': 'ftp://zemanta.com/test-content-ad',
             'errors': {
@@ -300,25 +259,23 @@ class ValidateCandidatesTestCase(TestCase):
                 'title': [u'Missing title'],
                 'url': [u'Invalid URL'],
                 'display_url': [u'Display URL too long (max 25 characters)'],
-                'brand_name': [u'Missing brand name'],
                 'label': [u'Label too long (max 100 characters)'],
-                'call_to_action': [u'Missing call to action'],
                 'image_url': [u'Invalid image URL'],
-                'tracker_urls': [u'Impression tracker URLs have to be HTTPS']
+                'primary_tracker_url': [u'Impression tracker URLs have to be HTTPS'],
+                'secondary_tracker_url': [u'Impression tracker URLs have to be HTTPS'],
             },
             'display_url': 'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com'
                            'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com',
-            'brand_name': '',
+            'brand_name': 'Example',
             'image_width': None,
-            'label': 'repeat'  * 21,
+            'label': 'repeat' * 21,
             'image_id': None,
             'image_height': None,
             'image_url': 'file://zemanta.com/test-image.jpg',
             'url_status': 1,
             'image_status': 1,
-            'secondary_tracker_url': '',
+            'secondary_tracker_url': 'http://example.com/px2.png',
             'id': candidates[0].id,
-            'tracker_urls': 'http://t.zemanta.com/px1.png http://t.zemanta.com/px2.png',
         }], result)
 
 

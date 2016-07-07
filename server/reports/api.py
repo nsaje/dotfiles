@@ -54,7 +54,7 @@ def _preprocess_breakdown(breakdown):
 def _include_article_data(rows):
     rows = list(rows)
     article_ids = [row['article'] for row in rows]
-    article_lookup = {a.pk:a for a in dash.models.Article.objects.filter(pk__in=article_ids)}
+    article_lookup = {a.pk: a for a in dash.models.Article.objects.filter(pk__in=article_ids)}
     for row in rows:
         a = article_lookup[row['article']]
         row['title'] = a.title
@@ -65,7 +65,7 @@ def _include_article_data(rows):
 def _get_initial_qs(breakdown, **constraints):
     qs = models.ArticleStats.objects
     if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown \
-        and 'article' not in constraints and 'article__in' not in constraints:
+            and 'article' not in constraints and 'article__in' not in constraints:
         qs = models.AdGroupStats.objects
     return qs
 
@@ -96,7 +96,7 @@ def query_stats(start_date, end_date, breakdown=None, **constraints):
 def _get_initial_conversion_qs(breakdown, **constraints):
     qs = models.GoalConversionStats.objects
     if settings.QUERY_AGGREGATE_REPORTS and 'article' not in breakdown \
-        and 'article' not in constraints and 'article__in' not in constraints:
+            and 'article' not in constraints and 'article__in' not in constraints:
         qs = models.AdGroupGoalConversionStats.objects
     return qs
 
@@ -140,7 +140,7 @@ def _add_computed_metrics(result):
     if result.get('clicks') is None or result.get('visits') is None or result['clicks'] == 0:
         result['click_discrepancy'] = None
     else:
-        result['click_discrepancy'] =  100.0 * max(0, result['clicks'] - result['visits']) / result['clicks']
+        result['click_discrepancy'] = 100.0 * max(0, result['clicks'] - result['visits']) / result['clicks']
 
     for goal_name, metrics in result.get('goals', {}).iteritems():
         metrics['conversion_rate'] = metrics['conversions'] / result['visits'] if result['visits'] > 0 else None
@@ -330,6 +330,7 @@ def row_has_traffic_data(row):
 def row_has_postclick_data(row):
     return any(row.get(field) is not None for field in
                api_helpers.POSTCLICK_ACQUISITION_FIELDS + api_helpers.POSTCLICK_ENGAGEMENT_FIELDS)
+
 
 def row_has_conversion_goal_data(row):
     return any(k.startswith('conversion_goal_') and v > 0 for k, v in row.iteritems())

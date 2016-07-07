@@ -60,6 +60,7 @@ describe('UploadAdsModalCtrl', function () {
             expect(api.upload.upload).toHaveBeenCalledWith(
                 $state.params.id, {file: $scope.uploadFormData.file, batchName: $scope.uploadFormData.batchName}
             );
+            expect($scope.uploadRequestInProgress).toBe(true);
 
             var candidates = [{
                 id: 1,
@@ -86,6 +87,36 @@ describe('UploadAdsModalCtrl', function () {
             expect($scope.batchId).toEqual(batchId);
             expect($scope.switchToContentAdPicker).toHaveBeenCalled();
             expect($scope.startPolling).toHaveBeenCalled();
+            expect($scope.uploadRequestInProgress).toBe(false);
+            expect($scope.uploadRequestFailed).toBe(false);
+        });
+
+        it('sets a flag on upload failure', function () {
+            var deferred = $q.defer();
+            spyOn(api.upload, 'upload').and.callFake(function () {
+                return deferred.promise;
+            });
+
+            $scope.uploadFormData = {
+                file: 'testfile',
+                batchName: 'testname',
+            };
+            $scope.uploadFormData.file = 'testfile';
+            spyOn($scope, 'switchToContentAdPicker').and.stub();
+
+            $scope.upload();
+            expect(api.upload.upload).toHaveBeenCalledWith(
+                $state.params.id, {file: $scope.uploadFormData.file, batchName: $scope.uploadFormData.batchName}
+            );
+            expect($scope.uploadRequestInProgress).toBe(true);
+            expect($scope.uploadRequestFailed).toBe(false);
+
+            deferred.reject({});
+            $scope.$root.$digest();
+
+            expect($scope.uploadRequestInProgress).toBe(false);
+            expect($scope.uploadRequestFailed).toBe(true);
+            expect($scope.switchToContentAdPicker).not.toHaveBeenCalled();
         });
 
         it('uses current datetime as default batch name', function () {
@@ -375,6 +406,8 @@ describe('UploadAdsModalCtrl', function () {
             $scope.updateCandidate();
             expect(api.upload.updateCandidate).toHaveBeenCalledWith(
                 $scope.selectedCandidate, $state.params.id, $scope.batchId);
+            expect($scope.updateRequestInProgress).toBe(true);
+            expect($scope.updateRequestFailed).toBe(false);
 
             var returnedCandidate = {
                 id: 1,
@@ -395,8 +428,51 @@ describe('UploadAdsModalCtrl', function () {
             });
             $scope.$root.$digest();
 
+            expect($scope.updateRequestInProgress).toBe(false);
+            expect($scope.updateRequestFailed).toBe(false);
             expect($scope.startPolling).toHaveBeenCalled();
             expect($scope.selectedCandidate).toBeNull();
+        });
+
+        it('sets a flag on failure', function () {
+            var candidate = {
+                id: 1,
+                url: 'http://example.com/url1',
+                title: 'Title 1',
+                imageUrl: 'http://exmaple.com/img1.jpg',
+                imageCrop: 'center',
+                description: '',
+                displayUrl: 'example.com',
+                brandName: '',
+                callToAction: 'Read more',
+                label: 'title1',
+                imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+            };
+            $scope.candidates = [candidate];
+            $scope.openEditForm($scope.candidates[0]);
+            $scope.batchId = 1234;
+
+            var deferred = $q.defer();
+            spyOn(api.upload, 'updateCandidate').and.callFake(function () {
+                return deferred.promise;
+            });
+
+            spyOn($scope, 'startPolling').and.stub();
+
+            $scope.updateCandidate();
+            expect(api.upload.updateCandidate).toHaveBeenCalledWith(
+                $scope.selectedCandidate, $state.params.id, $scope.batchId);
+            expect($scope.updateRequestInProgress).toBe(true);
+            expect($scope.updateRequestFailed).toBe(false);
+
+            deferred.reject({});
+            $scope.$root.$digest();
+
+            expect($scope.updateRequestInProgress).toBe(false);
+            expect($scope.updateRequestFailed).toBe(true);
+            expect($scope.startPolling).not.toHaveBeenCalled();
+            expect($scope.selectedCandidate).not.toBeNull();
         });
     });
 
@@ -433,12 +509,58 @@ describe('UploadAdsModalCtrl', function () {
             expect(mockEvent.stopPropagation).toHaveBeenCalled();
             expect(api.upload.removeCandidate).toHaveBeenCalledWith(
                 candidate.id, $state.params.id, $scope.batchId);
+            expect(candidate.removeRequestInProgress).toBe(true);
+            expect(candidate.removeRequestFailed).toBe(false);
 
             deferred.resolve();
             $scope.$root.$digest();
 
             expect($scope.selectedCandidate).toBeNull();
             expect($scope.candidates).toEqual([]);
+        });
+
+        it('sets a flag on failure', function () {
+            var candidate = {
+                id: 1,
+                url: 'http://example.com/url1',
+                title: 'Title 1',
+                imageUrl: 'http://exmaple.com/img1.jpg',
+                imageCrop: 'center',
+                description: '',
+                displayUrl: 'example.com',
+                brandName: '',
+                callToAction: 'Read more',
+                label: 'title1',
+                imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+            };
+            $scope.candidates = [candidate];
+            $scope.openEditForm($scope.candidates[0]);
+            $scope.batchId = 1234;
+
+            var deferred = $q.defer();
+            spyOn(api.upload, 'removeCandidate').and.callFake(function () {
+                return deferred.promise;
+            });
+
+            var mockEvent = {
+                stopPropagation: function () {},
+            };
+            spyOn(mockEvent, 'stopPropagation');
+            $scope.removeCandidate(candidate, mockEvent);
+            expect(mockEvent.stopPropagation).toHaveBeenCalled();
+            expect(api.upload.removeCandidate).toHaveBeenCalledWith(
+                candidate.id, $state.params.id, $scope.batchId);
+            expect(candidate.removeRequestInProgress).toBe(true);
+            expect(candidate.removeRequestFailed).toBe(false);
+
+            deferred.reject();
+            $scope.$root.$digest();
+
+            expect(candidate.removeRequestInProgress).toBe(false);
+            expect(candidate.removeRequestFailed).toBe(true);
+            expect($scope.selectedCandidate).not.toBeNull();
+            expect($scope.candidates.length).toEqual(1);
         });
     });
 
@@ -456,6 +578,8 @@ describe('UploadAdsModalCtrl', function () {
             $scope.save();
             expect(api.upload.save).toHaveBeenCalledWith(
                 $state.params.id, $scope.batchId, $scope.uploadFormData.batchName);
+            expect($scope.saveRequestInProgress).toBe(true);
+            expect($scope.saveRequestFailed).toBe(false);
 
             var numSuccessful = 50;
             deferred.resolve({
@@ -465,6 +589,32 @@ describe('UploadAdsModalCtrl', function () {
 
             expect($scope.switchToSuccessScreen).toHaveBeenCalled();
             expect($scope.numSuccessful).toEqual(numSuccessful);
+            expect($scope.saveRequestInProgress).toBe(false);
+            expect($scope.saveRequestFailed).toBe(false);
+        });
+
+        it('sets a flag on failure', function () {
+            var deferred = $q.defer();
+            spyOn(api.upload, 'save').and.callFake(function () {
+                return deferred.promise;
+            });
+            spyOn($scope, 'switchToSuccessScreen').and.stub();
+
+            $scope.batchId = 1234;
+            $scope.uploadFormData.batchName = 'new batch name';
+
+            $scope.save();
+            expect(api.upload.save).toHaveBeenCalledWith(
+                $state.params.id, $scope.batchId, $scope.uploadFormData.batchName);
+            expect($scope.saveRequestInProgress).toBe(true);
+            expect($scope.saveRequestFailed).toBe(false);
+
+            deferred.reject({});
+            $scope.$root.$digest();
+
+            expect($scope.switchToSuccessScreen).not.toHaveBeenCalled();
+            expect($scope.saveRequestInProgress).toBe(false);
+            expect($scope.saveRequestFailed).toBe(true);
         });
     });
 

@@ -1281,7 +1281,8 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
     ['brand_name', 'Brand name'],
     ['call_to_action', 'Call to action'],
     ['description', 'Description'],
-    ['impression_trackers', 'Impression trackers'],
+    ['primary_tracker_url', 'Primary tracker url'],
+    ['secondary_tracker_url', 'Secondary tracker url'],
     ['label', 'Label'],
 ])
 
@@ -1339,7 +1340,10 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 content_ad_dict['crop_areas'] = content_ad.crop_areas
 
             if content_ad.tracker_urls:
-                content_ad_dict['impression_trackers'] = ' '.join(content_ad.tracker_urls)
+                if len(content_ad.tracker_urls) > 0:
+                    content_ad_dict['primary_tracker_url'] = content_ad.tracker_urls[0]
+                if len(content_ad.tracker_urls) > 1:
+                    content_ad_dict['secondary_tracker_url'] = content_ad.tracker_urls[1]
 
             # delete keys that are not to be exported
             for k in content_ad_dict.keys():

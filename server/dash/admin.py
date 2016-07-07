@@ -33,10 +33,9 @@ import actionlog.api_contentads
 import actionlog.zwei_actions
 
 from automation import campaign_stop
+from utils.admin_common import SaveWithRequestMixin
 
 logger = logging.getLogger(__name__)
-
-from utils.admin_common import SaveWithRequestMixin
 
 
 # Forms for inline user functionality.

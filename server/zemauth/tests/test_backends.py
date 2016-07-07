@@ -1,6 +1,5 @@
-#import unittest
-from django import test
 import mock
+from django import test
 
 from zemauth import models
 from zemauth import backends

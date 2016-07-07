@@ -1207,16 +1207,18 @@ class PublisherCallbackTest(TestCase):
             'key': [1],
             'level': dash.constants.PublisherBlacklistLevel.ADGROUP,
             'state': dash.constants.PublisherStatus.BLACKLISTED,
-            'publishers': [{
-                'domain': 'zemanta.com',
-                'exchange': 'adiant',
-                'source_id': 7
-            },
-            {
-                'domain': 'test1.com',
-                'exchange': 'sharethrough',
-                'source_id': 9
-            }]
+            'publishers': [
+                {
+                    'domain': 'zemanta.com',
+                    'exchange': 'adiant',
+                    'source_id': 7
+                },
+                {
+                    'domain': 'test1.com',
+                    'exchange': 'sharethrough',
+                    'source_id': 9
+                }
+            ]
         }
 
         api.update_publisher_blacklist_state(args)
@@ -1240,18 +1242,20 @@ class PublisherCallbackTest(TestCase):
             'key': [1],
             'level': dash.constants.PublisherBlacklistLevel.ACCOUNT,
             'state': dash.constants.PublisherStatus.BLACKLISTED,
-            'publishers': [{
-                'domain': 'Awesome publisher',
-                'exchange': 'adiant',
-                'external_id': '12345',
-                'source_id': 3
-            },
-            {
-                'domain': 'Happy little publisher',
-                'exchange': 'outbrain',
-                'external_id': '67890',
-                'source_id': 3
-            }]
+            'publishers': [
+                {
+                    'domain': 'Awesome publisher',
+                    'exchange': 'adiant',
+                    'external_id': '12345',
+                    'source_id': 3
+                },
+                {
+                    'domain': 'Happy little publisher',
+                    'exchange': 'outbrain',
+                    'external_id': '67890',
+                    'source_id': 3
+                }
+            ]
         }
 
         api.update_publisher_blacklist_state(args)
@@ -1259,14 +1263,12 @@ class PublisherCallbackTest(TestCase):
         self.assertEqual(2, allblacklist.count())
 
         first_blacklist = allblacklist[0]
-        # self.assertEqual(ad_group_source.ad_group.id, first_blacklist.ad_group.id)
         self.assertEqual(u'Awesome publisher', first_blacklist.name)
         self.assertEqual('outbrain', first_blacklist.source.tracking_slug)
         self.assertEqual('12345', first_blacklist.external_id)
         self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, first_blacklist.status)
 
         second_blacklist = allblacklist[1]
-        #self.assertEqual(ad_group_source.ad_group.id, second_blacklist.ad_group.id)
         self.assertEqual(u'Happy little publisher', second_blacklist.name)
         self.assertEqual('outbrain', second_blacklist.source.tracking_slug)
         self.assertEqual('67890', second_blacklist.external_id)
@@ -1294,22 +1296,23 @@ class PublisherCallbackTest(TestCase):
             'key': [1],
             'level': dash.constants.PublisherBlacklistLevel.ADGROUP,
             'state': dash.constants.PublisherStatus.ENABLED,
-            'publishers': [{
-                'domain': 'zemanta.com',
-                'exchange': 'adiant',
-                'source_id': 7,
-            },
-            {
-                'domain': 'test1.com',
-                'exchange': 'sharethrough',
-                'source_id': 9,
-            }]
+            'publishers': [
+                {
+                    'domain': 'zemanta.com',
+                    'exchange': 'adiant',
+                    'source_id': 7,
+                },
+                {
+                    'domain': 'test1.com',
+                    'exchange': 'sharethrough',
+                    'source_id': 9,
+                }
+            ]
         }
 
         api.update_publisher_blacklist_state(args)
         allblacklist = dash.models.PublisherBlacklist.objects.all()
         self.assertEqual(0, allblacklist.count())
-
 
     def test_hiearchy_publisher_blacklist_wo_delete(self):
         # if we get a request to blacklist per adgroup source
@@ -1336,16 +1339,18 @@ class PublisherCallbackTest(TestCase):
             'key': [1],
             'level': dash.constants.PublisherBlacklistLevel.ADGROUP,
             'state': dash.constants.PublisherStatus.ENABLED,
-            'publishers': [{
-                'domain': 'zemanta.com',
-                'exchange': 'adiant',
-                'source_id': 7,
-            },
-            {
-                'domain': 'test1.com',
-                'exchange': 'sharethrough',
-                'source_id': 9,
-            }]
+            'publishers': [
+                {
+                    'domain': 'zemanta.com',
+                    'exchange': 'adiant',
+                    'source_id': 7,
+                },
+                {
+                    'domain': 'test1.com',
+                    'exchange': 'sharethrough',
+                    'source_id': 9,
+                }
+            ]
         }
 
         api.update_publisher_blacklist_state(args)
@@ -1383,7 +1388,6 @@ class PublisherCallbackTest(TestCase):
         self.assertEqual(1, allblacklist.count())
         self.assertIsNotNone(allblacklist[0].ad_group)
 
-
         args1 = {
             'key': [1],
             'level': dash.constants.PublisherBlacklistLevel.CAMPAIGN,
@@ -1400,7 +1404,6 @@ class PublisherCallbackTest(TestCase):
         self.assertEqual(1, allblacklist.count())
         self.assertIsNone(allblacklist[0].ad_group)
         self.assertIsNotNone(allblacklist[0].campaign)
-
 
         args2 = {
             'key': [1],
@@ -1419,7 +1422,6 @@ class PublisherCallbackTest(TestCase):
         self.assertIsNone(allblacklist[0].ad_group)
         self.assertIsNone(allblacklist[0].campaign)
         self.assertIsNotNone(allblacklist[0].account)
-
 
         args3 = {
             'key': None,

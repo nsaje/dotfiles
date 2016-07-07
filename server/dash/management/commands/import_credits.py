@@ -78,7 +78,7 @@ class Command(ExceptionCommand):
                 with_errors += 1
                 continue
 
-            ### Automatic budget creation
+            # Automatic budget creation
             raw_campaigns = dash.models.Campaign.objects.filter(account=imported_credit.account)
             campaigns = []
             for c in raw_campaigns:

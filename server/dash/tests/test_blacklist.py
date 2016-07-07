@@ -281,7 +281,7 @@ class BlacklistTestCase(TestCase):
                               BLACKLISTED, self.domains)
 
         self.assertEqual(set(self.domains), set(
-            (obj.name, obj.external_id) for obj in 
+            (obj.name, obj.external_id) for obj in
             dash.models.PublisherBlacklist.objects.filter(source=self.source, account=self.account)
         ))
 

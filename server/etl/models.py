@@ -5,33 +5,6 @@ import dash.constants
 from redshiftapi.model_helpers import RSBreakdownMixin, AGGREGATES, BREAKDOWN
 
 
-class K1Stats(backtosql.Model, RSBreakdownMixin):
-    hour = backtosql.Column('hour', BREAKDOWN)
-    date = backtosql.Column('date', BREAKDOWN)
-
-    source_type = backtosql.Column('media_source_type', BREAKDOWN)
-    source_slug = backtosql.Column('media_source', BREAKDOWN)
-
-    ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
-    content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
-    publisher = backtosql.Column('publisher', BREAKDOWN)
-
-    device_type = backtosql.Column('device_type', BREAKDOWN)
-    country = backtosql.Column('country', BREAKDOWN)
-    state = backtosql.Column('state', BREAKDOWN)
-    dma = backtosql.Column('dma', BREAKDOWN)
-    age = backtosql.Column('age', BREAKDOWN)
-    gender = backtosql.Column('gender', BREAKDOWN)
-
-    clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
-    impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATES)
-    cost_micro = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'spend'}, AGGREGATES)
-    data_cost_micro = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'data_spend'}, AGGREGATES)
-
-    def get_best_view(self, *args, **kwargs):
-        return 'stats'
-
-
 class K1Conversions(backtosql.Model, RSBreakdownMixin):
     date = backtosql.Column('date', BREAKDOWN)
 
@@ -109,8 +82,8 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
 
     clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
     impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATES)
-    cost_cc = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'cost_cc'}, AGGREGATES)
-    data_cost_cc = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'data_cost_cc'}, AGGREGATES)
+    cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'cost_nano'}, AGGREGATES)
+    data_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'data_cost_nano'}, AGGREGATES)
 
     visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'visits'}, AGGREGATES)
     new_visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'new_visits'}, AGGREGATES)
@@ -133,7 +106,7 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
         """
 
         return cls.select_columns(subset=[
-            'impressions', 'clicks', 'cost_cc', 'data_cost_cc', 'visits', 'new_visits',
+            'impressions', 'clicks', 'cost_nano', 'data_cost_nano', 'visits', 'new_visits',
             'bounced_visits', 'pageviews', 'total_time_on_site', 'effective_cost_nano',
             'effective_data_cost_nano', 'license_fee_nano',
         ])

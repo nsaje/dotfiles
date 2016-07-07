@@ -497,7 +497,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     }, zemOptimisationMetricsService.createColumnCategories(),
     ];
 
-    $scope.addContentAdsPlusMultiple = function () {
+    $scope.addContentAds = function () {
         var modalInstance = $modal.open({
             templateUrl: '/partials/upload_ads_modal.html',
             controller: 'UploadAdsModalCtrl',
