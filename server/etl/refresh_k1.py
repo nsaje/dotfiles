@@ -26,6 +26,9 @@ NEW_MATERIALIZED_VIEWS = [
 
     materialize_views.MasterView,
 
+    materialize_views.MVConversions,
+    materialize_views.MVTouchpointConversions,
+
     # Derived views from master - from broder to narrower breakdown
     materialize_views.MVContentAdDelivery,
     materialize_views.MVAdGroupDelivery,
