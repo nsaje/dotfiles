@@ -27,7 +27,10 @@ class RefreshTest(TestCase):
 
         refresh_k1.refresh_k1_reports(datetime.datetime(2016, 5, 10))
 
-        mock_mat_view.assert_called_with('asd',
-            datetime.date(2016, 5, 10), datetime.date(2016, 5, 13))
+        mock_mat_view.assert_called_with(
+            'asd',
+            datetime.date(2016, 5, 10),
+            datetime.date(2016, 5, 13)
+        )
 
         mock_mat_view().generate.assert_called_with(campaign_factors=effective_spend_factors)

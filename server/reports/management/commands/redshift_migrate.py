@@ -89,7 +89,7 @@ class Command(ExceptionCommand):
             is_list_action = bool(options.get('list', False))
             show_sql = bool(options.get('sql', False))
             start_index = int(options.get('start', 0)) if options['start'] is not None else 0
-            app_label= str(options.get('app', ''))
+            app_label = str(options.get('app', ''))
         except:
             logging.exception("Failed parsing command line arguments")
             sys.exit(1)

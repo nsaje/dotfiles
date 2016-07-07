@@ -27,7 +27,7 @@ TPConversionResults = collections.namedtuple('Result3',
 
 @mock.patch('redshiftapi.db.get_write_stats_cursor')
 @mock.patch('redshiftapi.db.get_write_stats_transaction')
-@mock.patch ('utils.s3helpers.S3Helper')
+@mock.patch('utils.s3helpers.S3Helper')
 class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
 
@@ -69,7 +69,7 @@ class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
 
 @mock.patch('redshiftapi.db.get_write_stats_cursor')
 @mock.patch('redshiftapi.db.get_write_stats_transaction')
-@mock.patch ('utils.s3helpers.S3Helper')
+@mock.patch('utils.s3helpers.S3Helper')
 class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
 
@@ -123,7 +123,7 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
 
 @mock.patch('redshiftapi.db.get_write_stats_cursor')
 @mock.patch('redshiftapi.db.get_write_stats_transaction')
-@mock.patch ('utils.s3helpers.S3Helper')
+@mock.patch('utils.s3helpers.S3Helper')
 class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
 
@@ -271,11 +271,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
         mv.generate()
 
-        mock_cursor().__enter__().execute.assert_has_calls([
-            mock.call(backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s'),
-                      {'date': datetime.date(2016, 7, 1)}
-            ),
-            mock.call(backtosql.SQLMatcher("""
+        insert_into_master_sql = backtosql.SQLMatcher("""
             INSERT INTO mv_master
                 (SELECT
                     a.date as date,
@@ -312,8 +308,14 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                     join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id )
                         join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
                 WHERE a.date=%(date)s);
-            """), {'date': datetime.date(2016, 7, 1)}
+            """)
+
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s'),
+                {'date': datetime.date(2016, 7, 1)}
             ),
+            mock.call(insert_into_master_sql, {'date': datetime.date(2016, 7, 1)}),
             mock.call(backtosql.SQLMatcher("""
                 SELECT date, source_id, content_ad_id
                 FROM mv_master
@@ -336,7 +338,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                 FROM postclickstats
                 WHERE date=%(date)s
                 GROUP BY ad_group_id, postclick_source, content_ad_id, source_slug, publisher;
-                """), {'date': datetime.date(2016, 7, 1)}
+            """), {'date': datetime.date(2016, 7, 1)}
             ),
             mock.call(backtosql.SQLMatcher("""
                 COPY mv_master
@@ -350,10 +352,11 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                     'delimiter': '\t'
                 }
             ),
-            mock.call(backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s'),
-                      {'date': datetime.date(2016, 7, 2)}
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s'),
+                {'date': datetime.date(2016, 7, 2)}
             ),
-            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
+            mock.call(insert_into_master_sql, {'date': datetime.date(2016, 7, 2)}),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
             mock.call(mock.ANY, {
@@ -361,10 +364,11 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                 's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/02/view_asd.csv',
                 'delimiter': '\t'
             }),
-            mock.call(backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s'),
-                      {'date': datetime.date(2016, 7, 3)}
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s'),
+                {'date': datetime.date(2016, 7, 3)}
             ),
-            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
+            mock.call(insert_into_master_sql, {'date': datetime.date(2016, 7, 3)}),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
             mock.call(mock.ANY, {
