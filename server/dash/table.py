@@ -162,20 +162,23 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
 
 class AllAccountsSourcesTable(object):
 
-    def __init__(self, user, id_, filtered_sources):
+    def __init__(self, user, id_, view_filter):
         self.user = user
-        self.accounts = models.Account.objects.all().filter_by_user(user)
+        self.accounts = models.Account.objects.all()\
+            .filter_by_user(user)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter_by_account_types(view_filter.filtered_account_types)
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Account, self.accounts)
         self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
-        self.filtered_sources = filtered_sources
+        self.view_filter = view_filter
         self.reports_api = get_reports_api_module(user)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return self.reports_api.has_complete_postclick_metrics_accounts(
-            start_date, end_date, self.accounts, self.filtered_sources)
+            start_date, end_date, self.accounts, self.view_filter.filtered_sources)
 
     def get_sources(self):
-        return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
+        return self.view_filter.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_stats(self, user, start_date, end_date):
         sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
@@ -183,14 +186,14 @@ class AllAccountsSourcesTable(object):
             end_date,
             breakdown=['source'],
             account=self.accounts,
-            source=self.filtered_sources
+            source=self.view_filter.filtered_sources
         ), self.user)
 
         totals_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
             account=self.accounts,
-            source=self.filtered_sources,
+            source=self.view_filter.filtered_sources,
         ), self.user)
 
         return sources_stats, totals_stats
@@ -198,7 +201,7 @@ class AllAccountsSourcesTable(object):
     def get_last_success_actions(self):
         if not hasattr(self, '_last_success_actions'):
             self._last_success_actions = actionlog.sync.GlobalSync(
-                sources=self.filtered_sources
+                sources=self.view_filter.filtered_sources
             ).get_latest_source_success()
         return self._last_success_actions
 
@@ -206,7 +209,9 @@ class AllAccountsSourcesTable(object):
         return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False))
 
     def is_sync_in_progress(self):
-        return actionlog.api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
+        return actionlog.api.is_sync_in_progress(
+            accounts=self.accounts,
+            sources=self.view_filter.filtered_sources)
 
     def get_data_status(self, user):
         return helpers.get_data_status(self.get_sources())
@@ -476,11 +481,12 @@ class AdGroupSourcesTableUpdates(object):
 
 class SourcesTable(object):
 
-    def get(self, user, level_, filtered_sources, start_date, end_date, order, id_=None):
+    def get(self, user, level_, view_filter, start_date, end_date, order, id_=None):
         ad_group_level = False
         kwargs = None
+        filtered_sources = view_filter.filtered_sources
         if level_ == 'all_accounts':
-            level_sources_table = AllAccountsSourcesTable(user, id_, filtered_sources)
+            level_sources_table = AllAccountsSourcesTable(user, id_, view_filter)
             kwargs = {'account': level_sources_table.accounts}
         elif level_ == 'accounts':
             level_sources_table = AccountSourcesTable(user, id_, filtered_sources)
@@ -793,7 +799,7 @@ class SourcesTable(object):
 
 class AccountsAccountsTable(object):
 
-    def get(self, user, filtered_sources, start_date, end_date, order, page, size, show_archived):
+    def get(self, user, view_filter, start_date, end_date, order, page, size, show_archived):
         # Permission check
         if not user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
@@ -802,8 +808,11 @@ class AccountsAccountsTable(object):
 
         has_view_managers_permission = user.has_perm('zemauth.can_see_managers_in_accounts_table')
 
-        accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
-        # account_ids = set(acc.id for acc in accounts)
+        accounts = models.Account.objects.all()\
+            .filter_by_user(user)\
+            .filter_by_sources(view_filter.filtered_sources)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter_by_account_types(view_filter.filtered_account_types)
 
         accounts_settings = models.AccountSettings.objects\
             .filter(account__in=accounts)\
@@ -820,14 +829,14 @@ class AccountsAccountsTable(object):
             end_date,
             breakdown=['account'],
             account=accounts,
-            source=filtered_sources
+            source=view_filter.filtered_sources
         ), user)
 
         totals_data = reports.api_helpers.filter_by_permissions(reports_api.query(
             start_date,
             end_date,
             account=accounts,
-            source=filtered_sources
+            source=view_filter.filtered_sources
         ), user)
 
         account_budget, account_total_spend = self.get_budgets(accounts)
@@ -848,7 +857,7 @@ class AccountsAccountsTable(object):
             if user.has_perm('zemauth.can_see_projections'):
                 totals_data['total_fee_projection'] = projections.total('total_fee_projection')
 
-        accounts_status_dict = self.get_per_account_running_status_dict(accounts, filtered_sources)
+        accounts_status_dict = self.get_per_account_running_status_dict(accounts, view_filter.filtered_sources)
 
         rows = self.get_rows(
             user,
@@ -872,7 +881,7 @@ class AccountsAccountsTable(object):
                 start_date,
                 end_date,
                 accounts,
-                filtered_sources
+                view_filter.filtered_sources
             ) if has_aggregate_postclick_permission(user) else False
 
         response = {

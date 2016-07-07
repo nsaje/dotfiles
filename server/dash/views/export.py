@@ -412,12 +412,21 @@ def _add_scheduled_report_from_request(request, by_source=False, ad_group=None, 
     except ValueError:
         raise exc.ValidationError(message='Invalid json')
     filtered_sources = []
+    filtered_agencies = None
+    filtered_account_types = []
     if len(r.get('filtered_sources')) > 0:
         filtered_sources = helpers.get_filtered_sources(request.user, r.get('filtered_sources'))
+    if ad_group is None and campaign is None and account is None:
+        view_filter = helpers.ViewFilter(request)
+        filtered_agencies = view_filter.filtered_agencies
+        filtered_account_types = view_filter.filtered_account_types
+
     scheduled_report.add_scheduled_report(
         request.user,
         report_name=r.get('report_name'),
         filtered_sources=filtered_sources,
+        filtered_agencies=filtered_agencies,
+        filtered_account_types=filtered_account_types,
         order=r.get('order'),
         additional_fields=r.get('additional_fields'),
         granularity=export.get_granularity_from_type(r.get('type')),

@@ -1312,6 +1312,8 @@ class ScheduledExportReportAdmin(admin.ModelAdmin):
         'report_',
         'sending_frequency',
         'get_sources',
+        '_agencies',
+        '_account_types',
         'get_recipients',
         'state',
     )
@@ -1334,6 +1336,18 @@ class ScheduledExportReportAdmin(admin.ModelAdmin):
         return u'<a href="%s">%s</a>' % (link, obj.report)
     report_.allow_tags = True
 
+    def _agencies(self, obj):
+        if len(obj.report.filtered_agencies.all()) == 0:
+            return 'All Agencies'
+        return ', '.join(agency.name for agency in obj.report.get_filtered_agencies())
+    _agencies.short_description = 'Filtered Agencies'
+
+    def _account_types(self, obj):
+        if len(obj.report.filtered_account_types or []) == 0:
+            return 'All Account Types'
+        return ', '.join(account_type_name for account_type_name in obj.report.get_filtered_account_types())
+    _agencies.short_description = 'Filtered Account Types'
+
 
 class ExportReportAdmin(admin.ModelAdmin):
     search_fields = ['created_by__email']
@@ -1348,7 +1362,9 @@ class ExportReportAdmin(admin.ModelAdmin):
         'campaign',
         'account',
         'additional_fields',
-        'get_sources'
+        'get_sources',
+        '_agencies',
+        '_account_types',
     )
     readonly_fields = ['created_dt']
 
@@ -1357,6 +1373,18 @@ class ExportReportAdmin(admin.ModelAdmin):
             return 'All Sources'
         return ', '.join(source.name for source in obj.get_filtered_sources())
     get_sources.short_description = 'Filtered Sources'
+
+    def _agencies(self, obj):
+        if len(obj.filtered_agencies.all()) == 0:
+            return 'All Agencies'
+        return ', '.join(agency.name for agency in obj.get_filtered_agencies())
+    _agencies.short_description = 'Filtered Agencies'
+
+    def _account_types(self, obj):
+        if len(obj.filtered_account_types or []) == 0:
+            return 'All Account Types'
+        return ', '.join(account_type_name for account_type_name in obj.get_filtered_account_types())
+    _agencies.short_description = 'Filtered Account Types'
 
 
 class PublisherBlacklistAdmin(admin.ModelAdmin):

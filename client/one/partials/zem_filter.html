@@ -48,7 +48,7 @@
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_filter_by_account_type')" popover-placement="left"></zem-internal-feature>
                 <div class="title">Filter by Account type</div>
 
-                <select ui-select2="{minimumResultsForSearch: -1, formatNoMatches: 'No account types', dropdownCssClass: 'select2-filter'}" ng-model="accountTypeIdToFilter" ng-change="addFilteredAccountType(accountTypeIdToFilter)" class="add-filter" data-placeholder="+ Account Type">
+                <select ui-select2="{formatNoMatches: 'No account types', dropdownCssClass: 'select2-filter'}" ng-model="accountTypeIdToFilter" ng-change="addFilteredAccountType(accountTypeIdToFilter)" class="add-filter" data-placeholder="+ Account Type">
                     <option value=""></option>
                     <option ng-repeat="accountType in accountTypes | orderBy:'name'" value="{{accountType.id}}">{{accountType.name}}</option>
                 </select>

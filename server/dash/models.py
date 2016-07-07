@@ -534,6 +534,26 @@ class Account(models.Model):
                 models.Q(campaign__adgroup__adgroupsource__source__id__in=sources)
             ).distinct()
 
+        def filter_by_agencies(self, agencies):
+            if not agencies:
+                return self
+            return self.filter(
+                agency__in=agencies)
+
+        def filter_by_account_types(self, account_types):
+            if not account_types:
+                return self
+            latest_settings = AccountSettings.objects.all().filter(
+                account__in=self
+            ).group_current_settings()
+
+            filtered_ac_ids = AccountSettings.objects.all().filter(
+                id__in=latest_settings,
+                account_type__in=account_types
+            ).values_list('account__id', flat=True)
+
+            return self.filter(id__in=filtered_ac_ids)
+
         def exclude_archived(self):
             related_settings = AccountSettings.objects.all().filter(
                 account__in=self
@@ -714,6 +734,30 @@ class Campaign(models.Model, PermissionMixin):
                 models.Q(id__in=Campaign.demo_objects.all()) |
                 models.Q(adgroup__adgroupsource__source__in=sources)
             ).distinct()
+
+        def filter_by_agencies(self, agencies):
+            if not agencies:
+                return self
+            return self.filter(
+                account__agency__in=agencies)
+
+        def filter_by_account_types(self, account_types):
+            if not account_types:
+                return self
+
+            latest_settings = AccountSettings.objects.all().filter(
+                account__campaign__in=self
+            ).group_current_settings()
+
+            filtered_accounts = AccountSettings.objects.all().filter(
+                id__in=latest_settings
+            ).filter(
+                account_type__in=account_types
+            ).values_list('account__id', flat=True)
+
+            return self.filter(
+                account__id__in=filtered_accounts
+            )
 
         def exclude_archived(self):
             related_settings = CampaignSettings.objects.all().filter(
@@ -1728,6 +1772,28 @@ class AdGroup(models.Model):
                 models.Q(campaign__account__groups__user__id=user.id) |
                 models.Q(campaign__account__agency__users__id=user.id)
             ).distinct()
+
+        def filter_by_agencies(self, agencies):
+            if not agencies:
+                return self
+            return self.filter(
+                campaign__account__agency__in=agencies)
+
+        def filter_by_account_types(self, account_types):
+            if not account_types:
+                return self
+
+            latest_settings = AccountSettings.objects.all().filter(
+                account__campaign__adgroup__in=self
+            ).group_current_settings()
+
+            filtered_accounts = AccountSettings.objects.all().filter(
+                id__in=latest_settings,
+                account_type__in=account_types
+            ).values_list('account__id', flat=True)
+
+            return self.filter(
+                campaign__account__in=filtered_accounts)
 
         def filter_by_sources(self, sources):
             if not should_filter_by_sources(sources):
@@ -3515,6 +3581,8 @@ class ExportReport(models.Model):
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.CharField(max_length=500, null=True, blank=True)
     filtered_sources = models.ManyToManyField(Source, blank=True)
+    filtered_agencies = models.ManyToManyField(Agency, blank=True)
+    filtered_account_types = jsonfield.JSONField(blank=True, default=[])
 
     def __unicode__(self):
         return u' '.join(filter(None, (
@@ -3556,6 +3624,16 @@ class ExportReport(models.Model):
         if len(self.filtered_sources.all()) == 0:
             return all_sources
         return all_sources.filter(id__in=[source.id for source in self.filtered_sources.all()])
+
+    def get_filtered_agencies(self):
+        if len(self.filtered_agencies.all()) == 0:
+            return Agency.objects.all()
+        return self.filtered_agencies.all()
+
+    def get_filtered_account_types(self):
+        if len(self.filtered_account_types or []) == 0:
+            return [constants.AccountType.get_text(c) for c in constants.AccountType.get_all()]
+        return [constants.AccountType.get_text(c) for c in self.filtered_account_types]
 
 
 class ScheduledExportReport(models.Model):

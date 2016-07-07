@@ -190,10 +190,30 @@ def get_yesterday_campaign_spend(user, campaign):
     ).get('media', Decimal(0))
 
 
-def get_yesterday_all_accounts_spend():
+def _filter_daily_statements(statements, filtered_agencies, filtered_account_types):
+    if filtered_agencies:
+        statements = statements.filter(
+            budget__campaign__account__agency__in=filtered_agencies
+        )
+    if filtered_account_types:
+        account_ids = dash.models.AccountSettings.objects.all()\
+            .filter(account__campaign__budgets__statements__in=statements)\
+            .group_current_settings()\
+            .values_list('account__id', flat=True)
+        statements = statements.filter(
+            budget__campaign__account__id__in=account_ids)
+    return statements
+
+
+def get_yesterday_all_accounts_spend(filtered_agencies, filtered_account_types):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     daily_statements = reports.models.BudgetDailyStatement.objects.filter(
         date=yesterday
+    )
+    daily_statements = _filter_daily_statements(
+        daily_statements,
+        filtered_agencies,
+        filtered_account_types
     )
     return reports.budget_helpers.calculate_spend_data(
         daily_statements,
@@ -201,8 +221,13 @@ def get_yesterday_all_accounts_spend():
     ).get('media', Decimal(0))
 
 
-def get_mtd_all_accounts_spend():
+def get_mtd_all_accounts_spend(filtered_agencies, filtered_account_types):
     daily_statements = reports.models.BudgetDailyStatement.objects.all()
+    daily_statements = _filter_daily_statements(
+        daily_statements,
+        filtered_agencies,
+        filtered_account_types
+    )
     return reports.budget_helpers.calculate_mtd_spend_data(
         daily_statements,
         date=_until_today(),
@@ -363,7 +388,7 @@ def count_active_campaigns(account):
     return len(active_campaign_ids)
 
 
-def count_active_accounts():
+def count_active_accounts(filtered_agencies, filtered_account_types):
     account_ids = set(
         dash.models.AdGroup.objects.all()
         .filter_running()
@@ -372,7 +397,12 @@ def count_active_accounts():
             flat=True
         )
     )
-    return len(account_ids)
+    count_filtered_ids = dash.models.Account.objects.all()\
+        .filter(id__in=account_ids)\
+        .filter_by_agencies(filtered_agencies)\
+        .filter_by_account_types(filtered_account_types)\
+        .count()
+    return count_filtered_ids
 
 
 def format_username(user):
@@ -381,19 +411,45 @@ def format_username(user):
     return user.get_full_name()
 
 
-def count_weekly_logged_in_users():
-    return zemauth.models.User.objects.filter(
+def _filter_user_by_account_type(users, filtered_account_types):
+    if not filtered_account_types:
+        return users
+    latest_account_settings = dash.models.AccountSettings.objects.all()\
+        .filter(
+            models.Q(account__users__in=users) |
+            models.Q(account__groups__user__in=users) |
+            models.Q(account__agency__users__in=users)
+        )\
+        .group_current_settings()
+
+    filtered_latest_account_settings = dash.models.AccountSettings.objects\
+        .all()\
+        .filter(pk__in=latest_account_settings)\
+        .filter(account_type__in=filtered_account_types)\
+        .values_list('account__id', flat=True)
+
+    return users.filter(
+        models.Q(account__id__in=filtered_latest_account_settings) |
+        models.Q(groups__account__id__in=filtered_latest_account_settings)
+    )
+
+
+def count_weekly_logged_in_users(filtered_agencies, filtered_account_types):
+    logged_in_users = zemauth.models.User.objects.filter(
         last_login__gte=_one_week_ago(),
         last_login__lte=_until_today(),
     ).exclude(
         email__contains='@zemanta'
     ).exclude(
         is_test_user=True
-    ).count()
+    ).filter_by_agencies(filtered_agencies)
+    return _filter_user_by_account_type(
+        logged_in_users,
+        filtered_account_types).count()
 
 
-def get_weekly_active_users():
-    return [action.created_by for action in dash.models.History.objects.filter(
+def get_weekly_active_users(filtered_agencies, filtered_account_types):
+    actions = dash.models.UserActionLog.objects.filter(
         created_dt__gte=_one_week_ago(),
         created_dt__lte=_until_today(),
         created_by__isnull=False,
@@ -401,11 +457,18 @@ def get_weekly_active_users():
         created_by__email__contains='@zemanta'
     ).exclude(
         created_by__is_test_user=True
-    ).select_related('created_by').distinct('created_by')]
+    ).select_related('created_by').distinct('created_by')
+
+    users = zemauth.models.User.objects.all().filter(
+        pk__in=[action.created_by.id for action in actions]
+    ).filter_by_agencies(filtered_agencies)
+    return _filter_user_by_account_type(
+        users,
+        filtered_account_types)
 
 
-def count_weekly_selfmanaged_actions():
-    return dash.models.History.objects.filter(
+def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
+    actions = dash.models.UserActionLog.objects.filter(
         created_dt__gte=_one_week_ago(),
         created_dt__lte=_until_today(),
         created_by__isnull=False,
@@ -413,7 +476,13 @@ def count_weekly_selfmanaged_actions():
         created_by__email__contains='@zemanta'
     ).exclude(
         created_by__is_test_user=True
-    ).count()
+    )
+
+    users = zemauth.models.User.objects.all().filter(
+        pk__in=[action.created_by.id for action in actions])\
+        .filter_by_agencies(filtered_agencies)
+    filtered_users = _filter_user_by_account_type(users, filtered_account_types)
+    return actions.filter(created_by__in=filtered_users).count()
 
 
 def _one_week_ago():

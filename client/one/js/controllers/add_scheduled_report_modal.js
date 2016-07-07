@@ -34,6 +34,13 @@ oneApp.controller('AddScheduledReportModalCtrl', ['$scope', '$modalInstance', 'a
             'report_name': $scope.export.reportName,
         };
 
+        if (zemFilterService.isAgencyFilterOn()) {
+            data.filtered_agencies = zemFilterService.getFilteredAgencies().join(',');
+        }
+        if (zemFilterService.isAccountTypeFilterOn()) {
+            data.filtered_account_types = zemFilterService.getFilteredAccountTypes().join(',');
+        }
+
         if ($scope.hasPermission('zemauth.can_include_model_ids_in_reports')) {
             data.include_model_ids = $scope.export.includeIds;
         }

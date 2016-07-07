@@ -13,6 +13,7 @@ import dash.constants
 import dash.models
 import dash.infobox_helpers
 
+from utils.test_helper import fake_request
 from django.test.client import RequestFactory
 
 
@@ -27,6 +28,31 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertTrue(formatted_flight_time.startswith('01/01 - '))
         self.assertEqual(2, days_left)
+
+    def test_filter_user_by_account_type(self):
+        account = dash.models.Account.objects.get(pk=1)
+
+        acs = account.get_current_settings()
+        acs.account_type = dash.constants.AccountType.PILOT
+        acs.save(fake_request(zemauth.models.User.objects.get(pk=1)))
+
+        su = zemauth.models.User.objects.all().filter(is_superuser=True)
+        fusers = dash.infobox_helpers._filter_user_by_account_type(
+            su, [dash.constants.AccountType.PILOT])
+        self.assertEqual(su.count(), fusers.count())
+
+        fusers = dash.infobox_helpers._filter_user_by_account_type(
+            account.users.all(), [dash.constants.AccountType.PILOT])
+        self.assertEqual(account.users.all().count(), fusers.count())
+
+        rest = zemauth.models.User.objects.all().exclude(
+            id__in=su.values_list('id', flat=True)
+        ).exclude(
+            id__in=account.users.all().values_list('id', flat=True)
+        )
+        rusers = dash.infobox_helpers._filter_user_by_account_type(
+            rest, [dash.constants.AccountType.PILOT])
+        self.assertEqual(0, rusers.count())
 
     def test_get_ideal_campaign_spend(self):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
@@ -346,6 +372,10 @@ class InfoBoxAccountHelpersTest(TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
 
+        self.user = user
+        self.agency = dash.models.Agency(name='test')
+        self.agency.save(fake_request(user))
+
         today = datetime.datetime.today().date()
 
         _, days_of_month = calendar.monthrange(today.year, today.month)
@@ -372,7 +402,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
     def test_get_yesterday_all_accounts_spend(self):
-        self.assertEqual(0, dash.infobox_helpers.get_yesterday_all_accounts_spend())
+        self.assertEqual(0, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
         yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         reports.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
@@ -381,10 +411,26 @@ class InfoBoxAccountHelpersTest(TestCase):
             data_spend_nano=10e9,
             license_fee_nano=10e9,
         )
-        self.assertEqual(10, dash.infobox_helpers.get_yesterday_all_accounts_spend())
+        self.assertEqual(10, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
+
+        account = dash.models.Account.objects.get(pk=1)
+        account.agency = self.agency
+        account.save(fake_request(self.user))
+
+        self.assertEqual(10, dash.infobox_helpers.get_yesterday_all_accounts_spend([self.agency], None))
+
+        res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.UNKNOWN])
+        self.assertEqual(0, res)
+
+        new_acs = account.get_current_settings().copy_settings()
+        new_acs.account_type = dash.constants.AccountType.UNKNOWN
+        new_acs.save(fake_request(self.user))
+
+        res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.UNKNOWN])
+        self.assertEqual(10, res)
 
     def test_get_mtd_all_accounts_spend(self):
-        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend())
+        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
         today = datetime.datetime.utcnow()
         reports.models.BudgetDailyStatement.objects.create(
@@ -394,7 +440,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             data_spend_nano=10e9,
             license_fee_nano=10e9,
         )
-        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend())
+        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
         aproximately_one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=31)
         reports.models.BudgetDailyStatement.objects.create(
@@ -405,7 +451,27 @@ class InfoBoxAccountHelpersTest(TestCase):
             license_fee_nano=10e9,
         )
         # shouldn't change because it's month to date
-        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend())
+        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
+
+        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            [self.agency], None))
+
+        account = dash.models.Account.objects.get(pk=1)
+        account.agency = self.agency
+        account.save(fake_request(self.user))
+
+        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            [self.agency], None))
+
+        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            [], [dash.constants.AccountType.PILOT]))
+
+        new_acs = account.get_current_settings().copy_settings()
+        new_acs.account_type = dash.constants.AccountType.PILOT
+        new_acs.save(fake_request(self.user))
+
+        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(
+            [], [dash.constants.AccountType.PILOT]))
 
     def test_count_active_accounts(self):
         today = datetime.datetime.utcnow()
@@ -414,7 +480,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             adgss.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
             adgss.save()
 
-        self.assertEqual(0, dash.infobox_helpers.count_active_accounts())
+        self.assertEqual(0, dash.infobox_helpers.count_active_accounts(None, None))
 
         all_adgset = dash.models.AdGroupSettings.objects.filter(
             ad_group__campaign__account__id=1
@@ -436,7 +502,7 @@ class InfoBoxAccountHelpersTest(TestCase):
                 daily_budget_cc=10
             )
 
-        self.assertEqual(1, dash.infobox_helpers.count_active_accounts())
+        self.assertEqual(1, dash.infobox_helpers.count_active_accounts(None, None))
 
     def _make_a_john(self):
         ordinary_john = zemauth.models.User.objects.create_user(
@@ -449,7 +515,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         return ordinary_john
 
     def test_get_weekly_logged_in_users(self):
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
 
         for u in zemauth.models.User.objects.all():
             if 'zemanta' not in u.email:
@@ -458,18 +524,18 @@ class InfoBoxAccountHelpersTest(TestCase):
             u.save()
 
         # zemanta mail should be skipped when counting mails
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
 
         john = self._make_a_john()
         john.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         john.save()
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users())
+        self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
 
     @mock.patch('django.utils.timezone.now')
     def test_count_weekly_active_users(self, mock_now):
         # should be 0 by default
-        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
+        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
         for u in zemauth.models.User.objects.all():
             if 'zemanta' not in u.email:
@@ -484,8 +550,8 @@ class InfoBoxAccountHelpersTest(TestCase):
             )
 
         # zemanta mail should be skipped when counting mails
-        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
+        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
         mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
         john = self._make_a_john()
@@ -496,8 +562,8 @@ class InfoBoxAccountHelpersTest(TestCase):
             created_by=john,
         )
 
-        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions())
+        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+        self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
         mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
         ual = dash.models.History.objects.create(
@@ -507,8 +573,8 @@ class InfoBoxAccountHelpersTest(TestCase):
             created_by=john
         )
 
-        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
-        self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions())
+        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
+        self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
 
     def test_calculate_yesterday_account_spend(self):
         account = dash.models.Account.objects.get(pk=1)
