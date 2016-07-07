@@ -79,8 +79,8 @@ class HelpersTest(TestCase):
         )
 
         self.assertListEqual(
-            helpers.extract_stats_breakdown(['content_ad', 'publisher', 'device', 'week']),
-            ['content_ad_id', 'publisher', 'device', 'week'],
+            helpers.extract_stats_breakdown(['content_ad', 'publisher', 'device_type', 'week']),
+            ['content_ad_id', 'publisher', 'device_type', 'week'],
         )
 
     def test_create_breakdown_id(self):

@@ -101,8 +101,8 @@ class ApiPublishersTest(TestCase):
         constraints = dict(
             ad_group=1
         )
-        start_date=datetime.date(2015, 2, 1)
-        end_date=datetime.date(2015, 2, 2)
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
         breakdown = ['domain']
 
         api_publishers.query(start_date, end_date, breakdown_fields=breakdown, constraints=constraints)
@@ -116,10 +116,10 @@ class ApiPublishersTest(TestCase):
         constraints = dict(
             ad_group=1
         )
-        start_date=datetime.date(2015, 2, 1)
-        end_date=datetime.date(2015, 2, 2)
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
         breakdown = ['date']
-        api_publishers.query(start_date, end_date, breakdown_fields=breakdown, constraints = constraints)
+        api_publishers.query(start_date, end_date, breakdown_fields=breakdown, constraints=constraints)
         constraints.update({'start_date': start_date, 'end_date': end_date})
 
         self.check_breakdown(breakdown)
@@ -130,8 +130,8 @@ class ApiPublishersTest(TestCase):
         constraints = dict(
             date=datetime.date(2015, 2, 1),
         )
-        start_date=datetime.date(2015, 2, 1)
-        end_date=datetime.date(2015, 2, 2)
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
         api_publishers.query(start_date, end_date, constraints=constraints)
         constraints.update({'start_date': start_date, 'end_date': end_date})
 
@@ -142,11 +142,11 @@ class ApiPublishersTest(TestCase):
         constraints = dict(
             ad_group=1
         )
-        start_date=datetime.date(2015, 2, 1)
-        end_date=datetime.date(2015, 2, 2)
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
         breakdown = ['domain']
 
-        api_publishers.query(start_date, end_date, order_fields = ['-cpc'], breakdown_fields=breakdown, constraints=constraints)
+        api_publishers.query(start_date, end_date, order_fields=['-cpc'], breakdown_fields=breakdown, constraints=constraints)
         constraints.update({'start_date': start_date, 'end_date': end_date})
         self.check_breakdown(breakdown)
         self.check_constraints(constraints)
@@ -159,15 +159,15 @@ class ApiPublishersTest(TestCase):
         # sure blacklisting condition creation executes
         # setup some test data
         self.get_cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'ctr': 0.0,
-            'exchange': 'gumgum',
-            'cpc_nano': 0,
-            'cost_nano_sum': 1e-05,
-            'impressions_sum': 1000L,
-            'clicks_sum': 0L,
-        },
+            {
+                'domain': u'zemanta.com',
+                'ctr': 0.0,
+                'exchange': 'gumgum',
+                'cpc_nano': 0,
+                'cost_nano_sum': 1e-05,
+                'impressions_sum': 1000L,
+                'clicks_sum': 0L,
+            },
         ]
 
         # setup some blacklisted publisher entries
@@ -205,15 +205,15 @@ class ApiPublishersTest(TestCase):
         # sure blacklisting condition creation executes
         # setup some test data
         self.get_cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'ctr': 0.0,
-            'exchange': 'gumgum',
-            'cpc_nano': 0,
-            'cost_nano_sum': 1e-05,
-            'impressions_sum': 1000L,
-            'clicks_sum': 0L,
-        },
+            {
+                'domain': u'zemanta.com',
+                'ctr': 0.0,
+                'exchange': 'gumgum',
+                'cpc_nano': 0,
+                'cost_nano_sum': 1e-05,
+                'impressions_sum': 1000L,
+                'clicks_sum': 0L,
+            },
         ]
 
         # setup some blacklisted publisher entries
@@ -235,7 +235,7 @@ class ApiPublishersTest(TestCase):
         start_date = datetime.datetime.utcnow()
         end_date = start_date = datetime.timedelta(days=31)
 
-        breakdown_fields=['domain', 'exchange']
+        breakdown_fields = ['domain', 'exchange']
         constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields, False)
         publishers_data = api_publishers.query_blacklisted_publishers(
             start_date, end_date,
@@ -252,15 +252,15 @@ class ApiPublishersTest(TestCase):
         # sure blacklisting condition creation executes
         # setup some test data
         self.get_cursor().dictfetchall.return_value = [
-        {
-            'domain': u'zemanta.com',
-            'ctr': 0.0,
-            'exchange': 'gumgum',
-            'cpc_nano': 0,
-            'cost_nano_sum': 1e-05,
-            'impressions_sum': 1000L,
-            'clicks_sum': 0L,
-        },
+            {
+                'domain': u'zemanta.com',
+                'ctr': 0.0,
+                'exchange': 'gumgum',
+                'cpc_nano': 0,
+                'cost_nano_sum': 1e-05,
+                'impressions_sum': 1000L,
+                'clicks_sum': 0L,
+            },
         ]
 
         # setup some blacklisted publisher entries
@@ -282,7 +282,7 @@ class ApiPublishersTest(TestCase):
         start_date = datetime.datetime.utcnow()
         end_date = start_date = datetime.timedelta(days=31)
 
-        breakdown_fields=['domain', 'exchange']
+        breakdown_fields = ['domain', 'exchange']
         constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields, False)
         publishers_data = api_publishers.query_blacklisted_publishers(
             start_date, end_date,
@@ -297,26 +297,30 @@ class ApiPublishersTest(TestCase):
 
 class ApiPublishersMapperTest(TestCase):
     def test_map_rowdict_to_output_nones(self):
-        input = {'impressions_sum': None,
-                'domain': None,
-                'exchange': None,
-                'date': None,
-                'clicks_sum': None,
-                'cost_nano_sum': None,
-                'cpc_nano': None,
-                'ctr': None,
-                'adgroup_id': None,
-                'exchange': None}
+        input = {
+            'impressions_sum': None,
+            'domain': None,
+            'exchange': None,
+            'date': None,
+            'clicks_sum': None,
+            'cost_nano_sum': None,
+            'cpc_nano': None,
+            'ctr': None,
+            'adgroup_id': None,
+            'exchange': None
+        }
         result = api_publishers.rs_pub.map_result_to_app(input, json_fields=[])
-        self.assertEqual(result, {   'ad_group': None,
-                                     'clicks': None,
-                                     'cost': None,
-                                     'cpc': None,
-                                     'ctr': None,
-                                     'date': None,
-                                     'domain': None,
-                                     'exchange': None,
-                                     'impressions': None})
+        self.assertEqual(result, {
+            'ad_group': None,
+            'clicks': None,
+            'cost': None,
+            'cpc': None,
+            'ctr': None,
+            'date': None,
+            'domain': None,
+            'exchange': None,
+            'impressions': None
+        })
 
     def test_map_rowdict_to_output_transforms(self):
         input = {'cpc_nano': 100000,

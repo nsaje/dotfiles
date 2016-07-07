@@ -10,7 +10,7 @@ class StructureDimension:
 
 
 class DeliveryDimension:
-    DEVICE = 'device'
+    DEVICE = 'device_type'
     COUNTRY = 'country'
     STATE = 'state'
     DMA = 'dma'

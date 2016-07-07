@@ -208,7 +208,8 @@ DMA_BY_CODE = {
     "800": "800 Bakersfield, CA", 
     "807": "807 San Francisco-Oakland-San Jose, CA", 
     "639": "639 Jackson, TN", 
-    "682": "682 Davenport,IA-Rock Island-Moline,IL"
+    "682": "682 Davenport,IA-Rock Island-Moline,IL",
+    "531": "531 Tri-Cities-Tn-Va",
 }
 
 COUNTRY_BY_CODE = {

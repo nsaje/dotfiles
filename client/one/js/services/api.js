@@ -1457,6 +1457,21 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             return deferred.promise;
         };
+
+        this.getFacebookAccountStatus = function (accountId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/facebook_account_status/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    deferred.resolve(data);
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
     }
 
     function CampaignAdGroups () {
@@ -2309,136 +2324,10 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function AdGroupAdsUpload () {
+    function Upload () {
         this.getDefaults = function (adGroupId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/';
-
-            $http.get(url).
-                success(function (data) {
-                    var result = {};
-
-                    if (data && data.data) {
-                        result.status = data.data.status;
-
-                        if (data.data.defaults) {
-                            result.defaults = {
-                                displayUrl: data.data.defaults.display_url,
-                                brandName: data.data.defaults.brand_name,
-                                description: data.data.defaults.description,
-                                callToAction: data.data.defaults.call_to_action
-                            };
-                        }
-                    }
-                    deferred.resolve(result);
-                }).error(function (data) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-
-        };
-
-        this.upload = function (adGroupId, data) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/';
-
-            var formData = new FormData();
-            formData.append('content_ads', data.file);
-            formData.append('batch_name', data.batchName ? data.batchName : '');
-            formData.append('display_url', data.displayUrl ? data.displayUrl : '');
-            formData.append('brand_name', data.brandName ? data.brandName : '');
-            formData.append('description', data.description ? data.description : '');
-            formData.append('call_to_action', data.callToAction ? data.callToAction : '');
-
-            $http.post(url, formData, {
-                transformRequest: angular.identity,
-                headers: {'Content-Type': undefined}
-            }).success(function (data, status) {
-                deferred.resolve(data.data.batch_id);
-            }).error(function (data, status) {
-                var result = {};
-                if (status == '413') {
-                    data = {
-                        'data': {
-                            'status': 2,
-                            'errors': {
-                                'content_ads': ['File too large (max 1MB).']
-                            }
-                        },
-                        'success': false
-                    };
-                    result.errors = convertValidationErrorsFromApi(data.data.errors);
-                } else if (data && data.data && data.data.errors) {
-                    result.errors = convertValidationErrorsFromApi(data.data.errors);
-                }
-
-                deferred.reject(result);
-            });
-
-            return deferred.promise;
-        };
-
-        this.checkStatus = function (adGroupId, batchId) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/' + batchId + '/status/';
-
-            $http.get(url).
-                success(function (data) {
-                    var result = {};
-
-                    if (data && data.data) {
-                        result.status = data.data.status;
-                        result.count = data.data.count;
-                        result.step = data.data.step;
-                        result.batchSize = data.data.batch_size;
-
-                        if (data.data.errors) {
-                            result.errors = convertValidationErrorsFromApi(data.data.errors);
-                        }
-                    }
-                    deferred.resolve(result);
-                }).error(function (data) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.cancel = function (adGroupId, batchId) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/' + batchId + '/cancel/';
-
-            $http.get(url).success(deferred.resolve).error(deferred.reject);
-
-            return deferred.promise;
-        };
-
-        function convertValidationErrorsFromApi (errors) {
-            var converted = {
-                file: errors.content_ads,
-                batchName: errors.batch_name,
-                displayUrl: errors.display_url,
-                brandName: errors.brand_name,
-                description: errors.description,
-                callToAction: errors.call_to_action,
-            };
-
-            if (errors.details) {
-                converted.details = {
-                    reportUrl: errors.details && errors.details.report_url,
-                    description: errors.details && errors.details.description,
-                };
-            }
-
-            return converted;
-        }
-    }
-
-    function UploadPlus () {
-        this.getDefaults = function (adGroupId) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/csv/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/csv/';
 
             $http.get(url).
                 success(function (data) {
@@ -2464,55 +2353,12 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
-        this.uploadCsv = function (adGroupId, data) {
+        this.upload = function (adGroupId, data) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/csv/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/csv/';
 
             var formData = new FormData();
-            formData.append('content_ads', data.file);
-            formData.append('batch_name', data.batchName ? data.batchName : '');
-            formData.append('display_url', data.displayUrl ? data.displayUrl : '');
-            formData.append('brand_name', data.brandName ? data.brandName : '');
-            formData.append('description', data.description ? data.description : '');
-            formData.append('call_to_action', data.callToAction ? data.callToAction : '');
-
-            $http.post(url, formData, {
-                transformRequest: angular.identity,
-                headers: {'Content-Type': undefined},
-            }).success(function (data) {
-                deferred.resolve({
-                    batchId: data.data.batch_id,
-                    candidates: data.data.candidates,
-                });
-            }).error(function (data, status) {
-                var result = {};
-                if (status === '413') {
-                    data = {
-                        'data': {
-                            'status': constants.uploadBatchStatus.FAILED,
-                            'errors': {
-                                'content_ads': ['File too large (max 1MB).'],
-                            },
-                        },
-                        'success': false,
-                    };
-                    result.errors = convertValidationErrorsFromApi(data.data.errors);
-                } else if (data && data.data && data.data.errors) {
-                    result.errors = convertValidationErrorsFromApi(data.data.errors);
-                }
-
-                deferred.reject(result);
-            });
-
-            return deferred.promise;
-        };
-
-        this.uploadMultiple = function (adGroupId, data) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/multiple/';
-
-            var formData = new FormData();
-            formData.append('content_ads', data.file);
+            formData.append('candidates', data.file);
             formData.append('batch_name', data.batchName ? data.batchName : '');
 
             $http.post(url, formData, {
@@ -2530,7 +2376,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         'data': {
                             'status': constants.uploadBatchStatus.FAILED,
                             'errors': {
-                                'content_ads': ['File too large (max 1MB).'],
+                                'candidates': ['File too large (max 1MB).'],
                             },
                         },
                         'success': false,
@@ -2548,7 +2394,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.checkStatus = function (adGroupId, batchId, candidates) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/status/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/' + batchId + '/status/';
             var config = {
                 params: {},
             };
@@ -2572,7 +2418,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.save = function (adGroupId, batchId, batchName) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/save/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/' + batchId + '/save/';
             var data = {};
 
             if (batchName) {
@@ -2600,7 +2446,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.updateCandidate = function (candidate, adGroupId, batchId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' +
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/' +
                     batchId + '/candidate/' + candidate.id + '/';
             var config = {
                 params: {},
@@ -2625,7 +2471,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.removeCandidate = function (candidateId, adGroupId, batchId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' +
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/' +
                     batchId + '/candidate/' + candidateId + '/';
 
             $http.delete(url).
@@ -2640,7 +2486,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         this.cancel = function (adGroupId, batchId) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload_plus/' + batchId + '/cancel/';
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/upload/' + batchId + '/cancel/';
 
             $http.post(url).success(deferred.resolve).error(deferred.reject);
 
@@ -2761,7 +2607,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertValidationErrorsFromApi (errors) {
             var converted = {
-                file: errors.content_ads,
+                file: errors.candidates,
                 batchName: errors.batch_name,
                 displayUrl: errors.display_url,
                 brandName: errors.brand_name,
@@ -3402,8 +3248,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         exportAllowed: new ExportAllowed(),
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
-        adGroupAdsUpload: new AdGroupAdsUpload(),
-        uploadPlus: new UploadPlus(),
+        upload: new Upload(),
         availableSources: new AvailableSources(),
         agencies: new Agencies(),
         conversionPixel: new ConversionPixel(),

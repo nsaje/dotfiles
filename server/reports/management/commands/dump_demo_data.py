@@ -18,10 +18,12 @@ HANDLE_MODIFYBY = (
 
 DEMO_ID_OFFSET = 1000000
 
+
 class Command(ExceptionCommand):
     option_list = BaseCommand.option_list + (
-	make_option('--format', dest='format', default='json', help='Output format'),
+        make_option('--format', dest='format', default='json', help='Output format'),
     )
+
     def handle(self, *args, **options):
         app_list = collections.OrderedDict()
 

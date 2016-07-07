@@ -180,12 +180,14 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
 
     return sorted_ret
 
+
 def _get_campaign(constraints):
     if 'ad_group' in constraints:
         return constraints['ad_group'].campaign
     if 'campaign' in constraints:
         return constraints['campaign']
     return None
+
 
 def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_date, include_settings=False,
                         include_account_settings=False, include_budgets=False, include_flat_fees=False,

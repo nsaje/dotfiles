@@ -1209,176 +1209,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         })
 
 
-class AdGroupAdsUpload(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        current_settings = ad_group.get_current_settings()
-
-        return self.create_api_response({
-            'defaults': {
-                'display_url': current_settings.display_url,
-                'brand_name': current_settings.brand_name,
-                'description': current_settings.description,
-                'call_to_action': current_settings.call_to_action or 'Read More'
-            }
-        })
-
-    @influx.timer('dash.api')
-    def post(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        form = forms.AdGroupAdsUploadExtendedForm(request.POST, request.FILES)
-        if not form.is_valid():
-            raise exc.ValidationError(errors=form.errors)
-
-        batch_name = form.cleaned_data['batch_name']
-        content_ads = form.cleaned_data['content_ads']
-
-        # we could have passed form.cleaned_data around,
-        # but it's better to have a version that is more predictable
-        upload_form_cleaned_fields = {
-            'display_url': form.cleaned_data['display_url'],
-            'brand_name': form.cleaned_data['brand_name'],
-            'description': form.cleaned_data['description'],
-            'call_to_action': form.cleaned_data['call_to_action']
-        }
-
-        batch = models.UploadBatch.objects.create(
-            name=batch_name,
-            processed_content_ads=0,
-            inserted_content_ads=0,
-            propagated_content_ads=0,
-            batch_size=len(content_ads),
-        )
-        batch.save()
-
-        current_settings = ad_group.get_current_settings()
-        new_settings = current_settings.copy_settings()
-
-        new_settings.display_url = upload_form_cleaned_fields['display_url']
-        new_settings.brand_name = upload_form_cleaned_fields['brand_name']
-        new_settings.description = upload_form_cleaned_fields['description']
-        new_settings.call_to_action = upload_form_cleaned_fields['call_to_action']
-
-        new_settings.save(request, action_type=constants.HistoryActionType.CONTENT_AD_CREATE)
-        helpers.log_useraction_if_necessary(
-            request, constants.UserActionType.UPLOAD_CONTENT_ADS,
-            ad_group=ad_group)
-
-        upload.process_async(
-            content_ads,
-            request.FILES['content_ads'].name,
-            batch,
-            upload_form_cleaned_fields,
-            ad_group,
-            request
-        )
-
-        return self.create_api_response({'batch_id': batch.pk})
-
-
-class AdGroupAdsUploadReport(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
-    def get(self, request, ad_group_id, batch_id):
-        helpers.get_ad_group(request.user, ad_group_id)
-
-        try:
-            batch = models.UploadBatch.objects.get(pk=batch_id)
-        except models.UploadBatch.DoesNotExist():
-            raise exc.MissingDataException()
-
-        content = s3helpers.S3Helper().get(batch.error_report_key)
-        basefnm, _ = os.path.splitext(
-            os.path.basename(batch.error_report_key))
-
-        name = basefnm.rsplit('_', 1)[0] + '_errors'
-
-        return self.create_csv_response(name, content=content)
-
-
-class AdGroupAdsUploadCancel(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
-    def get(self, request, ad_group_id, batch_id):
-        helpers.get_ad_group(request.user, ad_group_id)
-
-        try:
-            batch = models.UploadBatch.objects.get(pk=batch_id)
-        except models.UploadBatch.DoesNotExist():
-            raise exc.MissingDataException()
-
-        if batch.propagated_content_ads >= batch.batch_size:
-            raise exc.ValidationError(errors={
-                'cancel': 'Cancel action unsupported at this stage',
-            })
-
-        with transaction.atomic():
-            batch.status = constants.UploadBatchStatus.CANCELLED
-            batch.save(update_fields=['status'])
-
-        return self.create_api_response()
-
-
-class AdGroupAdsUploadStatus(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
-    def get(self, request, ad_group_id, batch_id):
-        helpers.get_ad_group(request.user, ad_group_id)
-
-        try:
-            batch = models.UploadBatch.objects.get(pk=batch_id)
-        except models.UploadBatch.DoesNotExist():
-            raise exc.MissingDataException()
-
-        step = 1
-        count = 0
-        batch_size = batch.batch_size
-
-        if batch.propagated_content_ads > 0:
-            step = 4
-            count = batch.propagated_content_ads
-        elif batch.inserted_content_ads > 0:
-            step = 3
-            count = batch.inserted_content_ads
-        else:
-            step = 2
-            count = batch.processed_content_ads
-
-        response_data = {
-            'status': batch.status,
-            'count': count,
-            'batch_size': batch_size,
-            'step': step,
-        }
-
-        errors = self._get_error_details(batch, ad_group_id)
-        if errors:
-            response_data['errors'] = {
-                'details': errors,
-            }
-
-        return self.create_api_response(response_data)
-
-    def _get_error_details(self, batch, ad_group_id):
-        errors = {}
-        if batch.status == constants.UploadBatchStatus.FAILED:
-            if batch.error_report_key:
-                errors['report_url'] = reverse('ad_group_ads_upload_report',
-                                               kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
-                errors['description'] = 'Found {} error{}.'.format(
-                    batch.num_errors, 's' if batch.num_errors > 1 else '')
-            else:
-                errors['description'] = 'An error occured while processing file.'
-        elif batch.status == constants.UploadBatchStatus.CANCELLED:
-            errors['description'] = 'Content Ads upload was cancelled.'
-
-        return errors
-
-
 class AdGroupContentAdArchive(api_common.BaseApiView):
 
     @influx.timer('dash.api')
@@ -1519,7 +1349,8 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
     ['brand_name', 'Brand name'],
     ['call_to_action', 'Call to action'],
     ['description', 'Description'],
-    ['impression_trackers', 'Impression trackers'],
+    ['primary_tracker_url', 'Primary tracker url'],
+    ['secondary_tracker_url', 'Secondary tracker url'],
     ['label', 'Label'],
 ])
 
@@ -1577,7 +1408,10 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 content_ad_dict['crop_areas'] = content_ad.crop_areas
 
             if content_ad.tracker_urls:
-                content_ad_dict['impression_trackers'] = ' '.join(content_ad.tracker_urls)
+                if len(content_ad.tracker_urls) > 0:
+                    content_ad_dict['primary_tracker_url'] = content_ad.tracker_urls[0]
+                if len(content_ad.tracker_urls) > 1:
+                    content_ad_dict['secondary_tracker_url'] = content_ad.tracker_urls[1]
 
             # delete keys that are not to be exported
             for k in content_ad_dict.keys():
@@ -1676,7 +1510,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                              everywhere=level == constants.PublisherBlacklistLevel.GLOBAL)
 
         self._write_history(request, ad_group, state, [
-            {'source': source, 'domain': d}
+            {'source': source, 'domain': d[0]}
             for source, domains in source_domains.iteritems()
             for d in domains
         ], level)
@@ -1686,14 +1520,16 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         source_ids = set()
 
         pubs_ignored_set = set(
-            (publisher['source_id'], publisher['domain']) for publisher in pubs_ignored
+            (publisher['source_id'], publisher['domain'])
+            for publisher in pubs_ignored
         )
 
         for publisher in pubs + pubs_selected:
             source_id, domain = publisher['source_id'], publisher['domain']
+            external_id = publisher.get('external_id')
             if (source_id, domain, ) in pubs_ignored_set:
                 continue
-            source_publishers.setdefault(source_id, set()).add(domain)
+            source_publishers.setdefault(source_id, set()).add((domain, external_id))
             source_ids.add(source_id)
 
         sources_map = {

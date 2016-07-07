@@ -238,7 +238,6 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
         }], rows)
 
 
-
 class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
 
     fixtures = ['test_api_touchpointconversions.yaml', 'test_api_touchpointconversions.stats.yaml']
@@ -355,7 +354,6 @@ class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
         }
         self._check_values(with_breakdown_ad_group_2, totals_ad_group_2[0], breakdown, expected_values_ad_group_2)
 
-
     def test_no_duplicates_campaign_ad_group_level(self):
         d1 = datetime.date(2015, 11, 1)
         d2 = datetime.date(2015, 11, 30)
@@ -380,7 +378,6 @@ class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
             }
         }
         self._check_values(with_breakdown, totals[0], breakdown, expected_values)
-
 
     def test_no_duplicates_campaign_source_level(self):
         d1 = datetime.date(2015, 11, 1)

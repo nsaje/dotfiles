@@ -1557,7 +1557,6 @@ class BCMCommandTestCase(TestCase):
         self.b1.refresh_from_db()
         self.assertEqual(self.b1.freed_cc, 2000001)
 
-
     def test_update_multiple_budget_freed_cc(self):
         self._call_command('bcm', 'update', 'budgets', '--credits', str(self.c.pk),
                            '--freed_cc', '4321', '--no-confirm')

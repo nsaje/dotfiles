@@ -1,162 +1,12 @@
-// Variables
-
-@default-font-family: 'Roboto', sans-serif;
-
-@default-color: #2fa8c7;
-@text-color: #333333;
-
-@add-color: #f68620;
-@add-color-hover: #dd771b;
-@add-filter-color: #2fa8c7;
-@internal-color: #0ab00a;
-@border-color: #ebebeb;
-@border-input-color: #d2d2d2;
-@line-color: #EEEEEE;
-
-@updated-color: #dff0d8;
-@canceled-color: #414141;
-
-@infobox-black: #414141;
-@infobox-gray: #aaaaaa;
-@infobox-dark-gray: #888888;
-
-@insights-table-gray: #fafafa;
-@insights-table-header: #d7d7d7;
-@insights-text-green: #70c700;
-@insights-text-red: #cb0101;
-
-@sidebar-background-inactive: #f6f6f6;
-@sidebar-background-active: #ecf6f8;
-@sidebar-border-gray: #dddddd;
-@sidebar-border-highlight: #43a8c6;
-
-@background-light-gray: #ebebeb;
-
-@white: #fff;
-@light-gray: #999999;
-@dark-gray: #666666;
-@red: #cc0000;
-@green: #99cc00;
-
-@status-green: #00cc00;
-@status-orange: #ff9900;
-@status-red: #ff0000;
-
-/* FREQUENTLY USED */
-
-.clear { 
-    clear: both;
-    width: 0px;
-    height: 0px;
-    padding: 0px;
-    margin: 0px;
- }
-
-/* MARGINS & PADDINGS */
-
-.p-none { padding: 0px !important; }
-.p-t-none { padding-top: 0 !important; }
-.p-r-none { padding-right: 0 !important; }
-.p-b-none { padding-bottom: 0 !important; }
-.p-l-none { padding-left: 0 !important; }
-.m-none { margin: 0px !important; }
-.m-t-none { margin-top: 0 !important; }
-.m-r-none { margin-right: 0 !important; }
-.m-b-none { margin-bottom: 0 !important; }
-.m-l-none { margin-left: 0 !important; }
-
-@keyframes show-updated {
-    0% { background-color: @updated-color; }
-    50% { background-color: @updated-color; }
-    100% { background-color: white; }
-}
-
-@keyframes show-canceled {
-    0% { background-color: @canceled-color; }
-    50% { background-color: @canceled-color; }
-    100% { background-color: white; }
-}
-
-// Mixins
-
-.box-shadow(@shadow) {
-    -webkit-box-shadow: @shadow;
-    -moz-box-shadow: @shadow;
-    box-shadow: @shadow;
-}
-
-.border-radius(@radius) {
-    border-radius: @radius;
-    -moz-border-radius: @radius;
-    -webkit-border-radius: @radius;
-}
-
-.border-right-radius(@radius) {
-    border-top-right-radius: @radius;
-    -moz-border-top-right-radius: @radius;
-    -webkit-border-top-right-radius: @radius;
-    border-bottom-right-radius: @radius;
-    -moz-border-bottom-right-radius: @radius;
-    -webkit-border-bottom-right-radius: @radius;
-}
-
-.border-left-radius(@radius) {
-    border-top-left-radius: @radius;
-    -moz-border-top-left-radius: @radius;
-    -webkit-border-top-left-radius: @radius;
-    border-bottom-left-radius: @radius;
-    -moz-border-bottom-left-radius: @radius;
-    -webkit-border-bottom-left-radius: @radius;
-}
-
-.nav-item-active() {
-    background-color: @default-color;
-    .border-radius(0 2px 2px 0);
-}
-
-.transition (@transition) {
-	  -webkit-transition: @transition;
-	  -moz-transition: @transition;
-	  -ms-transition: @transition;
-	  -o-transition: @transition;
-}
-
-.gradient-vertical (@startColor, @endColor) {
-  	background-color: @startColor;
-  	background: -webkit-gradient(linear, left top, left bottom, from(@startColor), to(@endColor));
-  	background: -webkit-linear-gradient(top, @startColor, @endColor);
-  	background: -moz-linear-gradient(top, @startColor, @endColor);
-  	background: -ms-linear-gradient(top, @startColor, @endColor);
-  	background: -o-linear-gradient(top, @startColor, @endColor);
-    background: linear-gradient(to bottom, @startColor, @endColor);
-}
-
-// HTML
-
-body {
-    font-family: @default-font-family;
-    color: @text-color;
-}
-
-a,
-a:hover,
-a:active,
-a:visited {
-    color: @default-color;
-}
-
 // TypeKit
-
 .wf-loading {
     visibility: hidden;
 }
 
 // Icons
-
 .small-icon { width: 20px; height: 20px; }
 
 // Bootstrap styles
-
 .container-fluid {
     min-width: 1170px;
 }
@@ -180,8 +30,8 @@ a:visited {
 }
 
 .form-horizontal .form-vertical {
-    & .form-group {
-        & > label {
+    .form-group {
+        > label {
             float: none;
             width: 100%;
 
@@ -191,7 +41,7 @@ a:visited {
             }
         }
 
-        & .col {
+        .col {
             float: left;
             position: relative;
             min-height: 1px;
@@ -221,8 +71,8 @@ a:visited {
     }
 
     .row {
-        margin-left: 0px;
-        margin-right: 0px;
+        margin-left: 0;
+        margin-right: 0;
     }
 
     &.has-error {
@@ -272,7 +122,7 @@ a:visited {
         input {
             position: absolute;
             top: -3px;
-            left: 0px;
+            left: 0;
         }
     }
 
@@ -322,7 +172,7 @@ a:visited {
 .form-alert-box {
     display: table;
     clear: left;
-    margin: 10px 0px 0px 14px;
+    margin: 10px 0 0 14px;
 
     .form-alert-exclamation {
         display: table-cell;
@@ -369,8 +219,8 @@ a:visited {
         position: absolute;
         width: 16px;
         height: 16px;
-        left: 0px;
-        top: 0px;
+        left: 0;
+        top: 0;
     }
     img.smaller_icon {
         width: 12px;
@@ -407,7 +257,7 @@ a:visited {
 .btn-secondary.active {
     position: relative;
     padding-left: 36px;
-    .gradient-vertical (rgba(255,255,255,1), rgba(249,249,249,1));
+    .gradient-vertical(rgba(255,255,255,1), rgba(249,249,249,1));
     border-color: @border-color;
     color: @text-color;
     .box-shadow(none);
@@ -416,7 +266,7 @@ a:visited {
         border-color: @default-color;
         color: @default-color;
     }
-    
+
     img {
         position: absolute;
         left: 10px;
@@ -540,7 +390,7 @@ a:visited {
     .border-radius(2px);
     .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 
-    /* bug fix for mac os scroll bars */
+    // bug fix for mac os scroll bars
     transform: translateZ(0);
 
 
@@ -559,26 +409,26 @@ a:visited {
         color: @default-color;
     }
 
-    & > li > a {
+    > li > a {
         color: @default-color;
         padding-left: 7px;
         padding-right: 6px
     }
 
-    & > li > a:hover {
+    > li > a:hover {
         background: #f68620;
         color: #fff;
     }
 }
 
 .zem-tabset .nav-tabs {
-    & > li {
+    > li {
         margin-bottom: 0;
 
-        & > a,
-        & > a:hover,
-        & > a:active,
-        & > a:visited {
+        > a,
+        > a:hover,
+        > a:active,
+        > a:visited {
             border-top: 1px solid #d2d2d2;
             border-left: 1px solid #d2d2d2;
             border-right: 1px solid #d2d2d2;
@@ -586,18 +436,18 @@ a:visited {
         }
 
         &.active > a {
-            & > tab-heading {
-                & > a,
-                & > a:hover,
-                & > a:active,
-                & > a:visited {
+            > tab-heading {
+                > a,
+                > a:hover,
+                > a:active,
+                > a:visited {
                     font-weight: 500;
                     margin-bottom: -1px;
                     padding-top: 9px;
                     padding-bottom: 11px;
                 }
 
-                & > .tab-top {
+                > .tab-top {
                     width: 100%;
                     height: 2px;
                     background-color: @default-color;
@@ -610,16 +460,16 @@ a:visited {
             }
         }
 
-        & > a {
-            padding: 0px;
+        > a {
+            padding: 0;
 
             .border-radius(2px 2px 0 0);
 
-            & > tab-heading {
-                & > a,
-                & > a:hover,
-                & > a:active,
-                & > a:visited {
+            > tab-heading {
+                > a,
+                > a:hover,
+                > a:active,
+                > a:visited {
                     display: block;
                     padding: 10px 15px;
                     text-decoration: none;
@@ -711,7 +561,7 @@ a:visited {
         background-color: #fffee9;
         border: 1px solid #ede652;
         font-size: 12px;
-        font-color: #414141;
+        color: #414141;
     }
 
     &.alert-success {
@@ -725,7 +575,7 @@ a:visited {
     .border-radius(0);
     .box-shadow(none);
     border: none;
-    padding: 0px;
+    padding: 0;
     z-index: 100000;
 
     &:before {
@@ -733,7 +583,7 @@ a:visited {
         display: block;
         height: 2px;
         background-color: @default-color;
-        .border-radius(2px 2px 0px 0px);
+        .border-radius(2px 2px 0 0);
     }
 
     .popover-inner {
@@ -741,8 +591,8 @@ a:visited {
         color: #414141;
         font-weight: 300;
         border: 1px solid #d2d2d2;
-        border-top: 0px;
-        .border-radius(0px 0px 2px 2px);
+        border-top: 0;
+        .border-radius(0 0 2px 2px);
         .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
     }
 
@@ -892,25 +742,24 @@ div[datepicker] {
 .breadcrumb {
     display: inline-block;
     background-color: transparent;
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
 
-    & > li+li:before {
+    > li+li:before {
         content: ">";
         font-size: 15px;
         font-weight: 400;
         color: white;
     }
 
-    & > li a,
-    & > li span {
+    > li a,
+    > li span {
         font-size: 15px;
         font-weight: 400;
         color: white;
 
         &.active {
             font-size: 15px;
-            font-weight: 400;
             color: white;
             font-weight: 500;
         }
@@ -965,33 +814,32 @@ div[datepicker] {
     }
 
     .zem-side-tabset {
-
         width: 100%;
         height: 340px;
 
         ul {
             height: 100%;
-            border: 0px;
+            border: 0;
             padding-bottom: 14px;
         }
         a {
             height: 100%;
-            border: 0px;
+            border: 0;
         }
-        li>a {
-            padding: 0px;
-            border-radius: 0px;
-            border: 0px;
+        li > a {
+            padding: 0;
+            border-radius: 0;
+            border: 0;
         }
 
         li .tab-body-cell {
             background-color: @sidebar-background-inactive;
-            border-radius: 0px;
-            padding: 0px;
+            border-radius: 0;
+            padding: 0;
 
             border-style: solid;
             border-color: @sidebar-border-gray;
-            border-width: 0px 2px 0px 0px;
+            border-width: 0 2px 0 0;
 
             background-position: center center;
             background-repeat: no-repeat;
@@ -1010,10 +858,10 @@ div[datepicker] {
             border-color: @sidebar-border-highlight;
         }
 
-        li.active>a,
-        .nav-tabs>li.active>a:focus,
-        .nav-tabs>li.active>a:hover {
-            border-width: 0px;
+        li.active > a,
+        .nav-tabs > li.active > a:focus,
+        .nav-tabs > li.active > a:hover {
+            border-width: 0;
         }
 
         li.active .performance { background-image: url('img/performance-gray.svg'); }
@@ -1068,15 +916,13 @@ div[datepicker] {
     margin-left: 2%;
 }
 
-/**
- * Default internal-feature style for header buttons
- */
-.header-button-internal() {
+// Default internal-feature style for header buttons
+.header-button-internal () {
     &:before {
         content: " ";
         position: absolute;
-        top: 0px;
-        left: 0px;
+        top: 0;
+        left: 0;
         width: 0;
         height: 0;
         display: block;
@@ -1091,8 +937,8 @@ div[datepicker] {
     width: 34px;
     height: 34px;
     line-height: 34px;
-    padding: 0px 0px;
-    border: 0px;
+    padding: 0 0;
+    border: 0;
     box-shadow: none;
 }
 
@@ -1104,7 +950,7 @@ img.zem-icon {
 .graph-button {
     width: 34px;
     height: 34px;
-    padding: 0px;
+    padding: 0;
     line-height: 34px;
     position: relative;
     text-align: center;
@@ -1116,7 +962,7 @@ img.zem-icon {
     }
 
     .internal {
-        .header-button-internal;
+        .header-button-internal();
     }
 }
 
@@ -1127,7 +973,6 @@ img.zem-icon {
 .infobox-wrapper {
     display: block;
     overflow: hidden;
-    height: 100%;
     height: 327px;
     max-height: 327px;
 }
@@ -1199,8 +1044,7 @@ img.zem-icon {
     text-align:right;
     display: inline-block;
     min-width: 20px;
-    vertical-align: top;
-    margin-left: 0px;
+    margin-left: 0;
     vertical-align: middle;
     margin-top: -4px;
 }
@@ -1209,7 +1053,6 @@ img.zem-icon {
     display: table;
     table-layout: fixed;
     width: 100%;
-    height: 34px;
     height: 34px;
     line-height: 38px;
 }
@@ -1388,7 +1231,7 @@ img.zem-icon {
     background: white;
     padding: 10px;
     border: 1px solid @infobox-gray;
-    margin: 5px 0px
+    margin: 5px 0;
     width: 100%;
 }
 
@@ -1412,8 +1255,8 @@ img.zem-icon {
     position: relative;
     .no-data {
         position: absolute;
-        left: 0px;
-        right: 0px;
+        left: 0;
+        right: 0;
         top: 138px;
         z-index: 2;
         text-align: center;
@@ -1510,7 +1353,7 @@ img.zem-icon {
     }
 }
 
-.highcharts-tooltip>span {
+.highcharts-tooltip > span {
     font-family: @default-font-family !important;
 
     .tooltip-header {
@@ -1569,15 +1412,14 @@ img.zem-icon {
 
         .select2-chosen {
             font-family: @default-font-family;
-            padding-top: 0px;
-            padding-right: 0px;
+            padding-top: 0;
+            padding-right: 0;
             margin-right: 26px;
         }
 
         .select2-arrow {
             color: #fff;
-            border: 0px;
-            padding-right: 0px;
+            padding-right: 0;
             padding-top: 3px;
             box-sizing: border-box;
             -moz-box-sizing: border-box;
@@ -1585,7 +1427,7 @@ img.zem-icon {
 
             background-image: none;
             background-color: transparent;
-            border: 0px;
+            border: 0;
             line-height: 34px;
             margin-right: 8px;
 
@@ -1605,7 +1447,7 @@ img.zem-icon {
 .select2-drop.select2-drop-above {
     border: 1px solid @default-color;
     .select2-results {
-        /* bug fix for mac os scroll bars */
+        // bug fix for mac os scroll bars
         transform: translateZ(0);
 
         li.select2-highlighted {
@@ -1634,14 +1476,12 @@ img.zem-icon {
 }
 
 // navigation filter select
-
 .select2-nav-search {
     &.select2-container {
         width: 100%;
 
         .select2-choice {
             height: 39px;
-            font-size: 13px;
             color: #454545;
             background-color: #F9F9F9;
             padding: 0 9px;
@@ -1699,11 +1539,11 @@ img.zem-icon {
             .select2-result-with-children {
                 margin-bottom: 11px;
 
-                & > .select2-result-label {
+                > .select2-result-label {
                     text-transform: uppercase;
                     font-size: 12px;
                     font-weight: 500;
-                    padding-bottom: 0px;
+                    padding-bottom: 0;
                 }
 
                 ul.select2-result-sub {
@@ -1772,7 +1612,6 @@ img.zem-icon {
 
 .link-img-disabled {
     opacity: 0.2;
-    filter: alpha(opacity=20); /* For IE8 and earlier */
 }
 
 .table-icon div {
@@ -1831,7 +1670,7 @@ ul.icon-list li {
     display: inline-block;
     background-color: #dddddd;
     .border-radius(50%);
-    padding: 1px 3px 0px 3px;
+    padding: 1px 3px 0 3px;
     margin-left: 5px;
     font-size: 12px;
     line-height: 13px;
@@ -1849,13 +1688,13 @@ ul.icon-list li {
 }
 
 .exclamation-popover {
-    margin-left: 0px;
+    margin-left: 0;
 
     .help-popover,
     .help-popover:hover,
     .help-popover:active,
     .help-popover:visited {
-        .border-radius(0%);
+        .border-radius(0);
         &:after {
             color: #888;
             font-weight: 500;
@@ -1883,11 +1722,8 @@ ul.icon-list li {
 }
 
 .settings-archive-container {
-
-    display: inline-block;
     position: relative;
-    float: right;
-
+    display: inline-block;
 
     zem-internal-feature .internal {
         &:before {
@@ -1959,8 +1795,8 @@ ul.icon-list li {
     position: absolute;
     border-top: 12px solid @internal-color;
     border-right: 12px solid transparent;
-    top: 0px;
-    left: 0px;
+    top: 0;
+    left: 0;
 }
 
 .custom-cols .internal {
@@ -2006,7 +1842,6 @@ ul.icon-list li {
         line-height: 60px;
 
         .content {
-            float: right;
             max-width: 260px;
             display: inline-block;
 
@@ -2088,7 +1923,7 @@ ul.icon-list li {
     .terms,
     .copyright {
         display: inline-block;
-        margin: 0px 15px;
+        margin: 0 15px;
     }
 }
 
@@ -2097,7 +1932,7 @@ ul.icon-list li {
 
     .sidebar {
         position: absolute;
-        top: 0px;
+        top: 0;
         bottom: 15px;
         width: 205px;
         padding-left: 0;
@@ -2105,10 +1940,7 @@ ul.icon-list li {
         > .loader {
             display: block;
             position: absolute;
-            top: 0px;
-            bottom: 0px;
-            left: 0px;
-            right: 0px;
+            .position-properties(0);
             width: auto;
             height: auto;
             background: rgba(255, 255, 255, 0.4) url('img/loader.gif') no-repeat center center;
@@ -2139,7 +1971,7 @@ ul.icon-list li {
                     text-overflow: ellipsis;
                     font-size: 14px;
                     padding: 0 5px  0 15px;
-                    border-radius: 0 2px 2px 0px;
+                    border-radius: 0 2px 2px 0;
                     display: block;
                     width: 100%;
 
@@ -2188,7 +2020,7 @@ ul.icon-list li {
             margin-left: 5px;
 
             .internal {
-                .header-button-internal;
+                .header-button-internal();
             }
 
             div.btn {
@@ -2215,7 +2047,6 @@ ul.icon-list li {
                         width: 25px;
                         height: 34px;
                         cursor: pointer;
-                        display: inline-block;
                         padding-left: 11px;
                         padding-right: 5px;
                         padding-top: 11px;
@@ -2323,7 +2154,6 @@ ul.icon-list li {
                             right: 8px;
                             top: 10px;
                             display: inline-block;
-                            width: 7px;
                         }
                     }
 
@@ -2383,7 +2213,7 @@ ul.icon-list li {
     margin-bottom: 15px;
     .border-radius(0 0 2px 2px);
 
-    & > form:first-child > .form-group:first-child > div:first-child > .btn-group:first-child{
+    > form:first-child > .form-group:first-child > div:first-child > .btn-group:first-child {
         padding-top: 0;
     }
 
@@ -2398,7 +2228,7 @@ ul.icon-list li {
             margin-bottom: 10px;
 
             .button-bar-item {
-                display: inline;
+                display: block;
                 float: left;
                 margin-right: 10px;
                 .btn {
@@ -2459,7 +2289,8 @@ ul.icon-list li {
     }
 }
 
-.page.page-section,.modal-page { /* step to the new tabless design */
+.page.page-section,
+.modal-page { // step to the new tabless design
     h3 {
         margin: 0 0 10px 0;
     }
@@ -2531,7 +2362,6 @@ ul.icon-list li {
         }
         th, td {
             border-top: 1px solid @border-color;
-            text-align: center;
             vertical-align: middle;
             padding: 8px;
             text-align: left;
@@ -2603,7 +2433,7 @@ ul.icon-list li {
     }
 
     .campaign-state-switch {
-        & > label {
+        > label {
             border: 1px solid #d2d2d2;
             background-color: #fff;
             color: #d2d2d2;
@@ -2625,7 +2455,7 @@ ul.icon-list li {
             }
         }
 
-        & > label:first-child {
+        > label:first-child {
             .border-radius(2px 0 0 2px);
             &:hover {
                 border-color: #c70000;
@@ -2641,8 +2471,8 @@ ul.icon-list li {
     }
 
     .geo-targeting-group {
-        & > .radio,
-        & > .checkbox {
+        > .radio,
+        > .checkbox {
             display: inline-block;
             margin-top: 0;
             margin-bottom: 0;
@@ -2728,7 +2558,7 @@ ul.icon-list li {
         border-bottom: 1px solid @border-color;
         margin-bottom: 10px;
 
-        &> tbody > tr {
+        > tbody > tr {
             &.archived {
                 .error {
                     a,
@@ -2740,10 +2570,10 @@ ul.icon-list li {
                 }
 
                 .dropdown {
-                    & a.dropdown-toggle:not(.disabled),
-                    & a.dropdown-toggle:not(.disabled):hover,
-                    & a.dropdown-toggle:not(.disabled):active,
-                    & a.dropdown-toggle:not(.disabled):visited {
+                    a.dropdown-toggle:not(.disabled),
+                    a.dropdown-toggle:not(.disabled):hover,
+                    a.dropdown-toggle:not(.disabled):active,
+                    a.dropdown-toggle:not(.disabled):visited {
                         color: @default-color;
                     }
 
@@ -2759,7 +2589,7 @@ ul.icon-list li {
                 }
             }
 
-            &> td {
+            > td {
                 vertical-align: middle;
                 padding-top: 4px;
                 padding-bottom: 4px;
@@ -2801,10 +2631,6 @@ ul.icon-list li {
     }
 }
 
-.no-wrap {
-    white-space: nowrap;
-}
-
 .service-fee-select2 .select2-search input {
     background-image: none !important;
 }
@@ -2817,7 +2643,7 @@ ul.icon-list li {
         padding-top: 10px;
         background: transparent;
 
-        & > .arrow {
+        > .arrow {
             top: 0;
 
             &:after {
@@ -2861,46 +2687,12 @@ ul.icon-list li {
     }
 }
 
-.arrow-placeholder() {
-    content: "";
-    position: relative;
-    width: 10px;
-    height: 10px;
-    display: none;
-    margin-left: 5px;
+.arrow-up {
+    .arrow-up();
 }
 
-.arrow-up() {
-    .arrow-placeholder();
-    background: url('img/arrow-up.svg');
-    display: inline-block;
-    background-size: 10px 10px;
-}
-
-.arrow-down() {
-    .arrow-placeholder();
-    background: url('img/arrow-up.svg');
-    display: inline-block;
-    background-size: 10px 10px;
-    -webkit-transform: rotate(180deg);
-    -moz-transform: rotate(180deg);
-    -ms-transform: rotate(180deg);
-    -o-transform: rotate(180deg);
-    transform: rotate(180deg);
-}
-
-.state-icon-placeholder() {
-    width: 9px;
-    height: 9px;
-    background-size: 36px;
-    background-position: 23px;
-    display: inline-block;
-}
-
-.auto-pilot-icon-placeholder() {
-    .state-icon-placeholder();
-    background-size: auto;
-    background-position: 0px;
+.arrow-down {
+    .arrow-down();
 }
 
 .active-circle-icon {
@@ -2925,15 +2717,8 @@ ul.icon-list li {
 }
 
 .auto-pilot-icon-row {
-    .auto-pilot-icon;
+    .auto-pilot-icon();
     margin-right: 3px;
-}
-
-.data-status-icon-placeholder() {
-    width: 16px;
-    height: 12px;
-    display: inline-block;
-    margin-top: 3px;
 }
 
 .alert-icon {
@@ -2967,15 +2752,6 @@ ul.icon-list li {
     background-size: 12px;
     margin-bottom: -2px;
     background-image: url('img/performance-column.svg');
-}
-
-.adgroup-status-icon-placeholder() {
-    background-size: 10px;
-    background-position: 10px;
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    margin: 0 5px 0 0;
 }
 
 .adgroup-status-active-icon {
@@ -3111,16 +2887,17 @@ ul.icon-list li {
     }
 
     thead > tr > th {
-        & a,
-        & a:hover,
-        & a:active,
-        & a:visited {
+        a,
+        a:hover,
+        a:active,
+        a:visited {
             color: #454545;
         }
     }
 
     thead > tr > th.arrow a.order::after {
         .arrow-placeholder();
+        display: none;
     }
 
     thead > tr > th.arrow.ordered a.order::after {
@@ -3149,10 +2926,10 @@ ul.icon-list li {
 
     tr.archived {
         &,
-        & a,
-        & a:hover,
-        & a:active,
-        & a:visited {
+        a,
+        a:hover,
+        a:active,
+        a:visited {
             color: #d9d9d9;
         }
     }
@@ -3249,7 +3026,7 @@ ul.icon-list li {
     .dropdown-menu {
         border-color: @default-color;
 
-        & > li > a {
+        > li > a {
             padding: 2px 6px;
 
             span {
@@ -3354,13 +3131,10 @@ ul.icon-list li {
 .loader-container {
     position: relative;
 
-    & > .loader {
+    > .loader {
         display: block;
         position: absolute;
-        top: 0px;
-        bottom: 0px;
-        left: 0px;
-        right: 0px;
+        .position-properties(0);
         width: auto;
         height: auto;
         background: rgba(255, 255, 255, 0.4) url('img/loader.gif') no-repeat center center;
@@ -3369,7 +3143,7 @@ ul.icon-list li {
     }
 }
 
-/* pagination select */
+// pagination select
 .select2-drop.select2-drop-above {
     font-weight: 300;
 }
@@ -3482,7 +3256,7 @@ ul.icon-list li {
 .zem-conversion-goals {
     margin-left: -15px;
     margin-bottom: 30px;
-    padding-right: 0px;
+    padding-right: 0;
     float: none;
 
     .title {
@@ -3615,12 +3389,12 @@ zem-editable-currency-field {
     width: @modal-content-width;
     box-sizing: border-box;
     max-height: 70vh;
-    
+
     .modal-body {
         overflow: hidden;
         position: relative;
     }
-    
+
     .contentad-picker {
         padding: 0;
         width: 100%;
@@ -3632,8 +3406,8 @@ zem-editable-currency-field {
         width: @modal-content-width;
         .transition(none);
         position: absolute;
-        top: 0px;
-        bottom: 0px;
+        top: 0;
+        bottom: 0;
         overflow-y: auto;
 
         .batch-name {
@@ -3645,7 +3419,6 @@ zem-editable-currency-field {
             white-space: nowrap;
             overflow:hidden;
             text-overflow: ellipsis;
-            text-overflow: "…";
             
             span {
                 color: @text-color;
@@ -3669,9 +3442,11 @@ zem-editable-currency-field {
                 line-height: 28px;
                 height: auto;
             }
-            input[readonly] {
-                border: none;
-                background: none;
+            
+            .title {
+                color: @default-color;
+                font-weight: 500;
+                line-height: 30px;
             }
 
             &.has-error {
@@ -3712,17 +3487,13 @@ zem-editable-currency-field {
                 width: 20px;
             }
 
-            td.image { 
+            td.image {
                 width: 40px;
-                
+
                 img {
                     width: inherit;
                     height: auto;
                 }
-            }
-
-            td.title {
-
             }
 
             td.link {
@@ -3733,12 +3504,12 @@ zem-editable-currency-field {
             td.errors div {
                 color: @red;
                 position: relative;
-                
+
                 img {
                     width: 14px;
                     height: 14px;
                     position: absolute;
-                    left: 0px;
+                    left: 0;
                     top: 2px;
                 }
                 span {
@@ -3751,27 +3522,32 @@ zem-editable-currency-field {
             td.action {
                 text-align: right;
                 white-space: nowrap;
+
+                .error {
+                    padding-top: 6px;
+                    white-space: normal;
+                }
             }
         }
-        
+
         .btn-download {
             margin: 0 0 15px 15px;
         }
     }
-    
+
     .edit-form {
         width: @modal-content-width - @modal-content-width*0.4;
         position: absolute;
         overflow-y: auto;
         overflow-x: hidden;
-        top: 0px;
-        bottom: 0px;
+        top: 0;
+        bottom: 0;
         right: -(@modal-content-width - @modal-content-width*0.4 + 20);
         .transition(all 200ms ease-in-out);
         padding: 0 15px 15px 15px;
         background: #F5F5F5;
-        .box-shadow(0px 0px 10px 0px rgba(0,0,0,0.25));
-        
+        .box-shadow(0 0 10px 0 rgba(0,0,0,0.25));
+
         .btn-close {
             position: absolute;
             top: 5px;
@@ -3788,11 +3564,10 @@ zem-editable-currency-field {
             white-space: nowrap;
             overflow:hidden;
             text-overflow: ellipsis;
-            text-overflow: "…";
         }
-        .form-group { 
-            margin-bottom: 10px; 
-            
+        .form-group {
+            margin-bottom: 10px;
+
             .control-label {
                 font-size: 13px;
             }
@@ -3803,15 +3578,14 @@ zem-editable-currency-field {
             }
         }
     }
-    
+
     .editing {
-        .candidate-table { 
+        .candidate-table {
             width: @modal-content-width - @modal-content-width*0.6;
             .transition(all 200ms ease-in-out);
-            
 
-            .candidate-title input {
-                width: 74%;
+            .batch-name input {
+                width: 75%;
             }
 
             tr.selected td {
@@ -3823,14 +3597,14 @@ zem-editable-currency-field {
             td.errors div {
                 width: 14px;
                 height: 14px;
-                
+
                 &:first-child {
                     margin-bottom: 4px;
                 }
                 img {
                     position: relative;
                     display: block;
-                    top: 0px;
+                    top: 0;
                 }
                 span {
                     display: none;
@@ -3838,10 +3612,10 @@ zem-editable-currency-field {
             }
             td.action {
                 white-space: nowrap;
-                
+
                 a {
                     padding-left: 10px;
-                
+
                     img {
                         position: relative;
                         display: block;
@@ -3856,12 +3630,12 @@ zem-editable-currency-field {
         }
         .edit-form {
             position: absolute;
-            right: 0px;
-            top: 0px;
-            bottom: 0px;
+            top: 0;
+            right: 0;
+            bottom: 0;
         }
     }
-    
+
     .control-label.small {
         font-size: 12px;
         font-weight: 400;
@@ -3881,7 +3655,7 @@ zem-editable-currency-field {
                 .small-icon {
                     position: absolute;
                     top: 7px;
-                    left: 0px;
+                    left: 0;
                 }
                 a {
                     display: block;
@@ -3900,7 +3674,7 @@ zem-editable-currency-field {
             width: 120px;
             height: 120px;
             position: absolute;
-            left: 0px;
+            left: 0;
             top: 20px;
         }
 
@@ -3913,6 +3687,10 @@ zem-editable-currency-field {
         .error {
             color: @red;
             padding-top: 8px;
+        }
+        
+        .loader-icon {
+            margin: 6px 20px 0 0;
         }
 
         border: none;
@@ -4001,7 +3779,7 @@ zem-editable-currency-field {
                 }
 
                 .no-padding-right {
-                    padding-right: 0px;
+                    padding-right: 0;
                 }
             }
 
@@ -4076,59 +3854,6 @@ zem-editable-currency-field {
                     height: 20px;
                 }
             }
-
-            .upload-form {
-                .form-group:last-child {
-                    margin-top: 50px;
-                    margin-bottom: 0;
-                }
-
-                input[type=text][readonly] {
-                    cursor: default;
-                    background-color: #fff;
-                }
-
-                .control-label.small {
-                    &[for=file-input].error {
-                        padding-top: 3px;
-                        line-height: 14px;
-                        display: block;
-                    }
-
-                    &.sample-link.error-shown {
-                        padding-top: 2px;
-                        line-height: 14px;
-                        display: block;
-
-                        a {
-                            color: @default-color;
-                        }
-                    }
-                }
-
-                #file-input:focus {
-                    border: 1px solid #d2d2d2;
-                }
-
-                #description-input {
-                    height: 100px;
-                    resize: vertical;
-                }
-            }
-
-            .missing-settings {
-                .error {
-                    display: block;
-                    width: 360px;
-                    padding-bottom: 20px;
-                    padding-top: 0;
-                }
-
-                #upload-modal-settings-btn {
-                    width: 200px;
-                    display: block;
-                }
-            }
         }
     }
 }
@@ -4161,7 +3886,8 @@ zem-submission-status {
 
         &.approved {
             &.archived {
-                .table .submission-status .cell .archived
+                background-color: #d9d9d9;
+                border-color: #d9d9d9;
             }
             background-color: #0ab00a;
             color: #fff;
@@ -4258,7 +3984,6 @@ zem-submission-status {
                 right: 8px;
                 top: 10px;
                 display: inline-block;
-                width: 7px;
             }
         }
     }
@@ -4268,7 +3993,7 @@ zem-submission-status {
     cursor: pointer;
 
     &.form-control .ui-select-dropdown {
-        /* parent element has border (1px) so dropdown needs positioning) */
+        // parent element has border (1px) so dropdown needs positioning)
         left: -1px;
         width: calc(~"100% + 2px");
     }
@@ -4281,10 +4006,8 @@ zem-submission-status {
     }
 }
 
-/**
- * Apply the following class conditionally to parent container
- * only in case it has contents.
- */
+
+// Apply the following class conditionally to parent container only in case it has contents.
 .ui-select-bigdrop {
     .select2-search {
         border-top: 1px solid @default-color;
@@ -4319,11 +4042,11 @@ zem-submission-status {
 
 .tutorial.popover {
     background: transparent;
-    padding: 0px;
+    padding: 0;
     z-index: 100000;
     &:before {
         display: block;
-        height: 0px;
+        height: 0;
     }
     .popover-inner {
         background-color: #fff;
@@ -4333,7 +4056,7 @@ zem-submission-status {
         border-radius: 6px;
         .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
     }
-    & > .arrow {
+    > .arrow {
         border-width: 11px;
     }
     &.bottom > .arrow {
@@ -4422,10 +4145,6 @@ select.media-source-select {
 
 .publishers-blacklist-bigdrop {
     width: 240px !important;
-}
-
-.no-dropdown {
-    width: 100%;
 }
 
 
@@ -4550,12 +4269,12 @@ select.media-source-select {
             cursor: default !important;
         }
 
-        & > div {
+        > div {
             border-style: solid;
             border-color: #aaaaaa;
             border-width: 1px 1px 1px 0;
             min-height: 50px;
-            .border-radius(0px);
+            .border-radius(0);
             cursor: pointer;
 
             &:first-child {
@@ -4596,10 +4315,7 @@ select.media-source-select {
 
             .center-area {
                 position: absolute;
-                top: 0;
-                bottom: 0;
-                left: 0;
-                right: 0;
+                .position-properties(0);
 
                 padding-right: 2px;
 
@@ -4645,8 +4361,8 @@ select.media-source-select {
 
 .progress-steps {
     width: 100%;
-    padding-left: 0px !important;
-    padding-right: 0px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
 
     .progress-step-box {
         background-color: @default-color;
@@ -4660,7 +4376,7 @@ select.media-source-select {
         display: inline-block;
 
         &:last-child {
-            margin-right: 0px;
+            margin-right: 0;
         }
     }
 
@@ -4675,14 +4391,14 @@ select.media-source-select {
         float: right;
     }
 
-    & + .progress {
+    + .progress {
         margin-top: 10px !important;
     }
 }
 
 
 .progress {
-    border-radius: 0px;
+    border-radius: 0;
     height: 36px;
     position: relative;
 
@@ -4695,8 +4411,8 @@ select.media-source-select {
         font-size: 16px;
         padding-top: 7px;
         position: absolute;
-        top: 0px;
-        left: 0px;
+        top: 0;
+        left: 0;
         white-space: nowrap;
         overflow: hidden;
         padding-left: 44%;
@@ -4708,10 +4424,6 @@ select.media-source-select {
             color: #fff;
         }
     }
-}
-
-.nopadding {
-    padding: 0 !important;
 }
 
 .insights-container {
@@ -4756,13 +4468,13 @@ select.media-source-select {
         }
 
         .table {
-            margin-bottom: 0px;
+            margin-bottom: 0;
             thead {
                 background: @white;
             }
             tbody>tr>td {
-                border-top: 0px;
-                border-bottom: 0px;
+                border-top: 0;
+                border-bottom: 0;
             }
 
             thead>tr>th,
@@ -4811,7 +4523,7 @@ select.media-source-select {
             a:focus,
             a:hover,
             a:visited {
-                border-width: 0px;
+                border-width: 0;
                 text-decoration: none;
             }
 
@@ -4868,8 +4580,7 @@ select.media-source-select {
     }
 }
 
-/* GENERAL MODAL STYLES */
-
+// GENERAL MODAL STYLES
 .modal {
     .modal-header {
         border-bottom: 4px solid @default-color;
@@ -4883,16 +4594,15 @@ select.media-source-select {
 
         p {
             color: @text-color;
-            margin-bottom: 0px;
+            margin-bottom: 0;
         }
     }
-    .modal-content { 
+    .modal-content {
         border: none;
     }
 }
 
-/* FACEBOOK INTEGRATION */
-
+// FACEBOOK INTEGRATION
 .fb-logo.input-group {
     .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 
@@ -4947,8 +4657,7 @@ select.media-source-select {
     margin-left: 0;
 }
 
-/* CUSTOM SCROLLER */
-
+// CUSTOM SCROLLER
 .custom_scroller::-webkit-scrollbar {
     width: 16px;
     height: 18px;
@@ -4959,7 +4668,7 @@ select.media-source-select {
     background-clip: padding-box;
     -webkit-border-radius: 7px;
     background-color: rgba(0, 0, 0, 0.15);
-    -webkit-box-shadow: inset -1px -1px 0px rgba(0, 0, 0, 0.05), inset 1px 1px 0px rgba(0, 0, 0, 0.05);
+    -webkit-box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.05), inset 1px 1px 0 rgba(0, 0, 0, 0.05);
 }
 .custom_scroller::-webkit-scrollbar-button {
     width: 0;
@@ -4970,18 +4679,10 @@ select.media-source-select {
     background-color: transparent;
 }
 
-/* ZEM-INTERNAL-FEATURE-CONTAINER (adds border around whole container) */
-
-.position-properties (@x) {
-	top: @x;
-    bottom: @x;
-    right: @x;
-    left: @x;
-}
-
+// ZEM-INTERNAL-FEATURE-CONTAINER (adds border around whole container)
 .zem-internal-feature-container {
     position: relative;
-    & > zem-internal-feature {
+    > zem-internal-feature {
         border: 1px solid @internal-color;
         position: absolute;
         .position-properties(-5px);

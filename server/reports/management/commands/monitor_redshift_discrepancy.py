@@ -39,7 +39,6 @@ class Command(ExceptionCommand):
             )
             influx.gauge(diff_stats_name, stats_val - redshift_stats_val)
 
-
     def handle(self, *args, **options):
 
         cad_stats = reports.models.ContentAdStats.objects.exclude(content_ad__ad_group__campaign__account_id=50).aggregate(
