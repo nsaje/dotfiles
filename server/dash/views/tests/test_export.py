@@ -801,10 +801,14 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         )
         self.assertEqual(response.content, expected_content)
 
-    def test_get_by_account_filtered_agencies(self):
+    @patch('dash.stats_helper.get_stats_with_conversions')
+    def test_get_by_account_filtered_agencies(self, mock_stats):
         user = models.User.objects.get(pk=2)
         agency = dash.models.Agency(name='test')
         agency.save(test_helper.fake_request(user))
+
+        mock_stats.return_value = []
+        self.mock_query.return_value = []
 
         request = http.HttpRequest()
         request.method = 'GET'
@@ -826,21 +830,32 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
 
         self.assertEqual(expected_content, response.content)
 
-        account = dash.models.Account.objects.get(pk=1)
-        account.agency = agency
-        account.save(test_helper.fake_request(user))
+    @patch('dash.stats_helper.get_stats_with_conversions')
+    def test_get_by_account_type_filtered(self, mock_stats):
+        user = models.User.objects.get(pk=2)
+        mock_stats.return_value = []
+        self.mock_query.return_value = []
 
+        request = http.HttpRequest()
+        request.method = 'GET'
+        request.GET['type'] = 'account-csv'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.GET['filtered_account_types'] = '{}'.format(constants.AccountType.MANAGED)
+        request.GET['additional_fields'] = 'account_type,cpc,clicks,impressions'
+        user.save()
+        request.user = user
 
         response = export.AllAccountsExport().get(request)
 
         expected_content = (
             'Start Date,End Date,Account,Status (' + time.strftime('%Y-%m-%d') + ')'
-            ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,'
-            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,20.230,203,200000\r\n'
+            ',Average CPC,Clicks,Impressions\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 
-        self.assertEqual(response.content, expected_content)
+        self.assertEqual(expected_content, response.content)
+
 
 class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
     fixtures = ['test_api']
