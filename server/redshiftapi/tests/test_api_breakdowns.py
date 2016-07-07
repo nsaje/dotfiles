@@ -56,21 +56,21 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
                     ELSE (sum(cast(a.clicks AS FLOAT)) - sum(a.visits)) / sum(a.clicks)
                 END)*100.0 click_discrepancy,
             sum(a.clicks) clicks,
-            sum(a.cost_cc)/10000.0 cost,
+            sum(a.cost_nano)/1000000000.0 cost,
             (CASE
-                    WHEN sum(a.clicks) <> 0 THEN sum(cast(a.cost_cc AS FLOAT)) / sum(a.clicks)
+                    WHEN sum(a.clicks) <> 0 THEN sum(cast(a.cost_nano AS FLOAT)) / sum(a.clicks)
                     ELSE NULL
-                END)/10000.0 cpc,
+                END)/1000000000.0 cpc,
             (CASE
                     WHEN sum(a.impressions) <> 0 THEN sum(cast(a.clicks AS FLOAT)) / sum(a.impressions)
                     ELSE NULL
                 END)*100.0 ctr,
-            sum(a.data_cost_cc)/10000.0 data_cost,
+            sum(a.data_cost_nano)/1000000000.0 data_cost,
             sum(a.effective_data_cost_nano)/1000000000.0 e_data_cost,
             sum(a.effective_cost_nano)/1000000000.0 e_media_cost,
             sum(a.impressions) impressions,
             sum(a.license_fee_nano)/1000000000.0 license_fee,
-            sum(a.cost_cc)/10000.0 media_cost,
+            sum(a.cost_nano)/1000000000.0 media_cost,
             sum(a.new_visits) new_visits,
             sum(a.pageviews) pageviews,
             (CASE
@@ -81,15 +81,15 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
                     WHEN sum(a.visits) <> 0 THEN sum(cast(a.pageviews AS FLOAT)) / sum(a.visits)
                     ELSE NULL
                 END) pv_per_visit,
-            (sum(a.license_fee_nano)+sum(a.cost_cc)*100000+sum(a.data_cost_cc)*100000)/1000000000.0 total_cost,
+            (sum(a.license_fee_nano)+sum(a.cost_nano)+sum(a.data_cost_nano))/1000000000.0 total_cost,
             sum(a.visits) visits
         FROM
         (SELECT b.ad_group_id AS ad_group_id,
                                 b.content_ad_id AS content_ad_id,
                                                     sum(b.clicks) clicks,
                                                     sum(b.impressions) impressions,
-                                                    sum(b.cost_cc) cost_cc,
-                                                    sum(b.data_cost_cc) data_cost_cc,
+                                                    sum(b.cost_nano) cost_nano,
+                                                    sum(b.data_cost_nano) data_cost_nano,
                                                     sum(b.effective_cost_nano) effective_cost_nano,
                                                     sum(b.effective_data_cost_nano) effective_data_cost_nano,
                                                     sum(b.license_fee_nano) license_fee_nano,
