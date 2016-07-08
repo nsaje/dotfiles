@@ -1,5 +1,5 @@
 <span class="zem-grid-cell-breakdown-field" ng-style="ctrl.getBreakdownColumnStyle()">
-    <span ng-show="ctrl.fieldType === ctrl.types.TOTALS_LABEL">TOTALS</span>
-    <span ng-show="ctrl.fieldType === ctrl.types.BASE_FIELD" ng-bind="ctrl.data.value"></span>
+    <span ng-show="ctrl.fieldType === ctrl.types.TOTALS_LABEL" class="zem-grid-cell-totals-label">TOTALS</span>
+    <span ng-show="ctrl.fieldType === ctrl.types.BASE_FIELD" ng-bind="ctrl.data.value" class="zem-grid-cell-base-field"></span>
     <zem-grid-cell-internal-link ng-show="ctrl.fieldType === ctrl.types.INTERNAL_LINK" data="ctrl.data" row="ctrl.row" column="ctrl.column" grid="ctrl.grid"></zem-grid-cell-internal-link>
 </span>

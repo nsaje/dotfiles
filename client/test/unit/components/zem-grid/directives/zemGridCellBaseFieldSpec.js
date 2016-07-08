@@ -1,4 +1,4 @@
-/* globals describe, it, it, beforeEach, expect, module, inject */
+/* globals describe, it, beforeEach, expect, module, inject */
 
 describe('zemGridCellBaseField', function () {
     var scope, element;

@@ -109,6 +109,11 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                 models.Q(groups__account__agency__id__in=agencies)
             ).distinct()
 
+        def filter_selfmanaged(self):
+            return self.filter(email__isnull=False)\
+                .exclude(email__icontains="@zemanta")\
+                .exclude(is_test_user=True)
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 

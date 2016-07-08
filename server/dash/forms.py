@@ -583,6 +583,11 @@ OPTIONAL_CSV_FIELDS = ['display_url', 'brand_name', 'description', 'call_to_acti
                        'primary_tracker_url', 'secondary_tracker_url']
 ALL_CSV_FIELDS = MANDATORY_CSV_FIELDS + OPTIONAL_CSV_FIELDS
 IGNORED_CSV_FIELDS = ['errors']
+EXPRESSIVE_FIELD_NAME_MAPPING = {
+    'primary_impression_tracker_url': 'primary_tracker_url',
+    'secondary_impression_tracker_url': 'secondary_tracker_url',
+}
+INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING = {v: k for k, v in EXPRESSIVE_FIELD_NAME_MAPPING.iteritems()}
 
 # Example CSV content - must be ignored if mistakenly uploaded
 # Example File is served by client (Zemanta_Content_Ads_Template.csv)
@@ -651,13 +656,15 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
             # That's how those columns are presented in our csv template (that user can download)
             # If the user downloads the template, fills it in and uploades, it immediately works.
             field = re.sub("_*\(optional\)", "", field)
+            field = EXPRESSIVE_FIELD_NAME_MAPPING.get(field, field)
             if n >= 3 and field not in OPTIONAL_CSV_FIELDS and field not in IGNORED_CSV_FIELDS:
                 raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
             column_names[n] = field
 
         # Make sure each column_name appears only once
         for column_name, count in Counter(column_names).iteritems():
-            formatted_name = column_name.replace('_', ' ').capitalize()
+            expr_column_name = INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING.get(column_name, column_name)
+            formatted_name = expr_column_name.replace('_', ' ').capitalize()
             if count > 1:
                 raise forms.ValidationError(
                     "Column \"{0}\" appears multiple times ({1}) in the CSV file.".format(formatted_name, count))

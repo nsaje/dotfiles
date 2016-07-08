@@ -14,7 +14,6 @@ class HistoryHelperTests(TestCase):
         ad_group.write_history(
             '',
             user=user,
-            history_type=dash.constants.HistoryType.AD_GROUP
         )
         self.assertEqual(0, dash.models.History.objects.all().count())
 
@@ -22,7 +21,6 @@ class HistoryHelperTests(TestCase):
         campaign.write_history(
             None,
             user=user,
-            history_type=dash.constants.HistoryType.CAMPAIGN
         )
         self.assertEqual(0, dash.models.History.objects.all().count())
 
@@ -30,7 +28,6 @@ class HistoryHelperTests(TestCase):
         account.write_history(
             '',
             system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
-            history_type=dash.constants.HistoryType.ACCOUNT
         )
         self.assertEqual(0, dash.models.History.objects.all().count())
 
@@ -40,13 +37,11 @@ class HistoryHelperTests(TestCase):
         ad_group.write_history(
             'Funky test',
             user=user,
-            history_type=dash.constants.HistoryType.AD_GROUP
         )
 
         hist = dash.models.History.objects.first()
         self.assertIsNotNone(hist)
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual(dash.constants.HistoryType.AD_GROUP, hist.type)
         self.assertEqual(user, hist.created_by)
         self.assertEqual('Funky test', hist.changes_text)
 
@@ -56,13 +51,11 @@ class HistoryHelperTests(TestCase):
         campaign.write_history(
             'Funky test',
             user=user,
-            history_type=dash.constants.HistoryType.CAMPAIGN
         )
 
         hist = dash.models.History.objects.first()
         self.assertIsNotNone(hist)
         self.assertEqual(campaign, hist.campaign)
-        self.assertEqual(dash.constants.HistoryType.CAMPAIGN, hist.type)
         self.assertEqual(user, hist.created_by)
         self.assertEqual('Funky test', hist.changes_text)
 
@@ -71,13 +64,11 @@ class HistoryHelperTests(TestCase):
         account.write_history(
             'Funky test',
             system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
-            history_type=dash.constants.HistoryType.ACCOUNT
         )
 
         hist = dash.models.History.objects.first()
         self.assertIsNotNone(hist)
         self.assertEqual(account, hist.account)
-        self.assertEqual(dash.constants.HistoryType.ACCOUNT, hist.type)
         self.assertIsNone(hist.created_by)
         self.assertEqual(dash.constants.SystemUserType.CAMPAIGN_STOP, hist.system_user)
         self.assertEqual('Funky test', hist.changes_text)
