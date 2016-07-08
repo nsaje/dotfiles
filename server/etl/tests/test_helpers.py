@@ -6,7 +6,6 @@ from django.test import TestCase
 import dash.constants
 
 from etl import helpers
-from etl.tests.test_materialize_views import TPConversionResults
 
 
 class HelpersTest(TestCase, backtosql.TestSQLMixin):
