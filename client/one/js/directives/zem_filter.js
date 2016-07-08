@@ -120,7 +120,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 }
 
                 zemFilterService.addFilteredAccountType(accountType);
-                $scope.accountTypeToFilter = '';
+                $scope.accountTypeIdToFilter = '';
             };
 
             $scope.removeFilteredAccountType = function (accountTypeId) {

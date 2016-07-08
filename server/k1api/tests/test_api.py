@@ -687,7 +687,22 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
 
         ag = dash.models.AdGroup.objects.get(pk=1)
-        self.assertEqual(ag.campaign.account.outbrain_marketer_id, 'abcde')
+        self.assertEqual(ag.campaign.account.outbrain_marketer_id, data['response'])
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_outbrain_marketer_id_assign_new(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_outbrain_marketer_id'),
+            {'ad_group_id': '3'}
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+
+        ag = dash.models.AdGroup.objects.get(pk=3)
+        self.assertEqual(ag.campaign.account.outbrain_marketer_id, data['response'])
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
@@ -702,7 +717,7 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
 
         fb_account = dash.models.FacebookAccount.objects.get(pk=1)
-        self.assertEqual(fb_account.ad_account_id, 'act_123')
+        self.assertEqual(fb_account.ad_account_id, data['response']['ad_account_id'])
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')

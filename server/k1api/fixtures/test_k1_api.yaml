@@ -16,6 +16,16 @@
     model: zemauth.user
     pk: 1
 
+# test Outbrain accounts
+-   fields:
+        marketer_id: 'dcefg'
+        marketer_name: 'Zemanta_XY'
+        used: False
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+    model: dash.outbrainaccount
+    pk: 1
+
 # test account
 
 -   fields:
@@ -32,9 +42,17 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 2'
-        outbrain_marketer_id: 'edcba'
     model: dash.account
     pk: 2
+
+    # no outbrain marketer id
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 3'
+    model: dash.account
+    pk: 3
 
 # test ga accounts
 
@@ -848,3 +866,4 @@
         value: 'dummy4'
     model: dash.rule
     pk: 4
+
