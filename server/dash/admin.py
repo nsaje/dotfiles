@@ -888,127 +888,6 @@ class AdGroupSourceStateAdmin(admin.ModelAdmin):
     )
 
 
-class UserActionLogResource(resources.ModelResource):
-
-    class Meta:
-        model = models.UserActionLog
-
-    def _changes_text(self, settings=None):
-        changes_text = '/'
-        if settings:
-            changes_text = settings.changes_text if settings.changes_text else '- no description -'
-        return changes_text
-
-    def _get_name(self, obj):
-        return obj.name if obj else '/'
-
-    def dehydrate_action_type(self, obj):
-        return constants.UserActionType.get_text(obj.action_type)
-
-    def dehydrate_ad_group(self, obj):
-        return self._get_name(obj.ad_group)
-
-    def dehydrate_ad_group_settings(self, obj):
-        return self._changes_text(obj.ad_group_settings)
-
-    def dehydrate_campaign(self, obj):
-        return self._get_name(obj.campaign)
-
-    def dehydrate_campaign_settings(self, obj):
-        return self._changes_text(obj.campaign_settings)
-
-    def dehydrate_account(self, obj):
-        return self._get_name(obj.account)
-
-    def dehydrate_account_settings(self, obj):
-        return self._changes_text(obj.account_settings)
-
-    def dehydrate_created_by(self, obj):
-        return obj.created_by.email if obj.created_by else '/'
-
-
-class UserActionLogAdmin(ExportMixin, admin.ModelAdmin):
-    search_fields = ['action_type', 'created_by__email']
-    list_display = (
-        'created_by',
-        'created_dt',
-        'action_type',
-        'ad_group_settings_changes_text_',
-        'campaign_settings_changes_text_',
-        'account_settings_changes_text_',
-    )
-
-    list_filter = ('action_type',
-                   ('created_dt', admin.DateFieldListFilter),
-                   ('created_by', admin.RelatedOnlyFieldListFilter))
-
-    resource_class = UserActionLogResource
-
-    def changelist_view(self, request, extra_context=None):
-        response = super(UserActionLogAdmin, self).changelist_view(request, extra_context=extra_context)
-        qs = response.context_data['cl'].queryset
-        extra_context = {
-            'self_managed_users': (qs.order_by('created_by').distinct('created_by')
-                                   .values_list('created_by__email', flat=True))
-        }
-
-        response.context_data.update(extra_context)
-
-        return response
-
-    def ad_group_settings_changes_text_(self, user_action_log):
-        return self._get_changes_link(
-            user_action_log.ad_group,
-            user_action_log.ad_group_settings,
-            'admin:dash_adgroup_change',
-            'admin:dash_adgroupsettings_change',
-        )
-    ad_group_settings_changes_text_.allow_tags = True
-    ad_group_settings_changes_text_.short_description = 'Ad Group'
-    ad_group_settings_changes_text_.admin_order_field = 'ad_group'
-
-    def campaign_settings_changes_text_(self, user_action_log):
-        return self._get_changes_link(
-            user_action_log.campaign,
-            user_action_log.campaign_settings,
-            'admin:dash_campaign_change',
-            'admin:dash_campaignsettings_change',
-        )
-    campaign_settings_changes_text_.allow_tags = True
-    campaign_settings_changes_text_.short_description = 'Campaign change'
-    campaign_settings_changes_text_.admin_order_field = 'campaign'
-
-    def account_settings_changes_text_(self, user_action_log):
-        return self._get_changes_link(
-            user_action_log.account,
-            user_action_log.account_settings,
-            'admin:dash_account_change',
-            None
-        )
-    account_settings_changes_text_.allow_tags = True
-    account_settings_changes_text_.short_description = 'Account change'
-    account_settings_changes_text_.admin_order_field = 'account'
-
-    def _get_changes_link(self, obj, settings, obj_url_name, settings_url_name):
-        obj_link = ''
-        settings_link = ''
-
-        if obj:
-            obj_link = u'<a href="{url}">{name}</a>'.format(
-                name=obj.name,
-                url=reverse(obj_url_name, args=(obj.pk, )))
-
-        if settings_url_name and settings:
-            settings_link = u'<a href="{url}">{name}</a>'.format(
-                name=settings.changes_text or '- no changes description -',
-                url=reverse(settings_url_name, args=(settings.pk, ))
-            )
-        elif not settings_url_name and settings:
-            settings_link = settings.changes_text or '- no changes description -'
-
-        return u'{} / {}'.format(obj_link, settings_link)
-
-
 class AdGroupModelChoiceField(forms.ModelChoiceField):
 
     def label_from_instance(self, obj):
@@ -1714,7 +1593,6 @@ admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)
 admin.site.register(models.DemoMapping, DemoMappingAdmin)
 admin.site.register(models.OutbrainAccount, OutbrainAccountAdmin)
 admin.site.register(models.ContentAdSource, ContentAdSourceAdmin)
-admin.site.register(models.UserActionLog, UserActionLogAdmin)
 admin.site.register(models.CreditLineItem, CreditLineItemAdmin)
 admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)
 admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdmin)
