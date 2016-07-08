@@ -33,7 +33,7 @@ class UploadCsvTestCase(TestCase):
         ad_group_id = 1
         mock_file = SimpleUploadedFile(
             'test_upload.csv',
-            'URL,Title,Image URL,Label,Image Crop,Primary tracker url,Secondary tracker url,Brand name,Display URL,'
+            'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,'
             'Call to Action,Description\nhttp://zemanta.com/test-content-ad,test content ad,'
             'http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,'
             'https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description'
@@ -88,7 +88,7 @@ class UploadCsvTestCase(TestCase):
 
         mock_file = SimpleUploadedFile(
             'test_upload.csv',
-            'URL,Title,Image URL,Label,Image Crop,Primary tracker url,Secondary tracker url,Description\n'
+            'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,Secondary impression tracker url,Description\n'
             'http://example.com/test-content-ad,test content ad,http://zemanta.com/test-image.jpg,test,entropy,'
             'https://t.zemanta.com/px1.png,https://t.zemanta.com/px2.png,description'
         )
@@ -138,7 +138,7 @@ class UploadCsvTestCase(TestCase):
         ad_group_id = 1
         mock_file = SimpleUploadedFile(
             'test_upload.csv',
-            'URL,Title,Image URL,Label,Image Crop,Primary tracker url,Secondary tracker url\n'
+            'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,Secondary impression tracker url\n'
             'ahttp://zemanta.com/test-content-ad,test content ad,ahttp://zemanta.com/test-image.jpg,'
             'testtoolonglabelforthecontentadcandidatelabelfield,entropy,'
             'http://t.zemanta.com/px1.png,https://t.zemanta.com/px2.png'
@@ -464,7 +464,7 @@ class CandidatesDownloadTestCase(TestCase):
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual('Url,Title,Image url,Display url,Brand name,Description,Call to action,'
-                         'Label,Image crop,Primary tracker url,Secondary tracker url\r\nhttp://zemanta.com/blog,'
+                         'Label,Image crop,Primary impression tracker url,Secondary impression tracker url\r\nhttp://zemanta.com/blog,'
                          'Zemanta blog čšž,http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
                          'content ad 1,entropy,,\r\n', response.content)
         self.assertEqual('attachment; filename="batch 1.csv"', response.get('Content-Disposition'))
