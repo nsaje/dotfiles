@@ -1,10 +1,10 @@
 <div class="modal-body">
     <form id="add-conversion-pixel-form" ng-submit="addConversionPixel()" class="modal-form conversion-pixel-form form-horizontal">
-    <div class="title">Add a New Conversion Pixel</div>
+    <div class="title">Add a New Pixel</div>
         <div class="form-group" ng-class="{'has-error': !!error && !!errorMessage}">
             <label for="unique-identifier-input" class="col-xs-4 control-label">
                 Unique identifier
-                <zem-help-popover content="Conversion pixel's unique identifier" placement="bottom"></zem-help-popover>
+                <zem-help-popover content="Pixel's unique identifier" placement="bottom"></zem-help-popover>
             </label>
             <span class="col-xs-4 text-vertical-align-middle text-align-right no-padding-right">
                 {{ conversionPixelTagPrefix }}
@@ -16,13 +16,13 @@
 
         <div class="form-group">
             <div class="col-xs-12 notice">
-                The conversion pixel should be included in the web page at the point of conversion.
+                The pixel should be included in the web page at the point of conversion.
             </div>
         </div>
 
         <div class="form-group">
             <div class="col-xs-4">
-                <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}">Add Conversion Pixel</button>
+                <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}">Add Pixel</button>
             </div>
             <div class="col-xs-3">
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>

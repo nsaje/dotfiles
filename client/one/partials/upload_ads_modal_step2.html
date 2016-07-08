@@ -218,7 +218,7 @@
                 <div class="addon_fields" ng-if="selectedCandidate.useTrackers">
                     <div class="form-group">
                         <label for="impression-trackers-input" class="col-xs-2 control-label p-t-none">
-                            Primary tracker:
+                            Primary impression tracker:
                         </label>
                         <div class="col-xs-8">
                             <input type="text" class="form-control" id="impression-trackers-input" ng-model="selectedCandidate.primaryTrackerUrl" ng-focus="clearSelectedCandidateErrors('primaryTrackerUrl')" />
@@ -231,7 +231,7 @@
                     </div>
     
                     <div class="form-group" ng-if="!!selectedCandidate.useSecondaryTracker">
-                        <label class="col-xs-2 control-label p-t-none">Secondary tracker:</label>
+                        <label class="col-xs-2 control-label p-t-none">Secondary impression tracker:</label>
                         <div class="col-xs-8">
                             <input type="text" class="form-control" id="impression-trackers-input" ng-model="selectedCandidate.secondaryTrackerUrl" ng-focus="clearSelectedCandidateErrors('secondaryTrackerUrl')" />
                             <label for="call-to-action-input" ng-repeat="error in selectedCandidate.errors.secondaryTrackerUrl" class="control-label small error">{{ error }}</label>
