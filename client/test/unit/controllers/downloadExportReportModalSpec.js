@@ -11,6 +11,8 @@ describe('DownloadExportReportModalCtrl', function () {
         zemFilterServiceMock = {
             getShowArchived: function () { return true; },
             isSourceFilterOn: function () { return false; },
+            isAgencyFilterOn: function () { return false; },
+            isAccountTypeFilterOn: function () { return false; },
             getFilteredSources: function () {}
         };
         $provide.value('zemFilterService', zemFilterServiceMock);

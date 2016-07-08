@@ -12,7 +12,7 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
     function init (user) {
         var filteredSourcesLocation = $location.search().filtered_sources;
         if (filteredSourcesLocation) {
-            filteredSources = filteredSourcesLocation.split(',');
+            filteredSources = filteredSourcesLocation.split(',')
         }
 
         var filteredAgenciesLocation = $location.search().filtered_agencies;
@@ -22,7 +22,7 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
 
         var filteredAccountTypesLocation = $location.search().filtered_account_types;
         if (filteredAccountTypesLocation) {
-            filteredAccountTypesLocation = filteredAccountTypesLocation.split(',');
+            filteredAccountTypes = filteredAccountTypesLocation.split(',');
         }
 
         showArchived = $location.search().show_archived || false;
@@ -192,9 +192,9 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
     }
 
     function removeFiltering () {
-        filteredSources.splice(0, filteredSources.length);
-        filteredAgencies.splice(0, filteredAgencies.length);
-        filteredAccountTypes.splice(0, filteredAccountTypes.length);
+        filteredSources = [];
+        filteredAgencies = [];
+        filteredAccountTypes = [];
 
         setFilteredSourcesLocation();
         setFilteredAgenciesLocation();
@@ -238,6 +238,7 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
         setShowArchived: setShowArchived,
         getFilteredSources: getFilteredSources,
         getFilteredAgencies: getFilteredAgencies,
+        getFilteredAccountTypes: getFilteredAccountTypes,
         isSourceFiltered: isSourceFiltered,
         isSourceFilterOn: isSourceFilterOn,
         isAgencyFiltered: isAgencyFiltered,
