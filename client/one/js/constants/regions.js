@@ -441,6 +441,7 @@ oneApp.constant('regions', {
               {'code': '807', 'type': 'D', 'name': '807 San Francisco-Oakland-San Jose,CA'},
               {'code': '639', 'type': 'D', 'name': '639 Jackson,TN'},
               {'code': '804', 'type': 'D', 'name': '804 Palm Springs,CA'},
+              {'code': '531', 'type': 'D', 'name': '531 Tri-Cities-Tn-Va'},
               {'code': 'US-AL', 'type': 'S', 'name': 'Alabama'},
               {'code': 'US-AK', 'type': 'S', 'name': 'Alaska'},
               {'code': 'US-AZ', 'type': 'S', 'name': 'Arizona'},
