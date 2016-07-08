@@ -20,7 +20,7 @@
         <ul class="filter-menu dropdown-menu" dropdown-menu>
             <li>
                 <div class="title">Filter by Media Source</div>
-               <select ui-select2="{dropdownAutoWidth: true, minimumResultsForSearch: -1, formatNoMatches: 'No sources', dropdownCssClass: 'select2-filter'}" ng-model="sourceIdToFilter" ng-change="addFilteredSource(sourceIdToFilter)" class="add-filter" data-placeholder="+ Media Source">
+               <select ui-select2="{dropdownAutoWidth: true, formatNoMatches: 'No sources', dropdownCssClass: 'select2-filter'}" ng-model="sourceIdToFilter" ng-change="addFilteredSource(sourceIdToFilter)" class="add-filter" data-placeholder="+ Media Source">
                     <option value=""></option>
                     <option ng-repeat="source in availableSources | orderBy:'name' | filter:isSourceValidFilterChoice" value="{{source.id}}">{{source.name}}</option>
                 </select>
