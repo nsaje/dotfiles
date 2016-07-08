@@ -1530,6 +1530,10 @@ class AgeGenderGroup(ConstantBase):
     }
 
 
+class DmaGroup(ConstantBase):
+    _VALUES = {int(key): regions.DMA_BY_CODE[key] for key in regions.DMA_BY_CODE.keys()}
+
+
 class ConversionWindows(ConstantBase):
     LEQ_1_DAY = 24
     LEQ_7_DAYS = 168
