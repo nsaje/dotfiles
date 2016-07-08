@@ -388,6 +388,18 @@ def count_active_campaigns(account):
     return len(active_campaign_ids)
 
 
+def count_active_agency_accounts(user):
+    account_ids = set(
+        dash.models.AdGroup.objects.all()
+        .filter_running()
+        .values_list(
+            'campaign__account',
+            flat=True
+        )
+    )
+    return dash.models.Account.objects.all().filter_by_user(user).filter(id__in=account_ids).count()
+
+
 def count_active_accounts(filtered_agencies, filtered_account_types):
     account_ids = set(
         dash.models.AdGroup.objects.all()
@@ -419,7 +431,7 @@ def _filter_user_by_account_type(users, filtered_account_types):
             models.Q(account__users__in=users) |
             models.Q(account__groups__user__in=users) |
             models.Q(account__agency__users__in=users)
-        )\
+    )\
         .group_current_settings()
 
     filtered_latest_account_settings = dash.models.AccountSettings.objects\

@@ -2837,11 +2837,6 @@ class AllAccountsOverviewTest(TestCase):
         self.client = Client()
         redshift.STATS_DB_NAME = 'default'
 
-        permission_2 = Permission.objects.get(codename='can_access_all_accounts_infobox')
-        user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(permission_2)
-        user.save()
-
     def _get_all_accounts_overview(self, campaign_id, user_id=2, with_status=False):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password='secret')
@@ -2855,8 +2850,30 @@ class AllAccountsOverviewTest(TestCase):
         return json.loads(response.content)
 
     def test_run_empty(self):
+        permission_2 = Permission.objects.get(codename='can_access_all_accounts_infobox')
+        user = zemauth.models.User.objects.get(pk=2)
+        user.user_permissions.add(permission_2)
+        user.save()
+
         response = self._get_all_accounts_overview(1)
         self.assertTrue(response['success'])
+
+    def test_agency_permission(self):
+        response = self._get_all_accounts_overview(1)
+        self.assertFalse(response['success'])
+
+        permission_2 = Permission.objects.get(codename='can_access_agency_infobox')
+        user = zemauth.models.User.objects.get(pk=2)
+        user.user_permissions.add(permission_2)
+        user.save()
+
+        response = self._get_all_accounts_overview(1)
+        self.assertTrue(response['success'])
+
+        self.assertEqual(
+            set(['Active accounts:']),
+            set(s['name'] for s in response['data']['basic_settings'])
+        )
 
 
 class DemoTest(TestCase):

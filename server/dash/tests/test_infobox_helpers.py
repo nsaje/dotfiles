@@ -503,10 +503,58 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(1, dash.infobox_helpers.count_active_accounts(None, None))
 
-    def _make_a_john(self):
+    def test_count_active_agency_accounts(self):
+        today = datetime.datetime.utcnow()
+
+        for adgss in dash.models.AdGroupSourceState.objects.all():
+            adgss.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
+            adgss.save()
+
+        self.assertEqual(0, dash.infobox_helpers.count_active_accounts(None, None))
+
+        all_adgset = dash.models.AdGroupSettings.objects.filter(
+            ad_group__campaign__account__id=1
+        )
+        for adgset in all_adgset:
+            new_adgset = adgset.copy_settings()
+            new_adgset.start_date = today
+            new_adgset.end_date = today + datetime.timedelta(days=1)
+            new_adgset.save(None)
+
+        all_adgs_1 = dash.models.AdGroupSource.objects.filter(
+            ad_group__campaign__account__id=1
+        )
+        for adgs in all_adgs_1:
+            dash.models.AdGroupSourceState.objects.create(
+                ad_group_source=adgs,
+                state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+                cpc_cc=10,
+                daily_budget_cc=10
+            )
+
+        user1 = self._make_a_john()
+        self.assertEqual(0, dash.infobox_helpers.count_active_agency_accounts(user1))
+
+        account = dash.models.Account.objects.get(pk=1)
+        account.users.add(user1)
+        self.assertEqual(1, dash.infobox_helpers.count_active_agency_accounts(user1))
+
+        r = RequestFactory().get('')
+        r.user = user1
+        user2 = self._make_a_john('john2@example.com')
+
+        agency = dash.models.Agency(name='Test Agency')
+        agency.save(r)
+        account.agency = agency
+        account.save(r)
+        self.assertEqual(0, dash.infobox_helpers.count_active_agency_accounts(user2))
+        agency.users.add(user2)
+        self.assertEqual(1, dash.infobox_helpers.count_active_agency_accounts(user2))
+
+    def _make_a_john(self, email=None):
         ordinary_john = zemauth.models.User.objects.create_user(
-            username="Janez",
-            email="janez.janez@arnes.si",
+            username=email or "Janez",
+            email=email or "janez.janez@arnes.si",
             password="janez"
         )
         ordinary_john.last_login = datetime.datetime.utcnow()
