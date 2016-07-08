@@ -32,7 +32,6 @@ class AdGroupSettingsTest(TestCase):
             'created_by',
             'created_by_id',
             'changes_text',
-            'useractionlog',
             'system_user'
         ]
 
@@ -275,7 +274,6 @@ class CampaignSettingsTest(TestCase):
             'created_by',
             'created_by_id',
             'changes_text',
-            'useractionlog',
             'campaign_manager_id',
             'system_user',
         ]
