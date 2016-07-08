@@ -3869,9 +3869,10 @@ class History(models.Model):
         verbose_name_plural = 'History'
 
 
-class ThirdPartyPixel(models.Model):
+class SourceTypePixel(models.Model):
     pixel = models.ForeignKey(ConversionPixel, on_delete=models.PROTECT)
     url = models.CharField(max_length=255)
+    source_pixel_id = models.CharField(max_length=127)
     source_type = models.ForeignKey(SourceType, on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
