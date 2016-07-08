@@ -1230,30 +1230,21 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         // TODO: create breakdown constants
         if (breakdown === 'source') {
             switch (level) {
-            case constants.level.AD_GROUPS:
-                return AD_GROUP_MEDIA_SOURCE;
-            default:
-                return MEDIA_SOURCE;
+            case constants.level.AD_GROUPS: return AD_GROUP_MEDIA_SOURCE;
+            default: return MEDIA_SOURCE;
             }
         } else if (breakdown === 'publisher') {
             switch (level) {
-            case constants.level.AD_GROUPS:
-                return AD_GROUP_PUBLISHERS;
-            default:
-                throw 'Not supported.';
+            case constants.level.AD_GROUPS: return AD_GROUP_PUBLISHERS;
+            default: throw 'Not supported.';
             }
         } else {
             switch (level) {
-            case constants.level.ALL_ACCOUNTS:
-                return ALL_ACCOUNTS_ACCOUNTS;
-            case constants.level.ACCOUNTS:
-                return ACCOUNT_CAMPAIGNS;
-            case constants.level.CAMPAIGNS:
-                return CAMPAIGN_AD_GROUPS;
-            case constants.level.AD_GROUPS:
-                return AD_GROUP_CONTENT_ADS;
-            default:
-                throw 'Not supported.';
+            case constants.level.ALL_ACCOUNTS: return ALL_ACCOUNTS_ACCOUNTS;
+            case constants.level.ACCOUNTS: return ACCOUNT_CAMPAIGNS;
+            case constants.level.CAMPAIGNS: return CAMPAIGN_AD_GROUPS;
+            case constants.level.AD_GROUPS: return AD_GROUP_CONTENT_ADS;
+            default: throw 'Not supported.';
             }
         }
     }
