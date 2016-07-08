@@ -196,12 +196,16 @@ def _filter_daily_statements(statements, filtered_agencies, filtered_account_typ
             budget__campaign__account__agency__in=filtered_agencies
         )
     if filtered_account_types:
-        account_ids = dash.models.AccountSettings.objects.all()\
+        acs_ids = dash.models.AccountSettings.objects.all()\
             .filter(account__campaign__budgets__statements__in=statements)\
             .group_current_settings()\
+            .values_list('id', flat=True)
+        filtered_ac_ids = dash.models.AccountSettings.objects.all()\
+            .filter(id__in=acs_ids)\
+            .filter(account_type__in=filtered_account_types)\
             .values_list('account__id', flat=True)
         statements = statements.filter(
-            budget__campaign__account__id__in=account_ids)
+            budget__campaign__account__id__in=filtered_ac_ids)
     return statements
 
 
