@@ -1140,10 +1140,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             columns: MANAGEMENT_GROUP,
         },
         {
-            name: 'Costs',
-            columns: COSTS_GROUP,
-        },
-        {
             name: 'Content Sync',
             columns: CONTENT_GROUP,
         },
@@ -1168,6 +1164,10 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
                 COLUMNS.domainLink,
                 COLUMNS.exchange,
             ],
+        },
+        {
+            name: 'Costs',
+            columns: COSTS_GROUP,
         },
         {
             name: 'Projections',
