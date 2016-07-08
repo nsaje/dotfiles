@@ -330,6 +330,7 @@ def calculate_yesterday_account_spend(account):
     credits = [c.id for c in _retrieve_active_creditlineitems(account, yesterday)]
     daily_statements = reports.models.BudgetDailyStatement.objects.filter(
         budget__credit__in=credits,
+        budget__campaign__account=account,
         date=yesterday,
     )
     return reports.budget_helpers.calculate_spend_data(
