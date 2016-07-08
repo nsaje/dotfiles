@@ -1030,7 +1030,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.impressions,
         COLUMNS.clicks,
         COLUMNS.ctr,
-        COLUMNS.cpc
+        COLUMNS.cpc,
     ];
 
     var AUDIENCE_METRICS_GROUP = [
@@ -1038,7 +1038,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.percentNewUsers,
         COLUMNS.clickDiscrepancy,
         COLUMNS.pageviews,
-        //TODO: COLUMNS.totalPageviews,
+        COLUMNS.totalPageviews,
         COLUMNS.pvPerVisit,
         COLUMNS.unbouncedVisits,
         COLUMNS.bounceRate,
@@ -1136,25 +1136,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     //
     var CATEGORIES = [
         {
-            name: 'Media Sources',
-            columns: [
-                COLUMNS.minBidCpc,
-                COLUMNS.maxBidCpc,
-                COLUMNS.dailyBudget,
-                COLUMNS.supplyDashUrl,
-                COLUMNS.bidCpcSetting,
-                COLUMNS.dailyBudgetSetting,
-            ],
-        },
-        {
-            name: 'Publishers',
-            columns: [
-                COLUMNS.domain,
-                COLUMNS.domainLink,
-                COLUMNS.exchange,
-            ],
-        },
-        {
             name: 'Management',
             columns: MANAGEMENT_GROUP,
         },
@@ -1167,23 +1148,34 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             columns: CONTENT_GROUP,
         },
         {
+            name: 'Media Source',
+            columns: [
+                // Account, Campaign level
+                COLUMNS.minBidCpc,
+                COLUMNS.maxBidCpc,
+                COLUMNS.dailyBudget,
+                // Ad group level
+                COLUMNS.supplyDashUrl,
+                COLUMNS.bidCpcSetting,
+                COLUMNS.dailyBudgetSetting,
+            ],
+        },
+        {
+            name: 'Publisher',
+            columns: [
+                COLUMNS.statusPublisher,
+                COLUMNS.domain,
+                COLUMNS.domainLink,
+                COLUMNS.exchange,
+            ],
+        },
+        {
             name: 'Projections',
             columns: PROJECTIONS_GROUP,
         },
         {
             name: 'Traffic Acquisition',
-            columns: TRAFFIC_ACQUISITION_GROUP
-                [
-
-                COLUMNS.statusPublisher,
-                COLUMNS.domain,
-                COLUMNS.domainLink,
-                COLUMNS.exchange,
-                COLUMNS.minBidCpc,
-                COLUMNS.maxBidCpc,
-                COLUMNS.dailyBudget,
-                COLUMNS.dailyBudgetSetting,
-            ],
+            columns: TRAFFIC_ACQUISITION_GROUP,
         },
         {
             name: 'Audience Metrics',
@@ -1238,21 +1230,30 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         // TODO: create breakdown constants
         if (breakdown === 'source') {
             switch (level) {
-            case constants.level.AD_GROUPS: return AD_GROUP_MEDIA_SOURCE;
-            default: return MEDIA_SOURCE;
+            case constants.level.AD_GROUPS:
+                return AD_GROUP_MEDIA_SOURCE;
+            default:
+                return MEDIA_SOURCE;
             }
         } else if (breakdown === 'publisher') {
             switch (level) {
-            case constants.level.AD_GROUPS: return AD_GROUP_PUBLISHERS;
-            default: throw 'Not supported.';
+            case constants.level.AD_GROUPS:
+                return AD_GROUP_PUBLISHERS;
+            default:
+                throw 'Not supported.';
             }
         } else {
             switch (level) {
-            case constants.level.ALL_ACCOUNTS: return ALL_ACCOUNTS_ACCOUNTS;
-            case constants.level.ACCOUNTS: return ACCOUNT_CAMPAIGNS;
-            case constants.level.CAMPAIGNS: return CAMPAIGN_AD_GROUPS;
-            case constants.level.AD_GROUPS: return AD_GROUP_CONTENT_ADS;
-            default: throw 'Not supported.';
+            case constants.level.ALL_ACCOUNTS:
+                return ALL_ACCOUNTS_ACCOUNTS;
+            case constants.level.ACCOUNTS:
+                return ACCOUNT_CAMPAIGNS;
+            case constants.level.CAMPAIGNS:
+                return CAMPAIGN_AD_GROUPS;
+            case constants.level.AD_GROUPS:
+                return AD_GROUP_CONTENT_ADS;
+            default:
+                throw 'Not supported.';
             }
         }
     }
