@@ -403,7 +403,8 @@ class Account(models.Model):
     groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                    related_name='+', on_delete=models.PROTECT)
 
     objects = QuerySetManager()
     demo_objects = DemoManager()
@@ -517,7 +518,8 @@ class Account(models.Model):
         )
 
     def save(self, request, *args, **kwargs):
-        self.modified_by = request.user
+        if not request.user.is_anonymous:
+            self.modified_by = request.user
         super(Account, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
