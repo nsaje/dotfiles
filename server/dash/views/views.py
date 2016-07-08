@@ -1577,7 +1577,7 @@ class AllAccountsOverview(api_common.BaseApiView):
                 id__in=latest_accset
             ).filter(
                 account_type__in=view_filter.filtered_account_types
-            ).values_list('id', flat=True)
+            ).values_list('account__id', flat=True)
             constraints['campaign__account__id__in'] = latest_typed_accset
 
         daterange_proj = reports.projections.BudgetProjections(
