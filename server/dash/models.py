@@ -3869,6 +3869,14 @@ class History(models.Model):
         verbose_name_plural = 'History'
 
 
+class ThirdPartyPixel(models.Model):
+    pixel = models.ForeignKey(ConversionPixel, on_delete=models.PROTECT)
+    url = models.CharField(max_length=255)
+    source_type = models.ForeignKey(SourceType, on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+
 class Audience(models.Model):
     id = models.AutoField(primary_key=True)
     pixel = models.ForeignKey(ConversionPixel, on_delete=models.PROTECT)
@@ -3879,6 +3887,7 @@ class Audience(models.Model):
 
 
 class Rule(models.Model):
+    id = models.AutoField(primary_key=True)
     audience = models.ForeignKey(Audience, on_delete=models.PROTECT)
     type = models.PositiveSmallIntegerField(
         choices=constants.RuleType.get_choices(),
