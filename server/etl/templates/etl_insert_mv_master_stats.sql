@@ -23,8 +23,8 @@ INSERT INTO mv_master (
       a.impressions as impressions,
       a.clicks as clicks,
       -- convert micro to nano
-      a.spend * 1000 as cost_nano,
-      a.data_spend * 1000 as data_cost_nano,
+      a.spend::bigint * 1000 as cost_nano,
+      a.data_spend::bigint * 1000 as data_cost_nano,
 
       null as visits,
       null as new_visits,

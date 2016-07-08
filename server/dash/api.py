@@ -1215,10 +1215,6 @@ def add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads,
 def update_content_ads_archived_state(request, content_ads, ad_group, archived):
     if content_ads.exists():
         add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, archived, request)
-
-        views.helpers.log_useraction_if_necessary(
-            request, constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD, ad_group=ad_group)
-
         with transaction.atomic():
             for content_ad in content_ads:
                 content_ad.archived = archived

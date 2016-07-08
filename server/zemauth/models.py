@@ -13,6 +13,9 @@ import utils.demo_anonymizer
 
 class UserManager(auth_models.BaseUserManager):
 
+    def get_queryset(self):
+        return self.model.QuerySet(self.model)
+
     def _create_user(self, email, password, is_staff, is_superuser, **extra_fields):
         """
         Creates and saves a User with the given email and password.
@@ -95,6 +98,21 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
     )
 
     objects = UserManager()
+
+    class QuerySet(models.QuerySet):
+
+        def filter_by_agencies(self, agencies):
+            if not agencies:
+                return self
+            return self.filter(
+                models.Q(agency__id__in=agencies) |
+                models.Q(groups__account__agency__id__in=agencies)
+            ).distinct()
+
+        def filter_selfmanaged(self):
+            return self.filter(email__isnull=False)\
+                .exclude(email__icontains="@zemanta")\
+                .exclude(is_test_user=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

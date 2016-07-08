@@ -169,6 +169,20 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             disabled: false,
             archivedField: 'archived',
         },
+        stateMediaSourceAdGroup: {
+            name: '\u25CF',
+            field: 'status_setting',
+            type: zemGridConstants.gridColumnTypes.STATE_SELECTOR,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
+            internal: false,
+            shown: true,
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            help: 'A setting for enabling and pausing media sources.',
+            disabled: false,
+        },
 
         // Status columns
         statusAccount: {
@@ -250,6 +264,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             name: 'Status',
             field: 'blacklisted',
             checked: true,
+            unselectable: true,
             type: zemGridConstants.gridColumnTypes.TEXT_WITH_POPUP,
             popupField: 'blacklisted_level_description',
             help: 'Blacklisted status of a publisher.',
@@ -321,19 +336,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             settingsField: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
-        currentBidCpc: {
-            name: 'Current Bid CPC',
-            field: 'current_bid_cpc',
-            fractionSize: 3,
-            checked: false,
-            type: zemGridConstants.gridColumnTypes.CURRENCY,
-            internal: false,
-            shown: false,
-            totalRow: false,
-            order: true,
-            help: 'Cost-per-click (CPC) bid is the approximate amount that you\'ll be charged for a click on your ad.',
-            initialOrder: zemGridConstants.gridColumnOrder.DESC,
-        },
         dailyBudgetSetting: {
             name: 'Daily Budget',
             field: 'daily_budget',
@@ -345,19 +347,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             order: true,
             settingsField: true,
-            initialOrder: zemGridConstants.gridColumnOrder.DESC,
-        },
-        currentDailyBudget: {
-            name: 'Current Daily Budget',
-            field: 'current_daily_budget',
-            checked: false,
-            fractionSize: 0,
-            type: zemGridConstants.gridColumnTypes.CURRENCY,
-            internal: false,
-            shown: false,
-            totalRow: true,
-            order: true,
-            help: 'Maximum budget per day.',
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
 
@@ -807,7 +796,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
-        avgCostPerSecond: {
+        avgCostPerMinute: {
             name: 'Avg. Cost per Minute',
             field: 'avg_cost_per_minute',
             checked: true,
@@ -990,49 +979,74 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         };
     }
 
-    var BASE_METRICS = [
-        COLUMNS.licenseFee,
+    // //////////////V////////////////////////////////////////////////////////////////////////////////////
+    //  COMMMON COLUMN GROUPS
+    //
+    var MANAGEMENT_GROUP = [
+        COLUMNS.agency,
+        COLUMNS.accountType,
+        COLUMNS.defaultSalesRepresentative,
+        COLUMNS.defaultAccountManager,
+        COLUMNS.campaignManager,
+    ];
+
+    var CONTENT_GROUP = [
+        COLUMNS.imageUrls,
+        COLUMNS.statusContentAd,
+        COLUMNS.titleLink,
+        COLUMNS.urlLink,
+        COLUMNS.displayUrl,
+        COLUMNS.brandName,
+        COLUMNS.description,
+        COLUMNS.callToAction,
+        COLUMNS.label,
+        // TODO: impression trackers
+        COLUMNS.uploadTime,
+        COLUMNS.batchName,
+    ];
+
+    var COSTS_GROUP = [
+        COLUMNS.yesterdayCost,
+        COLUMNS.eYesterdayCost,
         COLUMNS.mediaCost,
         COLUMNS.eMediaCost,
         COLUMNS.dataCost,
         COLUMNS.eDataCost,
+        COLUMNS.licenseFee,
+        COLUMNS.flatFee,
+        COLUMNS.totalFee,
         COLUMNS.billingCost,
-        COLUMNS.cpc,
-        COLUMNS.clicks,
+    ];
+
+    var PROJECTIONS_GROUP = [
+        COLUMNS.allocatedBudgets,
+        COLUMNS.pacing,
+        COLUMNS.spendProjection,
+        COLUMNS.licenseFeeProjection,
+        COLUMNS.totalFeeProjection,
+    ];
+
+    var TRAFFIC_ACQUISITION_GROUP = [
         COLUMNS.impressions,
+        COLUMNS.clicks,
         COLUMNS.ctr,
+        COLUMNS.cpc,
     ];
 
-    var OPTIMISATION_METRICS = [
-        COLUMNS.totalSeconds,
-        COLUMNS.unbouncedVisits,
-        COLUMNS.totalPageviews,
-        COLUMNS.avgCostPerSecond,
-        COLUMNS.avgCostPerPageview,
-        COLUMNS.avgCostPerNonBouncedVisitor,
-        COLUMNS.avgCostPerConversionGoal0,
-        COLUMNS.avgCostPerConversionGoal1,
-        COLUMNS.avgCostPerConversionGoal2,
-        COLUMNS.avgCostPerConversionGoal3,
-        COLUMNS.avgCostPerConversionGoal4,
-        COLUMNS.avgCostPerConversionGoal5,
-        COLUMNS.avgCostForNewVisitor,
-    ];
-
-    var POSTCLICK_ENGAGEMENT_METRICS = [
+    var AUDIENCE_METRICS_GROUP = [
+        COLUMNS.visits,
         COLUMNS.percentNewUsers,
-        COLUMNS.bounceRate,
+        COLUMNS.clickDiscrepancy,
+        COLUMNS.pageviews,
+        COLUMNS.totalPageviews,
         COLUMNS.pvPerVisit,
+        COLUMNS.unbouncedVisits,
+        COLUMNS.bounceRate,
+        COLUMNS.totalSeconds,
         COLUMNS.avgTos,
     ];
 
-    var POSTCLICK_ACQUISITION_METRICS = [
-        COLUMNS.visits,
-        COLUMNS.clickDiscrepancy,
-        COLUMNS.pageviews,
-    ];
-
-    var POSTCLICK_CONVERSION_GOALS_METRICS = [
+    var CONVERSIONS_GROUP = [
         COLUMNS.conversionGoal1,
         COLUMNS.conversionGoal2,
         COLUMNS.conversionGoal3,
@@ -1040,119 +1054,73 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.conversionGoal5,
     ];
 
+    var CAMPAIGN_GOALS_GROUP = [
+        COLUMNS.avgCostPerMinute,
+        COLUMNS.avgCostPerPageview,
+        COLUMNS.avgCostPerVisit,
+        COLUMNS.avgCostPerConversionGoal0,
+        COLUMNS.avgCostPerConversionGoal1,
+        COLUMNS.avgCostPerConversionGoal2,
+        COLUMNS.avgCostPerConversionGoal3,
+        COLUMNS.avgCostPerConversionGoal4,
+        COLUMNS.avgCostPerConversionGoal5,
+        COLUMNS.avgCostPerNonBouncedVisitor,
+        COLUMNS.avgCostForNewVisitor,
+    ];
+
+    var METRICS_GROUP = [].concat(
+        COSTS_GROUP,
+        PROJECTIONS_GROUP,
+        TRAFFIC_ACQUISITION_GROUP,
+        AUDIENCE_METRICS_GROUP,
+        CONVERSIONS_GROUP,
+        CAMPAIGN_GOALS_GROUP
+    );
+
+    // //////////////V////////////////////////////////////////////////////////////////////////////////////
+    //  TAB RELATED GROUPS (e.g. account campaign tab)
+    //
     var ALL_ACCOUNTS_ACCOUNTS = [
         COLUMNS.account,
-        COLUMNS.agency,
         COLUMNS.statusAccount,
-        COLUMNS.defaultAccountManager,
-        COLUMNS.defaultSalesRepresentative,
-        COLUMNS.accountType,
-        COLUMNS.allocatedBudgets,
-        COLUMNS.spendProjection,
-        COLUMNS.pacing,
-        COLUMNS.flatFee,
-        COLUMNS.totalFee,
-        COLUMNS.totalFeeProjection,
-        COLUMNS.licenseFeeProjection,
-    ].concat(
-        BASE_METRICS,
-        POSTCLICK_ACQUISITION_METRICS,
-        POSTCLICK_ENGAGEMENT_METRICS
-    );
+        COLUMNS.performance,
+    ].concat(MANAGEMENT_GROUP, METRICS_GROUP);
 
     var ACCOUNT_CAMPAIGNS = [
         COLUMNS.campaign,
-        COLUMNS.performance,
         COLUMNS.statusCampaign,
-        COLUMNS.campaignManager,
-        COLUMNS.allocatedBudgets,
-        COLUMNS.spendProjection,
-        COLUMNS.pacing,
-        COLUMNS.licenseFeeProjection,
-    ].concat(
-        BASE_METRICS,
-        POSTCLICK_ACQUISITION_METRICS,
-        POSTCLICK_ENGAGEMENT_METRICS
-    );
+        COLUMNS.performance,
+    ].concat(MANAGEMENT_GROUP, METRICS_GROUP);
 
     var CAMPAIGN_AD_GROUPS = [
         COLUMNS.stateAdGroup,
         COLUMNS.adgroup,
-        COLUMNS.performance,
         COLUMNS.statusAdGroup,
-        COLUMNS.yesterdayCost,
-        COLUMNS.eYesterdayCost,
-    ].concat(
-        BASE_METRICS,
-        POSTCLICK_ACQUISITION_METRICS,
-        POSTCLICK_ENGAGEMENT_METRICS,
-        POSTCLICK_CONVERSION_GOALS_METRICS,
-        OPTIMISATION_METRICS
-    );
+        COLUMNS.performance,
+    ].concat(METRICS_GROUP);
 
     var AD_GROUP_CONTENT_ADS = [
-        COLUMNS.imageUrls,
         COLUMNS.stateContentAd,
-        COLUMNS.performance,
-        COLUMNS.statusContentAd,
-        COLUMNS.notification,
-        COLUMNS.titleLink,
-        COLUMNS.urlLink,
-        COLUMNS.uploadTime,
-        COLUMNS.batchName,
-        COLUMNS.displayUrl,
-        COLUMNS.brandName,
-        COLUMNS.description,
-        COLUMNS.callToAction,
-        COLUMNS.label,
-    ].concat(
-        BASE_METRICS,
-        POSTCLICK_ACQUISITION_METRICS,
-        POSTCLICK_ENGAGEMENT_METRICS,
-        POSTCLICK_CONVERSION_GOALS_METRICS,
-        OPTIMISATION_METRICS
-    );
+    ].concat(CONTENT_GROUP, METRICS_GROUP);
 
     var MEDIA_SOURCE = [
         COLUMNS.mediaSource,
-        COLUMNS.performance,
         COLUMNS.statusMediaSource,
+        COLUMNS.performance,
         COLUMNS.minBidCpc,
         COLUMNS.maxBidCpc,
         COLUMNS.dailyBudget,
-        COLUMNS.yesterdayCost,
-        COLUMNS.eYesterdayCost,
-    ].concat(
-        BASE_METRICS,
-        POSTCLICK_ACQUISITION_METRICS,
-        POSTCLICK_ENGAGEMENT_METRICS
-    );
-
-    var CAMPAIGN_MEDIA_SOURCE = [].concat(
-        MEDIA_SOURCE,
-        POSTCLICK_CONVERSION_GOALS_METRICS,
-        OPTIMISATION_METRICS
-    );
+    ].concat(METRICS_GROUP);
 
     var AD_GROUP_MEDIA_SOURCE = [
+        COLUMNS.stateMediaSourceAdGroup,
         COLUMNS.mediaSource,
-        COLUMNS.performance,
         COLUMNS.statusMediaSourceAdGroup,
+        COLUMNS.performance,
         COLUMNS.supplyDashUrl,
         COLUMNS.bidCpcSetting,
-        COLUMNS.currentBidCpc,
-        COLUMNS.currentBidCpc,
         COLUMNS.dailyBudgetSetting,
-        COLUMNS.currentDailyBudget,
-        COLUMNS.yesterdayCost,
-        COLUMNS.eYesterdayCost,
-    ].concat(
-        BASE_METRICS,
-        POSTCLICK_ACQUISITION_METRICS,
-        POSTCLICK_ENGAGEMENT_METRICS,
-        POSTCLICK_CONVERSION_GOALS_METRICS,
-        OPTIMISATION_METRICS
-    );
+    ].concat(METRICS_GROUP);
 
     var AD_GROUP_PUBLISHERS = [
         COLUMNS.statusPublisher,
@@ -1160,13 +1128,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.domain,
         COLUMNS.domainLink,
         COLUMNS.exchange,
-    ].concat(
-        BASE_METRICS,
-        POSTCLICK_ACQUISITION_METRICS,
-        POSTCLICK_ENGAGEMENT_METRICS,
-        POSTCLICK_CONVERSION_GOALS_METRICS,
-        OPTIMISATION_METRICS
-    );
+    ].concat(METRICS_GROUP);
 
 
     // //////////////V////////////////////////////////////////////////////////////////////////////////////
@@ -1174,82 +1136,58 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     //
     var CATEGORIES = [
         {
+            name: 'Management',
+            columns: MANAGEMENT_GROUP,
+        },
+        {
             name: 'Costs',
-            columns: [
-                COLUMNS.dataCost,
-                COLUMNS.mediaCost,
-                COLUMNS.eMediaCost,
-                COLUMNS.eDataCost,
-                COLUMNS.billingCost,
-                COLUMNS.licenseFee,
-                COLUMNS.flatFee,
-                COLUMNS.totalFee,
-                COLUMNS.yesterdayCost,
-                COLUMNS.eYesterdayCost,
-            ],
+            columns: COSTS_GROUP,
         },
         {
             name: 'Content Sync',
-            columns: [
-                COLUMNS.imageUrls,
-                COLUMNS.titleLink,
-                COLUMNS.urlLink,
-                COLUMNS.statusContentAd,
-                COLUMNS.uploadTime,
-                COLUMNS.batchName,
-                COLUMNS.displayUrl,
-                COLUMNS.brandName,
-                COLUMNS.description,
-                COLUMNS.callToAction,
-                COLUMNS.label,
-            ],
+            columns: CONTENT_GROUP,
         },
         {
-            name: 'Projections',
+            name: 'Media Source',
             columns: [
-                COLUMNS.pacing,
-                COLUMNS.allocatedBudgets,
-                COLUMNS.spendProjection,
-                COLUMNS.licenseFeeProjection,
-                COLUMNS.totalFeeProjection,
-            ],
-        },
-        {
-            name: 'Traffic Acquisition',
-            columns: [
-                COLUMNS.clicks,
-                COLUMNS.impressions,
-                COLUMNS.ctr,
-                COLUMNS.statusPublisher,
-                COLUMNS.domain,
-                COLUMNS.domainLink,
-                COLUMNS.exchange,
+                // Account, Campaign level
                 COLUMNS.minBidCpc,
                 COLUMNS.maxBidCpc,
                 COLUMNS.dailyBudget,
+                // Ad group level
+                COLUMNS.supplyDashUrl,
+                COLUMNS.bidCpcSetting,
                 COLUMNS.dailyBudgetSetting,
             ],
         },
         {
-            name: 'Audience Metrics',
-            columns: [].concat(POSTCLICK_ACQUISITION_METRICS, POSTCLICK_ENGAGEMENT_METRICS),
-        },
-        {
-            name: 'Management',
+            name: 'Publisher',
             columns: [
-                COLUMNS.defaultAccountManager,
-                COLUMNS.defaultSalesRepresentative,
-                COLUMNS.campaignManager,
-                COLUMNS.accountType,
+                COLUMNS.statusPublisher,
+                COLUMNS.domain,
+                COLUMNS.domainLink,
+                COLUMNS.exchange,
             ],
         },
         {
+            name: 'Projections',
+            columns: PROJECTIONS_GROUP,
+        },
+        {
+            name: 'Traffic Acquisition',
+            columns: TRAFFIC_ACQUISITION_GROUP,
+        },
+        {
+            name: 'Audience Metrics',
+            columns: AUDIENCE_METRICS_GROUP,
+        },
+        {
             name: 'Conversions',
-            columns: POSTCLICK_CONVERSION_GOALS_METRICS,
+            columns: CONVERSIONS_GROUP,
         },
         {
             name: 'Campaign Goals',
-            columns: OPTIMISATION_METRICS,
+            columns: CAMPAIGN_GOALS_GROUP,
         },
     ];
 
@@ -1289,11 +1227,9 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     }
 
     function getColumns (level, breakdown) {
-        // TODO: create breakdown constants
         if (breakdown === 'source') {
             switch (level) {
             case constants.level.AD_GROUPS: return AD_GROUP_MEDIA_SOURCE;
-            case constants.level.CAMPAIGNS: return CAMPAIGN_MEDIA_SOURCE;
             default: return MEDIA_SOURCE;
             }
         } else if (breakdown === 'publisher') {

@@ -117,34 +117,34 @@ class AugmenterTestCase(TestCase):
         target = 'source'
 
         rows = [
-            {'ad_group_id': 1, 'source_id': 1, 'age': 1, 'clicks': 10},
-            {'ad_group_id': 2, 'source_id': 2, 'age': 2, 'clicks': 20},
+            {'ad_group_id': 1, 'source_id': 1, 'age': 1, 'dma': 501, 'clicks': 10},
+            {'ad_group_id': 2, 'source_id': 2, 'age': 2, 'dma': 502, 'clicks': 20},
         ]
 
         augmenter.augment(breakdown, rows, target)
 
         self.assertItemsEqual(rows, [
             {'ad_group_id': 1, 'source_id': 1, 'source_name': 'AdBlade', 'clicks': 10, 'age': '18-20',
-             'breakdown_id': '1||1', 'breakdown_name': 'AdBlade', 'parent_breakdown_id': '1'},
+             'dma': '501 New York, NY', 'breakdown_id': '1||1', 'breakdown_name': 'AdBlade', 'parent_breakdown_id': '1'},
             {'ad_group_id': 2, 'source_id': 2, 'source_name': 'Adiant', 'clicks': 20, 'age': '21-29',
-             'breakdown_id': '2||2', 'breakdown_name': 'Adiant', 'parent_breakdown_id': '2'},
+             'dma':  '502 Binghamton, NY', 'breakdown_id': '2||2', 'breakdown_name': 'Adiant', 'parent_breakdown_id': '2'},
         ])
 
         # same but different target
         target = 'ad_group'
 
         rows = [
-            {'ad_group_id': 1, 'source_id': 1, 'age': 1, 'clicks': 10},
-            {'ad_group_id': 2, 'source_id': 2, 'age': 2, 'clicks': 20},
+            {'ad_group_id': 1, 'source_id': 1, 'age': 1, 'dma': 501, 'clicks': 10},
+            {'ad_group_id': 2, 'source_id': 2, 'age': 2, 'dma': 502, 'clicks': 20},
         ]
 
         augmenter.augment(breakdown, rows, target)
 
         self.assertItemsEqual(rows, [
             {'ad_group_id': 1, 'source_id': 1, 'ad_group_name': 'test adgroup 1', 'clicks': 10, 'age': '18-20',
-             'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1'},
+             'dma': '501 New York, NY', 'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1'},
             {'ad_group_id': 2, 'source_id': 2, 'ad_group_name': 'test adgroup 2', 'clicks': 20, 'age': '21-29',
-             'breakdown_id': '2||2', 'breakdown_name': 'test adgroup 2', 'parent_breakdown_id': '2'},
+             'dma':  '502 Binghamton, NY', 'breakdown_id': '2||2', 'breakdown_name': 'test adgroup 2', 'parent_breakdown_id': '2'},
         ])
 
 

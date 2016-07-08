@@ -181,15 +181,8 @@ class AccountArchive(api_common.BaseApiView):
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
             raise exc.AuthorizationError()
-
         account = helpers.get_account(request.user, account_id)
         account.archive(request)
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT,
-            account=account)
-
         return self.create_api_response({})
 
 
@@ -202,14 +195,7 @@ class AccountRestore(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
         account.restore(request)
-
         actionlog.sync.AccountSync(account).trigger_all(self.request)
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT,
-            account=account)
-
         return self.create_api_response({})
 
 
@@ -222,12 +208,6 @@ class CampaignArchive(api_common.BaseApiView):
 
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign.archive(request)
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.ARCHIVE_RESTORE_CAMPAIGN,
-            campaign=campaign)
-
         return self.create_api_response({})
 
 
@@ -242,12 +222,6 @@ class CampaignRestore(api_common.BaseApiView):
         campaign.restore(request)
 
         actionlog.sync.CampaignSync(campaign).trigger_all(self.request)
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.ARCHIVE_RESTORE_CAMPAIGN,
-            campaign=campaign)
-
         return self.create_api_response({})
 
 
@@ -459,12 +433,6 @@ class AdGroupArchive(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group.archive(request)
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
-            ad_group=ad_group)
-
         return self.create_api_response({})
 
 
@@ -480,11 +448,6 @@ class AdGroupRestore(api_common.BaseApiView):
 
         for ad_group_source in ad_group.adgroupsource_set.all():
             api.refresh_publisher_blacklist(ad_group_source, request)
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
-            ad_group=ad_group)
         return self.create_api_response({})
 
 
@@ -502,12 +465,7 @@ class CampaignAdGroups(api_common.BaseApiView):
         ad_group.write_history(
             changes_text,
             user=request.user,
-            history_type=constants.HistoryType.AD_GROUP,
             action_type=constants.HistoryActionType.CREATE)
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.CREATE_AD_GROUP,
-            ad_group=ad_group, campaign=campaign)
         response = {
             'name': ad_group.name,
             'id': ad_group.id,
@@ -992,13 +950,7 @@ class AdGroupSources(api_common.BaseApiView):
         ad_group.write_history(
             '{} campaign created.'.format(ad_group_source.source.name),
             user=request.user,
-            history_type=constants.HistoryType.AD_GROUP,
             action_type=constants.HistoryActionType.MEDIA_SOURCE_ADD)
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.CREATE_MEDIA_SOURCE_CAMPAIGN,
-            ad_group=ad_group)
-
         helpers.set_ad_group_source_settings(
             None, ad_group_source,
             mobile_only=ad_group_settings.is_mobile_only(),
@@ -1030,13 +982,7 @@ class Account(api_common.BaseApiView):
         account.write_history(
             'Created account',
             user=request.user,
-            history_type=constants.HistoryType.ACCOUNT,
             action_type=constants.HistoryActionType.CREATE)
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.CREATE_ACCOUNT,
-            account=account)
 
         response = {
             'name': account.name,
@@ -1069,11 +1015,6 @@ class AccountCampaigns(api_common.BaseApiView):
         settings.campaign_manager = (account_settings.default_account_manager
                                      if account_settings.default_account_manager else request.user)
         settings.save(request, action_type=constants.HistoryActionType.CREATE)
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.CREATE_CAMPAIGN,
-            campaign=campaign)
 
         response = {
             'name': campaign.name,
@@ -1178,11 +1119,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
 
         settings_writer.set(resource, request)
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
-            ad_group=ad_group)
-
         autopilot_changed_sources_text = ''
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
         if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
@@ -1328,10 +1264,6 @@ class AdGroupContentAdState(api_common.BaseApiView):
         if content_ads.exists():
             api.update_content_ads_state(content_ads, state, request)
             api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
-            helpers.log_useraction_if_necessary(
-                request,
-                constants.UserActionType.SET_CONTENT_AD_STATE,
-                ad_group=ad_group)
             k1_helper.update_content_ads(
                 ad_group.pk, [ad.pk for ad in content_ads],
                 msg='AdGroupContentAdState.post'
@@ -1603,17 +1535,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 user=request.user,
                 action_type=action_type
             )
-
-        # at the moment we only have the publishers view on adgroup level
-        # which means all blacklisting actions are stored in the settings
-        # changes text of the current adgroup
-        # TODO: revise this if making separate views per level
-        helpers.log_useraction_if_necessary(
-            request,
-            publisher_helpers.get_useractiontype(level),
-            ad_group=ad_group
-        )
-
         email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
 
 
@@ -1626,6 +1547,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        # infobox only filters by agency and account type
+        view_filter = helpers.ViewFilter(request=request)
 
         header = {
             'title': None,
@@ -1635,18 +1558,43 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'basic_settings': self._basic_settings(start_date, end_date),
+            'basic_settings': self._basic_settings(start_date, end_date, view_filter),
             'performance_settings': None
         }
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, start_date, end_date):
+    def _basic_settings(self, start_date, end_date, view_filter):
         settings = []
-        daterange_proj = reports.projections.BudgetProjections(start_date, end_date, 'account')
-        month_proj = reports.projections.CurrentMonthBudgetProjections('account')
 
-        count_active_accounts = infobox_helpers.count_active_accounts()
+        constraints = {}
+        if view_filter.filtered_agencies:
+            constraints['campaign__account__agency__in']\
+                = view_filter.filtered_agencies
+        if view_filter.filtered_account_types:
+            latest_accset = models.AccountSettings.objects.all().group_current_settings()
+            latest_typed_accset = models.AccountSettings.objects.all().filter(
+                id__in=latest_accset
+            ).filter(
+                account_type__in=view_filter.filtered_account_types
+            ).values_list('id', flat=True)
+            constraints['campaign__account__id__in'] = latest_typed_accset
+
+        daterange_proj = reports.projections.BudgetProjections(
+            start_date,
+            end_date,
+            'account',
+            **constraints
+        )
+        month_proj = reports.projections.CurrentMonthBudgetProjections(
+            'account',
+            **constraints
+        )
+
+        count_active_accounts = infobox_helpers.count_active_accounts(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'Active accounts:',
             count_active_accounts,
@@ -1654,14 +1602,20 @@ class AllAccountsOverview(api_common.BaseApiView):
             tooltip='Number of accounts with at least one campaign running'
         ))
 
-        weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
+        weekly_logged_users = infobox_helpers.count_weekly_logged_in_users(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'Logged-in users:',
             weekly_logged_users,
             tooltip="Number of users who logged-in in the past 7 days"
         ))
 
-        weekly_active_users = infobox_helpers.get_weekly_active_users()
+        weekly_active_users = infobox_helpers.get_weekly_active_users(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         weekly_active_user_emails = [u.email for u in weekly_active_users]
         email_list_setting = infobox_helpers.OverviewSetting(
             'Active users:',
@@ -1677,7 +1631,10 @@ class AllAccountsOverview(api_common.BaseApiView):
             )
         settings.append(email_list_setting)
 
-        weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
+        weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'Self-managed actions:',
             weekly_sf_actions,
@@ -1685,7 +1642,10 @@ class AllAccountsOverview(api_common.BaseApiView):
                     "in the past 7 days"
         ))
 
-        yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
+        yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'Yesterday spend:',
             lc_helper.default_currency(yesterday_spend),
@@ -1693,7 +1653,10 @@ class AllAccountsOverview(api_common.BaseApiView):
             section_start=True
         ))
 
-        mtd_spend = infobox_helpers.get_mtd_all_accounts_spend()
+        mtd_spend = infobox_helpers.get_mtd_all_accounts_spend(
+            view_filter.filtered_agencies,
+            view_filter.filtered_account_types
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'MTD spend:',
             lc_helper.default_currency(mtd_spend),

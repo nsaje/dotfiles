@@ -608,16 +608,48 @@ class ArchiveRestoreTestCase(TestCase):
 class AdGroupTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_agency.yaml']
 
+    def setUp(self):
+        self.user = User.objects.get(pk=3)
+
     def test_filter_by_agency_manager(self):
-        u = User.objects.get(pk=3)
-        qs = models.AdGroup.objects.all().filter_by_user(u)
+        qs = models.AdGroup.objects.all().filter_by_user(self.user)
         oldcount = qs.count()
         self.assertGreater(oldcount, 0)
 
         agency = models.Agency.objects.get(pk=1)
-        agency.users.add(u)
-        qs = models.AdGroup.objects.all().filter_by_user(u)
+        agency.users.add(self.user)
+        qs = models.AdGroup.objects.all().filter_by_user(self.user)
         self.assertEqual(oldcount+1, qs.count())
+
+    def test_filter_by_agencies(self):
+        agencies = models.Agency.objects.filter(pk=1)
+
+        qs = models.AdGroup.objects.all().filter_by_agencies(agencies)
+        self.assertEqual(1, qs.count())
+
+        agency = models.Agency.objects.get(pk=1)
+        acc2 = models.Account.objects.get(pk=2)
+        acc2.agency = agency
+        acc2.save(test_helper.fake_request(self.user))
+
+        qs = models.AdGroup.objects.all().filter_by_agencies(agencies)
+        self.assertEqual(3, qs.count())
+
+    def test_filter_by_account_type(self):
+        all_adgroups = models.AdGroup.objects.all()
+        qs = all_adgroups.filter_by_account_types([constants.AccountType.UNKNOWN])
+        self.assertEqual(
+            models.AdGroup.objects.all().filter(
+                campaign__account__id=3
+            ).count(),
+            qs.count())
+
+        qs = all_adgroups.filter_by_account_types([constants.AccountType.SELF_MANAGED])
+        self.assertEqual(
+            models.AdGroup.objects.all().filter(
+                campaign__account__id=1
+            ).count(),
+            qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.AdGroup.objects.all().exclude_archived()
@@ -627,15 +659,17 @@ class AdGroupTestCase(TestCase):
 class CampaignTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_agency.yaml']
 
+    def setUp(self):
+        self.user = User.objects.get(pk=3)
+
     def test_filter_by_agency_manager(self):
-        u = User.objects.get(pk=3)
-        qs = models.Campaign.objects.all().filter_by_user(u)
+        qs = models.Campaign.objects.all().filter_by_user(self.user)
         oldcount = qs.count()
         self.assertGreater(oldcount, 0)
 
         agency = models.Agency.objects.get(pk=1)
-        agency.users.add(u)
-        qs = models.Campaign.objects.all().filter_by_user(u)
+        agency.users.add(self.user)
+        qs = models.Campaign.objects.all().filter_by_user(self.user)
         self.assertEqual(oldcount + 1, qs.count())
 
     def test_queryset_exclude_archived(self):
@@ -664,25 +698,88 @@ class CampaignTestCase(TestCase):
         self.assertEqual(settings.target_devices, ['tablet', 'mobile', 'desktop'])
         self.assertEqual(settings.target_regions, ['US'])
 
+    def test_filter_by_agencies(self):
+        agencies = models.Agency.objects.filter(pk=1)
+
+        qs = models.Campaign.objects.all().filter_by_agencies(agencies)
+        self.assertEqual(1, qs.count())
+
+        agency = models.Agency.objects.get(pk=1)
+        acc2 = models.Account.objects.get(pk=2)
+        acc2.agency = agency
+        acc2.save(test_helper.fake_request(self.user))
+
+        qs = models.Campaign.objects.all().filter_by_agencies(agencies)
+        self.assertEqual(2, qs.count())
+
+    def test_filter_by_account_type(self):
+        all_campaigns = models.Campaign.objects.all()
+        qs = all_campaigns.filter_by_account_types([constants.AccountType.UNKNOWN])
+        self.assertEqual(
+            models.Campaign.objects.all().filter(
+                account__id=3
+            ).count(),
+            qs.count())
+
+        qs = all_campaigns.filter_by_account_types([constants.AccountType.SELF_MANAGED])
+        self.assertEqual(
+            models.Campaign.objects.all().filter(
+                account__id=1
+            ).count(),
+            qs.count())
+
 
 class AccountTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_agency.yaml']
 
+    def setUp(self):
+        self.user = User.objects.get(pk=3)
+
     def test_filter_by_agency_manager(self):
-        u = User.objects.get(pk=3)
-        qs = models.Account.objects.all().filter_by_user(u)
+        qs = models.Account.objects.all().filter_by_user(self.user)
         oldcount = qs.count()
         self.assertGreater(oldcount, 0)
 
         agency = models.Agency.objects.get(pk=1)
-        agency.users.add(u)
+        agency.users.add(self.user)
 
         self.assertEqual(oldcount + 1, qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.Account.objects.all().exclude_archived()
-
         self.assertEqual(len(qs), 4)
+
+    def test_filter_by_agencies(self):
+        agencies = models.Agency.objects.filter(pk=1)
+
+        qs = models.Account.objects.all().filter_by_agencies(agencies)
+        self.assertEqual(1, qs.count())
+
+        agency = models.Agency.objects.get(pk=1)
+        acc2 = models.Account.objects.get(pk=2)
+        acc2.agency = agency
+        acc2.save(test_helper.fake_request(self.user))
+
+        qs = models.Account.objects.all().filter_by_agencies(agencies)
+        self.assertEqual(2, qs.count())
+
+    def test_filter_by_account_type(self):
+        all_accounts = models.Account.objects.all()
+        qs = all_accounts.filter_by_account_types([constants.AccountType.UNKNOWN])
+        self.assertEqual(
+            1,
+            qs.count())
+
+        qs = all_accounts.filter_by_account_types([constants.AccountType.SELF_MANAGED])
+        self.assertEqual(
+            1,
+            qs.count())
+
+        qs = all_accounts.filter_by_account_types([
+            constants.AccountType.UNKNOWN,
+            constants.AccountType.SELF_MANAGED
+        ])
+        self.assertEqual(2, qs.count())
 
 
 class CreditLineItemTestCase(TestCase):
@@ -793,7 +890,6 @@ class HistoryTest(TestCase):
         models.History.objects.create(
             created_by=self.u,
             account=self.acc,
-            type=constants.HistoryType.ACCOUNT,
             level=constants.HistoryLevel.ACCOUNT,
         )
         self.assertEqual(1, models.History.objects.all().count())
@@ -802,7 +898,6 @@ class HistoryTest(TestCase):
         models.History.objects.create(
             system_user=self.su,
             account=self.acc,
-            type=constants.HistoryType.ACCOUNT,
             level=constants.HistoryLevel.ACCOUNT,
         )
         self.assertEqual(1, models.History.objects.all().count())
@@ -810,7 +905,6 @@ class HistoryTest(TestCase):
     def test_save_no_creds(self):
         models.History.objects.create(
             account=self.acc,
-            type=constants.HistoryType.ACCOUNT,
             level=constants.HistoryLevel.ACCOUNT,
         )
         self.assertEqual(1, models.History.objects.all().count())
@@ -822,7 +916,6 @@ class HistoryTest(TestCase):
             adg.write_history(
                 '',
                 changes={},
-                history_type=constants.HistoryType.AD_GROUP,
             )
         )
 
@@ -830,7 +923,6 @@ class HistoryTest(TestCase):
             camp.write_history(
                 '',
                 changes=None,
-                history_type=constants.HistoryType.CAMPAIGN,
             )
         )
 
@@ -838,7 +930,6 @@ class HistoryTest(TestCase):
             self.acc.write_history(
                 '',
                 changes={},
-                history_type=constants.HistoryType.ACCOUNT,
             )
         )
 
@@ -850,7 +941,6 @@ class HistoryTest(TestCase):
         entry = models.History.objects.create(
             created_by=self.u,
             account=self.acc,
-            type=constants.HistoryType.ACCOUNT,
             level=constants.HistoryLevel.ACCOUNT,
         )
         with self.assertRaises(AssertionError):
@@ -863,7 +953,6 @@ class HistoryTest(TestCase):
         models.History.objects.create(
             created_by=self.u,
             account=self.acc,
-            type=constants.HistoryType.ACCOUNT,
             level=constants.HistoryLevel.ACCOUNT,
         )
         with self.assertRaises(AssertionError):
@@ -880,8 +969,7 @@ class HistoryTest(TestCase):
 
         hist = ad_group.write_history(
             '',
-            changes=model_to_dict(adgss),
-            history_type=constants.HistoryType.AD_GROUP)
+            changes=model_to_dict(adgss))
 
         self.assertEqual(ad_group, hist.ad_group)
         self.assertEqual(4.999, hist.changes['cpc_cc'])
@@ -905,8 +993,7 @@ class HistoryTest(TestCase):
 
         hist = ad_group.write_history(
             '',
-            changes={'cpc_cc': 5.101},
-            history_type=constants.HistoryType.AD_GROUP)
+            changes={'cpc_cc': 5.101})
 
         self.assertEqual(ad_group, hist.ad_group)
         self.assertEqual({'cpc_cc': 5.101}, hist.changes)
@@ -926,7 +1013,6 @@ class HistoryTest(TestCase):
         adgss.save(None)
 
         adgs_hist = self._latest_ad_group_history(ad_group=ad_group)
-        self.assertEqual(constants.HistoryType.AD_GROUP_SOURCE, adgs_hist.type)
         self.assertDictEqual(
             {
                 'daily_budget_cc': 50000,
@@ -948,7 +1034,6 @@ class HistoryTest(TestCase):
         hist = campaign.write_history(
             '',
             changes=model_to_dict(adgss),
-            history_type=constants.HistoryType.CAMPAIGN,
         )
 
         self.assertEqual(campaign, hist.campaign)
@@ -959,7 +1044,6 @@ class HistoryTest(TestCase):
         adgss.save(None)
 
         camp_hist = self._latest_campaign_history(campaign=campaign)
-        self.assertEqual(constants.HistoryType.CAMPAIGN, camp_hist.type)
         self.assertDictEqual(
             {
                 'name': 'Awesomer'
@@ -970,8 +1054,7 @@ class HistoryTest(TestCase):
 
         hist = campaign.write_history(
             '',
-            changes={'name': 'Awesomer'},
-            history_type=constants.HistoryType.CAMPAIGN)
+            changes={'name': 'Awesomer'})
 
         self.assertEqual(campaign, hist.campaign)
         self.assertEqual({'name': 'Awesomer'}, hist.changes)
@@ -989,7 +1072,6 @@ class HistoryTest(TestCase):
         hist = account.write_history(
             "",
             changes=adgss.get_settings_dict(),
-            history_type=constants.HistoryType.ACCOUNT,
             )
 
         self.assertEqual(account, hist.account)
@@ -998,7 +1080,6 @@ class HistoryTest(TestCase):
         hist = account.write_history(
             '',
             changes={'archived': True},
-            history_type=constants.HistoryType.ACCOUNT,
         )
 
         self.assertEqual(account, hist.account)
@@ -1009,7 +1090,6 @@ class HistoryTest(TestCase):
         adgss.save(r)
 
         acc_hist = self._latest_account_history(account=account)
-        self.assertEqual(constants.HistoryType.ACCOUNT, acc_hist.type)
         self.assertDictEqual(
             {
                 'name': 'Wacky account'
@@ -1027,7 +1107,6 @@ class HistoryTest(TestCase):
         hist = campaign.write_history(
             "",
             changes={'amount': 200},
-            history_type=constants.HistoryType.BUDGET
         )
 
         self.assertEqual(campaign, hist.campaign)
@@ -1056,7 +1135,6 @@ class HistoryTest(TestCase):
         hist = account.write_history(
             '',
             changes={'amount': 20000},
-            history_type=constants.HistoryType.CREDIT,
         )
 
         self.assertEqual(account, hist.account)

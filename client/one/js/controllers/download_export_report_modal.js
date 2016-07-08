@@ -63,6 +63,13 @@ oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 
         if (zemFilterService.isSourceFilterOn()) {
             url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');
         }
+        if (zemFilterService.isAgencyFilterOn()) {
+            url += '&filtered_agencies=' + zemFilterService.getFilteredAgencies().join(',');
+        }
+        if (zemFilterService.isAccountTypeFilterOn()) {
+            url += '&filtered_account_types=' + zemFilterService.getFilteredAccountTypes().join(',');
+        }
+
         url += '&additional_fields=' + $scope.getAdditionalColumns().join(',');
         $window.open(url, '_blank');
         $modalInstance.close();

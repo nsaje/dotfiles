@@ -19,6 +19,8 @@ from dash import models
 from dash import constants
 from dash import table
 from dash import conversions_helper
+from utils import test_helper
+from dash.views import helpers
 from actionlog.models import ActionLog
 import actionlog.constants
 
@@ -1954,24 +1956,34 @@ class AllAccountsSourcesTableTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
     def test_get_normal_all_accounts_table(self, mock_get_cursor):
-        t = table.AllAccountsSourcesTable(self.normal_user, 1, [])
+        t = table.AllAccountsSourcesTable(self.normal_user, 1, helpers.ViewFilter())
         today = datetime.datetime.utcnow()
         r = HttpRequest()
+        r.method = 'GET'
         t.get_stats(r, today, today)
+
         self.assertFalse(mock_get_cursor().dictfetchall.called)
 
     def test_get_redshift_all_accounts_table(self, mock_get_cursor):
-        t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
+        a = models.Agency(name='Test')
+        a.save(test_helper.fake_request(self.normal_user))
+
+        vf = helpers.ViewFilter()
+        vf.filtered_agencies = [a]
+        vf.filtered_account_types = [constants.AccountType.SELF_MANAGED]
+
+        t = table.AllAccountsSourcesTable(self.redshift_user, 1, vf)
         today = datetime.datetime.utcnow()
         r = HttpRequest()
+        r.method = 'GET'
+
         t.get_stats(r, today, today)
         self.assertTrue(mock_get_cursor().dictfetchall.called)
 
     def test_funcs(self, mock_get_cursor):
-        t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
+        t = table.AllAccountsSourcesTable(self.redshift_user, 1, helpers.ViewFilter())
         today = datetime.datetime.utcnow()
         self.assertTrue(t.has_complete_postclick_metrics(today, today))
-
         self.assertFalse(t.is_sync_in_progress())
 
 
@@ -2025,6 +2037,7 @@ class AccountsAccountsTableTest(TestCase):
 
         t = table.AccountsAccountsTable()
         r = HttpRequest()
+        r.method = 'GET'
         r.user = self.normal_user
 
         start_date = date
@@ -2034,8 +2047,8 @@ class AccountsAccountsTableTest(TestCase):
         size = 100
         show_archived = True
 
-        filtered_sources = None
-        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        view_filter = helpers.ViewFilter(request=r)
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
         self.assertNotIn('agency', response['rows'][0])
 
         # self.assertEqual('N/A', ['agency'])
@@ -2048,6 +2061,7 @@ class AccountsAccountsTableTest(TestCase):
         mock_api_query.side_effect = [[self.mock_stats], self.mock_stats]
 
         r = HttpRequest()
+        r.method = 'GET'
         r.user = self.normal_user
 
         agency = models.Agency(
@@ -2069,8 +2083,16 @@ class AccountsAccountsTableTest(TestCase):
         size = 100
         show_archived = True
 
-        filtered_sources = None
-        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        view_filter = helpers.ViewFilter(request=r)
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual('AdPro', response['rows'][0]['agency'])
+
+        view_filter.filtered_agencies = [10]
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual([], response['rows'])
+
+        view_filter.filtered_agencies = [agency.id]
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
         self.assertEqual('AdPro', response['rows'][0]['agency'])
 
     def test_get_account_type(self, mock_api_query, mock_get_cursor):
@@ -2081,6 +2103,7 @@ class AccountsAccountsTableTest(TestCase):
         mock_api_query.side_effect = [[self.mock_stats], self.mock_stats]
 
         r = HttpRequest()
+        r.method = 'GET'
         r.user = self.normal_user
 
         t = table.AccountsAccountsTable()
@@ -2092,6 +2115,14 @@ class AccountsAccountsTableTest(TestCase):
         size = 100
         show_archived = True
 
-        filtered_sources = None
-        response = t.get(self.normal_user, filtered_sources, start_date, end_date, order, page, size, show_archived)
+        view_filter = helpers.ViewFilter(request=r)
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual('Sandbox', response['rows'][0]['account_type'])
+
+        view_filter.filtered_account_types = [constants.AccountType.SELF_MANAGED]
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
+        self.assertEqual([], response['rows'])
+
+        view_filter.filtered_account_types = [constants.AccountType.SANDBOX]
+        response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
         self.assertEqual('Sandbox', response['rows'][0]['account_type'])

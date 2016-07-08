@@ -117,6 +117,7 @@ def augment_row_delivery(row):
         constants.DeliveryDimension.AGE: dash_constants.AgeGroup,
         constants.DeliveryDimension.GENDER: dash_constants.Gender,
         constants.DeliveryDimension.AGE_GENDER: dash_constants.AgeGenderGroup,
+        constants.DeliveryDimension.DMA: dash_constants.DmaGroup,
     }
 
     for dimension, const_class in mapping.iteritems():
