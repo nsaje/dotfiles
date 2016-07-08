@@ -820,7 +820,20 @@ def get_outbrain_marketer_id(request):
         raise Http404
     if ad_group.campaign.account.outbrain_marketer_id:
         return _response_ok(ad_group.campaign.account.outbrain_marketer_id)
-    # TODO(nsaje): implement logic for assigning new Outbrain account (server/actionlog/api.py#L840)
+
+    try:
+        outbrain_account = dash.models.OutbrainAccount.objects.\
+            filter(used=False).order_by('created_dt')[0]
+    except IndexError:
+        raise Exception('No unused Outbrain accounts available.')
+
+    outbrain_account.used = True
+    outbrain_account.save()
+
+    ad_group.campaign.account.outbrain_marketer_id = outbrain_account.marketer_id
+    ad_group.campaign.account.save(request)
+
+    return _response_ok(ad_group.campaign.account.outbrain_marketer_id)
 
 
 @csrf_exempt

@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.directive('zemGridCellBaseField', ['zemGridDataFormatter', 'zemGridUIService', function (zemGridDataFormatter, zemGridUIService) { // eslint-disable-line max-len
+oneApp.directive('zemGridCellBaseField', [function () {
 
     return {
         restrict: 'E',
@@ -15,20 +15,21 @@ oneApp.directive('zemGridCellBaseField', ['zemGridDataFormatter', 'zemGridUIServ
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_base_field.html',
-        link: function (scope, element, attributes, ctrl) {
-            scope.$watch('ctrl.row', update);
-            scope.$watch('ctrl.data', update);
+        controller: ['$scope', 'zemGridDataFormatter', 'zemGridUIService', function ($scope, zemGridDataFormatter, zemGridUIService) { // eslint-disable-line max-len
+            var vm = this;
+
+            $scope.$watch('ctrl.row', update);
+            $scope.$watch('ctrl.data', update);
 
             function update () {
-                var value = ctrl.data ? ctrl.data.value : undefined;
-                ctrl.parsedValue = zemGridDataFormatter.formatValue(value, ctrl.column.data);
+                var value = vm.data ? vm.data.value : undefined;
+                vm.parsedValue = zemGridDataFormatter.formatValue(value, vm.column.data);
 
-                ctrl.goalStatusClass = '';
-                if (ctrl.data) {
-                    ctrl.goalStatusClass = zemGridUIService.getFieldGoalStatusClass(ctrl.data.goalStatus);
+                vm.goalStatusClass = '';
+                if (vm.data) {
+                    vm.goalStatusClass = zemGridUIService.getFieldGoalStatusClass(vm.data.goalStatus);
                 }
             }
-        },
-        controller: [function () {}],
+        }],
     };
 }]);

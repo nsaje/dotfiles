@@ -429,7 +429,7 @@ class GetCandidatesCsvTestCase(TestCase):
         batch = models.UploadBatch.objects.get(id=1)
         content = upload.get_candidates_csv(batch)
         self.assertEqual('Url,Title,Image url,Display url,Brand name,Description,Call to action,'
-                         'Label,Image crop,Primary tracker url,Secondary tracker url\r\nhttp://zemanta.com/blog,'
+                         'Label,Image crop,Primary impression tracker url,Secondary impression tracker url\r\nhttp://zemanta.com/blog,'
                          'Zemanta blog čšž,http://zemanta.com/img.jpg,zemanta.com,Zemanta,Zemanta blog,Read more,'
                          'content ad 1,entropy,,\r\n', content)
 

@@ -193,6 +193,7 @@ GA_PRIVATE_KEY = ''
 K1_DEMO_MODE = True
 K1_CONSISTENCY_SYNC = True
 
+K1_CONSISTENCY_PING_ACCOUNT_QUEUE = 'k1-consistency_ping_account'
 K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
 K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
 K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'

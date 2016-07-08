@@ -20,13 +20,6 @@ from utils import api_common
 from utils import exc
 
 
-log_direct_download_user_action = partial(helpers.log_useraction_if_necessary,
-                                          user_action_type=constants.UserActionType.DOWNLOAD_REPORT)
-
-log_schedule_report_user_action = partial(helpers.log_useraction_if_necessary,
-                                          user_action_type=constants.UserActionType.SCHEDULE_REPORT)
-
-
 class ExportApiView(api_common.BaseApiView):
     def dispatch(self, request, *args, **kwargs):
         try:
@@ -227,7 +220,6 @@ class AccountCampaignsExport(api_common.BaseApiView):
             'Exported report: {}'.format(filename),
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_direct_download_user_action(request, account=account)
 
         return self.create_csv_response(filename, content=content)
 
@@ -239,7 +231,6 @@ class AccountCampaignsExport(api_common.BaseApiView):
             'Scheduled report.',
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_schedule_report_user_action(request, account=account)
 
         return self.create_api_response(response)
 
@@ -254,7 +245,6 @@ class CampaignAdGroupsExport(ExportApiView):
             'Exported report: {}'.format(filename),
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_direct_download_user_action(request, campaign=campaign)
 
         return self.create_csv_response(filename, content=content)
 
@@ -266,7 +256,6 @@ class CampaignAdGroupsExport(ExportApiView):
             'Scheduled report',
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_schedule_report_user_action(request, campaign=campaign)
 
         return self.create_api_response(response)
 
@@ -281,7 +270,6 @@ class AdGroupAdsExport(ExportApiView):
             'Exported report: {}'.format(filename),
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_direct_download_user_action(request, ad_group=ad_group)
 
         return self.create_csv_response(filename, content=content)
 
@@ -293,7 +281,6 @@ class AdGroupAdsExport(ExportApiView):
             'Scheduled report',
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_schedule_report_user_action(request, ad_group=ad_group)
 
         return self.create_api_response(response)
 
@@ -307,7 +294,6 @@ class AllAccountsSourcesExport(ExportApiView):
             'Exported report: {}'.format(filename),
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_direct_download_user_action(request)
 
         return self.create_csv_response(filename, content=content)
 
@@ -318,7 +304,6 @@ class AllAccountsSourcesExport(ExportApiView):
             'Scheduled report',
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_schedule_report_user_action(request)
 
         return self.create_api_response(response)
 
@@ -333,7 +318,6 @@ class AccountSourcesExport(ExportApiView):
             'Exported media sources report: {}'.format(filename),
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_direct_download_user_action(request, account=account)
 
         return self.create_csv_response(filename, content=content)
 
@@ -345,7 +329,6 @@ class AccountSourcesExport(ExportApiView):
             'Scheduled media sources report',
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_schedule_report_user_action(request, account=account)
 
         return self.create_api_response(response)
 
@@ -360,7 +343,6 @@ class CampaignSourcesExport(ExportApiView):
             'Exported media sources report: {}'.format(filename),
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_direct_download_user_action(request, campaign=campaign)
 
         return self.create_csv_response(filename, content=content)
 
@@ -372,7 +354,6 @@ class CampaignSourcesExport(ExportApiView):
             'Scheduled media sources report',
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_schedule_report_user_action(request, campaign=campaign)
 
         return self.create_api_response(response)
 
@@ -387,7 +368,6 @@ class AdGroupSourcesExport(ExportApiView):
             'Exported media sources report: {}'.format(filename),
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_direct_download_user_action(request, ad_group=ad_group)
 
         return self.create_csv_response(filename, content=content)
 
@@ -399,7 +379,6 @@ class AdGroupSourcesExport(ExportApiView):
             'Scheduled media sources report',
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_schedule_report_user_action(request, ad_group=ad_group)
 
         return self.create_api_response(response)
 
@@ -413,7 +392,6 @@ class AllAccountsExport(ExportApiView):
             'Exported report: {}'.format(filename),
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_direct_download_user_action(request)
 
         return self.create_csv_response(filename, content=content)
 
@@ -424,7 +402,6 @@ class AllAccountsExport(ExportApiView):
             'Scheduled report',
             user=request.user,
             action_type=constants.HistoryActionType.REPORTING_MANAGE)
-        log_schedule_report_user_action(request)
 
         return self.create_api_response(response)
 
@@ -509,11 +486,6 @@ class ScheduledReports(api_common.BaseApiView):
                 'Deleted scheduled report',
                 action_type=constants.HistoryActionType.REPORTING_MANAGE
             )
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.DELETE_SCHEDULED_REPORT,
-            **log_data)
 
     def format_reports(self, reports):
         result = []

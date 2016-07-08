@@ -515,34 +515,34 @@ class AdGroupAdsUploadFormTest(TestCase):
             self.assertTrue(valid)
 
     def test_no_csv_content(self):
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Primary tracker url'], [])
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Primary impression tracker url'], [])
 
         form = self._init_form(csv_file, {'display_url': 'test.com'})
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {'candidates': [u'Uploaded file is empty.']})
 
     def test_csv_empty_lines(self):
-        csv_file = self._get_csv_file([], [['Url', 'Title', 'Image Url', 'Primary tracker url'], [],
+        csv_file = self._get_csv_file([], [['Url', 'Title', 'Image Url', 'Primary impression tracker url'], [],
                                            [self.url, self.title, self.image_url, self.primary_tracker_url], []])
         form = self._init_form(csv_file, None)
         self.assertTrue(form.is_valid())
 
     def test_csv_max_ads(self):
         lines = [[self.url, self.title, self.image_url, self.primary_tracker_url]] * 101
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Primary tracker url'], lines)
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Primary impression tracker url'], lines)
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {'candidates': ['Too many content ads (max. 100)']})
 
     def test_csv_max_ads_empty_lines(self):
-        lines = [['Url', 'Title', 'Image Url', 'Primary tracker url']]
+        lines = [['Url', 'Title', 'Image Url', 'Primary impression tracker url']]
         lines += [[self.url, self.title, self.image_url, self.primary_tracker_url], []] * 100
         csv_file = self._get_csv_file([], lines)
         form = self._init_form(csv_file, None)
         self.assertTrue(form.is_valid())
 
     def test_csv_example_content_without_data(self):
-        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Primary tracker url'],
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Primary impression tracker url'],
                                       [forms.EXAMPLE_CSV_CONTENT.split(',')])
         form = self._init_form(csv_file, {})
         self.assertFalse(form.is_valid())
@@ -550,7 +550,7 @@ class AdGroupAdsUploadFormTest(TestCase):
 
     def test_csv_example_content_with_data(self):
         csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Description', 'Primary tracker url'],
+            ['Url', 'Title', 'Image Url', 'Description', 'Primary impression tracker url'],
             [forms.EXAMPLE_CSV_CONTENT.split(','),
              [self.url, self.title, self.image_url, self.description, self.primary_tracker_url],
              forms.EXAMPLE_CSV_CONTENT.split(',')]
@@ -561,7 +561,7 @@ class AdGroupAdsUploadFormTest(TestCase):
 
     def test_csv_impression_trackers_column(self):
         csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Primary tracker url'],
+            ['Url', 'Title', 'Image Url', 'Primary impression tracker url'],
             [[self.url, self.title, self.image_url, self.primary_tracker_url]])
 
         form = self._init_form(csv_file, None)
@@ -579,7 +579,7 @@ class AdGroupAdsUploadFormTest(TestCase):
 
     def test_form(self):
         csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Primary tracker url'],
+            ['Url', 'Title', 'Image Url', 'Primary impression tracker url'],
             [[self.url, self.title, self.image_url, self.primary_tracker_url]])
 
         form = self._init_form(csv_file, None)
@@ -598,12 +598,12 @@ class AdGroupAdsUploadFormTest(TestCase):
 
     def test_form_optional_fields_duplicated(self):
         csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Primary tracker url', 'Primary tracker url'],
+            ['Url', 'Title', 'Image Url', 'Primary impression tracker url', 'Primary impression tracker url'],
             [[self.url, self.title, self.image_url, self.crop_areas, self.primary_tracker_url]])
 
         form = self._init_form(csv_file, None)
         self.assertEqual(form.errors, {'candidates': [
-                         u'Column "Primary tracker url" appears multiple times (2) in the CSV file.']})
+                         u'Column "Primary impression tracker url" appears multiple times (2) in the CSV file.']})
 
     def test_incorrect_csv_format(self):
         csv_file = StringIO.StringIO()
@@ -647,7 +647,7 @@ class AdGroupAdsUploadFormTest(TestCase):
         )
 
     def test_header_unknown_fifth_column(self):
-        csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'Primary tracker url', 'aaa'], [])
+        csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'Primary impression tracker url', 'aaa'], [])
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
         self.assertEqual(
@@ -657,7 +657,7 @@ class AdGroupAdsUploadFormTest(TestCase):
 
     def test_windows_1252_encoding(self):
         csv_file = self._get_csv_file(
-            ['URL', 'Title', 'Image URL', 'Primary tracker url'],
+            ['URL', 'Title', 'Image URL', 'Primary impression tracker url'],
             [[self.url, u'\u00ae', self.image_url, self.crop_areas]],
             encoding='windows-1252'
         )
