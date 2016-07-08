@@ -3870,6 +3870,9 @@ class History(models.Model):
 
 
 class SourceTypePixel(models.Model):
+    class Meta:
+        unique_together = ('pixel', 'source_type')
+
     pixel = models.ForeignKey(ConversionPixel, on_delete=models.PROTECT)
     url = models.CharField(max_length=255)
     source_pixel_id = models.CharField(max_length=127)
