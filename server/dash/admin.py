@@ -1536,7 +1536,7 @@ class HistoryResource(resources.ModelResource):
 
     class Meta:
         model = models.History
-        exclude = ['type', 'changes']
+        exclude = ['changes']
 
     def _get_name(self, obj):
         return obj.name if obj else '/'
@@ -1617,7 +1617,6 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
         ('created_dt', admin.DateFieldListFilter),
         'action_type',
         'level',
-        'type',
         'system_user',
     )
 

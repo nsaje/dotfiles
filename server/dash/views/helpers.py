@@ -1165,22 +1165,6 @@ def format_percent_to_decimal(num):
     return Decimal(str(num).replace(',', '').strip('%')) / 100
 
 
-def log_useraction_if_necessary(request, user_action_type, account=None, campaign=None, ad_group=None):
-    if request.user.is_self_managed():
-
-        user_action_log = models.UserActionLog(
-            action_type=user_action_type,
-            created_by=request.user,
-            account=account,
-            campaign=campaign,
-            ad_group=ad_group,
-            account_settings_id=account.get_current_settings().id if account else None,
-            campaign_settings_id=campaign.get_current_settings().id if campaign else None,
-            ad_group_settings_id=ad_group.get_current_settings().id if ad_group else None
-        )
-        user_action_log.save()
-
-
 def get_source_default_settings(source):
     try:
         default_settings = models.DefaultSourceSettings.objects.get(source=source)
@@ -1235,4 +1219,3 @@ def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings
             action_type=constants.HistoryActionType.SETTINGS_CHANGE)
         changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator='\n')
         email_helper.send_campaign_notification_email(campaign, request, changes_text)
-        log_useraction_if_necessary(request, user_action_type, campaign=campaign)

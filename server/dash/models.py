@@ -347,7 +347,6 @@ class Agency(models.Model):
     objects = QuerySetManager()
 
     def write_history(self, changes_text, changes=None,
-                      history_type=constants.HistoryType.CREDIT,
                       user=None, system_user=None,
                       action_type=None):
         if not changes and not changes_text:
@@ -358,7 +357,6 @@ class Agency(models.Model):
             system_user=system_user,
             changes=json_helper.json_serializable_changes(changes),
             changes_text=changes_text or "",
-            type=history_type,
             level=constants.HistoryLevel.AGENCY,
             action_type=action_type
         )
@@ -498,7 +496,6 @@ class Account(models.Model):
         return campaign_settings_url
 
     def write_history(self, changes_text, changes=None,
-                      history_type=constants.HistoryType.ACCOUNT,
                       user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
             return None
@@ -511,7 +508,6 @@ class Account(models.Model):
             system_user=system_user,
             changes=json_helper.json_serializable_changes(changes),
             changes_text=changes_text or "",
-            type=history_type,
             level=constants.HistoryLevel.ACCOUNT,
             action_type=action_type
         )
@@ -696,7 +692,6 @@ class Campaign(models.Model, PermissionMixin):
         return current_settings.landing_mode
 
     def write_history(self, changes_text, changes=None,
-                      history_type=constants.HistoryType.CAMPAIGN,
                       user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
             return None
@@ -710,7 +705,6 @@ class Campaign(models.Model, PermissionMixin):
             system_user=system_user,
             changes=json_helper.json_serializable_changes(changes),
             changes_text=changes_text or "",
-            type=history_type,
             level=constants.HistoryLevel.CAMPAIGN,
             action_type=action_type
         )
@@ -941,7 +935,6 @@ class AccountSettings(SettingsBase):
         self.add_to_history(request and request.user, action_type, changes_text)
 
     def add_to_history(self, user, action_type, history_changes_text):
-        history_type = constants.HistoryType.ACCOUNT
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
@@ -953,7 +946,6 @@ class AccountSettings(SettingsBase):
         self.account.write_history(
             changes_text,
             changes=changes,
-            history_type=history_type,
             action_type=action_type,
             user=user,
         )
@@ -1055,7 +1047,6 @@ class CampaignSettings(SettingsBase):
         self.campaign.write_history(
             self.changes_text or changes_text,
             changes=changes,
-            history_type=constants.HistoryType.CAMPAIGN,
             action_type=action_type,
             user=user,
             system_user=self.system_user
@@ -1748,7 +1739,6 @@ class AdGroup(models.Model):
 
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,
-                      history_type=constants.HistoryType.AD_GROUP,
                       action_type=None):
         if not changes and not changes_text:
             return  # nothing to write
@@ -1763,7 +1753,6 @@ class AdGroup(models.Model):
             system_user=system_user,
             changes=json_helper.json_serializable_changes(changes),
             changes_text=changes_text or "",
-            type=history_type,
             level=constants.HistoryLevel.AD_GROUP,
             action_type=action_type
         )
@@ -2284,7 +2273,6 @@ class AdGroupSettings(SettingsBase):
         self.add_to_history(request and request.user, action_type, changes_text)
 
     def add_to_history(self, user, action_type, history_changes_text):
-        history_type = constants.HistoryType.AD_GROUP
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
@@ -2292,7 +2280,6 @@ class AdGroupSettings(SettingsBase):
         self.ad_group.write_history(
             self.changes_text or changes_text,
             changes=changes,
-            history_type=history_type,
             action_type=action_type,
             user=user,
             system_user=self.system_user
@@ -2454,7 +2441,6 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
 
     def add_to_history(self, user, action_type):
         current_settings = self.ad_group_source.ad_group.get_current_settings()
-        history_type = constants.HistoryType.AD_GROUP_SOURCE
 
         changes = self.get_model_state_changes(
             self.get_settings_dict()
@@ -2468,7 +2454,6 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             changes_text,
             changes=changes,
             user=user,
-            history_type=history_type,
             action_type=action_type,
             system_user=self.system_user,
         )
@@ -3084,8 +3069,6 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             action_type)
 
     def add_to_history(self, user, action_type):
-        history_type = constants.HistoryType.CREDIT
-
         changes = self.get_model_state_changes(
             model_to_dict(self)
         )
@@ -3106,14 +3089,12 @@ class CreditLineItem(FootprintModel, HistoryMixin):
             self.account.write_history(
                 changes_text,
                 changes=changes,
-                history_type=history_type,
                 action_type=action_type,
                 user=user)
         elif self.agency is not None:
             self.agency.write_history(
                 changes_text,
                 changes=changes,
-                history_type=history_type,
                 action_type=action_type,
                 user=user)
 
@@ -3349,7 +3330,6 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         self.campaign.write_history(
             changes_text,
             changes=changes,
-            history_type=constants.HistoryType.BUDGET,
             action_type=action_type,
             user=user
         )
@@ -3794,6 +3774,13 @@ class HistoryQuerySet(models.QuerySet):
     def delete(self, *args, **kwargs):
         raise AssertionError('Using delete not allowed.')
 
+    def filter_selfmanaged(self):
+        return self.filter(created_by__isnull=False)\
+            .filter(created_by__email__isnull=False)\
+            .exclude(created_by__email__icontains="@zemanta")\
+            .exclude(created_by__is_test_user=True)\
+            .exclude(action_type__isnull=True)
+
 
 class History(models.Model):
 
@@ -3807,15 +3794,7 @@ class History(models.Model):
         null=False,
         blank=False,
     )
-    type = models.PositiveSmallIntegerField(
-        choices=constants.HistoryType.get_choices(),
-        null=False,
-        blank=False,
-    )
-
-    # action type should only be set if this history entry is a direct
-    # consequence of a user action(backend actions that insert history
-    # should either have action_type set to None or have system user set)
+    # action type is user initiated action type
     # non user initiated action type is None
     action_type = models.PositiveSmallIntegerField(
         choices=constants.HistoryActionType.get_choices(),
