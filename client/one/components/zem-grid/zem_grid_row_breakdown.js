@@ -13,8 +13,9 @@ oneApp.directive('zemGridRowBreakdown', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_row_breakdown.html',
-        controller: ['zemGridConstants', 'zemGridUIService', function (zemGridConstants, zemGridUIService) {
+        controller: ['config', 'zemGridConstants', 'zemGridUIService', function (config, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
             var vm = this;
+            vm.config = config;
             vm.loadMore = loadMore;
             vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
             vm.getCompleteText = getCompleteText;
