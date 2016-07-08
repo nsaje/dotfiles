@@ -428,6 +428,34 @@ class InfoBoxAccountHelpersTest(TestCase):
         res = dash.infobox_helpers.get_yesterday_all_accounts_spend([], [dash.constants.AccountType.UNKNOWN])
         self.assertEqual(10, res)
 
+    def test_get_mtd_agency_spend(self):
+        self.assertEqual(0, dash.infobox_helpers.get_mtd_agency_spend(self.user))
+
+        today = datetime.datetime.utcnow()
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=today,
+            media_spend_nano=10e9,
+            data_spend_nano=10e9,
+            license_fee_nano=10e9,
+        )
+        self.assertEqual(Decimal('10.0000'), dash.infobox_helpers.get_mtd_agency_spend(self.user))
+
+    def test_yesterday_agency_spend(self):
+        self.assertEqual(0, dash.infobox_helpers.get_yesterday_agency_spend(self.user))
+
+        today = datetime.datetime.utcnow()
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=today - datetime.timedelta(1),
+            media_spend_nano=10e9,
+            data_spend_nano=10e9,
+            license_fee_nano=10e9,
+        )
+        self.assertEqual(Decimal('10.0000'), dash.infobox_helpers.get_yesterday_agency_spend(
+            self.user)
+        )
+
     def test_get_mtd_all_accounts_spend(self):
         self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 

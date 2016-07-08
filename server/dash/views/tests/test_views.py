@@ -2871,7 +2871,7 @@ class AllAccountsOverviewTest(TestCase):
         self.assertTrue(response['success'])
 
         self.assertEqual(
-            set(['Active accounts:']),
+            set(['Active accounts:', 'Yesterday spend:', 'MTD spend:']),
             set(s['name'] for s in response['data']['basic_settings'])
         )
 

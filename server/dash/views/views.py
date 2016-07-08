@@ -1658,6 +1658,21 @@ class AllAccountsOverview(api_common.BaseApiView):
             tooltip='Number of accounts with at least one campaign running'
         ))
 
+        yesterday_spend = infobox_helpers.get_yesterday_agency_spend(user)
+        settings.append(infobox_helpers.OverviewSetting(
+            'Yesterday spend:',
+            lc_helper.default_currency(yesterday_spend),
+            tooltip='Yesterday media spend',
+            section_start=True
+        ))
+
+        mtd_spend = infobox_helpers.get_mtd_agency_spend(user)
+        settings.append(infobox_helpers.OverviewSetting(
+            'MTD spend:',
+            lc_helper.default_currency(mtd_spend),
+            tooltip='Month-to-date media spend',
+        ))
+
         return [setting.as_dict() for setting in settings]
 
     def _basic_all_accounts_settings(self, start_date, end_date, view_filter):
