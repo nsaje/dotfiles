@@ -983,8 +983,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     //  COMMMON COLUMN GROUPS
     //
     var MANAGEMENT_GROUP = [
-        // TODO: IDs missing
         COLUMNS.agency,
+        COLUMNS.accountType,
         COLUMNS.defaultSalesRepresentative,
         COLUMNS.defaultAccountManager,
         COLUMNS.campaignManager,
@@ -1227,7 +1227,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     }
 
     function getColumns (level, breakdown) {
-        // TODO: create breakdown constants
         if (breakdown === 'source') {
             switch (level) {
             case constants.level.AD_GROUPS: return AD_GROUP_MEDIA_SOURCE;
