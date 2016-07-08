@@ -62,7 +62,6 @@ Base folder: `etl`
 - `refresh_k1` :: entry point, runs the listed materialized views. Its run every hour at 25 minutes past (see `crontab.txt`)
 - `materialize_k1` :: legacy materialized views - `contentadstats`, `touchpointconversions`, `publishers_1`
 - `materialize_views` :: new materialized views
-- `materialize_helpers` :: logics on how materialized views are executed
 - `helpers` :: clean and transform data helpers
 - `migrations/redshift/..` :: permanent redshift tables
 - `migrations/redshift/0006_udf_functions.sql` :: UDF python functions that are used to clean data in database. 
