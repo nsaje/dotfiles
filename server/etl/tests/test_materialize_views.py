@@ -582,7 +582,6 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
             mv = materialize_views.MVConversions('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
             rows = list(mv.generate_rows(mock_cursor, date, breakdown_keys_with_traffic))
 
-            print rows
             self.assertItemsEqual(rows, [
                 (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'einpix', 2),
                 (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'preuba', 1),
