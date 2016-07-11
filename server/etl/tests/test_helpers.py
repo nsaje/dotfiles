@@ -6,7 +6,6 @@ from django.test import TestCase
 import dash.constants
 
 from etl import helpers
-from etl.tests.test_materialize_views import TPConversionResults
 
 
 class HelpersTest(TestCase, backtosql.TestSQLMixin):
@@ -154,36 +153,3 @@ class HelpersTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(helpers.get_highest_priority_postclick_source({
             'other': 4,
         }), 4)
-
-    def test_construct_touchpoint_conversions_dict(self):
-        results = [
-            TPConversionResults(1, 1, 1, 'bla.com', 'einpix', 1, 2),
-            TPConversionResults(1, 1, 1, 'bla.com', 'einpix', 50, 1),
-            TPConversionResults(1, 1, 1, 'bla.com', 'einpix', 150, 7),
-            TPConversionResults(1, 1, 1, 'bla.com', 'blapix', 52, 2),
-            TPConversionResults(1, 1, 1, 'bla.com', 'einpix', 260, 2),
-            TPConversionResults(1, 1, 2, 'na.com', 'einpix', 1, 2),
-            TPConversionResults(1, 1, 2, 'a.com', 'einpix', 66, 2),
-            TPConversionResults(1, 2, 1, 'aa.com', 'einpix', 999, 2),  # out of the max window, don't count
-        ]
-
-        conversions = helpers.construct_touchpoint_conversions_dict(results)
-
-        self.assertDictEqual(conversions, {
-            (1, 1, 1, 'bla.com'): {
-                'blapix_168': 2,
-                'blapix_720': 2,
-                'einpix_24': 2,
-                'einpix_168': 10,
-                'einpix_720': 12,
-            },
-            (1, 1, 2, 'na.com'): {
-                'einpix_24': 2,
-                'einpix_168': 2,
-                'einpix_720': 2,
-            },
-            (1, 1, 2, 'a.com'): {
-                'einpix_168': 2,
-                'einpix_720': 2,
-            },
-        })

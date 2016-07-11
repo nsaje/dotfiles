@@ -1,6 +1,7 @@
 import backtosql
 import io
 import logging
+import json
 import os.path
 
 from collections import defaultdict
@@ -254,6 +255,8 @@ class MasterView(Materialize):
 
     TABLE_NAME = 'mv_master'
 
+    POSTCLICK_STRUCTURE_BREAKDOWN_INDEX = 8
+
     def generate(self, **kwargs):
         self.prefetch()
 
@@ -288,7 +291,7 @@ class MasterView(Materialize):
     def generate_rows(self, cursor, date, breakdown_keys_with_traffic):
         skipped_postclick_stats = set()
 
-        for breakdown_key, row in self.get_postclickstats(cursor, date):
+        for breakdown_key, row, _ in self.get_postclickstats(cursor, date):
             # only return those rows for which we have traffic - click
             if breakdown_key in breakdown_keys_with_traffic:
                 yield row
@@ -359,42 +362,43 @@ class MasterView(Materialize):
                 campaign = self.campaigns_map[ad_group.campaign_id]
                 account = self.accounts_map[campaign.account_id]
 
-                yield helpers.get_breakdown_key_for_postclickstats(source.id, row.content_ad_id), (
-                    date,
-                    source.id,
+                yield (
+                    helpers.get_breakdown_key_for_postclickstats(source.id, row.content_ad_id),
+                    (
+                        date,
+                        source.id,
 
-                    account.agency_id,
-                    account.id,
-                    campaign.id,
-                    ad_group.id,
-                    row.content_ad_id,
-                    row.publisher,
+                        account.agency_id,
+                        account.id,
+                        campaign.id,
+                        ad_group.id,
+                        row.content_ad_id,
+                        row.publisher,
 
-                    dash.constants.DeviceType.UNDEFINED,
-                    None,
-                    None,
-                    None,
-                    dash.constants.AgeGroup.UNDEFINED,
-                    dash.constants.Gender.UNDEFINED,
-                    dash.constants.AgeGenderGroup.UNDEFINED,
+                        dash.constants.DeviceType.UNDEFINED,
+                        None,
+                        None,
+                        None,
+                        dash.constants.AgeGroup.UNDEFINED,
+                        dash.constants.Gender.UNDEFINED,
+                        dash.constants.AgeGenderGroup.UNDEFINED,
 
-                    0,
-                    0,
-                    0,
-                    0,
+                        0,
+                        0,
+                        0,
+                        0,
 
-                    row.visits,
-                    row.new_visits,
-                    row.bounced_visits,
-                    row.pageviews,
-                    row.total_time_on_site,
+                        row.visits,
+                        row.new_visits,
+                        row.bounced_visits,
+                        row.pageviews,
+                        row.total_time_on_site,
 
-                    0,
-                    0,
-                    0,
-
-                    # row.conversions,
-                    # None,
+                        0,
+                        0,
+                        0,
+                    ),
+                    row.conversions,
                 )
 
     def get_postclickstats_query_results(self, c, date):
@@ -417,6 +421,84 @@ class MasterView(Materialize):
         return sql, params
 
 
+class MVConversions(Materialize):
+
+    TABLE_NAME = 'mv_conversions'
+
+    def __init__(self, *args, **kwargs):
+        super(MVConversions, self).__init__(*args, **kwargs)
+        self.master_view = MasterView(self.job_id, self.date_from, self.date_to)
+
+    def generate(self, **kwargs):
+
+        self.master_view.prefetch()
+
+        for date in rrule.rrule(rrule.DAILY, dtstart=self.date_from, until=self.date_to):
+            date = date.date()
+
+            with db.get_write_stats_transaction():
+                with db.get_write_stats_cursor() as c:
+                    logger.info('Deleting data from table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    sql, params = prepare_daily_delete_query(self.TABLE_NAME, date)
+                    c.execute(sql, params)
+
+                    breakdown_keys_with_traffic = self.master_view.get_breakdowns_with_traffic_results(c, date)
+
+                    # generate csv in transaction as it needs data created in it
+                    s3_path = upload_csv(
+                        self.TABLE_NAME,
+                        date,
+                        self.job_id,
+                        partial(self.generate_rows, c, date, breakdown_keys_with_traffic)
+                    )
+
+                    logger.info('Copying CSV to table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    sql, params = prepare_copy_csv_query(s3_path, self.TABLE_NAME)
+                    c.execute(sql, params)
+
+    def generate_rows(self, cursor, date, breakdown_keys_with_traffic):
+        skipped_postclick_stats = set()
+
+        for breakdown_key, row, conversions in self.master_view.get_postclickstats(cursor, date):
+            # only return those rows for which we have traffic - click
+            if breakdown_key in breakdown_keys_with_traffic:
+                if conversions:
+                    conversions = json.loads(conversions)
+                    for slug, hits in conversions.iteritems():
+                        yield tuple(list(row)[:self.master_view.POSTCLICK_STRUCTURE_BREAKDOWN_INDEX] + [slug, hits])
+            else:
+                skipped_postclick_stats.add(breakdown_key)
+
+        if skipped_postclick_stats:
+            logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
+
+
+class MVTouchpointConversions(Materialize):
+
+    TABLE_NAME = 'mv_touchpointconversions'
+
+    def generate(self, **kwargs):
+        with db.get_write_stats_transaction():
+            with db.get_write_stats_cursor() as c:
+                logger.info('Deleting data from table "%s" for date range %s - %s, job %s',
+                            self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
+                sql, params = prepare_date_range_delete_query(self.TABLE_NAME, self.date_from, self.date_to)
+                c.execute(sql, params)
+
+                logger.info('Inserting data into table "%s" for date range %s - %s, job %s',
+                            self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
+                sql, params = self.prepare_insert_query()
+                c.execute(sql, params)
+
+    def prepare_insert_query(self):
+        sql = backtosql.generate_sql('etl_insert_mv_touchpointconversions.sql', {})
+
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+
 class DerivedMaterializedView(Materialize):
     def generate(self, **kwargs):
         with db.get_write_stats_transaction():
@@ -431,6 +513,9 @@ class DerivedMaterializedView(Materialize):
                             self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
                 sql, params = self.prepare_insert_query()
                 c.execute(sql, params)
+
+    def prepare_insert_query(self):
+        raise NotImplementedError()
 
 
 class MVAccount(DerivedMaterializedView):

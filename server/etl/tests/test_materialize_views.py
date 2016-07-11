@@ -20,11 +20,6 @@ PostclickstatsResults = collections.namedtuple('Result2',
                                                 'total_time_on_site', 'visits'])
 
 
-TPConversionResults = collections.namedtuple('Result3',
-                                             ['ad_group_id', 'content_ad_id', 'source_id', 'publisher',
-                                              'slug', 'conversion_window', 'count'])
-
-
 @mock.patch('redshiftapi.db.get_write_stats_cursor')
 @mock.patch('redshiftapi.db.get_write_stats_transaction')
 @mock.patch('utils.s3helpers.S3Helper')
@@ -388,13 +383,13 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         postclickstats_return_value = [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None)),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None), None),
             ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None)),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None), None),
             ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None)),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None), None),
         ]
 
         with mock.patch.object(materialize_views.MasterView, 'get_postclickstats',
@@ -433,13 +428,13 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         self.assertItemsEqual(list(mv.get_postclickstats(None, date)), [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0)),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), '{einpix: 2}'),
             ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0)),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), '{einpix: 2}'),
             ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0)),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), '{einpix: 2}'),
         ])
 
     def test_prepare_postclickstats_query(self):
@@ -470,6 +465,174 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             publisher;""")
 
         self.assertDictEqual(params, {'date': date})
+
+
+class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
+
+    fixtures = ['test_materialize_views']
+
+    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @mock.patch('redshiftapi.db.get_write_stats_cursor')
+    @mock.patch('redshiftapi.db.get_write_stats_transaction')
+    @mock.patch('utils.s3helpers.S3Helper')
+    def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
+        date_from = datetime.date(2016, 7, 1)
+        date_to = datetime.date(2016, 7, 3)
+
+        mv = materialize_views.MVConversions('asd', date_from, date_to)
+
+        mv.generate()
+
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_conversions WHERE date=%(date)s'),
+                {'date': datetime.date(2016, 7, 1)}
+            ),
+            mock.call(backtosql.SQLMatcher("""
+                SELECT date, source_id, content_ad_id
+                FROM mv_master
+                WHERE date=%(date)s GROUP BY 1, 2, 3;
+            """), {'date': datetime.date(2016, 7, 1)}
+            ),
+            mock.call(backtosql.SQLMatcher("""
+                SELECT
+                    ad_group_id AS ad_group_id,
+                    type AS postclick_source,
+                    content_ad_id AS content_ad_id,
+                    source AS source_slug,
+                    publisher AS publisher,
+                    SUM(bounced_visits) bounced_visits,
+                    json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
+                    SUM(new_visits) new_visits,
+                    SUM(pageviews) pageviews,
+                    SUM(total_time_on_site) total_time_on_site,
+                    SUM(visits) visits
+                FROM postclickstats
+                WHERE date=%(date)s
+                GROUP BY ad_group_id, postclick_source, content_ad_id, source_slug, publisher;
+            """), {'date': datetime.date(2016, 7, 1)}
+            ),
+            mock.call(backtosql.SQLMatcher("""
+                COPY mv_conversions
+                FROM %(s3_url)s
+                FORMAT CSV
+                DELIMITER AS %(delimiter)s
+                CREDENTIALS %(credentials)s
+                MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
+                    'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                    's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/01/view_asd.csv',
+                    'delimiter': '\t'
+                }
+            ),
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_conversions WHERE date=%(date)s'),
+                {'date': datetime.date(2016, 7, 2)}
+            ),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
+            mock.call(mock.ANY, {
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/02/view_asd.csv',
+                'delimiter': '\t'
+            }),
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_conversions WHERE date=%(date)s'),
+                {'date': datetime.date(2016, 7, 3)}
+            ),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
+            mock.call(mock.ANY, {
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/03/view_asd.csv',
+                'delimiter': '\t'
+            }),
+        ])
+
+    def test_generate_rows(self):
+        date = datetime.date(2016, 7, 1)
+
+        breakdown_keys_with_traffic = set([(3, 1), (2, 2), (1, 3)])
+
+        mock_cursor = mock.MagicMock()
+
+        postclickstats_return_value = [
+            ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
+                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), '{"einpix": 2, "preuba": 1}'),
+            ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
+                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  '{"poop": 111}'),
+            ((1, 3), (date, 2, 1, 1, 3, 3, 3, 'nesto2.com', constants.DeviceType.UNDEFINED, None, None, None,
+                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  '{}'),
+            ((1, 3), (date, 3, 1, 1, 3, 3, 3, 'nesto3.com', constants.DeviceType.UNDEFINED, None, None, None,
+                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  ''),
+            ((1, 3), (date, 4, 1, 1, 3, 3, 3, 'nesto4.com', constants.DeviceType.UNDEFINED, None, None, None,
+                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  None),
+            ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
+                      constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), '{"poop": 23}'),
+        ]
+
+        with mock.patch.object(materialize_views.MasterView, 'get_postclickstats',
+                               return_value=postclickstats_return_value):
+
+            mv = materialize_views.MVConversions('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+            rows = list(mv.generate_rows(mock_cursor, date, breakdown_keys_with_traffic))
+
+            self.assertItemsEqual(rows, [
+                (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'einpix', 2),
+                (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'preuba', 1),
+                (date, 1, 1, 1, 3, 3, 3, 'nesto.com', 'poop', 111),
+            ])
+
+
+class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
+
+    @mock.patch('redshiftapi.db.get_write_stats_cursor')
+    @mock.patch('redshiftapi.db.get_write_stats_transaction')
+    def test_generate(self, mock_transaction, mock_cursor):
+        mv = materialize_views.MVTouchpointConversions('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+
+        mv.generate()
+
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(
+                backtosql.SQLMatcher(
+                    "DELETE FROM mv_touchpointconversions WHERE date BETWEEN %(date_from)s AND %(date_to)s;"),
+                {
+                    'date_from': datetime.date(2016, 7, 1),
+                    'date_to': datetime.date(2016, 7, 3),
+                }
+            ),
+            mock.call(backtosql.SQLMatcher("""
+            INSERT INTO mv_touchpointconversions (
+                SELECT
+                    a.date as date,
+                    a.source_id as source_id,
+                    s.agency_id as agency_id,
+                    s.account_id as account_id,
+                    s.campaign_id as campaign_id,
+                    a.ad_group_id as ad_group_id,
+                    a.content_ad_id as content_ad_id,
+                    a.publisher as publisher,
+                    a.slug as slug,
+                    CASE
+                    WHEN a.conversion_lag <= 24 THEN 24
+                    WHEN a.conversion_lag <= 168 THEN 168
+                    WHEN a.conversion_lag <= 720 THEN 720
+                    ELSE 2160
+                    END AS conversion_window,
+                    count(1) as touchpoint_count
+                FROM conversions a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
+                WHERE a.conversion_lag <= 2160 AND a.date BETWEEN %(date_from)s AND %(date_to)s
+                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);"""), {
+                'date_from': datetime.date(2016, 7, 1),
+                'date_to': datetime.date(2016, 7, 3),
+            })
+        ])
 
 
 @mock.patch('redshiftapi.db.get_write_stats_transaction')

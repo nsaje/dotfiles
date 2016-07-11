@@ -5,28 +5,6 @@ import dash.constants
 from redshiftapi.model_helpers import RSBreakdownMixin, AGGREGATES, BREAKDOWN
 
 
-class K1Conversions(backtosql.Model, RSBreakdownMixin):
-    date = backtosql.Column('date', BREAKDOWN)
-
-    account_id = backtosql.Column('account_id', BREAKDOWN)
-    campaign_id = backtosql.Column('campaign_id', BREAKDOWN)
-    ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
-    content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
-    source_id = backtosql.Column('source_id', BREAKDOWN)
-    publisher = backtosql.Column('publisher', BREAKDOWN)
-
-    slug = backtosql.Column('slug', BREAKDOWN)
-    conversion_window = backtosql.TemplateColumn('part_conversion_window.sql', {
-        'column_name': 'conversion_lag',
-        'conversion_windows': dash.constants.ConversionWindows.get_all()
-    }, BREAKDOWN)
-
-    count = backtosql.TemplateColumn('part_count.sql', None, AGGREGATES)
-
-    def get_best_view(self, *args, **kwargs):
-        return 'conversions'
-
-
 class K1PostclickStats(backtosql.Model, RSBreakdownMixin):
     date = backtosql.Column('date', BREAKDOWN)
 
