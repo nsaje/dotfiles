@@ -255,6 +255,8 @@ class MasterView(Materialize):
 
     TABLE_NAME = 'mv_master'
 
+    POSTCLICK_STRUCTURE_BREAKDOWN_INDEX = 8
+
     def generate(self, **kwargs):
         self.prefetch()
 
@@ -463,7 +465,7 @@ class MVConversions(Materialize):
                 if conversions:
                     conversions = json.loads(conversions)
                     for slug, hits in conversions.iteritems():
-                        yield tuple(list(row)[:8] + [slug, hits])
+                        yield tuple(list(row)[:self.master_view.POSTCLICK_STRUCTURE_BREAKDOWN_INDEX] + [slug, hits])
             else:
                 skipped_postclick_stats.add(breakdown_key)
 
