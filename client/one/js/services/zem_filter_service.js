@@ -1,5 +1,5 @@
-/* globals JSON */
-"use strict";
+/* globals JSON, oneApp */
+'use strict';
 
 oneApp.factory('zemFilterService', ['$location', function ($location) {
     var filteredSources = [];
@@ -12,7 +12,7 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
     function init (user) {
         var filteredSourcesLocation = $location.search().filtered_sources;
         if (filteredSourcesLocation) {
-            filteredSources = filteredSourcesLocation.split(',')
+            filteredSources = filteredSourcesLocation.split(',');
         }
 
         var filteredAgenciesLocation = $location.search().filtered_agencies;
@@ -260,5 +260,3 @@ oneApp.factory('zemFilterService', ['$location', function ($location) {
         setShowBlacklistedPublishers: setShowBlacklistedPublishers
     };
 }]);
-
-

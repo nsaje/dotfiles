@@ -1,4 +1,4 @@
-/*globals oneApp,constants,moment*/
+/*globals angular,oneApp,constants,options,moment*/
 oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataSourceService', 'zemGridEndpointService', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;

@@ -1,4 +1,4 @@
-/* globals oneApp,options */
+/* globals oneApp,options,constants */
 oneApp.controller('AddConversionGoalModalCtrl', ['$scope', '$modalInstance', 'api', function ($scope, $modalInstance, api) {
     $scope.conversionGoalTypes = options.conversionGoalTypes;
     $scope.conversionWindows = options.conversionWindows;

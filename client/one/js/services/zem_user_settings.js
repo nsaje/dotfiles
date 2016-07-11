@@ -1,5 +1,5 @@
-/* globals JSON */
-"use strict";
+/* globals JSON, oneApp */
+'use strict';
 
 oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', function (zemLocalStorageService, $location) {
     function toUnderscore (string) {

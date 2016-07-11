@@ -64,11 +64,11 @@ oneApp.directive('zemFilter', ['config', function (config) {
 
             $scope.isAgencyValidFilterChoice = function (agency) {
                 return !$scope.isAgencyFiltered(agency);
-            }
+            };
 
             $scope.isAccountTypeValidFilterChoice = function (accountType) {
                 return !$scope.isAccountTypeFiltered(accountType);
-            }
+            };
 
             $scope.isSourceDeprecated = function (source) {
                 return source.deprecated;
@@ -79,7 +79,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
             };
 
             $scope.isFilterOn = function () {
-                return zemFilterService.isSourceFilterOn() || 
+                return zemFilterService.isSourceFilterOn() ||
                     zemFilterService.isAgencyFilterOn() ||
                     zemFilterService.isAccountTypeFilterOn() ||
                     zemFilterService.isPublisherBlacklistFilterOn();
@@ -127,10 +127,10 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 zemFilterService.removeFilteredAccountType(accountTypeId);
             };
 
-            $rootScope.$on('$stateChangeSuccess', 
+            $rootScope.$on('$stateChangeSuccess',
                 function (event, toState, toParams, fromState, fromParams) {
                     updateVisibility();
-            });
+                });
 
             function updateVisibility () {
                 var isAllAccounts = $state.current.name.startsWith('main.allAccounts');

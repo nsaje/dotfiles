@@ -1,4 +1,4 @@
-/*globals constants*/
+/* globals constants, oneApp */
 'use strict';
 
 oneApp.directive('zemStateSelector', function () {
@@ -31,7 +31,7 @@ oneApp.directive('zemStateSelector', function () {
                     return;
                 }
 
-                var newState = ( (state === $scope.value) ? undefined : state );
+                var newState = ((state === $scope.value) ? undefined : state);
                 $scope.value = state;
 
                 $scope.onChange($scope.id, newState);

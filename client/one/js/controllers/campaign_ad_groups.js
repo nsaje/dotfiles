@@ -1,4 +1,4 @@
-/* globals oneApp,moment,constants,options*/
+/* globals oneApp,moment,constants,options,angular */
 oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemGridEndpointService', function ($location, $scope, $state, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;

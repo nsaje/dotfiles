@@ -1,4 +1,4 @@
-/*globals oneAll */
+/*globals oneApp, angular */
 'use strict';
 
 oneApp.directive('zemLocations', ['config', '$state', 'regions', function (config, $state, regions) {

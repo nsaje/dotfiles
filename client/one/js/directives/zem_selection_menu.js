@@ -1,3 +1,4 @@
+/* globals oneApp */
 'use strict';
 
 oneApp.directive('zemSelectionMenu', function () {

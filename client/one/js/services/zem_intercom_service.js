@@ -1,4 +1,4 @@
-/*globals Intercom*/
+/*globals Intercom, oneApp*/
 'use strict';
 
 oneApp.factory('zemIntercomService', ['$window', function ($window) {

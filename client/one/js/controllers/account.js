@@ -1,4 +1,4 @@
-/*globals oneApp*/
+/*globals oneApp,constants*/
 
 oneApp.controller('AccountCtrl', ['$scope', '$state', 'zemNavigationService', 'accountData', function ($scope, $state, zemNavigationService, accountData) {
     $scope.level = constants.level.ACCOUNTS;

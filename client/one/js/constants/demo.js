@@ -34,7 +34,7 @@ oneApp.constant('demoDefaults', {
     emptyChart: {
         'goals': {},
         'chartData': [
-            { 'seriesData': {}, 'id': 'totals', 'name': "Totals"}
+            {'seriesData': {}, 'id': 'totals', 'name': 'Totals'}
         ]
     },
     emptyTable: function () {
@@ -42,7 +42,7 @@ oneApp.constant('demoDefaults', {
             is_sync_recent: true,
             rows: [],
             pagination: {},
-            totals: { 'impressions': 0, 'cost': 0, 'clicks': 0, 'ctr': 0, 'cpc': 0}
+            totals: {'impressions': 0, 'cost': 0, 'clicks': 0, 'ctr': 0, 'cpc': 0}
         };
     },
     campaignsTableRow: function (name, id) {
@@ -325,7 +325,7 @@ oneApp.constant('demoDefaults', {
                 }
             ],
             'order': 'url',
-            'totals': { 'impressions': 0, 'cost': 0, 'clicks': 0, 'ctr': 0, 'cpc': 0}
+            'totals': {'impressions': 0, 'cost': 0, 'clicks': 0, 'ctr': 0, 'cpc': 0}
         };
     },
     contentAdsUpdates: {

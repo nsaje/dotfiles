@@ -1,5 +1,6 @@
-/*globals oneApp,constants,options,moment*/
+/* globals angular,oneApp,constants,options,moment */
 oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'api', 'zemNavigationService', function ($scope, $state, $q, $modal, api, zemNavigationService) { // eslint-disable-line max-len
+
     $scope.canEditAccount = false;
     $scope.salesReps = [];
     $scope.settings = {};

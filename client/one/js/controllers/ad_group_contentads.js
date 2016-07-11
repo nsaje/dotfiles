@@ -1,4 +1,4 @@
-/* globals oneApp, options, angular, constants */
+/* globals oneApp, options, angular, constants, moment */
 oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService',  'zemDataSourceService', 'zemGridEndpointService', 'zemUploadApi', 'zemUploadEndpointService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService, zemUploadApi, zemUploadEndpointService) { // eslint-disable-line max-len
     var contentAdsNotLoaded = $q.defer();
 

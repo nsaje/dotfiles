@@ -1,7 +1,9 @@
+/* globals angular */
+
 angular.module('config', [])
 
 .constant('config', {
-	'static_url': '/client'
+    'static_url': '/client'
 })
 
 ;

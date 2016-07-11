@@ -37,14 +37,14 @@ oneApp.config(['$provide', function ($provide) {
                     if (cachedResponse !== undefined) {
                         deferred.resolve(cachedResponse);
                         return deferred.promise;
-                    } else {
-                        wrappedFn(id).then(function (data) {
-                            data = dataFilterFn(data);
-                            zemDemoCacheService.set(cacheId, data);
-                            deferred.resolve(data);
-                        }, httpErrorFn(cacheId, cachedResponse, deferred));
-                        return deferred.promise;
                     }
+                    wrappedFn(id).then(function (data) {
+                        data = dataFilterFn(data);
+                        zemDemoCacheService.set(cacheId, data);
+                        deferred.resolve(data);
+                    }, httpErrorFn(cacheId, cachedResponse, deferred));
+                    return deferred.promise;
+
                 };
             },
             //////////////////////
@@ -146,9 +146,11 @@ oneApp.config(['$provide', function ($provide) {
             defaultGetWrapper(
                 '/api/campaigns/{id}/settings/',
                 $delegate.campaignSettings.get,
-                function () { return function () {
-                    resetDemo();
-                }; }
+                function () {
+                    return function () {
+                        resetDemo();
+                    };
+                }
             )
         );
         $delegate.campaignSettings.save = function demo (settings) {
@@ -232,8 +234,7 @@ oneApp.config(['$provide', function ($provide) {
                     } else {
                         deferred.resolve(defaults.emptyTable());
                     }
-                }
-                else {
+                } else {
                     backup(id, startDate, endDate, order).then(function (table) {
                         deferred.resolve(zemDemoAdGroupsService.applyToAdGroupTable(id, table));
                     }, resetDemo);
@@ -451,9 +452,8 @@ oneApp.config(['$provide', function ($provide) {
                         status: constants.uploadBatchStatus.DONE
                     });
                     return deferred.promise;
-                } else {
-                    return backup(adGroupId, batchId);
                 }
+                return backup(adGroupId, batchId);
             };
         }($delegate.adGroupAdsUpload.checkStatus));
 
@@ -533,9 +533,9 @@ oneApp.config(['$provide', function ($provide) {
                     deferred = $q.defer();
                     deferred.resolve({});
                     return deferred.promise;
-                } else {
-                    return backup(id, lastChange);
                 }
+                return backup(id, lastChange);
+
             };
         }($delegate.adGroupAdsTable.getUpdates));
 

@@ -1652,8 +1652,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 error(function (data, status) {
                     var errors = null;
                     if (data.data && data.data.errors) {
-                      errors = data.data.errors;
-                  }
+                        errors = data.data.errors;
+                    }
                     return deferred.reject(errors);
                 });
 
@@ -1894,7 +1894,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
 
         this.get = function (page, size, startDate, endDate, order) {
-            var deferred = createAbortableDefer()
+            var deferred = createAbortableDefer();
             var url = '/api/accounts/table/';
             var config = {
                 params: {}
@@ -2322,9 +2322,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         this.get = function (id_, level_, exportSources, startDate, endDate) {
             var deferred = $q.defer();
 
-            var urlId = ((level_ == constants.level.ALL_ACCOUNTS) ? '':id_ + '/');
-            var urlSources = ((exportSources.valueOf()) ? 'sources/':'');
-            var urlFilteredSources = ((exportSources.valueOf()) ? '?filtered_sources=' + zemFilterService.getFilteredSources().join(','):'');
+            var urlId = ((level_ == constants.level.ALL_ACCOUNTS) ? '' : id_ + '/');
+            var urlSources = ((exportSources.valueOf()) ? 'sources/' : '');
+            var urlFilteredSources = ((exportSources.valueOf()) ? '?filtered_sources=' + zemFilterService.getFilteredSources().join(',') : '');
             var url = '/api/' + level_ + '/' + urlId + urlSources + 'export/allowed/' + urlFilteredSources;
 
             var config = {
@@ -2434,7 +2434,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function Agencies() {
+    function Agencies () {
         this.list = function () {
             var deferred = $q.defer();
             var url = '/api/agencies/';

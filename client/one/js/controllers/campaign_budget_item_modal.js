@@ -1,4 +1,4 @@
-/* globals angular,oneApp,defaults,moment */
+/* globals angular,oneApp,defaults,moment,constants */
 oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$timeout', 'api', 'zemNavigationService', function ($scope, $modalInstance, $timeout, api, zemNavigationService) {
     $scope.today = moment().format('M/D/YYYY');
     $scope.isNew = true;

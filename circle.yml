@@ -12,7 +12,7 @@ machine:
     python:
         version: 2.7.10
     node:
-        version: v0.10.22
+        version: v4.4.3
 
 dependencies:
     override:
@@ -20,6 +20,9 @@ dependencies:
         - pip install -r server/requirements_dev.txt
         - pip install awscli
         - pip install pep8
+        - npm install -g eslint
+        - npm install -g bower
+        - npm install -g grunt
         - 'npm prune && npm install':
             pwd:
                 client
@@ -37,7 +40,7 @@ test:
             pwd: server
             parallel: true
     override:
-        - 'case $CIRCLE_NODE_INDEX in 0) ./pep8.sh && cd server && coverage run manage.py test --timing ;; 1) cd client && grunt prod --build-number ${CIRCLE_BUILD_NUM} ;; esac':
+        - 'case $CIRCLE_NODE_INDEX in 0) ./lint_check.sh && cd server && coverage run manage.py test --timing ;; 1) cd client && grunt prod --build-number ${CIRCLE_BUILD_NUM} ;; esac':
             parallel: true
     post:
         - 'mkdir client/dist && git rev-parse HEAD | tee server/git_commit_hash.txt client/dist/git_commit_hash.txt'
