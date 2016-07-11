@@ -1,7 +1,7 @@
 /* globals oneApp, constants */
 'use strict';
 
-oneApp.directive('zemGridCellStatus', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
+oneApp.directive('zemGridCellStatusField', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
 
     // Status texts are generated differently for different levels and breakdowns. This function returns an object with
     // row status and list of possible statuses for this row.
@@ -55,31 +55,31 @@ oneApp.directive('zemGridCellStatus', ['zemGridEndpointColumns', function (zemGr
             row: '=',
             grid: '=',
         },
-        templateUrl: '/components/zem-grid/templates/zem_grid_cell_status.html',
-        link: function (scope, element, attributes, ctrl) {
-            var pubsub = ctrl.grid.meta.pubsub;
+        templateUrl: '/components/zem-grid/templates/zem_grid_cell_status_field.html',
+        controller: ['$scope', function ($scope) {
+            var vm = this;
+            var pubsub = vm.grid.meta.pubsub;
 
-            ctrl.statusText = '';
+            vm.statusText = '';
 
-            scope.$watch('ctrl.row', update);
-            scope.$watch('ctrl.data', update);
+            $scope.$watch('ctrl.row', update);
+            $scope.$watch('ctrl.data', update);
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, update);
 
             function update () {
-                if (ctrl.row) {
-                    if (ctrl.row.archived) {
-                        ctrl.statusText = 'Archived';
+                if (vm.row) {
+                    if (vm.row.archived) {
+                        vm.statusText = 'Archived';
                     } else {
                         var status = getStatusObject(
-                            ctrl.row.data.stats,
-                            ctrl.grid.meta.data.level,
-                            ctrl.grid.meta.data.breakdown
+                            vm.row.data.stats,
+                            vm.grid.meta.data.level,
+                            vm.grid.meta.data.breakdown
                         );
-                        ctrl.statusText = getStatusText(status);
+                        vm.statusText = getStatusText(status);
                     }
                 }
             }
-        },
-        controller: [function () {}],
+        }],
     };
 }]);
