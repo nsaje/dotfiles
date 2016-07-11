@@ -624,7 +624,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     WHEN a.conversion_lag <= 168 THEN 168
                     WHEN a.conversion_lag <= 720 THEN 720
                     ELSE 2160
-                    END AS conversion_lag_window,
+                    END AS conversion_window,
                     count(1) as touchpoint_count
                 FROM conversions a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
                 WHERE a.conversion_lag <= 2160 AND a.date BETWEEN %(date_from)s AND %(date_to)s
