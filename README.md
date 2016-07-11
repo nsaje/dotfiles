@@ -207,6 +207,12 @@ For development, you can run grunt dev which also runs server on port 9999 and i
 ```bash
 grunt dev
 ```
+## Linting
+
+We have [pep8](https://pypi.python.org/pypi/pep8) and [eslint](http://eslint.org/docs/rules/) set up on circle CI. Meaning, that the build will break, if you will commit unconventional code.
+
+We suggest using a pep8 + eslint in your code editor alongside running `./lint_check.sh` on your code before commiting to this repository. Git pre-commit hooks are great too on your local machine dev setup. 
+
 
 ## Testing
 
