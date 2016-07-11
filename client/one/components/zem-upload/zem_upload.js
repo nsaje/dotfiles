@@ -1,5 +1,5 @@
 /* globals $, oneApp, constants, options, defaults, angular, moment */
-oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$modalInstance', '$window', 'api', function ($interval, $scope, $state, $modalInstance, $window, api) { // eslint-disable-line max-len
+oneApp.controller('zemUploadModalCtrl', ['$interval', '$scope', '$modalInstance', '$window', function ($interval, $scope, $modalInstance, $window) { // eslint-disable-line max-len
     $scope.MAX_URL_LENGTH = 936;
     $scope.MAX_TITLE_LENGTH = 90;
     $scope.MAX_DESCRIPTION_LENGTH = 140;
@@ -30,9 +30,9 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
     };
 
     $scope.partials = [
-        '/partials/upload_ads_modal_step1.html',
-        '/partials/upload_ads_modal_step2.html',
-        '/partials/upload_ads_modal_step3.html',
+        '/components/zem-upload/templates/zem_upload_step1.html',
+        '/components/zem-upload/templates/zem_upload_step2.html',
+        '/components/zem-upload/templates/zem_upload_step3.html',
     ];
 
     $scope.startPolling = function () {
@@ -46,7 +46,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
                 $scope.stopPolling();
                 return;
             }
-            api.upload.checkStatus($state.params.id, $scope.batchId, waitingCandidates).then(
+            $scope.api.checkStatus($scope.batchId, waitingCandidates).then(
                 function (data) {
                     updateCandidates(data.candidates);
                 }
@@ -139,9 +139,8 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
         candidate.removeRequestInProgress = true;
         candidate.removeRequestFailed = false;
 
-        api.upload.removeCandidate(
+        $scope.api.removeCandidate(
             candidate.id,
-            $state.params.id,
             $scope.batchId
         ).then(
             function () {
@@ -225,10 +224,14 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
     $scope.save = function () {
         $scope.saveRequestFailed = false;
         $scope.saveRequestInProgress = true;
-        api.upload.save($state.params.id, $scope.batchId, $scope.uploadFormData.batchName).then(
+        $scope.api.save($scope.batchId, $scope.uploadFormData.batchName).then(
             function (data) {
                 $scope.numSuccessful = data.numSuccessful;
                 $scope.switchToSuccessScreen();
+
+                if ($scope.onSave) {
+                    $scope.onSave();
+                }
             },
             function (errors) {
                 $scope.saveRequestFailed = true;
@@ -321,9 +324,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
 
         $scope.uploadRequestFailed = false;
         $scope.uploadRequestInProgress = true;
-        api.upload.upload(
-            $state.params.id, uploadFormData
-        ).then(
+        $scope.api.upload(uploadFormData).then(
             function (result) {
                 $scope.candidates = result.candidates;
                 $scope.batchId = result.batchId;
@@ -342,9 +343,8 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
     $scope.updateCandidate = function () {
         $scope.updateRequestInProgress = true;
         $scope.updateRequestFailed = false;
-        api.upload.updateCandidate(
+        $scope.api.updateCandidate(
             $scope.selectedCandidate,
-            $state.params.id,
             $scope.batchId
         ).then(function (result) {
             updateCandidates(result.candidates);
@@ -358,14 +358,14 @@ oneApp.controller('UploadAdsModalCtrl', ['$interval', '$scope',  '$state', '$mod
     };
 
     $scope.download = function () {
-        var url = '/api/ad_groups/' + $state.params.id + '/contentads/upload/' + $scope.batchId +
+        var url = '/api/ad_groups/' + $scope.adGroup.id + '/contentads/upload/' + $scope.batchId +
                 '/download/?batch_name=' + encodeURIComponent($scope.uploadFormData.batchName);
         $window.open(url, '_blank');
     };
 
     $scope.cancel = function () {
         if ($scope.batchId) {
-            api.upload.cancel($state.params.id, $scope.batchId);
+            $scope.api.cancel($scope.batchId);
         }
         $scope.stopPolling();
         $modalInstance.close();
