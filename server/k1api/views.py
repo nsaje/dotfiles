@@ -400,6 +400,7 @@ def get_content_ad_ad_group(request):
     return _response_ok(list(content_ads))
 
 
+@csrf_exempt
 def get_publishers_blacklist_outbrain(request):
     _validate_signature(request)
 
@@ -819,7 +820,20 @@ def get_outbrain_marketer_id(request):
         raise Http404
     if ad_group.campaign.account.outbrain_marketer_id:
         return _response_ok(ad_group.campaign.account.outbrain_marketer_id)
-    # TODO(nsaje): implement logic for assigning new Outbrain account (server/actionlog/api.py#L840)
+
+    try:
+        outbrain_account = dash.models.OutbrainAccount.objects.\
+            filter(used=False).order_by('created_dt')[0]
+    except IndexError:
+        raise Exception('No unused Outbrain accounts available.')
+
+    outbrain_account.used = True
+    outbrain_account.save()
+
+    ad_group.campaign.account.outbrain_marketer_id = outbrain_account.marketer_id
+    ad_group.campaign.account.save(request)
+
+    return _response_ok(ad_group.campaign.account.outbrain_marketer_id)
 
 
 @csrf_exempt
@@ -847,6 +861,34 @@ def get_facebook_account(request):
     except dash.models.FacebookAccount.DoesNotExist:
         facebook_account = None
     return _response_ok(facebook_account)
+
+
+@csrf_exempt
+def update_facebook_account(request):
+    _validate_signature(request)
+
+    values = json.loads(request.body)
+    account_id = values.get('account_id')
+    if not account_id:
+        return _response_error('account id must be specified')
+    try:
+        facebook_account = dash.models.FacebookAccount.objects.get(account__id=account_id)
+    except dash.models.FacebookAccount.DoesNotExist:
+        return _response_error(
+            "No Facebook account exists for account_id: %s" % account_id, status=404)
+
+    modified = False
+    if values.get('ad_account_id'):
+        facebook_account.ad_account_id = values['ad_account_id']
+        modified = True
+
+    if values.get('status'):
+        facebook_account.status = values['status']
+        modified = True
+
+    if modified:
+        facebook_account.save()
+    return _response_ok(values)
 
 
 @csrf_exempt

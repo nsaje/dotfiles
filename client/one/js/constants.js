@@ -517,7 +517,7 @@ var constants = {
         OMNITURE: 3,
     },
     conversionGoalTypeText: {
-        1: 'Conversion Pixel',
+        1: 'Pixel',
         2: 'Google Analytics',
         3: 'Adobe Analytics',
     },
@@ -614,6 +614,7 @@ var constants = {
         PENDING: 'Pending',
         EMPTY: 'Empty',
         ERROR: 'Error',
+        INVALID: 'Invalid'
     },
     imageCrop: {
         CENTER: 'center',
@@ -1199,7 +1200,7 @@ var options = {
         {name: 'CPA', value: constants.campaignGoalKPI.CPA},
     ],
     conversionGoalTypes: [
-        {name: 'Conversion Pixel', value: constants.conversionGoalType.PIXEL},
+        {name: 'Pixel', value: constants.conversionGoalType.PIXEL},
         {name: 'Google Analytics', value: constants.conversionGoalType.GA},
         {name: 'Adobe Analytics', value: constants.conversionGoalType.OMNITURE},
     ],

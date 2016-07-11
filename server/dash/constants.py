@@ -1530,15 +1530,21 @@ class AgeGenderGroup(ConstantBase):
     }
 
 
+class DmaGroup(ConstantBase):
+    _VALUES = {int(key): regions.DMA_BY_CODE[key] for key in regions.DMA_BY_CODE.keys()}
+
+
 class ConversionWindows(ConstantBase):
     LEQ_1_DAY = 24
     LEQ_7_DAYS = 168
     LEQ_30_DAYS = 720
+    LEQ_90_DAYS = 2160
 
     _VALUES = {
         LEQ_1_DAY: '1 day',
         LEQ_7_DAYS: '7 days',
         LEQ_30_DAYS: '30 days',
+        LEQ_90_DAYS: '90 days',
     }
 
 
@@ -1608,24 +1614,6 @@ class HistoryLevel(ConstantBase):
         ACCOUNT: 'Account Level',
         AGENCY: 'Agency Level',
         GLOBAL: 'All Accounts',
-    }
-
-
-class HistoryType(ConstantBase):
-    AD_GROUP = 1
-    CAMPAIGN = 2
-    BUDGET = 3
-    ACCOUNT = 4
-    CREDIT = 5
-    AD_GROUP_SOURCE = 6
-
-    _VALUES = {
-        AD_GROUP: 'Ad Group History',
-        CAMPAIGN: 'Campaign History',
-        BUDGET: 'Budget History',
-        ACCOUNT: 'Account History',
-        CREDIT: 'Credit History',
-        AD_GROUP_SOURCE: 'Ad Group Source History',
     }
 
 

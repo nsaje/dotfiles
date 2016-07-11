@@ -5,15 +5,32 @@ import backtosql
 from backtosql import helpers
 
 
+def assert_sql_equals(first, second):
+    first_norm = backtosql.clean_sql(first).upper().replace(' ', '').replace('\n', '')
+    second_norm = backtosql.clean_sql(second).upper().replace(' ', '').replace('\n', '')
+
+    if first_norm != second_norm:
+        raise AssertionError('"{} \n\n != \n\n "{}"'.format(
+            backtosql.clean_sql(first), backtosql.clean_sql(second)))
+
+
+class SQLMatcher():
+
+    def __init__(self, obj):
+        self.obj = obj
+
+    def __eq__(self, other):
+        try:
+            assert_sql_equals(self.obj, other)
+        except AssertionError as e:
+            return False
+        return True
+
+
 class TestSQLMixin(object):
 
     def assertSQLEquals(self, first, second):
-        first_norm = backtosql.clean_sql(first).upper().replace(' ', '').replace('\n', '')
-        second_norm = backtosql.clean_sql(second).upper().replace(' ', '').replace('\n', '')
-
-        if first_norm != second_norm:
-            raise AssertionError('"{} \n\n != \n\n "{}"'.format(
-                backtosql.clean_sql(first), backtosql.clean_sql(second)))
+        return assert_sql_equals(first, second)
 
 
 class TestRenderMixin(object):

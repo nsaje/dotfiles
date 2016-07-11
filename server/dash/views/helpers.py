@@ -3,6 +3,7 @@ import datetime
 import dateutil.parser
 import pytz
 import logging
+import json
 
 from decimal import Decimal
 
@@ -66,9 +67,58 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
+class ViewFilter(object):
+    '''Convenience class for extracting filters from requests'''
+
+    def __init__(self, request=None, user=None, data=None):
+        self.filtered_sources = None
+        self.filtered_agencies = None
+        self.filtered_account_types = None
+
+        # table breakdowns specific code
+        if data:
+            self._init_breakdowns(user, data)
+        else:
+            self._init_old(request)
+
+    def _init_old(self, request):
+        if not request:
+            return
+
+        if request.method == 'GET':
+            data = request.GET
+            filtered_sources = data.get('filtered_sources')
+            filtered_agencies = data.getlist('filtered_agencies')
+            filtered_account_types = data.get('filtered_account_types')
+        elif request.method == 'PUT':
+            data = json.loads(request.body)
+            filtered_sources = data.get('filtered_sources')
+            filtered_agencies_raw = data.get('filtered_agencies')
+            filtered_agencies = filtered_agencies_raw.split(',') if\
+                filtered_agencies_raw else None
+            filtered_account_types_raw = data.get('filtered_account_types')
+            filtered_account_types = filtered_account_types_raw.split(',') if\
+                filtered_account_types_raw else None
+
+        if request.user is not None:
+            self.filtered_sources = get_filtered_sources(request.user, filtered_sources)
+        self.filtered_agencies = get_filtered_agencies(filtered_agencies)
+        self.filtered_account_types = get_filtered_account_types(filtered_account_types)
+
+    def _init_breakdowns(self, user, data):
+        self.filtered_sources = None
+        if user is not None:
+            self.filtered_sources = data.get('filtered_sources')
+        self.filtered_agencies = get_filtered_agencies(
+            data.get('filtered_agencies')
+        )
+        self.filtered_account_types = get_filtered_account_types(
+            data.get('filtered_account_types')
+        )
+
+
 def get_filtered_sources(user, sources_filter):
     filtered_sources = models.Source.objects.all()
-
     if not sources_filter:
         return filtered_sources
 
@@ -83,6 +133,29 @@ def get_filtered_sources(user, sources_filter):
         filtered_sources = filtered_sources.filter(id__in=filtered_ids)
 
     return filtered_sources
+
+
+def get_filtered_agencies(agency_filter):
+    filtered_agencies = None
+    if not agency_filter:
+        return filtered_agencies
+
+    filtered_ids = map(int, agency_filter)
+    if filtered_ids:
+        filtered_agencies = models.Agency.objects.all().filter(
+            id__in=filtered_ids
+        )
+    return filtered_agencies
+
+
+def get_filtered_account_types(account_type_filter):
+    filtered_account_types = None
+    if not account_type_filter:
+        return filtered_account_types
+
+    filtered_account_types = constants.AccountType.get_all()
+    filtered_ids = map(int, account_type_filter)
+    return list(set(filtered_account_types) & set(filtered_ids))
 
 
 def get_additional_columns(additional_columns):
@@ -1092,22 +1165,6 @@ def format_percent_to_decimal(num):
     return Decimal(str(num).replace(',', '').strip('%')) / 100
 
 
-def log_useraction_if_necessary(request, user_action_type, account=None, campaign=None, ad_group=None):
-    if request.user.is_self_managed():
-
-        user_action_log = models.UserActionLog(
-            action_type=user_action_type,
-            created_by=request.user,
-            account=account,
-            campaign=campaign,
-            ad_group=ad_group,
-            account_settings_id=account.get_current_settings().id if account else None,
-            campaign_settings_id=campaign.get_current_settings().id if campaign else None,
-            ad_group_settings_id=ad_group.get_current_settings().id if ad_group else None
-        )
-        user_action_log.save()
-
-
 def get_source_default_settings(source):
     try:
         default_settings = models.DefaultSourceSettings.objects.get(source=source)
@@ -1162,4 +1219,3 @@ def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings
             action_type=constants.HistoryActionType.SETTINGS_CHANGE)
         changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator='\n')
         email_helper.send_campaign_notification_email(campaign, request, changes_text)
-        log_useraction_if_necessary(request, user_action_type, campaign=campaign)

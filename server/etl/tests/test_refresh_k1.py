@@ -9,8 +9,9 @@ from etl import refresh_k1
 class RefreshTest(TestCase):
 
     @mock.patch('etl.daily_statements_k1.reprocess_daily_statements')
-    def test_refresh_k1_reports(self, mock_reprocess):
-        mock_generate = mock.MagicMock()
+    @mock.patch('etl.refresh_k1.generate_job_id', return_value='asd')
+    def test_refresh_k1_reports(self, mock_generate_job_id, mock_reprocess):
+        mock_mat_view = mock.MagicMock()
 
         effective_spend_factors = {
             datetime.date(2016, 5, 10): 234,
@@ -21,9 +22,15 @@ class RefreshTest(TestCase):
 
         mock_reprocess.return_value = effective_spend_factors
 
-        refresh_k1.MATERIALIZED_VIEWS = [mock_generate]
+        refresh_k1.MATERIALIZED_VIEWS = [mock_mat_view]
+        refresh_k1.NEW_MATERIALIZED_VIEWS = []
 
         refresh_k1.refresh_k1_reports(datetime.datetime(2016, 5, 10))
 
-        mock_generate.generate.assert_called_with(
-            datetime.date(2016, 5, 10), datetime.date(2016, 5, 13), campaign_factors=effective_spend_factors)
+        mock_mat_view.assert_called_with(
+            'asd',
+            datetime.date(2016, 5, 10),
+            datetime.date(2016, 5, 13)
+        )
+
+        mock_mat_view().generate.assert_called_with(campaign_factors=effective_spend_factors)

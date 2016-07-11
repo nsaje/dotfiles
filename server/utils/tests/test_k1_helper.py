@@ -6,12 +6,24 @@ from utils import k1_helper
 
 
 @override_settings(
+    K1_CONSISTENCY_PING_ACCOUNT_QUEUE='ping_account_queue',
     K1_CONSISTENCY_PING_AD_GROUP_QUEUE='ping_ad_group_queue',
     K1_CONSISTENCY_PING_CONTENT_AD_QUEUE='ping_content_ad_queue',
     K1_CONSISTENCY_PING_BLACKLIST_QUEUE='ping_blacklist_queue'
 )
 @patch('utils.k1_helper.app')
 class K1HelperTest(TestCase):
+    def test_update_account(self, mock_app):
+        k1_helper.update_account(123, msg='test')
+        mock_app.send_task.assert_called_once_with(
+            'consistency_ping_account',
+            queue='ping_account_queue',
+            kwargs={
+                'msg': 'test',
+                'account_id': 123,
+            }
+        )
+
     def test_update_ad_group(self, mock_app):
         k1_helper.update_ad_group(123, msg='test')
         mock_app.send_task.assert_called_once_with(

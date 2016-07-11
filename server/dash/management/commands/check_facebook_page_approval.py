@@ -33,7 +33,7 @@ class Command(ExceptionCommand):
                                                                   credentials['access_token'])
                 if not ad_account_id:
                     raise CommandError('Error while creating facebook account.')
-                added = facebook_helper.add_system_user_permissions(ad_account_id, 'ADMIN', credentials['businsess_id'],
+                added = facebook_helper.add_system_user_permissions(ad_account_id, 'ADMIN', credentials['business_id'],
                                                                     credentials['system_user_id'],
                                                                     credentials['access_token'])
                 if not added:

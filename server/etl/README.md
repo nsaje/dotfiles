@@ -18,7 +18,7 @@ D. adding `campaign_id`, `account_id`, `agency_id` fields based on `ad_group_id`
 
 E. transforming `device_type`, `country`, `dma`, `state`, `age`, `gender` and `age_gender` to constants used by z1
 
-F. converting `spend` and `data_spend` to `cost_cc` and `data_cost_cc`
+F. converting `spend` and `data_spend` to `cost_nano` and `data_cost_nano`
 
 Most of transformations are made directly in the database so that we don't have the overhead of python,
 download and upload of data.
@@ -62,7 +62,6 @@ Base folder: `etl`
 - `refresh_k1` :: entry point, runs the listed materialized views. Its run every hour at 25 minutes past (see `crontab.txt`)
 - `materialize_k1` :: legacy materialized views - `contentadstats`, `touchpointconversions`, `publishers_1`
 - `materialize_views` :: new materialized views
-- `materialize_helpers` :: logics on how materialized views are executed
 - `helpers` :: clean and transform data helpers
 - `migrations/redshift/..` :: permanent redshift tables
 - `migrations/redshift/0006_udf_functions.sql` :: UDF python functions that are used to clean data in database. 

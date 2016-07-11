@@ -35,7 +35,6 @@ oneApp.constant('zemGridConstants', {
         SUBMISSION_STATUS: 'submissionStatus',
         THUMBNAIL: 'thumbnail',
         TEXT_WITH_POPUP: 'textWithPopup',
-        NOTIFICATION: 'notification',
         TOTALS_LABEL: 'totalsLabel',
     },
     gridStyle: {

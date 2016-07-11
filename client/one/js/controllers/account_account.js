@@ -137,7 +137,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         if ($scope.facebookPageChangedInfo.changed) {
             var facebookPageChangedModalInstance = $modal.open({
                 templateUrl: '/partials/facebook_page_changed_modal.html',
-                controller: function ($scope, $modalInstance) {
+                controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
                     $scope.ok = function () {
                         $modalInstance.close();
                     };
@@ -145,7 +145,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                     $scope.cancel = function () {
                         $modalInstance.dismiss('cancel');
                     };
-                },
+                }],
                 size: 'lg',
             });
             facebookPageChangedModalInstance.result.then(function () {

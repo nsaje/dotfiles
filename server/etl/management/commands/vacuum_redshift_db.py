@@ -21,10 +21,6 @@ class Command(ExceptionCommand):
             'mv_content_ad',
             'mv_content_ad_delivery',
             'mv_master',
-            'mvh_adgroup_structure',
-            'mvh_campaign_factors',
-            'mvh_clean_stats',
-            'mvh_source',
         ]
 
         for table in tables:

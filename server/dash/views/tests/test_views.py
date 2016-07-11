@@ -185,7 +185,6 @@ class AccountsTest(TestCase):
         self.assertIsNotNone(acc.agency)
 
 
-@patch('dash.views.views.helpers.log_useraction_if_necessary')
 class AccountCampaignsTest(TestCase):
     fixtures = ['test_views.yaml']
 
@@ -201,7 +200,7 @@ class AccountCampaignsTest(TestCase):
         self.client = Client()
         self.client.login(username=User.objects.get(pk=1).email, password='secret')
 
-    def test_put(self, mock_log_useraction):
+    def test_put(self):
         campaign_name = 'New campaign'
 
         response = self.client.put(
@@ -227,11 +226,8 @@ class AccountCampaignsTest(TestCase):
         self.assertEqual(settings.name, campaign_name)
         self.assertEqual(settings.campaign_manager.id, 2)
 
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.CREATE_CAMPAIGN,
-            campaign=campaign
-        )
+        hist = history_helpers.get_campaign_history(campaign).first()
+        self.assertEqual(constants.HistoryActionType.CREATE, hist.action_type)
 
 
 class AdGroupSourceSettingsTest(TestCase):
@@ -331,9 +327,8 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('utils.k1_helper.update_ad_group')
-    def test_logs_user_action(self, mock_k1_ping, mock_log_useraction):
+    def test_logs_user_action(self, mock_k1_ping):
         self._set_ad_group_end_date(days_delta=0)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
@@ -341,10 +336,9 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         mock_k1_ping.assert_called_with(1, msg='AdGroupSourceSettings.put')
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
-            ad_group=self.ad_group)
+
+        hist = history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1)).first()
+        self.assertEqual(constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE, hist.action_type)
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
     @patch('automation.campaign_stop.get_max_settable_source_budget')
@@ -609,9 +603,9 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary impression tracker url,Secondary impression tracker url,Label',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com,http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,,'  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -625,10 +619,10 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
-'http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary impression tracker url,Secondary impression tracker url,Label',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com,http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,center,example.com,Example,Call to action,Example description,,,'  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -642,8 +636,8 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,'  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary impression tracker url,Secondary impression tracker url,Label',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,,'  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -656,9 +650,9 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary impression tracker url,Secondary impression tracker url,Label',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com,http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -672,10 +666,10 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary impression tracker url,Secondary impression tracker url,Label',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com,http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -686,9 +680,9 @@ class AdGroupContentAdCSVTest(TestCase):
         response = self._get_csv_from_server(data)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Impression trackers,Label',  # noqa
-            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com http://testurl2.com,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary impression tracker url,Secondary impression tracker url,Label',  # noqa
+            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com,http://testurl2.com,',  # noqa
+            'http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -721,9 +715,8 @@ class AdGroupContentAdStateTest(TestCase):
             follow=True
         )
 
-    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('utils.k1_helper.update_content_ads')
-    def test_post(self, mock_k1_ping, mock_log_useraction):
+    def test_post(self, mock_k1_ping):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
@@ -752,10 +745,8 @@ class AdGroupContentAdStateTest(TestCase):
             'success': True
         })
 
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.SET_CONTENT_AD_STATE,
-            ad_group=models.AdGroup.objects.get(pk=1))
+        hist = history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1)).first()
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_STATE_CHANGE, hist.action_type)
 
     def test_state_set_all(self):
         username = User.objects.get(pk=1).email
@@ -1039,10 +1030,9 @@ class AdGroupContentAdArchive(TestCase):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
-    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     @patch('utils.k1_helper.update_content_ads')
-    def test_post(self, mock_k1_ping, mock_send_mail, mock_log_useraction):
+    def test_post(self, mock_k1_ping, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=1)
         content_ad_id = 2
 
@@ -1065,11 +1055,8 @@ class AdGroupContentAdArchive(TestCase):
             }})
 
         mock_send_mail.assert_called_with(ad_group, response.wsgi_request, 'Content ad(s) 2 Archived.')
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
-            ad_group=ad_group
-        )
+        hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     def test_archive_set_all(self, mock_send_mail):
@@ -1220,10 +1207,9 @@ class AdGroupContentAdRestore(TestCase):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
-    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     @patch('utils.k1_helper.update_content_ads')
-    def test_post(self, mock_k1_ping, mock_send_mail, mock_log_useraction):
+    def test_post(self, mock_k1_ping, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=1)
         content_ad_id = 2
 
@@ -1248,11 +1234,8 @@ class AdGroupContentAdRestore(TestCase):
 
         mock_send_mail.assert_called_with(
             ad_group, response.wsgi_request, 'Content ad(s) 2 Restored.')
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
-            ad_group=ad_group
-        )
+        hist = history_helpers.get_ad_group_history(ad_group).first()
+        self.assertEqual(constants.HistoryActionType.CONTENT_AD_ARCHIVE_RESTORE, hist.action_type)
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     def test_restore_set_all(self, mock_send_mail):
@@ -2140,6 +2123,21 @@ class PublishersBlacklistStatusTest(TestCase):
         )
         hist = history_helpers.get_campaign_history(adg1.campaign)
         self.assertEqual(1, hist.count())
+
+        adg9 = models.AdGroup.objects.get(pk=9)
+        hist9 = history_helpers.get_campaign_history(adg9.campaign).first()
+
+        self.assertEqual(
+            'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
+            hist9.changes_text
+        )
+
+        hist = history_helpers.get_campaign_history(adg9.campaign)
+        self.assertEqual(1, hist.count())
+        self.assertIsNotNone(hist[0].created_by)
+        self.assertEqual(
+            constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE,
+            hist[0].action_type)
 
     @patch('reports.redshift.get_cursor')
     def test_post_campaign_all_but_blacklist_1(self, cursor):

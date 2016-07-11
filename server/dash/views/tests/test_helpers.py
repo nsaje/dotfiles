@@ -1272,69 +1272,6 @@ class PixelLastSyncTestCase(TestCase):
         }, joined)
 
 
-class LogUserActionHelperTestCase(TestCase):
-    fixtures = ['test_api']
-
-    def test_add_user_action_log(self):
-        user = User.objects.get(pk=1)
-        user.is_self_managed = lambda: True
-
-        request = HttpRequest()
-        request.user = user
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        ad_group_settings = ad_group.get_current_settings()
-
-        campaign = models.Campaign.objects.get(pk=1)
-        campaign_settings = campaign.get_current_settings()
-        campaign_settings.save(request)
-
-        account = models.Account.objects.get(pk=3)
-        account_settings = account.get_current_settings()
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT,
-            ad_group=ad_group,
-            campaign=campaign,
-            account=account
-        )
-
-        user_actions = models.UserActionLog.objects.all()
-        self.assertEqual(user_actions.count(), 1)
-
-        user_action = user_actions[0]
-        self.assertEqual(user_action.created_by, user)
-        self.assertEqual(user_action.ad_group, ad_group)
-        self.assertEqual(user_action.campaign, campaign)
-        self.assertEqual(user_action.account, account)
-        self.assertEqual(user_action.ad_group_settings, ad_group_settings)
-        self.assertEqual(user_action.campaign_settings, campaign_settings)
-        self.assertEqual(user_action.account_settings, account_settings)
-
-    def test_dont_add_user_action_log(self):
-        user = User.objects.get(pk=1)
-        user.is_self_managed = lambda: False
-
-        request = HttpRequest()
-        request.user = user
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        campaign = models.Campaign.objects.get(pk=1)
-        account = models.Account.objects.get(pk=3)
-
-        helpers.log_useraction_if_necessary(
-            request,
-            constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT,
-            ad_group=ad_group,
-            campaign=campaign,
-            account=account
-        )
-
-        user_actions = models.UserActionLog.objects.all()
-        self.assertEqual(user_actions.count(), 0)
-
-
 class PublisherHelpersTest(TestCase):
     fixtures = ['test_api']
 

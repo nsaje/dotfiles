@@ -128,7 +128,7 @@ def fetch_redirects_impressions(date, timeout=300):
 
 def insert_audience(audience):
     try:
-        rules = [{'type': rule.type, 'value': rule.value} for rule in audience.rule_set.all()]
+        rules = [{'id': rule.id, 'type': rule.type, 'value': rule.value} for rule in audience.rule_set.all()]
 
         audience_dict = {
             'id': str(audience.id),

@@ -2,6 +2,7 @@ import logging
 import json
 from collections import defaultdict
 from decimal import Decimal
+from functools import partial
 
 from django.db import connections
 from django.conf import settings
@@ -9,10 +10,10 @@ from django.conf import settings
 import dash.models
 import reports.constants
 from utils import converters
-from redshiftapi.db import get_stats_cursor
+from redshiftapi.db import get_write_stats_cursor, get_write_stats_transaction
 
 from etl import helpers
-from etl.materialize_helpers import MaterializeViaCSVDaily
+from etl import materialize_views
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ replaces reports module.
 """
 
 
-class ContentAdStats(MaterializeViaCSVDaily):
+class ContentAdStats(materialize_views.Materialize):
     """
     date, content_ad_id, adgroup_id, source_id
     campaign_id, account_id
@@ -35,8 +36,27 @@ class ContentAdStats(MaterializeViaCSVDaily):
     effective_cost_nano, effective_data_cost_nano, license_fee_nano
     """
 
-    def table_name(self):
-        return 'contentadstats'
+    TABLE_NAME = 'contentadstats'
+
+    def generate(self, campaign_factors):
+        for date, daily_campaign_factors in campaign_factors.iteritems():
+            with get_write_stats_transaction():
+                with get_write_stats_cursor() as c:
+
+                    logger.info('Deleting data from table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    sql, params = materialize_views.prepare_daily_delete_query(self.TABLE_NAME, date)
+                    c.execute(sql, params)
+
+                    s3_path = materialize_views.upload_csv(
+                        self.TABLE_NAME,
+                        date,
+                        self.job_id,
+                        partial(self.generate_rows, c, date, daily_campaign_factors)
+                    )
+
+                    logger.info('Copying CSV to table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    sql, params = materialize_views.prepare_copy_csv_query(s3_path, self.TABLE_NAME)
+                    c.execute(sql, params)
 
     def _stats_breakdown(self, date):
         return Breakdown(
@@ -78,7 +98,7 @@ class ContentAdStats(MaterializeViaCSVDaily):
             "conversions": json.dumps(_sum_conversion(post_click[1], post_click[8])),
         }
 
-    def generate_rows(self, cursor, date, campaign_factors, **kwargs):
+    def generate_rows(self, cursor, date, campaign_factors):
         content_ad_postclick = defaultdict(list)
         for row in self._postclick_stats_breakdown(date).rows():
             content_ad_id = row[0]
@@ -145,7 +165,7 @@ class ContentAdStats(MaterializeViaCSVDaily):
         logger.info('Contentadstats: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
-class Publishers(MaterializeViaCSVDaily):
+class Publishers(materialize_views.Materialize):
     """
     date, adgroup_id, exchange,
     domain, external_id,
@@ -155,8 +175,27 @@ class Publishers(MaterializeViaCSVDaily):
     visits, new_visits, bounced_visits, pageviews, total_time_on_site, conversions
     """
 
-    def table_name(self):
-        return 'publishers_1'
+    TABLE_NAME = 'publishers_1'
+
+    def generate(self, campaign_factors):
+        for date, daily_campaign_factors in campaign_factors.iteritems():
+            with get_write_stats_transaction():
+                with get_write_stats_cursor() as c:
+
+                    logger.info('Deleting data from table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    sql, params = materialize_views.prepare_daily_delete_query(self.TABLE_NAME, date)
+                    c.execute(sql, params)
+
+                    s3_path = materialize_views.upload_csv(
+                        self.TABLE_NAME,
+                        date,
+                        self.job_id,
+                        partial(self.generate_rows, c, date, daily_campaign_factors)
+                    )
+
+                    logger.info('Copying CSV to table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    sql, params = materialize_views.prepare_copy_csv_query(s3_path, self.TABLE_NAME)
+                    c.execute(sql, params)
 
     def _stats_breakdown(self, date):
         return Breakdown(
@@ -222,7 +261,7 @@ class Publishers(MaterializeViaCSVDaily):
             "conversions": json.dumps(_sum_conversion(post_click[1], post_click[9])),
         }
 
-    def generate_rows(self, cursor, date, campaign_factors, **kwargs):
+    def generate_rows(self, cursor, date, campaign_factors):
         content_ad_postclick = defaultdict(list)
         for row in self._postclick_stats_breakdown(date).rows():
             ad_group_id = row[0]
@@ -332,18 +371,33 @@ class Publishers(MaterializeViaCSVDaily):
         logger.info('Publishers_1: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
-class TouchpointConversions(MaterializeViaCSVDaily):
+class TouchpointConversions(materialize_views.Materialize):
     """
     zuid, slug, date, conversion_id, conversion_timestamp, account_id,
     campaign_id, ad_group_id, content_ad_id, source_id,
     touchpoint_id, touchpoint_timestamp, conversion_lag, publisher
     """
 
-    def table_name(self):
-        return 'touchpointconversions'
+    TABLE_NAME = 'touchpointconversions'
 
-    def generate_rows(self, cursor, date, campaign_factors, **kwargs):
-        # TODO rewrite to the query insert-select materialization when it's ready
+    def generate(self, campaign_factors):
+        for date, daily_campaign_factors in campaign_factors.iteritems():
+            with get_write_stats_transaction():
+                with get_write_stats_cursor() as c:
+                    s3_path = materialize_views.upload_csv(
+                        self.TABLE_NAME,
+                        date,
+                        self.job_id,
+                        partial(self.generate_rows, c, date)
+                    )
+
+                    sql, params = materialize_views.prepare_daily_delete_query(self.TABLE_NAME, date)
+                    c.execute(sql, params)
+
+                    sql, params = materialize_views.prepare_copy_csv_query(s3_path, self.TABLE_NAME)
+                    c.execute(sql, params)
+
+    def generate_rows(self, cursor, date):
         query = """
             select
                 zuid, slug, date, conversion_id, conversion_timestamp, account_id,
@@ -352,10 +406,10 @@ class TouchpointConversions(MaterializeViaCSVDaily):
             from conversions
             where date=%s
         """
-        with get_stats_cursor() as c:
-            c.execute(query, [date])
-            for row in c:
-                yield row
+
+        cursor.execute(query, [date])
+        for row in cursor:
+            yield row
 
 
 class Breakdown(object):
@@ -368,7 +422,6 @@ class Breakdown(object):
 
     def rows(self):
         query = self._get_materialize_query()
-        logger.info("Breakdown query: %s", query)
         return _query_rows(query)
 
     def _get_materialize_query(self):
@@ -398,7 +451,7 @@ class Breakdown(object):
 
 
 def _query_rows(query):
-    with get_stats_cursor() as c:
+    with get_write_stats_cursor() as c:
         c.execute(query)
         for row in c:
             yield row

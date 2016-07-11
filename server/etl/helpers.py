@@ -1,4 +1,7 @@
 import datetime
+import boto
+import boto.s3
+
 from dateutil import rrule
 from collections import defaultdict
 
@@ -196,28 +199,22 @@ def get_breakdown_key_for_postclickstats(source_id, content_ad_id):
     return (source_id, content_ad_id)
 
 
-def construct_touchpoint_conversions_dict(rows):
-    """
-    Returns conversions dicts by breakdown keys. Conversion dict keys are formulated
-    as {slug}__{conversion_window}, values represent the number of touchpoint conversions
-    in given conversion lag.
+def get_aws_credentials_string(aws_access_key_id, aws_secret_access_key):
+    return 'aws_access_key_id={key};aws_secret_access_key={secret}'.format(
+        key=aws_access_key_id,
+        secret=aws_secret_access_key,
+    )
 
-    Structure built:
-    <breakdown_key>: {
-            {slug}__{conversion_window}: {n of touchpoint conversions}
-    }
-    """
 
-    conversions_breakdown = defaultdict(lambda: defaultdict(int))
-    allowed_windows = constants.ConversionWindows.get_all()
+def get_aws_credentials_from_role():
+    s3_client = boto.s3.connect_to_region('us-east-1')
 
-    for row in rows:
-        breakdown_key = (row.ad_group_id, row.content_ad_id, row.source_id, row.publisher)
+    access_key = s3_client.aws_access_key_id
+    access_secret = s3_client.aws_secret_access_key
 
-        # count this window in smaller windows
-        for window in allowed_windows:
-            if row.conversion_window <= window:
-                conversion_key = '{}_{}'.format(row.slug, window)
-                conversions_breakdown[breakdown_key][conversion_key] += row.count
+    security_token_param = ''
+    if s3_client.provider.security_token:
+        security_token_param = ';token=%s' % s3_client.provider.security_token
 
-    return conversions_breakdown
+    return 'aws_access_key_id=%s;aws_secret_access_key=%s%s' % (
+        access_key, access_secret, security_token_param)
