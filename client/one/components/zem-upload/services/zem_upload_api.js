@@ -7,10 +7,11 @@ oneApp.factory('zemUploadApi', ['$modal', '$rootScope', function ($modal, $rootS
     function UploadApi () {
         this.openModal = openModal;
 
-        function openModal (adGroup, apiEndpoint) {
+        function openModal (adGroup, apiEndpoint, onSave) {
             var scope = $rootScope.$new();
             scope.adGroup = adGroup;
             scope.api = apiEndpoint;
+            scope.onSave = onSave;
 
             return $modal.open({
                 templateUrl: '/components/zem-upload/templates/zem_upload.html',

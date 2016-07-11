@@ -228,6 +228,10 @@ oneApp.controller('zemUploadModalCtrl', ['$interval', '$scope', '$modalInstance'
             function (data) {
                 $scope.numSuccessful = data.numSuccessful;
                 $scope.switchToSuccessScreen();
+
+                if ($scope.onSave) {
+                    $scope.onSave();
+                }
             },
             function (errors) {
                 $scope.saveRequestFailed = true;
