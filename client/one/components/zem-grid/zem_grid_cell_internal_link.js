@@ -3,14 +3,6 @@
 
 oneApp.directive('zemGridCellInternalLink', [function () {
 
-    function getState (level) {
-        switch (level) {
-        case constants.level.ALL_ACCOUNTS: return 'main.accounts.campaigns';
-        case constants.level.ACCOUNTS: return 'main.campaigns.ad_groups';
-        case constants.level.CAMPAIGNS: return 'main.adGroups.ads';
-        }
-    }
-
     return {
         restrict: 'E',
         replace: true,
@@ -23,21 +15,31 @@ oneApp.directive('zemGridCellInternalLink', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_internal_link.html',
-        link: function (scope, element, attributes, ctrl) {
-            scope.$watch('ctrl.row', update);
-            scope.$watch('ctrl.data', update);
+        controller: ['$scope', function ($scope) {
+            var vm = this;
+
+            // Set some dummy values to initialize zem-in-link
+            vm.id = -1;
+            vm.state = 'unknown';
+
+            $scope.$watch('ctrl.row', update);
+            $scope.$watch('ctrl.data', update);
 
             function update () {
-                if (ctrl.data && ctrl.row.data.breakdownId && ctrl.row.level === 1) {
-                    ctrl.id = ctrl.row.data.breakdownId;
-                    ctrl.state = getState(ctrl.grid.meta.data.level);
+                if (vm.data && vm.row.data && vm.row.level === 1) {
+                    vm.id = vm.row.data.breakdownId || -1;
+                    vm.state = getState(vm.grid.meta.data.level);
                 }
             }
-        },
-        controller: [function () {
-            // Set some dummy values to initialize zem-in-link
-            this.id = -1;
-            this.state = 'unknown';
+
+            function getState (level) {
+                switch (level) {
+                case constants.level.ALL_ACCOUNTS: return 'main.accounts.campaigns';
+                case constants.level.ACCOUNTS: return 'main.campaigns.ad_groups';
+                case constants.level.CAMPAIGNS: return 'main.adGroups.ads';
+                default: return 'unknown';
+                }
+            }
         }],
     };
 }]);
