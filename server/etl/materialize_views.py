@@ -398,7 +398,7 @@ class MasterView(Materialize):
                         0,
                         0,
                     ),
-                    row.conversions,
+                    (row.conversions, row.postclick_source)
                 )
 
     def get_postclickstats_query_results(self, c, date):
@@ -459,12 +459,16 @@ class MVConversions(Materialize):
     def generate_rows(self, cursor, date, breakdown_keys_with_traffic):
         skipped_postclick_stats = set()
 
-        for breakdown_key, row, conversions in self.master_view.get_postclickstats(cursor, date):
+        for breakdown_key, row, conversions_tuple in self.master_view.get_postclickstats(cursor, date):
             # only return those rows for which we have traffic - click
             if breakdown_key in breakdown_keys_with_traffic:
+                conversions = conversions_tuple[0]
+                postclick_source = conversions_tuple[1]
+
                 if conversions:
                     conversions = json.loads(conversions)
                     for slug, hits in conversions.iteritems():
+                        slug = helpers.get_conversion_prefix(postclick_source, slug)
                         yield tuple(list(row)[:self.master_view.POSTCLICK_STRUCTURE_BREAKDOWN_INDEX] + [slug, hits])
             else:
                 skipped_postclick_stats.add(breakdown_key)

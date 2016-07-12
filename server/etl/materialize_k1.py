@@ -457,14 +457,6 @@ def _query_rows(query):
             yield row
 
 
-def _get_conversion_prefix(postclick_source, k):
-    if postclick_source in ('gaapi', 'ga_mail'):
-        return reports.constants.ReportType.GOOGLE_ANALYTICS + '__' + k
-    if postclick_source in ('omniture', ):
-        return reports.constants.ReportType.OMNITURE + '__' + k
-    return k
-
-
 def _sum_conversion(postclick_source, conversion_str):
     conv = defaultdict(int)
 
@@ -474,6 +466,6 @@ def _sum_conversion(postclick_source, conversion_str):
             continue
         c = json.loads(line)
         for k, v in c.iteritems():
-            conv[_get_conversion_prefix(postclick_source, k)] += v
+            conv[helpers.get_conversion_prefix(postclick_source, k)] += v
 
     return dict(conv)

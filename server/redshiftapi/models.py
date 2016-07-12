@@ -161,7 +161,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             if conversion_goal.type in conversions_helper.REPORT_GOAL_TYPES:
                 column = backtosql.TemplateColumn(
                     'part_conversion_goal.sql',
-                    {'goal_id': conversion_goal.pixel.slug if conversion_goal.pixel else conversion_goal.goal_id},
+                    {'goal_id': conversion_goal.get_stats_key()},
                     alias=conversion_key,
                     group=mh.CONVERSION_AGGREGATES
                 )

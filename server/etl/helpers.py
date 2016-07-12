@@ -6,6 +6,7 @@ from dateutil import rrule
 from collections import defaultdict
 
 from dash import constants
+import reports.constants
 
 from utils import dates_helper
 
@@ -218,3 +219,11 @@ def get_aws_credentials_from_role():
 
     return 'aws_access_key_id=%s;aws_secret_access_key=%s%s' % (
         access_key, access_secret, security_token_param)
+
+
+def get_conversion_prefix(postclick_source, k):
+    if postclick_source in ('gaapi', 'ga_mail'):
+        return reports.constants.ReportType.GOOGLE_ANALYTICS + '__' + k
+    if postclick_source in ('omniture', ):
+        return reports.constants.ReportType.OMNITURE + '__' + k
+    return k
