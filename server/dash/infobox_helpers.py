@@ -229,7 +229,7 @@ def get_yesterday_agency_spend(user):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     daily_statements = reports.models.BudgetDailyStatement.objects.filter(
         date=yesterday,
-        budget__campaign__account__in=_get_agency_accounts_ids(user)
+        budget__campaign__account__in=_get_user_accounts(user)
     )
     return reports.budget_helpers.calculate_spend_data(
         daily_statements,
@@ -253,7 +253,7 @@ def get_mtd_all_accounts_spend(filtered_agencies, filtered_account_types):
 
 def get_mtd_agency_spend(user):
     daily_statements = reports.models.BudgetDailyStatement.objects.filter(
-        budget__campaign__account__in=_get_agency_accounts_ids(user)
+        budget__campaign__account__in=_get_user_accounts(user)
     )
     return reports.budget_helpers.calculate_mtd_spend_data(
         daily_statements,
@@ -416,12 +416,12 @@ def count_active_campaigns(account):
     return len(active_campaign_ids)
 
 
-def _get_agency_accounts_ids(user):
+def _get_user_accounts(user):
     return dash.models.Account.objects.all().filter_by_user(user)
 
 
 def count_active_agency_accounts(user):
-    return _get_agency_accounts_ids(user).filter(
+    return _get_user_accounts(user).filter(
         id__in=set(
             dash.models.AdGroup.objects.all()
             .filter_running()
