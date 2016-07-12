@@ -6,13 +6,13 @@ from stats import constants
 from utils import exc
 
 
-def prepare_lvl1_top_rows(default_context):
+def prepare_breakdown_struct_delivery_top_rows(default_context):
     """
     Prepares a SQL query for a general 1st level breakdown.
     Breakdown array should be of lenght 2 - base and 1st level breakdown.
     """
 
-    sql = backtosql.generate_sql('breakdown_lvl1_top_rows.sql', default_context)
+    sql = backtosql.generate_sql('breakdown_struct_delivery_top_rows.sql.sql', default_context)
 
     params = default_context['constraints'].get_params()
 
@@ -20,17 +20,23 @@ def prepare_lvl1_top_rows(default_context):
         raise exc.MissingBreakdownConstraintsError()
 
     params.extend(default_context['breakdown_constraints'].get_params())
+
+    # mind the order in which these are used in the query
+    conversion_params = []
+    if default_context.get('conversions_aggregates'):
+        conversion_params.extend(params)
+
+    if default_context.get('touchpointconversions_aggregates'):
+        conversion_params.extend(params)
+
+    # conversion queries are ordered before the base query
+    params = conversion_params + params
 
     return sql, params
 
 
-def prepare_lvl2_top_rows(default_context):
-    """
-    Prepares a SQL query for a general 2st level breakdown.
-    Breakdown array should be of lenght 3 - base, 1st level and 2nd level breakdown.
-    """
-
-    sql = backtosql.generate_sql('breakdown_lvl2_top_rows.sql', default_context)
+def prepare_breakdown_struct_delivery_top_rows_order_conversions(default_context):
+    sql = backtosql.generate_sql('breakdown_struct_delivery_top_rows_order_conversions.sql', default_context)
 
     params = default_context['constraints'].get_params()
 
@@ -38,6 +44,16 @@ def prepare_lvl2_top_rows(default_context):
         raise exc.MissingBreakdownConstraintsError()
 
     params.extend(default_context['breakdown_constraints'].get_params())
+
+    conversion_params = []
+    if default_context.get('conversions_aggregates'):
+        conversion_params.extend(params)
+
+    if default_context.get('touchpointconversions_aggregates'):
+        conversion_params.extend(params)
+
+    # conversion queries are ordered before the base query
+    params = conversion_params + params
 
     return sql, params
 
@@ -57,11 +73,21 @@ def prepare_time_top_rows(model, time_dimension, default_context, constraints, o
     # when querying time dimension order is always time asc
     default_context['order'] = model.select_order([time_dimension])
 
-    sql = backtosql.generate_sql('breakdown_simple_select.sql', default_context)
+    sql = backtosql.generate_sql('breakdown_lvl_time_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
     if default_context.get('breakdown_constraints'):
         params.extend(default_context['breakdown_constraints'].get_params())
+
+    conversion_params = []
+    if default_context.get('conversions_aggregates'):
+        conversion_params.extend(params)
+
+    if default_context.get('touchpointconversions_aggregates'):
+        conversion_params.extend(params)
+
+    # conversion queries are ordered before the base query
+    params = conversion_params + params
 
     return sql, params
 

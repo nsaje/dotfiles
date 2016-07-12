@@ -223,16 +223,32 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             breakdown_constraints_q = backtosql.Q(self, *[backtosql.Q(self, **x) for x in breakdown_constraints])
             breakdown_constraints_q.join_operator = breakdown_constraints_q.OR
 
+        conversion_columns = self.select_columns(group=mh.CONVERSION_AGGREGATES)
+        tpconversion_columns = self.select_columns(group=mh.TOUCHPOINTCONVERSION_AGGREGATES)
+
+        breakdown_supports_conversions = conversion_columns and tpconversion_columns \
+                                         and sc.get_delivery_dimension(breakdown) is None
+
         order_column = self.get_column(order).as_order(order)
+
         context = {
             'view': self.get_best_view(breakdown, constraints),
             'breakdown': self.get_breakdown(breakdown),
+
+            # partition is 1 less than breakdown long - the last dimension is the targeted one
+            'breakdown_partition': self.get_breakdown(breakdown)[:-1],
+
             'constraints': backtosql.Q(self, **constraints),
             'breakdown_constraints': breakdown_constraints_q,
             'aggregates': self.get_aggregates(),
             'order': order_column,
             'offset': offset,
             'limit': limit,
+
+            'is_ordered_by_conversions': order_column.group == mh.CONVERSION_AGGREGATES,
+            'is_ordered_by_touchpointconversions': order_column.group == mh.TOUCHPOINTCONVERSION_AGGREGATES,
+            'conversions_aggregates': conversion_columns if breakdown_supports_conversions else [],
+            'touchpointconversions_aggregates': tpconversion_columns if breakdown_supports_conversions else [],
         }
 
         return context
