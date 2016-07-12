@@ -203,6 +203,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_set_ga_api_tracking', 'Can set GA API tracking.'),
             ('can_filter_by_agency', 'Can filter by agency'),
             ('can_filter_by_account_type', 'Can filter by account type'),
+            ('can_access_agency_infobox', 'Can access info box on all accounts agency level'),
         )
 
     def get_full_name(self):
