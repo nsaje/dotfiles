@@ -18,10 +18,11 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         // and configured styles (font, min/max widths, padding, etc.)
         // Solution is sub-optimal, since it can only calculate text fields (including parsed values)
         var headerCells = grid.header.ui.element.find('.zem-grid-cell');
+
         var gridWidth = 0;
         var columnWidths = [];
         var maxColumnWidths = [];
-        grid.header.visibleColumns.forEach(function (column, i) {
+        headerCells.each(function (i) {
             // Retrieve properties that affects column width
             var font = window.getComputedStyle(headerCells[i], null).getPropertyValue('font');
             var padding = window.getComputedStyle(headerCells[i], null).getPropertyValue('padding-left');
@@ -32,7 +33,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             padding = parseInt(padding) || 0;
 
             // Calculate column column width without constraints (use only font)
-            var width = calculateColumnWidth(grid, column, font);
+            var width = calculateColumnWidth(grid, grid.header.visibleColumns[i], font);
 
             // Apply constraints to column width (padding, max/min size)
             width += 2 * padding;
@@ -58,7 +59,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
     }
 
     function calculateColumnWidth (grid, column, font) {
-        if (!column.data) return -1;
+        if (!column || !column.data) return -1;
 
         var width = getTextWidth(column.data.name, font);
         width = Math.max(width, zemGridConstants.gridStyle.DEFAULT_ICON_SIZE);  // Column without text (e.g. only icon)

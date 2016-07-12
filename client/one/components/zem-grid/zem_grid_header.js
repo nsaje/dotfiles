@@ -22,9 +22,11 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 // yet rendered causing resize to function on empty table. On the other hand call resize
                 // immediately to prevent flickering if table is already rendered (e.g. toggling columns)
                 zemGridUIService.resizeGridColumns(ctrl.grid);
-                requestAnimationFrame (function () {
-                    zemGridUIService.resizeGridColumns(ctrl.grid);
-                });
+                $timeout(function () {
+                    requestAnimationFrame (function () {
+                        zemGridUIService.resizeGridColumns(ctrl.grid);
+                    });
+                }, 0, false);
             }
 
             function handleHorizontalScroll (leftOffset) {
