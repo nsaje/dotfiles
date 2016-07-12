@@ -75,6 +75,6 @@ class Model(object):
     def select_order(self, subset):
         return [self.get_column(c).as_order(c) for c in subset]
 
-    def add_column(self, column, custom_alias=None):
+    def add_column(self, column):
         self.columns.append(column)
-        self.columns_dict[custom_alias or column.alias] = column
+        self.columns_dict[column.alias] = column
