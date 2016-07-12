@@ -226,8 +226,8 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
         conversion_columns = self.select_columns(group=mh.CONVERSION_AGGREGATES)
         tpconversion_columns = self.select_columns(group=mh.TOUCHPOINTCONVERSION_AGGREGATES)
 
-        breakdown_supports_conversions = conversion_columns and tpconversion_columns \
-                                         and sc.get_delivery_dimension(breakdown) is None
+        breakdown_supports_conversions = (conversion_columns and tpconversion_columns and
+                                          sc.get_delivery_dimension(breakdown) is None)
 
         order_column = self.get_column(order).as_order(order)
 

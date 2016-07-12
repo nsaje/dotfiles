@@ -39,7 +39,7 @@ def _prepare_query(model, breakdown, constraints, breakdown_constraints,
 
     if 2 <= len(breakdown) <= 3:
         if (default_context.get('is_ordered_by_conversions') or
-            default_context.get('is_ordered_by_touchpointconversions')):
+           default_context.get('is_ordered_by_touchpointconversions')):
             return queries.prepare_breakdown_struct_delivery_top_rows_order_conversions(default_context)
 
         return queries.prepare_breakdown_struct_delivery_top_rows(default_context)
