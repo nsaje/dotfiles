@@ -38,6 +38,16 @@ NEW_MATERIALIZED_VIEWS = [
     materialize_views.MVAdGroup,
     materialize_views.MVCampaign,
     materialize_views.MVAccount,
+
+    materialize_views.MVTouchpointAccount,
+    materialize_views.MVTouchpointCampaign,
+    materialize_views.MVTouchpointAdGroup,
+    materialize_views.MVTouchpointContentAd,
+
+    materialize_views.MVConversionsAccount,
+    materialize_views.MVConversionsCampaign,
+    materialize_views.MVConversionsAdGroup,
+    materialize_views.MVConversionsContentAd,
 ]
 
 
