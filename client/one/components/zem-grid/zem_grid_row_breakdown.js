@@ -28,7 +28,7 @@ oneApp.directive('zemGridRowBreakdown', [function () {
             }
 
             function getBreakdownColumnStyle () {
-                return zemGridUIService.getBreakdownColumnStyle(vm.row);
+                return zemGridUIService.getBreakdownColumnStyle(vm.grid, vm.row);
             }
 
             function getCompleteText () {

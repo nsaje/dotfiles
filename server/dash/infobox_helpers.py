@@ -225,12 +225,35 @@ def get_yesterday_all_accounts_spend(filtered_agencies, filtered_account_types):
     ).get('media', Decimal(0))
 
 
+def get_yesterday_agency_spend(user):
+    yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
+    daily_statements = reports.models.BudgetDailyStatement.objects.filter(
+        date=yesterday,
+        budget__campaign__account__in=_get_user_accounts(user)
+    )
+    return reports.budget_helpers.calculate_spend_data(
+        daily_statements,
+        use_decimal=True
+    ).get('media', Decimal(0))
+
+
 def get_mtd_all_accounts_spend(filtered_agencies, filtered_account_types):
     daily_statements = reports.models.BudgetDailyStatement.objects.all()
     daily_statements = _filter_daily_statements(
         daily_statements,
         filtered_agencies,
         filtered_account_types
+    )
+    return reports.budget_helpers.calculate_mtd_spend_data(
+        daily_statements,
+        date=_until_today(),
+        use_decimal=True
+    ).get('media', Decimal(0))
+
+
+def get_mtd_agency_spend(user):
+    daily_statements = reports.models.BudgetDailyStatement.objects.filter(
+        budget__campaign__account__in=_get_user_accounts(user)
     )
     return reports.budget_helpers.calculate_mtd_spend_data(
         daily_statements,
@@ -393,6 +416,23 @@ def count_active_campaigns(account):
     return len(active_campaign_ids)
 
 
+def _get_user_accounts(user):
+    return dash.models.Account.objects.all().filter_by_user(user)
+
+
+def count_active_agency_accounts(user):
+    return _get_user_accounts(user).filter(
+        id__in=set(
+            dash.models.AdGroup.objects.all()
+            .filter_running()
+            .values_list(
+                'campaign__account',
+                flat=True
+            )
+        )
+    ).count()
+
+
 def count_active_accounts(filtered_agencies, filtered_account_types):
     account_ids = set(
         dash.models.AdGroup.objects.all()
@@ -424,7 +464,7 @@ def _filter_user_by_account_type(users, filtered_account_types):
             models.Q(account__users__in=users) |
             models.Q(account__groups__user__in=users) |
             models.Q(account__agency__users__in=users)
-        )\
+    )\
         .group_current_settings()
 
     filtered_latest_account_settings = dash.models.AccountSettings.objects\

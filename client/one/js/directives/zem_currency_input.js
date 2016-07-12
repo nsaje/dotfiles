@@ -42,8 +42,7 @@ oneApp.directive('zemCurrencyInput', ['$filter', function ($filter) {
                                 caretPosEnd = caretPosStart;
                             }
                             elem.setSelectionRange(caretPosStart, caretPosEnd);
-                        }
-                        else {
+                        } else {
                             elem.focus();
                         }
                     }

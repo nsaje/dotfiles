@@ -1093,8 +1093,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     ].concat(MANAGEMENT_GROUP, METRICS_GROUP);
 
     var CAMPAIGN_AD_GROUPS = [
-        COLUMNS.stateAdGroup,
         COLUMNS.adgroup,
+        COLUMNS.stateAdGroup,
         COLUMNS.statusAdGroup,
         COLUMNS.performance,
     ].concat(METRICS_GROUP);

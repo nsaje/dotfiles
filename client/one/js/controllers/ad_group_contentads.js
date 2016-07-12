@@ -1,5 +1,5 @@
-/* globals oneApp, options, angular, constants */
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService',  'zemDataSourceService', 'zemGridEndpointService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
+/* globals oneApp, options, angular, constants, moment */
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService',  'zemDataSourceService', 'zemGridEndpointService', 'zemUploadApi', 'zemUploadEndpointService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService, zemUploadApi, zemUploadEndpointService) { // eslint-disable-line max-len
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -498,20 +498,9 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     ];
 
     $scope.addContentAds = function () {
-        var modalInstance = $modal.open({
-            templateUrl: '/partials/upload_ads_modal.html',
-            controller: 'UploadAdsModalCtrl',
-            windowClass: 'modal-content-upload',
-            scope: $scope,
-        });
-
-        modalInstance.result.then(function () {
-            getTableData();
-        }).catch(function () {
-            getTableData();
-        });
-
-        return modalInstance;
+        var endpoint = zemUploadEndpointService.createEndpoint($state.params.id);
+        var api = zemUploadApi.createInstance();
+        return api.openModal($scope.adGroup, endpoint, getTableData);
     };
 
     var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {

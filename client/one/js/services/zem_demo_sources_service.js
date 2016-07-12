@@ -47,11 +47,11 @@ oneApp.factory('zemDemoSourcesService', ['$q', '$window', 'demoDefaults', 'zemDe
                     return deferred.promise;
                 }
                 return refreshAdSources(adGroup);
-            } else {
-                deferred = $q.defer();
-                deferred.resolve(false);
-                return deferred.promise;
             }
+            deferred = $q.defer();
+            deferred.resolve(false);
+            return deferred.promise;
+
         },
         getForAd: function (adGroup, row) {
             if (!adGroupSourcesTableRows[adGroup]) { return false; }

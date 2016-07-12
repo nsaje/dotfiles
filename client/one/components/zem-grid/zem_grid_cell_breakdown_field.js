@@ -21,10 +21,12 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_breakdown_field.html',
-        controller: ['$scope', 'zemGridConstants', 'zemGridUIService', function ($scope, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
+        controller: ['$scope', 'config', 'zemGridConstants', 'zemGridUIService', function ($scope, config, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
             var vm = this;
+            vm.config = config;
             vm.types = zemGridConstants.gridColumnTypes;
             vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
+            vm.toggleCollapse = toggleCollapse;
 
             $scope.$watch('ctrl.row', update);
             $scope.$watch('ctrl.data', update);
@@ -37,7 +39,11 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
 
             function getBreakdownColumnStyle () {
                 if (!vm.row) return; // can happen because of virtual scroll; TODO: find better solution
-                return zemGridUIService.getBreakdownColumnStyle(vm.row);
+                return zemGridUIService.getBreakdownColumnStyle(vm.grid, vm.row);
+            }
+
+            function toggleCollapse () {
+                vm.grid.meta.api.setCollapsedRows(vm.row, !vm.row.collapsed);
             }
 
             function getFieldType (breakdown, rowLevel) {

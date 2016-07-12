@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp, angular */
 'use strict';
 
 oneApp.directive('zemDropdown', function () {

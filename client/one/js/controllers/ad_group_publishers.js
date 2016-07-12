@@ -1,4 +1,4 @@
-/*globals oneApp,moment,constants,options*/
+/*globals angular,oneApp,moment,constants,options*/
 
 oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemGridEndpointService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) {
     $scope.selectedTotals = true;

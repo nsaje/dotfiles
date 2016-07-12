@@ -14,11 +14,18 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
         templateUrl: '/components/zem-grid/templates/zem_grid_header.html',
         link: function (scope, element, attributes, ctrl) {
             var pubsub = ctrl.grid.meta.pubsub;
+            var requestAnimationFrame = zemGridUIService.requestAnimationFrame;
             ctrl.grid.header.ui.element = element;
 
             function resizeColumns () {
+                // Workaround: call resize 2 times - in some cases  (e.g. initialization) table is not
+                // yet rendered causing resize to function on empty table. On the other hand call resize
+                // immediately to prevent flickering if table is already rendered (e.g. toggling columns)
+                zemGridUIService.resizeGridColumns(ctrl.grid);
                 $timeout(function () {
-                    zemGridUIService.resizeGridColumns(ctrl.grid);
+                    requestAnimationFrame (function () {
+                        zemGridUIService.resizeGridColumns(ctrl.grid);
+                    });
                 }, 0, false);
             }
 
@@ -64,12 +71,6 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 vm.grid.header.visibleColumns = vm.grid.header.columns.filter(function (column) {
                     return column.visible;
                 });
-
-                if (vm.grid.meta.service.getBreakdownLevel() > 1) {
-                    vm.grid.header.visibleColumns.unshift({
-                        type: zemGridConstants.gridColumnTypes.COLLAPSE,
-                    });
-                }
 
                 if (vm.grid.meta.options.enableSelection) {
                     vm.grid.header.visibleColumns.unshift({

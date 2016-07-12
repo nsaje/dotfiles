@@ -1542,9 +1542,6 @@ class AllAccountsOverview(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     def get(self, request):
-        if not request.user.has_perm('zemauth.can_access_all_accounts_infobox'):
-            raise exc.AuthorizationError()
-
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         # infobox only filters by agency and account type
@@ -1556,15 +1553,50 @@ class AllAccountsOverview(api_common.BaseApiView):
             'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ALL_ACCOUNTS),
         }
 
+        if request.user.has_perm('zemauth.can_access_all_accounts_infobox'):
+            basic_settings = self._basic_all_accounts_settings(start_date, end_date, view_filter)
+        elif request.user.has_perm('zemauth.can_access_agency_infobox'):
+            basic_settings = self._basic_agency_settings(request.user, start_date, end_date,
+                                                         view_filter)
+        else:
+            raise exc.AuthorizationError()
+
         response = {
             'header': header,
-            'basic_settings': self._basic_settings(start_date, end_date, view_filter),
+            'basic_settings': basic_settings,
             'performance_settings': None
         }
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, start_date, end_date, view_filter):
+    def _basic_agency_settings(self, user, start_date, end_date, view_filter):
+        settings = []
+        count_active_accounts = infobox_helpers.count_active_agency_accounts(user)
+        settings.append(infobox_helpers.OverviewSetting(
+            'Active accounts:',
+            count_active_accounts,
+            section_start=True,
+            tooltip='Number of accounts with at least one campaign running'
+        ))
+
+        yesterday_spend = infobox_helpers.get_yesterday_agency_spend(user)
+        settings.append(infobox_helpers.OverviewSetting(
+            'Yesterday spend:',
+            lc_helper.default_currency(yesterday_spend),
+            tooltip='Yesterday media spend',
+            section_start=True
+        ))
+
+        mtd_spend = infobox_helpers.get_mtd_agency_spend(user)
+        settings.append(infobox_helpers.OverviewSetting(
+            'MTD spend:',
+            lc_helper.default_currency(mtd_spend),
+            tooltip='Month-to-date media spend',
+        ))
+
+        return [setting.as_dict() for setting in settings]
+
+    def _basic_all_accounts_settings(self, start_date, end_date, view_filter):
         settings = []
 
         constraints = {}

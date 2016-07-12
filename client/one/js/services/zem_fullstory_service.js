@@ -1,4 +1,4 @@
-/*globals FS*/
+/*globals FS, oneApp*/
 'use strict';
 
 oneApp.factory('zemFullStoryService', function () {
