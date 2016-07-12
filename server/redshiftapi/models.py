@@ -1,4 +1,7 @@
 import backtosql
+import collections
+
+from dash import conversions_helper
 
 from stats import constants as sc
 
@@ -141,6 +144,42 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
     pv_per_visit = backtosql.TemplateColumn('part_sumdiv.sql', {'expr': 'pageviews', 'divisor': 'visits'}, mh.AGGREGATES)
     avg_tos = backtosql.TemplateColumn('part_sumdiv.sql',
                                        {'expr': 'total_time_on_site', 'divisor': 'visits'}, mh.AGGREGATES)
+
+    def init_conversion_columns(self, conversion_goals):
+        """
+        Conversion columns are added dynamically, because the number and their definition
+        depends on the conversion_goals collection.
+        """
+
+        if not conversion_goals:
+            return
+
+        # dynamically generate columns based on conversion goals
+        for conversion_goal in conversion_goals:
+            conversion_key = conversion_goal.get_view_key(conversion_goals)
+
+            if conversion_goal.type in conversions_helper.REPORT_GOAL_TYPES:
+                column = backtosql.TemplateColumn(
+                    'part_conversion_goal.sql',
+                    {'goal_id': conversion_goal.pixel.slug if conversion_goal.pixel else conversion_goal.goal_id},
+                    alias=conversion_key,
+                    group=mh.CONVERSION_AGGREGATES
+                )
+
+                self.add_column(column)
+
+            elif conversion_goal.type == conversions_helper.PIXEL_GOAL_TYPE:
+                column = backtosql.TemplateColumn(
+                    'part_touchpointconversion_goal.sql',
+                    {
+                        'goal_id': conversion_goal.pixel.slug if conversion_goal.pixel else conversion_goal.goal_id,
+                        'window': conversion_goal.conversion_window,
+                    },
+                    alias=conversion_key,
+                    group=mh.TOUCHPOINTCONVERSION_AGGREGATES
+                )
+
+                self.add_column(column)
 
     @classmethod
     def get_best_view(cls, breakdown, constraints):
