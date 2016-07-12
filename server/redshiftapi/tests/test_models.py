@@ -1,9 +1,76 @@
 import backtosql
 from django.test import TestCase
 
+import dash.models
+
 from redshiftapi import models
 from redshiftapi import model_helpers
 from stats import constants
+
+
+class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
+    fixtures = ['test_views.yaml']
+
+    def test_create_columns(self):
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
+
+        m = models.MVMaster(conversion_goals)
+
+        conversion_columns = m.select_columns(group=model_helpers.CONVERSION_AGGREGATES)
+        touchpoint_columns = m.select_columns(group=model_helpers.TOUCHPOINTCONVERSION_AGGREGATES)
+
+        self.assertListEqual([x.column_as_alias('a') for x in conversion_columns], [
+            "SUM(CASE WHEN a.slug='ga__2' THEN conversion_count ELSE 0 END) conversion_goal_2",
+            "SUM(CASE WHEN a.slug='ga__3' THEN conversion_count ELSE 0 END) conversion_goal_3",
+            "SUM(CASE WHEN a.slug='omniture__4' THEN conversion_count ELSE 0 END) conversion_goal_4",
+            "SUM(CASE WHEN a.slug='omniture__5' THEN conversion_count ELSE 0 END) conversion_goal_5",
+        ])
+
+        self.assertListEqual([x.column_as_alias('a') for x in touchpoint_columns], [
+            backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.conversion_window<=168
+            THEN conversion_count ELSE 0 END) conversion_goal_1""")
+        ])
+
+        columns = m.get_columns()
+        self.assertEquals(len(columns), 43)
+
+        columns = m.select_columns(group=model_helpers.BREAKDOWN)
+        self.assertEquals(len(columns), 18)
+
+    def test_get_default_context(self):
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
+        m = models.MVMaster(conversion_goals)
+
+        constraints = {
+            'account_id': 123,
+            'campaign_id': 223,
+        }
+
+        breakdown_constraints = [
+            {'content_ad_id': 32, 'source_id': 1},
+            {'content_ad_id': 33, 'source_id': [2, 3]},
+            {'content_ad_id': 35, 'source_id': [2, 4, 22]},
+        ]
+
+        context = m.get_default_context(
+            ['account_id', 'source_id'],
+            constraints,
+            breakdown_constraints,
+            '-conversion_goal_1',
+            2,
+            33
+        )
+
+        self.assertFalse(context['is_ordered_by_conversions'])
+        self.assertTrue(context['is_ordered_by_touchpointconversions'])
+
+        self.assertListEqual(context['conversions_aggregates'], m.select_columns([
+            'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5',
+        ]))
+
+        self.assertListEqual(context['touchpointconversions_aggregates'], m.select_columns([
+            'conversion_goal_1',
+        ]))
 
 
 class RSModelTest(TestCase, backtosql.TestSQLMixin):
@@ -38,6 +105,7 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
                                'bounce_rate', 'pv_per_visit', 'avg_tos'])
 
     def test_get_default_context_constraints(self):
+        m = models.MVMaster()
 
         constraints = {
             'account_id': 123,
@@ -50,7 +118,7 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
             {'content_ad_id': 35, 'source_id': [2, 4, 22]},
         ]
 
-        context = models.MVMaster().get_default_context(
+        context = m.get_default_context(
             ['account_id', 'source_id'],
             constraints,
             breakdown_constraints,
@@ -76,6 +144,8 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertEqual(context['offset'], 2)
         self.assertEqual(context['limit'], 33)
+
+        self.assertListEqual(context['breakdown_partition'], m.select_columns(['account_id']))
 
     def test_get_best_view(self):
         m = models.MVMaster()
