@@ -9,51 +9,71 @@ MATERIALIZED_VIEWS = [
     ({
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.SOURCE
-    }, 'mv_account'),
+    }, {
+        'base': 'mv_account',
+        'conversions': 'mv_conversions_account',
+        'touchpointconversions': 'mv_touch_account',
+    }),
     ({
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.SOURCE
-    } | set(sc.DeliveryDimension._ALL),
-        'mv_account_delivery'),
+    } | set(sc.DeliveryDimension._ALL), {
+        'base': 'mv_account_delivery',
+    }),
     ({
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.SOURCE,
         sc.StructureDimension.CAMPAIGN
-    }, 'mv_campaign'),
+    }, {
+        'base': 'mv_campaign',
+        'conversions': 'mv_conversions_campaign',
+        'touchpointconversions': 'mv_touch_campaign',
+    }),
     ({
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.SOURCE,
         sc.StructureDimension.CAMPAIGN
-    } | set(sc.DeliveryDimension._ALL),
-        'mv_campaign_delivery'),
+    } | set(sc.DeliveryDimension._ALL), {
+        'base': 'mv_campaign_delivery',
+    }),
     ({
         sc.StructureDimension.SOURCE,
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.CAMPAIGN,
         sc.StructureDimension.AD_GROUP
-    }, 'mv_ad_group'),
+    }, {
+        'base': 'mv_ad_group',
+        'conversions': 'mv_conversions_ad_group',
+        'touchpointconversions': 'mv_touch_ad_group',
+    }),
     ({
         sc.StructureDimension.SOURCE,
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.CAMPAIGN,
         sc.StructureDimension.AD_GROUP
-    } | set(sc.DeliveryDimension._ALL),
-        'mv_ad_group_delivery'),
+    } | set(sc.DeliveryDimension._ALL), {
+        'base': 'mv_ad_group_delivery',
+    }),
     ({
         sc.StructureDimension.SOURCE,
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.CAMPAIGN,
         sc.StructureDimension.AD_GROUP,
         sc.StructureDimension.CONTENT_AD
-    }, 'mv_content_ad'),
+    }, {
+        'base': 'mv_content_ad',
+        'conversions': 'mv_conversions_content_ad',
+        'touchpointconversions': 'mv_touch_content_ad',
+    }),
     ({
         sc.StructureDimension.SOURCE,
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.CAMPAIGN,
         sc.StructureDimension.AD_GROUP,
         sc.StructureDimension.CONTENT_AD
-    } | set(sc.DeliveryDimension._ALL),
-        'mv_content_ad_delivery'),
+    } | set(sc.DeliveryDimension._ALL), {
+        'base': 'mv_content_ad_delivery',
+    }),
 ]
 
 
@@ -142,10 +162,18 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             if len(breakdown - available) == 0:
                 return view
 
-        return 'mv_master'
+        if delivery:
+            return {
+                'base': 'mv_master',
+            }
 
-    @classmethod
-    def get_default_context(cls, breakdown, constraints, breakdown_constraints,
+        return {
+            'base': 'mv_master',
+            'conversions': 'mv_conversions',
+            'touchpointconversions': 'mv_touchpointconversions',
+        }
+
+    def get_default_context(self, breakdown, constraints, breakdown_constraints,
                             order, offset, limit):
         """
         Returns the template context that is used by most of templates
