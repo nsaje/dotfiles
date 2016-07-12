@@ -647,6 +647,14 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
         (materialize_views.MVAdGroup, 'mv_ad_group'),
         (materialize_views.MVCampaign, 'mv_campaign'),
         (materialize_views.MVAccount, 'mv_account'),
+        (materialize_views.MVTouchpointAccount, 'mv_touch_account'),
+        (materialize_views.MVTouchpointCampaign, 'mv_touch_campaign'),
+        (materialize_views.MVTouchpointAdGroup, 'mv_touch_ad_group'),
+        (materialize_views.MVTouchpointContentAd, 'mv_touch_content_ad'),
+        (materialize_views.MVConversionsAccount, 'mv_conversions_account'),
+        (materialize_views.MVConversionsCampaign, 'mv_conversions_campaign'),
+        (materialize_views.MVConversionsAdGroup, 'mv_conversions_ad_group'),
+        (materialize_views.MVConversionsContentAd, 'mv_conversions_content_ad'),
     ]
 
     def test_generate(self, mock_transaction):

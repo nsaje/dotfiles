@@ -667,13 +667,166 @@ class MVContentAdDelivery(DerivedMaterializedView):
 
     def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
+            'breakdown': models.MVMaster().get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id',
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'aggregates': models.MVMaster().get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
-            'source_table': 'mv_master',
+            'source_table': MasterView.TABLE_NAME,
+        })
+
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+
+class MVTouchpointAccount(DerivedMaterializedView):
+
+    TABLE_NAME = 'mv_touch_account'
+
+    def prepare_insert_query(self):
+        sql = backtosql.generate_sql('etl_select_insert_touchpointconversions.sql', {
+            # use MVMaster model as it has same breakdown columns
+            'breakdown': models.MVMaster().get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id',
+            ]),
+            'destination_table': self.TABLE_NAME,
+            'source_table': MVTouchpointConversions.TABLE_NAME,
+        })
+
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+
+class MVTouchpointCampaign(DerivedMaterializedView):
+
+    TABLE_NAME = 'mv_touch_campaign'
+
+    def prepare_insert_query(self):
+        sql = backtosql.generate_sql('etl_select_insert_touchpointconversions.sql', {
+            'breakdown': models.MVMaster().get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
+            ]),
+            'destination_table': self.TABLE_NAME,
+            'source_table': MVTouchpointConversions.TABLE_NAME,
+        })
+
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+
+class MVTouchpointAdGroup(DerivedMaterializedView):
+
+    TABLE_NAME = 'mv_touch_ad_group'
+
+    def prepare_insert_query(self):
+        sql = backtosql.generate_sql('etl_select_insert_touchpointconversions.sql', {
+            'breakdown': models.MVMaster().get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
+            ]),
+            'destination_table': self.TABLE_NAME,
+            'source_table': MVTouchpointConversions.TABLE_NAME,
+        })
+
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+
+class MVTouchpointContentAd(DerivedMaterializedView):
+
+    TABLE_NAME = 'mv_touch_content_ad'
+
+    def prepare_insert_query(self):
+        sql = backtosql.generate_sql('etl_select_insert_touchpointconversions.sql', {
+            'breakdown': models.MVMaster().get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'
+            ]),
+            'destination_table': self.TABLE_NAME,
+            'source_table': MVTouchpointConversions.TABLE_NAME,
+        })
+
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+
+class MVConversionsAccount(DerivedMaterializedView):
+
+    TABLE_NAME = 'mv_conversions_account'
+
+    def prepare_insert_query(self):
+        sql = backtosql.generate_sql('etl_select_insert_conversions.sql', {
+            'breakdown': models.MVMaster().get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id',
+            ]),
+            'destination_table': self.TABLE_NAME,
+            'source_table': MVConversions.TABLE_NAME,
+        })
+
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+
+class MVConversionsCampaign(DerivedMaterializedView):
+
+    TABLE_NAME = 'mv_conversions_campaign'
+
+    def prepare_insert_query(self):
+        sql = backtosql.generate_sql('etl_select_insert_conversions.sql', {
+            'breakdown': models.MVMaster().get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
+            ]),
+            'destination_table': self.TABLE_NAME,
+            'source_table': MVConversions.TABLE_NAME,
+        })
+
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+
+class MVConversionsAdGroup(DerivedMaterializedView):
+
+    TABLE_NAME = 'mv_conversions_ad_group'
+
+    def prepare_insert_query(self):
+        sql = backtosql.generate_sql('etl_select_insert_conversions.sql', {
+            'breakdown': models.MVMaster().get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
+            ]),
+            'destination_table': self.TABLE_NAME,
+            'source_table': MVConversions.TABLE_NAME,
+        })
+
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+
+class MVConversionsContentAd(DerivedMaterializedView):
+
+    TABLE_NAME = 'mv_conversions_content_ad'
+
+    def prepare_insert_query(self):
+        sql = backtosql.generate_sql('etl_select_insert_conversions.sql', {
+            'breakdown': models.MVMaster().get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'
+            ]),
+            'destination_table': self.TABLE_NAME,
+            'source_table': MVConversions.TABLE_NAME,
         })
 
         return sql, {
