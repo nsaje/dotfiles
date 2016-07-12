@@ -1,2 +1,1 @@
--- TODO should be 'conversion_count'
-SUM(CASE WHEN {{ p }}slug='{{ goal_id }}' THEN hits ELSE 0 END) {{ alias }}
+SUM(CASE WHEN {{ p }}slug='{{ goal_id }}' THEN conversion_count ELSE 0 END) {{ alias }}
