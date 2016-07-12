@@ -34,7 +34,7 @@ WITH
     ),
     {% endif %}
 
-    -- base query, get all other dimensions
+    -- base query, get all other dimensions and rank them by position
     temp_base AS (
         SELECT
             {{ breakdown|only_alias:"b" }},
@@ -59,7 +59,7 @@ WITH
             r <= {{ limit }}
     )
 
--- join the selected data together
+-- join the preselected data together
 SELECT
     {{ breakdown|only_alias:"temp_base" }},
     {{ aggregates|only_alias:"temp_base" }}

@@ -1,7 +1,7 @@
 {% load backtosql_tags %}
 {% autoescape off %}
 
--- this query supports sorting by conversion goals
+-- NOTE: this query supports sorting by conversion goals
 
 WITH
     {% if conversions_aggregates %}
@@ -55,7 +55,7 @@ SELECT
     {% endif %}
 
 FROM (
-    -- rank top rows
+    -- join and rank top rows, than select top rows
     SELECT
         {{ breakdown|only_alias:"temp_base" }},
         {{ aggregates|only_alias:"temp_base" }},
@@ -66,7 +66,6 @@ FROM (
             {{ touchpointconversions_aggregates|only_alias:"temp_touchpointconversions" }},
         {% endif %}
 
-        -- get best rows for current dimension
         {% if is_ordered_by_conversions %}
             ROW_NUMBER() OVER (PARTITION BY {{ breakdown_partition|only_column:"temp_base" }}
             ORDER BY {{ order|only_alias:"temp_conversions" }}) AS r
