@@ -419,7 +419,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             # this one should be left out as its from lower priority postclick source
             PostclickstatsResults(1, 'ga_mail', 2, 'outbrain', 'beer.com', 12, '{einpix: 2}', 22, 100, 20, 2),
             PostclickstatsResults(3, 'gaapi', 3, 'adblade', 'nesto.com', 12, '{einpix: 2}', 22, 100, 20, 2),
-            PostclickstatsResults(2, 'gaapi', 4, 'outbrain', 'trol', 12, '{einpix: 2}', 22, 100, 20, 2),
+            PostclickstatsResults(2, 'omniture', 4, 'outbrain', 'trol', 12, '{einpix: 2}', 22, 100, 20, 2),
         ]
 
         mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
@@ -428,13 +428,13 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         self.assertItemsEqual(list(mv.get_postclickstats(None, date)), [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), '{einpix: 2}'),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
             ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), '{einpix: 2}'),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{einpix: 2}', 'omniture')),
             ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), '{einpix: 2}'),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
         ])
 
     def test_prepare_postclickstats_query(self):
@@ -558,22 +558,22 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
         postclickstats_return_value = [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), '{"einpix": 2, "preuba": 1}'),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{"einpix": 2, "preuba": 1}', 'gaapi')),
             ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  '{"poop": 111}'),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  ('{"poop": 111}', 'omniture')),
             ((1, 3), (date, 2, 1, 1, 3, 3, 3, 'nesto2.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  '{}'),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  ('{}', None)),
             ((1, 3), (date, 3, 1, 1, 3, 3, 3, 'nesto3.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  ''),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  ('', None)),
             ((1, 3), (date, 4, 1, 1, 3, 3, 3, 'nesto4.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  None),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0),  (None, 'gaapi')),
             ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), '{"poop": 23}'),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{"poop": 23}', 'ga_mail')),
         ]
 
         with mock.patch.object(materialize_views.MasterView, 'get_postclickstats',
@@ -583,9 +583,9 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
             rows = list(mv.generate_rows(mock_cursor, date, breakdown_keys_with_traffic))
 
             self.assertItemsEqual(rows, [
-                (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'einpix', 2),
-                (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'preuba', 1),
-                (date, 1, 1, 1, 3, 3, 3, 'nesto.com', 'poop', 111),
+                (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'ga__einpix', 2),
+                (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'ga__preuba', 1),
+                (date, 1, 1, 1, 3, 3, 3, 'nesto.com', 'omniture__poop', 111),
             ])
 
 
