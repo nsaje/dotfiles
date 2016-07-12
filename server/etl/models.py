@@ -27,18 +27,6 @@ class K1PostclickStats(backtosql.Model, RSBreakdownMixin):
         return 'postclickstats'
 
 
-class K1OutbrainPublisherStats(backtosql.Model, RSBreakdownMixin):
-    date = backtosql.Column('date', BREAKDOWN)
-
-    ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
-    publisher = backtosql.Column('publisher_name', BREAKDOWN)
-
-    clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
-
-    def get_best_view(self, *args, **kwargs):
-        return 'outbrainpublisherstats'
-
-
 class MVMaster(backtosql.Model, RSBreakdownMixin):
     date = backtosql.Column('date', BREAKDOWN)
 
