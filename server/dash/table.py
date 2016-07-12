@@ -106,9 +106,6 @@ def _set_goal_meta_on_row(stat, performance, conversion_goals):
 
         stat['performance']['list'].append(performance_item)
 
-        if not goal.primary:
-            continue
-
         colored_column = campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.get(goal.type)
         if goal.type == constants.CampaignGoalKPI.CPA:
             colored_column = 'avg_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
@@ -153,9 +150,13 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         if not performance:
             continue
 
-        stat['performance']['overall'] = campaign_goals.STATUS_TO_EMOTICON_MAP[
-            min((p[0] for p in performance))
-        ]
+        # If set, first goal is always primary
+        primary_goal = performance[0][3].primary and performance[0][0]
+
+        if primary_goal:
+            stat['performance']['overall'] = campaign_goals.STATUS_TO_EMOTICON_MAP[
+                primary_goal
+            ]
 
         _set_goal_meta_on_row(stat, performance, conversion_goals)
 

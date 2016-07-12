@@ -583,6 +583,7 @@ OPTIONAL_CSV_FIELDS = ['display_url', 'brand_name', 'description', 'call_to_acti
                        'primary_tracker_url', 'secondary_tracker_url']
 ALL_CSV_FIELDS = MANDATORY_CSV_FIELDS + OPTIONAL_CSV_FIELDS
 IGNORED_CSV_FIELDS = ['errors']
+
 EXPRESSIVE_FIELD_NAME_MAPPING = {
     'primary_impression_tracker_url': 'primary_tracker_url',
     'secondary_impression_tracker_url': 'secondary_tracker_url',

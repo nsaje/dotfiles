@@ -598,6 +598,7 @@ class AdGroupAdsTableTest(TestCase):
             campaign=ad_group.campaign,
             type=constants.CampaignGoalKPI.CPC,
             created_dt=self.mock_date,
+            primary=True
         )
         cgv = models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
@@ -621,6 +622,7 @@ class AdGroupAdsTableTest(TestCase):
             campaign=ad_group.campaign,
             type=constants.CampaignGoalKPI.CPC,
             created_dt=self.mock_date,
+            primary=True
         )
         cgv = models.CampaignGoalValue.objects.create(
             campaign_goal=goal,
@@ -641,26 +643,6 @@ class AdGroupAdsTableTest(TestCase):
         ])
         self.assertEqual(stats[1]['performance']['list'], [
             {'emoticon': constants.Emoticon.SAD, 'text': '$0.020 CPC (planned $0.015)'}
-        ])
-        self.assertEqual(stats[0]['styles'], {})
-        self.assertEqual(stats[1]['styles'], {})
-
-        goal.primary = True
-        goal.save()
-        stats = [copy(self.mock_stats1), copy(self.mock_stats2)]
-        table.set_rows_goals_performance(self.user,
-                                         stats,
-                                         self.mock_date,
-                                         self.mock_date,
-                                         [ad_group.campaign])
-
-        self.assertEqual(stats[0]['performance']['overall'], constants.Emoticon.HAPPY)
-        self.assertEqual(stats[1]['performance']['overall'], constants.Emoticon.SAD)
-        self.assertEqual(stats[0]['performance']['list'], [
-            {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.010 CPC (planned $0.015)'},
-        ])
-        self.assertEqual(stats[1]['performance']['list'], [
-            {'emoticon': constants.Emoticon.SAD, 'text': '$0.020 CPC (planned $0.015)'},
         ])
         self.assertEqual(stats[0]['styles'], {'cpc': constants.Emoticon.HAPPY})
         self.assertEqual(stats[1]['styles'], {'cpc': constants.Emoticon.SAD})
