@@ -1,4 +1,7 @@
 <span class="zem-grid-cell-breakdown-field" ng-style="ctrl.getBreakdownColumnStyle()">
+    <a ng-show="ctrl.row.level < ctrl.grid.meta.service.getBreakdownLevel() && ctrl.row.level > 0" class="zem-grid-cell-breakdown-collapse" ng-click="ctrl.toggleCollapse()">
+        <img class="collapse-icon" ng-class="{'expanded': !ctrl.row.collapsed}" ng-src="{{ctrl.config.static_url}}/one/img/arrow.svg">
+    </a>
     <span ng-show="ctrl.fieldType === ctrl.types.TOTALS_LABEL" class="zem-grid-cell-totals-label">TOTALS</span>
     <span ng-show="ctrl.fieldType === ctrl.types.BASE_FIELD" ng-bind="ctrl.data.value" class="zem-grid-cell-base-field"></span>
     <zem-grid-cell-internal-link ng-show="ctrl.fieldType === ctrl.types.INTERNAL_LINK" data="ctrl.data" row="ctrl.row" column="ctrl.column" grid="ctrl.grid"></zem-grid-cell-internal-link>

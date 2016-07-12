@@ -18,7 +18,9 @@ describe('zemGridCellBreakdownField', function () {
                     level: '',
                     breakdown: '',
                 },
-                service: {},
+                service: {
+                    getBreakdownLevel: function () {},
+                },
             },
         };
     }));
@@ -67,6 +69,9 @@ describe('zemGridCellBreakdownField', function () {
                 meta: {
                     data: {
                         breakdown: test.breakdown,
+                    },
+                    service: {
+                        getBreakdownLevel: function () {},
                     },
                 },
             };

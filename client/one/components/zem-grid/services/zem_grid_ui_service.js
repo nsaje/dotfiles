@@ -62,9 +62,15 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
 
         var width = getTextWidth(column.data.name, font);
         width = Math.max(width, zemGridConstants.gridStyle.DEFAULT_ICON_SIZE);  // Column without text (e.g. only icon)
-        if (column.data.internal) width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
-        if (column.data.help) width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
-        if (column.order !== zemGridConstants.gridColumnOrder.NONE) width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
+        if (column.data.internal) {
+            width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
+        }
+        if (column.data.help) {
+            width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
+        }
+        if (column.order !== zemGridConstants.gridColumnOrder.NONE) {
+            width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;
+        }
 
         grid.body.rows.forEach(function (row) {
             if (row.type !== zemGridConstants.gridRowType.STATS) return;
@@ -77,6 +83,10 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN) {
                 // Special case for breakdown column - add padding based on row level
                 valueWidth += (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
+                // Add additional padding when collapse icon is shown
+                if (grid.meta.service.getBreakdownLevel() > 1 && row.level > 0) {
+                    valueWidth += zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
+                }
             }
             width = Math.max(width, valueWidth);
         });
@@ -167,7 +177,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         element.find('.breakdown-row-primary-cell').css({
             'width': paginationCellWidth + 'px',
             'max-width': paginationCellWidth + 'px',
-            'padding-left': paginationCellPadding,
+            'padding-left': paginationCellPadding + 'px',
         });
 
         element.find('.breakdown-row-info-cell').css({
@@ -214,10 +224,6 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             classes.push('zem-grid-cell-checkbox');
         }
 
-        if (column.type === zemGridConstants.gridColumnTypes.COLLAPSE) {
-            classes.push('zem-grid-cell-collapse');
-        }
-
         return classes;
     }
 
@@ -231,9 +237,16 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         return null;
     }
 
-    function getBreakdownColumnStyle (row) {
+    function getBreakdownColumnStyle (grid, row) {
+        var paddingLeft = (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
+        // Indent breakdown rows on last level with additional padding because no collapse icon is shown in these rows
+        var breakdownLevel = grid.meta.service.getBreakdownLevel();
+        if (breakdownLevel > 1 && breakdownLevel === row.level) {
+            paddingLeft += zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
+        }
+
         return {
-            'padding-left': (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING + 'px',
+            'padding-left': paddingLeft + 'px',
         };
     }
 

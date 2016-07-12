@@ -70,12 +70,6 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                     return column.visible;
                 });
 
-                if (vm.grid.meta.service.getBreakdownLevel() > 1) {
-                    vm.grid.header.visibleColumns.unshift({
-                        type: zemGridConstants.gridColumnTypes.COLLAPSE,
-                    });
-                }
-
                 if (vm.grid.meta.options.enableSelection) {
                     vm.grid.header.visibleColumns.unshift({
                         type: zemGridConstants.gridColumnTypes.CHECKBOX,
