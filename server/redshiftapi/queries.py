@@ -12,7 +12,7 @@ def prepare_breakdown_struct_delivery_top_rows(default_context):
     Breakdown array should be of lenght 2 - base and 1st level breakdown.
     """
 
-    sql = backtosql.generate_sql('breakdown_struct_delivery_top_rows.sql.sql', default_context)
+    sql = backtosql.generate_sql('breakdown_struct_delivery_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
 
