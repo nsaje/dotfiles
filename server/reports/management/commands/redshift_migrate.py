@@ -24,8 +24,8 @@ def migrate_db(start_index=0, app_label=None):
         logger.info('Done, database migrated.')
 
 
-def list_migrations(start_index=0, show_sql=False):
-    migration_files = _get_migrations(start_index)
+def list_migrations(start_index=0, app_label=None, show_sql=False):
+    migration_files = _get_migrations(start_index, app_label)
 
     for i, mf in enumerate(migration_files):
         logger.info('Migration {} {}/{} {}'.format(start_index + i, i + 1, len(migration_files), mf))
@@ -97,6 +97,6 @@ class Command(ExceptionCommand):
         set_logger_verbosity(logger, options)
 
         if is_list_action:
-            list_migrations(start_index, show_sql)
+            list_migrations(start_index, app_label, show_sql)
         else:
             migrate_db(start_index, app_label)
