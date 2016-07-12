@@ -21,9 +21,27 @@ INSERT INTO mv_touchpointconversions (
             WHEN a.conversion_lag <= 720 THEN 720
             ELSE 2160
         END AS conversion_window,
-        count(1) as touchpoint_count
+        COUNT(a.touchpoint_id) as touchpoint_count,
+        SUM(CASE WHEN a.conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS conversion_count
 
-    FROM conversions a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
+    FROM (
+        SELECT
+              c.date as date,
+              c.source_id as source_id,
+
+              c.ad_group_id as ad_group_id,
+              c.content_ad_id as content_ad_id,
+              c.publisher as publisher,
+
+              c.slug as slug,
+
+              c.conversion_lag as conversion_lag,
+
+              c.touchpoint_id as touchpoint_id,
+              RANK() OVER
+                  (PARTITION BY c.conversion_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
+        FROM conversions c
+    ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
     WHERE a.conversion_lag <= 2160 AND a.date BETWEEN %(date_from)s AND %(date_to)s
     GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 );

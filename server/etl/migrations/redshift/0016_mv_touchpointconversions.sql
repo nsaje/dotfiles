@@ -12,5 +12,6 @@ CREATE TABLE mv_touchpointconversions (
     slug varchar(256) encode lzo,
     conversion_window integer encode lzo,
 
-    touchpoint_count integer encode lzo
+    touchpoint_count integer encode lzo,
+    conversion_count integer encode lzo
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id, conversion_window);
