@@ -409,10 +409,10 @@ class MasterView(Materialize):
 
     def prepare_postclickstats_query(self, date):
         sql = backtosql.generate_sql('etl_breakdown_simple_one_day.sql', {
-            'breakdown': models.K1PostclickStats.get_breakdown([
+            'breakdown': models.K1PostclickStats().get_breakdown([
                 'ad_group_id', 'postclick_source', 'content_ad_id', 'source_slug', 'publisher',
             ]),
-            'aggregates': models.K1PostclickStats.get_aggregates(),
+            'aggregates': models.K1PostclickStats().get_aggregates(),
             'table': 'postclickstats'
         })
 
@@ -524,10 +524,10 @@ class MVAccount(DerivedMaterializedView):
 
     def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
+            'breakdown': models.MVMaster().get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id',
             ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'aggregates': models.MVMaster().get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
             'source_table': 'mv_campaign',
         })
@@ -544,11 +544,11 @@ class MVAccountDelivery(DerivedMaterializedView):
 
     def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
+            'breakdown': models.MVMaster().get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id',
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'aggregates': models.MVMaster().get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
             'source_table': 'mv_campaign_delivery',
         })
@@ -565,10 +565,10 @@ class MVCampaign(DerivedMaterializedView):
 
     def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
+            'breakdown': models.MVMaster().get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
             ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'aggregates': models.MVMaster().get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
             'source_table': 'mv_ad_group',
         })
@@ -585,11 +585,11 @@ class MVCampaignDelivery(DerivedMaterializedView):
 
     def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
+            'breakdown': models.MVMaster().get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id',
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'aggregates': models.MVMaster().get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
             'source_table': 'mv_ad_group_delivery',
         })
@@ -606,10 +606,10 @@ class MVAdGroup(DerivedMaterializedView):
 
     def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
+            'breakdown': models.MVMaster().get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
             ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'aggregates': models.MVMaster().get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
             'source_table': 'mv_content_ad',
         })
@@ -626,11 +626,11 @@ class MVAdGroupDelivery(DerivedMaterializedView):
 
     def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
+            'breakdown': models.MVMaster().get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id',
                 'device_type', 'country', 'state', 'dma', 'age', 'gender', 'age_gender',
             ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'aggregates': models.MVMaster().get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
             'source_table': 'mv_content_ad_delivery',
         })
@@ -647,10 +647,10 @@ class MVContentAd(DerivedMaterializedView):
 
     def prepare_insert_query(self):
         sql = backtosql.generate_sql('etl_select_insert.sql', {
-            'breakdown': models.MVMaster.get_breakdown([
+            'breakdown': models.MVMaster().get_breakdown([
                 'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'
             ]),
-            'aggregates': models.MVMaster.get_ordered_aggregates(),
+            'aggregates': models.MVMaster().get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
             'source_table': 'mv_content_ad_delivery',
         })

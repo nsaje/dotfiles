@@ -13,12 +13,10 @@ class RSBreakdownMixin(object):
         """ Returns the SQL view that best fits the breakdown """
         raise NotImplementedError()
 
-    @classmethod
-    def get_breakdown(cls, breakdown):
+    def get_breakdown(self, breakdown):
         """ Selects breakdown subset of columns """
-        return cls.select_columns(subset=breakdown)
+        return self.select_columns(subset=breakdown)
 
-    @classmethod
-    def get_aggregates(cls):
+    def get_aggregates(self):
         """ Returns all the aggregate columns """
-        return cls.select_columns(group=AGGREGATES)
+        return self.select_columns(group=AGGREGATES)

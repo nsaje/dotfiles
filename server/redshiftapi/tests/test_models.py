@@ -8,7 +8,7 @@ from stats import constants
 class RSModelTest(TestCase, backtosql.TestSQLMixin):
 
     def setUp(self):
-        self.model = models.MVMaster
+        self.model = models.MVMaster()
 
     def test_columns(self):
         columns = self.model.get_columns()
