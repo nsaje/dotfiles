@@ -223,11 +223,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             breakdown_constraints_q = backtosql.Q(self, *[backtosql.Q(self, **x) for x in breakdown_constraints])
             breakdown_constraints_q.join_operator = breakdown_constraints_q.OR
 
-        conversion_columns = self.select_columns(group=mh.CONVERSION_AGGREGATES)
-        tpconversion_columns = self.select_columns(group=mh.TOUCHPOINTCONVERSION_AGGREGATES)
-
-        breakdown_supports_conversions = ((conversion_columns or tpconversion_columns) and
-                                          sc.get_delivery_dimension(breakdown) is None)
+        breakdown_supports_conversions = self.breakdown_supports_conversions(breakdown)
 
         order_column = self.get_column(order).as_order(order)
 
@@ -247,8 +243,17 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
             'is_ordered_by_conversions': order_column.group == mh.CONVERSION_AGGREGATES,
             'is_ordered_by_touchpointconversions': order_column.group == mh.TOUCHPOINTCONVERSION_AGGREGATES,
-            'conversions_aggregates': conversion_columns if breakdown_supports_conversions else [],
-            'touchpointconversions_aggregates': tpconversion_columns if breakdown_supports_conversions else [],
+            'conversions_aggregates': (self.select_columns(group=mh.CONVERSION_AGGREGATES)
+                                       if breakdown_supports_conversions else []),
+            'touchpointconversions_aggregates': (self.select_columns(group=mh.TOUCHPOINTCONVERSION_AGGREGATES)
+                                                 if breakdown_supports_conversions else []),
         }
 
         return context
+
+    def breakdown_supports_conversions(self, breakdown):
+        conversion_columns = self.select_columns(group=mh.CONVERSION_AGGREGATES)
+        tpconversion_columns = self.select_columns(group=mh.TOUCHPOINTCONVERSION_AGGREGATES)
+
+        return ((conversion_columns or tpconversion_columns) and
+                sc.get_delivery_dimension(breakdown) is None)
