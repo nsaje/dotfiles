@@ -78,3 +78,5 @@ class Model(object):
     def add_column(self, column):
         self.columns.append(column)
         self.columns_dict[column.alias] = column
+
+        setattr(self, column.alias, column)
