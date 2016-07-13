@@ -38,12 +38,6 @@ def _prepare_query(model, breakdown, constraints, breakdown_constraints,
         return queries.prepare_time_top_rows(model, time_dimension, default_context, constraints, offset, limit)
 
     if 2 <= len(breakdown) <= 3:
-        if (default_context.get('is_ordered_by_conversions') or
-           default_context.get('is_ordered_by_touchpointconversions')):
-
-            # select a special query that can order by conversions
-            return queries.prepare_breakdown_struct_delivery_top_rows_order_conversions(default_context)
-
         return queries.prepare_breakdown_struct_delivery_top_rows(default_context)
 
     raise exc.InvalidBreakdownError("Selected breakdown is not supported {}".format(breakdown))

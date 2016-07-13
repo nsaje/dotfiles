@@ -1,9 +1,6 @@
 {% load backtosql_tags %}
 {% autoescape off %}
 
--- NOTE: this query does not support ordering by conversion fields
-
--- temporary preselected queries if conversion columns need to be included
 WITH
     {% if conversions_aggregates %}
     temp_conversions AS (
@@ -37,41 +34,55 @@ WITH
     -- base query, get all other dimensions and rank them by position
     temp_base AS (
         SELECT
-            {{ breakdown|only_alias:"b" }},
-            {{ aggregates|only_alias:"b" }}
-        FROM (
-            SELECT
-                {{ breakdown|column_as_alias:"a" }},
-                {{ aggregates|column_as_alias:"a" }},
-                ROW_NUMBER() OVER (PARTITION BY {{ breakdown_partition|only_column:"a" }}
-                ORDER BY {{ order|only_column:"a" }}) AS r
-            FROM
-                {{ view.base }} a
-            WHERE
-                {{ constraints|generate:"a"}} AND
-                {{ breakdown_constraints|generate:"a" }}
-            GROUP BY
-                {{ breakdown|only_alias:"a" }}
-        ) b
+            {{ breakdown|column_as_alias:"a" }},
+            {{ aggregates|column_as_alias:"a" }}
+        FROM {{ view.base }} a
         WHERE
-            -- limit number of rows per group (row_number() is 1-based)
-            {% if offset %} r >= {{ offset }} + 1 AND {% endif %}
-            r <= {{ limit }}
+            {{ constraints|generate:"a" }} AND
+            {{ breakdown_constraints|generate:"a" }}
+        GROUP BY {{ breakdown|only_alias }}
     )
 
--- join the preselected data together
 SELECT
-    {{ breakdown|only_alias:"temp_base" }},
-    {{ aggregates|only_alias:"temp_base" }}
+    {{ breakdown|only_alias:"b" }},
+    {{ aggregates|only_alias:"b" }}
     {% if conversions_aggregates %}
-        ,{{ conversions_aggregates|only_alias:"temp_conversions" }}
+        ,{{ conversions_aggregates|only_alias:"b" }}
     {% endif %}
     {% if touchpointconversions_aggregates %}
-        ,{{ touchpointconversions_aggregates|only_alias:"temp_touchpointconversions" }}
+        ,{{ touchpointconversions_aggregates|only_alias:"b" }}
     {% endif %}
 
-FROM temp_base
-    {% if conversions_aggregates %} NATURAL LEFT OUTER JOIN temp_conversions {% endif %}
-    {% if touchpointconversions_aggregates %} NATURAL LEFT OUTER JOIN temp_touchpointconversions {% endif %}
+FROM (
+    -- join and rank top rows, than select top rows
+    SELECT
+        {{ breakdown|only_alias:"temp_base" }},
+        {{ aggregates|only_alias:"temp_base" }},
+        {% if conversions_aggregates %}
+            {{ conversions_aggregates|only_alias:"temp_conversions" }},
+        {% endif %}
+        {% if touchpointconversions_aggregates %}
+            {{ touchpointconversions_aggregates|only_alias:"temp_touchpointconversions" }},
+        {% endif %}
+
+        {% if is_ordered_by_conversions %}
+            ROW_NUMBER() OVER (PARTITION BY {{ breakdown_partition|only_column:"temp_base" }}
+            ORDER BY {{ order|only_alias:"temp_conversions" }}) AS r
+        {% elif is_ordered_by_touchpointconversions %}
+            ROW_NUMBER() OVER (PARTITION BY {{ breakdown_partition|only_column:"temp_base" }}
+            ORDER BY {{ order|only_alias:"temp_touchpointconversions" }}) AS r
+        {% else %}
+            ROW_NUMBER() OVER (PARTITION BY {{ breakdown_partition|only_column:"temp_base" }}
+            ORDER BY {{ order|only_alias:"temp_base" }}) AS r
+        {% endif %}
+    FROM
+        temp_base
+        {% if conversions_aggregates %} NATURAL LEFT OUTER JOIN temp_conversions {% endif %}
+        {% if touchpointconversions_aggregates %} NATURAL LEFT OUTER JOIN temp_touchpointconversions {% endif %}
+) b
+WHERE
+    -- limit number of rows per group (row_number() is 1-based)
+    {% if offset %} r >= {{ offset }} + 1 AND {% endif %}
+    r <= {{ limit }}
 
 {% endautoescape %}

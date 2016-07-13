@@ -21,30 +21,6 @@ def prepare_breakdown_struct_delivery_top_rows(default_context):
 
     params.extend(default_context['breakdown_constraints'].get_params())
 
-    # mind the order in which these are used in the query
-    conversion_params = []
-    if default_context.get('conversions_aggregates'):
-        conversion_params.extend(params)
-
-    if default_context.get('touchpointconversions_aggregates'):
-        conversion_params.extend(params)
-
-    # conversion queries are ordered before the base query
-    params = conversion_params + params
-
-    return sql, params
-
-
-def prepare_breakdown_struct_delivery_top_rows_order_conversions(default_context):
-    sql = backtosql.generate_sql('breakdown_struct_delivery_top_rows_order_conversions.sql', default_context)
-
-    params = default_context['constraints'].get_params()
-
-    if not default_context.get('breakdown_constraints'):
-        raise exc.MissingBreakdownConstraintsError()
-
-    params.extend(default_context['breakdown_constraints'].get_params())
-
     conversion_params = []
     if default_context.get('conversions_aggregates'):
         conversion_params.extend(params)
