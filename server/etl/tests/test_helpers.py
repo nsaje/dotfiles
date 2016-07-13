@@ -96,7 +96,7 @@ class HelpersTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(helpers.extract_source_slug('outbrain'), 'outbrain')
 
     def test_extract_device_type(self):
-        self.assertEqual(helpers.extract_device_type(1), dash.constants.DeviceType.MOBILE)
+        self.assertEqual(helpers.extract_device_type(4), dash.constants.DeviceType.MOBILE)
         self.assertEqual(helpers.extract_device_type(2), dash.constants.DeviceType.DESKTOP)
         self.assertEqual(helpers.extract_device_type(5), dash.constants.DeviceType.TABLET)
 

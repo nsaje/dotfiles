@@ -86,7 +86,8 @@ def extract_source_slug(source_slug):
 
 
 def extract_device_type(device_type):
-    if device_type == 1:
+    # OpenRTB Device Type mapping
+    if device_type == 4:
         return constants.DeviceType.MOBILE
     elif device_type == 2:
         return constants.DeviceType.DESKTOP

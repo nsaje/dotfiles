@@ -46,7 +46,8 @@ $$ LANGUAGE plpythonu;
 
 
 CREATE OR REPLACE FUNCTION extract_device_type (device_type integer) RETURNS int2 IMMUTABLE as $$
-      if device_type == 1:
+      /* OpenRTB Device Type mapping */
+      if device_type == 4:
           return 3  # constants.DeviceType.MOBILE
       elif device_type == 2:
           return 1  # constants.DeviceType.DESKTOP
