@@ -117,6 +117,8 @@ class APIBreakdownsTest(TestCase, backtosql.TestSQLMixin):
                     temp_base.pv_per_visit,
                     temp_base.total_cost,
                     temp_base.visits,
+                    ROW_NUMBER() OVER (PARTITION BY temp_base.ad_group_id
+                                                ORDER BY temp_base.campaign_id DESC) AS r
             FROM temp_base) b
             WHERE r >= 10 + 1
             AND r <= 50
