@@ -6,8 +6,6 @@ import dash.models
 
 from django.core import management
 from django.test import TestCase
-from dash.models import AdGroup
-from dash.management.commands import create_blacklist
 
 
 class MonitorPublisherBlacklistTest(TestCase):
@@ -26,18 +24,16 @@ class MonitorPublisherBlacklistTest(TestCase):
             status=dash.constants.PublisherStatus.BLACKLISTED,
         )
 
-        self.get_cursor().dictfetchall.return_value = [
-            {
-                'domain': u'bollocks.com',
-                'adgroup_id': 1,
-                'exchange': u'adiant',
-                'billing_cost_nano_sum': 0.0,
-                'impressions_sum': 1000,
-                'clicks_sum': 5L,
-                'ctr': 0.0,
-                'external_id': u'1234567890',
-             }
-        ]
+        self.get_cursor().dictfetchall.return_value = [{
+            'domain': u'bollocks.com',
+            'adgroup_id': 1,
+            'exchange': u'adiant',
+            'billing_cost_nano_sum': 0.0,
+            'impressions_sum': 1000,
+            'clicks_sum': 5L,
+            'ctr': 0.0,
+            'external_id': u'1234567890',
+        }]
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         management.call_command('monitor_blacklist', blacklisted_before=tomorrow.date().isoformat())
         influx_gauge_mock.assert_has_calls(
@@ -56,18 +52,16 @@ class MonitorPublisherBlacklistTest(TestCase):
             status=dash.constants.PublisherStatus.BLACKLISTED,
         )
 
-        self.get_cursor().dictfetchall.return_value = [
-            {
-                'domain': u'bollocks.com',
-                'adgroup_id': 1,
-                'exchange': u'adiant',
-                'billing_cost_nano_sum': 0.0,
-                'impressions_sum': 1000,
-                'clicks_sum': 5L,
-                'ctr': 0.0,
-                'external_id': u'1234567890',
-             }
-        ]
+        self.get_cursor().dictfetchall.return_value = [{
+            'domain': u'bollocks.com',
+            'adgroup_id': 1,
+            'exchange': u'adiant',
+            'billing_cost_nano_sum': 0.0,
+            'impressions_sum': 1000,
+            'clicks_sum': 5L,
+            'ctr': 0.0,
+            'external_id': u'1234567890',
+        }]
         management.call_command('monitor_blacklist')
 
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
@@ -89,18 +83,16 @@ class MonitorPublisherBlacklistTest(TestCase):
             status=dash.constants.PublisherStatus.BLACKLISTED
         )
 
-        self.get_cursor().dictfetchall.return_value = [
-            {
-                'domain': u'Awesome Publisher',
-                'adgroup_id': 1,
-                'exchange': u'outbrain',
-                'billing_cost_nano_sum': 0.0,
-                'impressions_sum': 1000,
-                'clicks_sum': 5L,
-                'ctr': 0.0,
-                'external_id': u'RandomUuid',
-             }
-        ]
+        self.get_cursor().dictfetchall.return_value = [{
+            'domain': u'Awesome Publisher',
+            'adgroup_id': 1,
+            'exchange': u'outbrain',
+            'billing_cost_nano_sum': 0.0,
+            'impressions_sum': 1000,
+            'clicks_sum': 5L,
+            'ctr': 0.0,
+            'external_id': u'RandomUuid',
+        }]
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         management.call_command('monitor_blacklist', blacklisted_before=tomorrow.date().isoformat())
         influx_gauge_mock.assert_has_calls(

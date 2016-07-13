@@ -102,8 +102,8 @@ def prepare_publishers_for_rs_query(ad_group):
         everywhere=True
     )
     adg_blacklisted_publishers.extend(map(lambda pub_bl: {
-            'domain': pub_bl.name
-        }, global_pub_blacklist_qs)
+        'domain': pub_bl.name
+    }, global_pub_blacklist_qs)
     )
     return adg_blacklisted_publishers
 

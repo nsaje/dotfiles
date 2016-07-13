@@ -1791,7 +1791,6 @@ class BCMCommandTestCase(TestCase):
         )
 
         out = self._call_command('bcm', 'list', 'credits', '--accounts', '2')
-        print out
         self.assertIn('#' + str(self.c.pk), out)
         self.assertNotIn('#' + str(c.pk), out)
 

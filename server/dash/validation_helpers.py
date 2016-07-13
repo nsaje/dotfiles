@@ -48,7 +48,7 @@ def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
     max_cpc = ad_group_settings.cpc_cc
     if max_cpc is not None and cpc_cc > max_cpc:
         raise forms.ValidationError(
-                'Maximum ad group CPC is ${}.'.format(utils.string_helper.format_decimal(max_cpc, 2, 3)))
+            'Maximum ad group CPC is ${}.'.format(utils.string_helper.format_decimal(max_cpc, 2, 3)))
 
 
 def validate_ad_group_cpc_cc(cpc_cc, ad_group):

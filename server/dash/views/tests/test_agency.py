@@ -319,7 +319,6 @@ class AdGroupSettingsTest(TestCase):
                 json.dumps(new_settings),
                 follow=True
             )
-            print response
             mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
 
             self.assertEqual(json.loads(response.content), {

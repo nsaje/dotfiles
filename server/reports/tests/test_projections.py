@@ -361,7 +361,6 @@ class ProjectionsTestCase(test.TestCase):
             'account',
             projection_date=self.today
         )
-        print stats.projections, stats.totals
         self.assertEqual(stats.row(1), {
             'allocated_media_budget': Decimal('1285.294117647058823529411765'),
             'allocated_total_budget': Decimal('1794.117647058823529411764706'),

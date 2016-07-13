@@ -93,9 +93,9 @@ def get_ad_group_source(request):
 
     bidder_slug = request.GET.get("bidder_slug")
     ad_group_source = dash.models.AdGroupSource.objects.select_related(
-                'source_credentials', 'source', 'source__source_type',
-                'ad_group', 'ad_group__campaign', 'ad_group__campaign__account',
-            ).filter(ad_group_id=ad_group_id, source__source_type__type=source_type)
+        'source_credentials', 'source', 'source__source_type',
+        'ad_group', 'ad_group__campaign', 'ad_group__campaign__account',
+    ).filter(ad_group_id=ad_group_id, source__source_type__type=source_type)
     if bidder_slug:
         ad_group_source = ad_group_source.filter(source__bidder_slug=bidder_slug)
     if ad_group_source.count() != 1:

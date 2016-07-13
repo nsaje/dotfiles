@@ -4,8 +4,8 @@ import mock
 from zemauth import gauth
 
 SETTINGS = {
-        'GOOGLE_OAUTH_CLIENT_ID': '1111.apps.googleusercontent.com',
-        'GOOGLE_OAUTH_CLIENT_SECRET': '111111111111111111111111'
+    'GOOGLE_OAUTH_CLIENT_ID': '1111.apps.googleusercontent.com',
+    'GOOGLE_OAUTH_CLIENT_SECRET': '111111111111111111111111'
 }
 
 

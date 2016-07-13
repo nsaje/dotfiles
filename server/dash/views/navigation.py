@@ -171,7 +171,8 @@ class NavigationTreeView(api_common.BaseApiView):
             .filter_by_user(user)\
             .filter_by_sources(view_filter.filtered_sources)\
             .filter_by_agencies(view_filter.filtered_agencies)\
-            .filter_by_account_types(view_filter.filtered_account_types)
+            .filter_by_account_types(view_filter.filtered_account_types)\
+            .select_related('agency')
 
         accounts_settings = models.AccountSettings.objects.filter(
             account__in=accounts).group_current_settings()

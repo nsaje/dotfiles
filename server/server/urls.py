@@ -641,9 +641,9 @@ urlpatterns += [
         name='k1api.get_facebook_account',
     ),
     url(
-         r'^k1api/update_facebook_account$',
-         k1api.views.update_facebook_account,
-         name='k1api.update_facebook_account',
+        r'^k1api/update_facebook_account$',
+        k1api.views.update_facebook_account,
+        name='k1api.update_facebook_account',
     ),
     url(
         r'^k1api/update_ad_group_source_state$',

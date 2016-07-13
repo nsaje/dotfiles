@@ -13,7 +13,7 @@ from django.test import TestCase
 from zemauth.models import User
 from dash import models, constants
 from reports.models import BudgetDailyStatement
-from utils.test_helper import add_permissions, fake_request
+from utils.test_helper import fake_request
 from django.test.client import RequestFactory
 
 from utils import converters
@@ -618,19 +618,16 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()['data']
-        self.assertItemsEqual(data['credits'], [
-                {
-                    "available": "0.0000",
-                    "end_date": "2015-11-30",
-                    "id": 1,
-                    "is_available": False,
-                    "comment": "Test case",
-                    "license_fee": "20",
-                    "total": "100000.0000",
-                    "start_date": "2015-10-01"
-                }
-            ]
-        )
+        self.assertItemsEqual(data['credits'], [{
+            "available": "0.0000",
+            "end_date": "2015-11-30",
+            "id": 1,
+            "is_available": False,
+            "comment": "Test case",
+            "license_fee": "20",
+            "total": "100000.0000",
+            "start_date": "2015-10-01"
+        }])
 
         r = RequestFactory().get('')
         r.user = User.objects.get(pk=1)
@@ -645,29 +642,25 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()['data']
-        self.assertItemsEqual(data['credits'], [
-                {
-                    "available": "0.0000",
-                    "end_date": "2015-11-30",
-                    "id": 1,
-                    "is_available": False,
-                    "comment": "Test case",
-                    "license_fee": "20",
-                    "total": "100000.0000",
-                    "start_date": "2015-10-01"
-                },
-                {
-                    'available': u'99900.0000',
-                    'comment': u'Agency credit',
-                    'end_date': u'2015-11-30',
-                    'start_date': u'2015-10-01',
-                    'is_available': False,
-                    'license_fee': u'20',
-                    'total': u'99900.0000',
-                    'id': 1000,
-                }
-            ]
-        )
+        self.assertItemsEqual(data['credits'], [{
+            "available": "0.0000",
+            "end_date": "2015-11-30",
+            "id": 1,
+            "is_available": False,
+            "comment": "Test case",
+            "license_fee": "20",
+            "total": "100000.0000",
+            "start_date": "2015-10-01"
+        }, {
+            'available': u'99900.0000',
+            'comment': u'Agency credit',
+            'end_date': u'2015-11-30',
+            'start_date': u'2015-10-01',
+            'is_available': False,
+            'license_fee': u'20',
+            'total': u'99900.0000',
+            'id': 1000,
+        }])
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     def test_put(self, mock_lmode):

@@ -1,4 +1,4 @@
-/*globals $,oneApp,constants,options*/
+/* globals oneApp, constants */
 'use strict';
 
 oneApp.directive('zemNavSearch', ['config', '$state', function (config, $state) {
@@ -13,9 +13,9 @@ oneApp.directive('zemNavSearch', ['config', '$state', function (config, $state) 
             canAccessCampaigns: '@zemCanAccessCampaigns',
             defaultAccountState: '@zemDefaultAccountState',
             defaultCampaignState: '@zemDefaultCampaignState',
-            defaultAdGroupState: '@zemDefaultAdGroupState'
+            defaultAdGroupState: '@zemDefaultAdGroupState',
         },
-        controller: ['$scope', '$element', '$attrs', '$http', 'api', function ($scope, $element, $attrs, $http, api) {
+        controller: ['$scope', function ($scope) {
             $scope.accounts = null;
             $scope.campaigns = null;
             $scope.adGroups = null;
@@ -34,7 +34,17 @@ oneApp.directive('zemNavSearch', ['config', '$state', function (config, $state) 
                 },
                 formatResult: function (item) {
                     return item.text;
-                }
+                },
+                matcher: function (term, text, option) {
+                    var terms = term.toUpperCase().split(' ');
+                    var agency = option.data('agency').toUpperCase();
+
+                    text = text.toUpperCase();
+
+                    return terms.every(function (term) {
+                        return text.indexOf(term) >= 0 || agency.indexOf(term) >= 0;
+                    });
+                },
             };
 
             $scope.computeOptions = function () {
@@ -46,17 +56,32 @@ oneApp.directive('zemNavSearch', ['config', '$state', function (config, $state) 
                 $scope.campaigns = [];
                 $scope.adGroups = [];
 
-                $scope.accountsData.forEach(function (account, i) {
+                $scope.accountsData.forEach(function (account) {
                     if ($scope.showArchived || !account.archived) {
-                        $scope.accounts.push({id: constants.entityType.ACCOUNT + ':' + account.id, name: account.name, archived: account.archived});
+                        $scope.accounts.push({
+                            id: constants.entityType.ACCOUNT + ':' + account.id,
+                            name: account.name,
+                            archived: account.archived,
+                            agency: account.agency,
+                        });
                     }
-                    account.campaigns.forEach(function (campaign, j) {
+                    account.campaigns.forEach(function (campaign) {
                         if ($scope.showArchived || !campaign.archived) {
-                            $scope.campaigns.push({id: constants.entityType.CAMPAIGN + ':' + campaign.id, name: campaign.name, archived: campaign.archived});
+                            $scope.campaigns.push({
+                                id: constants.entityType.CAMPAIGN + ':' + campaign.id,
+                                name: campaign.name,
+                                archived: campaign.archived,
+                                agency: account.agency,
+                            });
                         }
-                        campaign.adGroups.forEach(function (adGroup, k) {
+                        campaign.adGroups.forEach(function (adGroup) {
                             if ($scope.showArchived || !adGroup.archived) {
-                                $scope.adGroups.push({id: constants.entityType.AD_GROUP + ':' + adGroup.id, name: adGroup.name, archived: adGroup.archived});
+                                $scope.adGroups.push({
+                                    id: constants.entityType.AD_GROUP + ':' + adGroup.id,
+                                    name: adGroup.name,
+                                    archived: adGroup.archived,
+                                    agency: account.agency,
+                                });
                             }
                         });
                     });
@@ -71,15 +96,15 @@ oneApp.directive('zemNavSearch', ['config', '$state', function (config, $state) 
                 $scope.adGroups = $scope.adGroups.sort(sortEntities);
             };
 
-            $scope.$watch('accountsData', function (newValue) {
+            $scope.$watch('accountsData', function () {
                 $scope.computeOptions();
             });
 
-            $scope.$watch('showArchived', function (newValue) {
+            $scope.$watch('showArchived', function () {
                 $scope.computeOptions();
             });
 
-            $scope.$watch('account', function (newValue) {
+            $scope.$watch('account', function () {
                 $scope.navSelector = $scope.account && constants.entityType.ACCOUNT + ':' + $scope.account.id || null;
             });
 
@@ -105,6 +130,6 @@ oneApp.directive('zemNavSearch', ['config', '$state', function (config, $state) 
 
                 $scope.navSelector = $scope.account && constants.entityType.ACCOUNT + ':' + $scope.account.id || null;
             };
-        }]
+        }],
     };
 }]);

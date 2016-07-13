@@ -85,13 +85,13 @@ class ApiPublishersTest(TestCase):
         stats = api_publishers.query(start_date, end_date, breakdown_fields=breakdown, constraints=constraints)
         constraints.update({'start_date': start_date, 'end_date': end_date})
         self.assertDictEqual(stats[0], {
-                                        'clicks': 123,
-                                        'cost': 2.6638e-05,
-                                        'cpc': 1e-09,
-                                        'ctr': 100.0,
-                                        'impressions': 10560,
-                                        'date': '2015-01-01',
-                                    })
+            'clicks': 123,
+            'cost': 2.6638e-05,
+            'cpc': 1e-09,
+            'ctr': 100.0,
+            'impressions': 10560,
+            'date': '2015-01-01',
+        })
 
         self.check_breakdown(breakdown)
         self.check_constraints(constraints)
@@ -190,7 +190,7 @@ class ApiPublishersTest(TestCase):
         end_date = start_date = datetime.timedelta(days=31)
 
         constraint_list = api_publishers.prepare_active_publishers_constraint_list(blacklist, False)
-        publishers_data = api_publishers.query_active_publishers(
+        api_publishers.query_active_publishers(
             start_date, end_date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=['-cost'],
@@ -237,7 +237,7 @@ class ApiPublishersTest(TestCase):
 
         breakdown_fields = ['domain', 'exchange']
         constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields, False)
-        publishers_data = api_publishers.query_blacklisted_publishers(
+        api_publishers.query_blacklisted_publishers(
             start_date, end_date,
             breakdown_fields=breakdown_fields,
             order_fields=['-cost'],
@@ -284,7 +284,7 @@ class ApiPublishersTest(TestCase):
 
         breakdown_fields = ['domain', 'exchange']
         constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields, False)
-        publishers_data = api_publishers.query_blacklisted_publishers(
+        api_publishers.query_blacklisted_publishers(
             start_date, end_date,
             breakdown_fields=breakdown_fields,
             order_fields=['-cost'],

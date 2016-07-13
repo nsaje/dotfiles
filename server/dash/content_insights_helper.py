@@ -56,13 +56,9 @@ def _deduplicate_content_ad_titles(campaign=None, ad_group=None):
     ads = dash.models.ContentAd.objects.all()
 
     if campaign is not None:
-        ads = ads.filter(
-           ad_group__campaign=campaign
-        )
+        ads = ads.filter(ad_group__campaign=campaign)
     if ad_group is not None:
-        ads = ads.filter(
-           ad_group=ad_group
-        )
+        ads = ads.filter(ad_group=ad_group)
 
     ads = ads.exclude_archived().values_list('id', 'title')
     ret = defaultdict(list)

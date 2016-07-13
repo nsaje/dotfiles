@@ -61,11 +61,11 @@ class Command(ExceptionCommand):
         finished_accounts = set()
         for credit in all_credits:
             duplicate_credits = dash.models.CreditLineItem.objects.filter(
-                    account_id=credit[0],
-                    start_date=credit[1],
-                    end_date=credit[2],
-                    license_fee=credit[4],
-                    amount=credit[3]
+                account_id=credit[0],
+                start_date=credit[1],
+                end_date=credit[2],
+                license_fee=credit[4],
+                amount=credit[3]
             )
             if duplicate_credits.count():
                 duplicates += 1
@@ -83,9 +83,9 @@ class Command(ExceptionCommand):
             campaigns = []
             for c in raw_campaigns:
                 stats = reports.models.ContentAdStats.objects\
-                                                         .filter(content_ad__ad_group__campaign_id=c.id)\
-                                                         .aggregate(cost_cc_sum=Sum('cost_cc'),
-                                                                    data_cost_cc_sum=Sum('data_cost_cc'))
+                    .filter(content_ad__ad_group__campaign_id=c.id)\
+                    .aggregate(cost_cc_sum=Sum('cost_cc'),
+                               data_cost_cc_sum=Sum('data_cost_cc'))
                 cost = (stats['cost_cc_sum'] or 0) + (stats['data_cost_cc_sum'] or 0)
                 if cost > 0:
                     campaigns.append(c)

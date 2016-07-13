@@ -161,11 +161,11 @@ def _get_conversion_goals(start_date,
 
     constraints = conversions_helper.convert_constraint_exchanges_to_source_ids(constraints)
     touchpoint_data = api_touchpointconversions.query(
-            start_date, end_date,
-            breakdown=touchpoint_breakdown_fields,
-            conversion_goals=touchpoint_conversion_goals,
-            constraints=constraints,
-            constraints_list=touchpoint_constraints_list,
+        start_date, end_date,
+        breakdown=touchpoint_breakdown_fields,
+        conversion_goals=touchpoint_conversion_goals,
+        constraints=constraints,
+        constraints_list=touchpoint_constraints_list,
     )
     return touchpoint_data
 

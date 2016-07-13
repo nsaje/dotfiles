@@ -58,8 +58,8 @@ class Command(ExceptionCommand):
                 cost = source_stats[recipient.source.pk]['cost']
 
             utils.email_helper.send_supply_report_email(
-                    recipient.email,
-                    yesterday,
-                    impressions,
-                    cost
+                recipient.email,
+                yesterday,
+                impressions,
+                cost
             )

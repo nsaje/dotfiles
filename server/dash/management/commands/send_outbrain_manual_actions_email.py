@@ -94,10 +94,9 @@ def get_location_targeting_content():
 
         {campaign_name}
         """).format(
-                location_targeting=setting,
-                campaign_name='\n'.join(campaign_names)
-            )
-        )
+            location_targeting=setting,
+            campaign_name='\n'.join(campaign_names)
+        ))
     date_str = datetime.date.today().strftime('%Y-%m-%d')
     subject = SUBJECT_LOCATION_TARGETING.format(date_str)
     body = BODY_LOCATION_TARGETING.format(

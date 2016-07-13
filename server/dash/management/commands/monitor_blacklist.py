@@ -139,9 +139,9 @@ class Command(ExceptionCommand):
         logger.info('Fetching adgroup publisher blacklist entries...')
         adgroup_blacklist = set([(pub[0], pub[1], pub[2].replace('b1_', ''),)
                                 for pub in dash.models.PublisherBlacklist.objects.filter(
-                                        ad_group__isnull=False,
-                                        status=dash.constants.PublisherStatus.BLACKLISTED,
-                                        created_dt__lte=blacklisted_before,
+                                    ad_group__isnull=False,
+                                    status=dash.constants.PublisherStatus.BLACKLISTED,
+                                    created_dt__lte=blacklisted_before,
             ).values_list('name', 'ad_group__id', 'source__tracking_slug')
         ])
         logger.info('Fetching adgroup publisher blacklist entries... Done.')
@@ -149,9 +149,9 @@ class Command(ExceptionCommand):
         logger.info('Fetching campaign and account publisher blacklist entries...')
         campaign_account_blacklist = []
         for pub in dash.models.PublisherBlacklist.objects.filter(
-             campaign__isnull=False,
-             status=dash.constants.PublisherStatus.BLACKLISTED,
-             created_dt__lte=blacklisted_before,
+            campaign__isnull=False,
+            status=dash.constants.PublisherStatus.BLACKLISTED,
+            created_dt__lte=blacklisted_before,
         ).iterator():
             adgroup_ids = dash.models.AdGroup.objects.filter(
                 campaign=pub.campaign
@@ -166,19 +166,19 @@ class Command(ExceptionCommand):
                 )
 
         for pub in dash.models.PublisherBlacklist.objects.filter(
-             account__isnull=False,
-             status=dash.constants.PublisherStatus.BLACKLISTED,
-             created_dt__lte=blacklisted_before,
+            account__isnull=False,
+            status=dash.constants.PublisherStatus.BLACKLISTED,
+            created_dt__lte=blacklisted_before,
         ).iterator():
             adgroup_ids = dash.models.AdGroup.objects.filter(
                 campaign__account=pub.account
             ).values_list('id', flat=True)
             for adgroup_id in adgroup_ids:
                 campaign_account_blacklist.append((
-                        pub.name,
-                        adgroup_id,
-                        dash.publisher_helpers.publisher_exchange(pub.source),
-                    ))
+                    pub.name,
+                    adgroup_id,
+                    dash.publisher_helpers.publisher_exchange(pub.source),
+                ))
         logger.info('Fetching campaign and account publisher blacklist entries... Done.')
         return adgroup_blacklist.union(set(campaign_account_blacklist))
 

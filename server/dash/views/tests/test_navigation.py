@@ -97,6 +97,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
+                'agency': 'Test Agency'
             }
         })
 
@@ -108,6 +109,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test account 3',
+                'agency': None
             }
         })
 
@@ -134,6 +136,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
+                'agency': 'Test Agency'
             },
             'campaign': {
                 'archived': False,
@@ -151,6 +154,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test account 3',
+                'agency': None
             },
             'campaign': {
                 'archived': True,
@@ -184,6 +188,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
+                'agency': 'Test Agency'
             },
             'campaign': {
                 'archived': False,
@@ -203,9 +208,6 @@ class NavigationDataViewTest(TestCase):
             }
         })
 
-        # archived entity
-        user = User.objects.get(pk=2)
-
         response = self._get(2, 'ad_groups', 4)
 
         self.assertDictEqual(response, {
@@ -213,6 +215,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 2,
                 'name': 'test account 2',
+                'agency': None
             },
             'campaign': {
                 'archived': False,
@@ -254,6 +257,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
+                'agency': 'Test Agency'
             }
         })
 
@@ -265,6 +269,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test account 3',
+                'agency': None
             }
         })
 
@@ -310,6 +315,7 @@ class NavigationTreeViewTest(TestCase):
                 "landingMode": False,
             }],
             "id": 1,
+            "agency": "Test Agency",
             "name": "test account 1",
         }]
 
@@ -381,6 +387,7 @@ class NavigationTreeViewTest(TestCase):
                 "name": "test campaign 1"
             }],
             "id": 1,
+            "agency": "Test Agency",
             "name": "test account 1",
         }]
         self.assertItemsEqual(response['data'], expected_response)
@@ -411,6 +418,7 @@ class NavigationTreeViewTest(TestCase):
             "id": 2,
             "name": "test account 2",
             "archived": False,
+            "agency": None
         }]
 
         self.assertItemsEqual(response['data'], expected_response)
@@ -421,13 +429,13 @@ class NavigationTreeViewTest(TestCase):
     @patch('datetime.datetime', MockDatetime)
     def test_get_account_filter_agency(self):
         user = User.objects.get(pk=1)
+        self.maxDiff = None
 
         account = models.Account.objects.get(pk=1)
         response = self._get(1)
         self.assertItemsEqual(response['data'], self.expected_response)
 
-        agency = models.Agency(name='Test')
-        agency.save(test_helper.fake_request(user))
+        agency = models.Agency.objects.get(pk=1)
 
         agency2 = models.Agency(name='Test 2')
         agency2.save(test_helper.fake_request(user))

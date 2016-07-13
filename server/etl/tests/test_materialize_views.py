@@ -1,7 +1,6 @@
 import collections
 import backtosql
 import datetime
-import json
 import mock
 import textwrap
 
@@ -11,7 +10,6 @@ from dash import models
 from dash import constants
 
 from etl import materialize_views
-from etl import helpers
 
 
 PostclickstatsResults = collections.namedtuple('Result2',
@@ -240,13 +238,13 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                             OR (date=%(tzdate_to)s
                                 AND hour < %(tzhour_to)s)))
                 GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);"""), {
-                    'tzhour_from': 4,
-                    'tzhour_to': 4,
-                    'tzdate_from': '2016-07-01',
-                    'tzdate_to': '2016-07-04',
-                    'date_from': '2016-07-01',
-                    'date_to': '2016-07-03'
-                })
+                'tzhour_from': 4,
+                'tzhour_to': 4,
+                'tzdate_from': '2016-07-01',
+                'tzdate_to': '2016-07-04',
+                'date_from': '2016-07-01',
+                'date_to': '2016-07-03'
+            })
         ])
 
 
@@ -342,11 +340,10 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                 DELIMITER AS %(delimiter)s
                 CREDENTIALS %(credentials)s
                 MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
-                    'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                    's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/01/view_asd.csv',
-                    'delimiter': '\t'
-                }
-            ),
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/01/view_asd.csv',
+                'delimiter': '\t'
+            }),
             mock.call(
                 backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s'),
                 {'date': datetime.date(2016, 7, 2)}
@@ -519,11 +516,10 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                 DELIMITER AS %(delimiter)s
                 CREDENTIALS %(credentials)s
                 MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
-                    'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                    's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/01/view_asd.csv',
-                    'delimiter': '\t'
-                }
-            ),
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/01/view_asd.csv',
+                'delimiter': '\t'
+            }),
             mock.call(
                 backtosql.SQLMatcher('DELETE FROM mv_conversions WHERE date=%(date)s'),
                 {'date': datetime.date(2016, 7, 2)}

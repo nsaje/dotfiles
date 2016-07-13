@@ -354,16 +354,16 @@ def _set_target_region_manual_property_if_needed(ad_group_source, ad_group_setti
     if not region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) and \
             region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings):
         new_field_value = _get_manual_action_target_regions_value(
-                ad_group_source,
-                None,
-                ad_group_settings
+            ad_group_source,
+            None,
+            ad_group_settings
         )
 
         actionlog.api.init_set_ad_group_manual_property(
-                ad_group_source,
-                request,
-                'target_regions',
-                new_field_value
+            ad_group_source,
+            request,
+            'target_regions',
+            new_field_value
         )
 
 
@@ -935,10 +935,10 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
 
         filtered_blacklist = list(
             map(lambda pub: {
-                    'domain': pub['domain'],
-                },
+                'domain': pub['domain'],
+            },
                 filtered_blacklist
-                )
+            )
         )
 
         actions.extend(

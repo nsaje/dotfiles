@@ -112,6 +112,24 @@
     pk: 5
 
 
+# test agency
+
+-   fields:
+        name: 'Test Agency'
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+    model: dash.agency
+    pk: 1
+
+-   fields:
+        name: 'Test Agency 2'
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+    model: dash.agency
+    pk: 2
+
 # test accounts
 
 -   fields:
@@ -120,6 +138,7 @@
         modified_by: 1
         name: 'test account 1'
         users: [1,5]
+        agency: 1
     model: dash.account
     pk: 1
 
