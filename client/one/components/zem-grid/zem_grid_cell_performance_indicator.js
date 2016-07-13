@@ -1,7 +1,7 @@
 /* globals oneApp, constants */
 'use strict';
 
-oneApp.directive('zemGridCellPerformanceIndicator', ['config', function (config) {
+oneApp.directive('zemGridCellPerformanceIndicator', [function () {
 
     var statusIcons = {},
         statusClasses = {};
@@ -51,28 +51,31 @@ oneApp.directive('zemGridCellPerformanceIndicator', ['config', function (config)
             row: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_performance_indicator.html',
-        link: function (scope, element, attributes, ctrl) {
-            ctrl.config = config;
+        controller: ['$scope', 'config', function ($scope, config) {
+            var vm = this;
 
-            scope.$watch('ctrl.row', update);
-            scope.$watch('ctrl.data', update);
+            vm.config = config;
+
+            $scope.$watch('ctrl.row', update);
+            $scope.$watch('ctrl.data', update);
 
             function update () {
-                ctrl.overall = {
+                vm.isFieldVisible = false;
+                vm.overall = {
                     file: statusIcons[constants.emoticon.NEUTRAL],
                     class: statusClasses[constants.emoticon.NEUTRAL],
                 };
+                vm.statusList = [];
 
-                if (ctrl.row) {
-                    ctrl.isFieldVisible = isFieldVisible(ctrl.row.level);
+                if (vm.row) {
+                    vm.isFieldVisible = isFieldVisible(vm.row.level);
                 }
 
-                if (ctrl.data) {
-                    ctrl.overall = getOverallIcon(ctrl.data.overall);
-                    ctrl.statusList = getStatusList(ctrl.data.list);
+                if (vm.data) {
+                    vm.overall = getOverallIcon(vm.data.overall);
+                    vm.statusList = getStatusList(vm.data.list);
                 }
             }
-        },
-        controller: [function () {}],
+        }],
     };
 }]);

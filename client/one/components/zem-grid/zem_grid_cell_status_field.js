@@ -60,13 +60,13 @@ oneApp.directive('zemGridCellStatusField', ['zemGridEndpointColumns', function (
             var vm = this;
             var pubsub = vm.grid.meta.pubsub;
 
-            vm.statusText = '';
-
             $scope.$watch('ctrl.row', update);
             $scope.$watch('ctrl.data', update);
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, update);
 
             function update () {
+                vm.statusText = '';
+
                 if (vm.row) {
                     if (vm.row.archived) {
                         vm.statusText = 'Archived';
