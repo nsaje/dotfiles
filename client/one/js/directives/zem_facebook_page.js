@@ -22,7 +22,7 @@ oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
 
             $scope.$watch('facebookPage', function (newValue, oldValue) {
                 if (newValue !== oldValue) {
-                    $scope.checkFacebookAccountStatus();
+                    // $scope.checkFacebookAccountStatus();
                 }
             });
 
