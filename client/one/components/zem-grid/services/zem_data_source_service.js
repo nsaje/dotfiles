@@ -123,7 +123,9 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             var config = prepareConfig(level, breakdowns, offset, limit);
             var promise = endpoint.getData(config);
 
-            activeRequests.push(promise);
+            var request = {promise: promise, config: config};
+            activeRequests.push(request);
+
             breakdowns.forEach(function (breakdown) {
                 breakdown.meta.loading = true;
             });
@@ -144,7 +146,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 });
                 deferred.reject(err);
             }).finally(function () {
-                var idx = activeRequests.indexOf(promise);
+                var idx = activeRequests.indexOf(request);
                 if (idx > -1) activeRequests.splice(idx, 1);
                 breakdowns.forEach(function (breakdown) {
                     breakdown.meta.loading = false;
@@ -186,8 +188,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         }
 
         function abortActiveRequests () {
-            activeRequests.forEach(function (promise) {
-                promise.abort();
+            activeRequests.forEach(function (request) {
+                request.promise.abort();
             });
         }
 
@@ -310,18 +312,31 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             var diff = findDifference(breakdown, selectedBreakdown);
             if (diff < 0) return fetch ? $q.resolve(data) : undefined;
 
-            abortActiveRequests();
-
             // Breakdown levels are 1-based therefor (diff + 1) is level
-            // that is different and needs to be replaced
-            var equalLevel = diff;
-            var parentNodes = getNodesByLevel(equalLevel);
+            // that is different and needs to be replaced, taking into account
+            // current tree level (depth)
+            var equalLevel = Math.min(getTreeLevel(), diff);
+            var baseNodes = getNodesByLevel(equalLevel);
             var fetchSuccessiveLevels = breakdown.length > equalLevel;
             selectedBreakdown = breakdown;
 
+            // Check if there is already an active request to retrieve data (breakdown)
+            // that could be reused with new configuration. In case it is chain that request's
+            // promise to avoid unnecessary re-fetch (abort + request)
+            if (activeRequests.length === 1) {
+                var request = activeRequests[0];
+                var nextBreakdownRequest = selectedBreakdown.slice(0, equalLevel + 1);
+                if (angular.equals(nextBreakdownRequest, request.config.breakdown)) {
+                    return fetch ? request.promise : undefined;
+                }
+            }
+
+            // Abort all active requests that would lead to inconsistencies in data tree.
+            abortActiveRequests();
+
             // For all levels below remove all nodes and initialize new breakdown object (if needed)
             var childBreakdowns = [];
-            parentNodes.forEach(function (node) {
+            baseNodes.forEach(function (node) {
                 if (fetchSuccessiveLevels) {
                     initializeNodeBreakdown(node, equalLevel + 1);
                     childBreakdowns.push(node.breakdown);
@@ -339,6 +354,16 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
                 return $q.resolve(data);
             }
+        }
+
+        function getTreeLevel () {
+            var level = 0;
+            var node = data;
+            while (node.breakdown && node.breakdown.rows.length > 0) {
+                node = node.breakdown.rows[0];
+                level += 1;
+            }
+            return level;
         }
 
         function getNodesByLevel (level, node, result) {
@@ -399,8 +424,9 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 }
             }
 
-            if (diff < 0 && arr2.length > arr1.length)
+            if (diff < 0 && arr2.length > arr1.length) {
                 return arr1.length;
+            }
 
             return diff;
         }

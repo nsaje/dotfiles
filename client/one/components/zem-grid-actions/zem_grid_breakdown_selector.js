@@ -29,6 +29,8 @@ oneApp.directive('zemGridBreakdownSelector', [function () {
                         if (b !== breakdown) b.checked = false;
                     });
                 }
+
+                applyBreakdown();
             }
 
             function applyBreakdown () {

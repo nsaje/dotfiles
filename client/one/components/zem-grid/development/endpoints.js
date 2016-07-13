@@ -13,10 +13,17 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
 
         this.getData = function (config) {
             var deferred = $q.defer();
-            $timeout(function () {
+            var timer = $timeout(function () {
                 var data = generateData(config);
+                deferred.promise.abort = angular.noop;
                 deferred.resolve(data);
             }, 500 + (config.level - 1) * 500);
+
+            deferred.promise.abort = function () {
+                $timeout.cancel(timer);
+                deferred.reject();
+            };
+
             return deferred.promise;
         };
     }
