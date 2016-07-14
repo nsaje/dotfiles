@@ -212,7 +212,7 @@
                 <zem-help-popover content="Google Analytics web property ID." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
-                <input id="ga-property-id-input" type="text" class="form-control" ng-model="settings.gaPropertyId">
+                <input id="ga-property-id-input" type="text" class="form-control" ng-model="settings.gaPropertyId" placeholder="UA-xxxxxxx-yy">
             </div>
 
             <label ng-repeat="error in errors.gaPropertyId" class="control-label error" for="ga-property-id-input">{{ error }}</label>
