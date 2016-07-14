@@ -20,7 +20,7 @@ module.exports = function (config) {
         'one/js/**/*.js',
         'one/components/**/*.js',
         'actionlog/**/*.js',
-        'test/unit/**/*.js'
+        'test/unit/**/*.js',
     ],
 
       preprocessors: {

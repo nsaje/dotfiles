@@ -53,6 +53,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         // TODO: default values will be defined by Breakdown selector (TBD)
         var defaultPagination = [10, 3, 5, 7];
 
+        initializeRoot();
+
         //
         // Public API
         //
@@ -160,7 +162,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             var deferred = $q.defer();
             endpoint.saveData(value, row, column).then(function (data) {
                 row.stats[column.field] = data;
-                notifyListeners(EVENTS.ON_STATS_UPDATED, row, column);
+                notifyListeners(EVENTS.ON_STATS_UPDATED, row);
                 deferred.resolve();
             }, function (err) {
                 deferred.reject(err);
@@ -191,6 +193,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             activeRequests.forEach(function (request) {
                 request.promise.abort();
             });
+            activeRequests = [];
         }
 
         function getChildBreakdowns (breakdowns) {
@@ -224,6 +227,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 data.breakdown = breakdown;
                 data.breakdown.meta = {};
                 data.stats = breakdown.totals;
+                delete breakdown.totals;
                 return;
             }
 

@@ -30,6 +30,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         this.getColumns = getColumns;
         this.getVisibleColumns = getVisibleColumns;
         this.getSelectedRows = getSelectedRows;
+        this.getVisibleRows = getVisibleRows;
 
         this.setCollapsedRows = setCollapsedRows;
         this.setCollapsedLevel = setCollapsedLevel;
@@ -134,6 +135,12 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             }
 
             return selectedData;
+        }
+
+        function getVisibleRows () {
+            return getRows().filter(function (row) {
+                return row.visible;
+            });
         }
 
         function getColumns () {

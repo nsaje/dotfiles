@@ -26,6 +26,13 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
 
             return deferred.promise;
         };
+
+        this.saveData = function (value, row, column) {
+            var deferred = $q.defer();
+            row.stats[column.field].value = value;
+            deferred.resolve(row.stats[column.field]);
+            return deferred.promise;
+        };
     }
 
     // ///////////////////////////////////////////////////////////////////////////////////////////
