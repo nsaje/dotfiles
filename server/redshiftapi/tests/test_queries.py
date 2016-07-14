@@ -109,31 +109,18 @@ class PrepareTimeConstraintsTest(TestCase):
 
 class TestPrepareQuery(TestCase):
 
-    def test_lvl1_required_breakdown_constraints(self):
+    def test_breakdown_struct_delivery_required_breakdown_constraints(self):
         constraints = {
             'date__gte': datetime.date(2016, 4, 1),
             'date__lte': datetime.date(2016, 5, 1),
         }
 
         context = {
-            'constraints': backtosql.Q(models.MVMaster, **constraints)
+            'constraints': backtosql.Q(models.MVMaster(), **constraints)
         }
 
         with self.assertRaises(exc.MissingBreakdownConstraintsError):
-            queries.prepare_lvl1_top_rows(context)
-
-    def test_lvl2required_breakdown_constraints(self):
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
-
-        context = {
-            'constraints': backtosql.Q(models.MVMaster, **constraints)
-        }
-
-        with self.assertRaises(exc.MissingBreakdownConstraintsError):
-            queries.prepare_lvl2_top_rows(context)
+            queries.prepare_breakdown_struct_delivery_top_rows(context)
 
     def test_top_time_rows_prepares_time(self):
         constraints = {
@@ -142,7 +129,7 @@ class TestPrepareQuery(TestCase):
         }
 
         _, params = queries.prepare_time_top_rows(
-            models.MVMaster,
+            models.MVMaster(),
             constants.TimeDimension.DAY, {}, constraints, 1, 2)
 
         self.assertItemsEqual(params, [datetime.date(2016, 2, 2), datetime.date(2016, 2, 4)])

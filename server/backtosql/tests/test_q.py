@@ -17,12 +17,12 @@ class QTestCase(TestCase):
             'py_bar': datetime.date.today(),
         }
 
-        c = backtosql.Q(self.ModelA, **constraints_dict)
+        c = backtosql.Q(self.ModelA(), **constraints_dict)
         constraints = c.generate()
         self.assertEquals(constraints, "(bar=%s AND foo=ANY(%s))")
         self.assertItemsEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
 
-        c = backtosql.Q(self.ModelA, **constraints_dict)
+        c = backtosql.Q(self.ModelA(), **constraints_dict)
         constraints = c.generate(prefix="v")
         self.assertEquals(constraints, "(v.bar=%s AND v.foo=ANY(%s))")
         self.assertItemsEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
@@ -33,9 +33,11 @@ class QTestCase(TestCase):
             'py_bar': datetime.date.today(),
         }
 
-        q = backtosql.Q(self.ModelA, **constraints_dict)
+        m = self.ModelA()
+
+        q = backtosql.Q(m, **constraints_dict)
         for i in range(10):
-            q |= backtosql.Q(self.ModelA, **constraints_dict)
+            q |= backtosql.Q(m, **constraints_dict)
 
         constraints = q.generate(prefix="v")
         expected = '''\
@@ -76,7 +78,7 @@ class QTestCase(TestCase):
             'py_bar': datetime.date.today(),
         }
 
-        q = backtosql.Q(self.ModelA, *[backtosql.Q(self.ModelA, **constraints_dict) for x in range(10)])
+        q = backtosql.Q(self.ModelA(), *[backtosql.Q(self.ModelA(), **constraints_dict) for x in range(10)])
         q.join_operator = q.OR
 
         constraints = q.generate("TROL")

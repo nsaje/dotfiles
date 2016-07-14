@@ -39,24 +39,25 @@ class Model(object):
         cls.__COLUMNS__ = [x[1] for x in columns]
         cls.__COLUMNS_DICT__ = dict(columns)
 
-    @classmethod
-    def get_columns(cls):
-        return cls.__COLUMNS__[:]
+    def __init__(self):
+        self.columns = self.__COLUMNS__[:]
+        self.columns_dict = {k: v for k, v in self.__COLUMNS_DICT__.iteritems()}
 
-    @classmethod
-    def get_column(cls, alias):
-        return cls.__COLUMNS_DICT__[helpers.clean_alias(alias)]
+    def get_columns(self):
+        return self.columns
 
-    @classmethod
-    def select_columns(cls, subset=None, group=None):
+    def get_column(self, alias):
+        return self.columns_dict[helpers.clean_alias(alias)]
+
+    def select_columns(self, subset=None, group=None):
         if subset:
             columns = []
             unknown = []
 
             for alias in subset:
                 alias = helpers.clean_alias(alias)
-                if alias in cls.__COLUMNS_DICT__:
-                    columns.append(cls.__COLUMNS_DICT__[alias])
+                if alias in self.columns_dict:
+                    columns.append(self.columns_dict[alias])
                 else:
                     unknown.append(alias)
 
@@ -64,13 +65,18 @@ class Model(object):
                 raise helpers.BackToSQLException('Unknown columns in subset {}'.format(unknown))
 
         else:
-            columns = cls.get_columns()
+            columns = self.get_columns()
 
         if group:
             columns = [x for x in columns if x.group == group]
 
         return columns
 
-    @classmethod
-    def select_order(cls, subset):
-        return [cls.get_column(c).as_order(c) for c in subset]
+    def select_order(self, subset):
+        return [self.get_column(c).as_order(c) for c in subset]
+
+    def add_column(self, column):
+        self.columns.append(column)
+        self.columns_dict[column.alias] = column
+
+        setattr(self, column.alias, column)

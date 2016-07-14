@@ -168,24 +168,43 @@ class ModelTestCase(TestCase):
         self.assertEquals(self.ModelA.py_dog.alias, 'py_dog')
 
     def test_get_columns(self):
-        self.assertItemsEqual(self.ModelA.get_columns(),
+        self.assertItemsEqual(self.ModelA().get_columns(),
                               [self.ModelA.py_foo, self.ModelA.py_bar,
                                self.ModelA.py_cat, self.ModelA.py_dog])
 
     def test_get_column(self):
-        self.assertEquals(self.ModelA.get_column('py_foo'), self.ModelA.py_foo)
+        self.assertEquals(self.ModelA().get_column('py_foo'), self.ModelA.py_foo)
 
     def test_select_columns(self):
-        self.assertItemsEqual(self.ModelA.select_columns(), self.ModelA.get_columns())
+        m = self.ModelA()
 
-        self.assertItemsEqual(self.ModelA.select_columns(subset=['py_foo', 'py_bar']),
-                              [self.ModelA.py_foo, self.ModelA.py_bar])
+        self.assertItemsEqual(m.select_columns(), m.get_columns())
 
-        self.assertItemsEqual(self.ModelA.select_columns(group=1),
-                              [self.ModelA.py_foo, self.ModelA.py_cat])
+        self.assertItemsEqual(m.select_columns(subset=['py_foo', 'py_bar']),
+                              [m.py_foo, m.py_bar])
 
-        self.assertItemsEqual(self.ModelA.select_columns(subset=['py_foo', 'py_bar'], group=1),
-                              [self.ModelA.py_foo])
+        self.assertItemsEqual(m.select_columns(group=1),
+                              [m.py_foo, m.py_cat])
+
+        self.assertItemsEqual(m.select_columns(subset=['py_foo', 'py_bar'], group=1),
+                              [m.py_foo])
+
+    def test_add_column(self):
+        m = self.ModelA()
+
+        column = backtosql.Column('food', group=1, alias='food')
+        m.add_column(column)
+
+        self.assertEquals(m.food, column)
+
+        with self.assertRaises(AttributeError):
+            getattr(self.ModelA, 'food')
+
+        self.assertItemsEqual(m.select_columns(subset=['py_foo', 'py_bar', 'food']),
+                              [m.py_foo, m.py_bar, m.food])
+
+        self.assertItemsEqual(m.select_columns(group=1),
+                              [m.py_foo, m.py_cat, m.food])
 
 
 class FiltersTestCase(TestCase, TestRenderMixin):
@@ -258,7 +277,7 @@ class QueryConstructionTestCase(TestCase, TestSQLMixin):
         py_dog = backtosql.TemplateColumn('test_col.sql', {'column_name': 'dog', 'multiplier': '10'}, group=2)
 
     def test_query(self):
-        model = self.ModelA
+        model = self.ModelA()
         breakdown = ['py_foo', 'py_bar']
         order = ['-py_cat', 'py_bar']
 

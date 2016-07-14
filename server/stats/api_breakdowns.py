@@ -1,17 +1,13 @@
 from utils import exc
 from utils import sort_helper
 
+import dash.models
+
 from stats import helpers
 from stats import constants
 from stats import augmenter
 
 import redshiftapi.api_breakdowns
-
-# TODO handle 'other' rows
-# TODO level specific api (different columns, order)
-# TODO which columns should be queried/returned (what exists per level, permissions)
-# TODO if sort is in dash than this should be sorted by dash data (fetch before)
-# TODO use constants for other dimensions like age, gender etc
 
 
 def query(user, breakdown, constraints, breakdown_page,
@@ -22,10 +18,16 @@ def query(user, breakdown, constraints, breakdown_page,
     # FIXME: Hack to prevent sorting by fields not available in redshift
     order = get_supported_order(order)
 
+    breakdown = helpers.extract_stats_breakdown(breakdown)
+    constraints = helpers.extract_stats_constraints(constraints)
+
+    conversion_goals = get_conversion_goals(breakdown, constraints)
+
     rows = redshiftapi.api_breakdowns.query(
-        helpers.extract_stats_breakdown(breakdown),
-        helpers.extract_stats_constraints(constraints),
+        breakdown,
+        constraints,
         helpers.extract_stats_breakdown_constraints(breakdown, breakdown_page),
+        conversion_goals,
         order,
         offset,
         limit)
@@ -73,8 +75,7 @@ def validate_breakdown(breakdown):
 # FIXME: Remove this hack
 def get_supported_order(order):
     UNSUPPORTED_FIELDS = ["name", "state", "status", "performance", "yesterday_cost", "e_yesterday_cost", "min_bid_cpc",
-                          "max_bid_cpc", "daily_budget", "conversion_goal_1", "conversion_goal_2", "conversion_goal_3",
-                          "conversion_goal_4", "conversion_goal_5", "unbounced_visits",
+                          "max_bid_cpc", "daily_budget", "unbounced_visits",
                           "avg_cost_per_non_bounced_visitor", "avg_cost_per_conversion_goal_1",
                           "avg_cost_per_conversion_goal_2", "avg_cost_per_conversion_goal_3",
                           "avg_cost_per_conversion_goal_4", "avg_cost_per_conversion_goal_5"]
@@ -87,3 +88,16 @@ def get_supported_order(order):
         return "-clicks"
 
     return order
+
+
+def get_conversion_goals(breakdown, constraints):
+    conversion_goals = []
+
+    level = constants.get_level_dimension(constraints)
+
+    if level == 'ad_group_id':
+        return dash.models.AdGroup.objects.get(pk=constraints['ad_group_id']).campaign.conversiongoal_set.all()
+    elif level == 'campaign_id':
+        return dash.models.Campaign.objects.get(pk=constraints['campaign_id']).conversiongoal_set.all()
+
+    return []

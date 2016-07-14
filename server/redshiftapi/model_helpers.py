@@ -1,6 +1,8 @@
 
 BREAKDOWN = 1
 AGGREGATES = 2
+CONVERSION_AGGREGATES = 3
+TOUCHPOINTCONVERSION_AGGREGATES = 4
 
 
 class RSBreakdownMixin(object):
@@ -13,12 +15,10 @@ class RSBreakdownMixin(object):
         """ Returns the SQL view that best fits the breakdown """
         raise NotImplementedError()
 
-    @classmethod
-    def get_breakdown(cls, breakdown):
+    def get_breakdown(self, breakdown):
         """ Selects breakdown subset of columns """
-        return cls.select_columns(subset=breakdown)
+        return self.select_columns(subset=breakdown)
 
-    @classmethod
-    def get_aggregates(cls):
+    def get_aggregates(self):
         """ Returns all the aggregate columns """
-        return cls.select_columns(group=AGGREGATES)
+        return self.select_columns(group=AGGREGATES)

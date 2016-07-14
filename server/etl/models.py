@@ -27,18 +27,6 @@ class K1PostclickStats(backtosql.Model, RSBreakdownMixin):
         return 'postclickstats'
 
 
-class K1OutbrainPublisherStats(backtosql.Model, RSBreakdownMixin):
-    date = backtosql.Column('date', BREAKDOWN)
-
-    ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
-    publisher = backtosql.Column('publisher_name', BREAKDOWN)
-
-    clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATES)
-
-    def get_best_view(self, *args, **kwargs):
-        return 'outbrainpublisherstats'
-
-
 class MVMaster(backtosql.Model, RSBreakdownMixin):
     date = backtosql.Column('date', BREAKDOWN)
 
@@ -74,16 +62,12 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
                                                         AGGREGATES)
     license_fee_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'license_fee_nano'}, AGGREGATES)
 
-    # conversions = backtosql.TemplateColumn('part_json_dict_sum.sql', {'column_name': 'conversions'}, AGGREGATES)
-    # tp_conversions = backtosql.TemplateColumn('part_json_dict_sum.sql', {'column_name': 'tp_conversions'}, AGGREGATES)
-
-    @classmethod
-    def get_ordered_aggregates(cls):
+    def get_ordered_aggregates(self):
         """
         Returns aggregates in order as it is used in materialized view table definitions.
         """
 
-        return cls.select_columns(subset=[
+        return self.select_columns(subset=[
             'impressions', 'clicks', 'cost_nano', 'data_cost_nano', 'visits', 'new_visits',
             'bounced_visits', 'pageviews', 'total_time_on_site', 'effective_cost_nano',
             'effective_data_cost_nano', 'license_fee_nano',
