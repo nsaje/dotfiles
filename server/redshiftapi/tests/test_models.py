@@ -18,6 +18,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         conversion_columns = m.select_columns(group=model_helpers.CONVERSION_AGGREGATES)
         touchpoint_columns = m.select_columns(group=model_helpers.TOUCHPOINTCONVERSION_AGGREGATES)
+        after_join_columns = m.select_columns(group=model_helpers.AFTER_JOIN_CALCULATIONS)
 
         self.assertListEqual([x.column_as_alias('a') for x in conversion_columns], [
             "SUM(CASE WHEN a.slug='ga__2' THEN conversion_count ELSE 0 END) conversion_goal_2",
@@ -31,8 +32,17 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             THEN conversion_count ELSE 0 END) conversion_goal_1""")
         ])
 
+        # prefixes should be added afterwards
+        self.assertListEqual([x.column_as_alias('a') for x in after_join_columns], [
+            'cost / NULLIF(conversion_goal_1, 0) avg_cost_per_conversion_goal_1',
+            'cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2',
+            'cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3',
+            'cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4',
+            'cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5',
+        ])
+
         columns = m.get_columns()
-        self.assertEquals(len(columns), 43)
+        self.assertEquals(len(columns), 56)
 
         columns = m.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
@@ -72,6 +82,14 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             'conversion_goal_1',
         ]))
 
+        self.assertListEqual(context['after_join_conversions_calculations'], m.select_columns([
+            'avg_cost_per_conversion_goal_1',
+            'avg_cost_per_conversion_goal_2',
+            'avg_cost_per_conversion_goal_3',
+            'avg_cost_per_conversion_goal_4',
+            'avg_cost_per_conversion_goal_5',
+        ]))
+
 
 class RSModelTest(TestCase, backtosql.TestSQLMixin):
 
@@ -80,10 +98,19 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
 
     def test_columns(self):
         columns = self.model.get_columns()
-        self.assertEquals(len(columns), 38)
+        self.assertEquals(len(columns), 46)
 
         columns = self.model.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
+
+    def test_no_conversion_columns(self):
+        conversion_columns = self.model.select_columns(group=model_helpers.CONVERSION_AGGREGATES)
+        touchpoint_columns = self.model.select_columns(group=model_helpers.TOUCHPOINTCONVERSION_AGGREGATES)
+        after_join_columns = self.model.select_columns(group=model_helpers.AFTER_JOIN_CALCULATIONS)
+
+        self.assertItemsEqual(conversion_columns, [])
+        self.assertItemsEqual(touchpoint_columns, [])
+        self.assertItemsEqual(after_join_columns, [])
 
     def test_get_breakdown(self):
         self.assertEquals(
@@ -102,7 +129,11 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
                                'license_fee', 'billing_cost', 'total_cost',
                                'ctr', 'cpc', 'visits', 'click_discrepancy',
                                'pageviews', 'new_visits', 'percent_new_users',
-                               'bounce_rate', 'pv_per_visit', 'avg_tos'])
+                               'bounce_rate', 'pv_per_visit', 'avg_tos',
+                               'avg_cost_for_new_visitor', 'avg_cost_per_minute',
+                               'avg_cost_per_non_bounced_visitor', 'avg_cost_per_pageview',
+                               'avg_cost_per_visit', 'total_pageviews', 'total_seconds',
+                               'unbounced_visits'])
 
     def test_get_default_context_constraints(self):
         m = models.MVMaster()

@@ -74,11 +74,11 @@ def validate_breakdown(breakdown):
 
 # FIXME: Remove this hack
 def get_supported_order(order):
-    UNSUPPORTED_FIELDS = ["name", "state", "status", "performance", "yesterday_cost", "e_yesterday_cost", "min_bid_cpc",
-                          "max_bid_cpc", "daily_budget", "unbounced_visits",
-                          "avg_cost_per_non_bounced_visitor", "avg_cost_per_conversion_goal_1",
-                          "avg_cost_per_conversion_goal_2", "avg_cost_per_conversion_goal_3",
-                          "avg_cost_per_conversion_goal_4", "avg_cost_per_conversion_goal_5"]
+    UNSUPPORTED_FIELDS = [
+        "name", "state", "status", "performance",
+        "yesterday_cost", "e_yesterday_cost", "min_bid_cpc",
+        "max_bid_cpc", "daily_budget",
+    ]
 
     unprefixed_order = order
     if order.startswith('-'):

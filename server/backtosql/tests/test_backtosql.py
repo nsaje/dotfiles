@@ -189,6 +189,11 @@ class ModelTestCase(TestCase):
         self.assertItemsEqual(m.select_columns(subset=['py_foo', 'py_bar'], group=1),
                               [m.py_foo])
 
+        with self.assertRaises(backtosql.BackToSQLException):
+            # should raise exception if nonexistent column is specified
+            self.assertItemsEqual(m.select_columns(subset=['nonexistent']),
+                                  [m.py_foo])
+
     def test_add_column(self):
         m = self.ModelA()
 

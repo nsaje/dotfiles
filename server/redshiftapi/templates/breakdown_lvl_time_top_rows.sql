@@ -57,6 +57,9 @@ SELECT
     {% if touchpointconversions_aggregates %}
         ,{{ touchpointconversions_aggregates|only_alias:"temp_touchpointconversions" }}
     {% endif %}
+    {% if after_join_conversions_calculations %}
+        ,{{ after_join_conversions_calculations|column_as_alias }}
+    {% endif %}
 FROM
     temp_base
     {% if conversions_aggregates %} NATURAL LEFT OUTER JOIN temp_conversions {% endif %}

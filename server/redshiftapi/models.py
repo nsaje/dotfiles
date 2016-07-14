@@ -1,5 +1,4 @@
 import backtosql
-import collections
 
 from dash import conversions_helper
 
@@ -145,6 +144,21 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
     avg_tos = backtosql.TemplateColumn('part_sumdiv.sql',
                                        {'expr': 'total_time_on_site', 'divisor': 'visits'}, mh.AGGREGATES)
 
+    total_seconds = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'total_time_on_site'}, mh.AGGREGATES)
+    avg_cost_per_minute = backtosql.TemplateColumn('part_avg_cost_per_minute.sql', group=mh.AGGREGATES)
+    unbounced_visits = backtosql.TemplateColumn('part_unbounced_visits.sql', group=mh.AGGREGATES)
+    avg_cost_per_non_bounced_visitor = backtosql.TemplateColumn('part_avg_cost_per_non_bounced_visitor.sql', group=mh.AGGREGATES)
+    total_pageviews = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'pageviews'}, group=mh.AGGREGATES)
+    avg_cost_per_pageview = backtosql.TemplateColumn('part_sumdiv_nano.sql', {
+        'expr': 'cost_nano', 'divisor': 'pageviews',
+    }, mh.AGGREGATES)
+    avg_cost_for_new_visitor = backtosql.TemplateColumn('part_sumdiv_nano.sql', {
+        'expr': 'cost_nano', 'divisor': 'new_visits',
+    }, mh.AGGREGATES)
+    avg_cost_per_visit = backtosql.TemplateColumn('part_sumdiv_nano.sql', {
+        'expr': 'cost_nano', 'divisor': 'visits',
+    }, mh.AGGREGATES)
+
     def init_conversion_columns(self, conversion_goals):
         """
         Conversion columns are added dynamically, because the number and their definition
@@ -160,26 +174,29 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
             if conversion_goal.type in conversions_helper.REPORT_GOAL_TYPES:
                 column = backtosql.TemplateColumn(
-                    'part_conversion_goal.sql',
-                    {'goal_id': conversion_goal.get_stats_key()},
-                    alias=conversion_key,
-                    group=mh.CONVERSION_AGGREGATES
+                    'part_conversion_goal.sql', {'goal_id': conversion_goal.get_stats_key()},
+                    alias=conversion_key, group=mh.CONVERSION_AGGREGATES
                 )
 
                 self.add_column(column)
 
             elif conversion_goal.type == conversions_helper.PIXEL_GOAL_TYPE:
+                goal_id = conversion_goal.pixel.slug if conversion_goal.pixel else conversion_goal.goal_id
                 column = backtosql.TemplateColumn(
-                    'part_touchpointconversion_goal.sql',
-                    {
-                        'goal_id': conversion_goal.pixel.slug if conversion_goal.pixel else conversion_goal.goal_id,
+                    'part_touchpointconversion_goal.sql', {
+                        'goal_id': goal_id,
                         'window': conversion_goal.conversion_window,
                     },
-                    alias=conversion_key,
-                    group=mh.TOUCHPOINTCONVERSION_AGGREGATES
+                    alias=conversion_key, group=mh.TOUCHPOINTCONVERSION_AGGREGATES
                 )
-
                 self.add_column(column)
+
+            avg_cost_column = backtosql.TemplateColumn(
+                'part_avg_cost_per_conversion_goal.sql', {'conversion_key': conversion_key},
+                alias='avg_cost_per_' + conversion_key, group=mh.AFTER_JOIN_CALCULATIONS
+            )
+
+            self.add_column(avg_cost_column)
 
     @classmethod
     def get_best_view(cls, breakdown, constraints):
@@ -247,6 +264,10 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
                                        if breakdown_supports_conversions else []),
             'touchpointconversions_aggregates': (self.select_columns(group=mh.TOUCHPOINTCONVERSION_AGGREGATES)
                                                  if breakdown_supports_conversions else []),
+
+            'after_join_conversions_calculations': (self.select_columns(group=mh.AFTER_JOIN_CALCULATIONS)
+                                                    if breakdown_supports_conversions else []),
+            'is_ordered_by_after_join_conversions_calculations': order_column.group == mh.AFTER_JOIN_CALCULATIONS,
         }
 
         return context

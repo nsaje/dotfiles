@@ -1,0 +1,1 @@
+(NVL(SUM({{ p }}visits)) - NVL(SUM({{ p }}bounced_visits), 0)) {{ alias }}

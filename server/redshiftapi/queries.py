@@ -34,10 +34,13 @@ def prepare_breakdown_struct_delivery_top_rows(default_context):
     return sql, params
 
 
-def prepare_time_top_rows(model, time_dimension, default_context, constraints, offset, limit):
+def prepare_time_top_rows(model, time_dimension, default_context, constraints):
     """
     Prepares a SQL query for a breakdown where targeted dimension is time.
     """
+
+    offset = default_context['offset']
+    limit = default_context['limit']
 
     _prepare_time_constraints(time_dimension, constraints, offset, limit)
     default_context['constraints'] = backtosql.Q(model, **constraints)
@@ -48,6 +51,9 @@ def prepare_time_top_rows(model, time_dimension, default_context, constraints, o
 
     # when querying time dimension order is always time asc
     default_context['order'] = model.select_order([time_dimension])
+    default_context['is_ordered_by_conversions'] = False
+    default_context['is_ordered_by_touchpointconversions'] = False
+    default_context['is_ordered_by_after_join_conversions_calculations'] = False
 
     sql = backtosql.generate_sql('breakdown_lvl_time_top_rows.sql', default_context)
 
