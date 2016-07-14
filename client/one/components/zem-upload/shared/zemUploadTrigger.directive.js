@@ -20,7 +20,7 @@ oneApp.directive('zemUploadTrigger', ['$modal', '$rootScope', 'zemUploadEndpoint
 
                 $modal.open({
                     templateUrl: '/components/zem-upload/templates/zem_upload.html',
-                    ctrl: 'zemUploadModalCtrl',
+                    controller: 'zemUploadModalCtrl',
                     windowClass: 'modal-zem-upload',
                     scope: modalScope,
                 });
