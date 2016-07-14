@@ -111,18 +111,6 @@ describe('AdGroupAdsCtrl', function () {
         });
     }
 
-    describe('addContentAds', function () {
-        beforeEach(function () {
-            initializeController();
-        });
-        it('opens a modal window when called', function () {
-            $scope.addContentAds().result
-                .catch(function (error) {
-                    expect(error).toBeUndefined();
-                });
-        });
-    });
-
     describe('archiveContentAds', function () {
         beforeEach(function () {
             initializeController();

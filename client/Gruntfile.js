@@ -49,6 +49,7 @@ module.exports = function (grunt) {
                     'one/js/filters/**/*.js',
                     'one/components/**/*.js',
                     'one/js/demo.js',
+                    '!one/**/*.spec.js',
                 ],
                 dest: 'dist/one/zemanta-one.js'
             },
@@ -191,6 +192,7 @@ module.exports = function (grunt) {
             one_js: {
                 files: [
                     'one/**/*.js',
+                    '!one/**/*.spec.js',
                 ],
                 tasks: ['concat:one']
             },

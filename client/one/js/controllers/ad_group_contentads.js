@@ -1,5 +1,5 @@
 /* globals oneApp, options, angular, constants, moment */
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService',  'zemDataSourceService', 'zemGridEndpointService', 'zemUploadApi', 'zemUploadEndpointService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService, zemUploadApi, zemUploadEndpointService) { // eslint-disable-line max-len
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService',  'zemDataSourceService', 'zemGridEndpointService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -497,12 +497,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     }, zemOptimisationMetricsService.createColumnCategories(),
     ];
 
-    $scope.addContentAds = function () {
-        var endpoint = zemUploadEndpointService.createEndpoint($state.params.id);
-        var api = zemUploadApi.createInstance();
-        return api.openModal($scope.adGroup, endpoint, getTableData);
-    };
-
     var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {
         updateContentAdStates(state);
 
@@ -774,6 +768,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
             $scope.reflowGraph(1);
         });
     };
+    $scope.getTableData = getTableData;
 
     var pollSyncStatus = function () {
         if ($scope.isSyncInProgress) {
