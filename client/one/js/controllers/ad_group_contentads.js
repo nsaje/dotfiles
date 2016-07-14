@@ -768,7 +768,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
             $scope.reflowGraph(1);
         });
     };
-    $scope.getTableData = getTableData;
+
+    $scope.refreshGridAndTable = function () {
+        getTableData();
+        $scope.grid.api.getDataService().loadData();
+    };
 
     var pollSyncStatus = function () {
         if ($scope.isSyncInProgress) {
