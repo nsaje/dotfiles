@@ -561,6 +561,16 @@ urlpatterns += [
         name='k1api.get_accounts',
     ),
     url(
+        r'^k1api/get_custom_audiences$',
+        k1api.views.get_custom_audiences,
+        name='k1api.get_custom_audiences',
+    ),
+    url(
+        r'k1api/update_source_pixel$',
+        k1api.views.update_source_pixel,
+        name='k1api.update_source_pixel',
+    ),
+    url(
         r'^k1api/get_source_credentials_for_reports_sync$',
         k1api.views.get_source_credentials_for_reports_sync,
         name='k1api.get_source_credentials_for_reports_sync',

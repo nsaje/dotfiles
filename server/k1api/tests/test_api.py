@@ -11,6 +11,9 @@ import dash.constants
 import dash.models
 
 import logging
+
+from utils.test_helper import ListMatcher
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -34,12 +37,16 @@ class K1ApiTest(TestCase):
     def test_signature(self):
         test_paths = [
             'k1api.get_accounts',
+            'k1api.get_custom_audiences',
+            'k1api.update_source_pixel',
             'k1api.get_source_credentials_for_reports_sync',
             'k1api.get_content_ad_source_mapping',
             'k1api.get_ga_accounts',
             'k1api.get_publishers_blacklist',
             'k1api.get_ad_groups',
             'k1api.get_ad_groups_exchanges',
+            'k1api.get_facebook_account',
+            'k1api.update_facebook_account',
         ]
         for path in test_paths:
             self._test_signature(path)
@@ -61,10 +68,211 @@ class K1ApiTest(TestCase):
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
+        data = data['response']
 
-        for account in data['response']['accounts']:
-            self.assertEqual(account['outbrain_marketer_id'],
-                             dash.models.Account.objects.get(pk=account['id']).outbrain_marketer_id)
+        self.assertTrue(len(data['accounts']), 3)
+        self.assertDictEqual(data, {u'accounts': ListMatcher([
+            {u'id': 1,
+             u'outbrain_marketer_id': u'abcde',
+             u'pixels': [
+                 {u'id': 1,
+                  u'slug': u'testslug1',
+                  u'source_pixels': ListMatcher([
+                      {u'url': u'http://www.ob.com/pixelendpoint',
+                       u'source_pixel_id': u'ob_zem1',
+                       u'source_type': u'outbrain',
+                       },
+                      {u'url': u'http://www.y.com/pixelendpoint',
+                       u'source_pixel_id': u'y_zem1',
+                       u'source_type': u'yahoo',
+                       },
+                      {u'url': u'http://www.fb.com/pixelendpoint',
+                       u'source_pixel_id': u'fb_zem1',
+                       u'source_type': u'facebook',
+                       },
+                  ])},
+                 {u'id': 2,
+                  u'slug': u'testslug2',
+                  u'source_pixels': ListMatcher([
+                      {u'url': u'http://www.ob.com/pixelendpoint',
+                       u'source_pixel_id': u'ob_zem2',
+                       u'source_type': u'outbrain',
+                       },
+                      {u'url': u'http://www.y.com/pixelendpoint',
+                       u'source_pixel_id': u'y_zem2',
+                       u'source_type': u'yahoo',
+                       },
+                      {u'url': u'http://www.fb.com/pixelendpoint',
+                       u'source_pixel_id': u'fb_zem2',
+                       u'source_type': u'facebook',
+                       },
+                  ])},
+             ]},
+            {u'id': 2,
+             u'outbrain_marketer_id': None,
+             u'pixels': [
+                 {u'id': 3,
+                  u'slug': u'testslug3',
+                  u'source_pixels': []
+                  },
+             ]},
+            {u'id': 3,
+             u'outbrain_marketer_id': None,
+             u'pixels': [],
+             },
+        ])})
+        self.assertIsNone(data.get('credentials'))
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_accounts_with_id(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_accounts'), {'account_id': 1, 'bidder_slug': 'outbrain'},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertTrue(len(data['accounts']), 1)
+        self.assertDictEqual(data['accounts'][0], {
+            u'id': 1,
+            u'outbrain_marketer_id': u'abcde',
+            u'pixels': [
+                {u'id': 1,
+                 u'slug': u'testslug1',
+                 u'source_pixels': ListMatcher([
+                     {u'url': u'http://www.ob.com/pixelendpoint',
+                      u'source_pixel_id': u'ob_zem1',
+                      u'source_type': u'outbrain',
+                      },
+                     {u'url': u'http://www.y.com/pixelendpoint',
+                      u'source_pixel_id': u'y_zem1',
+                      u'source_type': u'yahoo',
+                      },
+                     {u'url': u'http://www.fb.com/pixelendpoint',
+                      u'source_pixel_id': u'fb_zem1',
+                      u'source_type': u'facebook',
+                      },
+                 ])},
+                {u'id': 2,
+                 u'slug': u'testslug2',
+                 u'source_pixels': ListMatcher([
+                     {u'url': u'http://www.ob.com/pixelendpoint',
+                      u'source_pixel_id': u'ob_zem2',
+                      u'source_type': u'outbrain',
+                      },
+                     {u'url': u'http://www.y.com/pixelendpoint',
+                      u'source_pixel_id': u'y_zem2',
+                      u'source_type': u'yahoo',
+                      },
+                     {u'url': u'http://www.fb.com/pixelendpoint',
+                      u'source_pixel_id': u'fb_zem2',
+                      u'source_type': u'facebook',
+                      },
+                 ])},
+            ]})
+        self.assertEqual(data['credentials'], u'c')
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_custom_audience(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_custom_audiences'),
+            {'account_id': 1},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(2, len(data))
+        self.assertDictEqual(data[0], {
+            u'id': 1,
+            u'pixel_id': 1,
+            u'rules': ListMatcher([
+                {u'id': 1,
+                 u'type': 1,
+                 u'values': u'dummy',
+                 },
+                {u'id': 2,
+                 u'type': 2,
+                 u'values': u'dummy2',
+                 },
+            ]),
+            u'ttl': 90,
+        })
+        self.assertDictEqual(data[1], {
+            u'id': 2,
+            u'pixel_id': 2,
+            u'rules': ListMatcher([
+                {u'id': 3,
+                 u'type': 1,
+                 u'values': u'dummy3',
+                 },
+                {u'id': 4,
+                 u'type': 2,
+                 u'values': u'dummy4',
+                 },
+            ]),
+            u'ttl': 60,
+        })
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_custom_audience_no_id(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_custom_audiences'),
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['error'], 'Account id must be specified.')
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_source_pixel_with_existing(self, mock_verify_wsgi_request):
+        body = {
+            'pixel_id': 1,
+            'source_type': 'facebook',
+            'url': 'http://www.dummy_fb.com/pixie_endpoint',
+            'source_pixel_id': 'fb_dummy_id',
+        }
+        response = self.client.put(
+            reverse('k1api.update_source_pixel'), json.dumps(body), 'application/json',
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self.assertDictEqual(body, data['response'])
+
+        updated_pixel = dash.models.SourceTypePixel.objects.get(pk=3)
+        self.assertEqual(updated_pixel.url, 'http://www.dummy_fb.com/pixie_endpoint')
+        self.assertEqual(updated_pixel.source_pixel_id, 'fb_dummy_id')
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_source_pixel_create_new(self, mock_verify_wsgi_request):
+        body = {
+            'pixel_id': 3,
+            'source_type': 'facebook',
+            'url': 'http://www.dummy_fb.com/pixie_endpoint',
+            'source_pixel_id': 'fb_dummy_id',
+        }
+        response = self.client.put(
+            reverse('k1api.update_source_pixel'), json.dumps(body), 'application/json',
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self.assertDictEqual(body, data['response'])
+
+        updated_pixel = dash.models.SourceTypePixel.objects.get(pk=7)
+        self.assertEqual(updated_pixel.url, 'http://www.dummy_fb.com/pixie_endpoint')
+        self.assertEqual(updated_pixel.source_pixel_id, 'fb_dummy_id')
 
     def _test_source_credentials_filter(self, mock_verify_wsgi_request, source_types=None):
         response = self.client.get(
@@ -706,7 +914,7 @@ class K1ApiTest(TestCase):
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
-    def test_get_facebook_account(self, mock_verify_wsgi_request):
+    def test_get_facebook_account_with_ad_group(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_facebook_account'),
             {'ad_group_id': '1'}
@@ -718,6 +926,33 @@ class K1ApiTest(TestCase):
 
         fb_account = dash.models.FacebookAccount.objects.get(pk=1)
         self.assertEqual(fb_account.ad_account_id, data['response']['ad_account_id'])
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_facebook_account_with_account(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_facebook_account'),
+            {'account_id': '1'}
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+
+        fb_account = dash.models.FacebookAccount.objects.get(pk=1)
+        self.assertEqual(fb_account.ad_account_id, data['response']['ad_account_id'])
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_facebook_account_with_none(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_facebook_account'),
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['error'], 'Must provide ad group id or account id.')
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')

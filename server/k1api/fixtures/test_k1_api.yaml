@@ -167,6 +167,11 @@
     model: dash.sourcetype
     pk: 6
 
+-   fields:
+        type: 'facebook'
+    model: dash.sourcetype
+    pk: 7
+
 # sources
 
 -   fields:
@@ -707,6 +712,69 @@
         created_dt: '2015-02-23T00:00:00'
     model: dash.conversionpixel
     pk: 3
+
+
+# test sourcetypepixel
+
+-   fields:
+        pixel: 1
+        url: 'http://www.ob.com/pixelendpoint'
+        source_pixel_id: ob_zem1
+        source_type: 3
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.sourcetypepixel
+    pk: 1
+
+-   fields:
+        pixel: 1
+        url: 'http://www.y.com/pixelendpoint'
+        source_pixel_id: y_zem1
+        source_type: 5
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.sourcetypepixel
+    pk: 2
+
+-   fields:
+        pixel: 1
+        url: 'http://www.fb.com/pixelendpoint'
+        source_pixel_id: fb_zem1
+        source_type: 7
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.sourcetypepixel
+    pk: 3
+
+-   fields:
+        pixel: 2
+        url: 'http://www.ob.com/pixelendpoint'
+        source_pixel_id: ob_zem2
+        source_type: 3
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.sourcetypepixel
+    pk: 4
+
+-   fields:
+        pixel: 2
+        url: 'http://www.y.com/pixelendpoint'
+        source_pixel_id: y_zem2
+        source_type: 5
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.sourcetypepixel
+    pk: 5
+
+-   fields:
+        pixel: 2
+        url: 'http://www.fb.com/pixelendpoint'
+        source_pixel_id: fb_zem2
+        source_type: 7
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.sourcetypepixel
+    pk: 6
 
 # test publisherblacklist
 

@@ -261,17 +261,106 @@ def get_content_ad_sources_for_ad_group(request):
 def get_accounts(request):
     _validate_signature(request)
 
-    accounts_list = (
-        dash.models.Account.objects
-            .all()
-            .exclude_archived()
-            .values(
-                'id',
-                'outbrain_marketer_id',
-            )
-    )
+    account_id = request.GET.get('account_id')
+    if account_id:
+        accounts = (dash.models.Account.objects
+                    .filter(id=account_id)
+                    .prefetch_related('conversionpixel_set', 'conversionpixel_set__sourcetypepixel_set'))
+    else:
+        accounts = (dash.models.Account.objects
+                    .all()
+                    .exclude_archived()
+                    .prefetch_related('conversionpixel_set', 'conversionpixel_set__sourcetypepixel_set'))
 
-    return _response_ok({'accounts': list(accounts_list)})
+    account_dicts = []
+    for account in accounts:
+        pixels = []
+        for pixel in account.conversionpixel_set.all():
+            source_pixels = []
+            for source_pixel in pixel.sourcetypepixel_set.all():
+                source_pixel_dict = {
+                    'url': source_pixel.url,
+                    'source_pixel_id': source_pixel.source_pixel_id,
+                    'source_type': source_pixel.source_type.type,
+                }
+                source_pixels.append(source_pixel_dict)
+
+            pixel_dict = {
+                'id': pixel.id,
+                'slug': pixel.slug,
+                'source_pixels': source_pixels,
+            }
+            pixels.append(pixel_dict)
+
+        account_dict = {
+            'id': account.id,
+            'pixels': pixels,
+            'outbrain_marketer_id': account.outbrain_marketer_id,
+        }
+        account_dicts.append(account_dict)
+    response = {'accounts': account_dicts}
+
+    bidder_slug = request.GET.get("bidder_slug")
+    if bidder_slug:
+        source_credentials = dash.models.SourceCredentials.objects.get(source__bidder_slug=bidder_slug)
+        response['credentials'] = source_credentials.credentials
+
+    return _response_ok(response)
+
+
+@csrf_exempt
+def get_custom_audiences(request):
+    _validate_signature(request)
+
+    account_id = request.GET.get('account_id')
+    if not account_id:
+        return _response_error('Account id must be specified.')
+
+    audiences = dash.models.Audience.objects.filter(pixel__account__id=account_id).prefetch_related('rule_set')
+
+    audiences_dicts = []
+    for audience in audiences:
+        rules = []
+        for rule in audience.rule_set.all():
+            rule_dict = {
+                'id': rule.id,
+                'type': rule.type,
+                'values': rule.value,
+            }
+            rules.append(rule_dict)
+
+        audience_dict = {
+            'id': audience.id,
+            'pixel_id': audience.pixel.id,
+            'ttl': audience.ttl,
+            'rules': rules,
+        }
+        audiences_dicts.append(audience_dict)
+
+    return _response_ok(audiences_dicts)
+
+
+@csrf_exempt
+def update_source_pixel(request):
+    _validate_signature(request)
+
+    data = json.loads(request.body)
+    pixel_id = data['pixel_id']
+    source_type = data['source_type']
+
+    source_pixel, created = dash.models.SourceTypePixel.objects.get_or_create(
+        pixel__id=pixel_id,
+        source_type__type=source_type,
+        defaults={
+            'pixel': dash.models.ConversionPixel.objects.get(id=pixel_id),
+            'source_type': dash.models.SourceType.objects.get(type=source_type),
+        })
+
+    source_pixel.url = data['url']
+    source_pixel.source_pixel_id = data['source_pixel_id']
+    source_pixel.save()
+
+    return _response_ok(data)
 
 
 @csrf_exempt
@@ -841,17 +930,17 @@ def get_facebook_account(request):
     _validate_signature(request)
 
     ad_group_id = request.GET.get('ad_group_id')
-    if not ad_group_id:
-        return _response_error("Must provide content ad id or ad group id.")
+    account_id = request.GET.get('account_id')
+    if not ad_group_id and not account_id:
+        return _response_error("Must provide ad group id or account id.")
 
-    query_account = (
-        dash.models.Account.objects.get(campaign__adgroup__id=ad_group_id)
-    )
+    if not account_id:
+        account_id = dash.models.Account.objects.get(campaign__adgroup__id=ad_group_id).id
 
     try:
         query_facebook_account = (
             dash.models.FacebookAccount.objects
-                .get(status=constants.FacebookPageRequestType.CONNECTED, account__id=query_account.id)
+                .get(status=constants.FacebookPageRequestType.CONNECTED, account__id=account_id)
         )
         facebook_account = {
             'account_id': query_facebook_account.account_id,
