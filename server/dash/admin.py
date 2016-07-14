@@ -1513,6 +1513,7 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
     ]
 
     ordering = ('-created_dt', )
+    date_hierarchy = 'created_dt'
 
     resource_class = HistoryResource
 
