@@ -643,13 +643,13 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
         # ones that are then used across the application
         column_names = [col.strip(" _").lower().replace(' ', '_') for col in header]
 
-        if column_names[0] != 'url':
+        if len(column_names) < 1 or column_names[0] != 'url':
             raise forms.ValidationError('First column in header should be URL.')
 
-        if column_names[1] != 'title':
+        if len(column_names) < 2 or column_names[1] != 'title':
             raise forms.ValidationError('Second column in header should be Title.')
 
-        if column_names[2] != 'image_url':
+        if len(column_names) < 3 or column_names[2] != 'image_url':
             raise forms.ValidationError('Third column in header should be Image URL.')
 
         for n, field in enumerate(column_names):

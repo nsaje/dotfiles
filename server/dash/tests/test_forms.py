@@ -514,6 +514,27 @@ class AdGroupAdsUploadFormTest(TestCase):
             valid = form.is_valid_input_file(f.read())
             self.assertTrue(valid)
 
+    def test_missing_all_columns(self):
+        csv_file = self._get_csv_file([], ['http://example.com', 'Example', 'img.jpg'])
+
+        form = self._init_form(csv_file, {'display_url': 'test.com'})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'candidates': [u'First column in header should be URL.']})
+
+    def test_missing_title_and_image_url(self):
+        csv_file = self._get_csv_file(['Url'], ['http://example.com', 'Example', 'img.jpg'])
+
+        form = self._init_form(csv_file, {'display_url': 'test.com'})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'candidates': [u'Second column in header should be Title.']})
+
+    def test_missing_image_url(self):
+        csv_file = self._get_csv_file(['Url', 'Title'], ['http://example.com', 'Example', 'img.jpg'])
+
+        form = self._init_form(csv_file, {'display_url': 'test.com'})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'candidates': [u'Third column in header should be Image URL.']})
+
     def test_no_csv_content(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Primary impression tracker url'], [])
 
