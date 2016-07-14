@@ -1,5 +1,5 @@
 /* globals angular,oneApp,constants,options,moment */
-oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'api', 'zemNavigationService', function ($scope, $state, $q, $modal, api, zemNavigationService) { // eslint-disable-line max-len
+oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'api', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $modal, api, zemNavigationService, $timeout) { // eslint-disable-line max-len
 
     $scope.canEditAccount = false;
     $scope.salesReps = [];
@@ -167,6 +167,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                 $scope.settings = data.settings;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
+                $scope.checkFacebookAccountStatus();
                 zemNavigationService.updateAccountCache($state.params.id, {name: data.settings.name});
                 $scope.saved = true;
             },
@@ -179,6 +180,30 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
             $scope.requestInProgress = false;
         });
     }
+
+    $scope.checkFacebookAccountStatus = function () {
+        var facebookPage = $scope.settings.facebookPage;
+        var facebookStatus = $scope.settings.facebookStatus;
+        if (facebookPage === null || facebookStatus !== constants.facebookStatus.PENDING) {
+            return;
+        }
+        api.accountSettings.getFacebookAccountStatus($scope.settings.id).then(
+            function (data) {
+                var facebookAccountStatus = data.data.status;
+                $scope.settings.facebookStatus = facebookAccountStatus;
+            },
+            function () {
+                $scope.settings.facebookStatus = constants.facebookStatus.ERROR;
+            }
+        );
+        if ($scope.facebookAccountStatusChecker !== null) {
+            // prevent the creation of multiple Facebook account checkers (for example, when Facebook page URL is
+            // updated multiple times).
+            $timeout.cancel($scope.facebookAccountStatusChecker);
+        }
+
+        $scope.facebookAccountStatusChecker = $timeout($scope.checkFacebookAccountStatus, 30 * 1000);
+    };
 
     $scope.refreshPage = function () {
         zemNavigationService.reload();
