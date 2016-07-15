@@ -11,6 +11,7 @@ oneApp.directive('zemUpload', [function () { // eslint-disable-line max-len
             adGroup: '=',
             onSave: '=',
             closeModal: '=',
+            user: '=',
         },
         controllerAs: 'ctrl',
         controller: 'ZemUploadCtrl',

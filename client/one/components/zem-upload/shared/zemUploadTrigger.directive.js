@@ -9,6 +9,7 @@ oneApp.directive('zemUploadTrigger', ['$modal', '$rootScope', function ($modal, 
         bindToController: {
             adGroup: '=zemUploadAdGroup',
             onSave: '=zemUploadOnSave',
+            user: '=zemUploadUser',
         },
         controllerAs: 'ctrl',
         link: function (scope, element, attrs, ctrl) {
@@ -16,9 +17,10 @@ oneApp.directive('zemUploadTrigger', ['$modal', '$rootScope', function ($modal, 
                 var modalScope = $rootScope.$new();
                 modalScope.adGroup = ctrl.adGroup;
                 modalScope.onSave = ctrl.onSave;
+                modalScope.user = ctrl.user;
 
                 $modal.open({
-                    template: '<zem-upload data-ad-group="adGroup" data-on-save="onSave" data-close-modal="closeModal"></zem-upload>',
+                    template: '<zem-upload data-ad-group="adGroup" data-on-save="onSave" data-close-modal="closeModal" data-user="user"></zem-upload>',
                     controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
                         $scope.closeModal = $modalInstance.close;
                     }],

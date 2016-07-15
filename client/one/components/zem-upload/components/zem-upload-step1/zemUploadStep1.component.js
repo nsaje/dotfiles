@@ -10,6 +10,7 @@ oneApp.directive('zemUploadStep1', [function () { // eslint-disable-line max-len
             endpoint: '=',
             callback: '&',
             close: '=',
+            user: '=',
         },
         controllerAs: 'ctrl',
         templateUrl: '/components/zem-upload/components/zem-upload-step1/zemUploadStep1.component.html',
