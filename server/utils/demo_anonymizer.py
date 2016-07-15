@@ -6,6 +6,7 @@ _fake_factory = None
 
 
 class DemoNamePools(object):
+
     def __init__(self, account_names, campaign_names, ad_group_names):
         self.account_names = itertools.cycle(account_names)
         self.campaign_names = itertools.cycle(campaign_names)
@@ -63,7 +64,7 @@ def fake_display_url():
 
 
 def fake_brand():
-    return "%s-%s" % (_fake_factory.last_name(), _fake_factory.last_name())
+    return ("%s-%s" % (_fake_factory.last_name(), _fake_factory.last_name()))[:25]
 
 
 def fake_sentence():
