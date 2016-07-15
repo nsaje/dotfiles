@@ -9,7 +9,7 @@ oneApp.directive('zemUploadStep1', [function () { // eslint-disable-line max-len
         bindToController: {
             api: '=',
             callback: '&',
-            closeModal: '=close',
+            close: '=',
         },
         controllerAs: 'ctrl',
         templateUrl: '/components/zem-upload/components/zem-upload-step1/zemUploadStep1.component.html',
@@ -54,9 +54,5 @@ oneApp.controller('ZemUploadStep1Ctrl', ['config', function (config) {
         ).finally(function () {
             vm.requestInProgress = false;
         });
-    };
-
-    vm.close = function () {
-        vm.closeModal();
     };
 }]);

@@ -10,17 +10,13 @@ oneApp.directive('zemUploadStep3', [function () { // eslint-disable-line max-len
             callback: '&',
             numSuccessful: '=',
             adGroup: '=',
-            closeModal: '=close',
+            close: '=',
         },
         controllerAs: 'ctrl',
         templateUrl: '/components/zem-upload/components/zem-upload-step3/zemUploadStep3.component.html',
         controller: ['config', function (config) {
             var vm = this;
             vm.config = config;
-
-            vm.close = function () {
-                vm.closeModal();
-            };
         }],
     };
 }]);
