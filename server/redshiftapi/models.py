@@ -1,5 +1,7 @@
 import backtosql
+import copy
 
+from utils import dates_helper
 from dash import conversions_helper
 
 from stats import constants as sc
@@ -120,7 +122,8 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
     # BCM
     media_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'}, mh.AGGREGATES)
     e_media_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_cost_nano'}, mh.AGGREGATES)
-    e_data_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_data_cost_nano'}, mh.AGGREGATES)
+    e_data_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_data_cost_nano'},
+                                           mh.AGGREGATES)
     license_fee = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'license_fee_nano'}, mh.AGGREGATES)
     billing_cost = backtosql.TemplateColumn('part_billing_cost.sql', None, mh.AGGREGATES)
     total_cost = backtosql.TemplateColumn('part_total_cost.sql', None, mh.AGGREGATES)
@@ -140,14 +143,16 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
                                                  {'expr': 'new_visits', 'divisor': 'visits'}, mh.AGGREGATES)
     bounce_rate = backtosql.TemplateColumn('part_sumdiv_perc.sql',
                                            {'expr': 'bounced_visits', 'divisor': 'visits'}, mh.AGGREGATES)
-    pv_per_visit = backtosql.TemplateColumn('part_sumdiv.sql', {'expr': 'pageviews', 'divisor': 'visits'}, mh.AGGREGATES)
+    pv_per_visit = backtosql.TemplateColumn('part_sumdiv.sql', {'expr': 'pageviews', 'divisor': 'visits'},
+                                            mh.AGGREGATES)
     avg_tos = backtosql.TemplateColumn('part_sumdiv.sql',
                                        {'expr': 'total_time_on_site', 'divisor': 'visits'}, mh.AGGREGATES)
 
     total_seconds = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'total_time_on_site'}, mh.AGGREGATES)
     avg_cost_per_minute = backtosql.TemplateColumn('part_avg_cost_per_minute.sql', group=mh.AGGREGATES)
     unbounced_visits = backtosql.TemplateColumn('part_unbounced_visits.sql', group=mh.AGGREGATES)
-    avg_cost_per_non_bounced_visitor = backtosql.TemplateColumn('part_avg_cost_per_non_bounced_visitor.sql', group=mh.AGGREGATES)
+    avg_cost_per_non_bounced_visitor = backtosql.TemplateColumn('part_avg_cost_per_non_bounced_visitor.sql',
+                                                                group=mh.AGGREGATES)
     total_pageviews = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'pageviews'}, group=mh.AGGREGATES)
     avg_cost_per_pageview = backtosql.TemplateColumn('part_sumdiv_nano.sql', {
         'expr': 'cost_nano', 'divisor': 'pageviews',
@@ -158,6 +163,11 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
     avg_cost_per_visit = backtosql.TemplateColumn('part_sumdiv_nano.sql', {
         'expr': 'cost_nano', 'divisor': 'visits',
     }, mh.AGGREGATES)
+
+    yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'},
+                                              mh.YESTERDAY_COST_AGGREGATES)
+    e_yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_cost_nano'},
+                                                mh.YESTERDAY_COST_AGGREGATES)
 
     def init_conversion_columns(self, conversion_goals):
         """
@@ -270,6 +280,8 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             'is_ordered_by_after_join_conversions_calculations': order_column.group == mh.AFTER_JOIN_CALCULATIONS,
         }
 
+        context.update(get_default_yesterday_context(self, constraints, order_column))
+
         return context
 
     def breakdown_supports_conversions(self, breakdown):
@@ -278,3 +290,20 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
         return ((conversion_columns or tpconversion_columns) and
                 sc.get_delivery_dimension(breakdown) is None)
+
+
+def get_default_yesterday_context(model, constraints, order_column):
+
+    # replace date range with yesterday date
+    constraints = copy.copy(constraints)
+    constraints.pop('date__gte', None)
+    constraints.pop('date__lte', None)
+    constraints['date'] = dates_helper.local_yesterday()
+
+    context = {
+        'yesterday_constraints': backtosql.Q(model, **constraints),
+        'yesterday_aggregates': model.select_columns(group=mh.YESTERDAY_COST_AGGREGATES),
+        'is_ordered_by_yesterday_aggregates': order_column.group == mh.YESTERDAY_COST_AGGREGATES,
+    }
+
+    return context

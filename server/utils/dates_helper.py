@@ -35,6 +35,10 @@ def local_today():
     return utc_to_local_datetime(datetime.datetime.utcnow()).date()
 
 
+def local_yesterday():
+    return local_today() - datetime.timedelta(days=1)
+
+
 def local_midnight_to_utc_time():
     local_now = utc_to_local_datetime(datetime.datetime.utcnow())
     local_midnight = local_now.replace(hour=0, minute=0, second=0, microsecond=0)

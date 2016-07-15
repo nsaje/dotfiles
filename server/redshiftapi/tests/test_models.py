@@ -1,7 +1,10 @@
 import backtosql
+import datetime
+import mock
 from django.test import TestCase
 
 import dash.models
+from utils import test_helper
 
 from redshiftapi import models
 from redshiftapi import model_helpers
@@ -42,7 +45,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         ])
 
         columns = m.get_columns()
-        self.assertEquals(len(columns), 56)
+        self.assertEquals(len(columns), 58)
 
         columns = m.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
@@ -91,14 +94,14 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         ]))
 
 
-class RSModelTest(TestCase, backtosql.TestSQLMixin):
+class MVMasterTest(TestCase, backtosql.TestSQLMixin):
 
     def setUp(self):
         self.model = models.MVMaster()
 
     def test_columns(self):
         columns = self.model.get_columns()
-        self.assertEquals(len(columns), 46)
+        self.assertEquals(len(columns), 48)
 
         columns = self.model.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
@@ -134,6 +137,10 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
                                'avg_cost_per_non_bounced_visitor', 'avg_cost_per_pageview',
                                'avg_cost_per_visit', 'total_pageviews', 'total_seconds',
                                'unbounced_visits'])
+
+    def test_get_yesterday_aggregates(self):
+        self.assertItemsEqual([x.alias for x in self.model.select_columns(group=model_helpers.YESTERDAY_COST_AGGREGATES)],
+                              ['yesterday_cost', 'e_yesterday_cost'])
 
     def test_get_default_context_constraints(self):
         m = models.MVMaster()
@@ -177,6 +184,32 @@ class RSModelTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(context['limit'], 33)
 
         self.assertListEqual(context['breakdown_partition'], m.select_columns(['account_id']))
+
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    def test_get_default_yesterday_context(self, mock_local_today):
+        m = models.MVMaster()
+        constraints = {
+            'account_id': 123,
+            'campaign_id': 223,
+            'date__gte': datetime.date(2016, 6, 1),
+            'date__lte': datetime.date(2016, 6, 5),
+        }
+
+        context = models.get_default_yesterday_context(
+            m,
+            constraints,
+            m.yesterday_cost.as_order('-yesterday_cost')
+        )
+
+        self.assertDictContainsSubset({
+            'is_ordered_by_yesterday_aggregates': True,
+            'yesterday_aggregates': m.select_columns(['e_yesterday_cost', 'yesterday_cost']),
+        }, context)
+
+        self.assertSQLEquals(
+            context['yesterday_constraints'].generate('A'),
+            '(A.account_id=%s AND A.campaign_id=%s AND A.date=%s)'
+        )
 
     def test_get_best_view(self):
         m = models.MVMaster()

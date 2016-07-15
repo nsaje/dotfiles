@@ -15,11 +15,13 @@ def prepare_breakdown_struct_delivery_top_rows(default_context):
     sql = backtosql.generate_sql('breakdown_struct_delivery_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
+    yesterday_params = default_context['yesterday_constraints'].get_params()
 
     if not default_context.get('breakdown_constraints'):
         raise exc.MissingBreakdownConstraintsError()
 
     params.extend(default_context['breakdown_constraints'].get_params())
+    yesterday_params.extend(default_context['breakdown_constraints'].get_params())
 
     conversion_params = []
     if default_context.get('conversions_aggregates'):
@@ -29,7 +31,7 @@ def prepare_breakdown_struct_delivery_top_rows(default_context):
         conversion_params.extend(params)
 
     # conversion queries are ordered before the base query
-    params = conversion_params + params
+    params = conversion_params + yesterday_params + params
 
     return sql, params
 
@@ -54,12 +56,16 @@ def prepare_time_top_rows(model, time_dimension, default_context, constraints):
     default_context['is_ordered_by_conversions'] = False
     default_context['is_ordered_by_touchpointconversions'] = False
     default_context['is_ordered_by_after_join_conversions_calculations'] = False
+    default_context['is_ordered_by_yesterday_aggregates'] = False
 
     sql = backtosql.generate_sql('breakdown_lvl_time_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
+    yesterday_params = default_context['yesterday_constraints'].get_params()
+
     if default_context.get('breakdown_constraints'):
         params.extend(default_context['breakdown_constraints'].get_params())
+        yesterday_params.extend(default_context['breakdown_constraints'].get_params())
 
     conversion_params = []
     if default_context.get('conversions_aggregates'):
@@ -69,7 +75,7 @@ def prepare_time_top_rows(model, time_dimension, default_context, constraints):
         conversion_params.extend(params)
 
     # conversion queries are ordered before the base query
-    params = conversion_params + params
+    params = conversion_params + yesterday_params + params
 
     return sql, params
 

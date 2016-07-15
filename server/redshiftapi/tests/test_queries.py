@@ -1,6 +1,7 @@
 import backtosql
 import copy
 import datetime
+import mock
 
 from django.test import TestCase
 
@@ -24,7 +25,7 @@ class SmallMaster(models.MVMaster):
 
         columns = self.select_columns([
             'date', 'week', 'source_id', 'account_id', 'campaign_id',
-            'clicks', 'total_seconds',
+            'clicks', 'total_seconds', 'yesterday_cost',
         ])
 
         columns += self.select_columns(group=model_helpers.CONVERSION_AGGREGATES)
@@ -132,7 +133,8 @@ class PrepareTimeConstraintsTest(TestCase):
 
 class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
 
-    def test_breakdown_struct_delivery_top_rows(self):
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    def test_breakdown_struct_delivery_top_rows(self, mock_local_today):
         m = SmallMaster()
 
         constraints = {
@@ -149,14 +151,25 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
         sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
 
         # extracts params correctly
-        self.assertItemsEqual(params, [
+        self.assertEquals(params, [
+            datetime.date(2016, 7, 1),
+            132,
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
             132,
         ])
 
         self.assertSQLEquals(sql, """
-        WITH temp_base AS (
+        WITH
+            temp_yesterday AS (
+                SELECT
+                    a.account_id AS account_id,
+                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                FROM mv_account a
+                WHERE (a.date=%s) AND ((a.source_id=%s))
+                GROUP BY account_id
+            ),
+            temp_base AS (
                 SELECT
                     a.account_id AS account_id,
                     SUM(a.clicks) clicks,
@@ -168,32 +181,37 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
         SELECT
             b.account_id,
             b.clicks,
-            b.total_seconds
+            b.total_seconds,
+            b.yesterday_cost
         FROM (
             SELECT
                 temp_base.account_id,
                 temp_base.clicks,
                 temp_base.total_seconds,
+                temp_yesterday.yesterday_cost,
                 ROW_NUMBER() OVER (PARTITION BY ORDER BY temp_base.total_seconds ASC) AS r
-            FROM temp_base
+            FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday
         ) b
         WHERE r <= 10
         """)
 
     def test_breakdown_struct_delivery_required_breakdown_constraints(self):
+        m = models.MVMaster()
         constraints = {
             'date__gte': datetime.date(2016, 4, 1),
             'date__lte': datetime.date(2016, 5, 1),
         }
 
         context = {
-            'constraints': backtosql.Q(models.MVMaster(), **constraints)
+            'constraints': backtosql.Q(m, **constraints),
+            'yesterday_constraints': backtosql.Q(m, date=datetime.date(2016, 7, 7)),
         }
 
         with self.assertRaises(exc.MissingBreakdownConstraintsError):
             queries.prepare_breakdown_struct_delivery_top_rows(context)
 
-    def test_top_time_rows_prepares_time(self):
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    def test_top_time_rows_prepares_time(self, mock_local_today):
         m = SmallMaster()
         constraints = {
             'date__gte': datetime.date(2016, 2, 1),
@@ -217,11 +235,26 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             models.MVMaster(),
             constants.TimeDimension.DAY, context, constraints)
 
-        self.assertItemsEqual(params, [
-            datetime.date(2016, 2, 2), datetime.date(2016, 2, 4), 132])
+        self.assertEqual(params, [
+            datetime.date(2016, 7, 1),
+            132,
+            datetime.date(2016, 2, 2),
+            datetime.date(2016, 2, 4),
+            132
+        ])
 
         self.assertSQLEquals(sql, """
-        WITH temp_base AS (
+        WITH
+        temp_yesterday AS (
+            SELECT
+                a.account_id AS account_id,
+                TRUNC(DATE_TRUNC('week', a.date)) AS week,
+                SUM(a.cost_nano)/1000000000.0 yesterday_cost
+            FROM mv_account a
+            WHERE (a.date=%s) AND ((a.source_id=%s))
+            GROUP BY account_id, week
+        ),
+        temp_base AS (
             SELECT
                 a.account_id AS account_id,
                 TRUNC(DATE_TRUNC('week', a.date)) AS week,
@@ -236,8 +269,9 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             temp_base.account_id,
             temp_base.week,
             temp_base.clicks,
-            temp_base.total_seconds
-        FROM temp_base
+            temp_base.total_seconds,
+            temp_yesterday.yesterday_cost
+        FROM temp_base NATURAL LEFT JOIN temp_yesterday
         ORDER BY day ASC;
         """)
 
@@ -271,6 +305,16 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
                 GROUP BY account_id, campaign_id, week
             ),
+            temp_yesterday AS (
+                SELECT
+                    a.account_id AS account_id,
+                    a.campaign_id AS campaign_id,
+                    TRUNC(DATE_TRUNC('week', a.date)) AS week,
+                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                FROM mv_campaign a
+                WHERE (a.date=%s) AND ((a.source_id=%s))
+                GROUP BY account_id, campaign_id, week
+            ),
             temp_base AS (
                 SELECT
                     a.account_id AS account_id,
@@ -287,6 +331,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             b.week,
             b.clicks,
             b.total_seconds,
+            b.yesterday_cost,
             b.conversion_goal_2,
             b.conversion_goal_3,
             b.conversion_goal_4,
@@ -303,6 +348,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 temp_base.week,
                 temp_base.clicks,
                 temp_base.total_seconds,
+                temp_yesterday.yesterday_cost,
                 temp_conversions.conversion_goal_2,
                 temp_conversions.conversion_goal_3,
                 temp_conversions.conversion_goal_4,
@@ -316,6 +362,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 ROW_NUMBER() OVER (PARTITION BY temp_base.account_id, temp_base.campaign_id
                                     ORDER BY temp_base.clicks DESC) AS r
         FROM temp_base NATURAL
+        LEFT OUTER JOIN temp_yesterday NATURAL
         LEFT OUTER JOIN temp_conversions NATURAL
         LEFT OUTER JOIN temp_touchpointconversions) b
         WHERE r <= 10
@@ -345,7 +392,15 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
                 GROUP BY account_id, campaign_id
             ),
-
+            temp_yesterday AS (
+                SELECT
+                    a.account_id AS account_id,
+                    a.campaign_id AS campaign_id,
+                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                FROM mv_campaign a
+                WHERE (a.date=%s) AND ((a.source_id=%s))
+                GROUP BY account_id, campaign_id
+            ),
             temp_base AS (
                 SELECT
                     a.account_id AS account_id,
@@ -361,6 +416,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             b.campaign_id,
             b.clicks,
             b.total_seconds,
+            b.yesterday_cost,
             b.conversion_goal_2,
             b.conversion_goal_3,
             b.conversion_goal_4,
@@ -377,6 +433,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 temp_base.campaign_id,
                 temp_base.clicks,
                 temp_base.total_seconds,
+                temp_yesterday.yesterday_cost,
                 temp_conversions.conversion_goal_2,
                 temp_conversions.conversion_goal_3,
                 temp_conversions.conversion_goal_4,
@@ -389,12 +446,14 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
                 ROW_NUMBER() OVER (PARTITION BY temp_base.account_id ORDER BY temp_base.clicks DESC) AS r
         FROM temp_base NATURAL
+        LEFT OUTER JOIN temp_yesterday NATURAL
         LEFT OUTER JOIN temp_conversions NATURAL
         LEFT OUTER JOIN temp_touchpointconversions) b
         WHERE r <= 10
     """
 
-    def test_breakdown_time_top_rows(self):
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    def test_breakdown_time_top_rows(self, mock_local_today):
         conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
 
         m = SmallMaster(conversion_goals)
@@ -421,17 +480,20 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             'is_ordered_by_conversions':  False,
             'is_ordered_by_touchpointconversions': False,
             'is_ordered_by_after_join_conversions_calculations': False,
+            'is_ordered_by_yesterday_aggregates': False,
         }, context)
 
         sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
 
-        # extracts params correctly
-        self.assertItemsEqual(params, [
+        # extracts params correctly, check order
+        self.assertEquals(params, [
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
             132,
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
+            132,
+            datetime.date(2016, 7, 1),
             132,
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
@@ -440,7 +502,8 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertSQLEquals(sql, self.breakdown_time_sql)
 
-    def test_breakdown_struct_delivery_top_rows_w_conversions(self):
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    def test_breakdown_struct_delivery_top_rows(self, mock_local_today):
         conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
 
         m = SmallMaster(conversion_goals)
@@ -465,13 +528,15 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
 
-        # extracts params correctly
-        self.assertItemsEqual(params, [
+        # extracts params correctly, check order
+        self.assertEqual(params, [
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
             132,
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
+            132,
+            datetime.date(2016, 7, 1),
             132,
             datetime.date(2016, 4, 1),
             datetime.date(2016, 5, 1),
@@ -498,6 +563,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             'conversion_goal_1': 'ORDER BY temp_touchpointconversions.conversion_goal_1 ASC',
             'conversion_goal_2': 'ORDER BY temp_conversions.conversion_goal_2 ASC',
             'clicks': 'ORDER BY temp_base.clicks ASC',
+            '-yesterday_cost': 'ORDER BY temp_yesterday.yesterday_cost DESC'
         }
 
         for order, order_sql in orders.items():
@@ -533,6 +599,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             'conversion_goal_1',
             'conversion_goal_2',
             'clicks',
+            'yesterday_cost',
         ]
 
         order_sql = 'ORDER BY week ASC'

@@ -35,6 +35,19 @@ WITH
     ),
     {% endif %}
 
+    temp_yesterday AS (
+        SELECT
+            {{ breakdown|column_as_alias:"a" }},
+            {{ yesterday_aggregates|column_as_alias:"a" }}
+        FROM {{ view.base }} a
+        WHERE
+            {{ yesterday_constraints|generate:"a" }}
+            {% if breakdown_constraints %}
+                AND {{ breakdown_constraints|generate:"a" }}
+            {% endif %}
+        GROUP BY {{ breakdown|only_alias }}
+    ),
+
     temp_base AS (
         SELECT
             {{ breakdown|column_as_alias:"a" }},
@@ -49,7 +62,9 @@ WITH
     )
 SELECT
     {{ breakdown|only_alias:"temp_base" }},
-    {{ aggregates|only_alias:"temp_base" }}
+    {{ aggregates|only_alias:"temp_base" }},
+    {{ yesterday_aggregates|only_alias:"temp_yesterday" }}
+
     {% if conversions_aggregates %}
         ,{{ conversions_aggregates|only_alias:"temp_conversions" }}
     {% endif %}
@@ -61,7 +76,7 @@ SELECT
         ,{{ after_join_conversions_calculations|column_as_alias }}
     {% endif %}
 FROM
-    temp_base
+    temp_base NATURAL LEFT JOIN temp_yesterday
     {% if conversions_aggregates %} NATURAL LEFT OUTER JOIN temp_conversions {% endif %}
     {% if touchpointconversions_aggregates %} NATURAL LEFT OUTER JOIN temp_touchpointconversions {% endif %}
 

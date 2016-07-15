@@ -28,7 +28,7 @@ def get_order(alias):
 
 def clean_sql(dirty_sql):
     # removes comments and whitespaces
-    return sqlparse.format(dirty_sql, reindent=True, keword_case='upper', strip_comments=True).strip()
+    return sqlparse.format(dirty_sql, reindent=True, keyword_case='upper', strip_comments=True).strip()
 
 
 def clean_prefix(prefix=None):

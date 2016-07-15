@@ -76,8 +76,7 @@ def validate_breakdown(breakdown):
 def get_supported_order(order):
     UNSUPPORTED_FIELDS = [
         "name", "state", "status", "performance",
-        "yesterday_cost", "e_yesterday_cost", "min_bid_cpc",
-        "max_bid_cpc", "daily_budget",
+        "min_bid_cpc", "max_bid_cpc", "daily_budget",
     ]
 
     unprefixed_order = order
