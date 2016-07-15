@@ -768,6 +768,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
             $scope.reflowGraph(1);
         });
     };
+    $scope.getTableData = getTableData;
 
     $scope.refreshGridAndTable = function () {
         getTableData();

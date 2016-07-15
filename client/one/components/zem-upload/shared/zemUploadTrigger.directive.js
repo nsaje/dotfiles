@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.directive('zemUploadTrigger', ['$modal', '$rootScope', 'zemUploadEndpointService', function ($modal, $rootScope, zemUploadEndpointService) { // eslint-disable-line max-len
+oneApp.directive('zemUploadTrigger', ['$modal', '$rootScope', function ($modal, $rootScope) { // eslint-disable-line max-len
     return {
         restrict: 'A',
         replace: true,
@@ -14,13 +14,14 @@ oneApp.directive('zemUploadTrigger', ['$modal', '$rootScope', 'zemUploadEndpoint
         link: function (scope, element, attrs, ctrl) {
             element.on('click', function () {
                 var modalScope = $rootScope.$new();
-                modalScope.api = zemUploadEndpointService.createEndpoint(ctrl.adGroup.id);
                 modalScope.adGroup = ctrl.adGroup;
                 modalScope.onSave = ctrl.onSave;
 
                 $modal.open({
-                    templateUrl: '/components/zem-upload/templates/zem_upload.html',
-                    controller: 'zemUploadModalCtrl',
+                    template: '<zem-upload data-ad-group="adGroup" data-on-save="onSave" data-close-modal="closeModal"></zem-upload>',
+                    controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
+                        $scope.closeModal = $modalInstance.close;
+                    }],
                     windowClass: 'modal-zem-upload',
                     scope: modalScope,
                 });

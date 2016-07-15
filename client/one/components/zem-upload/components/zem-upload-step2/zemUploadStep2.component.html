@@ -1,0 +1,281 @@
+<div>
+    <div class="modal-body contentad-picker" ng-class="{editing: !!ctrl.selectedCandidate}">
+        <div class="clearfix"></div>
+        <div class="candidate-table custom_scroller">
+            <div class="batch-name form-group" ng-class="{'has-error': ctrl.saveErrors.batchName}">
+                <span>Batch name:</span>
+                <span class="title" ng-if="!ctrl.batchNameEdit">{{ ctrl.formData.batchName }}</span>
+                <input type="text" class="form-control" ng-if="ctrl.batchNameEdit" ng-model="ctrl.formData.batchName" id="batch-name-input" ng-blur="ctrl.disableBatchNameEdit()" ng-focus="ctrl.clearBatchNameErrors()" />
+                <a href class="btn btn-secondary only-icon" ng-click="ctrl.toggleBatchNameEdit()">
+                    <img ng-src="{{ ctrl.config.static_url }}/one/img/button-edit.svg" ng-if="!ctrl.batchNameEdit"/>
+                    <img ng-src="{{ ctrl.config.static_url }}/one/img/button-check_mark.svg" ng-if="ctrl.batchNameEdit"/>
+                </a>
+            </div>
+            <table class="table">
+                <tr ng-repeat="candidate in ctrl.candidates" ng-class="{selected: candidate.id === ctrl.selectedCandidate.id}" ng-click="ctrl.openEditForm(candidate)">
+                    <td class="status">
+                        <ng-switch on="ctrl.getStatus(candidate)">
+                            <img ng-switch-when="loading" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
+                            <img ng-switch-when="ok" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg"/>
+                            <img ng-switch-when="errors" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/warning.svg"/>
+                        </ng-switch>
+                    </td>
+                    <td class="image">
+                        <img ng-if="candidate.hostedImageUrl" ng-src="{{candidate.hostedImageUrl}}" ng-if="candidate.imageUrl" />
+                    </td>
+                    <td class="title">
+                        {{ candidate.title }}
+                    </td>
+                    <td class="link">
+                        {{ candidate.url }}
+                    </td>
+                    <td class="errors">
+                        <div ng-if="ctrl.getContentErrorsMsg(candidate)">
+                            <img ng-src="{{ ctrl.config.static_url }}/one/img/error-content.svg"/>
+                            <span class="error-text">{{ ctrl.getContentErrorsMsg(candidate) }}</span>
+                        </div>
+                        <div ng-if="ctrl.getImageErrorsMsg(candidate)">
+                            <img ng-src="{{ ctrl.config.static_url }}/one/img/error-image.svg"/>
+                            <span class="error-text">{{ ctrl.getImageErrorsMsg(candidate) }}</span>
+                        </div>
+                    </td>
+                    <td class="action">
+                        <img class="loader-icon small-icon" ng-if="candidate.removeRequestInProgress" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
+                        <a href ng-click="ctrl.openEditForm(candidate)" class="btn btn-secondary" ng-disabled="candidate.removeRequestInProgress">
+                            <img ng-src="{{ ctrl.config.static_url }}/one/img/button-edit.svg"/>
+                            <span class="action-text">Edit</span>
+                        </a>
+                        <a href ng-click="ctrl.removeCandidate(candidate, $event)" class="btn btn-secondary" ng-disabled="candidate.removeRequestInProgress">
+                            <img ng-src="{{ ctrl.config.static_url }}/one/img/button-remove.svg"/>
+                            <span class="action-text">Remove</span>
+                        </a>
+                        <div class="error" ng-if="candidate.removeRequestFailed">
+                            Something went wrong. Please try again.
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <button type="button" class="btn btn-secondary btn-download" ng-click="ctrl.download()">
+                <img ng-src="{{ ctrl.config.static_url }}/one/img/button-download.svg"/>
+                <span class="action-text">Download</span>
+            </button>
+        </div>
+
+        <div class="edit-form custom_scroller" zem-scroll-to-top="ctrl.editFormScrollApi">
+            <div ng-if="!!ctrl.selectedCandidate">
+                <h4>Edit content ad: {{ ctrl.selectedCandidate.title }}</h4>
+                <form class="file-upload-form form-horizontal">
+
+                    <div class="form-group" ng-class="{'has-error': ctrl.selectedCandidate.errors.url}">
+                        <label for="url-input" class="col-xs-2 control-label">
+                            URL:
+                        </label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control" id="url-input" ng-model="ctrl.selectedCandidate.url" ng-focus="ctrl.clearSelectedCandidateErrors('url')" />
+                            <label for="url-input" ng-repeat="error in ctrl.selectedCandidate.errors.url" class="control-label small error">{{ error }}</label>
+                        </div>
+                        <div class="col-xs-2 control-label small p-l-none">
+                            {{ ctrl.selectedCandidate.url.length }}/{{ ctrl.MAX_URL_LENGTH }}
+                        </div>
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': ctrl.selectedCandidate.errors.title}">
+                        <label for="title-input" class="col-xs-2 control-label">
+                            Ad Title:
+                        </label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control" id="title-input" ng-model="ctrl.selectedCandidate.title" ng-focus="ctrl.clearSelectedCandidateErrors('title')" />
+                            <label for="title-input" ng-repeat="error in ctrl.selectedCandidate.errors.title" class="control-label small error">{{ error }}</label>
+                        </div>
+                        <div class="col-xs-2 control-label small p-l-none">
+                            {{ ctrl.selectedCandidate.title.length }}/{{ ctrl.MAX_TITLE_LENGTH }}
+                        </div>
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': ctrl.selectedCandidate.errors.imageUrl}">
+                        <label for="image-url-input" class="col-xs-2 control-label">
+                            Image URL:
+                        </label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control" id="image-url-input" ng-model="ctrl.selectedCandidate.imageUrl" ng-focus="ctrl.clearSelectedCandidateErrors('imageUrl')" />
+                            <label for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageUrl" class="control-label small error">{{ error }}</label>
+                            <div class="help-block">
+                                Recommended image size is above 1200x1200px. Some media sources will not work with smaller images.
+                            </div>
+                        </div>
+                        <div class="col-xs-2 control-label small p-l-none"></div>
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': ctrl.selectedCandidate.errors.imageCrop}">
+                        <label for="image-crop-input" class="col-xs-2 control-label">
+                            Image crop:
+                        </label>
+
+                        <div class="col-xs-8">
+                            <ui-select theme="select2" search-enabled="false" id="image-crop-input" class="form-control" ng-model="ctrl.selectedCandidate.imageCrop" ng-focus="ctrl.clearSelectedCandidateErrors('imageCrop')">
+                                <ui-select-match placeholder="Choose image crop">{{$select.selected.name}}</ui-select-match>
+                                <ui-select-choices repeat="crop.value as crop in ctrl.imageCrops">
+                                    {{crop.name}}
+                                </ui-select-choices>
+                            </ui-select>
+                            <label for="image-crop-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageCrop" class="control-label small error">{{ error }}</label>
+                        </div>
+                        <div class="col-xs-2 control-label p-l-none">
+                            <label class="checkbox-label checkbox-label-default">
+                                <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.imageCrop" />Use as default
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': ctrl.selectedCandidate.errors.description}">
+                        <label for="description-input" class="col-xs-2 control-label">
+                            Description:
+                        </label>
+                        <div class="col-xs-8">
+                            <textarea type="text" class="form-control" rows="3" id="description-input" ng-model="ctrl.selectedCandidate.description" ng-focus="ctrl.clearSelectedCandidateErrors('description')"></textarea>
+                            <label for="description-input" ng-repeat="error in ctrl.selectedCandidate.errors.description" class="control-label small error">{{ error }}</label>
+                        </div>
+                        <div class="col-xs-2 control-label small p-t-none p-l-none">
+                            {{ ctrl.selectedCandidate.description.length }}/{{ ctrl.MAX_DESCRIPTION_LENGTH }}
+                            <label class="checkbox-label checkbox-label-default">
+                                <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.description"/>Use as default
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': ctrl.selectedCandidate.errors.displayUrl}">
+                        <label for="display-url-input" class="col-xs-2 control-label">
+                            Display URL:
+                        </label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control" id="display-url-input" ng-model="ctrl.selectedCandidate.displayUrl" ng-focus="ctrl.clearSelectedCandidateErrors('displayUrl')" />
+                            <label for="display-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.displayUrl" class="control-label small error">{{ error }}</label>
+                        </div>
+                        <div class="col-xs-2 control-label small p-t-none p-l-none">
+                            {{ ctrl.selectedCandidate.displayUrl.length }}/{{ ctrl.MAX_DISPLAY_URL_LENGTH }}
+                            <label class="checkbox-label checkbox-label-default">
+                                <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.displayUrl"/>Use as default
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': ctrl.selectedCandidate.errors.brandName}">
+                        <label for="brand-name-input" class="col-xs-2 control-label">
+                            Brand name:
+                        </label>
+
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control" id="brand-name-input" ng-model="ctrl.selectedCandidate.brandName" ng-focus="ctrl.clearSelectedCandidateErrors('brandName')" />
+                            <label for="brand-name-input" ng-repeat="error in ctrl.selectedCandidate.errors.brandName" class="control-label small error">{{ error }}</label>
+                        </div>
+                        <div class="col-xs-2 control-label small p-t-none p-l-none">
+                            {{ ctrl.selectedCandidate.brandName.length }}/{{ ctrl.MAX_BRAND_NAME_LENGTH }}
+                            <label class="checkbox-label checkbox-label-default">
+                                <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.brandName"/>Use as default
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': ctrl.selectedCandidate.errors.callToAction}">
+                        <label for="call-to-action-input" class="col-xs-2 control-label">
+                            Call To Action:
+                        </label>
+                        <div class="col-xs-8">
+                            <div ui-select2="ctrl.callToActionSelect2Config" id="call-to-action-input" class="form-control" ng-model="ctrl.selectedCandidate.callToAction" zem-select2-model-transform="text"></div>
+                        </div>
+                        <div class="col-xs-2 control-label small p-t-none p-l-none">
+                            {{ ctrl.selectedCandidate.callToAction.length }}/{{ ctrl.MAX_CALL_TO_ACTION_LENGTH }}
+                            <label class="checkbox-label checkbox-label-default">
+                                <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.callToAction" />Use as default
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" ng-class="{'has-error': ctrl.selectedCandidate.errors.label}">
+                        <label for="url-input" class="col-xs-2 control-label">
+                            Label:
+                        </label>
+                        <div class="col-xs-8">
+                            <input type="text" class="form-control" id="label-input" ng-model="ctrl.selectedCandidate.label" ng-focus="ctrl.clearCandidateErrors('label')" />
+                            <label for="label-input" ng-repeat="error in ctrl.selectedCandidate.errors.label" class="control-label small error">{{ error }}</label>
+                        </div>
+                        <div class="col-xs-2 control-label small p-l-none">
+                            {{ ctrl.selectedCandidate.label.length }}/{{ ctrl.MAX_LABEL_LENGTH }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-xs-2 control-label"></div>
+                        <div class="col-xs-8">
+                            <label class="checkbox-label">
+                                <input type="checkbox" ng-model="ctrl.selectedCandidate.useTrackers" />
+                                Use impression trackers
+                            </label>
+                        </div>
+                        <div class="col-xs-2"></div>
+                    </div>
+
+                    <div class="addon_fields" ng-if="ctrl.selectedCandidate.useTrackers" ng-class="{'has-error': ctrl.selectedCandidate.errors.primaryTrackerUrl}">
+                        <div class="form-group">
+                            <label for="impression-trackers-input" class="col-xs-2 control-label p-t-none">
+                                Primary impression tracker:
+                            </label>
+                            <div class="col-xs-8">
+                                <input type="text" class="form-control" id="impression-trackers-input" ng-model="ctrl.selectedCandidate.primaryTrackerUrl" ng-focus="ctrl.clearSelectedCandidateErrors('primaryTrackerUrl')" />
+                                <label for="call-to-action-input" ng-repeat="error in ctrl.selectedCandidate.errors.primaryTrackerUrl" class="control-label small error">{{ error }}</label>
+                                <div class="help-block">
+                                    Paste your impression tracker link to track impressions.
+                                </div>
+                            </div>
+                            <div class="col-xs-2"></div>
+                        </div>
+
+                        <div class="form-group" ng-if="!!ctrl.selectedCandidate.useSecondaryTracker" ng-class="{'has-error': ctrl.selectedCandidate.errors.secondaryTrackerUrl}">
+                            <label class="col-xs-2 control-label p-t-none">Secondary impression tracker:</label>
+                            <div class="col-xs-8">
+                                <input type="text" class="form-control" id="impression-trackers-input" ng-model="ctrl.selectedCandidate.secondaryTrackerUrl" ng-focus="ctrl.clearSelectedCandidateErrors('secondaryTrackerUrl')" />
+                                <label for="call-to-action-input" ng-repeat="error in ctrl.selectedCandidate.errors.secondaryTrackerUrl" class="control-label small error">{{ error }}</label>
+                                <div class="help-block">
+                                    Paste your impression tracker link to track impressions.
+                                </div>
+                            </div>
+                            <div class="col-xs-2 control-label p-l-none">
+                                <a href class="inline-link" ng-click="removeSecondaryTracker(ctrl.selectedCandidate)">
+                                    <img class="smaller_icon" ng-src="{{ ctrl.config.static_url }}/one/img/button-remove.svg" />Remove
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="form-group" ng-if="!ctrl.selectedCandidate.useSecondaryTracker">
+                            <label class="col-xs-2 control-label"></label>
+                            <div class="col-xs-10">
+                                <a href class="inline-link" ng-click="addSecondaryTracker(ctrl.selectedCandidate)">
+                                    <img ng-src="{{ ctrl.config.static_url }}/one/img/button-plus-blue.svg"/>Add secondary tracker
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-xs-2 control-label"></div>
+                        <div class="col-xs-8">
+                            <button type="button" class="btn btn-add" ng-click="ctrl.updateCandidate()" ng-disabled="ctrl.updateRequestInProgress">Update ad</button>
+                            <img class="loader-icon small-icon" ng-if="ctrl.updateRequestInProgress" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
+                            <span class="error" ng-if="ctrl.updateRequestFailed">Oops. Something went wrong. Please try again.</span>
+                        </div>
+                        <div class="col-xs-2"></div>
+                    </div>
+                </form>
+
+                <button type="button" class="btn-close" ng-click="ctrl.closeEditForm()">Close <span class="glyphicon glyphicon-chevron-right"></span></button>
+            </div>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-gray" ng-click="ctrl.cancel()">Cancel</button>
+        <button type="button" class="btn btn-add pull-right" ng-click="ctrl.save()" ng-disabled="ctrl.isSaveDisabled()">Upload</button>
+        <span class="error pull-right" ng-if="ctrl.getSaveErrorMsg()">{{ ctrl.getSaveErrorMsg() }}</span>
+        <img class="loader-icon small-icon pull-right" ng-if="ctrl.saveRequestInProgress || ctrl.anyCandidateWaiting" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
+    </div>
+</div>

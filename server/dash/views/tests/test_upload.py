@@ -60,6 +60,7 @@ class UploadCsvTestCase(TestCase):
             'success': True,
             'data': {
                 'batch_id': batch.id,
+                'batch_name': 'batch 1',
                 'candidates': [expected_candidate],
             }
         }, json.loads(response.content))
@@ -114,6 +115,7 @@ class UploadCsvTestCase(TestCase):
             'success': True,
             'data': {
                 'batch_id': batch.id,
+                'batch_name': 'batch 1',
                 'candidates': [expected_candidate],
             }
         }, json.loads(response.content))
@@ -170,6 +172,7 @@ class UploadCsvTestCase(TestCase):
             'success': True,
             'data': {
                 'batch_id': batch.id,
+                'batch_name': 'batch 1',
                 'candidates': [expected_candidate],
             }
         }, json.loads(response.content))

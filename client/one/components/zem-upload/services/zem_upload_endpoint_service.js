@@ -19,6 +19,7 @@ oneApp.factory('zemUploadEndpointService', ['$http', '$q', function ($http, $q) 
             }).success(function (data) {
                 deferred.resolve({
                     batchId: data.data.batch_id,
+                    batchName: data.data.batch_name,
                     candidates: convertCandidatesFromApi(data.data.candidates),
                 });
             }).error(function (data, status) {
@@ -73,7 +74,7 @@ oneApp.factory('zemUploadEndpointService', ['$http', '$q', function ($http, $q) 
             var url = baseUrl + batchId + '/save/';
             var data = {};
 
-            if (batchName) {
+            if (batchName !== undefined) {
                 data.batch_name = batchName;
             }
 

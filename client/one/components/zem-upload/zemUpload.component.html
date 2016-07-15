@@ -1,0 +1,5 @@
+<ng-switch on="ctrl.step">
+    <zem-upload-step1 ng-switch-when="1" api="ctrl.api" callback="ctrl.switchToContentAdPicker(batchId, batchName, candidates)" close="ctrl.closeModal"></zem-upload-step1>
+    <zem-upload-step2 ng-switch-when="2" api="ctrl.api" callback="ctrl.switchToSuccessScreen(numSuccessful)" candidates="ctrl.candidates" batch-id="ctrl.batchId" batch-name="ctrl.batchName" on-save="ctrl.onSave" ad-group="ctrl.adGroup" close="ctrl.closeModal"></zem-upload-step2>
+    <zem-upload-step3 ng-switch-when="3" api="ctrl.api" callback="ctrl.switchToFileUpload()" ad-group="ctrl.adGroup" num-successful="ctrl.numSuccessful" close="ctrl.closeModal"></zem-upload-step3>
+</ng-switch>

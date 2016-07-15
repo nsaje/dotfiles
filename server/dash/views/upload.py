@@ -40,6 +40,7 @@ class UploadCsv(api_common.BaseApiView):
         candidates_result = upload.get_candidates_with_errors(candidates)
         return self.create_api_response({
             'batch_id': batch.id,
+            'batch_name': batch.name,
             'candidates': candidates_result,
         })
 
