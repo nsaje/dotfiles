@@ -772,7 +772,9 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
 
     $scope.refreshGridAndTable = function () {
         getTableData();
-        $scope.grid.api.getDataService().loadData();
+        if ($scope.grid.api) {
+            $scope.grid.api.getDataService().loadData();
+        }
     };
 
     var pollSyncStatus = function () {
