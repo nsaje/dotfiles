@@ -100,7 +100,7 @@ describe('ZemUploadCtrl', function () {
 
     it('should initialize correctly', function () {
         expect(zemUploadEndpointService.createEndpoint).toHaveBeenCalledWith(adGroup.id);
-        expect(ctrl.api).toBe(mockEndpoint);
+        expect(ctrl.endpoint).toBe(mockEndpoint);
         expect(ctrl.step).toBe(1);
     });
 

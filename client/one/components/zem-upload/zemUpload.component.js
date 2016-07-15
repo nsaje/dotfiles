@@ -19,7 +19,7 @@ oneApp.directive('zemUpload', [function () { // eslint-disable-line max-len
 
 oneApp.controller('ZemUploadCtrl', ['zemUploadEndpointService', function (zemUploadEndpointService) {
     var vm = this;
-    vm.api = zemUploadEndpointService.createEndpoint(vm.adGroup.id);
+    vm.endpoint = zemUploadEndpointService.createEndpoint(vm.adGroup.id);
     vm.step = 1;
 
     vm.switchToFileUpload = function () {

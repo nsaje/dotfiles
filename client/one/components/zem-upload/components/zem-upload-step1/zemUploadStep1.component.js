@@ -7,7 +7,7 @@ oneApp.directive('zemUploadStep1', [function () { // eslint-disable-line max-len
         replace: true,
         scope: {},
         bindToController: {
-            api: '=',
+            endpoint: '=',
             callback: '&',
             close: '=',
         },
@@ -39,7 +39,7 @@ oneApp.controller('ZemUploadStep1Ctrl', ['config', function (config) {
     vm.upload = function () {
         vm.requestFailed = false;
         vm.requestInProgress = true;
-        vm.api.upload(vm.formData).then(
+        vm.endpoint.upload(vm.formData).then(
             function (result) {
                 vm.callback({
                     batchId: result.batchId,

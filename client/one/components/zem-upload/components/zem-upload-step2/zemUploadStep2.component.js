@@ -1,13 +1,13 @@
 /* globals oneApp, constants, defaults, options, angular, $ */
 'use strict';
 
-oneApp.directive('zemUploadStep2', [function () { // eslint-disable-line max-len
+oneApp.directive('zemUploadStep2', ['$window', function ($window) { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
         scope: {},
         bindToController: {
-            api: '=',
+            endpoint: '=',
             callback: '&',
             adGroup: '=',
             batchId: '=',
@@ -18,6 +18,21 @@ oneApp.directive('zemUploadStep2', [function () { // eslint-disable-line max-len
         },
         controllerAs: 'ctrl',
         templateUrl: '/components/zem-upload/components/zem-upload-step2/zemUploadStep2.component.html',
+        link: function (scope, element, attrs, ctrl) {
+            var batchNameInput = element.find('#batch-name-input');
+            batchNameInput.on('click', function (event) {
+                event.stopPropagation();
+            });
+
+            element.on('click', function () {
+                ctrl.disableBatchNameEdit();
+            });
+
+            ctrl.focusBatchNameEdit = function () {
+                batchNameInput[0].focus();
+                batchNameInput[0].setSelectionRange(0, batchNameInput[0].value.length);
+            };
+        },
         controller: 'ZemUploadStep2Ctrl',
     };
 }]);
@@ -26,27 +41,13 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
     var vm = this;
     vm.config = config;
 
-    vm.MAX_URL_LENGTH = 936;
-    vm.MAX_TITLE_LENGTH = 90;
-    vm.MAX_DESCRIPTION_LENGTH = 140;
-    vm.MAX_DISPLAY_URL_LENGTH = 25;
-    vm.MAX_BRAND_NAME_LENGTH = 25;
-    vm.MAX_CALL_TO_ACTION_LENGTH = 25;
-    vm.MAX_LABEL_LENGTH = 100;
-
-    vm.imageCrops = options.imageCrops;
-    vm.callToActionOptions = defaults.callToAction;
-    vm.candidateStatuses = constants.contentAdCandidateStatus;
-    vm.editFormScrollApi = {};
-
     vm.formData = {
         batchName: vm.batchName,
     };
-    vm.selectedCandidate = null;
     vm.batchNameEdit = false;
-    vm.anyCandidateHasErrors = false;
     vm.numSuccessful = null;
     vm.saveErrors = null;
+    vm.editFormApi = {};
 
     vm.pollInterval = null;
     vm.startPolling = function () {
@@ -60,7 +61,7 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
                 vm.stopPolling();
                 return;
             }
-            vm.api.checkStatus(vm.batchId, waitingCandidates).then(
+            vm.endpoint.checkStatus(vm.batchId, waitingCandidates).then(
                 function (data) {
                     updateCandidates(data.candidates);
                 }
@@ -85,6 +86,9 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
 
             vm.candidates.splice(index, 1, updatedCandidate);
         });
+
+        vm.anyCandidateHasErrors = checkAllCandidateErrors(vm.candidates);
+        vm.anyCandidateWaiting = getWaitingCandidateIds().length > 0;
     };
 
     var getWaitingCandidateIds = function () {
@@ -99,35 +103,21 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         return ret;
     };
 
-    vm.toggleBatchNameEdit = function () {
+    vm.toggleBatchNameEdit = function ($event) {
+        $event.stopPropagation();
         vm.batchNameEdit = !vm.batchNameEdit;
+        if (vm.batchNameEdit) {
+            vm.focusBatchNameEdit();
+        }
     };
 
     vm.disableBatchNameEdit = function () {
         vm.batchNameEdit = false;
     };
 
-    vm.openEditForm = function (candidate) {
-        vm.updateRequestInProgress = false;
-        vm.updateRequestFailed = false;
-        vm.selectedCandidate = angular.copy(candidate);
-        vm.selectedCandidate.defaults = {};
-        vm.selectedCandidate.useTrackers = !!vm.selectedCandidate.primaryTrackerUrl ||
-            !!vm.selectedCandidate.secondaryTrackerUrl;
-        vm.selectedCandidate.useSecondaryTracker = !!vm.selectedCandidate.secondaryTrackerUrl;
-
-        if (vm.editFormScrollApi.scroll) {
-            vm.editFormScrollApi.scroll();
-        }
-    };
-
-    vm.closeEditForm = function () {
-        vm.selectedCandidate = null;
-    };
-
     vm.isSaveDisabled = function () {
         return vm.anyCandidateHasErrors || !vm.candidates.length ||
-            vm.anyCandidateWaiting || vm.saveRequestInProgress;
+            vm.anyCandidateWaiting || vm.saveRequestInProgress || vm.editFormApi.requestInProgress;
     };
 
     var findCandidate = function (candidateId) {
@@ -138,14 +128,17 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         }
     };
 
-    vm.removeCandidate = function (selectedCandidate, event) {
+    vm.removeCandidate = function (candidate, event) {
         event.stopPropagation();  // the whole row has ng-click registered
 
-        var candidate = findCandidate(selectedCandidate.id);
         candidate.removeRequestInProgress = true;
         candidate.removeRequestFailed = false;
 
-        vm.api.removeCandidate(
+        if (vm.editFormApi && vm.editFormApi.selectedId === candidate.id) {
+            vm.editFormApi.close();
+        }
+
+        vm.endpoint.removeCandidate(
             candidate.id,
             vm.batchId
         ).then(
@@ -153,10 +146,6 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
                 vm.candidates = vm.candidates.filter(function (el) {
                     return candidate.id !== el.id;
                 });
-
-                if (vm.selectedCandidate && (vm.selectedCandidate.id === candidate.id)) {
-                    vm.closeEditForm();
-                }
             },
             function () {
                 candidate.removeRequestFailed = true;
@@ -164,16 +153,6 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         ).finally(function () {
             candidate.removeRequestInProgress = false;
         });
-    };
-
-    vm.addSecondaryTracker = function (candidate) {
-        candidate.useSecondaryTracker = true;
-    };
-
-    vm.removeSecondaryTracker = function (candidate) {
-        candidate.useSecondaryTracker = false;
-        candidate.secondaryTrackerUrl = null;
-        vm.clearSelectedCandidateErrors('secondaryTrackerUrl');
     };
 
     var hasErrors = function (candidate) {
@@ -215,10 +194,20 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         return constants.contentAdCandidateStatus.OK;
     };
 
-    vm.save = function () {
+    vm.updateCandidateCallback = function (candidates) {
+        updateCandidates(candidates);
+        vm.startPolling();
+    };
+
+    var executeSaveCall = function () {
+        if (vm.isSaveDisabled()) {
+            return;
+        }
+
         vm.saveRequestFailed = false;
         vm.saveRequestInProgress = true;
-        vm.api.save(vm.batchId, vm.formData.batchName).then(
+
+        vm.endpoint.save(vm.batchId, vm.formData.batchName).then(
             function (data) {
                 if (vm.onSave) {
                     vm.onSave();
@@ -236,12 +225,12 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         });
     };
 
-    vm.clearSelectedCandidateErrors = function (field) {
-        if (!vm.selectedCandidate || !vm.selectedCandidate.errors) {
-            return;
+    vm.save = function () {
+        if (vm.editFormApi.selectedId) {
+            vm.editFormApi.update().then(executeSaveCall);
+        } else {
+            executeSaveCall();
         }
-
-        delete vm.selectedCandidate.errors[field];
     };
 
     vm.clearBatchNameErrors = function () {
@@ -302,23 +291,6 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         return errs.length + ' image errors';
     };
 
-    vm.updateCandidate = function () {
-        vm.updateRequestInProgress = true;
-        vm.updateRequestFailed = false;
-        vm.api.updateCandidate(
-            vm.selectedCandidate,
-            vm.batchId
-        ).then(function (result) {
-            updateCandidates(result.candidates);
-            vm.startPolling();
-            vm.closeEditForm();
-        }, function () {
-            vm.updateRequestFailed = true;
-        }).finally(function () {
-            vm.updateRequestInProgress = false;
-        });
-    };
-
     vm.download = function () {
         var url = '/api/ad_groups/' + vm.adGroup.id + '/contentads/upload/' + vm.batchId +
                 '/download/?batch_name=' + encodeURIComponent(vm.formData.batchName);
@@ -327,32 +299,17 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
 
     vm.cancel = function () {
         if (vm.batchId) {
-            vm.api.cancel(vm.batchId);
+            vm.endpoint.cancel(vm.batchId);
         }
         vm.stopPolling();
         vm.closeModal();
     };
 
-    vm.callToActionSelect2Config = {
-        dropdownCssClass: 'service-fee-select2',
-        createSearchChoice: function (term, data) {
-            if ($(data).filter(function () {
-                return this.text.localeCompare(term) === 0;
-            }).length === 0) {
-                return {id: term, text: term};
-            }
-        },
-        data: defaults.callToAction,
-    };
-
-    $scope.$watchCollection('ctrl.candidates', function () {
-        vm.anyCandidateHasErrors = checkAllCandidateErrors(vm.candidates);
-        vm.anyCandidateWaiting = getWaitingCandidateIds().length > 0;
-    });
-
     $scope.$on('$destroy', function () {
         vm.stopPolling();
     });
 
+    vm.anyCandidateHasErrors = checkAllCandidateErrors(vm.candidates);
+    vm.anyCandidateWaiting = getWaitingCandidateIds().length > 0;
     vm.startPolling();
 }]);

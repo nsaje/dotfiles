@@ -2,13 +2,13 @@
 'use strict';
 
 describe('ZemUploadStep1Ctrl', function () {
-    var scope, $modalInstance, api, $q, ctrl;
+    var scope, $modalInstance, $q, ctrl;
 
     beforeEach(module('one'));
     beforeEach(inject(function ($controller, $rootScope, _$q_) {
         $q = _$q_;
         scope = $rootScope.$new();
-        var mockApi = {
+        var mockEndpoint = {
             upload: function () {},
             checkStatus: function () {},
             updateCandidate: function () {},
@@ -24,7 +24,7 @@ describe('ZemUploadStep1Ctrl', function () {
             'ZemUploadStep1Ctrl',
             {$scope: scope},
             {
-                api: mockApi,
+                endpoint: mockEndpoint,
                 callback: function () {},
             }
         );
@@ -32,7 +32,7 @@ describe('ZemUploadStep1Ctrl', function () {
 
     it('switches to picker on success', function () {
         var deferred = $q.defer();
-        spyOn(ctrl.api, 'upload').and.callFake(function () {
+        spyOn(ctrl.endpoint, 'upload').and.callFake(function () {
             return deferred.promise;
         });
 
@@ -44,7 +44,7 @@ describe('ZemUploadStep1Ctrl', function () {
         spyOn(ctrl, 'callback').and.stub();
 
         ctrl.upload();
-        expect(ctrl.api.upload).toHaveBeenCalledWith(
+        expect(ctrl.endpoint.upload).toHaveBeenCalledWith(
             {file: ctrl.formData.file, batchName: ctrl.formData.batchName}
         );
         expect(ctrl.requestInProgress).toBe(true);
@@ -83,7 +83,7 @@ describe('ZemUploadStep1Ctrl', function () {
 
     it('sets a flag on upload failure', function () {
         var deferred = $q.defer();
-        spyOn(ctrl.api, 'upload').and.callFake(function () {
+        spyOn(ctrl.endpoint, 'upload').and.callFake(function () {
             return deferred.promise;
         });
 
@@ -95,7 +95,7 @@ describe('ZemUploadStep1Ctrl', function () {
         spyOn(ctrl, 'callback').and.stub();
 
         ctrl.upload();
-        expect(ctrl.api.upload).toHaveBeenCalledWith(
+        expect(ctrl.endpoint.upload).toHaveBeenCalledWith(
             {file: ctrl.formData.file, batchName: ctrl.formData.batchName}
         );
         expect(ctrl.requestInProgress).toBe(true);
@@ -115,7 +115,7 @@ describe('ZemUploadStep1Ctrl', function () {
 
     it('displays errors on failure', function () {
         var deferred = $q.defer();
-        spyOn(ctrl.api, 'upload').and.callFake(function () {
+        spyOn(ctrl.endpoint, 'upload').and.callFake(function () {
             return deferred.promise;
         });
 
@@ -126,7 +126,7 @@ describe('ZemUploadStep1Ctrl', function () {
         spyOn(ctrl, 'callback').and.stub();
 
         ctrl.upload();
-        expect(ctrl.api.upload).toHaveBeenCalledWith(
+        expect(ctrl.endpoint.upload).toHaveBeenCalledWith(
             {file: ctrl.formData.file, batchName: ctrl.formData.batchName}
         );
 
