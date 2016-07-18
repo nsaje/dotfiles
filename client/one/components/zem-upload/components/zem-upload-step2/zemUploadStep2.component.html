@@ -68,6 +68,6 @@
         <button type="button" class="btn btn-gray" ng-click="ctrl.cancel()">Cancel</button>
         <button type="button" class="btn btn-add pull-right" ng-click="ctrl.save()" ng-disabled="ctrl.isSaveDisabled()">Upload</button>
         <span class="error pull-right" ng-if="ctrl.getSaveErrorMsg()">{{ ctrl.getSaveErrorMsg() }}</span>
-        <img class="loader-icon small-icon pull-right" ng-if="ctrl.saveRequestInProgress || ctrl.anyCandidateWaiting" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
+        <img class="loader-icon small-icon pull-right" ng-if="ctrl.isLoading()" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
     </div>
 </div>

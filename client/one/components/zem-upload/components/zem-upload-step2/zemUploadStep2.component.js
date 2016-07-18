@@ -86,9 +86,6 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
 
             vm.candidates.splice(index, 1, updatedCandidate);
         });
-
-        vm.anyCandidateHasErrors = checkAllCandidateErrors(vm.candidates);
-        vm.anyCandidateWaiting = getWaitingCandidateIds().length > 0;
     };
 
     var getWaitingCandidateIds = function () {
@@ -115,9 +112,16 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         vm.batchNameEdit = false;
     };
 
+    vm.isLoading = function () {
+        return getWaitingCandidateIds().length ||
+            vm.editFormApi.requestInProgress ||
+            vm.saveRequestInProgress;
+    };
+
     vm.isSaveDisabled = function () {
-        return vm.anyCandidateHasErrors || !vm.candidates.length ||
-            vm.anyCandidateWaiting || vm.saveRequestInProgress || vm.editFormApi.requestInProgress;
+        return vm.isLoading() ||
+            !vm.candidates.length ||
+            checkAllCandidateErrors();
     };
 
     var findCandidate = function (candidateId) {
@@ -165,13 +169,13 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         return false;
     };
 
-    var checkAllCandidateErrors = function (candidates) {
-        if (!candidates) {
+    var checkAllCandidateErrors = function () {
+        if (!vm.candidates) {
             return false;
         }
 
-        for (var i = 0; i < candidates.length; i++) {
-            if (hasErrors(candidates[i])) {
+        for (var i = 0; i < vm.candidates.length; i++) {
+            if (hasErrors(vm.candidates[i])) {
                 return true;
             }
         }
@@ -246,7 +250,7 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
             return;
         }
 
-        if (vm.anyCandidateHasErrors) {
+        if (checkAllCandidateErrors()) {
             return 'You need to fix all errors before you can upload batch.';
         }
 
@@ -309,7 +313,5 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         vm.stopPolling();
     });
 
-    vm.anyCandidateHasErrors = checkAllCandidateErrors(vm.candidates);
-    vm.anyCandidateWaiting = getWaitingCandidateIds().length > 0;
     vm.startPolling();
 }]);
