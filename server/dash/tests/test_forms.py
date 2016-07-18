@@ -14,6 +14,14 @@ from dash import forms
 from dash import models
 from zemauth.models import User
 
+EXAMPLE_CSV_CONTENT = [
+    forms.EXAMPLE_CSV_CONTENT['url'],
+    forms.EXAMPLE_CSV_CONTENT['title'],
+    forms.EXAMPLE_CSV_CONTENT['image_url'],
+    'Tech Talk with Zemanta: How Content Ads Will Come to Dominant Publishers Advertising Efforts',
+    'https://www.example.com/tracker',
+]
+
 
 class AccountSettingsFormTest(TestCase):
     fixtures = ['test_views.yaml']
@@ -564,18 +572,17 @@ class AdGroupAdsUploadFormTest(TestCase):
 
     def test_csv_example_content_without_data(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Primary impression tracker url'],
-                                      [forms.EXAMPLE_CSV_CONTENT.split(',')])
+                                      [EXAMPLE_CSV_CONTENT])
         form = self._init_form(csv_file, {})
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {'candidates': [u'Uploaded file is empty.']})
 
     def test_csv_example_content_with_data(self):
-        csv_file = self._get_csv_file(
-            ['Url', 'Title', 'Image Url', 'Description', 'Primary impression tracker url'],
-            [forms.EXAMPLE_CSV_CONTENT.split(','),
-             [self.url, self.title, self.image_url, self.description, self.primary_tracker_url],
-             forms.EXAMPLE_CSV_CONTENT.split(',')]
-        )
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Description', 'Primary impression tracker url'],
+                                      [EXAMPLE_CSV_CONTENT,
+                                       [self.url, self.title, self.image_url,
+                                        self.description, self.primary_tracker_url],
+                                       EXAMPLE_CSV_CONTENT])
         form = self._init_form(csv_file, {})
         self.assertTrue(form.is_valid())
         self.assertEqual(len(form.cleaned_data['candidates']), 1)
@@ -823,7 +830,8 @@ class ContentAdFormTestCase(TestCase):
             'brand_name': 'Zemanta',
             'description': 'Description',
             'call_to_action': 'Read more',
-            'tracker_urls': 'https://zemanta.com/px1 https://zemanta.com/px2',
+            'primary_tracker_url': 'https://zemanta.com/px1',
+            'secondary_tracker_url': 'https://zemanta.com/px2',
             'image_id': 'id123',
             'image_hash': 'imagehash',
             'image_width': 500,

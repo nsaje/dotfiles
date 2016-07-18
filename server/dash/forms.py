@@ -592,11 +592,13 @@ INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING = {v: k for k, v in EXPRESSIVE_FIELD_NAME_
 
 # Example CSV content - must be ignored if mistakenly uploaded
 # Example File is served by client (Zemanta_Content_Ads_Template.csv)
-EXAMPLE_CSV_CONTENT = 'http://www.zemanta.com/blog-posts/news/the-rise-of-content-ads,' \
-                      'The Rise of Content Ads,' \
-                      'http://www.topbestalternatives.com/wp-content/uploads/2016/01/zemanta-580x304.jpg,' \
-                      'Tech Talk with Zemanta: How Content Ads Will Come to Dominant Publishers Advertising Efforts,' \
-                      'http://www.example.com/tracker'
+EXAMPLE_CSV_CONTENT = {
+    'url': 'http://www.zemanta.com/insights/2016/6/13/8-tips-for-creating-clickable-content',
+    'title': '8 Tips for Creating Clickable Content',
+    'image_url': 'http://static1.squarespace.com/static/56bbb88007eaa031a14e3472/'
+                 '56ce2a0206dcb7970cb2a080/575f341659827ef48ecb2253/1466510434775/'
+                 'coffee-apple-iphone-laptop.jpg?format=1500w',
+}
 
 
 class DisplayURLField(forms.URLField):
@@ -683,6 +685,9 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
             if None in row:
                 del row[None]
 
+            if all(row[example_key] == example_value for example_key, example_value in EXAMPLE_CSV_CONTENT.iteritems()):
+                continue
+
             count_rows += 1
 
             # Remove ignored fields from row dict
@@ -721,7 +726,7 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
         # location on upload and then open it with 'rU'
         # (universal-newline mode).
         # Additionally remove empty lines and Example CSV content if present.
-        lines = [line for line in file_content.splitlines() if line and line != EXAMPLE_CSV_CONTENT]
+        lines = [line for line in file_content.splitlines() if line]
 
         encodings = ['utf-8', 'windows-1252']
         data = None
