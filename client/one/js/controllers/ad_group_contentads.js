@@ -772,7 +772,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
 
     $scope.refreshGridAndTable = function () {
         getTableData();
-        if ($scope.grid.api) {
+        if ($scope.grid && $scope.grid.api) {
             $scope.grid.api.getDataService().loadData();
         }
     };
