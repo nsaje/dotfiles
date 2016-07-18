@@ -16,4 +16,4 @@
 0 8 * * *           /home/ubuntu/docker-manage-py.sh create_demo_snapshot
 */5 * * * *         /home/ubuntu/docker-manage-py.sh check_facebook_page_approval
 0 * * * *           /home/ubuntu/docker-manage-py.sh monitor_selfmanaged
-5 * * * *           /home/ubuntu/docker-manage.py.sh monitor_demo
+5 * * * *           /home/ubuntu/docker-manage-py.sh monitor_demo
