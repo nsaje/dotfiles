@@ -13,7 +13,6 @@ oneApp.directive('zemUploadStep2', ['$window', function ($window) { // eslint-di
             batchId: '=',
             batchName: '=',
             candidates: '=',
-            onSave: '=',
             closeModal: '=close',
         },
         controllerAs: 'ctrl',
@@ -213,9 +212,6 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
 
         vm.endpoint.save(vm.batchId, vm.formData.batchName).then(
             function (data) {
-                if (vm.onSave) {
-                    vm.onSave();
-                }
                 vm.callback({
                     numSuccessful: data.numSuccessful,
                 });

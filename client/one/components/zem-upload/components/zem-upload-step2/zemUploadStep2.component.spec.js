@@ -29,7 +29,6 @@ describe('ZemUploadStep2Ctrl', function () {
                 candidates: [],
                 batchId: 1,
                 batchName: 'mock batch',
-                onSave: function () {},
                 closeModal: function () {},
             }
         );
