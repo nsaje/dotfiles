@@ -8,15 +8,12 @@ import httplib
 import urllib
 import urllib2
 import pytz
-import os
 import StringIO
 import unicodecsv
 import slugify
 import hmac
 import hashlib
 import threading
-
-from collections import OrderedDict
 
 from django.db import transaction
 from django.conf import settings
@@ -36,7 +33,6 @@ from dash.views import helpers
 from utils import lc_helper
 from utils import api_common
 from utils import exc
-from utils import s3helpers
 from utils import k1_helper
 from utils import email_helper
 from utils import request_signer
@@ -56,7 +52,6 @@ from dash import models, region_targeting_helper, retargeting_helper
 from dash import constants
 from dash import api
 from dash import forms
-from dash import upload
 from dash import infobox_helpers
 from dash import publisher_helpers
 from dash import history_helpers
@@ -1272,21 +1267,6 @@ class AdGroupContentAdState(api_common.BaseApiView):
         return self.create_api_response()
 
 
-CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
-    ['url', 'URL'],
-    ['title', 'Title'],
-    ['image_url', 'Image URL'],
-    ['image_crop', 'Image crop'],
-    ['display_url', 'Display URL'],
-    ['brand_name', 'Brand name'],
-    ['call_to_action', 'Call to action'],
-    ['description', 'Description'],
-    ['primary_tracker_url', 'Primary impression tracker url'],
-    ['secondary_tracker_url', 'Secondary impression tracker url'],
-    ['label', 'Label'],
-])
-
-
 class AdGroupContentAdCSV(api_common.BaseApiView):
 
     @influx.timer('dash.api')
@@ -1347,7 +1327,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
             # delete keys that are not to be exported
             for k in content_ad_dict.keys():
-                if k not in CSV_EXPORT_COLUMN_NAMES_DICT.keys():
+                if k not in forms.CSV_EXPORT_COLUMN_NAMES_DICT.keys():
                     del content_ad_dict[k]
 
             content_ad_dicts.append(content_ad_dict)
@@ -1364,10 +1344,10 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
     def _create_content_ad_csv(self, content_ads):
         string = StringIO.StringIO()
 
-        writer = unicodecsv.DictWriter(string, CSV_EXPORT_COLUMN_NAMES_DICT.keys())
+        writer = unicodecsv.DictWriter(string, forms.CSV_EXPORT_COLUMN_NAMES_DICT.keys())
 
         # write the header manually as it is different than keys in the dict
-        writer.writerow(CSV_EXPORT_COLUMN_NAMES_DICT)
+        writer.writerow(forms.CSV_EXPORT_COLUMN_NAMES_DICT)
 
         for row in content_ads:
             writer.writerow(row)

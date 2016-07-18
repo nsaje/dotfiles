@@ -153,7 +153,8 @@ def _get_candidates_csv(candidates):
 
 
 def _transform_field(field):
-    field = forms.INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING.get(field, field)
+    if field in forms.CSV_EXPORT_COLUMN_NAMES_DICT:
+        return forms.CSV_EXPORT_COLUMN_NAMES_DICT[field]
     return field.replace('_', ' ').capitalize()
 
 

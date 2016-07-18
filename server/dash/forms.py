@@ -4,6 +4,7 @@ import re
 import unicodecsv
 import dateutil.parser
 import rfc3987
+from collections import OrderedDict
 
 from collections import Counter
 
@@ -599,6 +600,20 @@ EXAMPLE_CSV_CONTENT = {
                  '56ce2a0206dcb7970cb2a080/575f341659827ef48ecb2253/1466510434775/'
                  'coffee-apple-iphone-laptop.jpg?format=1500w',
 }
+
+CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
+    ['url', 'URL'],
+    ['title', 'Title'],
+    ['image_url', 'Image URL'],
+    ['image_crop', 'Image crop'],
+    ['display_url', 'Display URL'],
+    ['brand_name', 'Brand name'],
+    ['call_to_action', 'Call to action'],
+    ['description', 'Description'],
+    ['primary_tracker_url', 'Primary impression tracker URL'],
+    ['secondary_tracker_url', 'Secondary impression tracker URL'],
+    ['label', 'Label'],
+])
 
 
 class DisplayURLField(forms.URLField):
