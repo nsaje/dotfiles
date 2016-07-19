@@ -208,8 +208,8 @@ bindsym $mod+r mode "resize"
 
 # gaps
 #for_window [class="^.*"] border pixel 3
-gaps inner 5
-gaps outer 0
+#gaps inner 5
+#gaps outer 0
 
 # wallpaper
 exec --no-startup-id feh --bg-fill ~/Downloads/Yosemite.jpg

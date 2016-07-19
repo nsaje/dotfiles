@@ -7,7 +7,7 @@
 	name = Nejc Saje
 	email = nejc@saje.info
 [push]
-	default = simple
+	default = current
 [diff]
 	tool = meld
 [core]

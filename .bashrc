@@ -53,10 +53,15 @@ export PS1="\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h:\[$txtcyn\]\$git_branch\[$tx
 #export PS1="\u@\h \W \[$txtcyn\]\$git_branch\[$txtred\]\$git_dirty\[$txtrst\]\$ "
 
 
+# alias nvim
+alias vi="nvim"
+
 
 export GOPATH=$HOME/.go
 export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
 export GO15VENDOREXPERIMENT=1
+
+export PATH="$PATH:~/go_appengine"
 
 
 [ -s "/home/nsaje/.scm_breeze/scm_breeze.sh" ] && source "/home/nsaje/.scm_breeze/scm_breeze.sh"

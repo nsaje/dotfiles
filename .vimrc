@@ -21,6 +21,15 @@ Plugin 'scrooloose/syntastic'
 Plugin 'valloric/youcompleteme'
 Plugin 'dkprice/vim-easygrep'
 Plugin 'nvie/vim-flake8'
+Plugin 'avakhov/vim-yaml'
+Plugin 'scrooloose/nerdcommenter'
+
+" allow changing buffer without saving
+set hidden
+
+" comment out binding
+nmap <C-_> <leader>c<Space>
+vmap <C-_> <leader>c<Space>
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
