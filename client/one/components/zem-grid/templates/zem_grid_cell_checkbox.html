@@ -1,8 +1,8 @@
 <span class="zem-grid-cell-checkbox">
-     <input ng-show="ctrl.isVisible()"
+     <input ng-show="ctrl.checkboxModel.visible"
             type="checkbox"
-            ng-disabled="ctrl.isDisabled()"
-            data-ng-model="ctrl.row.selected"
+            ng-disabled="ctrl.checkboxModel.disabled"
+            data-ng-model="ctrl.checkboxModel.checked"
             data-ng-change="ctrl.toggleSelection()"
      />
 </span>

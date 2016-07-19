@@ -30,7 +30,7 @@ oneApp.directive('zemGridCellStateSelector', [function () {
                 vm.showLoader = false;
                 vm.active = false;
                 vm.isEditable = false;
-                vm.enablingAutopilotSourcesAllowed = vm.grid.meta.data.enablingAutopilotSourcesAllowed;
+                vm.enablingAutopilotSourcesAllowed = vm.grid.meta.data.ext.enablingAutopilotSourcesAllowed;
 
                 if (vm.row) {
                     vm.isFieldVisible = isFieldVisible(vm.row.level);

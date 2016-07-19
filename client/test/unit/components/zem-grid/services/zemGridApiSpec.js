@@ -59,18 +59,19 @@ describe('zemGridApi', function () {
         expect(api.getColumns().length).toBe(3);
     });
 
-    it('should allow selecting rows', function () {
+    it('should allow setting selection', function () {
         var grid = createGrid();
         var api = zemGridApi.createInstance(grid);
         var rows = api.getRows();
+        var selection = {
+            filter: {},
+            selected: rows.slice(0, 1),
+            unselected: rows.slice(1, 2),
+        };
 
-        expect(api.getSelectedRows().length).toBe(0);
-
-        api.setSelectedRows(rows.slice(0, 2), true);
-        expect(api.getSelectedRows().length).toBe(2);
-
-        api.setSelectedRows(rows.slice(0, 1), false);
-        expect(api.getSelectedRows().length).toBe(1);
+        api.setSelection(selection);
+        expect(api.getSelection().selected.length).toBe(1);
+        expect(api.getSelection().unselected.length).toBe(1);
     });
 
     it('should allow setting visibility on columns', function () {
@@ -145,11 +146,11 @@ describe('zemGridApi', function () {
         var columns = api.getColumns();
         var rows = api.getRows();
 
-
+        var selection = {}
         var selectionSpy = jasmine.createSpy();
-        api.onRowsSelectionChanged(null, selectionSpy);
-        api.setSelectedRows(rows[0], false);
-        expect(selectionSpy).toHaveBeenCalledWith(jasmine.any(Object), [rows[0]]);
+        api.onSelectionChanged(null, selectionSpy);
+        api.setSelection(selection);
+        expect(selectionSpy).toHaveBeenCalledWith(jasmine.any(Object), selection);
 
         var collapseSpy = jasmine.createSpy();
         api.onRowsCollapseChanged(null, collapseSpy);

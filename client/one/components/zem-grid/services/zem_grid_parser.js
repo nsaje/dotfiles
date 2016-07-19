@@ -19,7 +19,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
         if (data.level > 0) throw 'Inplace parsing not supported yet.';
 
         if (data.breakdown) {
-            grid.footer.row = zemGridObject.createRow(zemGridConstants.gridRowType.FOOTER, data, 0);
+            grid.footer.row = createRow(zemGridConstants.gridRowType.FOOTER, data, 0);
             grid.body.rows = parseBreakdown(grid, null, data.breakdown);
         } else {
             grid.body.rows = [];
@@ -32,7 +32,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
         var level = breakdown.level;
 
         breakdown.rows.forEach(function (data) {
-            var row = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, data, level, parent);
+            var row = createRow(zemGridConstants.gridRowType.STATS, data, level, parent);
             rows.push(row);
             if (data.breakdown) {
                 var breakdownRows = parseBreakdown(grid, row, data.breakdown);
@@ -51,7 +51,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
     }
 
     function createBreakdownRow (grid, breakdown, parent) {
-        var row = zemGridObject.createRow(zemGridConstants.gridRowType.BREAKDOWN, breakdown, breakdown.level, parent);
+        var row = createRow(zemGridConstants.gridRowType.BREAKDOWN, breakdown, breakdown.level, parent);
 
         // TODO: refactor (move to virtual scroll functionality)
         // HACK: Empty stats for render optimizations (ng-repeat, ng-switch)
@@ -61,6 +61,21 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
         });
         row.data.stats = emptyStats;
         return row;
+    }
+
+    function createRow (type, data, level, parent) {
+        // Create row - try to reuse row if already crated
+        //  - row can already have some data used by different services (e.g. collapse)
+        //  - it is a bit more efficient then to re-create row objects through sequential requests
+
+        // (optional) FIXME For the simplicity we save (cache) row instance into the data itself.
+        // This creates circular dependency, which should not cause problems, but it can be avoided
+        // with modifying data source to create unique keys that can be used here for storage
+        if (!data.row) {
+            data.row = zemGridObject.createRow(type, data, level, parent);
+        }
+
+        return data.row;
     }
 
     return {

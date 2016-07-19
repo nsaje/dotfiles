@@ -2,7 +2,7 @@
 /* eslint-disable camelcase*/
 'use strict';
 
-oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', function (zemGridConstants) {
+oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpointColumns', function (zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
 
     return {
         convertBreakdownFromApi: convertBreakdownFromApi,
@@ -25,6 +25,9 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', function (zem
         }
         if (breakdown.enabling_autopilot_sources_allowed) {
             convertedBreakdown.enablingAutopilotSourcesAllowed = breakdown.enabling_autopilot_sources_allowed;
+        }
+        if (breakdown.batches) {
+            convertedBreakdown.batches = breakdown.batches;
         }
 
         convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData);

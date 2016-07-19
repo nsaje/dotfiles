@@ -198,46 +198,6 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         resizeBreakdownRows(grid);
     }
 
-    function getRowClass (grid, row) {
-        var classes = [];
-        classes.push('level-' + row.level);
-
-        if (row.level === grid.meta.service.getBreakdownLevel()) {
-            classes.push('level-last');
-        }
-
-        if (row.type === zemGridConstants.gridRowType.BREAKDOWN) {
-            classes.push('breakdown');
-        }
-
-        if (row.data.archived) {
-            classes.push('archived');
-        }
-
-        return classes;
-    }
-
-    function getHeaderColumnClass (grid, column) {
-        var classes = [];
-        classes.push('zem-grid-cell');
-
-        if (column.type === zemGridConstants.gridColumnTypes.CHECKBOX) {
-            classes.push('zem-grid-cell-checkbox');
-        }
-
-        return classes;
-    }
-
-    function getHeaderColumnOrderClass (grid, column) {
-        if (column.order === zemGridConstants.gridColumnOrder.DESC) {
-            return 'ordered';
-        }
-        if (column.order === zemGridConstants.gridColumnOrder.ASC) {
-            return 'ordered-reverse';
-        }
-        return null;
-    }
-
     function getBreakdownColumnStyle (grid, row) {
         var paddingLeft = (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
         // Indent breakdown rows on last level with additional padding because no collapse icon is shown in these rows
@@ -262,9 +222,6 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
     return {
         requestAnimationFrame: requestAnimationFrame,
         resizeGridColumns: resizeGridColumns,
-        getRowClass: getRowClass,
-        getHeaderColumnClass: getHeaderColumnClass,
-        getHeaderColumnOrderClass: getHeaderColumnOrderClass,
         getBreakdownColumnStyle: getBreakdownColumnStyle,
         getFieldGoalStatusClass: getFieldGoalStatusClass,
     };

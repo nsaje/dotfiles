@@ -9,14 +9,51 @@ oneApp.controller('DevelopmentCtrl', ['$scope', '$state', function ($scope, $sta
     });
 }]);
 
-oneApp.controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemDataSourceService', 'zemGridDebugEndpoint', function ($scope, $timeout, zemDataSourceService, zemGridDebugEndpoint) { // eslint-disable-line max-len
+oneApp.controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemGridConstants', 'zemDataSourceService', 'zemGridDebugEndpoint', function ($scope, $timeout, zemGridConstants, zemDataSourceService, zemGridDebugEndpoint) { // eslint-disable-line max-len
     var dataSource = zemDataSourceService.createInstance(zemGridDebugEndpoint.createEndpoint());
 
     var options = {
         enableSelection: true,
         enableTotalsSelection: true,
         maxSelectedRows: 3,
+
+        selection: {
+            enabled: true,
+            filtersEnabled: true,
+            levels: [0, 1],
+            customFilters: [
+                {
+                    type: zemGridConstants.gridSelectionCustomFilterType.LIST,
+                    name: 'Account manager (list)',
+                    filters: [
+                        {
+                            name: 'Tadej',
+                            callback: selectionFilter('Tadej'),
+                        },
+                        {
+                            name: 'Helen',
+                            callback: selectionFilter('Helen'),
+                        }
+                    ]
+                },
+                {
+                    type: zemGridConstants.gridSelectionCustomFilterType.ITEM,
+                    filter: {
+                        name: 'Account Manager (item) - Ana',
+                        callback: selectionFilter('Ana'),
+                    }
+                }
+            ],
+        }
     };
+
+    function selectionFilter (value) {
+        return function (row) {
+            var accountManager = row.data.stats['default_account_manager'];
+            if (!accountManager || !accountManager.value) return false;
+            return accountManager.value.startsWith(value);
+        };
+    }
 
     // GridApi is defined by zem-grid in initialization, therefor
     // it will be available in the next cycle; postpone initialization using $timeout
@@ -33,8 +70,8 @@ oneApp.controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemDataSourceSe
 
     function initializeGridApi () {
         // Initialize GridApi listeners
-        $scope.gridApi.onRowsSelectionChanged($scope, function () {
-            console.log($scope.gridApi.getSelectedRows()); // eslint-disable-line
+        $scope.grid.api.onSelectionChanged($scope, function () {
+            console.log($scope.grid.api.getSelection()); // eslint-disable-line
         });
     }
 }]);

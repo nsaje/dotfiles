@@ -1,0 +1,39 @@
+<div class="zem-grid-header-cell-checkbox zem-grid-cell" ng-style="ctrl.getStyle()">
+    <div class="zem-grid-cell-checkbox" ng-if="ctrl.options.filtersEnabled && !ctrl.options.customFilters">
+        <input class="allFilterCheckbox"
+               type="checkbox"
+               data-ng-model="ctrl.allFilterChecked"
+               ng-click="ctrl.toggleAllFilter($event)"
+        />
+    </div>
+
+    <div class="dropdown" ng-if="ctrl.options.filtersEnabled && ctrl.options.customFilters">
+        <div class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <input class="allFilterCheckbox"
+                   type="checkbox"
+                   data-ng-model="ctrl.allFilterChecked"
+                   ng-click="ctrl.toggleAllFilter($event)"
+            />
+            <div class="drop-arrow"></div>
+        </div>
+        <ul class="dropdown-menu" role="menu">
+            <li role="presentation" ng-repeat="customFilter in ctrl.options.customFilters">
+                <div ng-if="customFilter.type ===  ctrl.zemGridConstants.gridSelectionCustomFilterType.ITEM" class="link">
+                    <div role="menuitem" tabindex="-1" ng-click="ctrl.selectCustomFilter(customFilter.filter)">
+                        {{ customFilter.filter.name }}
+                    </div>
+                </div>
+                <div ng-if="customFilter.type === ctrl.zemGridConstants.gridSelectionCustomFilterType.LIST" class="link-list">
+                    <div class="link-list-name">{{ customFilter.name }}:</div>
+                    <div class="link-list-items">
+                        <div class="link-list-item" ng-repeat="filter in customFilter.filters">
+                            <div role="menuitem" tabindex="-1" ng-click="ctrl.selectCustomFilter(filter)">
+                                {{ filter.name }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>

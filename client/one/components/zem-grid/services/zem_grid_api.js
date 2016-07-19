@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp, angular */
 'use strict';
 
 oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($rootScope, zemGridStorageService) { // eslint-disable-line max-len
@@ -14,7 +14,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
     var EVENTS = {
         COLUMNS_LOADED: 'zem-grid-api-columns-loaded',
         ROWS_LOADED: 'zem-grid-api-rows-loaded',
-        ROWS_SELECTION_CHANGED: 'zem-grid-api-rows-selection-changed',
+        SELECTION_CHANGED: 'zem-grid-api-rows-selection-changed',
         ROWS_COLLAPSE_CHANGED: 'zem-grid-api-rows-collapse-changed',
         COLUMNS_VISIBILITY_CHANGED: 'zem-grid-api-columns-visibility-changed',
     };
@@ -29,18 +29,18 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         this.getRows = getRows;
         this.getColumns = getColumns;
         this.getVisibleColumns = getVisibleColumns;
-        this.getSelectedRows = getSelectedRows;
         this.getVisibleRows = getVisibleRows;
+        this.getSelection  = getSelection;
 
         this.setCollapsedRows = setCollapsedRows;
         this.setCollapsedLevel = setCollapsedLevel;
-        this.setSelectedRows = setSelectedRows;
+        this.setSelection = setSelection;
         this.setVisibleColumns = setVisibleColumns;
 
         this.onRowsLoaded = onRowsLoaded;
         this.onColumnsLoaded = onColumnsLoaded;
+        this.onSelectionChanged = onSelectionChanged;
         this.onRowsCollapseChanged = onRowsCollapseChanged;
-        this.onRowsSelectionChanged = onRowsSelectionChanged;
         this.onColumnsVisibilityChanged = onColumnsVisibilityChanged;
 
         // Initialize API
@@ -53,6 +53,9 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             });
             grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.METADATA_UPDATED, function () {
                 notifyListeners(EVENTS.COLUMNS_LOADED, getColumns());
+            });
+            grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.EXT_SELECTION_UPDATED, function () {
+                notifyListeners(EVENTS.SELECTION_CHANGED, getColumns());
             });
         }
 
@@ -80,14 +83,10 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             setCollapsedRows(rows, collapsed);
         }
 
-        function setSelectedRows (rows, selected) {
-            if (!Array.isArray(rows)) rows = [rows];
-
-            rows.forEach(function (row) {
-                row.selected = selected;
-            });
-
-            notifyListeners(EVENTS.ROWS_SELECTION_CHANGED, rows);
+        function setSelection (selection) {
+            grid.ext.selection = selection;
+            grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.EXT_SELECTION_UPDATED);
+            notifyListeners(EVENTS.SELECTION_CHANGED, grid.ext.selection);
         }
 
         function setVisibleColumns (columns, visible) {
@@ -122,19 +121,8 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             return rows;
         }
 
-        function getSelectedRows () {
-            var selectedData = [];
-            grid.body.rows.forEach(function (row) {
-                if (row.selected) {
-                    selectedData.push(row);
-                }
-            });
-
-            if (grid.footer.row && grid.footer.row.selected) {
-                selectedData.push(grid.footer.row);
-            }
-
-            return selectedData;
+        function getSelection () {
+            return grid.ext.selection;
         }
 
         function getVisibleRows () {
@@ -161,8 +149,8 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             registerListener(EVENTS.ROWS_LOADED, scope, callback);
         }
 
-        function onRowsSelectionChanged (scope, callback) {
-            registerListener(EVENTS.ROWS_SELECTION_CHANGED, scope, callback);
+        function onSelectionChanged (scope, callback) {
+            registerListener(EVENTS.SELECTION_CHANGED, scope, callback);
         }
 
         function onRowsCollapseChanged (scope, callback) {

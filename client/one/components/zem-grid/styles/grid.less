@@ -51,13 +51,11 @@
             }
 
             .zem-grid-cell-checkbox {
-                max-width: 40px;
                 input {
                     width: 100%;
                     margin: 0;
                     display: inline-block;
                     vertical-align: middle;
-
                 }
             }
 
@@ -120,21 +118,87 @@
 
         .zem-grid-header {
             font-weight: 500;
-            zem-internal-feature {
-                margin-right: 5px;
-                margin-top: 15px;
-                content: " ";
+            .zem-grid-header-cell {
                 display: inline-block;
-                vertical-align: top;
-                border-top: 7px solid @internal-color;
-                border-right: 7px solid transparent;
             }
-            .zem-grid-cell {
+            .zem-grid-header-cell-data {
+                zem-internal-feature {
+                    margin-right: 5px;
+                    margin-top: 15px;
+                    content: " ";
+                    display: inline-block;
+                    vertical-align: top;
+                    border-top: 7px solid @internal-color;
+                    border-right: 7px solid transparent;
+                }
                 .ordered {
                     .arrow-down();
                 }
                 .ordered-reverse {
                     .arrow-up();
+                }
+            }
+
+            .zem-grid-header-cell-checkbox {
+                overflow: visible;
+                .dropdown {
+                    display:inline-block;
+                    position: relative;
+                    line-height: 30px;
+
+                    .btn {
+                        padding: 4px 8px;
+                        border-color: #bbb;
+                    }
+                    input {
+                        margin: 0;
+                        vertical-align: middle;
+                    }
+
+                    &:not(.open) .drop-arrow {
+                        .arrow-down();
+                        top: 1px;
+                        margin-left: 0;
+                    }
+                    &.open .drop-arrow {
+                        .arrow-up();
+                        margin-left: 0;
+                    }
+
+                    .dropdown-menu {
+                        padding: 8px 10px;
+
+                        .link {
+                            font-weight: 300;
+                            cursor: pointer;
+                            &:hover {
+                                text-decoration: underline;
+                            }
+                        }
+
+                        .link-list {
+                            .link-list-name {
+                                vertical-align: top;
+                                display: inline-block;
+                                font-weight: 300;
+                                line-height: 22px;
+                            }
+
+                            .link-list-items {
+                                vertical-align: top;
+                                display: inline-block;
+                                font-weight: 400;
+                                line-height: 22px;
+
+                                .link-list-item {
+                                    cursor: pointer;
+                                    &:hover {
+                                        text-decoration: underline;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -39,6 +39,10 @@ oneApp.factory('zemGridObject', [function () {
             element: null,      // zem-grid dom element
             columnsWidths: [],  // columns widths used by grid cells
         };
+
+        this.ext = {            // extension objects (placeholder)
+            selection: null,    // selection extensions
+        };
     }
 
     function createUiObject () {

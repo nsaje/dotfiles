@@ -42,4 +42,13 @@ oneApp.constant('zemGridConstants', {
         DEFAULT_ICON_SIZE: 20,
         DEFAULT_SCROLLER_WIDTH: 20,
     },
+    gridSelectionFilterType: {
+        NONE: 0,
+        ALL: 1,
+        CUSTOM: 2,
+    },
+    gridSelectionCustomFilterType: {
+        ITEM: 1,
+        LIST: 2,
+    },
 });

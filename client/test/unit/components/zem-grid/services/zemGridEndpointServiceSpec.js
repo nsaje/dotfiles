@@ -42,6 +42,7 @@ describe('zemGridEndpointServiceSpec', function () {
             categories: jasmine.any(Array),
             breakdownGroups: jasmine.any(Array),
             localStoragePrefix: jasmine.any(String),
+            ext: jasmine.any(Object),
         };
 
         var variations = [

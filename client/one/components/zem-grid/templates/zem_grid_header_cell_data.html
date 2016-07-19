@@ -1,0 +1,20 @@
+<div class="zem-grid-header-cell-data zem-grid-cell">
+    <zem-internal-feature ng-if="ctrl.column.data.internal"></zem-internal-feature>
+
+    <span ng-switch="ctrl.column.data.order">
+        <a ng-switch-when='true' href ng-class="ctrl.column.data.nameCssClass"
+           ng-click="ctrl.setOrder(column)">
+            {{ ctrl.column.data.name }}
+        </a>
+        <span ng-switch-default ng-class="ctrl.column.data.nameCssClass">
+            {{ ctrl.column.data.name }}
+        </span>
+    </span>
+
+    <span ng-class="ctrl.getOrderClass()"></span>
+
+    <zem-help-popover ng-if="ctrl.column.data.help"
+                      content="{{ ctrl.column.data.help }}"
+                      placement="{{ $last ? 'left' : 'top' }}">
+    </zem-help-popover>
+</div>

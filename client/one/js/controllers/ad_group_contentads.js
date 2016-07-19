@@ -1,5 +1,5 @@
 /* globals oneApp, options, angular, constants, moment */
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService',  'zemDataSourceService', 'zemGridEndpointService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemGridConstants', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService',  'zemDataSourceService', 'zemGridEndpointService', function ($scope, $window, $state, $modal, $location, $q, api, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -886,11 +886,53 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         dataSource.setDateRange($scope.dateRange, false);
         dataSource.setOrder($scope.order, false);
 
+        var options = {
+            selection: {
+                enabled: true,
+                filtersEnabled: true,
+                levels: [1],
+                customFilters: [
+                    {
+                        type: zemGridConstants.gridSelectionCustomFilterType.LIST,
+                        name: 'Upload batch',
+                        filters: []
+                    }
+                ]
+            }
+        };
+
         $scope.grid = {
             api: undefined,
-            options: undefined,
+            options: options,
             dataSource: dataSource,
         };
+
+        $scope.$watch('grid.api', function (newValue, oldValue) {
+            if (newValue === oldValue) return; // Equal when watch is initialized (AngularJS docs)
+            initializeGridApi();
+        });
+    }
+
+    function initializeGridApi () {
+        $scope.grid.api.onColumnsLoaded($scope, function () {
+            var metaData = $scope.grid.api.getMetaData();
+            if (!metaData.ext.batches) return;
+
+            function createFilterCallback (batchId) {
+                return function (row) {
+                    return row.data.stats['batch_id'].value === batchId;
+                };
+            }
+
+            var filters = metaData.ext.batches.map(function (batch) {
+                return {
+                    name: batch.name,
+                    callback: createFilterCallback(batch.id),
+                    batch: batch, // store for later use
+                };
+            });
+            $scope.grid.options.selection.customFilters[0].filters = filters;
+        });
     }
 
     $scope.pollTableUpdates = function () {

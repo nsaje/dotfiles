@@ -117,6 +117,7 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
             categories: categories,
             breakdownGroups: breakdownGroups,
             localStoragePrefix: 'zem-grid-endpoint-' + level + '-' + breakdown,
+            ext: {} // extensions placeholder
         };
     }
 
@@ -124,9 +125,14 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
         zemGridEndpointColumns.updateConversionGoalColumns(metaData.columns, breakdown.conversionGoals);
         zemGridEndpointColumns.updateOptimizationGoalColumns(metaData.columns, breakdown.campaignGoals);
 
-        metaData.enablingAutopilotSourcesAllowed = true;
+        if (breakdown.batches) {
+            metaData.ext.batches = breakdown.batches;
+            delete breakdown.batches;
+        }
+
+        metaData.ext.enablingAutopilotSourcesAllowed = true;
         if (breakdown.enablingAutopilotSourcesAllowed !== undefined) {
-            metaData.enablingAutopilotSourcesAllowed = breakdown.enablingAutopilotSourcesAllowed;
+            metaData.ext.enablingAutopilotSourcesAllowed = breakdown.enablingAutopilotSourcesAllowed;
             delete breakdown.enablingAutopilotSourcesAllowed;
         }
     }

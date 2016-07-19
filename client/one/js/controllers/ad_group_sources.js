@@ -845,9 +845,11 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         dataSource.setOrder($scope.order, false);
 
         var options = {
-            enableSelection: true,
-            enableTotalsSelection: true,
-            maxSelectedRows: 4,
+            selection: {
+                enabled: true,
+                levels: [0, 1],
+                maxSelected: 4,
+            }
         };
 
         // GridApi is defined by zem-grid in initialization, therefor
@@ -866,8 +868,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     function initializeGridApi () {
         // Initialize GridApi listeners
-        $scope.grid.api.onRowsSelectionChanged($scope, function () {
-            var selectedRows = $scope.grid.api.getSelectedRows();
+        $scope.grid.api.onSelectionChanged($scope, function () {
+            var selectedRows = $scope.grid.api.getSelection().selected;
 
             $scope.selectedTotals = false;
             $scope.selectedSourceIds = [];
@@ -887,13 +889,15 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         });
 
         $scope.grid.api.onRowsLoaded($scope, function (event, rows) {
+            var selection = $scope.grid.api.getSelection();
             rows.forEach(function (row) {
-                if (row.level === 0)
-                    row.selected = $scope.selectedTotals;
-                if (row.level === 1) {
-                    row.selected = $scope.selectedSourceIds.indexOf(row.data.breakdownId) >= 0;
+                if (row.level === 0 && $scope.selectedTotals)
+                    selection.selected.push(row);
+                if (row.level === 1 && $scope.selectedSourceIds.indexOf(row.data.breakdownId) >= 0) {
+                    selection.selected.push(row);
                 }
             });
+            $scope.grid.api.setSelection(selection);
         });
     }
 

@@ -408,6 +408,12 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
+        batchId: {
+            shown: false, // not shown, but it is internally used
+            name: 'Batch Id',
+            field: 'batch_id',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+        },
         batchName: {
             name: 'Batch Name',
             field: 'batch_name',
@@ -1002,6 +1008,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.label,
         // TODO: impression trackers
         COLUMNS.uploadTime,
+        COLUMNS.batchId,
         COLUMNS.batchName,
     ];
 
@@ -1297,8 +1304,19 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         });
     }
 
+    function findColumnByField (field) {
+        if (!findColumnByField.cache) {
+            findColumnByField.cache = {};
+            angular.forEach(COLUMNS, function (column) {
+                findColumnByField.cache[column.field] = column;
+            });
+        }
+        return findColumnByField.cache[field];
+    }
+
     return {
         COLUMNS: COLUMNS,
+        findColumnByField: findColumnByField,
         createColumns: createColumns,
         createCategories: createCategories,
         updateConversionGoalColumns: updateConversionGoalColumns,

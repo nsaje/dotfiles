@@ -19,6 +19,7 @@ describe('zemGridCellStateSelector', function () {
                 data: {
                     level: '',
                     breakdown: '',
+                    ext: {},
                 },
                 service: {},
             },
@@ -44,6 +45,7 @@ describe('zemGridCellStateSelector', function () {
                     data: {
                         level: test.level,
                         breakdown: test.breakdown,
+                        ext: {},
                     },
                 },
             };

@@ -14,6 +14,7 @@ oneApp.factory('zemGridPubSub', [function () {
         BODY_VERTICAL_SCROLL: 'zem-grid-pubsub-bodyVerticalScroll',
         METADATA_UPDATED: 'zem-grid-pubsub-metadataUpdated',
         DATA_UPDATED: 'zem-grid-pubsub-dataUpdated',
+        EXT_SELECTION_UPDATED: 'zem-grid-ext-selection-updated',
     };
 
     function PubSub (scope) {
