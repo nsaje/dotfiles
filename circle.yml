@@ -20,6 +20,7 @@ dependencies:
         - pip install -r server/requirements_dev.txt
         - pip install awscli
         - pip install pep8
+        - pip install xenon
         - npm install -g eslint
         - npm install -g bower
         - npm install -g grunt

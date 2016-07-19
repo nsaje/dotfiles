@@ -6,6 +6,12 @@ function blue {
   echo -e "\e[34m$1\e[0m"
 }
 
+function green {
+  echo -e "\e[32m$1\e[0m"
+}
+
+# PEP 8 ------------------------------------------------------------------------
+
 blue "PEP8 lint in progress ..."
 pep8 \
   --first \
@@ -20,7 +26,9 @@ if [ $? != 0 ]
     red "+-------------------------+"
     exit 1
 fi
-blue "PEP8 check successful"
+green "PEP8 check successful"
+
+# ES Lint ----------------------------------------------------------------------
 
 blue "ESLint in progress ..."
 eslint client/one/js
@@ -32,4 +40,21 @@ if [ $? != 0 ]
     red "+---------------------------+"
     exit 1
 fi
-blue "ESLint check successful"
+green "ESLint check successful"
+
+# Xenon ------------------------------------------------------------------------
+
+blue "Xenon (cyclomatic complexity) check in progress ..."
+xenon \
+  --max-absolute D \
+  -e "server/dash/table.py,server/dash/views/views.py" \
+  ./server/
+
+if [ $? != 0 ]
+  then
+    red "+---------------------------+"
+    red "|    XENON CHECK FAILED     |"
+    red "+---------------------------+"
+    exit 1
+fi
+green "Xenon check successful"
