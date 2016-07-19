@@ -1599,7 +1599,7 @@ class MinimumBudgetAmountTestCase(TestCase):
 
         budget = dash.models.BudgetLineItem.objects.get(pk=1)
         self.assertEqual(
-            campaign_stop.get_minimum_budget_amount(budget, budget.campaign),
+            campaign_stop.get_minimum_budget_amount(budget),
             None  # not active
         )
 
@@ -1609,8 +1609,8 @@ class MinimumBudgetAmountTestCase(TestCase):
         campaign_settings.save(None)
 
         self.assertEqual(
-            campaign_stop.get_minimum_budget_amount(budget, budget.campaign),
-            None,  # not in landing mode
+            campaign_stop.get_minimum_budget_amount(budget),
+            None,  # automatic campaign stop not enabled
         )
 
         campaign_settings = budget.campaign.get_current_settings().copy_settings()
@@ -1618,7 +1618,7 @@ class MinimumBudgetAmountTestCase(TestCase):
         campaign_settings.save(None)
 
         self.assertEqual(
-            campaign_stop.get_minimum_budget_amount(budget, budget.campaign),
+            campaign_stop.get_minimum_budget_amount(budget),
             Decimal('294.4444444444444444444444444')  # max daily budgets without spend
         )
 
@@ -1631,7 +1631,7 @@ class MinimumBudgetAmountTestCase(TestCase):
         )
 
         self.assertEqual(
-            campaign_stop.get_minimum_budget_amount(budget, budget.campaign),
+            campaign_stop.get_minimum_budget_amount(budget),
             Decimal('541.9444444444444444444444444')  # max daily budgets without spend
         )
 
@@ -1644,7 +1644,7 @@ class MinimumBudgetAmountTestCase(TestCase):
         )
 
         self.assertEqual(
-            campaign_stop.get_minimum_budget_amount(budget, budget.campaign),
+            campaign_stop.get_minimum_budget_amount(budget),
             Decimal('679.4444444444444444444444444')  # max daily budgets without spend
         )
 

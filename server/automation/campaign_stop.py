@@ -133,11 +133,11 @@ def _check_and_resume_campaign(campaign, campaign_settings):
     return False, []
 
 
-def get_minimum_budget_amount(budget_item, campaign):
+def get_minimum_budget_amount(budget_item):
     if budget_item.state() != dash.constants.BudgetLineItemState.ACTIVE:
         return None
 
-    if not campaign.get_current_settings().automatic_campaign_stop:
+    if not budget_item.campaign.get_current_settings().automatic_campaign_stop:
         return None
 
     today = dates_helper.local_today()

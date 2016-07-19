@@ -419,7 +419,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         amount = Decimal(data.get('amount', '0'))
         if amount >= item.instance.amount:
             return
-        min_amount = campaign_stop.get_minimum_budget_amount(item.instance, item.campaign)
+        min_amount = campaign_stop.get_minimum_budget_amount(item.instance)
         if min_amount is None:
             return
 
