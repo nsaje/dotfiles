@@ -1597,14 +1597,28 @@ class MinimumBudgetAmountTestCase(TestCase):
     def test_get_minimum_budget_amount(self, mock_local_today):
         mock_local_today.return_value = datetime.date(2016, 4, 5)
 
+        budget = dash.models.BudgetLineItem.objects.get(pk=1)
         self.assertEqual(
-            campaign_stop.get_minimum_budget_amount(dash.models.BudgetLineItem.objects.get(pk=1)),
+            campaign_stop.get_minimum_budget_amount(budget, budget.campaign),
             None  # not active
         )
 
         budget = dash.models.BudgetLineItem.objects.get(pk=6)
+        campaign_settings = budget.campaign.get_current_settings().copy_settings()
+        campaign_settings.automatic_campaign_stop = False
+        campaign_settings.save(None)
+
         self.assertEqual(
-            campaign_stop.get_minimum_budget_amount(budget),
+            campaign_stop.get_minimum_budget_amount(budget, budget.campaign),
+            None,  # not in landing mode
+        )
+
+        campaign_settings = budget.campaign.get_current_settings().copy_settings()
+        campaign_settings.automatic_campaign_stop = True
+        campaign_settings.save(None)
+
+        self.assertEqual(
+            campaign_stop.get_minimum_budget_amount(budget, budget.campaign),
             Decimal('294.4444444444444444444444444')  # max daily budgets without spend
         )
 
@@ -1617,7 +1631,7 @@ class MinimumBudgetAmountTestCase(TestCase):
         )
 
         self.assertEqual(
-            campaign_stop.get_minimum_budget_amount(budget),
+            campaign_stop.get_minimum_budget_amount(budget, budget.campaign),
             Decimal('541.9444444444444444444444444')  # max daily budgets without spend
         )
 
@@ -1630,7 +1644,7 @@ class MinimumBudgetAmountTestCase(TestCase):
         )
 
         self.assertEqual(
-            campaign_stop.get_minimum_budget_amount(budget),
+            campaign_stop.get_minimum_budget_amount(budget, budget.campaign),
             Decimal('679.4444444444444444444444444')  # max daily budgets without spend
         )
 
