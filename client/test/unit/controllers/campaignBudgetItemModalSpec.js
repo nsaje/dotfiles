@@ -241,6 +241,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
                 id: 1,
                 endDate: '12/25/2015',
                 startDate: '12/1/2015',
+                margin: '20%',
                 credit: {
                     id: 1,
                     name: '123'

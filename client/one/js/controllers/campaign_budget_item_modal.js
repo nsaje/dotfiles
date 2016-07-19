@@ -1,5 +1,5 @@
 /* globals angular,oneApp,defaults,moment,constants */
-oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$timeout', 'api', 'zemNavigationService', function ($scope, $modalInstance, $timeout, api, zemNavigationService) {
+oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$filter', '$modalInstance', '$timeout', 'api', 'zemNavigationService', function ($scope, $filter, $modalInstance, $timeout, api, zemNavigationService) {
     $scope.today = moment().format('M/D/YYYY');
     $scope.isNew = true;
     $scope.startDatePicker = {isOpen: false};
@@ -94,6 +94,10 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
                 $scope.selectedBudgetId
             ).then(function (data) {
                 $scope.budgetItem = data;
+                $scope.budgetItem.margin = $filter('number')(
+                    $scope.budgetItem.margin.replace('%', ''),
+                    2
+                );
 
                 $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
                 $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();

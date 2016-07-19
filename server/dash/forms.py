@@ -802,6 +802,11 @@ class CreditLineItemForm(forms.ModelForm):
 
 class BudgetLineItemForm(forms.ModelForm):
     credit = forms.ModelChoiceField(queryset=models.CreditLineItem.objects.all())
+    margin = forms.DecimalField(
+        decimal_places=4,
+        max_digits=5,
+        required=False,
+    )
 
     def clean_start_date(self):
         start_date = self.cleaned_data['start_date']
@@ -828,7 +833,8 @@ class BudgetLineItemForm(forms.ModelForm):
     class Meta:
         model = models.BudgetLineItem
         fields = [
-            'campaign', 'credit', 'start_date', 'end_date', 'amount', 'comment'
+            'campaign', 'credit', 'start_date', 'end_date',
+            'amount', 'comment', 'margin'
         ]
 
 

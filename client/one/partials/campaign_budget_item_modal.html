@@ -85,10 +85,25 @@
             </div>
             <label ng-repeat="error in errors.amount" class="col-xs-5 control-label error" for="amount">{{ error }}</label>
         </div>
-		<div class="row">
-			<p class="col-xs-3"></p>
-			<p ng-if="isInLanding()" class="col-xs-9 text-info">Add at least ${{ minAmount | number:2 }} to adjust media sources by your needs.</p>
-		</div>
+        <div class="form-group" ng-class="{'has-error': !!errors.margin}" ng-if="hasPermission('zemauth.can_manage_agency_margin')">
+            <label for="margin-input" class="col-xs-3 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_manage_agency_margin')"></zem-internal-feature>
+                Margin (%)
+            </label>
+            <div class="col-xs-4">
+                <ui-select theme="select2" id="margin-select" class="form-control" ng-model="budgetItem.margin" ng-disabled="!isNew">
+                    <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
+                    <ui-select-choices repeat="fee in getLicenseFees($select.search, budgetItem.margin) | filter: $select.search">
+                        <span ng-bind-html="fee"></span>%
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+            <label ng-repeat="error in errors.margin" class="col-xs-5 control-label error" for="margin-input">{{ error }}</label>
+        </div>
+        <div class="row">
+            <p class="col-xs-3"></p>
+            <p ng-if="isInLanding()" class="col-xs-9 text-info">Add at least ${{ minAmount | number:2 }} to adjust media sources by your needs.</p>
+        </div>
         <div class="form-group" ng-class="{'has-error': !!errors.comment}">
             <label for="comment-input" class="col-xs-3 control-label">
                 Notes

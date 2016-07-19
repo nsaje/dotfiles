@@ -710,6 +710,56 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         ).order_by('-created_dt').first()
         self.assertEquals(self.user, hist.created_by)
 
+    @patch('automation.campaign_stop.perform_landing_mode_check')
+    def test_put_margin_no_permission(self, mock_lmode):
+        mock_lmode.return_value = False
+        credit_id = 2
+        data = {
+            'credit': credit_id,
+            'amount': '1000',
+            'start_date': '2015-10-01',
+            'end_date': '2015-10-31',
+            'margin': '20%',
+            'comment': 'Comment'
+        }
+        models.CreditLineItem.objects.filter(pk=credit_id).update(status=constants.CreditLineItemStatus.SIGNED)
+
+        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 9, 30)
+            response = self.client.put(url, json.dumps(data), content_type='application/json')
+        print response.content
+        self.assertEqual(response.status_code, 200)
+
+        insert_id = int(json.loads(response.content)['data'])
+        self.assertEqual(
+            models.BudgetLineItem.objects.get(pk=insert_id).margin,
+            models.BudgetLineItem._meta.get_field('margin').default)
+
+    @patch('automation.campaign_stop.perform_landing_mode_check')
+    def test_put_margin(self, mock_lmode):
+        mock_lmode.return_value = False
+        credit_id = 2
+        data = {
+            'credit': credit_id,
+            'amount': '1000',
+            'start_date': '2015-10-01',
+            'end_date': '2015-10-31',
+            'margin': '20%',
+            'comment': 'Comment'
+        }
+        models.CreditLineItem.objects.filter(pk=credit_id).update(status=constants.CreditLineItemStatus.SIGNED)
+
+        self.add_permission('can_manage_agency_margin')
+        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 9, 30)
+            response = self.client.put(url, json.dumps(data), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        insert_id = int(json.loads(response.content)['data'])
+        self.assertEqual(models.BudgetLineItem.objects.get(pk=insert_id).margin, Decimal('0.2'))
+
 
 class CampaignBudgetItemViewTest(BCMViewTestCase):
 
@@ -731,6 +781,39 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
                 "is_updatable": True,
                 "amount": 100000,
                 "end_date": "2015-11-30",
+                "state": 1,
+                "created_at": "2014-06-04T05:58:21",
+                "credit": {
+                    "license_fee": "0.2000",
+                    "id": 1,
+                    "name": "1 - test account 1 - $100000 - from 2015-10-01 to 2015-11-30",
+                },
+                "start_date": "2015-10-01",
+                "created_by": "ziga.stopinsek@zemanta.com"
+            }
+        )
+
+    def test_get_with_margin(self):
+        url = reverse('campaigns_budget_item', kwargs={
+            'campaign_id': 1,
+            'budget_id': 1,
+        })
+
+        self.add_permission('can_manage_agency_margin')
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 10, 11)
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json.loads(response.content)['data'],
+            {
+                "comment": "Test case",
+                "is_editable": False,
+                "is_updatable": True,
+                "amount": 100000,
+                "end_date": "2015-11-30",
+                "margin": "15%",
                 "state": 1,
                 "created_at": "2014-06-04T05:58:21",
                 "credit": {
@@ -808,6 +891,39 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             level=constants.HistoryLevel.CAMPAIGN,
         ).order_by('-created_dt').first()
         self.assertEquals(self.user, hist.created_by)
+
+    @patch('automation.campaign_stop.perform_landing_mode_check')
+    def test_post_margin(self, mock_lmode):
+        data = {}
+        mock_lmode.return_value = False
+        url = reverse('campaigns_budget_item', kwargs={
+            'campaign_id': 1,
+            'budget_id': 1,
+        })
+
+        data = {
+            'credit': 1,
+            'start_date': '2015-10-01',
+            'end_date': '2015-11-30',
+            'margin': '50%',
+            'amount': 1000,
+            'comment': 'Test case test_post',
+        }
+        models.CreditLineItem.objects.filter(id=1).update(status=constants.CreditLineItemStatus.SIGNED)
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 9, 30)
+            response = self.client.post(url, json.dumps(data),
+                                        content_type='application/json')
+        print response
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json.loads(response.content)['data'],
+            {'id': 1, 'state_changed': False}
+        )
+        self.assertEqual(
+            models.BudgetLineItem.objects.get(id=1).margin,
+            Decimal('0.15'),
+        )  # no change
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')

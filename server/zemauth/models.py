@@ -204,6 +204,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_filter_by_agency', 'Can filter by agency'),
             ('can_filter_by_account_type', 'Can filter by account type'),
             ('can_access_agency_infobox', 'Can access info box on all accounts agency level'),
+            ('can_manage_agency_margin', 'User can define margin in budget line item.'),
         )
 
     def get_full_name(self):

@@ -126,6 +126,7 @@
         campaign_id: 1 # test campaign 1
         start_date: '2015-10-01'
         end_date: '2015-11-30'
+        margin: 0.15
         amount: 100000
         comment: 'Test case'
     model: dash.budgetlineitem

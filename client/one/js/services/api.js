@@ -2796,6 +2796,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     isEditable: obj.is_editable,
                     isUpdatable: obj.is_updatable,
                     available: obj.available,
+                    margin: obj.margin,
                     comment: obj.comment
                 };
             },
@@ -2805,6 +2806,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     amount: obj.amount,
                     start_date: moment(obj.startDate).format('YYYY-MM-DD'),
                     end_date: moment(obj.endDate).format('YYYY-MM-DD'),
+                    margin: obj.margin,
                     comment: obj.comment
                 };
             },
@@ -2814,6 +2816,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     amount: resp.data.data.errors.amount,
                     startDate: resp.data.data.errors.start_date,
                     endDate: resp.data.data.errors.end_date,
+                    margin: resp.data.data.errors.margin,
                     comment: resp.data.data.errors.comment,
                     credit: resp.data.data.errors.credit
                 };

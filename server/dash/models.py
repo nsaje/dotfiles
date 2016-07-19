@@ -3218,6 +3218,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         'end_date',
         'amount',
         'freed_cc',
+        'margin',
         'comment',
     ]
 
@@ -3228,6 +3229,11 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
     credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
     start_date = models.DateField()
     end_date = models.DateField()
+    margin = models.DecimalField(
+        decimal_places=4,
+        max_digits=5,
+        default=Decimal('0'),
+    )
 
     amount = models.IntegerField()
     freed_cc = models.BigIntegerField(default=0)
@@ -3258,6 +3264,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             'end_date': 'End Date',
             'amount': 'Amount',
             'freed_cc': 'Freed',
+            'margin': 'Margin',
             'comment': 'Comment',
         }
         return NAMES.get(prop_name)
@@ -3272,6 +3279,8 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
                 Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
+        elif prop_name == 'margin' and value is not None:
+            value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value)*100, 2, 3))
         elif prop_name == 'comment':
             value = value or ''
         return value
@@ -3432,6 +3441,10 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
     def clean(self):
         if self.pk:
             db_state = self.db_state()
+            if self.has_changed('margin'):
+                raise ValidationError({
+                    'margin': 'Margin can only be set on newly created budgets.',
+                })
             if self.has_changed('start_date') and not db_state == constants.BudgetLineItemState.PENDING:
                 raise ValidationError('Only pending budgets can change start date and amount.')
             is_reserve_update = all([
@@ -3477,6 +3490,12 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             raise ValidationError('End date cannot be bigger than the credit\'s end date.')
         if self.start_date and self.start_date > self.end_date:
             raise ValidationError('Start date cannot be bigger than the end date.')
+
+    def validate_margin(self):
+        if not self.margin:
+            return
+        if not (0 <= self.margin < 1):
+            raise ValidationError('Margin must be between 0 and 100%.')
 
     def validate_amount(self):
         if self.has_changed('amount') and \

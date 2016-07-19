@@ -5,7 +5,6 @@ from dash import models, constants, forms
 from utils import api_common, exc
 from dash.views import helpers
 from automation import campaign_stop
-from django.db.models import Q
 
 
 class AccountCreditView(api_common.BaseApiView):
@@ -229,6 +228,11 @@ class CampaignBudgetView(api_common.BaseApiView):
         data.update(request_data)
 
         data['campaign'] = campaign.id
+        if 'margin' in data:
+            if not request.user.has_perm('zemauth.can_manage_agency_margin'):
+                del data['margin']
+            else:
+                data['margin'] = helpers.format_percent_to_decimal(data['margin'])
 
         item = forms.BudgetLineItemForm(data)
         if item.errors:
@@ -351,7 +355,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             campaign_id=campaign_id,
             pk=budget_id,
         )
-        return self._get_response(item)
+        return self._get_response(request.user, item)
 
     def post(self, request, campaign_id, budget_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -359,6 +363,11 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         request_data = json.loads(request.body)
         data = {}
         data.update(request_data)
+        if 'margin' in data:
+            if not request.user.has_perm('zemauth.can_manage_agency_margin'):
+                del data['margin']
+            else:
+                data['margin'] = helpers.format_percent_to_decimal(data['margin'])
 
         data['campaign'] = campaign.id
 
@@ -425,8 +434,8 @@ class CampaignBudgetItemView(api_common.BaseApiView):
                 'You can lower the amount on an active budget line item after 12:00 UTC.'
             )
 
-    def _get_response(self, item):
-        return self.create_api_response({
+    def _get_response(self, user, item):
+        response = {
             'amount': item.amount,
             'created_by': str(item.created_by or 'Zemanta One'),
             'created_at': item.created_dt,
@@ -441,4 +450,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
                 'name': str(item.credit),
                 'license_fee': item.credit.license_fee,
             }
-        })
+        }
+        if user.has_perm('zemauth.can_manage_agency_margin'):
+            response['margin'] = helpers.format_decimal_to_percent(item.margin) + '%'
+        return self.create_api_response(response)

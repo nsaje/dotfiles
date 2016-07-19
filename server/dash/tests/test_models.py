@@ -1250,6 +1250,7 @@ class HistoryTest(TestCase):
             , Start Date set to "{sd}"
             , Amount set to "$100.00"
             , Freed set to "$0.00"
+            , Margin set to "0.00%"
             '''.format(budid=budget.id,
                        sd=start_date.isoformat(),
                        ed=end_date.isoformat())
