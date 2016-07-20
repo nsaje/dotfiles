@@ -29,7 +29,7 @@ syspip(){
 }
 
 export WORKON_HOME=~/virtualenvs
-source /usr/bin/virtualenvwrapper.sh
+source /usr/local/bin/virtualenvwrapper.sh
 export TERM=xterm-256color
 
 genpasswd() {
