@@ -554,7 +554,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "data_spend": "0.0000",
                     "campaign_spend": "0.0000",
                     "media_spend": "0.0000",
-                    "license_fee": "0.0000"
+                    "license_fee": "0.0000",
                 }
             }
         })
@@ -604,7 +604,63 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "data_spend": "0.0000",
                     "campaign_spend": "0.0000",
                     "media_spend": "0.0000",
-                    "license_fee": "0.0000"
+                    "license_fee": "0.0000",
+                }
+            }
+        })
+
+    def test_get_with_margin(self):
+        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
+
+        self.add_permission('can_view_agency_margin')
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 9, 11)
+            response = self.client.get(url)
+
+        data = json.loads(response.content)['data']
+        self.assertEqual(data, {
+            "active": [
+                {
+                    "available": "100000.0000",
+                    "is_editable": True,
+                    "is_updatable": False,
+                    "state": 2,
+                    "end_date": "2015-11-30",
+                    "license_fee": "20%",
+                    u"margin": u"15%",
+                    "total": "100000.0000",
+                    "spend": "0.0000",
+                    "id": 1,
+                    "comment": "Test case",
+                    "start_date": "2015-10-01",
+                }
+            ],
+            "past": [],
+            "credits": [
+                {
+                    "available": "0.0000",
+                    "end_date": "2015-11-30",
+                    "id": 1,
+                    "is_available": False,
+                    "comment": "Test case",
+                    "license_fee": "20",
+                    "total": "100000.0000",
+                    "start_date": "2015-10-01"
+                }
+            ],
+            "min_amount": 0,
+            "totals": {
+                "current": {
+                    "available": "100000.0000",
+                    "past": "0.0000",
+                    "unallocated": "0.0000"
+                },
+                "lifetime": {
+                    "data_spend": "0.0000",
+                    "campaign_spend": "0.0000",
+                    "media_spend": "0.0000",
+                    "license_fee": "0.0000",
+                    "margin": "0.0000",
                 }
             }
         })
@@ -799,7 +855,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             'budget_id': 1,
         })
 
-        self.add_permission('can_manage_agency_margin')
+        self.add_permission('can_view_agency_margin')
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 10, 11)
@@ -1114,6 +1170,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
 
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
 
+        self.add_permission('can_view_agency_margin')
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = today
             response = self.client.get(url)
@@ -1129,6 +1186,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     u"state": 1,
                     u"end_date": u"2015-11-30",
                     u"license_fee": u"20%",
+                    u"margin": u"15%",
                     u"total": "100000.0000",
                     u"spend": u"210.5000",
                     u"id": 2,
@@ -1142,6 +1200,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     u"state": 1,
                     u"end_date": u"2015-11-30",
                     u"license_fee": u"20%",
+                    u"margin": u"15%",
                     u"total": "100000.0000",
                     u"spend": u"550.0000",
                     u"id": 1,
@@ -1174,6 +1233,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     u"campaign_spend": u"760.5000",
                     u"media_spend": u"400.0000",
                     u"license_fee": u"60.5000",
+                    u"margin": u"76.0500",
                 }
             }
         })

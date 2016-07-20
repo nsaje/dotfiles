@@ -2839,6 +2839,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         lifetimeMediaSpend: data.totals.lifetime.media_spend,
                         lifetimeDataSpend: data.totals.lifetime.data_spend,
                         lifetimeLicenseFee: data.totals.lifetime.license_fee,
+                        lifetimeMargin: data.totals.lifetime.margin,
                     },
                     credits: data.credits.map(function (obj) {
                         return {

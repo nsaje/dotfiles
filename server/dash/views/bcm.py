@@ -244,10 +244,10 @@ class CampaignBudgetView(api_common.BaseApiView):
 
         return self.create_api_response(item.instance.pk)
 
-    def _prepare_item(self, item):
+    def _prepare_item(self, user, item):
         spend = item.get_spend_data(use_decimal=True)['total']
         allocated = item.allocated_amount()
-        return {
+        result = {
             'id': item.pk,
             'start_date': item.start_date,
             'end_date': item.end_date,
@@ -260,15 +260,18 @@ class CampaignBudgetView(api_common.BaseApiView):
             'is_updatable': item.is_updatable(),
             'comment': item.comment,
         }
+        if user.has_perm('zemauth.can_view_agency_margin'):
+            result['margin'] = helpers.format_decimal_to_percent(item.margin) + '%'
+        return result
 
     def _get_response(self, user, campaign):
         budget_items = models.BudgetLineItem.objects.filter(
             campaign_id=campaign.id,
         ).select_related('credit').order_by('-created_dt')
-        active_budget = self._get_active_budget(budget_items)
+        active_budget = self._get_active_budget(user, budget_items)
         return self.create_api_response({
             'active': active_budget,
-            'past': self._get_past_budget(budget_items),
+            'past': self._get_past_budget(user, budget_items),
             'totals': self._get_budget_totals(user, campaign, active_budget),
             'credits': self._get_available_credit_items(user, campaign),
             'min_amount': campaign_stop.get_min_budget_increase(campaign),
@@ -299,14 +302,14 @@ class CampaignBudgetView(api_common.BaseApiView):
             for credit in available_credits
         ]
 
-    def _get_active_budget(self, items):
-        return [self._prepare_item(b) for b in items if b.state() in (
+    def _get_active_budget(self, user, items):
+        return [self._prepare_item(user, b) for b in items if b.state() in (
             constants.BudgetLineItemState.ACTIVE,
             constants.BudgetLineItemState.PENDING,
         )]
 
-    def _get_past_budget(self, items):
-        return [self._prepare_item(b) for b in items if b.state() in (
+    def _get_past_budget(self, user, items):
+        return [self._prepare_item(user, b) for b in items if b.state() in (
             constants.BudgetLineItemState.DEPLETED,
             constants.BudgetLineItemState.INACTIVE,
         )]
@@ -325,6 +328,10 @@ class CampaignBudgetView(api_common.BaseApiView):
                 'license_fee': Decimal('0.0000'),
             }
         }
+
+        if user.has_perm('zemauth.can_view_agency_margin'):
+            data['lifetime']['margin'] = Decimal('0.0000')
+
         credits = models.CreditLineItem.objects.filter(account=campaign.account)
 
         agency = campaign.account.agency
@@ -345,6 +352,8 @@ class CampaignBudgetView(api_common.BaseApiView):
             data['lifetime']['media_spend'] += spend_data['media']
             data['lifetime']['data_spend'] += spend_data['data']
             data['lifetime']['license_fee'] += spend_data['license_fee']
+            if user.has_perm('zemauth.can_view_agency_margin'):
+                data['lifetime']['margin'] += spend_data['margin']
         return data
 
 
@@ -451,6 +460,6 @@ class CampaignBudgetItemView(api_common.BaseApiView):
                 'license_fee': item.credit.license_fee,
             }
         }
-        if user.has_perm('zemauth.can_manage_agency_margin'):
+        if user.has_perm('zemauth.can_view_agency_margin'):
             response['margin'] = helpers.format_decimal_to_percent(item.margin) + '%'
         return self.create_api_response(response)

@@ -16,6 +16,13 @@
             <div class="value">{{ budgetTotals.lifetimeDataSpend | decimalCurrency:"$":2 }}</div>
             <div class="name">License Fee</div>
             <div class="value">{{ budgetTotals.lifetimeLicenseFee | decimalCurrency:"$":2 }}</div>
+            <div ng-if="hasPermission('zemauth.can_manage_agency_margin')">
+                <div class="name">
+                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_manage_agency_margin')"></zem-internal-feature>
+                    Margin
+                </div>
+                <div class="value">{{ budgetTotals.lifetimeMargin | decimalCurrency:"$":2 }}</div>
+            </div>
         </div>
     </div>
     <div class="section budgets-active-pending">
@@ -27,6 +34,10 @@
                     <th>End Date</th>
                     <th>Budget</th>
                     <th>License Fee</th>
+                    <th ng-if="hasPermission('zemauth.can_manage_agency_margin')">
+                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_manage_agency_margin')"></zem-internal-feature>
+                        Margin
+                    </th>
                     <th>Total Spend</th>
                     <th>Available Budget</th>
                     <th>Notes</th>
@@ -39,6 +50,9 @@
                     <td>{{ item.endDate }}</td>
                     <td>{{ item.total | decimalCurrency:"$":2  }}</td>
                     <td>{{ item.licenseFee  }}</td>
+                    <td ng-if="hasPermission('zemauth.can_manage_agency_margin')">
+                        {{ item.margin  }}
+                    </td>
                     <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
                     <td><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
@@ -65,6 +79,10 @@
                     <th>End Date</th>
                     <th>Total Budget</th>
                     <th>License Fee</th>
+                    <th ng-if="hasPermission('zemauth.can_manage_agency_margin')">
+                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_manage_agency_margin')"></zem-internal-feature>
+                        Margin
+                    </th>
                     <th>Total Spend</th>
                     <th>Available Budget</th>
                     <th>Notes</th>
@@ -78,11 +96,13 @@
 
                     <td>{{ item.total | decimalCurrency:"$":2  }}</td>
                     <td>{{ item.licenseFee  }}</td>
+                    <td ng-if="hasPermission('zemauth.can_manage_agency_margin')">
+                        {{ item.margin  }}
+                    </td>
                     <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
 
                     <td><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
-                    
                     <td>
                         <ul class="row-actions">
                             <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable"><i class="glyphicon glyphicon-pencil" title="edit"></i></li>
