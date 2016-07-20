@@ -839,7 +839,7 @@ class K1ApiTest(TestCase):
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
     def test_update_content_ad_status(self, mock_verify_wsgi_request):
-        response = self.client.post(
+        response = self.client.put(
             reverse('k1api.update_content_ad_status'),
             json.dumps({'content_ad_id': 1, 'source_slug': 'adblade',
                         'submission_status': 2, 'submission_errors': 'my-errors',
@@ -856,7 +856,7 @@ class K1ApiTest(TestCase):
         self.assertEqual(cas.submission_errors, 'my-errors')
         self.assertEqual(cas.source_content_ad_id, '123')
 
-        response = self.client.post(
+        response = self.client.put(
             reverse('k1api.update_content_ad_status'),
             json.dumps({'content_ad_id': 1000, 'source_slug': 'adblade',
                         'submission_status': 2, 'submission_errors': 'my-errors',
@@ -868,7 +868,7 @@ class K1ApiTest(TestCase):
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
     def test_set_source_campaign_key(self, mock_verify_wsgi_request):
-        response = self.client.post(
+        response = self.client.put(
             reverse('k1api.set_source_campaign_key'),
             json.dumps({'ad_group_source_id': 1, 'source_campaign_key': ['abc']}),
             'application/json',
@@ -957,7 +957,7 @@ class K1ApiTest(TestCase):
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
     def test_update_ad_group_source_state(self, mock_verify_wsgi_request):
-        response = self.client.post(
+        response = self.client.put(
             reverse('k1api.update_ad_group_source_state'),
             json.dumps({'ad_group_id': 1,
                         'bidder_slug': 'adblade',
@@ -976,7 +976,7 @@ class K1ApiTest(TestCase):
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
     def test_update_ad_group_source_state_no_ad_group(self, mock_verify_wsgi_request):
-        response = self.client.post(
+        response = self.client.put(
             reverse('k1api.update_ad_group_source_state'),
             json.dumps({'ad_group_id': 12345,
                         'bidder_slug': 'adblade',
@@ -991,7 +991,7 @@ class K1ApiTest(TestCase):
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
     def test_update_ad_group_source_state_incorrect_body(self, mock_verify_wsgi_request):
-        response = self.client.post(
+        response = self.client.put(
             reverse('k1api.update_ad_group_source_state'),
             json.dumps({'conf': {'state': 2}}),
             'application/json'
@@ -1004,7 +1004,7 @@ class K1ApiTest(TestCase):
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
     def test_update_facebook_account(self, mock_verify_wsgi_request):
-        response = self.client.post(
+        response = self.client.put(
             reverse('k1api.update_facebook_account'),
             json.dumps({'status': 5, 'ad_account_id': 'act_555', 'account_id': 1}),
             'application/json'
@@ -1018,7 +1018,7 @@ class K1ApiTest(TestCase):
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
     def test_update_facebook_account_error(self, mock_verify_wsgi_request):
-        response = self.client.post(
+        response = self.client.put(
             reverse('k1api.update_facebook_account'),
             json.dumps({'status': 5, 'ad_account_id': 'act_555'}),
             'application/json'
