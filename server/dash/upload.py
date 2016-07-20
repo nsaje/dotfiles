@@ -252,8 +252,6 @@ def process_callback(callback_data):
 def _augment_candidates_data(ad_group, candidates):
     ad_group_settings = ad_group.get_current_settings()
     for candidate in candidates:
-        if ('display_url' not in candidate or not candidate['display_url']) and candidate.get('url'):
-            candidate['display_url'] = urlparse(candidate['url']).netloc
         if 'brand_name' not in candidate or not candidate['brand_name']:
             candidate['brand_name'] = ad_group_settings.brand_name
         if 'call_to_action' not in candidate or not candidate['call_to_action']:

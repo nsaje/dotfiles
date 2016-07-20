@@ -98,6 +98,42 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual('', candidate.primary_tracker_url)
         self.assertEqual('', candidate.secondary_tracker_url)
 
+    def test_automatic_fields(self):
+        test_candidate = {
+            'url': 'http://zemanta.com/test-content-ad',
+            'title': 'test content ad',
+            'image_url': 'http://zemanta.com/test-image.jpg',
+            'description': 'zemanta content ad',
+        }
+
+        ad_group = models.AdGroup.objects.get(id=1)
+        batch_name = 'batch1'
+        filename = 'test_upload.csv'
+        self.assertEqual(0, models.UploadBatch.objects.filter(ad_group=ad_group).count())
+        self.assertEqual(0, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
+
+        upload.insert_candidates([test_candidate], ad_group, batch_name, filename)
+        self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
+        self.assertEqual(1, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
+
+        batch = models.UploadBatch.objects.filter(ad_group=ad_group).get()
+        self.assertEqual(batch_name, batch.name)
+        self.assertEqual(ad_group, batch.ad_group)
+        self.assertEqual(filename, batch.original_filename)
+
+        candidate = models.ContentAdCandidate.objects.filter(ad_group=ad_group).get()
+        self.assertEqual('', candidate.label)
+        self.assertEqual(test_candidate['url'], candidate.url)
+        self.assertEqual(test_candidate['title'], candidate.title)
+        self.assertEqual(test_candidate['image_url'], candidate.image_url)
+        self.assertEqual('center', candidate.image_crop)
+        self.assertEqual('', candidate.display_url)
+        self.assertEqual('Example', candidate.brand_name)
+        self.assertEqual(test_candidate['description'], candidate.description)
+        self.assertEqual('Read more', candidate.call_to_action)
+        self.assertEqual('', candidate.primary_tracker_url)
+        self.assertEqual('', candidate.secondary_tracker_url)
+
 
 class PersistCandidatesTestCase(TestCase):
     fixtures = ['test_upload.yaml']

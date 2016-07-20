@@ -89,9 +89,10 @@ class UploadCsvTestCase(TestCase):
 
         mock_file = SimpleUploadedFile(
             'test_upload.csv',
-            'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,Secondary impression tracker url,Description\n'
-            'http://example.com/test-content-ad,test content ad,http://zemanta.com/test-image.jpg,test,entropy,'
-            'https://t.zemanta.com/px1.png,https://t.zemanta.com/px2.png,description'
+            'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,'
+            'Secondary impression tracker url,Description,Display URL\nhttp://example.com/test-content-ad,'
+            'test content ad,http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,'
+            'https://t.zemanta.com/px2.png,description,example.com'
         )
         response = _get_client().post(
             reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
@@ -163,10 +164,10 @@ class UploadCsvTestCase(TestCase):
             'description': ['Missing description'],
             'primary_tracker_url': ['Impression tracker URLs have to be HTTPS'],
             'image_url': ['Invalid image URL'],
+            'display_url': ['Missing display URL'],
             'url': ['Invalid URL'],
         }
 
-        self.maxDiff = None
         self.assertEqual(response.status_code, 200)
         self.assertEqual({
             'success': True,
