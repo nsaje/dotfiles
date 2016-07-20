@@ -344,6 +344,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                 's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/01/view_asd.csv',
                 'delimiter': '\t'
             }),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 1)}),
             mock.call(
                 backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s'),
                 {'date': datetime.date(2016, 7, 2)}
@@ -356,6 +357,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                 's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/02/view_asd.csv',
                 'delimiter': '\t'
             }),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
             mock.call(
                 backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s'),
                 {'date': datetime.date(2016, 7, 3)}
@@ -368,6 +370,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                 's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/03/view_asd.csv',
                 'delimiter': '\t'
             }),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
         ])
 
     def test_generate_rows(self):

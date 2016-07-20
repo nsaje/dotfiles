@@ -292,6 +292,10 @@ class MasterView(Materialize):
                     sql, params = prepare_copy_csv_query(s3_path, self.TABLE_NAME)
                     c.execute(sql, params)
 
+                    logger.info('Copying any diff data from mv_master_diff for day %s, job %s', date, self.job_id)
+                    sql, params = self.prepare_copy_diff_data_query(c, date)
+                    c.execute(sql, params)
+
     def generate_rows(self, cursor, date, breakdown_keys_with_traffic):
         skipped_postclick_stats = set()
 
@@ -419,6 +423,12 @@ class MasterView(Materialize):
             'aggregates': models.K1PostclickStats().get_aggregates(),
             'table': 'postclickstats'
         })
+        params = {'date': date}
+
+        return sql, params
+
+    def prepare_copy_diff_data_query(self, cursor, date):
+        sql = backtosql.generate_sql('etl_copy_diff_into_mv_master.sql', None)
 
         params = {'date': date}
 
