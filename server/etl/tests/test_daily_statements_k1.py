@@ -18,6 +18,7 @@ class DailyStatementsK1TestCase(TestCase):
     def setUp(self):
         self.campaign1 = dash.models.Campaign.objects.get(id=1)
         self.campaign2 = dash.models.Campaign.objects.get(id=2)
+        self.campaign3 = dash.models.Campaign.objects.get(id=3)
 
     def _configure_ad_group_stats_mock(self, mock_ad_group_stats, return_values):
         def f(date, all_campaigns):
@@ -55,6 +56,30 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(1500000000000, statements[0].media_spend_nano)
         self.assertEqual(500000000000, statements[0].data_spend_nano)
         self.assertEqual(500000000000, statements[0].license_fee_nano)
+
+    def test_budget_margin(self, mock_ad_group_stats, mock_datetime):
+        return_values = {
+            datetime.date(2016, 7, 15): {
+                self.campaign3.id: {
+                    'media_nano': 1500000000000,
+                    'data_nano': 500000000000,
+                },
+            },
+        }
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2016, 7, 15, 12))
+
+        update_from = datetime.date(2016, 7, 15)
+        daily_statements.reprocess_daily_statements(update_from)
+
+        statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign=self.campaign3).all()
+        self.assertEqual(1, len(statements))
+        self.assertEqual(6, statements[0].budget_id)
+        self.assertEqual(datetime.date(2016, 7, 15), statements[0].date)
+        self.assertEqual(1500000000000, statements[0].media_spend_nano)
+        self.assertEqual(500000000000, statements[0].data_spend_nano)
+        self.assertEqual(500000000000, statements[0].license_fee_nano)
+        self.assertEqual(250000000000, statements[0].margin_nano)
 
     def test_first_day_cost_none(self, mock_ad_group_stats, mock_datetime):
         return_values = {}
@@ -254,7 +279,8 @@ class DailyStatementsK1TestCase(TestCase):
                         date=date,
                         media_spend_nano=0,
                         data_spend_nano=0,
-                        license_fee_nano=0
+                        license_fee_nano=0,
+                        margin_nano=0,
                     )
 
         update_from = datetime.date(2015, 11, 30)

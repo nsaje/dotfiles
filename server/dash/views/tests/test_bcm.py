@@ -1096,6 +1096,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
             media_spend_nano=300 * converters.DOLAR_TO_NANO,
             data_spend_nano=200 * converters.DOLAR_TO_NANO,
             license_fee_nano=50 * converters.DOLAR_TO_NANO,
+            margin_nano=55 * converters.DOLAR_TO_NANO,
         )
 
         # Another budget with daily statement
@@ -1108,6 +1109,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
             media_spend_nano=100 * converters.DOLAR_TO_NANO,
             data_spend_nano=100 * converters.DOLAR_TO_NANO,
             license_fee_nano=105 * (10**8),
+            margin_nano=Decimal('21.05') * converters.DOLAR_TO_NANO,
         )
 
         url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
@@ -1208,6 +1210,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             media_spend_nano=500 * converters.DOLAR_TO_NANO,
             data_spend_nano=0,
             license_fee_nano=50 * converters.DOLAR_TO_NANO,
+            margin_nano=0,
         )
         for num in range(0, 5):
             BudgetDailyStatement.objects.create(
@@ -1216,6 +1219,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 media_spend_nano=800 * converters.DOLAR_TO_NANO,
                 data_spend_nano=0,
                 license_fee_nano=80 * converters.DOLAR_TO_NANO,
+                margin_nano=0,
             )
 
         with patch('utils.dates_helper.local_today') as mock_now:

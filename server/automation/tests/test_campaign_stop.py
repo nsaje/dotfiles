@@ -1628,6 +1628,7 @@ class MinimumBudgetAmountTestCase(TestCase):
             license_fee_nano=22500000000,
             data_spend_nano=0,
             budget=budget,
+            margin_nano=0,
         )
 
         self.assertEqual(
@@ -1641,6 +1642,7 @@ class MinimumBudgetAmountTestCase(TestCase):
             license_fee_nano=12500000000,
             data_spend_nano=0,
             budget=budget,
+            margin_nano=0,
         )
 
         self.assertEqual(

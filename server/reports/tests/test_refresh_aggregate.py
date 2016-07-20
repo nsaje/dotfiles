@@ -193,6 +193,7 @@ class RefreshContentAdStats(test.TestCase):
             media_spend_nano=400000000000,
             data_spend_nano=400000000000,
             license_fee_nano=80000000000,
+            margin_nano=0,
         )
 
         refresh.refresh_contentadstats(date, campaign)
@@ -259,6 +260,7 @@ class RefreshContentAdStats(test.TestCase):
             media_spend_nano=400000000000,
             data_spend_nano=400000000000,
             license_fee_nano=80000000000,
+            margin_nano=0,
         )
 
         models.ContentAdStats.objects.all().delete()
@@ -311,6 +313,7 @@ class RefreshContentAdStats(test.TestCase):
             media_spend_nano=8000000000,
             data_spend_nano=8000000000,
             license_fee_nano=1600000000,
+            margin_nano=0,
         )
 
         refresh.refresh_contentadstats(date, campaign)

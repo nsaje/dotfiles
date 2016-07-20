@@ -4,6 +4,8 @@ from django.db.models import Sum
 
 from utils import converters
 
+TOTALS_FIELDS = ['media_cc', 'data_cc', 'license_fee_cc']
+
 
 def calculate_mtd_spend_data(statements, date=None, use_decimal=False):
     '''
@@ -32,9 +34,10 @@ def calculate_mtd_spend_data(statements, date=None, use_decimal=False):
             media=Sum('media_spend_nano'),
             data=Sum('data_spend_nano'),
             license_fee=Sum('license_fee_nano'),
+            margin=Sum('margin_nano'),
         ).iteritems()
     }
-    spend_data['total_cc'] = sum(spend_data.values())
+    spend_data['total_cc'] = sum(spend_data[field] for field in TOTALS_FIELDS)
     if not use_decimal:
         return spend_data
     return {
@@ -63,9 +66,10 @@ def calculate_spend_data(statements, date=None, use_decimal=False):
             media=Sum('media_spend_nano'),
             data=Sum('data_spend_nano'),
             license_fee=Sum('license_fee_nano'),
+            margin=Sum('margin_nano'),
         ).iteritems()
     }
-    spend_data['total_cc'] = sum(spend_data.values())
+    spend_data['total_cc'] = sum(spend_data[field] for field in TOTALS_FIELDS)
     if not use_decimal:
         return spend_data
     return {

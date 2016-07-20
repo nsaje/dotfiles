@@ -2553,7 +2553,8 @@ class AdGroupOverviewTest(TestCase):
             date=datetime.datetime.today() - datetime.timedelta(days=1),
             media_spend_nano=60 * 10**9,
             data_spend_nano=0,
-            license_fee_nano=0
+            license_fee_nano=0,
+            margin_nano=0,
         )
 
         cursor().diftfetchall.return_value = {

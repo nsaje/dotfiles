@@ -211,6 +211,7 @@ class BudgetDailyStatement(models.Model):
     media_spend_nano = models.BigIntegerField()
     data_spend_nano = models.BigIntegerField()
     license_fee_nano = models.BigIntegerField()
+    margin_nano = models.BigIntegerField()
 
     @property
     def total_spend_nano(self):

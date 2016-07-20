@@ -637,7 +637,8 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             date=start_date,
             media_spend_nano=1000,
             data_spend_nano=0,
-            license_fee_nano=0
+            license_fee_nano=0,
+            margin_nano=0,
         )
 
         add_permissions(r.user, ['can_view_flat_fees', 'can_see_account_type'])
@@ -765,7 +766,8 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             date=start_date,
             media_spend_nano=1000,
             data_spend_nano=0,
-            license_fee_nano=0
+            license_fee_nano=0,
+            margin_nano=0,
         )
 
         add_permissions(r.user, ['can_view_flat_fees', 'can_see_account_type'])

@@ -46,6 +46,7 @@ class AccountCampaignBudgetData(TestCase):
             media_spend_nano=200 * converters.DOLAR_TO_NANO,
             data_spend_nano=50 * converters.DOLAR_TO_NANO,
             license_fee_nano=25 * converters.DOLAR_TO_NANO,
+            margin_nano=0,
         )
 
         create_statement(
@@ -54,6 +55,7 @@ class AccountCampaignBudgetData(TestCase):
             media_spend_nano=200 * converters.DOLAR_TO_NANO,
             data_spend_nano=50 * converters.DOLAR_TO_NANO,
             license_fee_nano=25 * converters.DOLAR_TO_NANO,
+            margin_nano=0,
         )
 
     def test_campaign_budget_data(self):

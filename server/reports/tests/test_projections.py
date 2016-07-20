@@ -23,13 +23,14 @@ class ProjectionsTestCase(test.TestCase):
     def setUp(self):
         self.today = datetime.date(2015, 11, 15)
 
-    def _create_statement(self, budget, date, media=500, data=500, fee=100):
+    def _create_statement(self, budget, date, media=500, data=500, fee=100, margin=0):
         reports.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=date,
             media_spend_nano=media * converters.DOLAR_TO_NANO,
             data_spend_nano=data * converters.DOLAR_TO_NANO,
             license_fee_nano=fee * converters.DOLAR_TO_NANO,
+            margin_nano=margin * converters.DOLAR_TO_NANO,
         )
 
     def _create_batch_statements(self, budgets, start_date, end_date=None):
@@ -158,7 +159,8 @@ class ProjectionsTestCase(test.TestCase):
             date=start_date + datetime.timedelta(days=2),
             media_spend_nano=100,
             data_spend_nano=100,
-            license_fee_nano=100
+            license_fee_nano=100,
+            margin_nano=0,
         )
 
         self._create_batch_statements(
@@ -263,7 +265,8 @@ class ProjectionsTestCase(test.TestCase):
                 date=start_date + datetime.timedelta(days=2),
                 media_spend_nano=100,
                 data_spend_nano=100,
-                license_fee_nano=100
+                license_fee_nano=100,
+                margin_nano=0,
             )
 
         stats = reports.projections.BudgetProjections(

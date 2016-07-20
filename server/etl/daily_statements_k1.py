@@ -77,16 +77,19 @@ def _generate_statements(date, campaign, campaign_spend):
 
         total_media_nano -= attributed_media_nano
         total_data_nano -= attributed_data_nano
+
+        margin_nano = (attributed_media_nano + attributed_data_nano + license_fee_nano) * budget.margin
         reports.models.BudgetDailyStatement.objects.create(
             budget_id=budget.id,
             date=date,
             media_spend_nano=attributed_media_nano,
             data_spend_nano=attributed_data_nano,
-            license_fee_nano=license_fee_nano
+            license_fee_nano=license_fee_nano,
+            margin_nano=margin_nano,
         )
 
     if total_media_nano + total_data_nano > 0:
-        # TODO: over spend
+        # overspend occured, can be handled here
         pass
 
 

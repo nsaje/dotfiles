@@ -248,7 +248,8 @@ class InfoBoxHelpersTest(TestCase):
             date=start_date,
             media_spend_nano=499 * 10**9,
             data_spend_nano=0,
-            license_fee_nano=0
+            license_fee_nano=0,
+            margin_nano=0,
         )
 
         self.assertEqual(
@@ -286,7 +287,8 @@ class InfoBoxHelpersTest(TestCase):
             date=datetime.datetime.today() - datetime.timedelta(days=1),
             media_spend_nano=50 * 10**9,
             data_spend_nano=0,
-            license_fee_nano=0
+            license_fee_nano=0,
+            margin_nano=0,
         )
 
         self.assertEqual(
@@ -410,6 +412,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             media_spend_nano=10e9,
             data_spend_nano=10e9,
             license_fee_nano=10e9,
+            margin_nano=0,
         )
         self.assertEqual(10, dash.infobox_helpers.get_yesterday_all_accounts_spend(None, None))
 
@@ -439,6 +442,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             media_spend_nano=10e9,
             data_spend_nano=10e9,
             license_fee_nano=10e9,
+            margin_nano=0,
         )
         self.assertEqual(Decimal('10.0000'), dash.infobox_helpers.get_mtd_agency_spend(self.user))
 
@@ -452,6 +456,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             media_spend_nano=10e9,
             data_spend_nano=10e9,
             license_fee_nano=10e9,
+            margin_nano=0,
         )
         self.assertEqual(Decimal('10.0000'), dash.infobox_helpers.get_yesterday_agency_spend(
             self.user)
@@ -467,6 +472,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             media_spend_nano=10e9,
             data_spend_nano=10e9,
             license_fee_nano=10e9,
+            margin_nano=0,
         )
         self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
 
@@ -477,6 +483,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             media_spend_nano=10e9,
             data_spend_nano=10e9,
             license_fee_nano=10e9,
+            margin_nano=0,
         )
         # shouldn't change because it's month to date
         self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend(None, None))
@@ -662,6 +669,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             media_spend_nano=10 * 10**9,
             data_spend_nano=10 * 10**9,
             license_fee_nano=10 * 10**9,
+            margin_nano=0,
         )
 
         account = dash.models.Account.objects.get(pk=1)
@@ -1102,7 +1110,8 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             date=start_date,
             media_spend_nano=10 * 10**9,
             data_spend_nano=0,
-            license_fee_nano=0
+            license_fee_nano=0,
+            margin_nano=0,
         )
 
         account_spend, budget_available = dash.infobox_helpers.calculate_spend_and_available_budget(account)
@@ -1180,7 +1189,8 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             date=start_date,
             media_spend_nano=10 * 10**9,
             data_spend_nano=0,
-            license_fee_nano=0
+            license_fee_nano=0,
+            margin_nano=0,
         )
 
         account_spend, budget_available = dash.infobox_helpers.calculate_spend_and_available_budget(account)

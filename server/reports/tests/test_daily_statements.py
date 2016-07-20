@@ -231,7 +231,8 @@ class DailyStatementsTestCase(TestCase):
                         date=date,
                         media_spend_nano=0,
                         data_spend_nano=0,
-                        license_fee_nano=0
+                        license_fee_nano=0,
+                        margin_nano=0,
                     )
 
         update_from = datetime.date(2015, 11, 30)
@@ -274,7 +275,8 @@ class EffectiveSpendPctsTestCase(TestCase):
             date=date,
             media_spend_nano=ca_spends['media_cc'] * 100000,
             data_spend_nano=ca_spends['data_cc'] * 100000,
-            license_fee_nano=(ca_spends['media_cc'] + ca_spends['data_cc']) * 100000 * budget.credit.license_fee
+            license_fee_nano=(ca_spends['media_cc'] + ca_spends['data_cc']) * 100000 * budget.credit.license_fee,
+            margin_nano=0,
         )
 
         pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
@@ -298,7 +300,8 @@ class EffectiveSpendPctsTestCase(TestCase):
             date=date,
             media_spend_nano=attributed_media_spend_nano,
             data_spend_nano=attributed_data_spend_nano,
-            license_fee_nano=license_fee_nano
+            license_fee_nano=license_fee_nano,
+            margin_nano=0,
         )
 
         pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
@@ -322,7 +325,8 @@ class EffectiveSpendPctsTestCase(TestCase):
             date=date,
             media_spend_nano=attributed_media_spend_nano,
             data_spend_nano=attributed_data_spend_nano,
-            license_fee_nano=(attributed_media_spend_nano + attributed_data_spend_nano) * budget1.credit.license_fee
+            license_fee_nano=(attributed_media_spend_nano + attributed_data_spend_nano) * budget1.credit.license_fee,
+            margin_nano=0,
         )
 
         reports.models.BudgetDailyStatement.objects.create(
@@ -330,7 +334,8 @@ class EffectiveSpendPctsTestCase(TestCase):
             date=date,
             media_spend_nano=attributed_media_spend_nano,
             data_spend_nano=attributed_data_spend_nano,
-            license_fee_nano=(attributed_media_spend_nano + attributed_data_spend_nano) * budget2.credit.license_fee
+            license_fee_nano=(attributed_media_spend_nano + attributed_data_spend_nano) * budget2.credit.license_fee,
+            margin_nano=0,
         )
 
         pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
@@ -349,7 +354,8 @@ class EffectiveSpendPctsTestCase(TestCase):
             date=date,
             media_spend_nano=40000000000,
             data_spend_nano=40000000000,
-            license_fee_nano=16000000000
+            license_fee_nano=16000000000,
+            margin_nano=0,
         )
 
         pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)

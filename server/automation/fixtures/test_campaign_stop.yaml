@@ -1024,6 +1024,7 @@
     media_spend_nano: 225000000000
     data_spend_nano: 0
     license_fee_nano: 25000000000
+    margin_nano: 0
   model: reports.budgetdailystatement
   pk: 1
 
@@ -1033,6 +1034,7 @@
     media_spend_nano: 225000000000
     data_spend_nano: 0
     license_fee_nano: 25000000000
+    margin_nano: 0
   model: reports.budgetdailystatement
   pk: 2
 
@@ -1042,6 +1044,7 @@
     media_spend_nano: 225000000000
     data_spend_nano: 0
     license_fee_nano: 25000000000
+    margin_nano: 0
   model: reports.budgetdailystatement
   pk: 3
 
@@ -1051,5 +1054,6 @@
     media_spend_nano: 225000000000
     data_spend_nano: 0
     license_fee_nano: 25000000000
+    margin_nano: 0
   model: reports.budgetdailystatement
   pk: 4

@@ -336,7 +336,8 @@ class ExportTestCase(test.TestCase):
             budget=budget,
             license_fee_nano=1 * 10**9,
             media_spend_nano=100 * 10**9,
-            data_spend_nano=0
+            data_spend_nano=0,
+            margin_nano=0,
         )
 
         rows = export._generate_rows(

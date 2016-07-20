@@ -47,6 +47,15 @@
     model: dash.campaign
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 1 # test account 1
+        name: 'test campaign 3'
+    model: dash.campaign
+    pk: 3
+
 # test credit line items
 
 -   fields:
@@ -74,6 +83,19 @@
         created_by: 1
     model: dash.creditlineitem
     pk: 2
+
+-   fields:
+        account: 1
+        start_date: '2016-07-01'
+        end_date: '2016-07-31'
+        amount: 3000
+        license_fee: '0.2'
+        status: 1
+        created_dt: '2015-11-01 00:00:01'
+        modified_dt: '2015-11-01 00:00:01'
+        created_by: 1
+    model: dash.creditlineitem
+    pk: 3
 
 # test budget line items
 
@@ -136,3 +158,16 @@
         created_by: 1
     model: dash.budgetlineitem
     pk: 5
+
+-   fields:
+        campaign: 3
+        credit: 3
+        start_date: '2016-07-15'
+        end_date: '2016-07-20'
+        amount: 3000
+        created_dt: '2015-11-01 00:00:01'
+        modified_dt: '2015-11-01 00:00:01'
+        margin: '0.10'
+        created_by: 1
+    model: dash.budgetlineitem
+    pk: 6
