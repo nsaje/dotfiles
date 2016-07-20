@@ -100,6 +100,7 @@ def prepare_date_range_delete_query(table_name, date_from, date_to):
 class Materialize(object):
 
     TABLE_NAME = 'missing'
+    IS_TEMPORARY_TABLE = False
 
     def __init__(self, job_id, date_from, date_to):
         self.job_id = job_id
@@ -113,6 +114,7 @@ class Materialize(object):
 class MVHelpersSource(Materialize):
 
     TABLE_NAME = 'mvh_source'
+    IS_TEMPORARY_TABLE = True
 
     def generate(self, **kwargs):
         s3_path = upload_csv(
@@ -148,6 +150,7 @@ class MVHelpersCampaignFactors(Materialize):
     """
 
     TABLE_NAME = 'mvh_campaign_factors'
+    IS_TEMPORARY_TABLE = True
 
     def generate(self, campaign_factors, **kwargs):
         s3_path = upload_csv(
@@ -185,6 +188,7 @@ class MVHelpersAdGroupStructure(Materialize):
     """
 
     TABLE_NAME = 'mvh_adgroup_structure'
+    IS_TEMPORARY_TABLE = True
 
     def generate(self, **kwargs):
         s3_path = upload_csv(
@@ -223,6 +227,7 @@ class MVHelpersNormalizedStats(Materialize):
     """
 
     TABLE_NAME = 'mvh_clean_stats'
+    IS_TEMPORARY_TABLE = True
 
     def generate(self, **kwargs):
         with db.get_write_stats_transaction():
@@ -254,7 +259,6 @@ class MasterView(Materialize):
     """
 
     TABLE_NAME = 'mv_master'
-
     POSTCLICK_STRUCTURE_BREAKDOWN_INDEX = 8
 
     def generate(self, **kwargs):
