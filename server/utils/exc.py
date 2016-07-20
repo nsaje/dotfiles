@@ -64,6 +64,10 @@ class MissingBreakdownConstraintsError(BaseError):
     pass
 
 
+class UnknownFieldBreakdownError(BaseError):
+    pass
+
+
 custom_errors = (
     AuthError,
     AuthorizationError,

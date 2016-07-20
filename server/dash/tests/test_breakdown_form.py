@@ -35,7 +35,7 @@ class BreakdownFormTest(TestCase):
 
         self.assertTrue(form.is_valid())
         self.assertDictEqual(form.cleaned_data, {
-            'breakdown': ['account', 'source', 'dma', 'day'],
+            'breakdown': ['account_id', 'source_id', 'dma', 'day'],
             'start_date': datetime.date(2016, 1, 1),
             'end_date': datetime.date(2016, 2, 3),
             'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
@@ -75,7 +75,7 @@ class BreakdownFormTest(TestCase):
         self.assertTrue(form.is_valid())
 
         self.assertEqual(
-            ['account', 'source', 'dma', 'day'],
+            ['account_id', 'source_id', 'dma', 'day'],
             form.cleaned_data['breakdown']
         )
 
@@ -83,7 +83,7 @@ class BreakdownFormTest(TestCase):
         self.assertTrue(form.is_valid())
 
         self.assertEqual(
-            ['account', 'asd'],
+            ['account_id', 'asd'],
             form.cleaned_data['breakdown']
         )
 

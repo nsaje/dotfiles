@@ -223,8 +223,6 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
         breakdown = set(x for x in (base, structure, delivery, level) if x)
 
         for available, view in MATERIALIZED_VIEWS:
-            available = {sc.get_dimension_identifier(a) for a in available}
-
             if len(breakdown - available) == 0:
                 return view
 

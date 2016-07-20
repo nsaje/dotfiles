@@ -15,12 +15,12 @@ class HelpersTest(TestCase):
         constraints = {
             'date__gte': datetime.date(2016, 1, 1),
             'date__lte': datetime.date(2016, 2, 3),
-            'source': models.Source.objects.filter(pk__in=[1, 3, 4]),
+            'source_id': [1, 3, 4],
             'show_archived': True,
-            'account': models.Account.objects.get(pk=1),
-            'campaign': models.Campaign.objects.get(pk=1),
-            'ad_group': models.AdGroup.objects.get(pk=1),
-            'content_ad': models.ContentAd.objects.get(pk=1),
+            'account_id': 1,
+            'campaign_id': 1,
+            'ad_group_id': 1,
+            'content_ad_id': 1,
             'publisher': 'gimme.beer.com',
             'dma': '502',
             'state': 'US-FL',
@@ -51,7 +51,7 @@ class HelpersTest(TestCase):
     def test_extract_breakdown_id(self):
         self.assertDictEqual(
             helpers.extract_breakdown_id(
-                ['ad_group', 'publisher', 'state', 'month'],
+                ['ad_group_id', 'publisher', 'state', 'month'],
                 "23||gimme.beer.com||FL"
             ),
             {
@@ -63,7 +63,7 @@ class HelpersTest(TestCase):
 
         self.assertDictEqual(
             helpers.extract_breakdown_id(
-                ['source', 'content_ad', 'country'],
+                ['source_id', 'content_ad_id', 'country'],
                 "11||20284"
             ),
             {
@@ -72,21 +72,10 @@ class HelpersTest(TestCase):
             }
         )
 
-    def test_extract_stats_breakdown(self):
-        self.assertListEqual(
-            helpers.extract_stats_breakdown(['account', 'source', 'dma', 'day']),
-            ['account_id', 'source_id', 'dma', 'day'],
-        )
-
-        self.assertListEqual(
-            helpers.extract_stats_breakdown(['content_ad', 'publisher', 'device_type', 'week']),
-            ['content_ad_id', 'publisher', 'device_type', 'week'],
-        )
-
     def test_create_breakdown_id(self):
         self.assertEqual(
             helpers.create_breakdown_id(
-                ['campaign', 'publisher', 'gender'],
+                ['campaign_id', 'publisher', 'gender'],
                 {'campaign_id': 13, 'publisher': 'gimme.beer.com', 'gender': 'M', 'clicks': 666}
             ),
             "13||gimme.beer.com||M"
@@ -102,7 +91,7 @@ class HelpersTest(TestCase):
 
     def test_extract_order_field(self):
         self.assertEqual(
-            helpers.extract_order_field('clicks', ['source', 'day']),
+            helpers.extract_order_field('clicks', ['source_id', 'day']),
             'day'
         )
 
@@ -117,6 +106,6 @@ class HelpersTest(TestCase):
         )
 
         self.assertEqual(
-            helpers.extract_order_field('account', []),
+            helpers.extract_order_field('account_id', []),
             'account_name'
         )

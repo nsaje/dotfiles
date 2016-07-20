@@ -26,6 +26,9 @@ from zemauth.models import User as ZemUser
 import actionlog.api_contentads
 import actionlog.zwei_actions
 
+import stats.constants
+
+
 MAX_ADS_PER_UPLOAD = 100
 
 
@@ -1031,7 +1034,7 @@ class BreakdownForm(forms.Form):
         return helpers.get_filtered_sources(self.user, self.cleaned_data.get('filtered_sources'))
 
     def clean_breakdown(self):
-        return [x for x in self.cleaned_data['breakdown'].split('/') if x]
+        return [stats.constants.get_dimension_identifier(x) for x in self.cleaned_data['breakdown'].split('/') if x]
 
 
 class ContentAdCandidateForm(forms.ModelForm):

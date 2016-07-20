@@ -46,8 +46,7 @@ def postprocess_time_dimension(time_dimension, rows, empty_row, breakdown, const
 
 
 def _get_breakdown_key_tuple(breakdown, row_or_dict):
-    return tuple(row_or_dict[constants.get_dimension_identifier(dimension)]
-                 for dimension in breakdown)
+    return tuple(row_or_dict[dimension] for dimension in breakdown)
 
 
 def _get_representative_dates(time_dimension, constraints):

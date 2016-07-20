@@ -215,7 +215,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         m = models.MVMaster()
 
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.ACCOUNT),
+            constants.StructureDimension.ACCOUNT,
             constants.TimeDimension.MONTH,
         ], {}), {
             'base': 'mv_account',
@@ -223,7 +223,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             'touchpointconversions': 'mv_touch_account',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.StructureDimension.SOURCE,
             constants.TimeDimension.MONTH,
         ], {}), {
             'base': 'mv_account',
@@ -231,8 +231,8 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             'touchpointconversions': 'mv_touch_account',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.ACCOUNT),
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.StructureDimension.ACCOUNT,
+            constants.StructureDimension.SOURCE,
             constants.TimeDimension.MONTH,
         ], {}), {
             'base': 'mv_account',
@@ -240,43 +240,43 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             'touchpointconversions': 'mv_touch_account',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.ACCOUNT),
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.StructureDimension.ACCOUNT,
+            constants.StructureDimension.SOURCE,
             constants.DeliveryDimension.AGE,
         ], {}), {
             'base': 'mv_account_delivery',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.ACCOUNT),
+            constants.StructureDimension.ACCOUNT,
             constants.DeliveryDimension.AGE,
         ], {}), {
             'base': 'mv_account_delivery',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.ACCOUNT),
-            constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN),
+            constants.StructureDimension.ACCOUNT,
+            constants.StructureDimension.CAMPAIGN,
         ], {}), {
             'base': 'mv_campaign',
             'conversions': 'mv_conversions_campaign',
             'touchpointconversions': 'mv_touch_campaign',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN),
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.StructureDimension.CAMPAIGN,
+            constants.StructureDimension.SOURCE,
         ], {}), {
             'base': 'mv_campaign',
             'conversions': 'mv_conversions_campaign',
             'touchpointconversions': 'mv_touch_campaign',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN),
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.StructureDimension.CAMPAIGN,
+            constants.StructureDimension.SOURCE,
             constants.DeliveryDimension.AGE,
         ], {}), {
             'base': 'mv_campaign_delivery',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.StructureDimension.AD_GROUP,
             constants.TimeDimension.MONTH,
         ], {}), {
             'base': 'mv_ad_group',
@@ -284,13 +284,13 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             'touchpointconversions': 'mv_touch_ad_group',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.StructureDimension.AD_GROUP,
             constants.DeliveryDimension.AGE,
         ], {}), {
             'base': 'mv_ad_group_delivery',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.CONTENT_AD),
+            constants.StructureDimension.CONTENT_AD,
             constants.DeliveryDimension.AGE,
         ], {}), {
             'base': 'mv_content_ad_delivery',
@@ -298,88 +298,88 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
 
         # Campaign level - media sources tab
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.StructureDimension.SOURCE,
             constants.TimeDimension.DAY,
-        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), {
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
             'base': 'mv_campaign',
             'conversions': 'mv_conversions_campaign',
             'touchpointconversions': 'mv_touch_campaign',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
-            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.StructureDimension.SOURCE,
+            constants.StructureDimension.AD_GROUP,
             constants.TimeDimension.DAY,
-        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), {
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
             'base': 'mv_ad_group',
             'conversions': 'mv_conversions_ad_group',
             'touchpointconversions': 'mv_touch_ad_group',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
-            constants.get_dimension_identifier(constants.StructureDimension.CONTENT_AD),
+            constants.StructureDimension.SOURCE,
+            constants.StructureDimension.CONTENT_AD,
             constants.TimeDimension.DAY,
-        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), {
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
             'base': 'mv_content_ad',
             'conversions': 'mv_conversions_content_ad',
             'touchpointconversions': 'mv_touch_content_ad',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
-            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.StructureDimension.SOURCE,
+            constants.StructureDimension.AD_GROUP,
             constants.DeliveryDimension.AGE,
             constants.TimeDimension.DAY,
-        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), {
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
             'base': 'mv_ad_group_delivery',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
-            constants.get_dimension_identifier(constants.StructureDimension.CONTENT_AD),
+            constants.StructureDimension.SOURCE,
+            constants.StructureDimension.CONTENT_AD,
             constants.DeliveryDimension.AGE,
             constants.TimeDimension.DAY,
-        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), {
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
             'base': 'mv_content_ad_delivery',
         })
 
         # Campaign level - Ad groups tab
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
+            constants.StructureDimension.AD_GROUP,
             constants.TimeDimension.DAY,
-        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), {
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
             'base': 'mv_ad_group',
             'conversions': 'mv_conversions_ad_group',
             'touchpointconversions': 'mv_touch_ad_group',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.StructureDimension.AD_GROUP,
+            constants.StructureDimension.SOURCE,
             constants.TimeDimension.DAY,
-        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), {
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
             'base': 'mv_ad_group',
             'conversions': 'mv_conversions_ad_group',
             'touchpointconversions': 'mv_touch_ad_group',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
-            constants.get_dimension_identifier(constants.StructureDimension.CONTENT_AD),
+            constants.StructureDimension.AD_GROUP,
+            constants.StructureDimension.CONTENT_AD,
             constants.TimeDimension.DAY,
-        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), {
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
             'base': 'mv_content_ad',
             'conversions': 'mv_conversions_content_ad',
             'touchpointconversions': 'mv_touch_content_ad',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
-            constants.get_dimension_identifier(constants.StructureDimension.SOURCE),
+            constants.StructureDimension.AD_GROUP,
+            constants.StructureDimension.SOURCE,
             constants.DeliveryDimension.AGE,
             constants.TimeDimension.DAY,
-        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), {
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
             'base': 'mv_ad_group_delivery',
         })
         self.assertEqual(m.get_best_view([
-            constants.get_dimension_identifier(constants.StructureDimension.AD_GROUP),
-            constants.get_dimension_identifier(constants.StructureDimension.CONTENT_AD),
+            constants.StructureDimension.AD_GROUP,
+            constants.StructureDimension.CONTENT_AD,
             constants.DeliveryDimension.AGE,
             constants.TimeDimension.DAY,
-        ], {constants.get_dimension_identifier(constants.StructureDimension.CAMPAIGN): 1}), {
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
             'base': 'mv_content_ad_delivery',
         })

@@ -13,14 +13,22 @@ import redshiftapi.api_breakdowns
 def query(user, breakdown, constraints, breakdown_page,
           order, offset, limit):
 
+    """
+    Get a breakdown report. Data is sourced from dash models and redshiftapi.
+
+    All field names and values in breakdown, constraints, breakdown_page and order should
+    use valid field names. Field names should match those of used dash and redshiftapi models.
+
+    All values in constraints and breakdown_page should be object ids.
+    """
+
     validate_breakdown(breakdown)
+    validate_constraints(constraints)
 
     # FIXME: Hack to prevent sorting by fields not available in redshift
     order = get_supported_order(order)
 
-    breakdown = helpers.extract_stats_breakdown(breakdown)
     constraints = helpers.extract_stats_constraints(constraints)
-
     conversion_goals = get_conversion_goals(breakdown, constraints)
 
     rows = redshiftapi.api_breakdowns.query(
@@ -43,10 +51,6 @@ def query(user, breakdown, constraints, breakdown_page,
 
 
 def validate_breakdown(breakdown):
-    # translation needed because of inconsistent handling of dimension identifiers
-    # TODO needs to be fixed when @greginvm comes back
-    breakdown = [constants.get_dimension_identifier(b) for b in breakdown]
-
     base = constants.get_base_dimension(breakdown)
     if not base:
         raise exc.InvalidBreakdownError("Breakdown requires at least 1 dimension")
@@ -72,6 +76,12 @@ def validate_breakdown(breakdown):
         raise exc.InvalidBreakdownError("Wrong breakdown order")
 
 
+def validate_constraints(constraints):
+    for k, v in constraints.iteritems():
+        if constants.get_dimension_identifier(k) != k:
+            raise exc.UnknownFieldBreakdownError("Unknown dimension identifier '{}'".format(k))
+
+
 # FIXME: Remove this hack
 def get_supported_order(order):
     UNSUPPORTED_FIELDS = [
@@ -94,9 +104,9 @@ def get_conversion_goals(breakdown, constraints):
 
     level = constants.get_level_dimension(constraints)
 
-    if level == 'ad_group_id':
+    if level == constants.StructureDimension.AD_GROUP:
         return dash.models.AdGroup.objects.get(pk=constraints['ad_group_id']).campaign.conversiongoal_set.all()
-    elif level == 'campaign_id':
+    elif level == constants.StructureDimension.CAMPAIGN:
         return dash.models.Campaign.objects.get(pk=constraints['campaign_id']).conversiongoal_set.all()
 
     return []

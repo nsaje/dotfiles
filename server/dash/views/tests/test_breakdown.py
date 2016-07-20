@@ -33,8 +33,7 @@ class ExtractConstraintsTest(TestCase):
         self.assertDictEqual(breakdown.extract_constraints(form_data), {
             'date__gte': datetime.date(2016, 1, 1),
             'date__lte': datetime.date(2016, 2, 3),
-            'source': test_helper.QuerySetMatcher(
-                models.Source.objects.filter(pk__in=[1, 3, 4])),
+            'source_id': test_helper.ListMatcher([1, 3, 4]),
             'show_archived': True,
         })
 
@@ -54,17 +53,16 @@ class ExtractConstraintsTest(TestCase):
         self.assertDictEqual(
             breakdown.extract_constraints(
                 form_data,
-                account=models.Account.objects.get(pk=1),
-                campaign=models.Campaign.objects.get(pk=1)
+                account_id=1,
+                campaign_id=1
             ),
             {
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
-                'source': test_helper.QuerySetMatcher(
-                    models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'source_id': test_helper.ListMatcher([1, 3, 4]),
                 'show_archived': True,
-                'account': models.Account.objects.get(pk=1),
-                'campaign': models.Campaign.objects.get(pk=1),
+                'account_id': 1,
+                'campaign_id': 1,
             }
         )
 
@@ -115,12 +113,11 @@ class AllAccountsBreakdownTestCase(TestCase):
 
         mock_query.assert_called_with(
             self.user,
-            ['account', 'campaign', 'dma', 'day'],
+            ['account_id', 'campaign_id', 'dma', 'day'],
             {
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
-                'source': test_helper.QuerySetMatcher(
-                    models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'source_id': test_helper.ListMatcher([1, 3, 4]),
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -326,13 +323,12 @@ class AccountBreakdownTestCase(TestCase):
 
         mock_query.assert_called_with(
             self.user,
-            ['campaign', 'source', 'dma', 'day'],
+            ['campaign_id', 'source_id', 'dma', 'day'],
             {
-                'account': models.Account.objects.get(pk=1),
+                'account_id': 1,
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
-                'source': test_helper.QuerySetMatcher(
-                    models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'source_id': test_helper.ListMatcher([1, 3, 4]),
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -508,13 +504,12 @@ class CampaignBreakdownTestCase(TestCase):
 
         mock_query.assert_called_with(
             self.user,
-            ['ad_group', 'source', 'dma', 'day'],
+            ['ad_group_id', 'source_id', 'dma', 'day'],
             {
-                'campaign': models.Campaign.objects.get(pk=1),
+                'campaign_id': 1,
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
-                'source': test_helper.QuerySetMatcher(
-                    models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'source_id': test_helper.ListMatcher([1, 3, 4]),
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -572,13 +567,12 @@ class AdGroupBreakdownTestCase(TestCase):
 
         mock_query.assert_called_with(
             self.user,
-            ['content_ad', 'source', 'dma', 'day'],
+            ['content_ad_id', 'source_id', 'dma', 'day'],
             {
-                'ad_group': models.AdGroup.objects.get(pk=1),
+                'ad_group_id': 1,
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
-                'source': test_helper.QuerySetMatcher(
-                    models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'source_id': test_helper.ListMatcher([1, 3, 4]),
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],

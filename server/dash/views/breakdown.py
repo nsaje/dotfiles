@@ -22,7 +22,7 @@ def extract_constraints(form_data, **kwargs):
     constraints = {
         'date__gte': form_data['start_date'],
         'date__lte': form_data['end_date'],
-        'source': form_data.get('filtered_sources'),
+        'source_id': [x.id for x in form_data['filtered_sources']],
         'show_archived': form_data.get('show_archived'),
     }
     constraints.update(kwargs)
@@ -458,7 +458,7 @@ class AccountBreakdown(api_common.BaseApiView):
         report = stats.api_breakdowns.query(
             request.user,
             breakdown,
-            extract_constraints(form.cleaned_data, account=account),
+            extract_constraints(form.cleaned_data, account_id=account.id),
             breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
@@ -507,7 +507,7 @@ class CampaignBreakdown(api_common.BaseApiView):
         report = stats.api_breakdowns.query(
             request.user,
             breakdown,
-            extract_constraints(form.cleaned_data, campaign=campaign),
+            extract_constraints(form.cleaned_data, campaign_id=campaign.id),
             breakdown_page,
             form.cleaned_data.get('order', None),
             offset,
@@ -558,7 +558,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
         report = stats.api_breakdowns.query(
             request.user,
             breakdown,
-            extract_constraints(form.cleaned_data, ad_group=ad_group),
+            extract_constraints(form.cleaned_data, ad_group_id=ad_group.id),
             breakdown_page,
             form.cleaned_data.get('order', None),
             offset,

@@ -113,8 +113,8 @@ class AugmenterTestCase(TestCase):
         ])
 
     def test_augment(self):
-        breakdown = ['ad_group', 'source']
-        target = 'source'
+        breakdown = ['ad_group_id', 'source_id']
+        target = 'source_id'
 
         rows = [
             {'ad_group_id': 1, 'source_id': 1, 'age': 1, 'dma': 501, 'clicks': 10},
@@ -131,7 +131,7 @@ class AugmenterTestCase(TestCase):
         ])
 
         # same but different target
-        target = 'ad_group'
+        target = 'ad_group_id'
 
         rows = [
             {'ad_group_id': 1, 'source_id': 1, 'age': 1, 'dma': 501, 'clicks': 10},
