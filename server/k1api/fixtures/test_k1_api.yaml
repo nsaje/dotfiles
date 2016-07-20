@@ -265,6 +265,45 @@
     model: dash.source
     pk: 8
 
+# test default source settings
+
+-   fields:
+        source: 1
+        credentials: 1
+    model: dash.defaultsourcesettings
+    pk: 1
+
+-   fields:
+        source: 2
+        credentials: 2
+    model: dash.defaultsourcesettings
+    pk: 2
+
+-   fields:
+        source: 3
+        credentials: 3
+    model: dash.defaultsourcesettings
+    pk: 3
+
+-   fields:
+        source: 4
+        credentials: 4
+    model: dash.defaultsourcesettings
+    pk: 4
+
+-   fields:
+        source: 5
+        credentials: 5
+    model: dash.defaultsourcesettings
+    pk: 5
+
+-   fields:
+        source: 6
+        credentials: 6
+    model: dash.defaultsourcesettings
+    pk: 6
+
+
 # test source credentials
 -   fields:
         created_dt: '2014-06-04T00:00:00'

@@ -309,8 +309,8 @@ class get_accounts(K1APIView):
 
         bidder_slug = request.GET.get("bidder_slug")
         if bidder_slug:
-            source_credentials = dash.models.SourceCredentials.objects.get(source__bidder_slug=bidder_slug)
-            response['credentials'] = source_credentials.credentials
+            default_source_settings = dash.models.DefaultSourceSettings.objects.get(source__bidder_slug=bidder_slug)
+            response['credentials'] = default_source_settings.credentials.credentials
 
         return self.response_ok(response)
 
