@@ -252,7 +252,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
         breakdown_supports_conversions = self.breakdown_supports_conversions(breakdown)
 
-        order_column = self.get_column(order).as_order(order)
+        order_column = self.get_column(order).as_order(order, nulls='last')
 
         context = {
             'view': self.get_best_view(breakdown, constraints),

@@ -103,20 +103,20 @@ class HelpersTest(TestCase):
     def test_extract_order_field(self):
         self.assertEqual(
             helpers.extract_order_field('clicks', ['source', 'day']),
-            ['day']
+            'day'
         )
 
         self.assertEqual(
             helpers.extract_order_field('clicks', []),
-            ['clicks']
+            'clicks'
         )
 
         self.assertEqual(
             helpers.extract_order_field('-cost', []),
-            ['-cost']
+            '-cost'
         )
 
         self.assertEqual(
             helpers.extract_order_field('account', []),
-            ['account_name']
+            'account_name'
         )

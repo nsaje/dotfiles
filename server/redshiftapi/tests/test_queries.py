@@ -189,7 +189,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
                 temp_base.clicks,
                 temp_base.total_seconds,
                 temp_yesterday.yesterday_cost,
-                ROW_NUMBER() OVER (PARTITION BY ORDER BY temp_base.total_seconds ASC) AS r
+                ROW_NUMBER() OVER (PARTITION BY ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
             FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday
         ) b
         WHERE r <= 10
@@ -360,7 +360,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
                 cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
                 ROW_NUMBER() OVER (PARTITION BY temp_base.account_id, temp_base.campaign_id
-                                    ORDER BY temp_base.clicks DESC) AS r
+                                    ORDER BY temp_base.clicks DESC NULLS LAST) AS r
         FROM temp_base NATURAL
         LEFT OUTER JOIN temp_yesterday NATURAL
         LEFT OUTER JOIN temp_conversions NATURAL
@@ -444,7 +444,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
                 cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
                 cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
-                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id ORDER BY temp_base.clicks DESC) AS r
+                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id ORDER BY temp_base.clicks DESC NULLS LAST) AS r
         FROM temp_base NATURAL
         LEFT OUTER JOIN temp_yesterday NATURAL
         LEFT OUTER JOIN temp_conversions NATURAL

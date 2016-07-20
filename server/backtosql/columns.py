@@ -46,8 +46,8 @@ class TemplateColumn(object):
 
         return helpers.generate_sql(self.template_name, context)
 
-    def as_order(self, direction_hint):
-        return OrderColumn(self, direction_hint)
+    def as_order(self, direction_hint, nulls=None):
+        return OrderColumn(self, direction_hint, nulls)
 
 
 class Column(TemplateColumn):
@@ -57,8 +57,9 @@ class Column(TemplateColumn):
 
 
 class OrderColumn(TemplateColumn):
-    def __init__(self, column, direction_hint):
+    def __init__(self, column, direction_hint, nulls=None):
         self.column = column
+        self.nulls = nulls
 
         super(OrderColumn, self).__init__(
             'order.sql',
@@ -68,7 +69,7 @@ class OrderColumn(TemplateColumn):
 
     def order_context(self, direction_hint):
         return {
-            'direction': helpers.get_order(direction_hint)
+            'direction': helpers.get_order(direction_hint, self.nulls)
         }
 
     def only_column(self, prefix=None):

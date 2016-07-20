@@ -19,11 +19,17 @@ def clean_alias(alias):
     return alias.strip().lstrip('+-') if alias else ''
 
 
-def get_order(alias):
-    if alias.startswith('-'):
-        return 'DESC'
+def get_order(alias, nulls=None):
+    properties = ''
+    if nulls and nulls.upper() == 'LAST':
+        properties = ' NULLS LAST'
+    elif nulls and nulls.upper() == 'FIRST':
+        properties = ' NULLS FIRST'
 
-    return 'ASC'
+    if alias.startswith('-'):
+        return 'DESC' + properties
+
+    return 'ASC' + properties
 
 
 def clean_sql(dirty_sql):

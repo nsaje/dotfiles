@@ -78,7 +78,7 @@ def extract_order_field(order, breakdown):
     # TODO should this be requested by frontend?
     time_dimension = constants.get_time_dimension(breakdown)
     if time_dimension:
-        return [time_dimension]
+        return time_dimension
 
     unprefixed_order = order
     prefix = ''
@@ -89,4 +89,4 @@ def extract_order_field(order, breakdown):
     if unprefixed_order in constants.SpecialDimensionNameKeys:
         unprefixed_order = constants.get_dimension_name_key(unprefixed_order)
 
-    return [prefix + unprefixed_order]
+    return prefix + unprefixed_order

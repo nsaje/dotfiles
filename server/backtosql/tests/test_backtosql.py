@@ -123,6 +123,11 @@ class OrderColumnTestCase(TestCase, TestSQLMixin):
         self.assertEquals(helpers.get_order('cat'), 'ASC')
         self.assertEquals(helpers.get_order('+cat'), 'ASC')
 
+    def test_get_direction_nulls(self):
+        self.assertEquals(helpers.get_order('-cat', nulls='last'), 'DESC NULLS LAST')
+        self.assertEquals(helpers.get_order('cat', nulls='first'), 'ASC NULLS FIRST')
+        self.assertEquals(helpers.get_order('+cat', nulls=None), 'ASC')
+
     def test_column_only_column(self):
         column = backtosql.Column('cat', alias='py_cat')
 
@@ -151,6 +156,16 @@ class OrderColumnTestCase(TestCase, TestSQLMixin):
 
         with self.assertRaises(backtosql.BackToSQLException):
             order.column_as_alias()
+
+    def test_column_generate_with_nulls(self):
+        column = backtosql.TemplateColumn('test_col.sql', {
+            'column_name': 'cat',
+            'multiplier': 100,
+        }, alias='py_cat')
+
+        order = column.as_order('-py_cat', nulls='last')
+        self.assertSQLEquals(order.only_column(), 'SUM(cat)*100 DESC NULLS LAST')
+        self.assertSQLEquals(order.only_alias(), 'py_cat DESC NULLS LAST')
 
 
 class ModelTestCase(TestCase):
