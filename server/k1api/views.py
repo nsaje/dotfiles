@@ -151,7 +151,7 @@ class get_ad_group_source(AdGroupSourceBase):
         return self.response_ok(ad_group_source_with_settings)
 
 
-class get_ad_group_sources_for_source_type(K1APIView):
+class get_ad_group_sources_for_source_type(AdGroupSourceBase):
 
     def get(self, request):
         source_type = request.GET.get('source_type')
