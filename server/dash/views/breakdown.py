@@ -156,7 +156,7 @@ def get_report_all_accounts_accounts(user, view_filter, start_date, end_date,
     for row in response['rows']:
         row['account_id'] = int(row['id'])
         row['account_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['account'], row)
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['account_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
@@ -179,7 +179,7 @@ def get_report_account_campaigns(user, filtered_sources, start_date, end_date,
     for row in response['rows']:
         row['campaign_id'] = int(row['campaign'])
         row['campaign_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['campaign'], row)
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['campaign_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
@@ -206,7 +206,7 @@ def get_report_campaign_ad_groups(user, filtered_sources, start_date, end_date,
     for row in response['rows']:
         row['ad_group_id'] = int(row['ad_group'])
         row['ad_group_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['ad_group'], row)
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['ad_group_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
@@ -238,7 +238,7 @@ def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date
     for row in response['rows']:
         row['content_ad_id'] = int(row['id'])
         row['content_ad_name'] = row['title']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['content_ad'], row)
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['content_ad_id'], row)
         row['breakdown_name'] = row['title']
         row['parent_breakdown_id'] = None
 
@@ -260,7 +260,7 @@ def get_report_all_accounts_sources(user, view_filter, start_date, end_date,
     for row in response['rows']:
         row['source_id'] = int(row['id'])
         row['source_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source'], row)
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
@@ -286,7 +286,7 @@ def get_report_account_sources(user, filtered_sources, start_date, end_date,
     for row in response['rows']:
         row['source_id'] = int(row['id'])
         row['source_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source'], row)
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
@@ -312,7 +312,7 @@ def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
     for row in response['rows']:
         row['source_id'] = int(row['id'])
         row['source_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source'], row)
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
@@ -341,7 +341,7 @@ def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
     for row in response['rows']:
         row['source_id'] = int(row['id'])
         row['source_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source'], row)
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
