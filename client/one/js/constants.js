@@ -630,6 +630,12 @@ var constants = {
         OK: 'ok',
         ERRORS: 'errors',
     },
+    defaultFractionSize: {
+        NUMBER: 0,
+        CURRENCY: 2,
+        PERCENT: 2,
+        SECONDS: 1,
+    }
 };
 
 var options = {

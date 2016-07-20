@@ -7,21 +7,23 @@ oneApp.directive('zemGridModal', ['$http', '$templateCache', '$compile', '$docum
     var deregisterVerticalScroll;
     var deregisterHorizontalScroll;
     var toggleElement;
-    var modalTemplate;
     var relativePositionTop;
     var relativePositionLeft;
     var modal;
 
-    function prepareModal (element, scope) {
-        if (!modalTemplate) {
-            return;
-        }
-
+    function prepareModal (scope, element, attributes) {
         if (modal) {
             closeModal();
         }
 
-        toggleElement = angular.element(element);
+        var modalTemplate = attributes.zemGridModal;
+        if (!modalTemplate) {
+            return;
+        }
+
+        toggleElement = element;
+        relativePositionTop = parseInt(attributes.top) || 0;
+        relativePositionLeft = parseInt(attributes.left) || 0;
 
         $http.get(modalTemplate, {cache: $templateCache}).success(function (template) {
             compileModalTemplate(template, scope);
@@ -44,6 +46,12 @@ oneApp.directive('zemGridModal', ['$http', '$templateCache', '$compile', '$docum
         compiledModal.css(modalCss);
         body.append(compiledModal);
         modal = compiledModal;
+
+        // Focus element with 'focus' attribute
+        var inputToFocus = modal.find('[focus]');
+        if (inputToFocus.length) {
+            inputToFocus[0].focus();
+        }
 
         // Listen for clicks outside modal and close the modal on click
         // NOTE: Event listener for clicks on modal is stopping event propagation so that modal is not closed if user
@@ -77,15 +85,12 @@ oneApp.directive('zemGridModal', ['$http', '$templateCache', '$compile', '$docum
         link: function (scope, element, attributes) {
             body = $document.find('body');
             pubsub = scope.ctrl.grid.meta.pubsub;
-            modalTemplate = attributes.zemGridModal;
-            relativePositionTop = parseInt(attributes.top) || 0;
-            relativePositionLeft = parseInt(attributes.left) || 0;
 
             element.on('click', function () {
                 if (modal) {
                     closeModal();
                 } else {
-                    prepareModal(this, scope);
+                    prepareModal(scope, element, attributes);
                 }
             });
 

@@ -26,6 +26,9 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         if (breakdown.enabling_autopilot_sources_allowed) {
             convertedBreakdown.enablingAutopilotSourcesAllowed = breakdown.enabling_autopilot_sources_allowed;
         }
+        if (breakdown.ad_group_autopilot_state) {
+            convertedBreakdown.adGroupAutopilotState = breakdown.ad_group_autopilot_state;
+        }
         if (breakdown.batches) {
             convertedBreakdown.batches = breakdown.batches;
         }

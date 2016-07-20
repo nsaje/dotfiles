@@ -19,7 +19,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
         if (data.level > 0) throw 'Inplace parsing not supported yet.';
 
         if (data.breakdown) {
-            grid.footer.row = createRow(zemGridConstants.gridRowType.FOOTER, data, 0);
+            grid.footer.row = createRow(zemGridConstants.gridRowType.STATS, data, 0);
             grid.body.rows = parseBreakdown(grid, null, data.breakdown);
         } else {
             grid.body.rows = [];

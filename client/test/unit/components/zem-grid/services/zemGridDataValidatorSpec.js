@@ -1,6 +1,6 @@
 /* globals describe, it, beforeEach, expect, module, inject */
 
-describe('test zemGridDataValidator', function () {
+describe('zemGridDataValidator', function () {
     var zemGridDataValidator,
         tests,
         options;
@@ -29,6 +29,7 @@ describe('test zemGridDataValidator', function () {
             {value: '0.123', fractionSize: 2, expectedResult: false},
             {value: '0.123', expectedResult: false},
             {value: '0.123', fractionSize: 3, expectedResult: true},
+            {value: '0.', fractionSize: 0, expectedResult: false},
         ];
 
         tests.forEach(function (test) {

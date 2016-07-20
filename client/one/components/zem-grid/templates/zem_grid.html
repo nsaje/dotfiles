@@ -59,4 +59,17 @@
             </ul>
         </div>
     </script>
+    <script id="editableCurrencyFieldModal.html" type="text/ng-template">
+        <div class='editable-currency-field-modal zem-grid-modal'>
+            <div class="edit-form">
+                <span class="currency-input">
+                    <span class="prefix">$</span>
+                    <input type="text" ng-model="ctrl.editFormInputValue" ng-trim="false" ng-change="ctrl.filterInput()" focus ng-keydown="$event.keyCode === 13 && ctrl.save()"><!-- key code 13 = Enter -->
+                </span>
+                <button class="save-button btn btn-primary" ng-click="ctrl.save()"><span ng-show="ctrl.showLoader" class="loader-image"></span><span ng-show="!ctrl.showLoader">Save</span></button>
+                <button class="cancel-button btn btn-default" ng-click="ctrl.closeModal()">Cancel</button>
+                <span class="error" ng-repeat="error in ctrl.errors">{{error}}</span>
+            </div>
+        </div>
+    </script>
 </div>

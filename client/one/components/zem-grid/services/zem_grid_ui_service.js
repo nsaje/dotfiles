@@ -79,8 +79,8 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             if (!data) return;
 
             // Format data to string and predict width based on it
-            var parsedValue = zemGridDataFormatter.formatValue(data.value, column);
-            var valueWidth = getTextWidth(parsedValue, font);
+            var formattedValue = zemGridDataFormatter.formatValue(data.value, column);
+            var valueWidth = getTextWidth(formattedValue, font);
             if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN) {
                 // Special case for breakdown column - add padding based on row level
                 valueWidth += (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
@@ -95,8 +95,8 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         if (grid.footer.row) {
             var data = grid.footer.row.data.stats[column.field];
             if (data) {
-                var parsedValue = zemGridDataFormatter.formatValue(data.value, column);
-                var valueWidth = getTextWidth(parsedValue, font);
+                var formattedValue = zemGridDataFormatter.formatValue(data.value, column);
+                var valueWidth = getTextWidth(formattedValue, font);
                 width = Math.max(width, valueWidth);
             }
         }

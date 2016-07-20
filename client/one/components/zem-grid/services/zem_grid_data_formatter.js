@@ -1,9 +1,10 @@
-/* globals oneApp */
+/* globals oneApp, constants */
 'use strict';
 
 oneApp.factory('zemGridDataFormatter', ['$filter', 'zemGridConstants', function ($filter, zemGridConstants) {
     return {
         formatValue: formatValue,
+        parseInputValue: parseInputValue,
     };
 
     function formatValue (value, options) {
@@ -18,35 +19,86 @@ oneApp.factory('zemGridDataFormatter', ['$filter', 'zemGridConstants', function 
         }
     }
 
+    function parseInputValue (value, options) {
+        if (!options) {
+            return value;
+        }
+        switch (options.type) {
+        case zemGridConstants.gridColumnTypes.NUMBER:
+            return roundNumber(value, options, constants.defaultFractionSize.NUMBER);
+        case zemGridConstants.gridColumnTypes.CURRENCY:
+            return roundNumber(value, options, constants.defaultFractionSize.CURRENCY);
+        default: return value;
+        }
+    }
+
     function formatText (value, options) {
-        if (value !== 0 && !value) return options.defaultValue || '';
+        if (value !== 0 && !value) {
+            return options.defaultValue || '';
+        }
         return value + '';
     }
 
     function formatPercent (value, options) {
-        if (value !== 0 && !value) return options.defaultValue || 'N/A';
-        return $filter('number')(value, 2) + '%';
+        if (value !== 0 && !value) {
+            return options.defaultValue || 'N/A';
+        }
+        return $filter('number')(value, constants.defaultFractionSize.PERCENT) + '%';
     }
 
     function formatSeconds (value, options) {
-        if (value !== 0 && !value) return options.defaultValue || 'N/A';
-        return $filter('number')(value, 1) + ' s';
+        if (value !== 0 && !value) {
+            return options.defaultValue || 'N/A';
+        }
+        return $filter('number')(value, constants.defaultFractionSize.SECONDS) + ' s';
     }
 
     function formatDateTime (value, options) {
-        if (!value) return options.defaultValue || 'N/A';
+        if (!value) {
+            return options.defaultValue || 'N/A';
+        }
         return $filter('date')(value, 'M/d/yyyy h:mm a', 'EST');
     }
 
     function formatNumber (value, options) {
-        if (value !== 0 && !value) return options.defaultValue || 'N/A';
-        var fractionSize = options.fractionSize || 0;
+        if (value !== 0 && !value) {
+            return options.defaultValue || 'N/A';
+        }
+        var fractionSize;
+        if (options.fractionSize !== 0 && !options.fractionSize) {
+            fractionSize = constants.defaultFractionSize.NUMBER;
+        } else {
+            fractionSize = options.fractionSize;
+        }
         return $filter('number')(value, fractionSize);
     }
 
     function formatCurrency (value, options) {
-        if (value !== 0 && !value) return options.defaultValue || 'N/A';
-        var fractionSize = options.fractionSize !== 0 && !options.fractionSize ? 2 : options.fractionSize;
+        if (value !== 0 && !value) {
+            return options.defaultValue || 'N/A';
+        }
+        var fractionSize;
+        if (options.fractionSize !== 0 && !options.fractionSize) {
+            fractionSize = constants.defaultFractionSize.CURRENCY;
+        } else {
+            fractionSize = options.fractionSize;
+        }
         return $filter('decimalCurrency')(value, '$', fractionSize);
+    }
+
+    function roundNumber (value, options, defaultFractionSize) {
+        if (value !== 0 && !value) {
+            return;
+        }
+        var fractionSize;
+        if (options.fractionSize !== 0 && !options.fractionSize) {
+            fractionSize = defaultFractionSize;
+        } else {
+            fractionSize = options.fractionSize;
+        }
+        var number = parseFloat(value);
+        if (!isNaN(number)) {
+            return number.toFixed(fractionSize);
+        }
     }
 }]);

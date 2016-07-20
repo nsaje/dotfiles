@@ -1,17 +1,19 @@
 /* globals describe, it, beforeEach, expect, module, inject */
 
 describe('zemGridCellBaseField', function () {
-    var scope, element;
+    var scope, element, $compile;
 
     var template = '<zem-grid-cell-base-field data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid">' +
                    '</zem-grid-cell-base-field>';
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function ($rootScope, $compile) {
-        scope = $rootScope.$new();
+    beforeEach(inject(function ($rootScope, _$compile_) {
+        $compile = _$compile_;
 
+        scope = $rootScope.$new();
         scope.ctrl = {};
+        scope.ctrl.row = {};
         scope.ctrl.col = {};
         scope.ctrl.col.data = {};
         scope.ctrl.grid = {};
@@ -23,6 +25,29 @@ describe('zemGridCellBaseField', function () {
         scope.ctrl.data = undefined;
         scope.$digest();
         expect(element.text().trim()).toEqual('N/A');
+    });
+
+    it('should hide the field if no data is available or field is disabled in footer', function () {
+        delete scope.ctrl.row;
+        element = $compile(template)(scope);
+        scope.$digest();
+
+        expect(element.text().trim()).toEqual('');
+
+        element.isolateScope().ctrl.row = {};
+        scope.$digest();
+
+        expect(element.text().trim()).toEqual('N/A');
+
+        element.isolateScope().ctrl.row = {
+            level: 0,
+        };
+        element.isolateScope().ctrl.column.data = {
+            totalRow: false,
+        };
+        scope.$digest();
+
+        expect(element.text().trim()).toEqual('');
     });
 
     it('should display default column\'s value if field\'s value is not defined and default value is set', function () {

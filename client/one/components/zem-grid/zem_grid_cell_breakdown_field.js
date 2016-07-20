@@ -48,11 +48,12 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
 
             function getFieldType (breakdown, rowLevel) {
                 // Footer row
-                if (rowLevel === 0) {
+                if (rowLevel === zemGridConstants.gridRowLevel.FOOTER) {
                     return zemGridConstants.gridColumnTypes.TOTALS_LABEL;
                 }
                 // Display internal links for rows on first level in 'Account', 'Campaign' or 'Ad Group' breakdowns
-                if (BREAKDOWNS_WITH_INTERNAL_LINKS.indexOf(breakdown) !== -1 && rowLevel === 1) {
+                if (BREAKDOWNS_WITH_INTERNAL_LINKS.indexOf(breakdown) !== -1 &&
+                    rowLevel === zemGridConstants.gridRowLevel.BASE) {
                     return zemGridConstants.gridColumnTypes.INTERNAL_LINK;
                 }
                 return zemGridConstants.gridColumnTypes.BASE_FIELD;

@@ -15,10 +15,10 @@ oneApp.directive('zemGridCellStateSelector', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_state_selector.html',
-        controller: ['$scope', function ($scope) {
+        controller: ['$scope', 'zemGridConstants', 'zemGridStateAndStatusHelpers', function ($scope, zemGridConstants, zemGridStateAndStatusHelpers) { // eslint-disable-line max-len
             var vm = this;
 
-            vm.stateValues = getStateValues(vm.grid.meta.data.level, vm.grid.meta.data.breakdown);
+            vm.stateValues = zemGridStateAndStatusHelpers.getAvailableStateValues(vm.grid.meta.data.level, vm.grid.meta.data.breakdown);
             vm.setState = setState;
 
             $scope.$watch('ctrl.row', update);
@@ -75,23 +75,12 @@ oneApp.directive('zemGridCellStateSelector', [function () {
                 }
             }
 
-            function getStateValues (level, breakdown) {
-                // TODO: Set state values for other levels and breakdowns where state selector is available
-                if (level === constants.level.CAMPAIGNS && breakdown === constants.breakdown.AD_GROUP) {
-                    return {
-                        enabled: constants.adGroupSourceSettingsState.ACTIVE,
-                        paused: constants.adGroupSourceSettingsState.INACTIVE,
-                    };
-                }
-                return {enabled: undefined, paused: undefined};
-            }
-
             function isActive (state, enabledState) {
                 return state === enabledState;
             }
 
             function isFieldVisible (rowLevel) {
-                return rowLevel === 1;
+                return rowLevel === zemGridConstants.gridRowLevel.BASE;
             }
         }],
     };

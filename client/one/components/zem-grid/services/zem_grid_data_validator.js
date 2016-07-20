@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp, constants */
 'use strict';
 
 oneApp.factory('zemGridDataValidator', ['zemGridConstants', function (zemGridConstants) {
@@ -17,8 +17,20 @@ oneApp.factory('zemGridDataValidator', ['zemGridConstants', function (zemGridCon
     }
 
     function validateCurrency (value, options) {
-        var fractionSize = options.fractionSize || 2;
-        var currencyRegex = new RegExp('^\\d*\\.?\\d{0,' + fractionSize + '}?$');
+        var fractionSize;
+        if (options.fractionSize !== 0 && !options.fractionSize) {
+            fractionSize = constants.defaultFractionSize.CURRENCY;
+        } else {
+            fractionSize = options.fractionSize;
+        }
+
+        var currencyRegex;
+        if (fractionSize === 0) {
+            currencyRegex = new RegExp('^\\d*$');
+        } else {
+            currencyRegex = new RegExp('^\\d*\\.?\\d{0,' + fractionSize + '}?$');
+        }
+
         if (currencyRegex.exec(value)) {
             return true;
         }

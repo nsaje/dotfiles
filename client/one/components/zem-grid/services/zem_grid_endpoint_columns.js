@@ -252,7 +252,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             field: 'status',
             unselectable: true,
             checked: true,
-            type: zemGridConstants.gridColumnTypes.NOTIFICATION,
+            // type: zemGridConstants.gridColumnTypes.NOTIFICATION, // FIXME: Notification column type does not exist
+            type: zemGridConstants.gridColumnTypes.STATUS, // FIXME: Is this correct?
             shown: true,
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
@@ -333,7 +334,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Maximum bid price (in USD) per click.',
             totalRow: false,
             order: true,
-            settingsField: true,
+            editable: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         dailyBudgetSetting: {
@@ -346,7 +347,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Maximum budget per day.',
             totalRow: true,
             order: true,
-            settingsField: true,
+            editable: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
 

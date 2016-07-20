@@ -135,6 +135,11 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
             metaData.ext.enablingAutopilotSourcesAllowed = breakdown.enablingAutopilotSourcesAllowed;
             delete breakdown.enablingAutopilotSourcesAllowed;
         }
+
+        if (breakdown.adGroupAutopilotState !== undefined) {
+            metaData.adGroupAutopilotState = breakdown.adGroupAutopilotState;
+            delete breakdown.adGroupAutopilotState;
+        }
     }
 
     function createEndpoint (metaData) {

@@ -1,6 +1,6 @@
 /* globals describe, it, beforeEach, expect, module, inject */
 
-describe('test zemGridDataFormatter', function () {
+describe('zemGridDataFormatter', function () {
     var zemGridDataFormatter,
         tests,
         options;
@@ -122,6 +122,42 @@ describe('test zemGridDataFormatter', function () {
                 fractionSize: test.fractionSize,
             };
             expect(zemGridDataFormatter.formatValue(test.value, options)).toEqual(test.expectedResult);
+        });
+    });
+
+    it('should correctly round number values', function () {
+        tests = [
+            {value: undefined, expectedResult: undefined},
+            {value: 0, fractionSize: 2, expectedResult: '0.00'},
+            {value: 1234.5678, expectedResult: '1235'},
+            {value: 1234.56, fractionSize: 3, expectedResult: '1234.560'},
+            {value: 1234.56, fractionSize: 0, expectedResult: '1235'},
+        ];
+
+        tests.forEach(function (test) {
+            options = {
+                type: 'number',
+                fractionSize: test.fractionSize,
+            };
+            expect(zemGridDataFormatter.parseInputValue(test.value, options)).toEqual(test.expectedResult);
+        });
+    });
+
+    it('should correctly round currency values', function () {
+        tests = [
+            {value: undefined, expectedResult: undefined},
+            {value: 0, fractionSize: 2, expectedResult: '0.00'},
+            {value: 1234.5678, expectedResult: '1234.57'},
+            {value: 1234.56, fractionSize: 3, expectedResult: '1234.560'},
+            {value: 1234.56, fractionSize: 0, expectedResult: '1235'},
+        ];
+
+        tests.forEach(function (test) {
+            options = {
+                type: 'currency',
+                fractionSize: test.fractionSize,
+            };
+            expect(zemGridDataFormatter.parseInputValue(test.value, options)).toEqual(test.expectedResult);
         });
     });
 });

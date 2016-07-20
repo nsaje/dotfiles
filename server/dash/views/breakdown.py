@@ -131,6 +131,8 @@ def get_report_through_table(get_fn, user, form_data, all_accounts_level=False, 
     if 'enabling_autopilot_sources_allowed' in response:
         base['enabling_autopilot_sources_allowed'] = response['enabling_autopilot_sources_allowed']
 
+    if 'ad_group_autopilot_state' in response:
+        base['ad_group_autopilot_state'] = response['ad_group_autopilot_state']
     if 'batches' in response:
         base['batches'] = response['batches']
 

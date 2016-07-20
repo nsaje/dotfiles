@@ -15,7 +15,7 @@ oneApp.directive('zemGridCellInternalLink', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_internal_link.html',
-        controller: ['$scope', function ($scope) {
+        controller: ['$scope', 'zemGridConstants', function ($scope, zemGridConstants) {
             var vm = this;
 
             // Set some dummy values to initialize zem-in-link
@@ -26,7 +26,7 @@ oneApp.directive('zemGridCellInternalLink', [function () {
             $scope.$watch('ctrl.data', update);
 
             function update () {
-                if (vm.data && vm.row.data && vm.row.level === 1) {
+                if (vm.data && vm.row.data && vm.row.level === zemGridConstants.gridRowLevel.BASE) {
                     vm.id = vm.row.data.breakdownId || -1;
                     vm.state = getState(vm.grid.meta.data.level);
                 }

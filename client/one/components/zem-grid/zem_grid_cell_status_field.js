@@ -3,43 +3,18 @@
 
 oneApp.directive('zemGridCellStatusField', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
 
-    // Status texts are generated differently for different levels and breakdowns. This function returns an object with
-    // row status and list of possible statuses for this row.
-    // TODO: Set status object for other levels and breakdowns where status text is available
-    // FIXME: constants.adGroupSettingsState.ACTIVE and constants.adGroupSettingsState.INACTIVE are used on "wrong"
-    // levels (e.g. enabled and paused value for status on account level is based on constants.adGroupSettingsState)
-    function getStatusObject (stats, level, breakdown) {
-        var value;
-        if (level === constants.level.CAMPAIGNS && breakdown === constants.breakdown.AD_GROUP) {
-            if (stats[zemGridEndpointColumns.COLUMNS.stateAdGroup.field]) {
-                value = stats[zemGridEndpointColumns.COLUMNS.stateAdGroup.field].value;
-            }
-            return {
-                value: value,
-                enabled: constants.adGroupSourceSettingsState.ACTIVE,
-                paused: constants.adGroupSourceSettingsState.INACTIVE,
-            };
+    function getStatusText (row, rowStatusObject) {
+        if (row.archived) {
+            return 'Archived';
         }
-        if (level === constants.level.CAMPAIGNS && breakdown === constants.breakdown.MEDIA_SOURCE) {
-            if (stats[zemGridEndpointColumns.COLUMNS.statusMediaSource.field]) {
-                value = stats[zemGridEndpointColumns.COLUMNS.statusMediaSource.field].value;
-            }
-            return {
-                value: value,
-                enabled: constants.adGroupSettingsState.ACTIVE,
-                paused: constants.adGroupSettingsState.INACTIVE,
-            };
-        }
-    }
 
-    function getStatusText (status) {
-        if (!status) {
+        if (!rowStatusObject) {
             return '';
         }
 
-        if (status.value === status.enabled) {
+        if (rowStatusObject.value === rowStatusObject.enabled) {
             return 'Active';
-        } else if (status.value === status.paused) {
+        } else if (rowStatusObject.value === rowStatusObject.paused) {
             return 'Paused';
         }
         return '';
@@ -56,7 +31,7 @@ oneApp.directive('zemGridCellStatusField', ['zemGridEndpointColumns', function (
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_status_field.html',
-        controller: ['$scope', function ($scope) {
+        controller: ['$scope', 'zemGridStateAndStatusHelpers', function ($scope, zemGridStateAndStatusHelpers) {
             var vm = this;
             var pubsub = vm.grid.meta.pubsub;
 
@@ -68,16 +43,13 @@ oneApp.directive('zemGridCellStatusField', ['zemGridEndpointColumns', function (
                 vm.statusText = '';
 
                 if (vm.row) {
-                    if (vm.row.archived) {
-                        vm.statusText = 'Archived';
-                    } else {
-                        var status = getStatusObject(
-                            vm.row.data.stats,
-                            vm.grid.meta.data.level,
-                            vm.grid.meta.data.breakdown
-                        );
-                        vm.statusText = getStatusText(status);
-                    }
+                    var stats = vm.row.data ? vm.row.data.stats : null;
+                    var rowStatusObject = zemGridStateAndStatusHelpers.getRowStatusObject(
+                        stats,
+                        vm.grid.meta.data.level,
+                        vm.grid.meta.data.breakdown
+                    );
+                    vm.statusText = getStatusText(vm.row, rowStatusObject);
                 }
             }
         }],

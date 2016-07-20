@@ -91,7 +91,7 @@ describe('zemGridCellBreakdownField', function () {
         scope.$digest();
 
         expect(element.find('.zem-grid-cell-totals-label').hasClass('ng-hide')).toBe(false);
-        expect(element.find('.zem-grid-cell-base-field').hasClass('ng-hide')).toBe(true);
+        expect(element.find('.zem-grid-cell-base-breakdown-field').hasClass('ng-hide')).toBe(true);
         expect(element.find('.zem-grid-cell-internal-link').hasClass('ng-hide')).toBe(true);
     });
 
@@ -103,7 +103,7 @@ describe('zemGridCellBreakdownField', function () {
         scope.$digest();
 
         expect(element.find('.zem-grid-cell-totals-label').hasClass('ng-hide')).toBe(true);
-        expect(element.find('.zem-grid-cell-base-field').hasClass('ng-hide')).toBe(false);
+        expect(element.find('.zem-grid-cell-base-breakdown-field').hasClass('ng-hide')).toBe(false);
         expect(element.find('.zem-grid-cell-internal-link').hasClass('ng-hide')).toBe(true);
     });
 
@@ -115,7 +115,7 @@ describe('zemGridCellBreakdownField', function () {
         scope.$digest();
 
         expect(element.find('.zem-grid-cell-totals-label').hasClass('ng-hide')).toBe(true);
-        expect(element.find('.zem-grid-cell-base-field').hasClass('ng-hide')).toBe(true);
+        expect(element.find('.zem-grid-cell-base-breakdown-field').hasClass('ng-hide')).toBe(true);
         expect(element.find('.zem-grid-cell-internal-link').hasClass('ng-hide')).toBe(false);
     });
 });

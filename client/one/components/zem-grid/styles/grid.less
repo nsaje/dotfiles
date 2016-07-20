@@ -121,7 +121,12 @@
             .zem-grid-header-cell {
                 display: inline-block;
             }
+
             .zem-grid-header-cell-data {
+                &.number, &.percent, &.dateTime, &.seconds, &.currency {
+                    text-align: right;
+                }
+
                 zem-internal-feature {
                     margin-right: 5px;
                     margin-top: 15px;
@@ -131,6 +136,7 @@
                     border-top: 7px solid @internal-color;
                     border-right: 7px solid transparent;
                 }
+
                 .ordered {
                     .arrow-down();
                 }
@@ -251,6 +257,12 @@
             cursor: pointer;
         }
 
+        .zem-grid-cell-base-field:not(.text),
+        .zem-grid-cell-editable-base-field:not(.text) {
+            display: block;
+            text-align: right;
+        }
+
         .zem-grid-cell-base-field {
             &.superperforming-goal {
                 color: @zem-grid-superperforming-goal-color;
@@ -258,6 +270,40 @@
 
             &.underperforming-goal {
                 color: @zem-grid-underperforming-goal-color;
+            }
+        }
+
+        .zem-grid-cell-editable-base-field {
+            .auto-pilot-icon {
+                margin-right: 2px;
+            }
+
+            .edit-modal-trigger {
+                position: relative;
+                margin-right: -4px;
+                padding: 3px 3px 3px 24px;
+                border: 1px dashed transparent;
+                border-radius: 2px;
+
+                &:before {
+                    content: '';
+                    position: absolute;
+                    top: 3px;
+                    left: 3px;
+                    width: 16px;
+                    height: 16px;
+                    background-size: 30px;
+                    background-position: 50%;
+                }
+
+                &:hover:not(.modal-open) {
+                    cursor: pointer;
+                    border-color: @zem-grid-text-color;
+
+                    &:before {
+                        background-image: url('img/edit_icon.svg');
+                    }
+                }
             }
         }
 
@@ -414,6 +460,65 @@
                 font-size: 12px;
                 text-decoration: underline;
             }
+        }
+    }
+
+    &.editable-currency-field-modal {
+        width: 284px;
+        padding: 8px;
+        background-color: @zem-grid-bg-color;
+        border: 1px solid @default-color;
+        border-radius: 3px;
+        font-size: @zem-grid-default-font-size;
+
+        .currency-input {
+            position: relative;
+            display: block;
+            float: left;
+            width: 120px;
+            padding-left: 16px;
+
+            .prefix {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 10px;
+                height: 34px;
+                line-height: 34px;
+                font-size: 16px;
+            }
+
+            input {
+                width: 100%;
+                height: 34px;
+                line-height: 34px;
+                padding: 0 4px;
+                border: 1px solid @default-color;
+                border-radius: 3px;
+
+                &:focus {
+                    outline: none;
+                }
+            }
+        }
+
+        .save-button,
+        .cancel-button {
+            display: block;
+            float: left;
+            width: 70px;
+            margin-left: 3px;
+
+            .loader-image {
+                height: 12px;
+            }
+        }
+
+        .error {
+            display: block;
+            float: left;
+            width: 100%;
+            margin-top: 5px;
         }
     }
 }

@@ -1,7 +1,7 @@
 /* globals oneApp, constants */
 'use strict';
 
-oneApp.directive('zemGridCellPerformanceIndicator', [function () {
+oneApp.directive('zemGridCellPerformanceIndicator', ['zemGridConstants', function (zemGridConstants) {
 
     var statusIcons = {},
         statusClasses = {};
@@ -13,7 +13,7 @@ oneApp.directive('zemGridCellPerformanceIndicator', [function () {
     statusClasses[constants.emoticon.NEUTRAL] = 'img-icon-neutral';
 
     function isFieldVisible (rowLevel) {
-        return rowLevel === 1;
+        return rowLevel === zemGridConstants.gridRowLevel.BASE;
     }
 
     function getOverallIcon (overall) {
