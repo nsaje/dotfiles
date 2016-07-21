@@ -37,6 +37,7 @@ class K1ApiTest(TestCase):
     def test_signature(self):
         test_paths = [
             'k1api.get_accounts',
+            'k1api.get_default_source_credentials',
             'k1api.get_custom_audiences',
             'k1api.update_source_pixel',
             'k1api.get_source_credentials_for_reports_sync',
@@ -174,6 +175,33 @@ class K1ApiTest(TestCase):
                  ])},
             ]})
         self.assertEqual(data['credentials'], u'c')
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_default_source_credentials(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_default_source_credentials'),
+            {'bidder_slug': 'facebook'}
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+
+        data = data['response']
+        self.assertEqual(data, u'h')
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_default_source_credentials_with_no_slug(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_default_source_credentials'),
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['error'], 'Must provide bidder slug.')
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
@@ -588,7 +616,7 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertEqual(len(data['blacklist']), 10)
+        self.assertEqual(len(data['blacklist']), 8)
 
         sorted_blacklist = sorted(data['blacklist'], key=lambda b: (b['ad_group_id'], b['status'], b['domain']))
         self.assertDictEqual(sorted_blacklist[0], {
@@ -627,29 +655,15 @@ class K1ApiTest(TestCase):
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[5], {
-            'ad_group_id': 1,
-            'domain': 'pub7.com',
-            'exchange': 'facebook',
-            'status': 2,
-            'external_id': 'outbrain-pub-id',
-        })
-        self.assertDictEqual(sorted_blacklist[6], {
             'ad_group_id': 2,
             'domain': 'pub3.com',
             'exchange': 'google',
             'status': 1,
             'external_id': '',
         })
-        self.assertDictEqual(sorted_blacklist[7], {
+        self.assertDictEqual(sorted_blacklist[6], {
             'ad_group_id': 2,
             'domain': 'pub5.com',
-            'exchange': 'google',
-            'status': 2,
-            'external_id': '',
-        })
-        self.assertDictEqual(sorted_blacklist[8], {
-            'ad_group_id': 2,
-            'domain': 'pub6.com',
             'exchange': 'google',
             'status': 2,
             'external_id': '',
@@ -668,7 +682,7 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertEqual(len(data['blacklist']), 5)
+        self.assertEqual(len(data['blacklist']), 4)
 
         sorted_blacklist = sorted(data['blacklist'], key=lambda b: b['domain'])
         self.assertDictEqual(sorted_blacklist[0], {
@@ -783,7 +797,7 @@ class K1ApiTest(TestCase):
 
         self.assertEqual(len(data), 2)
         self.assertEqual(len(data['1']), 1)
-        self.assertEqual(len(data['2']), 2)
+        self.assertEqual(len(data['2']), 1)
 
         self.assertDictEqual(data['1'][0], {
             u'exchange': 'b1_adiant',
@@ -794,12 +808,6 @@ class K1ApiTest(TestCase):
 
         sorted_exchanges = sorted(data['2'], key=lambda b: b['exchange'])
         self.assertDictEqual(sorted_exchanges[0], {
-            u'exchange': u'b1_facebook',
-            u'status': 1,
-            u'cpc_cc': u'0.1400',
-            u'daily_budget_cc': u'1.7000',
-        })
-        self.assertDictEqual(sorted_exchanges[1], {
             u'exchange': u'b1_google',
             u'status': 1,
             u'cpc_cc': u'0.1300',

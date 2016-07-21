@@ -315,6 +315,16 @@ class get_accounts(K1APIView):
         return self.response_ok(response)
 
 
+class get_default_source_credentials(K1APIView):
+    def get(self, request):
+        bidder_slug = request.GET.get("bidder_slug")
+        if not bidder_slug:
+            return self.response_error("Must provide bidder slug.")
+
+        default_source_settings = dash.models.DefaultSourceSettings.objects.get(source__bidder_slug=bidder_slug)
+        return self.response_ok(default_source_settings.credentials.credentials)
+
+
 class get_custom_audiences(K1APIView):
 
     def get(self, request):

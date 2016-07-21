@@ -258,8 +258,8 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Facebook
         tracking_slug: 'facebook'
-        bidder_slug: 'b1_facebook'
-        source_type: 6
+        bidder_slug: 'facebook'
+        source_type: 7
         content_ad_submission_type: 2
         maintenance: False
     model: dash.source
@@ -302,6 +302,12 @@
         credentials: 6
     model: dash.defaultsourcesettings
     pk: 6
+
+-   fields:
+        source: 8
+        credentials: 7
+    model: dash.defaultsourcesettings
+    pk: 7
 
 
 # test source credentials
@@ -364,6 +370,16 @@
         source: 6
     model: dash.sourcecredentials
     pk: 6
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        credentials: 'h'
+        sync_reports: False
+        name: Credentials
+        source: 8
+    model: dash.sourcecredentials
+    pk: 7
 
 # test adgroup
 
