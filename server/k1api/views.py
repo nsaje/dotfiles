@@ -919,13 +919,24 @@ class get_outbrain_marketer_id(K1APIView):
         return self.response_ok(ad_group.campaign.account.outbrain_marketer_id)
 
 
-class get_facebook_account(K1APIView):
+class get_facebook_accounts(K1APIView):
 
     def get(self, request):
         ad_group_id = request.GET.get('ad_group_id')
         account_id = request.GET.get('account_id')
         if not ad_group_id and not account_id:
-            return self.response_error("Must provide ad group id or account id.")
+            facebook_accounts = dash.models.FacebookAccount.objects.filter(
+                status=constants.FacebookPageRequestType.CONNECTED)
+
+            result = []
+            for facebook_account in facebook_accounts:
+                account_dict = {
+                    'account_id': facebook_account.account_id,
+                    'ad_account_id': facebook_account.ad_account_id,
+                    'page_id': facebook_account.page_id
+                }
+                result.append(account_dict)
+            return self.response_ok(result)
 
         if not account_id:
             account_id = dash.models.Account.objects.get(campaign__adgroup__id=ad_group_id).id

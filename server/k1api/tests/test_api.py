@@ -45,7 +45,7 @@ class K1ApiTest(TestCase):
             'k1api.get_publishers_blacklist',
             'k1api.get_ad_groups',
             'k1api.get_ad_groups_exchanges',
-            'k1api.get_facebook_account',
+            'k1api.get_facebook_accounts',
             'k1api.update_facebook_account',
         ]
         for path in test_paths:
@@ -914,9 +914,33 @@ class K1ApiTest(TestCase):
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
-    def test_get_facebook_account_with_ad_group(self, mock_verify_wsgi_request):
+    def test_get_facebook_accounts(self, mock_verify_wsgi_request):
         response = self.client.get(
-            reverse('k1api.get_facebook_account'),
+            reverse('k1api.get_facebook_accounts'),
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+
+        data = data['response']
+        self.assertEqual(len(data), 2)
+        self.assertDictEqual(data[0], {
+            u'account_id': 1,
+            u'ad_account_id': u'act_123',
+            u'page_id': u'1234',
+        })
+        self.assertDictEqual(data[1], {
+            u'account_id': 2,
+            u'ad_account_id': u'act_456',
+            u'page_id': u'5678',
+        })
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_facebook_accounts_with_ad_group(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_facebook_accounts'),
             {'ad_group_id': '1'}
         )
         mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
@@ -929,9 +953,9 @@ class K1ApiTest(TestCase):
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')
-    def test_get_facebook_account_with_account(self, mock_verify_wsgi_request):
+    def test_get_facebook_accounts_with_account(self, mock_verify_wsgi_request):
         response = self.client.get(
-            reverse('k1api.get_facebook_account'),
+            reverse('k1api.get_facebook_accounts'),
             {'account_id': '1'}
         )
         mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
@@ -941,18 +965,6 @@ class K1ApiTest(TestCase):
 
         fb_account = dash.models.FacebookAccount.objects.get(pk=1)
         self.assertEqual(fb_account.ad_account_id, data['response']['ad_account_id'])
-
-    @patch('utils.request_signer.verify_wsgi_request')
-    @override_settings(K1_API_SIGN_KEY='test_api_key')
-    def test_get_facebook_account_with_none(self, mock_verify_wsgi_request):
-        response = self.client.get(
-            reverse('k1api.get_facebook_account'),
-        )
-        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
-
-        data = json.loads(response.content)
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['error'], 'Must provide ad group id or account id.')
 
     @patch('utils.request_signer.verify_wsgi_request')
     @override_settings(K1_API_SIGN_KEY='test_api_key')

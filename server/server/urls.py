@@ -646,9 +646,9 @@ urlpatterns += [
         name='k1api.get_outbrain_marketer_id',
     ),
     url(
-        r'^k1api/get_facebook_account$',
-        k1api.views.get_facebook_account.as_view(),
-        name='k1api.get_facebook_account',
+        r'^k1api/get_facebook_accounts$',
+        k1api.views.get_facebook_accounts.as_view(),
+        name='k1api.get_facebook_accounts',
     ),
     url(
         r'^k1api/update_facebook_account$',
