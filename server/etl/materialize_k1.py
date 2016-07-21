@@ -129,6 +129,7 @@ class ContentAdStats(materialize_views.Materialize):
             effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
                 cost, data_cost, campaign_factors[ad_group.campaign])
 
+            # merge postclicks
             post_click = self._get_post_click_data(
                 content_ad_postclick,
                 ad_group,
@@ -142,8 +143,8 @@ class ContentAdStats(materialize_views.Materialize):
                 ad_group.id,
                 media_source.id,
 
-                ad_group.campaign.id,
-                ad_group.campaign.account.id,
+                ad_group.campaign_id,
+                ad_group.campaign.account_id,
                 row[4],  # impressions
                 row[5],  # clicks
 
@@ -162,7 +163,61 @@ class ContentAdStats(materialize_views.Materialize):
                 converters.decimal_to_int(license_fee * converters.MICRO_TO_NANO),
             )
 
-        logger.info('Contentadstats: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
+        content_ads_ad_group_map = {x.id: x.ad_group_id for x in dash.models.ContentAd.objects.all()}
+
+        # make a new mapping as from now on we use media_source_slugs that are already extracted
+        media_sources_map = {
+            helpers.extract_source_slug(s.bidder_slug): s for s in dash.models.Source.objects.all()
+        }
+
+        # insert the remaining postclicks
+        for content_ad_id, media_source_slug in content_ad_postclick.keys():
+            ad_group_id = content_ads_ad_group_map.get(content_ad_id)
+            ad_group = ad_groups_map.get(ad_group_id)
+            if ad_group is None:
+                logger.error("Got postclick data for unknown ad group")
+                continue
+
+            media_source = media_sources_map.get(media_source_slug)
+            if media_source is None:
+                logger.error("Got postclick data for invalid media_source: %s", media_source_slug)
+                continue
+
+            post_click = self._get_post_click_data(
+                content_ad_postclick,
+                ad_group,
+                content_ad_id,
+                media_source_slug
+            )
+
+            yield (
+                date,
+                content_ad_id,
+                ad_group.id,
+                media_source.id,
+
+                ad_group.campaign_id,
+                ad_group.campaign.account_id,
+
+                0,
+                0,
+                0,
+                0,
+
+                post_click.get('visits'),
+                post_click.get('new_visits'),
+                post_click.get('bounced_visits'),
+                post_click.get('pageviews'),
+                post_click.get('time_on_site'),
+                post_click.get('conversions'),
+
+                0,
+                0,
+                0,
+            )
+
+        if content_ad_postclick:
+            logger.info('Contentadstats: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
 class Publishers(materialize_views.Materialize):
@@ -267,9 +322,7 @@ class Publishers(materialize_views.Materialize):
             ad_group_id = row[0]
             media_source = row[2]
             publisher = row[3]
-            if media_source.startswith('b1_'):
-                # TODO fix in k1
-                media_source = media_source[3:]
+            media_source = helpers.extract_source_slug(media_source)
             content_ad_postclick[(ad_group_id, media_source, publisher)].append(row)
 
         ad_groups_map = {a.id: a for a in dash.models.AdGroup.objects.all()}
@@ -280,6 +333,7 @@ class Publishers(materialize_views.Materialize):
             publisher = row[3]
 
             if media_source == 'outbrain':
+                # skip outbrain as we import it from another table
                 continue
 
             if not publisher:
@@ -325,6 +379,7 @@ class Publishers(materialize_views.Materialize):
 
         source = dash.models.Source.objects.get(source_type__type=dash.constants.SourceType.OUTBRAIN)
         outbrain_cpcs = self._outbrain_cpc(date)
+
         for row in self._stats_outbrain_publishers(date):
             ad_group_id = row[0]
             ad_group = ad_groups_map.get(ad_group_id)
@@ -368,7 +423,60 @@ class Publishers(materialize_views.Materialize):
                 post_click.get('conversions'),
             )
 
-        logger.info('Publishers_1: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
+        content_ads_ad_group_map = {x.id: x.ad_group_id for x in dash.models.ContentAd.objects.all()}
+
+        # make a new mapping as from now on we use media_source_slugs that are already extracted
+        media_sources_map = {
+            helpers.extract_source_slug(s.bidder_slug): s for s in dash.models.Source.objects.all()
+        }
+
+        # import the remaining postclickstats
+        for ad_group_id, media_source_slug, publisher in content_ad_postclick.keys():
+            ad_group_id = content_ads_ad_group_map.get(content_ad_id)
+            ad_group = ad_groups_map.get(ad_group_id)
+            if ad_group is None:
+                logger.error("Got postclick data for unknown ad group")
+                continue
+
+            media_source = media_sources_map.get(media_source_slug)
+            if media_source is None:
+                logger.error("Got postclick data for invalid media_source: %s", media_source_slug)
+                continue
+
+            post_click = self._get_post_click_data(
+                content_ad_postclick,
+                ad_group_id,
+                content_ad_id,
+                media_source_slug
+            )
+
+            yield (
+                date,
+                ad_group.id,
+                media_source.bidder_slug,
+                publisher,
+                '',  # domain
+
+                0,
+                0,
+
+                0,
+                0,
+
+                0,
+                0,
+                0,
+
+                post_click.get('visits'),
+                post_click.get('new_visits'),
+                post_click.get('bounced_visits'),
+                post_click.get('pageviews'),
+                post_click.get('time_on_site'),
+                post_click.get('conversions'),
+            )
+
+        if content_ad_postclick:
+            logger.info('Publishers_1: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
 class TouchpointConversions(materialize_views.Materialize):
