@@ -51,7 +51,7 @@ NEW_MATERIALIZED_VIEWS = [
 ]
 
 
-@influx.timer('etl.refresh_k1.refresh_k1_reports')
+@influx.timer('etl.refresh_k1.refresh_k1_timer', type='all')
 def refresh_k1_reports(update_since):
     influx.incr('etl.refresh_k1.refresh_k1_reports', 1)
 
@@ -67,7 +67,7 @@ def refresh_k1_reports(update_since):
             mv.generate(campaign_factors=effective_spend_factors)
 
 
-@influx.timer('etl.refresh_k1.refresh_k1_new_reports')
+@influx.timer('etl.refresh_k1.refresh_k1_timer', type='only_new')
 def refresh_k1_new_reports(update_since):
     influx.incr('etl.refresh_k1.refresh_k1_reports', 1)
 
