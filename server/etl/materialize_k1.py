@@ -440,6 +440,9 @@ class Publishers(materialize_views.Materialize):
                 logger.error("Got postclick data for invalid media_source: %s", media_source_slug)
                 continue
 
+            if not publisher:
+                continue
+
             post_click = self._get_post_click_data(
                 content_ad_postclick,
                 ad_group_id,
