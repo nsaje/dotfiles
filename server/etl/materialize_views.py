@@ -278,14 +278,12 @@ class MasterView(Materialize):
                     sql, params = self.prepare_insert_traffic_data_query(date)
                     c.execute(sql, params)
 
-                    breakdown_keys_with_traffic = self.get_breakdowns_with_traffic_results(c, date)
-
                     # generate csv in transaction as it needs data created in it
                     s3_path = upload_csv(
                         self.TABLE_NAME,
                         date,
                         self.job_id,
-                        partial(self.generate_rows, c, date, breakdown_keys_with_traffic)
+                        partial(self.generate_rows, c, date)
                     )
 
                     logger.info('Copying CSV to table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
@@ -296,38 +294,14 @@ class MasterView(Materialize):
                     sql, params = self.prepare_copy_diff_data_query(c, date)
                     c.execute(sql, params)
 
-    def generate_rows(self, cursor, date, breakdown_keys_with_traffic):
-        skipped_postclick_stats = set()
-
+    def generate_rows(self, cursor, date):
         for breakdown_key, row, _ in self.get_postclickstats(cursor, date):
-            # only return those rows for which we have traffic - click
-            if breakdown_key in breakdown_keys_with_traffic:
-                yield row
-            else:
-                skipped_postclick_stats.add(breakdown_key)
-
-        if skipped_postclick_stats:
-            logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
+            yield row
 
     def prepare_insert_traffic_data_query(self, date):
         sql = backtosql.generate_sql('etl_insert_mv_master_stats.sql', {})
 
         return sql, {
-            'date': date,
-        }
-
-    def get_breakdowns_with_traffic_results(self, c, date):
-        sql, params = self.prepare_get_breakdowns_with_traffic(date)
-        c.execute(sql, params)
-
-        breakdown_keys = set()
-        for row in db.xnamedtuplefetchall(c):
-            breakdown_keys.add(helpers.get_breakdown_key_for_postclickstats(row.source_id, row.content_ad_id))
-
-        return breakdown_keys
-
-    def prepare_get_breakdowns_with_traffic(self, date):
-        return backtosql.generate_sql('etl_select_breakdown_keys_with_traffic.sql', {}), {
             'date': date,
         }
 
@@ -456,39 +430,28 @@ class MVConversions(Materialize):
                     sql, params = prepare_daily_delete_query(self.TABLE_NAME, date)
                     c.execute(sql, params)
 
-                    breakdown_keys_with_traffic = self.master_view.get_breakdowns_with_traffic_results(c, date)
-
                     # generate csv in transaction as it needs data created in it
                     s3_path = upload_csv(
                         self.TABLE_NAME,
                         date,
                         self.job_id,
-                        partial(self.generate_rows, c, date, breakdown_keys_with_traffic)
+                        partial(self.generate_rows, c, date)
                     )
 
                     logger.info('Copying CSV to table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
                     sql, params = prepare_copy_csv_query(s3_path, self.TABLE_NAME)
                     c.execute(sql, params)
 
-    def generate_rows(self, cursor, date, breakdown_keys_with_traffic):
-        skipped_postclick_stats = set()
-
+    def generate_rows(self, cursor, date):
         for breakdown_key, row, conversions_tuple in self.master_view.get_postclickstats(cursor, date):
-            # only return those rows for which we have traffic - click
-            if breakdown_key in breakdown_keys_with_traffic:
-                conversions = conversions_tuple[0]
-                postclick_source = conversions_tuple[1]
+            conversions = conversions_tuple[0]
+            postclick_source = conversions_tuple[1]
 
-                if conversions:
-                    conversions = json.loads(conversions)
-                    for slug, hits in conversions.iteritems():
-                        slug = helpers.get_conversion_prefix(postclick_source, slug)
-                        yield tuple(list(row)[:self.master_view.POSTCLICK_STRUCTURE_BREAKDOWN_INDEX] + [slug, hits])
-            else:
-                skipped_postclick_stats.add(breakdown_key)
-
-        if skipped_postclick_stats:
-            logger.info('MasterView: Couldn\'t join the following postclick stats: %s', skipped_postclick_stats)
+            if conversions:
+                conversions = json.loads(conversions)
+                for slug, hits in conversions.iteritems():
+                    slug = helpers.get_conversion_prefix(postclick_source, slug)
+                    yield tuple(list(row)[:self.master_view.POSTCLICK_STRUCTURE_BREAKDOWN_INDEX] + [slug, hits])
 
 
 class MVTouchpointConversions(Materialize):

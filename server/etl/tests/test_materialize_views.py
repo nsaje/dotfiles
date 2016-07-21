@@ -310,12 +310,6 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             ),
             mock.call(insert_into_master_sql, {'date': datetime.date(2016, 7, 1)}),
             mock.call(backtosql.SQLMatcher("""
-                SELECT date, source_id, content_ad_id
-                FROM mv_master
-                WHERE date=%(date)s GROUP BY 1, 2, 3;
-            """), {'date': datetime.date(2016, 7, 1)}
-            ),
-            mock.call(backtosql.SQLMatcher("""
                 SELECT
                     ad_group_id AS ad_group_id,
                     type AS postclick_source,
@@ -351,7 +345,6 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             ),
             mock.call(insert_into_master_sql, {'date': datetime.date(2016, 7, 2)}),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
-            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
                 's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/02/view_asd.csv',
@@ -364,7 +357,6 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             ),
             mock.call(insert_into_master_sql, {'date': datetime.date(2016, 7, 3)}),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
-            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
                 's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/03/view_asd.csv',
@@ -376,7 +368,6 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
     def test_generate_rows(self):
 
         date = datetime.date(2016, 5, 1)
-        breakdown_keys_with_traffic = set([(3, 1), (2, 2), (1, 3)])
 
         mock_cursor = mock.MagicMock()
 
@@ -395,7 +386,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         with mock.patch.object(materialize_views.MasterView, 'get_postclickstats',
                                return_value=postclickstats_return_value):
             mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
-            rows = list(mv.generate_rows(mock_cursor, date, breakdown_keys_with_traffic))
+            rows = list(mv.generate_rows(mock_cursor, date))
 
             self.assertItemsEqual(rows, [
                 (
@@ -408,6 +399,11 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                     constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
                     0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None
                 ),
+                (
+                    date, 3, 1, 2, 2, 2, 4, 'trol', 0, None, None, None,
+                    constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
+                    0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, '{einpix: 2}', None
+                )
             ])
 
     @mock.patch('etl.materialize_views.MasterView.get_postclickstats_query_results')
@@ -489,12 +485,6 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                 {'date': datetime.date(2016, 7, 1)}
             ),
             mock.call(backtosql.SQLMatcher("""
-                SELECT date, source_id, content_ad_id
-                FROM mv_master
-                WHERE date=%(date)s GROUP BY 1, 2, 3;
-            """), {'date': datetime.date(2016, 7, 1)}
-            ),
-            mock.call(backtosql.SQLMatcher("""
                 SELECT
                     ad_group_id AS ad_group_id,
                     type AS postclick_source,
@@ -528,7 +518,6 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                 {'date': datetime.date(2016, 7, 2)}
             ),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
-            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
                 's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/02/view_asd.csv',
@@ -539,7 +528,6 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                 {'date': datetime.date(2016, 7, 3)}
             ),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
-            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
                 's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/03/view_asd.csv',
@@ -549,8 +537,6 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
 
     def test_generate_rows(self):
         date = datetime.date(2016, 7, 1)
-
-        breakdown_keys_with_traffic = set([(3, 1), (2, 2), (1, 3)])
 
         mock_cursor = mock.MagicMock()
 
@@ -579,12 +565,13 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                                return_value=postclickstats_return_value):
 
             mv = materialize_views.MVConversions('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
-            rows = list(mv.generate_rows(mock_cursor, date, breakdown_keys_with_traffic))
+            rows = list(mv.generate_rows(mock_cursor, date))
 
             self.assertItemsEqual(rows, [
                 (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'ga__einpix', 2),
                 (date, 3, 1, 1, 1, 1, 1, 'bla.com', 'ga__preuba', 1),
                 (date, 1, 1, 1, 3, 3, 3, 'nesto.com', 'omniture__poop', 111),
+                (date, 3, 1, 2, 2, 2, 4, 'trol', 'ga__poop', 23),
             ])
 
 
