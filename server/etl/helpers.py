@@ -68,13 +68,14 @@ def get_local_multiday_date_context(date_from, date_to):
 
 
 def calculate_effective_cost(cost, data_cost, factors):
-    pct_actual_spend, pct_license_fee = factors
+    pct_actual_spend, pct_license_fee, pct_margin = factors
 
     effective_cost = cost * pct_actual_spend
     effective_data_cost = data_cost * pct_actual_spend
     license_fee = (effective_cost + effective_data_cost) * pct_license_fee
+    margin = (effective_cost + effective_data_cost + license_fee) * pct_margin
 
-    return effective_cost, effective_data_cost, license_fee
+    return effective_cost, effective_data_cost, license_fee, margin
 
 
 def extract_source_slug(source_slug):

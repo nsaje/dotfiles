@@ -83,13 +83,14 @@ class HelpersTest(TestCase, backtosql.TestSQLMixin):
         )""")
 
     def test_calculate_effective_cost(self):
-        factors = (0.2, 0.1)
+        factors = (0.2, 0.1, 0.15)
 
-        effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(250, 300, factors)
+        effective_cost, effective_data_cost, license_fee, margin = helpers.calculate_effective_cost(250, 300, factors)
 
         self.assertEqual(effective_cost, 50.0)
         self.assertEqual(effective_data_cost, 60.0)
         self.assertEqual(license_fee, 11.0)
+        self.assertEqual(margin, 18.15)
 
     def test_extract_source_slug(self):
         self.assertEqual(helpers.extract_source_slug('b1_outbrain'), 'outbrain')

@@ -124,19 +124,21 @@ def _get_dates(date, campaign):
 
 def _get_effective_spend_pcts(date, campaign, campaign_spend):
     if campaign_spend is None:
-        return 0, 0
+        return 0, 0, 0
 
     attributed_spends = reports.models.BudgetDailyStatement.objects.\
         filter(budget__campaign=campaign, date=date).\
         aggregate(
             media_nano=Sum('media_spend_nano'),
             data_nano=Sum('data_spend_nano'),
-            license_fee_nano=Sum('license_fee_nano')
+            license_fee_nano=Sum('license_fee_nano'),
+            margin_nano=Sum('margin_nano'),
         )
 
     actual_spend_nano = campaign_spend['media_nano'] + campaign_spend['data_nano']
     attributed_spend_nano = (attributed_spends['media_nano'] or 0) + (attributed_spends['data_nano'] or 0)
     license_fee_nano = attributed_spends['license_fee_nano'] or 0
+    margin_nano = attributed_spends['margin_nano'] or 0
 
     pct_actual_spend = 0
     if actual_spend_nano > 0:
@@ -146,7 +148,11 @@ def _get_effective_spend_pcts(date, campaign, campaign_spend):
     if attributed_spend_nano > 0:
         pct_license_fee = min(1, license_fee_nano / Decimal(attributed_spend_nano))
 
-    return pct_actual_spend, pct_license_fee
+    pct_margin = 0
+    if attributed_spend_nano + license_fee_nano > 0:
+        pct_margin = min(1, margin_nano / Decimal(attributed_spend_nano + license_fee_nano))
+
+    return pct_actual_spend, pct_license_fee, pct_margin
 
 
 def _get_campaign_spend(date, all_campaigns):

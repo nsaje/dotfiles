@@ -4,11 +4,7 @@ from collections import defaultdict
 from decimal import Decimal
 from functools import partial
 
-from django.db import connections
-from django.conf import settings
-
 import dash.models
-import reports.constants
 from utils import converters
 from redshiftapi.db import get_write_stats_cursor, get_write_stats_transaction
 
@@ -126,7 +122,7 @@ class ContentAdStats(materialize_views.Materialize):
             cost = row[6] or 0
             data_cost = row[7] or 0
 
-            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
+            effective_cost, effective_data_cost, license_fee, margin = helpers.calculate_effective_cost(
                 cost, data_cost, campaign_factors[ad_group.campaign])
 
             # merge postclicks
@@ -161,6 +157,7 @@ class ContentAdStats(materialize_views.Materialize):
                 converters.decimal_to_int(effective_cost * converters.MICRO_TO_NANO),
                 converters.decimal_to_int(effective_data_cost * converters.MICRO_TO_NANO),
                 converters.decimal_to_int(license_fee * converters.MICRO_TO_NANO),
+                converters.decimal_to_int(margin * converters.MICRO_TO_NANO),
             )
 
         content_ads_ad_group_map = {x.id: x.ad_group_id for x in dash.models.ContentAd.objects.all()}
@@ -347,7 +344,7 @@ class Publishers(materialize_views.Materialize):
             cost = row[6] or 0
             data_cost = row[7] or 0
 
-            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
+            effective_cost, effective_data_cost, license_fee, margin = helpers.calculate_effective_cost(
                 cost, data_cost, campaign_factors[ad_group.campaign])
 
             post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, publisher)
@@ -375,6 +372,8 @@ class Publishers(materialize_views.Materialize):
                 post_click.get('pageviews'),
                 post_click.get('time_on_site'),
                 post_click.get('conversions'),
+
+                converters.decimal_to_int(margin * converters.MICRO_TO_NANO),
             )
 
         source = dash.models.Source.objects.get(source_type__type=dash.constants.SourceType.OUTBRAIN)
@@ -391,7 +390,7 @@ class Publishers(materialize_views.Materialize):
             cost = converters.decimal_to_int(outbrain_cpcs.get(ad_group_id, 0) * clicks)
             data_cost = 0
 
-            effective_cost, effective_data_cost, license_fee = helpers.calculate_effective_cost(
+            effective_cost, effective_data_cost, license_fee, margin = helpers.calculate_effective_cost(
                 cost, data_cost, campaign_factors[ad_group.campaign])
 
             media_source = source.tracking_slug
@@ -421,6 +420,8 @@ class Publishers(materialize_views.Materialize):
                 post_click.get('pageviews'),
                 post_click.get('time_on_site'),
                 post_click.get('conversions'),
+
+                converters.decimal_to_int(margin * converters.MICRO_TO_NANO),
             )
 
         # make a new mapping as from now on we use media_source_slugs that are already extracted
