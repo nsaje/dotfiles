@@ -84,3 +84,22 @@ class PostprocessTest(TestCase):
             datetime.date(2016, 2, 1),
             datetime.date(2016, 3, 1),
         ])
+
+    def test_postprocess_time_dimension(self):
+        rows = []
+        postprocess.postprocess_time_dimension(
+            constants.TimeDimension.DAY,
+            rows,
+            {'ad_group_id': None, 'clicks': None},
+            ['ad_group_id', 'day'],
+            {'date__gte': datetime.date(2016, 7, 1), 'date__lte': datetime.date(2016, 7, 5)},
+            [{'ad_group_id': 1}]
+        )
+
+        self.assertItemsEqual(rows, [
+            {'ad_group_id': 1, 'clicks': None, 'day': datetime.date(2016, 7, 1)},
+            {'ad_group_id': 1, 'clicks': None, 'day': datetime.date(2016, 7, 2)},
+            {'ad_group_id': 1, 'clicks': None, 'day': datetime.date(2016, 7, 3)},
+            {'ad_group_id': 1, 'clicks': None, 'day': datetime.date(2016, 7, 4)},
+            {'ad_group_id': 1, 'clicks': None, 'day': datetime.date(2016, 7, 5)},
+        ])

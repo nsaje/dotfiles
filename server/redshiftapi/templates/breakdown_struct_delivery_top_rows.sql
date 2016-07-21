@@ -31,6 +31,7 @@ WITH
     ),
     {% endif %}
 
+    {% if yesterday_constraints %}
     temp_yesterday AS (
         SELECT
             {{ breakdown|column_as_alias:"a" }},
@@ -41,12 +42,17 @@ WITH
             {{ breakdown_constraints|generate:"a" }}
         GROUP BY {{ breakdown|only_alias }}
     ),
+    {% endif %}
 
     -- base query, get all other dimensions and rank them by position
     temp_base AS (
         SELECT
             {{ breakdown|column_as_alias:"a" }},
             {{ aggregates|column_as_alias:"a" }}
+
+            {% if not yesterday_constraints %}
+                ,{{ yesterday_aggregates|column_as_alias:"a" }}
+            {% endif %}
         FROM {{ view.base }} a
         WHERE
             {{ constraints|generate:"a" }} AND
@@ -75,9 +81,12 @@ FROM (
         {{ breakdown|only_alias:"temp_base" }},
         {{ aggregates|only_alias:"temp_base" }},
 
-        {% if yesterday_aggregates %}
+        {% if yesterday_constraints %}
             {{ yesterday_aggregates|only_alias:"temp_yesterday" }},
+        {% else %}
+            {{ yesterday_aggregates|only_alias:"temp_base" }},
         {% endif %}
+
         {% if conversions_aggregates %}
             {{ conversions_aggregates|only_alias:"temp_conversions" }},
         {% endif %}
@@ -89,7 +98,7 @@ FROM (
             {{ after_join_conversions_calculations|column_as_alias }},
         {% endif %}
 
-        {% if is_ordered_by_yesterday_aggregates %}
+        {% if is_ordered_by_yesterday_aggregates and yesterday_constraints %}
             ROW_NUMBER() OVER (PARTITION BY {{ breakdown_partition|only_column:"temp_base" }}
             ORDER BY {{ order|only_alias:"temp_yesterday" }}) AS r
         {% elif is_ordered_by_conversions %}
@@ -106,7 +115,8 @@ FROM (
             ORDER BY {{ order|only_alias:"temp_base" }}) AS r
         {% endif %}
     FROM
-        temp_base NATURAL LEFT OUTER JOIN temp_yesterday
+        temp_base
+        {% if yesterday_constraints %}NATURAL LEFT OUTER JOIN temp_yesterday {% endif %}
         {% if conversions_aggregates %} NATURAL LEFT OUTER JOIN temp_conversions {% endif %}
         {% if touchpointconversions_aggregates %} NATURAL LEFT OUTER JOIN temp_touchpointconversions {% endif %}
 ) b

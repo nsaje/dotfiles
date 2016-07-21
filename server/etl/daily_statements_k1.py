@@ -178,7 +178,7 @@ def _get_campaign_spend(date, all_campaigns):
             campaign_id = ad_group_campaign.get(ad_group_id)
             if campaign_id is None:
                 if media_spend > 0 or data_spend > 0:
-                    logger.error("Got spend for invalid adgroup: %s", ad_group_id)
+                    logger.info("Got spend for invalid adgroup: %s", ad_group_id)
                 continue
 
             if media_spend is None:

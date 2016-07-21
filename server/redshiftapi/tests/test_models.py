@@ -57,6 +57,8 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         constraints = {
             'account_id': 123,
             'campaign_id': 223,
+            'date__gte': datetime.date(2016, 7, 1),
+            'date__lte': datetime.date(2016, 7, 10),
         }
 
         breakdown_constraints = [
@@ -76,6 +78,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertFalse(context['is_ordered_by_conversions'])
         self.assertTrue(context['is_ordered_by_touchpointconversions'])
+        self.assertFalse(context['is_ordered_by_after_join_conversions_calculations'])
 
         self.assertListEqual(context['conversions_aggregates'], m.select_columns([
             'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5',
@@ -92,6 +95,45 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             'avg_cost_per_conversion_goal_4',
             'avg_cost_per_conversion_goal_5',
         ]))
+
+        self.assertEquals(context['order'].alias, 'conversion_goal_1')
+
+    def test_get_default_context_conversions_not_supported(self):
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
+        m = models.MVMaster(conversion_goals)
+
+        constraints = {
+            'account_id': 123,
+            'campaign_id': 223,
+            'date__gte': datetime.date(2016, 7, 1),
+            'date__lte': datetime.date(2016, 7, 10),
+        }
+
+        breakdown_constraints = [
+            {'content_ad_id': 32, 'source_id': 1},
+            {'content_ad_id': 33, 'source_id': [2, 3]},
+            {'content_ad_id': 35, 'source_id': [2, 4, 22]},
+        ]
+
+        context = m.get_default_context(
+            ['account_id', 'source_id', 'dma'],
+            constraints,
+            breakdown_constraints,
+            '-conversion_goal_1',
+            2,
+            33
+        )
+
+        self.assertFalse(context['is_ordered_by_conversions'])
+        self.assertFalse(context['is_ordered_by_touchpointconversions'])
+        self.assertFalse(context['is_ordered_by_after_join_conversions_calculations'])
+
+        self.assertListEqual(context['conversions_aggregates'], [])
+        self.assertListEqual(context['touchpointconversions_aggregates'], [])
+        self.assertListEqual(context['after_join_conversions_calculations'], [])
+
+        # the order specified is not supported for this breakdown so select the default
+        self.assertEquals(context['order'].alias, 'clicks')
 
 
 class MVMasterTest(TestCase, backtosql.TestSQLMixin):
@@ -145,9 +187,13 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
     def test_get_default_context_constraints(self):
         m = models.MVMaster()
 
+        date_from = datetime.date(2016, 7, 1)
+        date_to = datetime.date(2016, 7, 10)
         constraints = {
             'account_id': 123,
             'campaign_id': 223,
+            'date__gte': date_from,
+            'date__lte': date_to,
         }
 
         breakdown_constraints = [
@@ -168,8 +214,8 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         q = context['constraints']
         self.assertEqual(
             q.generate('A'),
-            "(A.account_id=%s AND A.campaign_id=%s)")
-        self.assertEqual(q.get_params(), [123, 223])
+            "(A.account_id=%s AND A.campaign_id=%s AND A.date>=%s AND A.date<=%s)")
+        self.assertEqual(q.get_params(), [123, 223, date_from, date_to])
 
         q = context['breakdown_constraints']
         self.assertSQLEquals(

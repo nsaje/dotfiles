@@ -5,6 +5,8 @@ import dateutil
 from stats import constants
 from utils import exc
 
+from redshiftapi import models
+
 
 def prepare_breakdown_struct_delivery_top_rows(default_context):
     """
@@ -15,13 +17,15 @@ def prepare_breakdown_struct_delivery_top_rows(default_context):
     sql = backtosql.generate_sql('breakdown_struct_delivery_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
-    yesterday_params = default_context['yesterday_constraints'].get_params()
-
     if not default_context.get('breakdown_constraints'):
         raise exc.MissingBreakdownConstraintsError()
 
     params.extend(default_context['breakdown_constraints'].get_params())
-    yesterday_params.extend(default_context['breakdown_constraints'].get_params())
+
+    yesterday_params = []
+    if 'yesterday_constraints' in default_context:
+        yesterday_params = default_context['yesterday_constraints'].get_params()
+        yesterday_params.extend(default_context['breakdown_constraints'].get_params())
 
     conversion_params = []
     if default_context.get('conversions_aggregates'):
@@ -44,7 +48,16 @@ def prepare_time_top_rows(model, time_dimension, default_context, constraints):
     offset = default_context['offset']
     limit = default_context['limit']
 
+    # no need to use nulls last as time timension cannot be null
+    order_column = model.get_column(time_dimension).as_order(time_dimension)
+
     _prepare_time_constraints(time_dimension, constraints, offset, limit)
+
+    # prepare yesterday context for the modified constraints
+    default_context.pop('yesterday_constraints', None)
+    yesterday_context = models.get_default_yesterday_context(model, constraints, order_column)
+    default_context.update(yesterday_context)
+
     default_context['constraints'] = backtosql.Q(model, **constraints)
 
     # limit and offset are handeled via time constraints
@@ -52,7 +65,7 @@ def prepare_time_top_rows(model, time_dimension, default_context, constraints):
     default_context['limit'] = None
 
     # when querying time dimension order is always time asc
-    default_context['order'] = model.select_order([time_dimension])
+    default_context['order'] = order_column
     default_context['is_ordered_by_conversions'] = False
     default_context['is_ordered_by_touchpointconversions'] = False
     default_context['is_ordered_by_after_join_conversions_calculations'] = False
@@ -61,11 +74,15 @@ def prepare_time_top_rows(model, time_dimension, default_context, constraints):
     sql = backtosql.generate_sql('breakdown_lvl_time_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
-    yesterday_params = default_context['yesterday_constraints'].get_params()
+    yesterday_params = []
+    if 'yesterday_constraints' in default_context:
+        yesterday_params = default_context['yesterday_constraints'].get_params()
 
     if default_context.get('breakdown_constraints'):
         params.extend(default_context['breakdown_constraints'].get_params())
-        yesterday_params.extend(default_context['breakdown_constraints'].get_params())
+
+        if 'yesterday_constraints' in default_context:
+            yesterday_params.extend(default_context['breakdown_constraints'].get_params())
 
     conversion_params = []
     if default_context.get('conversions_aggregates'):
@@ -109,4 +126,4 @@ def _prepare_time_constraints(time_dimension, constraints, offset, limit):
     else:
         # else later ranges are possible
         del constraints['date__lte']
-        constraints['date__lt'] = end_date
+        constraints['date__lte'] = end_date - datetime.timedelta(days=1)

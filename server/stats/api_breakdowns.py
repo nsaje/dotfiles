@@ -87,6 +87,8 @@ def get_supported_order(order):
     UNSUPPORTED_FIELDS = [
         "name", "state", "status", "performance",
         "min_bid_cpc", "max_bid_cpc", "daily_budget",
+        "pacing", "allocated_budgets", "spend_projection",
+        "license_fee_projection", "upload_time",
     ]
 
     unprefixed_order = order

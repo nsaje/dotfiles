@@ -118,6 +118,16 @@ class OrderColumnTestCase(TestCase, TestSQLMixin):
 
         self.assertIsInstance(order, backtosql.OrderColumn)
 
+    def test_as_order_direction_hint_with_other_column(self):
+        column = backtosql.Column('cat', alias='py_cat')
+
+        # it does not matter which column name is used as a direction hint
+        # because the column is already initialized
+        order = column.as_order('-bla')
+
+        self.assertIsInstance(order, backtosql.OrderColumn)
+        self.assertSQLEquals(order.only_alias('A'), 'A.py_cat DESC')
+
     def test_get_direction(self):
         self.assertEquals(helpers.get_order('-cat'), 'DESC')
         self.assertEquals(helpers.get_order('cat'), 'ASC')

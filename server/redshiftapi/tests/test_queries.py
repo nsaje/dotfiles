@@ -50,7 +50,7 @@ class PrepareTimeConstraintsTest(TestCase):
 
         self.assertEquals(constraints, {
             'date__gte': datetime.date(2016, 2, 1),
-            'date__lt': datetime.date(2016, 2, 6),
+            'date__lte': datetime.date(2016, 2, 5),
         })
 
         constraints = copy.copy(base_constraints)
@@ -58,7 +58,7 @@ class PrepareTimeConstraintsTest(TestCase):
 
         self.assertEquals(constraints, {
             'date__gte': datetime.date(2016, 2, 11),
-            'date__lt': datetime.date(2016, 2, 14),
+            'date__lte': datetime.date(2016, 2, 13),
         })
 
         constraints = copy.copy(base_constraints)
@@ -89,7 +89,7 @@ class PrepareTimeConstraintsTest(TestCase):
 
         self.assertEquals(constraints, {
             'date__gte': datetime.date(2016, 2, 1),
-            'date__lt': datetime.date(2016, 2, 15),
+            'date__lte': datetime.date(2016, 2, 14),
         })
 
         constraints = copy.copy(base_constraints)
@@ -97,7 +97,7 @@ class PrepareTimeConstraintsTest(TestCase):
 
         self.assertEquals(constraints, {
             'date__gte': datetime.date(2016, 2, 8),
-            'date__lt': datetime.date(2016, 2, 15),
+            'date__lte': datetime.date(2016, 2, 14),
         })
 
         constraints = copy.copy(base_constraints)
@@ -119,7 +119,7 @@ class PrepareTimeConstraintsTest(TestCase):
 
         self.assertEquals(constraints, {
             'date__gte': datetime.date(2016, 2, 5),
-            'date__lt': datetime.date(2016, 4, 1),
+            'date__lte': datetime.date(2016, 3, 31),
         })
 
         constraints = copy.copy(base_constraints)
@@ -195,6 +195,62 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
         WHERE r <= 10
         """)
 
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    def test_breakdown_struct_delivery_top_rows_no_yesterday_join(self, mock_local_today):
+        m = SmallMaster()
+
+        constraints = {
+            'date__gte': datetime.date(2016, 6, 1),
+            'date__lte': datetime.date(2016, 8, 1),
+        }
+
+        breakdown_constraints = [
+            {'source_id': 132},
+        ]
+
+        context = m.get_default_context(['account_id'], constraints, breakdown_constraints, 'total_seconds', 0, 10)
+
+        sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
+
+        # extracts params correctly
+        self.assertEquals(params, [
+            datetime.date(2016, 6, 1),
+            datetime.date(2016, 8, 1),
+            132,
+        ])
+
+        self.assertSQLEquals(sql, """
+        WITH
+            temp_base AS (
+                SELECT
+                    a.account_id AS account_id,
+                    SUM(a.clicks) clicks,
+                    SUM(a.total_time_on_site) total_seconds,
+                    SUM(CASE WHEN a.date='2016-07-01' THEN a.cost_nano ELSE 0 END)/1000000000.0 yesterday_cost,
+                    SUM(CASE WHEN a.date='2016-07-01' THEN a.effective_cost_nano ELSE 0 END)/1000000000.0 e_yesterday_cost
+                FROM mv_account a
+                WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
+                GROUP BY account_id
+            )
+        SELECT
+            b.account_id,
+            b.clicks,
+            b.total_seconds,
+            b.yesterday_cost,
+            b.e_yesterday_cost
+        FROM (
+            SELECT
+                temp_base.account_id,
+                temp_base.clicks,
+                temp_base.total_seconds,
+                temp_base.yesterday_cost,
+                temp_base.e_yesterday_cost,
+                ROW_NUMBER() OVER (PARTITION BY ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
+            FROM temp_base
+        ) b
+        WHERE r <= 10
+        """)
+
     def test_breakdown_struct_delivery_required_breakdown_constraints(self):
         m = models.MVMaster()
         constraints = {
@@ -233,13 +289,14 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
 
         sql, params = queries.prepare_time_top_rows(
             models.MVMaster(),
-            constants.TimeDimension.DAY, context, constraints)
+            constants.TimeDimension.DAY, context, constraints
+        )
 
         self.assertEqual(params, [
             datetime.date(2016, 7, 1),
             132,
             datetime.date(2016, 2, 2),
-            datetime.date(2016, 2, 4),
+            datetime.date(2016, 2, 3),
             132
         ])
 
@@ -249,6 +306,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             SELECT
                 a.account_id AS account_id,
                 TRUNC(DATE_TRUNC('week', a.date)) AS week,
+                SUM(a.effective_cost_nano)/1000000000.0 e_yesterday_cost,
                 SUM(a.cost_nano)/1000000000.0 yesterday_cost
             FROM mv_account a
             WHERE (a.date=%s) AND ((a.source_id=%s))
@@ -261,7 +319,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
                 SUM(a.clicks) clicks,
                 SUM(a.total_time_on_site) total_seconds
             FROM mv_account a
-            WHERE (a.date>=%s AND a.date<%s)
+            WHERE (a.date>=%s AND a.date<=%s)
                   AND ((a.source_id=%s))
             GROUP BY account_id, week
         )
@@ -270,9 +328,68 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             temp_base.week,
             temp_base.clicks,
             temp_base.total_seconds,
+            temp_yesterday.e_yesterday_cost,
             temp_yesterday.yesterday_cost
         FROM temp_base NATURAL LEFT JOIN temp_yesterday
         ORDER BY day ASC;
+        """)
+
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 10))
+    def test_top_time_rows_prepares_time_no_yesterday_join(self, mock_local_today):
+        m = SmallMaster()
+        constraints = {
+            'date__gte': datetime.date(2016, 7, 1),
+            'date__lte': datetime.date(2016, 8, 1),
+        }
+
+        breakdown_constraints = [
+            {'source_id': 132},
+        ]
+
+        context = m.get_default_context(
+            ['account_id', 'week'],
+            constraints,
+            breakdown_constraints,
+            '-clicks',
+            1,
+            2
+        )
+
+        sql, params = queries.prepare_time_top_rows(
+            models.MVMaster(),
+            constants.TimeDimension.WEEK, context, constraints
+        )
+
+        self.assertEqual(params, [
+            datetime.date(2016, 7, 8),
+            datetime.date(2016, 7, 21),
+            132
+        ])
+
+        self.assertSQLEquals(sql, """
+        WITH
+        temp_base AS (
+            SELECT
+                a.account_id AS account_id,
+                TRUNC(DATE_TRUNC('week', a.date)) AS week,
+                SUM(a.clicks) clicks,
+                SUM(a.total_time_on_site) total_seconds,
+                SUM(CASE WHEN a.date='2016-07-09' THEN a.cost_nano ELSE 0 END)/1000000000.0 yesterday_cost,
+                SUM(CASE WHEN a.date='2016-07-09' THEN a.effective_cost_nano ELSE 0 END)/1000000000.0 e_yesterday_cost
+            FROM mv_account a
+            WHERE (a.date>=%s AND a.date<=%s)
+                  AND ((a.source_id=%s))
+            GROUP BY account_id, week
+        )
+        SELECT
+            temp_base.account_id,
+            temp_base.week,
+            temp_base.clicks,
+            temp_base.total_seconds,
+            temp_base.yesterday_cost,
+            temp_base.e_yesterday_cost
+        FROM temp_base
+        ORDER BY week ASC;
         """)
 
 

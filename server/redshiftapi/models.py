@@ -165,9 +165,9 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
     }, mh.AGGREGATES)
 
     yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'},
-                                              mh.YESTERDAY_COST_AGGREGATES)
+                                              group=mh.YESTERDAY_COST_AGGREGATES)
     e_yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_cost_nano'},
-                                                mh.YESTERDAY_COST_AGGREGATES)
+                                                group=mh.YESTERDAY_COST_AGGREGATES)
 
     def init_conversion_columns(self, conversion_goals):
         """
@@ -252,6 +252,17 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
         order_column = self.get_column(order).as_order(order, nulls='last')
 
+        is_ordered_by_conversions = order_column.group == mh.CONVERSION_AGGREGATES
+        is_ordered_by_touchpointconversions = order_column.group == mh.TOUCHPOINTCONVERSION_AGGREGATES
+        is_ordered_by_after_join_conversions_calculations = order_column.group == mh.AFTER_JOIN_CALCULATIONS
+
+        # dont order by conversions if breakdown does not support them
+        if (not breakdown_supports_conversions and
+            (is_ordered_by_touchpointconversions or
+             is_ordered_by_conversions or
+             is_ordered_by_after_join_conversions_calculations)):
+            order_column = self.get_column('clicks').as_order(order, nulls='last')
+
         context = {
             'view': self.get_best_view(breakdown, constraints),
             'breakdown': self.get_breakdown(breakdown),
@@ -266,8 +277,9 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             'offset': offset,
             'limit': limit,
 
-            'is_ordered_by_conversions': order_column.group == mh.CONVERSION_AGGREGATES,
-            'is_ordered_by_touchpointconversions': order_column.group == mh.TOUCHPOINTCONVERSION_AGGREGATES,
+            'is_ordered_by_conversions': (breakdown_supports_conversions and is_ordered_by_conversions),
+            'is_ordered_by_touchpointconversions': (breakdown_supports_conversions and
+                                                    is_ordered_by_touchpointconversions),
             'conversions_aggregates': (self.select_columns(group=mh.CONVERSION_AGGREGATES)
                                        if breakdown_supports_conversions else []),
             'touchpointconversions_aggregates': (self.select_columns(group=mh.TOUCHPOINTCONVERSION_AGGREGATES)
@@ -275,7 +287,8 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
             'after_join_conversions_calculations': (self.select_columns(group=mh.AFTER_JOIN_CALCULATIONS)
                                                     if breakdown_supports_conversions else []),
-            'is_ordered_by_after_join_conversions_calculations': order_column.group == mh.AFTER_JOIN_CALCULATIONS,
+            'is_ordered_by_after_join_conversions_calculations': (is_ordered_by_after_join_conversions_calculations and
+                                                                  breakdown_supports_conversions),
         }
 
         context.update(get_default_yesterday_context(self, constraints, order_column))
@@ -291,17 +304,50 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
 
 def get_default_yesterday_context(model, constraints, order_column):
+    date_from, date_to = constraints['date__gte'], constraints['date__lte']
 
-    # replace date range with yesterday date
-    constraints = copy.copy(constraints)
-    constraints.pop('date__gte', None)
-    constraints.pop('date__lte', None)
-    constraints['date'] = dates_helper.local_yesterday()
+    yesterday = dates_helper.local_yesterday()
 
-    context = {
-        'yesterday_constraints': backtosql.Q(model, **constraints),
-        'yesterday_aggregates': model.select_columns(group=mh.YESTERDAY_COST_AGGREGATES),
-        'is_ordered_by_yesterday_aggregates': order_column.group == mh.YESTERDAY_COST_AGGREGATES,
-    }
+    if date_from <= yesterday <= date_to:
+        # columns that fetch yesterday spend from the base table
+        yesterday_cost = backtosql.TemplateColumn(
+            'part_for_date_sum_nano.sql',
+            {
+                'column_name': 'cost_nano',
+                'date_column_name': 'date',
+                'date': yesterday.isoformat(),
+            },
+            alias='yesterday_cost',
+            group=mh.YESTERDAY_COST_AGGREGATES)
+        e_yesterday_cost = backtosql.TemplateColumn(
+            'part_for_date_sum_nano.sql',
+            {
+                'column_name': 'effective_cost_nano',
+                'date_column_name': 'date',
+                'date': yesterday.isoformat(),
+            },
+            alias='e_yesterday_cost',
+            group=mh.YESTERDAY_COST_AGGREGATES)
+
+        context = {
+            'yesterday_aggregates': [yesterday_cost, e_yesterday_cost]
+        }
+    else:
+        # columns that fetch yesterday spend in a special select statement that
+        # is then joined to the base select
+
+        constraints = copy.copy(constraints)
+
+        # replace date range with yesterday date
+        constraints.pop('date__gte', None)
+        constraints.pop('date__lte', None)
+        constraints['date'] = dates_helper.local_yesterday()
+
+        context = {
+            'yesterday_constraints': backtosql.Q(model, **constraints),
+            'yesterday_aggregates': model.select_columns(group=mh.YESTERDAY_COST_AGGREGATES),
+        }
+
+    context['is_ordered_by_yesterday_aggregates'] = order_column.group == mh.YESTERDAY_COST_AGGREGATES
 
     return context
