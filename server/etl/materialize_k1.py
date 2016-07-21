@@ -211,6 +211,7 @@ class ContentAdStats(materialize_views.Materialize):
                 0,
                 0,
                 0,
+                0,
             )
 
         if content_ad_postclick:
@@ -474,6 +475,8 @@ class Publishers(materialize_views.Materialize):
                 post_click.get('pageviews'),
                 post_click.get('time_on_site'),
                 post_click.get('conversions'),
+
+                0,
             )
 
         if content_ad_postclick:
