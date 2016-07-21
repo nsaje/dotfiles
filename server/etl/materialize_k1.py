@@ -423,8 +423,6 @@ class Publishers(materialize_views.Materialize):
                 post_click.get('conversions'),
             )
 
-        content_ads_ad_group_map = {x.id: x.ad_group_id for x in dash.models.ContentAd.objects.all()}
-
         # make a new mapping as from now on we use media_source_slugs that are already extracted
         media_sources_map = {
             helpers.extract_source_slug(s.bidder_slug): s for s in dash.models.Source.objects.all()
@@ -432,7 +430,6 @@ class Publishers(materialize_views.Materialize):
 
         # import the remaining postclickstats
         for ad_group_id, media_source_slug, publisher in content_ad_postclick.keys():
-            ad_group_id = content_ads_ad_group_map.get(content_ad_id)
             ad_group = ad_groups_map.get(ad_group_id)
             if ad_group is None:
                 logger.error("Got postclick data for unknown ad group")
@@ -446,8 +443,8 @@ class Publishers(materialize_views.Materialize):
             post_click = self._get_post_click_data(
                 content_ad_postclick,
                 ad_group_id,
-                content_ad_id,
-                media_source_slug
+                media_source_slug,
+                publisher
             )
 
             yield (
