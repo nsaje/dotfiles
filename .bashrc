@@ -65,3 +65,6 @@ export PATH="$PATH:~/go_appengine"
 
 
 [ -s "/home/nsaje/.scm_breeze/scm_breeze.sh" ] && source "/home/nsaje/.scm_breeze/scm_breeze.sh"
+
+# git completion
+source ~/.local/bin/git-completion.bash
