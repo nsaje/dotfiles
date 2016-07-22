@@ -406,6 +406,8 @@ def _get_minimum_remaining_budget(campaign, max_daily_budget):
     for bli in budgets_active_today.order_by('created_dt'):
         spend_without_fee_pct = 1 - bli.credit.license_fee
         spend_available = bli.get_available_amount(date=today - datetime.timedelta(days=1)) * spend_without_fee_pct
+        # this is a workaround for a bug when a budget line item can have negative amount available
+        spend_available = max(0, spend_available)
         per_budget_remaining_today[bli.id] = max(0, spend_available - unattributed_budget)
         unattributed_budget = max(0, unattributed_budget - spend_available)
 
