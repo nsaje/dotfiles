@@ -1,6 +1,5 @@
 import copy
 
-from django.conf import settings
 import dash.constants
 import models
 from dash import publisher_helpers
@@ -8,10 +7,6 @@ from reports import redshift
 
 REPORT_GOAL_TYPES = [dash.constants.ConversionGoalType.GA, dash.constants.ConversionGoalType.OMNITURE]
 PIXEL_GOAL_TYPE = dash.constants.ConversionGoalType.PIXEL
-
-
-def get_conversion_pixel_url(account_id, slug):
-    return settings.CONVERSION_PIXEL_PREFIX + '{}/{}/'.format(account_id, slug)
 
 
 def group_conversions(rows):

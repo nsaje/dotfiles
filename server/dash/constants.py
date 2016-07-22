@@ -1169,18 +1169,6 @@ class SourceType(ConstantBase):
     }
 
 
-class ConversionPixelStatus(ConstantBase):
-    ACTIVE = 1
-    INACTIVE = 2
-    NOT_USED = 3
-
-    _VALUES = {
-        NOT_USED: 'Not used',
-        INACTIVE: 'Inactive',
-        ACTIVE: 'Active',
-    }
-
-
 class ConversionGoalType(ConstantBase):
     PIXEL = 1
     GA = 2

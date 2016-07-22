@@ -15,7 +15,7 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
             $scope.conversionPixels = [];
             $scope.listInProgress = false;
             $scope.listError = false;
-            $scope.orderField = 'slug';
+            $scope.orderField = 'name';
             $scope.orderReverse = false;
             $scope.tagPrefix = '';
 
@@ -81,7 +81,8 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
 
             $scope.copyConversionPixelTag = function (conversionPixel) {
                 var scope = $scope.$new(true);
-                scope.conversionPixelTag = $scope.getConversionPixelTag(conversionPixel.url);
+                scope.conversionPixelTag = $scope.getConversionPixelTag(
+                    conversionPixel.name, conversionPixel.url);
 
                 var modalInstance = $modal.open({
                     templateUrl: '/partials/copy_conversion_pixel_modal.html',
@@ -100,8 +101,8 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
                 return !conversionPixel.archived;
             };
 
-            $scope.getConversionPixelTag = function (url) {
-                return '<img src="' + url + '" height="1" width="1" border="0" alt="" />';
+            $scope.getConversionPixelTag = function (name, url) {
+                return '<!-- ' + name + '-->\n<img src="' + url + '" height="1" width="1" border="0" alt="" />';
             };
 
             $scope.getConversionPixels();

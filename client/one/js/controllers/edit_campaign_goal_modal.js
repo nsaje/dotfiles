@@ -287,7 +287,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         });
         availablePixels.push({
             id: '___new___',
-            slug: 'Create new pixel',
+            name: 'Create new pixel',
         });
         return availablePixels;
     };

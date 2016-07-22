@@ -136,24 +136,6 @@ def sum_of_stats(with_diffs=False):
     return result[0]
 
 
-def get_pixels_last_verified_dt(account_id=None):
-    query = 'SELECT account_id, slug, max(conversion_timestamp) FROM touchpointconversions'
-    params = []
-    if account_id:
-        query += ' WHERE account_id = %s'
-        params.append(account_id)
-
-    query += ' GROUP BY slug, account_id'
-
-    cursor = get_cursor(read_only=True)
-    cursor.execute(query, params)
-
-    result = cursor.fetchall()
-    cursor.close()
-
-    return {(row[0], row[1]): row[2] for row in result}
-
-
 @influx.timer('reports.redshift', operation='vacuum_contentadstats')
 def vacuum_contentadstats():
     query = 'VACUUM FULL contentadstats'
