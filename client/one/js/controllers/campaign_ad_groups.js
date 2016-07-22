@@ -270,6 +270,30 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
+            name: 'Margin',
+            field: 'margin',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Agency\'s margin',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+            shown: $scope.hasPermission('zemauth.can_view_agency_margin')
+        },
+        {
+            name: 'Total Spend + Margin',
+            field: 'agency_total',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total billing cost including Media Spend, License Fee and Agency Margin',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+            shown: $scope.hasPermission('zemauth.can_view_agency_margin')
+        },
+        {
             name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
@@ -346,6 +370,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 'cost', 'data_cost',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'license_fee', 'yesterday_cost', 'e_yesterday_cost',
+                'margin', 'agency_total',
             ],
         },
         {

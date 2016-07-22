@@ -551,6 +551,18 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         shown: $scope.hasPermission('zemauth.can_view_effective_costs')
     },
     {
+        name: 'License Fee',
+        field: 'license_fee',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Zemanta One platform usage cost.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    },
+    {
         name: 'Total Spend',
         field: 'billing_cost',
         checked: false,
@@ -563,16 +575,28 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         shown: $scope.hasPermission('zemauth.can_view_effective_costs')
     },
     {
-        name: 'License Fee',
-        field: 'license_fee',
+        name: 'Margin',
+        field: 'margin',
         checked: false,
         type: 'currency',
         totalRow: true,
-        help: 'Zemanta One platform usage cost.',
+        help: 'Agency\'s margin',
         order: true,
         initialOrder: 'desc',
-        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+        shown: $scope.hasPermission('zemauth.can_view_agency_margin')
+    },
+    {
+        name: 'Total Spend + Margin',
+        field: 'agency_total',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Total billing cost including Media Spend, License Fee and Agency Margin',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+        shown: $scope.hasPermission('zemauth.can_view_agency_margin')
     },
     {
         name: 'Avg. CPC',
@@ -641,7 +665,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 'e_media_cost',
                 'e_data_cost',
                 'billing_cost',
-                'license_fee'
+                'license_fee',
+                'margin',
+                'agency_total',
             ]
         },
         {

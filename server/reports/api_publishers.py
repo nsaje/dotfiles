@@ -10,18 +10,12 @@ from dash import conversions_helper
 from dash.models import Source
 from reports import redshift
 from reports.rs_helpers import from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr, click_discrepancy, \
-    decimal_to_int_exact, sum_expr, extract_json_or_null, from_cc, subtractions, mul_expr, \
+    decimal_to_int_exact, sum_expr, extract_json_or_null, mul_expr, total_cost,\
     DIVIDE_FORMULA, UNBOUNCED_VISITS_FORMULA, AVG_TOS_FORMULA
 
 from utils import s3helpers
 
 logger = logging.getLogger(__name__)
-
-FORMULA_BILLING_COST = '({} + {} + {})'.format(
-    sum_agr('effective_cost_nano'),
-    sum_agr('effective_data_cost_nano'),
-    sum_agr('license_fee_nano'),
-)
 
 OB_PUBLISHERS_KEY_FORMAT = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/{ad_group_id}/{ts}.json'
 
@@ -39,8 +33,8 @@ class RSPublishersModel(redshift.RSModel):
         "external_id", "visits", "click_discrepancy", "pageviews", "new_visits",
         "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos", "total_seconds",
         "avg_cost_per_minute", "unbounced_visits", "avg_cost_per_non_bounced_visitor",
-        "total_pageviews", "avg_cost_per_pageview", "avg_cost_for_new_visitor", "avg_cost_per_visit"
-
+        "total_pageviews", "avg_cost_per_pageview", "avg_cost_for_new_visitor", "avg_cost_per_visit",
+        "margin", "agency_total",
     ]
     # fields that are allowed for breakdowns (app-based naming)
     ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'ad_group', 'date'])
@@ -48,21 +42,23 @@ class RSPublishersModel(redshift.RSModel):
     # 	SQL NAME                           APP NAME            OUTPUT TRANSFORM        AGGREGATE                                  ORDER BY function
     _FIELDS = [
         dict(sql='clicks_sum',             app='clicks',       out=unchanged,          calc=sum_agr('clicks')),
-        dict(sql='impressions_sum',        app='impressions',  out=unchanged,          calc=sum_agr('impressions'),               order="SUM(impressions) = 0, impressions_sum {direction}"),
+        dict(sql='impressions_sum',        app='impressions',  out=unchanged,          calc=sum_agr('impressions'),                                                                                       order="SUM(impressions) = 0, impressions_sum {direction}"),
         dict(sql='domain',                 app='domain',       out=unchanged),
         dict(sql='exchange',               app='exchange',     out=unchanged),
         dict(sql='external_id',            app='external_id',  out=unchanged,          calc=max_agr('external_id')),
         dict(sql='date',                   app='date',         out=unchanged),
-        dict(sql='cost_nano_sum',          app='cost',         out=from_nano,          calc=sum_agr('cost_nano'),                 order="SUM(cost_nano) = 0, cost_nano_sum {direction}"),
-        dict(sql='media_cost_nano_sum',    app='media_cost',   out=from_nano,          calc=sum_agr('cost_nano'),                 order="SUM(cost_nano) = 0, cost_nano_sum {direction}"),
-        dict(sql='data_cost_nano_sum',     app='data_cost',    out=from_nano,          calc=sum_agr('data_cost_nano'),            order="SUM(data_cost_nano) = 0, data_cost_nano_sum {direction}"),
-        dict(sql='cpc_nano',               app='cpc',          out=from_nano,          calc=sum_div("cost_nano", "clicks"),       order="SUM(clicks) = 0, sum(cost_nano) IS NULL, cpc_nano {direction}"),  # makes sure nulls are last
-        dict(sql='ctr',                    app='ctr',          out=to_percent,         calc=sum_div("clicks", "impressions"),     order="SUM(impressions) IS NULL, ctr {direction}"),
+        dict(sql='cost_nano_sum',          app='cost',         out=from_nano,          calc=sum_agr('cost_nano'),                                                                                         order="SUM(cost_nano) = 0, cost_nano_sum {direction}"),
+        dict(sql='media_cost_nano_sum',    app='media_cost',   out=from_nano,          calc=sum_agr('cost_nano'),                                                                                         order="SUM(cost_nano) = 0, cost_nano_sum {direction}"),
+        dict(sql='data_cost_nano_sum',     app='data_cost',    out=from_nano,          calc=sum_agr('data_cost_nano'),                                                                                    order="SUM(data_cost_nano) = 0, data_cost_nano_sum {direction}"),
+        dict(sql='cpc_nano',               app='cpc',          out=from_nano,          calc=sum_div("cost_nano", "clicks"),                                                                               order="SUM(clicks) = 0, sum(cost_nano) IS NULL, cpc_nano {direction}"),  # makes sure nulls are last
+        dict(sql='ctr',                    app='ctr',          out=to_percent,         calc=sum_div("clicks", "impressions"),                                                                             order="SUM(impressions) IS NULL, ctr {direction}"),
         dict(sql='adgroup_id',             app='ad_group',     out=unchanged),
-        dict(sql='license_fee_nano_sum',   app='license_fee',  out=from_nano,          calc=sum_agr('license_fee_nano'),          order="license_fee_nano_sum = 0, license_fee_nano_sum {direction}"),
-        dict(sql='e_media_cost_nano_sum',  app='e_media_cost', out=from_nano,          calc=sum_agr('effective_cost_nano'),       order="effective_cost_nano_sum = 0, cost_nano_sum {direction}"),
-        dict(sql='e_data_cost_nano_sum',   app='e_data_cost',  out=from_nano,          calc=sum_agr('effective_data_cost_nano'),  order="data_cost_nano_sum = 0, data_cost_nano_sum {direction}"),
-        dict(sql='billing_cost_nano_sum',  app='billing_cost', out=from_nano,          calc=FORMULA_BILLING_COST,                 order="billing_cost_nano_sum = 0, billing_cost_nano_sum {direction}"),
+        dict(sql='license_fee_nano_sum',   app='license_fee',  out=from_nano,          calc=sum_agr('license_fee_nano'),                                                                                  order="license_fee_nano_sum = 0, license_fee_nano_sum {direction}"),
+        dict(sql='e_media_cost_nano_sum',  app='e_media_cost', out=from_nano,          calc=sum_agr('effective_cost_nano'),                                                                               order="effective_cost_nano_sum = 0, cost_nano_sum {direction}"),
+        dict(sql='e_data_cost_nano_sum',   app='e_data_cost',  out=from_nano,          calc=sum_agr('effective_data_cost_nano'),                                                                          order="data_cost_nano_sum = 0, data_cost_nano_sum {direction}"),
+        dict(sql='billing_cost_nano_sum',  app='billing_cost', out=from_nano,          calc=total_cost(nano_cols=['effective_cost_nano', 'effective_data_cost_nano', 'license_fee_nano']),                order="billing_cost_nano_sum = 0, billing_cost_nano_sum {direction}"),
+        dict(sql='margin_nano_sum',        app='margin',       out=from_nano,          calc=sum_agr('margin_nano'),                                                                                       order="margin_nano_sum = 0, margin_nano_sum {direction}"),
+        dict(sql='agency_total_nano',      app='agency_total', out=from_nano,          calc=total_cost(nano_cols=['effective_cost_nano', 'effective_data_cost_nano', 'license_fee_nano', 'margin_nano']), order="agency_total_nano = 0, agency_total_nano {direction}"),
     ]
 
     _POSTCLICK_ACQUISITION_FIELDS = [

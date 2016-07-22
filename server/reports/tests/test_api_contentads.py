@@ -66,7 +66,9 @@ class ApiContentAdsQueryTest(TestCase):
             'CASE WHEN SUM("visits") <> 0 THEN SUM(CAST("new_visits" AS FLOAT)) / SUM("visits") ELSE NULL END AS "percent_new_users"',
             'SUM("clicks") AS "clicks_sum"',
             'CASE WHEN SUM("visits") <> 0 THEN SUM(CAST("pageviews" AS FLOAT)) / SUM("visits") ELSE NULL END AS "pv_per_visit"',
-            'CASE WHEN SUM("clicks") = 0 THEN NULL WHEN SUM("visits") = 0 THEN 1 WHEN SUM("clicks") < SUM("visits") THEN 0 ELSE (SUM(CAST("clicks" AS FLOAT)) - SUM("visits")) / SUM("clicks") END AS "click_discrepancy"'
+            'CASE WHEN SUM("clicks") = 0 THEN NULL WHEN SUM("visits") = 0 THEN 1 WHEN SUM("clicks") < SUM("visits") THEN 0 ELSE (SUM(CAST("clicks" AS FLOAT)) - SUM("visits")) / SUM("clicks") END AS "click_discrepancy"',
+            'SUM("margin_nano") AS "margin_nano_sum",',
+            '(SUM("effective_cost_nano")+SUM("effective_data_cost_nano")+SUM("license_fee_nano")+SUM("margin_nano")) AS "agency_total_nano"'
         ]
         query = self._get_query(mock_cursor)
 
