@@ -7,6 +7,8 @@ import datetime
 from collections import OrderedDict
 
 from django import test
+from django.http.request import HttpRequest
+from django.contrib.auth import models as authmodels
 
 from dash import export
 from dash import models
@@ -881,3 +883,20 @@ class ExportTestCase(test.TestCase):
             ad_group=None,
             granularity=2,
             order=None)
+
+
+class FilterAllowedFieldsTestCase(test.TestCase):
+    fixtures = ['test_api']
+
+    def test_filter_margin(self):
+        r = HttpRequest()
+        r.user = User.objects.get(id=2)
+
+        allowed = export.filter_allowed_fields(r, ['margin', 'agency_total'])
+        self.assertEqual([], allowed)
+
+        r.user.user_permissions.add(authmodels.Permission.objects.get(codename='can_view_agency_margin'))
+        r.user = User.objects.get(id=2)
+
+        allowed = export.filter_allowed_fields(r, ['margin', 'agency_total'])
+        self.assertEqual(['margin', 'agency_total'], allowed)
