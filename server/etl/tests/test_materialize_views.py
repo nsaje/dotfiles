@@ -436,13 +436,13 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         self.assertItemsEqual(list(mv.get_postclickstats(None, date)), [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
             ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{einpix: 2}', 'omniture')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0), ('{einpix: 2}', 'omniture')),
             ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
         ])
 
     def test_prepare_postclickstats_query(self):
