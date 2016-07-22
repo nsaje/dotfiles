@@ -215,7 +215,8 @@ class ContentAdStats(materialize_views.Materialize):
             )
 
         if content_ad_postclick:
-            logger.info('Contentadstats: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
+            logger.info(
+                'Contentadstats: Couldn\'t join the following post click stats: %s', content_ad_postclick.keys())
 
 
 class Publishers(materialize_views.Materialize):

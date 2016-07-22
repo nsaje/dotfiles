@@ -21,6 +21,7 @@ CREATE TABLE mv_content_ad (
 
        effective_cost_nano bigint encode lzo,
        effective_data_cost_nano bigint encode lzo,
-       license_fee_nano bigint encode lzo
+       license_fee_nano bigint encode lzo,
+       margin_nano bigint encode lzo
 
 ) distkey(date) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id);

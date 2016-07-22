@@ -1,7 +1,5 @@
 import backtosql
 
-import dash.constants
-
 from redshiftapi.model_helpers import RSBreakdownMixin, AGGREGATES, BREAKDOWN
 
 
@@ -61,6 +59,7 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     effective_data_cost_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'effective_data_cost_nano'},
                                                         AGGREGATES)
     license_fee_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'license_fee_nano'}, AGGREGATES)
+    margin_nano = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'margin_nano'}, AGGREGATES)
 
     def get_ordered_aggregates(self):
         """
@@ -70,5 +69,5 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
         return self.select_columns(subset=[
             'impressions', 'clicks', 'cost_nano', 'data_cost_nano', 'visits', 'new_visits',
             'bounced_visits', 'pageviews', 'total_time_on_site', 'effective_cost_nano',
-            'effective_data_cost_nano', 'license_fee_nano',
+            'effective_data_cost_nano', 'license_fee_nano', 'margin_nano',
         ])

@@ -26,6 +26,7 @@ CREATE TABLE mv_account_delivery (
 
        effective_cost_nano bigint encode lzo,
        effective_data_cost_nano bigint encode lzo,
-       license_fee_nano bigint encode lzo
+       license_fee_nano bigint encode lzo,
+       margin_nano bigint encode lzo
 
 ) sortkey(date, source_id, account_id, device_type, country, state, age, gender);

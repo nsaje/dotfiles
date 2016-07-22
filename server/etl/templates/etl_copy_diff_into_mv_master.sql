@@ -40,7 +40,17 @@ INSERT INTO mv_master (
               (nvl(a.cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8)) +
               (nvl(a.data_cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8))
           ) * pct_license_fee::decimal(10, 8)
-      ) as license_fee_nano
+      ) as license_fee_nano,
+      round(
+          (
+              (nvl(a.cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+              (nvl(a.data_cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+              (
+                  (nvl(a.cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                  (nvl(a.data_cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8))
+              ) * cf.pct_license_fee::decimal(10, 8)
+          ) * cf.pct_margin::decimal(10, 8)
+      ) as margin_nano
   FROM
     (
       mv_master_diff a
