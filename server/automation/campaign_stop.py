@@ -145,13 +145,11 @@ def get_minimum_budget_amount(budget_item):
     covered_amount = _combined_active_budget_from_other_items(budget_item)
 
     spend = budget_item.get_spend_data(use_decimal=True)['total']
+
     max_daily_budget = _get_max_daily_budget(today, budget_item.campaign)
 
     daily_budgets = max_daily_budget / (1 - budget_item.credit.license_fee)
-    return max(
-        spend + daily_budgets - covered_amount,
-        0
-    )
+    return spend + max(daily_budgets - covered_amount, 0)
 
 
 def is_current_time_valid_for_amount_editing(campaign):
