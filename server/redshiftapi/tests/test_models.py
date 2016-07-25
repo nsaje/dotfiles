@@ -176,9 +176,9 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
                                'pageviews', 'new_visits', 'percent_new_users',
                                'bounce_rate', 'pv_per_visit', 'avg_tos',
                                'avg_cost_for_new_visitor', 'avg_cost_per_minute',
-                               'avg_cost_per_non_bounced_visitor', 'avg_cost_per_pageview',
+                               'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview',
                                'avg_cost_per_visit', 'total_pageviews', 'total_seconds',
-                               'unbounced_visits'])
+                               'non_bounced_visits'])
 
     def test_get_yesterday_aggregates(self):
         self.assertItemsEqual([x.alias for x in self.model.select_columns(group=model_helpers.YESTERDAY_COST_AGGREGATES)],

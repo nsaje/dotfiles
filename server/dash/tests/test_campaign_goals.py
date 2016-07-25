@@ -240,7 +240,7 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.PAGES_PER_SESSION, 5)
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
         self._add_value(constants.CampaignGoalKPI.CPV, 0.5)
-
+        self._add_value(constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT, 2.25)
         self._add_value(constants.CampaignGoalKPI.CPA, 10)
 
         cam_goals = campaign_goals.get_campaign_goals(self.campaign, [])
@@ -262,7 +262,7 @@ class CampaignGoalsTestCase(TestCase):
                 'name': 'Max Bounce Rate',
                 'conversion': None,
                 'value': 75,
-                'fields': {'unbounced_visits': True, 'avg_cost_per_non_bounced_visitor': True},
+                'fields': {'non_bounced_visits': True, 'avg_cost_per_non_bounced_visit': True},
             },
             {
                 'name': 'Cost per Visit',
@@ -275,7 +275,13 @@ class CampaignGoalsTestCase(TestCase):
                 'conversion': 'test conversion goal',
                 'value': 10,
                 'fields': {},
-            }
+            },
+            {
+                'name': 'Cost per Non-Bounced Visit',
+                'conversion': None,
+                'value': 2.25,
+                'fields': {'non_bounced_visits': True, 'avg_cost_per_non_bounced_visit': True},
+            },
         ]
 
         self.assertItemsEqual(result, cam_goals)

@@ -20,6 +20,7 @@ CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.CPA: '{} CPA',
     constants.CampaignGoalKPI.CPC: '{} CPC',
     constants.CampaignGoalKPI.CPV: '{} Cost Per Visit',
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: '{} Cost Per Non-Bounced Visit',
 }
 
 CAMPAIGN_GOAL_VALUE_FORMAT = {
@@ -30,12 +31,13 @@ CAMPAIGN_GOAL_VALUE_FORMAT = {
     constants.CampaignGoalKPI.CPA: utils.lc_helper.default_currency,
     constants.CampaignGoalKPI.CPC: lambda x: utils.lc_helper.default_currency(x, places=3),
     constants.CampaignGoalKPI.CPV: utils.lc_helper.default_currency,
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: utils.lc_helper.default_currency,
 }
 
 CAMPAIGN_GOAL_MAP = {
     constants.CampaignGoalKPI.MAX_BOUNCE_RATE: [
-        'unbounced_visits',
-        'avg_cost_per_non_bounced_visitor',
+        'non_bounced_visits',
+        'avg_cost_per_non_bounced_visit',
     ],
     constants.CampaignGoalKPI.PAGES_PER_SESSION: [
         'total_pageviews',
@@ -51,6 +53,10 @@ CAMPAIGN_GOAL_MAP = {
     constants.CampaignGoalKPI.CPA: [],
     constants.CampaignGoalKPI.CPC: ['cpc'],
     constants.CampaignGoalKPI.CPV: ['avg_cost_per_visit'],
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: [
+        'avg_cost_per_non_bounced_visit',
+        'non_bounced_visits',
+    ],
 }
 
 CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
@@ -60,6 +66,7 @@ CAMPAIGN_GOAL_PRIMARY_METRIC_MAP = {
     constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS: 'percent_new_users',
     constants.CampaignGoalKPI.CPC: 'cpc',
     constants.CampaignGoalKPI.CPV: 'avg_cost_per_visit',
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT: 'avg_cost_per_non_bounced_visit',
 }
 
 INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
@@ -67,6 +74,7 @@ INVERSE_PERFORMANCE_CAMPAIGN_GOALS = (
     constants.CampaignGoalKPI.CPA,
     constants.CampaignGoalKPI.CPC,
     constants.CampaignGoalKPI.CPV,
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
 )
 
 STATUS_TO_EMOTICON_MAP = {
@@ -83,6 +91,7 @@ COST_DEPENDANT_GOALS = (
     constants.CampaignGoalKPI.CPA,
     constants.CampaignGoalKPI.CPC,
     constants.CampaignGoalKPI.CPV,
+    constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
 )
 
 ROUNDING = ROUND_DOWN
@@ -333,14 +342,16 @@ def get_campaign_goal_values(campaign):
 
 def exclude_goal_columns(row, goal_types):
     ret_row = dict(row)
-
     excluded_goals = set(constants.CampaignGoalKPI.get_all()) -\
         set(map(lambda gv: gv.campaign_goal.type, goal_types))
+
+    # flat list of required columns
+    req_cols = [col for cols in [CAMPAIGN_GOAL_MAP.get(gv.campaign_goal.type, []) for gv in goal_types] for col in cols]
 
     for excluded_goal in excluded_goals:
         goal_strings = CAMPAIGN_GOAL_MAP.get(excluded_goal, [])
         for goal_string in goal_strings:
-            if goal_string in EXISTING_COLUMNS_FOR_GOALS:
+            if goal_string in EXISTING_COLUMNS_FOR_GOALS or goal_string in req_cols:
                 continue
             ret_row.pop(goal_string, None)
 
@@ -398,8 +409,8 @@ def copy_fields(user, source, dest):
 
     dest['total_seconds'] = source.get('total_seconds', 0)
     dest['avg_cost_per_minute'] = source.get('avg_cost_per_minute', 0)
-    dest['unbounced_visits'] = source.get('unbounced_visits', 0)
-    dest['avg_cost_per_non_bounced_visitor'] = source.get('avg_cost_per_non_bounced_visitor', 0)
+    dest['non_bounced_visits'] = source.get('non_bounced_visits', 0)
+    dest['avg_cost_per_non_bounced_visit'] = source.get('avg_cost_per_non_bounced_visit', 0)
     dest['total_pageviews'] = source.get('total_pageviews', 0)
     dest['avg_cost_per_pageview'] = source.get('avg_cost_per_pageview', 0)
     dest['avg_cost_for_new_visitor'] = source.get('avg_cost_for_new_visitor', 0)

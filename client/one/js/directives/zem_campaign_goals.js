@@ -46,6 +46,8 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                     return value + ' ' + constants.campaignGoalValueText[goal.type];
                 case constants.campaignGoalKPI.CPV:
                     return '$' + value + ' ' + constants.campaignGoalValueText[goal.type];
+                case constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT:
+                    return '$' + value + ' ' + constants.campaignGoalValueText[goal.type];
                 }
             };
 

@@ -1053,6 +1053,7 @@ class CampaignGoalKPI(ConstantBase):
 #    CPM = 6
     NEW_UNIQUE_VISITORS = 7
     CPV = 8
+    CP_NON_BOUNCED_VISIT = 9
 
     _VALUES = {
         TIME_ON_SITE: 'Time on Site - Seconds',
@@ -1062,7 +1063,8 @@ class CampaignGoalKPI(ConstantBase):
         CPC: 'CPC',
         #        CPM: '$CPM',
         NEW_UNIQUE_VISITORS: 'New Unique Visitors',
-        CPV: 'Cost per Visit'
+        CPV: 'Cost per Visit',
+        CP_NON_BOUNCED_VISIT: 'Cost per Non-Bounced Visit',
     }
 
 

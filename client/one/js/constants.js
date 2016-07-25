@@ -72,11 +72,11 @@ var constants = {
         CONVERSION_GOAL5: 'conversion_goal_5',
         TOTAL_SECONDS: 'total_seconds',
         TOTAL_PAGEVIEWS: 'total_pageviews',
-        UNBOUNCED_VISITS: 'unbounced_visits',
+        NON_BOUNCED_VISITS: 'non_bounced_visits',
         COST_PER_MINUTE: 'avg_cost_per_minute',
         COST_PER_PAGEVIEW: 'avg_cost_per_pageview',
         COST_PER_VISIT: 'avg_cost_per_visit',
-        COST_PER_UNBOUNCED_VISITOR: 'avg_cost_per_non_bounced_visitor',
+        COST_PER_NON_BOUNCED_VISIT: 'avg_cost_per_non_bounced_visit',
         COST_PER_NEW_VISITOR: 'avg_cost_for_new_visitor',
         COST_PER_CONVERSION_GOAL_1: 'avg_cost_per_conversion_goal_1',
         COST_PER_CONVERSION_GOAL_2: 'avg_cost_per_conversion_goal_2',
@@ -510,6 +510,7 @@ var constants = {
         CPM: 6,
         NEW_UNIQUE_VISITORS: 7,
         CPV: 8,
+        CP_NON_BOUNCED_VISIT: 9,
     },
     conversionGoalType: {
         PIXEL: 1,
@@ -720,8 +721,8 @@ var options = {
             shown: false,
         },
         {
-            name: 'Unbounced Visitors',
-            value: constants.chartMetric.UNBOUNCED_VISITS,
+            name: 'Non-Bounced Visits',
+            value: constants.chartMetric.NON_BOUNCED_VISITS,
             shown: false,
         },
         {
@@ -740,8 +741,8 @@ var options = {
             shown: false,
         },
         {
-            name: 'Avg. Cost for Unbounced Visitor',
-            value: constants.chartMetric.COST_PER_UNBOUNCED_VISITOR,
+            name: 'Avg. Cost per Non-Bounced Visit',
+            value: constants.chartMetric.COST_PER_NON_BOUNCED_VISIT,
             shown: false,
         },
         {
@@ -1195,6 +1196,7 @@ var options = {
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
         {name: 'New Unique Visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
         {name: 'CPA - Setup Conversion Tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
+        {name: 'Cost per Non-Bounced Visit', value: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT, unit: '$'},
     ],
     budgetAutomationGoals: [
         {name: 'time on site', value: constants.campaignGoalKPI.TIME_ON_SITE},
@@ -1204,6 +1206,7 @@ var options = {
         {name: 'average CPC', value: constants.campaignGoalKPI.CPC},
         {name: 'new visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS},
         {name: 'CPA', value: constants.campaignGoalKPI.CPA},
+        {name: 'cost per non-bounced visit', value: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT},
     ],
     conversionGoalTypes: [
         {name: 'Pixel', value: constants.conversionGoalType.PIXEL},
@@ -1250,6 +1253,7 @@ var defaults = {
         {id: constants.campaignGoalKPI.CPA, value: 50},
         {id: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, value: 0.1},
         {id: constants.campaignGoalKPI.CPV, value: 0.50},
+        {id: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT, value: 2.75},
     ],
 };
 
@@ -1262,13 +1266,15 @@ constants.campaignGoalValueText[constants.campaignGoalKPI.NEW_UNIQUE_VISITORS] =
 constants.campaignGoalValueText[constants.campaignGoalKPI.TIME_ON_SITE] = 'seconds Time on Site';
 constants.campaignGoalValueText[constants.campaignGoalKPI.PAGES_PER_SESSION] = 'Pageviews per Visit';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPV] = 'Cost per Visit';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT] = 'Cost per Non-Bounced Visit';
 
 constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.MAX_BOUNCE_RATE,
     constants.campaignGoalKPI.NEW_UNIQUE_VISITORS,
     constants.campaignGoalKPI.TIME_ON_SITE,
     constants.campaignGoalKPI.PAGES_PER_SESSION,
-    constants.campaignGoalKPI.CPV];
+    constants.campaignGoalKPI.CPV,
+    constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT];
 
 
 constants.defaultAccountTypes = [
@@ -1299,4 +1305,3 @@ constants.defaultAccountTypes = [
         name: 'Managed',
     },
 ];
-

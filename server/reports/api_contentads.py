@@ -69,14 +69,14 @@ class RSContentAdStatsModel(redshift.RSModel):
     ]
 
     _POSTCLICK_OPTIMIZATION_FIELDS = [
-        dict(sql='total_seconds_sum',              app='total_seconds',                    out=unchanged,     calc=AVG_TOS_FORMULA),
-        dict(sql='total_seconds_avg_cost_min_sum', app='avg_cost_per_minute',              out=from_cc,       calc=mul_expr(DIVIDE_FORMULA.format(expr=sum_agr('cost_cc'), divisor=AVG_TOS_FORMULA), 60)),
-        dict(sql='unbounced_visits_diff',          app='unbounced_visits',                 out=unchanged,     calc=UNBOUNCED_VISITS_FORMULA),
-        dict(sql='unbounced_visits_avg_cost_sum',  app='avg_cost_per_non_bounced_visitor', out=from_cc,       calc=DIVIDE_FORMULA.format(expr=sum_agr('cost_cc'), divisor=UNBOUNCED_VISITS_FORMULA)),
-        dict(sql='total_pageviews_sum',            app='total_pageviews',                  out=unchanged,     calc=sum_agr('pageviews')),
-        dict(sql='avg_cost_per_pageview_sum',      app='avg_cost_per_pageview',            out=from_cc,       calc=sum_div('cost_cc', 'pageviews')),
-        dict(sql='avg_cost_for_new_visitor_sum',   app='avg_cost_for_new_visitor',         out=from_cc,       calc=sum_div('cost_cc', 'new_visits')),
-        dict(sql='avg_cost_per_visit_sum',         app='avg_cost_per_visit',               out=from_cc,       calc=sum_div('cost_cc', 'visits')),
+        dict(sql='total_seconds_sum',               app='total_seconds',                    out=unchanged,     calc=AVG_TOS_FORMULA),
+        dict(sql='total_seconds_avg_cost_min_sum',  app='avg_cost_per_minute',              out=from_cc,       calc=mul_expr(DIVIDE_FORMULA.format(expr=sum_agr('cost_cc'), divisor=AVG_TOS_FORMULA), 60)),
+        dict(sql='non_bounced_visits_diff',         app='non_bounced_visits',               out=unchanged,     calc=UNBOUNCED_VISITS_FORMULA),
+        dict(sql='non_bounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visit',   out=from_cc,       calc=DIVIDE_FORMULA.format(expr=sum_agr('cost_cc'), divisor=UNBOUNCED_VISITS_FORMULA)),
+        dict(sql='total_pageviews_sum',             app='total_pageviews',                  out=unchanged,     calc=sum_agr('pageviews')),
+        dict(sql='avg_cost_per_pageview_sum',       app='avg_cost_per_pageview',            out=from_cc,       calc=sum_div('cost_cc', 'pageviews')),
+        dict(sql='avg_cost_for_new_visitor_sum',    app='avg_cost_for_new_visitor',         out=from_cc,       calc=sum_div('cost_cc', 'new_visits')),
+        dict(sql='avg_cost_per_visit_sum',          app='avg_cost_per_visit',               out=from_cc,       calc=sum_div('cost_cc', 'visits')),
     ]
 
     _CONVERSION_GOAL_FIELDS = [
