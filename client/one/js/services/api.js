@@ -2556,10 +2556,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         function convertFromApi (conversionPixel) {
             return {
                 id: conversionPixel.id,
-                slug: conversionPixel.slug,
+                name: conversionPixel.name,
                 url: conversionPixel.url,
-                status: conversionPixel.status,
-                lastVerifiedDt: conversionPixel.last_verified_dt,
                 archived: conversionPixel.archived
             };
         }
@@ -2584,11 +2582,11 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
-        this.post = function (accountId, slug) {
+        this.post = function (accountId, name) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/conversion_pixels/';
             var config = {
-                slug: slug
+                name: name
             };
 
             $http.post(url, config).

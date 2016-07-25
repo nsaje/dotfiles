@@ -178,6 +178,7 @@ class MVHelpersCampaignFactors(Materialize):
 
                     factors[0],
                     factors[1],
+                    factors[2],
                 )
 
 
@@ -274,7 +275,8 @@ class MasterView(Materialize):
                     sql, params = prepare_daily_delete_query(self.TABLE_NAME, date)
                     c.execute(sql, params)
 
-                    logger.info('Running insert traffic data into table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    logger.info('Running insert traffic data into table "%s" for day %s, job %s',
+                                self.TABLE_NAME, date, self.job_id)
                     sql, params = self.prepare_insert_traffic_data_query(date)
                     c.execute(sql, params)
 
@@ -376,6 +378,7 @@ class MasterView(Materialize):
                         row.pageviews,
                         row.total_time_on_site,
 
+                        0,
                         0,
                         0,
                         0,

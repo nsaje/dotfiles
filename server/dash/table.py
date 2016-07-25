@@ -1811,7 +1811,7 @@ class PublishersTable(object):
 
     def _mark_missing_data(self, publishers_data, publishers_totals):
         for publisher_data in publishers_data:
-            publisher_exchange = publisher_data['exchange'].lower()
+            publisher_exchange = (publisher_data['exchange'] or '').lower()
 
             if publisher_exchange == constants.SourceType.OUTBRAIN:
                 # OB does not report back impressions for publishers
@@ -1953,6 +1953,9 @@ class PublishersTable(object):
             result['e_media_cost'] = totals_data.get('e_media_cost', 0)
             result['billing_cost'] = totals_data.get('billing_cost', 0)
             result['license_fee'] = totals_data.get('license_fee', 0)
+        if user.has_perm('zemauth.can_view_agency_margin'):
+            result['margin'] = totals_data.get('margin', 0)
+            result['agency_total'] = totals_data.get('agency_total', 0)
         if user.has_perm('zemauth.can_view_actual_costs'):
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
@@ -2007,11 +2010,17 @@ class PublishersTable(object):
                 row['e_data_cost'] = publisher_data.get('e_data_cost', 0)
                 row['e_media_cost'] = publisher_data.get('e_media_cost', 0)
                 row['billing_cost'] = publisher_data.get('billing_cost', 0)
+            if user.has_perm('zemauth.can_view_agency_margin'):
+                row['margin'] = publisher_data.get('margin', 0)
+                row['agency_total'] = publisher_data.get('agency_total', 0)
             if user.has_perm('zemauth.can_view_actual_costs'):
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
             for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
                 row[key] = publisher_data[key]
+                if (source_name or '').lower() == constants.SourceType.OUTBRAIN:
+                    # We have no conversion data for OB
+                    row[key] = None
             campaign_goals.copy_fields(user, publisher_data, row)
             if 'performance' in publisher_data:
                 row['performance'] = publisher_data['performance']

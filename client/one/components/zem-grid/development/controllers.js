@@ -70,7 +70,7 @@ oneApp.controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemGridConstant
 
     function initializeGridApi () {
         // Initialize GridApi listeners
-        $scope.grid.api.onSelectionChanged($scope, function () {
+        $scope.grid.api.onSelectionUpdated($scope, function () {
             console.log($scope.grid.api.getSelection()); // eslint-disable-line
         });
     }

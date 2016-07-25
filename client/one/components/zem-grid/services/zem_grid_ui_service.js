@@ -85,7 +85,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
                 // Special case for breakdown column - add padding based on row level
                 valueWidth += (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
                 // Add additional padding when collapse icon is shown
-                if (grid.meta.service.getBreakdownLevel() > 1 && row.level > 0) {
+                if (grid.meta.dataService.getBreakdownLevel() > 1 && row.level > 0) {
                     valueWidth += zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
                 }
             }
@@ -201,7 +201,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
     function getBreakdownColumnStyle (grid, row) {
         var paddingLeft = (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
         // Indent breakdown rows on last level with additional padding because no collapse icon is shown in these rows
-        var breakdownLevel = grid.meta.service.getBreakdownLevel();
+        var breakdownLevel = grid.meta.dataService.getBreakdownLevel();
         if (breakdownLevel > 1 && breakdownLevel === row.level) {
             paddingLeft += zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
         }

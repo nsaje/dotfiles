@@ -54,6 +54,8 @@ FIELDNAMES = {
     'date': 'Date',
     'license_fee': 'License Fee',
     'total_fee': 'Total Fee',
+    'margin': 'Margin',
+    'agency_total': 'Total Spend + Margin',
     'flat_fee': 'Recognized Flat Fee',
     'default_account_manager': 'Account Manager',
     'default_sales_representative': 'Sales Representative',
@@ -93,7 +95,7 @@ FORMAT_1_DECIMAL = ['avg_tos']
 
 FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'cost', 'data_cost', 'media_cost',
                      'e_media_cost', 'e_data_cost',
-                     'billing_cost',
+                     'billing_cost', 'margin', 'agency_total',
                      'license_fee', 'total_fee', 'flat_fee',
                      'allocated_budgets', 'spend_projection',
                      'license_fee_projection', 'total_fee_projection']
@@ -107,6 +109,7 @@ FORMAT_EMPTY_TO_0 = [
     'clicks', 'impressions', 'ctr', 'visits', 'pageviews',
     'e_media_cost', 'media_cost', 'e_data_cost',
     'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
+    'margin', 'agency_total',
 ]
 
 FORMAT_HASH = ['image_hash']
@@ -1046,8 +1049,11 @@ def filter_allowed_fields(request, fields):
     can_see_managers_in_accounts_table = request.user.has_perm('zemauth.can_see_managers_in_accounts_table')
     can_see_managers_in_campaigns_table = request.user.has_perm('zemauth.can_see_managers_in_campaigns_table')
     can_see_account_type = request.user.has_perm('zemauth.can_see_account_type')
+    can_view_agency_margin = request.user.has_perm('zemauth.can_view_agency_margin')
 
     for f in fields:
+        if f in ('margin', 'agency_total') and not can_view_agency_margin:
+            continue
         if f in ('e_data_cost', 'e_media_cost',
                  'license_fee', 'billing_cost') and not can_view_effective_costs:
             continue

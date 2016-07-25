@@ -1323,3 +1323,24 @@ class HistoryTest(TestCase):
 
         hist = models.History.objects.all().order_by('-created_dt').first()
         self.assertEqual('Created settings. Source: b1.', hist.changes_text)
+
+
+@override_settings(CONVERSION_PIXEL_PREFIX='test_prefix')
+class ConversionPixelTestCase(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def test_save(self):
+        pixel = models.ConversionPixel.objects.create(account_id=1, name='Pixel name', id=1)
+        self.assertEqual(pixel.slug, '1')
+        pixel = models.ConversionPixel.objects.create(account_id=1, name='Pixel name', id=2, slug='testslug')
+        self.assertEqual(pixel.slug, 'testslug')
+
+    def test_get_url(self):
+        self.assertEqual(len(models.ConversionPixel.objects.all()), 0)
+        pixel = models.ConversionPixel.objects.create(account_id=1, name='Pixel name', id=1)
+
+        self.assertEqual(pixel.get_url(), 'test_prefix1/1/')
+
+        pixel = models.ConversionPixel.objects.create(account_id=1, name='Pixel name', slug='test_slug', id=2)
+
+        self.assertEqual(pixel.get_url(), 'test_prefix1/test_slug/')

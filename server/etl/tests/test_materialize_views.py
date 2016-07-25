@@ -72,12 +72,12 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
 
         mv.generate(campaign_factors={
             datetime.date(2016, 7, 1): {
-                models.Campaign.objects.get(pk=1): (1.0, 0.2),
-                models.Campaign.objects.get(pk=2): (0.2, 0.2),
+                models.Campaign.objects.get(pk=1): (1.0, 0.2, 0.25),
+                models.Campaign.objects.get(pk=2): (0.2, 0.2, 0.25),
             },
             datetime.date(2016, 7, 2): {
-                models.Campaign.objects.get(pk=1): (1.0, 0.3),
-                models.Campaign.objects.get(pk=2): (0.2, 0.3),
+                models.Campaign.objects.get(pk=1): (1.0, 0.3, 0.25),
+                models.Campaign.objects.get(pk=2): (0.2, 0.3, 0.25),
             },
         })
 
@@ -85,10 +85,10 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
         mock_s3helper().put.assert_called_with(
             "materialized_views/mvh_campaign_factors/2016/07/03/view_asd.csv",
             textwrap.dedent("""\
-            2016-07-01\t1\t1.0\t0.2\r
-            2016-07-01\t2\t0.2\t0.2\r
-            2016-07-02\t1\t1.0\t0.3\r
-            2016-07-02\t2\t0.2\t0.3\r
+            2016-07-01\t1\t1.0\t0.2\t0.25\r
+            2016-07-01\t2\t0.2\t0.2\t0.25\r
+            2016-07-02\t1\t1.0\t0.3\t0.25\r
+            2016-07-02\t2\t0.2\t0.3\t0.25\r
             """))
 
         mock_cursor().__enter__().execute.assert_has_calls([
@@ -98,7 +98,8 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
                 campaign_id int2 not null encode lzo,
 
                 pct_actual_spend decimal(22, 18) encode lzo,
-                pct_license_fee decimal(22, 18) encode lzo
+                pct_license_fee decimal(22, 18) encode lzo,
+                pct_margin decimal(22, 18) encode lzo
             ) sortkey(date, campaign_id)""")),
             mock.call(backtosql.SQLMatcher("""
             COPY mvh_campaign_factors
@@ -296,7 +297,18 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                     round( (
                         (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
                         (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
-                    ) * pct_license_fee::decimal(10, 8) * 1000 ) as license_fee_nano
+                    ) * cf.pct_license_fee::decimal(10, 8) * 1000
+                    ) as license_fee_nano,
+                    round(
+                        (
+                            (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (
+                                (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                                (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                            ) * cf.pct_license_fee::decimal(10, 8)
+                        ) * cf.pct_margin::decimal(10, 8) * 1000
+                    ) as margin_nano
                 FROM ( (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
                     join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id )
                         join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
@@ -424,13 +436,13 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         self.assertItemsEqual(list(mv.get_postclickstats(None, date)), [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
             ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{einpix: 2}', 'omniture')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0), ('{einpix: 2}', 'omniture')),
             ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
         ])
 
     def test_prepare_postclickstats_query(self):

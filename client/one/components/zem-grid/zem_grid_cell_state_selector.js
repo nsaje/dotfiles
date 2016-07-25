@@ -59,7 +59,7 @@ oneApp.directive('zemGridCellStateSelector', [function () {
                 vm.showLoader = true;
                 closeStateSelectorModal();
 
-                vm.grid.meta.service.saveData(state, vm.row, vm.column)
+                vm.grid.meta.dataService.saveData(state, vm.row, vm.column)
                 .then(function () {
                     update();
                     vm.showLoader = false;

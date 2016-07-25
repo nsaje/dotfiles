@@ -4,6 +4,7 @@ TRAFFIC_FIELDS = [
     'cpc', 'ctr', 'title', 'url',
     'media_cost', 'e_media_cost', 'e_data_cost',
     'license_fee', 'billing_cost',
+    'margin', 'agency_total',
 ]
 POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
 POSTCLICK_ENGAGEMENT_FIELDS = [
@@ -40,6 +41,7 @@ FIELD_PERMISSION_MAPPING = {
     'billing_cost':   'zemauth.can_view_effective_costs',
     'media_cost':     'zemauth.can_view_actual_costs',
     'data_cost':      'zemauth.can_view_actual_costs',
+    'margin':         'zemauth.can_view_agency_margin',
 }
 
 

@@ -217,6 +217,30 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
+            name: 'Margin',
+            field: 'margin',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Agency\'s margin',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+            shown: $scope.hasPermission('zemauth.can_view_agency_margin')
+        },
+        {
+            name: 'Total Spend + Margin',
+            field: 'agency_total',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total billing cost including Media Spend, License Fee and Agency Margin',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+            shown: $scope.hasPermission('zemauth.can_view_agency_margin')
+        },
+        {
             name: 'Media budgets',
             field: 'allocated_budgets',
             checked: false,
@@ -353,7 +377,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 'cost', 'data_cost',
                 'media_cost', 'e_media_cost', 'e_data_cost',
                 'license_fee', 'total_fee', 'flat_fee',
-                'billing_cost',
+                'billing_cost', 'margin', 'agency_total',
             ],
         },
         {

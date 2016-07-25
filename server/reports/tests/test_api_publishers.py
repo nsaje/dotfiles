@@ -59,6 +59,8 @@ class ApiPublishersTest(TestCase):
             'SUM("impressions") AS "impressions_sum"',
             'CASE WHEN SUM("impressions") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("impressions") ELSE NULL END AS "ctr"',
             'SUM("clicks") AS "clicks_sum"',
+            'SUM("margin_nano") AS "margin_nano_sum"',
+            '(SUM("effective_cost_nano")+SUM("effective_data_cost_nano")+SUM("license_fee_nano")+SUM("margin_nano")) AS "agency_total_nano"',
         ]
         query = self._get_query()
 

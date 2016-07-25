@@ -57,31 +57,6 @@ class RedshiftTest(TestCase):
 
         mock_cursor().execute.assert_called_with(query, params)
 
-    def test_get_pixels_last_verified_dt(self, mock_get_cursor):
-        mock_cursor = Mock()
-        mock_cursor.fetchall = Mock()
-        mock_cursor.fetchall.return_value = []
-        mock_get_cursor.return_value = mock_cursor
-
-        redshift.get_pixels_last_verified_dt()
-
-        query = 'SELECT account_id, slug, max(conversion_timestamp) FROM touchpointconversions '\
-                'GROUP BY slug, account_id'
-        mock_cursor.execute.assert_called_with(query, [])
-
-    def test_get_pixels_last_verified_dt_account_id(self, mock_get_cursor):
-        mock_cursor = Mock()
-        mock_cursor.fetchall = Mock()
-        mock_cursor.fetchall.return_value = []
-        mock_get_cursor.return_value = mock_cursor
-
-        account_id = 1
-        redshift.get_pixels_last_verified_dt(account_id=account_id)
-
-        query = 'SELECT account_id, slug, max(conversion_timestamp) FROM touchpointconversions '\
-                'WHERE account_id = %s GROUP BY slug, account_id'
-        mock_cursor.execute.assert_called_with(query, [account_id])
-
     def test_vacuum_contentadstats(self, mock_get_cursor):
         mock_cursor = Mock()
         mock_get_cursor.return_value = MyCursor(mock_cursor)

@@ -425,6 +425,28 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
         shown: $scope.hasPermission('zemauth.can_view_effective_costs')
     }, {
+        name: 'Margin',
+        field: 'margin',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Agency\'s margin',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+        shown: $scope.hasPermission('zemauth.can_view_agency_margin')
+    }, {
+        name: 'Total Spend + Margin',
+        field: 'agency_total',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Total billing cost including Media Spend, License Fee and Agency Margin',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+        shown: $scope.hasPermission('zemauth.can_view_agency_margin')
+    }, {
         name: 'Avg. CPC',
         field: 'cpc',
         checked: true,
@@ -481,7 +503,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     $scope.columnCategories = [{
         'name': 'Costs',
         'fields': ['cost', 'data_cost', 'media_cost', 'e_media_cost', 'e_data_cost',
-                   'billing_cost', 'license_fee'],
+                   'billing_cost', 'license_fee', 'margin', 'agency_total'],
     }, {
         'name': 'Content Sync',
         'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action', 'label'],
@@ -773,7 +795,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     $scope.refreshGridAndTable = function () {
         getTableData();
         if ($scope.grid && $scope.grid.api) {
-            $scope.grid.api.getDataService().loadData();
+            $scope.grid.api.loadData();
         }
     };
 
@@ -914,7 +936,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     }
 
     function initializeGridApi () {
-        $scope.grid.api.onColumnsLoaded($scope, function () {
+        $scope.grid.api.onMetaDataUpdated($scope, function () {
             var metaData = $scope.grid.api.getMetaData();
             if (!metaData.ext.batches) return;
 

@@ -405,6 +405,30 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
+            name: 'Margin',
+            field: 'margin',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Agency\'s margin',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+            shown: $scope.hasPermission('zemauth.can_view_agency_margin')
+        },
+        {
+            name: 'Total Spend + Margin',
+            field: 'agency_total',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total billing cost including Media Spend, License Fee and Agency Margin',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+            shown: $scope.hasPermission('zemauth.can_view_agency_margin')
+        },
+        {
             name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
@@ -482,7 +506,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 'cost', 'data_cost',
                 'yesterday_cost', 'e_yesterday_cost',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
-                'license_fee',
+                'license_fee', 'margin', 'agency_total',
             ],
         },
         {
@@ -868,7 +892,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     function initializeGridApi () {
         // Initialize GridApi listeners
-        $scope.grid.api.onSelectionChanged($scope, function () {
+        $scope.grid.api.onSelectionUpdated($scope, function () {
             var selectedRows = $scope.grid.api.getSelection().selected;
 
             $scope.selectedTotals = false;
@@ -888,7 +912,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.getDailyStats();
         });
 
-        $scope.grid.api.onRowsLoaded($scope, function (event, rows) {
+        $scope.grid.api.onDataUpdated($scope, function () {
+            var rows = $scope.grid.api.getRows();
             var selection = $scope.grid.api.getSelection();
             rows.forEach(function (row) {
                 if (row.level === 0 && $scope.selectedTotals)

@@ -270,6 +270,30 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
+            name: 'Margin',
+            field: 'margin',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Agency\'s margin',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+            shown: $scope.hasPermission('zemauth.can_view_agency_margin')
+        },
+        {
+            name: 'Total Spend + Margin',
+            field: 'agency_total',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Total billing cost including Media Spend, License Fee and Agency Margin',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_agency_margin'),
+            shown: $scope.hasPermission('zemauth.can_view_agency_margin')
+        },
+        {
             name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
@@ -346,6 +370,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 'cost', 'data_cost',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'license_fee', 'yesterday_cost', 'e_yesterday_cost',
+                'margin', 'agency_total',
             ],
         },
         {
@@ -737,7 +762,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
     function initializeGridApi () {
         // Initialize GridApi listeners
-        $scope.grid.api.onSelectionChanged($scope, function () {
+        $scope.grid.api.onSelectionUpdated($scope, function () {
             var selectedRows = $scope.grid.api.getSelection().selected;
 
             $scope.selectedTotals = false;
@@ -757,7 +782,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             getDailyStats();
         });
 
-        $scope.grid.api.onRowsLoaded($scope, function (event, rows) {
+        $scope.grid.api.onDataUpdated($scope, function () {
+            var rows = $scope.grid.api.getRows();
             var selection = $scope.grid.api.getSelection();
             rows.forEach(function (row) {
                 if (row.level === 0 && $scope.selectedTotals)

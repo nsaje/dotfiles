@@ -157,14 +157,15 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 return label;
             };
 
-            $scope.getConversionPixelTag = function (url) {
-                return '<img src="' + url + '" height="1" width="1" border="0" alt="" />';
+            $scope.getConversionPixelTag = function (name, url) {
+                return '<!-- ' + name + '-->\n<img src="' + url + '" height="1" width="1" border="0" alt="" />';
             };
 
             $scope.copyConversionPixelTag = function (conversionGoal, $event) {
                 // when clicking on Copy pixel prevent select primary goal
                 var scope = $scope.$new(true);
-                scope.conversionPixelTag = $scope.getConversionPixelTag(conversionGoal.pixelUrl);
+                scope.conversionPixelTag = $scope.getConversionPixelTag(
+                    conversionGoal.name, conversionGoal.pixelUrl);
 
                 var modalInstance = $modal.open({
                     templateUrl: '/partials/copy_conversion_pixel_modal.html',

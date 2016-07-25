@@ -24,7 +24,7 @@ oneApp.directive('zemGridRowBreakdown', [function () {
                 if (!size) {
                     size = vm.row.data.pagination.count - vm.row.data.pagination.limit;
                 }
-                vm.grid.meta.service.loadData(vm.row, size);
+                vm.grid.meta.dataService.loadData(vm.row, size);
             }
 
             function getBreakdownColumnStyle () {

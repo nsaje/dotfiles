@@ -353,8 +353,8 @@ class CampaignConversionGoals(api_common.BaseApiView):
             if conversion_goal.type == constants.ConversionGoalType.PIXEL:
                 row['pixel'] = {
                     'id': conversion_goal.pixel.id,
-                    'slug': conversion_goal.pixel.slug,
-                    'url': conversions_helper.get_conversion_pixel_url(campaign.account_id, conversion_goal.pixel.slug),
+                    'name': conversion_goal.pixel.name,
+                    'url': conversion_goal.pixel.get_url(),
                     'archived': conversion_goal.pixel.archived,
                 }
 
@@ -364,7 +364,7 @@ class CampaignConversionGoals(api_common.BaseApiView):
         for conversion_pixel in campaign.account.conversionpixel_set.filter(archived=False):
             available_pixels.append({
                 'id': conversion_pixel.id,
-                'slug': conversion_pixel.slug,
+                'name': conversion_pixel.name,
             })
 
         return self.create_api_response({
@@ -584,11 +584,7 @@ class CampaignSettings(api_common.BaseApiView):
             conversion_goal = campaign_goal.conversion_goal
             if conversion_goal is not None and\
                     conversion_goal.type == constants.ConversionGoalType.PIXEL:
-                goal_blob['conversion_goal']['pixel_url'] =\
-                    conversions_helper.get_conversion_pixel_url(
-                        campaign.account.id,
-                        conversion_goal.pixel.slug
-                )
+                goal_blob['conversion_goal']['pixel_url'] = conversion_goal.pixel.get_url()
             ret.append(goal_blob)
         return ret
 
@@ -642,28 +638,15 @@ class CampaignSettings(api_common.BaseApiView):
 
 class AccountConversionPixels(api_common.BaseApiView):
 
-    def _get_pixel_status(self, last_verified_dt):
-        if last_verified_dt is None:
-            return constants.ConversionPixelStatus.NOT_USED
-
-        if last_verified_dt > datetime.datetime.utcnow() - datetime.timedelta(days=CONVERSION_PIXEL_INACTIVE_DAYS):
-            return constants.ConversionPixelStatus.ACTIVE
-
-        return constants.ConversionPixelStatus.INACTIVE
-
     def get(self, request, account_id):
         account_id = int(account_id)
         account = helpers.get_account(request.user, account_id)
-        last_verified_dts = redshift.get_pixels_last_verified_dt(account_id=account_id)
 
         rows = [
             {
                 'id': conversion_pixel.id,
-                'slug': conversion_pixel.slug,
-                'url': conversions_helper.get_conversion_pixel_url(account.id, conversion_pixel.slug),
-                'status': constants.ConversionPixelStatus.get_text(
-                    self._get_pixel_status(last_verified_dts.get((account_id, conversion_pixel.slug)))),
-                'last_verified_dt': last_verified_dts.get((account_id, conversion_pixel.slug)),
+                'name': conversion_pixel.name,
+                'url': conversion_pixel.get_url(),
                 'archived': conversion_pixel.archived
             } for conversion_pixel in models.ConversionPixel.objects.filter(account=account)
         ]
@@ -681,22 +664,22 @@ class AccountConversionPixels(api_common.BaseApiView):
         except ValueError:
             raise exc.ValidationError()
 
-        slug = data.get('slug')
+        name = data.get('name')
 
-        form = forms.ConversionPixelForm({'slug': slug})
+        form = forms.ConversionPixelForm({'name': name})
         if not form.is_valid():
-            raise exc.ValidationError(message=' '.join(dict(form.errors)['slug']))
+            raise exc.ValidationError(message=' '.join(dict(form.errors)['name']))
 
         try:
-            models.ConversionPixel.objects.get(account_id=account_id, slug=slug)
-            raise exc.ValidationError(message='Conversion pixel with this identifier already exists.')
+            models.ConversionPixel.objects.get(account_id=account_id, name=name)
+            raise exc.ValidationError(message='Conversion pixel with this name already exists.')
         except models.ConversionPixel.DoesNotExist:
             pass
 
         with transaction.atomic():
-            conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
+            conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, name=name)
 
-            changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
+            changes_text = u'Added conversion pixel named {}.'.format(name)
             account.write_history(
                 changes_text,
                 user=request.user,
@@ -706,11 +689,8 @@ class AccountConversionPixels(api_common.BaseApiView):
 
         return self.create_api_response({
             'id': conversion_pixel.id,
-            'slug': conversion_pixel.slug,
-            'url': conversions_helper.get_conversion_pixel_url(account.id, slug),
-            'status': constants.ConversionPixelStatus.get_text(
-                constants.ConversionPixelStatus.NOT_USED),
-            'last_verified_dt': None,
+            'name': conversion_pixel.name,
+            'url': conversion_pixel.get_url(),
             'archived': conversion_pixel.archived,
         })
 
@@ -744,9 +724,9 @@ class ConversionPixel(api_common.BaseApiView):
                 conversion_pixel.archived = data['archived']
                 conversion_pixel.save()
 
-                changes_text = u'{} conversion pixel with unique identifier {}.'.format(
+                changes_text = u'{} conversion pixel named {}.'.format(
                     'Archived' if data['archived'] else 'Restored',
-                    conversion_pixel.slug
+                    conversion_pixel.name
                 )
                 account.write_history(
                     changes_text,

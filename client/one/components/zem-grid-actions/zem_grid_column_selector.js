@@ -20,7 +20,7 @@ oneApp.directive('zemGridColumnSelector', [function () {
 
             function init () {
                 initCategories();
-                vm.api.onColumnsLoaded(null, function () {
+                vm.api.onMetaDataUpdated(null, function () {
                     initCategories();
                 });
             }

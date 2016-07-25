@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
 import datetime
-import pytz
 import httplib
 
 from mock import patch, ANY, Mock, call
@@ -948,11 +947,7 @@ class AccountConversionPixelsTestCase(TestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
-    @patch('dash.views.agency.redshift.get_pixels_last_verified_dt')
-    def test_get(self, redshift_get_mock):
-        utcnow = datetime.datetime.utcnow()
-        redshift_get_mock.return_value = {(1, 'test'): utcnow}
-
+    def test_get(self):
         account = models.Account.objects.get(pk=1)
         account.users.add(self.user)
 
@@ -962,15 +957,12 @@ class AccountConversionPixelsTestCase(TestCase):
         )
 
         decoded_response = json.loads(response.content)
-        tz_now = pytz.utc.localize(utcnow).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
         self.assertEqual(200, response.status_code)
         self.assertTrue(decoded_response['success'])
         self.assertEqual([{
             'id': 1,
-            'slug': 'test',
+            'name': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
-            'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.ACTIVE),
-            'last_verified_dt': tz_now.isoformat(),
             'archived': False
         }], decoded_response['data']['rows'])
 
@@ -985,7 +977,7 @@ class AccountConversionPixelsTestCase(TestCase):
     def test_post(self):
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
-            json.dumps({'slug': 'slug'}),
+            json.dumps({'name': 'name'}),
             content_type='application/json',
             follow=True,
         )
@@ -995,10 +987,8 @@ class AccountConversionPixelsTestCase(TestCase):
         self.assertTrue(decoded_response['success'])
         self.assertEqual({
             'id': 2,
-            'slug': 'slug',
-            'url': settings.CONVERSION_PIXEL_PREFIX + '1/slug/',
-            'status': constants.ConversionPixelStatus.get_text(constants.ConversionPixelStatus.NOT_USED),
-            'last_verified_dt': None,
+            'name': 'name',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/2/',
             'archived': False,
         }, decoded_response['data'])
 
@@ -1006,17 +996,17 @@ class AccountConversionPixelsTestCase(TestCase):
         self.assertEqual(
             constants.HistoryActionType.CONVERSION_PIXEL_CREATE,
             hist.action_type)
-        self.assertEqual('Added conversion pixel with unique identifier slug.',
+        self.assertEqual('Added conversion pixel named name.',
                          hist.changes_text)
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
 
-    def test_post_slug_empty(self):
+    def test_post_name_empty(self):
         pixels_before = list(models.ConversionPixel.objects.all())
 
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
-            json.dumps({'slug': ''}),
+            json.dumps({'name': ''}),
             content_type='application/json',
             follow=True,
         )
@@ -1024,65 +1014,12 @@ class AccountConversionPixelsTestCase(TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
 
-    def test_post_slug_invalid_chars(self):
+    def test_post_name_too_long(self):
         pixels_before = list(models.ConversionPixel.objects.all())
 
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
-            json.dumps({'slug': 'A'}),
-            content_type='application/json',
-            follow=True,
-        )
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
-
-        response = self.client.post(
-            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
-            json.dumps({'slug': '1'}),
-            content_type='application/json',
-            follow=True,
-        )
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
-
-        response = self.client.post(
-            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
-            json.dumps({'slug': 'č'}),
-            content_type='application/json',
-            follow=True,
-        )
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
-
-        response = self.client.post(
-            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
-            json.dumps({'slug': '-'}),
-            content_type='application/json',
-            follow=True,
-        )
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
-
-        response = self.client.post(
-            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
-            json.dumps({'slug': '_'}),
-            content_type='application/json',
-            follow=True,
-        )
-
-        self.assertEqual(400, response.status_code)
-        self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
-
-    def test_post_slug_too_long(self):
-        pixels_before = list(models.ConversionPixel.objects.all())
-
-        response = self.client.post(
-            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
-            json.dumps({'slug': 'a' * (models.ConversionPixel._meta.get_field('slug').max_length + 1)}),
+            json.dumps({'name': 'a' * (models.ConversionPixel._meta.get_field('name').max_length + 1)}),
             content_type='application/json',
             follow=True,
         )
@@ -1122,7 +1059,7 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual(
             constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE,
             hist.action_type)
-        self.assertEqual('Archived conversion pixel with unique identifier test.',
+        self.assertEqual('Archived conversion pixel named test.',
                          hist.changes_text)
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
@@ -1155,7 +1092,7 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual('Conversion pixel does not exist', decoded_response['data']['message'])
 
     def test_put_invalid_account(self):
-        new_conversion_pixel = models.ConversionPixel.objects.create(account_id=2, slug='abcd')
+        new_conversion_pixel = models.ConversionPixel.objects.create(account_id=2, name='abcd')
 
         add_permissions(self.user, ['archive_restore_entity'])
         response = self.client.put(
@@ -1219,7 +1156,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                 'goal_id': '1',
                 'pixel': {
                     'id': 1,
-                    'slug': 'test',
+                    'name': 'test',
                     'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
                     'archived': False,
                 },
@@ -1248,7 +1185,7 @@ class CampaignConversionGoalsTestCase(TestCase):
         ]
         expected_available_pixels = [{
             'id': 1,
-            'slug': 'test'
+            'name': 'test'
         }]
 
         self.assertItemsEqual(expected_goals, decoded_response['data']['rows'])
@@ -1273,7 +1210,7 @@ class CampaignConversionGoalsTestCase(TestCase):
     def test_get_available_pixels(self):
         new_pixel = models.ConversionPixel.objects.create(
             account_id=1,
-            slug='new',
+            name='new',
             archived=False,
         )
 
@@ -1301,7 +1238,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                 'goal_id': '1',
                 'pixel': {
                     'id': 1,
-                    'slug': 'test',
+                    'name': 'test',
                     'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
                     'archived': False,
                 },
@@ -1330,10 +1267,10 @@ class CampaignConversionGoalsTestCase(TestCase):
         ]
         expected_available_pixels = [{
             'id': 1,
-            'slug': 'test',
+            'name': 'test',
         }, {
             'id': new_pixel.id,
-            'slug': 'new',
+            'name': 'new',
         }]
 
         self.assertItemsEqual(expected_conversion_goals, decoded_response['data']['rows'])
@@ -2050,7 +1987,7 @@ class CampaignSettingsTest(TestCase):
 
         convpix = models.ConversionPixel.objects.create(
             account=ad_group.campaign.account,
-            slug='janez_slug',
+            name='janez_name',
         )
         convg = models.ConversionGoal.objects.create(
             campaign=ad_group.campaign,
@@ -2076,7 +2013,7 @@ class CampaignSettingsTest(TestCase):
         self.assertDictContainsSubset(
             {
                 'name': 'janezjanez',
-                'pixel_url': 'https://p1.zemanta.com/p/1/janez_slug/',
+                'pixel_url': 'https://p1.zemanta.com/p/1/2/',
             },
             content['data']['goals'][0]['conversion_goal'],
         )

@@ -385,19 +385,13 @@ class AccountSettingsForm(forms.Form):
         return facebook_page
 
 
-def validate_lower_case_only(st):
-    if re.search(r'[^a-z]+', st):
-        raise forms.ValidationError(message='Please use only lower case letters for unique identifier.')
-
-
 class ConversionPixelForm(forms.Form):
-    slug = forms.CharField(
-        max_length=32,
+    name = forms.CharField(
+        max_length=50,
         required=True,
-        validators=[validate_lower_case_only],
         error_messages={
-            'required': 'Please specify a unique identifier.',
-            'max_length': 'Unique identifier is too long (%(show_value)d/%(limit_value)d).',
+            'required': 'Please specify a name.',
+            'max_length': 'Name is too long (%(show_value)d/%(limit_value)d).',
         }
     )
 

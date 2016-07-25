@@ -32,11 +32,10 @@ oneApp.directive('zemGridExport', function () {
                 $scope.defaultOption = zemGridExportOptions.getDefaultOption($scope.options);
                 $scope.exportSources = metaData.breakdown === constants.breakdown.MEDIA_SOURCE;
 
-                var dataService = vm.api.getDataService();
-                var dateRange = dataService.getDateRange();
+                var dateRange = vm.api.getDateRange();
                 $scope.startDate = dateRange.startDate;
                 $scope.endDate = dateRange.endDate;
-                $scope.order = dataService.getOrder();
+                $scope.order = vm.api.getOrder();
 
                 $scope.getAdditionalColumns = getAdditionalColumns;
                 $scope.hasPermission = vm.api.hasPermission;
