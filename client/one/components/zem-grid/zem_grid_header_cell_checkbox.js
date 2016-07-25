@@ -14,26 +14,21 @@ oneApp.directive('zemGridHeaderCellCheckbox', [function () {
         controller: ['$element', 'zemGridConstants', function ($element, zemGridConstants) {
             var vm = this;
             var pubsub = this.grid.meta.pubsub;
+            var selectionService = vm.grid.meta.selectionService;
 
-            vm.zemGridConstants = zemGridConstants;
-            vm.options = vm.grid.meta.options.selection;
             vm.allFilterChecked = false;
-            vm.getStyle = getStyle;
+            vm.zemGridConstants = zemGridConstants;
+            vm.isVisible = selectionService.isFilterSelectionEnabled;
+            vm.getCustomFilters = selectionService.getCustomFilters;
             vm.toggleAllFilter = toggleAllFilter;
             vm.selectCustomFilter = selectCustomFilter;
+            vm.getStyle = getStyle;
 
             initialize();
 
             function initialize () {
-                initializeSelection();
-                pubsub.register(pubsub.EVENTS.DATA_UPDATED, function () {
-                    if (vm.grid.body.rows.length === 0) {
-                        initializeSelection();
-                    }
-                });
-
                 pubsub.register(pubsub.EVENTS.EXT_SELECTION_UPDATED, function () {
-                    var selection = vm.grid.ext.selection;
+                    var selection = selectionService.getSelection();
                     var indeterminate =
                         selection.type === zemGridConstants.gridSelectionFilterType.CUSTOM ||
                         selection.selected.length > 0 || selection.unselected.length > 0;
@@ -41,41 +36,20 @@ oneApp.directive('zemGridHeaderCellCheckbox', [function () {
                 });
             }
 
-            function initializeSelection () {
-                var defaultFilter = {
-                    callback: function () {
-                        return vm.allFilterChecked;
-                    }
-                };
-
-                vm.grid.ext.selection = {
-                    type: vm.allFilterChecked ?
-                        zemGridConstants.gridSelectionFilterType.ALL :
-                        zemGridConstants.gridSelectionFilterType.NONE,
-                    filter: defaultFilter,
-                    selected: [],
-                    unselected: [],
-                };
-            }
-
             function toggleAllFilter ($event) {
                 $event.stopPropagation();
-                initializeSelection();
-                pubsub.notify(pubsub.EVENTS.EXT_SELECTION_UPDATED, vm.grid.ext.selection);
+                var type = vm.allFilterChecked ?
+                    zemGridConstants.gridSelectionFilterType.ALL :
+                    zemGridConstants.gridSelectionFilterType.NONE;
+                selectionService.setFilter(type);
             }
 
             function selectCustomFilter (filter) {
-                vm.grid.ext.selection = {
-                    type: zemGridConstants.gridSelectionFilterType.CUSTOM,
-                    filter: filter,
-                    selected: [],
-                    unselected: [],
-                };
-                pubsub.notify(pubsub.EVENTS.EXT_SELECTION_UPDATED, vm.grid.ext.selection);
+                selectionService.setFilter(zemGridConstants.gridSelectionFilterType.CUSTOM, filter);
             }
 
             function getStyle () {
-                var width = vm.options.filtersEnabled && vm.options.customFilters ? 60 : 40;
+                var width = vm.isVisible() && vm.getCustomFilters() ? 60 : 40;
                 return {
                     'max-width': width,
                     'min-width': width,

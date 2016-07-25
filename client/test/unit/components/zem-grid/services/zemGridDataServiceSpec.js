@@ -34,14 +34,14 @@ describe('zemGridDataService', function () {
         grid.meta.pubsub = zemGridPubSub.createInstance(grid.meta.scope);
 
         gridService = zemGridDataService.createInstance(grid, dataSource);
-        grid.meta.service = gridService;
+        grid.meta.dataService = gridService;
     }));
 
     it('should load meta data on initialization', function () {
         spyOn(dataSource, 'getMetaData').and.callThrough();
 
         expect(grid.meta.initialized).toBeFalsy();
-        grid.meta.service.initialize();
+        grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
         expect(dataSource.getMetaData).toHaveBeenCalled();
         expect(grid.meta.initialized).toBe(true);
@@ -52,7 +52,7 @@ describe('zemGridDataService', function () {
         spyOn(dataSource, 'getMetaData').and.callThrough();
         spyOn(dataSource, 'getData').and.callThrough();
 
-        grid.meta.service.initialize();
+        grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
         $timeout.flush();
 
@@ -63,7 +63,7 @@ describe('zemGridDataService', function () {
     it('should register to datasource events on initialization', function () {
         spyOn(dataSource, 'onStatsUpdated');
         spyOn(dataSource, 'onDataUpdated');
-        grid.meta.service.initialize();
+        grid.meta.dataService.initialize();
 
         expect(dataSource.onStatsUpdated).toHaveBeenCalled();
         expect(dataSource.onDataUpdated).toHaveBeenCalled();
@@ -71,7 +71,7 @@ describe('zemGridDataService', function () {
 
     it('should notify listeners when data is updated', function () {
         spyOn(grid.meta.pubsub, 'notify');
-        grid.meta.service.initialize();
+        grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
         $timeout.flush();
 
@@ -83,7 +83,7 @@ describe('zemGridDataService', function () {
         ]);
 
         grid.meta.pubsub.notify.calls.reset();
-        grid.meta.service.loadData();
+        grid.meta.dataService.loadData();
         expect(grid.meta.pubsub.notify).toHaveBeenCalledWith(grid.meta.pubsub.EVENTS.DATA_UPDATED);
     });
 
@@ -91,7 +91,7 @@ describe('zemGridDataService', function () {
         spyOn(zemGridParser, 'parse').and.callThrough();
         spyOn(zemGridParser, 'parseMetaData').and.callThrough();
 
-        grid.meta.service.initialize();
+        grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
         $timeout.flush();
 
@@ -104,7 +104,7 @@ describe('zemGridDataService', function () {
     });
 
     it('should be able to load data by breakdown and size', function () {
-        grid.meta.service.initialize();
+        grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
         $timeout.flush();
 
@@ -112,7 +112,7 @@ describe('zemGridDataService', function () {
         var rowsCount = grid.body.rows.length;
         var row = grid.body.rows[grid.body.rows.length - 1]; // Breakdown row
 
-        grid.meta.service.loadData(row, 5);
+        grid.meta.dataService.loadData(row, 5);
         grid.meta.scope.$apply();
         $timeout.flush();
 
@@ -121,7 +121,7 @@ describe('zemGridDataService', function () {
     });
 
     it('should save data through data source and notify updates', function () {
-        grid.meta.service.initialize();
+        grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
         $timeout.flush();
 
@@ -130,7 +130,7 @@ describe('zemGridDataService', function () {
 
         var row = grid.body.rows[0];
         var column = grid.header.columns[0];
-        grid.meta.service.saveData('new value', row, column);
+        grid.meta.dataService.saveData('new value', row, column);
         grid.meta.scope.$apply();
 
         expect(dataSource.saveData).toHaveBeenCalledWith('new value', row.data, column.data);

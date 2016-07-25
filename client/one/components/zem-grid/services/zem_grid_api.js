@@ -9,97 +9,41 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
     // or may be passed back to calling controller to enable interaction between them.
     //
 
-    // Definition of events used internally in GridApi
-    // External listeners are registered through dedicated methods
-    var EVENTS = {
-        COLUMNS_LOADED: 'zem-grid-api-columns-loaded',
-        ROWS_LOADED: 'zem-grid-api-rows-loaded',
-        SELECTION_CHANGED: 'zem-grid-api-rows-selection-changed',
-        ROWS_COLLAPSE_CHANGED: 'zem-grid-api-rows-collapse-changed',
-        COLUMNS_VISIBILITY_CHANGED: 'zem-grid-api-columns-visibility-changed',
-    };
-
     function GridApi (grid) {
-        //
-        // Public API
-        //
+        var pubsub = grid.meta.pubsub;
+
+        // Grid Object API
         this.isInitialized = isInitialized;
         this.getMetaData = getMetaData;
-        this.getDataService = getDataService;
         this.getRows = getRows;
         this.getColumns = getColumns;
-        this.getVisibleColumns = getVisibleColumns;
-        this.getVisibleRows = getVisibleRows;
-        this.getSelection  = getSelection;
 
-        this.setCollapsedRows = setCollapsedRows;
-        this.setCollapsedLevel = setCollapsedLevel;
-        this.setSelection = setSelection;
-        this.setVisibleColumns = setVisibleColumns;
+        // Data service API
+        this.loadData = grid.meta.dataService.loadData;
+        this.loadMetaData = grid.meta.dataService.loadMetaData;
+        this.setBreakdown = grid.meta.dataService.setBreakdown;
+        this.getBreakdown = grid.meta.dataService.getBreakdown;
+        this.getBreakdownLevel = grid.meta.dataService.getBreakdownLevel;
+        this.setOrder = grid.meta.dataService.setOrder;
+        this.getOrder = grid.meta.dataService.getOrder;
+        this.setDateRange = grid.meta.dataService.setDateRange;
+        this.getDateRange = grid.meta.dataService.getDateRange;
 
-        this.onRowsLoaded = onRowsLoaded;
-        this.onColumnsLoaded = onColumnsLoaded;
-        this.onSelectionChanged = onSelectionChanged;
-        this.onRowsCollapseChanged = onRowsCollapseChanged;
-        this.onColumnsVisibilityChanged = onColumnsVisibilityChanged;
+        // Selection service API
+        this.getSelection = grid.meta.selectionService.getSelection;
+        this.setSelection = grid.meta.selectionService.setSelection;
+        this.getSelectionOptions = grid.meta.selectionService.getSelectionOptions;
+        this.setSelectionOptions = grid.meta.selectionService.setSelectionOptions;
 
-        // Initialize API
-        initialize();
+        // Columns service API
+        this.setVisibleColumns = grid.meta.columnsService.setVisibleColumns;
+        this.getVisibleColumns = grid.meta.columnsService.getVisibleColumns;
 
-        function initialize () {
-            // Re-Wire some of pubsub events; notify when rows and columns are available
-            grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.DATA_UPDATED, function () {
-                notifyListeners(EVENTS.ROWS_LOADED, getRows());
-            });
-            grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.METADATA_UPDATED, function () {
-                notifyListeners(EVENTS.COLUMNS_LOADED, getColumns());
-            });
-            grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.EXT_SELECTION_UPDATED, function () {
-                notifyListeners(EVENTS.SELECTION_CHANGED, getColumns());
-            });
-        }
-
-        function setCollapsedRows (rows, collapsed) {
-            if (!Array.isArray(rows)) rows = [rows];
-
-            rows.forEach(function (row) {
-                row.collapsed = collapsed;
-                var idx = grid.body.rows.indexOf(row);
-                while (++idx < grid.body.rows.length) {
-                    var child = grid.body.rows[idx];
-                    if (child.level <= row.level) break;
-                    child.visible = !row.collapsed && !child.parent.collapsed;
-                }
-            });
-
-            grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
-            notifyListeners(EVENTS.ROWS_COLLAPSE_CHANGED, rows);
-        }
-
-        function setCollapsedLevel (level, collapsed) {
-            var rows = grid.body.rows.filter(function (row) {
-                return row.level === level;
-            });
-            setCollapsedRows(rows, collapsed);
-        }
-
-        function setSelection (selection) {
-            grid.ext.selection = selection;
-            grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.EXT_SELECTION_UPDATED);
-            notifyListeners(EVENTS.SELECTION_CHANGED, grid.ext.selection);
-        }
-
-        function setVisibleColumns (columns, visible) {
-            if (!Array.isArray(columns)) columns = [columns];
-
-            columns.forEach(function (column) {
-                column.visible = visible;
-            });
-
-            zemGridStorageService.saveColumns(grid);
-            notifyListeners(EVENTS.COLUMNS_VISIBILITY_CHANGED, columns);
-            grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
-        }
+        // Listeners - pubsub rewiring
+        this.onMetaDataUpdated = onMetaDataUpdated;
+        this.onDataUpdated = onDataUpdated;
+        this.onColumnsUpdated = onColumnsUpdated;
+        this.onSelectionUpdated = onSelectionUpdated;
 
         function isInitialized () {
             return grid.meta.initialized;
@@ -107,10 +51,6 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
 
         function getMetaData () {
             return grid.meta.data;
-        }
-
-        function getDataService () {
-            return grid.meta.service;
         }
 
         function getRows () {
@@ -121,54 +61,30 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
             return rows;
         }
 
-        function getSelection () {
-            return grid.ext.selection;
-        }
-
-        function getVisibleRows () {
-            return getRows().filter(function (row) {
-                return row.visible;
-            });
-        }
-
         function getColumns () {
             return grid.header.columns;
         }
 
-        function getVisibleColumns () {
-            return grid.header.columns.filter(function (column) {
-                return column.visible;
-            });
+        function onMetaDataUpdated (scope, callback) {
+            registerListener(pubsub.EVENTS.METADATA_UPDATED, scope, callback);
         }
 
-        function onColumnsLoaded (scope, callback) {
-            registerListener(EVENTS.COLUMNS_LOADED, scope, callback);
+        function onDataUpdated (scope, callback) {
+            registerListener(pubsub.EVENTS.DATA_UPDATED, scope, callback);
         }
 
-        function onRowsLoaded (scope, callback) {
-            registerListener(EVENTS.ROWS_LOADED, scope, callback);
+        function onColumnsUpdated (scope, callback) {
+            registerListener(pubsub.EVENTS.EXT_COLUMNS_UPDATED, scope, callback);
         }
 
-        function onSelectionChanged (scope, callback) {
-            registerListener(EVENTS.SELECTION_CHANGED, scope, callback);
-        }
-
-        function onRowsCollapseChanged (scope, callback) {
-            registerListener(EVENTS.ROWS_COLLAPSE_CHANGED, scope, callback);
-        }
-
-        function onColumnsVisibilityChanged (scope, callback) {
-            registerListener(EVENTS.COLUMNS_VISIBILITY_CHANGED, scope, callback);
+        function onSelectionUpdated (scope, callback) {
+            registerListener(pubsub.EVENTS.EXT_SELECTION_UPDATED, scope, callback);
         }
 
         function registerListener (event, scope, callback) {
+            var handler = pubsub.register(event, callback);
             scope = scope || grid.meta.scope;
-            var handler = $rootScope.$on(event, callback);
             scope.$on('$destroy', handler);
-        }
-
-        function notifyListeners (event, data) {
-            $rootScope.$emit(event, data);
         }
     }
 

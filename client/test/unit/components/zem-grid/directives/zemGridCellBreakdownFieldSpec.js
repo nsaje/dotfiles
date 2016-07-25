@@ -13,17 +13,33 @@ describe('zemGridCellBreakdownField', function () {
         scope = $rootScope.$new();
         scope.ctrl = {};
         scope.ctrl.grid = {
-            meta: {
-                data: {
-                    level: '',
-                    breakdown: '',
-                },
-                service: {
-                    getBreakdownLevel: function () {},
-                },
-            },
+            meta: createMockGridMeta(),
         };
     }));
+
+    function createMockGridMeta () {
+        return {
+            data: {
+                level: '',
+                breakdown: '',
+            },
+            dataService: {
+                getBreakdownLevel: function () {
+                },
+            },
+            collapseService: {
+                isRowCollapsable: function () {
+                },
+                isRowCollapsed: function () {
+                },
+            },
+            pubsub: {
+                EVENTS: {},
+                register: function () {
+                },
+            }
+        };
+    }
 
     it('should set field type to baseField by default', function () {
         scope.ctrl.row = {};
@@ -65,16 +81,9 @@ describe('zemGridCellBreakdownField', function () {
         scope.ctrl.row = {level: 1};
 
         tests.forEach(function (test) {
-            scope.ctrl.grid = {
-                meta: {
-                    data: {
-                        breakdown: test.breakdown,
-                    },
-                    service: {
-                        getBreakdownLevel: function () {},
-                    },
-                },
-            };
+            var meta = createMockGridMeta();
+            meta.data.breakdown = test.breakdown;
+            scope.ctrl.grid = {meta: meta};
 
             element = $compile(template)(scope);
             scope.$digest();

@@ -23,7 +23,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 // immediately to prevent flickering if table is already rendered (e.g. toggling columns)
                 zemGridUIService.resizeGridColumns(ctrl.grid);
                 $timeout(function () {
-                    requestAnimationFrame (function () {
+                    requestAnimationFrame(function () {
                         zemGridUIService.resizeGridColumns(ctrl.grid);
                     });
                 }, 0, false);
@@ -41,59 +41,32 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
             }
 
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, resizeColumns);
-            pubsub.register(pubsub.EVENTS.METADATA_UPDATED, resizeColumns);
+            pubsub.register(pubsub.EVENTS.EXT_COLUMNS_UPDATED, resizeColumns);
             resizeColumns();
 
             pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, leftOffset) {
                 handleHorizontalScroll(leftOffset);
             });
         },
-        controller: ['zemGridConstants', 'zemGridStorageService', function (zemGridConstants, zemGridStorageService) {
+        controller: [function () {
             var vm = this;
+            var pubsub = this.grid.meta.pubsub;
+            var columnsService = this.grid.meta.columnsService;
+
+            vm.model = {};
 
             initialize();
 
             function initialize () {
                 initializeColumns();
-                vm.grid.meta.pubsub.register(vm.grid.meta.pubsub.EVENTS.METADATA_UPDATED, initializeColumns);
-                vm.grid.meta.pubsub.register(vm.grid.meta.pubsub.EVENTS.DATA_UPDATED, initializeColumns);
+                pubsub.register(pubsub.EVENTS.EXT_COLUMNS_UPDATED, initializeColumns);
             }
 
             function initializeColumns () {
-                // Initialize header columns based on the stored data and default values
-                zemGridStorageService.loadColumns(vm.grid);
+                vm.model.visibleColumns = columnsService.getVisibleColumns();
 
-                initializeOrder();
-
-                vm.grid.header.visibleColumns = vm.grid.header.columns.filter(function (column) {
-                    return column.visible;
-                });
-
-                if (vm.grid.meta.options.selection && vm.grid.meta.options.selection.enabled) {
-                    vm.grid.header.visibleColumns.unshift({
-                        type: zemGridConstants.gridColumnTypes.CHECKBOX,
-                    });
-                }
-            }
-
-            function initializeOrder () {
-                var order = vm.grid.meta.service.getOrder();
-                if (!order) return;
-
-                var direction = zemGridConstants.gridColumnOrder.ASC;
-                if (order[0] === '-') {
-                    direction = zemGridConstants.gridColumnOrder.DESC;
-                    order = order.substr(1);
-                }
-
-                vm.grid.header.columns.forEach(function (column) {
-                    var orderField = column.data.orderField || column.field;
-                    if (orderField === order) {
-                        column.order = direction;
-                    } else {
-                        column.order = zemGridConstants.gridColumnOrder.NONE;
-                    }
-                });
+                // visibleColumns is shared with body to optimize virtual scroll performance
+                vm.grid.header.visibleColumns = vm.model.visibleColumns;
             }
         }],
     };

@@ -795,7 +795,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     $scope.refreshGridAndTable = function () {
         getTableData();
         if ($scope.grid && $scope.grid.api) {
-            $scope.grid.api.getDataService().loadData();
+            $scope.grid.api.loadData();
         }
     };
 
@@ -936,7 +936,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     }
 
     function initializeGridApi () {
-        $scope.grid.api.onColumnsLoaded($scope, function () {
+        $scope.grid.api.onMetaDataUpdated($scope, function () {
             var metaData = $scope.grid.api.getMetaData();
             if (!metaData.ext.batches) return;
 

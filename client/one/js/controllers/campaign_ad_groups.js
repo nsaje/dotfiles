@@ -762,7 +762,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
     function initializeGridApi () {
         // Initialize GridApi listeners
-        $scope.grid.api.onSelectionChanged($scope, function () {
+        $scope.grid.api.onSelectionUpdated($scope, function () {
             var selectedRows = $scope.grid.api.getSelection().selected;
 
             $scope.selectedTotals = false;
@@ -782,7 +782,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             getDailyStats();
         });
 
-        $scope.grid.api.onRowsLoaded($scope, function (event, rows) {
+        $scope.grid.api.onDataUpdated($scope, function () {
+            var rows = $scope.grid.api.getRows();
             var selection = $scope.grid.api.getSelection();
             rows.forEach(function (row) {
                 if (row.level === 0 && $scope.selectedTotals)

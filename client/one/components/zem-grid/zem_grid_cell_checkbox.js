@@ -14,9 +14,9 @@ oneApp.directive('zemGridCellCheckbox', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_checkbox.html',
-        controller: ['$scope', 'zemGridConstants', function ($scope, zemGridConstants) {
+        controller: ['$scope', function ($scope) {
             var vm = this;
-            var pubsub = this.grid.meta.pubsub;
+            var selectionService = this.grid.meta.selectionService;
 
             vm.checkboxModel = {};
             vm.toggleSelection = toggleSelection;
@@ -24,59 +24,22 @@ oneApp.directive('zemGridCellCheckbox', [function () {
             initialize();
 
             function initialize () {
+                var pubsub = vm.grid.meta.pubsub;
                 updateModel();
                 pubsub.register(pubsub.EVENTS.EXT_SELECTION_UPDATED, updateModel);
                 $scope.$watch('ctrl.row', updateModel);
             }
 
             function updateModel () {
-                vm.checkboxModel.visible = isVisible();
+                if (!vm.row) return;
+                vm.checkboxModel.visible = selectionService.isRowSelectionEnabled(vm.row);
                 if (vm.checkboxModel.visible) {
-                    vm.checkboxModel.checked = isChecked();
-                    vm.checkboxModel.disabled = isDisabled();
+                    vm.checkboxModel.checked = selectionService.isRowSelected(vm.row);
+                    vm.checkboxModel.disabled = selectionService.isRowSelectable(vm.row);
                 }
             }
-
-            function isVisible () {
-                if (!vm.row) return false;
-                return vm.grid.meta.options.selection.levels.indexOf(vm.row.level) >= 0;
-            }
-
-            function isChecked () {
-                var selection = vm.grid.ext.selection;
-                var isFiltered = selection.filter.callback(vm.row);
-                if (isFiltered) {
-                    return selection.unselected.indexOf(vm.row) < 0;
-                }
-                return selection.selected.indexOf(vm.row) >= 0;
-            }
-
-            function isDisabled () {
-                var maxSelected = vm.grid.meta.options.selection.maxSelected;
-                var selection = vm.grid.ext.selection;
-                if (maxSelected && selection.selected.length >= maxSelected) {
-                    return !vm.checkboxModel.checked;
-                }
-                return false;
-            }
-
             function toggleSelection () {
-                var idx;
-                var selection = vm.grid.ext.selection;
-                var isFiltered = selection.filter.callback(vm.row);
-
-                // If item is filtered its selection would be persisted in unselected collection
-                // since it will actually be unselected by user. If not filtered selected collection
-                // is used.
-                var collection = isFiltered ? selection.unselected : selection.selected;
-                idx = collection.indexOf(vm.row);
-                if (idx >= 0) {
-                    collection.splice(idx, 1);
-                } else {
-                    collection.push(vm.row);
-                }
-
-                pubsub.notify(pubsub.EVENTS.EXT_SELECTION_UPDATED, vm.grid.ext.selection);
+                selectionService.setRowSelection(vm.row, !selectionService.isRowSelected(vm.row));
             }
         }],
     };

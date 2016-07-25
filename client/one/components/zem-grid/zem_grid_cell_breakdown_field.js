@@ -23,18 +23,32 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_breakdown_field.html',
         controller: ['$scope', 'config', 'zemGridConstants', 'zemGridUIService', function ($scope, config, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
             var vm = this;
+            var collapseService = vm.grid.meta.collapseService;
+
             vm.config = config;
             vm.types = zemGridConstants.gridColumnTypes;
-            vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
+            vm.collapsable = false;
+            vm.collapsed = false;
             vm.toggleCollapse = toggleCollapse;
+            vm.getBreakdownColumnStyle = getBreakdownColumnStyle;
 
-            $scope.$watch('ctrl.row', update);
-            $scope.$watch('ctrl.data', update);
+            initialize();
 
-            function update () {
-                if (vm.row) {
-                    vm.fieldType = getFieldType(vm.grid.meta.data.breakdown, vm.row.level);
-                }
+            function initialize () {
+                var pubsub = vm.grid.meta.pubsub;
+                $scope.$watch('ctrl.row', updateModel);
+                $scope.$watch('ctrl.data', updateModel);
+                pubsub.register(pubsub.EVENTS.EXT_COLLAPSE_UPDATED, updateModel);
+
+                updateModel();
+            }
+
+            function updateModel () {
+                if (!vm.row) return;
+
+                vm.fieldType = getFieldType(vm.grid.meta.data.breakdown, vm.row.level);
+                vm.collapsable = collapseService.isRowCollapsable(vm.row);
+                vm.collapsed = collapseService.isRowCollapsed(vm.row);
             }
 
             function getBreakdownColumnStyle () {
@@ -43,7 +57,7 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
             }
 
             function toggleCollapse () {
-                vm.grid.meta.api.setCollapsedRows(vm.row, !vm.row.collapsed);
+                return collapseService.setRowCollapsed(vm.row, !vm.collapsed);
             }
 
             function getFieldType (breakdown, rowLevel) {

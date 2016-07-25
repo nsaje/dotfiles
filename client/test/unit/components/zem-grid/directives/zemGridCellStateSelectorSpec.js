@@ -21,7 +21,7 @@ describe('zemGridCellStateSelector', function () {
                     breakdown: '',
                     ext: {},
                 },
-                service: {},
+                dataService: {},
             },
         };
     }));
@@ -137,8 +137,8 @@ describe('zemGridCellStateSelector', function () {
     });
 
     it('should not make a save request if state is not active and enabling is disabled by autopilot', function () {
-        scope.ctrl.grid.meta.service.saveData = function () {};
-        spyOn(scope.ctrl.grid.meta.service, 'saveData').and.callFake(function () {
+        scope.ctrl.grid.meta.dataService.saveData = function () {};
+        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(function () {
             var deferred = $q.defer();
             deferred.resolve(false);
             return deferred.promise;
@@ -156,12 +156,12 @@ describe('zemGridCellStateSelector', function () {
         element.isolateScope().ctrl.modal = null;
         element.isolateScope().ctrl.setState(2);
 
-        expect(element.isolateScope().ctrl.grid.meta.service.saveData).not.toHaveBeenCalled();
+        expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).not.toHaveBeenCalled();
     });
 
     it('should not make a save request if field is not editable', function () {
-        scope.ctrl.grid.meta.service.saveData = function () {};
-        spyOn(scope.ctrl.grid.meta.service, 'saveData').and.callFake(function () {
+        scope.ctrl.grid.meta.dataService.saveData = function () {};
+        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(function () {
             var deferred = $q.defer();
             deferred.resolve(false);
             return deferred.promise;
@@ -178,12 +178,12 @@ describe('zemGridCellStateSelector', function () {
         element.isolateScope().ctrl.modal = null;
         element.isolateScope().ctrl.setState(2);
 
-        expect(element.isolateScope().ctrl.grid.meta.service.saveData).not.toHaveBeenCalled();
+        expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).not.toHaveBeenCalled();
     });
 
     it('should make a save request if field is editable', function () {
-        scope.ctrl.grid.meta.service.saveData = function () {};
-        spyOn(scope.ctrl.grid.meta.service, 'saveData').and.callFake(function () {
+        scope.ctrl.grid.meta.dataService.saveData = function () {};
+        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(function () {
             var deferred = $q.defer();
             deferred.resolve(false);
             return deferred.promise;
@@ -200,6 +200,6 @@ describe('zemGridCellStateSelector', function () {
         element.isolateScope().ctrl.modal = null;
         element.isolateScope().ctrl.setState(2);
 
-        expect(element.isolateScope().ctrl.grid.meta.service.saveData).toHaveBeenCalled();
+        expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).toHaveBeenCalled();
     });
 });
