@@ -1608,7 +1608,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
-            u'conversion_goal_1': 0,
+            u'conversion_goal_1': None,
             u'performance': {u'list': [], u'overall': None},
             u'styles': {},
             u'conversion_goal_2': None,

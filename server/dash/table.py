@@ -1811,7 +1811,7 @@ class PublishersTable(object):
 
     def _mark_missing_data(self, publishers_data, publishers_totals):
         for publisher_data in publishers_data:
-            publisher_exchange = publisher_data['exchange'].lower()
+            publisher_exchange = (publisher_data['exchange'] or '').lower()
 
             if publisher_exchange == constants.SourceType.OUTBRAIN:
                 # OB does not report back impressions for publishers
@@ -2018,6 +2018,9 @@ class PublishersTable(object):
                 row['data_cost'] = publisher_data.get('data_cost', 0)
             for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
                 row[key] = publisher_data[key]
+                if (source_name or '').lower() == constants.SourceType.OUTBRAIN:
+                    # We have no conversion data for OB
+                    row[key] = None
             campaign_goals.copy_fields(user, publisher_data, row)
             if 'performance' in publisher_data:
                 row['performance'] = publisher_data['performance']
