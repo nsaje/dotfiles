@@ -629,6 +629,30 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             internal: 'zemauth.can_view_effective_costs',
             shown: 'zemauth.can_view_effective_costs',
         },
+        margin: {
+            name: 'Margin',
+            field: 'margin',
+            checked: false,
+            type: zemGridConstants.gridColumnTypes.CURRENCY,
+            totalRow: true,
+            help: 'Agency\'s margin',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            internal: 'zemauth.can_view_agency_margin',
+            shown: 'zemauth.can_view_agency_margin',
+        },
+        agencyTotal: {
+            name: 'Total Spend + Margin',
+            field: 'agency_total',
+            checked: false,
+            type: zemGridConstants.gridColumnTypes.CURRENCY,
+            totalRow: true,
+            help: 'Total billing cost including Media Spend, License Fee and Agency Margin',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            internal: 'zemauth.can_view_agency_margin',
+            shown: 'zemauth.can_view_agency_margin',
+        },
         cpc: {
             name: 'Avg. CPC',
             field: 'cpc',
@@ -1024,6 +1048,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.flatFee,
         COLUMNS.totalFee,
         COLUMNS.billingCost,
+        COLUMNS.margin,
+        COLUMNS.agencyTotal,
     ];
 
     var PROJECTIONS_GROUP = [
