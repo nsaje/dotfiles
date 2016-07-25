@@ -18,6 +18,7 @@ oneApp.factory('zemGridSelectionService', ['zemGridConstants', function (zemGrid
         this.getConfig = getConfig;
         this.setConfig = setConfig;
         this.getSelection = getSelection;
+        this.setSelection = setSelection;
         this.setFilter = setFilter;
         this.getCustomFilters = getCustomFilters;
 
