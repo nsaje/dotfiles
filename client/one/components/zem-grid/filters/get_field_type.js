@@ -17,6 +17,10 @@ oneApp.filter('getFieldType', ['zemGridConstants', function (zemGridConstants) {
             return zemGridConstants.gridColumnTypes.BASE_FIELD;
         }
 
+        if (zemGridConstants.gridColumnTypes.EXTERNAL_LINK_TYPES.indexOf(columnType) !== -1) {
+            return zemGridConstants.gridColumnTypes.EXTERNAL_LINK;
+        }
+
         return columnType;
     };
 }]);

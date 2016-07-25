@@ -34,6 +34,12 @@ describe('zemGridEndpointApiConverter', function () {
                     },
                     clicks: 100,
                     state: 1,
+                    url: 'example1.com',
+                    redirector_url: 'redirector.example1.com',
+                    title: 'Example 1',
+                    domain_link: 'domainlink.com',
+                    supply_dash_url: 'supplydashurl.com',
+                    supply_dash_disabled_message: 'Disabled',
                 },
                 {
                     breakdown_id: 4,
@@ -48,6 +54,11 @@ describe('zemGridEndpointApiConverter', function () {
                     },
                     clicks: 200,
                     state: 2,
+                    url: 'example2.com',
+                    redirector_url: '',
+                    title: 'Example 2',
+                    domain_link: 'domainlink.com',
+                    supply_dash_url: 'supplydashurl.com',
                 },
                 {
                     breakdown_id: 5,
@@ -62,6 +73,11 @@ describe('zemGridEndpointApiConverter', function () {
                     },
                     clicks: 300,
                     state: 2,
+                    url: '',
+                    redirector_url: '',
+                    title: 'Example 3',
+                    domain_link: 'domainlink.com',
+                    supply_dash_url: 'supplydashurl.com',
                 },
             ],
             totals: {
@@ -85,6 +101,14 @@ describe('zemGridEndpointApiConverter', function () {
                     field: 'state',
                     type: 'state',
                 },
+                {
+                    field: 'domain_link',
+                    type: 'visibleLink',
+                },
+                {
+                    field: 'supply_dash_url',
+                    type: 'link',
+                },
             ],
         };
 
@@ -103,9 +127,25 @@ describe('zemGridEndpointApiConverter', function () {
                             isEditable: true,
                             editMessage: null,
                         },
+                        urlLink: {
+                            text: 'example1.com',
+                            url: 'example1.com',
+                        },
+                        titleLink: {
+                            text: 'Example 1',
+                            url: 'example1.com',
+                            redirectorUrl: 'redirector.example1.com',
+                        },
+                        domain_link: {
+                            url: 'domainlink.com',
+                        },
+                        supply_dash_url: {
+                            url: 'supplydashurl.com',
+                        },
                     },
                     breakdownId: 3,
                     archived: false,
+                    supplyDashDisabledMessage: 'Disabled',
                 },
                 {
                     stats: {
@@ -120,9 +160,25 @@ describe('zemGridEndpointApiConverter', function () {
                             isEditable: false,
                             editMessage: 'Test edit message.',
                         },
+                        urlLink: {
+                            text: 'example2.com',
+                            url: 'example2.com',
+                        },
+                        titleLink: {
+                            text: 'Example 2',
+                            url: 'example2.com',
+                            redirectorUrl: null,
+                        },
+                        domain_link: {
+                            url: 'domainlink.com',
+                        },
+                        supply_dash_url: {
+                            url: 'supplydashurl.com',
+                        },
                     },
                     breakdownId: 4,
                     archived: false,
+                    supplyDashDisabledMessage: undefined,
                 },
                 {
                     stats: {
@@ -137,9 +193,25 @@ describe('zemGridEndpointApiConverter', function () {
                             isEditable: false,
                             editMessage: 'Test edit message.',
                         },
+                        urlLink: {
+                            text: 'N/A',
+                            url: null,
+                        },
+                        titleLink: {
+                            text: 'Example 3',
+                            url: null,
+                            redirectorUrl: null,
+                        },
+                        domain_link: {
+                            url: 'domainlink.com',
+                        },
+                        supply_dash_url: {
+                            url: 'supplydashurl.com',
+                        },
                     },
                     breakdownId: 5,
                     archived: true,
+                    supplyDashDisabledMessage: undefined,
                 },
             ],
             totals: {
@@ -151,6 +223,12 @@ describe('zemGridEndpointApiConverter', function () {
                 },
                 state: {
                     value: undefined,
+                },
+                domain_link: {
+                    url: undefined,
+                },
+                supply_dash_url: {
+                    url: undefined,
                 },
             },
             breakdownId: 2,

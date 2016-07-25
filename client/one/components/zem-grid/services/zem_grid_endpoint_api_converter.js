@@ -39,6 +39,7 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
                 stats: convertStatsFromApi(row, metaData),
                 breakdownId: row.breakdown_id,
                 archived: row.archived,
+                supplyDashDisabledMessage: row.supply_dash_disabled_message,
             };
         });
 
@@ -65,6 +66,9 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         metaData.columns.forEach(function (column) {
             convertedStats[column.field] = convertField(row[column.field], column.type);
         });
+        convertedStats = setLinkFields(
+            convertedStats, row.url, row.redirector_url, row.title, row.supply_dash_disabled_message
+        );
         convertedStats = setEditableFields(convertedStats, row.editable_fields);
         convertedStats = setGoalStatuses(convertedStats, row.styles);
         return convertedStats;
@@ -72,13 +76,31 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
 
     function convertField (value, type) {
         switch (type) {
-        // TODO: convertExternalLinkField
         // TODO: convertThumbnailField
         // TODO: convertSubmissionStatusField
         // TODO: convertTextWithPopupField
         case zemGridConstants.gridColumnTypes.PERFORMANCE_INDICATOR: return value;
+        case zemGridConstants.gridColumnTypes.VISIBLE_LINK: return convertUrlValue(value);
+        case zemGridConstants.gridColumnTypes.ICON_LINK: return convertUrlValue(value);
         default: return convertValueToDefaultObject(value);
         }
+    }
+
+    function setLinkFields (stats, url, redirectorUrl, title, supplyDashDisabledMessage) {
+        if (url !== undefined) {
+            stats.urlLink = {
+                text: url !== '' ? url : 'N/A',
+                url: url !== '' ? url : null,
+            };
+
+            stats.titleLink = {
+                text: title,
+                url: url !== '' ? url : null,
+                redirectorUrl: redirectorUrl !== '' ? redirectorUrl : null,
+            };
+        }
+
+        return stats;
     }
 
     function setEditableFields (stats, editableFields) {
@@ -104,6 +126,12 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
             }
         });
         return stats;
+    }
+
+    function convertUrlValue (value) {
+        return {
+            url: value,
+        };
     }
 
     function convertValueToDefaultObject (value) {

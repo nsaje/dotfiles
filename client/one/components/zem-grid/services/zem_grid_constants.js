@@ -36,6 +36,10 @@ oneApp.factory('zemGridConstants', [function () {
             DATE_TIME: 'dateTime',
             SECONDS: 'seconds',
             CURRENCY: 'currency',
+            EXTERNAL_LINK: 'externalLink',
+            ICON_LINK: 'link',
+            VISIBLE_LINK: 'visibleLink',
+            TEXT_LINK: 'linkText',
             INTERNAL_LINK: 'internalLink',
             STATUS: 'status',
             STATE_SELECTOR: 'stateSelector',
@@ -69,6 +73,12 @@ oneApp.factory('zemGridConstants', [function () {
         constants.gridColumnTypes.CURRENCY,
         constants.gridColumnTypes.SECONDS,
         constants.gridColumnTypes.DATE_TIME,
+    ];
+
+    constants.gridColumnTypes.EXTERNAL_LINK_TYPES = [
+        constants.gridColumnTypes.ICON_LINK,
+        constants.gridColumnTypes.VISIBLE_LINK,
+        constants.gridColumnTypes.TEXT_LINK,
     ];
 
     return constants;

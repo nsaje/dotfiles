@@ -31,9 +31,9 @@ oneApp.directive('zemGridCellBaseField', [function () {
                 var value = vm.data ? vm.data.value : undefined;
                 vm.formattedValue = zemGridDataFormatter.formatValue(value, vm.column.data);
 
-                vm.goalStatusClass = '';
+                vm.class = vm.column.type + '-field';
                 if (vm.data) {
-                    vm.goalStatusClass = zemGridUIService.getFieldGoalStatusClass(vm.data.goalStatus);
+                    vm.class += ' ' + zemGridUIService.getFieldGoalStatusClass(vm.data.goalStatus);
                 }
             }
 

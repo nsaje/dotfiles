@@ -1,4 +1,5 @@
-<span class="zem-grid-cell-editable-base-field {{ctrl.column.type}}">
+<span class="zem-grid-cell-editable-base-field {{ctrl.column.type}}-field"
+      ng-class="ctrl.class">
     <span ng-show="!ctrl.isEditable"
           zem-lazy-popover-append-to-body="true"
           zem-lazy-popover-html-unsafe="{{ctrl.editMessage}}"
