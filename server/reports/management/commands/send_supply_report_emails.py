@@ -63,8 +63,7 @@ class Command(ExceptionCommand):
                 cost = source_stats[recipient.source.pk]['cost']
 
             if recipient.publishers_report and recipient.source.pk not in publisher_stats:
-                start_dt = yesterday - datetime.timedelta(days=7)
-                publisher_stats[recipient.source.pk] = self.get_publisher_stats(recipient, start_dt, today)
+                publisher_stats[recipient.source.pk] = self.get_publisher_stats(recipient, yesterday)
 
             publisher_report = None
             if recipient.source.pk in publisher_stats and publisher_stats[recipient.source.pk]:
@@ -81,18 +80,17 @@ class Command(ExceptionCommand):
                 publisher_report=publisher_report
             )
 
-    def get_publisher_stats(self, recipient, start_dt, end_dt):
+    def get_publisher_stats(self, recipient, date):
         query = """
             select to_char(date, 'YYYY-MM-DD') as date, domain, sum(impressions), sum(clicks), sum(cost_nano)
             from publishers_1
-            where exchange=%s and date>=%s and date<%s
+            where exchange=%s and date=%s
             group by date, domain
-            order by date
         """
 
         result = []
 
-        params = [recipient.source.bidder_slug, start_dt.date().isoformat(), end_dt.date().isoformat()]
+        params = [recipient.source.bidder_slug, date.date().isoformat()]
 
         with connections[settings.STATS_DB_NAME].cursor() as c:
             c.execute(query, params)
