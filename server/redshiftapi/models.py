@@ -127,6 +127,8 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
     license_fee = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'license_fee_nano'}, mh.AGGREGATES)
     billing_cost = backtosql.TemplateColumn('part_billing_cost.sql', None, mh.AGGREGATES)
     total_cost = backtosql.TemplateColumn('part_total_cost.sql', None, mh.AGGREGATES)
+    margin = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'margin_nano'}, mh.AGGREGATES)
+    agency_total = backtosql.TemplateColumn('part_agency_total.sql', None, mh.AGGREGATES)
 
     # Derivates
     ctr = backtosql.TemplateColumn('part_sumdiv_perc.sql', {'expr': 'clicks', 'divisor': 'impressions'}, mh.AGGREGATES)

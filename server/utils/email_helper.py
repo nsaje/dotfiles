@@ -219,7 +219,7 @@ def _send_email_to_user(user, request, subject, body):
         )
 
 
-def send_supply_report_email(email, date, impressions, cost):
+def send_supply_report_email(email, date, impressions, cost, publisher_report=None):
     date_str = '%d/%d/%d' % (date.month, date.day, date.year)
     args = {
         'date': date_str,
@@ -229,13 +229,16 @@ def send_supply_report_email(email, date, impressions, cost):
     subject, body = format_email(EmailTemplateType.SUPPLY_REPORT, **args)
 
     try:
-        send_mail(
+        email = EmailMessage(
             subject,
             body,
             'Zemanta <{}>'.format(settings.SUPPLY_REPORTS_FROM_EMAIL),
-            [email],
-            fail_silently=False
+            [email]
         )
+        if publisher_report:
+            email.attach('publisher_report.csv', publisher_report, 'text/csv')
+
+        email.send(fail_silently=False)
     except Exception as e:
         logger.error(
             'Supply report e-mail to %s was not sent because an exception was raised: %s',

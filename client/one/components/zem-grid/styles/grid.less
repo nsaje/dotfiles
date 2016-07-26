@@ -123,7 +123,8 @@
             }
 
             .zem-grid-header-cell-data {
-                &.number, &.percent, &.dateTime, &.seconds, &.currency {
+                // NOTE: [type]-field classes are generated in templates by concatenating field's type and '-type' postfix
+                &.number-field, &.percent-field, &.seconds-field, &.currency-field {
                     text-align: right;
                 }
 
@@ -257,8 +258,9 @@
             cursor: pointer;
         }
 
-        .zem-grid-cell-base-field:not(.text),
-        .zem-grid-cell-editable-base-field:not(.text) {
+        // NOTE: [type]-field classes are generated in templates by concatenating field's type and '-type' postfix
+        .zem-grid-cell-base-field:not(.text-field):not(.dateTime-field),
+        .zem-grid-cell-editable-base-field:not(.text-field):not(.dateTime-field) {
             display: block;
             text-align: right;
         }

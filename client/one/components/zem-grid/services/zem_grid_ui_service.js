@@ -79,7 +79,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             if (!data) return;
 
             // Format data to string and predict width based on it
-            var formattedValue = zemGridDataFormatter.formatValue(data.value, column);
+            var formattedValue = zemGridDataFormatter.formatValue(data.value || data.text, column);
             var valueWidth = getTextWidth(formattedValue, font);
             if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN) {
                 // Special case for breakdown column - add padding based on row level

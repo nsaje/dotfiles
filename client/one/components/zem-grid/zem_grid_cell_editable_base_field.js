@@ -31,6 +31,7 @@ oneApp.directive('zemGridCellEditableBaseField', [function () {
             function update () {
                 vm.formattedValue = '';
                 vm.isEditable = false;
+                vm.class = vm.column.type + '-field';
 
                 if (!isFieldVisible()) {
                     return;
