@@ -318,19 +318,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             totalRow: true,
             order: true,
             initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
-            name: 'Spend',
-            field: 'cost',
-            checked: true,
-            type: 'currency',
-            help: 'Amount spent per media source.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-            shown: !$scope.hasPermission('zemauth.can_view_effective_costs') && !$scope.hasPermission('zemauth.can_view_actual_costs')
+            internal: $scope.isPermissionInternal('zemauth.can_view_platform_cost_breakdown'),
+            shown: $scope.hasPermission('zemauth.can_view_platform_cost_breakdown')
         },
         {
             name: 'Actual Media Spend',
@@ -353,8 +342,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Amount spent per media source.',
             order: true,
             initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+            internal: $scope.isPermissionInternal('zemauth.can_view_platform_cost_breakdown'),
+            shown: $scope.hasPermission('zemauth.can_view_platform_cost_breakdown')
         },
         {
             name: 'Actual Data Cost',
@@ -377,8 +366,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Additional targeting/segmenting costs.',
             order: true,
             initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+            internal: $scope.isPermissionInternal('zemauth.can_view_platform_cost_breakdown'),
+            shown: $scope.hasPermission('zemauth.can_view_platform_cost_breakdown')
         },
         {
             name: 'License Fee',
@@ -389,8 +378,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Zemanta One platform usage cost.',
             order: true,
             initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+            internal: $scope.isPermissionInternal('zemauth.can_view_platform_cost_breakdown'),
+            shown: $scope.hasPermission('zemauth.can_view_platform_cost_breakdown')
         },
         {
             name: 'Total Spend',
@@ -401,8 +390,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             help: 'Sum of media spend, data cost and license fee.',
             order: true,
             initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+            internal: false,
+            shown: true,
         },
         {
             name: 'Margin',
@@ -503,8 +492,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         {
             'name': 'Costs',
             'fields': [
-                'cost', 'data_cost',
-                'yesterday_cost', 'e_yesterday_cost',
+                'data_cost', 'yesterday_cost', 'e_yesterday_cost',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'license_fee', 'margin', 'agency_total',
             ],
@@ -671,19 +659,20 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             true
         );
 
-        if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
+        if ($scope.hasPermission('zemauth.can_view_platform_cost_breakdown')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
                 $scope.chartMetricOptions,
-                options.effectiveCostChartMetrics,
-                $scope.isPermissionInternal('zemauth.can_view_effective_costs')
-            );
-        } else if (!$scope.hasPermission('zemauth.can_view_actual_costs')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
-                $scope.chartMetricOptions,
-                options.legacyCostChartMetrics,
-                false
+                options.platformCostChartMetrics,
+                $scope.isPermissionInternal('zemauth.can_view_platform_cost_breakdown')
             );
         }
+
+        $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+            $scope.chartMetricOptions,
+            options.billingCostChartMetrics,
+            false
+        );
+
         if ($scope.hasPermission('zemauth.can_view_actual_costs')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
                 $scope.chartMetricOptions,

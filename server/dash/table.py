@@ -629,12 +629,12 @@ class SourcesTable(object):
         helpers.copy_stats_to_row(totals_data, result)
         if level_ in ('ad_groups', 'campaigns'):
             campaign_goals.copy_fields(user, totals_data, result)
-        result['yesterday_cost'] = yesterday_cost
 
-        if user.has_perm('zemauth.can_view_effective_costs'):
+        if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
             result['e_yesterday_cost'] = e_yesterday_cost
-        if user.has_perm('zemauth.can_view_effective_costs') and not user.has_perm('zemauth.can_view_actual_costs'):
-            del result['yesterday_cost']
+
+        if user.has_perm('zemauth.can_view_actual_costs'):
+            result['yesterday_cost'] = yesterday_cost
 
         if ad_group_level:
             result['daily_budget'] = get_daily_budget_total(ad_group_sources, sources_states, sources_settings)
@@ -718,14 +718,15 @@ class SourcesTable(object):
                 'daily_budget': daily_budget,
                 'status': self.get_state(states),
                 'last_sync': last_sync,
-                'yesterday_cost': yesterday_cost.get(source.id),
                 'maintenance': source.maintenance,
                 'archived': source.deprecated,
             }
-            if user.has_perm('zemauth.can_view_effective_costs'):
+
+            if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
                 row['e_yesterday_cost'] = e_yesterday_cost.get(source.id)
-            if user.has_perm('zemauth.can_view_effective_costs') and not user.has_perm('zemauth.can_view_actual_costs'):
-                del row['yesterday_cost']
+
+            if user.has_perm('zemauth.can_view_actual_costs'):
+                row['yesterday_cost'] = yesterday_cost.get(source.id)
 
             helpers.copy_stats_to_row(source_data, row)
             if level_ in ('ad_groups', 'campaigns'):
@@ -846,13 +847,13 @@ class AccountsAccountsTable(object):
             start_date, end_date, 'account', accounts=accounts,
             campaign_id__in=models.Campaign.objects.filter(account__in=accounts)
         )
-        if user.has_perm('zemauth.can_see_projections'):
+        if user.has_perm('zemauth.can_see_projections') and user.has_perm('zemauth.can_view_platform_cost_breakdown'):
             totals_data['pacing'] = projections.total('pacing')
             totals_data['allocated_budgets'] = projections.total('allocated_media_budget')
             totals_data['spend_projection'] = projections.total('media_spend_projection')
             totals_data['license_fee_projection'] = projections.total('license_fee_projection')
 
-        if user.has_perm('zemauth.can_view_flat_fees'):
+        if user.has_perm('zemauth.can_view_flat_fees') and user.has_perm('zemauth.can_view_platform_cost_breakdown'):
             totals_data['flat_fee'] = projections.total('flat_fee')
             totals_data['total_fee'] = projections.total('total_fee')
             if user.has_perm('zemauth.can_see_projections'):
@@ -992,13 +993,15 @@ class AccountsAccountsTable(object):
 
             row.update(account_data)
 
-            if user.has_perm('zemauth.can_see_projections'):
+            if user.has_perm('zemauth.can_see_projections') and\
+               user.has_perm('zemauth.can_view_platform_cost_breakdown'):
                 row['pacing'] = projections.row(account.id, 'pacing')
                 row['allocated_budgets'] = projections.row(account.id, 'allocated_media_budget')
                 row['spend_projection'] = projections.row(account.id, 'media_spend_projection')
                 row['license_fee_projection'] = projections.row(account.id, 'license_fee_projection')
 
-            if user.has_perm('zemauth.can_view_flat_fees'):
+            if user.has_perm('zemauth.can_view_flat_fees') and\
+               user.has_perm('zemauth.can_view_platform_cost_breakdown'):
                 row['flat_fee'] = projections.row(account.id, 'flat_fee')
                 row['total_fee'] = projections.row(account.id, 'total_fee')
                 if user.has_perm('zemauth.can_see_projections'):
@@ -1420,7 +1423,6 @@ class CampaignAdGroupsTable(object):
             ad_group_settings = ad_group_settings_dict.get(ad_group.id)
             archived = ad_group_settings.archived if ad_group_settings else False
 
-            reports_api = get_reports_api_module(user)
             if not show_archived and archived:
                 continue
 
@@ -1429,9 +1431,10 @@ class CampaignAdGroupsTable(object):
 
             row.update(ad_group_data)
 
-            if user.has_perm('zemauth.can_view_effective_costs'):
+            if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
                 row['e_yesterday_cost'] = e_yesterday_cost.get(ad_group.id)
-            if not user.has_perm('zemauth.can_view_effective_costs') or user.has_perm('zemauth.can_view_actual_costs'):
+
+            if user.has_perm('zemauth.can_view_actual_costs'):
                 row['yesterday_cost'] = yesterday_cost.get(ad_group.id)
 
             last_sync = last_actions and last_actions.get(ad_group.pk)
@@ -1445,10 +1448,12 @@ class CampaignAdGroupsTable(object):
         return rows
 
     def get_totals(self, user, totals_data, e_yesterday_cost, yesterday_cost):
-        if user.has_perm('zemauth.can_view_effective_costs'):
+        if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
             totals_data['e_yesterday_cost'] = e_yesterday_cost
-        if not user.has_perm('zemauth.can_view_effective_costs') or user.has_perm('zemauth.can_view_actual_costs'):
+
+        if user.has_perm('zemauth.can_view_actual_costs'):
             totals_data['yesterday_cost'] = yesterday_cost
+
         return totals_data
 
     def sort_rows(self, rows, order):
@@ -1540,7 +1545,7 @@ class AccountCampaignsTable(object):
             start_date, end_date, 'campaign',
             campaign_id__in=campaigns
         )
-        if user.has_perm('zemauth.can_see_projections'):
+        if user.has_perm('zemauth.can_see_projections') and user.has_perm('zemauth.can_view_platform_cost_breakdown'):
             totals_stats['pacing'] = projections.total('pacing')
             totals_stats['allocated_budgets'] = projections.total('allocated_media_budget')
             totals_stats['spend_projection'] = projections.total('media_spend_projection')
@@ -1651,7 +1656,8 @@ class AccountCampaignsTable(object):
 
             row.update(campaign_stat)
 
-            if user.has_perm('zemauth.can_see_projections'):
+            if user.has_perm('zemauth.can_see_projections') and\
+               user.has_perm('zemauth.can_view_platform_cost_breakdown'):
                 row['pacing'] = projections.row(campaign.pk, 'pacing')
                 row['allocated_budgets'] = projections.row(campaign.pk, 'allocated_media_budget')
                 row['spend_projection'] = projections.row(campaign.pk, 'media_spend_projection')
@@ -1930,7 +1936,6 @@ class PublishersTable(object):
                    user,
                    totals_data):
         result = {
-            'cost': totals_data.get('cost', 0),
             'cpc': totals_data.get('cpc', 0),
             'clicks': totals_data.get('clicks', 0),
             'impressions': totals_data.get('impressions', 0),
@@ -1947,18 +1952,20 @@ class PublishersTable(object):
         result['pv_per_visit'] = totals_data.get('pv_per_visit', None)
         result['avg_tos'] = totals_data.get('avg_tos', None)
 
-        if user.has_perm('zemauth.can_view_effective_costs'):
-            del result['cost']
+        result['billing_cost'] = totals_data.get('billing_cost', 0)
+        if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
             result['e_data_cost'] = totals_data.get('e_data_cost', 0)
             result['e_media_cost'] = totals_data.get('e_media_cost', 0)
-            result['billing_cost'] = totals_data.get('billing_cost', 0)
             result['license_fee'] = totals_data.get('license_fee', 0)
+
         if user.has_perm('zemauth.can_view_agency_margin'):
             result['margin'] = totals_data.get('margin', 0)
             result['agency_total'] = totals_data.get('agency_total', 0)
+
         if user.has_perm('zemauth.can_view_actual_costs'):
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
+
         campaign_goals.copy_fields(user, totals_data, result)
         for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
             result[key] = totals_data[key]
@@ -1986,8 +1993,6 @@ class PublishersTable(object):
                 'source_id': publisher_data['source_id'],
                 'external_id': publisher_data.get('external_id'),
 
-                'cost': publisher_data.get('cost', 0),
-                'license_fee': publisher_data.get('license_fee', 0),
                 'cpc': publisher_data.get('cpc', 0),
                 'clicks': publisher_data.get('clicks', None),
                 'impressions': publisher_data.get('impressions', None),
@@ -2005,22 +2010,26 @@ class PublishersTable(object):
             row['pv_per_visit'] = publisher_data.get('pv_per_visit', None)
             row['avg_tos'] = publisher_data.get('avg_tos', None)
 
-            if user.has_perm('zemauth.can_view_effective_costs'):
-                del row['cost']
+            row['billing_cost'] = publisher_data.get('billing_cost', 0)
+            if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
                 row['e_data_cost'] = publisher_data.get('e_data_cost', 0)
                 row['e_media_cost'] = publisher_data.get('e_media_cost', 0)
-                row['billing_cost'] = publisher_data.get('billing_cost', 0)
+                row['license_fee'] = publisher_data.get('license_fee', 0)
+
             if user.has_perm('zemauth.can_view_agency_margin'):
                 row['margin'] = publisher_data.get('margin', 0)
                 row['agency_total'] = publisher_data.get('agency_total', 0)
+
             if user.has_perm('zemauth.can_view_actual_costs'):
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
+
             for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
                 row[key] = publisher_data[key]
                 if (source_name or '').lower() == constants.SourceType.OUTBRAIN:
                     # We have no conversion data for OB
                     row[key] = None
+
             campaign_goals.copy_fields(user, publisher_data, row)
             if 'performance' in publisher_data:
                 row['performance'] = publisher_data['performance']

@@ -60,7 +60,6 @@ class AdGroupAdsTableTest(TestCase):
             'cpc': '0.0100',
             'clicks': 1000,
             'impressions': 1000000,
-            'cost': 100,
             'media_cost': 100,
             'data_cost': None,
             'e_data_cost': None,
@@ -82,11 +81,10 @@ class AdGroupAdsTableTest(TestCase):
             'cpc': '0.0200',
             'clicks': 1500,
             'impressions': 2000000,
-            'cost': 200,
             'media_cost': 200,
             'data_cost': None,
             'e_data_cost': None,
-            'e_media_cost': None,
+            'e_media_cost': 200,
             'billing_cost': 200,
             'license_fee': 0,
             'margin': 20,
@@ -115,7 +113,6 @@ class AdGroupAdsTableTest(TestCase):
             'cpc': '0.0100',
             'clicks': 1000,
             'impressions': 1000000,
-            'cost': 100,
             'media_cost': 100,
             'data_cost': None,
             'e_data_cost': None,
@@ -137,7 +134,6 @@ class AdGroupAdsTableTest(TestCase):
             'cpc': '0.0200',
             'clicks': 1500,
             'impressions': 2000000,
-            'cost': 200,
             'media_cost': 200,
             'data_cost': None,
             'e_data_cost': None,
@@ -243,7 +239,6 @@ class AdGroupAdsTableTest(TestCase):
             'conversion_goal_3': None,
             'conversion_goal_4': None,
             'conversion_goal_5': None,
-            'cost': 100,
             'media_cost': 100,
             'data_cost': None,
             'e_data_cost': None,
@@ -313,7 +308,6 @@ class AdGroupAdsTableTest(TestCase):
             'image_hash': '987654321',
             'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
             'submission_status': [],
-            'cost': None,
             'data_cost': None,
             'media_cost': None,
             'e_data_cost': None,
@@ -350,7 +344,6 @@ class AdGroupAdsTableTest(TestCase):
             'conversion_goal_3': None,
             'conversion_goal_4': None,
             'conversion_goal_5': None,
-            'cost': 200,
             'media_cost': 200,
             'data_cost': None,
             'e_data_cost': None,
@@ -387,7 +380,6 @@ class AdGroupAdsTableTest(TestCase):
             'cpc': '0.0100',
             'clicks': 1000,
             'impressions': 1000000,
-            'cost': 100,
             'ctr': '12.5000',
             'content_ad': 1
         }]
@@ -396,7 +388,6 @@ class AdGroupAdsTableTest(TestCase):
             'cpc': '0.0200',
             'clicks': 1500,
             'impressions': 2000000,
-            'cost': 200,
             'ctr': '15.5000',
             'content_ad': 1
         }
@@ -464,7 +455,6 @@ class AdGroupAdsTableTest(TestCase):
             'cpc': '0.0100',
             'clicks': 1000,
             'impressions': 1000000,
-            'cost': 100,
             'ctr': '12.5000',
             'content_ad': 1
         }]
@@ -473,7 +463,6 @@ class AdGroupAdsTableTest(TestCase):
             'cpc': '0.0200',
             'clicks': 1500,
             'impressions': 2000000,
-            'cost': 200,
             'ctr': '15.5000',
             'content_ad': 1
         }
@@ -545,7 +534,6 @@ class AdGroupAdsTableTest(TestCase):
             'cpc': '0.0100',
             'clicks': 1000,
             'impressions': 1000000,
-            'cost': 100,
             'ctr': '12.5000',
             'content_ad': 1
         }]
@@ -554,7 +542,6 @@ class AdGroupAdsTableTest(TestCase):
             'cpc': '0.0200',
             'clicks': 1500,
             'impressions': 2000000,
-            'cost': 200,
             'ctr': '15.5000',
             'content_ad': 1
         }
@@ -668,10 +655,13 @@ class AdGroupAdsTableTest(TestCase):
         user = User.objects.create_user('some@email.si', 'secret2')
         ad_group.campaign.users.add(user)
         self.client.login(username=user.email, password='secret2')
+        user.user_permissions.add(
+            authmodels.Permission.objects.get(codename="can_view_platform_cost_breakdown")
+        )
 
         params = {
             'page': 1,
-            'order': '-cost',
+            'order': '-e_media_cost',
             'size': 2,
             'start_date': self.mock_date.isoformat(),
             'end_date': self.mock_date.isoformat(),
@@ -865,7 +855,6 @@ class AdGroupPublishersTableTest(TestCase):
 
         mock_stats1 = [{
             'clicks': 123,
-            'cost': 2.4,
             'data_cost': 0,
             'media_cost': 2.4,
             'e_data_cost': 0,
@@ -893,7 +882,6 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_stats2 = [{
             'clicks': 323,
-            'cost': 2.1,
             'data_cost': 1.9,
             'media_cost': 2.1,
             'e_data_cost': 1.9,
@@ -1089,7 +1077,6 @@ class AdGroupPublishersTableTest(TestCase):
 
         mock_stats1 = [{
             'clicks': 123,
-            'cost': 2.4,
             'media_cost': 2.4,
             'e_media_cost': 2.4,
             'external_id': '12345',
@@ -1114,7 +1101,6 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_stats2 = [{
             'clicks': 123,
-            'cost': 2.4,
             'media_cost': 2.4,
             'e_media_cost': 2.4,
             'external_id': '12345',
@@ -1325,7 +1311,6 @@ class AdGroupPublishersTableTest(TestCase):
 
         mock_stats1 = [{
          'clicks': 123,
-         'cost': 2.4,
          'cpc': 1.3,
          'ctr': 100.0,
          'impressions': 10560,
@@ -1335,7 +1320,6 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_stats2 = {
          'clicks': 123,
-         'cost': 2.4,
          'cpc': 1.3,
          'ctr': 100.0,
          'impressions': 10560,
@@ -1411,7 +1395,7 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
         self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active',
-                             u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
+                             u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
     """
 
     def test_get_outbrain_blacklisted_over_quota(self, mock_query, mock_touchpointconversins_query):
@@ -1427,7 +1411,6 @@ class AdGroupPublishersTableTest(TestCase):
 
         mock_stats1 = [{
             'clicks': 123,
-            'cost': 2.4,
             'data_cost': 0,
             'media_cost': 2.4,
             'e_data_cost': 0,
@@ -1455,7 +1438,6 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_stats2 = [{
             'clicks': 323,
-            'cost': 2.1,
             'data_cost': 1.9,
             'media_cost': 2.1,
             'e_data_cost': 1.9,
@@ -1653,7 +1635,6 @@ class AdGroupPublishersTableTest(TestCase):
 
         mock_stats1 = [{
             'clicks': 123,
-            'cost': 2.4,
             'data_cost': 0,
             'e_data_cost': 0,
             'external_id': '12345',
@@ -1681,7 +1662,6 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_stats2 = [{
             'clicks': 123,
-            'cost': 2.4,
             'data_cost': 0,
             'e_data_cost': 0,
             'external_id': '12345',
@@ -1730,7 +1710,7 @@ class AdGroupPublishersTableTest(TestCase):
 
         params = {
             'page': 1,
-            'order': '-cost',
+            'order': '-e_media_cost',
             'size': 2,
             'start_date': date.isoformat(),
             'end_date': date.isoformat(),
@@ -1805,8 +1785,8 @@ class AdGroupPublishersTableTest(TestCase):
             u'e_data_cost': 0,
             u'billing_cost': 3,
             u'license_fee': 0.6,
-            'margin': 0.3,
-            'agency_total': 3.3,
+            u'margin': 0.3,
+            u'agency_total': 3.3,
             u'impressions': 10560,
             u'clicks': 123,
             u'source_id': 7,
@@ -1827,13 +1807,12 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_5': None,
         })
 
-    @skip('Test is randomly failing in production and it needs to be fixed')
     def test_actual_hidden(self, mock_query, mock_touchpointconversins_query):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password='secret')
 
         self.user.user_permissions.add(
-            authmodels.Permission.objects.get(codename="can_view_effective_costs")
+            authmodels.Permission.objects.get(codename="can_view_platform_cost_breakdown")
         )
         self.user.user_permissions.add(
             authmodels.Permission.objects.get(codename="can_see_publishers")
@@ -1841,9 +1820,9 @@ class AdGroupPublishersTableTest(TestCase):
 
         date = datetime.date(2015, 2, 22)
 
+        self.maxDiff = None
         mock_stats1 = [{
             'clicks': 123,
-            'cost': 2.4,
             'data_cost': 0,
             'e_data_cost': 0,
             'external_id': '12345',
@@ -1869,7 +1848,6 @@ class AdGroupPublishersTableTest(TestCase):
         }]
         mock_stats2 = [{
             'clicks': 123,
-            'cost': 2.4,
             'data_cost': 0,
             'e_data_cost': 0,
             'external_id': '12345',
@@ -1897,7 +1875,7 @@ class AdGroupPublishersTableTest(TestCase):
 
         params = {
             'page': 1,
-            'order': '-cost',
+            'order': '-e_media_cost',
             'size': 2,
             'start_date': date.isoformat(),
             'end_date': date.isoformat(),
@@ -1915,7 +1893,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=['domain', 'exchange'],
             order_fields=[],
             constraints={'ad_group': ad_group.id, },
-            conversion_goals=[u'omniture__5', u'omniture__4', u'ga__3', u'ga__2'],
+            conversion_goals=ListMatcher([u'omniture__5', u'omniture__4', u'ga__3', u'ga__2']),
             constraints_list=[],
         )
 
@@ -1925,7 +1903,7 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=[],
             order_fields=[],
             constraints={"ad_group": ad_group.id, },
-            conversion_goals=[u'omniture__5', u'omniture__4', u'ga__3', u'ga__2'],
+            conversion_goals=ListMatcher([u'omniture__5', u'omniture__4', u'ga__3', u'ga__2']),
             constraints_list=[],
         )
 
@@ -2039,7 +2017,6 @@ class AccountsAccountsTableTest(TestCase):
             'cpc': '0.0200',
             'clicks': 1500,
             'impressions': 2000000,
-            'cost': 200,
             'media_cost': 200,
             'data_cost': None,
             'e_data_cost': None,

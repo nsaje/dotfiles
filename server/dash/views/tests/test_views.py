@@ -1740,7 +1740,7 @@ class PublishersBlacklistStatusTest(TestCase):
             'ctr': 0.0,
             'exchange': 'adiant',
             'cpc_nano': 0,
-            'cost_nano_sum': 1e-05,
+            'media_cost_nano_sum': 1e-05,
             'impressions_sum': 1000L,
             'clicks_sum': 0L,
         },
@@ -1838,7 +1838,7 @@ class PublishersBlacklistStatusTest(TestCase):
                 'ctr': 0.0,
                 'exchange': 'adiant',
                 'cpc_nano': 0,
-                'cost_nano_sum': 1e-05,
+                'media_cost_nano_sum': 1e-05,
                 'impressions_sum': 1000L,
                 'clicks_sum': 0L,
             },
@@ -2209,7 +2209,7 @@ class PublishersBlacklistStatusTest(TestCase):
                 'exchange': 'outbrain',
                 'external_id': 'sfdafkl1230899012asldas',
                 'cpc_nano': 0,
-                'cost_nano_sum': 1e-05,
+                'media_cost_nano_sum': 1e-05,
                 'impressions_sum': 1000L,
                 'clicks_sum': 0L,
             },
@@ -2244,7 +2244,7 @@ class PublishersBlacklistStatusTest(TestCase):
                 'exchange': 'outbrain',
                 'external_id': 'sfdafkl1230899012asldas',
                 'cpc_nano': 0,
-                'cost_nano_sum': 1e-05,
+                'media_cost_nano_sum': 1e-05,
                 'impressions_sum': 1000L,
                 'clicks_sum': 0L,
             },
@@ -2284,7 +2284,7 @@ class PublishersBlacklistStatusTest(TestCase):
                 'exchange': 'outbrain',
                 'external_id': 'sfdafkl1230899012asldas',
                 'cpc_nano': 0,
-                'cost_nano_sum': 1e-05,
+                'media_cost_nano_sum': 1e-05,
                 'impressions_sum': 1000L,
                 'clicks_sum': 0L,
             },
@@ -2329,7 +2329,7 @@ class PublishersBlacklistStatusTest(TestCase):
                 'exchange': 'outbrain',
                 'external_id': 'sfdafkl1230899012asldas',
                 'cpc_nano': 0,
-                'cost_nano_sum': 1e-05,
+                'media_cost_nano_sum': 1e-05,
                 'impressions_sum': 1000L,
                 'clicks_sum': 0L,
             },
@@ -2418,7 +2418,7 @@ class AdGroupOverviewTest(TestCase):
         cursor().dictfetchall.return_value = [{
             'adgroup_id': 1,
             'source_id': 9,
-            'cost_cc_sum': 0.0
+            'media_cost_cc_sum': 0.0
         }]
 
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -2478,19 +2478,16 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual(tracking_setting['details_content'], 'param1=foo&param2=bar')
 
         yesterday_spend = self._get_setting(settings, 'yesterday')
-        self.assertEqual('$0.00', yesterday_spend['value'])
+        self.assertIsNone(yesterday_spend, 'no permission')
 
         budget_setting = self._get_setting(settings, 'daily budget')
         self.assertEqual('$50.00', budget_setting['value'])
 
         budget_setting = self._get_setting(settings, 'campaign budget')
-        self.assertEqual('$80.00', budget_setting['value'])
-        self.assertEqual('$80.00 remaining', budget_setting['description'])
+        self.assertIsNone(budget_setting, 'no permission')
 
         pacing_setting = self._get_setting(settings, 'pacing')
-        self.assertEqual('$0.00', pacing_setting['value'])
-        self.assertEqual('0.00% on plan', pacing_setting['description'])
-        self.assertEqual(constants.Emoticon.SAD, pacing_setting['icon'])
+        self.assertIsNone(pacing_setting, 'no permission')
 
         retargeting_setting = self._get_setting(settings, 'retargeting')
         self.assertIsNone(retargeting_setting, 'no permission')
@@ -2508,6 +2505,27 @@ class AdGroupOverviewTest(TestCase):
             response['data']['performance_settings']
         retargeting_setting = self._get_setting(settings, 'retargeting')
         self.assertEqual('test adgroup 3', retargeting_setting['details_content'])
+
+        # try again with platform breakdown permission
+        permission = Permission.objects.get(codename='can_view_platform_cost_breakdown')
+        self.user.user_permissions.add(permission)
+        self.user.save()
+
+        response = self._get_ad_group_overview(1)
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
+
+        budget_setting = self._get_setting(settings, 'campaign budget')
+        self.assertEqual('$80.00', budget_setting['value'])
+        self.assertEqual('$80.00 remaining', budget_setting['description'])
+
+        pacing_setting = self._get_setting(settings, 'pacing')
+        self.assertEqual('$0.00', pacing_setting['value'])
+        self.assertEqual('0.00% on plan', pacing_setting['description'])
+        self.assertEqual(constants.Emoticon.SAD, pacing_setting['icon'])
+
+        yesterday_spend = self._get_setting(settings, 'yesterday')
+        self.assertEqual('$0.00', yesterday_spend['value'])
 
     @patch('reports.redshift.get_cursor')
     @patch('reports.api_contentads.get_actual_yesterday_cost')
@@ -2588,6 +2606,17 @@ class AdGroupOverviewTest(TestCase):
         flight_setting = self._get_setting(settings, 'daily')
         self.assertEqual('$50.00', flight_setting['value'])
         yesterday_setting = self._get_setting(settings, 'yesterday')
+        self.assertIsNone(yesterday_setting, 'no permission')
+
+        permission = Permission.objects.get(codename='can_view_platform_cost_breakdown')
+        self.user.user_permissions.add(permission)
+        self.user.save()
+
+        response = self._get_ad_group_overview(1)
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
+
+        yesterday_setting = self._get_setting(settings, 'yesterday')
         self.assertEqual('$60.00', yesterday_setting['value'])
         self.assertEqual('120.00% of daily budget', yesterday_setting['description'])
 
@@ -2616,7 +2645,10 @@ class CampaignOverviewTest(TestCase):
         return json.loads(response.content)
 
     def _get_setting(self, settings, name):
-        return [s for s in settings if name in s['name'].lower()][0]
+        matching_settings = [s for s in settings if name in s['name'].lower()]
+        if matching_settings:
+            return matching_settings[0]
+        return None
 
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
@@ -2701,6 +2733,23 @@ class CampaignOverviewTest(TestCase):
         self.assertEqual('$100.00', budget_setting['value'])
 
         budget_setting = self._get_setting(settings, 'campaign budget')
+        self.assertIsNone(budget_setting)
+
+        pacing_setting = self._get_setting(settings, 'pacing')
+        self.assertIsNone(pacing_setting)
+
+        goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
+        self.assertEqual([], goal_setting)
+
+        permission = Permission.objects.get(codename='can_view_platform_cost_breakdown')
+        self.user.user_permissions.add(permission)
+        self.user.save()
+
+        response = self._get_campaign_overview(1)
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
+
+        budget_setting = self._get_setting(settings, 'campaign budget')
         self.assertEqual('$80.00', budget_setting['value'])
         self.assertEqual('$80.00 remaining', budget_setting['description'])
 
@@ -2708,9 +2757,6 @@ class CampaignOverviewTest(TestCase):
         self.assertEqual('$0.00', pacing_setting['value'])
         self.assertEqual('0.00% on plan', pacing_setting['description'])
         self.assertEqual(constants.Emoticon.SAD, pacing_setting['icon'])
-
-        goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
-        self.assertEqual([], goal_setting)
 
 
 class AccountOverviewTest(TestCase):
@@ -2864,6 +2910,19 @@ class AllAccountsOverviewTest(TestCase):
         permission_2 = Permission.objects.get(codename='can_access_agency_infobox')
         user = zemauth.models.User.objects.get(pk=2)
         user.user_permissions.add(permission_2)
+        user.save()
+
+        response = self._get_all_accounts_overview(1)
+        self.assertTrue(response['success'])
+
+        self.assertEqual(
+            set(['Active accounts:']),
+            set(s['name'] for s in response['data']['basic_settings'])
+        )
+
+        platform_breakdown_permission = Permission.objects.get(codename='can_view_platform_cost_breakdown')
+        user = zemauth.models.User.objects.get(pk=2)
+        user.user_permissions.add(platform_breakdown_permission)
         user.save()
 
         response = self._get_all_accounts_overview(1)

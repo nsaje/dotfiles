@@ -554,8 +554,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Amount spent per media source.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_view_effective_costs',
-            shown: 'zemauth.can_view_effective_costs',
+            internal: 'zemauth.can_view_platform_cost_breakdown',
+            shown: 'zemauth.can_view_platform_cost_breakdown',
         },
         dataCost: {
             name: 'Actual Data Cost',
@@ -578,8 +578,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Additional targeting/segmenting costs.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_view_effective_costs',
-            shown: 'zemauth.can_view_effective_costs',
+            internal: 'zemauth.can_view_platform_cost_breakdown',
+            shown: 'zemauth.can_view_platform_cost_breakdown',
         },
         licenseFee: {
             name: 'License Fee',
@@ -590,8 +590,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Zemanta One platform usage cost.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_view_effective_costs',
-            shown: 'zemauth.can_view_effective_costs',
+            internal: 'zemauth.can_view_platform_cost_breakdown',
+            shown: 'zemauth.can_view_platform_cost_breakdown',
         },
         flatFee: {
             name: 'Recognized Flat Fee',
@@ -603,7 +603,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_flat_fees',
-            shown: 'zemauth.can_view_flat_fees',
+            shown: ['zemauth.can_view_flat_fees', 'zemauth.can_view_platform_cost_breakdown'],
         },
         totalFee: {
             name: 'Total Fee',
@@ -615,7 +615,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_flat_fees',
-            shown: 'zemauth.can_view_flat_fees',
+            shown: ['zemauth.can_view_flat_fees', 'zemauth.can_view_platform_cost_breakdown'],
         },
         billingCost: {
             name: 'Total Spend',
@@ -626,8 +626,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             help: 'Sum of media spend, data cost and license fee.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_view_effective_costs',
-            shown: 'zemauth.can_view_effective_costs',
+            internal: false,
+            shown: true,
         },
         margin: {
             name: 'Margin',
@@ -688,8 +688,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            internal: 'zemauth.can_view_effective_costs',
-            shown: 'zemauth.can_view_effective_costs',
+            internal: 'zemauth.can_view_platform_cost_breakdown',
+            shown: 'zemauth.can_view_platform_cost_breakdown',
         },
 
         // Traffic metrics
@@ -739,7 +739,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
-            shown: 'zemauth.can_see_projections',
+            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'],
         },
         pacing: {
             name: 'Pacing',
@@ -751,7 +751,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
-            shown: 'zemauth.can_see_projections',
+            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'],
         },
         spendProjection: {
             name: 'Spend Projection',
@@ -763,7 +763,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
-            shown: 'zemauth.can_see_projections',
+            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'],
         },
         licenseFeeProjection: {
             name: 'License Fee Projection',
@@ -775,7 +775,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
-            shown: 'zemauth.can_see_projections',
+            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'],
         },
         totalFeeProjection: {
             name: 'Total Fee Projection',
@@ -787,7 +787,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
-            shown: ['zemauth.can_see_projections', 'zemauth.can_view_flat_fees'],
+            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown', 'zemauth.can_view_flat_fees'],
         },
 
         // Optimisation metrics

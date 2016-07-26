@@ -45,7 +45,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         ])
 
         columns = m.get_columns()
-        self.assertEquals(len(columns), 60)
+        self.assertEquals(len(columns), 59)
 
         columns = m.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
@@ -143,7 +143,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
 
     def test_columns(self):
         columns = self.model.get_columns()
-        self.assertEquals(len(columns), 50)
+        self.assertEquals(len(columns), 49)
 
         columns = self.model.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
@@ -169,7 +169,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
 
     def test_get_aggregates(self):
         self.assertItemsEqual([x.alias for x in self.model.get_aggregates()],
-                              ['clicks', 'impressions', 'cost', 'data_cost',
+                              ['clicks', 'impressions', 'data_cost',
                                'media_cost', 'e_media_cost', 'e_data_cost',
                                'license_fee', 'billing_cost', 'total_cost',
                                'ctr', 'cpc', 'visits', 'click_discrepancy',

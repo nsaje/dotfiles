@@ -34,7 +34,7 @@ class ExportTestCase(test.TestCase):
                 'campaign': 1,
                 'account': 1,
                 'date': datetime.date(2014, 7, 1),
-                'cost': 1000.12,
+                'media_cost': 1000.12,
                 'data_cost': 10.10,
                 'cpc': 10.23,
                 'clicks': 103,
@@ -47,7 +47,7 @@ class ExportTestCase(test.TestCase):
                 'campaign': 2,
                 'account': 1,
                 'date': datetime.date(2014, 7, 1),
-                'cost': 2000.12,
+                'media_cost': 2000.12,
                 'data_cost': 23.10,
                 'cpc': 20.23,
                 'clicks': 203,
@@ -60,7 +60,7 @@ class ExportTestCase(test.TestCase):
                 'campaign': 3,
                 'account': 1,
                 'date': datetime.date(2014, 7, 1),
-                'cost': 3000.12,
+                'media_cost': 3000.12,
                 'data_cost': 33.10,
                 'cpc': 30.23,
                 'clicks': 303,
@@ -80,7 +80,7 @@ class ExportTestCase(test.TestCase):
             'account': 1,
             'content_ad': 1,
             'date': datetime.date(2014, 7, 1),
-            'cost': 1000.12,
+            'media_cost': 1000.12,
             'data_cost': 10.10,
             'cpc': 10.23,
             'clicks': 103,
@@ -94,7 +94,7 @@ class ExportTestCase(test.TestCase):
             'account': 1,
             'content_ad': 2,
             'date': datetime.date(2014, 7, 1),
-            'cost': 2000.12,
+            'media_cost': 2000.12,
             'data_cost': 23.10,
             'cpc': 20.23,
             'clicks': 203,
@@ -108,7 +108,7 @@ class ExportTestCase(test.TestCase):
             'account': 1,
             'content_ad': 3,
             'date': datetime.date(2014, 7, 1),
-            'cost': 3000.12,
+            'media_cost': 3000.12,
             'data_cost': 33.10,
             'cpc': 30.23,
             'clicks': 303,
@@ -121,7 +121,7 @@ class ExportTestCase(test.TestCase):
     def test_get_csv_content(self):
         fieldnames = OrderedDict([
             ('date', 'Date'),
-            ('cost', 'Cost'),
+            ('media_cost', 'Media Cost'),
             ('data_cost', 'Data Cost'),
             ('clicks', 'Clicks'),
             ('ctr', 'CTR'),
@@ -129,7 +129,7 @@ class ExportTestCase(test.TestCase):
 
         content = export.get_csv_content(fieldnames, self.data)
 
-        expected_content = '''Date,Cost,Data Cost,Clicks,CTR\r
+        expected_content = '''Date,Media Cost,Data Cost,Clicks,CTR\r
 2014-07-01,1000.12,10.10,103,0.0103\r
 2014-07-01,2000.12,23.10,203,0.0203\r
 2014-07-01,3000.12,33.10,303,0.0303\r
@@ -140,7 +140,7 @@ class ExportTestCase(test.TestCase):
     def test_get_csv_content_with_statuses(self):
         fieldnames = OrderedDict([
             ('date', 'Date'),
-            ('cost', 'Cost'),
+            ('media_cost', 'Media Cost'),
             ('data_cost', 'Data Cost'),
             ('clicks', 'Clicks'),
             ('ctr', 'CTR'),
@@ -152,7 +152,7 @@ class ExportTestCase(test.TestCase):
         data[2]['status'] = 2
         content = export.get_csv_content(fieldnames, self.data)
 
-        expected_content = '''Date,Cost,Data Cost,Clicks,CTR,Status\r
+        expected_content = '''Date,Media Cost,Data Cost,Clicks,CTR,Status\r
 2014-07-01,1000.12,10.10,103,0.0103,Active\r
 2014-07-01,2000.12,23.10,203,0.0203,Inactive\r
 2014-07-01,3000.12,33.10,303,0.0303,Archived\r
@@ -207,7 +207,7 @@ class ExportTestCase(test.TestCase):
             'end_date': datetime.date(2014, 7, 2),
             'account': u'test account 1 \u010c\u017e\u0161',
             'content_ad': 1,
-            'cost': 1000.12,
+            'media_cost': 1000.12,
             'data_cost': 10.1,
             'ctr': 1.03,
             'campaign': u'test campaign 1 \u010c\u017e\u0161',
@@ -234,7 +234,7 @@ class ExportTestCase(test.TestCase):
             'end_date': datetime.date(2014, 7, 2),
             'account': u'test account 1 \u010c\u017e\u0161',
             'content_ad': 2,
-            'cost': 2000.12,
+            'media_cost': 2000.12,
             'data_cost': 23.1,
             'ctr': 2.03,
             'campaign': u'test campaign 1 \u010c\u017e\u0161',
@@ -261,7 +261,7 @@ class ExportTestCase(test.TestCase):
             'end_date': datetime.date(2014, 7, 2),
             'account': u'test account 1 \u010c\u017e\u0161',
             'content_ad': 3,
-            'cost': 3000.12,
+            'media_cost': 3000.12,
             'data_cost': 33.1,
             'ctr': 3.03,
             'campaign': u'test campaign 1 \u010c\u017e\u0161',
@@ -287,7 +287,7 @@ class ExportTestCase(test.TestCase):
         mock_query.return_value = [{
             'account': 1,
             'date': datetime.date(2014, 7, 1),
-            'cost': 1000.12,
+            'media_cost': 1000.12,
             'data_cost': 10.10,
             'cpc': 10.23,
             'clicks': 103,
@@ -298,7 +298,7 @@ class ExportTestCase(test.TestCase):
         }, {
             'account': 2,
             'date': datetime.date(2014, 7, 1),
-            'cost': 2000.12,
+            'media_cost': 2000.12,
             'data_cost': 23.10,
             'cpc': 20.23,
             'clicks': 203,
@@ -368,7 +368,7 @@ class ExportTestCase(test.TestCase):
             {'account_id': 1,
              'account': u'test account 1 \u010c\u017e\u0161',
              'clicks': 103,
-             'cost': 1000.12,
+             'media_cost': 1000.12,
              'cpc': 10.23,
              'ctr': 1.03,
              'data_cost': 10.1,
@@ -384,7 +384,7 @@ class ExportTestCase(test.TestCase):
             {'account_id': 2,
              'account': u'test account 2',
              'clicks': 203,
-             'cost': 2000.12,
+             'media_cost': 2000.12,
              'cpc': 20.23,
              'ctr': 2.03,
              'data_cost': 23.1,
@@ -421,7 +421,7 @@ class ExportTestCase(test.TestCase):
             'campaign': 1,
             'account': 1,
             'date': datetime.date(2014, 7, 1),
-            'cost': 1000.12,
+            'media_cost': 1000.12,
             'data_cost': 10.10,
             'cpc': 10.23,
             'clicks': 103,
@@ -432,7 +432,7 @@ class ExportTestCase(test.TestCase):
             'campaign': 1,
             'account': 1,
             'date': datetime.date(2014, 7, 1),
-            'cost': 2000.12,
+            'media_cost': 2000.12,
             'data_cost': 23.10,
             'cpc': 20.23,
             'clicks': 203,
@@ -443,7 +443,7 @@ class ExportTestCase(test.TestCase):
             'campaign': 2,
             'account': 1,
             'date': datetime.date(2014, 7, 1),
-            'cost': 2000.12,
+            'media_cost': 2000.12,
             'data_cost': 23.10,
             'cpc': 20.23,
             'clicks': 203,
@@ -486,7 +486,7 @@ class ExportTestCase(test.TestCase):
              'account': u'test account 1 \u010c\u017e\u0161',
              'campaign': campaign1,
              'clicks': 203,
-             'cost': 2000.12,
+             'media_cost': 2000.12,
              'cpc': 20.23,
              'ctr': 2.03,
              'data_cost': 23.1,
@@ -505,7 +505,7 @@ class ExportTestCase(test.TestCase):
              'account': u'test account 1 \u010c\u017e\u0161',
              'campaign': campaign2,
              'clicks': 203,
-             'cost': 2000.12,
+             'media_cost': 2000.12,
              'cpc': 20.23,
              'ctr': 2.03,
              'data_cost': 23.1,
@@ -543,7 +543,7 @@ class ExportTestCase(test.TestCase):
             'campaign': 1,
             'account': 1,
             'date': datetime.date(2014, 7, 1),
-            'cost': 1000.12,
+            'media_cost': 1000.12,
             'data_cost': 10.10,
             'cpc': 10.23,
             'clicks': 103,
@@ -554,7 +554,7 @@ class ExportTestCase(test.TestCase):
             'campaign': 1,
             'account': 1,
             'date': datetime.date(2014, 7, 1),
-            'cost': 2000.12,
+            'media_cost': 2000.12,
             'data_cost': 23.10,
             'cpc': 20.23,
             'clicks': 203,
@@ -565,7 +565,7 @@ class ExportTestCase(test.TestCase):
             'campaign': 2,
             'account': 1,
             'date': datetime.date(2014, 7, 1),
-            'cost': 2000.12,
+            'media_cost': 2000.12,
             'data_cost': 23.10,
             'cpc': 20.23,
             'clicks': 203,
@@ -577,7 +577,7 @@ class ExportTestCase(test.TestCase):
             'campaign': 1,
             'account': 1,
             'date': datetime.date(2014, 7, 2),
-            'cost': 1000.12,
+            'media_cost': 1000.12,
             'data_cost': 10.10,
             'cpc': 10.23,
             'clicks': 103,
@@ -588,7 +588,7 @@ class ExportTestCase(test.TestCase):
             'campaign': 1,
             'account': 1,
             'date': datetime.date(2014, 7, 2),
-            'cost': 2000.12,
+            'media_cost': 2000.12,
             'data_cost': 23.10,
             'cpc': 20.23,
             'clicks': 203,
@@ -599,7 +599,7 @@ class ExportTestCase(test.TestCase):
             'campaign': 2,
             'account': 1,
             'date': datetime.date(2014, 7, 2),
-            'cost': 2000.12,
+            'media_cost': 2000.12,
             'data_cost': 23.10,
             'cpc': 20.23,
             'clicks': 203,
@@ -642,7 +642,7 @@ class ExportTestCase(test.TestCase):
              'account': u'test account 1 \u010c\u017e\u0161',
              'campaign': campaign1,
              'clicks': 203,
-             'cost': 2000.12,
+             'media_cost': 2000.12,
              'cpc': 20.23,
              'ctr': 2.03,
              'data_cost': 23.1,
@@ -661,7 +661,7 @@ class ExportTestCase(test.TestCase):
              'account': u'test account 1 \u010c\u017e\u0161',
              'campaign': campaign2,
              'clicks': 203,
-             'cost': 2000.12,
+             'media_cost': 2000.12,
              'cpc': 20.23,
              'ctr': 2.03,
              'data_cost': 23.1,
@@ -680,7 +680,7 @@ class ExportTestCase(test.TestCase):
              'account': u'test account 1 \u010c\u017e\u0161',
              'campaign': campaign1,
              'clicks': 203,
-             'cost': 2000.12,
+             'media_cost': 2000.12,
              'cpc': 20.23,
              'ctr': 2.03,
              'data_cost': 23.1,
@@ -699,7 +699,7 @@ class ExportTestCase(test.TestCase):
              'account': u'test account 1 \u010c\u017e\u0161',
              'campaign': campaign2,
              'clicks': 203,
-             'cost': 2000.12,
+             'media_cost': 2000.12,
              'cpc': 20.23,
              'ctr': 2.03,
              'data_cost': 23.1,
@@ -841,7 +841,7 @@ class ExportTestCase(test.TestCase):
             None,
             datetime.date(2014, 6, 3),
             datetime.date(2014, 6, 10),
-            'cost',
+            'media_cost',
             [],
             ['campaign', 'source'],
             True,
@@ -857,7 +857,7 @@ class ExportTestCase(test.TestCase):
             start_date=datetime.date(2014, 6, 3),
             by_source=True, user=User.objects.get(pk=1),
             include_model_ids=False,
-            order='cost'
+            order='media_cost'
         )
 
     @mock.patch('dash.export._get_report')

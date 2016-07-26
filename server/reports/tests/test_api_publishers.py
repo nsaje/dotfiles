@@ -55,7 +55,7 @@ class ApiPublishersTest(TestCase):
         required_statements = [
             '"date"',
             'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("cost_nano" AS FLOAT)) / SUM("clicks") ELSE NULL END AS "cpc_nano"',
-            'SUM("cost_nano") AS "cost_nano_sum"',
+            'SUM("cost_nano") AS "media_cost_nano_sum"',
             'SUM("impressions") AS "impressions_sum"',
             'CASE WHEN SUM("impressions") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("impressions") ELSE NULL END AS "ctr"',
             'SUM("clicks") AS "clicks_sum"',
@@ -73,7 +73,7 @@ class ApiPublishersTest(TestCase):
             'clicks_sum': 123,
             'ctr': 1.0,
             'cpc_nano': 1.0,
-            'cost_nano_sum': 26638,
+            'media_cost_nano_sum': 26638,
             'date': '2015-01-01',
         }]
 
@@ -88,7 +88,7 @@ class ApiPublishersTest(TestCase):
         constraints.update({'start_date': start_date, 'end_date': end_date})
         self.assertDictEqual(stats[0], {
             'clicks': 123,
-            'cost': 2.6638e-05,
+            'media_cost': 2.6638e-05,
             'cpc': 1e-09,
             'ctr': 100.0,
             'impressions': 10560,
@@ -166,7 +166,7 @@ class ApiPublishersTest(TestCase):
                 'ctr': 0.0,
                 'exchange': 'gumgum',
                 'cpc_nano': 0,
-                'cost_nano_sum': 1e-05,
+                'media_cost_nano_sum': 1e-05,
                 'impressions_sum': 1000L,
                 'clicks_sum': 0L,
             },
@@ -195,7 +195,7 @@ class ApiPublishersTest(TestCase):
         api_publishers.query_active_publishers(
             start_date, end_date,
             breakdown_fields=['domain', 'exchange'],
-            order_fields=['-cost'],
+            order_fields=['-media_cost'],
             constraints=constraints,
             constraints_list=constraint_list
         )
@@ -212,7 +212,7 @@ class ApiPublishersTest(TestCase):
                 'ctr': 0.0,
                 'exchange': 'gumgum',
                 'cpc_nano': 0,
-                'cost_nano_sum': 1e-05,
+                'media_cost_nano_sum': 1e-05,
                 'impressions_sum': 1000L,
                 'clicks_sum': 0L,
             },
@@ -242,7 +242,7 @@ class ApiPublishersTest(TestCase):
         api_publishers.query_blacklisted_publishers(
             start_date, end_date,
             breakdown_fields=breakdown_fields,
-            order_fields=['-cost'],
+            order_fields=['-media_cost'],
             constraints=constraints,
             constraints_list=constraints_list
         )
@@ -259,7 +259,7 @@ class ApiPublishersTest(TestCase):
                 'ctr': 0.0,
                 'exchange': 'gumgum',
                 'cpc_nano': 0,
-                'cost_nano_sum': 1e-05,
+                'media_cost_nano_sum': 1e-05,
                 'impressions_sum': 1000L,
                 'clicks_sum': 0L,
             },
@@ -289,7 +289,7 @@ class ApiPublishersTest(TestCase):
         api_publishers.query_blacklisted_publishers(
             start_date, end_date,
             breakdown_fields=breakdown_fields,
-            order_fields=['-cost'],
+            order_fields=['-media_cost'],
             constraints=constraints,
             constraints_list=constraints_list
         )
@@ -305,7 +305,7 @@ class ApiPublishersMapperTest(TestCase):
             'exchange': None,
             'date': None,
             'clicks_sum': None,
-            'cost_nano_sum': None,
+            'media_cost_nano_sum': None,
             'cpc_nano': None,
             'ctr': None,
             'adgroup_id': None,
@@ -315,7 +315,7 @@ class ApiPublishersMapperTest(TestCase):
         self.assertEqual(result, {
             'ad_group': None,
             'clicks': None,
-            'cost': None,
+            'media_cost': None,
             'cpc': None,
             'ctr': None,
             'date': None,
@@ -326,10 +326,10 @@ class ApiPublishersMapperTest(TestCase):
 
     def test_map_rowdict_to_output_transforms(self):
         input = {'cpc_nano': 100000,
-                 'cost_nano_sum': 200000,
+                 'media_cost_nano_sum': 200000,
                  'ctr': 0.2}
         result = api_publishers.rs_pub.map_result_to_app(input, json_fields=[])
-        self.assertEqual(result, {'cost': 0.0002,
+        self.assertEqual(result, {'media_cost': 0.0002,
                                   'cpc': 0.0001,
                                   'ctr': 20.0
                                   })

@@ -341,7 +341,7 @@ class InfoBoxHelpersTest(TestCase):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         cursor().dictfetchall.return_value = [{
             'adgroup_id': u'1',
-            'cost_cc_sum': 500000,
+            'media_cost_cc_sum': 500000,
         }]
 
         self.assertEqual(

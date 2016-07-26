@@ -933,7 +933,7 @@ def get_target_regions_string(regions):
 
 
 def copy_stats_to_row(stat, row):
-    for key in ['impressions', 'clicks', 'cost', 'data_cost', 'cpc', 'ctr',
+    for key in ['impressions', 'clicks', 'data_cost', 'cpc', 'ctr',
                 'visits', 'click_discrepancy', 'pageviews', 'media_cost',
                 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'e_media_cost', 'e_data_cost', 'billing_cost',

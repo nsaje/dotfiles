@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 OB_PUBLISHERS_KEY_FORMAT = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/{ad_group_id}/{ts}.json'
 
-DEFAULT_PUBLISHERS_DATA_ORDER = ['-cost']
+DEFAULT_PUBLISHERS_DATA_ORDER = ['-media_cost']
 DEFAULT_PUBLISHERS_DATA_LIMIT = 1000
 
 
@@ -28,7 +28,7 @@ class RSPublishersModel(redshift.RSModel):
 
     # fields that are always returned (app-based naming)
     DEFAULT_RETURNED_FIELDS_APP = [
-        "clicks", "impressions", "cost", "data_cost", "media_cost", "ctr", "cpc",
+        "clicks", "impressions", "data_cost", "media_cost", "ctr", "cpc",
         "e_media_cost", "e_data_cost", "billing_cost", "license_fee",
         "external_id", "visits", "click_discrepancy", "pageviews", "new_visits",
         "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos", "total_seconds",
@@ -47,7 +47,6 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='exchange',               app='exchange',     out=unchanged),
         dict(sql='external_id',            app='external_id',  out=unchanged,          calc=max_agr('external_id')),
         dict(sql='date',                   app='date',         out=unchanged),
-        dict(sql='cost_nano_sum',          app='cost',         out=from_nano,          calc=sum_agr('cost_nano'),                                                                                         order="SUM(cost_nano) = 0, cost_nano_sum {direction}"),
         dict(sql='media_cost_nano_sum',    app='media_cost',   out=from_nano,          calc=sum_agr('cost_nano'),                                                                                         order="SUM(cost_nano) = 0, cost_nano_sum {direction}"),
         dict(sql='data_cost_nano_sum',     app='data_cost',    out=from_nano,          calc=sum_agr('data_cost_nano'),                                                                                    order="SUM(data_cost_nano) = 0, data_cost_nano_sum {direction}"),
         dict(sql='cpc_nano',               app='cpc',          out=from_nano,          calc=sum_div("cost_nano", "clicks"),                                                                               order="SUM(clicks) = 0, sum(cost_nano) IS NULL, cpc_nano {direction}"),  # makes sure nulls are last

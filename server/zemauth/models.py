@@ -165,7 +165,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
              'Can view or modify account and campaign publishers blacklist status'),
             ('can_see_all_available_sources', 'Can see all available media sources in account settings'),
             ('account_account_view', "Can view account's Account tab."),
-            ('can_view_effective_costs', 'Can view effective costs'),
             ('can_view_actual_costs', 'Can view actual costs'),
             ('can_modify_outbrain_account_publisher_blacklist_status',
              'Can modify Outbrain account publisher blacklist status'),
@@ -206,6 +205,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_access_agency_infobox', 'Can access info box on all accounts agency level'),
             ('can_manage_agency_margin', 'User can define margin in budget line item.'),
             ('can_view_agency_margin', 'User can view margin in budget tab and view margin columns in tables and reports.'),
+            ('can_view_platform_cost_breakdown', 'User can view platform costs broken down into media, data and fee.')
         )
 
     def get_full_name(self):

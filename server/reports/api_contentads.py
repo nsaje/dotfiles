@@ -39,7 +39,6 @@ class RSContentAdStatsModel(redshift.RSModel):
     _TRAFFIC_FIELDS = [
         dict(sql='clicks_sum',            app='clicks',             out=rsh.unchanged,            calc=rsh.sum_agr('clicks')),
         dict(sql='impressions_sum',       app='impressions',        out=rsh.unchanged,            calc=rsh.sum_agr('impressions')),
-        dict(sql='cost_cc_sum',           app='cost',               out=rsh.from_cc,              calc=rsh.sum_agr('cost_cc')),
         dict(sql='data_cost_cc_sum',      app='data_cost',          out=rsh.from_cc,              calc=rsh.sum_agr('data_cost_cc')),
         # BCM
         dict(sql='media_cost_cc_sum',     app='media_cost',         out=rsh.from_cc,              calc=rsh.sum_agr('cost_cc')),
@@ -270,7 +269,7 @@ def get_yesterday_cost(constraints, breakdown=None):
 
     rs = get_day_cost(yesterday, breakdown=breakdown, **constraints)
 
-    result = map_by_breakdown(rs, breakdown, lambda row: row.get('e_media_cost', row['cost']) or 0.0)
+    result = map_by_breakdown(rs, breakdown, lambda row: row.get('e_media_cost', row['media_cost']) or 0.0)
 
     return result
 
@@ -287,7 +286,7 @@ def get_actual_yesterday_cost(constraints, breakdown=None):
 
     rs = get_day_cost(yesterday, breakdown=breakdown, **constraints)
 
-    result = map_by_breakdown(rs, breakdown, lambda row: row.get('media_cost', row['cost']) or 0.0)
+    result = map_by_breakdown(rs, breakdown, lambda row: row.get('media_cost', 0.0))
 
     return result
 

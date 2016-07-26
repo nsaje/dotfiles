@@ -30,7 +30,6 @@ FIELDNAMES = {
     'campaign': 'Campaign',
     'click_discrepancy': 'Click Discrepancy',
     'clicks': 'Clicks',
-    'cost': 'Media Spend',
     'media_cost': 'Actual Media Spend',
     'data_cost': 'Actual Data Spend',
     'e_data_cost': 'Data Cost',
@@ -93,7 +92,7 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
 
 FORMAT_1_DECIMAL = ['avg_tos']
 
-FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'cost', 'data_cost', 'media_cost',
+FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'data_cost', 'media_cost',
                      'e_media_cost', 'e_data_cost',
                      'billing_cost', 'margin', 'agency_total',
                      'license_fee', 'total_fee', 'flat_fee',
@@ -105,7 +104,7 @@ FORMAT_3_DECIMALS = ['cpc']
 FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate', 'ctr', 'click_discrepancy', 'pacing']
 
 FORMAT_EMPTY_TO_0 = [
-    'data_cost', 'cost', 'cpc',
+    'data_cost', 'cpc',
     'clicks', 'impressions', 'ctr', 'visits', 'pageviews',
     'e_media_cost', 'media_cost', 'e_data_cost',
     'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
@@ -1042,7 +1041,7 @@ class AdGroupAdsExport(object):
 
 def filter_allowed_fields(request, fields):
     allowed_fields = []
-    can_view_effective_costs = request.user.has_perm('zemauth.can_view_effective_costs')
+    can_view_platform_cost_breakdown = request.user.has_perm('zemauth.can_view_platform_cost_breakdown')
     can_view_actual_costs = request.user.has_perm('zemauth.can_view_actual_costs')
     can_view_flat_fees = request.user.has_perm('zemauth.can_view_flat_fees')
     can_see_projections = request.user.has_perm('zemauth.can_see_projections')
@@ -1055,14 +1054,13 @@ def filter_allowed_fields(request, fields):
         if f in ('margin', 'agency_total') and not can_view_agency_margin:
             continue
         if f in ('e_data_cost', 'e_media_cost',
-                 'license_fee', 'billing_cost') and not can_view_effective_costs:
+                 'license_fee') and not can_view_platform_cost_breakdown:
             continue
         if f in ('data_cost', 'media_cost',
                  'license_fee') and not can_view_actual_costs:
             continue
-        if f in ('cost', ) and (can_view_effective_costs or can_view_actual_costs):
-            continue
-        if f in ('total_fee', 'flat_fee', 'total_fee_projection') and not can_view_flat_fees:
+        if f in ('total_fee', 'flat_fee',
+                 'total_fee_projection') and not (can_view_flat_fees and can_view_platform_cost_breakdown):
             continue
         if f in ('allocated_budget', 'spend_projection', 'pacing', 'license_fee_projection',
                  'total_fee_projection') and not can_see_projections:

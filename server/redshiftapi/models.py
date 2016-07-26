@@ -116,11 +116,10 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
     clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, mh.AGGREGATES)
     impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, mh.AGGREGATES)
-    cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'}, mh.AGGREGATES)
+    media_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'}, mh.AGGREGATES)
     data_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'data_cost_nano'}, mh.AGGREGATES)
 
     # BCM
-    media_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'}, mh.AGGREGATES)
     e_media_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_cost_nano'}, mh.AGGREGATES)
     e_data_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_data_cost_nano'},
                                            mh.AGGREGATES)

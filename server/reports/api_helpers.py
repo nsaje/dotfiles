@@ -1,6 +1,6 @@
 DIMENSIONS = set(['content_ad', 'article', 'ad_group', 'date', 'source', 'account', 'campaign'])
 TRAFFIC_FIELDS = [
-    'clicks', 'impressions', 'cost', 'data_cost',
+    'clicks', 'impressions', 'data_cost',
     'cpc', 'ctr', 'title', 'url',
     'media_cost', 'e_media_cost', 'e_data_cost',
     'license_fee', 'billing_cost',
@@ -35,13 +35,15 @@ CAMPAIGN_GOAL_FIELDS = [
 ]
 
 FIELD_PERMISSION_MAPPING = {
-    'e_media_cost':   'zemauth.can_view_effective_costs',
-    'e_data_cost':    'zemauth.can_view_effective_costs',
-    'license_fee':    'zemauth.can_view_effective_costs',
-    'billing_cost':   'zemauth.can_view_effective_costs',
-    'media_cost':     'zemauth.can_view_actual_costs',
-    'data_cost':      'zemauth.can_view_actual_costs',
-    'margin':         'zemauth.can_view_agency_margin',
+    'e_media_cost':     'zemauth.can_view_platform_cost_breakdown',
+    'e_data_cost':      'zemauth.can_view_platform_cost_breakdown',
+    'license_fee':      'zemauth.can_view_platform_cost_breakdown',
+    'media_cost':       'zemauth.can_view_actual_costs',
+    'data_cost':        'zemauth.can_view_actual_costs',
+    'margin':           'zemauth.can_view_agency_margin',
+    'agency_total':     'zemauth.can_view_agency_margin',
+    'yesterday_cost':   'zemauth.can_view_actual_costs',
+    'e_yesterday_cost': 'zemauth.can_view_platform_cost_breakdown',
 }
 
 

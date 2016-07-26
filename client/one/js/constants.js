@@ -50,7 +50,6 @@ var constants = {
         CLICKS: 'clicks',
         IMPRESSIONS: 'impressions',
         CTR: 'ctr',
-        COST: 'cost',
         DATA_COST: 'data_cost',
         EFFECTIVE_DATA_COST: 'e_data_cost',
         MEDIA_COST: 'media_cost',
@@ -769,12 +768,11 @@ var options = {
         {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC},
     ],
-    legacyCostChartMetrics: [
-        {name: 'Spend', value: constants.chartMetric.COST},
-    ],
-    effectiveCostChartMetrics: [
+    platformCostChartMetrics: [
         {name: 'Data Cost', value: constants.chartMetric.EFFECTIVE_DATA_COST},
         {name: 'Media Spend', value: constants.chartMetric.EFFECTIVE_MEDIA_COST},
+    ],
+    billingCostChartMetrics: [
         {name: 'Total Spend', value: constants.chartMetric.BILLING_COST},
     ],
     actualCostChartMetrics: [

@@ -641,7 +641,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             margin_nano=0,
         )
 
-        add_permissions(r.user, ['can_view_flat_fees', 'can_see_account_type'])
+        add_permissions(r.user, ['can_view_flat_fees', 'can_see_account_type', 'can_view_platform_cost_breakdown'])
 
         request = http.HttpRequest()
         request.method = 'GET'
@@ -770,7 +770,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             margin_nano=0,
         )
 
-        add_permissions(r.user, ['can_view_flat_fees', 'can_see_account_type'])
+        add_permissions(r.user, ['can_view_flat_fees', 'can_see_account_type', 'can_view_platform_cost_breakdown'])
 
         request = http.HttpRequest()
         request.method = 'GET'

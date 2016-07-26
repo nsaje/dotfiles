@@ -178,16 +178,18 @@ class FilterTestCase(TestCase):
             {
                 'ad_group_id': 1, 'source_id': 1, 'ad_group_name': 'test adgroup 1', 'clicks': 10, 'age': '18-20',
                 'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1',
+                'billing_cost': 124,
             },
             {
                 'ad_group_id': 2, 'source_id': 2, 'ad_group_name': 'test adgroup 2', 'clicks': 20, 'age': '21-29',
                 'breakdown_id': '2||2', 'breakdown_name': 'test adgroup 2', 'parent_breakdown_id': '2',
+                'billing_cost': 224,
             },
         ])
 
     def test_filter_columns_by_permission(self):
         user = User.objects.get(pk=1)
-        add_permissions(user, ['can_view_effective_costs'])
+        add_permissions(user, ['can_view_platform_cost_breakdown'])
 
         rows = [
             {
