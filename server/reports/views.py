@@ -74,7 +74,7 @@ def _format_stat(stat, bidder_slugs):
         'ad_group_id': stat['ad_group'],
         'impressions': stat['impressions'],
         'clicks': stat['clicks'],
-        'cost': stat['cost'],
+        'cost': stat['media_cost'],
     }
 
 
