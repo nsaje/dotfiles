@@ -1,7 +1,8 @@
+/* globals it, angular, describe, inject, module, expect, spyOn, beforeEach */
 'use strict';
 
 describe('zemConversionPixels', function () {
-    var $scope, $q, element, isolate;
+    var $scope, $q, element, isolate, $modal;
 
     var mockApiFunc = function () {
         return {
@@ -22,6 +23,21 @@ describe('zemConversionPixels', function () {
         }
     };
 
+    var fakeModal = {
+        result: {
+            then: function (confirmCallback, cancelCallback) {
+                this.confirmCallBack = confirmCallback;
+                this.cancelCallback = cancelCallback;
+            }
+        },
+        close: function (item) {
+            this.result.confirmCallBack(item);
+        },
+        dismiss: function (type) {
+            this.result.cancelCallback(type);
+        }
+    };
+
     angular.module('conversionPixelsApiMock', []);
     angular.module('conversionPixelsApiMock').service('api', function () {
         return api;
@@ -30,8 +46,10 @@ describe('zemConversionPixels', function () {
     beforeEach(module('one'));
     beforeEach(module('conversionPixelsApiMock'));
 
-    beforeEach(inject(function ($compile, $rootScope, _$q_) {
+    beforeEach(inject(function ($compile, $rootScope, _$q_, _$modal_) {
         $q =  _$q_;
+        $modal = _$modal_;
+
         var template = '<zem-conversion-pixels zem-account="account" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-conversion-pixels>';
 
         $scope = $rootScope.$new();
@@ -51,6 +69,30 @@ describe('zemConversionPixels', function () {
                 .catch(function (error) {
                     expect(error).toBeUndefined();
                 });
+        });
+    });
+
+    describe('renameConversionPixel', function () {
+        it('opens a modal window', function () {
+            isolate.renameConversionPixel({id: 1, name: 'test'}).result
+                .catch(function (error) {
+                    expect(error).toBeUndefined();
+                });
+        });
+
+        it('updates conversion pixels', function () {
+            isolate.conversionPixels = [
+                {id: 3, name: 'Old Name', archived: true}
+            ];
+
+            spyOn($modal, 'open').and.returnValue(fakeModal);
+
+            var modalInstance = isolate.renameConversionPixel(isolate.conversionPixels[0]);
+            modalInstance.close({id: 3, name: 'New Name'});
+
+            expect(isolate.conversionPixels).toEqual([
+                {id: 3, name: 'New Name', archived: true}
+            ]);
         });
     });
 

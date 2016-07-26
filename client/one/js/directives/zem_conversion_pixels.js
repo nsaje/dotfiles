@@ -36,7 +36,7 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
 
             $scope.addConversionPixel = function () {
                 var modalInstance = $modal.open({
-                    templateUrl: '/partials/add_conversion_pixel_modal.html',
+                    templateUrl: '/partials/conversion_pixel_modal.html',
                     controller: 'AddConversionPixelModalCtrl',
                     windowClass: 'modal-default',
                     scope: $scope,
@@ -49,10 +49,34 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
                 return modalInstance;
             };
 
+            $scope.renameConversionPixel = function (pixel) {
+                var modalInstance = $modal.open({
+                    templateUrl: '/partials/conversion_pixel_modal.html',
+                    controller: 'EditConversionPixelModalCtrl',
+                    windowClass: 'modal-default',
+                    scope: $scope,
+                    resolve: {
+                        pixel: function () {
+                            return {id: pixel.id, name: pixel.name};
+                        }
+                    }
+                });
+
+                modalInstance.result.then(function (conversionPixel) {
+                    $scope.conversionPixels.forEach(function (pixel) {
+                        if (pixel.id === conversionPixel.id) {
+                            pixel.name = conversionPixel.name;
+                        }
+                    });
+                });
+
+                return modalInstance;
+            };
+
             $scope.archiveConversionPixel = function (conversionPixel) {
                 conversionPixel.requestInProgress = true;
                 conversionPixel.error = false;
-                api.conversionPixel.archive(conversionPixel.id).then(
+                api.conversionPixel.archive(conversionPixel).then(
                     function (data) {
                         conversionPixel.archived = data.archived;
                     },
@@ -67,7 +91,7 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
             $scope.restoreConversionPixel = function (conversionPixel) {
                 conversionPixel.requestInProgress = true;
                 conversionPixel.error = false;
-                api.conversionPixel.restore(conversionPixel.id).then(
+                api.conversionPixel.restore(conversionPixel).then(
                     function (data) {
                         conversionPixel.archived = data.archived;
                     },

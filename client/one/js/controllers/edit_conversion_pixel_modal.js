@@ -1,23 +1,21 @@
 /* globals oneApp */
-oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', 'api', function ($scope, $modalInstance, api) {
+oneApp.controller('EditConversionPixelModalCtrl', ['$scope', '$modalInstance', 'api', 'pixel', function ($scope, $modalInstance, api, pixel) {
     $scope.inProgress = false;
-    $scope.pixel = {name: ''};
+    $scope.pixel = pixel;
     $scope.error = false;
     $scope.errorMessage = '';
-    $scope.title = 'Add a New Pixel';
-    $scope.buttonText = 'Add Pixel';
+    $scope.title = 'Edit Pixel';
+    $scope.buttonText = 'Save Pixel';
 
     $scope.submit = function () {
         $scope.inProgress = true;
-        api.conversionPixel.post($scope.account.id, $scope.pixel.name).then(
+        api.conversionPixel.rename(pixel).then(
             function (data) {
                 $modalInstance.close(data);
             },
             function (data) {
                 $scope.error = true;
-                if (data && data.message) {
-                    $scope.errorMessage = data.message;
-                }
+                $scope.errorMessage = data.errors.name.join(' ');
             }
         ).finally(function () {
             $scope.inProgress = false;

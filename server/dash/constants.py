@@ -1238,6 +1238,8 @@ class UserActionType(ConstantBase):
     CHANGE_CAMPAIGN_GOAL_VALUE = 31
     CHANGE_PRIMARY_CAMPAIGN_GOAL = 32
 
+    RENAME_CONVERSION_PIXEL = 33
+
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
         SET_CONTENT_AD_STATE: 'Set Content Ad(s) State',
@@ -1270,7 +1272,8 @@ class UserActionType(ConstantBase):
         CREATE_CAMPAIGN_GOAL: 'Create Campaign Goal',
         DELETE_CAMPAIGN_GOAL: 'Delete Campaign Goal',
         CHANGE_CAMPAIGN_GOAL_VALUE: 'Change Campaign Goal Value',
-        CHANGE_PRIMARY_CAMPAIGN_GOAL: 'Change Primary Campaign Goal'
+        CHANGE_PRIMARY_CAMPAIGN_GOAL: 'Change Primary Campaign Goal',
+        RENAME_CONVERSION_PIXEL: 'Rename conversion pixel'
     }
 
 
@@ -1622,6 +1625,7 @@ class HistoryActionType(ConstantBase):
     CONTENT_AD_ARCHIVE_RESTORE = 14
     MEDIA_SOURCE_SETTINGS_CHANGE = 15
     MEDIA_SOURCE_ADD = 16
+    CONVERSION_PIXEL_RENAME = 17
 
     _VALUES = {
         GOAL_CHANGE: 'Change Campaign Goal',
@@ -1640,6 +1644,7 @@ class HistoryActionType(ConstantBase):
         CONTENT_AD_ARCHIVE_RESTORE: 'Archive/Restore Content Ad(s)',
         MEDIA_SOURCE_SETTINGS_CHANGE: 'Set Media Source Settings',
         MEDIA_SOURCE_ADD: 'Add Media Source',
+        CONVERSION_PIXEL_RENAME: 'Rename conversion pixel'
     }
 
 

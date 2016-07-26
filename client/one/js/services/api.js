@@ -2605,42 +2605,50 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
-        this.archive = function (conversionPixelId) {
+        this.put = function (conversionPixelId, data) {
             var deferred = $q.defer();
             var url = '/api/conversion_pixel/' + conversionPixelId + '/';
-
-            var data = {
-                archived: true
-            };
 
             $http.put(url, data).
                 success(function (data, status) {
                     deferred.resolve(convertFromApi(data.data));
                 }).
                 error(function (data, status) {
-                    deferred.reject();
+                    var ret = null;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        ret = data.data;
+                    }
+
+                    deferred.reject(ret);
                 });
 
             return deferred.promise;
         };
 
-        this.restore = function (conversionPixelId) {
-            var deferred = $q.defer();
-            var url = '/api/conversion_pixel/' + conversionPixelId + '/';
-
+        this.rename = function (conversionPixel) {
             var data = {
-                archived: false
+                name: conversionPixel.name
             };
 
-            $http.put(url, data).
-                success(function (data, status) {
-                    deferred.resolve(convertFromApi(data.data));
-                }).
-                error(function (data, status) {
-                    deferred.reject();
-                });
+            return this.put(conversionPixel.id, data);
+        };
 
-            return deferred.promise;
+        this.archive = function (conversionPixel) {
+            var data = {
+                archived: true,
+                name: conversionPixel.name
+            };
+
+            return this.put(conversionPixel.id, data);
+        };
+
+        this.restore = function (conversionPixel) {
+            var data = {
+                archived: false,
+                name: conversionPixel.name
+            };
+
+            return this.put(conversionPixel.id, data);
         };
     }
 

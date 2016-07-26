@@ -1,8 +1,8 @@
 /* globals it, describe, inject, module, expect, spyOn, beforeEach */
 'use strict';
 
-describe('AddConversionPixelModalCtrl', function () {
-    var $scope, $modalInstance, api, $q, $timeout, openedDeferred;
+describe('EditConversionPixelModalCtrl', function () {
+    var $scope, $modalInstance, api, $q, $timeout, openedDeferred, pixel;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -33,65 +33,70 @@ describe('AddConversionPixelModalCtrl', function () {
 
         api = {
             conversionPixel: {
-                post: mockApiFunc
+                rename: mockApiFunc
             }
         };
 
+        pixel = {
+            id: 1,
+            name: 'Test Name'
+        };
+
         $controller(
-            'AddConversionPixelModalCtrl',
-            {$scope: $scope, $modalInstance: $modalInstance, api: api}
+            'EditConversionPixelModalCtrl',
+            {$scope: $scope, $modalInstance: $modalInstance, api: api, pixel: pixel}
         );
     }));
 
-    describe('submit', function () {
+    describe('editConversionPixel', function () {
         it('updates error message on failure', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'post').and.callFake(function () {
+            spyOn(api.conversionPixel, 'rename').and.callFake(function () {
                 return deferred.promise;
             });
 
             spyOn($modalInstance, 'close');
 
-            $scope.submit('slug');
+            $scope.submit();
             $scope.$digest();
 
-            expect(api.conversionPixel.post).toHaveBeenCalled();
+            expect(api.conversionPixel.rename).toHaveBeenCalled();
             expect($scope.inProgress).toBe(true);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.error).toEqual(false);
             expect($scope.errorMessage).toEqual('');
 
-            deferred.reject({message: 'error message'});
+            deferred.reject({errors: {name: ['error message', 'another message']}});
             $scope.$digest();
 
             expect($scope.inProgress).toBe(false);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.error).toEqual(true);
-            expect($scope.errorMessage).toEqual('error message');
+            expect($scope.errorMessage).toEqual('error message another message');
         });
 
         it('closes the modal window on success', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'post').and.callFake(function () {
+            spyOn(api.conversionPixel, 'rename').and.callFake(function () {
                 return deferred.promise;
             });
 
             spyOn($modalInstance, 'close');
 
-            $scope.submit('slug');
+            $scope.submit();
             $scope.$digest();
 
-            expect(api.conversionPixel.post).toHaveBeenCalled();
+            expect(api.conversionPixel.rename).toHaveBeenCalled();
             expect($scope.inProgress).toBe(true);
             expect($modalInstance.close).not.toHaveBeenCalled();
 
-            deferred.resolve({id: 1, slug: 'slug', archived: false, lastVerifiedDt: null, status: 1});
+            deferred.resolve({id: 1, name: 'name', archived: false});
             $scope.$digest();
 
             expect($scope.inProgress).toBe(false);
-            expect($modalInstance.close).toHaveBeenCalledWith({id: 1, slug: 'slug', archived: false, lastVerifiedDt: null, status: 1});
+            expect($modalInstance.close).toHaveBeenCalledWith({id: 1, name: 'name', archived: false});
         });
     });
 });

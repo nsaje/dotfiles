@@ -386,6 +386,7 @@ class AccountSettingsForm(forms.Form):
 
 
 class ConversionPixelForm(forms.Form):
+    archived = forms.BooleanField(required=False)
     name = forms.CharField(
         max_length=50,
         required=True,

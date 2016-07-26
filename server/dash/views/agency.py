@@ -713,30 +713,56 @@ class ConversionPixel(api_common.BaseApiView):
         except ValueError:
             raise exc.ValidationError()
 
-        if 'archived' in data:
-            if not request.user.has_perm('zemauth.archive_restore_entity'):
-                raise exc.AuthorizationError()
+        form = forms.ConversionPixelForm(data)
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
 
-            if not isinstance(data['archived'], bool):
-                raise exc.ValidationError(message='Invalid value')
+        with transaction.atomic():
+            if 'archived' in form.cleaned_data and request.user.has_perm('zemauth.archive_restore_entity'):
+                self._write_archived_change_to_history(
+                    request, account, conversion_pixel, form.cleaned_data)
+                conversion_pixel.archived = form.cleaned_data['archived']
 
-            with transaction.atomic():
-                conversion_pixel.archived = data['archived']
-                conversion_pixel.save()
+            self._write_name_change_to_history(
+                request, account, conversion_pixel, form.cleaned_data)
+            conversion_pixel.name = form.cleaned_data['name']
 
-                changes_text = u'{} conversion pixel named {}.'.format(
-                    'Archived' if data['archived'] else 'Restored',
-                    conversion_pixel.name
-                )
-                account.write_history(
-                    changes_text,
-                    user=request.user,
-                    action_type=constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE
-                )
+            conversion_pixel.save()
+
         return self.create_api_response({
             'id': conversion_pixel.id,
+            'name': conversion_pixel.name,
+            'url': conversion_pixel.get_url(),
             'archived': conversion_pixel.archived,
         })
+
+    def _write_archived_change_to_history(self, request, account, conversion_pixel, data):
+        if data['archived'] == conversion_pixel.archived:
+            return
+
+        changes_text = u'{} conversion pixel named {}.'.format(
+            'Archived' if data['archived'] else 'Restored',
+            conversion_pixel.name
+        )
+        account.write_history(
+            changes_text,
+            user=request.user,
+            action_type=constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE
+        )
+
+    def _write_name_change_to_history(self, request, account, conversion_pixel, data):
+        if data['name'] == conversion_pixel.name:
+            return
+
+        changes_text = u'Renamed conversion pixel named {} to {}.'.format(
+            conversion_pixel.name,
+            data['name']
+        )
+        account.write_history(
+            changes_text,
+            user=request.user,
+            action_type=constants.HistoryActionType.CONVERSION_PIXEL_RENAME
+        )
 
 
 class AccountSettings(api_common.BaseApiView):

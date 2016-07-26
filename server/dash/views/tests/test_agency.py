@@ -1038,11 +1038,13 @@ class ConversionPixelTestCase(TestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
-    def test_put(self):
+    def test_put_archive(self):
         add_permissions(self.user, ['archive_restore_entity'])
+
+        conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
-            json.dumps({'archived': True}),
+            json.dumps({'archived': True, 'name': conversion_pixel.name}),
             content_type='application/json',
             follow=True,
         )
@@ -1053,6 +1055,8 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual({
             'id': 1,
             'archived': True,
+            'name': 'test',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
         }, decoded_response['data'])
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
@@ -1062,18 +1066,53 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual('Archived conversion pixel named test.',
                          hist.changes_text)
 
-        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
-        self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE, hist.action_type)
-
-    def test_put_archive_no_permissions(self):
+    def test_put_name(self):
+        add_permissions(self.user, ['archive_restore_entity'])
+        conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
-            json.dumps({'archived': True}),
+            json.dumps({'name': 'New name'}),
             content_type='application/json',
             follow=True,
         )
 
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(200, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual({
+            'id': 1,
+            'archived': conversion_pixel.archived,
+            'name': 'New name',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+        }, decoded_response['data'])
+
+        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
+        self.assertEqual(
+            constants.HistoryActionType.CONVERSION_PIXEL_RENAME,
+            hist.action_type)
+        self.assertEqual('Renamed conversion pixel named test to New name.',
+                         hist.changes_text)
+
+    def test_put_archive_no_permissions(self):
+        conversion_pixel = models.ConversionPixel.objects.get(pk=1)
+        self.assertFalse(conversion_pixel.archived)
+
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
+            json.dumps({'archived': True, 'name': conversion_pixel.name}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual({
+            'id': 1,
+            'archived': False,
+            'name': conversion_pixel.name,
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+        }, decoded_response['data'])
 
     def test_put_invalid_pixel(self):
         conversion_pixel = models.ConversionPixel.objects.latest('id')
@@ -1107,11 +1146,10 @@ class ConversionPixelTestCase(TestCase):
 
         self.assertEqual('Conversion pixel does not exist', decoded_response['data']['message'])
 
-    def test_put_invalid_archived_value(self):
-        add_permissions(self.user, ['archive_restore_entity'])
+    def test_empty_name(self):
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
-            json.dumps({'archived': 1}),
+            json.dumps({'name': ''}),
             content_type='application/json',
             follow=True,
         )
@@ -1119,7 +1157,20 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual(400, response.status_code)
         decoded_response = json.loads(response.content)
 
-        self.assertEqual('Invalid value', decoded_response['data']['message'])
+        self.assertEqual(['Please specify a name.'], decoded_response['data']['errors']['name'])
+
+    def test_name_too_long(self):
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
+            json.dumps({'name': 'aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeefffff'}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(400, response.status_code)
+        decoded_response = json.loads(response.content)
+
+        self.assertEqual(['Name is too long (55/50).'], decoded_response['data']['errors']['name'])
 
 
 class CampaignConversionGoalsTestCase(TestCase):
