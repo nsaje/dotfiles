@@ -19,9 +19,9 @@ dependencies:
         - pip install -r server/requirements.txt
         - pip install -r server/requirements_dev.txt
         - pip install awscli
-        - pip install pep8
-        - pip install xenon
-        - npm install -g eslint
+        - if [ $CIRCLE_NODE_INDEX == 1 ]; then pip install pep8 ; fi 
+        - if [ $CIRCLE_NODE_INDEX == 1 ]; then pip install xenon; fi
+        - if [ $CIRCLE_NODE_INDEX == 1 ]; then npm install -g eslint; fi
         - npm install -g bower
         - npm install -g grunt
         - 'npm prune && npm install':
@@ -41,7 +41,7 @@ test:
             pwd: server
             parallel: true
     override:
-        - 'case $CIRCLE_NODE_INDEX in 0) ./lint_check.sh && cd server && coverage run manage.py test --timing ;; 1) cd client && grunt prod --build-number ${CIRCLE_BUILD_NUM} ;; esac':
+        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test --timing ;; 1) ./lint_check.sh && cd client && grunt prod --build-number ${CIRCLE_BUILD_NUM} ;; esac':
             parallel: true
     post:
         - 'mkdir client/dist && git rev-parse HEAD | tee server/git_commit_hash.txt client/dist/git_commit_hash.txt'
