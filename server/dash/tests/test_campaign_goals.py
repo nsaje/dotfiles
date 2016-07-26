@@ -294,6 +294,7 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
         self._add_value(constants.CampaignGoalKPI.CPA, 10)
         self._add_value(constants.CampaignGoalKPI.CPV, 15)
+        self._add_value(constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT, 2)
 
         stats = {
             'conversion_goal_1': 10,
@@ -303,18 +304,21 @@ class CampaignGoalsTestCase(TestCase):
             'avg_tos': 10,
             'percent_new_users': 1.2,
             'avg_cost_per_visit': 35,
+            'avg_cost_per_non_bounced_visit': 8,
         }
         performance = campaign_goals.get_goals_performance(self.user, {'campaign': self.campaign},
                                                            start_date, end_date, stats=stats)
         self.assertEqual(
             [(p[1], p[2]) for p in performance],
             [(10, Decimal('60.00000')), (0.5, Decimal('10.00000')), (None, None),
-             (10, Decimal('5.00000')), (10, Decimal('75.00000')), (1.2, None), (35, Decimal('15.00000'))]
+             (10, Decimal('5.00000')),  (8, Decimal('2.00000')), (10, Decimal('75.00000')),
+             (1.2, None), (35, Decimal('15.00000')), ],
         )
         self.assertEqual(
             [p[0] for p in performance],
             [cgp.UNDERPERFORMING, cgp.SUPERPERFORMING, cgp.UNDERPERFORMING,
-             cgp.SUPERPERFORMING, cgp.SUPERPERFORMING, cgp.AVERAGE, cgp.UNDERPERFORMING],
+             cgp.SUPERPERFORMING, cgp.UNDERPERFORMING, cgp.SUPERPERFORMING,
+             cgp.AVERAGE, cgp.UNDERPERFORMING, ],
         )
 
         stats['conversion_goal_1'] = None
@@ -323,7 +327,8 @@ class CampaignGoalsTestCase(TestCase):
         self.assertEqual(
             [p[0] for p in performance],
             [cgp.UNDERPERFORMING, cgp.UNDERPERFORMING, cgp.UNDERPERFORMING,
-             cgp.SUPERPERFORMING, cgp.SUPERPERFORMING, cgp.AVERAGE, cgp.UNDERPERFORMING, ],
+             cgp.SUPERPERFORMING, cgp.UNDERPERFORMING, cgp.SUPERPERFORMING,
+             cgp.AVERAGE, cgp.UNDERPERFORMING, ],
         )
 
     @patch('reports.api_contentads.query')
@@ -335,6 +340,7 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
         self._add_value(constants.CampaignGoalKPI.CPA, 10)
         self._add_value(constants.CampaignGoalKPI.CPV, 15)
+        self._add_value(constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT, 2)
 
         mock_contentads_query.return_value = {
             'bounce_rate': 10,
@@ -348,6 +354,7 @@ class CampaignGoalsTestCase(TestCase):
                 'ga__123': 20.00,
             },
             'avg_cost_per_visit': 35,
+            'avg_cost_per_non_bounced_visit': 8,
         }
 
         self.maxDiff = None
@@ -390,6 +397,14 @@ class CampaignGoalsTestCase(TestCase):
                 'section_start': False,
                 'internal': False,
                 'type': 'setting',
+                'icon': constants.Emoticon.SAD,
+                'name': '', 'value':
+                '$8.00 Cost Per Non-Bounced Visit',
+                'description': 'planned $2.00'
+            }, {
+                'section_start': False,
+                'internal': False,
+                'type': 'setting',
                 'name': '',
                 'icon': constants.Emoticon.HAPPY,
                 'value': '10.00 % Max Bounce Rate',
@@ -423,6 +438,7 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.TIME_ON_SITE, 60)
         self._add_value(constants.CampaignGoalKPI.CPA, 10)
         self._add_value(constants.CampaignGoalKPI.CPV, 15)
+        self._add_value(constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT, 2)
 
         mock_contentads_query.return_value = {
             'bounce_rate': 10,
@@ -436,6 +452,7 @@ class CampaignGoalsTestCase(TestCase):
                 'ga__123': 20.00,
             },
             'avg_cost_per_visit': 10,
+            'avg_cost_per_non_bounced_visit': 8,
         }
 
         goals_infobox = infobox_helpers.get_campaign_goal_list(self.user, {'ad_group': ad_group},
@@ -473,6 +490,14 @@ class CampaignGoalsTestCase(TestCase):
                 'name': '', 'value':
                 '10.00 Pageviews per Visit',
                 'description': 'planned 5.00'
+            }, {
+                'section_start': False,
+                'internal': False,
+                'type': 'setting',
+                'name': '',
+                'icon': constants.Emoticon.SAD,
+                'value': '$8.00 Cost Per Non-Bounced Visit',
+                'description': 'planned $2.00'
             }, {
                 'section_start': False,
                 'internal': False,
