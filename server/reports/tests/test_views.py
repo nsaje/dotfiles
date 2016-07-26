@@ -29,7 +29,7 @@ class CrossvalidationViewTest(TestCase):
                 'ad_group': 1,
                 'impressions': None,
                 'clicks': None,
-                'cost': None,
+                'media_cost': None,
             },
             {
                 'content_ad': 11,
@@ -37,7 +37,7 @@ class CrossvalidationViewTest(TestCase):
                 'ad_group': 1,
                 'impressions': 10,
                 'clicks': 2,
-                'cost': 0.033,
+                'media_cost': 0.033,
             },
             {
                 'content_ad': 15,
@@ -45,7 +45,7 @@ class CrossvalidationViewTest(TestCase):
                 'ad_group': 2,
                 'impressions': 5,
                 'clicks': 0,
-                'cost': 0.0,
+                'media_cost': 0.0,
             },
         ]
 
