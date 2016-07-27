@@ -81,7 +81,9 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
     }
 
     subject, body = format_email(EmailTemplateType.ADGROUP_CHANGE, **args)
-    emails = email_manager_list(ad_group.campaign)
+    emails = list(set(email_manager_list(ad_group.campaign)) - set([request.user.email]))
+    if not emails:
+        return
     send_notification_mail(
         emails, subject, body, ad_group.campaign.get_campaign_url(request))
 
@@ -102,7 +104,9 @@ def send_campaign_notification_email(campaign, request, changes_text):
     }
 
     subject, body = format_email(EmailTemplateType.CAMPAIGN_CHANGE, **args)
-    emails = email_manager_list(campaign)
+    emails = list(set(email_manager_list(campaign)) - set([request.user.email]))
+    if not emails:
+        return
     send_notification_mail(
         emails, subject, body, campaign.get_campaign_url(request))
 
@@ -121,7 +125,9 @@ def send_budget_notification_email(campaign, request, changes_text):
         'changes_text': _format_changes_text(changes_text),
     }
     subject, body = format_email(EmailTemplateType.BUDGET_CHANGE, **args)
-    emails = email_manager_list(campaign)
+    emails = list(set(email_manager_list(campaign)) - set([request.user.email]))
+    if not emails:
+        return
     send_notification_mail(
         emails, subject, body, campaign.get_campaign_url(request))
 
