@@ -46,7 +46,6 @@ oneApp.factory('zemGridConstants', [function () {
             PERFORMANCE_INDICATOR: 'performanceIndicator',
             SUBMISSION_STATUS: 'submissionStatus',
             THUMBNAIL: 'thumbnail',
-            TEXT_WITH_POPUP: 'textWithPopup',
             TOTALS_LABEL: 'totalsLabel',
         },
         gridStyle: {

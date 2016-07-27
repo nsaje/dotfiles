@@ -3,56 +3,114 @@
 
 oneApp.factory('zemGridStateAndStatusHelpers', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
     return {
-        getRowStatusObject: getRowStatusObject,
-        getAvailableStateValues: getAvailableStateValues,
+        getStatusValuesAndTexts: getStatusValuesAndTexts,
+        getStateValues: getStateValues,
     };
 
-    // Status texts are generated differently for different levels and breakdowns. This function returns an object with
-    // row status and list of possible statuses for this row.
-    // TODO: Set status object for other levels and breakdowns where status text is available
-    // FIXME: constants.adGroupSettingsState.ACTIVE and constants.adGroupSettingsState.INACTIVE are used on "wrong"
-    // levels (e.g. enabled and paused value for status on account level is based on constants.adGroupSettingsState)
-    function getRowStatusObject (stats, level, breakdown) {
-        if (!stats) {
-            return;
-        }
+    // FIXME: Change constants used for different level/breakdown combinations
+    function getStatusValuesAndTexts (level, breakdown) {
+        var statusTexts;
+        if (level === constants.level.ALL_ACCOUNTS && breakdown === constants.breakdown.ACCOUNT) {
+            statusTexts = {};
+            statusTexts[constants.adGroupSettingsState.ACTIVE] = 'Active';
+            statusTexts[constants.adGroupSettingsState.INACTIVE] = 'Paused';
 
-        var value;
-        if (level === constants.level.CAMPAIGNS && breakdown === constants.breakdown.AD_GROUP) {
-            if (stats[zemGridEndpointColumns.COLUMNS.stateAdGroup.field]) {
-                value = stats[zemGridEndpointColumns.COLUMNS.stateAdGroup.field].value;
-            }
             return {
-                value: value,
+                enabled: constants.adGroupSettingsState.ACTIVE,
+                paused: constants.adGroupSettingsState.INACTIVE,
+                statusTexts: statusTexts,
+            };
+        }
+        if (level === constants.level.ACCOUNTS && breakdown === constants.breakdown.CAMPAIGN) {
+            statusTexts = {};
+            statusTexts[constants.adGroupSettingsState.ACTIVE] = 'Active';
+            statusTexts[constants.adGroupSettingsState.INACTIVE] = 'Paused';
+
+            return {
+                enabled: constants.adGroupSettingsState.ACTIVE,
+                paused: constants.adGroupSettingsState.INACTIVE,
+                statusTexts: statusTexts,
+            };
+        }
+        if (level === constants.level.CAMPAIGNS && breakdown === constants.breakdown.AD_GROUP) {
+            statusTexts = {};
+            statusTexts[constants.adGroupSourceSettingsState.ACTIVE] = 'Active';
+            statusTexts[constants.adGroupSourceSettingsState.INACTIVE] = 'Paused';
+
+            return {
                 enabled: constants.adGroupSourceSettingsState.ACTIVE,
                 paused: constants.adGroupSourceSettingsState.INACTIVE,
+                statusTexts: statusTexts,
+            };
+        }
+        if (level === constants.level.ALL_ACCOUNTS && breakdown === constants.breakdown.MEDIA_SOURCE) {
+            statusTexts = {};
+            statusTexts[constants.adGroupSettingsState.ACTIVE] = 'Active';
+            statusTexts[constants.adGroupSettingsState.INACTIVE] = 'Paused';
+
+            return {
+                enabled: constants.adGroupSettingsState.ACTIVE,
+                paused: constants.adGroupSettingsState.INACTIVE,
+                statusTexts: statusTexts,
+            };
+        }
+        if (level === constants.level.ACCOUNTS && breakdown === constants.breakdown.MEDIA_SOURCE) {
+            statusTexts = {};
+            statusTexts[constants.adGroupSettingsState.ACTIVE] = 'Active';
+            statusTexts[constants.adGroupSettingsState.INACTIVE] = 'Paused';
+
+            return {
+                enabled: constants.adGroupSettingsState.ACTIVE,
+                paused: constants.adGroupSettingsState.INACTIVE,
+                statusTexts: statusTexts,
             };
         }
         if (level === constants.level.CAMPAIGNS && breakdown === constants.breakdown.MEDIA_SOURCE) {
-            if (stats[zemGridEndpointColumns.COLUMNS.statusMediaSource.field]) {
-                value = stats[zemGridEndpointColumns.COLUMNS.statusMediaSource.field].value;
-            }
+            statusTexts = {};
+            statusTexts[constants.adGroupSettingsState.ACTIVE] = 'Active';
+            statusTexts[constants.adGroupSettingsState.INACTIVE] = 'Paused';
+
             return {
-                value: value,
                 enabled: constants.adGroupSettingsState.ACTIVE,
                 paused: constants.adGroupSettingsState.INACTIVE,
+                statusTexts: statusTexts,
             };
         }
         if (level === constants.level.AD_GROUPS && breakdown === constants.breakdown.MEDIA_SOURCE) {
-            if (stats[zemGridEndpointColumns.COLUMNS.stateMediaSourceAdGroup.field]) {
-                value = stats[zemGridEndpointColumns.COLUMNS.stateMediaSourceAdGroup.field].value;
-            }
+            statusTexts = {};
+            statusTexts[constants.adGroupSettingsState.ACTIVE] = 'Active';
+            statusTexts[constants.adGroupSettingsState.INACTIVE] = 'Paused';
+
             return {
-                value: value,
                 enabled: constants.adGroupSettingsState.ACTIVE,
                 paused: constants.adGroupSettingsState.INACTIVE,
+                statusTexts: statusTexts,
+            };
+        }
+        if (level === constants.level.AD_GROUPS && breakdown === constants.breakdown.PUBLISHER) {
+            statusTexts = {};
+            statusTexts[constants.publisherStatus.ENABLED] = 'Active';
+            statusTexts[constants.publisherStatus.BLACKLISTED] = 'Blacklisted';
+            statusTexts[constants.publisherStatus.PENDING] = 'Pending';
+
+            return {
+                enabled: constants.publisherStatus.ENABLED,
+                blacklisted: constants.publisherStatus.BLACKLISTED,
+                pending: constants.publisherStatus.PENDING,
+                statusTexts: statusTexts,
             };
         }
     }
 
-    function getAvailableStateValues (level, breakdown) {
-        // TODO: Set state values for other levels and breakdowns where state selector is available
+    function getStateValues (level, breakdown) {
+        // FIXME: Change constants used for different level/breakdown combinations
         if (level === constants.level.CAMPAIGNS && breakdown === constants.breakdown.AD_GROUP) {
+            return {
+                enabled: constants.adGroupSourceSettingsState.ACTIVE,
+                paused: constants.adGroupSourceSettingsState.INACTIVE,
+            };
+        }
+        if (level === constants.level.AD_GROUPS && breakdown === constants.breakdown.CONTENT_AD) {
             return {
                 enabled: constants.adGroupSourceSettingsState.ACTIVE,
                 paused: constants.adGroupSourceSettingsState.INACTIVE,

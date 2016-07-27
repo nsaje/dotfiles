@@ -1,6 +1,7 @@
 import collections
 import json
 
+from dash import constants
 from dash import forms
 from dash import table
 from dash.views import helpers
@@ -160,6 +161,7 @@ def get_report_all_accounts_accounts(user, view_filter, start_date, end_date,
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['account_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
+        row['status'] = {'value': row['status']}
 
     return response
 
@@ -183,6 +185,8 @@ def get_report_account_campaigns(user, filtered_sources, start_date, end_date,
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['campaign_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
+        row['status'] = {'value': row['state']}
+        del row['state']
 
     response['pagination'] = {
         'count': len(response['rows'])
@@ -210,6 +214,8 @@ def get_report_campaign_ad_groups(user, filtered_sources, start_date, end_date,
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['ad_group_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
+        row['status'] = {'value': row['state']}
+        row['state'] = {'value': row['state']}
 
     response['pagination'] = {
         'count': len(response['rows'])
@@ -242,6 +248,12 @@ def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['content_ad_id'], row)
         row['breakdown_name'] = row['title']
         row['parent_breakdown_id'] = None
+        row['state'] = {'value': row['status_setting']}
+        del row['status_setting']
+
+        if 'status_setting' in row['editable_fields']:
+            row['editable_fields']['state'] = row['editable_fields']['status_setting']
+            del row['editable_fields']['status_setting']
 
     return response
 
@@ -264,6 +276,7 @@ def get_report_all_accounts_sources(user, view_filter, start_date, end_date,
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['source_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
+        row['status'] = {'value': row['status']}
 
     return response
 
@@ -290,6 +303,7 @@ def get_report_account_sources(user, filtered_sources, start_date, end_date,
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['source_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
+        row['status'] = {'value': row['status']}
 
     return response
 
@@ -316,6 +330,7 @@ def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['source_id'], row)
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
+        row['status'] = {'value': row['status']}
 
     response['conversion_goals'] = response.get('conversion_goals')
     response['campaign_goals'] = response.get('campaign_goals')
@@ -346,6 +361,24 @@ def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
         row['breakdown_name'] = row['name']
         row['parent_breakdown_id'] = None
 
+        status = {'value': row['status']}
+        if 'notifications' in response:
+            # Notifications are only set for rows for enabled sources in paused ad groups. This is a workaround to
+            # append notification message to status dict and changing status value to inactive (sources can not have
+            # enabled status in paused ad groups).
+            for notification_row_id in response['notifications']:
+                if int(row['id']) == notification_row_id:
+                    status['value'] = constants.AdGroupSourceSettingsState.INACTIVE
+                    status['popover_message'] = response['notifications'][notification_row_id]['message']
+                    status['important'] = True
+        row['status'] = status
+        row['state'] = {'value': row['status_setting']}
+        del row['status_setting']
+
+        if 'status_setting' in row['editable_fields']:
+            row['editable_fields']['state'] = row['editable_fields']['status_setting']
+            del row['editable_fields']['status_setting']
+
     return response
 
 
@@ -371,6 +404,11 @@ def get_report_ad_group_publishers(user, filtered_sources, start_date, end_date,
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['publisher'], row)
         row['breakdown_name'] = row['domain']
         row['parent_breakdown_id'] = None
+
+        status = {'value': row['status']}
+        if 'blacklisted_level_description' in row:
+            status['popover_message'] = row['blacklisted_level_description']
+        row['status'] = status
 
     return response
 

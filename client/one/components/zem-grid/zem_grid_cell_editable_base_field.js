@@ -19,6 +19,9 @@ oneApp.directive('zemGridCellEditableBaseField', [function () {
             var vm = this;
             var initialValue;
             var prevValidInputValue;
+            var stateValues = zemGridStateAndStatusHelpers.getStateValues(
+                vm.grid.meta.data.level, vm.grid.meta.data.breakdown
+            );
 
             vm.isAutopilotIconShown = isAutopilotIconShown;
             vm.filterInput = filterInput;
@@ -74,16 +77,12 @@ oneApp.directive('zemGridCellEditableBaseField', [function () {
                     return false;
                 }
 
-                var stats = null;
-                if (vm.row.data) {
-                    stats = vm.row.data.stats;
+                var rowState;
+                if (vm.row.data && vm.row.data.stats && vm.row.data.stats.state) {
+                    rowState = vm.row.data.stats.state.value;
                 }
-                var rowStatusObject = zemGridStateAndStatusHelpers.getRowStatusObject(
-                    stats,
-                    vm.grid.meta.data.level,
-                    vm.grid.meta.data.breakdown
-                );
-                if (!rowStatusObject || rowStatusObject.value !== rowStatusObject.enabled) {
+
+                if (!stateValues || rowState !== stateValues.enabled) {
                     return false;
                 }
 

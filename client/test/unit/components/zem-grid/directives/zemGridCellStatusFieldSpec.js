@@ -12,6 +12,8 @@ describe('zemGridCellStatusField', function () {
 
         scope = $rootScope.$new();
         scope.ctrl = {};
+        scope.ctrl.row = {};
+        scope.ctrl.data = {};
         scope.ctrl.grid = {
             meta: {
                 data: {
@@ -52,12 +54,23 @@ describe('zemGridCellStatusField', function () {
 
     it('should set status text correctly for different levels and breakdowns', function () {
         var tests = [
-            // TODO: Add tests for other levels and breakdowns
-            {level: 'campaigns', breakdown: 'ad_group', field: 'state', value: 1, expectedResult: 'Active'},
-            {level: 'campaigns', breakdown: 'ad_group', field: 'state', value: 2, expectedResult: 'Paused'},
-            {level: 'campaigns', breakdown: 'source', field: 'status', value: 1, expectedResult: 'Active'},
-            {level: 'campaigns', breakdown: 'source', field: 'status', value: 2, expectedResult: 'Paused'},
-            {level: 'unknown', breakdown: 'unknown', field: 'unknown', value: null, expectedResult: ''},
+            {level: 'all_accounts', breakdown: 'account', value: 1, expectedResult: 'Active'},
+            {level: 'all_accounts', breakdown: 'account', value: 2, expectedResult: 'Paused'},
+            {level: 'accounts', breakdown: 'campaign', value: 1, expectedResult: 'Active'},
+            {level: 'accounts', breakdown: 'campaign', value: 2, expectedResult: 'Paused'},
+            {level: 'campaigns', breakdown: 'ad_group', value: 1, expectedResult: 'Active'},
+            {level: 'campaigns', breakdown: 'ad_group', value: 2, expectedResult: 'Paused'},
+            {level: 'all_accounts', breakdown: 'source', value: 1, expectedResult: 'Active'},
+            {level: 'all_accounts', breakdown: 'source', value: 2, expectedResult: 'Paused'},
+            {level: 'accounts', breakdown: 'source', value: 1, expectedResult: 'Active'},
+            {level: 'accounts', breakdown: 'source', value: 2, expectedResult: 'Paused'},
+            {level: 'campaigns', breakdown: 'source', value: 1, expectedResult: 'Active'},
+            {level: 'campaigns', breakdown: 'source', value: 2, expectedResult: 'Paused'},
+            {level: 'ad_groups', breakdown: 'source', value: 1, expectedResult: 'Active'},
+            {level: 'ad_groups', breakdown: 'source', value: 2, expectedResult: 'Paused'},
+            {level: 'ad_groups', breakdown: 'publisher', value: 1, expectedResult: 'Active'},
+            {level: 'ad_groups', breakdown: 'publisher', value: 2, expectedResult: 'Blacklisted'},
+            {level: 'unknown', breakdown: 'unknown', value: null, expectedResult: ''},
         ];
 
         tests.forEach(function (test) {
@@ -68,9 +81,8 @@ describe('zemGridCellStatusField', function () {
 
             scope.ctrl.row = {
                 archived: false,
-                data: {stats: {}},
             };
-            scope.ctrl.row.data.stats[test.field] = {value: test.value};
+            scope.ctrl.data = {value: test.value};
 
             element = $compile(template)(scope);
             scope.$digest();
