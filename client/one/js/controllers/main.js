@@ -20,6 +20,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.graphVisible = true;
     $scope.navigationPaneVisible = false;
 
+    $scope.liveStreamOn = false;
+
     $scope.hasPermission = function (permissions) {
         if (!permissions) {
             return false;
@@ -331,6 +333,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.allowLivestream = function () {
+        $scope.liveStreamOn = true;
         if (!$window.FS) { return; }
         api.liveStream.allow($window.FS.getCurrentSessionURL());
     };
