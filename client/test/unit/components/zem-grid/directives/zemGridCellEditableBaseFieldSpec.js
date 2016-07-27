@@ -108,7 +108,7 @@ describe('zemGridCellEditableBaseField', function () {
         };
         scope.ctrl.row.data = {
             stats: {
-                status_setting: {
+                state: {
                     value: 1,
                 },
             },
@@ -129,7 +129,7 @@ describe('zemGridCellEditableBaseField', function () {
         };
         scope.ctrl.row.data = {
             stats: {
-                status_setting: {
+                state: {
                     value: 1,
                 },
             },
@@ -151,7 +151,7 @@ describe('zemGridCellEditableBaseField', function () {
         scope.ctrl.row.archived = true;
         scope.ctrl.row.data = {
             stats: {
-                status_setting: {
+                state: {
                     value: 1,
                 },
             },
@@ -172,7 +172,7 @@ describe('zemGridCellEditableBaseField', function () {
         };
         scope.ctrl.row.data = {
             stats: {
-                status_setting: {
+                state: {
                     value: 2,
                 },
             },

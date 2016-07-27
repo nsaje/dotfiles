@@ -3,8 +3,7 @@
 describe('zemGridCellBaseField', function () {
     var scope, element, $compile;
 
-    var template = '<zem-grid-cell-base-field data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid">' +
-                   '</zem-grid-cell-base-field>';
+    var template = '<zem-grid-cell-base-field data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid"></zem-grid-cell-base-field>'; // eslint-disable-line max-len
 
     beforeEach(module('one'));
 

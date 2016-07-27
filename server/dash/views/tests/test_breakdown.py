@@ -252,7 +252,7 @@ class AllAccountsBreakdownTestCase(TestCase):
             u'name': u"Cat's Pride",
             u'parent_breakdown_id': None,
             u'pv_per_visit': None,
-            u'status': 1,
+            u'status': {'value': 1},
         }, {
             u'account': 305,  # TODO remove when doing stats
             u'account_id': 305,
@@ -271,7 +271,7 @@ class AllAccountsBreakdownTestCase(TestCase):
             u'name': u'Outbrain',
             u'parent_breakdown_id': None,
             u'pv_per_visit': None,
-            u'status': 1,
+            u'status': {'value': 1},
         }])
 
 
@@ -438,7 +438,7 @@ class AccountBreakdownTestCase(TestCase):
             u'name': u'Blog Campaign [Desktop]',
             u'pageviews': 78853,
             u'parent_breakdown_id': None,
-            u'state': 1,
+            u'status': {'value': 1},
         }, {
             u'archived': False,
             u'breakdown_id': u'413',
@@ -452,7 +452,7 @@ class AccountBreakdownTestCase(TestCase):
             u'name': u'Learning Center',  # TODO remove when doing stats
             u'pageviews': 51896,
             u'parent_breakdown_id': None,
-            u'state': 1,
+            u'status': {'value': 1},
         }])
 
 

@@ -142,14 +142,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
             checked: true,
             unselectable: false,
         },
-        text_with_popup: {
-            name: 'Text with Popup',
-            type: zemGridConstants.gridColumnTypes.TEXT_WITH_POPUP,
-            help: 'Test text with popup.',
-            shown: true,
-            checked: true,
-            unselectable: false,
-        },
     };
 
     function getMockedBreakdownGroups () {
@@ -177,7 +169,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
                 fields: [
                     'time_on_site',
                     'last_sync',
-                    'text_with_popup',
                 ],
             },
         ];
@@ -195,7 +186,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
             'clicks',
             'time_on_site',
             'last_sync',
-            'text_with_popup',
         ]);
     }
 
@@ -423,9 +413,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
         case zemGridConstants.gridColumnTypes.PERFORMANCE_INDICATOR:
             data = getMockedPerformance();
             break;
-        case zemGridConstants.gridColumnTypes.TEXT_WITH_POPUP:
-            data = getMockedFieldWithPopup();
-            break;
         }
 
         return data;
@@ -546,14 +533,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
                 overall: 3,
             };
         }
-    }
-
-    var fieldWithPopupIndex = 0;
-    function getMockedFieldWithPopup () {
-        return {
-            fieldContent: '<span style="color: blue;">Random text ' + (fieldWithPopupIndex++) + '</span>',
-            popupContent: '<span style="font-size: 30px;">ಠᴗಠ</span>',
-        };
     }
 
     function getRandomTimestamp (start, end) {

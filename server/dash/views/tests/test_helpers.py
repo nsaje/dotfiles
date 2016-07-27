@@ -1275,36 +1275,6 @@ class PixelLastSyncTestCase(TestCase):
 class PublisherHelpersTest(TestCase):
     fixtures = ['test_api']
 
-    def test_get_useractiontype(self):
-        self.assertEqual(
-            publisher_helpers.get_useractiontype(
-                constants.PublisherBlacklistLevel.ACCOUNT
-            ),
-            constants.UserActionType.SET_ACCOUNT_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(
-            publisher_helpers.get_useractiontype(
-                constants.PublisherBlacklistLevel.CAMPAIGN
-            ),
-            constants.UserActionType.SET_CAMPAIGN_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(
-            publisher_helpers.get_useractiontype(
-                constants.PublisherBlacklistLevel.ADGROUP
-            ),
-            constants.UserActionType.SET_ADGROUP_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(
-            publisher_helpers.get_useractiontype(
-                constants.PublisherBlacklistLevel.GLOBAL
-            ),
-            constants.UserActionType.SET_GLOBAL_PUBLISHER_BLACKLIST
-        )
-        with self.assertRaises(Exception):
-            publisher_helpers.get_useractiontype(
-                'and now for something completely different'
-            )
-
     def test_get_key(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 

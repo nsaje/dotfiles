@@ -1017,6 +1017,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'cpc': 1.3,
             u'ctr': 100.0,
             u'blacklisted': u'Active',
+            u'status': 1,
             u'can_blacklist_publisher': True,
             u'exchange': 'Adiant',
             u'source_id': 7,
@@ -1212,6 +1213,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'domain': u'example.com',
             u'domain_link': u'http://example.com',
             u'blacklisted': u'Active',
+            u'status': 1,
             u'can_blacklist_publisher': True,
             u'ctr': 100.0,
             u'exchange': u'Adiant',
@@ -1395,7 +1397,7 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
         self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active',
-                             u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
+                             u'status': 1, u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
     """
 
     def test_get_outbrain_blacklisted_over_quota(self, mock_query, mock_touchpointconversins_query):
@@ -1574,6 +1576,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'cpc': 1.3,
             u'ctr': 100.0,
             u'blacklisted': u'Blacklisted',
+            u'status': 2,
             u'can_blacklist_publisher': False,
             u'blacklisted_level': 'account',
             u'blacklisted_level_description': 'Blacklisted in this account',
@@ -1774,6 +1777,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'domain': u'example.com',
             u'domain_link': u'http://example.com',
             u'blacklisted': u'Active',
+            u'status': 1,
             u'can_blacklist_publisher': True,
             u'ctr': 100.0,
             u'exchange': u'Adiant',
@@ -1921,6 +1925,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'domain': u'example.com',
             u'domain_link': u'http://example.com',
             u'blacklisted': u'Active',
+            u'status': 1,
             u'can_blacklist_publisher': True,
             u'ctr': 100.0,
             u'exchange': u'Adiant',

@@ -3,21 +3,16 @@
 
 oneApp.directive('zemGridCellStatusField', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
 
-    function getStatusText (row, rowStatusObject) {
+    function getStatusText (value, row, statusValuesAndTexts) {
         if (row.archived) {
             return 'Archived';
         }
 
-        if (!rowStatusObject) {
+        if (!statusValuesAndTexts || !statusValuesAndTexts.statusTexts) {
             return '';
         }
 
-        if (rowStatusObject.value === rowStatusObject.enabled) {
-            return 'Active';
-        } else if (rowStatusObject.value === rowStatusObject.paused) {
-            return 'Paused';
-        }
-        return '';
+        return statusValuesAndTexts.statusTexts[value] || '';
     }
 
     return {
@@ -42,14 +37,12 @@ oneApp.directive('zemGridCellStatusField', ['zemGridEndpointColumns', function (
             function update () {
                 vm.statusText = '';
 
-                if (vm.row) {
-                    var stats = vm.row.data ? vm.row.data.stats : null;
-                    var rowStatusObject = zemGridStateAndStatusHelpers.getRowStatusObject(
-                        stats,
+                if (vm.row && vm.data) {
+                    var statusValuesAndTexts = zemGridStateAndStatusHelpers.getStatusValuesAndTexts(
                         vm.grid.meta.data.level,
                         vm.grid.meta.data.breakdown
                     );
-                    vm.statusText = getStatusText(vm.row, rowStatusObject);
+                    vm.statusText = getStatusText(vm.data.value, vm.row, statusValuesAndTexts);
                 }
             }
         }],

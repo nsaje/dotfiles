@@ -1787,6 +1787,7 @@ class PublishersTable(object):
 
         pub_blacklist_qs = models.PublisherBlacklist.objects.none()
         for publisher_data in publishers_data:
+            publisher_data['status'] = constants.PublisherStatus.ENABLED
             publisher_data['blacklisted'] = 'Active'
             domain = publisher_data['domain']
             source_slug = publisher_data['exchange'].lower()
@@ -1862,6 +1863,7 @@ class PublishersTable(object):
                 )
 
                 if pub_source_match and blacklisted_on_some_level or globally_blacklisted:
+                    publisher_data['status'] = blacklisted_pub.status
                     if blacklisted_pub.status == constants.PublisherStatus.BLACKLISTED:
                         publisher_data['blacklisted'] = 'Blacklisted'
                     elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
@@ -1988,6 +1990,7 @@ class PublishersTable(object):
                 'can_blacklist_publisher': publisher_data['can_blacklist_publisher'],
                 'domain': domain,
                 'domain_link': domain_link,
+                'status': publisher_data['status'],
                 'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
                 'source_id': publisher_data['source_id'],

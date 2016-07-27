@@ -134,7 +134,6 @@ def create_campaign_goal(request, form, campaign, value=None, conversion_goal=No
     _add_entry_to_history(
         request,
         campaign,
-        constants.UserActionType.CREATE_CAMPAIGN_GOAL,
         constants.HistoryActionType.GOAL_CHANGE,
         u'Added campaign goal "{}{}"'.format(
             (str(value) + ' ') if value else '',
@@ -158,7 +157,6 @@ def delete_campaign_goal(request, goal_id, campaign):
     _add_entry_to_history(
         request,
         campaign,
-        constants.UserActionType.DELETE_CAMPAIGN_GOAL,
         constants.HistoryActionType.GOAL_CHANGE,
         u'Deleted campaign goal "{}"'.format(
             constants.CampaignGoalKPI.get_text(goal.type)
@@ -177,7 +175,6 @@ def add_campaign_goal_value(request, goal, value, campaign, skip_history=False):
         _add_entry_to_history(
             request,
             campaign,
-            constants.UserActionType.CHANGE_CAMPAIGN_GOAL_VALUE,
             constants.HistoryActionType.GOAL_CHANGE,
             u'Changed campaign goal value: "{}"'.format(
                 CAMPAIGN_GOAL_NAME_FORMAT[goal.type].format(value)
@@ -195,7 +192,6 @@ def set_campaign_goal_primary(request, campaign, goal_id):
     _add_entry_to_history(
         request,
         campaign,
-        constants.UserActionType.CHANGE_PRIMARY_CAMPAIGN_GOAL,
         constants.HistoryActionType.GOAL_CHANGE,
         u'Campaign goal "{}" set as primary'.format(
             constants.CampaignGoalKPI.get_text(goal.type)
@@ -238,7 +234,6 @@ def delete_conversion_goal(request, conversion_goal_id, campaign):
         _add_entry_to_history(
             request,
             campaign,
-            constants.UserActionType.DELETE_CONVERSION_GOAL,
             constants.HistoryActionType.GOAL_CHANGE,
             u'Deleted conversion goal "{}"'.format(
                 conversion_goal.name,
@@ -287,7 +282,6 @@ def create_conversion_goal(request, form, campaign, value=None):
     _add_entry_to_history(
         request,
         campaign,
-        constants.UserActionType.CREATE_CONVERSION_GOAL,
         constants.HistoryActionType.GOAL_CHANGE,
         u'Added conversion goal with name "{}" of type {}'.format(
             conversion_goal.name,
@@ -417,7 +411,7 @@ def copy_fields(user, source, dest):
     dest['avg_cost_per_visit'] = source.get('avg_cost_per_visit', 0)
 
 
-def _add_entry_to_history(request, campaign, action_type, history_action_type, changes_text):
+def _add_entry_to_history(request, campaign, history_action_type, changes_text):
     campaign.write_history(
         changes_text,
         user=request.user,

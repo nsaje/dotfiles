@@ -156,7 +156,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         },
         stateContentAd: {
             name: '\u25CF',
-            field: 'status_setting',
+            field: 'state',
             type: zemGridConstants.gridColumnTypes.STATE_SELECTOR,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
@@ -171,7 +171,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         },
         stateMediaSourceAdGroup: {
             name: '\u25CF',
-            field: 'status_setting',
+            field: 'state',
             type: zemGridConstants.gridColumnTypes.STATE_SELECTOR,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
@@ -201,7 +201,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         },
         statusCampaign: {
             name: 'Status',
-            field: 'state',
+            field: 'status',
             checked: true,
             type: zemGridConstants.gridColumnTypes.STATUS,
             shown: true,
@@ -213,7 +213,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         },
         statusAdGroup: {
             name: 'Status',
-            field: 'stateText',
+            field: 'status',
             unselectable: true,
             checked: true,
             type: zemGridConstants.gridColumnTypes.STATUS,
@@ -252,8 +252,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             field: 'status',
             unselectable: true,
             checked: true,
-            // type: zemGridConstants.gridColumnTypes.NOTIFICATION, // FIXME: Notification column type does not exist
-            type: zemGridConstants.gridColumnTypes.STATUS, // FIXME: Is this correct?
+            type: zemGridConstants.gridColumnTypes.STATUS,
             shown: true,
             totalRow: false,
             help: 'Status of a particular media source (enabled or paused).',
@@ -263,11 +262,10 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         },
         statusPublisher: {
             name: 'Status',
-            field: 'blacklisted',
+            field: 'status',
             checked: true,
             unselectable: true,
-            type: zemGridConstants.gridColumnTypes.TEXT_WITH_POPUP,
-            popupField: 'blacklisted_level_description',
+            type: zemGridConstants.gridColumnTypes.STATUS,
             help: 'Blacklisted status of a publisher.',
             totalRow: false,
             order: false,
@@ -363,14 +361,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             orderField: 'image_hash',
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
-        },
-        notification: {
-            name: '',
-            unselectable: true,
-            checked: true,
-            type: zemGridConstants.gridColumnTypes.NOTIFICATION,
-            shown: true,
-            totalRow: false,
         },
         titleLink: {
             name: 'Title',

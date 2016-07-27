@@ -40,6 +40,7 @@ var constants = {
     publisherStatus: {
         ENABLED: 1,
         BLACKLISTED: 2,
+        PENDING: 3,
     },
     adTargetDevice: {
         DESKTOP: 'desktop',

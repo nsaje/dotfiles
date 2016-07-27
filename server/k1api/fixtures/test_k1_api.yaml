@@ -34,6 +34,7 @@
         modified_by: 1
         name: 'test account 1'
         outbrain_marketer_id: 'abcde'
+        agency: 20
     model: dash.account
     pk: 1
 
@@ -42,6 +43,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 2'
+        agency: 20
     model: dash.account
     pk: 2
 
@@ -51,8 +53,19 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 3'
+        agency: 20
     model: dash.account
     pk: 3
+
+# test agencies
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test agency 1'
+    model: dash.agency
+    pk: 20
 
 # test ga accounts
 

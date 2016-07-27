@@ -18,7 +18,7 @@ oneApp.directive('zemGridCellStateSelector', [function () {
         controller: ['$scope', 'zemGridConstants', 'zemGridStateAndStatusHelpers', function ($scope, zemGridConstants, zemGridStateAndStatusHelpers) { // eslint-disable-line max-len
             var vm = this;
 
-            vm.stateValues = zemGridStateAndStatusHelpers.getAvailableStateValues(vm.grid.meta.data.level, vm.grid.meta.data.breakdown);
+            vm.stateValues = zemGridStateAndStatusHelpers.getStateValues(vm.grid.meta.data.level, vm.grid.meta.data.breakdown);
             vm.setState = setState;
 
             $scope.$watch('ctrl.row', update);
