@@ -82,8 +82,6 @@ class AdGroupSettings(api_common.BaseApiView):
         current_settings.ad_group_name = previous_ad_group_name
         new_settings.ad_group_name = ad_group.name
 
-        user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
-
         self._send_update_actions(ad_group, current_settings, new_settings, request)
         self._add_ga_account(request.user, ad_group, new_settings)
         self._adjust_adgroup_sources(ad_group, new_settings, request)
@@ -493,8 +491,7 @@ class CampaignSettings(api_common.BaseApiView):
         if current_settings.get_setting_changes(new_settings):
             helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
             helpers.log_and_notify_campaign_settings_change(
-                campaign, current_settings, new_settings, request,
-                constants.UserActionType.SET_CAMPAIGN_SETTINGS
+                campaign, current_settings, new_settings, request
             )
 
         response = {

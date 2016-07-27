@@ -1206,7 +1206,7 @@ def save_campaign_settings_and_propagate(campaign, settings, request):
     actionlog.zwei_actions.send(actions)
 
 
-def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request, user_action_type):
+def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request):
     changes = old_settings.get_setting_changes(new_settings)
     if changes:
         history_changes_text = models.CampaignSettings.get_changes_text(
