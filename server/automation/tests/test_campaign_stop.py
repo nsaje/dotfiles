@@ -916,8 +916,6 @@ class GetMaximumDailyBudgetTestCase(TestCase):
             campaign_stop._get_ad_groups_running_on_date(date, c5.adgroup_set.all()), set(c5.adgroup_set.all()))
 
     def test_get_source_max_daily_budget(self):
-        ag_settings = dash.models.AdGroupSettings.objects.all().order_by('created_dt')
-        ags_settings = dash.models.AdGroupSourceSettings.objects.all().order_by('created_dt')
         ags1 = dash.models.AdGroupSource.objects.get(id=1)  # highest daily budget set on date
         ags2 = dash.models.AdGroupSource.objects.get(id=2)  # highest daily budget from day before
         ags3 = dash.models.AdGroupSource.objects.get(id=3)  # inactive since day before
@@ -1060,9 +1058,10 @@ class StopNonSpendingSourcesTestCase(TestCase):
 
         mock_get_yesterday_spends.return_value = []
         for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
-            row = {'ad_group': ags.ad_group_id, 'source': ags.source_id, 'cost': Decimal(100), 'data_cost': Decimal(0)}
+            row = {'ad_group': ags.ad_group_id, 'source': ags.source_id,
+                   'media_cost': Decimal(100), 'data_cost': Decimal(0)}
             if ags.id in non_spending_ags_ids:
-                row['cost'] = Decimal('0.5')
+                row['media_cost'] = Decimal('0.5')
             mock_get_yesterday_spends.return_value.append(row)
 
         current_ags_settings = {
@@ -1092,9 +1091,10 @@ class StopNonSpendingSourcesTestCase(TestCase):
 
         mock_get_yesterday_spends.return_value = []
         for ags in dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups):
-            row = {'ad_group': ags.ad_group_id, 'source': ags.source_id, 'cost': Decimal(100), 'data_cost': Decimal(0)}
+            row = {'ad_group': ags.ad_group_id, 'source': ags.source_id,
+                   'media_cost': Decimal(100), 'data_cost': Decimal(0)}
             if ags.ad_group_id in non_spending_ag_ids:
-                row['cost'] = Decimal('0.5')
+                row['media_cost'] = Decimal('0.5')
             mock_get_yesterday_spends.return_value.append(row)
 
         campaign_stop._stop_non_spending_sources(campaign)

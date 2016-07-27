@@ -866,7 +866,7 @@ def _get_yesterday_source_spends(ad_groups):
 
     yesterday_spends = {}
     for row in rows:
-        media_cost = row['cost'] or 0
+        media_cost = row['media_cost'] or 0
         data_cost = row['data_cost'] or 0
         yesterday_spends[(row['ad_group'], row['source'])] = media_cost + data_cost
 
@@ -970,7 +970,7 @@ def _get_past_7_days_data(campaign):
     date_spend = defaultdict(int)
     source_spend = defaultdict(int)
     for item in data:
-        media_cost = item['cost'] or 0
+        media_cost = item['media_cost'] or 0
         data_cost = item['data_cost'] or 0
         spend = media_cost + data_cost
         date_spend[(item['ad_group'], item['date'])] += spend
