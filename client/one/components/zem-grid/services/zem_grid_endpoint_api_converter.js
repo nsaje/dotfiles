@@ -76,11 +76,11 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
 
     function convertField (value, type) {
         switch (type) {
-        // TODO: convertThumbnailField
         case zemGridConstants.gridColumnTypes.PERFORMANCE_INDICATOR: return value;
         case zemGridConstants.gridColumnTypes.SUBMISSION_STATUS: return value;
         case zemGridConstants.gridColumnTypes.STATE_SELECTOR: return value;
         case zemGridConstants.gridColumnTypes.STATUS: return convertStatusValue(value);
+        case zemGridConstants.gridColumnTypes.THUMBNAIL: return convertThumbnailValue(value);
         case zemGridConstants.gridColumnTypes.VISIBLE_LINK: return convertUrlValue(value);
         case zemGridConstants.gridColumnTypes.ICON_LINK: return convertUrlValue(value);
         default: return convertValueToDefaultObject(value);
@@ -127,6 +127,15 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
             }
         });
         return stats;
+    }
+
+    function convertThumbnailValue (value) {
+        if (value) {
+            return {
+                square: value.square || null,
+                landscape: value.landscape || null,
+            };
+        }
     }
 
     function convertUrlValue (value) {
