@@ -633,6 +633,7 @@ class get_ad_groups(K1APIView):
                 'retargeting': self._get_retargeting(ad_group_settings),
                 'campaign_id': ad_group_settings.ad_group.campaign.id,
                 'account_id': ad_group_settings.ad_group.campaign.account.id,
+                'agency_id': ad_group_settings.ad_group.campaign.account.agency.id,
                 'goal_types': campaign_goal_types[ad_group_settings.ad_group.campaign.id],
             }
 
