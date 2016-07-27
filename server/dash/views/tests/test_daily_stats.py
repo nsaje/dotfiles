@@ -599,6 +599,10 @@ class AdGroupAdsDailyStatsTest(TestCase):
                         'id': 'Cost per Visit',
                         'name': 'Cost per Visit'
                     },
+                    'avg_cost_per_non_bounced_visit': {
+                        'id': 'Cost per Non-Bounced Visit',
+                        'name': 'Cost per Non-Bounced Visit'
+                    },
                 },
                 'chart_data': [{
                     'id': 'totals',
@@ -762,6 +766,10 @@ class AdGroupAdsDailyStatsTest(TestCase):
                         'id': 'Cost per Visit',
                         'name': 'Cost per Visit'
                     },
+                    'avg_cost_per_non_bounced_visit': {
+                        'id': 'Cost per Non-Bounced Visit',
+                        'name': 'Cost per Non-Bounced Visit'
+                    },
                 },
                 'chart_data': [{
                     'id': 'totals',
@@ -920,6 +928,10 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                     'avg_cost_per_visit': {
                         'id': 'Cost per Visit',
                         'name': 'Cost per Visit'
+                    },
+                    'avg_cost_per_non_bounced_visit': {
+                        'id': 'Cost per Non-Bounced Visit',
+                        'name': 'Cost per Non-Bounced Visit'
                     },
                 },
                 'chart_data': [{

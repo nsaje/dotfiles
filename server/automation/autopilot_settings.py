@@ -43,7 +43,8 @@ GOALS_COLUMNS = {
     CampaignGoalKPI.CPA: {'col': ['conversions', 0.6], 'spend_perc': Decimal(0.4)},
     CampaignGoalKPI.CPC: {'col': ['cpc', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.NEW_UNIQUE_VISITORS: {'col': ['percent_new_users', 0.7], 'spend_perc': Decimal(0.3)},
-    CampaignGoalKPI.CPV: {'col': ['avg_cost_per_visit', 0.7], 'spend_perc': Decimal(0.3)}
+    CampaignGoalKPI.CPV: {'col': ['avg_cost_per_visit', 0.7], 'spend_perc': Decimal(0.3)},
+    CampaignGoalKPI.CP_NON_BOUNCED_VISIT: {'col': ['avg_cost_per_non_bounced_visit', 0.7], 'spend_perc': Decimal(0.3)},
 }
 GOALS_WORST_VALUE = {
     'bounce_rate': 100.00,

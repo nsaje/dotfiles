@@ -32,9 +32,10 @@ class RSPublishersModel(redshift.RSModel):
         "e_media_cost", "e_data_cost", "billing_cost", "license_fee",
         "external_id", "visits", "click_discrepancy", "pageviews", "new_visits",
         "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos", "total_seconds",
-        "avg_cost_per_minute", "unbounced_visits", "avg_cost_per_non_bounced_visitor",
+        "avg_cost_per_minute", "non_bounced_visits", "avg_cost_per_non_bounced_visit",
         "total_pageviews", "avg_cost_per_pageview", "avg_cost_for_new_visitor", "avg_cost_per_visit",
         "margin", "agency_total",
+
     ]
     # fields that are allowed for breakdowns (app-based naming)
     ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'ad_group', 'date'])
@@ -75,14 +76,14 @@ class RSPublishersModel(redshift.RSModel):
     ]
 
     _POSTCLICK_OPTIMIZATION_FIELDS = [
-        dict(sql='total_seconds_sum',              app='total_seconds',                    out=unchanged,       calc=AVG_TOS_FORMULA),
-        dict(sql='total_seconds_avg_cost_min_sum', app='avg_cost_per_minute',              out=from_nano,       calc=mul_expr(DIVIDE_FORMULA.format(expr=sum_agr('cost_nano'), divisor=AVG_TOS_FORMULA), 60)),
-        dict(sql='unbounced_visits_diff',          app='unbounced_visits',                 out=unchanged,       calc=UNBOUNCED_VISITS_FORMULA),
-        dict(sql='unbounced_visits_avg_cost_sum',  app='avg_cost_per_non_bounced_visitor', out=from_nano,       calc=DIVIDE_FORMULA.format(expr=sum_agr('cost_nano'), divisor=UNBOUNCED_VISITS_FORMULA)),
-        dict(sql='total_pageviews_sum',            app='total_pageviews',                  out=unchanged,       calc=sum_agr('pageviews')),
-        dict(sql='avg_cost_per_pageview_sum',      app='avg_cost_per_pageview',            out=from_nano,       calc=sum_div('cost_nano', 'pageviews')),
-        dict(sql='avg_cost_for_new_visitor_sum',   app='avg_cost_for_new_visitor',         out=from_nano,       calc=sum_div('cost_nano', 'new_visits')),
-        dict(sql='avg_cost_per_visit_sum',         app='avg_cost_per_visit',               out=from_nano,       calc=sum_div('cost_nano', 'visits')),
+        dict(sql='total_seconds_sum',               app='total_seconds',                    out=unchanged,       calc=AVG_TOS_FORMULA),
+        dict(sql='total_seconds_avg_cost_min_sum',  app='avg_cost_per_minute',              out=from_nano,       calc=mul_expr(DIVIDE_FORMULA.format(expr=sum_agr('cost_nano'), divisor=AVG_TOS_FORMULA), 60)),
+        dict(sql='non_bounced_visits_diff',         app='non_bounced_visits',               out=unchanged,       calc=UNBOUNCED_VISITS_FORMULA),
+        dict(sql='non_bounced_visits_avg_cost_sum', app='avg_cost_per_non_bounced_visit',   out=from_nano,       calc=DIVIDE_FORMULA.format(expr=sum_agr('cost_nano'), divisor=UNBOUNCED_VISITS_FORMULA)),
+        dict(sql='total_pageviews_sum',             app='total_pageviews',                  out=unchanged,       calc=sum_agr('pageviews')),
+        dict(sql='avg_cost_per_pageview_sum',       app='avg_cost_per_pageview',            out=from_nano,       calc=sum_div('cost_nano', 'pageviews')),
+        dict(sql='avg_cost_for_new_visitor_sum',    app='avg_cost_for_new_visitor',         out=from_nano,       calc=sum_div('cost_nano', 'new_visits')),
+        dict(sql='avg_cost_per_visit_sum',          app='avg_cost_per_visit',               out=from_nano,       calc=sum_div('cost_nano', 'visits')),
     ]
 
     _CONVERSION_GOAL_FIELDS = [
