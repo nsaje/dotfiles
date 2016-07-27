@@ -10,6 +10,7 @@
 @zem-grid-cell-border-color: #dddddd;
 @zem-grid-superperforming-goal-color: #73bf44;
 @zem-grid-underperforming-goal-color: #cb2027;
+@zem-grid-approved-submission-color: #0ab00a;
 
 .zem-grid-container {
     width: 100%;
@@ -398,6 +399,114 @@
                     top: 5px;
                     margin-left: 0;
                 }
+            }
+        }
+
+        .zem-grid-cell-submission-status {
+            display: inline-block;
+            vertical-align: middle;
+            width: 60px;
+            height: 18px;
+            font-size: 0;
+            cursor: default;
+
+            .popover {
+                max-width: 600px;
+            }
+
+            .field {
+                display: inline-block;
+                vertical-align: top;
+                width: 30px;
+                height: 18px;
+                line-height: 10px;
+                text-align: center;
+                color: @zem-grid-approved-submission-color;
+                font-size: 10px;
+                padding: 4px 1px;
+                border: 1px solid @zem-grid-approved-submission-color;
+
+                &.one-field,
+                &.no-submission {
+                    width: 60px;
+                    border-top-left-radius: 2px;
+                    border-bottom-left-radius: 2px;
+                    border-top-right-radius: 2px;
+                    border-bottom-right-radius: 2px;
+                }
+
+                &.approved,
+                &.non-approved.only-field {
+                    border-top-left-radius: 2px;
+                    border-bottom-left-radius: 2px;
+                }
+
+                &.non-approved,
+                &.approved.only-field {
+                    border-top-right-radius: 2px;
+                    border-bottom-right-radius: 2px;
+                }
+
+                &.archived {
+                    background-color: @zem-grid-archived-text-color;
+                    border-color: @zem-grid-archived-text-color;
+                    color: @zem-grid-bg-color;
+                }
+
+                &.approved {
+                    background-color: @zem-grid-approved-submission-color;
+                    color: @zem-grid-bg-color;
+
+                    &.archived {
+                        background-color: @zem-grid-archived-text-color;
+                        border-color: @zem-grid-archived-text-color;
+                        color: @zem-grid-bg-color;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Popovers
+.zem-grid-submission-status-popover {
+    max-width: 600px;
+
+    .submission-status-emphasis {
+        font-style: italic;
+    }
+
+    .submission-status-popover-table {
+        display: table;
+        font-size: 11px;
+
+        .submission-status-popover-row {
+            display: table-row;
+
+            &.no-submission-message {
+                font-size: @zem-grid-default-font-size;
+            }
+
+            .submission-status-popover-cell {
+                display: table-cell;
+                white-space: nowrap;
+
+                &.bold {
+                    font-weight: 600;
+                }
+
+                hr {
+                    margin: 3px 0;
+                }
+            }
+
+            .left-cell {
+                padding-right: 10px;
+            }
+
+            .submission-status-label {
+                font-weight: 600;
+                color: #25a8c9;
             }
         }
     }

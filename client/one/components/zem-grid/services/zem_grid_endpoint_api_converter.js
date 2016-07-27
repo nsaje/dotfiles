@@ -77,9 +77,9 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
     function convertField (value, type) {
         switch (type) {
         // TODO: convertThumbnailField
-        // TODO: convertSubmissionStatusField
         // TODO: convertTextWithPopupField
         case zemGridConstants.gridColumnTypes.PERFORMANCE_INDICATOR: return value;
+        case zemGridConstants.gridColumnTypes.SUBMISSION_STATUS: return value;
         case zemGridConstants.gridColumnTypes.VISIBLE_LINK: return convertUrlValue(value);
         case zemGridConstants.gridColumnTypes.ICON_LINK: return convertUrlValue(value);
         default: return convertValueToDefaultObject(value);
