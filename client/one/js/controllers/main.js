@@ -330,6 +330,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return modalInstance;
     };
 
+    $scope.allowLivestream = function () {
+        if (!$window.FS) { return; }
+        api.liveStream.allow($window.FS.getCurrentSessionURL());
+    };
+
     $scope.$on('$stateChangeSuccess', function () {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();

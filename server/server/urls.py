@@ -494,6 +494,11 @@ urlpatterns += [
         login_required(dash.views.views.Demo.as_view()),
         name='demov3'
     ),
+    url(
+        r'^api/live-stream/allow/$',
+        login_required(dash.views.views.LiveStreamAllow.as_view()),
+        name='live_stream_allow'
+    ),
 ]
 
 # Lambdas

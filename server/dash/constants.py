@@ -1556,6 +1556,7 @@ class EmailTemplateType(ConstantBase):
     CAMPAIGN_LANDING_MODE_SWITCH = 13
     CAMPAIGN_BUDGET_LOW = 14
     DEMO_RUNNING = 15
+    LIVESTREAM_SESSION = 16
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1573,6 +1574,7 @@ class EmailTemplateType(ConstantBase):
         CAMPAIGN_LANDING_MODE_SWITCH: 'Campaign switched to landing mode notification',
         CAMPAIGN_BUDGET_LOW: 'Campaign is running out of budget notification',
         DEMO_RUNNING: 'Demo is running',
+        LIVESTREAM_SESSION: 'Livestream sesion id',
     }
 
 
