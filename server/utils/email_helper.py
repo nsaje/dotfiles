@@ -6,16 +6,19 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
-from django.core.mail.message import EmailMessage
+from django.core.mail.message import EmailMessage, EmailMultiAlternatives
 
 from dash.constants import EmailTemplateType
 import dash.models
+import reports.management_report
 
 from utils import pagerduty_helper
 
 logger = logging.getLogger(__name__)
 
+# TODO: move this somewhere appropriate
 OPERATIONS_EMAILS = ['operations@zemanta.com', 'ziga.stopinsek@zemanta.com']
+MANAGEMENT_EMAILS = ['ziga.stopinsek@zemanta.com', 'bostjan@zemanta.com', 'urska.kosec@zemanta.com']
 
 
 def format_email(template_type, **kwargs):
@@ -348,6 +351,16 @@ def send_livestream_email(user, session_url):
     email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), OPERATIONS_EMAILS)
+    email.send(fail_silently=False)
+
+
+def send_daily_management_report_email():
+    # TODO: use email template
+    subject = 'Zemanta One daily management report'
+    email = EmailMultiAlternatives(subject, '', 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL
+    ), MANAGEMENT_EMAILS)
+    email.attach_alternative(reports.management_report.get_daily_report_html(), "text/html")
     email.send(fail_silently=False)
 
 

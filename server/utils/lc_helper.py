@@ -33,7 +33,8 @@ def format_currency(value,
         build(trailneg)
     for i in range(places):
         build(next() if digits else '0')
-    build(dp)
+    if places != 0:
+        build(dp)
     if not digits:
         build('0')
     i = 0
