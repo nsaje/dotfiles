@@ -26,6 +26,7 @@
                 <li class="dropdown-header">{{ user.email }}</li>
                 <li ng-if="hasPermission('zemauth.switch_to_demo_mode')"><zem-internal-feature ng-if="isPermissionInternal('zemauth.switch_to_demo_mode')" popover-placement="bottom"></zem-internal-feature><a ng-href="/demo_mode">Demo mode</a></li>
                 <li ng-if="hasPermission('zemauth.can_request_demo_v3')"><zem-internal-feature ng-if="isPermissionInternal('zemauth.can_request_demo_v3')" popover-placement="bottom"></zem-internal-feature><a href="#" ng-click="requestDemo()">Request demo v3</a></li>
+                <li ng-show="!liveStreamOn"><a href="#" ng-click="allowLivestream()">Allow Livestream</a></li>
                 <li><a ng-href="/signout">Sign out</a></li>
             </ul>
         </div>

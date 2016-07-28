@@ -14,6 +14,7 @@ from utils import email_helper
     SEND_NOTIFICATION_MAIL=True
 )
 class EmailHelperTestCase(TestCase):
+
     def setUp(self):
         request_factory = RequestFactory()
         self.user = User.objects.create_user('test@user.com')
@@ -186,6 +187,16 @@ class EmailHelperTestCase(TestCase):
 
         self.assertTrue(mock_trigger_event.called)
 
+    def test_send_livestream_email(self):
+        email_helper.send_livestream_email(self.user, 'http://www.google.com')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'Livestream session started')
+        self.assertEqual(
+            mail.outbox[0].body,
+            'User test@user.com started a new livestream session, accesssible on: http://www.google.com')
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
+        self.assertEqual(mail.outbox[0].to, email_helper.OPERATIONS_EMAILS)
+
     def test_send_budget_notification_email(self):
         campaign_manager = User.objects.create_user('manager@user.com')
         account_manager = User.objects.create_user('accountmanager@user.com')
@@ -246,6 +257,7 @@ class EmailHelperTestCase(TestCase):
 
 
 class FormatChangesTextTest(TestCase):
+
     def test_single_line(self):
         self.assertEqual(email_helper._format_changes_text('Some change.'), '- Some change.')
 

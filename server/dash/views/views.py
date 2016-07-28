@@ -1861,3 +1861,11 @@ def sharethrough_approval(request):
                                                            request=None, send=True)
 
     return HttpResponse('OK')
+
+
+class LiveStreamAllow(api_common.BaseApiView):
+
+    def post(self, request):
+        data = json.loads(request.body)
+        email_helper.send_livestream_email(request.user, data['session_url'])
+        return self.create_api_response({})

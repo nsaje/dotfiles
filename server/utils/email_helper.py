@@ -15,6 +15,8 @@ from utils import pagerduty_helper
 
 logger = logging.getLogger(__name__)
 
+OPERATIONS_EMAILS = ['operations@zemanta.com', 'ziga.stopinsek@zemanta.com']
+
 
 def format_email(template_type, **kwargs):
     # since editing through admin is currently unavailable no validation takes
@@ -328,6 +330,18 @@ def send_scheduled_export_report(report_name, frequency, granularity,
         settings.FROM_EMAIL
     ), email_adresses)
     email.attach(report_filename + '.csv', report_contents, 'text/csv')
+    email.send(fail_silently=False)
+
+
+def send_livestream_email(user, session_url):
+    subject, body = format_email(
+        EmailTemplateType.LIVESTREAM_SESSION,
+        user=user,
+        session_url=session_url,
+    )
+    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL
+    ), OPERATIONS_EMAILS)
     email.send(fail_silently=False)
 
 

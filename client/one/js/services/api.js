@@ -2939,6 +2939,15 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
+    function LiveStream () {
+        this.allow = function (sessionUrl) {
+            var url = '/api/live-stream/allow/';
+            return $http.post(url, {
+                session_url: sessionUrl
+            });
+        };
+    }
+
     return {
         navigation: new Navigation(),
         user: new User(),
@@ -2993,6 +3002,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignBudget: new CampaignBudget(),
         campaignGoalValidation: new CampaignGoalValidation(),
         demo: new Demo(),
+        liveStream: new LiveStream(),
         // Also, don't forget to add me to DEMO!
     };
 }]);
