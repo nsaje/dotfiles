@@ -51,6 +51,130 @@ class K1APIView(View):
         }, status=status)
 
 
+class get_ad_group_source_ids(K1APIView):
+    def get(self, request):
+        credentials_id = request.GET.get('credentials_id')
+        source_type = request.GET.get('source_type')
+        if credentials_id:
+            ad_group_source_ids = self._get_ad_group_source_ids_by_credentials_id(credentials_id)
+        elif source_type:
+            ad_group_source_ids = self._get_ad_group_source_ids_by_source_type(source_type)
+        else:
+            return self.response_error("Missing credentials ID and source type")
+
+        res = []
+        for ags in ad_group_source_ids:
+            res.append({'ad_group_id': ags.ad_group_id, 'source_campaign_key': ags.source_campaign_key})
+        return self.response_ok(list(res))
+
+    @staticmethod
+    def _get_ad_group_source_ids_by_credentials_id(credentials_id):
+        nonarchived = dash.models.AdGroup.objects.all().exclude_archived()
+        ad_group_source_ids = (
+            dash.models.AdGroupSource.objects
+                .filter(ad_group__in=nonarchived)
+                .filter(source_credentials_id=credentials_id)
+        )
+        return ad_group_source_ids
+
+    @staticmethod
+    def _get_ad_group_source_ids_by_source_type(source_type):
+        nonarchived = dash.models.AdGroup.objects.all().exclude_archived()
+        ad_group_source_ids = (
+            dash.models.AdGroupSource.objects
+                .filter(ad_group__in=nonarchived)
+                .filter(source__source_type__type=source_type)
+        )
+        return ad_group_source_ids
+
+
+class AdGroupSourceBase(K1APIView):
+
+    @staticmethod
+    def _add_settings_to_ad_group_source(ad_group_source):
+        ad_group_source_settings = ad_group_source.get_current_settings()
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+
+        if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
+                ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
+            source_state = constants.AdGroupSettingsState.ACTIVE
+        else:
+            source_state = constants.AdGroupSettingsState.INACTIVE
+
+        tracking_code = url_helper.combine_tracking_codes(
+            ad_group_settings.get_tracking_codes(),
+            ad_group_source.get_tracking_ids() if ad_group_settings.enable_ga_tracking else ''
+        )
+
+        data = {
+            'ad_group_source_id': ad_group_source.id,
+            'ad_group_id': ad_group_source.ad_group_id,
+            'credentials': ad_group_source.source_credentials.credentials,
+            'source_campaign_key': ad_group_source.source_campaign_key,
+            'state': source_state,
+            'cpc_cc': ad_group_source_settings.cpc_cc,
+            'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
+            'name': ad_group_source.get_external_name(),
+            'start_date': ad_group_settings.start_date,
+            'end_date': ad_group_settings.end_date,
+            'target_devices': ad_group_settings.target_devices,
+            'target_regions': ad_group_settings.target_regions,
+            'tracking_code': tracking_code,
+            'tracking_slug': ad_group_source.source.tracking_slug,
+        }
+        return data
+
+
+class get_ad_group_source(AdGroupSourceBase):
+
+    def get(self, request):
+        ad_group_id = request.GET.get('ad_group_id')
+        if not ad_group_id:
+            return self.response_error("Must provide ad group id.")
+        source_type = request.GET.get('source_type')
+        if not source_type:
+            return self.response_error("Must provide source type.")
+
+        bidder_slug = request.GET.get("bidder_slug")
+        ad_group_source = dash.models.AdGroupSource.objects.select_related(
+            'source_credentials', 'source', 'source__source_type',
+            'ad_group', 'ad_group__campaign', 'ad_group__campaign__account',
+        ).filter(ad_group_id=ad_group_id, source__source_type__type=source_type)
+        if bidder_slug:
+            ad_group_source = ad_group_source.filter(source__bidder_slug=bidder_slug)
+        if ad_group_source.count() != 1:
+            status = 404 if ad_group_source.count() == 0 else 400
+            return self.response_error("%d objects retrieved for ad group %s on source %s with bidder slug %s" %
+                                       (ad_group_source.count(), ad_group_id, source_type, bidder_slug), status=status)
+        ad_group_source = ad_group_source[0]
+        ad_group_source_with_settings = self._add_settings_to_ad_group_source(ad_group_source)
+        return self.response_ok(ad_group_source_with_settings)
+
+
+class get_ad_group_sources_for_source_type(AdGroupSourceBase):
+
+    def get(self, request):
+        source_type = request.GET.get('source_type')
+        if not source_type:
+            return self.response_error("Must provide source type.")
+
+        try:
+            ad_group_sources = (
+                dash.models.AdGroupSource.objects
+                    .select_related('source_credentials', 'source', 'source__source_type',
+                                    'ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+                    .filter(source__source_type__type=source_type)
+            )
+        except dash.models.AdGroupSource.DoesNotExist:
+            return self.response_error("No ad group exists for source %s" % source_type, status=404)
+
+        ad_group_sources_with_settings = []
+        for ad_group_source in ad_group_sources:
+            ad_group_source_with_settings = self._add_settings_to_ad_group_source(ad_group_source)
+            ad_group_sources_with_settings.append(ad_group_source_with_settings)
+        return self.response_ok(ad_group_sources_with_settings)
+
+
 class get_content_ad_sources_for_ad_group(K1APIView):
 
     def get(self, request):
@@ -483,26 +607,13 @@ class get_publishers_blacklist(K1APIView):
                 blacklist[hash(tuple(entry.values()))] = entry
 
 
-class AdGroupsView(K1APIView):
-    """
-    Returns a list of non-archived ad groups together with their current settings.
-
-    Filterable by ad_group_id, source_type and slug.
-    """
+class get_ad_groups(K1APIView):
 
     def get(self, request):
-        ad_group_ids = request.GET.get('ad_group_ids')
-        source_types = request.GET.get('source_types')
-        slugs = request.GET.get('source_slugs')
-        if ad_group_ids:
-            ad_group_ids = ad_group_ids.split(',')
-        if source_types:
-            source_types = source_types.split(',')
-        if slugs:
-            slugs = slugs.split(',')
-
-        ad_groups_settings, campaigns_settings_map = \
-            self._get_ad_groups_and_campaigns_settings(ad_group_ids, source_types, slugs)
+        ad_group_id = request.GET.get('ad_group_id')
+        source_type = request.GET.get('source_type')
+        ad_groups_settings, campaigns_settings_map = self._get_ad_groups_and_campaigns_settings(ad_group_id,
+                                                                                                source_type)
         campaign_goal_types = self._get_campaign_goal_types(campaigns_settings_map.keys())
 
         ad_groups = []
@@ -516,9 +627,9 @@ class AdGroupsView(K1APIView):
                 'brand_name': ad_group_settings.brand_name,
                 'display_url': ad_group_settings.display_url,
                 'tracking_codes': ad_group_settings.get_tracking_codes(),
-                'target_devices': ad_group_settings.target_devices,
-                'target_regions': ad_group_settings.target_regions,
+                'device_targeting': ad_group_settings.target_devices,
                 'iab_category': campaigns_settings_map[ad_group_settings.ad_group.campaign.id].iab_category,
+                'target_regions': ad_group_settings.target_regions,
                 'retargeting': self._get_retargeting(ad_group_settings),
                 'campaign_id': ad_group_settings.ad_group.campaign.id,
                 'account_id': ad_group_settings.ad_group.campaign.account.id,
@@ -560,28 +671,36 @@ class AdGroupsView(K1APIView):
         return campaign_goals
 
     @staticmethod
-    def _get_ad_groups_and_campaigns_settings(ad_group_ids, source_types, slugs):
-        ad_groups = dash.models.AdGroup.objects.all().exclude_archived()
-
-        if ad_group_ids:
-            ad_groups = ad_groups.filter(id__in=ad_group_ids)
-
-        if source_types or slugs:
-            ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups)
-            if source_types:
-                ad_group_sources = ad_group_sources.filter(source__source_type__type__in=source_types)
-            if slugs:
-                ad_group_sources = ad_group_sources.filter(source__bidder_slug__in=slugs)
-            ad_groups = ad_groups.filter(id__in=ad_group_sources.values('ad_group_id'))
-
-        ad_groups_settings = (dash.models.AdGroupSettings.objects
-                              .filter(ad_group__in=ad_groups)
-                              .group_current_settings()
-                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
-                              .prefetch_related('audience_set'))
+    def _get_ad_groups_and_campaigns_settings(ad_group_id, source_type):
+        if ad_group_id:
+            ad_groups_settings = (dash.models.AdGroupSettings.objects
+                                  .filter(ad_group__id=ad_group_id)
+                                  .group_current_settings()
+                                  .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+                                  .prefetch_related('audience_set'))
+            ad_group_ids = [ad_group_id]
+        elif source_type:
+            nonarchived = dash.models.AdGroup.objects.all().exclude_archived()
+            ad_group_ids = (dash.models.AdGroupSource.objects
+                            .filter(ad_group__in=nonarchived)
+                            .filter(source__source_type__type=source_type)
+                            .values('ad_group_id'))
+            ad_groups_settings = (dash.models.AdGroupSettings.objects
+                                  .filter(ad_group__id__in=ad_group_ids)
+                                  .group_current_settings()
+                                  .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+                                  .prefetch_related('audience_set'))
+        else:
+            ad_groups_settings = (dash.models.AdGroupSettings.objects
+                                  .all()
+                                  .group_current_settings()
+                                  .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+                                  .prefetch_related('audience_set'))
+            ad_group_ids = [ad_group_settings.ad_group_id for ad_group_settings in ad_groups_settings if
+                            not ad_group_settings.archived]
 
         campaigns_settings = (dash.models.CampaignSettings.objects
-                              .filter(campaign__adgroup__in=ad_groups)
+                              .filter(campaign__adgroup__id__in=ad_group_ids)
                               .group_current_settings()
                               .select_related('campaign'))
         campaigns_settings_map = {cs.campaign.id: cs for cs in campaigns_settings}
@@ -589,52 +708,31 @@ class AdGroupsView(K1APIView):
         return ad_groups_settings, campaigns_settings_map
 
 
-class AdGroupSourcesView(K1APIView):
+class get_ad_groups_exchanges(K1APIView):
 
     def get(self, request):
-        """
-        Returns a list of non-archived ad group sources together with their current source settings.
+        ad_group_id = request.GET.get('ad_group_id')
 
-        Filterable by ad_group_id, source_type and slug.
-        """
-        ad_group_ids = request.GET.get('ad_group_ids')
-        source_types = request.GET.get('source_types')
-        slugs = request.GET.get('source_slugs')
-        if ad_group_ids:
-            ad_group_ids = ad_group_ids.split(',')
-        if source_types:
-            source_types = source_types.split(',')
-        if slugs:
-            slugs = slugs.split(',')
-
-        # get ad groups we're interested in
-        ad_groups_settings_query = dash.models.AdGroupSettings.objects.filter(archived=False)
-        if ad_group_ids:
-            ad_groups_settings_query = ad_groups_settings_query.filter(ad_group__id__in=ad_group_ids)
+        ad_groups_settings_query = dash.models.AdGroupSettings.objects
+        if ad_group_id:
+            ad_groups_settings_query = ad_groups_settings_query.filter(ad_group__id=ad_group_id)
+        else:
+            ad_groups_settings_query = ad_groups_settings_query.filter(archived=False)
 
         ad_groups_settings = ad_groups_settings_query.group_current_settings()
         ad_group_settings_map = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
-        ag_source_settings_query = (dash.models.AdGroupSourceSettings.objects
-                                    .filter(ad_group_source__ad_group__in=ad_group_settings_map.keys())
-                                    .filter(ad_group_source__source__deprecated=False))
+        ad_group_sources_settings = (dash.models.AdGroupSourceSettings.objects
+                                     .filter(ad_group_source__ad_group__in=ad_group_settings_map.keys())
+                                     .filter(ad_group_source__source__source_type__type='b1')
+                                     .filter(ad_group_source__source__deprecated=False)
+                                     .group_current_settings()
+                                     .select_related('ad_group_source',
+                                                     'ad_group_source__source'))
 
-        # filter which sources we want
-        if source_types:
-            ag_source_settings_query = ag_source_settings_query.filter(
-                ad_group_source__source__source_type__type__in=source_types)
-        if slugs:
-            ag_source_settings_query = ag_source_settings_query.filter(
-                ad_group_source__source__bidder_slug__in=slugs)
+        ad_group_sources = defaultdict(list)
 
-        ad_group_source_settings = (ag_source_settings_query
-                                    .group_current_settings()
-                                    .select_related('ad_group_source',
-                                                    'ad_group_source__source'))
-
-        # build the list of objects
-        ad_group_sources = []
-        for ad_group_source_settings in ad_group_source_settings:
+        for ad_group_source_settings in ad_group_sources_settings:
             ad_group_settings = ad_group_settings_map[ad_group_source_settings.ad_group_source.ad_group_id]
             if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
                     ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
@@ -642,66 +740,15 @@ class AdGroupSourcesView(K1APIView):
             else:
                 source_state = constants.AdGroupSettingsState.INACTIVE
 
-            tracking_code = url_helper.combine_tracking_codes(
-                ad_group_settings.get_tracking_codes(),
-                (ad_group_source_settings.ad_group_source.get_tracking_ids()
-                    if ad_group_settings.enable_ga_tracking else '')
-            )
-
             source = {
-                'ad_group_id': ad_group_settings.ad_group_id,
-                'slug': ad_group_source_settings.ad_group_source.source.bidder_slug,
-                'source_campaign_key': ad_group_source_settings.ad_group_source.source_campaign_key,
-                'tracking_code': tracking_code,
-                'state': source_state,
+                'exchange': ad_group_source_settings.ad_group_source.source.bidder_slug,
+                'status': source_state,
                 'cpc_cc': ad_group_source_settings.cpc_cc,
                 'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
             }
-            ad_group_sources.append(source)
+            ad_group_sources[ad_group_settings.ad_group_id].append(source)
 
         return self.response_ok(ad_group_sources)
-
-    def put(self, request):
-        """
-        Updates ad group source settings.
-        """
-        ad_group_id = request.GET.get('ad_group_id')
-        bidder_slug = request.GET.get('source_slug')
-        data = json.loads(request.body)
-
-        if not (ad_group_id and bidder_slug and data):
-            return self.response_error("Must provide ad_group_id, source_slug and conf", status=404)
-
-        try:
-            ad_group_source = dash.models.AdGroupSource.objects.get(ad_group__id=ad_group_id,
-                                                                    source__bidder_slug=bidder_slug)
-        except dash.models.AdGroupSource.DoesNotExist:
-            return self.response_error(
-                "No AdGroupSource exists for ad_group_id: %s with bidder_slug %s" % (ad_group_id, bidder_slug),
-                status=404)
-        ad_group_source_settings = ad_group_source.get_current_settings()
-        new_settings = ad_group_source_settings.copy_settings()
-
-        settings_changed = False
-        for key, val in data.items():
-            if key == 'cpc_cc':
-                new_settings.cpc_cc = converters.cc_to_decimal(val)
-                settings_changed = True
-            elif key == 'daily_budget_cc':
-                new_settings.daily_budget_cc = converters.cc_to_decimal(val)
-                settings_changed = True
-            elif key == 'state':
-                new_settings.state = val
-                settings_changed = True
-            elif key == 'source_campaign_key':
-                ad_group_source.source_campaign_key = val
-            else:
-                return self.response_error("Invalid setting!", status=400)
-
-        if settings_changed:
-            new_settings.system_user = dash.constants.SystemUserType.K1_USER
-            new_settings.save(None)
-        return self.response_ok([])
 
 
 class get_content_ads(K1APIView):
@@ -836,6 +883,28 @@ class update_content_ad_status(K1APIView):
         return self.response_ok(data)
 
 
+class set_source_campaign_key(K1APIView):
+
+    def put(self, request):
+        data = json.loads(request.body)
+
+        ad_group_source_id = data['ad_group_source_id']
+        source_campaign_key = data['source_campaign_key']
+        try:
+            ad_group_source = dash.models.AdGroupSource.objects.get(pk=ad_group_source_id)
+        except dash.models.AdGroupSource.DoesNotExist:
+            logger.exception(
+                'set_source_campaign_key: ad_group_source does not exist. ad_group_source id: %d',
+                ad_group_source_id,
+            )
+            raise Http404
+
+        ad_group_source.source_campaign_key = source_campaign_key
+        ad_group_source.save()
+
+        return self.response_ok(data)
+
+
 class get_outbrain_marketer_id(K1APIView):
 
     def get(self, request):
@@ -926,3 +995,36 @@ class update_facebook_account(K1APIView):
         if modified:
             facebook_account.save()
         return self.response_ok(values)
+
+
+class update_ad_group_source_state(K1APIView):
+
+    def put(self, request):
+        data = json.loads(request.body)
+        ad_group_id = data.get('ad_group_id')
+        bidder_slug = data.get('bidder_slug')
+        conf = data.get('conf')
+        if not (ad_group_id and bidder_slug and conf):
+            return self.response_error("Must provide ad_group_id, bidder_slug and conf", status=404)
+
+        try:
+            ad_group_source = dash.models.AdGroupSource.objects.get(ad_group__id=ad_group_id,
+                                                                    source__bidder_slug=bidder_slug)
+        except dash.models.AdGroupSource.DoesNotExist:
+            return self.response_error(
+                "No AdGroupSource exists for ad_group_id: %s with bidder_slug %s" % (ad_group_id, bidder_slug),
+                status=404)
+        ad_group_source_settings = ad_group_source.get_current_settings()
+        new_settings = ad_group_source_settings.copy_settings()
+
+        for key, val in conf.items():
+            if key == 'cpc_cc':
+                new_settings.cpc_cc = converters.cc_to_decimal(val)
+            elif key == 'daily_budget_cc':
+                new_settings.daily_budget_cc = converters.cc_to_decimal(val)
+            elif key == 'state':
+                new_settings.state = val
+
+        new_settings.system_user = dash.constants.SystemUserType.K1_USER
+        new_settings.save(None)
+        return self.response_ok([])

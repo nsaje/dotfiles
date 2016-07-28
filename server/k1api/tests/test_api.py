@@ -1,12 +1,11 @@
 import itertools
 import time
 import json
-from mock import patch, ANY
+from mock import patch
 import urllib
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
-from django.conf import settings
 
 import dash.constants
 import dash.models
@@ -14,7 +13,6 @@ import dash.models
 import logging
 
 from utils.test_helper import ListMatcher
-from utils import request_signer
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -23,17 +21,6 @@ logger.setLevel(logging.INFO)
 class K1ApiTest(TestCase):
 
     fixtures = ['test_k1_api.yaml']
-
-    def setUp(self):
-        self.test_signature = True
-        settings.K1_API_SIGN_KEY = 'test_api_key'
-        self.verify_patcher = patch('utils.request_signer.verify_wsgi_request')
-        self.mock_verify_wsgi_request = self.verify_patcher.start()
-
-    def tearDown(self):
-        if self.test_signature:
-            self.mock_verify_wsgi_request.assert_called_with(ANY, 'test_api_key')
-        self.verify_patcher.stop()
 
     def _test_signature(self, path):
         response = self.client.get(
@@ -47,12 +34,8 @@ class K1ApiTest(TestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_404_without_signature(self):
-        self.test_signature = False
-        self.mock_verify_wsgi_request.side_effect = request_signer.SignatureError
+    def test_signature(self):
         test_paths = [
-            'k1api_new.ad_groups',
-            'k1api_new.ad_groups.sources',
             'k1api.get_accounts',
             'k1api.get_default_source_credentials',
             'k1api.get_custom_audiences',
@@ -76,10 +59,13 @@ class K1ApiTest(TestCase):
         self.assertIn('response', data)
         self.assertNotEqual(data['response'], None)
 
-    def test_get_accounts(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_accounts(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_accounts'),
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -138,10 +124,13 @@ class K1ApiTest(TestCase):
         ])})
         self.assertIsNone(data.get('credentials'))
 
-    def test_get_accounts_with_id(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_accounts_with_id(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_accounts'), {'account_id': 1, 'bidder_slug': 'outbrain'},
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -187,11 +176,14 @@ class K1ApiTest(TestCase):
             ]})
         self.assertEqual(data['credentials'], u'c')
 
-    def test_get_default_source_credentials(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_default_source_credentials(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_default_source_credentials'),
             {'bidder_slug': 'facebook'}
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -199,20 +191,26 @@ class K1ApiTest(TestCase):
         data = data['response']
         self.assertEqual(data, u'h')
 
-    def test_get_default_source_credentials_with_no_slug(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_default_source_credentials_with_no_slug(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_default_source_credentials'),
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(data['error'], 'Must provide bidder slug.')
 
-    def test_get_custom_audience(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_custom_audience(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_custom_audiences'),
             {'account_id': 1},
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -250,16 +248,21 @@ class K1ApiTest(TestCase):
             u'ttl': 60,
         })
 
-    def test_get_custom_audience_no_id(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_custom_audience_no_id(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_custom_audiences'),
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(data['error'], 'Account id must be specified.')
 
-    def test_update_source_pixel_with_existing(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_source_pixel_with_existing(self, mock_verify_wsgi_request):
         body = {
             'pixel_id': 1,
             'source_type': 'facebook',
@@ -269,6 +272,7 @@ class K1ApiTest(TestCase):
         response = self.client.put(
             reverse('k1api.update_source_pixel'), json.dumps(body), 'application/json',
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self.assertDictEqual(body, data['response'])
@@ -277,7 +281,9 @@ class K1ApiTest(TestCase):
         self.assertEqual(updated_pixel.url, 'http://www.dummy_fb.com/pixie_endpoint')
         self.assertEqual(updated_pixel.source_pixel_id, 'fb_dummy_id')
 
-    def test_update_source_pixel_create_new(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_source_pixel_create_new(self, mock_verify_wsgi_request):
         body = {
             'pixel_id': 3,
             'source_type': 'facebook',
@@ -287,6 +293,7 @@ class K1ApiTest(TestCase):
         response = self.client.put(
             reverse('k1api.update_source_pixel'), json.dumps(body), 'application/json',
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self.assertDictEqual(body, data['response'])
@@ -295,11 +302,12 @@ class K1ApiTest(TestCase):
         self.assertEqual(updated_pixel.url, 'http://www.dummy_fb.com/pixie_endpoint')
         self.assertEqual(updated_pixel.source_pixel_id, 'fb_dummy_id')
 
-    def _test_source_credentials_filter(self, source_types=None):
+    def _test_source_credentials_filter(self, mock_verify_wsgi_request, source_types=None):
         response = self.client.get(
             reverse('k1api.get_source_credentials_for_reports_sync'),
             {'source_type': source_types},
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -315,15 +323,17 @@ class K1ApiTest(TestCase):
             scs = scs.filter(source__source_type__type__in=source_types)
         self.assertEqual(len(data['source_credentials_list']), scs.count())
 
-    def test_get_source_credentials(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_source_credentials(self, mock_verify_wsgi_request):
         test_cases = [
             ['b1'],
             ['b1', 'outbrain', 'yahoo'],
         ]
         for source_types in test_cases:
-            self._test_source_credentials_filter(source_types)
+            self._test_source_credentials_filter(mock_verify_wsgi_request, source_types)
 
-    def _test_content_ad_source_ids_filters(self, source_types=None,
+    def _test_content_ad_source_ids_filters(self, mock_verify_wsgi_request, source_types=None,
                                             source_content_ad_ids=None):
         query_params = urllib.urlencode({'source_type': source_types})
         response = self.client.generic(
@@ -332,6 +342,7 @@ class K1ApiTest(TestCase):
             data=json.dumps(source_content_ad_ids),
             QUERY_STRING=query_params
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -357,7 +368,9 @@ class K1ApiTest(TestCase):
         logger.error('abc')
         self.assertEqual(len(data['content_ad_sources']), contentadsources.count())
 
-    def test_get_content_ad_source_mapping(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_content_ad_source_mapping(self, mock_verify_wsgi_request):
         test_source_filters = [
             ['b1'],
             ['b1', 'outbrain', 'yahoo'],
@@ -369,12 +382,15 @@ class K1ApiTest(TestCase):
         test_cases = itertools.product(test_source_filters, test_source_content_ads)
         for source_types, source_content_ad_ids in test_cases:
             self._test_content_ad_source_ids_filters(
-                source_types, source_content_ad_ids)
+                mock_verify_wsgi_request, source_types, source_content_ad_ids)
 
-    def test_get_ga_accounts(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ga_accounts(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_ga_accounts'),
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -388,12 +404,80 @@ class K1ApiTest(TestCase):
         self.assertEqual(data['ga_accounts'][0]['ga_web_property_id'], 'prop1')
         self.assertEqual(data['ga_accounts'][1]['ga_web_property_id'], 'prop2')
 
-    def _test_get_content_ad_sources_for_ad_group(self, ad_group_id, content_ad_id):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_group_source_ids(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_group_source_ids'),
+            {'source_type': 'adblade',
+             'credentials_id': 1},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        expected = dash.models.AdGroupSource.objects.filter(
+            source__source_type__type='adblade', source_credentials_id=1)
+        expected = [{u'ad_group_id': e.ad_group_id, u'source_campaign_key': e.source_campaign_key} for e in expected]
+        self.assertEqual(data, list(expected))
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_group_source(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_group_source'),
+            {'source_type': 'adblade',
+             'ad_group_id': 1},
+        )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        required_fields = {
+            u'ad_group_source_id',
+            u'ad_group_id',
+            u'credentials',
+            u'source_campaign_key',
+            u'state',
+            u'cpc_cc',
+            u'daily_budget_cc',
+            u'name',
+            u'start_date',
+            u'end_date',
+            u'target_devices',
+            u'target_regions',
+            u'tracking_code',
+            u'tracking_slug',
+        }
+
+        db_ags = dash.models.AdGroupSource.objects.get(
+            source__source_type__type='adblade', ad_group_id=1)
+        self.assertEqual(data['ad_group_id'], db_ags.ad_group_id)
+        self.assertEqual(data['ad_group_source_id'], db_ags.id)
+        self.assertEqual(data['source_campaign_key'], db_ags.source_campaign_key)
+        self.assertLessEqual(required_fields, set(data.keys()))
+
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_group_source_nonexisting(self, mock_verify_wsgi_request):
+        response = self.client.get(
+            reverse('k1api.get_ad_group_source'),
+            {'source_type': 'nonexistingsource',
+             'ad_group_id': 1},
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def _test_get_content_ad_sources_for_ad_group(self, mock_verify_wsgi_request, ad_group_id, content_ad_id):
         response = self.client.get(
             reverse('k1api.get_content_ad_sources_for_ad_group'),
             {'source_type': 'adblade',
              'ad_group_id': 1},
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -431,30 +515,38 @@ class K1ApiTest(TestCase):
         for cas in data:
             self.assertLessEqual(required_fields, set(cas.keys()))
 
-    def test_get_content_ad_sources_for_ad_group(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_content_ad_sources_for_ad_group(self, mock_verify_wsgi_request):
         test_cases = [
             (1, None),
             (1, 1),
         ]
         for ad_group_id, content_ad_id in test_cases:
-            self._test_get_content_ad_sources_for_ad_group(ad_group_id, content_ad_id)
+            self._test_get_content_ad_sources_for_ad_group(mock_verify_wsgi_request, ad_group_id, content_ad_id)
 
-    def test_get_content_ad_sources_for_ad_group_no_adgroupsource(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_content_ad_sources_for_ad_group_no_adgroupsource(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_content_ad_sources_for_ad_group'),
             {'source_type': 'outbrain',
              'ad_group_id': 1},
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
         self.assertEqual(data, [])
 
-    def test_get_sources_by_tracking_slug(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_sources_by_tracking_slug(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_sources_by_tracking_slug')
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -464,12 +556,15 @@ class K1ApiTest(TestCase):
         for source in data.values():
             self.assertIn('id', source)
 
-    def test_get_accounts_slugs_ad_groups(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_accounts_slugs_ad_groups(self, mock_verify_wsgi_request):
         accounts = (1, 2)
         response = self.client.get(
             reverse('k1api.get_accounts_slugs_ad_groups'),
             {'account': accounts},
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -487,11 +582,14 @@ class K1ApiTest(TestCase):
 
             self.assertGreater(len(account_data['slugs']), 0)
 
-    def test_get_publishers_blacklist_outbrain(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_publishers_blacklist_outbrain(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_publishers_blacklist_outbrain'),
             {'marketer_id': 'abcde'}
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -506,10 +604,13 @@ class K1ApiTest(TestCase):
         )
         self.assertEqual(data, {u'blacklist': list(expected)})
 
-    def test_get_publishers_blacklist(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_publishers_blacklist(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_publishers_blacklist'),
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -568,11 +669,14 @@ class K1ApiTest(TestCase):
             'external_id': '',
         })
 
-    def test_get_publishers_blacklist_with_ad_group_id(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_publishers_blacklist_with_ad_group_id(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_publishers_blacklist'),
             {'ad_group_id': 1},
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -610,11 +714,14 @@ class K1ApiTest(TestCase):
             'external_id': '',
         })
 
-    def test_get_ad_groups_with_id(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups_with_id(self, mock_verify_wsgi_request):
         response = self.client.get(
-            reverse('k1api_new.ad_groups'),
-            {'ad_group_ids': 1},
+            reverse('k1api.get_ad_groups'),
+            {'ad_group_id': 1},
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -631,7 +738,7 @@ class K1ApiTest(TestCase):
             u'brand_name': u'brand1',
             u'display_url': u'brand1.com',
             u'tracking_codes': u'tracking1&tracking2',
-            u'target_devices': [],
+            u'device_targeting': [],
             u'iab_category': u'IAB24',
             u'target_regions': [],
             u'retargeting': [{u'event_id': u'1', u'event_type': u'aud', u'exclusion': False},
@@ -642,10 +749,13 @@ class K1ApiTest(TestCase):
             u'goal_types': [2, 5],
         })
 
-    def test_get_ad_groups(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups(self, mock_verify_wsgi_request):
         response = self.client.get(
-            reverse('k1api_new.ad_groups'),
+            reverse('k1api.get_ad_groups'),
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -662,7 +772,7 @@ class K1ApiTest(TestCase):
             u'brand_name',
             u'display_url',
             u'tracking_codes',
-            u'target_devices',
+            u'device_targeting',
             u'iab_category',
             u'target_regions',
             u'retargeting',
@@ -675,44 +785,45 @@ class K1ApiTest(TestCase):
         for item in data:
             self.assertEqual(required_fields, set(item.keys()))
 
-    def test_get_ad_groups_sources(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups_exchanges(self, mock_verify_wsgi_request):
         response = self.client.get(
-            reverse('k1api_new.ad_groups.sources'),
-            {'source_types': 'b1'}
+            reverse('k1api.get_ad_groups_exchanges'),
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
 
         self.assertEqual(len(data), 2)
+        self.assertEqual(len(data['1']), 1)
+        self.assertEqual(len(data['2']), 1)
 
-        self.assertDictEqual(data[0], {
-            u'ad_group_id': 1,
-            u'slug': u'b1_adiant',
-            u'state': 1,
-            u'cpc_cc': u'0.1200',
-            u'daily_budget_cc': u'1.5000',
-            u'source_campaign_key': [u'fake'],
-            u'tracking_code': u'tracking1&tracking2&_z1_adgid=1&_z1_msid={sourceDomain}',
+        self.assertDictEqual(data['1'][0], {
+            u'exchange': 'b1_adiant',
+            u'status': 1,
+            u'cpc_cc': '0.1200',
+            u'daily_budget_cc': '1.5000',
         })
 
-        self.assertDictEqual(data[1], {
-            u'ad_group_id': 2,
-            u'slug': u'b1_google',
-            u'state': 1,
+        sorted_exchanges = sorted(data['2'], key=lambda b: b['exchange'])
+        self.assertDictEqual(sorted_exchanges[0], {
+            u'exchange': u'b1_google',
+            u'status': 1,
             u'cpc_cc': u'0.1300',
             u'daily_budget_cc': u'1.6000',
-            u'source_campaign_key': [u'fake'],
-            u'tracking_code': u'tracking1&tracking2&_z1_adgid=2&_z1_msid={sourceDomain}',
         })
 
-    def test_get_ad_groups_exchanges_with_id(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_ad_groups_exchanges_with_id(self, mock_verify_wsgi_request):
         response = self.client.get(
-            reverse('k1api_new.ad_groups.sources'),
-            {'ad_group_ids': 1,
-             'source_types': 'b1'},
+            reverse('k1api.get_ad_groups_exchanges'),
+            {'ad_group_id': 1},
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -720,27 +831,24 @@ class K1ApiTest(TestCase):
 
         self.assertEqual(len(data), 1)
 
-        self.assertDictEqual(data[0], {
-            u'ad_group_id': 1,
-            u'slug': u'b1_adiant',
-            u'state': 1,
-            u'cpc_cc': u'0.1200',
-            u'daily_budget_cc': u'1.5000',
-            u'source_campaign_key': [u'fake'],
-            u'tracking_code': u'tracking1&tracking2&_z1_adgid=1&_z1_msid={sourceDomain}',
+        self.assertDictEqual(data['1'][0], {
+            u'exchange': 'b1_adiant',
+            u'status': 1,
+            u'cpc_cc': '0.1200',
+            u'daily_budget_cc': '1.5000',
         })
 
     def test_get_content_ads(self):
         # TODO matijav 03.05.2016
-        self.test_signature = False
         pass
 
     def test_get_content_ads_exchanges(self):
         # TODO matijav 03.05.2016
-        self.test_signature = False
         pass
 
-    def test_update_content_ad_status(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_content_ad_status(self, mock_verify_wsgi_request):
         response = self.client.put(
             reverse('k1api.update_content_ad_status'),
             json.dumps({'content_ad_id': 1, 'source_slug': 'adblade',
@@ -748,6 +856,7 @@ class K1ApiTest(TestCase):
                         'source_content_ad_id': 123}),
             'application/json',
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -766,12 +875,15 @@ class K1ApiTest(TestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_set_source_campaign_key(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_set_source_campaign_key(self, mock_verify_wsgi_request):
         response = self.client.put(
             reverse('k1api.set_source_campaign_key'),
             json.dumps({'ad_group_source_id': 1, 'source_campaign_key': ['abc']}),
             'application/json',
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -780,11 +892,14 @@ class K1ApiTest(TestCase):
         # self.assertEqual(1, 2)
         self.assertEqual(ags.source_campaign_key, ['abc'])
 
-    def test_get_outbrain_marketer_id(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_outbrain_marketer_id(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_outbrain_marketer_id'),
             {'ad_group_id': '1'}
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -792,11 +907,14 @@ class K1ApiTest(TestCase):
         ag = dash.models.AdGroup.objects.get(pk=1)
         self.assertEqual(ag.campaign.account.outbrain_marketer_id, data['response'])
 
-    def test_get_outbrain_marketer_id_assign_new(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_outbrain_marketer_id_assign_new(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_outbrain_marketer_id'),
             {'ad_group_id': '3'}
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -804,10 +922,13 @@ class K1ApiTest(TestCase):
         ag = dash.models.AdGroup.objects.get(pk=3)
         self.assertEqual(ag.campaign.account.outbrain_marketer_id, data['response'])
 
-    def test_get_facebook_accounts(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_facebook_accounts(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_facebook_accounts'),
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -825,11 +946,14 @@ class K1ApiTest(TestCase):
             u'page_id': u'5678',
         })
 
-    def test_get_facebook_accounts_with_ad_group(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_facebook_accounts_with_ad_group(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_facebook_accounts'),
             {'ad_group_id': '1'}
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -837,11 +961,14 @@ class K1ApiTest(TestCase):
         fb_account = dash.models.FacebookAccount.objects.get(pk=1)
         self.assertEqual(fb_account.ad_account_id, data['response']['ad_account_id'])
 
-    def test_get_facebook_accounts_with_account(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_get_facebook_accounts_with_account(self, mock_verify_wsgi_request):
         response = self.client.get(
             reverse('k1api.get_facebook_accounts'),
             {'account_id': '1'}
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
@@ -849,16 +976,17 @@ class K1ApiTest(TestCase):
         fb_account = dash.models.FacebookAccount.objects.get(pk=1)
         self.assertEqual(fb_account.ad_account_id, data['response']['ad_account_id'])
 
-    def test_update_ad_group_source(self):
-        params = {'ad_group_id': 1,
-                  'source_slug': 'adblade'}
-        response = self.client.generic(
-            'PUT',
-            reverse('k1api_new.ad_groups.sources'),
-            json.dumps({'state': 2}),
-            'application/json',
-            QUERY_STRING=urllib.urlencode(params)
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_ad_group_source_state(self, mock_verify_wsgi_request):
+        response = self.client.put(
+            reverse('k1api.update_ad_group_source_state'),
+            json.dumps({'ad_group_id': 1,
+                        'bidder_slug': 'adblade',
+                        'conf': {'state': 2}}),
+            'application/json'
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
 
@@ -867,50 +995,57 @@ class K1ApiTest(TestCase):
 
         self.assertEqual(a.get_current_settings().state, 2)
 
-    def test_update_ad_group_source_state_no_ad_group(self):
-        params = {'ad_group_id': 12345,
-                  'source_slug': 'adblade'}
-        response = self.client.generic(
-            'PUT',
-            reverse('k1api_new.ad_groups.sources'),
-            json.dumps({'state': 2}),
-            'application/json',
-            QUERY_STRING=urllib.urlencode(params)
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_ad_group_source_state_no_ad_group(self, mock_verify_wsgi_request):
+        response = self.client.put(
+            reverse('k1api.update_ad_group_source_state'),
+            json.dumps({'ad_group_id': 12345,
+                        'bidder_slug': 'adblade',
+                        'conf': {'state': 2}}),
+            'application/json'
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(data['error'], 'No AdGroupSource exists for ad_group_id: 12345 with bidder_slug adblade')
 
-    def test_update_ad_group_source_state_incorrect_body(self):
-        params = {'slug': 'adblade'}
-        response = self.client.generic(
-            'PUT',
-            reverse('k1api_new.ad_groups.sources'),
-            json.dumps({'state': 2}),
-            'application/json',
-            QUERY_STRING=urllib.urlencode(params)
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_ad_group_source_state_incorrect_body(self, mock_verify_wsgi_request):
+        response = self.client.put(
+            reverse('k1api.update_ad_group_source_state'),
+            json.dumps({'conf': {'state': 2}}),
+            'application/json'
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(data['error'], 'Must provide ad_group_id, source_slug and conf')
+        self.assertEqual(data['error'], 'Must provide ad_group_id, bidder_slug and conf')
 
-    def test_update_facebook_account(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_facebook_account(self, mock_verify_wsgi_request):
         response = self.client.put(
             reverse('k1api.update_facebook_account'),
             json.dumps({'status': 5, 'ad_account_id': 'act_555', 'account_id': 1}),
             'application/json'
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
         fb_account = dash.models.FacebookAccount.objects.get(account__id=1)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(fb_account.status, 5)
         self.assertEqual(fb_account.ad_account_id, 'act_555')
 
-    def test_update_facebook_account_error(self):
+    @patch('utils.request_signer.verify_wsgi_request')
+    @override_settings(K1_API_SIGN_KEY='test_api_key')
+    def test_update_facebook_account_error(self, mock_verify_wsgi_request):
         response = self.client.put(
             reverse('k1api.update_facebook_account'),
             json.dumps({'status': 5, 'ad_account_id': 'act_555'}),
             'application/json'
         )
+        mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
         data = json.loads(response.content)
         self.assertEqual(data['error'], 'account id must be specified')
         self.assertEqual(response.status_code, 400)
