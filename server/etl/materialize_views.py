@@ -382,6 +382,8 @@ class MasterView(Materialize):
                         0,
                         0,
                         0,
+
+                        row.users,
                     ),
                     (row.conversions, row.postclick_source)
                 )

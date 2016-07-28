@@ -29,7 +29,7 @@ class ContentAdStats(materialize_views.Materialize):
     impressions, clicks
     cost_cc, data_cost_cc
     visits, new_visits, bounced_visits, pageviews, total_time_on_site, conversions
-    effective_cost_nano, effective_data_cost_nano, license_fee_nano
+    effective_cost_nano, effective_data_cost_nano, license_fee_nano, users
     """
 
     TABLE_NAME = 'contentadstats'
@@ -68,7 +68,8 @@ class ContentAdStats(materialize_views.Materialize):
             'postclickstats',
             ['content_ad_id', 'type', 'source'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
-             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg')],
+             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg'),
+             ('users', 'sum')],
         )
 
     def _get_post_click_data(self, content_ad_postclick, ad_group, content_ad_id, media_source):
@@ -92,6 +93,7 @@ class ContentAdStats(materialize_views.Materialize):
             "pageviews": post_click[6],
             "time_on_site": post_click[7],
             "conversions": json.dumps(_sum_conversion(post_click[1], post_click[8])),
+            "users": post_click[9],
         }
 
     def generate_rows(self, cursor, date, campaign_factors):
@@ -158,6 +160,8 @@ class ContentAdStats(materialize_views.Materialize):
                 converters.decimal_to_int(effective_data_cost * converters.MICRO_TO_NANO),
                 converters.decimal_to_int(license_fee * converters.MICRO_TO_NANO),
                 converters.decimal_to_int(margin * converters.MICRO_TO_NANO),
+
+                post_click.get('users'),
             )
 
         content_ads_ad_group_map = {x.id: x.ad_group_id for x in dash.models.ContentAd.objects.all()}
@@ -212,6 +216,8 @@ class ContentAdStats(materialize_views.Materialize):
                 0,
                 0,
                 0,
+
+                post_click.get('users'),
             )
 
         if content_ad_postclick:
@@ -226,7 +232,8 @@ class Publishers(materialize_views.Materialize):
     clicks, impressions,
     cost_nano, data_cost_nano,
     effective_cost_nano, effective_data_cost_nano, license_fee_nano
-    visits, new_visits, bounced_visits, pageviews, total_time_on_site, conversions
+    visits, new_visits, bounced_visits, pageviews, total_time_on_site, conversions,
+    users
     """
 
     TABLE_NAME = 'publishers_1'
@@ -274,7 +281,8 @@ class Publishers(materialize_views.Materialize):
             'postclickstats',
             ['ad_group_id', 'type', 'source', 'lower(publisher)'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
-             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg')],
+             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg'),
+             ('users', 'sum')],
         )
 
     def _outbrain_cpc(self, date):
@@ -313,6 +321,7 @@ class Publishers(materialize_views.Materialize):
             "pageviews": post_click[7],
             "time_on_site": post_click[8],
             "conversions": json.dumps(_sum_conversion(post_click[1], post_click[9])),
+            "users": post_click[10],
         }
 
     def generate_rows(self, cursor, date, campaign_factors):
@@ -376,6 +385,8 @@ class Publishers(materialize_views.Materialize):
                 post_click.get('conversions'),
 
                 converters.decimal_to_int(margin * converters.MICRO_TO_NANO),
+
+                post_click.get('users'),
             )
 
         source = dash.models.Source.objects.get(source_type__type=dash.constants.SourceType.OUTBRAIN)
@@ -424,6 +435,8 @@ class Publishers(materialize_views.Materialize):
                 post_click.get('conversions'),
 
                 converters.decimal_to_int(margin * converters.MICRO_TO_NANO),
+
+                post_click.get('users'),
             )
 
         # make a new mapping as from now on we use media_source_slugs that are already extracted
@@ -478,6 +491,8 @@ class Publishers(materialize_views.Materialize):
                 post_click.get('conversions'),
 
                 0,
+
+                post_click.get('users'),
             )
 
         if content_ad_postclick:

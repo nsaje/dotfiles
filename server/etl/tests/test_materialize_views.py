@@ -15,7 +15,7 @@ from etl import materialize_views
 PostclickstatsResults = collections.namedtuple('Result2',
                                                ['ad_group_id', 'postclick_source', 'content_ad_id', 'source_slug',
                                                 'publisher', 'bounced_visits', 'conversions', 'new_visits', 'pageviews',
-                                                'total_time_on_site', 'visits'])
+                                                'total_time_on_site', 'visits', 'users'])
 
 
 @mock.patch('redshiftapi.db.get_write_stats_cursor')
@@ -308,7 +308,8 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                                 (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
                             ) * cf.pct_license_fee::decimal(10, 8)
                         ) * cf.pct_margin::decimal(10, 8) * 1000
-                    ) as margin_nano
+                    ) as margin_nano,
+                    null as users
                 FROM ( (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
                     join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id )
                         join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
@@ -333,6 +334,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                     SUM(new_visits) new_visits,
                     SUM(pageviews) pageviews,
                     SUM(total_time_on_site) total_time_on_site,
+                    SUM(users) users,
                     SUM(visits) visits
                 FROM postclickstats
                 WHERE date=%(date)s
@@ -423,11 +425,11 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         date = datetime.date(2016, 5, 1)
 
         mock_get_postclickstats_query_results.return_value = [
-            PostclickstatsResults(1, 'gaapi', 1, 'outbrain', 'bla.com', 12, '{einpix: 2}', 22, 100, 20, 2),
+            PostclickstatsResults(1, 'gaapi', 1, 'outbrain', 'bla.com', 12, '{einpix: 2}', 22, 100, 20, 2, 2),
             # this one should be left out as its from lower priority postclick source
-            PostclickstatsResults(1, 'ga_mail', 2, 'outbrain', 'beer.com', 12, '{einpix: 2}', 22, 100, 20, 2),
-            PostclickstatsResults(3, 'gaapi', 3, 'adblade', 'nesto.com', 12, '{einpix: 2}', 22, 100, 20, 2),
-            PostclickstatsResults(2, 'omniture', 4, 'outbrain', 'trol', 12, '{einpix: 2}', 22, 100, 20, 2),
+            PostclickstatsResults(1, 'ga_mail', 2, 'outbrain', 'beer.com', 12, '{einpix: 2}', 22, 100, 20, 2, 2),
+            PostclickstatsResults(3, 'gaapi', 3, 'adblade', 'nesto.com', 12, '{einpix: 2}', 22, 100, 20, 2, 2),
+            PostclickstatsResults(2, 'omniture', 4, 'outbrain', 'trol', 12, '{einpix: 2}', 22, 100, 20, 2, 2),
         ]
 
         mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
@@ -436,13 +438,13 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         self.assertItemsEqual(list(mv.get_postclickstats(None, date)), [
             ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 2), ('{einpix: 2}', 'gaapi')),
             ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0), ('{einpix: 2}', 'omniture')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 2), ('{einpix: 2}', 'omniture')),
             ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
-                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0), ('{einpix: 2}', 'gaapi')),
+                      0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 2), ('{einpix: 2}', 'gaapi')),
         ])
 
     def test_prepare_postclickstats_query(self):
@@ -462,6 +464,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             SUM(new_visits) new_visits,
             SUM(pageviews) pageviews,
             SUM(total_time_on_site) total_time_on_site,
+            SUM(users) users,
             SUM(visits) visits
         FROM postclickstats
         WHERE date=%(date)s
@@ -508,6 +511,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(new_visits) new_visits,
                     SUM(pageviews) pageviews,
                     SUM(total_time_on_site) total_time_on_site,
+                    SUM(users) users,
                     SUM(visits) visits
                 FROM postclickstats
                 WHERE date=%(date)s

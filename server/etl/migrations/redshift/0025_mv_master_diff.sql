@@ -30,5 +30,7 @@ CREATE TABLE mv_master_diff (
 
        effective_cost_nano bigint encode lzo,
        effective_data_cost_nano bigint encode lzo,
-       license_fee_nano bigint encode lzo
+       license_fee_nano bigint encode lzo,
+
+       users integer encode lzo
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id);

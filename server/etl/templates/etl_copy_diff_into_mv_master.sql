@@ -50,7 +50,9 @@ INSERT INTO mv_master (
                   (nvl(a.data_cost_nano, 0) * cf.pct_actual_spend::decimal(10, 8))
               ) * cf.pct_license_fee::decimal(10, 8)
           ) * cf.pct_margin::decimal(10, 8)
-      ) as margin_nano
+      ) as margin_nano,
+
+      a.users
   FROM
     (
       mv_master_diff a

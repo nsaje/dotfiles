@@ -51,7 +51,9 @@ INSERT INTO mv_master (
                   (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
               ) * cf.pct_license_fee::decimal(10, 8)
           ) * cf.pct_margin::decimal(10, 8) * 1000
-      ) as margin_nano
+      ) as margin_nano,
+
+      null as users
   FROM
     (
       (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
