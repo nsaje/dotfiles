@@ -73,7 +73,7 @@ describe('zemGridCellBreakdownField', function () {
             {breakdown: 'account', expectedResult: 'internalLink'},
             {breakdown: 'campaign', expectedResult: 'internalLink'},
             {breakdown: 'ad_group', expectedResult: 'internalLink'},
-            {breakdown: 'content_ad', expectedResult: 'baseField'},
+            {breakdown: 'content_ad', expectedResult: 'externalLink'},
             {breakdown: 'source', expectedResult: 'baseField'},
             {breakdown: 'publisher', expectedResult: 'baseField'},
         ];

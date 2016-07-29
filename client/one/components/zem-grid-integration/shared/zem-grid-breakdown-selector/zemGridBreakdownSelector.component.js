@@ -25,7 +25,11 @@ oneApp.controller('zemGridBreakdownSelectorCtrl', [function () {
 
     function initialize () {
         // Skip base level breakdown selection
-        vm.breakdownGroups = vm.api.getMetaData().breakdownGroups.slice(1);
+        vm.breakdownGroups = [
+            vm.api.getMetaData().breakdownGroups.structure,
+            vm.api.getMetaData().breakdownGroups.delivery,
+            vm.api.getMetaData().breakdownGroups.time,
+        ];
     }
 
     function onChecked (breakdown, group) {
@@ -42,7 +46,7 @@ oneApp.controller('zemGridBreakdownSelectorCtrl', [function () {
         // Add base level breakdown and all checked
         // breakdowns in successive levels
         var breakdown = [];
-        var baseLevelGroup = vm.api.getMetaData().breakdownGroups[0];
+        var baseLevelGroup = vm.api.getMetaData().breakdownGroups.base;
         breakdown.push(baseLevelGroup.breakdowns[0]);
         vm.breakdownGroups.forEach(function (group) {
             group.breakdowns.forEach(function (b) {

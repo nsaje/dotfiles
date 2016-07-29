@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp, constants */
 /* eslint-disable camelcase*/
 'use strict';
 
@@ -73,6 +73,7 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         );
         convertedStats = setEditableFields(convertedStats, row.editable_fields);
         convertedStats = setGoalStatuses(convertedStats, row.styles);
+        convertedStats = updateNameFieldData(convertedStats, metaData);
         return convertedStats;
     }
 
@@ -128,6 +129,13 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
                 stats[field].goalStatus = goalStatuses[field];
             }
         });
+        return stats;
+    }
+
+    function updateNameFieldData (stats, metaData) {
+        if (metaData.breakdown === constants.breakdown.CONTENT_AD) {
+            stats[zemGridEndpointColumns.COLUMNS.name.field] = stats.titleLink;
+        }
         return stats;
     }
 

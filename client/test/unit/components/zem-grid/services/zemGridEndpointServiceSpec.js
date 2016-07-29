@@ -40,7 +40,7 @@ describe('zemGridEndpointServiceSpec', function () {
             breakdown: jasmine.any(String),
             columns: jasmine.any(Array),
             categories: jasmine.any(Array),
-            breakdownGroups: jasmine.any(Array),
+            breakdownGroups: jasmine.any(Object),
             localStoragePrefix: jasmine.any(String),
             ext: jasmine.any(Object),
         };
@@ -92,7 +92,7 @@ describe('zemGridEndpointServiceSpec', function () {
             limit: 3,
             startDate: moment(),
             endDate: moment(),
-            breakdown: [metaData.breakdownGroups[0].breakdowns[0]],
+            breakdown: [metaData.breakdownGroups.base.breakdowns[0]],
         };
 
         $httpBackend.when('POST', '/api/accounts/1/breakdown/campaign/').respond({data: [breakdown]});

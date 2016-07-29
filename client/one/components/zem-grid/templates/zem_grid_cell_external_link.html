@@ -7,7 +7,7 @@
         <span ng-switch-when="visibleLink" class="visible-link">
             <a ng-show="ctrl.url && ctrl.fieldVisible" ng-href="{{ctrl.url}}" target="_blank"><img ng-src="{{ctrl.config.static_url}}/one/img/link.svg" class="link-img"></a>
         </span>
-        <span ng-switch-when="linkText" class="text-link">
+        <span ng-switch-default class="text-link">
             <a ng-show="ctrl.url && ctrl.fieldVisible" ng-href="{{ctrl.url}}" ng-click="ctrl.openUrl($event)" ng-attr-title="{{ctrl.text}}">{{ctrl.text}}</a>
             <span ng-show="!ctrl.url && ctrl.fieldVisible" class="text-link-disabled">{{ctrl.text}}</span>
         </span>

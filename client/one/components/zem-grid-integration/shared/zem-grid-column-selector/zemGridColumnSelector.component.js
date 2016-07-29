@@ -16,22 +16,30 @@ oneApp.directive('zemGridColumnSelector', [function () {
 
 
 oneApp.controller('zemGridColumnSelectorCtrl', [function () {
+    var MSG_DISABLED_COLUMN = 'Column is available when coresponding breakdown is visible.';
+
     var vm = this;
 
     vm.categories = [];
+    vm.getTooltip = getTooltip;
     vm.columnChecked = columnChecked;
 
     initialize();
 
     function initialize () {
         initCategories();
-        vm.api.onMetaDataUpdated(null, function () {
-            initCategories();
-        });
+        vm.api.onColumnsUpdated(null, initCategories);
     }
 
     function columnChecked (column) {
         vm.api.setVisibleColumns(column, column.visible);
+    }
+
+    function getTooltip (column) {
+        if (column.disabled) {
+            return MSG_DISABLED_COLUMN;
+        }
+        return null;
     }
 
     function initCategories () {
@@ -42,7 +50,7 @@ oneApp.controller('zemGridColumnSelectorCtrl', [function () {
         vm.api.getMetaData().categories.forEach(function (category) {
             var categoryColumns = columns.filter(function (column) {
                 var inCategory = category.fields.indexOf(column.field) !== -1;
-                return  inCategory && column.data.shown && !column.data.unselectable;
+                return inCategory && column.data.shown && !column.data.permanent;
             });
 
             if (categoryColumns.length > 0) {

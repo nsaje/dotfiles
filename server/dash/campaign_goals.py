@@ -389,6 +389,7 @@ def get_campaign_goals(campaign, conversion_goals):
 
         ret.append({
             'name': goal_name,
+            'primary': cg_value.campaign_goal.primary,
             'conversion': conversion_goal_name,
             'value': float(cg_value.value),
             'fields': fields,

@@ -18,16 +18,36 @@ oneApp.factory('zemGridColumnsService', ['zemGridConstants', 'zemGridStorageServ
 
         function initialize () {
             pubsub.register(pubsub.EVENTS.METADATA_UPDATED, initializeColumns);
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, initializeColumnsState);
         }
 
         function initializeColumns () {
             zemGridStorageService.loadColumns(grid);
+            initializeColumnsState();
+        }
+
+        function initializeColumnsState () {
+            var breakdowns = grid.meta.dataService.getBreakdown().map(function (breakdown) { return breakdown.query; });
+            grid.header.columns.forEach(function (column) {
+                if (column.data.breakdowns) {
+                    column.disabled = !intersects(column.data.breakdowns, breakdowns);
+                } else {
+                    column.disabled = false;
+                }
+            });
             pubsub.notify(grid.meta.pubsub.EVENTS.EXT_COLUMNS_UPDATED);
+        }
+
+        function intersects (array1, array2) {
+            // Simple solution for finding if arrays are having common element
+            return array1.filter(function (n) {
+                return array2.indexOf(n) != -1;
+            }).length > 0;
         }
 
         function getVisibleColumns () {
             var visibleColumns = grid.header.columns.filter(function (column) {
-                return column.visible;
+                return column.visible && !column.disabled;
             });
 
             // Add grid-only (non-data) columns

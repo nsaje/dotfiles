@@ -251,36 +251,42 @@ class CampaignGoalsTestCase(TestCase):
                 'conversion': None,
                 'value': 60,
                 'fields': {'total_seconds': True, 'avg_cost_per_minute': True},
+                'primary': True,
             },
             {
                 'name': 'Pageviews per Visit',
                 'conversion': None,
                 'value': 5,
                 'fields': {'total_pageviews': True, 'avg_cost_per_pageview': True},
+                'primary': False,
             },
             {
                 'name': 'Max Bounce Rate',
                 'conversion': None,
                 'value': 75,
                 'fields': {'non_bounced_visits': True, 'avg_cost_per_non_bounced_visit': True},
+                'primary': False,
             },
             {
                 'name': 'Cost per Visit',
                 'conversion': None,
                 'value': 0.5,
                 'fields': {'avg_cost_per_visit': True},
+                'primary': False,
             },
             {
                 'name': 'Avg. CPA',
                 'conversion': 'test conversion goal',
                 'value': 10,
                 'fields': {},
+                'primary': False,
             },
             {
                 'name': 'Cost per Non-Bounced Visit',
                 'conversion': None,
                 'value': 2.25,
                 'fields': {'non_bounced_visits': True, 'avg_cost_per_non_bounced_visit': True},
+                'primary': False,
             },
         ]
 

@@ -105,9 +105,9 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
         // Replace first column type to text and field breakdown name, to solve
         // temporary problems with primary column content in level>1 breakdowns
         // FIXME: find appropriate solution for this problem (special type)
-        var columns = zemGridEndpointColumns.createColumns(scope, level, breakdown);
-        var categories = zemGridEndpointColumns.createCategories(columns);
         var breakdownGroups = zemGridEndpointBreakdowns.createBreakdownGroups(level, breakdown);
+        var columns = zemGridEndpointColumns.createColumns(scope, level, getAvailableBreakdowns(breakdownGroups));
+        var categories = zemGridEndpointColumns.createCategories(columns);
 
         return {
             id: id,
@@ -119,6 +119,14 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
             localStoragePrefix: 'zem-grid-endpoint-' + level + '-' + breakdown,
             ext: {} // extensions placeholder
         };
+    }
+
+    function getAvailableBreakdowns (breakdownGroups) {
+        // Returns all structural breakdowns (text/query) available in group configuration
+        return [].concat(
+            breakdownGroups.base.breakdowns,
+            breakdownGroups.structure.breakdowns
+        ).map (function (breakdown) { return breakdown.query; });
     }
 
     function extendMetaData (breakdown, metaData) {

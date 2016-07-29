@@ -95,8 +95,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 // Base level always defines only one breakdown and
                 // is available as first element in breakdownGroups
                 metaData = _metaData;
-                var baseLevelBreakdown = metaData.breakdownGroups[0];
-                selectedBreakdown = [baseLevelBreakdown.breakdowns[0]];
+                var baseLevelBreakdown = metaData.breakdownGroups.base.breakdowns[0];
+                selectedBreakdown = [baseLevelBreakdown];
                 deferred.resolve(metaData);
             });
             return deferred.promise;

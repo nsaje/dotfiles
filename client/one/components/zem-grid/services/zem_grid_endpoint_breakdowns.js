@@ -1,4 +1,4 @@
-/* globals oneApp, constants */
+/* globals oneApp, constants, angular */
 'use strict';
 
 oneApp.factory('zemGridEndpointBreakdowns', [function () {
@@ -93,37 +93,35 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
     }
 
     function createBreakdownGroups (level, breakdown) {
-        var breakdownGroups = [];
+        var breakdownGroups = {};
 
         // Base Level breakdown group; based on required breakdown
         var baseLevelBreakdown = getBaseLevelBreakdown(breakdown);
-        breakdownGroups.push ({
+        breakdownGroups.base = {
             name: BASE_LEVEL_GROUP_NAME,
             breakdowns: [baseLevelBreakdown],
-        });
+        };
 
         // Structure breakdown group; based on level and breakdown (i.g. dedicated tab)
         var structureBreakdowns = getStructureBreakdowns(level, breakdown);
-        if (structureBreakdowns.length > 0) {
-            breakdownGroups.push ({
-                name: STRUCTURE_GROUP_NAME,
-                breakdowns: structureBreakdowns,
-            });
-        }
+        breakdownGroups.structure = {
+            name: STRUCTURE_GROUP_NAME,
+            breakdowns: structureBreakdowns,
+        };
 
         // Delivery breakdown group
-        breakdownGroups.push ({
+        breakdownGroups.delivery = {
             name: DELIVERY_GROUP_NAME,
             breakdowns: DELIVERY_BREAKDOWNS,
-        });
+        };
 
         // Time breakdown group
-        breakdownGroups.push ({
+        breakdownGroups.time = {
             name: TIME_GROUP_NAME,
             breakdowns: TIME_BREAKDOWNS,
-        });
+        };
 
-        return breakdownGroups;
+        return angular.copy(breakdownGroups);
     }
 
     return {

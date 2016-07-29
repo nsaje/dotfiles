@@ -39,12 +39,12 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
     // Mocked MetaData Definition
     //
 
-    var BREAKDOWN_GROUPS = [
-        {name: 'Base level', breakdowns: [{name: 'Base level', query: 'base_level'}]},
-        {name: 'Group 1',    breakdowns: [{name: 'By Age', query: 'age'}]},
-        {name: 'Group 2',    breakdowns: [{name: 'By Sex', query: 'sex'}]},
-        {name: 'Group 3',    breakdowns: [{name: 'By Date', query: 'date'}]},
-    ];
+    var BREAKDOWN_GROUPS = {
+        base: {name: 'Base level', breakdowns: [{name: 'Base level', query: 'base_level'}]},
+        age: {name: 'Group 1',    breakdowns: [{name: 'By Age', query: 'age'}]},
+        gender: {name: 'Group 2',    breakdowns: [{name: 'By Sex', query: 'sex'}]},
+        time: {name: 'Group 3',    breakdowns: [{name: 'By Date', query: 'date'}]},
+    };
 
     var COLUMNS = {
         breakdown_name: {

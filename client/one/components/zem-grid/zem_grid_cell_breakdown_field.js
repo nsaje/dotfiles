@@ -9,6 +9,10 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
         constants.breakdown.AD_GROUP,
     ];
 
+    var BREAKDOWNS_WITH_EXTERNAL_LINK = [
+        constants.breakdown.CONTENT_AD,
+    ];
+
     return {
         restrict: 'E',
         replace: true,
@@ -70,6 +74,12 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
                     rowLevel === zemGridConstants.gridRowLevel.BASE) {
                     return zemGridConstants.gridColumnTypes.INTERNAL_LINK;
                 }
+
+                if (BREAKDOWNS_WITH_EXTERNAL_LINK.indexOf(breakdown) !== -1 &&
+                    rowLevel === zemGridConstants.gridRowLevel.BASE) {
+                    return zemGridConstants.gridColumnTypes.EXTERNAL_LINK;
+                }
+
                 return zemGridConstants.gridColumnTypes.BASE_FIELD;
             }
         }],

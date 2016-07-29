@@ -50,8 +50,9 @@ oneApp.controller('zemGridExportCtrl', ['$scope', '$modal', 'zemGridExportOption
     function getAdditionalColumns () {
         var fields = [];
         vm.api.getVisibleColumns().forEach(function (column) {
-            if (column.data && !column.unselectable)
+            if (column.data && !column.permanent) {
                 fields.push(column.data.field);
+            }
         });
         return fields;
     }
