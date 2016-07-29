@@ -42,6 +42,10 @@ var constants = {
         BLACKLISTED: 2,
         PENDING: 3,
     },
+    notificationType: {
+        info: 'info',
+        success: 'success',
+    },
     adTargetDevice: {
         DESKTOP: 'desktop',
         TABLET: 'tablet',

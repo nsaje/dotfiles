@@ -35,7 +35,8 @@ oneApp.directive('zemGridCellCheckbox', [function () {
                 vm.checkboxModel.visible = selectionService.isRowSelectionEnabled(vm.row);
                 if (vm.checkboxModel.visible) {
                     vm.checkboxModel.checked = selectionService.isRowSelected(vm.row);
-                    vm.checkboxModel.disabled = selectionService.isRowSelectable(vm.row);
+                    vm.checkboxModel.disabled = !selectionService.isRowSelectable(vm.row);
+                    vm.checkboxModel.tooltip = selectionService.getRowTooltip(vm.row);
                 }
             }
             function toggleSelection () {

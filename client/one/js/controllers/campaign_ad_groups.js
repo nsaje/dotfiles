@@ -9,8 +9,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
     $scope.chartMetricOptions = options.campaignChartMetrics;
-    $scope.selectedAdGroupIds = [];
-    $scope.selectedTotals = true;
     $scope.rows = null;
     $scope.totalRow = null;
     $scope.order = '-cost';
@@ -21,47 +19,59 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.campaigns.settings';
 
+    $scope.selection = {
+        entityIds: [],
+        totals: true,
+    };
+
+    $scope.grid = {
+        api: undefined,
+        level: constants.level.CAMPAIGNS,
+        breakdown: constants.breakdown.AD_GROUP,
+        entityId: $state.params.id,
+    };
+
     var userSettings = zemUserSettings.getInstance($scope, 'campaignAdGroups');
 
     $scope.updateSelectedAdGroups = function (adGroupId) {
         adGroupId = adGroupId.toString();
 
-        var i = $scope.selectedAdGroupIds.indexOf(adGroupId);
+        var i = $scope.selection.entityIds.indexOf(adGroupId);
         if (i > -1) {
-            $scope.selectedAdGroupIds.splice(i, 1);
+            $scope.selection.entityIds.splice(i, 1);
         } else {
-            $scope.selectedAdGroupIds.push(adGroupId);
+            $scope.selection.entityIds.push(adGroupId);
         }
 
-        $scope.columns[0].disabled = $scope.selectedAdGroupIds.length >= 4;
+        $scope.columns[0].disabled = $scope.selection.entityIds.length >= 4;
     };
 
     $scope.selectedAdGroupsChanged = function (row, checked) {
         if (row.ad_group) {
             $scope.updateSelectedAdGroups(row.ad_group);
         } else {
-            $scope.selectedTotals = !$scope.selectedTotals;
+            $scope.selection.totals = !$scope.selection.totals;
         }
 
         $scope.updateSelectedRowsData();
     };
 
     $scope.updateSelectedRowsData = function () {
-        if (!$scope.selectedTotals && !$scope.selectedAdGroupIds.length) {
-            $scope.selectedTotals = true;
+        if (!$scope.selection.totals && !$scope.selection.entityIds.length) {
+            $scope.selection.totals = true;
             $scope.totalRow.checked = true;
         }
 
-        $location.search('ad_group_ids', $scope.selectedAdGroupIds.join(','));
-        $location.search('ad_group_totals', $scope.selectedTotals ? 1 : null);
+        $location.search('ad_group_ids', $scope.selection.entityIds.join(','));
+        $location.search('ad_group_totals', $scope.selection.totals ? 1 : null);
 
         getDailyStats();
     };
 
     $scope.selectRows = function () {
-        $scope.totalRow.checked = $scope.selectedTotals;
+        $scope.totalRow.checked = $scope.selection.totals;
         $scope.rows.forEach(function (x) {
-            x.checked = $scope.selectedAdGroupIds.indexOf(x.ad_group.toString()) > -1;
+            x.checked = $scope.selection.entityIds.indexOf(x.ad_group.toString()) > -1;
         });
     };
 
@@ -553,7 +563,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, getDailyStatsMetrics(), null).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), null).then(
             function (data) {
                 setConversionGoalChartOptions(data.conversionGoals);
                 $scope.chartData = data.chartData;
@@ -569,7 +579,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         if (id !== 'totals') {
             $scope.updateSelectedAdGroups(id);
         } else {
-            $scope.selectedTotals = false;
+            $scope.selection.totals = false;
         }
 
         $scope.selectRows();
@@ -584,7 +594,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 var defaultChartMetrics;
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
-                $scope.totalRow.checked = $scope.selectedTotals;
+                $scope.totalRow.checked = $scope.selection.totals;
                 $scope.dataStatus = data.dataStatus;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
@@ -704,7 +714,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             $location.search('ad_group_ids', adGroupIds);
         }
 
-        $scope.selectedTotals = !$scope.selectedAdGroupIds.length || !!adGroupTotals;
+        $scope.selection.totals = !$scope.selection.entityIds.length || !!adGroupTotals;
         $location.search('ad_group_totals', adGroupTotals);
 
         getTableData();
@@ -713,77 +723,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         getDailyStats();
         $scope.getContentInsights();
         $scope.getInfoboxData();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeGrid();
-        }
     };
-
-    function initializeGrid () {
-        var metadata = zemGridEndpointService.createMetaData($scope,
-            $scope.level, $state.params.id, constants.breakdown.AD_GROUP);
-        var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        var dataSource = zemDataSourceService.createInstance(endpoint);
-        dataSource.setDateRange($scope.dateRange, false);
-        dataSource.setOrder($scope.order, false);
-
-        var options = {
-            selection: {
-                enabled: true,
-                levels: [0, 1],
-                maxSelected: 4,
-            }
-        };
-
-        // GridApi is defined by zem-grid in initialization, therefor
-        // it will be available in the next cycle; postpone initialization using $timeout
-        $scope.grid = {
-            api: undefined,
-            options: options,
-            dataSource: dataSource,
-        };
-
-        $scope.$watch('grid.api', function (newValue, oldValue) {
-            if (newValue === oldValue) return; // Equal when watch is initialized (AngularJS docs)
-            initializeGridApi();
-        });
-    }
-
-    function initializeGridApi () {
-        // Initialize GridApi listeners
-        $scope.grid.api.onSelectionUpdated($scope, function () {
-            var selectedRows = $scope.grid.api.getSelection().selected;
-
-            $scope.selectedTotals = false;
-            $scope.selectedAdGroupIds = [];
-
-            selectedRows.forEach(function (row) {
-                if (row.level === 0) {
-                    $scope.selectedTotals = true;
-                }
-                if (row.level === 1) {
-                    $scope.selectedAdGroupIds.push(row.data.breakdownId);
-                }
-            });
-
-            $location.search('ad_group_ids', $scope.selectedAdGroupIds.join(','));
-            $location.search('ad_group_totals', $scope.selectedTotals ? 1 : null);
-            getDailyStats();
-        });
-
-        $scope.grid.api.onDataUpdated($scope, function () {
-            var rows = $scope.grid.api.getRows();
-            var selection = $scope.grid.api.getSelection();
-            rows.forEach(function (row) {
-                if (row.level === 0 && $scope.selectedTotals)
-                    selection.selected.push(row);
-                if (row.level === 1 && $scope.selectedAdGroupIds.indexOf(row.data.breakdownId) >= 0) {
-                    selection.selected.push(row);
-                }
-            });
-            $scope.grid.api.setSelection(selection);
-        });
-    }
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('ad_group_ids', null);
@@ -805,10 +745,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         getTableData();
 
         $scope.getContentInsights();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setDateRange(newValue, true);
-        }
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
@@ -818,10 +754,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getTableData();
         getDailyStats();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue);
-        }
     }, true);
 
     $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
@@ -830,10 +762,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         }
 
         getTableData();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
-        }
     });
 
     $scope.init();

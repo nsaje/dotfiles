@@ -21,6 +21,7 @@ oneApp.factory('zemGridSelectionService', ['zemGridConstants', function (zemGrid
         this.setSelection = setSelection;
         this.setFilter = setFilter;
         this.getCustomFilters = getCustomFilters;
+        this.getRowTooltip = getRowTooltip;
 
         this.isSelectionEnabled = isSelectionEnabled;
         this.isFilterSelectionEnabled = isFilterSelectionEnabled;
@@ -94,12 +95,14 @@ oneApp.factory('zemGridSelectionService', ['zemGridConstants', function (zemGrid
         }
 
         function isRowSelectable (row) {
+            if (!isRowSelectionEnabled(row)) return false;
+            if (isRowSelected(row)) return true;
+
             var config = getConfig();
-            var maxSelected = config.maxSelected;
-            if (config.maxSelected && getSelection().selected.length >= maxSelected) {
-                return !isRowSelected(row);
+            if (config.callbacks && config.callbacks.isRowSelectable) {
+                return config.callbacks.isRowSelectable(row);
             }
-            return false;
+            return true;
         }
 
         function isRowSelected (row) {
@@ -125,6 +128,14 @@ oneApp.factory('zemGridSelectionService', ['zemGridConstants', function (zemGrid
                 collection.push(row);
             }
             pubsub.notify(pubsub.EVENTS.EXT_SELECTION_UPDATED, getSelection());
+        }
+
+        function getRowTooltip (row) {
+            var config = getConfig();
+            if (!config.info) return null;
+            if (isRowSelectionEnabled(row) && !isRowSelectable(row)) return config.info.disabledRow;
+            // TODO: extend functionality for other row states
+            return null;
         }
     }
 

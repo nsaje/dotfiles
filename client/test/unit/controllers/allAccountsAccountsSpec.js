@@ -8,9 +8,8 @@ describe('AllAccountsAccountsCtrl', function () {
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(module(function ($provide, zemGridDebugEndpointProvider) {
+    beforeEach(module(function ($provide) {
         $provide.value('zemLocalStorageService', {get: function () {}});
-        $provide.value('zemGridEndpointService', zemGridDebugEndpointProvider.$get());
     }));
 
     beforeEach(function () {
@@ -106,19 +105,6 @@ describe('AllAccountsAccountsCtrl', function () {
                     title: 'Test',
                 }
             );
-        });
-    });
-
-    describe('Zem-Grid DataSource', function () {
-        it('check without permission', function () {
-            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
-            initializeController();
-            expect($scope.grid).toBe(undefined);
-        });
-
-        it('check with permission', function () {
-            initializeController();
-            expect($scope.grid).not.toBe(undefined);
         });
     });
 });

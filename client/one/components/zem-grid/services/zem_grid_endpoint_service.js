@@ -130,6 +130,11 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
             delete breakdown.batches;
         }
 
+        if (breakdown.obBlacklistedCount) {
+            metaData.ext.obBlacklistedCount = breakdown.obBlacklistedCount;
+            delete breakdown.obBlacklistedCount;
+        }
+
         metaData.ext.enablingAutopilotSourcesAllowed = true;
         if (breakdown.enablingAutopilotSourcesAllowed !== undefined) {
             metaData.ext.enablingAutopilotSourcesAllowed = breakdown.enablingAutopilotSourcesAllowed;

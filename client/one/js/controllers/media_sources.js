@@ -1,8 +1,6 @@
 /* globals oneApp,moment,constants,options,angular */
-oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemOptimisationMetricsService', '$timeout', 'zemDataSourceService', 'zemGridEndpointService', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, zemOptimisationMetricsService, $timeout, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
+oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemOptimisationMetricsService', '$timeout', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, zemOptimisationMetricsService, $timeout) { // eslint-disable-line max-len
     $scope.localStoragePrefix = null;
-    $scope.selectedTotals = true;
-    $scope.selectedSourceIds = [];
     $scope.chartMetrics = [];
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -23,39 +21,51 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.infoboxLinkTo = null;
     $scope.sideBarVisible = false;
 
+    $scope.selection = {
+        entityIds: [],
+        totals: true,
+    };
+
+    $scope.grid = {
+        api: undefined,
+        level: $scope.level,
+        breakdown: constants.breakdown.MEDIA_SOURCE,
+        entityId: $state.params.id,
+    };
+
     var userSettings = null,
         hasCampaignGoals = $scope.level === constants.level.CAMPAIGNS;
 
     $scope.updateSelectedSources = function (sourceId) {
-        var i = $scope.selectedSourceIds.indexOf(sourceId);
+        var i = $scope.selection.entityIds.indexOf(sourceId);
 
         if (i > -1) {
-            $scope.selectedSourceIds.splice(i, 1);
+            $scope.selection.entityIds.splice(i, 1);
         } else {
-            $scope.selectedSourceIds.push(sourceId);
+            $scope.selection.entityIds.push(sourceId);
         }
 
-        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= constants.maxSelectedSources;
+        $scope.columns[0].disabled = $scope.selection.entityIds.length >= constants.maxSelectedSources;
     };
 
     $scope.selectedSourcesChanged = function (row) {
         if (row.id) {
             $scope.updateSelectedSources(row.id);
         } else {
-            $scope.selectedTotals = !$scope.selectedTotals;
+            $scope.selection.totals = !$scope.selection.totals;
         }
 
         $scope.updateSelectedRowsData();
     };
 
     $scope.updateSelectedRowsLocation = function () {
-        if (!$scope.selectedTotals && !$scope.selectedSourceIds.length) {
-            $scope.selectedTotals = true;
+        if (!$scope.selection.totals && !$scope.selection.entityIds.length) {
+            $scope.selection.totals = true;
             $scope.totals.checked = true;
         }
-        if ($scope.selectedSourceIds.length > 0) {
-            $location.search('source_ids', $scope.selectedSourceIds.join(','));
-            $location.search('source_totals', $scope.selectedTotals ? 1 : null);
+        if ($scope.selection.entityIds.length > 0) {
+            $location.search('source_ids', $scope.selection.entityIds.join(','));
+            $location.search('source_totals', $scope.selection.totals ? 1 : null);
         } else {
             $location.search('source_ids', null);
             $location.search('source_totals', null);
@@ -69,7 +79,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
     $scope.selectRows = function () {
         $scope.rows.forEach(function (x) {
-            x.checked = $scope.selectedSourceIds.indexOf(x.id) > -1;
+            x.checked = $scope.selection.entityIds.indexOf(x.id) > -1;
         });
     };
 
@@ -77,7 +87,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         if (sourceId !== 'totals') {
             $scope.updateSelectedSources(String(sourceId));
         } else {
-            $scope.selectedTotals = false;
+            $scope.selection.totals = false;
             $scope.totals.checked = false;
         }
 
@@ -87,7 +97,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
     $scope.removeFilteredSelectedSources = function () {
         if (zemFilterService.isSourceFilterOn()) {
-            $scope.selectedSourceIds = $scope.selectedSourceIds.filter(function (sourceId) {
+            $scope.selection.entityIds = $scope.selection.entityIds.filter(function (sourceId) {
                 return zemFilterService.isSourceFiltered(sourceId);
             });
         }
@@ -531,7 +541,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 var defaultChartMetrics;
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
-                $scope.totals.checked = $scope.selectedTotals;
+                $scope.totals.checked = $scope.selection.totals;
                 $scope.dataStatus = data.dataStatus;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
@@ -566,7 +576,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         }
 
         $scope.dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate,
-            $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true);
+            $scope.dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), true);
 
         $scope.dailyStatsPromise.then(
             function (data) {
@@ -725,12 +735,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         userSettings.registerGlobal('chartHidden');
 
         if (sourceIds) {
-            $scope.selectedSourceIds = sourceIds.split(',');
+            $scope.selection.entityIds = sourceIds.split(',');
             $scope.removeFilteredSelectedSources();
             $location.search('source_ids', sourceIds);
         }
 
-        $scope.selectedTotals = !$scope.selectedSourceIds.length || !!sourceTotals;
+        $scope.selection.totals = !$scope.selection.entityIds.length || !!sourceTotals;
         $location.search('source_totals', sourceTotals);
 
         $scope.initColumns();
@@ -746,77 +756,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         } else {
             $scope.sideBarVisible = false;
         }
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeGrid();
-        }
     };
-
-    function initializeGrid () {
-        var metadata = zemGridEndpointService.createMetaData($scope,
-            $scope.level, $state.params.id, constants.breakdown.MEDIA_SOURCE);
-        var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        var dataSource = zemDataSourceService.createInstance(endpoint);
-        dataSource.setDateRange($scope.dateRange, false);
-        dataSource.setOrder($scope.order, false);
-
-        var options = {
-            selection: {
-                enabled: true,
-                levels: [0, 1],
-                maxSelected: 4,
-            }
-        };
-
-        // GridApi is defined by zem-grid in initialization, therefor
-        // it will be available in the next cycle; postpone initialization using $timeout
-        $scope.grid = {
-            api: undefined,
-            options: options,
-            dataSource: dataSource,
-        };
-
-        $scope.$watch('grid.api', function (newValue, oldValue) {
-            if (newValue === oldValue) return; // Equal when watch is initialized (AngularJS docs)
-            initializeGridApi();
-        });
-    }
-
-    function initializeGridApi () {
-        // Initialize GridApi listeners
-        $scope.grid.api.onSelectionUpdated($scope, function () {
-            var selectedRows = $scope.grid.api.getSelection().selected;
-
-            $scope.selectedTotals = false;
-            $scope.selectedSourceIds = [];
-
-            selectedRows.forEach(function (row) {
-                if (row.level === 0) {
-                    $scope.selectedTotals = true;
-                }
-                if (row.level === 1) {
-                    $scope.selectedSourceIds.push(row.data.breakdownId);
-                }
-            });
-
-            $location.search('source_ids', $scope.selectedSourceIds.join(','));
-            $location.search('source_totals', $scope.selectedTotals ? 1 : null);
-            getDailyStats();
-        });
-
-        $scope.grid.api.onDataUpdated($scope, function () {
-            var rows = $scope.grid.api.getRows();
-            var selection = $scope.grid.api.getSelection();
-            rows.forEach(function (row) {
-                if (row.level === 0 && $scope.selectedTotals)
-                    selection.selected.push(row);
-                if (row.level === 1 && $scope.selectedSourceIds.indexOf(row.data.breakdownId) >= 0) {
-                    selection.selected.push(row);
-                }
-            });
-            $scope.grid.api.setSelection(selection);
-        });
-    }
 
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
         if (newValue === true && oldValue === false) {
@@ -841,9 +781,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.sideBarVisible = true;
             $scope.getContentInsights();
         }
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setDateRange(newValue, true);
-        }
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
@@ -856,10 +793,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         getTableData();
         getDailyStats();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
-        }
     }, true);
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {

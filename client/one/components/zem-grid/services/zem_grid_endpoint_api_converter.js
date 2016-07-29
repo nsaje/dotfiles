@@ -54,6 +54,8 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
             show_archived: config.showArchived,
             show_blacklisted_publishers: config.showBlacklistedPublishers,
             filtered_sources: config.filteredSources,
+            filtered_account_types: config.filteredAccountTypes,
+            filtered_agencies: config.filteredAgencies,
             level: config.level,
             limit: config.limit,
             offset: config.offset,

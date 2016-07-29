@@ -9,6 +9,12 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     // BASE COLUMNS DEFINITIONS
     //
     var COLUMNS = {
+        id: {
+            shown: false, // not shown (used internally)
+            name: 'Id',
+            field: 'id',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+        },
         account: {
             name: 'Account',
             field: 'breakdown_name',
@@ -400,7 +406,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
         batchId: {
-            shown: false, // not shown, but it is internally used
+            shown: false, // not shown (used internally)
             name: 'Batch Id',
             field: 'batch_id',
             type: zemGridConstants.gridColumnTypes.TEXT,
@@ -485,6 +491,18 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         },
 
         // Publisher
+        externalId: {
+            shown: false, // not shown (used internally)
+            name: 'External Id',
+            field: 'external_id',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+        },
+        sourceId: {
+            shown: false, // not shown (used internally)
+            name: 'Id',
+            field: 'source_id',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+        },
         domain: {
             name: 'Domain',
             field: 'domain',
@@ -1105,18 +1123,21 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     //  TAB RELATED GROUPS (e.g. account campaign tab)
     //
     var ALL_ACCOUNTS_ACCOUNTS = [
+        COLUMNS.id,
         COLUMNS.account,
         COLUMNS.statusAccount,
         COLUMNS.performance,
     ].concat(MANAGEMENT_GROUP, METRICS_GROUP);
 
     var ACCOUNT_CAMPAIGNS = [
+        COLUMNS.id,
         COLUMNS.campaign,
         COLUMNS.statusCampaign,
         COLUMNS.performance,
     ].concat(MANAGEMENT_GROUP, METRICS_GROUP);
 
     var CAMPAIGN_AD_GROUPS = [
+        COLUMNS.id,
         COLUMNS.adgroup,
         COLUMNS.stateAdGroup,
         COLUMNS.statusAdGroup,
@@ -1124,10 +1145,12 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     ].concat(METRICS_GROUP);
 
     var AD_GROUP_CONTENT_ADS = [
+        COLUMNS.id,
         COLUMNS.stateContentAd,
     ].concat(CONTENT_GROUP, METRICS_GROUP);
 
     var MEDIA_SOURCE = [
+        COLUMNS.id,
         COLUMNS.mediaSource,
         COLUMNS.statusMediaSource,
         COLUMNS.performance,
@@ -1137,6 +1160,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     ].concat(METRICS_GROUP);
 
     var AD_GROUP_MEDIA_SOURCE = [
+        COLUMNS.id,
         COLUMNS.stateMediaSourceAdGroup,
         COLUMNS.mediaSource,
         COLUMNS.statusMediaSourceAdGroup,
@@ -1147,6 +1171,9 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     ].concat(METRICS_GROUP);
 
     var AD_GROUP_PUBLISHERS = [
+        COLUMNS.id,
+        COLUMNS.sourceId,
+        COLUMNS.externalId,
         COLUMNS.statusPublisher,
         COLUMNS.performance,
         COLUMNS.domain,

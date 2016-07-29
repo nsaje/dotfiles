@@ -1,4 +1,10 @@
-<span class="zem-grid-cell-checkbox">
+<span class="zem-grid-cell-checkbox"
+      zem-lazy-popover-visible="{{ ctrl.checkboxModel.tooltip }}"
+      zem-lazy-popover-text="{{ ctrl.checkboxModel.tooltip }}"
+      zem-lazy-popover-placement="right"
+      zem-lazy-popover-animation-class="fade"
+      zem-lazy-popover-append-to-body="true"
+>
      <input ng-show="ctrl.checkboxModel.visible"
             type="checkbox"
             ng-disabled="ctrl.checkboxModel.disabled"

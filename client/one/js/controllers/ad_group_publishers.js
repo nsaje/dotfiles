@@ -1,6 +1,6 @@
 /*globals angular,oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', 'zemDataSourceService', 'zemGridEndpointService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) {
+oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService) {
     $scope.selectedTotals = true;
     $scope.selectedColumnsCount = 0;
     $scope.constants = constants;
@@ -23,6 +23,13 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
     $scope.obBlacklistedCount = 0;
     $scope.obBlacklistedSelected = 0;
+
+    $scope.grid = {
+        api: undefined,
+        level: constants.level.AD_GROUPS,
+        breakdown: constants.breakdown.PUBLISHER,
+        entityId: $state.params.id,
+    };
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
@@ -935,9 +942,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setDateRange($scope.dateRange, true);
-        }
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
@@ -947,10 +951,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
-        }
     }, true);
 
     $scope.$watch(zemFilterService.getBlacklistedPublishers, function (newValue, oldValue) {
@@ -960,10 +960,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.SHOW_BLACKLISTED_PUBLISHERS, newValue, true);
-        }
     }, true);
 
 
@@ -1012,26 +1008,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getDailyStats();
         $scope.getInfoboxData();
         zemFilterService.setShowBlacklistedPublishers(true);
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeGrid();
-        }
     };
-
-    function initializeGrid () {
-        var metadata = zemGridEndpointService.createMetaData($scope,
-            $scope.level, $state.params.id, constants.breakdown.PUBLISHER);
-        var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        var dataSource = zemDataSourceService.createInstance(endpoint);
-        dataSource.setDateRange($scope.dateRange, false);
-        dataSource.setOrder($scope.order, false);
-
-        $scope.grid = {
-            api: undefined,
-            options: undefined,
-            dataSource: dataSource,
-        };
-    }
 
     $scope.loadPage = function (page) {
         if (page && page > 0 && page <= $scope.pagination.numPages) {

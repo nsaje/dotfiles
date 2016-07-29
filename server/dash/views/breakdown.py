@@ -138,6 +138,9 @@ def get_report_through_table(get_fn, user, form_data, all_accounts_level=False, 
     if 'batches' in response:
         base['batches'] = response['batches']
 
+    if 'ob_blacklisted_count' in response:
+        base['ob_blacklisted_count'] = response['ob_blacklisted_count']
+
     return [base]
 
 

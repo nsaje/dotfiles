@@ -54,14 +54,33 @@
         </div>
     </div>
 
-    <div class="zem-internal-feature-container" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
+    <div class="section zem-internal-feature-container" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature')"></zem-internal-feature>
-        <zem-grid-action-bar api="grid.api"></zem-grid-action-bar>
-        <zem-grid data-data-source="grid.dataSource"
-                  api="grid.api"
-                  options="grid.options"
-                  zem-has-permission="hasPermission"
-                  zem-is-permission-internal="isPermissionInternal">
-        </zem-grid>
+
+        <div class="button-bar" ng-if="grid.api">
+            <div class="button-bar-item add-source-container">
+                <button type="button" class="btn btn-add" ng-click="addAdGroup()">+ Ad group</button>
+                <div class="loader" ng-show="addGroupRequestInProgress"></div>
+            </div>
+            <zem-grid-export api="grid.api" class="pull-right"></zem-grid-export>
+            <zem-grid-column-selector api="grid.api" class="pull-right"></zem-grid-column-selector>
+            <zem-grid-breakdown-selector api="grid.api" class="pull-right"></zem-grid-breakdown-selector>
+        </div>
+
+        <zem-grid-integration
+              api="grid.api"
+              level="grid.level"
+              breakdown="grid.breakdown"
+              entity-id="grid.entityId"
+              opitons="grid.options"
+
+              order="order"
+              date-range="dateRange"
+              selection="selection"
+              selection-callback="updateSelectedRowsData"
+
+              zem-has-permission="hasPermission"
+              zem-is-permission-internal="isPermissionInternal">
+        </zem-grid-integration>
     </div>
 </div>

@@ -1,5 +1,5 @@
 /*globals angular,oneApp,constants,options,moment*/
-oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataSourceService', 'zemGridEndpointService', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
+oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService) { // eslint-disable-line max-len
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -9,7 +9,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
     $scope.chartMetricOptions = options.accountChartMetrics;
-    $scope.selectedCampaignIds = [];
     $scope.selectedTotals = true;
     $scope.rows = null;
     $scope.totalRow = null;
@@ -20,6 +19,18 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.accounts.settings';
+
+    $scope.selection = {
+        entityIds: [],
+        totals: true,
+    };
+
+    $scope.grid = {
+        api: undefined,
+        level: constants.level.ACCOUNTS,
+        breakdown: constants.breakdown.CAMPAIGN,
+        entityId: $state.params.id,
+    };
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
@@ -33,42 +44,42 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.updateSelectedCampaigns = function (campaignId) {
         campaignId = campaignId.toString();
 
-        var i = $scope.selectedCampaignIds.indexOf(campaignId);
+        var i = $scope.selection.entityIds.indexOf(campaignId);
         if (i > -1) {
-            $scope.selectedCampaignIds.splice(i, 1);
+            $scope.selection.entityIds.splice(i, 1);
         } else {
-            $scope.selectedCampaignIds.push(campaignId);
+            $scope.selection.entityIds.push(campaignId);
         }
 
-        $scope.columns[0].disabled = $scope.selectedCampaignIds.length >= 4;
+        $scope.columns[0].disabled = $scope.selection.entityIds.length >= 4;
     };
 
     $scope.selectedCampaignsChanged = function (row, checked) {
         if (row.campaign) {
             $scope.updateSelectedCampaigns(row.campaign);
         } else {
-            $scope.selectedTotals = !$scope.selectedTotals;
+            $scope.selection.totals = !$scope.selection.totals;
         }
 
         $scope.updateSelectedRowsData();
     };
 
     $scope.updateSelectedRowsData = function () {
-        if (!$scope.selectedTotals && !$scope.selectedCampaignIds.length) {
-            $scope.selectedTotals = true;
+        if (!$scope.selection.totals && !$scope.selection.entityIds.length) {
+            $scope.selection.totals = true;
             $scope.totalRow.checked = true;
         }
 
-        $location.search('campaign_ids', $scope.selectedCampaignIds.join(','));
-        $location.search('campaign_totals', $scope.selectedTotals ? 1 : null);
+        $location.search('campaign_ids', $scope.selection.entityIds.join(','));
+        $location.search('campaign_totals', $scope.selection.totals ? 1 : null);
 
         getDailyStats();
     };
 
     $scope.selectRows = function () {
-        $scope.totalRow.checked = $scope.selectedTotals;
+        $scope.totalRow.checked = $scope.selection.totals;
         $scope.rows.forEach(function (x) {
-            x.checked = $scope.selectedCampaignIds.indexOf(x.campaign.toString()) > -1;
+            x.checked = $scope.selection.entityIds.indexOf(x.campaign.toString()) > -1;
         });
     };
 
@@ -509,7 +520,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedCampaignIds, $scope.selectedTotals, getDailyStatsMetrics(), null).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), null).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
@@ -536,7 +547,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         if (id !== 'totals') {
             $scope.updateSelectedCampaigns(id);
         } else {
-            $scope.selectedTotals = false;
+            $scope.selection.totals = false;
         }
 
         $scope.selectRows();
@@ -550,7 +561,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
-                $scope.totalRow.checked = $scope.selectedTotals;
+                $scope.totalRow.checked = $scope.selection.totals;
                 $scope.dataStatus = data.dataStatus;
                 $scope.lastSyncDate = data.last_sync ? moment(data.last_sync) : null;
                 $scope.isSyncRecent = data.is_sync_recent;
@@ -658,7 +669,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             }
         }
 
-        $scope.selectedTotals = !$scope.selectedCampaignIds.length || !!campaignTotals;
+        $scope.selection.totals = !$scope.selection.entityIds.length || !!campaignTotals;
         $location.search('campaign_totals', campaignTotals);
 
         getTableData();
@@ -666,77 +677,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         pollSyncStatus();
         getDailyStats();
         $scope.getInfoboxData();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeGrid();
-        }
     };
-
-    function initializeGrid () {
-        var metadata = zemGridEndpointService.createMetaData($scope,
-            $scope.level, $state.params.id, constants.breakdown.CAMPAIGN);
-        var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        var dataSource = zemDataSourceService.createInstance(endpoint);
-        dataSource.setDateRange($scope.dateRange, false);
-        dataSource.setOrder($scope.order, false);
-
-        var options = {
-            selection: {
-                enabled: true,
-                levels: [0, 1],
-                maxSelected: 4,
-            }
-        };
-
-        // GridApi is defined by zem-grid in initialization, therefor
-        // it will be available in the next cycle; postpone initialization using $timeout
-        $scope.grid = {
-            api: undefined,
-            options: options,
-            dataSource: dataSource,
-        };
-
-        $scope.$watch('grid.api', function (newValue, oldValue) {
-            if (newValue === oldValue) return; // Equal when watch is initialized (AngularJS docs)
-            initializeGridApi();
-        });
-    }
-
-    function initializeGridApi () {
-        // Initialize GridApi listeners
-        $scope.grid.api.onSelectionUpdated($scope, function () {
-            var selectedRows = $scope.grid.api.getSelection().selected;
-
-            $scope.selectedTotals = false;
-            $scope.selectedCampaignIds = [];
-
-            selectedRows.forEach(function (row) {
-                if (row.level === 0) {
-                    $scope.selectedTotals = true;
-                }
-                if (row.level === 1) {
-                    $scope.selectedCampaignIds.push(row.data.breakdownId);
-                }
-            });
-
-            $location.search('campaign_ids', $scope.selectedCampaignIds.join(','));
-            $location.search('campaign_totals', $scope.selectedTotals ? 1 : null);
-            getDailyStats();
-        });
-
-        $scope.grid.api.onDataUpdated($scope, function () {
-            var rows = $scope.grid.api.getRows();
-            var selection = $scope.grid.api.getSelection();
-            rows.forEach(function (row) {
-                if (row.level === 0 && $scope.selectedTotals)
-                    selection.selected.push(row);
-                if (row.level === 1 && $scope.selectedCampaignIds.indexOf(row.data.breakdownId) >= 0) {
-                    selection.selected.push(row);
-                }
-            });
-            $scope.grid.api.setSelection(selection);
-        });
-    }
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('campaign_ids', null);
@@ -756,10 +697,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
         getTableData();
         getDailyStats();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setDateRange(newValue, true);
-        }
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
@@ -769,10 +706,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
         getTableData();
         getDailyStats();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
-        }
     }, true);
 
     $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
@@ -781,10 +714,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         }
 
         getTableData();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
-        }
     });
 
     $scope.init();

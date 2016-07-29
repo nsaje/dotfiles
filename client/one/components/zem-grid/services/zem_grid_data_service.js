@@ -16,6 +16,7 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGr
         this.loadData = loadData;
         this.saveData = saveData;
 
+        this.DS_FILTER = dataSource.FILTER;
         this.setBreakdown = dataSource.setBreakdown;
         this.getBreakdown = dataSource.getBreakdown;
         this.getBreakdownLevel = dataSource.getBreakdownLevel;
@@ -23,6 +24,8 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGr
         this.getOrder = dataSource.getOrder;
         this.setDateRange = dataSource.setDateRange;
         this.getDateRange = dataSource.getDateRange;
+        this.setFilter = dataSource.setFilter;
+        this.getFilter = dataSource.getFilter;
 
 
         function initialize () {

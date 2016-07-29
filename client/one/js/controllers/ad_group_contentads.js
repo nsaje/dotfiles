@@ -1,5 +1,5 @@
 /* globals oneApp, options, angular, constants, moment */
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemGridConstants', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService',  'zemDataSourceService', 'zemGridEndpointService', function ($scope, $window, $state, $modal, $location, $q, api, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemGridConstants', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService',  function ($scope, $window, $state, $modal, $location, $q, api, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService) { // eslint-disable-line max-len
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -28,6 +28,13 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     $scope.selectedAll = false;
     $scope.selectedBatchId = null;
     $scope.selectedContentAdsStatus = {};
+
+    $scope.grid = {
+        api: undefined,
+        level: constants.level.AD_GROUPS,
+        breakdown: constants.breakdown.CONTENT_AD,
+        entityId: $state.params.id,
+    };
 
     $scope.archivingResults = null;
     $scope.closeArchivingResults = function () {
@@ -645,10 +652,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
 
         getDailyStats();
         getTableData();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setDateRange($scope.dateRange, true);
-        }
     });
 
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
@@ -711,10 +714,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         }
         getTableData();
         getDailyStats();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.FILTERED_MEDIA_SOURCES, newValue, true);
-        }
     }, true);
 
     $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
@@ -723,10 +722,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         }
         getTableData();
         getDailyStats();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            $scope.grid.dataSource.setFilter($scope.grid.dataSource.FILTER.SHOW_ARCHIVED_SOURCES, newValue, true);
-        }
     }, true);
 
     $scope.triggerSync = function () {
@@ -884,68 +879,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         initColumns();
 
         pollSyncStatus();
-
-        if ($scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
-            initializeGrid();
-        }
     };
-
-    function initializeGrid () {
-        var metadata = zemGridEndpointService.createMetaData($scope,
-            $scope.level, $state.params.id, constants.breakdown.CONTENT_AD);
-        var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        var dataSource = zemDataSourceService.createInstance(endpoint);
-        dataSource.setDateRange($scope.dateRange, false);
-        dataSource.setOrder($scope.order, false);
-
-        var options = {
-            selection: {
-                enabled: true,
-                filtersEnabled: true,
-                levels: [1],
-                customFilters: [
-                    {
-                        type: zemGridConstants.gridSelectionCustomFilterType.LIST,
-                        name: 'Upload batch',
-                        filters: []
-                    }
-                ]
-            }
-        };
-
-        $scope.grid = {
-            api: undefined,
-            options: options,
-            dataSource: dataSource,
-        };
-
-        $scope.$watch('grid.api', function (newValue, oldValue) {
-            if (newValue === oldValue) return; // Equal when watch is initialized (AngularJS docs)
-            initializeGridApi();
-        });
-    }
-
-    function initializeGridApi () {
-        $scope.grid.api.onMetaDataUpdated($scope, function () {
-            var metaData = $scope.grid.api.getMetaData();
-            if (!metaData.ext.batches) return;
-
-            function createFilterCallback (batchId) {
-                return function (row) {
-                    return row.data.stats['batch_id'].value === batchId;
-                };
-            }
-
-            var filters = metaData.ext.batches.map(function (batch) {
-                return {
-                    name: batch.name,
-                    callback: createFilterCallback(batch.id),
-                    batch: batch, // store for later use
-                };
-            });
-            $scope.grid.options.selection.customFilters[0].filters = filters;
-        });
-    }
 
     $scope.pollTableUpdates = function () {
         if ($scope.lastChangeTimeout) {

@@ -19,6 +19,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         this.getColumns = getColumns;
 
         // Data service API
+        this.DS_FILTER = grid.meta.dataService.DS_FILTER;
         this.loadData = grid.meta.dataService.loadData;
         this.loadMetaData = grid.meta.dataService.loadMetaData;
         this.setBreakdown = grid.meta.dataService.setBreakdown;
@@ -28,12 +29,14 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         this.getOrder = grid.meta.dataService.getOrder;
         this.setDateRange = grid.meta.dataService.setDateRange;
         this.getDateRange = grid.meta.dataService.getDateRange;
+        this.setFilter = grid.meta.dataService.setFilter;
+        this.getFilter = grid.meta.dataService.getFilter;
 
         // Selection service API
         this.getSelection = grid.meta.selectionService.getSelection;
         this.setSelection = grid.meta.selectionService.setSelection;
-        this.getSelectionOptions = grid.meta.selectionService.getSelectionOptions;
-        this.setSelectionOptions = grid.meta.selectionService.setSelectionOptions;
+        this.getSelectionOptions = grid.meta.selectionService.getConfig;
+        this.setSelectionOptions = grid.meta.selectionService.setConfig;
 
         // Columns service API
         this.setVisibleColumns = grid.meta.columnsService.setVisibleColumns;

@@ -4393,9 +4393,10 @@ select.media-source-select {
 .zem-internal-feature-container {
     position: relative;
     > zem-internal-feature {
+        z-index: -1;
         border: 1px solid @internal-color;
         position: absolute;
-        .position-properties(-5px);
+        .position-properties(-8px);
 
         .internal {
             position: absolute;

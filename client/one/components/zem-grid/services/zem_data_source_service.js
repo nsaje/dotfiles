@@ -30,9 +30,11 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
     };
 
     var FILTER = {
-        FILTERED_MEDIA_SOURCES: 1,
-        SHOW_ARCHIVED_SOURCES: 2,
-        SHOW_BLACKLISTED_PUBLISHERS: 3,
+        FILTERED_AGENCIES: 1,
+        FILTERED_ACCOUNT_TYPES: 2,
+        FILTERED_MEDIA_SOURCES: 3,
+        SHOW_ARCHIVED_SOURCES: 4,
+        SHOW_BLACKLISTED_PUBLISHERS: 5,
     };
 
     function DataSource (endpoint) {
@@ -299,9 +301,11 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function setFilter (filter, value, fetch) {
             switch (filter) {
+            case FILTER.FILTERED_AGENCIES: config.filteredAgencies = value; break;
+            case FILTER.FILTERED_ACCOUNT_TYPES: config.filteredAccountTypes = value; break;
+            case FILTER.FILTERED_MEDIA_SOURCES: config.filteredSources = value; break;
             case FILTER.SHOW_ARCHIVED_SOURCES: config.showArchived = value; break;
             case FILTER.SHOW_BLACKLISTED_PUBLISHERS: config.showBlacklistedPublishers = value; break;
-            case FILTER.FILTERED_MEDIA_SOURCES: config.filteredSources = value; break;
             }
 
             if (fetch) {
@@ -399,13 +403,11 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function getFilter (filter) {
             switch (filter) {
+            case FILTER.FILTERED_AGENCIES: return config.filteredAgencies;
+            case FILTER.FILTERED_ACCOUNT_TYPES: return config.filteredAccountTypes;
+            case FILTER.FILTERED_MEDIA_SOURCES: return config.filteredSources;
             case FILTER.SHOW_ARCHIVED_SOURCES: return config.showArchived;
             case FILTER.SHOW_BLACKLISTED_PUBLISHERS: return config.showBlacklistedPublishers;
-            case FILTER.FILTERED_MEDIA_SOURCES: return config.filteredSources;
-            }
-
-            if (fetch) {
-                return getData();
             }
         }
 

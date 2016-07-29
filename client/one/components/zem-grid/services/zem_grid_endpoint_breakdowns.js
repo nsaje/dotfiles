@@ -64,7 +64,7 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
     }
 
     function getEntityLevelBreakdown (level) {
-        switch(level) {
+        switch (level) {
         case constants.level.ALL_ACCOUNTS: return BREAKDOWNS.account;
         case constants.level.ACCOUNTS: return BREAKDOWNS.campaign;
         case constants.level.CAMPAIGNS: return BREAKDOWNS.adGroup;

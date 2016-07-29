@@ -20,7 +20,6 @@ describe('AdGroupAdsCtrl', function () {
 
         $provide.value('zemLocalStorageService', {get: function () {}});
         $provide.value('zemFilterService', zemFilterServiceMock);
-        $provide.value('zemGridEndpointService', zemGridDebugEndpointProvider.$get());
         $provide.value('zemCustomTableColsService', {
             load: function () {
                 return [];
@@ -548,19 +547,6 @@ describe('AdGroupAdsCtrl', function () {
             $scope.executeBulkAction('restore');
 
             expect(api.adGroupContentAdArchive.restore).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('Zem-Grid DataSource', function () {
-        it('check without permission', function () {
-            permissions['zemauth.can_access_table_breakdowns_feature'] = false;
-            initializeController();
-            expect($scope.grid).toBe(undefined);
-        });
-
-        it('check with permission', function () {
-            initializeController();
-            expect($scope.grid).not.toBe(undefined);
         });
     });
 });
