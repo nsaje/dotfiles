@@ -268,7 +268,7 @@ module.exports = function (grunt) {
         karma: {
             local: {
                 configFile: 'test/karma.conf.js',
-                singleRun: false,
+                singleRun: true,
             },
         },
         protractor: {
