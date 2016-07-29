@@ -44,7 +44,6 @@ class AdGroupAdsTableTest(TestCase):
         self.user = User.objects.get(pk=1)
         self.client.login(username=self.user.email, password=password)
 
-        self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
@@ -108,6 +107,7 @@ class AdGroupAdsTableTest(TestCase):
 
         mock_stats1 = [{
             'ctr': '12.5000',
+            'cpm': '0.1',
             'content_ad': 1,
             'date': date.isoformat(),
             'cpc': '0.0100',
@@ -128,10 +128,13 @@ class AdGroupAdsTableTest(TestCase):
             'bounce_rate': 12.0,
             'pv_per_visit': 0.9,
             'avg_tos': 1.0,
+            'returning_users': 20,
+            'unique_users': 35,
         }]
         mock_stats2 = {
             'date': date.isoformat(),
             'cpc': '0.0200',
+            'cpm': '0.1',
             'clicks': 1500,
             'impressions': 2000000,
             'media_cost': 200,
@@ -145,6 +148,8 @@ class AdGroupAdsTableTest(TestCase):
             'ctr': '15.5000',
             'content_ad': 2,
             'visits': 30,
+            'returning_users': 20,
+            'unique_users': 30,
             'click_discrepancy': 0.1,
             'pageviews': 122,
             'percent_new_users': 32.0,
@@ -248,6 +253,7 @@ class AdGroupAdsTableTest(TestCase):
             'margin': 11,
             'agency_total': 121,
             'cpc': '0.0100',
+            'cpm': '0.1',
             'ctr': '12.5000',
             'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
             'id': '1',
@@ -279,6 +285,8 @@ class AdGroupAdsTableTest(TestCase):
             'url': 'http://testurl.com',
             'redirector_url': 'http://example.com/b/abc/z1/1/1/',
             'visits': 40,
+            'returning_users': 20,
+            'unique_users': 35,
             'click_discrepancy': 0.2,
             'pageviews': 123,
             'percent_new_users': 33.0,
@@ -302,6 +310,7 @@ class AdGroupAdsTableTest(TestCase):
             'redirector_url': 'http://example.com/b/abc/z1/1/2/',
             'clicks': None,
             'cpc': None,
+            'cpm': None,
             'image_urls': {
                 'square': '/123456789.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
                 'landscape': '/123456789.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg'},
@@ -332,6 +341,8 @@ class AdGroupAdsTableTest(TestCase):
             'bounce_rate': None,
             'pv_per_visit': None,
             'avg_tos': None,
+            'returning_users': None,
+            'unique_users': None,
         }
         self.assertItemsEqual(sorted(result['data']['rows']), [expected_row_1, expected_row_2])
 
@@ -353,9 +364,12 @@ class AdGroupAdsTableTest(TestCase):
             'margin': 20,
             'agency_total': 220,
             'cpc': '0.0200',
+            'cpm': '0.1',
             'ctr': '15.5000',
             'impressions': 2000000,
             'visits': 30,
+            'returning_users': 20,
+            'unique_users': 30,
             'click_discrepancy': 0.1,
             'pageviews': 122,
             'percent_new_users': 32.0,
@@ -700,7 +714,6 @@ class AdGroupAdsTableUpdatesTest(TestCase):
         self.user = User.objects.get(pk=1)
         self.client.login(username=self.user.email, password=password)
 
-        self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 7, 5, 13, 22, 20)
 
@@ -846,7 +859,6 @@ class AdGroupPublishersTableTest(TestCase):
         self.user = User.objects.get(pk=1)
         self.client.login(username=self.user.email, password=password)
 
-        self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
@@ -1824,7 +1836,6 @@ class AdGroupPublishersTableTest(TestCase):
 
         date = datetime.date(2015, 2, 22)
 
-        self.maxDiff = None
         mock_stats1 = [{
             'clicks': 123,
             'data_cost': 0,

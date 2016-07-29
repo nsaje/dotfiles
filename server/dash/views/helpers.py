@@ -933,11 +933,11 @@ def get_target_regions_string(regions):
 
 
 def copy_stats_to_row(stat, row):
-    for key in ['impressions', 'clicks', 'data_cost', 'cpc', 'ctr',
+    for key in ['impressions', 'clicks', 'data_cost', 'cpc', 'ctr', 'cpm',
                 'visits', 'click_discrepancy', 'pageviews', 'media_cost',
                 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'e_media_cost', 'e_data_cost', 'billing_cost',
-                'license_fee', 'margin', 'agency_total']:
+                'license_fee', 'margin', 'agency_total', 'unique_users', 'returning_users']:
         row[key] = stat.get(key)
 
     for key in [k for k in stat.keys() if k.startswith('conversion_goal_')]:

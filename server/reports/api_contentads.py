@@ -52,6 +52,7 @@ class RSContentAdStatsModel(redshift.RSModel):
         # Derivatives
         dict(sql='ctr',                   app='ctr',                out=rsh.to_percent,           calc=rsh.sum_div('clicks', 'impressions')),
         dict(sql='cpc_cc',                app='cpc',                out=rsh.from_cc,              calc=rsh.sum_div('cost_cc', 'clicks')),
+        dict(sql='cpm_cc',                app='cpm',                out=rsh.from_cc,              calc=rsh.calc_cpm('cost_cc', 'impressions')),
 
     ]
 
@@ -67,6 +68,8 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='bounce_rate',           app='bounce_rate',        out=rsh.to_percent,           calc=rsh.sum_div('bounced_visits', 'visits')),
         dict(sql='pv_per_visit',          app='pv_per_visit',       out=rsh.unchanged,            calc=rsh.sum_div('pageviews', 'visits')),
         dict(sql='avg_tos',               app='avg_tos',            out=rsh.unchanged,            calc=rsh.sum_div('total_time_on_site', 'visits')),
+        dict(sql='unique_users_sum',      app='unique_users',       out=rsh.unchanged,            calc=rsh.sum_agr('users')),
+        dict(sql='returning_users_sum',   app='returning_users',    out=rsh.unchanged,            calc=rsh.RETURNING_USERS_FORMULA),
     ]
 
     _POSTCLICK_OPTIMIZATION_FIELDS = [

@@ -4,11 +4,12 @@ TRAFFIC_FIELDS = [
     'cpc', 'ctr', 'title', 'url',
     'media_cost', 'e_media_cost', 'e_data_cost',
     'license_fee', 'billing_cost',
-    'margin', 'agency_total',
+    'margin', 'agency_total', 'cpm',
 ]
 POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
 POSTCLICK_ENGAGEMENT_FIELDS = [
-    'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals', 'new_visits'
+    'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals', 'new_visits',
+    'returning_users', 'unique_users',
 ]
 CONVERSION_GOAL_FIELDS = ['conversions']
 
@@ -44,6 +45,9 @@ FIELD_PERMISSION_MAPPING = {
     'agency_total':     'zemauth.can_view_agency_margin',
     'yesterday_cost':   'zemauth.can_view_actual_costs',
     'e_yesterday_cost': 'zemauth.can_view_platform_cost_breakdown',
+    'cpm':              'zemauth.can_view_new_columns',
+    'unique_users':     'zemauth.can_view_new_columns',
+    'returning_users':  'zemauth.can_view_new_columns',
 }
 
 

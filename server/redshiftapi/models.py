@@ -132,6 +132,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
     # Derivates
     ctr = backtosql.TemplateColumn('part_sumdiv_perc.sql', {'expr': 'clicks', 'divisor': 'impressions'}, mh.AGGREGATES)
     cpc = backtosql.TemplateColumn('part_sumdiv_nano.sql', {'expr': 'cost_nano', 'divisor': 'clicks'}, mh.AGGREGATES)
+    cpm = backtosql.TemplateColumn('part_cpm.sql', group=mh.AGGREGATES)
 
     # Postclick acquisition fields
     visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'visits'}, mh.AGGREGATES)
@@ -148,6 +149,8 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
                                             mh.AGGREGATES)
     avg_tos = backtosql.TemplateColumn('part_sumdiv.sql',
                                        {'expr': 'total_time_on_site', 'divisor': 'visits'}, mh.AGGREGATES)
+    returning_users = backtosql.TemplateColumn('part_returning_users.sql', group=mh.AGGREGATES)
+    unique_users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'users'}, mh.AGGREGATES)
 
     total_seconds = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'total_time_on_site'}, mh.AGGREGATES)
     avg_cost_per_minute = backtosql.TemplateColumn('part_avg_cost_per_minute.sql', group=mh.AGGREGATES)

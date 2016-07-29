@@ -10,8 +10,8 @@ from dash import conversions_helper
 from dash.models import Source
 from reports import redshift
 from reports.rs_helpers import from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr, click_discrepancy, \
-    decimal_to_int_exact, sum_expr, extract_json_or_null, mul_expr, total_cost,\
-    DIVIDE_FORMULA, UNBOUNCED_VISITS_FORMULA, AVG_TOS_FORMULA
+    decimal_to_int_exact, sum_expr, extract_json_or_null, mul_expr, total_cost, calc_cpm,\
+    DIVIDE_FORMULA, UNBOUNCED_VISITS_FORMULA, AVG_TOS_FORMULA, RETURNING_USERS_FORMULA
 
 from utils import s3helpers
 
@@ -34,8 +34,7 @@ class RSPublishersModel(redshift.RSModel):
         "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos", "total_seconds",
         "avg_cost_per_minute", "non_bounced_visits", "avg_cost_per_non_bounced_visit",
         "total_pageviews", "avg_cost_per_pageview", "avg_cost_for_new_visitor", "avg_cost_per_visit",
-        "margin", "agency_total",
-
+        "margin", "agency_total", "cpm", "returning_users", "unique_users",
     ]
     # fields that are allowed for breakdowns (app-based naming)
     ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'ad_group', 'date'])
@@ -51,6 +50,7 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='media_cost_nano_sum',    app='media_cost',   out=from_nano,          calc=sum_agr('cost_nano'),                                                                                         order="SUM(cost_nano) = 0, media_cost_nano_sum {direction}"),
         dict(sql='data_cost_nano_sum',     app='data_cost',    out=from_nano,          calc=sum_agr('data_cost_nano'),                                                                                    order="SUM(data_cost_nano) = 0, data_cost_nano_sum {direction}"),
         dict(sql='cpc_nano',               app='cpc',          out=from_nano,          calc=sum_div("cost_nano", "clicks"),                                                                               order="SUM(clicks) = 0, sum(cost_nano) IS NULL, cpc_nano {direction}"),  # makes sure nulls are last
+        dict(sql='cpm_nano',               app='cpm',          out=from_nano,          calc=calc_cpm('cost_nano', 'impressions'),                                                                         order="SUM(impressions) = 0, sum(cost_nano) IS NULL, cpm_nano {direction}"),  # makes sure nulls are last
         dict(sql='ctr',                    app='ctr',          out=to_percent,         calc=sum_div("clicks", "impressions"),                                                                             order="SUM(impressions) IS NULL, ctr {direction}"),
         dict(sql='adgroup_id',             app='ad_group',     out=unchanged),
         dict(sql='license_fee_nano_sum',   app='license_fee',  out=from_nano,          calc=sum_agr('license_fee_nano'),                                                                                  order="license_fee_nano_sum = 0, license_fee_nano_sum {direction}"),
@@ -73,6 +73,8 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='bounce_rate',         app='bounce_rate',          out=to_percent,     calc=sum_div('bounced_visits', 'visits')),
         dict(sql='pv_per_visit',        app='pv_per_visit',         out=unchanged,      calc=sum_div('pageviews', 'visits')),
         dict(sql='avg_tos',             app='avg_tos',              out=unchanged,      calc=sum_div('total_time_on_site', 'visits')),
+        dict(sql='unique_users_sum',    app='unique_users',         out=unchanged,      calc=sum_agr('users')),
+        dict(sql='returning_users_sum', app='returning_users',      out=unchanged,      calc=RETURNING_USERS_FORMULA),
     ]
 
     _POSTCLICK_OPTIMIZATION_FIELDS = [
