@@ -568,7 +568,7 @@ urlpatterns += [
     ),
     url(
         r'^k1api/get_default_source_credentials$',
-        k1api.views.get_default_source_credentials.as_view(),
+        k1api_old.views.get_default_source_credentials.as_view(),
         name='k1api.get_default_source_credentials',
     ),
     url(
@@ -658,7 +658,7 @@ urlpatterns += [
     ),
     url(
         r'^k1api/get_facebook_accounts$',
-        k1api.views.get_facebook_accounts.as_view(),
+        k1api_old.views.get_facebook_accounts.as_view(),
         name='k1api.get_facebook_accounts',
     ),
     url(

@@ -745,6 +745,7 @@ class K1ApiTest(TestCase):
                              {u'event_id': u'2', u'event_type': u'aud', u'exclusion': False}],
             u'campaign_id': 1,
             u'account_id': 1,
+            u'agency_id': 20,
             u'goal_types': [2, 5],
         })
 
@@ -777,6 +778,7 @@ class K1ApiTest(TestCase):
             u'retargeting',
             u'campaign_id',
             u'account_id',
+            u'agency_id',
             u'goal_types',
         }
 

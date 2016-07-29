@@ -309,10 +309,20 @@ class get_accounts(K1APIView):
 
         bidder_slug = request.GET.get("bidder_slug")
         if bidder_slug:
-            source_credentials = dash.models.SourceCredentials.objects.get(source__bidder_slug=bidder_slug)
-            response['credentials'] = source_credentials.credentials
+            default_source_settings = dash.models.DefaultSourceSettings.objects.get(source__bidder_slug=bidder_slug)
+            response['credentials'] = default_source_settings.credentials.credentials
 
         return self.response_ok(response)
+
+
+class get_default_source_credentials(K1APIView):
+    def get(self, request):
+        bidder_slug = request.GET.get("bidder_slug")
+        if not bidder_slug:
+            return self.response_error("Must provide bidder slug.")
+
+        default_source_settings = dash.models.DefaultSourceSettings.objects.get(source__bidder_slug=bidder_slug)
+        return self.response_ok(default_source_settings.credentials.credentials)
 
 
 class get_custom_audiences(K1APIView):
@@ -623,8 +633,12 @@ class get_ad_groups(K1APIView):
                 'retargeting': self._get_retargeting(ad_group_settings),
                 'campaign_id': ad_group_settings.ad_group.campaign.id,
                 'account_id': ad_group_settings.ad_group.campaign.account.id,
+                'agency_id': None,
                 'goal_types': campaign_goal_types[ad_group_settings.ad_group.campaign.id],
             }
+
+            if ad_group_settings.ad_group.campaign.account.agency:
+                ad_group['agency_id'] = ad_group_settings.ad_group.campaign.account.agency.id
 
             ad_groups.append(ad_group)
 
@@ -919,13 +933,24 @@ class get_outbrain_marketer_id(K1APIView):
         return self.response_ok(ad_group.campaign.account.outbrain_marketer_id)
 
 
-class get_facebook_account(K1APIView):
+class get_facebook_accounts(K1APIView):
 
     def get(self, request):
         ad_group_id = request.GET.get('ad_group_id')
         account_id = request.GET.get('account_id')
         if not ad_group_id and not account_id:
-            return self.response_error("Must provide ad group id or account id.")
+            facebook_accounts = dash.models.FacebookAccount.objects.filter(
+                status=constants.FacebookPageRequestType.CONNECTED)
+
+            result = []
+            for facebook_account in facebook_accounts:
+                account_dict = {
+                    'account_id': facebook_account.account_id,
+                    'ad_account_id': facebook_account.ad_account_id,
+                    'page_id': facebook_account.page_id
+                }
+                result.append(account_dict)
+            return self.response_ok(result)
 
         if not account_id:
             account_id = dash.models.Account.objects.get(campaign__adgroup__id=ad_group_id).id

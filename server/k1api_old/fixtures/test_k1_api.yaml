@@ -34,6 +34,7 @@
         modified_by: 1
         name: 'test account 1'
         outbrain_marketer_id: 'abcde'
+        agency: 20
     model: dash.account
     pk: 1
 
@@ -42,6 +43,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 2'
+        agency: 20
     model: dash.account
     pk: 2
 
@@ -51,8 +53,19 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 3'
+        agency: 20
     model: dash.account
     pk: 3
+
+# test agencies
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test agency 1'
+    model: dash.agency
+    pk: 20
 
 # test ga accounts
 
@@ -258,12 +271,57 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Facebook
         tracking_slug: 'facebook'
-        bidder_slug: 'b1_facebook'
-        source_type: 6
+        bidder_slug: 'facebook'
+        source_type: 7
         content_ad_submission_type: 2
         maintenance: False
     model: dash.source
     pk: 8
+
+# test default source settings
+
+-   fields:
+        source: 1
+        credentials: 1
+    model: dash.defaultsourcesettings
+    pk: 1
+
+-   fields:
+        source: 2
+        credentials: 2
+    model: dash.defaultsourcesettings
+    pk: 2
+
+-   fields:
+        source: 3
+        credentials: 3
+    model: dash.defaultsourcesettings
+    pk: 3
+
+-   fields:
+        source: 4
+        credentials: 4
+    model: dash.defaultsourcesettings
+    pk: 4
+
+-   fields:
+        source: 5
+        credentials: 5
+    model: dash.defaultsourcesettings
+    pk: 5
+
+-   fields:
+        source: 6
+        credentials: 6
+    model: dash.defaultsourcesettings
+    pk: 6
+
+-   fields:
+        source: 8
+        credentials: 7
+    model: dash.defaultsourcesettings
+    pk: 7
+
 
 # test source credentials
 -   fields:
@@ -325,6 +383,16 @@
         source: 6
     model: dash.sourcecredentials
     pk: 6
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        credentials: 'h'
+        sync_reports: False
+        name: Credentials
+        source: 8
+    model: dash.sourcecredentials
+    pk: 7
 
 # test adgroup
 
@@ -880,9 +948,19 @@
         account_id: 1
         ad_account_id: 'act_123'
         page_url: 'https://business.facebook.com/test/'
+        page_id: '1234'
         status: 2
     model: dash.facebookaccount
     pk: 1
+
+-   fields:
+        account_id: 2
+        ad_account_id: 'act_456'
+        page_url: 'https://business.facebook.com/test2/'
+        page_id: '5678'
+        status: 2
+    model: dash.facebookaccount
+    pk: 2
 
 # test Audience
 
