@@ -71,7 +71,7 @@ oneApp.controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'ze
     function createDataSource () {
         var metadata = zemGridEndpointService.createMetaData($scope, vm.level, vm.entityId, vm.breakdown);
         var endpoint = zemGridEndpointService.createEndpoint(metadata);
-        var dataSource = zemDataSourceService.createInstance(endpoint);
+        var dataSource = zemDataSourceService.createInstance(endpoint, $scope);
         return dataSource;
     }
 

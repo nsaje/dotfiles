@@ -37,7 +37,12 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         SHOW_BLACKLISTED_PUBLISHERS: 5,
     };
 
-    function DataSource (endpoint) {
+    function DataSource (endpoint, $scope) {
+        // Scope is used for notifying listeners
+        // FIXME WORKAROUND: Using rootScope causes consistency problems between the views
+        //   ! proper solution is need, but for now use passed $scope (provided by host controller)
+        $scope = $scope || $rootScope;
+
         var metaData = null;
         var data = null;
         var activeRequests = [];
@@ -450,18 +455,18 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         }
 
         function registerListener (event, scope, callback) {
-            var handler = $rootScope.$on(event, callback);
+            var handler = $scope.$on(event, callback);
             scope.$on('$destroy', handler);
         }
 
         function notifyListeners (event, data) {
-            $rootScope.$emit(event, data);
+            $scope.$emit(event, data);
         }
     }
 
     return {
-        createInstance: function (endpoint) {
-            return new DataSource(endpoint);
+        createInstance: function (endpoint, $scope) {
+            return new DataSource(endpoint, $scope);
         },
     };
 }]);
