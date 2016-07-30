@@ -4,7 +4,7 @@
 0 9,12,15 * * *     /home/ubuntu/docker-manage-py.sh monitor_blacklist
 15 9 * * *          /home/ubuntu/docker-manage-py.sh run_autopilot
 0 12 * * *          /home/ubuntu/docker-manage-py.sh run_campaign_stop
-#25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 3
+25 * * * *          /home/ubuntu/docker-manage-py.sh refresh_k1 3
 0 9 * * *           /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email --action=content_approval
 5 9 * * *           /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email --action=location_targeting
 40 * * * *          /home/ubuntu/docker-manage-py.sh monitor_adgroup_propagation
