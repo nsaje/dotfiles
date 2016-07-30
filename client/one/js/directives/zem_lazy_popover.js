@@ -195,7 +195,7 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
 }
 
 angular.module('one')
-  .directive('zemLazyPopoverTemplate', $zemLazyPopoverDirective)
-  .directive('zemLazyPopoverText', $zemLazyPopoverDirective)
-  .directive('zemLazyPopoverHtmlUnsafe', $zemLazyPopoverDirective);
+    .directive('zemLazyPopoverTemplate', $zemLazyPopoverDirective)
+    .directive('zemLazyPopoverText', $zemLazyPopoverDirective)
+    .directive('zemLazyPopoverHtmlUnsafe', $zemLazyPopoverDirective);
 

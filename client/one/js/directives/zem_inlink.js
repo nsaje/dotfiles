@@ -95,4 +95,4 @@ function $StateRefDirective ($state, $timeout, $rootScope, $location) {
 }
 
 angular.module('one')
-  .directive('zemInLink', $StateRefDirective);
+    .directive('zemInLink', $StateRefDirective);
