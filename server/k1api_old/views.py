@@ -114,7 +114,7 @@ class AdGroupSourceBase(K1APIView):
             'state': source_state,
             'cpc_cc': ad_group_source_settings.cpc_cc,
             'daily_budget_cc': ad_group_source_settings.daily_budget_cc,
-            'name': ad_group_source.get_external_name(),
+            'name': ad_group_settings.ad_group.get_external_name(),
             'start_date': ad_group_settings.start_date,
             'end_date': ad_group_settings.end_date,
             'target_devices': ad_group_settings.target_devices,
