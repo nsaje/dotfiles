@@ -64,8 +64,6 @@ def create_breakdown_id(breakdown, row):
 
 
 def extract_order_field(order, breakdown):
-    # time dimension overrides everything
-    # TODO should this be requested by frontend?
     time_dimension = constants.get_time_dimension(breakdown)
     if time_dimension:
         return time_dimension

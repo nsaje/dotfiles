@@ -79,6 +79,14 @@ class BreakdownFormTest(TestCase):
             form.cleaned_data['breakdown']
         )
 
+        form = forms.BreakdownForm(self.user, '/account/', copy.copy(request_body))
+        self.assertTrue(form.is_valid())
+
+        self.assertEqual(
+            ['account_id'],
+            form.cleaned_data['breakdown']
+        )
+
         form = forms.BreakdownForm(self.user, '/account/asd/', copy.copy(request_body))
         self.assertTrue(form.is_valid())
 

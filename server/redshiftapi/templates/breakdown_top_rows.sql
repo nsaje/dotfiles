@@ -5,7 +5,7 @@ WITH
     {% if conversions_aggregates %}
     temp_conversions AS (
         SELECT
-            {{ breakdown|column_as_alias:"a" }},
+            {% if breakdown %} {{ breakdown|column_as_alias:"a" }}, {% endif %}
             {{ conversions_aggregates|column_as_alias:"a" }}
         FROM {{ view.conversions }} a
         WHERE
@@ -16,14 +16,14 @@ WITH
             {% if breakdown_constraints %}
                 AND {{ breakdown_constraints|generate:"a" }}
             {% endif %}
-        GROUP BY {{ breakdown|only_alias }}
+        {% if breakdown %} GROUP BY {{ breakdown|only_alias }} {% endif %}
     ),
     {% endif %}
 
     {% if touchpointconversions_aggregates %}
     temp_touchpointconversions AS (
         SELECT
-            {{ breakdown|column_as_alias:"a" }},
+            {% if breakdown %} {{ breakdown|column_as_alias:"a" }}, {% endif %}
             {{ touchpointconversions_aggregates|column_as_alias:"a" }}
             FROM {{ view.touchpointconversions }} a
         WHERE
@@ -31,14 +31,14 @@ WITH
             {% if breakdown_constraints %}
                 AND {{ breakdown_constraints|generate:"a" }}
             {% endif %}
-        GROUP BY {{ breakdown|only_alias }}
+        {% if breakdown %} GROUP BY {{ breakdown|only_alias }} {% endif %}
     ),
     {% endif %}
 
     {% if yesterday_constraints %}
     temp_yesterday AS (
         SELECT
-            {{ breakdown|column_as_alias:"a" }},
+            {% if breakdown %} {{ breakdown|column_as_alias:"a" }}, {% endif %}
             {{ yesterday_aggregates|column_as_alias:"a" }}
         FROM {{ view.base }} a
         WHERE
@@ -46,13 +46,13 @@ WITH
             {% if breakdown_constraints %}
                 AND {{ breakdown_constraints|generate:"a" }}
             {% endif %}
-        GROUP BY {{ breakdown|only_alias }}
+        {% if breakdown %} GROUP BY {{ breakdown|only_alias }} {% endif %}
     ),
     {% endif %}
 
     temp_base AS (
         SELECT
-            {{ breakdown|column_as_alias:"a" }},
+            {% if breakdown %} {{ breakdown|column_as_alias:"a" }}, {% endif %}
             {{ aggregates|column_as_alias:"a" }}
 
             {% if not yesterday_constraints %}
@@ -64,10 +64,10 @@ WITH
             {% if breakdown_constraints %}
                 AND {{ breakdown_constraints|generate:"a" }}
             {% endif %}
-        GROUP BY {{ breakdown|only_alias }}
+        {% if breakdown %} GROUP BY {{ breakdown|only_alias }} {% endif %}
     )
 SELECT
-    {{ breakdown|only_alias:"temp_base" }},
+    {% if breakdown %} {{ breakdown|only_alias:"temp_base" }}, {% endif %}
     {{ aggregates|only_alias:"temp_base" }},
 
     {% if yesterday_constraints %}

@@ -13,7 +13,7 @@ from stats import helpers
 UNKNOWN = 'Unknown'
 
 
-def augment(breakdown, stats_rows, target_dimension):
+def augment(breakdown, stats_rows, target_dimension=None):
 
     if target_dimension == constants.StructureDimension.ACCOUNT:
         augment_accounts(stats_rows)
@@ -30,14 +30,15 @@ def augment(breakdown, stats_rows, target_dimension):
     if target_dimension == constants.StructureDimension.SOURCE:
         augment_source(stats_rows)
 
-    for row in stats_rows:
-        row['breakdown_id'] = helpers.create_breakdown_id(breakdown, row)
-        row['parent_breakdown_id'] = helpers.create_breakdown_id(
-            constants.get_parent_breakdown(breakdown), row) if breakdown else None
+    if target_dimension:
+        for row in stats_rows:
+            row['breakdown_id'] = helpers.create_breakdown_id(breakdown, row)
+            row['parent_breakdown_id'] = helpers.create_breakdown_id(
+                constants.get_parent_breakdown(breakdown), row) if breakdown else None
 
-        augment_row_delivery(row)
-        augment_row_time(row)
-        row['breakdown_name'] = row[constants.get_dimension_name_key(target_dimension)]
+            augment_row_delivery(row)
+            augment_row_time(row)
+            row['breakdown_name'] = row[constants.get_dimension_name_key(target_dimension)]
 
 
 def augment_accounts(stats_rows):

@@ -118,6 +118,9 @@ def get_level_dimension(constraints):
 
 
 def get_target_dimension(breakdown):
+    if not breakdown:
+        return None
+
     return breakdown[-1]
 
 

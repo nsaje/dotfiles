@@ -8,6 +8,40 @@ from utils import exc
 from redshiftapi import models
 
 
+def prepare_breakdown_top_rows(default_context):
+    """
+    Prepares a SQL query for base level or totals.
+    """
+
+    if not default_context.get('breakdown') and default_context.get('order'):
+        # remove order as it is not necessary when there is no breakdown
+        default_context.pop('order')
+
+    sql = backtosql.generate_sql('breakdown_top_rows.sql', default_context)
+
+    params = default_context['constraints'].get_params()
+    if default_context.get('breakdown_constraints'):
+        params.extend(default_context['breakdown_constraints'].get_params())
+
+    yesterday_params = []
+    if 'yesterday_constraints' in default_context:
+        yesterday_params = default_context['yesterday_constraints'].get_params()
+        if default_context.get('breakdown_constraints'):
+            yesterday_params.extend(default_context['breakdown_constraints'].get_params())
+
+    conversion_params = []
+    if default_context.get('conversions_aggregates'):
+        conversion_params.extend(params)
+
+    if default_context.get('touchpointconversions_aggregates'):
+        conversion_params.extend(params)
+
+    # conversion queries are ordered before the base query
+    params = conversion_params + yesterday_params + params
+
+    return sql, params
+
+
 def prepare_breakdown_struct_delivery_top_rows(default_context):
     """
     Prepares a SQL query for a general 1st level breakdown.
@@ -40,7 +74,7 @@ def prepare_breakdown_struct_delivery_top_rows(default_context):
     return sql, params
 
 
-def prepare_time_top_rows(model, time_dimension, default_context, constraints):
+def prepare_breakdown_time_top_rows(model, time_dimension, default_context, constraints):
     """
     Prepares a SQL query for a breakdown where targeted dimension is time.
     """
@@ -71,7 +105,7 @@ def prepare_time_top_rows(model, time_dimension, default_context, constraints):
     default_context['is_ordered_by_after_join_conversions_calculations'] = False
     default_context['is_ordered_by_yesterday_aggregates'] = False
 
-    sql = backtosql.generate_sql('breakdown_lvl_time_top_rows.sql', default_context)
+    sql = backtosql.generate_sql('breakdown_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
     yesterday_params = []

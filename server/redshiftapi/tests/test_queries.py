@@ -134,6 +134,98 @@ class PrepareTimeConstraintsTest(TestCase):
 class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    def test_breakdown_top_rows_totals(self, mock_local_today):
+        m = SmallMaster()
+
+        constraints = {
+            'date__gte': datetime.date(2016, 4, 1),
+            'date__lte': datetime.date(2016, 5, 1),
+        }
+
+        breakdown_constraints = []
+
+        context = m.get_default_context([], constraints, breakdown_constraints, 'total_seconds', None, None)
+
+        sql, params = queries.prepare_breakdown_top_rows(context)
+
+        self.assertEquals(params, [
+            datetime.date(2016, 7, 1),
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+        ])
+
+        self.assertSQLEquals(sql, """
+        WITH
+            temp_yesterday AS (
+                SELECT
+                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                FROM mv_account a
+                WHERE (a.date=%s)
+            ),
+            temp_base AS (
+                SELECT
+                    SUM(a.clicks) clicks,
+                    SUM(a.total_time_on_site) total_seconds
+                FROM mv_account a
+                WHERE (a.date>=%s AND a.date<=%s)
+            )
+        SELECT
+            temp_base.clicks,
+            temp_base.total_seconds,
+            temp_yesterday.yesterday_cost
+        FROM temp_base NATURAL LEFT JOIN temp_yesterday;
+        """)
+
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    def test_single_breakdown_top_rows(self, mock_local_today):
+        m = SmallMaster()
+
+        constraints = {
+            'date__gte': datetime.date(2016, 4, 1),
+            'date__lte': datetime.date(2016, 5, 1),
+        }
+
+        breakdown_constraints = []
+
+        context = m.get_default_context(['account_id'], constraints, breakdown_constraints, 'total_seconds', None, None)
+
+        sql, params = queries.prepare_breakdown_top_rows(context)
+
+        self.assertEquals(params, [
+            datetime.date(2016, 7, 1),
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+        ])
+
+        self.assertSQLEquals(sql, """
+        WITH
+            temp_yesterday AS (
+                SELECT
+                    a.account_id AS account_id,
+                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                FROM mv_account a
+                WHERE (a.date=%s)
+                GROUP BY account_id
+            ),
+            temp_base AS (
+                SELECT
+                    a.account_id AS account_id,
+                    SUM(a.clicks) clicks,
+                    SUM(a.total_time_on_site) total_seconds
+                FROM mv_account a
+                WHERE (a.date>=%s AND a.date<=%s)
+                GROUP BY account_id
+            )
+        SELECT
+            temp_base.account_id,
+            temp_base.clicks,
+            temp_base.total_seconds,
+            temp_yesterday.yesterday_cost
+        FROM temp_base NATURAL LEFT JOIN temp_yesterday
+        ORDER BY total_seconds ASC NULLS LAST;
+        """)
+
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
     def test_breakdown_struct_delivery_top_rows(self, mock_local_today):
         m = SmallMaster()
 
@@ -146,7 +238,8 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             {'source_id': 132},
         ]
 
-        context = m.get_default_context(['account_id'], constraints, breakdown_constraints, 'total_seconds', 0, 10)
+        context = m.get_default_context(['account_id', 'source_id'], constraints,
+                                        breakdown_constraints, 'total_seconds', 0, 10)
 
         sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
 
@@ -164,32 +257,37 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             temp_yesterday AS (
                 SELECT
                     a.account_id AS account_id,
+                    a.source_id AS source_id,
                     SUM(a.cost_nano)/1000000000.0 yesterday_cost
                 FROM mv_account a
                 WHERE (a.date=%s) AND ((a.source_id=%s))
-                GROUP BY account_id
+                GROUP BY account_id, source_id
             ),
             temp_base AS (
                 SELECT
                     a.account_id AS account_id,
+                    a.source_id AS source_id,
                     SUM(a.clicks) clicks,
                     SUM(a.total_time_on_site) total_seconds
                 FROM mv_account a
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY account_id
+                GROUP BY account_id, source_id
             )
         SELECT
             b.account_id,
+            b.source_id,
             b.clicks,
             b.total_seconds,
             b.yesterday_cost
         FROM (
             SELECT
                 temp_base.account_id,
+                temp_base.source_id,
                 temp_base.clicks,
                 temp_base.total_seconds,
                 temp_yesterday.yesterday_cost,
-                ROW_NUMBER() OVER (PARTITION BY ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
+                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id
+                    ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
             FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday
         ) b
         WHERE r <= 10
@@ -287,7 +385,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             2
         )
 
-        sql, params = queries.prepare_time_top_rows(
+        sql, params = queries.prepare_breakdown_time_top_rows(
             models.MVMaster(),
             constants.TimeDimension.DAY, context, constraints
         )
@@ -355,7 +453,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             2
         )
 
-        sql, params = queries.prepare_time_top_rows(
+        sql, params = queries.prepare_breakdown_time_top_rows(
             models.MVMaster(),
             constants.TimeDimension.WEEK, context, constraints
         )
@@ -731,7 +829,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 10
             )
 
-            sql, _ = queries.prepare_time_top_rows(m, 'week', context, constraints)
+            sql, _ = queries.prepare_breakdown_time_top_rows(m, 'week', context, constraints)
 
             # should always order by time
             self.assertTrue(order_sql in sql, "Order {}:\n{}\nNOT IN\n{}".format(order, order_sql, sql))

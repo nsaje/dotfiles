@@ -34,7 +34,15 @@ def _prepare_query(model, breakdown, constraints, breakdown_constraints,
     time_dimension = constants.get_time_dimension(breakdown)
     if time_dimension:
         # should also cover the case for len(breakdown) == 4 because in that case time dimension should be the last one
-        return queries.prepare_time_top_rows(model, time_dimension, default_context, constraints)
+        return queries.prepare_breakdown_time_top_rows(model, time_dimension, default_context, constraints)
+
+    if len(breakdown) == 0:
+        # only totals
+        return queries.prepare_breakdown_top_rows(default_context)
+
+    if len(breakdown) == 1:
+        # base level
+        return queries.prepare_breakdown_top_rows(default_context)
 
     if 2 <= len(breakdown) <= 3:
         return queries.prepare_breakdown_struct_delivery_top_rows(default_context)

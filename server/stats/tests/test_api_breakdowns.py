@@ -10,9 +10,8 @@ class ApiBreakdownTest(TestCase):
     def test_validate_breakdown(self):
         # should succeed, no exception
         api_breakdowns.validate_breakdown(['account_id', 'campaign_id', 'device_type', 'week'])
-
-        with self.assertRaisesMessage(exc.InvalidBreakdownError, "Breakdown requires at least 1 dimension"):
-            api_breakdowns.validate_breakdown([])
+        api_breakdowns.validate_breakdown(['account_id'])
+        api_breakdowns.validate_breakdown([])
 
         with self.assertRaisesMessage(exc.InvalidBreakdownError, "Unsupported breakdowns set(['bla'])"):
             api_breakdowns.validate_breakdown(['account_id', 'bla', 'device_type'])

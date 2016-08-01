@@ -214,6 +214,9 @@ class ModelTestCase(TestCase):
         self.assertItemsEqual(m.select_columns(subset=['py_foo', 'py_bar'], group=1),
                               [m.py_foo])
 
+        self.assertItemsEqual(m.select_columns(subset=None), [m.py_foo, m.py_bar, m.py_cat, m.py_dog])
+        self.assertItemsEqual(m.select_columns(subset=[]), [])
+
         with self.assertRaises(backtosql.BackToSQLException):
             # should raise exception if nonexistent column is specified
             self.assertItemsEqual(m.select_columns(subset=['nonexistent']),

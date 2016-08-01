@@ -50,7 +50,7 @@ class Model(object):
         return self.columns_dict[helpers.clean_alias(alias)]
 
     def select_columns(self, subset=None, group=None):
-        if subset:
+        if subset is not None:
             columns = []
             unknown = []
 

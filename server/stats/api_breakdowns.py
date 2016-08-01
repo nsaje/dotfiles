@@ -29,7 +29,7 @@ def query(user, breakdown, constraints, breakdown_page,
     order = get_supported_order(order)
 
     constraints = helpers.extract_stats_constraints(constraints)
-    conversion_goals = get_conversion_goals(breakdown, constraints)
+    conversion_goals = get_conversion_goals(constraints)
 
     rows = redshiftapi.api_breakdowns.query(
         breakdown,
@@ -53,7 +53,7 @@ def query(user, breakdown, constraints, breakdown_page,
 def validate_breakdown(breakdown):
     base = constants.get_base_dimension(breakdown)
     if not base:
-        raise exc.InvalidBreakdownError("Breakdown requires at least 1 dimension")
+        return
 
     clean_breakdown = [base]
     structure = constants.get_structure_dimension(breakdown)
@@ -101,7 +101,7 @@ def get_supported_order(order):
     return order
 
 
-def get_conversion_goals(breakdown, constraints):
+def get_conversion_goals(constraints):
     conversion_goals = []
 
     level = constants.get_level_dimension(constraints)
