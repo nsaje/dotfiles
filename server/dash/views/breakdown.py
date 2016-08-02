@@ -426,7 +426,10 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
     def post(self, request, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
-            raise exc.AuthorizationError()
+            raise exc.MissingDataError()
+
+        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
+            raise exc.MissingDataError()
 
         request_body = json.loads(request.body).get('params')
         form = forms.BreakdownForm(request.user, breakdown, request_body)

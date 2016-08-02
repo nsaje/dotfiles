@@ -1039,16 +1039,16 @@ class AdGroupAdsExport(object):
         return get_csv_content(fieldnames, results)
 
 
-def filter_allowed_fields(request, fields):
+def filter_allowed_fields(user, fields):
     allowed_fields = []
-    can_view_platform_cost_breakdown = request.user.has_perm('zemauth.can_view_platform_cost_breakdown')
-    can_view_actual_costs = request.user.has_perm('zemauth.can_view_actual_costs')
-    can_view_flat_fees = request.user.has_perm('zemauth.can_view_flat_fees')
-    can_see_projections = request.user.has_perm('zemauth.can_see_projections')
-    can_see_managers_in_accounts_table = request.user.has_perm('zemauth.can_see_managers_in_accounts_table')
-    can_see_managers_in_campaigns_table = request.user.has_perm('zemauth.can_see_managers_in_campaigns_table')
-    can_see_account_type = request.user.has_perm('zemauth.can_see_account_type')
-    can_view_agency_margin = request.user.has_perm('zemauth.can_view_agency_margin')
+    can_view_platform_cost_breakdown = user.has_perm('zemauth.can_view_platform_cost_breakdown')
+    can_view_actual_costs = user.has_perm('zemauth.can_view_actual_costs')
+    can_view_flat_fees = user.has_perm('zemauth.can_view_flat_fees')
+    can_see_projections = user.has_perm('zemauth.can_see_projections')
+    can_see_managers_in_accounts_table = user.has_perm('zemauth.can_see_managers_in_accounts_table')
+    can_see_managers_in_campaigns_table = user.has_perm('zemauth.can_see_managers_in_campaigns_table')
+    can_see_account_type = user.has_perm('zemauth.can_see_account_type')
+    can_view_agency_margin = user.has_perm('zemauth.can_view_agency_margin')
 
     for f in fields:
         if f in ('margin', 'agency_total') and not can_view_agency_margin:
@@ -1096,7 +1096,7 @@ def get_report_from_export_report(export_report, start_date, end_date):
 
 def get_report_from_request(request, account=None, campaign=None, ad_group=None, by_source=False):
     additional_fields = filter_allowed_fields(
-        request,
+        request.user,
         helpers.get_additional_columns(request.GET.get('additional_fields'))
     )
 

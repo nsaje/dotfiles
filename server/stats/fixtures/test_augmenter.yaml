@@ -220,3 +220,105 @@
         created_dt: '2015-02-23T00:00:00'
     model: dash.contentad
     pk: 4
+
+# test conversion pixel
+
+-   fields:
+        account: 1
+        slug: 'test'
+        archived: false
+        created_dt: '2015-08-25T09:58:21'
+    model: dash.conversionpixel
+    pk: 1
+
+# test conversion goals
+
+-   fields:
+        campaign: 1
+        type: 1
+        pixel: 1
+        name: 'test conversion goal'
+        conversion_window: 168
+        goal_id: '1'
+        created_dt: '2015-09-23T09:58:21'
+    model: dash.conversiongoal
+    pk: 1
+
+-   fields:
+        campaign: 1
+        type: 2
+        pixel: null
+        name: 'test conversion goal 2'
+        conversion_window: null
+        goal_id: '2'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 2
+
+-   fields:
+        campaign: 1
+        type: 2
+        pixel: null
+        name: 'test conversion goal 3'
+        conversion_window: null
+        goal_id: '3'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 3
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 4'
+        conversion_window: null
+        goal_id: '4'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 4
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 5'
+        conversion_window: null
+        goal_id: '5'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 5
+
+# test campaign goal
+
+-   fields:
+        campaign: 1
+        type: 5
+        primary: false
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaigngoal
+    pk: 1
+
+-   fields:
+        campaign: 1
+        type: 4
+        primary: true
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaigngoal
+    pk: 2
+
+
+# test campaign goal values
+
+-   fields:
+        campaign_goal: 1
+        value: 5
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaigngoalvalue
+    pk: 1
+
+-   fields:
+        campaign_goal: 2
+        value: 4
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaigngoalvalue
+    pk: 2

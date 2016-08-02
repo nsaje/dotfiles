@@ -103,13 +103,18 @@ def get_structure_dimension(breakdown):
     return dimension.pop()
 
 
-def get_level_dimension(constraints):
+def get_lowest_level_structure_dimension(constraints):
+    """
+    Returns the lowest dimension by levels of ad group related objects hierarchy that is constrained.
+    """
+
     dimensions = [
         StructureDimension.AD_GROUP,
         StructureDimension.CAMPAIGN,
         StructureDimension.ACCOUNT
     ]
 
+    # search from bottom up
     for d in dimensions:
         if d in constraints.keys():
             return d

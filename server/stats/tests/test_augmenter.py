@@ -2,9 +2,6 @@ import datetime
 
 from django.test import TestCase
 
-from utils.test_helper import add_permissions
-from zemauth.models import User
-
 from stats import augmenter
 
 
@@ -145,76 +142,4 @@ class AugmenterTestCase(TestCase):
              'dma': '501 New York, NY', 'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1'},
             {'ad_group_id': 2, 'source_id': 2, 'ad_group_name': 'test adgroup 2', 'clicks': 20, 'age': '21-29',
              'dma':  '502 Binghamton, NY', 'breakdown_id': '2||2', 'breakdown_name': 'test adgroup 2', 'parent_breakdown_id': '2'},
-        ])
-
-
-class FilterTestCase(TestCase):
-
-    fixtures = ['test_augmenter', 'test_non_superuser']
-
-    def test_user_not_superuser(self):
-        user = User.objects.get(pk=1)
-        self.assertFalse(user.is_superuser)
-
-    def test_filter_columns_by_permission_no_perm(self):
-        user = User.objects.get(pk=1)
-
-        rows = [
-            {
-                'ad_group_id': 1, 'source_id': 1, 'ad_group_name': 'test adgroup 1', 'clicks': 10, 'age': '18-20',
-                'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1',
-                'license_fee': 123, 'billing_cost': 124, 'media_cost': 125,
-            },
-            {
-                'ad_group_id': 2, 'source_id': 2, 'ad_group_name': 'test adgroup 2', 'clicks': 20, 'age': '21-29',
-                'breakdown_id': '2||2', 'breakdown_name': 'test adgroup 2', 'parent_breakdown_id': '2',
-                'license_fee': 223, 'billing_cost': 224, 'media_cost': 225,
-            },
-        ]
-
-        augmenter.filter_columns_by_permission(user, rows)
-
-        self.assertItemsEqual(rows, [
-            {
-                'ad_group_id': 1, 'source_id': 1, 'ad_group_name': 'test adgroup 1', 'clicks': 10, 'age': '18-20',
-                'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1',
-                'billing_cost': 124,
-            },
-            {
-                'ad_group_id': 2, 'source_id': 2, 'ad_group_name': 'test adgroup 2', 'clicks': 20, 'age': '21-29',
-                'breakdown_id': '2||2', 'breakdown_name': 'test adgroup 2', 'parent_breakdown_id': '2',
-                'billing_cost': 224,
-            },
-        ])
-
-    def test_filter_columns_by_permission(self):
-        user = User.objects.get(pk=1)
-        add_permissions(user, ['can_view_platform_cost_breakdown'])
-
-        rows = [
-            {
-                'ad_group_id': 1, 'source_id': 1, 'ad_group_name': 'test adgroup 1', 'clicks': 10, 'age': '18-20',
-                'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1',
-                'license_fee': 123, 'billing_cost': 124, 'media_cost': 125,
-            },
-            {
-                'ad_group_id': 2, 'source_id': 2, 'ad_group_name': 'test adgroup 2', 'clicks': 20, 'age': '21-29',
-                'breakdown_id': '2||2', 'breakdown_name': 'test adgroup 2', 'parent_breakdown_id': '2',
-                'license_fee': 223, 'billing_cost': 224, 'media_cost': 225,
-            },
-        ]
-
-        augmenter.filter_columns_by_permission(user, rows)
-
-        self.assertItemsEqual(rows, [
-            {
-                'ad_group_id': 1, 'source_id': 1, 'ad_group_name': 'test adgroup 1', 'clicks': 10, 'age': '18-20',
-                'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1',
-                'license_fee': 123, 'billing_cost': 124,
-            },
-            {
-                'ad_group_id': 2, 'source_id': 2, 'ad_group_name': 'test adgroup 2', 'clicks': 20, 'age': '21-29',
-                'breakdown_id': '2||2', 'breakdown_name': 'test adgroup 2', 'parent_breakdown_id': '2',
-                'license_fee': 223, 'billing_cost': 224,
-            },
         ])

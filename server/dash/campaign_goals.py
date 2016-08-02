@@ -698,3 +698,41 @@ def inverted_campaign_goal_map(conversion_goals=None):
             ),
         }
     return ret
+
+
+def get_allowed_campaign_goals_fields(user, campaign_goal_values, conversion_goals):
+    """
+    Returns campaign goal field names that should be kept if user has
+    proper permissions.
+    """
+
+    allowed_fields = []
+    included_campaign_goals = []
+
+    if user.has_perm('zemauth.campaign_goal_optimization'):
+        included_campaign_goals = [x.campaign_goal.type for x in campaign_goal_values]
+
+    for goal in included_campaign_goals:
+        relevant_fields = CAMPAIGN_GOAL_MAP.get(goal, [])
+
+        if goal == constants.CampaignGoalKPI.CPA:
+            relevant_fields.extend(
+                ['avg_cost_per_{}'.format(cg.get_view_key(conversion_goals)) for cg in conversion_goals]
+            )
+
+        allowed_fields.extend(relevant_fields)
+
+    return allowed_fields
+
+
+def get_allowed_conversion_goals_fields(user, conversion_goals):
+    """
+    Returns conversion goal column names that should be kept if user has
+    proper permissions.
+    """
+
+    allowed = []
+    if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+        allowed.extend([cg.get_view_key(conversion_goals) for cg in conversion_goals])
+
+    return allowed

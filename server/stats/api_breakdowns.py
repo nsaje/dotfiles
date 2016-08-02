@@ -2,10 +2,14 @@ from utils import exc
 from utils import sort_helper
 
 import dash.models
+import dash.campaign_goals
+
+from reports.db_raw_helpers import is_collection
 
 from stats import helpers
 from stats import constants
 from stats import augmenter
+from stats import permission_filter
 
 import redshiftapi.api_breakdowns
 
@@ -22,6 +26,9 @@ def query(user, breakdown, constraints, breakdown_page,
     All values in constraints and breakdown_page should be object ids.
     """
 
+    permission_filter.update_allowed_objects_constraints(user, breakdown, constraints)
+    permission_filter.check_breakdown_allowed(user, breakdown)
+
     validate_breakdown(breakdown)
     validate_constraints(constraints)
 
@@ -29,7 +36,7 @@ def query(user, breakdown, constraints, breakdown_page,
     order = get_supported_order(order)
 
     constraints = helpers.extract_stats_constraints(constraints)
-    conversion_goals = get_conversion_goals(constraints)
+    conversion_goals, campaign_goal_values = get_goals(breakdown, constraints)
 
     rows = redshiftapi.api_breakdowns.query(
         breakdown,
@@ -43,7 +50,7 @@ def query(user, breakdown, constraints, breakdown_page,
     target_dimension = constants.get_target_dimension(breakdown)
 
     augmenter.augment(breakdown, rows, target_dimension)
-    augmenter.filter_columns_by_permission(user, rows)
+    permission_filter.filter_columns_by_permission(user, rows, campaign_goal_values, conversion_goals)
 
     rows = sort_helper.sort_results(rows, [helpers.extract_order_field(order, breakdown)])
 
@@ -101,14 +108,20 @@ def get_supported_order(order):
     return order
 
 
-def get_conversion_goals(constraints):
-    conversion_goals = []
+def get_goals(breakdown, constraints):
+    campaign = None
 
-    level = constants.get_level_dimension(constraints)
+    if constants.StructureDimension.AD_GROUP in constraints and not is_collection(constraints['ad_group_id']):
+        campaign = dash.models.AdGroup.objects.get(
+            pk=constraints['ad_group_id']).campaign
 
-    if level == constants.StructureDimension.AD_GROUP:
-        return dash.models.AdGroup.objects.get(pk=constraints['ad_group_id']).campaign.conversiongoal_set.all()
-    elif level == constants.StructureDimension.CAMPAIGN:
-        return dash.models.Campaign.objects.get(pk=constraints['campaign_id']).conversiongoal_set.all()
+    elif constants.StructureDimension.CAMPAIGN in constraints and not is_collection(constraints['campaign_id']):
+        campaign = dash.models.Campaign.objects.get(
+            pk=constraints['campaign_id'])
 
-    return []
+    conversion_goals, campaign_goal_values = [], []
+    if campaign:
+        conversion_goals = campaign.conversiongoal_set.all()
+        campaign_goal_values = dash.campaign_goals.get_campaign_goal_values(campaign)
+
+    return conversion_goals, campaign_goal_values

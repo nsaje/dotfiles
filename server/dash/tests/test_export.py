@@ -889,14 +889,13 @@ class FilterAllowedFieldsTestCase(test.TestCase):
     fixtures = ['test_api']
 
     def test_filter_margin(self):
-        r = HttpRequest()
-        r.user = User.objects.get(id=2)
+        user = User.objects.get(id=2)
 
-        allowed = export.filter_allowed_fields(r, ['margin', 'agency_total'])
+        allowed = export.filter_allowed_fields(user, ['margin', 'agency_total'])
         self.assertEqual([], allowed)
 
-        r.user.user_permissions.add(authmodels.Permission.objects.get(codename='can_view_agency_margin'))
-        r.user = User.objects.get(id=2)
+        user.user_permissions.add(authmodels.Permission.objects.get(codename='can_view_agency_margin'))
+        user = User.objects.get(id=2)
 
-        allowed = export.filter_allowed_fields(r, ['margin', 'agency_total'])
+        allowed = export.filter_allowed_fields(user, ['margin', 'agency_total'])
         self.assertEqual(['margin', 'agency_total'], allowed)

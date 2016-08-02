@@ -83,12 +83,12 @@ class AllAccountsBreakdownTestCase(TestCase):
         })
 
         response = self.client.post(url)
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 404)
 
     def test_post(self, mock_query):
         mock_query.return_value = {}
 
-        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature'])
+        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature', 'all_accounts_accounts_view'])
 
         params = {
             'limit': 5,
@@ -199,7 +199,7 @@ class AllAccountsBreakdownTestCase(TestCase):
             }],
         }
 
-        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature'])
+        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature', 'all_accounts_accounts_view'])
 
         params = {
             'limit': 2,

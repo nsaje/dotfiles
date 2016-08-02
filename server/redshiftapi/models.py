@@ -221,10 +221,12 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
         base = sc.get_base_dimension(breakdown)
         structure = sc.get_structure_dimension(breakdown)
         delivery = sc.get_delivery_dimension(breakdown)
-        level = sc.get_level_dimension(constraints)
+
+        non_date_dimensions = set(sc.StructureDimension._ALL) | set(sc.DeliveryDimension._ALL)
+        constraints_dimensions = [x for x in constraints.keys() if (x in non_date_dimensions)]
 
         # find first one that matches
-        breakdown = set(x for x in (base, structure, delivery, level) if x)
+        breakdown = set(x for x in [base, structure, delivery] + constraints_dimensions if x)
 
         for available, view in MATERIALIZED_VIEWS:
             if len(breakdown - available) == 0:

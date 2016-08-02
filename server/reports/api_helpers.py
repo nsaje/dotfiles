@@ -39,12 +39,35 @@ FIELD_PERMISSION_MAPPING = {
     'e_media_cost':     'zemauth.can_view_platform_cost_breakdown',
     'e_data_cost':      'zemauth.can_view_platform_cost_breakdown',
     'license_fee':      'zemauth.can_view_platform_cost_breakdown',
+
     'media_cost':       'zemauth.can_view_actual_costs',
     'data_cost':        'zemauth.can_view_actual_costs',
-    'margin':           'zemauth.can_view_agency_margin',
-    'agency_total':     'zemauth.can_view_agency_margin',
+
     'yesterday_cost':   'zemauth.can_view_actual_costs',
     'e_yesterday_cost': 'zemauth.can_view_platform_cost_breakdown',
+
+    'margin':           'zemauth.can_view_agency_margin',
+    'agency_total':     'zemauth.can_view_agency_margin',
+
+    'total_fee': 'zemauth.can_view_flat_fees',
+    'flat_fee': 'zemauth.can_view_flat_fees',
+    'total_fee_projection': 'zemauth.can_view_flat_fees',
+
+    'allocated_budget': 'zemauth.can_see_projections',
+    'spend_projection': 'zemauth.can_see_projections',
+    'pacing': 'zemauth.can_see_projections',
+    'license_fee_projection': 'zemauth.can_see_projections',
+    'total_fee_projection': 'zemauth.can_see_projections',
+
+    'default_account_manager': 'zemauth.can_see_managers_in_accounts_table',
+    'default_sales_representative': 'zemauth.can_see_managers_in_accounts_table',
+
+    'campaign_manager': 'zemauth.can_see_managers_in_campaigns_table',
+    'account_type': 'zemauth.can_see_account_type',
+
+    'performance': 'zemauth.campaign_goal_performance',
+    'styles': 'zemauth.campaign_goal_performance',
+
     'cpm':              'zemauth.can_view_new_columns',
     'unique_users':     'zemauth.can_view_new_columns',
     'returning_users':  'zemauth.can_view_new_columns',
@@ -91,28 +114,25 @@ def filter_by_permissions(result, user):
         return [filter_row(row) for row in result]
 
 
-def remove_columns_without_permission(user, rows):
-    fields_to_remove = []
+def get_fields_to_keep(user):
+    fields_to_keep = []
 
-    if not ((user.has_perm('zemauth.content_ads_postclick_acquisition') or
-             user.has_perm('zemauth.aggregate_postclick_acquisition'))):
-        fields_to_remove.extend(POSTCLICK_ACQUISITION_FIELDS)
+    if ((user.has_perm('zemauth.content_ads_postclick_acquisition') or
+         user.has_perm('zemauth.aggregate_postclick_acquisition'))):
+        fields_to_keep.extend(POSTCLICK_ACQUISITION_FIELDS)
 
-    if not user.has_perm('zemauth.aggregate_postclick_engagement'):
-        fields_to_remove.extend(POSTCLICK_ENGAGEMENT_FIELDS)
-
-    if not user.has_perm('zemauth.campaign_goal_optimization'):
-        fields_to_remove.extend(CAMPAIGN_GOAL_FIELDS)
+    if user.has_perm('zemauth.aggregate_postclick_engagement'):
+        fields_to_keep.extend(POSTCLICK_ENGAGEMENT_FIELDS)
 
     for field, permission in FIELD_PERMISSION_MAPPING.iteritems():
-        if not user.has_perm(permission):
-            fields_to_remove.append(field)
+        if user.has_perm(permission):
+            fields_to_keep.append(field)
 
+    return fields_to_keep
+
+
+def remove_fields(rows, fields_to_keep):
     for row in rows:
-        _remove_fields(row, fields_to_remove)
-
-
-def _remove_fields(row, fields):
-    for field in fields:
-        if field in row:
-            del row[field]
+        for field in row.keys():
+            if field not in fields_to_keep:
+                row.pop(field, None)
