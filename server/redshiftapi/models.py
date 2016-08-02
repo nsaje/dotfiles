@@ -151,6 +151,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
                                        {'expr': 'total_time_on_site', 'divisor': 'visits'}, mh.AGGREGATES)
     returning_users = backtosql.TemplateColumn('part_returning_users.sql', group=mh.AGGREGATES)
     unique_users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'users'}, mh.AGGREGATES)
+    bounced_visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'bounced_visits'}, mh.AGGREGATES)
 
     total_seconds = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'total_time_on_site'}, mh.AGGREGATES)
     avg_cost_per_minute = backtosql.TemplateColumn('part_avg_cost_per_minute.sql', group=mh.AGGREGATES)

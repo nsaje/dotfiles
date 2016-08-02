@@ -306,6 +306,19 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             initialOrder: 'desc'
         },
         {
+            name: 'Avg. CPM',
+            field: 'cpm',
+            checked: true,
+            type: 'currency',
+            fractionSize: 3,
+            help: 'The average CPM.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+            shown: $scope.hasPermission('zemauth.can_view_new_columns'),
+            internal: $scope.isPermissionInternal('zemauth.can_view_new_columns'),
+        },
+        {
             name: 'Clicks',
             field: 'clicks',
             checked: true,
@@ -380,7 +393,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         {
             'name': 'Traffic Acquisition',
             'fields': [
-                'cpc', 'clicks', 'impressions', 'ctr',
+                'cpc', 'clicks', 'impressions', 'ctr', 'cpm',
             ]
         },
         {
@@ -388,7 +401,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             'fields': [
                 'visits', 'pageviews', 'percent_new_users',
                 'bounce_rate', 'pv_per_visit', 'avg_tos',
-                'click_discrepancy'
+                'click_discrepancy', 'unique_users', 'returning_users', 'bounced_visits',
             ]
         },
         {
@@ -409,6 +422,13 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
+        );
+
+        zemPostclickMetricsService.insertUserColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.can_view_new_columns'),
+            $scope.isPermissionInternal('zemauth.can_view_new_columns')
         );
 
         zemPostclickMetricsService.insertEngagementColumns(

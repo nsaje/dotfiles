@@ -39,6 +39,48 @@ oneApp.factory('zemPostclickMetricsService', function () {
         });
     }
 
+    function insertUserColumns (columns, position, isShown, isInternal) {
+        columns.splice(
+            position, 0,
+            {
+                name: 'Unique Users',
+                field: 'unique_users',
+                checked: false,
+                type: 'number',
+                shown: isShown,
+                internal: isInternal,
+                help: 'Total number of unique users within a date range.',
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc',
+            },
+            {
+                name: 'Returning Users',
+                field: 'returning_users',
+                checked: false,
+                type: 'number',
+                shown: isShown,
+                internal: isInternal,
+                help: 'Total number of returning users within a date range.',
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc',
+            },
+            {
+                name: 'Bounced Visits',
+                field: 'bounced_visits',
+                checked: false,
+                type: 'number',
+                shown: isShown,
+                internal: isInternal,
+                help: 'Total number of bounced visits.',
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc',
+            }
+        );
+    }
+
     function insertEngagementColumns (columns, position, isShown, isInternal) {
         columns.splice(position, 0, {
             name: '% New Users',
@@ -237,6 +279,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
         insertAcquisitionColumns: insertAcquisitionColumns,
         insertEngagementColumns: insertEngagementColumns,
         insertConversionGoalColumns: insertConversionGoalColumns,
+        insertUserColumns: insertUserColumns,
         concatAcquisitionChartOptions: concatAcquisitionChartOptions,
         concatEngagementChartOptions: concatEngagementChartOptions,
         concatChartOptions: concatChartOptions,

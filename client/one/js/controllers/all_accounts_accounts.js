@@ -316,6 +316,19 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'desc'
         },
         {
+            name: 'Avg. CPM',
+            field: 'cpm',
+            checked: true,
+            type: 'currency',
+            fractionSize: 3,
+            help: 'The average CPM.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+            shown: $scope.hasPermission('zemauth.can_view_new_columns'),
+            internal: $scope.isPermissionInternal('zemauth.can_view_new_columns'),
+        },
+        {
             name: 'Clicks',
             field: 'clicks',
             checked: true,
@@ -392,15 +405,15 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Traffic Acquisition',
             'fields': [
-                'clicks', 'impressions', 'ctr', 'cpc',
+                'clicks', 'impressions', 'ctr', 'cpc', 'cpm',
             ]
         },
         {
             'name': 'Audience Metrics',
             'fields': [
-                'visits', 'pageviews', 'percent_new_users',
-                'bounce_rate', 'pv_per_visit', 'avg_tos',
-                'click_discrepancy'
+                'visits', 'unique_users', 'returning_users', 'pageviews', 'percent_new_users',
+                'bounce_rate', 'pv_per_visit', 'avg_tos', 'click_discrepancy', 'unique_users',
+                'returning_users', 'bounced_visits',
             ]
         },
         {
@@ -423,6 +436,13 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
+        );
+
+        zemPostclickMetricsService.insertUserColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.can_view_new_columns'),
+            $scope.isPermissionInternal('zemauth.can_view_new_columns')
         );
 
         zemPostclickMetricsService.insertEngagementColumns(

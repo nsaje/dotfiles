@@ -9,7 +9,7 @@ TRAFFIC_FIELDS = [
 POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
 POSTCLICK_ENGAGEMENT_FIELDS = [
     'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals', 'new_visits',
-    'returning_users', 'unique_users',
+    'returning_users', 'unique_users', 'bounced_visits',
 ]
 CONVERSION_GOAL_FIELDS = ['conversions']
 
@@ -71,6 +71,7 @@ FIELD_PERMISSION_MAPPING = {
     'cpm':              'zemauth.can_view_new_columns',
     'unique_users':     'zemauth.can_view_new_columns',
     'returning_users':  'zemauth.can_view_new_columns',
+    'bounced_visits':   'zemauth.can_view_new_columns',
 }
 
 

@@ -130,6 +130,7 @@ class AdGroupAdsTableTest(TestCase):
             'avg_tos': 1.0,
             'returning_users': 20,
             'unique_users': 35,
+            'bounced_visits': 6,
         }]
         mock_stats2 = {
             'date': date.isoformat(),
@@ -156,6 +157,7 @@ class AdGroupAdsTableTest(TestCase):
             'bounce_rate': 11.0,
             'pv_per_visit': 0.8,
             'avg_tos': 0.9,
+            'bounced_visits': 6,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -286,6 +288,7 @@ class AdGroupAdsTableTest(TestCase):
             'redirector_url': 'http://example.com/b/abc/z1/1/1/',
             'visits': 40,
             'returning_users': 20,
+            'bounced_visits': 6,
             'unique_users': 35,
             'click_discrepancy': 0.2,
             'pageviews': 123,
@@ -343,6 +346,7 @@ class AdGroupAdsTableTest(TestCase):
             'avg_tos': None,
             'returning_users': None,
             'unique_users': None,
+            'bounced_visits': None,
         }
         self.assertItemsEqual(sorted(result['data']['rows']), [expected_row_1, expected_row_2])
 
@@ -369,6 +373,7 @@ class AdGroupAdsTableTest(TestCase):
             'impressions': 2000000,
             'visits': 30,
             'returning_users': 20,
+            'bounced_visits': 6,
             'unique_users': 30,
             'click_discrepancy': 0.1,
             'pageviews': 122,

@@ -45,7 +45,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         ])
 
         columns = m.get_columns()
-        self.assertEquals(len(columns), 62)
+        self.assertEquals(len(columns), 63)
 
         columns = m.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
@@ -143,7 +143,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
 
     def test_columns(self):
         columns = self.model.get_columns()
-        self.assertEquals(len(columns), 52)
+        self.assertEquals(len(columns), 53)
 
         columns = self.model.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
@@ -179,7 +179,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
                                'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview',
                                'avg_cost_per_visit', 'total_pageviews', 'total_seconds',
                                'non_bounced_visits', 'margin', 'agency_total',
-                               'cpm', 'returning_users', 'unique_users'])
+                               'cpm', 'returning_users', 'unique_users', 'bounced_visits'])
 
     def test_get_yesterday_aggregates(self):
         self.assertItemsEqual([x.alias for x in self.model.select_columns(group=model_helpers.YESTERDAY_COST_AGGREGATES)],
