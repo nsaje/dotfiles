@@ -100,12 +100,6 @@ def _get_active_sources_with_spend(active_sources, data, current_budgets):
     active_sources_with_spend = []
     for s in active_sources:
         if data[s].get('yesterdays_spend_cc') / current_budgets.get(s) >= autopilot_settings.AUTOPILOT_MIN_SPEND_PERC:
-
-            # HACK: davorin 2.8.2016 - freeze yahoo until further notice
-            if s.source.source_type.type == dash.constants.SourceType.YAHOO:
-                print 'yahkooooooooooooooooooooooooooooooooooooooooooooooooooooooo'
-                #continue
-
             active_sources_with_spend.append(s)
     return active_sources_with_spend
 
