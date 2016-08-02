@@ -317,35 +317,35 @@ class K1ApiTest(TestCase):
 
     def test_get_source_credentials(self):
         test_cases = [
-            ['b1'],
-            ['b1', 'outbrain', 'yahoo'],
+            ['adblade'],
+            ['adblade', 'outbrain', 'yahoo'],
         ]
         for source_types in test_cases:
             self._test_source_credentials_filter(source_types)
 
     def _test_content_ad_source_ids_filters(self, source_types=None,
                                             source_content_ad_ids=None):
-        query_params = urllib.urlencode({'source_type': source_types})
-        response = self.client.generic(
-            'GET',
-            reverse('k1api.get_content_ad_source_mapping'),
-            data=json.dumps(source_content_ad_ids),
-            QUERY_STRING=query_params
+        response = self.client.get(
+            reverse('k1api_new.content_ads.sources'),
+            data=dict(source_slugs=','.join(source_types), source_content_ad_ids=','.join(source_content_ad_ids))
         )
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
 
-        for content_ad_source in data['content_ad_sources']:
+        expected_count = dash.models.ContentAdSource.objects.filter(
+            source__bidder_slug__in=source_types,
+            source_content_ad_id__in=source_content_ad_ids).count()
+        self.assertEqual(expected_count, len(data))
+        self.assertGreater(len(data), 0)
+        for content_ad_source in data:
             db_cas = dash.models.ContentAdSource.objects.get(
                 id=content_ad_source['id'])
             self.assertEqual(content_ad_source['source_content_ad_id'], db_cas.source_content_ad_id)
             self.assertEqual(content_ad_source['content_ad_id'], db_cas.content_ad_id)
             self.assertEqual(content_ad_source['ad_group_id'], db_cas.content_ad.ad_group_id)
-            self.assertEqual(content_ad_source['source_id'], db_cas.source_id)
-            self.assertEqual(content_ad_source['source_name'], db_cas.source.name)
-            self.assertEqual(content_ad_source['slug'], db_cas.source.bidder_slug)
+            self.assertEqual(content_ad_source['source_slug'], db_cas.source.bidder_slug)
 
         contentadsources = dash.models.ContentAdSource.objects
         if source_content_ad_ids:
@@ -354,13 +354,12 @@ class K1ApiTest(TestCase):
         if source_types:
             contentadsources = contentadsources.filter(
                 source__source_type__type__in=source_types)
-        logger.error('abc')
-        self.assertEqual(len(data['content_ad_sources']), contentadsources.count())
+        self.assertEqual(len(data), contentadsources.count())
 
     def test_get_content_ad_source_mapping(self):
         test_source_filters = [
-            ['b1'],
-            ['b1', 'outbrain', 'yahoo'],
+            ['adblade'],
+            ['adblade', 'outbrain', 'yahoo'],
         ]
         test_source_content_ads = [
             ['987654321'],
@@ -390,7 +389,7 @@ class K1ApiTest(TestCase):
 
     def _test_get_content_ad_sources_for_ad_group(self, ad_group_id, content_ad_id):
         response = self.client.get(
-            reverse('k1api.get_content_ad_sources_for_ad_group'),
+            reverse('k1api_new.content_ads.sources'),
             {'source_type': 'adblade',
              'ad_group_id': 1},
         )
@@ -400,28 +399,14 @@ class K1ApiTest(TestCase):
         data = data['response']
 
         required_fields = {
-            u'content_ad_source_id',
-            u'credentials',
-            u'source_campaign_key',
-            u'ad_group_id',
+            u'id',
             u'content_ad_id',
+            u'ad_group_id',
             u'source_content_ad_id',
-            u'state',
-            u'title',
-            u'url',
             u'submission_status',
-            u'image_id',
-            u'image_width',
-            u'image_height',
-            u'image_hash',
-            u'image_crop',
-            u'redirect_id',
-            u'display_url',
-            u'brand_name',
-            u'description',
-            u'call_to_action',
             u'tracking_slug',
-            u'tracker_urls',
+            u'source_slug',
+            u'state',
         }
 
         db_ags = dash.models.ContentAdSource.objects.filter(content_ad__ad_group_id=ad_group_id)
@@ -441,9 +426,9 @@ class K1ApiTest(TestCase):
 
     def test_get_content_ad_sources_for_ad_group_no_adgroupsource(self):
         response = self.client.get(
-            reverse('k1api.get_content_ad_sources_for_ad_group'),
-            {'source_type': 'outbrain',
-             'ad_group_id': 1},
+            reverse('k1api_new.content_ads.sources'),
+            {'source_types': 'outbrain',
+             'ad_group_ids': 1},
         )
 
         data = json.loads(response.content)
@@ -731,22 +716,72 @@ class K1ApiTest(TestCase):
         })
 
     def test_get_content_ads(self):
-        # TODO matijav 03.05.2016
-        self.test_signature = False
-        pass
+        response = self.client.get(
+            reverse('k1api_new.content_ads'),
+            {'content_ad_ids': 1,
+             'ad_group_ids': 1},
+        )
 
-    def test_get_content_ads_exchanges(self):
-        # TODO matijav 03.05.2016
-        self.test_signature = False
-        pass
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        expected = [{
+            "image_crop": "center",
+            "image_hash": None,
+            "description": "",
+            "ad_group_id": 1,
+            "call_to_action": "",
+            "url": "http://testurl.com",
+            "title": "Test Article 1",
+            "brand_name": "",
+            "image_width": None,
+            "image_id": "123456789",
+            "image_height": None,
+            "display_url": "",
+            "redirect_id": None,
+            "id": 1,
+            "tracker_urls": None
+        }]
+        self.assertEqual(data, expected)
+
+    def test_get_content_ads_sources(self):
+        response = self.client.get(
+            reverse('k1api_new.content_ads.sources'),
+            {'content_ad_ids': 1,
+             'ad_group_ids': 1,
+             'source_slugs': 'adblade'},
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        expected = [
+            {
+                "id": 1,
+                "content_ad_id": 1,
+                "ad_group_id": 1,
+                "submission_status": 1,
+                "source_content_ad_id": "987654321",
+                "tracking_slug": "adblade",
+                "state": 1,
+                "source_slug": "adblade"
+            }
+        ]
+
+        self.assertEqual(data, expected)
 
     def test_update_content_ad_status(self):
-        response = self.client.put(
-            reverse('k1api.update_content_ad_status'),
-            json.dumps({'content_ad_id': 1, 'source_slug': 'adblade',
-                        'submission_status': 2, 'submission_errors': 'my-errors',
-                        'source_content_ad_id': 123}),
+        response = self.client.generic(
+            'PUT',
+            reverse('k1api_new.content_ads.sources'),
+            json.dumps({
+                'submission_status': 2, 'submission_errors': 'my-errors',
+                'source_content_ad_id': 123
+            }),
             'application/json',
+            QUERY_STRING=urllib.urlencode({'content_ad_id': 1, 'source_slug': 'adblade'})
         )
 
         data = json.loads(response.content)

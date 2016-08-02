@@ -51,96 +51,6 @@ class K1APIView(View):
         }, status=status)
 
 
-class get_content_ad_sources_for_ad_group(K1APIView):
-
-    def get(self, request):
-        source_type = request.GET.get('source_type')
-        if not source_type:
-            return self.response_error("Must provide source type.")
-        ad_group_id = request.GET.get('ad_group_id', None)
-        if not ad_group_id:
-            return self.response_error("Must provide ad group id.")
-        content_ad_id = request.GET.get('content_ad_id', None)
-
-        bidder_slug = request.GET.get("bidder_slug")
-
-        ad_group_source = dash.models.AdGroupSource.objects.select_related('ad_group', 'source').filter(
-            ad_group_id=ad_group_id, source__source_type__type=source_type)
-
-        if bidder_slug:
-            ad_group_source = ad_group_source.filter(source__bidder_slug=bidder_slug)
-
-        if ad_group_source.count() == 0:
-            return self.response_ok([])
-        elif ad_group_source.count() > 1:
-            return self.response_error("%d object retrieved instead of 1" % ad_group_source.count())
-        ad_group_source = ad_group_source[0]
-
-        content_ad_sources = (
-            dash.models.ContentAdSource.objects
-                .select_related('content_ad')
-                .filter(content_ad__ad_group_id=ad_group_id)
-                .filter(source__source_type__type=source_type)
-                .exclude(submission_status=constants.ContentAdSubmissionStatus.REJECTED)
-        )
-        if content_ad_id:
-            content_ad_sources = content_ad_sources.filter(content_ad_id=content_ad_id)
-        if bidder_slug:
-            content_ad_sources = content_ad_sources.filter(source__bidder_slug=bidder_slug)
-
-        ad_group_tracking_codes = self._get_ad_group_tracking_codes(ad_group_source)
-
-        content_ads = []
-        for content_ad_source in content_ad_sources:
-            url = self._compose_url(ad_group_tracking_codes, content_ad_source, ad_group_source)
-
-            content_ads.append({
-                'content_ad_source_id': content_ad_source.id,
-                'credentials': ad_group_source.source_credentials.credentials,
-                'source_campaign_key': ad_group_source.source_campaign_key,
-                'ad_group_id': content_ad_source.content_ad.ad_group_id,
-                'content_ad_id': content_ad_source.content_ad_id,
-                'source_content_ad_id': content_ad_source.source_content_ad_id,
-                'state': content_ad_source.state,
-                'title': content_ad_source.content_ad.title,
-                'url': url,
-                'submission_status': content_ad_source.submission_status,
-                'image_id': content_ad_source.content_ad.image_id,
-                'image_width': content_ad_source.content_ad.image_width,
-                'image_height': content_ad_source.content_ad.image_height,
-                'image_hash': content_ad_source.content_ad.image_hash,
-                'image_crop': content_ad_source.content_ad.image_crop,
-                'redirect_id': content_ad_source.content_ad.redirect_id,
-                'display_url': content_ad_source.content_ad.display_url,
-                'brand_name': content_ad_source.content_ad.brand_name,
-                'description': content_ad_source.content_ad.description,
-                'call_to_action': content_ad_source.content_ad.call_to_action,
-                'tracking_slug': ad_group_source.source.tracking_slug,
-                'tracker_urls': content_ad_source.content_ad.tracker_urls
-            })
-        return self.response_ok(content_ads)
-
-    @staticmethod
-    def _get_ad_group_tracking_codes(ad_group_source):
-        ad_group_tracking_codes = None
-        if ad_group_source.source.update_tracking_codes_on_content_ads() and \
-                ad_group_source.can_manage_content_ads:
-            ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
-        return ad_group_tracking_codes
-
-    @staticmethod
-    def _compose_url(ad_group_tracking_codes, content_ad_source, ad_group_source):
-        url = content_ad_source.content_ad.url
-        if ad_group_tracking_codes:
-            url = content_ad_source.content_ad.url_with_tracking_codes(
-                url_helper.combine_tracking_codes(
-                    ad_group_tracking_codes,
-                    ad_group_source.get_tracking_ids(),
-                )
-            )
-        return url
-
-
 class get_accounts(K1APIView):
 
     def get(self, request):
@@ -275,37 +185,6 @@ class get_source_credentials_for_reports_sync(K1APIView):
         return self.response_ok({'source_credentials_list': list(source_credentials_list)})
 
 
-class get_content_ad_source_mapping(K1APIView):
-
-    def get(self, request):
-        source_content_ad_ids = json.loads(request.body)
-        if not isinstance(source_content_ad_ids, list):
-            return JsonResponse({
-                "error": "Body must be a list of source content ad ids."
-            }, status=400)
-
-        contentadsources = (
-            dash.models.ContentAdSource.objects
-                .filter(source_content_ad_id__in=source_content_ad_ids)
-                .annotate(
-                    ad_group_id=F('content_ad__ad_group_id'),
-                    source_name=F('source__name'),
-                    slug=F('source__bidder_slug'),
-                ).values(
-                    'source_content_ad_id',
-                    'content_ad_id',
-                    'ad_group_id',
-                    'source_name',
-                    'slug',
-                )
-        )
-        source_types = request.GET.getlist('source_type')
-        if source_types:
-            contentadsources = contentadsources.filter(source__source_type__type__in=source_types)
-
-        return self.response_ok({'content_ad_sources': list(contentadsources)})
-
-
 class get_ga_accounts(K1APIView):
 
     def get(self, request):
@@ -360,18 +239,6 @@ class get_accounts_slugs_ad_groups(K1APIView):
             }
 
         return self.response_ok(data)
-
-
-class get_content_ad_ad_group(K1APIView):
-
-    def get(self, request):
-        content_ad_ids = json.loads(request.body)
-
-        content_ads = (dash.models.ContentAd.objects
-                       .filter(id__in=content_ad_ids)
-                       .values('id', 'ad_group_id'))
-
-        return self.response_ok(list(content_ads))
 
 
 class get_publishers_blacklist_outbrain(K1APIView):
@@ -704,23 +571,24 @@ class AdGroupSourcesView(K1APIView):
         return self.response_ok([])
 
 
-class get_content_ads(K1APIView):
+class ContentAdsView(K1APIView):
 
     def get(self, request):
-        content_ad_id = request.GET.get('content_ad_id')
-        ad_group_id = request.GET.get('ad_group_id')
-        if content_ad_id:
-            content_ads = dash.models.ContentAd.objects.filter(id=content_ad_id).select_related('ad_group')
-        elif ad_group_id:
-            content_ads = dash.models.ContentAd.objects.filter(ad_group__id=ad_group_id).select_related('ad_group')
-        else:
-            return self.response_error("Must provide content ad id or ad group id.")
+        content_ad_ids = request.GET.get('content_ad_ids')
+        ad_group_ids = request.GET.get('ad_group_ids')
+        content_ads = dash.models.ContentAd.objects.all()
+        if content_ad_ids:
+            content_ad_ids = content_ad_ids.split(',')
+            content_ads = content_ads.filter(id__in=content_ad_ids)
+        if ad_group_ids:
+            ad_group_ids = ad_group_ids.split(',')
+            content_ads = content_ads.filter(ad_group_id__in=ad_group_ids)
 
         response = []
         for item in content_ads:
             content_ad = {
                 'id': item.id,
-                'ad_group_id': item.ad_group.id,
+                'ad_group_id': item.ad_group_id,
                 'title': item.title,
                 'url': item.url,
                 'redirect_id': item.redirect_id,
@@ -740,72 +608,67 @@ class get_content_ads(K1APIView):
         return self.response_ok(response)
 
 
-class get_content_ads_exchanges(K1APIView):
+class ContentAdSourcesView(K1APIView):
 
     def get(self, request):
-        content_ad_id = request.GET.get('content_ad_id')
-        ad_group_id = request.GET.get('ad_group_id')
-        if content_ad_id:
-            content_ad_sources = (
-                dash.models.ContentAdSource.objects
-                .filter(
-                    content_ad__id=content_ad_id,
-                    source__source_type__type='b1',
-                    source__deprecated=False,
-                )
-                .values('content_ad_id',
-                        'source__bidder_slug',
-                        'source__tracking_slug',
-                        'source_content_ad_id',
-                        'submission_status',
-                        'state')
-            )
-        elif ad_group_id:
-            content_ad_sources = (
-                dash.models.ContentAdSource.objects
-                .filter(
-                    content_ad__ad_group__id=ad_group_id,
-                    source__source_type__type='b1',
-                    source__deprecated=False,
-                )
-                .values('content_ad_id',
-                        'source__bidder_slug',
-                        'source__tracking_slug',
-                        'source_content_ad_id',
-                        'submission_status',
-                        'state')
-            )
-        else:
-            return self.response_error("Must provide content ad id or ad group id.")
+        content_ad_ids = request.GET.get('content_ad_ids')
+        ad_group_ids = request.GET.get('ad_group_ids')
+        source_types = request.GET.get('source_types')
+        slugs = request.GET.get('source_slugs')
+        source_content_ad_ids = request.GET.get('source_content_ad_ids')
+        content_ad_sources = (
+            dash.models.ContentAdSource.objects
+            .filter(source__deprecated=False)
+            .select_related('content_ad', 'source')
+            .values('id',
+                    'content_ad_id',
+                    'content_ad__ad_group_id',
+                    'source__bidder_slug',
+                    'source__tracking_slug',
+                    'source_content_ad_id',
+                    'submission_status',
+                    'state')
+        )
+        if content_ad_ids:
+            content_ad_sources = content_ad_sources.filter(content_ad_id__in=content_ad_ids.split(','))
+        if ad_group_ids:
+            content_ad_sources = content_ad_sources.filter(content_ad__ad_group_id__in=ad_group_ids.split(','))
+        if source_types:
+            content_ad_sources = content_ad_sources.filter(source__source_type__type__in=source_types.split(','))
+        if slugs:
+            content_ad_sources = content_ad_sources.filter(source__bidder_slug__in=slugs.split(','))
+        if source_content_ad_ids:
+            content_ad_sources = content_ad_sources.filter(source_content_ad_id__in=source_content_ad_ids.split(','))
 
-        content_ad_exchanges = defaultdict(list)
+        response = []
         for content_ad_source in content_ad_sources:
-            exchange = {
-                'exchange': content_ad_source['source__bidder_slug'],
+            response.append({
+                'id': content_ad_source['id'],
+                'content_ad_id': content_ad_source['content_ad_id'],
+                'ad_group_id': content_ad_source['content_ad__ad_group_id'],
+                'source_slug': content_ad_source['source__bidder_slug'],
                 'tracking_slug': content_ad_source['source__tracking_slug'],
                 'source_content_ad_id': content_ad_source['source_content_ad_id'],
                 'submission_status': content_ad_source['submission_status'],
                 'state': content_ad_source['state'],
-            }
-            content_ad_exchanges[content_ad_source['content_ad_id']].append(exchange)
+            })
 
-        return self.response_ok(content_ad_exchanges)
-
-
-class update_content_ad_status(K1APIView):
+        return self.response_ok(response)
 
     def put(self, request):
+        content_ad_id = request.GET.get('content_ad_id')
+        source_slug = request.GET.get('source_slug')
         data = json.loads(request.body)
 
         content_ad_source = dash.models.ContentAdSource.objects \
-            .filter(content_ad__id=data['content_ad_id']) \
-            .filter(source__bidder_slug=data['source_slug'])
+            .filter(content_ad_id=content_ad_id) \
+            .filter(source__bidder_slug=source_slug)
 
         if not content_ad_source:
             logger.exception(
                 'update_content_ad_status: content_ad_source does not exist. content ad id: %d, source slug: %s',
-                data['content_ad_id'],
-                data['source_slug']
+                content_ad_id,
+                source_slug
             )
             raise Http404
 
@@ -819,11 +682,6 @@ class update_content_ad_status(K1APIView):
 
         if 'submission_errors' in data and content_ad_source.submission_errors != data['submission_errors']:
             content_ad_source.submission_errors = data['submission_errors']
-            modified = True
-
-        # TODO(nsaje): remove after K1 uses source_content_ad_id
-        if 'external_id' in data and content_ad_source.source_content_ad_id != data['external_id']:
-            content_ad_source.source_content_ad_id = data['external_id']
             modified = True
 
         if 'source_content_ad_id' in data and content_ad_source.source_content_ad_id != data['source_content_ad_id']:

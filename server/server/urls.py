@@ -685,6 +685,16 @@ urlpatterns += [
         k1api.views.AdGroupSourcesView.as_view(),
         name='k1api_new.ad_groups.sources',
     ),
+    url(
+        r'^k1api_new/content_ads$',
+        k1api.views.ContentAdsView.as_view(),
+        name='k1api_new.content_ads',
+    ),
+    url(
+        r'^k1api_new/content_ads/sources$',
+        k1api.views.ContentAdSourcesView.as_view(),
+        name='k1api_new.content_ads.sources',
+    ),
 ]
 
 # Crossvalidation Api
