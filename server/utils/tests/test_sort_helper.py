@@ -1,5 +1,5 @@
 import unittest
-from utils.sort_helper import sort_results, map_by_breakdown
+from utils.sort_helper import sort_results, map_by_breakdown, dissect_order
 
 
 class SortHelperTestCase(unittest.TestCase):
@@ -119,3 +119,10 @@ class MapByBreakdownTestCase(unittest.TestCase):
                 }
             }
         })
+
+
+class DissectOrderTest(unittest.TestCase):
+    def test_dissect(self):
+        self.assertEqual(dissect_order('-clicks'), ('-', 'clicks'))
+        self.assertEqual(dissect_order('clicks'), ('', 'clicks'))
+        self.assertEqual(dissect_order('-field_name'), ('-', 'field_name'))

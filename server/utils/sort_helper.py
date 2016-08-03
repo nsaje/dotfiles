@@ -48,3 +48,14 @@ def map_by_breakdown(rows, breakdown, mapper):
         row_dict[row[breakdown[-1]]] = mapper(row)
 
     return result
+
+
+def dissect_order(order):
+
+    prefix = ''
+    field_name = order
+    if order.startswith('-'):
+        prefix = order[0]
+        field_name = order[1:]
+
+    return prefix, field_name

@@ -82,14 +82,11 @@ def prepare_breakdown_time_top_rows(model, time_dimension, default_context, cons
     offset = default_context['offset']
     limit = default_context['limit']
 
-    # no need to use nulls last as time timension cannot be null
-    order_column = model.get_column(time_dimension).as_order(time_dimension)
-
     _prepare_time_constraints(time_dimension, constraints, offset, limit)
 
     # prepare yesterday context for the modified constraints
     default_context.pop('yesterday_constraints', None)
-    yesterday_context = models.get_default_yesterday_context(model, constraints, order_column)
+    yesterday_context = models.get_default_yesterday_context(model, constraints, default_context['order'])
     default_context.update(yesterday_context)
 
     default_context['constraints'] = backtosql.Q(model, **constraints)
@@ -98,8 +95,6 @@ def prepare_breakdown_time_top_rows(model, time_dimension, default_context, cons
     default_context['offset'] = None
     default_context['limit'] = None
 
-    # when querying time dimension order is always time asc
-    default_context['order'] = order_column
     default_context['is_ordered_by_conversions'] = False
     default_context['is_ordered_by_touchpointconversions'] = False
     default_context['is_ordered_by_after_join_conversions_calculations'] = False

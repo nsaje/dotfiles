@@ -11,7 +11,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.chartMetricOptions = [];
     $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
-    $scope.order = '-cost';
+    $scope.order = '-media_cost';
     $scope.localStoragePrefix = 'adGroupPublishers';
     $scope.sizeRange = [5, 10, 20, 50];
     $scope.size = $scope.sizeRange[0];

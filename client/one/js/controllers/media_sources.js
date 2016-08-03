@@ -9,7 +9,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.chartMetricOptions = [];
     $scope.chartBtnTitle = 'Hide chart';
 
-    $scope.order = '-cost';
+    $scope.order = '-media_cost';
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;

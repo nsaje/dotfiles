@@ -29,11 +29,12 @@ def query(breakdown, constraints, breakdown_constraints, conversion_goals, order
 def _prepare_query(model, breakdown, constraints, breakdown_constraints,
                    order, offset, limit):
 
+    target_dimension = constants.get_target_dimension(breakdown)
     default_context = model.get_default_context(breakdown, constraints, breakdown_constraints, order, offset, limit)
 
-    time_dimension = constants.get_time_dimension(breakdown)
-    if time_dimension:
+    if target_dimension in constants.TimeDimension._ALL:
         # should also cover the case for len(breakdown) == 4 because in that case time dimension should be the last one
+        time_dimension = constants.get_time_dimension(breakdown)
         return queries.prepare_breakdown_time_top_rows(model, time_dimension, default_context, constraints)
 
     if len(breakdown) == 0:

@@ -429,7 +429,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             temp_yesterday.e_yesterday_cost,
             temp_yesterday.yesterday_cost
         FROM temp_base NATURAL LEFT JOIN temp_yesterday
-        ORDER BY day ASC;
+        ORDER BY clicks DESC NULLS LAST;
         """)
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 10))
@@ -487,7 +487,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             temp_base.yesterday_cost,
             temp_base.e_yesterday_cost
         FROM temp_base
-        ORDER BY week ASC;
+        ORDER BY clicks DESC NULLS LAST;
         """)
 
 
@@ -569,11 +569,11 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 temp_conversions.conversion_goal_4,
                 temp_conversions.conversion_goal_5,
                 temp_touchpointconversions.conversion_goal_1,
-                cost / NULLIF(conversion_goal_1, 0) avg_cost_per_conversion_goal_1,
-                cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
-                cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
-                cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
-                cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
+                media_cost / NULLIF(conversion_goal_1, 0) avg_cost_per_conversion_goal_1,
+                media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
+                media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
+                media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
+                media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
                 ROW_NUMBER() OVER (PARTITION BY temp_base.account_id, temp_base.campaign_id
                                     ORDER BY temp_base.clicks DESC NULLS LAST) AS r
         FROM temp_base NATURAL
@@ -654,11 +654,11 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 temp_conversions.conversion_goal_4,
                 temp_conversions.conversion_goal_5,
                 temp_touchpointconversions.conversion_goal_1,
-                cost / NULLIF(conversion_goal_1, 0) avg_cost_per_conversion_goal_1,
-                cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
-                cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
-                cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
-                cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
+                media_cost / NULLIF(conversion_goal_1, 0) avg_cost_per_conversion_goal_1,
+                media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
+                media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
+                media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
+                media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
                 ROW_NUMBER() OVER (PARTITION BY temp_base.account_id ORDER BY temp_base.clicks DESC NULLS LAST) AS r
         FROM temp_base NATURAL
         LEFT OUTER JOIN temp_yesterday NATURAL
@@ -774,7 +774,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
         ]
 
         orders = {
-            '-avg_cost_per_conversion_goal_1': 'ORDER BY cost / NULLIF(conversion_goal_1, 0) DESC',
+            '-avg_cost_per_conversion_goal_1': 'ORDER BY media_cost / NULLIF(conversion_goal_1, 0) DESC',
             'conversion_goal_1': 'ORDER BY temp_touchpointconversions.conversion_goal_1 ASC',
             'conversion_goal_2': 'ORDER BY temp_conversions.conversion_goal_2 ASC',
             'clicks': 'ORDER BY temp_base.clicks ASC',
@@ -794,42 +794,4 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
 
             sql, _ = queries.prepare_breakdown_struct_delivery_top_rows(context)
 
-            self.assertTrue(order_sql in sql, "Order {}:\n{}\nNOT IN\n{}".format(order, order_sql, sql))
-
-    def test_breakdown_time_top_rows_order(self):
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
-        m = SmallMaster(conversion_goals)
-
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
-
-        breakdown_constraints = [
-            {'source_id': 132},
-        ]
-
-        orders = [
-            '-avg_cost_per_conversion_goal_1',
-            'conversion_goal_1',
-            'conversion_goal_2',
-            'clicks',
-            'yesterday_cost',
-        ]
-
-        order_sql = 'ORDER BY week ASC'
-
-        for order in orders:
-            context = m.get_default_context(
-                ['account_id', 'campaign_id', 'week'],
-                constraints,
-                breakdown_constraints,
-                order,
-                0,
-                10
-            )
-
-            sql, _ = queries.prepare_breakdown_time_top_rows(m, 'week', context, constraints)
-
-            # should always order by time
             self.assertTrue(order_sql in sql, "Order {}:\n{}\nNOT IN\n{}".format(order, order_sql, sql))

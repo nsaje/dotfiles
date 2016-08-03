@@ -11,7 +11,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.chartMetricOptions = options.campaignChartMetrics;
     $scope.rows = null;
     $scope.totalRow = null;
-    $scope.order = '-cost';
+    $scope.order = '-media_cost';
     $scope.isIncompletePostclickMetrics = false;
     $scope.localStoragePrefix = 'campaignAdGroups';
     $scope.infoboxHeader = null;

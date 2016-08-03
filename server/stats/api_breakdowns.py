@@ -33,7 +33,7 @@ def query(user, breakdown, constraints, breakdown_page,
     validate_constraints(constraints)
 
     # FIXME: Hack to prevent sorting by fields not available in redshift
-    order = get_supported_order(order)
+    order = get_supported_order(order, constants.get_target_dimension(breakdown))
 
     constraints = helpers.extract_stats_constraints(constraints)
     conversion_goals, campaign_goal_values = get_goals(breakdown, constraints)
@@ -90,7 +90,12 @@ def validate_constraints(constraints):
 
 
 # FIXME: Remove this hack
-def get_supported_order(order):
+def get_supported_order(order, target_dimension):
+    order_prefix, order_field = sort_helper.dissect_order(order)
+
+    if target_dimension in constants.TimeDimension._ALL or target_dimension in ('age', 'age_gender'):
+        return order
+
     UNSUPPORTED_FIELDS = [
         "name", "state", "status", "performance",
         "min_bid_cpc", "max_bid_cpc", "daily_budget",
@@ -98,11 +103,7 @@ def get_supported_order(order):
         "license_fee_projection", "upload_time",
     ]
 
-    unprefixed_order = order
-    if order.startswith('-'):
-        unprefixed_order = order[1:]
-
-    if unprefixed_order in UNSUPPORTED_FIELDS:
+    if order_field in UNSUPPORTED_FIELDS:
         return "-clicks"
 
     return order

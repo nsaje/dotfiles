@@ -11,7 +11,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.chartHidden = false;
     $scope.chartMetricOptions = [];
     $scope.chartBtnTitle = 'Hide chart';
-    $scope.order = '-cost';
+    $scope.order = '-media_cost';
     $scope.sources = [];
     $scope.sourcesWaiting = null;
     $scope.infoboxLinkTo = 'main.adGroups.settings';

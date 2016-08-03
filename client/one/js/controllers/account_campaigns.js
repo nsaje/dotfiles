@@ -12,7 +12,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.selectedTotals = true;
     $scope.rows = null;
     $scope.totalRow = null;
-    $scope.order = '-cost';
+    $scope.order = '-media_cost';
     $scope.isIncompletePostclickMetrics = false;
     $scope.localStoragePrefix = 'accountCampaigns';
     $scope.infoboxHeader = null;

@@ -11,7 +11,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.chartData = undefined;
     $scope.chartHidden = false;
     $scope.chartBtnTitle = 'Hide chart';
-    $scope.order = '-cost';
+    $scope.order = '-media_cost';
     $scope.sizeRange = [5, 10, 20, 50];
     $scope.size = $scope.sizeRange[0];
     $scope.isIncompletePostclickMetrics = false;

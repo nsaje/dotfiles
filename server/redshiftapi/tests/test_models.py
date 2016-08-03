@@ -37,11 +37,11 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         # prefixes should be added afterwards
         self.assertListEqual([x.column_as_alias('a') for x in after_join_columns], [
-            'cost / NULLIF(conversion_goal_1, 0) avg_cost_per_conversion_goal_1',
-            'cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2',
-            'cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3',
-            'cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4',
-            'cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5',
+            'media_cost / NULLIF(conversion_goal_1, 0) avg_cost_per_conversion_goal_1',
+            'media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2',
+            'media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3',
+            'media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4',
+            'media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5',
         ])
 
         columns = m.get_columns()
