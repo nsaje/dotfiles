@@ -388,7 +388,7 @@ class AccountBreakdownTestCase(TestCase):
                 'cost': 29300.8323,
                 'impressions': 42541160,
             },
-            'order': u'-cost'
+            'order': u'-media_cost'
         }
 
         params = {

@@ -17,7 +17,7 @@ DIMENSION_FIELDS |= set([
 ])
 
 DEFAULT_STATS = set([
-    'cost', 'ctr', 'cpc', 'clicks', 'impressions',
+    'ctr', 'cpc', 'clicks', 'impressions',
 ])
 
 DEFAULT_FIELDS = DIMENSION_FIELDS | DEFAULT_STATS
@@ -48,22 +48,24 @@ def update_allowed_objects_constraints(user, breakdown, constraints):
     level_dimension = constants.get_lowest_level_structure_dimension(constraints)
 
     if level_dimension is None:
-        allowed_account_ids = dash.models.Account.objects.all().filter_by_user(user).values_list('id', flat=True)
-        constraints['account_id'] = list(allowed_account_ids)
+        allowed_account_ids = list(dash.models.Account.objects.all().filter_by_user(user).values_list('id', flat=True))
+        constraints['account_id'] = allowed_account_ids
 
         # when campaign breakdown is a part of requested breakdown we need to limit that only to allowed
         # campaigns
         if constants.StructureDimension.CAMPAIGN in breakdown:
-            allowed_campaig_ids = dash.models.Campaign.objects.all().filter_by_user(user).values_list('id', flat=True)
+            allowed_campaig_ids = list(dash.models.Campaign.objects.all().filter_by_user(user).values_list(
+                'id', flat=True))
 
             # mind that this sets the structure level lower
-            constraints['campaign_id'] = list(allowed_campaig_ids)
+            constraints['campaign_id'] = allowed_campaig_ids
 
     elif level_dimension == constants.StructureDimension.ACCOUNT:
         account = get_account(user, constraints['account_id'])
         constraints['account_id'] = account.id
 
-        allowed_campaig_ids = dash.models.Campaign.objects.all().filter_by_user(user).values_list('id', flat=True)
+        allowed_campaig_ids = list(dash.models.Campaign.objects.all().filter_by_user(user).values_list(
+            'id', flat=True))
         constraints['campaign_id'] = allowed_campaig_ids
 
     elif level_dimension == constants.StructureDimension.CAMPAIGN:

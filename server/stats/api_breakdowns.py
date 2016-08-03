@@ -32,8 +32,10 @@ def query(user, breakdown, constraints, breakdown_page,
     validate_breakdown(breakdown)
     validate_constraints(constraints)
 
+    order = helpers.extract_order_field(order, breakdown)
+
     # FIXME: Hack to prevent sorting by fields not available in redshift
-    order = get_supported_order(order, constants.get_target_dimension(breakdown))
+    stats_order = get_supported_order(order)
 
     constraints = helpers.extract_stats_constraints(constraints)
     conversion_goals, campaign_goal_values = get_goals(breakdown, constraints)
@@ -43,7 +45,7 @@ def query(user, breakdown, constraints, breakdown_page,
         constraints,
         helpers.extract_stats_breakdown_constraints(breakdown, breakdown_page),
         conversion_goals,
-        order,
+        stats_order,
         offset,
         limit)
 
@@ -52,7 +54,8 @@ def query(user, breakdown, constraints, breakdown_page,
     augmenter.augment(breakdown, rows, target_dimension)
     permission_filter.filter_columns_by_permission(user, rows, campaign_goal_values, conversion_goals)
 
-    rows = sort_helper.sort_results(rows, [helpers.extract_order_field(order, breakdown)])
+    # keep the original sort
+    rows = sort_helper.sort_results(rows, [order])
 
     return rows
 
@@ -90,18 +93,19 @@ def validate_constraints(constraints):
 
 
 # FIXME: Remove this hack
-def get_supported_order(order, target_dimension):
-    order_prefix, order_field = sort_helper.dissect_order(order)
+def get_supported_order(order):
+    prefix, order_field = sort_helper.dissect_order(order)
 
-    if target_dimension in constants.TimeDimension._ALL or target_dimension in ('age', 'age_gender'):
-        return target_dimension
+    if order_field == 'cost':
+        # cost is not supported anymore, this case needs to be handled in case this sort was cached in browser
+        return prefix + 'media_cost'
 
     UNSUPPORTED_FIELDS = [
         "name", "state", "status", "performance",
         "min_bid_cpc", "max_bid_cpc", "daily_budget",
         "pacing", "allocated_budgets", "spend_projection",
         "license_fee_projection", "upload_time",
-    ]
+    ] + [v for _, v in constants.SpecialDimensionNameKeys.items()]
 
     if order_field in UNSUPPORTED_FIELDS:
         return "-clicks"

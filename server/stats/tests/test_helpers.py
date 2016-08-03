@@ -96,13 +96,33 @@ class HelpersTest(TestCase):
         )
 
         self.assertEqual(
+            helpers.extract_order_field('clicks', ['source_id', 'week']),
+            'week'
+        )
+
+        self.assertEqual(
+            helpers.extract_order_field('clicks', ['source_id', 'month']),
+            'month'
+        )
+
+        self.assertEqual(
+            helpers.extract_order_field('clicks', ['source_id', 'age']),
+            'age'
+        )
+
+        self.assertEqual(
+            helpers.extract_order_field('clicks', ['source_id', 'age_gender']),
+            'age_gender'
+        )
+
+        self.assertEqual(
             helpers.extract_order_field('clicks', []),
             'clicks'
         )
 
         self.assertEqual(
-            helpers.extract_order_field('-cost', []),
-            '-cost'
+            helpers.extract_order_field('-media_cost', []),
+            '-media_cost'
         )
 
         self.assertEqual(

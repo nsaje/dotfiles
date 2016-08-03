@@ -1,5 +1,7 @@
 import copy
 
+from utils import sort_helper
+
 from stats import constants
 from reports.db_raw_helpers import extract_obj_ids
 
@@ -60,21 +62,17 @@ def create_breakdown_id(breakdown, row):
 
     Returns: '1-2-500'
     """
-    return u"||".join(str(row[dimension]) for dimension in breakdown)
+    return u"||".join(unicode(row[dimension]) for dimension in breakdown)
 
 
 def extract_order_field(order, breakdown):
-    time_dimension = constants.get_time_dimension(breakdown)
-    if time_dimension:
-        return time_dimension
+    target_dimension = constants.get_target_dimension(breakdown)
+    if target_dimension in constants.TimeDimension._ALL or target_dimension in ('age', 'age_gender'):
+        return target_dimension
 
-    unprefixed_order = order
-    prefix = ''
-    if order.startswith('-'):
-        prefix = '-'
-        unprefixed_order = order[1:]
+    prefix, order_field = sort_helper.dissect_order(order)
 
-    if unprefixed_order in constants.SpecialDimensionNameKeys:
-        unprefixed_order = constants.get_dimension_name_key(unprefixed_order)
+    if order_field in constants.SpecialDimensionNameKeys:
+        order = prefix + constants.get_dimension_name_key(order_field)
 
-    return prefix + unprefixed_order
+    return order
