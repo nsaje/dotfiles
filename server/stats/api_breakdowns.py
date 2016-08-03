@@ -94,7 +94,7 @@ def get_supported_order(order, target_dimension):
     order_prefix, order_field = sort_helper.dissect_order(order)
 
     if target_dimension in constants.TimeDimension._ALL or target_dimension in ('age', 'age_gender'):
-        return order
+        return target_dimension
 
     UNSUPPORTED_FIELDS = [
         "name", "state", "status", "performance",
