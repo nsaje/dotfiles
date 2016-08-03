@@ -3,7 +3,6 @@ import logging
 
 from automation.constants import CpcChangeComment
 from automation import autopilot_settings
-import dash.constants
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +32,6 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
             set(autopilot_settings.CPC_CHANGE_ALLOWED_COMMENTS)
         if cpc_change_not_allowed_comments:
             cpc_change_comments = cpc_change_not_allowed_comments
-            new_cpc_cc = old_cpc_cc
-
-        # HACK: davorin 2.8.2016 - freeze yahoo until further notice
-        if ag_source.source.source_type.type == dash.constants.SourceType.YAHOO:
-            cpc_change_comments = []
             new_cpc_cc = old_cpc_cc
 
         recommended_changes[ag_source] = {
