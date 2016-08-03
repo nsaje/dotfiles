@@ -6,7 +6,7 @@ import decimal
 from itertools import tee, izip_longest
 
 from django.db import transaction
-from django.db.models import Min, Max
+from django.db.models import Min, Max, Q
 
 import pytz
 
@@ -357,7 +357,7 @@ def _can_enable_ad_group(ad_group, ad_group_settings, ad_group_sources_settings_
 
 def get_min_budget_increase(campaign):
     today = dates_helper.local_today()
-    user_daily_budget_per_ags = _get_user_daily_budget_per_ags(campaign)
+    user_daily_budget_per_ags = _get_user_daily_budget_per_ags(today, campaign)
     max_daily_budgets_per_ags = _get_max_daily_budget_per_ags(today, campaign)
 
     max_daily_budget = 0
@@ -1103,10 +1103,11 @@ def _get_current_daily_budget(campaign):
     return sum(_get_current_daily_budget_per_ags(campaign).values())
 
 
-def _get_user_daily_budget_per_ags(campaign):
+def _get_user_daily_budget_per_ags(date, campaign):
     ag_settings = dash.models.AdGroupSettings.objects.filter(
         ad_group__campaign=campaign, landing_mode=False).group_current_settings().values_list('id', flat=True)
     active_ag_ids = dash.models.AdGroupSettings.objects.filter(
+        Q(end_date=None) | Q(end_date__gte=date),
         id__in=ag_settings,
         state=dash.constants.AdGroupSettingsState.ACTIVE,
     ).values_list('ad_group_id', flat=True)

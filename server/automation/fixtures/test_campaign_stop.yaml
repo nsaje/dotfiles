@@ -318,7 +318,7 @@
     created_dt: '2016-04-01T12:01:00'
     created_by: 1
     state: 1
-    end_date: '2016-04-30'
+    end_date: '2016-04-08'
     landing_mode: False
   model: dash.adgroupsettings
   pk: 9

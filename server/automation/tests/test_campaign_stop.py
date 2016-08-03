@@ -813,15 +813,41 @@ class GetUserDailyBudgetTestCase(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
 
-    def test_get_user_daily_budget(self):
+    @patch('utils.dates_helper.local_today')
+    def test_get_user_daily_budget(self, mock_today):
+        today = datetime.date(2016, 4, 5)
+        mock_today.return_value = today
+
         campaign = dash.models.Campaign.objects.get(id=6)  # campaign in landing
-        user_daily_budget = campaign_stop._get_user_daily_budget_per_ags(campaign)
+        user_daily_budget = campaign_stop._get_user_daily_budget_per_ags(today, campaign)
         self.assertEqual(user_daily_budget, {
             8: Decimal('200.0000'),
             10: Decimal('100.0000'),
             11: Decimal('40.0000'),
             12: Decimal('15.0000')
         })
+
+    @patch('utils.dates_helper.local_today')
+    def test_end_date_past(self, mock_today):
+        today = datetime.date(2016, 4, 10)  # ad group 7 end date is in past by then
+        mock_today.return_value = today
+
+        campaign = dash.models.Campaign.objects.get(id=6)  # campaign in landing
+        user_daily_budget = campaign_stop._get_user_daily_budget_per_ags(today, campaign)
+        self.assertEqual(user_daily_budget, {
+            10: Decimal('100.0000'),
+            11: Decimal('40.0000'),
+            12: Decimal('15.0000')
+        })
+
+    @patch('utils.dates_helper.local_today')
+    def test_all_end_dates_past(self, mock_today):
+        today = datetime.date(2016, 5, 1)  # all ad group end dates are in past by then
+        mock_today.return_value = today
+
+        campaign = dash.models.Campaign.objects.get(id=6)  # campaign in landing
+        user_daily_budget = campaign_stop._get_user_daily_budget_per_ags(today, campaign)
+        self.assertEqual(user_daily_budget, {})
 
 
 class GetMaximumDailyBudgetTestCase(TestCase):
