@@ -562,6 +562,7 @@ class AdGroupSourcesView(K1APIView):
                 settings_changed = True
             elif key == 'source_campaign_key':
                 ad_group_source.source_campaign_key = val
+                ad_group_source.save()
             else:
                 return self.response_error("Invalid setting!", status=400)
 

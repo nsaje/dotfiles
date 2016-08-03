@@ -802,17 +802,18 @@ class K1ApiTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_set_source_campaign_key(self):
-        response = self.client.put(
-            reverse('k1api.set_source_campaign_key'),
-            json.dumps({'ad_group_source_id': 1, 'source_campaign_key': ['abc']}),
+        response = self.client.generic(
+            'PUT',
+            reverse('k1api_new.ad_groups.sources'),
+            json.dumps({'source_campaign_key': ['abc']}),
             'application/json',
+            QUERY_STRING=urllib.urlencode({'ad_group_id': 1, 'source_slug': 'adblade'})
         )
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
 
         ags = dash.models.AdGroupSource.objects.get(pk=1)
-        # self.assertEqual(1, 2)
         self.assertEqual(ags.source_campaign_key, ['abc'])
 
     def test_get_outbrain_marketer_id(self):
