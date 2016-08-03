@@ -62,8 +62,8 @@ bindsym $mod+Return exec gnome-terminal --hide-menubar
 
 # start browser
 #bindsym $mod+backslash exec google-chrome --new-window --force-device-scale-factor=1.25
-bindsym $mod+backslash exec google-chrome --new-window --force-device-scale-factor=1.25 --profile-directory="Default"
-bindsym $mod+bracketright exec google-chrome --new-window --force-device-scale-factor=1.25 --profile-directory="Profile 1"
+bindsym $mod+backslash exec google-chrome --new-window --force-device-scale-factor=1.25 --profile-directory="Profile 1"
+bindsym $mod+bracketright exec google-chrome --new-window --force-device-scale-factor=1.25 --profile-directory="Default"
 
 #set $Locker i3lock && sleep 1
 set $Locker bash ~/.local/bin/fuzzy_lock.sh && sleep 1
