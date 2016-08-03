@@ -33,19 +33,20 @@ class AutopilotBudgetsTestCase(test.TestCase):
 
     @patch('automation.autopilot_settings.AUTOPILOT_MIN_SPEND_PERC', 0.2)
     def test_get_active_sources_with_spend(self):
-        sources = [0, 1]
+        s0 = dash.models.AdGroupSource.objects.get(id=5)
+        s1 = dash.models.AdGroupSource.objects.get(id=1)
         test_cases = (
             # spends, returned_sources
-            ({0: {'yesterdays_spend_cc': 0.6}, 1: {'yesterdays_spend_cc': 0.6}}, [0, 1]),
-            ({0: {'yesterdays_spend_cc': 0.6}, 1: {'yesterdays_spend_cc': 0.1}}, [0]),
-            ({0: {'yesterdays_spend_cc': 0.1}, 1: {'yesterdays_spend_cc': 0.6}}, [1]),
-            ({0: {'yesterdays_spend_cc': 0.1}, 1: {'yesterdays_spend_cc': 0.1}}, []),
-            ({0: {'yesterdays_spend_cc': 0.2}, 1: {'yesterdays_spend_cc': 0.2}}, [0, 1])
+            ({s0: {'yesterdays_spend_cc': 0.6}, s1: {'yesterdays_spend_cc': 0.6}}, [s0, s1]),
+            ({s0: {'yesterdays_spend_cc': 0.6}, s1: {'yesterdays_spend_cc': 0.1}}, [s0]),
+            ({s0: {'yesterdays_spend_cc': 0.1}, s1: {'yesterdays_spend_cc': 0.6}}, [s1]),
+            ({s0: {'yesterdays_spend_cc': 0.1}, s1: {'yesterdays_spend_cc': 0.1}}, []),
+            ({s0: {'yesterdays_spend_cc': 0.2}, s1: {'yesterdays_spend_cc': 0.2}}, [s0, s1])
         )
-        spends = {0: 1.0, 1: 1.0}
+        spends = {s0: 1.0, s1: 1.0}
         for test_case in test_cases:
             self.assertEqual(autopilot_budgets._get_active_sources_with_spend(
-                sources, test_case[0], spends), test_case[1])
+                [s0, s1], test_case[0], spends), test_case[1])
 
     @patch('automation.autopilot_budgets._get_minimum_autopilot_budget_constraints')
     @patch('automation.autopilot_budgets._get_optimistic_autopilot_budget_constraints')

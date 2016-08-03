@@ -14,6 +14,14 @@ logger = logging.getLogger(__name__)
 
 
 def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, campaign_goal=None):
+
+    # HACK: davorin 3.8.2016 - freeze yahoo until further notice
+    for d in data:
+        if d.source.source_type.type == dash.constants.SourceType.YAHOO:
+            daily_budget -= data[d]['old_budget']
+            data.pop(d)
+            break
+
     active_sources = data.keys()
 
     max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(active_sources, daily_budget)
