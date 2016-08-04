@@ -69,7 +69,7 @@ class ContentAdStats(materialize_views.Materialize):
             ['content_ad_id', 'type', 'source'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
              ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg'),
-             ('users', 'sum'), ('returning_users', 'sum')],
+             ('users', 'sum')],
         )
 
     def _get_post_click_data(self, content_ad_postclick, ad_group, content_ad_id, media_source):
@@ -284,7 +284,7 @@ class Publishers(materialize_views.Materialize):
             ['ad_group_id', 'type', 'source', 'lower(publisher)'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
              ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg'),
-             ('users', 'sum'), ('returning_users', 'sum')],
+             ('users', 'sum')],
         )
 
     def _outbrain_cpc(self, date):
