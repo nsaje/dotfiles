@@ -549,7 +549,7 @@ class AdGroupBreakdownTestCase(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_post(self, mock_query):
-        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature'])
+        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature_on_ad_group_level'])
 
         mock_query.return_value = {}
 

@@ -11,7 +11,7 @@
             </div>
         </div>
     </div>
-    <div class="section table-ad-group-sources">
+    <div class="section table-ad-group-sources" ng-if="!(hasPermission('zemauth.can_access_table_breakdowns_feature_on_ad_group_level') && hasPermission('zemauth.hide_old_table_on_ad_group_level'))">
         <div class="button-bar">
             <div class="button-bar-item">
                 <div ng-show="hasPermission('zemauth.can_modify_publisher_blacklist_status')" style="display:inline;">
@@ -63,7 +63,7 @@
             </form>
 
             <span>Show rows</span>
-            <zem-paging-dropdown class="show-rows" counts="sizeRange" selection="size"></zem-paging-dropdown> 
+            <zem-paging-dropdown class="show-rows" counts="sizeRange" selection="size"></zem-paging-dropdown>
             <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/one/img/arrow-first.svg"></div>
             <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(pagination.currentPage - 1)"><img ng-src="{{ config.static_url }}/one/img/arrow-prev.svg"></div>
             <span class="current-rows">{{ pagination.startIndex}} - {{ pagination.endIndex }} of {{ pagination.count }}</span>
@@ -74,8 +74,8 @@
 
     </div>
 
-    <div class="section zem-internal-feature-container" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
-        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature')"></zem-internal-feature>
+    <div class="section zem-internal-feature-container" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature_on_ad_group_level')">
+        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature_on_ad_group_level')"></zem-internal-feature>
 
         <div class="button-bar" ng-if="grid.api">
             <zem-grid-bulk-publishers-actions api="grid.api"></zem-grid-bulk-publishers-actions>
