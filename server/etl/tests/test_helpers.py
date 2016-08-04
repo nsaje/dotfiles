@@ -96,15 +96,6 @@ class HelpersTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(helpers.extract_source_slug('b1_outbrain'), 'outbrain')
         self.assertEqual(helpers.extract_source_slug('outbrain'), 'outbrain')
 
-    def test_extract_device_type(self):
-        self.assertEqual(helpers.extract_device_type(4), dash.constants.DeviceType.MOBILE)
-        self.assertEqual(helpers.extract_device_type(2), dash.constants.DeviceType.DESKTOP)
-        self.assertEqual(helpers.extract_device_type(5), dash.constants.DeviceType.TABLET)
-
-        self.assertEqual(helpers.extract_device_type(None), dash.constants.DeviceType.UNDEFINED)
-        self.assertEqual(helpers.extract_device_type(0), dash.constants.DeviceType.UNDEFINED)
-        self.assertEqual(helpers.extract_device_type(3), dash.constants.DeviceType.UNDEFINED)
-
     def test_extract_age(self):
         self.assertEqual(helpers.extract_age('18-20'), dash.constants.AgeGroup.AGE_18_20)
         self.assertEqual(helpers.extract_age('21-29'), dash.constants.AgeGroup.AGE_21_29)

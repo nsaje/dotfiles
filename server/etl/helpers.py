@@ -87,17 +87,6 @@ def extract_source_slug(source_slug):
     return source_slug
 
 
-def extract_device_type(device_type):
-    # OpenRTB Device Type mapping
-    if device_type == 4:
-        return constants.DeviceType.MOBILE
-    elif device_type == 2:
-        return constants.DeviceType.DESKTOP
-    elif device_type == 5:
-        return constants.DeviceType.TABLET
-    return constants.DeviceType.UNDEFINED
-
-
 def extract_country(country):
     if country and len(country) == 2:
         return country.upper()

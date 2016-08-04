@@ -24,7 +24,7 @@ class SmallMaster(models.MVMaster):
         super(SmallMaster, self).__init__(*args, **kwargs)
 
         columns = self.select_columns([
-            'date', 'week', 'source_id', 'account_id', 'campaign_id',
+            'date', 'week', 'source_id', 'account_id', 'campaign_id', 'device_type',
             'clicks', 'total_seconds', 'yesterday_cost',
         ])
 
@@ -667,6 +667,55 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
         WHERE r <= 10
     """
 
+    breakdown_device_type_sql = """
+        WITH temp_yesterday AS
+                (SELECT a.account_id AS account_id,
+                        CASE
+                            WHEN a.device_type == 4 THEN 3
+                            WHEN a.device_type == 2 THEN 1
+                            WHEN a.device_type == 5 THEN 2
+                            ELSE 0
+                        END a.device_type,
+                            SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                FROM mv_account_delivery a
+                WHERE (a.date=%s)
+                    AND ((a.source_id=%s))
+                GROUP BY account_id,
+                            device_type),
+            temp_base AS
+                (SELECT a.account_id AS account_id,
+                        CASE
+                            WHEN a.device_type == 4 THEN 3
+                            WHEN a.device_type == 2 THEN 1
+                            WHEN a.device_type == 5 THEN 2
+                            ELSE 0
+                        END a.device_type,
+                            SUM(a.clicks) clicks,
+                            SUM(a.total_time_on_site) total_seconds
+                FROM mv_account_delivery a
+                WHERE (a.date>=%s
+                        AND a.date<=%s)
+                    AND ((a.source_id=%s))
+                GROUP BY account_id,
+                            device_type)
+        SELECT b.account_id,
+            b.device_type,
+            b.clicks,
+            b.total_seconds,
+            b.yesterday_cost
+        FROM
+        (SELECT temp_base.account_id,
+                temp_base.device_type,
+                temp_base.clicks,
+                temp_base.total_seconds,
+                temp_yesterday.yesterday_cost,
+                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id
+                                    ORDER BY temp_base.clicks DESC NULLS LAST) AS r
+        FROM temp_base NATURAL
+        LEFT OUTER JOIN temp_yesterday) b
+        WHERE r <= 10
+    """
+
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
     def test_breakdown_time_top_rows(self, mock_local_today):
         conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
@@ -759,6 +808,43 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
         ])
 
         self.assertSQLEquals(sql, self.breakdown_struct_sql)
+
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    def test_breakdown_device_type_top_rows(self, mock_local_today):
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
+
+        m = SmallMaster(conversion_goals)
+
+        constraints = {
+            'date__gte': datetime.date(2016, 4, 1),
+            'date__lte': datetime.date(2016, 5, 1),
+        }
+
+        breakdown_constraints = [
+            {'source_id': 132},
+        ]
+
+        context = m.get_default_context(
+            ['account_id', 'device_type'],
+            constraints,
+            breakdown_constraints,
+            '-clicks',
+            0,
+            10
+        )
+
+        sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
+
+        # extracts params correctly, check order, goals are not added as delivery does not support them
+        self.assertEqual(params, [
+            datetime.date(2016, 7, 1),
+            132,
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+            132,
+        ])
+
+        self.assertSQLEquals(sql, self.breakdown_device_type_sql)
 
     def test_breakdown_struct_delivery_top_rows_order(self):
         conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)

@@ -15,7 +15,7 @@ INSERT INTO mvh_clean_stats (
       content_ad_id,
       publisher,
 
-      extract_device_type(device_type) as device_type,
+      device_type,
       extract_country(country) as country,
       extract_state(state) as state,
       extract_dma(dma) as dma,

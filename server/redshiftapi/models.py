@@ -106,7 +106,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
     source_id = backtosql.Column('source_id', mh.BREAKDOWN)
     publisher = backtosql.Column('publisher', mh.BREAKDOWN)
 
-    device_type = backtosql.Column('device_type', mh.BREAKDOWN)
+    device_type = backtosql.TemplateColumn('part_device_type.sql', None, mh.BREAKDOWN)
     country = backtosql.Column('country', mh.BREAKDOWN)
     state = backtosql.Column('state', mh.BREAKDOWN)
     dma = backtosql.Column('dma', mh.BREAKDOWN)

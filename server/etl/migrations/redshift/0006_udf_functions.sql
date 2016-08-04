@@ -45,18 +45,6 @@ CREATE OR REPLACE FUNCTION extract_source_slug (source_slug varchar(130)) RETURN
 $$ LANGUAGE plpythonu;
 
 
-CREATE OR REPLACE FUNCTION extract_device_type (device_type integer) RETURNS int2 IMMUTABLE as $$
-      /* OpenRTB Device Type mapping */
-      if device_type == 4:
-          return 3  # constants.DeviceType.MOBILE
-      elif device_type == 2:
-          return 1  # constants.DeviceType.DESKTOP
-      elif device_type == 5:
-          return 2  # constants.DeviceType.TABLET
-      return 0  # constants.DeviceType.UNDEFINED
-$$ LANGUAGE plpythonu;
-
-
 CREATE OR REPLACE FUNCTION extract_country (country varchar(255)) RETURNS varchar(2) IMMUTABLE as $$
       if country and len(country) == 2:
           return country.upper()
