@@ -3,41 +3,7 @@
 
 oneApp.factory('zemOptimisationMetricsService', function () {
     function insertAudienceOptimizationColumns (columns, position, isShown, isInternal) {
-        isShown = false;
         columns.splice(position, 0, {
-            name: 'Total Seconds',
-            field: 'total_seconds',
-            checked: true,
-            type: 'number',
-            shown: isShown,
-            internal: isInternal,
-            help: 'Total time spend on site.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        }, {
-            name: 'Non-Bounced Visits',
-            field: 'non_bounced_visits',
-            checked: true,
-            type: 'number',
-            shown: isShown,
-            internal: isInternal,
-            help: 'Number of visitors that navigate to more than one page on the site.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        }, {
-            name: 'Total Pageviews',
-            field: 'total_pageviews',
-            checked: true,
-            type: 'number',
-            shown: isShown,
-            internal: isInternal,
-            help: 'Total pageviews.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-        }, {
             name: 'Avg. Cost per Minute',
             field: 'avg_cost_per_minute',
             checked: true,
@@ -100,7 +66,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
                 field: 'avg_cost_per_conversion_goal_' + i,
                 checked: true,
                 type: 'currency',
-                shown: isShown,
+                shown: false,
                 internal: isInternal,
                 help: 'Average cost per acquisition.',
                 totalRow: true,
@@ -112,14 +78,11 @@ oneApp.factory('zemOptimisationMetricsService', function () {
 
     function columnCategories () {
         var categories = {
-            total_seconds: true,
-            non_bounced_visits: true,
-            total_pageviews: true,
-            avg_cost_per_minute: true,
-            avg_cost_per_pageview: true,
-            avg_cost_per_non_bounced_visit: true,
-            avg_cost_for_new_visitor: true,
-            avg_cost_per_visit: true,
+            avg_cost_per_minute: false,  // add to category but don't hide column
+            avg_cost_per_pageview: false,
+            avg_cost_per_non_bounced_visit: false,
+            avg_cost_for_new_visitor: false,
+            avg_cost_per_visit: false,
             cpa: true,
         };
         for (var i = 0; i < 16; i++) {
@@ -131,7 +94,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
     function createColumnCategories () {
         var columnCats = columnCategories();
         return {
-            'name': 'Campaign Goals',
+            'name': 'Goals',
             'fields': Object.keys(columnCats),
         };
     }

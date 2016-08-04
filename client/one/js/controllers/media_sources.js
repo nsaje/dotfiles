@@ -330,12 +330,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: 'The average CPM.',
+            help: 'Cost per 1,000 impressions',
             totalRow: true,
             order: true,
             initialOrder: 'desc',
-            shown: $scope.hasPermission('zemauth.can_view_new_columns'),
-            internal: $scope.isPermissionInternal('zemauth.can_view_new_columns'),
+            shown: true,
+            internal: false,
         },
         {
             name: 'Clicks',
@@ -419,7 +419,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 'visits', 'pageviews', 'percent_new_users',
                 'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy', 'unique_users', 'returning_users',
-                'bounced_visits',
+                'bounced_visits', 'non_bounced_visits', 'total_seconds',
             ]
         },
         {
@@ -441,13 +441,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
         );
 
-        zemPostclickMetricsService.insertUserColumns(
-            $scope.columns,
-            $scope.columns.length - 2,
-            $scope.hasPermission('zemauth.can_view_new_columns'),
-            $scope.isPermissionInternal('zemauth.can_view_new_columns')
-        );
-
         zemPostclickMetricsService.insertEngagementColumns(
             $scope.columns,
             $scope.columns.length - 2,
@@ -464,15 +457,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             );
         }
 
-        if (($scope.level === constants.level.CAMPAIGNS) ||
-            ($scope.level === constants.level.AD_GROUPS)) {
-            zemOptimisationMetricsService.insertAudienceOptimizationColumns(
-                $scope.columns,
-                $scope.columns.length - 2,
-                $scope.hasPermission('zemauth.campaign_goal_optimization'),
-                $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
-            );
-        }
+        zemOptimisationMetricsService.insertAudienceOptimizationColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.campaign_goal_optimization'),
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+        );
     };
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
@@ -693,13 +683,19 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             );
         }
 
+        $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+            $scope.chartMetricOptions,
+            options.goalChartMetrics,
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+        );
+
         if ($scope.hasPermission('zemauth.campaign_goal_optimization') &&
             (($scope.level === constants.level.CAMPAIGNS) ||
              ($scope.level === constants.level.AD_GROUPS))) {
             $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
                 $scope.campaignGoals,
                 $scope.chartMetricOptions,
-                options.campaignGoalChartMetrics.concat(options.campaignGoalConversionGoalChartMetrics),
+                options.campaignGoalConversionGoalChartMetrics,
                 $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
             );
         }

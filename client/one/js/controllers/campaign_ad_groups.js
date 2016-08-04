@@ -309,12 +309,12 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: 'The average CPM.',
+            help: 'Cost per 1,000 impressions',
             totalRow: true,
             order: true,
             initialOrder: 'desc',
-            shown: $scope.hasPermission('zemauth.can_view_new_columns'),
-            internal: $scope.isPermissionInternal('zemauth.can_view_new_columns'),
+            shown: true,
+            internal: false,
         },
         {
             name: 'Clicks',
@@ -395,7 +395,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 'visits', 'pageviews', 'percent_new_users',
                 'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy', 'unique_users', 'returning_users',
-                'bounced_visits',
+                'bounced_visits', 'non_bounced_visits', 'total_seconds',
             ]
         },
         {
@@ -415,13 +415,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
-        );
-
-        zemPostclickMetricsService.insertUserColumns(
-            $scope.columns,
-            $scope.columns.length - 2,
-            $scope.hasPermission('zemauth.can_view_new_columns'),
-            $scope.isPermissionInternal('zemauth.can_view_new_columns')
         );
 
         zemPostclickMetricsService.insertEngagementColumns(
@@ -573,14 +566,18 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             );
         }
 
-        if ($scope.hasPermission('zemauth.campaign_goal_optimization')) {
-            $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
-                $scope.campaignGoals,
-                $scope.chartMetricOptions,
-                options.campaignGoalChartMetrics.concat(options.campaignGoalConversionGoalChartMetrics),
-                $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
-            );
-        }
+        $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+            $scope.chartMetricOptions,
+            options.goalChartMetrics,
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+        );
+
+        $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
+            $scope.campaignGoals,
+            $scope.chartMetricOptions,
+            options.goalChartMetrics.concat(options.campaignGoalConversionGoalChartMetrics),
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+        );
     };
 
     var getDailyStats = function () {

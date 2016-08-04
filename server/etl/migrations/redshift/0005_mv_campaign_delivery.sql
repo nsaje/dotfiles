@@ -30,5 +30,6 @@ CREATE TABLE mv_campaign_delivery (
        license_fee_nano bigint encode lzo,
        margin_nano bigint encode lzo,
 
-       users integer encode lzo
+       users integer encode lzo,
+       returning_users integer encode lzo
 ) sortkey(date, source_id, account_id, campaign_id, device_type, country, state, age);

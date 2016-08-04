@@ -627,8 +627,6 @@ class SourcesTable(object):
                    yesterday_cost):
         result = {}
         helpers.copy_stats_to_row(totals_data, result)
-        if level_ in ('ad_groups', 'campaigns'):
-            campaign_goals.copy_fields(user, totals_data, result)
 
         if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
             result['e_yesterday_cost'] = e_yesterday_cost
@@ -729,8 +727,6 @@ class SourcesTable(object):
                 row['yesterday_cost'] = yesterday_cost.get(source.id)
 
             helpers.copy_stats_to_row(source_data, row)
-            if level_ in ('ad_groups', 'campaigns'):
-                campaign_goals.copy_fields(user, source_data, row)
 
             if ad_group_level:
                 bid_cpc_value = states[0].cpc_cc if len(states) == 1 else None
@@ -1174,7 +1170,6 @@ class AdGroupAdsTable(object):
     def _get_total_row(self, user, stats):
         totals = {}
         helpers.copy_stats_to_row(stats, totals)
-        campaign_goals.copy_fields(user, stats, totals)
         return totals
 
     def _get_url(self, ad_group, content_ad, is_demo):
@@ -1229,7 +1224,6 @@ class AdGroupAdsTable(object):
                 'status_setting': content_ad.state,
             }
             helpers.copy_stats_to_row(stat, row)
-            campaign_goals.copy_fields(user, stat, row)
 
             row['archived'] = archived
 
@@ -1968,7 +1962,6 @@ class PublishersTable(object):
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
 
-        campaign_goals.copy_fields(user, totals_data, result)
         for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
             result[key] = totals_data[key]
 
@@ -2033,7 +2026,6 @@ class PublishersTable(object):
                     # We have no conversion data for OB
                     row[key] = None
 
-            campaign_goals.copy_fields(user, publisher_data, row)
             if 'performance' in publisher_data:
                 row['performance'] = publisher_data['performance']
                 row['styles'] = publisher_data.get('styles')

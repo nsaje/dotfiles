@@ -934,7 +934,9 @@ def copy_stats_to_row(stat, row):
                 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'e_media_cost', 'e_data_cost', 'billing_cost',
                 'license_fee', 'margin', 'agency_total', 'unique_users', 'returning_users',
-                'bounced_visits']:
+                'bounced_visits', 'total_seconds', 'avg_cost_per_minute', 'non_bounced_visits',
+                'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview', 'avg_cost_for_new_visitor',
+                'avg_cost_per_visit']:
         row[key] = stat.get(key)
 
     for key in [k for k in stat.keys() if k.startswith('conversion_goal_')]:

@@ -131,6 +131,13 @@ class AdGroupAdsTableTest(TestCase):
             'returning_users': 20,
             'unique_users': 35,
             'bounced_visits': 6,
+            'avg_cost_per_visit': 0.15,
+            'avg_cost_per_pageview': 0.123,
+            'avg_cost_per_minute': 0.753,
+            'avg_cost_for_new_visitor': 0.221,
+            'avg_cost_per_non_bounced_visit': 0.332,
+            'non_bounced_visits': 5,
+            'total_seconds': 14,
         }]
         mock_stats2 = {
             'date': date.isoformat(),
@@ -158,6 +165,13 @@ class AdGroupAdsTableTest(TestCase):
             'pv_per_visit': 0.8,
             'avg_tos': 0.9,
             'bounced_visits': 6,
+            'avg_cost_per_visit': 0.15,
+            'avg_cost_per_pageview': 0.123,
+            'avg_cost_per_minute': 0.753,
+            'avg_cost_for_new_visitor': 0.221,
+            'avg_cost_per_non_bounced_visit': 0.332,
+            'non_bounced_visits': 5,
+            'total_seconds': 14,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -296,6 +310,13 @@ class AdGroupAdsTableTest(TestCase):
             'bounce_rate': 12.0,
             'pv_per_visit': 0.9,
             'avg_tos': 1.0,
+            'avg_cost_per_visit': 0.15,
+            'avg_cost_per_pageview': 0.123,
+            'avg_cost_per_minute': 0.753,
+            'avg_cost_for_new_visitor': 0.221,
+            'avg_cost_per_non_bounced_visit': 0.332,
+            'non_bounced_visits': 5,
+            'total_seconds': 14,
             'performance': {
                 'list': [],
                 'overall': None,
@@ -344,6 +365,13 @@ class AdGroupAdsTableTest(TestCase):
             'bounce_rate': None,
             'pv_per_visit': None,
             'avg_tos': None,
+            'avg_cost_per_visit': None,
+            'avg_cost_per_pageview': None,
+            'avg_cost_per_minute': None,
+            'avg_cost_for_new_visitor': None,
+            'avg_cost_per_non_bounced_visit': None,
+            'non_bounced_visits': None,
+            'total_seconds': None,
             'returning_users': None,
             'unique_users': None,
             'bounced_visits': None,
@@ -381,6 +409,13 @@ class AdGroupAdsTableTest(TestCase):
             'bounce_rate': 11.0,
             'pv_per_visit': 0.8,
             'avg_tos': 0.9,
+            'avg_cost_per_visit': 0.15,
+            'avg_cost_per_pageview': 0.123,
+            'avg_cost_per_minute': 0.753,
+            'avg_cost_for_new_visitor': 0.221,
+            'avg_cost_per_non_bounced_visit': 0.332,
+            'non_bounced_visits': 5,
+            'total_seconds': 14,
         })
 
         batches = models.UploadBatch.objects.filter(

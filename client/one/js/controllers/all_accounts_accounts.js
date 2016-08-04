@@ -1,5 +1,5 @@
 /*globals angular,oneApp,moment,constants,options*/
-oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', 'zemNavigationService', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService) { // eslint-disable-line max-len
+oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService) { // eslint-disable-line max-len
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
@@ -321,12 +321,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             checked: true,
             type: 'currency',
             fractionSize: 3,
-            help: 'The average CPM.',
+            help: 'Cost per 1,000 impressions',
             totalRow: true,
             order: true,
             initialOrder: 'desc',
-            shown: $scope.hasPermission('zemauth.can_view_new_columns'),
-            internal: $scope.isPermissionInternal('zemauth.can_view_new_columns'),
+            shown: true,
+            internal: false,
         },
         {
             name: 'Clicks',
@@ -413,7 +413,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             'fields': [
                 'visits', 'unique_users', 'returning_users', 'pageviews', 'percent_new_users',
                 'bounce_rate', 'pv_per_visit', 'avg_tos', 'click_discrepancy', 'unique_users',
-                'returning_users', 'bounced_visits',
+                'returning_users', 'bounced_visits', 'non_bounced_visits', 'total_seconds',
             ]
         },
         {
@@ -422,6 +422,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 'default_account_manager', 'default_sales_representative', 'account_type'
             ]
         },
+        zemOptimisationMetricsService.createColumnCategories(),
         {
             'name': 'Data Sync',
             'fields': ['last_sync']
@@ -438,18 +439,18 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
         );
 
-        zemPostclickMetricsService.insertUserColumns(
-            $scope.columns,
-            $scope.columns.length - 2,
-            $scope.hasPermission('zemauth.can_view_new_columns'),
-            $scope.isPermissionInternal('zemauth.can_view_new_columns')
-        );
-
         zemPostclickMetricsService.insertEngagementColumns(
             $scope.columns,
             $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+        );
+
+        zemOptimisationMetricsService.insertAudienceOptimizationColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.campaign_goal_optimization'),
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );
     };
 
@@ -535,6 +536,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 $scope.isPermissionInternal('zemauth.can_view_actual_costs')
             );
         }
+
+        $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+            $scope.chartMetricOptions,
+            options.goalChartMetrics,
+            false
+        );
     };
 
     var getDailyStats = function () {

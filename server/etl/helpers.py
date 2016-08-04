@@ -78,6 +78,13 @@ def calculate_effective_cost(cost, data_cost, factors):
     return effective_cost, effective_data_cost, license_fee, margin
 
 
+def calculate_returning_users(users, new_visits):
+    if users is None or new_visits is None:
+        return None
+
+    return max(0, users - new_visits)
+
+
 def extract_source_slug(source_slug):
     if not source_slug:
         return None

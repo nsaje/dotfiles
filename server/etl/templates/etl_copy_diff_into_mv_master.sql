@@ -52,7 +52,8 @@ INSERT INTO mv_master (
           ) * cf.pct_margin::decimal(10, 8)
       ) as margin_nano,
 
-      a.users
+      a.users,
+      a.returning_users
   FROM
     (
       mv_master_diff a

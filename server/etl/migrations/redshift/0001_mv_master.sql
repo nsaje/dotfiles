@@ -35,5 +35,6 @@ CREATE TABLE mv_master (
        license_fee_nano bigint encode lzo,
        margin_nano bigint encode lzo,
 
-       users integer encode lzo
+       users integer encode lzo,
+       returning_users integer encode lzo
 ) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id);

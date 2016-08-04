@@ -352,6 +352,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
 
             var metricFormats = {};
             metricFormats[constants.chartMetric.CPC] = {'type': 'currency', 'fractionSize': 3};
+            metricFormats[constants.chartMetric.CPM] = {'type': 'currency', 'fractionSize': 3};
             metricFormats[constants.chartMetric.DATA_COST] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.EFFECTIVE_DATA_COST] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.MEDIA_COST] = {'type': 'currency', 'fractionSize': 2};
@@ -360,12 +361,13 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             metricFormats[constants.chartMetric.LICENSE_FEE] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.NEW_USERS] = {'type': 'percent', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.UNIQUE_USERS] = {};
+            metricFormats[constants.chartMetric.RETURNING_USERS] = {};
             metricFormats[constants.chartMetric.BOUNCE_RATE] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.PV_PER_VISIT] = {'fractionSize': 2};
             metricFormats[constants.chartMetric.AVG_TOS] = {'type': 'time', 'fractionSize': 1};
             metricFormats[constants.chartMetric.CLICK_DISCREPANCY] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.TOTAL_SECONDS] = {};
-            metricFormats[constants.chartMetric.TOTAL_PAGEVIEWS] = {};
             metricFormats[constants.chartMetric.NON_BOUNCED_VISITS] = {};
             metricFormats[constants.chartMetric.COST_PER_MINUTE] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.COST_PER_PAGEVIEW] = {'type': 'currency', 'fractionSize': 2};

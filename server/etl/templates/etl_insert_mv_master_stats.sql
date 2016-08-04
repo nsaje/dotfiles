@@ -53,7 +53,8 @@ INSERT INTO mv_master (
           ) * cf.pct_margin::decimal(10, 8) * 1000
       ) as margin_nano,
 
-      null as users
+      null as users,
+      null as returning_users
   FROM
     (
       (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)

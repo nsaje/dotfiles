@@ -69,7 +69,7 @@ class ContentAdStats(materialize_views.Materialize):
             ['content_ad_id', 'type', 'source'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
              ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg'),
-             ('users', 'sum')],
+             ('users', 'sum'), ('returning_users', 'sum')],
         )
 
     def _get_post_click_data(self, content_ad_postclick, ad_group, content_ad_id, media_source):
@@ -162,6 +162,7 @@ class ContentAdStats(materialize_views.Materialize):
                 converters.decimal_to_int(margin * converters.MICRO_TO_NANO),
 
                 post_click.get('users'),
+                helpers.calculate_returning_users(post_click.get('users'), post_click.get('new_visits')),
             )
 
         content_ads_ad_group_map = {x.id: x.ad_group_id for x in dash.models.ContentAd.objects.all()}
@@ -218,6 +219,7 @@ class ContentAdStats(materialize_views.Materialize):
                 0,
 
                 post_click.get('users'),
+                helpers.calculate_returning_users(post_click.get('users'), post_click.get('new_visits')),
             )
 
         if content_ad_postclick:
@@ -282,7 +284,7 @@ class Publishers(materialize_views.Materialize):
             ['ad_group_id', 'type', 'source', 'lower(publisher)'],
             [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
              ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg'),
-             ('users', 'sum')],
+             ('users', 'sum'), ('returning_users', 'sum')],
         )
 
     def _outbrain_cpc(self, date):
@@ -387,6 +389,7 @@ class Publishers(materialize_views.Materialize):
                 converters.decimal_to_int(margin * converters.MICRO_TO_NANO),
 
                 post_click.get('users'),
+                helpers.calculate_returning_users(post_click.get('users'), post_click.get('new_visits')),
             )
 
         source = dash.models.Source.objects.get(source_type__type=dash.constants.SourceType.OUTBRAIN)
@@ -437,6 +440,7 @@ class Publishers(materialize_views.Materialize):
                 converters.decimal_to_int(margin * converters.MICRO_TO_NANO),
 
                 post_click.get('users'),
+                helpers.calculate_returning_users(post_click.get('users'), post_click.get('new_visits')),
             )
 
         # make a new mapping as from now on we use media_source_slugs that are already extracted
@@ -493,6 +497,7 @@ class Publishers(materialize_views.Materialize):
                 0,
 
                 post_click.get('users'),
+                helpers.calculate_returning_users(post_click.get('users'), post_click.get('new_visits')),
             )
 
         if content_ad_postclick:

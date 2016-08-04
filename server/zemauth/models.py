@@ -207,7 +207,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_manage_agency_margin', 'User can define margin in budget line item.'),
             ('can_view_agency_margin', 'User can view margin in budget tab and view margin columns in tables and reports.'),
             ('can_view_platform_cost_breakdown', 'User can view platform costs broken down into media, data and fee.'),
-            ('can_view_new_columns', 'User can view CPM, unique users and returning users columns.'),
         )
 
     def get_full_name(self):

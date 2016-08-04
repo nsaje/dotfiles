@@ -346,6 +346,8 @@ class MasterView(Materialize):
                 campaign = self.campaigns_map[ad_group.campaign_id]
                 account = self.accounts_map[campaign.account_id]
 
+                returning_users = helpers.calculate_returning_users(row.users, row.new_visits)
+
                 yield (
                     helpers.get_breakdown_key_for_postclickstats(source.id, row.content_ad_id),
                     (
@@ -384,6 +386,7 @@ class MasterView(Materialize):
                         0,
 
                         row.users,
+                        returning_users,
                     ),
                     (row.conversions, row.postclick_source)
                 )

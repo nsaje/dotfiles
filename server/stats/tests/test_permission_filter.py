@@ -28,7 +28,7 @@ class FilterTestCase(TestCase):
         row.update({x: 1 for x in api_helpers.TRAFFIC_FIELDS})
         row.update({x: 1 for x in api_helpers.POSTCLICK_ACQUISITION_FIELDS})
         row.update({x: 1 for x in api_helpers.POSTCLICK_ENGAGEMENT_FIELDS})
-        row.update({x: 1 for x in api_helpers.CAMPAIGN_GOAL_FIELDS})
+        row.update({x: 1 for x in api_helpers.GOAL_FIELDS})
 
         for field in api_helpers.FIELD_PERMISSION_MAPPING.keys():
             if field not in row:
