@@ -801,7 +801,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         },
     };
 
-    for (var i = 1; i <= 15; i++) {
+    for (var i = 1; i <= 5; i++) {
         COLUMNS['conversionGoal' + i] = {
             name: 'Conversion Goal ' + i,
             field: CONVERSION_GOAL_FIELD_PREFIX + i,
@@ -815,7 +815,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         };
     }
 
-    for (i = 0; i < 16; i++) {
+    for (i = 0; i < 6; i++) {
         COLUMNS['avgCostPerConversionGoal' + i] = {
             name: 'Avg. CPA',
             field: AVG_COST_PER_CONVERSION_GOAL_PREFIX + i,

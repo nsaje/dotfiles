@@ -12,8 +12,6 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     $scope.savingInProgress = false;
     $scope.prevValue = null;
 
-    var MAX_CONVERSION_GOALS = 15;
-
     if ($scope.campaignGoal === undefined) {
         $scope.newCampaignGoal = true;
         $scope.campaignGoal = {
@@ -72,7 +70,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             }
             countConversionGoals += goal.type === constants.campaignGoalKPI.CPA;
         });
-        if (option.value === constants.campaignGoalKPI.CPA && countConversionGoals < MAX_CONVERSION_GOALS) {
+        if (option.value === constants.campaignGoalKPI.CPA && countConversionGoals < 5) {
             return true;
         }
         return isAvailable;

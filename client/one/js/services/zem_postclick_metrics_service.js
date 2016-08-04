@@ -131,20 +131,62 @@ oneApp.factory('zemPostclickMetricsService', function () {
     }
 
     function insertConversionGoalColumns (columns, position, isShown, isInternal) {
-        for (var i = 15; i > 0; i--) {
-            columns.splice(position, 0, {
-                name: 'Conversion Goal ' + i,
-                field: 'conversion_goal_' + i,
-                checked: false,
-                type: 'number',
-                help: 'Number of completions of the conversion goal',
-                shown: false,
-                internal: isInternal,
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc',
-            });
-        }
+        columns.splice(position, 0, {
+            name: 'Conversion Goal 1',
+            field: 'conversion_goal_1',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: false,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
+            name: 'Conversion Goal 2',
+            field: 'conversion_goal_2',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: false,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
+            name: 'Conversion Goal 3',
+            field: 'conversion_goal_3',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: false,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
+            name: 'Conversion Goal 4',
+            field: 'conversion_goal_4',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: false,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
+            name: 'Conversion Goal 5',
+            field: 'conversion_goal_5',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: false,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        });
     }
 
     function concatAcquisitionChartOptions (chartOptions, isInternal) {
