@@ -1122,7 +1122,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             columns: CONVERSIONS_GROUP,
         },
         {
-            name: 'Campaign Goals',
+            name: 'Goals',
             columns: CAMPAIGN_GOALS_GROUP,
         },
     ];
