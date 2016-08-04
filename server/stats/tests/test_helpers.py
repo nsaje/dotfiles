@@ -15,7 +15,7 @@ class HelpersTest(TestCase):
         constraints = {
             'date__gte': datetime.date(2016, 1, 1),
             'date__lte': datetime.date(2016, 2, 3),
-            'source_id': [1, 3, 4],
+            'filtered_sources': models.Source.objects.filter(pk__in=[1, 3, 4]),
             'show_archived': True,
             'account_id': 1,
             'campaign_id': 1,

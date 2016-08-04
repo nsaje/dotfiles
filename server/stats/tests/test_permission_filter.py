@@ -49,7 +49,7 @@ class FilterTestCase(TestCase):
             {
                 'ad_group_id': 1, 'source_id': 1, 'ad_group_name': 'test adgroup 1', 'clicks': 10, 'age': '18-20',
                 'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1',
-                'clicks': 1, 'ctr': 1, 'cpc': 1, 'impressions': 1,
+                'clicks': 1, 'ctr': 1, 'cpc': 1, 'impressions': 1, 'billing_cost': 1,
                 'title': 1, 'url': 1,  # these two are in TRAFFIC_FIELDS
             },
         ]

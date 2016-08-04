@@ -13,7 +13,11 @@ def extract_stats_constraints(constraints):
 
     new_constraints = copy.copy(constraints)
 
-    del new_constraints['show_archived']
+    filtered_sources = new_constraints.pop('filtered_sources', [])
+    new_constraints['source_id'] = [x.pk for x in filtered_sources]
+
+    for removed in ('show_archived', 'filtered_agencies', 'filtered_account_types'):
+        new_constraints.pop(removed, None)
 
     return new_constraints
 

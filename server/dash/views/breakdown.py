@@ -23,7 +23,9 @@ def extract_constraints(form_data, **kwargs):
     constraints = {
         'date__gte': form_data['start_date'],
         'date__lte': form_data['end_date'],
-        'source_id': [x.id for x in form_data['filtered_sources']],
+        'filtered_sources': form_data['filtered_sources'],
+        'filtered_agencies': form_data.get('filtered_agencies'),
+        'filtered_account_types': form_data.get('filtered_account_types'),
         'show_archived': form_data.get('show_archived'),
     }
     constraints.update(kwargs)

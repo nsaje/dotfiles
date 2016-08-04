@@ -65,6 +65,7 @@ class ApiBreakdownQueryTest(TestCase):
         constraints = {
             'show_archived': True,
             'campaign_id': 1,
+            'filtered_sources': models.Source.objects.all(),
             'date__gte': datetime.date(2016, 8, 1),
             'date__lte': datetime.date(2016, 8, 5),
         }
@@ -82,6 +83,7 @@ class ApiBreakdownQueryTest(TestCase):
                 'campaign_id': 1,
                 'date__gte': datetime.date(2016, 8, 1),
                 'date__lte': datetime.date(2016, 8, 5),
+                'source_id': [1, 2, 3],
             },
             None,
             test_helper.QuerySetMatcher(models.ConversionGoal.objects.filter(campaign_id=1)),

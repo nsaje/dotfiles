@@ -33,7 +33,9 @@ class ExtractConstraintsTest(TestCase):
         self.assertDictEqual(breakdown.extract_constraints(form_data), {
             'date__gte': datetime.date(2016, 1, 1),
             'date__lte': datetime.date(2016, 2, 3),
-            'source_id': test_helper.ListMatcher([1, 3, 4]),
+            'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+            'filtered_agencies': None,
+            'filtered_account_types': None,
             'show_archived': True,
         })
 
@@ -59,7 +61,9 @@ class ExtractConstraintsTest(TestCase):
             {
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
-                'source_id': test_helper.ListMatcher([1, 3, 4]),
+                'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'filtered_agencies': None,
+                'filtered_account_types': None,
                 'show_archived': True,
                 'account_id': 1,
                 'campaign_id': 1,
@@ -96,7 +100,7 @@ class AllAccountsBreakdownTestCase(TestCase):
             'order': '-clicks',
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
-            'filtered_sources': '1,3,4',
+            'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
             'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
         }
@@ -117,7 +121,9 @@ class AllAccountsBreakdownTestCase(TestCase):
             {
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
-                'source_id': test_helper.ListMatcher([1, 3, 4]),
+                'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'filtered_agencies': None,
+                'filtered_account_types': None,
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -207,7 +213,7 @@ class AllAccountsBreakdownTestCase(TestCase):
             'order': '-clicks',
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
-            'filtered_sources': '1,3,4',
+            'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
             'breakdown_page': None,
         }
@@ -305,7 +311,7 @@ class AccountBreakdownTestCase(TestCase):
             'order': '-clicks',
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
-            'filtered_sources': '1,3,4',
+            'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
             'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
         }
@@ -328,7 +334,9 @@ class AccountBreakdownTestCase(TestCase):
                 'account_id': 1,
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
-                'source_id': test_helper.ListMatcher([1, 3, 4]),
+                'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'filtered_agencies': None,
+                'filtered_account_types': None,
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -397,7 +405,7 @@ class AccountBreakdownTestCase(TestCase):
             'order': '-clicks',
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
-            'filtered_sources': '1,3,4',
+            'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
             'breakdown_page': None,
         }
@@ -486,7 +494,7 @@ class CampaignBreakdownTestCase(TestCase):
             'order': '-clicks',
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
-            'filtered_sources': '1,3,4',
+            'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
             'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
         }
@@ -509,7 +517,9 @@ class CampaignBreakdownTestCase(TestCase):
                 'campaign_id': 1,
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
-                'source_id': test_helper.ListMatcher([1, 3, 4]),
+                'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'filtered_agencies': None,
+                'filtered_account_types': None,
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -549,7 +559,7 @@ class AdGroupBreakdownTestCase(TestCase):
             'order': '-clicks',
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
-            'filtered_sources': '1,3,4',
+            'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
             'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
         }
@@ -572,7 +582,9 @@ class AdGroupBreakdownTestCase(TestCase):
                 'ad_group_id': 1,
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
-                'source_id': test_helper.ListMatcher([1, 3, 4]),
+                'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'filtered_agencies': None,
+                'filtered_account_types': None,
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -642,3 +654,40 @@ class RequestOverflowTest(TestCase):
                 }
             }
         ])
+
+    def test_next_page(self):
+        rows = [{
+            'rows': [{1}, {2}, {3}, {4}, {5}],
+            'pagination': {
+                'offset': 0,
+                'limit': 5,
+                'count': -1,
+            }
+        }]
+
+        self.assertEqual(breakdown._process_request_overflow(rows, 4, 1), [{
+            'rows': [{1}, {2}, {3}, {4}],
+            'pagination': {
+                'offset': 0,
+                'limit': 4,
+                'count': -1,
+            }
+        }])
+
+        rows = [{
+            'rows': [{5}, {6}, {7}],
+            'pagination': {
+                'offset': 0,
+                'limit': 3,
+                'count': 3,
+            }
+        }]
+
+        self.assertEqual(breakdown._process_request_overflow(rows, 10, 1), [{
+            'rows': [{5}, {6}, {7}],
+            'pagination': {
+                'offset': 0,
+                'limit': 3,
+                'count': 3,
+            },
+        }])

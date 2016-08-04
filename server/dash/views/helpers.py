@@ -109,12 +109,8 @@ class ViewFilter(object):
         self.filtered_sources = None
         if user is not None:
             self.filtered_sources = data.get('filtered_sources')
-        self.filtered_agencies = get_filtered_agencies(
-            data.get('filtered_agencies')
-        )
-        self.filtered_account_types = get_filtered_account_types(
-            data.get('filtered_account_types')
-        )
+        self.filtered_agencies = data.get('filtered_agencies')
+        self.filtered_account_types = data.get('filtered_account_types')
 
 
 def get_filtered_sources(user, sources_filter):

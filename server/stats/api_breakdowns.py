@@ -30,14 +30,15 @@ def query(user, breakdown, constraints, breakdown_page,
     permission_filter.check_breakdown_allowed(user, breakdown)
 
     validate_breakdown(breakdown)
+
+    constraints = helpers.extract_stats_constraints(constraints)
     validate_constraints(constraints)
 
     order = helpers.extract_order_field(order, breakdown)
 
     # FIXME: Hack to prevent sorting by fields not available in redshift
-    stats_order = get_supported_order(order)
+    order = get_supported_order(order)
 
-    constraints = helpers.extract_stats_constraints(constraints)
     conversion_goals, campaign_goal_values = get_goals(breakdown, constraints)
 
     rows = redshiftapi.api_breakdowns.query(
@@ -45,17 +46,29 @@ def query(user, breakdown, constraints, breakdown_page,
         constraints,
         helpers.extract_stats_breakdown_constraints(breakdown, breakdown_page),
         conversion_goals,
-        stats_order,
+        order,
         offset,
         limit)
 
     target_dimension = constants.get_target_dimension(breakdown)
 
+    """
+    TODO when fields get replaced with augmented values their sorted position might change
+    and this can lead to duplicated and missed items in "load more" requests when we request
+    number of items + offset.
+    Example: Ad group ids in DB: 1, 2, 3, 4 (by name: 1, 3, 4, 2)
+            Request first 2 + overflow: 1, 2, 3
+            Order by name: 1, 3, 2
+            Cut overflow: 1, 3
+            Load more, offset 2: 3, 4
+            Resulting collection: 1, 3, 3, 4
+    Possible solutions: cut overflow before sorting and report the count, order before augmentation (current solution)
+    """
+
+    rows = sort_helper.sort_results(rows, [order])
+
     augmenter.augment(breakdown, rows, target_dimension)
     permission_filter.filter_columns_by_permission(user, rows, campaign_goal_values, conversion_goals)
-
-    # keep the original sort
-    rows = sort_helper.sort_results(rows, [order])
 
     return rows
 

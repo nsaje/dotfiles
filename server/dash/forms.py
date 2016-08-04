@@ -1020,14 +1020,22 @@ class BreakdownForm(forms.Form):
         coerce=str,
     )
 
-    filtered_sources = forms.CharField(required=False)
+    filtered_sources = TypedMultipleAnyChoiceField(required=False, coerce=str)
+    filtered_agencies = TypedMultipleAnyChoiceField(required=False, coerce=str)
+    filtered_account_types = TypedMultipleAnyChoiceField(required=False, coerce=str)
 
     order = forms.CharField(required=False)
 
     breakdown = forms.CharField(required=True)
 
     def clean_filtered_sources(self):
-        return helpers.get_filtered_sources(self.user, self.cleaned_data.get('filtered_sources'))
+        return helpers.get_filtered_sources(self.user, ','.join(self.cleaned_data.get('filtered_sources')))
+
+    def clean_filtered_agencies(self):
+        return helpers.get_filtered_agencies(self.cleaned_data.get('filtered_agencies'))
+
+    def clean_filtered_account_types(self):
+        return helpers.get_filtered_account_types(self.cleaned_data.get('filtered_account_types'))
 
     def clean_breakdown(self):
         return [stats.constants.get_dimension_identifier(x) for x in self.cleaned_data['breakdown'].split('/') if x]

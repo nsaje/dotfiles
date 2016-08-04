@@ -13,7 +13,7 @@ from utils import test_helper
 
 
 class BreakdownFormTest(TestCase):
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_api.yaml', 'test_agency.yaml']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -23,7 +23,9 @@ class BreakdownFormTest(TestCase):
         request_body = {
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
-            'filtered_sources': '1,3,4',
+            'filtered_sources': ['1', '3', '4'],
+            'filtered_agencies': ['1', '2'],
+            'filtered_account_types': ['1', '3', '2'],
             'show_archived': 'true',
             'breakdown_page': ['123-7', '23-33', '23-24'],
             'offset': 12,
@@ -39,6 +41,8 @@ class BreakdownFormTest(TestCase):
             'start_date': datetime.date(2016, 1, 1),
             'end_date': datetime.date(2016, 2, 3),
             'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+            'filtered_agencies': test_helper.QuerySetMatcher(models.Agency.objects.filter(pk=1)),
+            'filtered_account_types': test_helper.ListMatcher([1, 3, 2]),
             'show_archived': True,
             'breakdown_page': ['123-7', '23-33', '23-24'],
             'offset': 12,
