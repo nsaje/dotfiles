@@ -1233,76 +1233,6 @@ class CampaignConversionGoalsTestCase(TestCase):
                 'conversion_window': None,
                 'type': 2
             },
-            {
-                'id': 6,
-                'goal_id': '6',
-                'name': 'test conversion goal 6',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 7,
-                'goal_id': '7',
-                'name': 'test conversion goal 7',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 8,
-                'goal_id': '8',
-                'name': 'test conversion goal 8',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 9,
-                'goal_id': '9',
-                'name': 'test conversion goal 9',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 10,
-                'goal_id': '10',
-                'name': 'test conversion goal 10',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 11,
-                'goal_id': '11',
-                'name': 'test conversion goal 11',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 12,
-                'goal_id': '12',
-                'name': 'test conversion goal 12',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 13,
-                'goal_id': '13',
-                'name': 'test conversion goal 13',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 14,
-                'goal_id': '14',
-                'name': 'test conversion goal 14',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 15,
-                'goal_id': '15',
-                'name': 'test conversion goal 15',
-                'conversion_window': None,
-                'type': 3,
-            },
         ]
         expected_available_pixels = [{
             'id': 1,
@@ -1385,76 +1315,6 @@ class CampaignConversionGoalsTestCase(TestCase):
                 'conversion_window': None,
                 'type': 2
             },
-            {
-                'id': 6,
-                'goal_id': '6',
-                'name': 'test conversion goal 6',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 7,
-                'goal_id': '7',
-                'name': 'test conversion goal 7',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 8,
-                'goal_id': '8',
-                'name': 'test conversion goal 8',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 9,
-                'goal_id': '9',
-                'name': 'test conversion goal 9',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 10,
-                'goal_id': '10',
-                'name': 'test conversion goal 10',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 11,
-                'goal_id': '11',
-                'name': 'test conversion goal 11',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 12,
-                'goal_id': '12',
-                'name': 'test conversion goal 12',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 13,
-                'goal_id': '13',
-                'name': 'test conversion goal 13',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 14,
-                'goal_id': '14',
-                'name': 'test conversion goal 14',
-                'conversion_window': None,
-                'type': 3,
-            },
-            {
-                'id': 15,
-                'goal_id': '15',
-                'name': 'test conversion goal 15',
-                'conversion_window': None,
-                'type': 3,
-            },
         ]
         expected_available_pixels = [{
             'id': 1,
@@ -1527,6 +1387,14 @@ class CampaignConversionGoalsTestCase(TestCase):
         self.assertEqual(200, response.status_code)
 
     def test_post_max_conversion_goals(self):
+        campaign = models.Campaign.objects.get(id=1)
+        while campaign.conversiongoal_set.all().count() < constants.MAX_CONVERSION_GOALS_PER_CAMPAIGN:
+            i = campaign.conversiongoal_set.all().count() + 1
+            campaign.conversiongoal_set.create(
+                type=constants.ConversionGoalType.OMNITURE,
+                name='test conversion goal ' + str(i),
+                goal_id=str(i),
+            )
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
             json.dumps({
