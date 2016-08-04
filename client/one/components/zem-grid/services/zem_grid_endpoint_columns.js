@@ -1007,6 +1007,16 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.conversionGoal3,
         COLUMNS.conversionGoal4,
         COLUMNS.conversionGoal5,
+        COLUMNS.conversionGoal6,
+        COLUMNS.conversionGoal7,
+        COLUMNS.conversionGoal8,
+        COLUMNS.conversionGoal9,
+        COLUMNS.conversionGoal10,
+        COLUMNS.conversionGoal11,
+        COLUMNS.conversionGoal12,
+        COLUMNS.conversionGoal13,
+        COLUMNS.conversionGoal14,
+        COLUMNS.conversionGoal15,
     ];
 
     var CAMPAIGN_GOALS_GROUP = [
@@ -1021,6 +1031,16 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.avgCostPerConversionGoal3,
         COLUMNS.avgCostPerConversionGoal4,
         COLUMNS.avgCostPerConversionGoal5,
+        COLUMNS.avgCostPerConversionGoal6,
+        COLUMNS.avgCostPerConversionGoal7,
+        COLUMNS.avgCostPerConversionGoal8,
+        COLUMNS.avgCostPerConversionGoal9,
+        COLUMNS.avgCostPerConversionGoal10,
+        COLUMNS.avgCostPerConversionGoal11,
+        COLUMNS.avgCostPerConversionGoal12,
+        COLUMNS.avgCostPerConversionGoal13,
+        COLUMNS.avgCostPerConversionGoal14,
+        COLUMNS.avgCostPerConversionGoal15,
     ];
 
     var METRICS_GROUP = [].concat(
