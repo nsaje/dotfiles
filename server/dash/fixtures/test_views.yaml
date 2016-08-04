@@ -177,6 +177,116 @@
     model: dash.conversiongoal
     pk: 5
 
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 6'
+        conversion_window: null
+        goal_id: '6'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 6
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 7'
+        conversion_window: null
+        goal_id: '7'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 7
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 8'
+        conversion_window: null
+        goal_id: '8'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 8
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 9'
+        conversion_window: null
+        goal_id: '9'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 9
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 10'
+        conversion_window: null
+        goal_id: '10'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 10
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 11'
+        conversion_window: null
+        goal_id: '11'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 11
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 12'
+        conversion_window: null
+        goal_id: '12'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 12
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 13'
+        conversion_window: null
+        goal_id: '13'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 13
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 14'
+        conversion_window: null
+        goal_id: '14'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 14
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 15'
+        conversion_window: null
+        goal_id: '15'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 15
+
 # test creditlineitems
 
 -   fields:
