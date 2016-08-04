@@ -108,8 +108,7 @@ FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate', 'ctr', 'click_discrepan
 
 FORMAT_EMPTY_TO_0 = [
     'data_cost', 'cpc',
-    'clicks', 'impressions', 'ctr', 'visits', 'pageviews',
-    'e_media_cost', 'media_cost', 'e_data_cost',
+    'clicks', 'impressions', 'ctr', 'e_media_cost', 'media_cost', 'e_data_cost',
     'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
     'margin', 'agency_total',
 ]
