@@ -1,9 +1,10 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.directive('zemGridModal', ['$http', '$templateCache', '$compile', '$document', function ($http, $templateCache, $compile, $document) { // eslint-disable-line max-len
+oneApp.directive('zemGridModal', ['$rootScope', '$http', '$templateCache', '$compile', '$document', function ($rootScope, $http, $templateCache, $compile, $document) { // eslint-disable-line max-len
     var body;
     var pubsub;
+    var deregisterLocationChangeStart;
     var deregisterVerticalScroll;
     var deregisterHorizontalScroll;
     var toggleElement;
@@ -56,12 +57,12 @@ oneApp.directive('zemGridModal', ['$http', '$templateCache', '$compile', '$docum
         // Listen for clicks outside modal and close the modal on click
         // NOTE: Event listener for clicks on modal is stopping event propagation so that modal is not closed if user
         // clicks on it
-        body.on('click', function () {
-            closeModal();
-        });
+        body.on('click', closeModal);
         modal.on('click', function (event) {
             event.stopPropagation();
         });
+        // Close modal when navigating to different route (e.g. using navigation search)
+        deregisterLocationChangeStart = $rootScope.$on('$locationChangeStart', closeModal);
 
         deregisterVerticalScroll = pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, closeModal);
         deregisterHorizontalScroll = pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, closeModal);
@@ -74,8 +75,11 @@ oneApp.directive('zemGridModal', ['$http', '$templateCache', '$compile', '$docum
             modal = null;
         }
         body.off('click');
+
         deregisterVerticalScroll();
         deregisterHorizontalScroll();
+        deregisterLocationChangeStart();
+
         toggleElement.removeClass('modal-open');
     }
 

@@ -405,7 +405,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             field: 'flat_fee',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
             totalRow: true,
-            help: '',
+            help: 'Zemanta One fixed usage platform cost.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_flat_fees',
@@ -416,7 +416,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             field: 'total_fee',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
             totalRow: true,
-            help: '',
+            help: 'Sum of License Fee and Recognized Flat Fee.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_view_flat_fees',
@@ -586,7 +586,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             field: 'total_fee_projection',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
             totalRow: true,
-            help: '',
+            help: 'Sum of License Fee Projection and Recognized Flat Fee.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
@@ -1075,6 +1075,9 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     COLUMNS.state.breakdowns = [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD, constants.breakdown.MEDIA_SOURCE];
     COLUMNS.state.breakdownBaseLevelOnly = true;
 
+    // Exceptions (performance - not shown on ALL_ACCOUNTS level)
+    COLUMNS.performance.levels = [constants.level.ACCOUNTS, constants.level.CAMPAIGNS, constants.level.AD_GROUPS];
+
     // Exceptions (source editable fields)
     COLUMNS.minBidCpc.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
     COLUMNS.maxBidCpc.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
@@ -1204,6 +1207,14 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             if (column.breakdowns) result &= intersects(column.breakdowns, breakdowns);
             if (column.breakdownBaseLevelOnly) result &= column.breakdowns.indexOf(breakdowns[0]) >= 0;
             if (column.levels) result &= column.levels.indexOf(level) >= 0;
+
+            // FIXME: Find a better solution for columns thet are shown only in certain breakdown-level combinations
+            // Example: state selector is only shown on CAMPAIGNS level for AD_GROUP breakdown and not for MEDIA_SOURCE
+            // breakdown
+            if (column.field === COLUMNS.state.field && breakdowns[0] === constants.breakdown.MEDIA_SOURCE) {
+                result &= level === constants.level.AD_GROUPS;
+            }
+
             return result;
         });
     }

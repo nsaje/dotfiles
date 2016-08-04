@@ -1,7 +1,7 @@
 /* globals oneApp, constants */
 'use strict';
 
-oneApp.factory('zemGridEndpointApi', ['api', 'zemGridEndpointColumns', function (api, zemGridEndpointColumns) { // eslint-disable-line max-len
+oneApp.factory('zemGridEndpointApi', ['$q', 'api', 'zemGridEndpointColumns', function ($q, api, zemGridEndpointColumns) { // eslint-disable-line max-len
     //
     // Service responsible for defining API methods used by Grid Endpoint based on
     // level, breakdown and column -> uniquely defines table cells throughout the application
@@ -15,7 +15,14 @@ oneApp.factory('zemGridEndpointApi', ['api', 'zemGridEndpointColumns', function 
 
     function CampaignsAdGroupState () {
         this.save = function (levelEntityId, breakdownEntityId, value) {
-            return api.adGroupSettingsState.post(breakdownEntityId, value);
+            var deferred = $q.defer();
+            api.adGroupSettingsState.post(breakdownEntityId, value).then(function (data) {
+                data['state'] = {value: data['state']};
+                deferred.resolve(data);
+            }, function (err) {
+                deferred.reject(err);
+            });
+            return deferred.promise;
         };
     }
 
@@ -56,13 +63,13 @@ oneApp.factory('zemGridEndpointApi', ['api', 'zemGridEndpointColumns', function 
 
         if (level === constants.level.CAMPAIGNS &&
             breakdown === constants.breakdown.AD_GROUP &&
-            column.field === COLUMNS.stateAdGroup.field) {
+            column.field === COLUMNS.state.field) {
             return new CampaignsAdGroupState();
         }
 
         if (level === constants.level.AD_GROUPS &&
             breakdown === constants.breakdown.CONTENT_AD &&
-            column.field === COLUMNS.stateAdGroup.field) {
+            column.field === COLUMNS.state.field) {
             return new AdGroupsContentAdState();
         }
     }
