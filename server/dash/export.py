@@ -36,6 +36,7 @@ FIELDNAMES = {
     'e_media_cost': 'Media Spend',
     'billing_cost': 'Total Spend',
     'cpc': 'Average CPC',
+    'cpm': 'Average CPM',
     'ctr': 'CTR',
     'url': 'URL',
     'end_date': 'End Date',
