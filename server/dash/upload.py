@@ -1,6 +1,5 @@
 import logging
 import StringIO
-from urlparse import urlparse
 
 from django.db import transaction
 from django.conf import settings
@@ -14,7 +13,6 @@ from utils import lambda_helper, k1_helper, redirector_helper
 logger = logging.getLogger(__name__)
 
 VALID_DEFAULTS_FIELDS = set(['image_crop', 'description', 'display_url', 'brand_name', 'call_to_action'])
-DEFAULT_CALL_TO_ACTION = 'Read more'
 
 
 class InvalidBatchStatus(Exception):
@@ -32,7 +30,6 @@ def insert_candidates(candidates_data, ad_group, batch_name, filename):
         ad_group=ad_group,
         original_filename=filename,
     )
-    _augment_candidates_data(ad_group, candidates_data)
     candidates = _create_candidates(candidates_data, ad_group, batch)
     return batch, candidates
 
@@ -247,15 +244,6 @@ def process_callback(callback_data):
         logger.exception('Failed to parse callback data %s', str(callback_data))
 
     candidate.save()
-
-
-def _augment_candidates_data(ad_group, candidates):
-    ad_group_settings = ad_group.get_current_settings()
-    for candidate in candidates:
-        if 'brand_name' not in candidate or not candidate['brand_name']:
-            candidate['brand_name'] = ad_group_settings.brand_name
-        if 'call_to_action' not in candidate or not candidate['call_to_action']:
-            candidate['call_to_action'] = DEFAULT_CALL_TO_ACTION
 
 
 def _create_candidates(content_ads_data, ad_group, batch):

@@ -92,7 +92,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual('', candidate.image_url)
         self.assertEqual('center', candidate.image_crop)
         self.assertEqual('', candidate.display_url)
-        self.assertEqual('Example', candidate.brand_name)
+        self.assertEqual('', candidate.brand_name)
         self.assertEqual('', candidate.description)
         self.assertEqual('Read more', candidate.call_to_action)
         self.assertEqual('', candidate.primary_tracker_url)
@@ -128,7 +128,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual(test_candidate['image_url'], candidate.image_url)
         self.assertEqual('center', candidate.image_crop)
         self.assertEqual('', candidate.display_url)
-        self.assertEqual('Example', candidate.brand_name)
+        self.assertEqual('', candidate.brand_name)
         self.assertEqual(test_candidate['description'], candidate.description)
         self.assertEqual('Read more', candidate.call_to_action)
         self.assertEqual('', candidate.primary_tracker_url)
@@ -277,7 +277,6 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         ad_group = models.AdGroup.objects.get(id=1)
         batch, candidates = upload.insert_candidates(data, ad_group, 'batch1', 'test_upload.csv')
 
-        self.maxDiff = None
         result = upload.get_candidates_with_errors(candidates)
         self.assertEqual([{
             'hosted_image_url': None,
@@ -297,12 +296,13 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                 'display_url': [u'Display URL too long (max 25 characters)'],
                 'label': [u'Label too long (max 100 characters)'],
                 'image_url': [u'Invalid image URL'],
+                'brand_name': [u'Missing brand name'],
                 'primary_tracker_url': [u'Impression tracker URLs have to be HTTPS'],
                 'secondary_tracker_url': [u'Impression tracker URLs have to be HTTPS'],
             },
             'display_url': 'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com'
                            'zemanta.comzemanta.comzemanta.comzemanta.comzemanta.com',
-            'brand_name': 'Example',
+            'brand_name': '',
             'image_width': None,
             'label': 'repeat' * 21,
             'image_id': None,

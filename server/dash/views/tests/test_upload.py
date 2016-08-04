@@ -90,9 +90,9 @@ class UploadCsvTestCase(TestCase):
         mock_file = SimpleUploadedFile(
             'test_upload.csv',
             'URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,'
-            'Secondary impression tracker url,Description,Display URL\nhttp://example.com/test-content-ad,'
+            'Secondary impression tracker url,Description,Display URL,brand name\nhttp://example.com/test-content-ad,'
             'test content ad,http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,'
-            'https://t.zemanta.com/px2.png,description,example.com'
+            'https://t.zemanta.com/px2.png,description,example.com,Example'
         )
         response = _get_client().post(
             reverse('upload_csv', kwargs={'ad_group_id': ad_group_id}),
@@ -132,7 +132,7 @@ class UploadCsvTestCase(TestCase):
         self.assertEqual('https://t.zemanta.com/px1.png', candidate.primary_tracker_url)
         self.assertEqual('https://t.zemanta.com/px2.png', candidate.secondary_tracker_url)
         self.assertEqual('example.com', candidate.display_url)
-        self.assertEqual('Default brand name', candidate.brand_name)
+        self.assertEqual('Example', candidate.brand_name)
         self.assertEqual('description', candidate.description)
         self.assertEqual('Read more', candidate.call_to_action)
 
@@ -166,6 +166,7 @@ class UploadCsvTestCase(TestCase):
             'image_url': ['Invalid image URL'],
             'display_url': ['Missing display URL'],
             'url': ['Invalid URL'],
+            'brand_name': ['Missing brand name'],
         }
 
         self.assertEqual(response.status_code, 200)

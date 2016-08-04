@@ -816,6 +816,13 @@ class ContentAdCandidateFormTestCase(TestCase):
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data['image_crop'], 'center')
 
+    def test_skipped_call_to_action(self):
+        data = self._get_valid_data()
+        del data['call_to_action']
+        f = forms.ContentAdCandidateForm(data)
+        self.assertTrue(f.is_valid())
+        self.assertEqual(f.cleaned_data['call_to_action'], 'Read more')
+
 
 class ContentAdFormTestCase(TestCase):
 
