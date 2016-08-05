@@ -115,6 +115,8 @@ def get_fields_to_keep(user):
     if user.has_perm('zemauth.aggregate_postclick_engagement'):
         fields_to_keep.extend(POSTCLICK_ENGAGEMENT_FIELDS)
 
+    fields_to_keep.extend(GOAL_FIELDS)
+
     for field, permission in FIELD_PERMISSION_MAPPING.iteritems():
         if user.has_perm(permission):
             fields_to_keep.append(field)
