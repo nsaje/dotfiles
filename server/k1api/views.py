@@ -475,10 +475,11 @@ class AdGroupSourcesView(K1APIView):
             slugs = slugs.split(',')
 
         # get ad groups we're interested in
-        ad_groups_settings_query = dash.models.AdGroupSettings.objects.filter(archived=False)
+        ad_groups = dash.models.AdGroup.objects.all().exclude_archived()
         if ad_group_ids:
-            ad_groups_settings_query = ad_groups_settings_query.filter(ad_group__id__in=ad_group_ids)
+            ad_groups = ad_groups.filter(id__in=ad_group_ids)
 
+        ad_groups_settings_query = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups)
         ad_groups_settings = ad_groups_settings_query.group_current_settings()
         ad_group_settings_map = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
