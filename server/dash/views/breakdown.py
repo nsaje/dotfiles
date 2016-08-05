@@ -73,6 +73,13 @@ def _process_request_overflow(blocks, limit, overflow):
     return blocks
 
 
+def _get_page_and_size(offset, limit):
+    # most sure way to get what we want
+    page = 1
+    size = offset + limit
+    return page, size
+
+
 def get_report_through_table(get_fn, user, form_data, all_accounts_level=False, **kwargs):
     """
     FIXME: This code is temporary! It will only be used for the prototype.
@@ -92,9 +99,7 @@ def get_report_through_table(get_fn, user, form_data, all_accounts_level=False, 
     offset = form_data.get('offset', DEFAULT_OFFSET)
     limit = form_data.get('limit', DEFAULT_LIMIT)
 
-    # this way the whole requested range is fetched, with possibly some extra that is cut off later
-    size = limit * 2
-    page = int(offset / size) + 1
+    page, size = _get_page_and_size(offset, limit)
     order = form_data.get('order')
 
     show_archived = form_data.get('show_archived', False)

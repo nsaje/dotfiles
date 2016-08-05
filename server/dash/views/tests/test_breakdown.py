@@ -691,3 +691,12 @@ class RequestOverflowTest(TestCase):
                 'count': 3,
             },
         }])
+
+
+class LimitOffsetToPageTest(TestCase):
+
+    def test_get_page_and_size(self):
+        self.assertEquals(breakdown._get_page_and_size(0, 10), (1, 10))
+        self.assertEquals(breakdown._get_page_and_size(10, 20), (1, 30))
+        self.assertEquals(breakdown._get_page_and_size(30, 20), (1, 50))
+        self.assertEquals(breakdown._get_page_and_size(50, 20), (1, 70))

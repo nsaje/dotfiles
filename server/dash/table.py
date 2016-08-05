@@ -874,13 +874,13 @@ class AccountsAccountsTable(object):
 
         rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(rows, page, size)
 
-        incomplete_postclick_metrics = \
-            not reports_api.has_complete_postclick_metrics_accounts(
-                start_date,
-                end_date,
-                accounts,
-                view_filter.filtered_sources
-            ) if has_aggregate_postclick_permission(user) else False
+        # incomplete_postclick_metrics = \
+        #     not reports_api.has_complete_postclick_metrics_accounts(
+        #         start_date,
+        #         end_date,
+        #         accounts,
+        #         view_filter.filtered_sources
+        #     ) if has_aggregate_postclick_permission(user) else False
 
         response = {
             'rows': rows,
@@ -895,9 +895,9 @@ class AccountsAccountsTable(object):
                 'count': count,
                 'startIndex': start_index,
                 'endIndex': end_index,
-                'size': size
+                'size': size,
             },
-            'incomplete_postclick_metrics': incomplete_postclick_metrics
+            'incomplete_postclick_metrics': False,
         }
 
         return response
