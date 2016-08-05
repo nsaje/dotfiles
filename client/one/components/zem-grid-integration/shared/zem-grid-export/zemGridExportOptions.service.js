@@ -44,11 +44,9 @@ oneApp.factory('zemGridExportOptions', [function () {
     //
 
     function getBaseUrl (level, breakdown, id) {
-        var baseUrl;
-        if (level === constants.level.ALL_ACCOUNTS) {
-            baseUrl = '/api/accounts/';
-        } else {
-            baseUrl = '/api/' + level + '/' + id + '/';
+        var baseUrl = '/api/' + level + '/';
+        if (level !== constants.level.ALL_ACCOUNTS) {
+            baseUrl += id + '/';
         }
 
         if (breakdown === constants.breakdown.MEDIA_SOURCE) {

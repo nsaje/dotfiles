@@ -462,7 +462,7 @@ urlpatterns += [
         login_required(dash.views.export.AllAccountsSourcesExport.as_view())
     ),
     url(
-        r'^api/accounts/export/',
+        r'^api/all_accounts/export/',
         login_required(dash.views.export.AllAccountsExport.as_view())
     ),
     url(
