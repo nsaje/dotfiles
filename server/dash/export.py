@@ -1,3 +1,4 @@
+import datetime
 import unicodecsv
 import StringIO
 import slugify
@@ -137,12 +138,11 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         conversion_goals=conversion_goals,
         constraints=constraints
     )
-    prefetched_data, budgets, projections, account_projections, statuses, settings, account_settings =\
+    prefetched_data, sources, budgets, projections, account_projections, statuses, settings, account_settings =\
         _prefetch_rows_data(
             user,
             dimensions,
             constraints,
-            stats,
             start_date,
             end_date,
             include_settings=include_settings,
@@ -154,6 +154,8 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
 
     if not dimensions:
         stats = [stats]
+
+    _add_missing_stats(stats, dimensions, prefetched_data, sources, start_date, end_date)
 
     source_names = None
     if 'source' in dimensions:
@@ -187,6 +189,76 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     return sorted_ret
 
 
+def _generate_stats_date(dimensions, prefetched_data, sources, start_date, end_date):
+    if 'date' in dimensions:
+        date = start_date
+        while date < end_date:
+            for stat in _generate_stats_source(dimensions, prefetched_data, sources):
+                stat['date'] = date
+                yield stat
+            date += datetime.timedelta(days=1)
+    else:
+        for stat in _generate_stats_source(dimensions, prefetched_data, sources):
+            yield stat
+
+
+def _generate_stats_source(dimensions, prefetched_data, sources):
+    sourcelevel = None
+    if 'content_ad' in dimensions or 'ad_group' in dimensions:
+        sourcelevel = 'ad_group'
+    elif 'campaign' in dimensions:
+        sourcelevel = 'campaign'
+    elif 'account' in dimensions:
+        sourcelevel = 'account'
+
+    if 'source' in dimensions:
+        for stat in _generate_stats_prefetched(dimensions, prefetched_data):
+            if sourcelevel is not None:
+                sources_for_stat = sources[stat[sourcelevel]]
+            else:
+                sources_for_stat = sources
+            for source in sources_for_stat:
+                stat['source'] = source
+                yield stat
+    else:
+        for stat in _generate_stats_prefetched(dimensions, prefetched_data):
+            yield stat
+
+
+def _generate_stats_prefetched(dimensions, prefetched_data):
+    stat = {}
+    if set(['content_ad', 'ad_group', 'campaign', 'account']) & set(dimensions):
+        for itemid, item in prefetched_data.iteritems():
+            if 'content_ad' in dimensions:
+                stat['content_ad'] = itemid
+                stat['ad_group'] = item.ad_group_id
+                stat['campaign'] = item.ad_group.campaign_id
+                stat['account'] = item.ad_group.campaign.account_id
+            elif 'ad_group' in dimensions:
+                stat['ad_group'] = itemid
+                stat['campaign'] = item.campaign_id
+                stat['account'] = item.campaign.account_id
+            elif 'campaign' in dimensions:
+                stat['campaign'] = itemid
+                stat['account'] = item.account_id
+            elif 'account' in dimensions:
+                stat['account'] = itemid
+            yield stat
+    else:
+        yield stat
+
+
+def _add_missing_stats(stats, dimensions, prefetched_data, sources, start_date, end_date):
+    if not dimensions:
+        return
+
+    existing_keys = set(tuple(stat[d] for d in dimensions) for stat in stats)
+    for stat in _generate_stats_date(dimensions, prefetched_data, sources, start_date, end_date):
+        key = tuple(stat[d] for d in dimensions)
+        if key not in existing_keys:
+            stats.append(stat.copy())
+
+
 def _get_campaign(constraints):
     if 'ad_group' in constraints:
         return constraints['ad_group'].campaign
@@ -195,7 +267,7 @@ def _get_campaign(constraints):
     return None
 
 
-def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_date, include_settings=False,
+def _prefetch_rows_data(user, dimensions, constraints, start_date, end_date, include_settings=False,
                         include_account_settings=False, include_budgets=False, include_flat_fees=False,
                         include_projections=False, filtered_all_accounts=None):
     data = None
@@ -203,26 +275,78 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
     projections = None
     statuses = None
     by_source = ('source' in dimensions)
+    sources = None
     level = _level_from_dimensions(dimensions)
     settings = None
     account_settings = None
+    account_ids = None
     if 'content_ad' in dimensions:
         data = _prefetch_content_ad_data(constraints)
+        account_ids = set(content_ad.ad_group.campaign.account_id for content_ad in data.itervalues())
+        if by_source:
+            adgroups = set(content_ad.ad_group_id for content_ad in data.itervalues())
+            adgroup_sources = (models.AdGroupSource.objects.values('ad_group_id', 'source_id')
+                               .filter(ad_group__in=adgroups)
+                               .distinct())
+            sources = defaultdict(list)
+            for adgroup_source in adgroup_sources:
+                sources[adgroup_source['ad_group_id']].append(adgroup_source['source_id'])
+
     elif 'ad_group' in dimensions:
         data, settings, account_settings = _prefetch_ad_group_data(
-            stats, include_settings=include_settings,
+            constraints,
+            include_settings=include_settings,
             include_account_settings=include_account_settings
         )
+        account_ids = set(ad_group.campaign.account_id for ad_group in data.itervalues())
+        if by_source:
+            adgroup_sources = (helpers.get_active_ad_group_sources(models.AdGroup, data.values())
+                               .values('ad_group_id', 'source_id')
+                               .filter(ad_group__in=data.keys())
+                               .distinct())
+            sources = defaultdict(list)
+            for adgroup_source in adgroup_sources:
+                sources[adgroup_source['ad_group_id']].append(adgroup_source['source_id'])
     elif 'campaign' in dimensions:
         data, settings, account_settings = _prefetch_campaign_data(
-            stats, include_settings=include_settings,
+            constraints,
+            include_settings=include_settings,
             include_account_settings=include_account_settings
         )
+        account_ids = set(campaign.account_id for campaign in data.itervalues())
+        if by_source:
+            adgroup_sources = (helpers.get_active_ad_group_sources(models.Campaign, data.values())
+                               .values('ad_group__campaign_id', 'source_id')
+                               .prefetch_related('ad_group')
+                               .filter(ad_group__campaign__in=data.keys())
+                               .distinct())
+            sources = defaultdict(list)
+            for adgroup_source in adgroup_sources:
+                sources[adgroup_source['ad_group__campaign_id']].append(adgroup_source['source_id'])
     elif 'account' in dimensions:
-        data, settings = _prefetch_account_data(stats, include_settings=include_settings)
+        data, settings = _prefetch_account_data(constraints, include_settings=include_settings)
+        account_ids = set(data.keys())
+        if by_source:
+            adgroup_sources = (helpers.get_active_ad_group_sources(models.Account, data.values())
+                               .values('ad_group__campaign__account_id', 'source_id')
+                               .prefetch_related('ad_group__campaign')
+                               .filter(ad_group__campaign__account__in=data.keys())
+                               .distinct())
+            sources = defaultdict(list)
+            for adgroup_source in adgroup_sources:
+                sources[adgroup_source['ad_group__campaign__account_id']].append(adgroup_source['source_id'])
+    elif by_source:
+        accounts = models.Account.objects.all().filter_by_user(user)
+        adgroup_sources = (helpers.get_active_ad_group_sources(models.Account, accounts)
+                           .values('source_id')
+                           .prefetch_related('ad_group__campaign')
+                           .filter(ad_group__campaign__account__in=accounts)
+                           .distinct())
+        sources = [adgroup_source['source_id'] for adgroup_source in adgroup_sources]
     elif not dimensions:
         accounts = models.Account.objects.all().filter_by_user(user)
         data = {a.id: a for a in accounts}
+        account_ids = set(data.keys())
 
     if level in ['account', 'campaign', 'ad_group']:
         statuses = _prefetch_statuses(data, level, by_source, constraints.get('source'))
@@ -231,14 +355,13 @@ def _prefetch_rows_data(user, dimensions, constraints, stats, start_date, end_da
         budgets = None if not include_budgets \
             else _prefetch_budgets(data, level)
 
-    projections, account_projections = _prefetch_projections(start_date, end_date, stats, level, user)
-    return data, budgets, projections, account_projections, statuses, settings, account_settings
+    projections, account_projections = _prefetch_projections(start_date, end_date, account_ids, level, user)
+    return data, sources, budgets, projections, account_projections, statuses, settings, account_settings
 
 
-def _prefetch_account_settings(stats):
-    distinct_accounts = set(stat['account'] for stat in stats)
+def _prefetch_account_settings(accounts):
     account_settings_qs = models.AccountSettings.objects \
-        .filter(account__in=distinct_accounts) \
+        .filter(account__in=accounts) \
         .group_current_settings()
     account_settings = {s.account_id: s for s in account_settings_qs}
     return account_settings
@@ -594,56 +717,105 @@ def _prefetch_content_ad_data(constraints):
     return {c.id: c for c in content_ads}
 
 
-def _prefetch_ad_group_data(stats, include_settings=False, include_account_settings=False):
-    distinct_ad_groups = set(stat['ad_group'] for stat in stats)
+def _prefetch_ad_group_data(constraints, include_settings=False, include_account_settings=False):
+    sources = None
+    fields = {}
+    for key, constraint in constraints.iteritems():
+        if key == 'source':
+            sources = constraint
+        elif key == 'ad_group':
+            fields['id'] = constraint.id
+        elif key == 'campaign':
+            fields['campaign'] = constraint
+        elif key == 'account':
+            if isinstance(constraint, models.Account):
+                fields['campaign__account'] = constraint
+            else:
+                fields['campaign__account__in'] = constraint
+        else:
+            fields[key] = constraint
 
-    ad_group_qs = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
+    ad_group_qs = models.AdGroup.objects.filter(**fields).select_related('campaign__account')
+    if sources is not None:
+        ad_group_qs.filter_by_sources(sources)
     data = {ad_group.id: ad_group for ad_group in ad_group_qs}
 
     settings = None
     if include_settings:
         settings_qs = models.AdGroupSettings.objects \
-            .filter(ad_group__in=distinct_ad_groups) \
+            .filter(ad_group__in=data.keys()) \
             .group_current_settings()
         settings = {s.ad_group_id: s for s in settings_qs}
 
+    distinct_accounts = set(ad_group.campaign.account_id for ad_group in data.itervalues())
     account_settings = None
     if include_account_settings:
-        account_settings = _prefetch_account_settings(stats)
+        account_settings = _prefetch_account_settings(distinct_accounts)
     return data, settings, account_settings
 
 
-def _prefetch_campaign_data(stats, include_settings=False, include_account_settings=False):
-    distinct_campaigns = set(stat['campaign'] for stat in stats)
+def _prefetch_campaign_data(constraints, include_settings=False, include_account_settings=False):
+    sources = None
+    fields = {}
+    for key, constraint in constraints.iteritems():
+        if key == 'source':
+            sources = constraint
+        elif key == 'campaign':
+            fields['id'] = constraint.id
+        elif key == 'account':
+            if isinstance(constraint, models.Account):
+                fields['account'] = constraint
+            else:
+                fields['account__in'] = constraint
+        else:
+            fields[key] = constraint
 
-    campaign_qs = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
+    campaign_qs = models.Campaign.objects.filter(**fields).select_related('account')
+    if sources is not None:
+        campaign_qs.filter_by_sources(sources)
     data = {c.id: c for c in campaign_qs}
 
     settings = None
     if include_settings:
         settings_qs = models.CampaignSettings.objects \
-            .filter(campaign__in=distinct_campaigns) \
+            .filter(campaign__in=data.keys()) \
             .group_current_settings() \
             .select_related('campaign_manager')
         settings = {s.campaign_id: s for s in settings_qs}
 
+    distinct_accounts = set(campaign.account_id for campaign in data.itervalues())
     account_settings = None
     if include_account_settings:
-        account_settings = _prefetch_account_settings(stats)
+        account_settings = _prefetch_account_settings(distinct_accounts)
     return data, settings, account_settings
 
 
-def _prefetch_account_data(stats, include_settings=False, include_account_settings=False):
-    distinct_accounts = set(stat['account'] for stat in stats)
+def _prefetch_account_data(constraints, include_settings=False, include_account_settings=False):
     include_settings = include_settings or include_account_settings
 
-    accounts_qs = models.Account.objects.filter(id__in=distinct_accounts)
+    sources = None
+    fields = {}
+    for key, constraint in constraints.iteritems():
+        if key == 'source':
+            sources = constraint
+        elif key == 'account':
+            if isinstance(constraint, models.Account):
+                fields['id'] = constraint.id
+            else:
+                fields['id__in'] = constraint
+        else:
+            fields[key] = constraint
+
+    accounts_qs = models.Account.objects.filter(**fields)
+    if sources is not None:
+        accounts_qs.filter_by_sources(sources)
+
     data = {a.id: a for a in accounts_qs}
 
     settings = None
     if include_settings:
         settings_qs = models.AccountSettings.objects \
-            .filter(account__in=distinct_accounts) \
+            .filter(account__in=data.keys()) \
             .group_current_settings() \
             .select_related('default_account_manager', 'default_sales_representative')
         settings = {s.account_id: s for s in settings_qs}
@@ -651,7 +823,7 @@ def _prefetch_account_data(stats, include_settings=False, include_account_settin
     return data, settings
 
 
-def _prefetch_projections(start_date, end_date, stats, level, user):
+def _prefetch_projections(start_date, end_date, account_ids, level, user):
     if level not in ['all_accounts', 'account', 'campaign', 'ad_group']:
         return None, None
     projections_accounts = []
@@ -659,7 +831,7 @@ def _prefetch_projections(start_date, end_date, stats, level, user):
         projections_accounts = models.Account.objects.all().filter_by_user(user)
     else:
         projections_accounts = models.Account.objects.all().filter(
-            pk__in=set(stat['account'] for stat in stats if stat.get('account'))
+            pk__in=account_ids
         )
 
     if level == 'ad_group':

@@ -35,6 +35,9 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
     def setUp(self):
         self.ad_group_id = 1
 
+        self.missing_stats_patcher = patch('dash.export._add_missing_stats')
+        self.mock_missing_stats = self.missing_stats_patcher.start()
+
         self.query_patcher = patch('reports.api_contentads.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
@@ -96,6 +99,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
     def tearDown(self):
         super(AdGroupAdsExportTestCase, self).tearDown()
         self.query_patcher.stop()
+        self.missing_stats_patcher.stop()
 
     def test_get_content_ad(self):
         request = http.HttpRequest()
@@ -160,6 +164,10 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
 
     def setUp(self):
         self.campaign_id = 1
+
+        self.missing_stats_patcher = patch('dash.export._add_missing_stats')
+        self.mock_missing_stats = self.missing_stats_patcher.start()
+
         self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
@@ -176,7 +184,7 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
                 'ctr': 1.03
             }, {
                 'content_ad': 2,
-                'ad_group': 2,
+                'ad_group': 9,
                 'campaign': 1,
                 'account': 1,
                 'date': datetime.date(2014, 7, 1),
@@ -194,6 +202,7 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
     def tearDown(self):
         super(CampaignAdGroupsExportTestCase, self).tearDown()
         self.query_patcher.stop()
+        self.missing_stats_patcher.stop()
 
     def test_get_ad_group(self):
         request = http.HttpRequest()
@@ -215,8 +224,9 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
             'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
             'test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,10.230,103,'
             '100000\r\n2014-06-30,2014-07-01,'
-            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,'
-            'test adgroup 2,Inactive,20.230,203,200000\r\n'
+            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
+            'test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,'
+            'test adgroup 9,Inactive,20.230,203,200000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 
@@ -289,6 +299,10 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
 
     def setUp(self):
         self.account_id = 1
+
+        self.missing_stats_patcher = patch('dash.export._add_missing_stats')
+        self.mock_missing_stats = self.missing_stats_patcher.start()
+
         self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
@@ -322,6 +336,7 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
     def tearDown(self):
         super(AccountCampaignsExportTestCase, self).tearDown()
         self.query_patcher.stop()
+        self.missing_stats_patcher.stop()
 
     def test_get_by_campaign(self):
         request = http.HttpRequest()
@@ -448,6 +463,10 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
     fixtures = ['test_api']
 
     def setUp(self):
+
+        self.missing_stats_patcher = patch('dash.export._add_missing_stats')
+        self.mock_missing_stats = self.missing_stats_patcher.start()
+
         self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
@@ -479,6 +498,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
     def tearDown(self):
         super(AllAccountsExportTestCase, self).tearDown()
         self.query_patcher.stop()
+        self.missing_stats_patcher.stop()
 
     def test_get_by_account(self):
         request = http.HttpRequest()
@@ -865,6 +885,9 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
     def setUp(self):
         self.ad_group_id = 1
 
+        self.missing_stats_patcher = patch('dash.export._add_missing_stats')
+        self.mock_missing_stats = self.missing_stats_patcher.start()
+
         self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
@@ -901,6 +924,7 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
     def tearDown(self):
         super(AdGroupSourcesExportTestCase, self).tearDown()
         self.query_patcher.stop()
+        self.missing_stats_patcher.stop()
 
     def test_get_by_adgroup(self):
         request = http.HttpRequest()
@@ -952,6 +976,9 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
     def setUp(self):
         self.campaign_id = 1
 
+        self.missing_stats_patcher = patch('dash.export._add_missing_stats')
+        self.mock_missing_stats = self.missing_stats_patcher.start()
+
         self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
@@ -976,6 +1003,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
     def tearDown(self):
         super(CampaignSourcesExportTestCase, self).tearDown()
         self.query_patcher.stop()
+        self.missing_stats_patcher.stop()
 
     def test_get_by_campaign(self):
         request = http.HttpRequest()
@@ -1093,6 +1121,9 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
     def setUp(self):
         self.account_id = 1
 
+        self.missing_stats_patcher = patch('dash.export._add_missing_stats')
+        self.mock_missing_stats = self.missing_stats_patcher.start()
+
         self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
@@ -1116,6 +1147,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
     def tearDown(self):
         super(AccountSourcesExportTestCase, self).tearDown()
         self.query_patcher.stop()
+        self.missing_stats_patcher.stop()
 
     def test_get_by_account(self):
         request = http.HttpRequest()
@@ -1262,6 +1294,9 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
     fixtures = ['test_api']
 
     def setUp(self):
+        self.missing_stats_patcher = patch('dash.export._add_missing_stats')
+        self.mock_missing_stats = self.missing_stats_patcher.start()
+
         self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
@@ -1295,6 +1330,7 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
     def tearDown(self):
         super(AllAccountsSourcesExportTestCase, self).tearDown()
         self.query_patcher.stop()
+        self.missing_stats_patcher.stop()
 
     def test_get_all_accounts(self):
         request = http.HttpRequest()

@@ -160,8 +160,9 @@ class ExportTestCase(test.TestCase):
         expected_content = test_helper.format_csv_content(expected_content)
         self.assertEqual(content, expected_content)
 
+    @patch('dash.export._add_missing_stats')
     @patch('reports.api_contentads.query')
-    def test_generate_rows(self, mock_query):
+    def test_generate_rows(self, mock_query, mock_missing_stats):
         mock_query.return_value = self.mock_generate_rows_stats
 
         dimensions = ['ad_group', 'content_ad', 'source']
@@ -197,6 +198,8 @@ class ExportTestCase(test.TestCase):
                 'ad_group': ad_group
             }
         )
+
+        self.assertEqual(1, mock_missing_stats.call_count)
 
         expectedRows = [{
             'account_id': 1,
@@ -282,8 +285,9 @@ class ExportTestCase(test.TestCase):
         }]
         self.assertEqual(rows, expectedRows)
 
+    @patch('dash.export._add_missing_stats')
     @patch('reports.api_contentads.query')
-    def test_generate_rows_flat_fees(self, mock_query):
+    def test_generate_rows_flat_fees(self, mock_query, mock_missing_stats):
         mock_query.return_value = [{
             'account': 1,
             'date': datetime.date(2014, 7, 1),
@@ -364,6 +368,8 @@ class ExportTestCase(test.TestCase):
             account=accounts,
         )
 
+        self.assertEqual(1, mock_missing_stats.call_count)
+
         self.assertEqual(rows, [
             {'account_id': 1,
              'account': u'test account 1 \u010c\u017e\u0161',
@@ -399,9 +405,10 @@ class ExportTestCase(test.TestCase):
              }
         ])
 
+    @patch('dash.export._add_missing_stats')
     @patch('reports.api_contentads.query')
     @patch('dash.export._prefetch_projections')
-    def test_generate_rows_budget(self, mock_proj, mock_query):
+    def test_generate_rows_budget(self, mock_proj, mock_query, mock_missing_stats):
         class Projection:
 
             def __init__(self):
@@ -479,6 +486,7 @@ class ExportTestCase(test.TestCase):
             conversion_goals=[],
             ignore_diff_rows=True,
         )
+        self.assertEqual(1, mock_missing_stats.call_count)
         self.maxDiff = None
         self.assertEqual(rows, [
             {'account_id': 1,
@@ -521,9 +529,10 @@ class ExportTestCase(test.TestCase):
              }
         ])
 
+    @patch('dash.export._add_missing_stats')
     @patch('reports.api_contentads.query')
     @patch('dash.export._prefetch_projections')
-    def test_generate_rows_budget_breakdown_by_date(self, mock_proj, mock_query):
+    def test_generate_rows_budget_breakdown_by_date(self, mock_proj, mock_query, mock_missing_stats):
         class Projection:
 
             def __init__(self):
@@ -636,6 +645,8 @@ class ExportTestCase(test.TestCase):
             ignore_diff_rows=True,
         )
 
+        self.assertEqual(1, mock_missing_stats.call_count)
+
         self.assertEqual(rows, [
             {'account_id': 1,
              'campaign_id': 1,
@@ -715,8 +726,9 @@ class ExportTestCase(test.TestCase):
              }
         ])
 
+    @patch('dash.export._add_missing_stats')
     @patch('reports.api_contentads.query')
-    def test_generate_rows_order_by_status(self, mock_query):
+    def test_generate_rows_order_by_status(self, mock_query, mock_missing_stats):
         mock_query.return_value = self.mock_generate_rows_stats
 
         dimensions = ['ad_group', 'content_ad', 'source']
@@ -752,6 +764,7 @@ class ExportTestCase(test.TestCase):
                 'ad_group': ad_group
             }
         )
+        self.assertEqual(1, mock_missing_stats.call_count)
         self.assertEqual(rows[0].get('status'), constants.ExportStatus.INACTIVE)
         self.assertEqual(rows[1].get('status'), constants.ExportStatus.INACTIVE)
         self.assertEqual(rows[2].get('status'), constants.ExportStatus.ACTIVE)
@@ -883,6 +896,39 @@ class ExportTestCase(test.TestCase):
             ad_group=None,
             granularity=2,
             order=None)
+
+    def test_add_missing_stats(self):
+        stats = list(self.mock_generate_rows_stats)
+        export._add_missing_stats(stats, [], None, None, None, None)
+        self.assertEqual(self.mock_generate_rows_stats, stats)
+
+    def test_add_missing_stats_content_ad(self):
+        stats = list(self.mock_generate_rows_stats)
+        data = {obj.id: obj for obj in models.ContentAd.objects.all()}
+        sources = {obj.ad_group_id: [1, 2] for obj in data.itervalues()}
+        export._add_missing_stats(stats, ['content_ad', 'date', 'source'], data, sources, datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
+        self.assertEqual(43, len(stats))
+
+    def test_add_missing_stats_ad_group(self):
+        stats = list(self.mock_generate_rows_stats)
+        data = {obj.id: obj for obj in models.AdGroup.objects.all()}
+        sources = {id: [1, 2] for id in data}
+        export._add_missing_stats(stats, ['ad_group', 'date', 'source'], data, sources, datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
+        self.assertEqual(83, len(stats))
+
+    def test_add_missing_stats_campaign(self):
+        stats = list(self.mock_generate_rows_stats)
+        data = {obj.id: obj for obj in models.Campaign.objects.all()}
+        sources = {id: [1, 2] for id in data}
+        export._add_missing_stats(stats, ['campaign', 'date', 'source'], data, sources, datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
+        self.assertEqual(51, len(stats))
+
+    def test_add_missing_stats_account(self):
+        stats = list(self.mock_generate_rows_stats)
+        data = {obj.id: obj for obj in models.Account.objects.all()}
+        sources = {id: [1, 2] for id in data}
+        export._add_missing_stats(stats, ['account', 'date', 'source'], data, sources, datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
+        self.assertEqual(35, len(stats))
 
 
 class FilterAllowedFieldsTestCase(test.TestCase):
