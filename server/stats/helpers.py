@@ -71,7 +71,7 @@ def create_breakdown_id(breakdown, row):
 
 def extract_order_field(order, breakdown):
     target_dimension = constants.get_target_dimension(breakdown)
-    if target_dimension in constants.TimeDimension._ALL or target_dimension in ('age', 'age_gender'):
+    if target_dimension in constants.TimeDimension._ALL or target_dimension in ('age', 'age_gender', 'device_type'):
         return target_dimension
 
     prefix, order_field = sort_helper.dissect_order(order)

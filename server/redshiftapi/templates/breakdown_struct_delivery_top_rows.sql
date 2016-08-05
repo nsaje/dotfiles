@@ -14,7 +14,7 @@ WITH
             -- this way params are always correctly ordered
             {{ constraints|generate:"a" }} AND
             {{ breakdown_constraints|generate:"a" }}
-        GROUP BY {{ breakdown|only_alias }}
+        GROUP BY {{ breakdown|indices }}
     ),
     {% endif %}
 
@@ -27,7 +27,7 @@ WITH
         WHERE
             {{ constraints|generate:"a" }} AND
             {{ breakdown_constraints|generate:"a" }}
-        GROUP BY {{ breakdown|only_alias }}
+        GROUP BY {{ breakdown|indices }}
     ),
     {% endif %}
 
@@ -40,7 +40,7 @@ WITH
         WHERE
             {{ yesterday_constraints|generate:"a" }} AND
             {{ breakdown_constraints|generate:"a" }}
-        GROUP BY {{ breakdown|only_alias }}
+        GROUP BY {{ breakdown|indices }}
     ),
     {% endif %}
 
@@ -57,7 +57,7 @@ WITH
         WHERE
             {{ constraints|generate:"a" }} AND
             {{ breakdown_constraints|generate:"a" }}
-        GROUP BY {{ breakdown|only_alias }}
+        GROUP BY {{ breakdown|indices }}
     )
 
 SELECT

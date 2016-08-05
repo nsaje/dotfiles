@@ -3,6 +3,8 @@ import copy
 import datetime
 from dateutil import rrule, relativedelta
 
+from dash import constants as dash_constants
+
 from stats import constants
 
 
@@ -12,37 +14,56 @@ but are easier to do in python than in sql.
 """
 
 
-def postprocess_time_dimension(time_dimension, rows, empty_row, breakdown, constraints, breakdown_constraints):
+def postprocess_time_dimension(target_dimension, rows, empty_row, breakdown, constraints, breakdown_constraints):
     """
     When querying time dimensions add rows that are missing from a query
     so that result is a nice constant time series.
     """
 
+    all_dates = _get_representative_dates(target_dimension, constraints)
+    fill_in_missing_rows(
+        target_dimension, rows, empty_row, breakdown, breakdown_constraints, all_dates)
+
+
+def postprocess_device_type_dimension(target_dimension, rows, empty_row, breakdown, breakdown_constraints,
+                                      offset, limit):
+    all_values = sorted(dash_constants.DeviceType._VALUES.keys())
+
+    fill_in_missing_rows(
+        target_dimension, rows, empty_row, breakdown, breakdown_constraints,
+        all_values[offset:offset + limit]
+    )
+
+
+def fill_in_missing_rows(target_dimension, rows, empty_row, breakdown, breakdown_constraints, all_values):
     parent_breakdown = constants.get_parent_breakdown(breakdown)
 
-    # map rows by parent breakdown
     rows_per_parent_breakdown = collections.defaultdict(list)
     for row in rows:
         parent_br_key = _get_breakdown_key_tuple(parent_breakdown, row)
         rows_per_parent_breakdown[parent_br_key].append(row)
 
-    all_dates = _get_representative_dates(time_dimension, constraints)
-
-    # breakdown constraints represent parent selection
     for bc in breakdown_constraints:
         parent_br_key = _get_breakdown_key_tuple(parent_breakdown, bc)
 
-        # collect used dates from rows returned
-        used_dates = set(row[time_dimension] for row in rows_per_parent_breakdown[parent_br_key])
+        # collect used constants for rows returned
+        used = set(row[target_dimension] for row in rows_per_parent_breakdown[parent_br_key])
 
-        for missing_date in set(all_dates) - set(used_dates):
-            new_row = copy.copy(empty_row)
-            new_row.update(bc)  # update with parent
-            new_row[time_dimension] = missing_date
+        for x in all_values:
+            if x not in used:
+                new_row = copy.copy(empty_row)
+                new_row.update(bc)  # update with parent
+                new_row[target_dimension] = x
 
-            rows.append(new_row)
+                rows_per_parent_breakdown[parent_br_key].append(new_row)
+                rows.append(new_row)
 
-    # TODO sort rows
+        # cut rows that are not a part of the final collection
+        for x in used:
+            if x not in all_values:
+                excess_row = [row for row in rows_per_parent_breakdown[parent_br_key] if row[target_dimension] == x][0]
+
+                rows.remove(excess_row)
 
 
 def _get_breakdown_key_tuple(breakdown, row_or_dict):

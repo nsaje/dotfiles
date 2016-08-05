@@ -21,7 +21,7 @@ def query(breakdown, constraints, breakdown_constraints, conversion_goals, order
 
         empty_row = db.get_empty_row_dict(cursor.description)
 
-    _post_process(rows, empty_row, breakdown, constraints, breakdown_constraints)
+    _post_process(rows, empty_row, breakdown, constraints, breakdown_constraints, offset, limit)
 
     return rows
 
@@ -51,9 +51,13 @@ def _prepare_query(model, breakdown, constraints, breakdown_constraints,
     raise exc.InvalidBreakdownError("Selected breakdown is not supported {}".format(breakdown))
 
 
-def _post_process(rows, empty_row, breakdown, constraints, breakdown_constraints):
-    time_dimension = constants.get_time_dimension(breakdown)
+def _post_process(rows, empty_row, breakdown, constraints, breakdown_constraints, offset, limit):
+    target_dimension = constants.get_target_dimension(breakdown)
 
-    if time_dimension:
-        postprocess.postprocess_time_dimension(time_dimension, rows, empty_row,
-                                               breakdown, constraints, breakdown_constraints)
+    if target_dimension in constants.TimeDimension._ALL:
+        postprocess.postprocess_time_dimension(
+            target_dimension, rows, empty_row, breakdown, constraints, breakdown_constraints)
+
+    if target_dimension == 'device_type':
+        postprocess.postprocess_device_type_dimension(
+            target_dimension, rows, empty_row, breakdown, breakdown_constraints, offset, limit)

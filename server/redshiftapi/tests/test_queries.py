@@ -205,7 +205,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
                     SUM(a.cost_nano)/1000000000.0 yesterday_cost
                 FROM mv_account a
                 WHERE (a.date=%s)
-                GROUP BY account_id
+                GROUP BY 1
             ),
             temp_base AS (
                 SELECT
@@ -214,7 +214,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
                     SUM(a.total_time_on_site) total_seconds
                 FROM mv_account a
                 WHERE (a.date>=%s AND a.date<=%s)
-                GROUP BY account_id
+                GROUP BY 1
             )
         SELECT
             temp_base.account_id,
@@ -261,7 +261,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
                     SUM(a.cost_nano)/1000000000.0 yesterday_cost
                 FROM mv_account a
                 WHERE (a.date=%s) AND ((a.source_id=%s))
-                GROUP BY account_id, source_id
+                GROUP BY 1, 2
             ),
             temp_base AS (
                 SELECT
@@ -271,7 +271,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
                     SUM(a.total_time_on_site) total_seconds
                 FROM mv_account a
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY account_id, source_id
+                GROUP BY 1, 2
             )
         SELECT
             b.account_id,
@@ -328,7 +328,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
                     SUM(CASE WHEN a.date='2016-07-01' THEN a.effective_cost_nano ELSE 0 END)/1000000000.0 e_yesterday_cost
                 FROM mv_account a
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY account_id
+                GROUP BY 1
             )
         SELECT
             b.account_id,
@@ -408,7 +408,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
                 SUM(a.cost_nano)/1000000000.0 yesterday_cost
             FROM mv_account a
             WHERE (a.date=%s) AND ((a.source_id=%s))
-            GROUP BY account_id, week
+            GROUP BY 1, 2
         ),
         temp_base AS (
             SELECT
@@ -419,7 +419,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             FROM mv_account a
             WHERE (a.date>=%s AND a.date<=%s)
                   AND ((a.source_id=%s))
-            GROUP BY account_id, week
+            GROUP BY 1, 2
         )
         SELECT
             temp_base.account_id,
@@ -477,7 +477,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             FROM mv_account a
             WHERE (a.date>=%s AND a.date<=%s)
                   AND ((a.source_id=%s))
-            GROUP BY account_id, week
+            GROUP BY 1, 2
         )
         SELECT
             temp_base.account_id,
@@ -507,7 +507,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(CASE WHEN a.slug='omniture__5' THEN conversion_count ELSE 0 END) conversion_goal_5
                 FROM mv_conversions_campaign a
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY account_id, campaign_id, week
+                GROUP BY 1, 2, 3
             ),
             temp_touchpointconversions AS (
                 SELECT
@@ -518,7 +518,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                         conversion_goal_1
                 FROM mv_touch_campaign a
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY account_id, campaign_id, week
+                GROUP BY 1, 2, 3
             ),
             temp_yesterday AS (
                 SELECT
@@ -528,7 +528,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(a.cost_nano)/1000000000.0 yesterday_cost
                 FROM mv_campaign a
                 WHERE (a.date=%s) AND ((a.source_id=%s))
-                GROUP BY account_id, campaign_id, week
+                GROUP BY 1, 2, 3
             ),
             temp_base AS (
                 SELECT
@@ -539,7 +539,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(a.total_time_on_site) total_seconds
                 FROM mv_campaign a
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY account_id, campaign_id, week
+                GROUP BY 1, 2, 3
             )
         SELECT b.account_id,
             b.campaign_id,
@@ -594,7 +594,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(CASE WHEN a.slug='omniture__5' THEN conversion_count ELSE 0 END) conversion_goal_5
                 FROM mv_conversions_campaign a
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY account_id, campaign_id
+                GROUP BY 1, 2
             ),
 
             temp_touchpointconversions AS (
@@ -605,7 +605,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                         conversion_goal_1
                 FROM mv_touch_campaign a
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY account_id, campaign_id
+                GROUP BY 1, 2
             ),
             temp_yesterday AS (
                 SELECT
@@ -614,7 +614,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(a.cost_nano)/1000000000.0 yesterday_cost
                 FROM mv_campaign a
                 WHERE (a.date=%s) AND ((a.source_id=%s))
-                GROUP BY account_id, campaign_id
+                GROUP BY 1, 2
             ),
             temp_base AS (
                 SELECT
@@ -624,7 +624,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(a.total_time_on_site) total_seconds
                 FROM mv_campaign a
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY account_id, campaign_id
+                GROUP BY 1, 2
             )
         SELECT
             b.account_id,
@@ -680,8 +680,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 FROM mv_account_delivery a
                 WHERE (a.date=%s)
                     AND ((a.source_id=%s))
-                GROUP BY account_id,
-                            device_type),
+                GROUP BY 1, 2),
             temp_base AS
                 (SELECT a.account_id AS account_id,
                         CASE
@@ -696,8 +695,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 WHERE (a.date>=%s
                         AND a.date<=%s)
                     AND ((a.source_id=%s))
-                GROUP BY account_id,
-                            device_type)
+                GROUP BY 1, 2)
         SELECT b.account_id,
             b.device_type,
             b.clicks,

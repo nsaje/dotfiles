@@ -16,7 +16,14 @@ WITH
             {% if breakdown_constraints %}
                 AND {{ breakdown_constraints|generate:"a" }}
             {% endif %}
-        {% if breakdown %} GROUP BY {{ breakdown|only_alias }} {% endif %}
+        -- use indices to refer to breakdown fields, this way if a field name is the same
+        -- for source column from database and calculated fields alias the aliase get chosen.
+        -- Otherwise the source column is selected and so results are probably not what we
+        -- might expect.
+        -- Eg: SELECT case table.device_type == 1 then 2 else 1 end AS device_type, ...
+        --     FROM table
+        --     GROUP BY device_type;  <-- this refers to table.device_type not device_type alias
+        {% if breakdown %} GROUP BY {{ breakdown|indices }} {% endif %}
     ),
     {% endif %}
 
@@ -31,7 +38,7 @@ WITH
             {% if breakdown_constraints %}
                 AND {{ breakdown_constraints|generate:"a" }}
             {% endif %}
-        {% if breakdown %} GROUP BY {{ breakdown|only_alias }} {% endif %}
+        {% if breakdown %} GROUP BY {{ breakdown|indices }} {% endif %}
     ),
     {% endif %}
 
@@ -46,7 +53,7 @@ WITH
             {% if breakdown_constraints %}
                 AND {{ breakdown_constraints|generate:"a" }}
             {% endif %}
-        {% if breakdown %} GROUP BY {{ breakdown|only_alias }} {% endif %}
+        {% if breakdown %} GROUP BY {{ breakdown|indices }} {% endif %}
     ),
     {% endif %}
 
@@ -64,7 +71,7 @@ WITH
             {% if breakdown_constraints %}
                 AND {{ breakdown_constraints|generate:"a" }}
             {% endif %}
-        {% if breakdown %} GROUP BY {{ breakdown|only_alias }} {% endif %}
+        {% if breakdown %} GROUP BY {{ breakdown|indices }} {% endif %}
     )
 SELECT
     {% if breakdown %} {{ breakdown|only_alias:"temp_base" }}, {% endif %}
