@@ -125,10 +125,3 @@ def ranked(field_name, order_field):
 # common formulas
 UNBOUNCED_VISITS_FORMULA = "({} - {})".format(sum_agr('visits'), sum_agr('bounced_visits'))
 AVG_TOS_FORMULA = sum_agr('total_time_on_site')
-RETURNING_USERS_FORMULA = '''
-CASE
-    WHEN SUM(users) IS NULL OR SUM(new_visits) IS NULL THEN NULL
-    WHEN SUM(new_visits) > SUM(users) THEN 0
-    ELSE SUM(users) - SUM(new_visits)
-END
-'''
