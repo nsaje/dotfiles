@@ -773,6 +773,9 @@ class K1ApiTest(TestCase):
         self.assertEqual(data, expected)
 
     def test_update_content_ad_status(self):
+        cas = dash.models.ContentAdSource.objects.get(pk=1)
+        cas.source_content_ad_id = None
+        cas.save()
         response = self.client.generic(
             'PUT',
             reverse('k1api_new.content_ads.sources'),
@@ -801,7 +804,26 @@ class K1ApiTest(TestCase):
         )
         self.assertEqual(response.status_code, 404)
 
+    def test_update_content_ad_status_refuse_delete(self):
+        response = self.client.generic(
+            'PUT',
+            reverse('k1api_new.content_ads.sources'),
+            json.dumps({
+                'submission_status': 2, 'submission_errors': 'my-errors',
+                'source_content_ad_id': ''
+            }),
+            'application/json',
+            QUERY_STRING=urllib.urlencode({'content_ad_id': 1, 'source_slug': 'adblade'})
+        )
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Cannot change', data['error'])
+
     def test_set_source_campaign_key(self):
+        ags = dash.models.AdGroupSource.objects.get(pk=1)
+        ags.source_campaign_key = None
+        ags.save()
+
         response = self.client.generic(
             'PUT',
             reverse('k1api_new.ad_groups.sources'),
@@ -902,6 +924,20 @@ class K1ApiTest(TestCase):
                                                   source__bidder_slug='adblade')
 
         self.assertEqual(a.get_current_settings().state, 2)
+
+    def test_update_ad_group_source_refuse_change(self):
+        params = {'ad_group_id': 1,
+                  'source_slug': 'adblade'}
+        response = self.client.generic(
+            'PUT',
+            reverse('k1api_new.ad_groups.sources'),
+            json.dumps({'source_campaign_key': ''}),
+            'application/json',
+            QUERY_STRING=urllib.urlencode(params)
+        )
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Cannot change', data['error'])
 
     def test_update_ad_group_source_state_no_ad_group(self):
         params = {'ad_group_id': 12345,

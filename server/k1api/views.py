@@ -561,6 +561,8 @@ class AdGroupSourcesView(K1APIView):
                 new_settings.state = val
                 settings_changed = True
             elif key == 'source_campaign_key':
+                if ad_group_source.source_campaign_key and val != ad_group_source.source_campaign_key:
+                    return self.response_error("Cannot change existing source_campaign_key", status=400)
                 ad_group_source.source_campaign_key = val
                 ad_group_source.save()
             else:
@@ -686,6 +688,8 @@ class ContentAdSourcesView(K1APIView):
             modified = True
 
         if 'source_content_ad_id' in data and content_ad_source.source_content_ad_id != data['source_content_ad_id']:
+            if content_ad_source.source_content_ad_id:
+                return self.response_error("Cannot change existing source_content_ad_id", status=400)
             content_ad_source.source_content_ad_id = data['source_content_ad_id']
             modified = True
 
