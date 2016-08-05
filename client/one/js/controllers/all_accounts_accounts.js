@@ -411,7 +411,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Audience Metrics',
             'fields': [
-                'visits', 'unique_users', 'returning_users', 'pageviews', 'percent_new_users',
+                'visits', 'unique_users', 'new_users', 'returning_users', 'pageviews', 'percent_new_users',
                 'bounce_rate', 'pv_per_visit', 'avg_tos', 'click_discrepancy', 'unique_users',
                 'returning_users', 'bounced_visits', 'non_bounced_visits', 'total_seconds',
             ]

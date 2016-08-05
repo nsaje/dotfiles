@@ -10,6 +10,7 @@ POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
 POSTCLICK_ENGAGEMENT_FIELDS = [
     'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals', 'new_visits',
     'returning_users', 'unique_users', 'bounced_visits', 'total_seconds', 'non_bounced_visits',
+    'new_users',
 ]
 CONVERSION_GOAL_FIELDS = ['conversions']
 

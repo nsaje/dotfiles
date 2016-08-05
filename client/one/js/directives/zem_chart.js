@@ -360,8 +360,9 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             metricFormats[constants.chartMetric.BILLING_COST] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.LICENSE_FEE] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};
-            metricFormats[constants.chartMetric.NEW_USERS] = {'type': 'percent', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.PERCENT_NEW_USERS] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.UNIQUE_USERS] = {};
+            metricFormats[constants.chartMetric.NEW_USERS] = {};
             metricFormats[constants.chartMetric.RETURNING_USERS] = {};
             metricFormats[constants.chartMetric.BOUNCE_RATE] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.PV_PER_VISIT] = {'fractionSize': 2};

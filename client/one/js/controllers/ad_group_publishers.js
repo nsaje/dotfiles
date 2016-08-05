@@ -684,8 +684,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             'fields': [
                 'visits', 'pageviews', 'percent_new_users',
                 'bounce_rate', 'pv_per_visit', 'avg_tos',
-                'click_discrepancy', 'unique_users', 'returning_users',
-                'bounced_vists', 'non_bounced_visits', 'total_seconds']
+                'click_discrepancy', 'unique_users', 'new_users', 'returning_users',
+                'bounced_visits', 'non_bounced_visits', 'total_seconds']
         },
         {
             'name': 'Conversions',

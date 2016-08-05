@@ -45,7 +45,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         ])
 
         columns = m.get_columns()
-        self.assertEquals(len(columns), 63)
+        self.assertEquals(len(columns), 64)
 
         columns = m.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
@@ -143,7 +143,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
 
     def test_columns(self):
         columns = self.model.get_columns()
-        self.assertEquals(len(columns), 53)
+        self.assertEquals(len(columns), 54)
 
         columns = self.model.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
@@ -174,7 +174,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
                                'license_fee', 'billing_cost', 'total_cost',
                                'ctr', 'cpc', 'visits', 'click_discrepancy',
                                'pageviews', 'new_visits', 'percent_new_users',
-                               'bounce_rate', 'pv_per_visit', 'avg_tos',
+                               'new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos',
                                'avg_cost_for_new_visitor', 'avg_cost_per_minute',
                                'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview',
                                'avg_cost_per_visit', 'total_pageviews', 'total_seconds',

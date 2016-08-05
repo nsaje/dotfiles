@@ -1933,6 +1933,7 @@ class PublishersTable(object):
                    totals_data):
         result = {
             'cpc': totals_data.get('cpc', 0),
+            'cpm': totals_data.get('cpm', 0),
             'clicks': totals_data.get('clicks', 0),
             'impressions': totals_data.get('impressions', 0),
             'ctr': totals_data.get('ctr', 0),
@@ -1944,9 +1945,20 @@ class PublishersTable(object):
 
         result['new_visits'] = totals_data.get('new_visits', None)
         result['percent_new_users'] = totals_data.get('percent_new_users', None)
+        result['bounced_visits'] = totals_data.get('bounced_visits', None)
+        result['non_bounced_visits'] = totals_data.get('non_bounced_visits', None)
         result['bounce_rate'] = totals_data.get('bounce_rate', None)
         result['pv_per_visit'] = totals_data.get('pv_per_visit', None)
         result['avg_tos'] = totals_data.get('avg_tos', None)
+        result['new_users'] = totals_data.get('new_users', None)
+        result['unique_users'] = totals_data.get('unique_users', None)
+        result['returning_users'] = totals_data.get('returning_users', None)
+
+        result['avg_cost_per_minute'] = totals_data.get('avg_cost_per_minute', None)
+        result['avg_cost_per_pageview'] = totals_data.get('avg_cost_per_pageview', None)
+        result['avg_cost_per_visit'] = totals_data.get('avg_cost_per_visit', None)
+        result['avg_cost_per_non_bounced_visit'] = totals_data.get('avg_cost_per_non_bounced_visit', None)
+        result['avg_cost_for_new_visitor'] = totals_data.get('avg_cost_for_new_visitor', None)
 
         result['billing_cost'] = totals_data.get('billing_cost', 0)
         if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
@@ -1993,6 +2005,7 @@ class PublishersTable(object):
                 'clicks': publisher_data.get('clicks', None),
                 'impressions': publisher_data.get('impressions', None),
                 'ctr': publisher_data.get('ctr', None),
+                'cpm': publisher_data.get('cpm', None)
             }
 
             if user.has_perm('zemauth.view_pubs_postclick_acquisition'):
@@ -2002,9 +2015,20 @@ class PublishersTable(object):
 
             row['new_visits'] = publisher_data.get('new_visits', None)
             row['percent_new_users'] = publisher_data.get('percent_new_users', None)
+            row['bounced_visits'] = publisher_data.get('bounced_visits', None)
+            row['non_bounced_visits'] = publisher_data.get('non_bounced_visits', None)
             row['bounce_rate'] = publisher_data.get('bounce_rate', None)
             row['pv_per_visit'] = publisher_data.get('pv_per_visit', None)
             row['avg_tos'] = publisher_data.get('avg_tos', None)
+            row['new_users'] = publisher_data.get('new_users', None)
+            row['unique_users'] = publisher_data.get('unique_users', None)
+            row['returning_users'] = publisher_data.get('returning_users', None)
+
+            row['avg_cost_per_minute'] = publisher_data.get('avg_cost_per_minute', None)
+            row['avg_cost_per_pageview'] = publisher_data.get('avg_cost_per_pageview', None)
+            row['avg_cost_per_visit'] = publisher_data.get('avg_cost_per_visit', None)
+            row['avg_cost_per_non_bounced_visit'] = publisher_data.get('avg_cost_per_non_bounced_visit', None)
+            row['avg_cost_for_new_visitor'] = publisher_data.get('avg_cost_for_new_visitor', None)
 
             row['billing_cost'] = publisher_data.get('billing_cost', 0)
             if user.has_perm('zemauth.can_view_platform_cost_breakdown'):

@@ -69,6 +69,7 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='pv_per_visit',          app='pv_per_visit',       out=rsh.unchanged,            calc=rsh.sum_div('pageviews', 'visits')),
         dict(sql='avg_tos',               app='avg_tos',            out=rsh.unchanged,            calc=rsh.sum_div('total_time_on_site', 'visits')),
         dict(sql='unique_users_sum',      app='unique_users',       out=rsh.unchanged,            calc=rsh.sum_agr('users')),
+        dict(sql='new_users_sum',         app='users_users',        out=unchanged,                calc=rsh.sum_agr('new_visits')),
         dict(sql='returning_users_sum',   app='returning_users',    out=rsh.unchanged,            calc=rsh.RETURNING_USERS_FORMULA),
         dict(sql='bounced_visits_sum',    app='bounced_visits',     out=rsh.unchanged,            calc=rsh.sum_agr('bounced_visits')),
     ]

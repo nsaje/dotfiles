@@ -522,7 +522,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     }, {
         'name': 'Audience Metrics',
         'fields': ['percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'visits', 'pageviews', 'click_discrepancy',
-                   'unique_users', 'returning_users', 'bounced_visits', 'non_bounced_visits', 'total_seconds']
+                   'unique_users', 'new_users', 'returning_users', 'bounced_visits', 'non_bounced_visits', 'total_seconds']
     }, {
         name: 'Conversions',
         fields: ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']

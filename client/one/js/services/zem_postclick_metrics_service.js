@@ -56,6 +56,18 @@ oneApp.factory('zemPostclickMetricsService', function () {
                 initialOrder: 'desc',
             },
             {
+                name: 'New Users',
+                field: 'new_users',
+                checked: false,
+                type: 'number',
+                shown: isShown,
+                internal: isInternal,
+                help: 'The total number of unique people who visited your site for the first time.',
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc',
+            },
+            {
                 name: 'Returning Users',
                 field: 'returning_users',
                 checked: false,

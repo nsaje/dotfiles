@@ -754,6 +754,17 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
+        newUsers: {
+            name: 'New Users',
+            field: 'new_users',
+            type: zemGridConstants.gridColumnTypes.NUMBER,
+            shown: true,
+            internal: false,
+            help: 'The total number of unique people who visited your site for the first time.',
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+        },
         returningUsers: {
             name: 'Returning Users',
             field: 'returning_users',
@@ -989,6 +1000,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     var AUDIENCE_METRICS_GROUP = [
         COLUMNS.visits,
         COLUMNS.uniqueUsers,
+        COLUMNS.newUsers,
         COLUMNS.returningUsers,
         COLUMNS.percentNewUsers,
         COLUMNS.clickDiscrepancy,

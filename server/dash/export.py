@@ -52,6 +52,7 @@ FIELDNAMES = {
     'title': 'Title',
     'visits': 'Visits',
     'unique_users': 'Unique Users',
+    'new_users': 'New Users',
     'returning_users': 'Returning Users',
     'date': 'Date',
     'license_fee': 'License Fee',
