@@ -1090,6 +1090,10 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     configureBreakdowns(CONTENT_GROUP, [constants.breakdown.CONTENT_AD]);
     configureBreakdowns(SOURCE_GROUP, [constants.breakdown.MEDIA_SOURCE]);
     configureBreakdowns(PUBLISHER_GROUP, [constants.breakdown.PUBLISHER]);
+    configureBreakdowns(
+        [COLUMNS.yesterdayCost, COLUMNS.eYesterdayCost],
+        [constants.breakdown.CAMPAIGN, constants.breakdown.AD_GROUP, constants.breakdown.MEDIA_SOURCE]
+    );
 
     // Configuration (availability based on level)
     configureLevels(PROJECTIONS_GROUP, [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS]);
