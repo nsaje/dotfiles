@@ -11,7 +11,7 @@
             </div>
         </div>
     </div>
-    <div class="section table-ad-group-sources" ng-if="!(hasPermission('zemauth.can_access_table_breakdowns_feature_on_ad_group_level') && hasPermission('zemauth.hide_old_table_on_ad_group_level'))">
+    <div class="section table-ad-group-sources" ng-if="true || !(hasPermission('zemauth.can_access_table_breakdowns_feature_on_ad_group_level') && hasPermission('zemauth.hide_old_table_on_ad_group_level'))">
         <div class="button-bar">
             <div class="button-bar-item">
                 <div ng-show="hasPermission('zemauth.can_modify_publisher_blacklist_status')" style="display:inline;">
