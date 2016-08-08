@@ -1,4 +1,3 @@
-import codecs
 from mock import patch
 import mock
 from decimal import Decimal
@@ -7,7 +6,6 @@ import datetime
 from collections import OrderedDict
 
 from django import test
-from django.http.request import HttpRequest
 from django.contrib.auth import models as authmodels
 
 from dash import export
@@ -908,6 +906,14 @@ class ExportTestCase(test.TestCase):
         sources = {obj.ad_group_id: [1, 2] for obj in data.itervalues()}
         export._add_missing_stats(stats, ['content_ad', 'date', 'source'], data, sources, datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
         self.assertEqual(43, len(stats))
+        self.assertEqual({
+            'account': 1,
+            'ad_group': 2,
+            'campaign': 2,
+            'content_ad': 5,
+            'date': datetime.date(2014, 7, 4),
+            'source': 2
+        }, stats[len(stats)-1])
 
     def test_add_missing_stats_ad_group(self):
         stats = list(self.mock_generate_rows_stats)
@@ -915,6 +921,13 @@ class ExportTestCase(test.TestCase):
         sources = {id: [1, 2] for id in data}
         export._add_missing_stats(stats, ['ad_group', 'date', 'source'], data, sources, datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
         self.assertEqual(83, len(stats))
+        self.assertEqual({
+            'account': 1,
+            'ad_group': 10,
+            'campaign': 1,
+            'date': datetime.date(2014, 7, 4),
+            'source': 2
+        }, stats[len(stats)-1])
 
     def test_add_missing_stats_campaign(self):
         stats = list(self.mock_generate_rows_stats)
@@ -922,6 +935,12 @@ class ExportTestCase(test.TestCase):
         sources = {id: [1, 2] for id in data}
         export._add_missing_stats(stats, ['campaign', 'date', 'source'], data, sources, datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
         self.assertEqual(51, len(stats))
+        self.assertEqual({
+            'account': 4,
+            'campaign': 6,
+            'date': datetime.date(2014, 7, 4),
+            'source': 2
+        }, stats[len(stats)-1])
 
     def test_add_missing_stats_account(self):
         stats = list(self.mock_generate_rows_stats)
@@ -929,6 +948,11 @@ class ExportTestCase(test.TestCase):
         sources = {id: [1, 2] for id in data}
         export._add_missing_stats(stats, ['account', 'date', 'source'], data, sources, datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
         self.assertEqual(35, len(stats))
+        self.assertEqual({
+            'account': 4,
+            'date': datetime.date(2014, 7, 4),
+            'source': 2
+        }, stats[len(stats)-1])
 
 
 class FilterAllowedFieldsTestCase(test.TestCase):
