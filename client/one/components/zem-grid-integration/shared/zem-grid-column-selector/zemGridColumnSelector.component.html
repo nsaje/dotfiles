@@ -12,7 +12,7 @@
                    zem-lazy-popover-placement="left"
                    zem-lazy-popover-animation-class="fade"
                    zem-lazy-popover-append-to-body="true">
-                  <label>
+                  <label ng-class="{disabled: column.disabled}">
                       <input ng-disabled="column.disabled" type="checkbox" ng-model="column.visible" ng-change="ctrl.columnChecked(column)">
                       <zem-internal-feature ng-if="column.data.internal"></zem-internal-feature>
                       {{ column.data.name }}
