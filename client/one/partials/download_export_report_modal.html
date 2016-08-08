@@ -2,6 +2,12 @@
     <form id="download-export-report-form" ng-submit="downloadReport()" class="modal-form add-scheduled-report-form form-horizontal">
         <div class="title">Export Report</div>
 
+        <div class="form-group" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')">
+            <span class="col-xs-12">
+                Note: Exports currently don't support some of the breakdowns available in the table view.
+            </span>
+        </div>
+
         <div class="form-group">
             <label for="granularity-select" class="col-xs-4 control-label">
                 Report Granularity
