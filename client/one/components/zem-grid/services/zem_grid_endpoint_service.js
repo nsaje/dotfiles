@@ -116,7 +116,6 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
             columns: columns,
             categories: categories,
             breakdownGroups: breakdownGroups,
-            localStoragePrefix: 'zem-grid-endpoint-' + level + '-' + breakdown,
             ext: {} // extensions placeholder
         };
     }

@@ -544,7 +544,6 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
             columns: getMockedColumns(),
             categories: getMockedCategories(),
             breakdownGroups: getMockedBreakdownGroups(),
-            localStoragePrefix: 'zem-data-source-debug-endpoint',
         };
     }
 

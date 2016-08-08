@@ -15,7 +15,6 @@ oneApp.directive('zemGridIntegration', [function () { // eslint-disable-line max
             breakdown: '=breakdown',
             entityId: '=entityId',
 
-            order: '=order',
             dateRange: '=dateRange',
             selection: '=',
             selectionCallback: '=',
@@ -41,7 +40,6 @@ oneApp.controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'ze
 
     function initialize () {
         initializeGrid();
-        initializeOrderWatch();
         initializeDateRangeWatch();
         initializeFilterWatches();
         loadState();
@@ -91,7 +89,6 @@ oneApp.controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'ze
     }
 
     function loadState () {
-        vm.grid.dataSource.setOrder(vm.order, false);
         vm.grid.dataSource.setDateRange(vm.dateRange, false);
         loadFilters();
     }
@@ -110,13 +107,6 @@ oneApp.controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'ze
         if (vm.breakdown === constants.breakdown.PUBLISHER) {
             vm.grid.dataSource.setFilter(FILTER.SHOW_BLACKLISTED_PUBLISHERS, zemFilterService.getShowBlacklistedPublishers());
         }
-    }
-
-    function initializeOrderWatch () {
-        $scope.$watch('ctrl.order', function (newValue, oldValue) {
-            if (newValue === oldValue) return;
-            vm.grid.dataSource.setOrder(newValue, true);
-        });
     }
 
     function initializeDateRangeWatch () {

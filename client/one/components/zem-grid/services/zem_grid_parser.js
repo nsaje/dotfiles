@@ -10,9 +10,7 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
 
     function parseMetaData (grid, metadata) {
         grid.meta.data = metadata;
-        grid.header.columns = metadata.columns.map(function (data) {
-            return zemGridObject.createColumn(data);
-        });
+        grid.header.columns = metadata.columns.map(createColumn);
     }
 
     function parse (grid, data) {
@@ -76,6 +74,21 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
         }
 
         return data.row;
+    }
+
+    function createColumn (data) {
+        // Create column - try to reuse column if already crated
+        //  - column can already have some data used by different services (e.g. order)
+        //  - it is a bit more efficient then to re-create row objects through sequential requests
+
+        // (optional) FIXME For the simplicity we save (cache) column instance into the data itself.
+        // This creates circular dependency, which should not cause problems, but it can be avoided
+        // with modifying data source to create unique keys that can be used here for storage
+        if (!data.column) {
+            data.column = zemGridObject.createColumn(data);
+        }
+
+        return data.column;
     }
 
     return {

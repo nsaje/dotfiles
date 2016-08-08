@@ -41,7 +41,6 @@ describe('zemGridEndpointServiceSpec', function () {
             columns: jasmine.any(Array),
             categories: jasmine.any(Array),
             breakdownGroups: jasmine.any(Object),
-            localStoragePrefix: jasmine.any(String),
             ext: jasmine.any(Object),
         };
 
