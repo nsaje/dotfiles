@@ -10,11 +10,15 @@
 		<div class="section">
 			{% for list in lists %}
 			<h4>{{ list.title }}</h4>
+			{% if list.elements %}
 			<ul class="list">
 				{% for elt in list.elements %}
 				<li>{% autoescape off %}{{ elt }}{% endautoescape %}</li>
 				{% endfor %}
 			</ul>
+			{% else %}
+			No changes.
+			{% endif %}
 			{% endfor %}
 		</div>
 	</body>

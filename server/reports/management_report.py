@@ -287,9 +287,6 @@ def _generate_table_html(context):
 def _generate_lists_html(context):
     data = []
     for item, elements in context.yesterday_created.iteritems():
-        if not elements:
-            continue
-
         data.append({
             'title': NEW_ITEMS_LIST_REPORT_TITLES[item],
             'elements': [
@@ -298,8 +295,6 @@ def _generate_lists_html(context):
         })
 
     for item, elements in context.yesterday_modified.iteritems():
-        if not elements:
-            continue
         data.append({
             'title': CHANGED_ITEMS_LIST_REPORT_TITLES[item],
             'elements': [
