@@ -70,7 +70,12 @@ oneApp.factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject',
         // This creates circular dependency, which should not cause problems, but it can be avoided
         // with modifying data source to create unique keys that can be used here for storage
         if (!data.row) {
-            data.row = zemGridObject.createRow(type, data, level, parent);
+            var row = zemGridObject.createRow(type, data, level, parent);
+            if (parent && (parent.collapsed || !parent.visible)) {
+                // Hide row if parent is collapsed or not visible
+                row.visible = false;
+            }
+            data.row = row;
         }
 
         return data.row;
