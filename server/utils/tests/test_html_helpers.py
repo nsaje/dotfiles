@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.test import TestCase
 
-from utils.html_helpers import TableCell, TableRow
+from utils.html_helpers import TableCell, TableRow, Url
 
 
 class HtmlHelpersTest(TestCase):
@@ -41,4 +41,14 @@ class HtmlHelpersTest(TestCase):
                 TableCell(3),
             ], row_type='totals').as_html(),
             '<tr><td><b>1</b></td><td><b>2</b></td><td><b>3</b></td></tr>'
+        )
+
+    def test_url(self):
+        self.assertEqual(
+            Url('http://www.google.com', 'abc').as_html(),
+            '<a href="http://www.google.com">abc</a>'
+        )
+        self.assertEqual(
+            Url('http://www.google.com').as_html(),
+            '<a href="http://www.google.com">http://www.google.com</a>'
         )

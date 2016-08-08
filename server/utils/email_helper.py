@@ -16,16 +16,16 @@ from utils import pagerduty_helper
 
 logger = logging.getLogger(__name__)
 
-# TODO: move this somewhere appropriate
-OPERATIONS_EMAILS = ['operations@zemanta.com', 'ziga.stopinsek@zemanta.com']
-MANAGEMENT_EMAILS = ['ziga.stopinsek@zemanta.com', 'bostjan@zemanta.com', 'urska.kosec@zemanta.com']
+
+def prepare_recipients(email_text):
+    return (email.strip() for email in email_text.split(','))
 
 
 def format_email(template_type, **kwargs):
     # since editing through admin is currently unavailable no validation takes
     # place
     template = dash.models.EmailTemplate.objects.get(template_type=template_type)
-    return template.subject.format(**kwargs), template.body.format(**kwargs)
+    return template.subject.format(**kwargs), template.body.format(**kwargs), prepare_recipients(template.recipients)
 
 
 def email_manager_list(campaign):
@@ -85,7 +85,7 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
         'changes_text': _format_changes_text(changes_text)
     }
 
-    subject, body = format_email(EmailTemplateType.ADGROUP_CHANGE, **args)
+    subject, body, _ = format_email(EmailTemplateType.ADGROUP_CHANGE, **args)
     emails = list(set(email_manager_list(ad_group.campaign)) - set([request.user.email]))
     if not emails:
         return
@@ -108,7 +108,7 @@ def send_campaign_notification_email(campaign, request, changes_text):
         'changes_text': _format_changes_text(changes_text)
     }
 
-    subject, body = format_email(EmailTemplateType.CAMPAIGN_CHANGE, **args)
+    subject, body, _ = format_email(EmailTemplateType.CAMPAIGN_CHANGE, **args)
     emails = list(set(email_manager_list(campaign)) - set([request.user.email]))
     if not emails:
         return
@@ -129,7 +129,7 @@ def send_budget_notification_email(campaign, request, changes_text):
         'link_url': link_url,
         'changes_text': _format_changes_text(changes_text),
     }
-    subject, body = format_email(EmailTemplateType.BUDGET_CHANGE, **args)
+    subject, body, _ = format_email(EmailTemplateType.BUDGET_CHANGE, **args)
     emails = list(set(email_manager_list(campaign)) - set([request.user.email]))
     if not emails:
         return
@@ -147,7 +147,7 @@ def send_account_pixel_notification(account, request):
         'account': account,
         'link_url': link_url
     }
-    subject, body = format_email(EmailTemplateType.PIXEL_ADD, **args)
+    subject, body, _ = format_email(EmailTemplateType.PIXEL_ADD, **args)
     account_settings = account.get_current_settings()
 
     send_notification_mail(
@@ -164,7 +164,7 @@ def send_password_reset_email(user, request):
         'link_url': _generate_password_reset_url(user, request),
     }
 
-    subject, body = format_email(EmailTemplateType.PASSWORD_RESET, **args)
+    subject, body, _ = format_email(EmailTemplateType.PASSWORD_RESET, **args)
     _send_email_to_user(user, request, subject, body)
 
 
@@ -173,7 +173,7 @@ def send_email_to_new_user(user, request):
         'user': user,
         'link_url': _generate_password_reset_url(user, request),
     }
-    subject, body = format_email(EmailTemplateType.USER_NEW, **args)
+    subject, body, _ = format_email(EmailTemplateType.USER_NEW, **args)
     return _send_email_to_user(user, request, subject, body)
 
 
@@ -237,7 +237,7 @@ def send_supply_report_email(email, date, impressions, cost, publisher_report=No
         'impressions': impressions,
         'cost': cost,
     }
-    subject, body = format_email(EmailTemplateType.SUPPLY_REPORT, **args)
+    subject, body, _ = format_email(EmailTemplateType.SUPPLY_REPORT, **args)
 
     try:
         email = EmailMessage(
@@ -331,7 +331,7 @@ def send_scheduled_export_report(report_name, frequency, granularity,
         'scheduled_by': scheduled_by,
     }
 
-    subject, body = format_email(EmailTemplateType.SCHEDULED_EXPORT_REPORT, **args)
+    subject, body, _ = format_email(EmailTemplateType.SCHEDULED_EXPORT_REPORT, **args)
 
     if not email_adresses:
         raise Exception('No recipient emails: ' + report_name)
@@ -343,23 +343,22 @@ def send_scheduled_export_report(report_name, frequency, granularity,
 
 
 def send_livestream_email(user, session_url):
-    subject, body = format_email(
+    subject, body, recipients = format_email(
         EmailTemplateType.LIVESTREAM_SESSION,
         user=user,
         session_url=session_url,
     )
     email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
-    ), OPERATIONS_EMAILS)
+    ), recipients)
     email.send(fail_silently=False)
 
 
 def send_daily_management_report_email():
-    # TODO: use email template
-    subject = 'Zemanta One daily management report'
-    email = EmailMultiAlternatives(subject, '', 'Zemanta <{}>'.format(
+    subject, body, recipients = format_email(EmailTemplateType.DAILY_MANAGEMENT_REPORT)
+    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
-    ), MANAGEMENT_EMAILS)
+    ), recipients)
     email.attach_alternative(reports.management_report.get_daily_report_html(), "text/html")
     email.send(fail_silently=False)
 

@@ -2953,7 +2953,7 @@ class DemoTest(TestCase):
     @patch('dash.views.views.email_helper')
     def test_get(self, email_helper_mock, send_mail_mock, start_instance_mock):
         start_instance_mock.return_value = {'url': 'test-url', 'password': 'test-password'}
-        email_helper_mock.format_email.return_value = ('test-subject', 'test-body')
+        email_helper_mock.format_email.return_value = ('test-subject', 'test-body', [])
 
         reversed_url = reverse('demov3')
         response = self._get_client().get(reversed_url, follow=True)

@@ -156,7 +156,7 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
         'link_url': url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign.id)),
         'changes': ''.join(changesText)
     }
-    subject, body = format_email(EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT, **args)
+    subject, body, _ = format_email(EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT, **args)
     try:
         send_mail(
             subject,

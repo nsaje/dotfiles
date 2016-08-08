@@ -82,7 +82,7 @@ def _send_depleting_budget_notification_email(
         'cap': _round_budget(total_daily_budget),
         'yesterday_spend': _round_budget(yesterdays_spend)
     }
-    subject, body = format_email(EmailTemplateType.BUDGET_DEPLETING, **args)
+    subject, body, _ = format_email(EmailTemplateType.BUDGET_DEPLETING, **args)
 
     try:
         send_mail(
@@ -124,7 +124,7 @@ def _send_campaign_stopped_notification_email(
         'account': campaign.account,
         'link_url': campaign_url,
     }
-    subject, body = format_email(EmailTemplateType.CAMPAIGN_STOPPED, **args)
+    subject, body, _ = format_email(EmailTemplateType.CAMPAIGN_STOPPED, **args)
     try:
         send_mail(
             subject,

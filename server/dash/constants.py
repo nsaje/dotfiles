@@ -1477,6 +1477,7 @@ class EmailTemplateType(ConstantBase):
     CAMPAIGN_BUDGET_LOW = 14
     DEMO_RUNNING = 15
     LIVESTREAM_SESSION = 16
+    DAILY_MANAGEMENT_REPORT = 17
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1495,6 +1496,7 @@ class EmailTemplateType(ConstantBase):
         CAMPAIGN_BUDGET_LOW: 'Campaign is running out of budget notification',
         DEMO_RUNNING: 'Demo is running',
         LIVESTREAM_SESSION: 'Livestream sesion id',
+        DAILY_MANAGEMENT_REPORT: 'Daily management report',
     }
 
 

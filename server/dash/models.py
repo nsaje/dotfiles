@@ -346,6 +346,9 @@ class Agency(models.Model):
 
     objects = QuerySetManager()
 
+    def get_long_name(self):
+        return 'Agency {}'.format(self.name)
+
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,
                       action_type=None):
@@ -419,6 +422,12 @@ class Account(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def get_long_name(self):
+        agency = ''
+        if self.agency:
+            agency = self.agency.get_long_name() + ', '
+        return '{}Account {}'.format(agency, self.name)
 
     def get_current_settings(self):
         if not self.pk:
@@ -619,6 +628,9 @@ class Campaign(models.Model, PermissionMixin):
         )
         campaign_settings_url = campaign_settings_url.replace('http://', 'https://')
         return campaign_settings_url
+
+    def get_long_name(self):
+        return '{}, Campaign {}'.format(self.account.get_long_name(), self.name)
 
     admin_link.allow_tags = True
 
@@ -3038,7 +3050,7 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         if prop_name == 'amount' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'license_fee' and value is not None:
-            value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value)*100, 2, 3))
+            value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value) * 100, 2, 3))
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
                 Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
@@ -3299,7 +3311,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             value = lc_helper.default_currency(
                 Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
         elif prop_name == 'margin' and value is not None:
-            value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value)*100, 2, 3))
+            value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value) * 100, 2, 3))
         elif prop_name == 'comment':
             value = value or ''
         return value
@@ -3767,6 +3779,7 @@ class FacebookAccount(models.Model):
 class EmailTemplate(models.Model):
     template_type = models.PositiveSmallIntegerField(
         choices=constants.EmailTemplateType.get_choices(), null=True, blank=True)
+    recipients = models.TextField(blank=True, null=False)
     subject = models.CharField(blank=True, null=False, max_length=255)
     body = models.TextField(blank=True, null=False)
 
@@ -3869,6 +3882,7 @@ class History(models.Model):
 
 
 class SourceTypePixel(models.Model):
+
     class Meta:
         unique_together = ('pixel', 'source_type')
 

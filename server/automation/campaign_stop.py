@@ -1308,7 +1308,7 @@ def _send_campaign_stop_notification_email(campaign, available_tomorrow,
         'max_daily_budget': max_daily_budget,
         'yesterday_spend': yesterday_spend,
     }
-    subject, body = email_helper.format_email(
+    subject, body, _ = email_helper.format_email(
         dash.constants.EmailTemplateType.CAMPAIGN_LANDING_MODE_SWITCH,
         **args
     )
@@ -1326,7 +1326,7 @@ def _send_depleting_budget_notification_email(campaign, available_tomorrow,
         'yesterday_spend': yesterday_spend,
     }
 
-    subject, body = email_helper.format_email(
+    subject, body, _ = email_helper.format_email(
         dash.constants.EmailTemplateType.CAMPAIGN_BUDGET_LOW,
         **args
     )

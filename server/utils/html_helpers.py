@@ -3,6 +3,16 @@ from decimal import Decimal
 from utils import lc_helper
 
 
+class Url():
+
+    def __init__(self, href, text=None):
+        self.href = href
+        self.text = text or href
+
+    def as_html(self):
+        return '<a href="{}">{}</a>'.format(self.href, self.text)
+
+
 class TableCell():
 
     def __init__(self, value, info=[], **kwargs):

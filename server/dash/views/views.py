@@ -1705,7 +1705,7 @@ class Demo(api_common.BaseApiView):
 
         instance = self._start_instance()
 
-        subject, body = email_helper.format_email(constants.EmailTemplateType.DEMO_RUNNING, **instance)
+        subject, body, _ = email_helper.format_email(constants.EmailTemplateType.DEMO_RUNNING, **instance)
 
         send_mail(
             subject,

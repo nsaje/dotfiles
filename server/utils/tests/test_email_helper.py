@@ -195,7 +195,8 @@ class EmailHelperTestCase(TestCase):
             mail.outbox[0].body,
             'User test@user.com started a new livestream session, accesssible on: http://www.google.com')
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, email_helper.OPERATIONS_EMAILS)
+        self.assertEqual(mail.outbox[0].to, [u'operations@zemanta.com',
+                                             u'ziga.stopinsek@zemanta.com'])
 
     def test_send_budget_notification_email(self):
         campaign_manager = User.objects.create_user('manager@user.com')

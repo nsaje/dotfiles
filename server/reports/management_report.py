@@ -6,13 +6,46 @@ import dash.models
 import dash.constants
 import reports.models
 import reports.projections
-from utils.html_helpers import TableCell, TableRow
+from utils.html_helpers import TableCell, TableRow, Url
+
+NEW_ITEMS_LIST_REPORT_TITLES = {
+    'campaigns': 'Campaigns created yesterday',
+    'accounts': 'Accounts created yesterday',
+    'credits': 'Yesterday\'s credit items',
+    'budgets': 'Yesterday\'s budget items',
+}
+
+CHANGED_ITEMS_LIST_REPORT_TITLES = {
+    'credits': 'Credit line items updated yesterday',
+    'budgets': 'Budget line items updated yesterday',
+}
+
+
+LIST_REPORT_DISPLAY = {
+    'campaigns': lambda obj: Url(
+        _url(['campaigns', obj.pk, 'ad_groups']),
+        obj.get_long_name()
+    ).as_html(),
+    'accounts': lambda obj: Url(
+        _url(['accounts', obj.pk, 'campaigns']),
+        obj.get_long_name()
+    ).as_html(),
+    'credits': lambda obj: Url(
+        obj.account and _url(['accounts', obj.account_id, 'campaigns']) or '#',
+        str(obj)
+    ).as_html(),
+    'budgets': lambda obj: Url(
+        _url(['campaigns', obj.campaign_id, 'ad_groups']),
+        '{}, {}'.format(str(obj), obj.campaign.account.get_long_name())
+    ).as_html(),
+}
 
 
 class ReportContext(object):
 
     def __init__(self, date):
         self.date = date
+        self.date_before = date - datetime.timedelta(1)
 
         self._prepare_main_model()
 
@@ -21,10 +54,10 @@ class ReportContext(object):
         self.campaigns = self._get_subset_model(lambda s: s.budget.campaign_id)
 
         self.agency_accounts = set(
-            acc.pk for acc in dash.models.Account.objects.filter(agency_id__isnull=True)
+            acc.pk for acc in dash.models.Account.objects.filter(agency_id__isnull=False)
         )
         self.agency_campaigns = set(
-            camp.pk for camp in dash.models.Campaign.objects.filter(account__agency_id__isnull=True)
+            camp.pk for camp in dash.models.Campaign.objects.filter(account__agency_id__isnull=False)
         )
 
         self.account_types = {
@@ -34,6 +67,26 @@ class ReportContext(object):
         self.campaign_types = {
             c.pk: self.account_types.get(c.account_id, dash.constants.AccountType.UNKNOWN)
             for c in dash.models.Campaign.objects.all()
+        }
+
+        yesterday_range = {
+            'created_dt__lt': self.date,
+            'created_dt__gte': self.date_before,
+        }
+        self.yesterday_created = {
+            'accounts': dash.models.Account.objects.filter(**yesterday_range),
+            'campaigns': dash.models.Campaign.objects.filter(**yesterday_range),
+            'budgets': dash.models.BudgetLineItem.objects.filter(**yesterday_range),
+            'credits': dash.models.CreditLineItem.objects.filter(**yesterday_range),
+        }
+
+        yesterday_range = {
+            'modified_dt__lt': self.date,
+            'modified_dt__gte': self.date_before
+        }
+        self.yesterday_modified = {
+            'budgets': dash.models.BudgetLineItem.objects.filter(**yesterday_range),
+            'credits': dash.models.CreditLineItem.objects.filter(**yesterday_range),
         }
 
     def _get_data_model(self):
@@ -94,6 +147,10 @@ class ReportContext(object):
                 self.statements['this_month'].add(s)
             else:
                 self.statements['prev_month'].add(s)
+
+
+def _url(path):
+    return 'https://one.zemanta.com/' + '/'.join(str(p) for p in path)
 
 
 def _get_totals(table, col):
@@ -202,7 +259,8 @@ def _prepare_table_rows(context):
     clientdirect_rows = map(TableRow.prepare(TableRow.TYPE_BREAKDOWN), [
         [TableCell('Managed', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.MANAGED),
         [TableCell('Pilot', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.PILOT),
-        [TableCell('Self-managed', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.SELF_MANAGED),
+        [TableCell('Self-managed', align='right')] +
+        _populate_clientdirect(context, dash.constants.AccountType.SELF_MANAGED),
         [TableCell('Test', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.TEST),
         [TableCell('Unknown', align='right')] + _populate_clientdirect(context, dash.constants.AccountType.UNKNOWN),
     ])
@@ -226,11 +284,37 @@ def _generate_table_html(context):
     return html
 
 
+def _generate_lists_html(context):
+    data = []
+    for item, elements in context.yesterday_created.iteritems():
+        if not elements:
+            continue
+
+        data.append({
+            'title': NEW_ITEMS_LIST_REPORT_TITLES[item],
+            'elements': [
+                LIST_REPORT_DISPLAY[item](elt) for elt in elements
+            ]
+        })
+
+    for item, elements in context.yesterday_modified.iteritems():
+        if not elements:
+            continue
+        data.append({
+            'title': CHANGED_ITEMS_LIST_REPORT_TITLES[item],
+            'elements': [
+                LIST_REPORT_DISPLAY[item](elt) for elt in elements
+            ]
+        })
+    return data
+
+
 def get_daily_report_html(date=None):
     if not date:
         date = datetime.date.today() - datetime.timedelta(1)
 
     context = ReportContext(date)
     return render_to_string('management_report.html', {
-        'table': _generate_table_html(context)
+        'table': _generate_table_html(context),
+        'lists': _generate_lists_html(context),
     })
