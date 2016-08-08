@@ -215,7 +215,12 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                     ad_group_id,
                     content_ad_id,
                     publisher,
-                    device_type,
+                    CASE
+                        WHEN device_type = 4 THEN 3
+                        WHEN device_type = 2 THEN 1
+                        WHEN device_type = 5 THEN 2
+                        ELSE 0
+                    END as device_type,
                     extract_country(country) as country,
                     extract_state(state) as state,
                     extract_dma(dma) as dma,

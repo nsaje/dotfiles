@@ -670,12 +670,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
     breakdown_device_type_sql = """
         WITH temp_yesterday AS
                 (SELECT a.account_id AS account_id,
-                        CASE
-                            WHEN a.device_type = 4 THEN 3
-                            WHEN a.device_type = 2 THEN 1
-                            WHEN a.device_type = 5 THEN 2
-                            ELSE 0
-                        END device_type,
+                        a.device_type AS device_type,
                             SUM(a.cost_nano)/1000000000.0 yesterday_cost
                 FROM mv_account_delivery a
                 WHERE (a.date=%s)
@@ -683,12 +678,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 GROUP BY 1, 2),
             temp_base AS
                 (SELECT a.account_id AS account_id,
-                        CASE
-                            WHEN a.device_type = 4 THEN 3
-                            WHEN a.device_type = 2 THEN 1
-                            WHEN a.device_type = 5 THEN 2
-                            ELSE 0
-                        END device_type,
+                        a.device_type AS device_type,
                             SUM(a.clicks) clicks,
                             SUM(a.total_time_on_site) total_seconds
                 FROM mv_account_delivery a

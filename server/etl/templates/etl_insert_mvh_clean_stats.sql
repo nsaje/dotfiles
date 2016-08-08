@@ -15,7 +15,21 @@ INSERT INTO mvh_clean_stats (
       content_ad_id,
       publisher,
 
-      device_type,
+      -- check dash/constants.py DeviceType for correct setting.
+      -- OpenRTB values:
+      -- 1 | Mobile/Tablet
+      -- 2 | Personal Computer
+      -- 3 | Connected TV
+      -- 4 | Phone
+      -- 5 | Tablet
+      -- 6 | Connected Device
+      -- 7 | Set Top Box
+      CASE
+          WHEN device_type = 4 THEN 3 -- mobile
+          WHEN device_type = 2 THEN 1 -- desktop
+          WHEN device_type = 5 THEN 2 -- tablet
+          ELSE 0 -- undefined
+      END as device_type,
       extract_country(country) as country,
       extract_state(state) as state,
       extract_dma(dma) as dma,
