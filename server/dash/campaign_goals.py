@@ -6,7 +6,6 @@ from django.db.models import Prefetch
 
 from utils import exc
 from dash import models, constants, forms
-from dash.views import helpers
 import dash.stats_helper
 import dash.history_helpers
 import utils.lc_helper
@@ -252,6 +251,7 @@ def create_conversion_goal(request, form, campaign, value=None):
 
     conversion_goal = models.ConversionGoal(campaign_id=campaign.id, type=form.cleaned_data['type'],
                                             name=form.cleaned_data['name'])
+
     if form.cleaned_data['type'] == constants.ConversionGoalType.PIXEL:
         try:
             pixel = models.ConversionPixel.objects.get(id=form.cleaned_data['goal_id'],

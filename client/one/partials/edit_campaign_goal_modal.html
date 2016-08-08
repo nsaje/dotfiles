@@ -28,19 +28,6 @@
         </div>
 
         <div class="form-part" ng-if="showAddConversionGoalForm()">
-            <div class="form-group" ng-class="{'has-error': !!errors.conversionGoal.name}">
-                <label for="goal-name-input" class="col-xs-4 control-label">
-                    Conversion/goal
-                    <zem-help-popover content="The name of conversion or goal." placement="top"></zem-help-popover>
-                </label>
-                <div class="col-xs-5">
-                    <input type="text" id="goal-name-input" class="form-control" ng-model="campaignGoal.conversionGoal.name" ng-focus="clearErrors('conversionGoal')" placeholder="Name of column in data table" ng-disabled="!!campaignGoal.id" />
-                </div>
-                <div class="col-xs-3">
-                    <label ng-repeat="error in errors.conversionGoal.name" class="control-label small error" for="goal-name-input">{{ error }}</label>
-                </div>
-            </div>
-
             <div class="form-group" ng-class="{'has-error': !!errors.conversionGoal.type}">
                 <label for="conversion-type-select" class="col-xs-4 control-label">
                     Type

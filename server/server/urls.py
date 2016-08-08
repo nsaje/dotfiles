@@ -297,16 +297,6 @@ urlpatterns += [
         name='conversion_pixel',
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/conversion_goals/(?P<conversion_goal_id>\d+)/',
-        login_required(dash.views.agency.ConversionGoal.as_view()),
-        name='conversion_goal',
-    ),
-    url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/conversion_goals/',
-        login_required(dash.views.agency.CampaignConversionGoals.as_view()),
-        name='campaign_conversion_goals',
-    ),
-    url(
         r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/',
         login_required(dash.views.agency.AccountUsers.as_view()),
     ),

@@ -80,7 +80,6 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
 
     $scope.validate = function (newGoal, allErrors) {
         var goalTypeIds = {},
-            goalNames = {},
             errors = {};
 
         if (!$scope.newCampaignGoal) {
@@ -91,7 +90,6 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             return true;
         }
 
-        goalNames[newGoal.conversionGoal.name] = 1;
         goalTypeIds[getTypeId(newGoal)] = 1;
 
         $scope.campaignGoals.forEach(function (goal) {
@@ -103,14 +101,10 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
                 return;
             }
             var typeId = getTypeId(goal);
-            if (!goalNames[goal.conversionGoal.name]) {
-                goalNames[goal.conversionGoal.name] = 0;
-            }
             if (!goalTypeIds[typeId]) {
                 goalTypeIds[typeId] = 0;
             }
 
-            goalNames[goal.conversionGoal.name]++;
             goalTypeIds[typeId]++;
         });
 
@@ -119,12 +113,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
                 errors.goalId = ['This field has to be unique'];
             }
         });
-        angular.forEach(goalNames, function (count) {
-            if (count > 1) {
-                errors.name = ['This field has to be unique'];
-            }
-        });
-        if (errors.goalId || errors.name) {
+        if (errors.goalId) {
             allErrors.conversionGoal = errors;
             return false;
         }
@@ -145,10 +134,12 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
 
         if (!$scope.newCampaignGoal) {
             $modalInstance.close($scope.campaignGoal);
+            $scope.savingInProgress = false;
             return; // Skip server validation call if this is not a new entry
         }
 
         if (!$scope.validate($scope.campaignGoal, $scope.errors)) {
+            $scope.savingInProgress = false;
             return;
         }
 
@@ -180,11 +171,12 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         api.campaignGoalValidation.post(
             campaignId,
             campaignGoal
-        ).then(function () {
+        ).then(function (goal) {
+            campaignGoal.conversionGoal = goal.conversionGoal;
             $modalInstance.close(campaignGoal);
             $scope.savingInProgress = false;
-        }, function (response) {
-            $scope.errors = api.campaignGoalValidation.convert.errorsFromApi(response);
+        }, function (errors) {
+            $scope.errors = errors;
             $scope.savingInProgress = false;
         });
     };

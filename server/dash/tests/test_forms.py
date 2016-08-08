@@ -369,30 +369,13 @@ class ConversionGoalFormTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
 
-    def test_name(self):
-        data = {
-            'type': '2',
-            'goal_id': '1'
-        }
-
-        form = forms.ConversionGoalForm(data, campaign_id=1)
-        self.assertFalse(form.is_valid())
-        self.assertEqual({'name': ['This field is required.']}, form.errors)
-
-        data['name'] = 'a' * 101
-
-        form = forms.ConversionGoalForm(data, campaign_id=1)
-        self.assertFalse(form.is_valid())
-        self.assertEqual({'name': ['Conversion goal name is too long (101/100).']}, form.errors)
-
-        data['name'] = 'a'
-
-        form = forms.ConversionGoalForm(data, campaign_id=1)
-        self.assertTrue(form.is_valid())
+    def setUp(self):
+        account = models.Account.objects.get(pk=1)
+        models.ConversionPixel.objects.create(
+            id=1, account=account, slug='slug', name='Test pixel name')
 
     def test_type(self):
         data = {
-            'name': 'name',
             'goal_id': '1',
             'conversion_window': 168,
         }
@@ -414,7 +397,6 @@ class ConversionGoalFormTestCase(TestCase):
 
     def test_conversion_window(self):
         data = {
-            'name': 'name',
             'goal_id': '1',
             'type': '1',
         }
@@ -437,7 +419,6 @@ class ConversionGoalFormTestCase(TestCase):
 
     def test_goal_id(self):
         data = {
-            'name': 'name',
             'type': '1',
             'conversion_window': '168',
         }
@@ -452,30 +433,14 @@ class ConversionGoalFormTestCase(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual({'goal_id': ['Conversion goal id is too long (101/100).']}, form.errors)
 
-        data['goal_id'] = 'a'
+        data['goal_id'] = '1'
 
         form = forms.ConversionGoalForm(data, campaign_id=1)
-        self.assertTrue(form.is_valid())
-
-    def test_unique_name(self):
-        models.ConversionGoal.objects.create(campaign_id=1, type=2, goal_id='1', name='Conversion goal')
-        data = {
-            'name': 'Conversion goal',
-            'type': 3,
-            'goal_id': '2'
-        }
-
-        form = forms.ConversionGoalForm(data, campaign_id=1)
-        self.assertFalse(form.is_valid())
-        self.assertEqual({'name': ['This field has to be unique.']}, form.errors)
-
-        form = forms.ConversionGoalForm(data, campaign_id=2)
         self.assertTrue(form.is_valid())
 
     def test_unique_goal_id(self):
         models.ConversionGoal.objects.create(campaign_id=1, type=2, goal_id='1', name='Conversion goal')
         data = {
-            'name': 'Conversion goal 2',
             'type': 2,
             'goal_id': '1'
         }
@@ -491,6 +456,26 @@ class ConversionGoalFormTestCase(TestCase):
 
         form = forms.ConversionGoalForm(data, campaign_id=1)
         self.assertTrue(form.is_valid())
+
+    def test_name(self):
+        data = {
+            'type': 2,
+            'goal_id': 'Test goal id'
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['name'], 'Test goal id')
+
+        data = {
+            'type': 1,
+            'goal_id': '1',
+            'conversion_window': 168,
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['name'], 'Test pixel name - 7 days')
 
 
 class AdGroupAdsUploadFormTest(TestCase):

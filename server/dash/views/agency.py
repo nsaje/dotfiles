@@ -1,4 +1,3 @@
-import datetime
 import json
 import re
 import logging
@@ -19,11 +18,8 @@ from dash import constants
 from dash import validation_helpers
 from dash import retargeting_helper
 from dash import campaign_goals
-from dash import conversions_helper
 from dash import facebook_helper
 from dash import content_insights_helper
-from dash import history_helpers
-from reports import redshift
 from utils import api_common
 from utils import exc
 from utils import email_helper
@@ -333,74 +329,6 @@ class AdGroupSettingsState(api_common.BaseApiView):
                 raise exc.ValidationError('Please add a goal to your campaign before enabling this ad group.')
 
 
-class CampaignConversionGoals(api_common.BaseApiView):
-
-    def get(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-
-        rows = []
-        for conversion_goal in campaign.conversiongoal_set.select_related('pixel').order_by('created_dt').all():
-            row = {
-                'id': conversion_goal.id,
-                'type': conversion_goal.type,
-                'name': conversion_goal.name,
-                'conversion_window': conversion_goal.conversion_window,
-                'goal_id': conversion_goal.goal_id,
-            }
-
-            if conversion_goal.type == constants.ConversionGoalType.PIXEL:
-                row['pixel'] = {
-                    'id': conversion_goal.pixel.id,
-                    'name': conversion_goal.pixel.name,
-                    'url': conversion_goal.pixel.get_url(),
-                    'archived': conversion_goal.pixel.archived,
-                }
-
-            rows.append(row)
-
-        available_pixels = []
-        for conversion_pixel in campaign.account.conversionpixel_set.filter(archived=False):
-            available_pixels.append({
-                'id': conversion_pixel.id,
-                'name': conversion_pixel.name,
-            })
-
-        return self.create_api_response({
-            'rows': rows,
-            'available_pixels': available_pixels
-        })
-
-    def post(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-
-        try:
-            data = json.loads(request.body)
-        except ValueError:
-            raise exc.ValidationError(message='Invalid json')
-
-        form = forms.ConversionGoalForm(
-            {
-                'name': data.get('name'),
-                'type': data.get('type'),
-                'conversion_window': data.get('conversion_window'),
-                'goal_id': data.get('goal_id'),
-            },
-            campaign_id=campaign_id
-        )
-        campaign_goals.create_conversion_goal(request, form, campaign)
-
-        return self.create_api_response()
-
-
-class ConversionGoal(api_common.BaseApiView):
-
-    def delete(self, request, campaign_id, conversion_goal_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)  # checks authorization
-        campaign_goals.delete_conversion_goal(request, conversion_goal_id, campaign)
-
-        return self.create_api_response()
-
-
 class CampaignGoalValidation(api_common.BaseApiView):
 
     def post(self, request, campaign_id):
@@ -411,6 +339,7 @@ class CampaignGoalValidation(api_common.BaseApiView):
         goal_form = forms.CampaignGoalForm(campaign_goal, campaign_id=campaign.pk)
 
         errors = {}
+        result = {}
         if not goal_form.is_valid():
             errors.update(dict(goal_form.errors))
 
@@ -420,13 +349,15 @@ class CampaignGoalValidation(api_common.BaseApiView):
                     campaign_goal.get('conversion_goal', {}),
                     campaign_id=campaign.pk,
                 )
-                if not conversion_form.is_valid():
+                if conversion_form.is_valid():
+                    result['conversion_goal'] = conversion_form.cleaned_data
+                else:
                     errors['conversion_goal'] = conversion_form.errors
 
         if errors:
             raise exc.ValidationError(errors=errors)
 
-        return self.create_api_response()
+        return self.create_api_response(result)
 
 
 class CampaignSettings(api_common.BaseApiView):
@@ -517,7 +448,6 @@ class CampaignSettings(api_common.BaseApiView):
             if goal['conversion_goal']:
                 conversion_form = forms.ConversionGoalForm(
                     {
-                        'name': goal['conversion_goal'].get('name'),
                         'type': goal['conversion_goal'].get('type'),
                         'conversion_window': goal['conversion_goal'].get('conversion_window'),
                         'goal_id': goal['conversion_goal'].get('goal_id'),

@@ -148,50 +148,6 @@ describe('EditCampaignGoalModalCtrl', function () {
     });
 
     describe('validate', function () {
-        it ('catches duplicate conversion goal names', function () {
-            var newGoal = {},
-                errors = {};
-            $scope.campaignGoals = [
-                {
-                    primary: false,
-                    campaignId: 1,
-                    id: 1,
-                    type: 4,
-                    conversionGoal: {
-                        goalId: '123', type: 2, name: '123',
-                    },
-                },
-                {
-                    primary: true,
-                    campaignId: 1,
-                    type: 4,
-                    conversionGoal: {
-                        goalId: '123', type: 3, name: '124',
-                    },
-                },
-            ];
-
-            newGoal = {
-                type: 4,
-                campaignId: 1,
-                conversionGoal: {
-                    goalId: 'something', type: 3, name: '124',
-                },
-            };
-
-            expect($scope.validate(newGoal, errors)).toBe(false);
-
-            newGoal = {
-                type: 4,
-                campaignId: 1,
-                conversionGoal: {
-                    goalId: 'something', type: 3, name: '125',
-                },
-            };
-
-            expect($scope.validate(newGoal, errors)).toBe(true);
-
-        });
         it ('catches duplicate conversion goal ids', function () {
             var newGoal = {},
                 errors = {};
