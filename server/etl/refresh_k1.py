@@ -30,10 +30,14 @@ NEW_MATERIALIZED_VIEWS = [
     materialize_views.MVTouchpointConversions,
 
     # Derived views from master - from broder to narrower breakdown
-    materialize_views.MVContentAdDelivery,
-    materialize_views.MVAdGroupDelivery,
-    materialize_views.MVCampaignDelivery,
-    materialize_views.MVAccountDelivery,
+    materialize_views.MVContentAdDeliveryGeo,
+    materialize_views.MVContentAdDeliveryDemo,
+    materialize_views.MVAdGroupDeliveryGeo,
+    materialize_views.MVAdGroupDeliveryDemo,
+    materialize_views.MVCampaignDeliveryGeo,
+    materialize_views.MVCampaignDeliveryDemo,
+    materialize_views.MVAccountDeliveryGeo,
+    materialize_views.MVAccountDeliveryDemo,
     materialize_views.MVContentAd,
     materialize_views.MVAdGroup,
     materialize_views.MVCampaign,

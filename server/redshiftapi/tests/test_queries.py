@@ -672,7 +672,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 (SELECT a.account_id AS account_id,
                         a.device_type AS device_type,
                             SUM(a.cost_nano)/1000000000.0 yesterday_cost
-                FROM mv_account_delivery a
+                FROM mv_account_delivery_demo a
                 WHERE (a.date=%s)
                     AND ((a.source_id=%s))
                 GROUP BY 1, 2),
@@ -681,7 +681,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                         a.device_type AS device_type,
                             SUM(a.clicks) clicks,
                             SUM(a.total_time_on_site) total_seconds
-                FROM mv_account_delivery a
+                FROM mv_account_delivery_demo a
                 WHERE (a.date>=%s
                         AND a.date<=%s)
                     AND ((a.source_id=%s))

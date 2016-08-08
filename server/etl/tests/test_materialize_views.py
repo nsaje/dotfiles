@@ -666,10 +666,14 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
 class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
 
     DERIVED_VIEWS = [
-        (materialize_views.MVContentAdDelivery, 'mv_content_ad_delivery'),
-        (materialize_views.MVAdGroupDelivery, 'mv_ad_group_delivery'),
-        (materialize_views.MVCampaignDelivery, 'mv_campaign_delivery'),
-        (materialize_views.MVAccountDelivery, 'mv_account_delivery'),
+        (materialize_views.MVContentAdDeliveryGeo, 'mv_content_ad_delivery_geo'),
+        (materialize_views.MVContentAdDeliveryDemo, 'mv_content_ad_delivery_demo'),
+        (materialize_views.MVAdGroupDeliveryGeo, 'mv_ad_group_delivery_geo'),
+        (materialize_views.MVAdGroupDeliveryDemo, 'mv_ad_group_delivery_demo'),
+        (materialize_views.MVCampaignDeliveryGeo, 'mv_campaign_delivery_geo'),
+        (materialize_views.MVCampaignDeliveryDemo, 'mv_campaign_delivery_demo'),
+        (materialize_views.MVAccountDeliveryGeo, 'mv_account_delivery_geo'),
+        (materialize_views.MVAccountDeliveryDemo, 'mv_account_delivery_demo'),
         (materialize_views.MVContentAd, 'mv_content_ad'),
         (materialize_views.MVAdGroup, 'mv_ad_group'),
         (materialize_views.MVCampaign, 'mv_campaign'),

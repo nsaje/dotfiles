@@ -291,13 +291,26 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             constants.StructureDimension.SOURCE,
             constants.DeliveryDimension.AGE,
         ], {}), {
-            'base': 'mv_account_delivery',
+            'base': 'mv_account_delivery_demo',
+        })
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.StructureDimension.SOURCE,
+            constants.DeliveryDimension.DMA,
+        ], {}), {
+            'base': 'mv_account_delivery_geo',
         })
         self.assertEqual(m.get_best_view([
             constants.StructureDimension.ACCOUNT,
             constants.DeliveryDimension.AGE,
         ], {}), {
-            'base': 'mv_account_delivery',
+            'base': 'mv_account_delivery_demo',
+        })
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.ACCOUNT,
+            constants.DeliveryDimension.DMA,
+        ], {}), {
+            'base': 'mv_account_delivery_geo',
         })
         self.assertEqual(m.get_best_view([
             constants.StructureDimension.ACCOUNT,
@@ -320,7 +333,14 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             constants.StructureDimension.SOURCE,
             constants.DeliveryDimension.AGE,
         ], {}), {
-            'base': 'mv_campaign_delivery',
+            'base': 'mv_campaign_delivery_demo',
+        })
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.CAMPAIGN,
+            constants.StructureDimension.SOURCE,
+            constants.DeliveryDimension.DMA,
+        ], {}), {
+            'base': 'mv_campaign_delivery_geo',
         })
         self.assertEqual(m.get_best_view([
             constants.StructureDimension.AD_GROUP,
@@ -334,13 +354,25 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             constants.StructureDimension.AD_GROUP,
             constants.DeliveryDimension.AGE,
         ], {}), {
-            'base': 'mv_ad_group_delivery',
+            'base': 'mv_ad_group_delivery_demo',
+        })
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.AD_GROUP,
+            constants.DeliveryDimension.DMA,
+        ], {}), {
+            'base': 'mv_ad_group_delivery_geo',
         })
         self.assertEqual(m.get_best_view([
             constants.StructureDimension.CONTENT_AD,
             constants.DeliveryDimension.AGE,
         ], {}), {
-            'base': 'mv_content_ad_delivery',
+            'base': 'mv_content_ad_delivery_demo',
+        })
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.CONTENT_AD,
+            constants.DeliveryDimension.DMA,
+        ], {}), {
+            'base': 'mv_content_ad_delivery_geo',
         })
 
         # Campaign level - media sources tab
@@ -376,7 +408,15 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             constants.DeliveryDimension.AGE,
             constants.TimeDimension.DAY,
         ], {constants.StructureDimension.CAMPAIGN: 1}), {
-            'base': 'mv_ad_group_delivery',
+            'base': 'mv_ad_group_delivery_demo',
+        })
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.SOURCE,
+            constants.StructureDimension.AD_GROUP,
+            constants.DeliveryDimension.DMA,
+            constants.TimeDimension.DAY,
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
+            'base': 'mv_ad_group_delivery_geo',
         })
         self.assertEqual(m.get_best_view([
             constants.StructureDimension.SOURCE,
@@ -384,7 +424,15 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             constants.DeliveryDimension.AGE,
             constants.TimeDimension.DAY,
         ], {constants.StructureDimension.CAMPAIGN: 1}), {
-            'base': 'mv_content_ad_delivery',
+            'base': 'mv_content_ad_delivery_demo',
+        })
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.SOURCE,
+            constants.StructureDimension.CONTENT_AD,
+            constants.DeliveryDimension.DMA,
+            constants.TimeDimension.DAY,
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
+            'base': 'mv_content_ad_delivery_geo',
         })
 
         # Campaign level - Ad groups tab
@@ -420,7 +468,15 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             constants.DeliveryDimension.AGE,
             constants.TimeDimension.DAY,
         ], {constants.StructureDimension.CAMPAIGN: 1}), {
-            'base': 'mv_ad_group_delivery',
+            'base': 'mv_ad_group_delivery_demo',
+        })
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.AD_GROUP,
+            constants.StructureDimension.SOURCE,
+            constants.DeliveryDimension.DMA,
+            constants.TimeDimension.DAY,
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
+            'base': 'mv_ad_group_delivery_geo',
         })
         self.assertEqual(m.get_best_view([
             constants.StructureDimension.AD_GROUP,
@@ -428,5 +484,13 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             constants.DeliveryDimension.AGE,
             constants.TimeDimension.DAY,
         ], {constants.StructureDimension.CAMPAIGN: 1}), {
-            'base': 'mv_content_ad_delivery',
+            'base': 'mv_content_ad_delivery_demo',
+        })
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.AD_GROUP,
+            constants.StructureDimension.CONTENT_AD,
+            constants.DeliveryDimension.DMA,
+            constants.TimeDimension.DAY,
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
+            'base': 'mv_content_ad_delivery_geo',
         })

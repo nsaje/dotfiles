@@ -8,6 +8,19 @@ from stats import constants as sc
 
 from redshiftapi import model_helpers as mh
 
+DeliveryGeo = set([
+    sc.DeliveryDimension.COUNTRY,
+    sc.DeliveryDimension.STATE,
+    sc.DeliveryDimension.DMA,
+])
+
+
+DeliveryDemo = set([
+    sc.DeliveryDimension.DEVICE,
+    sc.DeliveryDimension.AGE,
+    sc.DeliveryDimension.GENDER,
+    sc.DeliveryDimension.AGE_GENDER,
+])
 
 MATERIALIZED_VIEWS = [
     ({
@@ -21,8 +34,14 @@ MATERIALIZED_VIEWS = [
     ({
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.SOURCE
-    } | set(sc.DeliveryDimension._ALL), {
-        'base': 'mv_account_delivery',
+    } | DeliveryGeo, {
+        'base': 'mv_account_delivery_geo',
+    }),
+    ({
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.SOURCE
+    } | DeliveryDemo, {
+        'base': 'mv_account_delivery_demo',
     }),
     ({
         sc.StructureDimension.ACCOUNT,
@@ -37,8 +56,15 @@ MATERIALIZED_VIEWS = [
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.SOURCE,
         sc.StructureDimension.CAMPAIGN
-    } | set(sc.DeliveryDimension._ALL), {
-        'base': 'mv_campaign_delivery',
+    } | DeliveryGeo, {
+        'base': 'mv_campaign_delivery_geo',
+    }),
+    ({
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.SOURCE,
+        sc.StructureDimension.CAMPAIGN
+    } | DeliveryDemo, {
+        'base': 'mv_campaign_delivery_demo',
     }),
     ({
         sc.StructureDimension.SOURCE,
@@ -55,8 +81,16 @@ MATERIALIZED_VIEWS = [
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.CAMPAIGN,
         sc.StructureDimension.AD_GROUP
-    } | set(sc.DeliveryDimension._ALL), {
-        'base': 'mv_ad_group_delivery',
+    } | DeliveryGeo, {
+        'base': 'mv_ad_group_delivery_geo',
+    }),
+    ({
+        sc.StructureDimension.SOURCE,
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.CAMPAIGN,
+        sc.StructureDimension.AD_GROUP
+    } | DeliveryDemo, {
+        'base': 'mv_ad_group_delivery_demo',
     }),
     ({
         sc.StructureDimension.SOURCE,
@@ -75,8 +109,17 @@ MATERIALIZED_VIEWS = [
         sc.StructureDimension.CAMPAIGN,
         sc.StructureDimension.AD_GROUP,
         sc.StructureDimension.CONTENT_AD
-    } | set(sc.DeliveryDimension._ALL), {
-        'base': 'mv_content_ad_delivery',
+    } | DeliveryGeo, {
+        'base': 'mv_content_ad_delivery_geo',
+    }),
+    ({
+        sc.StructureDimension.SOURCE,
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.CAMPAIGN,
+        sc.StructureDimension.AD_GROUP,
+        sc.StructureDimension.CONTENT_AD
+    } | DeliveryDemo, {
+        'base': 'mv_content_ad_delivery_demo',
     }),
 ]
 
