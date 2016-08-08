@@ -3896,6 +3896,12 @@ class SourceTypePixel(models.Model):
 
 class Audience(models.Model):
     id = models.AutoField(primary_key=True)
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        blank=False,
+        null=False
+    )
     pixel = models.ForeignKey(ConversionPixel, on_delete=models.PROTECT)
     ad_group_settings = models.ManyToManyField(AdGroupSettings)
     ttl = models.PositiveSmallIntegerField()
