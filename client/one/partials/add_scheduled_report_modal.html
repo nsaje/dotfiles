@@ -2,6 +2,12 @@
     <form id="add-scheduled-report-form" ng-submit="addScheduledReport()" class="modal-form add-scheduled-report-form form-horizontal">
         <div class="title">Schedule Report</div>
 
+        <div class="form-group" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')">
+            <span class="col-xs-12">
+                Note: Exports currently don't support some of the breakdowns available in the table view.
+            </span>
+        </div>
+
         <div class="form-group" ng-class="{'has-error': !!validationErrors.report_name}">
             <label for="report-name-input" class="col-xs-4 control-label">
                 Report name
