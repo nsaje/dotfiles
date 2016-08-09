@@ -1,3 +1,5 @@
+import influx
+
 from redshiftapi import db
 from redshiftapi import models
 from redshiftapi import queries
@@ -12,14 +14,16 @@ def query(breakdown, constraints, breakdown_constraints, conversion_goals, order
 
     model = models.MVMaster(conversion_goals)
 
-    query, params = _prepare_query(model, breakdown, constraints, breakdown_constraints,
-                                   order, offset, limit)
+    with influx.block_timer('redshiftapi.api_breakdowns.prepare_query'):
+        query, params = _prepare_query(model, breakdown, constraints, breakdown_constraints,
+                                    order, offset, limit)
 
-    with db.get_stats_cursor() as cursor:
-        cursor.execute(query, params)
-        rows = db.dictfetchall(cursor)
+    with influx.block_timer('redshiftapi.api_breakdowns.query', breakdown="__".join(breakdown)):
+        with db.get_stats_cursor() as cursor:
+            cursor.execute(query, params)
+            rows = db.dictfetchall(cursor)
 
-        empty_row = db.get_empty_row_dict(cursor.description)
+            empty_row = db.get_empty_row_dict(cursor.description)
 
     _post_process(rows, empty_row, breakdown, constraints, breakdown_constraints, offset, limit)
 
