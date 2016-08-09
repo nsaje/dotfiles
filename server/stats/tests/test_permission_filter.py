@@ -22,7 +22,7 @@ class FilterTestCase(TestCase):
         row = {
             'ad_group_id': 1, 'source_id': 1, 'ad_group_name': 'test adgroup 1', 'clicks': 10, 'age': '18-20',
             'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1',
-            'e_yesterday_cost': 1, 'yesterday_cost': 1,
+            'e_yesterday_cost': 1, 'yesterday_cost': 1, 'cpm': 1,
         }
 
         # add all possible fields
@@ -52,7 +52,7 @@ class FilterTestCase(TestCase):
                 'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1',
                 'clicks': 1, 'ctr': 1, 'cpc': 1, 'impressions': 1, 'billing_cost': 1, 'avg_cost_per_visit': 1,
                 'avg_cost_per_pageview': 1, 'avg_cost_per_minute': 1, 'avg_cost_per_non_bounced_visit': 1,
-                'avg_cost_for_new_visitor': 1,
+                'avg_cost_for_new_visitor': 1, 'cpm': 1,
                 'title': 1, 'url': 1,  # these two are in TRAFFIC_FIELDS
             },
         ]

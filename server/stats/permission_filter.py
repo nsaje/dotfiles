@@ -17,7 +17,7 @@ DIMENSION_FIELDS |= set([
 ])
 
 DEFAULT_STATS = set([
-    'ctr', 'cpc', 'clicks', 'impressions', 'billing_cost',
+    'ctr', 'cpc', 'clicks', 'impressions', 'billing_cost', 'cpm',
 ])
 
 DEFAULT_FIELDS = DIMENSION_FIELDS | DEFAULT_STATS
