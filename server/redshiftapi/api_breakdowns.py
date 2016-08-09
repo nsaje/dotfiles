@@ -16,7 +16,7 @@ def query(breakdown, constraints, breakdown_constraints, conversion_goals, order
 
     with influx.block_timer('redshiftapi.api_breakdowns.prepare_query'):
         query, params = _prepare_query(model, breakdown, constraints, breakdown_constraints,
-                                    order, offset, limit)
+                                       order, offset, limit)
 
     with influx.block_timer('redshiftapi.api_breakdowns.query', breakdown="__".join(breakdown)):
         with db.get_stats_cursor() as cursor:
