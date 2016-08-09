@@ -29,7 +29,7 @@ oneApp.controller('zemGridBreakdownSelectorCtrl', [function () {
             vm.api.getMetaData().breakdownGroups.structure,
             vm.api.getMetaData().breakdownGroups.delivery,
             vm.api.getMetaData().breakdownGroups.time,
-        ];
+        ].filter (function (group) { return group.available !== false; });
     }
 
     function onChecked (breakdown, group) {
@@ -38,7 +38,6 @@ oneApp.controller('zemGridBreakdownSelectorCtrl', [function () {
                 if (b !== breakdown) b.checked = false;
             });
         }
-
         applyBreakdown();
     }
 

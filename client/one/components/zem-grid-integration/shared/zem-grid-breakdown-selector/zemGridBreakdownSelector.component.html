@@ -4,10 +4,14 @@
   </a>
   <ul class="dropdown-menu dropdown-menu-right" dropdown-menu>
       <div ng-repeat="group in ctrl.breakdownGroups" ng-click="$event.stopPropagation()">
-          <div class="category-name">{{ group.name }}</div>
+          <div class="category-name">
+              <zem-internal-feature ng-if="group.internal"></zem-internal-feature>
+              {{ group.name }}
+          </div>
           <li ng-repeat="breakdown in group.breakdowns">
               <div class="checkbox">
                   <label>
+                      <zem-internal-feature ng-if="breakdown.internal"></zem-internal-feature>
                       <input type="checkbox" ng-model="breakdown.checked" ng-change="ctrl.onChecked(breakdown, group)">
                       {{ breakdown.name }}
                   </label>

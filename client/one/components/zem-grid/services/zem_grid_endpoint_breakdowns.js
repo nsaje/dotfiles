@@ -92,7 +92,7 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
         });
     }
 
-    function createBreakdownGroups (level, breakdown) {
+    function createBreakdownGroups ($scope, level, breakdown) {
         var breakdownGroups = {};
 
         // Base Level breakdown group; based on required breakdown
@@ -111,6 +111,8 @@ oneApp.factory('zemGridEndpointBreakdowns', [function () {
 
         // Delivery breakdown group
         breakdownGroups.delivery = {
+            available: $scope.hasPermission('zemauth.can_view_breakdown_by_delivery'),
+            internal: $scope.isPermissionInternal('zemauth.can_view_breakdown_by_delivery'),
             name: DELIVERY_GROUP_NAME,
             breakdowns: DELIVERY_BREAKDOWNS,
         };

@@ -105,7 +105,7 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
         // Replace first column type to text and field breakdown name, to solve
         // temporary problems with primary column content in level>1 breakdowns
         // FIXME: find appropriate solution for this problem (special type)
-        var breakdownGroups = zemGridEndpointBreakdowns.createBreakdownGroups(level, breakdown);
+        var breakdownGroups = zemGridEndpointBreakdowns.createBreakdownGroups(scope, level, breakdown);
         var columns = zemGridEndpointColumns.createColumns(scope, level, getAvailableBreakdowns(breakdownGroups));
         var categories = zemGridEndpointColumns.createCategories(columns);
 
