@@ -72,6 +72,28 @@ class HelpersTest(TestCase):
             }
         )
 
+        self.assertDictEqual(
+            helpers.extract_breakdown_id(
+                ['source_id', 'content_ad_id', 'country'],
+                "11||-None-"
+            ),
+            {
+                'source_id': 11,
+                'content_ad_id': None,
+            }
+        )
+
+        self.assertDictEqual(
+            helpers.extract_breakdown_id(
+                ['source_id', 'country', 'content_ad_id'],
+                "11||-None-"
+            ),
+            {
+                'source_id': 11,
+                'country': None,
+            }
+        )
+
     def test_create_breakdown_id(self):
         self.assertEqual(
             helpers.create_breakdown_id(
@@ -87,6 +109,13 @@ class HelpersTest(TestCase):
                 {'campaign_id': 13, 'publisher': 'gimme.beer.com', 'gender': 'M', 'clicks': 666}
             ),
             "M"
+        )
+        self.assertEqual(
+            helpers.create_breakdown_id(
+                ['campaign_id', 'publisher', 'gender'],
+                {'campaign_id': 13, 'publisher': None, 'gender': 'M', 'clicks': 666}
+            ),
+            "13||-None-||M"
         )
 
     def test_extract_order_field(self):

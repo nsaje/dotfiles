@@ -115,6 +115,8 @@ class Q(object):
                     return '{}=ANY(%s)'.format(column.only_column(prefix)), [value]
                 return 'FALSE', []
 
+            if value is None:
+                return '{} IS %s'.format(column.only_column(prefix)), [value]
             return '{}=%s'.format(column.only_column(prefix)), [value]
 
         elif operator == "neq":
@@ -123,6 +125,9 @@ class Q(object):
                     return '{}!=ANY(%s)'.format(column.only_column(prefix)), [value]
 
                 return 'TRUE', []
+
+            if value is None:
+                return '{} IS NOT %s'.format(column.only_column(prefix)), [value]
 
             return '{}!=%s'.format(column.only_column(prefix)), [value]
 
