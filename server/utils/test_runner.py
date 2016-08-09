@@ -8,12 +8,12 @@ import unittest
 
 from xmlrunner.extra.djangotestrunner import XMLTestRunner
 
-import django.test
+from django.test import runner
 from django.conf import settings
 from django.core.management import call_command
 
 
-class SplitTestsRunner(django.test.runner.DiscoverRunner):
+class SplitTestsRunner(runner.DiscoverRunner):
 
     @classmethod
     def add_arguments(cls, parser):
@@ -43,14 +43,6 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
         )
 
         parser.add_argument(
-            '--skip-transaction-tests',
-            dest='skip_transaction_tests',
-            action='store_true',
-            default=False,
-            help='Filter out tests that use TransactionTestCase.'
-        )
-
-        parser.add_argument(
             '--timing',
             action='store_true',
             dest='timing',
@@ -58,8 +50,7 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
             help='Measure tests execution time',
         )
 
-    def __init__(self, integration_tests=None, redshift_tests=None, test_name=None,
-                 skip_transaction_tests=False, timing=False, *args, **kwargs):
+    def __init__(self, integration_tests=None, redshift_tests=None, test_name=None, timing=False, *args, **kwargs):
         logging.disable(logging.CRITICAL)
 
         if integration_tests:
@@ -67,7 +58,6 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
 
         self.redshift_tests = redshift_tests
         self.test_name = test_name
-        self.skip_transaction_tests = skip_transaction_tests
         settings.RUN_REDSHIFT_UNITTESTS = redshift_tests
 
         self.test_timings = {}
@@ -129,34 +119,15 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
             print_times(self.test_timings)
 
     def build_suite(self, test_labels=None, extra_tests=None, **kwargs):
-        return self._filter_by_prefix(
-            self._filter_transaction_tests(
-                super(SplitTestsRunner, self).build_suite(test_labels=test_labels, extra_tests=extra_tests, **kwargs)))
+        ret = super(SplitTestsRunner, self).build_suite(test_labels=test_labels, extra_tests=extra_tests, **kwargs)
 
-    def _filter_transaction_tests(self, test_suite):
-        if not self.skip_transaction_tests:
-            return test_suite
+        if self.test_name is None:
+            return ret
 
         new_suite = unittest.TestSuite()
-        for test in test_suite._tests:
-            if not issubclass(type(test), django.test.TestCase) and\
-               issubclass(type(test), django.test.TransactionTestCase):
-                # django.test.TestCase inherits from django.test.TransactionTestCase so
-                # every test will be subclass of TransactionTestCase unless it uses
-                # unittest.TestCase
-                continue
-            new_suite.addTest(test)
 
-        return new_suite
-
-    def _filter_by_prefix(self, test_suite):
         prefix = self.test_name
-        if prefix is None:
-            return test_suite
-
-        new_suite = unittest.TestSuite()
-
-        for test in test_suite._tests:
+        for test in ret._tests:
             # the next string is <test_name> (<module path>)
             test_str = str(test).split()
             name = test_str[0]
