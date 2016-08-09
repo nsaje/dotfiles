@@ -445,7 +445,7 @@ class CampaignSettings(api_common.BaseApiView):
 
             goal['primary'] = False
 
-            if goal['conversion_goal']:
+            if goal.get('conversion_goal'):
                 conversion_form = forms.ConversionGoalForm(
                     {
                         'type': goal['conversion_goal'].get('type'),

@@ -2818,14 +2818,18 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             dataFromApi: function (data) {
                 var goal = data.data;
 
-                return {
-                    conversionGoal: {
-                        name: goal.conversion_goal.name,
-                        type: goal.conversion_goal.type,
-                        conversionWindow: goal.conversion_goal.conversion_window,
-                        goalId: goal.conversion_goal.goal_id
-                    }
-                };
+                if (goal && goal.conversion_goal) {
+                    return {
+                        conversionGoal: {
+                            name: goal.conversion_goal.name,
+                            type: goal.conversion_goal.type,
+                            conversionWindow: goal.conversion_goal.conversion_window,
+                            goalId: goal.conversion_goal.goal_id,
+                        }
+                    };
+                }
+
+                return {};
             },
             errorsFromApi: function (data) {
                 var result = {};
