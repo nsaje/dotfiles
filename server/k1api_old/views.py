@@ -347,6 +347,7 @@ class get_custom_audiences(K1APIView):
 
             audience_dict = {
                 'id': audience.id,
+                'name': audience.name,
                 'pixel_id': audience.pixel.id,
                 'ttl': audience.ttl,
                 'rules': rules,

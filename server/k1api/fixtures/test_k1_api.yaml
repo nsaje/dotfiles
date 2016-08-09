@@ -965,6 +965,7 @@
 # test Audience
 
 -   fields:
+        name: 'Audience 1'
         pixel_id: 1
         ad_group_settings: [1, 2]
         ttl: 90
@@ -974,6 +975,7 @@
     pk: 1
 
 -   fields:
+        name: 'Audience 2'
         pixel_id: 2
         ad_group_settings: [1]
         ttl: 60

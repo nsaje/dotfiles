@@ -219,6 +219,7 @@ class K1ApiTest(TestCase):
         self.assertEqual(2, len(data))
         self.assertDictEqual(data[0], {
             u'id': 1,
+            u'name': u'Audience 1',
             u'pixel_id': 1,
             u'rules': ListMatcher([
                 {u'id': 1,
@@ -234,6 +235,7 @@ class K1ApiTest(TestCase):
         })
         self.assertDictEqual(data[1], {
             u'id': 2,
+            u'name': u'Audience 2',
             u'pixel_id': 2,
             u'rules': ListMatcher([
                 {u'id': 3,
