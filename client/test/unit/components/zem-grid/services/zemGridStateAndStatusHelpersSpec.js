@@ -29,6 +29,7 @@ describe('zemGridStateAndStatusHelpers', function () {
             {level: 'accounts', breakdown: 'campaign', expectedResult: {enabled: 1, paused: 2, statusTexts: defaultStatusTexts}}, // eslint-disable-line max-len
             {level: 'campaigns', breakdown: 'ad_group', expectedResult: {enabled: 1, paused: 2, statusTexts: defaultStatusTexts}}, // eslint-disable-line max-len
             {level: 'campaigns', breakdown: 'ad_group', expectedResult: {enabled: 1, paused: 2, statusTexts: defaultStatusTexts}}, // eslint-disable-line max-len
+            {level: 'ad_groups', breakdown: 'content_ad', expectedResult: {enabled: 1, paused: 2, statusTexts: defaultStatusTexts}}, // eslint-disable-line max-len
             {level: 'all_accounts', breakdown: 'source', expectedResult: {enabled: 1, paused: 2, statusTexts: defaultStatusTexts}}, // eslint-disable-line max-len
             {level: 'all_accounts', breakdown: 'source', expectedResult: {enabled: 1, paused: 2, statusTexts: defaultStatusTexts}}, // eslint-disable-line max-len
             {level: 'accounts', breakdown: 'source', expectedResult: {enabled: 1, paused: 2, statusTexts: defaultStatusTexts}}, // eslint-disable-line max-len

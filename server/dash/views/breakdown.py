@@ -258,6 +258,7 @@ def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date
         row['breakdown_id'] = stats.helpers.create_breakdown_id(['content_ad_id'], row)
         row['breakdown_name'] = row['title']
         row['parent_breakdown_id'] = None
+        row['status'] = {'value': row['status_setting']}
         row['state'] = {'value': row['status_setting']}
         del row['status_setting']
 

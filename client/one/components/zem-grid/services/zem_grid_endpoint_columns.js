@@ -49,6 +49,16 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             orderField: 'status',
             initialOrder: zemGridConstants.gridColumnOrder.ASC,
         },
+        submissionStatus: {
+            name: 'Submission Status',
+            help: 'Current submission status.',
+            field: 'submission_status',
+            type: zemGridConstants.gridColumnTypes.SUBMISSION_STATUS,
+            shown: true,
+            totalRow: false,
+            order: false,
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
+        },
         performance: {
             nameCssClass: 'performance-icon',
             field: 'performance',
@@ -875,7 +885,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     };
     STATUS_COLUMN_BRANDING[constants.breakdown.CONTENT_AD] = {
         name: 'Status',
-        help: 'Current submission status.',
+        help: 'Status of an content ad (enabled or paused).',
     };
     STATUS_COLUMN_BRANDING[constants.breakdown.MEDIA_SOURCE] = {
         name: 'Status',
@@ -910,6 +920,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.state,
         COLUMNS.name,
         COLUMNS.status,
+        COLUMNS.submissionStatus,
         COLUMNS.performance,
     ];
 
@@ -1101,6 +1112,10 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     // Exceptions (state - not yet supported everywhere, only available on base level)
     COLUMNS.state.breakdowns = [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD, constants.breakdown.MEDIA_SOURCE];
     COLUMNS.state.breakdownBaseLevelOnly = true;
+
+    // Exceptions (submission status - only shown on AD_GROUPS level for CONTENT_AD breakdown)
+    COLUMNS.submissionStatus.breakdowns = [constants.breakdown.CONTENT_AD];
+    COLUMNS.submissionStatus.levels = [constants.level.AD_GROUPS];
 
     // Exceptions (performance - not shown on ALL_ACCOUNTS level)
     COLUMNS.performance.levels = [constants.level.ACCOUNTS, constants.level.CAMPAIGNS, constants.level.AD_GROUPS];

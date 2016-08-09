@@ -43,6 +43,17 @@ oneApp.factory('zemGridStateAndStatusHelpers', ['zemGridEndpointColumns', functi
                 statusTexts: statusTexts,
             };
         }
+        if (level === constants.level.AD_GROUPS && breakdown === constants.breakdown.CONTENT_AD) {
+            statusTexts = {};
+            statusTexts[constants.adGroupSettingsState.ACTIVE] = 'Active';
+            statusTexts[constants.adGroupSettingsState.INACTIVE] = 'Paused';
+
+            return {
+                enabled: constants.adGroupSettingsState.ACTIVE,
+                paused: constants.adGroupSettingsState.INACTIVE,
+                statusTexts: statusTexts,
+            };
+        }
         if (level === constants.level.ALL_ACCOUNTS && breakdown === constants.breakdown.MEDIA_SOURCE) {
             statusTexts = {};
             statusTexts[constants.adGroupSettingsState.ACTIVE] = 'Active';
