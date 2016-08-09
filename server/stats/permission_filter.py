@@ -101,3 +101,7 @@ def check_breakdown_allowed(user, breakdown):
 
     if (target_dimension == constants.StructureDimension.PUBLISHER and not user.has_perm('zemauth.can_see_publishers')):
         raise exc.MissingDataError()
+
+    delivery_dimension = constants.get_delivery_dimension(breakdown)
+    if delivery_dimension and not user.has_perm('zemauth.can_view_breakdown_by_delivery'):
+        raise exc.MissingDataError()

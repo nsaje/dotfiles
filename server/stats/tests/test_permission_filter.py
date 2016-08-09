@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from utils.test_helper import add_permissions
+from utils import exc
 from zemauth.models import User
 
 from dash import models
@@ -110,3 +111,21 @@ class FilterTestCase(TestCase):
         })
 
         self.assertItemsEqual(self.rows, self.default_cleaned_rows)
+
+
+class BreakdownAllowedTest(TestCase):
+    fixtures = ['test_non_superuser']
+
+    def test_breakdown_delivery_not_allowed(self):
+        user = User.objects.get(pk=1)
+
+        permission_filter.check_breakdown_allowed(user, ['account_id'])
+
+        with self.assertRaises(exc.MissingDataError):
+            permission_filter.check_breakdown_allowed(user, ['account_id', 'dma'])
+
+    def test_breakdown_delivery_allowed(self):
+        user = User.objects.get(pk=1)
+        add_permissions(user, ['can_view_breakdown_by_delivery'])
+
+        permission_filter.check_breakdown_allowed(user, ['account_id', 'dma'])
