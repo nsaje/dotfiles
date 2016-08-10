@@ -10,16 +10,15 @@ oneApp.directive('zemCustomTableCols', ['config', function (config) {
             localStoragePrefix: '='
         },
         templateUrl: '/partials/zem_custom_table_cols.html',
-        compile: function compile (tElement, tAttrs, transclude) {
-            // Prevent closing of dropdown-menu when checkbox is clicked.
-            $(tElement).on('click', function (e) {
-                e.stopPropagation();
+        link: function postLink (scope, element) {
+            // Prevent closing of dropdown-menu when clicking inside it.
+            var dropdownMenu = element.find('[dropdown-menu]');
+            dropdownMenu.on('click', function (event) {
+                event.stopPropagation();
             });
-
-            return {
-                pre: function preLink (scope, iElement, iAttrs, controller) { return; },
-                post: function postLink (scope, iElement, iAttrs, controller) { return; }
-            };
+            scope.$on('$destroy', function () {
+                dropdownMenu.off('click');
+            });
         },
         controller: ['$scope', '$element', '$attrs', 'zemCustomTableColsService', function ($scope, $element, $attrs, zemCustomTableColsService) {
             $scope.categoryColumns = [];
