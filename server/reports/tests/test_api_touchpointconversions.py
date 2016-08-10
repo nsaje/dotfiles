@@ -17,7 +17,6 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
 
     outer_query_aggregations = [
         'SUM(CASE WHEN conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS "conversion_count"',
-        'COUNT("touchpoint_id") AS "touchpoint_count"'
     ]
 
     inner_query_aggregations = [
@@ -198,13 +197,11 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
             "ad_group": 9999,
             "conversion_count": 5,
             "slug": "slug3",
-            "touchpoint_count": 10,
         }, {
             "account": 1,
             "ad_group": 9999,
             "conversion_count": 4,
             "slug": "slug2",
-            "touchpoint_count": 9,
         }]
 
         cp1 = dash.models.ConversionPixel.objects.create(account=dash.models.Account.objects.get(id=1), slug='slug2')
@@ -226,14 +223,12 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
             "ad_group": 9999,
             "conversion_count": 5,
             "slug": "slug3",
-            "touchpoint_count": 10,
             "conversion_window": 7,
         }, {
             "account": 1,
             "ad_group": 9999,
             "conversion_count": 4,
             "slug": "slug2",
-            "touchpoint_count": 9,
             "conversion_window": 168,
         }], rows)
 

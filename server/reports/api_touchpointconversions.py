@@ -22,7 +22,6 @@ class RSTouchpointConversionsModel(redshift.RSModel):
 
     _CONVERSION_FIELDS = [
         dict(sql='conversion_count', app='conversion_count', out=rs_helpers.unchanged, calc=rs_helpers.count_ranked('conversion_id_ranked', 1)),
-        dict(sql='touchpoint_count', app='touchpoint_count', out=rs_helpers.unchanged, calc=rs_helpers.count_agr('touchpoint_id')),
     ]
 
     _OTHER_FIELDS = [
