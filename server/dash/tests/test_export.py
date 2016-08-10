@@ -197,7 +197,7 @@ class ExportTestCase(test.TestCase):
             }
         )
 
-        # self.assertEqual(1, mock_missing_stats.call_count) # FIXME: sources export
+        self.assertEqual(1, mock_missing_stats.call_count)
 
         expectedRows = [{
             'account_id': 1,
@@ -366,7 +366,7 @@ class ExportTestCase(test.TestCase):
             account=accounts,
         )
 
-        # self.assertEqual(1, mock_missing_stats.call_count) # FIXME: sources export
+        self.assertEqual(1, mock_missing_stats.call_count)
 
         self.assertEqual(rows, [
             {'account_id': 1,
@@ -484,7 +484,7 @@ class ExportTestCase(test.TestCase):
             conversion_goals=[],
             ignore_diff_rows=True,
         )
-        # self.assertEqual(1, mock_missing_stats.call_count) # FIXME: sources export
+        self.assertEqual(1, mock_missing_stats.call_count)
         self.maxDiff = None
         self.assertEqual(rows, [
             {'account_id': 1,
@@ -643,7 +643,7 @@ class ExportTestCase(test.TestCase):
             ignore_diff_rows=True,
         )
 
-        # self.assertEqual(1, mock_missing_stats.call_count) # FIXME: sources export
+        self.assertEqual(1, mock_missing_stats.call_count)
 
         self.assertEqual(rows, [
             {'account_id': 1,
@@ -762,7 +762,7 @@ class ExportTestCase(test.TestCase):
                 'ad_group': ad_group
             }
         )
-        # self.assertEqual(1, mock_missing_stats.call_count) # FIXME: sources export
+        self.assertEqual(1, mock_missing_stats.call_count)
         self.assertEqual(rows[0].get('status'), constants.ExportStatus.INACTIVE)
         self.assertEqual(rows[1].get('status'), constants.ExportStatus.INACTIVE)
         self.assertEqual(rows[2].get('status'), constants.ExportStatus.ACTIVE)

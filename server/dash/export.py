@@ -158,7 +158,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     if not dimensions:
         stats = [stats]
 
-#    _add_missing_stats(stats, dimensions, prefetched_data, sources, start_date, end_date) # FIXME: sources export
+    _add_missing_stats(stats, dimensions, prefetched_data, sources, start_date, end_date)
 
     source_names = None
     if 'source' in dimensions:
