@@ -103,7 +103,10 @@ FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'data_cost', 'media_cost',
                      'billing_cost', 'margin', 'agency_total',
                      'license_fee', 'total_fee', 'flat_fee',
                      'allocated_budgets', 'spend_projection',
-                     'license_fee_projection', 'total_fee_projection']
+                     'license_fee_projection', 'total_fee_projection',
+                     'avg_cost_per_minute', 'avg_cost_per_pageview',
+                     'avg_cost_per_visit', 'avg_cost_per_non_bounced_visit',
+                     'avg_cost_for_new_visitor', ]
 
 FORMAT_3_DECIMALS = ['cpc']
 
@@ -155,7 +158,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     if not dimensions:
         stats = [stats]
 
-    _add_missing_stats(stats, dimensions, prefetched_data, sources, start_date, end_date)
+#    _add_missing_stats(stats, dimensions, prefetched_data, sources, start_date, end_date) # FIXME: sources export
 
     source_names = None
     if 'source' in dimensions:
