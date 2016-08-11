@@ -420,12 +420,23 @@ def _prefetch_statuses(entities, level, by_source, sources=None):
         constraints = 'id'
 
     if by_source:
-        ad_group_sources = helpers.get_active_ad_group_sources(model_class, entities)
-        return {entity.id: {ad_group_source.source.id:
-                            _get_sources_state(ad_group_sources.filter(
-                                source=ad_group_source.source.id, **{by_source_constraints: entity}))
-                            for ad_group_source in ad_group_sources.filter(**{by_source_constraints: entity})}
-                for entity in entities.itervalues()}
+        ad_group_sources = helpers.get_active_ad_group_sources(model_class, entities).filter(
+            **{by_source_constraints + '__in': entities.values()}
+        ).select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
+        entity_ags_map = {entity.pk: {} for entity in entities.itervalues()}
+        for ags in ad_group_sources:
+            entity = ags
+            path = by_source_constraints.split('__')
+            for part in path:
+                entity = getattr(entity, part)
+            entity_ags_map[entity.pk].setdefault(ags.source.id, set()).add(
+                ags
+            )
+        return {
+            entity_id: {source_id: _get_sources_state(ags_set)
+                        for source_id, ags_set in source_ags_set.iteritems()}
+            for entity_id, source_ags_set in entity_ags_map.iteritems()
+        }
 
     ad_groups = models.AdGroup.objects.filter(**{constraints + '__in': entities})
     ad_groups_settings = models.AdGroupSettings.objects.filter(
@@ -715,8 +726,8 @@ def _prefetch_content_ad_data(constraints):
         else:
             fields[key] = constraints[key]
     content_ads = models.ContentAd.objects.filter(**fields).select_related('ad_group__campaign__account__agency')
-    if sources is not None:
-        content_ads = content_ads.filter_by_sources(sources)
+    # if sources is not None:
+    #     content_ads = content_ads.filter_by_sources(sources)
     return {c.id: c for c in content_ads}
 
 
@@ -739,8 +750,8 @@ def _prefetch_ad_group_data(constraints, include_settings=False, include_account
             fields[key] = constraint
 
     ad_group_qs = models.AdGroup.objects.filter(**fields).select_related('campaign__account')
-    if sources is not None:
-        ad_group_qs.filter_by_sources(sources)
+    # if sources is not None:
+    #     ad_group_qs.filter_by_sources(sources)
     data = {ad_group.id: ad_group for ad_group in ad_group_qs}
 
     settings = None
@@ -774,8 +785,8 @@ def _prefetch_campaign_data(constraints, include_settings=False, include_account
             fields[key] = constraint
 
     campaign_qs = models.Campaign.objects.filter(**fields).select_related('account')
-    if sources is not None:
-        campaign_qs.filter_by_sources(sources)
+    # if sources is not None:
+    #     campaign_qs.filter_by_sources(sources)
     data = {c.id: c for c in campaign_qs}
 
     settings = None
@@ -810,8 +821,8 @@ def _prefetch_account_data(constraints, include_settings=False, include_account_
             fields[key] = constraint
 
     accounts_qs = models.Account.objects.filter(**fields)
-    if sources is not None:
-        accounts_qs.filter_by_sources(sources)
+    # if sources is not None:
+    #     accounts_qs.filter_by_sources(sources)
 
     data = {a.id: a for a in accounts_qs}
 
@@ -922,7 +933,7 @@ def _format_statuses_and_dates(value, field, archived):
 def _format_decimals(value, field):
     if value and field in FORMAT_1_DECIMAL:
         return '{:.1f}'.format(value)
-    elif value and field in FORMAT_2_DECIMALS:
+    elif value and field in FORMAT_2_DECIMALS or 'avg_cost_per' in field:
         return '{:.2f}'.format(value)
     elif value and field in FORMAT_3_DECIMALS:
         return '{:.3f}'.format(value)

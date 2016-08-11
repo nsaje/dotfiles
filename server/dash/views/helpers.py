@@ -821,7 +821,7 @@ def get_fake_ad_group_source_states(ad_group_sources):
 
     ad_groups_settings = {
         ag.ad_group_id: ag for ag in models.AdGroupSettings.objects.filter(
-            ad_group__in=ad_group_sources.values("ad_group_id"),
+            ad_group__in=[ags.ad_group_id for ags in ad_group_sources],
         ).group_current_settings()
     }
 
@@ -1011,7 +1011,8 @@ def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settin
        campaign_settings.landing_mode or\
        _is_end_date_past(ad_group_settings) or\
        ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-        message = _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings, campaign_settings)
+        message = _get_bid_cpc_daily_budget_disabled_message(
+            ad_group, ad_group_source, ad_group_settings, campaign_settings)
 
     return {
         'enabled': message is None,
