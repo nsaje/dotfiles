@@ -18,11 +18,14 @@ Plugin 'vim-airline/vim-airline-themes'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'fatih/vim-go'
 Plugin 'scrooloose/syntastic'
-Plugin 'valloric/youcompleteme'
-Plugin 'dkprice/vim-easygrep'
+" Plugin 'valloric/youcompleteme'
+" Plugin 'dkprice/vim-easygrep'
 Plugin 'nvie/vim-flake8'
 Plugin 'avakhov/vim-yaml'
 Plugin 'scrooloose/nerdcommenter'
+Plugin 'junegunn/goyo.vim'
+Plugin 'reedes/vim-pencil'
+
 
 " allow changing buffer without saving
 set hidden
@@ -30,6 +33,9 @@ set hidden
 " comment out binding
 nmap <C-_> <leader>c<Space>
 vmap <C-_> <leader>c<Space>
+
+" dont wrap
+set nowrap
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -83,4 +89,14 @@ let g:airline#extensions#tabline#fnamemod = ':t'
 " tabs
 nnoremap <C-Left> :bprev<CR>
 nnoremap <C-Right> :bnext<CR>
+nnoremap <C-h> :bprev<CR>
+nnoremap <C-l> :bnext<CR>
 
+" pencil
+set nocompatible
+" filetype plugin on       " may already be in your .vimrc
+augroup pencil
+  autocmd!
+  autocmd FileType markdown,mkd call pencil#init()
+  autocmd FileType text         call pencil#init()
+augroup END
