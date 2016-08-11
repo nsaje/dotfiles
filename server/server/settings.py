@@ -127,6 +127,16 @@ DEMO_USERS = tuple()
 
 ENABLE_DJANGO_EXTENSIONS = False
 
+# cache settings
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    },
+    'breakdowns_rs': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    },
+}
+
 try:
     import qinspect
     MIDDLEWARE_CLASSES.append('qinspect.middleware.QueryInspectMiddleware'),
@@ -217,20 +227,6 @@ LOGGING = {
     }
 }
 CELERYD_LOG_FORMAT = LOGGING['formatters']['standard']['format']
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    },
-    'breakdowns_rs': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'breakdowns_rs_cache',
-        'TIMEOUT': 60 * 60 * 2,  # 2 hours
-        'OPTIONS': {
-            'MAX_ENTRIES': 1000,
-        }
-    }
-}
 
 if TESTING:
     LOGGING = None

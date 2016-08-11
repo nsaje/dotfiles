@@ -136,9 +136,15 @@ DEMO_USER_PASSWORD = 'zemantadsp'
 # cache settings
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'default_cache',
+    },
+    'breakdowns_rs': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'breakdowns_rs_cache',
     }
 }
+
 USE_HASH_CACHE = False
 HASH_CACHE_TTL = 24 * 60 * 60
 

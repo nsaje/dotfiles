@@ -130,12 +130,6 @@ QUERY_AGGREGATE_REPORTS=False
 DEMO_USER_EMAIL = 'test.account@zemanta.si'
 DEMO_USER_PASSWORD = 'zemantadsp'
 
-# cache settings
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
-    }
-}
 USE_HASH_CACHE = False
 HASH_CACHE_TTL = 24 * 60 * 60
 

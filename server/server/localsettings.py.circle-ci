@@ -120,10 +120,12 @@ DEMO_USERS = (
     'demo2@zemanta.si',
 )
 
-# cache settings
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+    },
+    'breakdowns_rs': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
     }
 }
 USE_HASH_CACHE = False

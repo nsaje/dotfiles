@@ -154,6 +154,14 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
         'LOCATION': ['%s:%s' % (MEMCACHED_ADDR, MEMCACHED_PORT),
         ]
+    },
+    'breakdowns_rs': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'breakdowns_rs_cache',
+        'TIMEOUT': 60 * 60 * 2,  # 2 hours
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
     }
 }
 
