@@ -4,6 +4,8 @@ import random
 import string
 import logging
 
+from django.core.cache import caches
+
 from etl import daily_statements_k1
 from etl import materialize_k1
 from etl import materialize_views
@@ -70,6 +72,10 @@ def refresh_k1_reports(update_since):
             mv = mv_class(job_id, date_from, date_to)
             mv.generate(campaign_factors=effective_spend_factors)
 
+    # while everything is being updated data is not consistent among tables
+    # so might as well leave cache until refresh finishes
+    invalidate_breakdowns_rs_cache()
+
 
 @influx.timer('etl.refresh_k1.refresh_k1_timer', type='only_new')
 def refresh_k1_new_reports(update_since):
@@ -88,6 +94,10 @@ def refresh_k1_new_reports(update_since):
             mv = mv_class(job_id, date_from, date_to)
             mv.generate(campaign_factors=effective_spend_factors)
 
+    # while everything is being updated data is not consistent among tables
+    # so might as well leave cache until refresh finishes
+    invalidate_breakdowns_rs_cache()
+
 
 def generate_job_id():
     epoch = datetime.datetime.utcfromtimestamp(0)
@@ -96,3 +106,8 @@ def generate_job_id():
     rnd_str = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(3))
 
     return "{}_{}".format(timestamp, rnd_str)
+
+
+def invalidate_breakdowns_rs_cache():
+    cache = caches['breakdowns_rs']
+    cache.clear()

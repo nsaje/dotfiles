@@ -1,4 +1,7 @@
 import influx
+import logging
+
+from django.core.cache import caches
 
 from redshiftapi import db
 from redshiftapi import models
@@ -7,10 +10,22 @@ from redshiftapi import postprocess
 
 from stats import constants
 from utils import exc
+from utils import cache_helper
+
+logger = logging.getLogger(__name__)
+
+
+"""
+NOTE: caching in this module is of experimental nature. Patterns used are
+very rudimentary and would need a facelift (for example: cursor middleware for caching to make
+the code less verbose) for proper production code.
+"""
 
 
 def query(breakdown, constraints, breakdown_constraints, conversion_goals, order, offset, limit):
-    # returns a collection of rows that are dicts
+    """
+    Returns an array of rows that are represented as dicts.
+    """
 
     model = models.MVMaster(conversion_goals)
 
@@ -18,16 +33,31 @@ def query(breakdown, constraints, breakdown_constraints, conversion_goals, order
         query, params = _prepare_query(model, breakdown, constraints, breakdown_constraints,
                                        order, offset, limit)
 
-    with influx.block_timer('redshiftapi.api_breakdowns.query', breakdown="__".join(breakdown)):
-        with db.get_stats_cursor() as cursor:
-            cursor.execute(query, params)
-            rows = db.dictfetchall(cursor)
+    with influx.block_timer('redshiftapi.api_breakdowns.get_cache_value_overhead'):
+        cache_key = cache_helper.get_cache_key(query, params)
+        cache = caches['breakdowns_rs']
+        results = cache.get(cache_key, None)
 
-            empty_row = db.get_empty_row_dict(cursor.description)
+    if not results:
+        influx.incr('redshiftapi.api_breakdowns.cache_miss', 1)
+        logger.info('Cache miss %s', cache_key)
 
-    _post_process(rows, empty_row, breakdown, constraints, breakdown_constraints, offset, limit)
+        with influx.block_timer('redshiftapi.api_breakdowns.query', breakdown="__".join(breakdown)):
+            with db.get_stats_cursor() as cursor:
+                cursor.execute(query, params)
+                results = db.dictfetchall(cursor)
 
-    return rows
+                empty_row = db.get_empty_row_dict(cursor.description)
+
+        _post_process(results, empty_row, breakdown, constraints, breakdown_constraints, offset, limit)
+
+        with influx.block_timer('redshiftapi.api_breakdowns.set_cache_value_overhead'):
+            cache.set(cache_key, results)
+    else:
+        influx.incr('redshiftapi.api_breakdowns.cache_hit', 1)
+        logger.info('Cache hit %s', cache_key)
+
+    return results
 
 
 def _prepare_query(model, breakdown, constraints, breakdown_constraints,

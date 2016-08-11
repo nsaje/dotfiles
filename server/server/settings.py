@@ -218,6 +218,20 @@ LOGGING = {
 }
 CELERYD_LOG_FORMAT = LOGGING['formatters']['standard']['format']
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    },
+    'breakdowns_rs': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'breakdowns_rs_cache',
+        'TIMEOUT': 60 * 60 * 2,  # 2 hours
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
+    }
+}
+
 if TESTING:
     LOGGING = None
     GOOGLE_OAUTH_ENABLED = False
@@ -225,6 +239,9 @@ if TESTING:
     USE_HASH_CACHE = False
     CACHES = {
         'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+        },
+        'breakdowns_rs': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
         }
     }
