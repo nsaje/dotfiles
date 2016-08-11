@@ -876,7 +876,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
             $scope.campaignGoals,
             $scope.chartMetricOptions,
-            options.goalChartMetrics.concat(options.campaignGoalConversionGoalChartMetrics),
+            options.campaignGoalConversionGoalChartMetrics,
             $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );
     };
