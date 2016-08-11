@@ -3,6 +3,7 @@ import json
 import logging
 import time
 import urllib2
+import requests
 
 from django.conf import settings
 
@@ -18,7 +19,7 @@ class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
         demo = self._start_demo()
-        self._check_demo_url(demo['url'])
+        self._check_demo_url(demo)
         self._stop_demo(demo['name'])
         influx.incr('demo.monitor', 1)
 
@@ -37,16 +38,44 @@ class Command(ExceptionCommand):
         return {
             'name': ret.get('instance_name'),
             'url': ret.get('instance_url'),
+            'password': ret.get('instance_password'),
         }
 
-    def _check_demo_url(self, url):
-        error = None
+    def _check_demo_url(self, demo_instance):
+        url = demo_instance['url']
+        password = demo_instance['password']
+        username = "regular.user+demo@zemanta.com"
+
+        error = Exception()
         for _ in range(NUM_RETRIES):
             try:
-                response = urllib2.urlopen(url)
-                body = response.read()
+                session = requests.Session()
+                response = session.get(url)
+                body = response.text
+                csrf_token = session.cookies['csrftoken']
+                # 1) basic check
                 if 'Zemanta One' not in body or 'Sign in' not in body:
                     raise Exception('Invalid response from demo')
+
+                # 2) try to login
+                response = session.post(
+                    url='%s/signin' % url,
+                    data={ 'username': username, 'password': password, 'csrfmiddlewaretoken': csrf_token },
+                    headers = {'Referer': '%s/signin?next=/' % url }
+                )
+                if response.status_code != 200:
+                    raise Exception('Invalid response code from demo signin')
+
+                # 3) Fetch some JSON data
+                response = session.get(
+                    url='%s/api/all_accounts/nav/' % url, headers = {'Accept':'application/json', }
+                )
+                if response.status_code != 200:
+                    raise Exception('Invalid response code from demo nav')
+                data = json.loads(response.text)
+                if not data.get('success', False):
+                    raise Exception("Couldn't get basic nav data")
+
                 return
             except Exception as err:
                 error = err
