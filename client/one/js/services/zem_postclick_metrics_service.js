@@ -224,6 +224,16 @@ oneApp.factory('zemPostclickMetricsService', function () {
             constants.chartMetric.CONVERSION_GOAL3,
             constants.chartMetric.CONVERSION_GOAL4,
             constants.chartMetric.CONVERSION_GOAL5,
+            constants.chartMetric.CONVERSION_GOAL6,
+            constants.chartMetric.CONVERSION_GOAL7,
+            constants.chartMetric.CONVERSION_GOAL8,
+            constants.chartMetric.CONVERSION_GOAL9,
+            constants.chartMetric.CONVERSION_GOAL10,
+            constants.chartMetric.CONVERSION_GOAL11,
+            constants.chartMetric.CONVERSION_GOAL12,
+            constants.chartMetric.CONVERSION_GOAL13,
+            constants.chartMetric.CONVERSION_GOAL14,
+            constants.chartMetric.CONVERSION_GOAL15,
         ];
 
         if (cgChartMetrics.indexOf(chartMetric1) > -1 && cgIds.indexOf(chartMetric1) === -1) {

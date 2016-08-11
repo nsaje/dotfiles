@@ -525,7 +525,9 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
                    'unique_users', 'new_users', 'returning_users', 'bounced_visits', 'non_bounced_visits', 'total_seconds']
     }, {
         name: 'Conversions',
-        fields: ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
+        'fields': ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5',
+                   'conversion_goal_6', 'conversion_goal_7', 'conversion_goal_8', 'conversion_goal_9', 'conversion_goal_10',
+                   'conversion_goal_11', 'conversion_goal_12', 'conversion_goal_13', 'conversion_goal_14', 'conversion_goal_15']
     }, zemOptimisationMetricsService.createColumnCategories(),
     ];
 
