@@ -934,7 +934,7 @@ def _format_decimals(value, field):
     if value and field in FORMAT_1_DECIMAL:
         return '{:.1f}'.format(value)
     elif value and field in FORMAT_2_DECIMALS or 'avg_cost_per' in field:
-        return '{:.2f}'.format(value)
+        return '{:.2f}'.format(value or 0.0)
     elif value and field in FORMAT_3_DECIMALS:
         return '{:.3f}'.format(value)
     return value
