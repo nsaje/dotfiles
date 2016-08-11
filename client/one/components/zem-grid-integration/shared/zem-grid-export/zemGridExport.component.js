@@ -37,9 +37,7 @@ oneApp.controller('zemGridExportCtrl', ['$scope', '$modal', 'zemGridExportOption
         $scope.defaultOption = zemGridExportOptions.getDefaultOption($scope.options);
         $scope.exportSources = metaData.breakdown === constants.breakdown.MEDIA_SOURCE;
 
-        var dateRange = vm.api.getDateRange();
-        $scope.startDate = dateRange.startDate;
-        $scope.endDate = dateRange.endDate;
+        $scope.dateRange = vm.api.getDateRange();
         $scope.order = vm.api.getOrder();
 
         $scope.getAdditionalColumns = getAdditionalColumns;
