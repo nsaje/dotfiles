@@ -6,7 +6,7 @@ oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 
     $scope.setDisabledExportOptions = function () {
         $scope.showInProgress = true;
         api.exportAllowed.get($state.params.id, $scope.level,
-            $scope.exportSources, $scope.startDate, $scope.endDate).then(
+            $scope.exportSources, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 $scope.options.forEach(function (opt) {
                     if (opt.value === constants.exportType.CONTENT_AD) {
@@ -52,8 +52,8 @@ oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 
 
     $scope.downloadReport = function () {
         var url = $scope.baseUrl + 'export/?type=' + $scope.export.type.value +
-            '&start_date=' + $scope.startDate.format() +
-            '&end_date=' + $scope.endDate.format() +
+            '&start_date=' + $scope.dateRange.startDate.format() +
+            '&end_date=' + $scope.dateRange.endDate.format() +
             '&order=' + $scope.order +
             '&by_day=' + $scope.export.byDay;
 
