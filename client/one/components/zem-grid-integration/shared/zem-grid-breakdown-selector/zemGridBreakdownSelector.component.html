@@ -4,7 +4,7 @@
   </a>
   <ul class="dropdown-menu dropdown-menu-right" dropdown-menu>
       <div ng-repeat="group in ctrl.breakdownGroups" ng-click="$event.stopPropagation()">
-          <div class="category-name">
+          <div class="category-name" ng-if="group.breakdowns.length > 0">
               <zem-internal-feature ng-if="group.internal"></zem-internal-feature>
               {{ group.name }}
           </div>

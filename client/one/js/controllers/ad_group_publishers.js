@@ -13,11 +13,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-media_cost';
     $scope.localStoragePrefix = 'adGroupPublishers';
-    $scope.selection = {
+    $scope.page = {
         sizeRange: [5, 10, 20, 50],
         size: 5
     };
-    $scope.size = $scope.selection.size;
+    $scope.size = $scope.page.size;
     $scope.rows = [];
     $scope.isSyncInProgress = false;
     $scope.infoboxLinkTo = 'main.adGroups.settings';
@@ -761,7 +761,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupPublishersTable.get($state.params.id, $scope.pagination.currentPage, $scope.selection.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        api.adGroupPublishersTable.get($state.params.id, $scope.pagination.currentPage, $scope.page.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 var defaultChartMetrics;
                 $scope.rows = data.rows;
@@ -1007,12 +1007,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         userSettings.register('size');
         userSettings.registerGlobal('chartHidden');
 
-        if (size !== 0 && $scope.selection.size !== size) {
-            $scope.selection.size = size;
+        if (size !== 0 && $scope.page.size !== size) {
+            $scope.page.size = size;
         }
         // if nothing in local storage or page query var set first as default
-        if ($scope.selection.size === 0) {
-            $scope.selection.size = $scope.selection.sizeRange[0];
+        if ($scope.page.size === 0) {
+            $scope.page.size = $scope.page.sizeRange[0];
         }
 
         setChartOptions();
@@ -1046,9 +1046,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
     };
 
-    $scope.$watch('selection.size', function (newValue, oldValue) {
+    $scope.$watch('page.size', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            $scope.size = $scope.selection.size;
+            $scope.size = $scope.page.size;
             $scope.loadPage();
         }
     });

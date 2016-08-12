@@ -12,11 +12,11 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.chartHidden = false;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-media_cost';
-    $scope.selection = {
+    $scope.page = {
         sizeRange: [5, 10, 20, 50],
         size: 5,
     };
-    $scope.size = $scope.selection.size;
+    $scope.size = $scope.page.size;
     $scope.isIncompletePostclickMetrics = false;
     $scope.infoboxHeader = null;
     $scope.infoboxBasicSettings = null;
@@ -579,7 +579,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.selection.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.page.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -724,7 +724,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     };
 
-    $scope.$watch('selection.size', function (newValue, oldValue) {
+    $scope.$watch('page.size', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.size = newValue;
             $scope.loadPage();
@@ -750,12 +750,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         userSettings.register('size');
         userSettings.registerGlobal('chartHidden');
 
-        if (size !== 0 && $scope.selection.size !== size) {
-            $scope.selection.size = size;
+        if (size !== 0 && $scope.page.size !== size) {
+            $scope.page.size = size;
         }
         // if nothing in local storage or page query var set first as default
-        if ($scope.selection.size === 0) {
-            $scope.selection.size = $scope.selection.sizeRange[0];
+        if ($scope.page.size === 0) {
+            $scope.page.size = $scope.page.sizeRange[0];
         }
 
         setChartOptions();
