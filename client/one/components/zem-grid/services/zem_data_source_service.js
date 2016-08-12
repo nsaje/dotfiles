@@ -59,7 +59,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         // Define default pagination (limits) for all levels when
         // size is not passed when requesting new data
         // TODO: default values will be defined by Breakdown selector (TBD)
-        var defaultPagination = [36, 4, 5, 7];
+        var defaultPagination = [40, 4, 5, 7];
 
         initializeRoot();
 
