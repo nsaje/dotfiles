@@ -1,5 +1,4 @@
 import datetime
-import pytz
 
 from django.conf import settings
 from django.db.models import Q
@@ -227,6 +226,7 @@ class AccountSourcesTable(object):
         self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
         self.reports_api = get_reports_api_module(user)
+        self.pixels = self.account.conversionpixel_set.filter(archived=False)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return self.reports_api.has_complete_postclick_metrics_accounts(
@@ -236,20 +236,22 @@ class AccountSourcesTable(object):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_stats(self, user, start_date, end_date):
-        sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
+        sources_stats = stats_helper.get_stats_with_conversions(
+            user,
             start_date,
             end_date,
             breakdown=['source'],
-            account=self.account,
-            source=self.filtered_sources
-        ), self.user)
+            pixels=self.pixels,
+            constraints={'account': self.account, 'source': self.filtered_sources}
+        )
 
-        totals_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
+        totals_stats = stats_helper.get_stats_with_conversions(
+            user,
             start_date,
             end_date,
-            account=self.account,
-            source=self.filtered_sources
-        ), self.user)
+            pixels=self.pixels,
+            constraints={'account': self.account, 'source': self.filtered_sources}
+        )
 
         return sources_stats, totals_stats
 
@@ -286,6 +288,7 @@ class CampaignSourcesTable(object):
         self.filtered_sources = filtered_sources
         self.reports_api = get_reports_api_module(user)
         self.conversion_goals = self.campaign.conversiongoal_set.all()
+        self.pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return self.reports_api.has_complete_postclick_metrics_campaigns(
@@ -300,7 +303,8 @@ class CampaignSourcesTable(object):
             start_date,
             end_date,
             breakdown=['source'],
-            conversion_goals=self.campaign.conversiongoal_set.all(),
+            conversion_goals=self.conversion_goals,
+            pixels=self.pixels,
             constraints={'campaign': self.campaign, 'source': self.filtered_sources}
         )
 
@@ -308,7 +312,8 @@ class CampaignSourcesTable(object):
             user,
             start_date,
             end_date,
-            conversion_goals=self.campaign.conversiongoal_set.all(),
+            conversion_goals=self.conversion_goals,
+            pixels=self.pixels,
             constraints={'campaign': self.campaign, 'source': self.filtered_sources}
         )
 
@@ -338,7 +343,7 @@ class AdGroupSourcesTable(object):
         self.user = user
         helpers.get_ad_group(user, id_)
         self.ad_group = models.AdGroup.objects.filter(id=int(id_)).\
-            select_related('campaign').\
+            select_related('campaign__account').\
             prefetch_related('campaign__conversiongoal_set').get()
         self.ad_group_settings = self.ad_group.get_current_settings()
         self.campaign_settings = self.ad_group.campaign.get_current_settings()
@@ -353,6 +358,7 @@ class AdGroupSourcesTable(object):
         self.filtered_sources = filtered_sources
         self.reports_api = get_reports_api_module(user)
         self.conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
+        self.pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
         return self.reports_api.has_complete_postclick_metrics_ad_groups(
@@ -367,7 +373,8 @@ class AdGroupSourcesTable(object):
             start_date,
             end_date,
             breakdown=['source'],
-            conversion_goals=self.ad_group.campaign.conversiongoal_set.all(),
+            conversion_goals=self.conversion_goals,
+            pixels=self.pixels,
             constraints={'ad_group': self.ad_group, 'source': self.filtered_sources}
         )
 
@@ -375,7 +382,8 @@ class AdGroupSourcesTable(object):
             user,
             start_date,
             end_date,
-            conversion_goals=self.ad_group.campaign.conversiongoal_set.all(),
+            conversion_goals=self.conversion_goals,
+            pixels=self.pixels,
             constraints={'ad_group': self.ad_group, 'source': self.filtered_sources}
         )
 
@@ -569,12 +577,12 @@ class SourcesTable(object):
 
         conversion_goals_lst = []
         if hasattr(level_sources_table, 'conversion_goals'):
-            conversion_goals_lst = [
-                {'id': cg.get_view_key(level_sources_table.conversion_goals), 'name': cg.name}
-                for cg in level_sources_table.conversion_goals
-            ]
+            conversion_goals_lst = helpers.get_conversion_goal_list(level_sources_table.conversion_goals)
             # only on ad group and campaign level
             response['conversion_goals'] = conversion_goals_lst
+
+        if hasattr(level_sources_table, 'pixels'):
+            response['pixels'] = helpers.get_pixels_list(level_sources_table.pixels)
 
         if ad_group_level:
             response['last_change'] = helpers.get_ad_group_sources_last_change_dt(
@@ -1019,7 +1027,7 @@ class AdGroupAdsTableUpdates(object):
     def get(self, user, ad_group_id, filtered_sources, last_change_dt):
         helpers.get_ad_group(user, ad_group_id)
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
-            select_related('campaign').\
+            select_related('campaign__account').\
             prefetch_related('campaign__conversiongoal_set').get()
 
         new_last_change_dt = helpers.get_content_ad_last_change_dt(ad_group, filtered_sources, last_change_dt)
@@ -1060,12 +1068,13 @@ class AdGroupAdsTable(object):
 
         helpers.get_ad_group(user, ad_group_id)
         ad_group = models.AdGroup.objects.filter(id=int(ad_group_id)).\
-            select_related('campaign').\
+            select_related('campaign__account').\
             prefetch_related('campaign__conversiongoal_set').get()
 
         size = max(min(int(size or 5), 4294967295), 1)
 
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.filter(archived=False)
         content_ads = models.ContentAd.objects.filter(
             ad_group=ad_group).filter_by_sources(filtered_sources).select_related('batch')
 
@@ -1076,6 +1085,7 @@ class AdGroupAdsTable(object):
             breakdown=['content_ad'],
             ignore_diff_rows=True,
             conversion_goals=conversion_goals,
+            pixels=pixels,
             constraints={'ad_group': ad_group, 'source': filtered_sources}
         )
 
@@ -1112,6 +1122,7 @@ class AdGroupAdsTable(object):
             start_date,
             end_date,
             conversion_goals=conversion_goals,
+            pixels=pixels,
             ignore_diff_rows=True,
             constraints={'ad_group': ad_group, 'source': filtered_sources}
         )
@@ -1146,9 +1157,9 @@ class AdGroupAdsTable(object):
             'incomplete_postclick_metrics': False,  # incomplete_postclick_metrics,
         }
 
-        conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-                                for cg in conversion_goals]
+        conversion_goals_lst = helpers.get_conversion_goal_list(conversion_goals)
         response['conversion_goals'] = conversion_goals_lst
+        response['pixels'] = helpers.get_pixels_list(pixels)
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
             campaign = ad_group.campaign
@@ -1275,6 +1286,8 @@ class CampaignAdGroupsTable(object):
         show_archived = show_archived == 'true'
 
         reports_api = get_reports_api_module(user)
+        conversion_goals = campaign.conversiongoal_set.all()
+        pixels = campaign.account.conversionpixel_set.filter(archived=False)
 
         stats = stats_helper.get_stats_with_conversions(
             user,
@@ -1282,6 +1295,7 @@ class CampaignAdGroupsTable(object):
             end_date=end_date,
             breakdown=['ad_group'],
             conversion_goals=campaign.conversiongoal_set.all(),
+            pixels=campaign.account.conversionpixel_set.filter(archived=False),
             constraints={'campaign': campaign, 'source': filtered_sources}
         )
 
@@ -1294,7 +1308,8 @@ class CampaignAdGroupsTable(object):
             user,
             start_date=start_date,
             end_date=end_date,
-            conversion_goals=campaign.conversiongoal_set.all(),
+            conversion_goals=conversion_goals,
+            pixels=pixels,
             constraints={'ad_group': ad_groups, 'source': filtered_sources}
         )
 
@@ -1347,9 +1362,10 @@ class CampaignAdGroupsTable(object):
         }
 
         conversion_goals = campaign.conversiongoal_set.all()
-        conversion_goals_lst = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-                                for cg in conversion_goals]
+        conversion_goals_lst = helpers.get_conversion_goal_list(conversion_goals)
+
         response['conversion_goals'] = conversion_goals_lst
+        response['pixels'] = helpers.get_pixels_list(pixels)
 
         # if user.has_perm('zemauth.data_status_column'):
         #     response['data_status'] = self.get_data_status(
@@ -1492,22 +1508,24 @@ class AccountCampaignsTable(object):
             .group_current_settings()\
             .select_related('campaign_manager')
 
-        reports_api = get_reports_api_module(user)
-        stats = reports.api_helpers.filter_by_permissions(reports_api.query(
+        pixels = account.conversionpixel_set.filter(archived=False)
+
+        stats = stats_helper.get_stats_with_conversions(
+            user,
             start_date=start_date,
             end_date=end_date,
             breakdown=['campaign'],
-            campaign=campaigns,
-            source=filtered_sources,
-        ), user)
+            pixels=pixels,
+            constraints={'campaign': campaigns, 'source': filtered_sources}
+        )
 
-        totals_stats = reports.api_helpers.filter_by_permissions(
-            reports_api.query(
-                start_date,
-                end_date,
-                campaign=campaigns,
-                source=filtered_sources,
-            ), user)
+        totals_stats = stats_helper.get_stats_with_conversions(
+            user,
+            start_date=start_date,
+            end_date=end_date,
+            pixels=pixels,
+            constraints={'campaign': campaigns, 'source': filtered_sources}
+        )
 
         campaign_budget, campaign_spend = bcm_helpers.get_campaign_media_budget_data(
             c.pk for c in campaigns
@@ -1570,6 +1588,7 @@ class AccountCampaignsTable(object):
             # ),
             'order': order,
             'incomplete_postclick_metrics': False,  # incomplete_postclick_metrics
+            'pixels': helpers.get_pixels_list(pixels),
         }
 
         # if user.has_perm('zemauth.data_status_column'):
@@ -1630,7 +1649,6 @@ class AccountCampaignsTable(object):
             campaign_settings = campaign_settings_dict.get(campaign.id)
             archived = campaign_settings.archived if campaign_settings else False
 
-            reports_api = get_reports_api_module(user)
             if not show_archived and archived:
                 continue
 
@@ -1670,7 +1688,8 @@ class AccountCampaignsTable(object):
 
 class PublishersTable(object):
 
-    def get(self, user, level_, filtered_sources, show_blacklisted_publishers, start_date, end_date, order, page, size, id_=None):
+    def get(self, user, level_, filtered_sources, show_blacklisted_publishers,
+            start_date, end_date, order, page, size, id_=None):
         if not user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
@@ -1701,6 +1720,7 @@ class PublishersTable(object):
             constraints['exchange'] = map_exchange_to_source_name.keys()
 
         conversion_goals = adgroup.campaign.conversiongoal_set.all()
+        pixels = adgroup.campaign.account.conversionpixel_set.filter(archived=False)
         publishers_data, totals_data = self._query_filtered_publishers(
             user,
             show_blacklisted_publishers,
@@ -1708,7 +1728,8 @@ class PublishersTable(object):
             end_date,
             adgroup,
             constraints,
-            conversion_goals
+            conversion_goals,
+            pixels,
         )
 
         set_rows_goals_performance(user, publishers_data, start_date, end_date, [adgroup.campaign])
@@ -1760,11 +1781,9 @@ class PublishersTable(object):
             'ob_blacklisted_count': count_ob_blacklisted_publishers,
         }
 
-        conversion_goals_lst = [
-            {'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-            for cg in conversion_goals
-        ]
+        conversion_goals_lst = helpers.get_conversion_goal_list(conversion_goals)
         response['conversion_goals'] = conversion_goals_lst
+        response['pixels'] = helpers.get_pixels_list(pixels)
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
             campaign = adgroup.campaign
@@ -1890,7 +1909,7 @@ class PublishersTable(object):
             return False
 
     def _query_filtered_publishers(self, user, show_blacklisted_publishers, start_date, end_date, adgroup, constraints,
-                                   conversion_goals):
+                                   conversion_goals, pixels):
 
         if show_blacklisted_publishers in (
                 constants.PublisherBlacklistFilter.SHOW_ACTIVE, constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
@@ -1910,6 +1929,7 @@ class PublishersTable(object):
             end_date,
             constraints,
             conversion_goals,
+            pixels=pixels,
             publisher_breakdown_fields=['domain', 'exchange'],
             touchpoint_breakdown_fields=['publisher', 'source'],
             show_blacklisted_publishers=show_blacklisted_publishers,
@@ -1922,6 +1942,7 @@ class PublishersTable(object):
             end_date,
             constraints,
             conversion_goals,
+            pixels=pixels,
             show_blacklisted_publishers=show_blacklisted_publishers,
             adg_blacklisted_publishers=adg_blacklisted_publishers,
         )
@@ -1974,8 +1995,14 @@ class PublishersTable(object):
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
 
-        for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
+        for key in totals_data.keys():
+            if not key.startswith('conversion_goal_') and not key.startswith('pixel_'):
+                continue
             result[key] = totals_data[key]
+            if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
+                result['avg_cost_per_' + key] = None
+                if totals_data[key]:
+                    result['avg_cost_per_' + key] = totals_data.get('e_media_cost', 0) / totals_data[key]
 
         return result
 
@@ -2044,11 +2071,15 @@ class PublishersTable(object):
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
 
-            for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
+            for key in publisher_data.keys():
+                if not key.startswith('conversion_goal_') and not key.startswith('pixel_'):
+                    continue
                 row[key] = publisher_data[key]
                 if (source_name or '').lower() == constants.SourceType.OUTBRAIN:
                     # We have no conversion data for OB
                     row[key] = None
+                if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
+                    row['avg_cost_per_' + key] = row.get('e_media_cost', 0) / row[key] if row[key] else None
 
             if 'performance' in publisher_data:
                 row['performance'] = publisher_data['performance']

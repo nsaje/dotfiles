@@ -61,7 +61,7 @@ class BaseDailyStatsTest(TestCase):
 
         return params
 
-    def _assert_response(self, response, selected_id, selected_name, with_conversion_goals=True):
+    def _assert_response(self, response, selected_id, selected_name, with_conversion_goals=True, with_pixels=True):
         json_blob = json.loads(response.content)
         self.maxDiff = None
         expected_response = {
@@ -95,12 +95,19 @@ class BaseDailyStatsTest(TestCase):
 
         if with_conversion_goals:
             expected_response['data']['conversion_goals'] = [
-                {'id': 'conversion_goal_1', 'name': 'test conversion goal'},
                 {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
                 {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
                 {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
                 {'id': 'conversion_goal_5', 'name': 'test conversion goal 5'},
             ]
+
+        if with_pixels:
+            expected_response['data']['pixels'] = [
+                    {'id': 'pixel_1_24', 'name': 'test 1 day'},
+                    {'id': 'pixel_1_168', 'name': 'test 7 days'},
+                    {'id': 'pixel_1_720', 'name': 'test 30 days'},
+                    {'id': 'pixel_1_2160', 'name': 'test 90 days'},
+                ]
 
         self.assertDictEqual(expected_response, json_blob)
 
@@ -143,6 +150,7 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
             breakdown=['date'],
             order=['date'],
             conversion_goals=None,
+            pixels=None,
             constraints={'account': accounts_matcher, 'source': sources_matcher}
         )
 
@@ -154,11 +162,12 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
             breakdown=['date', 'source'],
             order=['date'],
             conversion_goals=None,
+            pixels=None,
             constraints={'account': accounts_matcher, 'source': source_matcher}
         )
 
         source = models.Source.objects.get(pk=source_id)
-        self._assert_response(response, source_id, source.name, with_conversion_goals=False)
+        self._assert_response(response, source_id, source.name, with_conversion_goals=False, with_pixels=False)
 
     def test_get_by_agency(self):
         agency = models.Agency(name='test')
@@ -183,6 +192,7 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
             breakdown=['date'],
             order=['date'],
             conversion_goals=None,
+            pixels=None,
             constraints={'account': accounts_matcher, 'source': sources_matcher}
         )
 
@@ -206,6 +216,7 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
             breakdown=['date'],
             order=['date'],
             conversion_goals=None,
+            pixels=None,
             constraints={'account': accounts_matcher, 'source': sources_matcher}
         )
 
@@ -229,6 +240,7 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
             breakdown=['date'],
             order=['date'],
             conversion_goals=None,
+            pixels=None,
             constraints={'account': accounts_matcher, 'source': sources_matcher}
         )
 
@@ -253,6 +265,7 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
             breakdown=['date'],
             order=['date'],
             conversion_goals=None,
+            pixels=None,
             constraints={'account': accounts_matcher, 'source': sources_matcher}
         )
 
@@ -269,7 +282,10 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
             follow=True
         )
 
+        account = models.Account.objects.get(id=1)
+        pixels = account.conversionpixel_set.all()
         matcher = QuerySetMatcher(models.Source.objects.all())
+
         self.mock_query.assert_any_call(
             self.user,
             self.date,
@@ -277,6 +293,7 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
             breakdown=['date'],
             order=['date'],
             conversion_goals=None,
+            pixels=ListMatcher(pixels),
             constraints={'account': 1, 'source': matcher},
         )
 
@@ -287,6 +304,7 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
             breakdown=['date', 'source'],
             order=['date'],
             conversion_goals=None,
+            pixels=ListMatcher(pixels),
             constraints={'account': 1, 'source_id': [source_id]}
         )
 
@@ -305,6 +323,9 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
         )
 
         matcher = QuerySetMatcher(models.Source.objects.all())
+        account = models.Account.objects.get(id=1)
+        pixels = account.conversionpixel_set.all()
+
         self.mock_query.assert_any_call(
             self.user,
             self.date,
@@ -312,6 +333,7 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
             breakdown=['date'],
             order=['date'],
             conversion_goals=None,
+            pixels=ListMatcher(pixels),
             constraints={'account': 1, 'source': matcher}
         )
 
@@ -322,6 +344,7 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
             breakdown=['date', 'campaign'],
             order=['date'],
             conversion_goals=None,
+            pixels=ListMatcher(pixels),
             constraints={'account': 1, 'ad_group__campaign__id': [campaign_id]}
         )
 
@@ -341,16 +364,19 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
             follow=True
         )
 
+        campaign = models.Campaign.objects.get(id=1)
         matcher = QuerySetMatcher(models.Source.objects.all())
-        conversion_goals = models.ConversionGoal.objects.filter(campaign_id=1)
-        conversion_goals_matcher = QuerySetMatcher(conversion_goals)
+        conversion_goals = campaign.conversiongoal_set.all()
+        pixels = campaign.account.conversionpixel_set.all()
+
         self.mock_query.assert_any_call(
             self.user,
             self.date,
             self.date,
             breakdown=['date'],
             order=['date'],
-            conversion_goals=conversion_goals_matcher,
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
             constraints={'campaign': 1, 'source': matcher}
         )
 
@@ -360,7 +386,8 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
             self.date,
             breakdown=['date', 'source'],
             order=['date'],
-            conversion_goals=conversion_goals_matcher,
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
             constraints={'campaign': 1, 'source_id': [source_id]}
         )
 
@@ -379,15 +406,19 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         )
 
         matcher = QuerySetMatcher(models.Source.objects.all())
-        conversion_goals = models.AdGroup.objects.get(id=1).campaign.conversiongoal_set.all()
-        conversion_goals_matcher = QuerySetMatcher(conversion_goals)
+
+        ad_group = models.AdGroup.objects.get(id=1)
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.all()
+
         self.mock_query.assert_any_call(
             self.user,
             self.date,
             self.date,
             breakdown=['date'],
             order=['date'],
-            conversion_goals=conversion_goals_matcher,
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
             constraints={'campaign': 1, 'source': matcher}
         )
 
@@ -397,7 +428,8 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
             self.date,
             breakdown=['date', 'ad_group'],
             order=['date'],
-            conversion_goals=conversion_goals_matcher,
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
             constraints={'campaign': 1, 'ad_group_id': [ad_group_id]}
         )
 
@@ -446,15 +478,19 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         )
 
         matcher = QuerySetMatcher(models.Source.objects.all())
-        conversion_goals = models.AdGroup.objects.get(id=1).campaign.conversiongoal_set.all()
-        conversion_goals_matcher = QuerySetMatcher(conversion_goals)
+
+        ad_group = models.AdGroup.objects.get(id=1)
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.all()
+
         self.mock_query.assert_any_call(
             self.user,
             self.date,
             self.date,
             breakdown=['date'],
             order=['date'],
-            conversion_goals=conversion_goals_matcher,
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
             constraints={'ad_group': 1, 'source': matcher}
         )
 
@@ -465,7 +501,8 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
             self.date,
             breakdown=['date', 'source'],
             order=['date'],
-            conversion_goals=conversion_goals_matcher,
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
             constraints={'ad_group': 1, 'source': match_source}
         )
 
@@ -559,8 +596,8 @@ class AdGroupAdsDailyStatsTest(TestCase):
                         'id': 'Time on Site - Seconds',
                         'name': 'Time on Site - Seconds'
                     },
-                    'avg_cost_per_conversion_goal_1': {
-                        'id': 'avg_cost_per_conversion_goal_1',
+                    'avg_cost_per_pixel_1_168': {
+                        'id': 'avg_cost_per_pixel_1_168',
                         'name': '$CPA - test conversion goal'
                     },
                     'avg_cost_per_conversion_goal_2': {
@@ -620,12 +657,17 @@ class AdGroupAdsDailyStatsTest(TestCase):
                 }],
                 'conversion_goals': ListMatcher([
                     {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
-                    {'id': 'conversion_goal_1', 'name': 'test conversion goal'},
                     {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
                     {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
                     {'id': 'conversion_goal_5', 'name': 'test conversion goal 5'}
                 ]),
-                'campaign_goals': {}
+                'campaign_goals': {},
+                'pixels': [
+                    {'id': 'pixel_1_24', 'name': 'test 1 day'},
+                    {'id': 'pixel_1_168', 'name': 'test 7 days'},
+                    {'id': 'pixel_1_720', 'name': 'test 30 days'},
+                    {'id': 'pixel_1_2160', 'name': 'test 90 days'},
+                ],
             },
             'success': True
         })
@@ -726,8 +768,8 @@ class AdGroupAdsDailyStatsTest(TestCase):
                         'id': 'Time on Site - Seconds',
                         'name': 'Time on Site - Seconds'
                     },
-                    'avg_cost_per_conversion_goal_1': {
-                        'id': 'avg_cost_per_conversion_goal_1',
+                    'avg_cost_per_pixel_1_168': {
+                        'id': 'avg_cost_per_pixel_1_168',
                         'name': '$CPA - test conversion goal'
                     },
                     'avg_cost_per_conversion_goal_2': {
@@ -794,9 +836,14 @@ class AdGroupAdsDailyStatsTest(TestCase):
                     {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
                     {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
                     {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
-                    {'id': 'conversion_goal_1', 'name': 'test conversion goal'},
                 ]),
                 'campaign_goals': {},
+                'pixels': [
+                    {'id': 'pixel_1_24', 'name': 'test 1 day'},
+                    {'id': 'pixel_1_168', 'name': 'test 7 days'},
+                    {'id': 'pixel_1_720', 'name': 'test 30 days'},
+                    {'id': 'pixel_1_2160', 'name': 'test 90 days'},
+                ],
             },
             'success': True
         })
@@ -833,6 +880,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
         touchpoint_conversion_goal = \
             ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+        pixels = ad_group.campaign.account.conversionpixel_set.all()
 
         mock_stats2 = [{
             'date': start_date.isoformat(),
@@ -876,7 +924,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             start_date,
             end_date,
             breakdown=['date'],
-            conversion_goals=[touchpoint_conversion_goal],
+            pixels=ListMatcher(pixels),
             constraints={'ad_group': ad_group.id},
             constraints_list=[],
         )
@@ -889,8 +937,8 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                         'id': 'Time on Site - Seconds',
                         'name': 'Time on Site - Seconds'
                     },
-                    'avg_cost_per_conversion_goal_1': {
-                        'id': 'avg_cost_per_conversion_goal_1',
+                    'avg_cost_per_pixel_1_168': {
+                        'id': 'avg_cost_per_pixel_1_168',
                         'name': '$CPA - test conversion goal'
                     },
                     'avg_cost_per_conversion_goal_2': {
@@ -965,12 +1013,14 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                         'id': 'conversion_goal_2',
                         'name': 'test conversion goal 2'
                     },
-                    {
-                        'id': 'conversion_goal_1',
-                        'name': 'test conversion goal'
-                    },
                 ]),
                 'campaign_goals': {},
+                'pixels': [
+                    {'id': 'pixel_1_24', 'name': 'test 1 day'},
+                    {'id': 'pixel_1_168', 'name': 'test 7 days'},
+                    {'id': 'pixel_1_720', 'name': 'test 30 days'},
+                    {'id': 'pixel_1_2160', 'name': 'test 90 days'},
+                ],
             },
             'success': True
         })

@@ -136,6 +136,9 @@ def get_report_through_table(get_fn, user, form_data, all_accounts_level=False, 
     if 'conversion_goals' in response:
         base['conversion_goals'] = response['conversion_goals']
 
+    if 'pixels' in response:
+        base['pixels'] = response['pixels']
+
     if 'enabling_autopilot_sources_allowed' in response:
         base['enabling_autopilot_sources_allowed'] = response['enabling_autopilot_sources_allowed']
 

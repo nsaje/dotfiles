@@ -23,15 +23,16 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
 
             $http.post(url, {params: data}, httpConfig).success(function (data) {
                 var breakdowns = data.data;
+
+                if (config.level === 1) { // Base level data comes with some additional metadata (e.g. goals)
+                    extendMetaData(zemGridEndpointApiConverter.extractMetaData(breakdowns[0]), metaData);
+                }
+
                 breakdowns = breakdowns.map(function (breakdown) {
                     breakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(config, breakdown, metaData);
                     checkPaginationCount(config, breakdown);
                     return breakdown;
                 });
-
-                if (config.level === 1) { // Base level data comes with some additional metadata (e.g. goals)
-                    extendMetaData(breakdowns[0], metaData);
-                }
 
                 deferred.resolve(breakdowns);
             }).error(function (data) {
@@ -128,29 +129,34 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
         ).map (function (breakdown) { return breakdown.query; });
     }
 
-    function extendMetaData (breakdown, metaData) {
-        zemGridEndpointColumns.updateConversionGoalColumns(metaData.columns, breakdown.conversionGoals);
-        zemGridEndpointColumns.updateOptimizationGoalColumns(metaData.columns, breakdown.campaignGoals);
+    function extendMetaData (breakdownMetaData, metaData) {
+        zemGridEndpointColumns.setDynamicColumns(
+            metaData.columns,
+            metaData.categories,
+            breakdownMetaData.campaignGoals,
+            breakdownMetaData.conversionGoals,
+            breakdownMetaData.pixels
+        );
 
-        if (breakdown.batches) {
-            metaData.ext.batches = breakdown.batches;
-            delete breakdown.batches;
+        if (breakdownMetaData.batches) {
+            metaData.ext.batches = breakdownMetaData.batches;
+            delete breakdownMetaData.batches;
         }
 
-        if (breakdown.obBlacklistedCount) {
-            metaData.ext.obBlacklistedCount = breakdown.obBlacklistedCount;
-            delete breakdown.obBlacklistedCount;
+        if (breakdownMetaData.obBlacklistedCount) {
+            metaData.ext.obBlacklistedCount = breakdownMetaData.obBlacklistedCount;
+            delete breakdownMetaData.obBlacklistedCount;
         }
 
         metaData.ext.enablingAutopilotSourcesAllowed = true;
-        if (breakdown.enablingAutopilotSourcesAllowed !== undefined) {
-            metaData.ext.enablingAutopilotSourcesAllowed = breakdown.enablingAutopilotSourcesAllowed;
-            delete breakdown.enablingAutopilotSourcesAllowed;
+        if (breakdownMetaData.enablingAutopilotSourcesAllowed !== undefined) {
+            metaData.ext.enablingAutopilotSourcesAllowed = breakdownMetaData.enablingAutopilotSourcesAllowed;
+            delete breakdownMetaData.enablingAutopilotSourcesAllowed;
         }
 
-        if (breakdown.adGroupAutopilotState !== undefined) {
-            metaData.adGroupAutopilotState = breakdown.adGroupAutopilotState;
-            delete breakdown.adGroupAutopilotState;
+        if (breakdownMetaData.adGroupAutopilotState !== undefined) {
+            metaData.adGroupAutopilotState = breakdownMetaData.adGroupAutopilotState;
+            delete breakdownMetaData.adGroupAutopilotState;
         }
     }
 

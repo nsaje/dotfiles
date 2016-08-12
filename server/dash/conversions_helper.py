@@ -24,22 +24,28 @@ def group_conversions(rows):
     return results
 
 
-def transform_to_conversion_goals(rows, conversion_goals):
+def transform_to_conversion_goals(rows, conversion_goals, pixels):
     report_conversion_goals = [cg for cg in conversion_goals if cg.type in REPORT_GOAL_TYPES]
-    touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == PIXEL_GOAL_TYPE]
 
     for row in rows:
         for conversion_goal in report_conversion_goals:
             key = conversion_goal.get_stats_key()
             row[conversion_goal.get_view_key(conversion_goals)] = row.get('conversions', {}).get(key)
 
-        for tp_conversion_goal in touchpoint_conversion_goals:
-            key = (tp_conversion_goal.pixel.slug,
-                   tp_conversion_goal.pixel.account_id,
-                   tp_conversion_goal.conversion_window)
-            # set the default - if tp_conversion_goal result won't contain value, assume it's 0
-            goal_value = row.get('conversions', {}).get(key, 0)
-            row[tp_conversion_goal.get_view_key(conversion_goals)] = goal_value
+        if pixels:
+            for pixel in pixels:
+                for conversion_window in dash.constants.ConversionWindows.get_all():
+                    key = (pixel.slug, pixel.account_id, conversion_window)
+                    # set the default - if tp_conversion_goal result won't contain value, assume it's 0
+                    goal_value = row.get('conversions', {}).get(key, 0)
+                    view_key = pixel.get_view_key(conversion_window)
+                    avg_cost_key = 'avg_cost_per_' + view_key
+                    row[view_key] = goal_value
+                    row[avg_cost_key] = None
+                    e_media_cost = row.get('e_media_cost')
+                    if e_media_cost is not None and goal_value:
+                        row[avg_cost_key] = float(e_media_cost) / goal_value
+
         if 'conversions' in row:
             # mapping done, this is not needed anymore
             del row['conversions']

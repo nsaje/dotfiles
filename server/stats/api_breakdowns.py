@@ -39,13 +39,14 @@ def query(user, breakdown, constraints, breakdown_page,
     # FIXME: Hack to prevent sorting by fields not available in redshift
     order = get_supported_order(order)
 
-    conversion_goals, campaign_goal_values = get_goals(breakdown, constraints)
+    conversion_goals, campaign_goal_values, pixels = get_goals(breakdown, constraints)
 
     rows = redshiftapi.api_breakdowns.query(
         breakdown,
         constraints,
         helpers.extract_stats_breakdown_constraints(breakdown, breakdown_page),
         conversion_goals,
+        pixels,
         order,
         offset,
         limit)
@@ -68,7 +69,7 @@ def query(user, breakdown, constraints, breakdown_page,
     rows = sort_helper.sort_results(rows, [order])
 
     augmenter.augment(breakdown, rows, target_dimension)
-    permission_filter.filter_columns_by_permission(user, rows, campaign_goal_values, conversion_goals)
+    permission_filter.filter_columns_by_permission(user, rows, campaign_goal_values, conversion_goals, pixels)
 
     return rows
 
@@ -128,18 +129,28 @@ def get_supported_order(order):
 
 def get_goals(breakdown, constraints):
     campaign = None
+    account = None
 
     if constants.StructureDimension.AD_GROUP in constraints and not is_collection(constraints['ad_group_id']):
         campaign = dash.models.AdGroup.objects.get(
             pk=constraints['ad_group_id']).campaign
+        account = campaign.account
 
     elif constants.StructureDimension.CAMPAIGN in constraints and not is_collection(constraints['campaign_id']):
         campaign = dash.models.Campaign.objects.get(
             pk=constraints['campaign_id'])
+        account = campaign.account
 
-    conversion_goals, campaign_goal_values = [], []
+    elif constants.StructureDimension.ACCOUNT in constraints and not is_collection(constraints['account_id']):
+        account = dash.models.Account.objects.get(
+            pk=constraints['account_id'])
+
+    conversion_goals, campaign_goal_values, pixels = [], [], []
     if campaign:
         conversion_goals = campaign.conversiongoal_set.all()
         campaign_goal_values = dash.campaign_goals.get_campaign_goal_values(campaign)
 
-    return conversion_goals, campaign_goal_values
+    if account:
+        pixels = account.conversionpixel_set.filter(archived=False)
+
+    return conversion_goals, campaign_goal_values, pixels

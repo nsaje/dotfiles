@@ -81,20 +81,28 @@ class ConversionHelperTestCase(test.TestCase):
 
     def test_empty_transform_to_conversion_goals(self):
         rows = self._get_transform_to_conversion_goals_rows()
-        conversions_helper.transform_to_conversion_goals(rows, [])
+        conversions_helper.transform_to_conversion_goals(rows, [], [])
         self.assertDictEqual(rows[0], rows[0])
 
     def test_transform_to_conversion_goals(self):
         ad_group = AdGroup.objects.get(pk=1)
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.all()
 
         rows = self._get_transform_to_conversion_goals_rows()
-        conversions_helper.transform_to_conversion_goals(rows, conversion_goals)
+        conversions_helper.transform_to_conversion_goals(rows, conversion_goals, pixels)
 
         self.assertDictEqual(rows[0], {
             'dummy_param_1': 'dummy_value_1',
             'dummy_param_2': 'dummy_value_2',
-            'conversion_goal_1': 0,
+            'pixel_1_24': 0,
+            'pixel_1_168': 0,
+            'pixel_1_720': 0,
+            'pixel_1_2160': 0,
+            'avg_cost_per_pixel_1_24': None,
+            'avg_cost_per_pixel_1_168': None,
+            'avg_cost_per_pixel_1_720': None,
+            'avg_cost_per_pixel_1_2160': None,
             'conversion_goal_2': None,
             'conversion_goal_3': 3,
             'conversion_goal_4': 4,
@@ -107,7 +115,7 @@ class ConversionHelperTestCase(test.TestCase):
                                    cg.type in conversions_helper.REPORT_GOAL_TYPES]
 
         rows = self._get_transform_to_conversion_goals_rows()
-        conversions_helper.transform_to_conversion_goals(rows, report_conversion_goals)
+        conversions_helper.transform_to_conversion_goals(rows, report_conversion_goals, [])
 
         self.assertDictEqual(rows[0], {
             'dummy_param_1': 'dummy_value_1',

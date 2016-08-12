@@ -35,10 +35,10 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
         campaign = dash.models.Campaign.objects.get(id=1)
         start_date = datetime.date(2015, 11, 1)
         end_date = datetime.date(2015, 11, 18)
-        conversion_goals = campaign.conversiongoal_set.all()
+        pixels = campaign.account.conversionpixel_set.all()
         constraints = {'campaign': campaign, 'source': dash.models.Source.objects.all()}
 
-        api_touchpointconversions.query(start_date, end_date, conversion_goals=conversion_goals, constraints=constraints)
+        api_touchpointconversions.query(start_date, end_date, pixels=pixels, constraints=constraints)
         q = self._get_query(mock_cursor)
 
         m = re.search('SELECT(.+?)FROM.*SELECT(.+?)FROM', q)
@@ -65,10 +65,10 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
         start_date = datetime.date(2015, 11, 1)
         end_date = datetime.date(2015, 11, 18)
         breakdown = ['content_ad']
-        conversion_goals = campaign.conversiongoal_set.all()
+        pixels = campaign.account.conversionpixel_set.all()
         constraints = {'campaign': campaign, 'source': dash.models.Source.objects.all()}
 
-        api_touchpointconversions.query(start_date, end_date, breakdown=breakdown, conversion_goals=conversion_goals, constraints=constraints)
+        api_touchpointconversions.query(start_date, end_date, breakdown=breakdown, pixels=pixels, constraints=constraints)
         q = self._get_query(mock_cursor)
 
         m = re.search('SELECT(.+?)FROM.*SELECT(.+?)FROM', q)
@@ -95,10 +95,10 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
         start_date = datetime.date(2015, 11, 1)
         end_date = datetime.date(2015, 11, 18)
         breakdown = ['ad_group', 'source']
-        conversion_goals = campaign.conversiongoal_set.all()
+        pixels = campaign.account.conversionpixel_set.all()
         constraints = {'campaign': campaign, 'source': dash.models.Source.objects.all()}
 
-        api_touchpointconversions.query(start_date, end_date, breakdown=breakdown, conversion_goals=conversion_goals, constraints=constraints)
+        api_touchpointconversions.query(start_date, end_date, breakdown=breakdown, pixels=pixels, constraints=constraints)
         q = self._get_query(mock_cursor)
 
         m = re.search('SELECT(.+?)FROM.*SELECT(.+?)FROM', q)
@@ -128,10 +128,10 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
         start_date = datetime.date(2015, 11, 1)
         end_date = datetime.date(2015, 11, 18)
         breakdown = ['ad_group', 'source']
-        conversion_goals = campaign.conversiongoal_set.all()
+        pixels = campaign.account.conversionpixel_set.all()
         constraints = {'campaign': campaign, 'source': dash.models.Source.objects.all()}
 
-        api_touchpointconversions.query(start_date, end_date, breakdown=breakdown, conversion_goals=conversion_goals, constraints=constraints)
+        api_touchpointconversions.query(start_date, end_date, breakdown=breakdown, pixels=pixels, constraints=constraints)
         q = self._get_query(mock_cursor)
 
         self.assertEqual(2, q.count('WHERE'))
@@ -162,34 +162,11 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
         start_date = datetime.date(2015, 11, 1)
         end_date = datetime.date(2015, 11, 18)
         breakdown = ['ad_group', 'source']
-        conversion_goals = campaign.conversiongoal_set.all()
+        pixels = campaign.account.conversionpixel_set.all()
         constraints = {'campaign': campaign, 'source': dash.models.Source.objects.all()}
 
-        api_touchpointconversions.query(start_date, end_date, breakdown=breakdown, conversion_goals=conversion_goals, constraints=constraints)
-        self.assertEquals(mock_cursor().execute.call_count, 2)
-
-    def test_split_conversion_goals_by_window(self, mock_cursor):
-        cp = dash.models.ConversionPixel.objects.create(account=dash.models.Account.objects.get(id=1), slug='slug2')
-        cg1 = dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
-                                                        type=dash.constants.ConversionGoalType.PIXEL,
-                                                        name='goal name 2',
-                                                        pixel=cp,
-                                                        conversion_window=168)
-        cg2 = dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
-                                                        type=dash.constants.ConversionGoalType.PIXEL,
-                                                        name='goal name 3',
-                                                        pixel=cp,
-                                                        conversion_window=7)
-        cp2 = dash.models.ConversionPixel.objects.create(account=dash.models.Account.objects.get(id=1), slug='slug3')
-        cg3 = dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
-                                                        type=dash.constants.ConversionGoalType.PIXEL,
-                                                        name='goal name 4',
-                                                        pixel=cp2,
-                                                        conversion_window=7)
-
-        batches = api_touchpointconversions._split_conversion_goals_by_window([cg1, cg2, cg3])
-        self.assertItemsEqual(batches[0], [cg1, cg3])
-        self.assertItemsEqual(batches[1], [cg2])
+        api_touchpointconversions.query(start_date, end_date, breakdown=breakdown, pixels=pixels, constraints=constraints)
+        self.assertEquals(mock_cursor().execute.call_count, 4)
 
     def test_insert_conversion_window(self, mock_cursor):
         rows = [{
@@ -204,20 +181,8 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
             "slug": "slug2",
         }]
 
-        cp1 = dash.models.ConversionPixel.objects.create(account=dash.models.Account.objects.get(id=1), slug='slug2')
-        cg1 = dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
-                                                        type=dash.constants.ConversionGoalType.PIXEL,
-                                                        name='goal name 2',
-                                                        pixel=cp1,
-                                                        conversion_window=168)
-        cp2 = dash.models.ConversionPixel.objects.create(account=dash.models.Account.objects.get(id=1), slug='slug3')
-        cg2 = dash.models.ConversionGoal.objects.create(campaign=dash.models.Campaign.objects.get(id=1),
-                                                        type=dash.constants.ConversionGoalType.PIXEL,
-                                                        name='goal name 3',
-                                                        pixel=cp2,
-                                                        conversion_window=7)
-        conversion_goals = [cg1, cg2]
-        api_touchpointconversions._insert_conversion_window(rows, conversion_goals)
+        window = 7
+        api_touchpointconversions._insert_conversion_window(rows, window)
         self.assertItemsEqual([{
             "account": 1,
             "ad_group": 9999,
@@ -229,7 +194,7 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
             "ad_group": 9999,
             "conversion_count": 4,
             "slug": "slug2",
-            "conversion_window": 168,
+            "conversion_window": 7,
         }], rows)
 
 

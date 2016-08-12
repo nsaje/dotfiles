@@ -375,11 +375,7 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
             metricFormats[constants.chartMetric.COST_PER_NON_BOUNCED_VISIT] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.COST_PER_VISIT] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.COST_PER_NEW_VISITOR] = {'type': 'currency', 'fractionSize': 2};
-            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_1] = {'type': 'currency', 'fractionSize': 2};
-            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_2] = {'type': 'currency', 'fractionSize': 2};
-            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_3] = {'type': 'currency', 'fractionSize': 2};
-            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_4] = {'type': 'currency', 'fractionSize': 2};
-            metricFormats[constants.chartMetric.COST_PER_CONVERSION_GOAL_5] = {'type': 'currency', 'fractionSize': 2};
+            var AVG_GOAL_COST_FORMAT = {type: 'currency', fractionSize: 2};
 
             var getMetricName = function (metricId) {
                 var name = null;
@@ -392,13 +388,22 @@ oneApp.directive('zemChart', ['config', '$compile', '$window', function (config,
                 return name;
             };
 
+            var getMetricFormat = function (metricId) {
+                if (!metricId || metricId.indexOf('avg_cost_per_') < 0) {
+                    // NOTE: This will return undefined for pixel and conversion goal metrics
+                    // which is fine since they don't have to be formatted
+                    return metricFormats[metricId];
+                }
+                return AVG_GOAL_COST_FORMAT;
+            };
+
             var getPointFormat = function (metricId) {
                 var format = null;
                 var valueSuffix = '';
                 var valuePrefix = '';
                 var fractionSize = 0;
 
-                format = metricFormats[metricId];
+                format = getMetricFormat(metricId);
 
                 if (format !== undefined) {
                     fractionSize = format.fractionSize;

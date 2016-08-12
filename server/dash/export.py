@@ -133,7 +133,7 @@ ACCOUNT_CAMPAIGN_ONLY_ONCE_FIELDS = ACCOUNT_ONLY_ONCE_FIELDS + ('allocated_budge
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
-                   conversion_goals, include_settings=False, include_account_settings=False, include_budgets=False,
+                   conversion_goals, pixels=None, include_settings=False, include_account_settings=False, include_budgets=False,
                    include_flat_fees=False, include_projections=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
@@ -142,6 +142,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         breakdown=dimensions,
         ignore_diff_rows=ignore_diff_rows,
         conversion_goals=conversion_goals,
+        pixels=pixels,
         constraints=constraints
     )
     prefetched_data, sources, budgets, projections, account_projections, statuses, settings, account_settings =\
@@ -962,18 +963,27 @@ def _get_fieldnames(required_fields, additional_fields, exclude=[]):
     return fieldnames
 
 
-def _get_conversion_goals(user, campaign):
-    return campaign.conversiongoal_set.all()
-
-
-def _extend_fieldnames(fieldnames, conversion_goals, additional_fields):
+def _extend_fieldnames(fieldnames, additional_fields, conversion_goals=[], pixels=[]):
     for conversion_goal in conversion_goals:
         view_key = conversion_goal.get_view_key(conversion_goals)
         cpa_view_key = 'avg_cost_per_' + view_key
         if view_key in additional_fields:
             fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
         if cpa_view_key in additional_fields:
-            fieldnames[cpa_view_key] = 'Avg. CPA ({})'.format(conversion_goal.name)
+            fieldnames[cpa_view_key] = 'CPA ({})'.format(conversion_goal.name)
+
+    for pixel in pixels:
+        for conversion_window in constants.ConversionWindows.get_all():
+            view_key = pixel.get_view_key(conversion_window)
+            cpa_view_key = 'avg_cost_per_' + view_key
+            conversion_window_days = conversion_window / 24
+            name = '{} {} day{}'.format(pixel.name, conversion_window_days,
+                                        's' if conversion_window_days > 1 else '')
+            if view_key in additional_fields:
+                fieldnames[view_key] = name
+            if cpa_view_key in additional_fields:
+                fieldnames[cpa_view_key] = 'CPA ({})'.format(name)
+
     return fieldnames
 
 
@@ -1104,6 +1114,7 @@ class AccountExport(object):
     def get_data(self, user, account_id, filtered_sources, start_date, end_date,
                  order, additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
         account = helpers.get_account(user, account_id)
+        pixels = account.conversionpixel_set.filter(archived=False)
 
         dimensions = ['account']
         required_fields = ['start_date', 'end_date', 'account']
@@ -1132,6 +1143,7 @@ class AccountExport(object):
             exclude_fields.append('campaign_manager')
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
+        fieldnames = _extend_fieldnames(fieldnames, additional_fields, pixels=pixels)
 
         include_projections = bool(set([
             'pacing', 'spend_projection', 'allocated_budgets',
@@ -1146,6 +1158,7 @@ class AccountExport(object):
             order,
             breakdown == 'content_ad',
             [],
+            pixels=pixels,
             include_settings=True,
             include_projections=include_projections,
             account=account,
@@ -1178,9 +1191,10 @@ class CampaignExport(object):
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields)
-        conversion_goals = _get_conversion_goals(user, campaign)
+        conversion_goals = campaign.conversiongoal_set.all()
+        pixels = campaign.account.conversionpixel_set.filter(archived=False)
 
-        fieldnames = _extend_fieldnames(fieldnames, conversion_goals, additional_fields)
+        fieldnames = _extend_fieldnames(fieldnames, additional_fields, conversion_goals=conversion_goals, pixels=pixels)
 
         results = _generate_rows(
             dimensions,
@@ -1190,6 +1204,7 @@ class CampaignExport(object):
             order,
             breakdown == 'content_ad',
             conversion_goals,
+            pixels=pixels,
             include_settings=True,
             campaign=campaign,
             source=filtered_sources)
@@ -1220,8 +1235,10 @@ class AdGroupAdsExport(object):
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields)
-        conversion_goals = _get_conversion_goals(user, ad_group.campaign)
-        fieldnames = _extend_fieldnames(fieldnames, conversion_goals, additional_fields)
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.all()
+
+        fieldnames = _extend_fieldnames(fieldnames, additional_fields, conversion_goals=conversion_goals, pixels=pixels)
 
         results = _generate_rows(
             dimensions,
@@ -1231,6 +1248,7 @@ class AdGroupAdsExport(object):
             order,
             breakdown == 'content_ad',
             conversion_goals,
+            pixels=pixels,
             ad_group=ad_group,
             source=filtered_sources)
 
