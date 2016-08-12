@@ -1127,8 +1127,9 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     // Exceptions (total fee projection - only shown on ALL_ACCOUNTS level)
     COLUMNS.totalFeeProjection.levels = [constants.level.ALL_ACCOUNTS];
 
-    // Exceptions (supply dash url - only shown on AD_GROUPS level)
+    // Exceptions (supply dash url - only shown on AD_GROUPS level on base row level)
     COLUMNS.supplyDashUrl.levels = [constants.level.AD_GROUPS];
+    COLUMNS.supplyDashUrl.breakdownBaseLevelOnly = true;
 
     // Exceptions (source editable fields)
     COLUMNS.minBidCpc.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
