@@ -100,13 +100,13 @@ class ManagementReportTestCase(test.TestCase):
         )
 
         html = reports.management_report.get_daily_report_html(
-            today + datetime.timedelta(1)
+            today
         )
         self.assertIn('<li><a href="https://one.zemanta.com/accounts/1/campaigns">1 - test account 1 - $5000 - ', html)
         self.assertIn('<li><a href="https://one.zemanta.com/campaigns/1/ad_groups">$5000', html)
 
         html = reports.management_report.get_daily_report_html(
-            today + datetime.timedelta(2)
+            today + datetime.timedelta(1)
         )
         self.assertNotIn('<li><a href="https://one.zemanta.com/accounts/1/campaigns">1 - test account 1 - $5000', html)
         self.assertNotIn('<li><a href="https://one.zemanta.com/accounts/1/campaigns">$5000', html)
@@ -127,7 +127,7 @@ class ManagementReportTestCase(test.TestCase):
             name='Campaign 2'
         ).save(r)
         html = reports.management_report.get_daily_report_html(
-            today + datetime.timedelta(1)
+            today
         )
 
         self.assertIn(
