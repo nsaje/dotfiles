@@ -518,7 +518,7 @@ class MVAccount(DerivedMaterializedView):
             ]),
             'aggregates': models.MVMaster().get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
-            'source_table': 'mv_campaign',
+            'source_table': MVCampaign.TABLE_NAME,
         })
 
         return sql, {
@@ -580,7 +580,7 @@ class MVCampaign(DerivedMaterializedView):
             ]),
             'aggregates': models.MVMaster().get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
-            'source_table': 'mv_ad_group',
+            'source_table': MVAdGroup.TABLE_NAME,
         })
 
         return sql, {
@@ -704,7 +704,7 @@ class MVContentAd(DerivedMaterializedView):
             ]),
             'aggregates': models.MVMaster().get_ordered_aggregates(),
             'destination_table': self.TABLE_NAME,
-            'source_table': 'mv_content_ad_delivery',
+            'source_table': MVContentAdDeliveryDemo.TABLE_NAME,
         })
 
         return sql, {
