@@ -1,4 +1,4 @@
-CREATE TABLE mv_master_diff (
+CREATE TABLE mv_pubs_master (
        date date not null encode delta,
        source_id int2 encode bytedict,
 
@@ -6,7 +6,6 @@ CREATE TABLE mv_master_diff (
        account_id int2 encode lzo,
        campaign_id int2 encode lzo,
        ad_group_id int2 encode lzo,
-       content_ad_id integer encode lzo,
        publisher varchar(255) encode lzo,
 
        device_type int2 encode bytedict,
@@ -31,7 +30,8 @@ CREATE TABLE mv_master_diff (
        effective_cost_nano bigint encode lzo,
        effective_data_cost_nano bigint encode lzo,
        license_fee_nano bigint encode lzo,
+       margin_nano bigint encode lzo,
 
        users integer encode lzo,
        returning_users integer encode lzo
-) sortkey(date, source_id, account_id, campaign_id, ad_group_id, content_ad_id);
+) sortkey(date, source_id, account_id, campaign_id, ad_group_id, publisher);

@@ -417,6 +417,62 @@ class MasterView(Materialize):
         return sql, params
 
 
+class MasterPublishersView(Materialize):
+
+    TABLE_NAME = 'mv_pubs_master'
+
+    def __init__(self, *args, **kwargs):
+        self.outbrain = dash.models.Source.objects.get(name__iexact='outbrain')
+        super(MasterPublishersView, self).__init__(*args, **kwargs)
+
+    def generate(self, **kwargs):
+        with db.get_write_stats_transaction():
+            with db.get_write_stats_cursor() as c:
+                logger.info('Deleting data from table "%s" for date range %s - %s, job %s',
+                            self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
+                sql, params = prepare_date_range_delete_query(self.TABLE_NAME, self.date_from, self.date_to)
+                c.execute(sql, params)
+
+                logger.info('Creating temp table "mvh_ad_group_cpcs" for date range %s - %s, job %s',
+                            self.date_from, self.date_to, self.job_id)
+                sql, params = self.prepare_temp_table_ad_group_cpcs()
+                c.execute(sql, params)
+
+                logger.info('Inserting non-Outbrain data into table "%s" for date range %s - %s, job %s',
+                            self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
+                sql, params = self.prepare_select_insert_mv_pubs_master()
+                c.execute(sql, params)
+
+                logger.info('Inserting Outbrain data into table "%s" for date range %s - %s, job %s',
+                            self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
+                sql, params = self.prepare_select_insert_outbrain_to_mv_pubs_master()
+                c.execute(sql, params)
+
+    def prepare_temp_table_ad_group_cpcs(self):
+        sql = backtosql.generate_sql('etl_create_temp_table_mvh_ad_group_cpcs.sql', None)
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+            'source_name': self.outbrain.name,
+        }
+
+    def prepare_select_insert_mv_pubs_master(self):
+        sql = backtosql.generate_sql('etl_select_insert_mv_pubs_master.sql', None)
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+    def prepare_select_insert_outbrain_to_mv_pubs_master(self):
+        sql = backtosql.generate_sql('etl_select_insert_outbrain_to_mv_pubs_master.sql', {
+            'source_id': self.outbrain.id,
+        })
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }
+
+
 class MVConversions(Materialize):
 
     TABLE_NAME = 'mv_conversions'

@@ -494,3 +494,12 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         ], {constants.StructureDimension.CAMPAIGN: 1}), {
             'base': 'mv_content_ad_delivery_geo',
         })
+        self.assertEqual(m.get_best_view([
+            constants.StructureDimension.AD_GROUP,
+            constants.StructureDimension.PUBLISHER,
+            constants.TimeDimension.DAY,
+        ], {constants.StructureDimension.CAMPAIGN: 1}), {
+            'base': 'mv_pubs_master',
+            'conversions': 'mv_conversions',
+            'touchpointconversions': 'mv_touchpointconversions',
+        })
