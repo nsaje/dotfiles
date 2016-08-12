@@ -101,7 +101,9 @@ FORMAT_1_DECIMAL = []
 
 FORMAT_2_DECIMALS = []
 
-FORMAT_3_DECIMALS = ['pv_per_visit', 'avg_tos', 'data_cost', 'media_cost',
+FORMAT_3_DECIMALS = []
+
+FORMAT_4_DECIMALS = ['pv_per_visit', 'data_cost', 'media_cost',
                      'e_media_cost', 'e_data_cost',
                      'billing_cost', 'margin', 'agency_total',
                      'license_fee', 'total_fee', 'flat_fee',
@@ -938,6 +940,8 @@ def _format_decimals(value, field):
         return '{:.2f}'.format(Decimal(value or 0))
     elif value and field in FORMAT_3_DECIMALS:
         return '{:.3f}'.format(Decimal(value or 0))
+    elif value and field in FORMAT_4_DECIMALS:
+        return '{:.4f}'.format(Decimal(value or 0))
     return value
 
 
