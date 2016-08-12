@@ -10,6 +10,8 @@
                         <th>Report Level</th>
                         <th>Granularity</th>
                         <th>Frequency</th>
+                        <th ng-if="hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">Day of week</th>
+                        <th ng-if="hasPermission('zemauth.can_set_time_period_in_scheduled_reports')">Time period</th>
                         <th>Recipients</th>
                         <th></th>
                     </tr>
@@ -32,6 +34,8 @@
                         <td>{{ item.level }}</td>
                         <td>{{ item.granularity }}</td>
                         <td>{{ item.frequency }}</td>
+                        <td ng-if="hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">{{ item.day_of_week }}</td>
+                        <td ng-if="hasPermission('zemauth.can_set_time_period_in_scheduled_reports')">{{ item.time_period }}</td>
                         <td>{{ item.recipients }}</td>
                         <td><button type="button" class="btn btn-default" ng-click="removeReport(item.scheduled_report_id)">Remove</button></td>
                     </tr>

@@ -1247,6 +1247,46 @@ class ScheduledReportSendingFrequency(ConstantBase):
     }
 
 
+class ScheduledReportDayOfWeek(ConstantBase):
+    MONDAY = 1
+    TUESDAY = 2
+    WEDNESDAY = 3
+    THURSDAY = 4
+    FRIDAY = 5
+    SATURDAY = 6
+    SUNDAY = 7
+
+    _VALUES = {
+        MONDAY: 'Monday',
+        TUESDAY: 'Tuesday',
+        WEDNESDAY: 'Wednesday',
+        THURSDAY: 'Thursday',
+        FRIDAY: 'Friday',
+        SATURDAY: 'Saturday',
+        SUNDAY: 'Sunday',
+    }
+
+
+class ScheduledReportTimePeriod(ConstantBase):
+    YESTERDAY = 1
+    LAST_7_DAYS = 2
+    LAST_30_DAYS = 3
+    THIS_WEEK = 4
+    LAST_WEEK = 5
+    THIS_MONTH = 6
+    LAST_MONTH = 7
+
+    _VALUES = {
+        YESTERDAY: 'Yesterday',
+        LAST_7_DAYS: 'Last 7 Days',
+        LAST_30_DAYS: 'Last 30 Days',
+        THIS_WEEK: 'This Week',
+        LAST_WEEK: 'Last Week',
+        THIS_MONTH: 'This Month',
+        LAST_MONTH: 'Last Month',
+    }
+
+
 class ScheduledReportState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2

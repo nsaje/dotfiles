@@ -4,6 +4,7 @@ import pytz
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 
 from utils import exc
 
@@ -24,9 +25,10 @@ def get_due_scheduled_reports():
     if reports_sent_today.exists():
         due_reports = due_reports.exclude(id__in=[rep.scheduled_report.id for rep in reports_sent_today])
 
-    if today.isoweekday() != 1:  # weekly reports are only sent on Mondays
-        due_reports = due_reports.exclude(
-            sending_frequency=constants.ScheduledReportSendingFrequency.WEEKLY)
+    due_reports = due_reports.exclude(
+        ~Q(day_of_week=today.isoweekday()),
+        sending_frequency=constants.ScheduledReportSendingFrequency.WEEKLY,
+    )
 
     if today.day != 1:  # montly reports are only sent on the 1st
         due_reports = due_reports.exclude(
@@ -39,22 +41,39 @@ def _get_yesterday(today):
     return today - datetime.timedelta(days=1, hours=-1)
 
 
-def get_scheduled_report_date_range(sending_frequency):
+def get_scheduled_report_date_range(time_period):
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
     today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None).date()
     yesterday = today - datetime.timedelta(days=1)
 
-    if sending_frequency == constants.ScheduledReportSendingFrequency.DAILY:
+    if time_period == constants.ScheduledReportTimePeriod.YESTERDAY:
         return (yesterday, yesterday)
-    elif sending_frequency == constants.ScheduledReportSendingFrequency.WEEKLY:
-        week_ago = yesterday - datetime.timedelta(days=6)
-        return (week_ago, yesterday)
-    elif sending_frequency == constants.ScheduledReportSendingFrequency.MONTHLY:
-        if today.month == 1:
-            month_ago = today.replace(month=12, year=today.year - 1)
+    elif time_period == constants.ScheduledReportTimePeriod.LAST_7_DAYS:
+        before_7_days = today - datetime.timedelta(days=7)
+        return (before_7_days, yesterday)
+    elif time_period == constants.ScheduledReportTimePeriod.LAST_30_DAYS:
+        before_30_days = today - datetime.timedelta(days=30)
+        return (before_30_days, yesterday)
+    elif time_period == constants.ScheduledReportTimePeriod.THIS_WEEK:
+        if today.isoweekday() != 7:
+            sunday = today - datetime.timedelta(days=today.isoweekday())
         else:
-            month_ago = today.replace(month=today.month - 1)
-        return (month_ago, yesterday)
+            sunday = today
+        return (sunday, yesterday)
+    elif time_period == constants.ScheduledReportTimePeriod.LAST_WEEK:
+        if today.isoweekday() != 7:
+            last_saturday = today - datetime.timedelta(days=today.isoweekday() + 1)
+        else:
+            last_saturday = today - datetime.timedelta(days=1)
+        last_sunday = last_saturday - datetime.timedelta(days=6)
+        return (last_sunday, last_saturday)
+    elif time_period == constants.ScheduledReportTimePeriod.THIS_MONTH:
+        first = today - datetime.timedelta(days=today.day - 1)
+        return (first, yesterday)
+    elif time_period == constants.ScheduledReportTimePeriod.LAST_MONTH:
+        last = today - datetime.timedelta(days=today.day)
+        first = last - datetime.timedelta(days=last.day - 1)
+        return (first, last)
     return None, None
 
 
@@ -64,6 +83,14 @@ def get_sending_frequency(freq):
         'weekly': constants.ScheduledReportSendingFrequency.WEEKLY,
         'monthly': constants.ScheduledReportSendingFrequency.MONTHLY
     }.get(freq)
+
+
+def _get_default_time_period(sending_frequency):
+    return {
+        constants.ScheduledReportSendingFrequency.DAILY: constants.ScheduledReportTimePeriod.YESTERDAY,
+        constants.ScheduledReportSendingFrequency.WEEKLY: constants.ScheduledReportTimePeriod.LAST_WEEK,
+        constants.ScheduledReportSendingFrequency.MONTHLY: constants.ScheduledReportTimePeriod.LAST_MONTH,
+    }.get(sending_frequency)
 
 
 def add_scheduled_report(
@@ -82,16 +109,26 @@ def add_scheduled_report(
         campaign=None,
         account=None,
         sending_frequency=constants.ScheduledReportSendingFrequency.DAILY,
+        day_of_week=constants.ScheduledReportDayOfWeek.MONDAY,
+        time_period=constants.ScheduledReportTimePeriod.YESTERDAY,
         recipient_emails=''):
 
     if not user.has_perm('zemauth.can_include_model_ids_in_reports'):
         include_model_ids = False
+
+    if not user.has_perm('zemauth.can_set_time_period_in_scheduled_reports'):
+        time_period = _get_default_time_period(sending_frequency)
+
+    if not user.has_perm('zemauth.can_set_day_of_week_in_scheduled_reports'):
+        day_of_week = constants.ScheduledReportDayOfWeek.MONDAY
 
     form = forms.ScheduleReportForm(
         {
             'report_name': report_name,
             'granularity': granularity,
             'frequency': sending_frequency,
+            'day_of_week': day_of_week,
+            'time_period': time_period,
             'recipient_emails': recipient_emails
         })
 
@@ -123,7 +160,10 @@ def add_scheduled_report(
             created_by=user,
             name=form.cleaned_data['report_name'],
             report=export_report,
-            sending_frequency=form.cleaned_data['frequency'])
+            sending_frequency=form.cleaned_data['frequency'],
+            day_of_week=form.cleaned_data['day_of_week'],
+            time_period=form.cleaned_data['time_period'],
+        )
         scheduled_report.save()
 
         scheduled_report.set_recipient_emails_list(form.cleaned_data['recipient_emails'])

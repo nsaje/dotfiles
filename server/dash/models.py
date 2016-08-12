@@ -3692,6 +3692,16 @@ class ScheduledExportReport(models.Model):
         choices=constants.ScheduledReportSendingFrequency.get_choices()
     )
 
+    day_of_week = models.IntegerField(
+        default=constants.ScheduledReportDayOfWeek.MONDAY,
+        choices=constants.ScheduledReportDayOfWeek.get_choices()
+    )
+
+    time_period = models.IntegerField(
+        default=constants.ScheduledReportTimePeriod.YESTERDAY,
+        choices=constants.ScheduledReportTimePeriod.get_choices()
+    )
+
     def __unicode__(self):
         return u' '.join(filter(None, (
             self.name,

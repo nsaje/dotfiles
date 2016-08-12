@@ -1609,6 +1609,8 @@ class ScheduledReportsTest(test.TestCase):
             'level': u'Account - test account 1 \u010c\u017e\u0161',
             'scheduled_report_id': 1,
             'frequency': 'Daily',
+            'day_of_week': 'Monday',
+            'time_period': 'Yesterday',
             'granularity': 'Account'}])
         self.assertTrue(content['success'])
 

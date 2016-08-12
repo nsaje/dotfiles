@@ -2,8 +2,6 @@ import logging
 
 import influx
 
-from django.core.management.base import BaseCommand
-
 from dash import models
 from dash import constants
 from dash import scheduled_report
@@ -27,7 +25,7 @@ class Command(ExceptionCommand):
             report_log.scheduled_report = sr
 
             try:
-                start_date, end_date = scheduled_report.get_scheduled_report_date_range(sr.sending_frequency)
+                start_date, end_date = scheduled_report.get_scheduled_report_date_range(sr.time_period)
                 email_adresses = sr.get_recipients_emails_list()
                 report_log.start_date = start_date
                 report_log.end_date = end_date

@@ -93,6 +93,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     additional_fields: '',
                     filtered_sources: '',
                     frequency: 'daily',
+                    day_of_week: 1,
+                    time_period: 1,
                     recipient_emails: undefined,
                     report_name: undefined,
                     include_model_ids: undefined
@@ -136,6 +138,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     additional_fields: '',
                     filtered_sources: '',
                     frequency: 'daily',
+                    day_of_week: 1,
+                    time_period: 1,
                     recipient_emails: undefined,
                     report_name: undefined,
                     include_model_ids: undefined
@@ -179,6 +183,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     additional_fields: '',
                     filtered_sources: '',
                     frequency: 'daily',
+                    day_of_week: 1,
+                    time_period: 1,
                     recipient_emails: undefined,
                     report_name: undefined,
                     include_model_ids: undefined

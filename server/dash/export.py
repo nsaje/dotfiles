@@ -181,6 +181,9 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
 
     sorted_ret = list(sort_results(stats, [ordering]))
 
+    if len(sorted_ret) == 0:
+        return sorted_ret
+
     is_breakdown_by_day = 'date' in dimensions
     first_stat_date = is_breakdown_by_day and list(
         sorted(stat.get('date') for stat in sorted_ret)
@@ -198,7 +201,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
 def _generate_stats_date(dimensions, prefetched_data, sources, start_date, end_date):
     if 'date' in dimensions:
         date = start_date
-        while date < end_date:
+        while date <= end_date:
             for stat in _generate_stats_source(dimensions, prefetched_data, sources):
                 stat['date'] = date
                 yield stat

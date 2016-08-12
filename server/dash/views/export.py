@@ -437,6 +437,8 @@ def _add_scheduled_report_from_request(request, by_source=False, ad_group=None, 
         campaign=campaign,
         account=account,
         sending_frequency=scheduled_report.get_sending_frequency(r.get('frequency')),
+        day_of_week=r.get('day_of_week'),
+        time_period=r.get('time_period'),
         recipient_emails=r.get('recipient_emails'))
 
 
@@ -448,7 +450,7 @@ class ScheduledReports(api_common.BaseApiView):
         else:
             reports = self.get_all_accounts_scheduled_reports(request.user)
         response = {
-            'reports': self.format_reports(reports)
+            'reports': self.format_reports(reports, request.user)
         }
         return self.create_api_response(response)
 
@@ -487,7 +489,7 @@ class ScheduledReports(api_common.BaseApiView):
                 action_type=constants.HistoryActionType.REPORTING_MANAGE
             )
 
-    def format_reports(self, reports):
+    def format_reports(self, reports, user):
         result = []
         for r in reports:
             item = {}
@@ -507,6 +509,10 @@ class ScheduledReports(api_common.BaseApiView):
                 ('by day' if r.report.breakdown_by_day else '')]))
 
             item['frequency'] = constants.ScheduledReportSendingFrequency.get_text(r.sending_frequency)
+            if user.has_perm('zemauth.can_set_day_of_week_in_scheduled_reports'):
+                item['day_of_week'] = constants.ScheduledReportDayOfWeek.get_text(r.day_of_week)
+            if user.has_perm('zemauth.can_set_time_period_in_scheduled_reports'):
+                item['time_period'] = constants.ScheduledReportTimePeriod.get_text(r.time_period)
             item['scheduled_report_id'] = r.id
             item['recipients'] = ', '.join(r.get_recipients_emails_list())
             result.append(item)
