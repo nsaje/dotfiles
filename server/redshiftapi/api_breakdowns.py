@@ -50,6 +50,7 @@ def query(breakdown, constraints, breakdown_constraints, conversion_goals, order
                 empty_row = db.get_empty_row_dict(cursor.description)
 
         _post_process(results, empty_row, breakdown, constraints, breakdown_constraints, offset, limit)
+        remove_postclick_values(breakdown, results)
 
         with influx.block_timer('redshiftapi.api_breakdowns.set_cache_value_overhead'):
             cache.set(cache_key, results)
@@ -95,3 +96,19 @@ def _post_process(rows, empty_row, breakdown, constraints, breakdown_constraints
     if target_dimension == 'device_type':
         postprocess.postprocess_device_type_dimension(
             target_dimension, rows, empty_row, breakdown, breakdown_constraints, offset, limit)
+
+
+POSTCLICK_FIELDS = [
+    'visits', 'click_discrepancy', 'pageviews', 'new_visits', 'percent_new_users', 'bounce_rate',
+    'pv_per_visit', 'avg_tos', 'returning_users', 'unique_users', 'new_users', 'bounced_visits',
+    'total_seconds', 'avg_cost_per_minute', 'non_bounced_visits', 'avg_cost_per_non_bounced_visit',
+    'total_pageviews', 'avg_cost_per_pageview', 'avg_cost_for_new_visitor', 'avg_cost_per_visit',
+]
+
+
+def remove_postclick_values(breakdown, rows):
+    # HACK: Temporary hack that removes postclick data when we breakdown by delivery
+    if constants.get_delivery_dimension(breakdown) is not None:
+        for row in rows:
+            for key in POSTCLICK_FIELDS:
+                row[key] = None
