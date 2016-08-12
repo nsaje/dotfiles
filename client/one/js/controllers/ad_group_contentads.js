@@ -4,8 +4,11 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
 
     $scope.order = '-upload_time';
     $scope.loadRequestInProgress = false;
-    $scope.sizeRange = [5, 10, 20, 50];
-    $scope.size = $scope.sizeRange[0];
+    $scope.selection = {
+        sizeRange: [5, 10, 20, 50],
+        size: 5,
+    };
+    $scope.size = $scope.selection.size; // legacy
     $scope.lastChangeTimeout = null;
     $scope.rows = null;
     $scope.totals = null;
@@ -653,8 +656,9 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
         }
     };
 
-    $scope.$watch('size', function (newValue, oldValue) {
+    $scope.$watch('selection.size', function (newValue, oldValue) {
         if (newValue !== oldValue) {
+            $scope.size = newValue;
             $scope.loadPage();
         }
     });
@@ -747,7 +751,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
     var getTableData = function () {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.selection.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 var defaultChartMetrics;
 
@@ -880,12 +884,12 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$modal', '$
             $location.search('page', page);
         }
 
-        if (size !== 0 && $scope.size !== size) {
-            $scope.size = size;
+        if (size !== 0 && $scope.selection.size !== size) {
+            $scope.selection.size = size;
         }
         // if nothing in local storage or page query var set first as default
-        if ($scope.size === 0) {
-            $scope.size = $scope.sizeRange[0];
+        if ($scope.selection.size === 0) {
+            $scope.selection.size = $scope.selection.sizeRange[0];
         }
         getTableData();
         getDailyStats();

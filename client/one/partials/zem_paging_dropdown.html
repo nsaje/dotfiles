@@ -1,7 +1,7 @@
 <div class="dropdown" dropdown aria-haspopup="true" style="display:inline-block">
-<a href class="btn btn-default dropdown-toggle" dropdown-toggle ng-model="selection">{{ selectionText }}&nbsp;<span class="caret"></a>
+<a href class="btn btn-default dropdown-toggle" dropdown-toggle ng-model="selection.size">{{ selectionText }}&nbsp;<span class="caret"></a>
 <ul class="dropdown-menu dropdown-menu-activation" role="menu">
-    <li ng-repeat="count in counts"><a tabindex="-1" ng-click="select(count, count)" href="#">{{ count }}</a></li>
+    <li ng-repeat="count in selection.sizeRange"><a tabindex="-1" ng-click="select(count, count)" href="#">{{ count }}</a></li>
     <!-- max int is derived from stack exch. as 2^32-1 -->
     <!--
     <li><a tabindex="-1" ng-click="select(selectAllCount, 'Show All')" href="#">Show All</a></li>

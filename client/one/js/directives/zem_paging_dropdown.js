@@ -5,7 +5,6 @@ oneApp.directive('zemPagingDropdown', function () {
     return {
         restrict: 'E',
         scope: {
-            counts: '=',
             selection: '=',
             selectionText: '=',
             selectAllCount: '='
@@ -13,7 +12,7 @@ oneApp.directive('zemPagingDropdown', function () {
         templateUrl: '/partials/zem_paging_dropdown.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
             $scope.selectAllCount = 4294967295;
-            $scope.$watch('selection', function (newValue, oldValue) {
+            $scope.$watch('selection.size', function (newValue, oldValue) {
                 if (newValue === $scope.selectAllCount) {
                     $scope.selectionText = 'Show All';
                 } else {
@@ -22,7 +21,7 @@ oneApp.directive('zemPagingDropdown', function () {
             });
 
             $scope.select = function (value, text) {
-                $scope.selection = value;
+                $scope.selection.size = value;
                 $scope.selectionText = text;
             };
         }]
