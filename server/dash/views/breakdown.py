@@ -412,7 +412,7 @@ def get_report_ad_group_publishers(user, filtered_sources, start_date, end_date,
     for row in response['rows']:
         row['publisher'] = row['domain']
         row['publisher_name'] = row['domain']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['publisher'], row)
+        row['breakdown_id'] = stats.helpers.create_breakdown_id(['publisher', 'source_id'], row)
         row['breakdown_name'] = row['domain']
         row['parent_breakdown_id'] = None
 
@@ -607,6 +607,9 @@ class AdGroupBreakdown(api_common.BaseApiView):
                 show_blacklisted_publishers=form.cleaned_data.get('show_blacklisted_publishers'),
             )
             return self.create_api_response(report)
+
+        if stats.constants.get_base_dimension(breakdown) == 'publisher':
+            breakdown = ['publisher', 'source_id'] + breakdown[1:]
 
         report = stats.api_breakdowns.query(
             request.user,
