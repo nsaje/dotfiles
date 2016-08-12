@@ -1,4 +1,4 @@
-/* globals oneApp, constants */
+/* globals angular, oneApp, constants */
 /* eslint-disable camelcase*/
 'use strict';
 
@@ -68,12 +68,10 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         metaData.columns.forEach(function (column) {
             convertedStats[column.field] = convertField(row[column.field], column.type);
         });
-        convertedStats = setLinkFields(
-            convertedStats, row.url, row.redirector_url, row.title, row.supply_dash_disabled_message
-        );
+        convertedStats = setUrlLinkField(convertedStats, row.url);
+        convertedStats = setBreakdownField(convertedStats, metaData, row.url, row.redirector_url, row.title);
         convertedStats = setEditableFields(convertedStats, row.editable_fields);
         convertedStats = setGoalStatuses(convertedStats, row.styles);
-        convertedStats = updateNameFieldData(convertedStats, metaData);
         return convertedStats;
     }
 
@@ -90,20 +88,25 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         }
     }
 
-    function setLinkFields (stats, url, redirectorUrl, title, supplyDashDisabledMessage) {
+    function setUrlLinkField (stats, url) {
         if (url !== undefined) {
             stats.urlLink = {
                 text: url !== '' ? url : 'N/A',
                 url: url !== '' ? url : null,
             };
+        }
+        return stats;
+    }
 
-            stats.titleLink = {
+    function setBreakdownField (stats, metaData, url, redirectorUrl, title) {
+        if (metaData.breakdown === constants.breakdown.CONTENT_AD) {
+            var titleLink = {
                 text: title,
                 url: url !== '' ? url : null,
                 redirectorUrl: redirectorUrl !== '' ? redirectorUrl : null,
             };
+            angular.extend(stats[zemGridEndpointColumns.COLUMNS.name.field], titleLink);
         }
-
         return stats;
     }
 
@@ -129,13 +132,6 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
                 stats[field].goalStatus = goalStatuses[field];
             }
         });
-        return stats;
-    }
-
-    function updateNameFieldData (stats, metaData) {
-        if (metaData.breakdown === constants.breakdown.CONTENT_AD) {
-            stats[zemGridEndpointColumns.COLUMNS.name.field] = stats.titleLink;
-        }
         return stats;
     }
 

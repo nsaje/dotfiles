@@ -94,7 +94,8 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'daily_budget', 'current_daily_budget', 'yesterday_cost',
                        'image_urls', 'urlLink', 'upload_time',
                        'batch_name', 'display_url', 'brand_name',
-                       'description', 'call_to_action', 'e_yesterday_cost']
+                       'description', 'call_to_action', 'e_yesterday_cost',
+                       'breakdown_name']
 
 FORMAT_1_DECIMAL = ['avg_tos']
 

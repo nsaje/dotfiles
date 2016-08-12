@@ -88,6 +88,7 @@ describe('zemGridEndpointApiConverter', function () {
         };
 
         metaData = {
+            breakdown: 'content_ad',
             columns: [
                 {
                     field: 'breakdown_name',
@@ -118,6 +119,9 @@ describe('zemGridEndpointApiConverter', function () {
                     stats: {
                         breakdown_name: {
                             value: 'Test breakdown 1',
+                            text: 'Example 1',
+                            url: 'example1.com',
+                            redirectorUrl: 'redirector.example1.com',
                         },
                         clicks: {
                             value: 100,
@@ -130,11 +134,6 @@ describe('zemGridEndpointApiConverter', function () {
                         urlLink: {
                             text: 'example1.com',
                             url: 'example1.com',
-                        },
-                        titleLink: {
-                            text: 'Example 1',
-                            url: 'example1.com',
-                            redirectorUrl: 'redirector.example1.com',
                         },
                         domain_link: {
                             url: 'domainlink.com',
@@ -151,6 +150,9 @@ describe('zemGridEndpointApiConverter', function () {
                     stats: {
                         breakdown_name: {
                             value: 'Test breakdown 2',
+                            text: 'Example 2',
+                            url: 'example2.com',
+                            redirectorUrl: null,
                         },
                         clicks: {
                             value: 200,
@@ -163,11 +165,6 @@ describe('zemGridEndpointApiConverter', function () {
                         urlLink: {
                             text: 'example2.com',
                             url: 'example2.com',
-                        },
-                        titleLink: {
-                            text: 'Example 2',
-                            url: 'example2.com',
-                            redirectorUrl: null,
                         },
                         domain_link: {
                             url: 'domainlink.com',
@@ -184,6 +181,9 @@ describe('zemGridEndpointApiConverter', function () {
                     stats: {
                         breakdown_name: {
                             value: 'Test breakdown 3',
+                            text: 'Example 3',
+                            url: null,
+                            redirectorUrl: null,
                         },
                         clicks: {
                             value: 300,
@@ -196,11 +196,6 @@ describe('zemGridEndpointApiConverter', function () {
                         urlLink: {
                             text: 'N/A',
                             url: null,
-                        },
-                        titleLink: {
-                            text: 'Example 3',
-                            url: null,
-                            redirectorUrl: null,
                         },
                         domain_link: {
                             url: 'domainlink.com',
@@ -217,6 +212,9 @@ describe('zemGridEndpointApiConverter', function () {
             totals: {
                 breakdown_name: {
                     value: undefined,
+                    text: undefined,
+                    url: undefined,
+                    redirectorUrl: undefined,
                 },
                 clicks: {
                     value: 1000,
