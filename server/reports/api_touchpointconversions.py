@@ -1,6 +1,5 @@
 import copy
-from multiprocessing.pool import ThreadPool
-from functools import partial
+import collections
 
 from reports import db_raw_helpers
 from reports import redshift
@@ -56,25 +55,12 @@ def query(start_date, end_date, order=[], breakdown=[], pixels=[], constraints={
     if not pixels:
         return results
 
-    batches = _create_pixel_batches(pixels)
-    pool = ThreadPool(processes=4)
-    map_results = pool.map(
-        partial(_async_query, breakdown, order, constraints, constraints_list),
-        batches,
-    )
-
-    results = []
-    for partial_results in map_results:
-        results.extend(partial_results)
-    return results
-
-
-def _async_query(breakdown, order, constraints, constraints_list, batch):
-    window, pixels = batch
     cursor = redshift.get_cursor(read_only=True)
-    batch_results = _query(cursor, pixels, window, constraints, constraints_list, breakdown, order)
+    for window, pixels_batch in _create_pixel_batches(pixels):
+        batch_results = _query(cursor, pixels_batch, window, constraints, constraints_list, breakdown, order)
+        results.extend(batch_results)
     cursor.close()
-    return batch_results
+    return results
 
 
 def _query(cursor, pixels, window, constraints, constraints_list, breakdown, order):
