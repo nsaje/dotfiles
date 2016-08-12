@@ -128,9 +128,9 @@ class ExportTestCase(test.TestCase):
         content = export.get_csv_content(fieldnames, self.data)
 
         expected_content = '''Date,Media Cost,Data Cost,Clicks,CTR\r
-2014-07-01,1000.12,10.10,103,0.0103\r
-2014-07-01,2000.12,23.10,203,0.0203\r
-2014-07-01,3000.12,33.10,303,0.0303\r
+2014-07-01,1000.120,10.100,103,0.010\r
+2014-07-01,2000.120,23.100,203,0.020\r
+2014-07-01,3000.120,33.100,303,0.030\r
 '''
         expected_content = test_helper.format_csv_content(expected_content)
         self.assertEqual(content, expected_content)
@@ -151,9 +151,9 @@ class ExportTestCase(test.TestCase):
         content = export.get_csv_content(fieldnames, self.data)
 
         expected_content = '''Date,Media Cost,Data Cost,Clicks,CTR,Status\r
-2014-07-01,1000.12,10.10,103,0.0103,Active\r
-2014-07-01,2000.12,23.10,203,0.0203,Inactive\r
-2014-07-01,3000.12,33.10,303,0.0303,Archived\r
+2014-07-01,1000.120,10.100,103,0.010,Active\r
+2014-07-01,2000.120,23.100,203,0.020,Inactive\r
+2014-07-01,3000.120,33.100,303,0.030,Archived\r
 '''
         expected_content = test_helper.format_csv_content(expected_content)
         self.assertEqual(content, expected_content)

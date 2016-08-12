@@ -97,9 +97,11 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'description', 'call_to_action', 'e_yesterday_cost',
                        'breakdown_name']
 
-FORMAT_1_DECIMAL = ['avg_tos']
+FORMAT_1_DECIMAL = []
 
-FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'data_cost', 'media_cost',
+FORMAT_2_DECIMALS = []
+
+FORMAT_3_DECIMALS = ['pv_per_visit', 'avg_tos', 'data_cost', 'media_cost',
                      'e_media_cost', 'e_data_cost',
                      'billing_cost', 'margin', 'agency_total',
                      'license_fee', 'total_fee', 'flat_fee',
@@ -107,9 +109,7 @@ FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'data_cost', 'media_cost',
                      'license_fee_projection', 'total_fee_projection',
                      'avg_cost_per_minute', 'avg_cost_per_pageview',
                      'avg_cost_per_visit', 'avg_cost_per_non_bounced_visit',
-                     'avg_cost_for_new_visitor', ]
-
-FORMAT_3_DECIMALS = ['cpc']
+                     'avg_cost_for_new_visitor', 'avg_tos', 'cpc', 'ctr']
 
 FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate', 'ctr', 'click_discrepancy', 'pacing']
 
@@ -933,11 +933,11 @@ def _format_statuses_and_dates(value, field, archived):
 
 def _format_decimals(value, field):
     if value and field in FORMAT_1_DECIMAL:
-        return '{:.1f}'.format(value)
+        return '{:.1f}'.format(Decimal(value or 0))
     elif value and field in FORMAT_2_DECIMALS or 'avg_cost_per' in field:
-        return '{:.2f}'.format(value or 0.0)
+        return '{:.2f}'.format(Decimal(value or 0))
     elif value and field in FORMAT_3_DECIMALS:
-        return '{:.3f}'.format(value)
+        return '{:.3f}'.format(Decimal(value or 0))
     return value
 
 
