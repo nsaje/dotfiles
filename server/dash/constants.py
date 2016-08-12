@@ -1651,8 +1651,12 @@ class FacebookAccountStatus(ConstantBase):
 class RuleType(ConstantBase):
     STARTS_WITH = 1
     CONTAINS = 2
+    NOT_STARTS_WITH = 3
+    NOT_CONTAINS = 4
 
     _VALUES = {
         STARTS_WITH: 'Starts with',
         CONTAINS: 'Contains',
+        NOT_STARTS_WITH: 'Not starts with',
+        NOT_CONTAINS: 'Not contains',
     }
