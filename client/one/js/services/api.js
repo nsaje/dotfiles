@@ -894,28 +894,22 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             $http.get(url, config).
                 success(function (response, status) {
-                    var chartData, conversionGoals, pixels;
-                    if (response && response.data) {
-                        if (response.data.chart_data) {
-                            chartData = {
-                                groups: response.data.chart_data.map(function (group) {
-                                    return convertFromApi(group);
-                                }),
-                                campaignGoals: response.data.campaign_goals,
-                                goalFields: response.data.goal_fields,
-                            };
-                        }
-                        if (response.data.conversion_goals) {
-                            conversionGoals = response.data.conversion_goals;
-                        }
-                        if (response.data.pixels) {
-                            pixels = response.data.pixels;
-                        }
+                    var chartData, conversionGoals;
+                    if (response && response.data && response.data.chart_data) {
+                        chartData = {
+                            groups: response.data.chart_data.map(function (group) {
+                                return convertFromApi(group);
+                            }),
+                            campaignGoals: response.data.campaign_goals,
+                            goalFields: response.data.goal_fields,
+                        };
+                    }
+                    if (response && response.data && response.data.conversion_goals) {
+                        conversionGoals = response.data.conversion_goals;
                     }
                     deferred.resolve({
                         chartData: chartData,
-                        conversionGoals: conversionGoals,
-                        pixels: pixels,
+                        conversionGoals: conversionGoals
                     });
                 }).
                 error(function (data, status, headers, config) {

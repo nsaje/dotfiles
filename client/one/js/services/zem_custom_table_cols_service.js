@@ -10,6 +10,8 @@ oneApp.factory('zemCustomTableColsService', ['zemLocalStorageService', function 
             columns.forEach(function (x) {
                 x.checked = x.unselectable || cols.indexOf(x.field) > -1;
             });
+        } else {
+            cols = [];
         }
     }
 

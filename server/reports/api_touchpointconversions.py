@@ -5,8 +5,6 @@ from reports import db_raw_helpers
 from reports import redshift
 from reports import rs_helpers
 
-import dash.constants
-
 
 class RSTouchpointConversionsModel(redshift.RSModel):
     TABLE_NAME = 'touchpointconversions'
@@ -39,10 +37,10 @@ class RSTouchpointConversionsModel(redshift.RSModel):
 RSTouchpointConversions = RSTouchpointConversionsModel()
 
 
-def query(start_date, end_date, order=[], breakdown=[], pixels=[], constraints={}, constraints_list=[]):
+def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], constraints={}, constraints_list=[]):
 
     breakdown = copy.copy(breakdown)
-    pixels = copy.copy(pixels)
+    conversion_goals = copy.copy(conversion_goals)
     order = copy.copy(order)
     constraints = copy.copy(constraints)
 
@@ -51,25 +49,31 @@ def query(start_date, end_date, order=[], breakdown=[], pixels=[], constraints={
 
     constraints = db_raw_helpers.extract_obj_ids(constraints)
 
-    results = []
-    if not pixels:
-        return results
-
     cursor = redshift.get_cursor(read_only=True)
-    for window, pixels_batch in _create_pixel_batches(pixels):
-        batch_results = _query(cursor, pixels_batch, window, constraints, constraints_list, breakdown, order)
-        results.extend(batch_results)
-    cursor.close()
+
+    if conversion_goals:
+        results = []
+        for conversion_goals_batch in _split_conversion_goals_by_window(conversion_goals):
+            batch_results = _query(cursor, conversion_goals_batch, constraints, constraints_list, breakdown, order)
+            results.extend(batch_results)
+        cursor.close()
+    else:
+        results = _query(cursor, conversion_goals, constraints, constraints_list, breakdown, order)
+        cursor.close()
+
     return results
 
 
-def _query(cursor, pixels, window, constraints, constraints_list, breakdown, order):
+def _query(cursor, conversion_goals, constraints, constraints_list, breakdown, order):
     constraints_list = copy.copy(constraints_list)
-    # create a base object, then OR onto it
-    rsq = redshift.RSQ(account=pixels[0].account_id, slug=pixels[0].slug, conversion_lag__lte=window)
-    for pixel in pixels[1:]:
-        rsq |= redshift.RSQ(account=pixel.account_id, slug=pixel.slug, conversion_lag__lte=window)
-    constraints_list.append(rsq)
+    if conversion_goals:
+        # create a base object, then OR onto it
+        rsq = redshift.RSQ(account=conversion_goals[0].pixel.account_id, slug=conversion_goals[0].pixel.slug,
+                           conversion_lag__lte=conversion_goals[0].conversion_window)
+        for conversion_goal in conversion_goals[1:]:
+            rsq |= redshift.RSQ(account=conversion_goal.pixel.account_id, slug=conversion_goal.pixel.slug,
+                                conversion_lag__lte=conversion_goal.conversion_window)
+        constraints_list.append(rsq)
 
     subquery = {
         'constraints_list': constraints_list,
@@ -88,17 +92,40 @@ def _query(cursor, pixels, window, constraints, constraints_list, breakdown, ord
         constraints_list=constraints_list,
     )
 
-    _insert_conversion_window(results, window)
+    _insert_conversion_window(results, conversion_goals)
 
     return results
 
 
-def _create_pixel_batches(pixels):
-    return {
-        window: list(pixels) for window in dash.constants.ConversionWindows.get_all()
-    }.items()
+def _split_conversion_goals_by_window(conversion_goals):
+    # split conversions goals into batches
+    # new batches are created when goals with same pixels are used
+    # and use different window length
+
+    goals_by_pixels = collections.defaultdict(list)
+    nr_batches = 1  # the number of batches is the max nr of different conversion goals with the same pixels
+    for cg in conversion_goals:
+        k = (cg.pixel.slug, cg.pixel.account_id)
+        goals_by_pixels[k].append(cg)
+        if len(goals_by_pixels[k]) > nr_batches:
+            nr_batches = len(goals_by_pixels[k])
+
+    # join batches by goals list indices
+    conversion_goals_batches = collections.defaultdict(list)
+    for i in xrange(nr_batches):
+        gs = []
+        for px, goals in goals_by_pixels.items():
+            if len(goals) >= i + 1:
+                gs.append(goals[i])
+
+        conversion_goals_batches[i].extend(gs)
+
+    return conversion_goals_batches.values()
 
 
-def _insert_conversion_window(result, window):
+def _insert_conversion_window(result, conversion_goals):
+    conversion_goals_by_slug = {(cg.pixel.slug, cg.pixel.account_id): cg for cg in
+                                conversion_goals if cg.pixel}
     for row in result:
-        row['conversion_window'] = window
+        cg = conversion_goals_by_slug.get((row['slug'], row['account'],))
+        row['conversion_window'] = cg.conversion_window if cg else None

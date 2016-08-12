@@ -8,7 +8,6 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         convertBreakdownFromApi: convertBreakdownFromApi,
         convertConfigToApi: convertConfigToApi,
         convertField: convertField,
-        extractMetaData: extractMetaData,
     };
 
     function convertBreakdownFromApi (config, breakdown, metaData) {
@@ -17,6 +16,22 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
             level: config.level,
             pagination: breakdown.pagination,
         };
+
+        if (breakdown.campaign_goals) {
+            convertedBreakdown.campaignGoals = breakdown.campaign_goals;
+        }
+        if (breakdown.conversion_goals) {
+            convertedBreakdown.conversionGoals = breakdown.conversion_goals;
+        }
+        if (breakdown.enabling_autopilot_sources_allowed) {
+            convertedBreakdown.enablingAutopilotSourcesAllowed = breakdown.enabling_autopilot_sources_allowed;
+        }
+        if (breakdown.ad_group_autopilot_state) {
+            convertedBreakdown.adGroupAutopilotState = breakdown.ad_group_autopilot_state;
+        }
+        if (breakdown.batches) {
+            convertedBreakdown.batches = breakdown.batches;
+        }
 
         convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
         convertedBreakdown.rows = breakdown.rows.map(function (row) {
@@ -29,29 +44,6 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         });
 
         return convertedBreakdown;
-    }
-
-    function extractMetaData (breakdown) {
-        var metaData = {};
-        if (breakdown.campaign_goals) {
-            metaData.campaignGoals = breakdown.campaign_goals;
-        }
-        if (breakdown.conversion_goals) {
-            metaData.conversionGoals = breakdown.conversion_goals;
-        }
-        if (breakdown.pixels) {
-            metaData.pixels = breakdown.pixels;
-        }
-        if (breakdown.enabling_autopilot_sources_allowed) {
-            metaData.enablingAutopilotSourcesAllowed = breakdown.enabling_autopilot_sources_allowed;
-        }
-        if (breakdown.ad_group_autopilot_state) {
-            metaData.adGroupAutopilotState = breakdown.ad_group_autopilot_state;
-        }
-        if (breakdown.batches) {
-            metaData.batches = breakdown.batches;
-        }
-        return metaData;
     }
 
     function convertConfigToApi (config) {

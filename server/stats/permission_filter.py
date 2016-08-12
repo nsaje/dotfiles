@@ -23,7 +23,7 @@ DEFAULT_STATS = set([
 DEFAULT_FIELDS = DIMENSION_FIELDS | DEFAULT_STATS
 
 
-def filter_columns_by_permission(user, rows, campaign_goal_values, conversion_goals, pixels):
+def filter_columns_by_permission(user, rows, campaign_goal_values, conversion_goals):
     fields_to_keep = list(DEFAULT_FIELDS)
 
     fields_to_keep.extend(api_helpers.get_fields_to_keep(user))
@@ -33,7 +33,6 @@ def filter_columns_by_permission(user, rows, campaign_goal_values, conversion_go
     fields_to_keep.extend(dash.campaign_goals.get_allowed_conversion_goals_fields(
         user, conversion_goals
     ))
-    fields_to_keep.extend(dash.campaign_goals.get_allowed_pixels_fields(pixels))
 
     api_helpers.remove_fields(rows, fields_to_keep)
 

@@ -96,14 +96,16 @@ describe('zemGridEndpointServiceSpec', function () {
 
         $httpBackend.when('POST', '/api/accounts/1/breakdown/campaign/').respond({data: [breakdown]});
         spyOn(zemGridEndpointApiConverter, 'convertBreakdownFromApi').and.callThrough();
-        spyOn(zemGridEndpointColumns, 'setDynamicColumns');
+        spyOn(zemGridEndpointColumns, 'updateConversionGoalColumns');
+        spyOn(zemGridEndpointColumns, 'updateOptimizationGoalColumns');
 
         endpoint.getData(config);
         $httpBackend.flush();
         $scope.$apply();
 
         expect(zemGridEndpointApiConverter.convertBreakdownFromApi).toHaveBeenCalled();
-        expect(zemGridEndpointColumns.setDynamicColumns).toHaveBeenCalled();
+        expect(zemGridEndpointColumns.updateConversionGoalColumns).toHaveBeenCalled();
+        expect(zemGridEndpointColumns.updateOptimizationGoalColumns).toHaveBeenCalled();
     });
 
     it('should save data using endpoint api', function () {

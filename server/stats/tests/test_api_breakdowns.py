@@ -55,7 +55,7 @@ class ApiBreakdownQueryTest(TestCase):
 
     @mock.patch('redshiftapi.api_breakdowns.query')
     def test_query(self, mock_rs_query):
-        campaign = models.Campaign.objects.get(id=1)
+
         mock_rs_query.return_value = [
             {'clicks': 1, 'ad_group_id': 1},
         ]
@@ -86,8 +86,7 @@ class ApiBreakdownQueryTest(TestCase):
                 'source_id': [1, 2, 3],
             },
             None,
-            test_helper.QuerySetMatcher(models.ConversionGoal.objects.filter(campaign_id=campaign.id)),
-            test_helper.QuerySetMatcher(models.ConversionPixel.objects.filter(account_id=campaign.account.id)),
+            test_helper.QuerySetMatcher(models.ConversionGoal.objects.filter(campaign_id=1)),
             '-clicks',
             1,
             1

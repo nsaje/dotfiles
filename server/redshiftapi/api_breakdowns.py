@@ -22,12 +22,12 @@ the code less verbose) for proper production code.
 """
 
 
-def query(breakdown, constraints, breakdown_constraints, conversion_goals, pixels, order, offset, limit):
+def query(breakdown, constraints, breakdown_constraints, conversion_goals, order, offset, limit):
     """
     Returns an array of rows that are represented as dicts.
     """
 
-    model = models.MVMaster(conversion_goals, pixels)
+    model = models.MVMaster(conversion_goals)
 
     with influx.block_timer('redshiftapi.api_breakdowns.prepare_query'):
         query, params = _prepare_query(model, breakdown, constraints, breakdown_constraints,

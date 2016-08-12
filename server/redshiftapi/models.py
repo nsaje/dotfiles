@@ -2,8 +2,6 @@ import backtosql
 import copy
 
 from utils import dates_helper
-
-import dash.constants
 from dash import conversions_helper
 
 from stats import constants as sc
@@ -152,11 +150,10 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
     Materialized sub-views are a part of it.
     """
 
-    def __init__(self, conversion_goals=None, pixels=None):
+    def __init__(self, conversion_goals=None):
         super(MVMaster, self).__init__()
 
         self.init_conversion_columns(conversion_goals)
-        self.init_pixels(pixels)
 
     date = backtosql.Column('date', mh.BREAKDOWN)
 
@@ -252,16 +249,26 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
         # dynamically generate columns based on conversion goals
         for conversion_goal in conversion_goals:
-            if conversion_goal.type not in conversions_helper.REPORT_GOAL_TYPES:
-                continue
-
             conversion_key = conversion_goal.get_view_key(conversion_goals)
-            column = backtosql.TemplateColumn(
-                'part_conversion_goal.sql', {'goal_id': conversion_goal.get_stats_key()},
-                alias=conversion_key, group=mh.CONVERSION_AGGREGATES
-            )
 
-            self.add_column(column)
+            if conversion_goal.type in conversions_helper.REPORT_GOAL_TYPES:
+                column = backtosql.TemplateColumn(
+                    'part_conversion_goal.sql', {'goal_id': conversion_goal.get_stats_key()},
+                    alias=conversion_key, group=mh.CONVERSION_AGGREGATES
+                )
+
+                self.add_column(column)
+
+            elif conversion_goal.type == conversions_helper.PIXEL_GOAL_TYPE:
+                goal_id = conversion_goal.pixel.slug if conversion_goal.pixel else conversion_goal.goal_id
+                column = backtosql.TemplateColumn(
+                    'part_touchpointconversion_goal.sql', {
+                        'goal_id': goal_id,
+                        'window': conversion_goal.conversion_window,
+                    },
+                    alias=conversion_key, group=mh.TOUCHPOINTCONVERSION_AGGREGATES
+                )
+                self.add_column(column)
 
             avg_cost_column = backtosql.TemplateColumn(
                 'part_avg_cost_per_conversion_goal.sql', {'conversion_key': conversion_key},
@@ -269,35 +276,6 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             )
 
             self.add_column(avg_cost_column)
-
-    def init_pixels(self, pixels):
-        """
-        Pixel columns are added dynamically like conversions, because the number and their definition
-        depends on the pixels collection.
-        """
-        if not pixels:
-            return
-
-        conversion_windows = sorted(dash.constants.ConversionWindows.get_all())
-        for pixel in pixels:
-            for conversion_window in conversion_windows:
-                pixel_key = pixel.get_view_key(conversion_window)
-                column = backtosql.TemplateColumn(
-                    'part_touchpointconversion_goal.sql', {
-                        'account_id': pixel.account_id,
-                        'slug': pixel.slug,
-                        'window': conversion_window,
-                    },
-                    alias=pixel_key, group=mh.TOUCHPOINTCONVERSION_AGGREGATES
-                )
-                self.add_column(column)
-
-                avg_cost_column = backtosql.TemplateColumn(
-                    'part_avg_cost_per_conversion_goal.sql', {'conversion_key': pixel_key},
-                    alias='avg_cost_per_' + pixel_key, group=mh.AFTER_JOIN_CALCULATIONS
-                )
-
-                self.add_column(avg_cost_column)
 
     @classmethod
     def get_best_view(cls, breakdown, constraints):

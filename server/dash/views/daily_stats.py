@@ -14,8 +14,7 @@ from utils.sort_helper import sort_results
 
 
 class BaseDailyStatsView(api_common.BaseApiView):
-    def get_stats(self, request, totals_kwargs, selected_kwargs=None,
-                  group_key=None, conversion_goals=None, pixels=None):
+    def get_stats(self, request, totals_kwargs, selected_kwargs=None, group_key=None, conversion_goals=None):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
@@ -29,7 +28,6 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 breakdown=['date'],
                 order=['date'],
                 conversion_goals=conversion_goals,
-                pixels=pixels,
                 constraints=totals_kwargs
             )
 
@@ -43,7 +41,6 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 breakdown=['date', group_key],
                 order=['date'],
                 conversion_goals=conversion_goals,
-                pixels=pixels,
                 constraints=selected_kwargs,
             )
 
@@ -98,21 +95,18 @@ class BaseDailyStatsView(api_common.BaseApiView):
         return result
 
     def get_goals(
-            self,
-            request,
-            conversion_goals=None,
-            campaign=None,
-            pixels=None):
+        self,
+        request,
+        conversion_goals=None,
+        campaign=None,
+    ):
         user = request.user
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         result = {}
         if conversion_goals is not None:
-            result['conversion_goals'] = helpers.get_conversion_goal_list(conversion_goals)
-
-        if pixels:
-            result['pixels'] = helpers.get_pixels_list(pixels)
+            result['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name} for cg in conversion_goals]
 
         can_see_campaign_goals = user.has_perm('zemauth.campaign_goal_performance')
         if campaign is not None and can_see_campaign_goals:
@@ -191,24 +185,14 @@ class AccountDailyStats(BaseDailyStatsView):
                 campaigns = models.Campaign.objects.filter(pk__in=ids)
                 group_names = {campaign.id: campaign.name for campaign in campaigns}
 
-        pixels = account.conversionpixel_set.filter(archived=False)
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key, pixels=pixels)
-
-        return self.create_api_response(
-            self.merge(
-                self.get_response_dict(
-                    stats,
-                    totals,
-                    group_names,
-                    metrics,
-                    group_key
-                ),
-                self.get_goals(
-                    request,
-                    pixels=pixels,
-                )
-            )
-        )
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            totals,
+            group_names,
+            metrics,
+            group_key
+        ))
 
 
 class CampaignDailyStats(BaseDailyStatsView):
@@ -249,8 +233,7 @@ class CampaignDailyStats(BaseDailyStatsView):
                 group_names = {ad_group.id: ad_group.name for ad_group in ad_groups}
 
         conversion_goals = campaign.conversiongoal_set.all()
-        pixels = campaign.account.conversionpixel_set.filter(archived=False)
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key, conversion_goals, pixels=pixels)
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key, conversion_goals)
         if request.user.has_perm('zemauth.campaign_goal_optimization'):
             stats = campaign_goals.create_goals(campaign, stats)
 
@@ -267,7 +250,6 @@ class CampaignDailyStats(BaseDailyStatsView):
                     request,
                     conversion_goals=conversion_goals,
                     campaign=campaign,
-                    pixels=pixels,
                 )
             )
         )
@@ -296,11 +278,9 @@ class AdGroupDailyStats(BaseDailyStatsView):
             selected_kwargs = {'ad_group': int(ad_group.id), 'source': sources}
 
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
-        pixels = ad_group.campaign.account.conversionpixel_set.filter(archived=False)
         stats = self.get_stats(
             request, totals_kwargs, selected_kwargs=selected_kwargs,
-            group_key='source', conversion_goals=conversion_goals,
-            pixels=pixels)
+            group_key='source', conversion_goals=conversion_goals)
 
         if request.user.has_perm('zemauth.campaign_goal_optimization'):
             stats = campaign_goals.create_goals(ad_group.campaign, stats)
@@ -318,7 +298,6 @@ class AdGroupDailyStats(BaseDailyStatsView):
                     request,
                     conversion_goals=conversion_goals,
                     campaign=ad_group.campaign,
-                    pixels=pixels,
                 )
             )
         )
@@ -353,16 +332,7 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
             totals_constraints['exchange'] = map_exchange_to_source_name.keys()
 
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
-        pixels = ad_group.campaign.account.conversionpixel_set.filter(archived=False)
-        stats = self.get_stats(
-            request,
-            ad_group,
-            totals_constraints,
-            show_blacklisted_publishers,
-            selected_kwargs=None,
-            group_key='source',
-            conversion_goals=conversion_goals,
-            pixels=pixels)
+        stats = self.get_stats(request, ad_group, totals_constraints, show_blacklisted_publishers, selected_kwargs=None, group_key='source', conversion_goals=conversion_goals)
 
         if request.user.has_perm('zemauth.campaign_goal_optimization'):
             stats = campaign_goals.create_goals(ad_group.campaign, stats)
@@ -380,22 +350,11 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                     request,
                     conversion_goals=conversion_goals,
                     campaign=ad_group.campaign,
-                    pixels=pixels,
                 )
             )
         )
 
-    def get_stats(
-            self,
-            request,
-            ad_group,
-            totals_constraints,
-            show_blacklisted_publishers,
-            selected_kwargs=None,
-            group_key=None,
-            conversion_goals=None,
-            pixels=None,
-    ):
+    def get_stats(self, request, ad_group, totals_constraints, show_blacklisted_publishers, selected_kwargs=None, group_key=None, conversion_goals=None):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
@@ -411,7 +370,6 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                     end_date,
                     totals_constraints,
                     conversion_goals,
-                    pixels,
                     publisher_breakdown_fields=['date'],
                     touchpoint_breakdown_fields=['date'],
                     order_fields=['date'])
@@ -437,7 +395,6 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                     end_date,
                     totals_constraints,
                     conversion_goals,
-                    pixels,
                     publisher_breakdown_fields=['date'],
                     touchpoint_breakdown_fields=['date'],
                     order_fields=['date'],
@@ -503,8 +460,7 @@ class AdGroupAdsDailyStats(BaseDailyStatsView):
 
         metrics = request.GET.getlist('metrics')
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
-        pixels = ad_group.campaign.account.conversionpixel_set.filter(archived=False)
-        stats = self._get_stats(request, ad_group, filtered_sources, conversion_goals, pixels)
+        stats = self._get_stats(request, ad_group, filtered_sources, conversion_goals)
 
         if request.user.has_perm('zemauth.campaign_goal_optimization'):
             stats = campaign_goals.create_goals(ad_group.campaign, stats)
@@ -521,12 +477,11 @@ class AdGroupAdsDailyStats(BaseDailyStatsView):
                     request,
                     conversion_goals=conversion_goals,
                     campaign=ad_group.campaign,
-                    pixels=pixels,
                 )
             )
         )
 
-    def _get_stats(self, request, ad_group, sources, conversion_goals, pixels):
+    def _get_stats(self, request, ad_group, sources, conversion_goals):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
@@ -537,7 +492,6 @@ class AdGroupAdsDailyStats(BaseDailyStatsView):
             breakdown=['date'],
             ignore_diff_rows=True,
             conversion_goals=conversion_goals,
-            pixels=pixels,
             constraints={'ad_group': ad_group.id, 'source': sources}
         )
 
