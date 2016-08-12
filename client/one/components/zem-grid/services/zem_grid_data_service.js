@@ -16,6 +16,8 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGr
         this.loadData = loadData;
         this.saveData = saveData;
 
+        this.isSaveRequestInProgress = dataSource.isSaveRequestInProgress;
+
         this.DS_FILTER = dataSource.FILTER;
         this.setBreakdown = dataSource.setBreakdown;
         this.getBreakdown = dataSource.getBreakdown;

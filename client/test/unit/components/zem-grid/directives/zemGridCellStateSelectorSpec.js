@@ -21,7 +21,9 @@ describe('zemGridCellStateSelector', function () {
                     breakdown: '',
                     ext: {},
                 },
-                dataService: {},
+                dataService: {
+                    isSaveRequestInProgress: function () {},
+                },
             },
         };
     }));
@@ -46,6 +48,9 @@ describe('zemGridCellStateSelector', function () {
                         level: test.level,
                         breakdown: test.breakdown,
                         ext: {},
+                    },
+                    dataService: {
+                        isSaveRequestInProgress: function () {},
                     },
                 },
             };

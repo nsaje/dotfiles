@@ -45,7 +45,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         var metaData = null;
         var data = null;
-        var activeRequests = [];
+        var activeLoadRequests = [];
+        var saveRequestInProgress = false;
 
         var config = {
             order: '-clicks',
@@ -69,6 +70,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         this.getData = getData;
         this.getMetaData = getMetaData;
         this.saveData = saveData;
+
+        this.isSaveRequestInProgress = isSaveRequestInProgress;
 
         this.setDateRange = setDateRange;
         this.setOrder = setOrder;
@@ -112,7 +115,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 limit = size;
                 breakdowns = [breakdown];
             } else {
-                abortActiveRequests();
+                abortActiveLoadRequests();
                 initializeRoot();
             }
 
@@ -133,7 +136,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             var promise = endpoint.getData(config);
 
             var request = {promise: promise, config: config};
-            activeRequests.push(request);
+            activeLoadRequests.push(request);
 
             breakdowns.forEach(function (breakdown) {
                 breakdown.meta.loading = true;
@@ -155,8 +158,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 });
                 deferred.reject(err);
             }).finally(function () {
-                var idx = activeRequests.indexOf(request);
-                if (idx > -1) activeRequests.splice(idx, 1);
+                var idx = activeLoadRequests.indexOf(request);
+                if (idx > -1) activeLoadRequests.splice(idx, 1);
                 breakdowns.forEach(function (breakdown) {
                     breakdown.meta.loading = false;
                 });
@@ -167,13 +170,20 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
 
         function saveData (value, row, column) {
             var deferred = $q.defer();
-            endpoint.saveData(value, row, column).then(function (data) {
-                row.stats[column.field] = data;
-                notifyListeners(EVENTS.ON_STATS_UPDATED, row);
-                deferred.resolve();
-            }, function (err) {
-                deferred.reject(err);
-            });
+            if (saveRequestInProgress) {
+                deferred.reject();
+            } else {
+                saveRequestInProgress = true;
+                endpoint.saveData(value, row, column).then(function (data) {
+                    row.stats[column.field] = data;
+                    notifyListeners(EVENTS.ON_STATS_UPDATED, row);
+                    saveRequestInProgress = false;
+                    deferred.resolve();
+                }, function (err) {
+                    saveRequestInProgress = false;
+                    deferred.reject(err);
+                });
+            }
             return deferred.promise;
         }
 
@@ -196,11 +206,15 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             return newConfig;
         }
 
-        function abortActiveRequests () {
-            activeRequests.forEach(function (request) {
+        function abortActiveLoadRequests () {
+            activeLoadRequests.forEach(function (request) {
                 request.promise.abort();
             });
-            activeRequests = [];
+            activeLoadRequests = [];
+        }
+
+        function isSaveRequestInProgress () {
+            return saveRequestInProgress;
         }
 
         function getChildBreakdowns (breakdowns) {
@@ -336,8 +350,8 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             // Check if there is already an active request to retrieve data (breakdown)
             // that could be reused with new configuration. In case it is chain that request's
             // promise to avoid unnecessary re-fetch (abort + request)
-            if (activeRequests.length === 1) {
-                var request = activeRequests[0];
+            if (activeLoadRequests.length === 1) {
+                var request = activeLoadRequests[0];
                 var nextBreakdownRequest = selectedBreakdown.slice(0, equalLevel + 1);
                 if (angular.equals(nextBreakdownRequest, request.config.breakdown)) {
                     return fetch ? request.promise : undefined;
@@ -345,7 +359,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
             }
 
             // Abort all active requests that would lead to inconsistencies in data tree.
-            abortActiveRequests();
+            abortActiveLoadRequests();
 
             // For all levels below remove all nodes and initialize new breakdown object (if needed)
             var childBreakdowns = [];
