@@ -3,8 +3,15 @@
 {% block head_extra %}
 <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/actionlog/zemanta-one.actionlog.lib.min.css" />
 <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/actionlog/zemanta-one.actionlog.min.css" />
+
+{% if debug %}
+<script type="text/javascript" src="{{ staticUrl }}/actionlog/zemanta-one.actionlog.lib.js"></script>
+<script type="text/javascript" src="{{ staticUrl }}/actionlog/zemanta-one.actionlog.js"></script>
+{% else %}
 <script type="text/javascript" src="{{ staticUrl }}/actionlog/zemanta-one.actionlog.lib.min.js"></script>
 <script type="text/javascript" src="{{ staticUrl }}/actionlog/zemanta-one.actionlog.min.js"></script>
+{% endif %}
+
 {% endblock %}
 
 {% block content %}
