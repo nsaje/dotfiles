@@ -78,17 +78,23 @@ class K1ApiTest(TestCase):
 
     def test_get_accounts(self):
         response = self.client.get(
-            reverse('k1api.get_accounts'),
+            reverse('k1api_new.accounts'),
         )
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertTrue(len(data['accounts']), 3)
-        self.assertDictEqual(data, {u'accounts': ListMatcher([
+        self.assertTrue(len(data), 3)
+        self.assertEqual(data, ListMatcher([
             {u'id': 1,
              u'outbrain_marketer_id': u'abcde',
+             u'custom_audiences': [{u'pixel_id': 1, u'rules': [{u'type': 1, u'values': u'dummy', u'id': 1},
+                                                               {u'type': 2, u'values': u'dummy2', u'id': 2}],
+                                    u'name': 'Audience 1', u'id': 1, u'ttl': 90},
+                                   {u'pixel_id': 2, u'rules': [{u'type': 1, u'values': u'dummy3', u'id': 3},
+                                                               {u'type': 2, u'values': u'dummy4', u'id': 4}],
+                                    u'name': 'Audience 2', u'id': 2, u'ttl': 60}],
              u'pixels': [
                  {u'id': 1,
                   u'slug': u'testslug1',
@@ -124,6 +130,7 @@ class K1ApiTest(TestCase):
                   ])},
              ]},
             {u'id': 2,
+             u'custom_audiences': [],
              u'outbrain_marketer_id': None,
              u'pixels': [
                  {u'id': 3,
@@ -132,25 +139,31 @@ class K1ApiTest(TestCase):
                   },
              ]},
             {u'id': 3,
+             u'custom_audiences': [],
              u'outbrain_marketer_id': None,
              u'pixels': [],
              },
-        ])})
-        self.assertIsNone(data.get('credentials'))
+        ]))
 
     def test_get_accounts_with_id(self):
         response = self.client.get(
-            reverse('k1api.get_accounts'), {'account_id': 1, 'bidder_slug': 'outbrain'},
+            reverse('k1api_new.accounts'), {'account_ids': 1},
         )
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertTrue(len(data['accounts']), 1)
-        self.assertDictEqual(data['accounts'][0], {
+        self.assertTrue(len(data), 1)
+        self.assertEqual(data[0], {
             u'id': 1,
             u'outbrain_marketer_id': u'abcde',
+            u'custom_audiences': [{u'pixel_id': 1, u'rules': [{u'type': 1, u'values': u'dummy', u'id': 1},
+                                                              {u'type': 2, u'values': u'dummy2', u'id': 2}],
+                                   u'name': 'Audience 1', u'id': 1, u'ttl': 90},
+                                  {u'pixel_id': 2, u'rules': [{u'type': 1, u'values': u'dummy3', u'id': 3},
+                                                              {u'type': 2, u'values': u'dummy4', u'id': 4}],
+                                   u'name': 'Audience 2', u'id': 2, u'ttl': 60}],
             u'pixels': [
                 {u'id': 1,
                  u'slug': u'testslug1',
@@ -185,19 +198,18 @@ class K1ApiTest(TestCase):
                       },
                  ])},
             ]})
-        self.assertEqual(data['credentials'], u'c')
 
     def test_get_default_source_credentials(self):
         response = self.client.get(
-            reverse('k1api.get_default_source_credentials'),
-            {'bidder_slug': 'facebook'}
+            reverse('k1api_new.sources'),
+            {'source_slugs': 'facebook'}
         )
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
 
         data = data['response']
-        self.assertEqual(data, u'h')
+        self.assertEqual(data[0]['credentials']['credentials'], u'h')
 
     def test_get_default_source_credentials_with_no_slug(self):
         response = self.client.get(
@@ -210,13 +222,15 @@ class K1ApiTest(TestCase):
 
     def test_get_custom_audience(self):
         response = self.client.get(
-            reverse('k1api.get_custom_audiences'),
-            {'account_id': 1},
+            reverse('k1api_new.accounts'),
+            {'account_ids': 1},
         )
 
-        data = json.loads(response.content)
-        self._assert_response_ok(response, data)
-        data = data['response']
+        json_data = json.loads(response.content)
+        self._assert_response_ok(response, json_data)
+        accounts_data = json_data['response']
+        self.assertEqual(1, len(accounts_data))
+        data = accounts_data[0]['custom_audiences']
 
         self.assertEqual(2, len(data))
         self.assertDictEqual(data[0], {
@@ -251,15 +265,6 @@ class K1ApiTest(TestCase):
             ]),
             u'ttl': 60,
         })
-
-    def test_get_custom_audience_no_id(self):
-        response = self.client.get(
-            reverse('k1api.get_custom_audiences'),
-        )
-
-        data = json.loads(response.content)
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['error'], 'Account id must be specified.')
 
     def test_update_source_pixel_with_existing(self):
         body = {
@@ -297,25 +302,24 @@ class K1ApiTest(TestCase):
         self.assertEqual(updated_pixel.url, 'http://www.dummy_fb.com/pixie_endpoint')
         self.assertEqual(updated_pixel.source_pixel_id, 'fb_dummy_id')
 
-    def _test_source_credentials_filter(self, source_types=None):
+    def _test_source_credentials_filter(self, source_slugs=None):
         response = self.client.get(
-            reverse('k1api.get_source_credentials_for_reports_sync'),
-            {'source_type': source_types},
+            reverse('k1api_new.sources'),
+            {'source_slugs': ','.join(source_slugs)},
         )
 
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
 
-        for source_credentials in data['source_credentials_list']:
-            sc = dash.models.SourceCredentials.objects.get(pk=source_credentials['id'])
-            self.assertEqual(sc.credentials, source_credentials['credentials'])
-            self.assertEqual(sc.source.source_type.type, source_credentials['source_type'])
+        for source in data:
+            sc = dash.models.SourceCredentials.objects.get(pk=source['credentials']['id'])
+            self.assertEqual(sc.credentials, source['credentials']['credentials'])
 
-        scs = dash.models.SourceCredentials.objects.filter(sync_reports=True)
-        if source_types:
-            scs = scs.filter(source__source_type__type__in=source_types)
-        self.assertEqual(len(data['source_credentials_list']), scs.count())
+        scs = dash.models.Source.objects.all()
+        if source_slugs:
+            scs = scs.filter(bidder_slug__in=source_slugs)
+        self.assertEqual(len(data), scs.count())
 
     def test_get_source_credentials(self):
         test_cases = [
