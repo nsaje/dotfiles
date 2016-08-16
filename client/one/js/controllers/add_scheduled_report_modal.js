@@ -40,8 +40,8 @@ oneApp.controller('AddScheduledReportModalCtrl', ['$scope', '$modalInstance', 'a
         var url = $scope.baseUrl + 'export/';
         var data = {
             'type': $scope.export.type.value,
-            'start_date': $scope.startDate.format(),
-            'end_date': $scope.endDate.format(),
+            'start_date': $scope.dateRange.startDate.format(),
+            'end_date': $scope.dateRange.endDate.format(),
             'order': $scope.order,
             'by_day': $scope.export.byDay,
             'additional_fields': $scope.getAdditionalColumns().join(','),
