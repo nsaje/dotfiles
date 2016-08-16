@@ -488,6 +488,9 @@ def _adjust_breakdown_by_day(first_stat_date, stat):
 
 
 def _adjust_breakdown_by_account(stat, account_appeared):
+    if 'account' not in stat:
+        return
+
     if not account_appeared[stat['account']]:
         account_appeared[stat['account']] = True
         return
@@ -500,7 +503,7 @@ def _adjust_breakdown_by_account(stat, account_appeared):
 def _populate_source_stat(stat, user=None, source_names=None):
     ad_group_sources = models.AdGroupSource.objects.filter(
         ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
-        source=stat['source'])
+        source=stat['source']).select_related('ad_group')
     stat['status'] = stat['status'] = _get_sources_state(ad_group_sources)
 
 
