@@ -695,6 +695,41 @@ urlpatterns += [
         k1api.views.SourcesView.as_view(),
         name='k1api_new.sources',
     ),
+    url(
+        r'k1api_new/source_pixels$',
+        k1api.views.SourcePixelsView.as_view(),
+        name='k1api_new.source_pixels',
+    ),
+    url(
+        r'^k1api_new/ga_accounts$',
+        k1api.views.GAAccountsView.as_view(),
+        name='k1api_new.ga_accounts',
+    ),
+    url(
+        r'^k1api_new/r1_mapping$',
+        k1api.views.R1MappingView.as_view(),
+        name='k1api_new.r1_mapping',
+    ),
+    url(
+        r'^k1api_new/publishers_blacklist$',
+        k1api.views.PublishersBlacklistView.as_view(),
+        name='k1api_new.publishers_blacklist',
+    ),
+    url(
+        r'^k1api_new/outbrain/publishers_blacklist$',
+        k1api.views.OutbrainPublishersBlacklistView.as_view(),
+        name='k1api_new.outbrain_publishers_blacklist',
+    ),
+    url(
+        r'^k1api_new/outbrain/marketer_id$',
+        k1api.views.OutbrainMarketerIdView.as_view(),
+        name='k1api_new.outbrain_marketer_id',
+    ),
+    url(
+        r'^k1api_new/facebook/accounts$',
+        k1api.views.FacebookAccountsView.as_view(),
+        name='k1api_new.facebook_accounts',
+    ),
 ]
 
 # Crossvalidation Api

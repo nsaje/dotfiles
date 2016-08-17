@@ -140,7 +140,7 @@ class SourcesView(K1APIView):
         return self.response_ok(response)
 
 
-class update_source_pixel(K1APIView):
+class SourcePixelsView(K1APIView):
 
     def put(self, request):
         data = json.loads(request.body)
@@ -162,7 +162,7 @@ class update_source_pixel(K1APIView):
         return self.response_ok(data)
 
 
-class get_ga_accounts(K1APIView):
+class GAAccountsView(K1APIView):
 
     def get(self, request):
         all_current_settings = dash.models.AdGroupSettings.objects.all().group_current_settings().prefetch_related(
@@ -179,7 +179,7 @@ class get_ga_accounts(K1APIView):
         return self.response_ok({'ga_accounts': list(ga_accounts)})
 
 
-class get_accounts_slugs_ad_groups(K1APIView):
+class R1MappingView(K1APIView):
 
     def get(self, request):
         accounts = [int(account) for account in request.GET.getlist('account')]
@@ -204,7 +204,7 @@ class get_accounts_slugs_ad_groups(K1APIView):
         return self.response_ok(data)
 
 
-class get_publishers_blacklist_outbrain(K1APIView):
+class OutbrainPublishersBlacklistView(K1APIView):
 
     def get(self, request):
         marketer_id = request.GET.get('marketer_id')
@@ -217,7 +217,7 @@ class get_publishers_blacklist_outbrain(K1APIView):
         return self.response_ok({'blacklist': list(blacklisted_publishers)})
 
 
-class get_publishers_blacklist(K1APIView):
+class PublishersBlacklistView(K1APIView):
 
     def get(self, request):
         ad_group_id = request.GET.get('ad_group_id')
@@ -664,7 +664,7 @@ class ContentAdSourcesView(K1APIView):
         return self.response_ok(data)
 
 
-class get_outbrain_marketer_id(K1APIView):
+class OutbrainMarketerIdView(K1APIView):
 
     def get(self, request):
 
@@ -692,7 +692,7 @@ class get_outbrain_marketer_id(K1APIView):
         return self.response_ok(ad_group.campaign.account.outbrain_marketer_id)
 
 
-class get_facebook_accounts(K1APIView):
+class FacebookAccountsView(K1APIView):
 
     def get(self, request):
         ad_group_id = request.GET.get('ad_group_id')
@@ -727,9 +727,6 @@ class get_facebook_accounts(K1APIView):
         except dash.models.FacebookAccount.DoesNotExist:
             facebook_account = None
         return self.response_ok(facebook_account)
-
-
-class update_facebook_account(K1APIView):
 
     def put(self, request):
         values = json.loads(request.body)
