@@ -42,41 +42,54 @@ class Command(ExceptionCommand):
         }
 
     def _check_demo_url(self, demo_instance):
+        def _find_string_in_login_page(session):
+            response = session.get(url)
+            body = response.text
+            csrf_token = session.cookies['csrftoken']
+            if 'Zemanta One' not in body or 'Sign in' not in body:
+                raise Exception('Invalid response from demo')
+            return session
+
+        def _try_to_login(session):
+            response = session.post(
+                url='%s/signin' % url,
+                data={ 'username': username, 'password': password, 'csrfmiddlewaretoken': csrf_token },
+                headers = {'Referer': '%s/signin?next=/' % url }
+            )
+            if response.status_code != 200:
+                raise Exception('Invalid response code from demo signin')
+            return session
+
+        def _fetch_all_accounts_nav(session):
+            response = session.get(
+                url='%s/api/all_accounts/nav/' % url, headers = {'Accept':'application/json', }
+            )
+            if response.status_code != 200:
+                raise Exception('Invalid response code from demo nav')
+            data = json.loads(response.text)
+            if not data.get('success', False):
+                raise Exception("Couldn't get basic nav data")
+            return session
+
+
         url = demo_instance['url']
         password = demo_instance['password']
-        username = "regular.user+demo@zemanta.com"
+        username = demo_instance['username']
 
-        error = Exception()
+        error = Exception("Automatic 'Request demoV3' check failed for unknown reason.")
         for _ in range(NUM_RETRIES):
             try:
                 session = requests.Session()
-                response = session.get(url)
-                body = response.text
-                csrf_token = session.cookies['csrftoken']
+
                 # 1) basic check
-                if 'Zemanta One' not in body or 'Sign in' not in body:
-                    raise Exception('Invalid response from demo')
-
+                session = _find_string_in_login_page(session)
                 # 2) try to login
-                response = session.post(
-                    url='%s/signin' % url,
-                    data={ 'username': username, 'password': password, 'csrfmiddlewaretoken': csrf_token },
-                    headers = {'Referer': '%s/signin?next=/' % url }
-                )
-                if response.status_code != 200:
-                    raise Exception('Invalid response code from demo signin')
-
+                session = _try_to_login(session)
                 # 3) Fetch some JSON data
-                response = session.get(
-                    url='%s/api/all_accounts/nav/' % url, headers = {'Accept':'application/json', }
-                )
-                if response.status_code != 200:
-                    raise Exception('Invalid response code from demo nav')
-                data = json.loads(response.text)
-                if not data.get('success', False):
-                    raise Exception("Couldn't get basic nav data")
-
+                session = _fetch_all_accounts_nav(session)
+                # We're' good!
                 return
+
             except Exception as err:
                 error = err
                 time.sleep(5)
