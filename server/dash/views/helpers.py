@@ -191,6 +191,19 @@ def get_ad_group(user, ad_group_id, select_related=False, sources=None):
         raise exc.MissingDataError('Ad Group does not exist')
 
 
+def get_content_ad(user, content_ad_id, select_related=False):
+    try:
+        content_ad = models.ContentAd.objects.all().filter_by_user(user). \
+            filter(id=int(content_ad_id))
+
+        if select_related:
+            content_ad = content_ad.select_related('ad_group')
+
+        return content_ad.get()
+    except models.AdGroup.DoesNotExist:
+        raise exc.MissingDataError('Content Ad does not exist')
+
+
 def get_campaign(user, campaign_id, sources=None):
     try:
         campaign = models.Campaign.objects.all()\

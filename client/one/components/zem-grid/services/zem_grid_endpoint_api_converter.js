@@ -7,7 +7,7 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
     return {
         convertBreakdownFromApi: convertBreakdownFromApi,
         convertConfigToApi: convertConfigToApi,
-        convertField: convertField,
+        convertSettingsToApi: convertSettingsToApi,
     };
 
     function convertBreakdownFromApi (config, breakdown, metaData) {
@@ -17,6 +17,7 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
             pagination: breakdown.pagination,
         };
 
+        // TODO: find better solution for optional fields (and camelcase converting)
         if (breakdown.campaign_goals) {
             convertedBreakdown.campaignGoals = breakdown.campaign_goals;
         }
@@ -32,8 +33,13 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         if (breakdown.batches) {
             convertedBreakdown.batches = breakdown.batches;
         }
+        if (breakdown.notification) {
+            convertedBreakdown.notification = breakdown.notification;
+        }
+        if (breakdown.totals) {
+            convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
+        }
 
-        convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
         convertedBreakdown.rows = breakdown.rows.map(function (row) {
             return {
                 stats: convertStatsFromApi(row, metaData),
@@ -61,6 +67,23 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
             offset: config.offset,
             order: config.order,
         };
+    }
+
+    function convertSettingsToApi (settings) {
+        var convertedSettings = {};
+        Object.keys(settings).forEach(function (key) {
+            switch (key) {
+            case zemGridEndpointColumns.COLUMNS.bidCpcSetting.field:
+                convertedSettings['cpc_cc'] = settings[key];
+                break;
+            case zemGridEndpointColumns.COLUMNS.dailyBudgetSetting.field:
+                convertedSettings['daily_budget_cc'] = settings[key];
+                break;
+            default:
+                convertedSettings[key] = settings[key];
+            }
+        });
+        return convertedSettings;
     }
 
     function convertStatsFromApi (row, metaData) {

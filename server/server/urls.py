@@ -26,6 +26,7 @@ import dash.views.views
 import dash.views.navigation
 import dash.views.callbacks
 import dash.views.upload
+import dash.views.grid
 
 
 admin.site.login = login_required(admin.site.login)
@@ -62,6 +63,21 @@ urlpatterns = [
 
 # Api
 urlpatterns += [
+    url(
+        r'^api/grid/ad_groups/(?P<ad_group_id>\d+)/settings/',
+        login_required(dash.views.grid.AdGroupSettings.as_view()),
+        name='grid_ad_group_settings'
+    ),
+    url(
+        r'^api/grid/content_ads/(?P<content_ad_id>\d+)/settings/',
+        login_required(dash.views.grid.ContentAdSettings.as_view()),
+        name='grid_content_ad_settings'
+    ),
+    url(
+        r'^api/grid/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/settings/',
+        login_required(dash.views.grid.AdGroupSourceSettings.as_view()),
+        name='grid_ad_group_source_settings'
+    ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/state/',
         login_required(dash.views.agency.AdGroupSettingsState.as_view()),

@@ -1,11 +1,13 @@
-/* globals oneApp, angular */
+/* globals oneApp, angular, constants */
 /* eslint-disable camelcase*/
 
 'use strict';
 
-oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemGridEndpointApiConverter', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemGridEndpointApiConverter) { // eslint-disable-line max-len
+oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemNavigationService', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemNavigationService) { // eslint-disable-line max-len
 
-    function StatsEndpoint (baseUrl, metaData) {
+    function EndpointService (metaData) {
+
+        var api = zemGridEndpointApi.createInstance(metaData);
 
         this.getMetaData = function () {
             // Meta data is not yet fetched from backend,
@@ -16,51 +18,59 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
         };
 
         this.getData = function (config) {
-            var url = createUrl(baseUrl, config);
-            var deferred = createAbortableDefer();
-            var data = zemGridEndpointApiConverter.convertConfigToApi(config);
-            var httpConfig = {timeout: deferred.abortPromise};
-
-            $http.post(url, {params: data}, httpConfig).success(function (data) {
-                var breakdowns = data.data;
-                breakdowns = breakdowns.map(function (breakdown) {
-                    breakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(config, breakdown, metaData);
+            var deferred = $q.defer();
+            var promise = api.get(config);
+            promise.then(function (breakdowns) {
+                breakdowns.forEach(function (breakdown) {
                     checkPaginationCount(config, breakdown);
-                    return breakdown;
                 });
 
-                if (config.level === 1) { // Base level data comes with some additional metadata (e.g. goals)
+                // Base level data comes with some additional metadata (e.g. goals)
+                if (config.level === 1) {
                     extendMetaData(breakdowns[0], metaData);
                 }
 
                 deferred.resolve(breakdowns);
-            }).error(function (data) {
-                deferred.reject(data);
+            }, function (error) {
+                deferred.reject(error);
             });
+
+            deferred.promise.abort = promise.abort;
             return deferred.promise;
         };
 
-        this.saveData = function (value, row, column) {
-            var api = zemGridEndpointApi.getApi(metaData.level, metaData.breakdown, column);
-
+        this.saveData = function (value, row, column, config) {
             var deferred = $q.defer();
-            var levelEntityId = metaData.id;
-            var breakdownEntityId = row.breakdownId;
-            api.save(levelEntityId, breakdownEntityId, value).then(function (data) {
-                var convertedField = zemGridEndpointApiConverter.convertField(data[column.field], column.type);
-                data = angular.extend({}, row.stats[column.field], convertedField);
-                deferred.resolve(data);
+            var data = {
+                settings: {},
+                config: config,
+            };
+            data.settings[column.field] = value;
+            api.save(row.breakdownId, data).then(function (breakdown) {
+                extendMetaData(breakdown, metaData);
+                deferred.resolve(breakdown);
             }, function (err) {
                 deferred.reject(err);
             });
+
+            if (metaData.breakdown === constants.breakdown.AD_GROUP) {
+                return chainNavigationServiceUpdate(row.breakdownId, deferred.promise);
+            }
             return deferred.promise;
         };
 
-        function createUrl (baseUrl, config) {
-            var queries = config.breakdown.map(function (breakdown) {
-                return breakdown.query;
+        function chainNavigationServiceUpdate (adGroupId, promise) {
+            // In case we are changing AdGroup settings, notify Navigation service to reload this AdGroup
+            var deferred = $q.defer();
+            zemNavigationService.notifyAdGroupReloading(adGroupId, true);
+            promise.then(function (data) {
+                zemNavigationService.reloadAdGroup(adGroupId);
+                deferred.resolve(data);
+            }, function (data) {
+                zemNavigationService.notifyAdGroupReloading(adGroupId, false);
+                deferred.reject(data);
             });
-            return baseUrl + queries.join('/') + '/';
+            return deferred.promise;
         }
 
         function checkPaginationCount (config, breakdown) {
@@ -76,29 +86,6 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
             }
             pagination.complete = (pagination.offset + pagination.limit) === pagination.count;
         }
-    }
-
-    function createAbortableDefer () {
-        var deferred = $q.defer();
-        var deferredAbort = $q.defer();
-        deferred.promise.abort = function () {
-            deferredAbort.resolve();
-        };
-        deferred.promise.finally(
-            function () {
-                deferred.promise.abort = angular.noop;
-            }
-        );
-
-        deferred.abortPromise = deferredAbort.promise;
-        return deferred;
-    }
-
-    function getUrl (level, id) {
-        if (level === 'all_accounts') {
-            return '/api/all_accounts/breakdown/';
-        }
-        return '/api/' + level + '/' + id + '/breakdown/';
     }
 
     function createMetaData (scope, level, id, breakdown) {
@@ -125,7 +112,9 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
         return [].concat(
             breakdownGroups.base.breakdowns,
             breakdownGroups.structure.breakdowns
-        ).map (function (breakdown) { return breakdown.query; });
+        ).map(function (breakdown) {
+            return breakdown.query;
+        });
     }
 
     function extendMetaData (breakdown, metaData) {
@@ -155,8 +144,7 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
     }
 
     function createEndpoint (metaData) {
-        var url = getUrl(metaData.level, metaData.id);
-        return new StatsEndpoint(url, metaData);
+        return new EndpointService(metaData);
     }
 
 

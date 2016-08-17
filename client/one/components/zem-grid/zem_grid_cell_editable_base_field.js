@@ -30,7 +30,7 @@ oneApp.directive('zemGridCellEditableBaseField', [function () {
             vm.closeModal = closeModal;
 
             $scope.$watch('ctrl.row', update);
-            $scope.$watch('ctrl.data', update);
+            $scope.$watch('ctrl.data', update, true); // TODO: use pubsub for propagating data updates
 
             function update () {
                 vm.formattedValue = '';

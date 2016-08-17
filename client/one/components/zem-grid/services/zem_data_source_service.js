@@ -169,22 +169,45 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
         }
 
         function saveData (value, row, column) {
-            var deferred = $q.defer();
             if (saveRequestInProgress) {
-                deferred.reject();
-            } else {
-                saveRequestInProgress = true;
-                endpoint.saveData(value, row, column).then(function (data) {
-                    row.stats[column.field] = data;
-                    notifyListeners(EVENTS.ON_STATS_UPDATED, row);
-                    saveRequestInProgress = false;
-                    deferred.resolve();
-                }, function (err) {
-                    saveRequestInProgress = false;
-                    deferred.reject(err);
-                });
+                return $q.reject();
             }
+
+            var deferred = $q.defer();
+            saveRequestInProgress = true;
+            endpoint.saveData(value, row, column, config).then(function (breakdown) {
+                // For each row in breakdown patch find cached row by id and apply values
+                var updatedStats = [];
+                breakdown.rows.forEach (function (updatedRow) {
+                    var row = findRow(updatedRow.breakdownId);
+                    if (row) {
+                        updateStats(row.stats, updatedRow.stats);
+                        updatedStats.push(row.stats);
+                    }
+                });
+
+                if (breakdown.totals) {
+                    updateStats(data.stats, breakdown.totals);
+                    updatedStats.push(data.stats);
+                }
+
+                notifyListeners(EVENTS.ON_STATS_UPDATED, updatedStats);
+                saveRequestInProgress = false;
+                deferred.resolve(breakdown);
+            }, function (err) {
+                saveRequestInProgress = false;
+                deferred.reject(err);
+            });
             return deferred.promise;
+        }
+
+        function updateStats (stats, updatedStats) {
+            Object.keys(updatedStats).forEach(function (field) {
+                var updatedField = updatedStats[field];
+                if (updatedField !== undefined && updatedField.value !== undefined) {
+                    angular.extend(stats[field], updatedField);
+                }
+            });
         }
 
         function prepareConfig (level, breakdowns, offset, limit) {
@@ -272,6 +295,24 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 var row = subtree.rows[i];
                 if (row.breakdown) {
                     var res = findBreakdown(breakdownId, row.breakdown);
+                    if (res) return res;
+                }
+            }
+            return null;
+        }
+
+        function findRow (breakdownId, subtree) {
+            // Traverse breakdown tree to find row by breakdownId
+            // If subtree (breakdown) is not passed start with base one
+            if (!subtree) subtree = data.breakdown;
+
+            for (var i = 0; i < subtree.rows.length; ++i) {
+                var row = subtree.rows[i];
+                if (row.breakdownId === breakdownId) {
+                    return row;
+                }
+                if (row.breakdown) {
+                    var res = findRow(breakdownId, row.breakdown);
                     if (res) return res;
                 }
             }

@@ -8,6 +8,8 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGr
     // to communicate current data source status
 
     function GridDataService (grid, dataSource) {
+        // Last notification cached to close it when new arrives (e.g. saving data)
+        var lastNotification = null;
 
         //
         // Public API
@@ -79,8 +81,12 @@ oneApp.factory('zemGridDataService', ['$q', 'zemGridParser', function ($q, zemGr
 
         function saveData (value, row, column) {
             var deferred = $q.defer();
-            dataSource.saveData(value, row.data, column.data).then(function () {
-                deferred.resolve();
+            dataSource.saveData(value, row.data, column.data).then(function (data) {
+                if (data.notification) {
+                    if (lastNotification) lastNotification.close();
+                    lastNotification = grid.meta.api.notify(data.notification.type, data.notification.msg, true);
+                }
+                deferred.resolve(data);
             }, function (err) {
                 deferred.reject(err);
             });
