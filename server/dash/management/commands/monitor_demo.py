@@ -53,8 +53,8 @@ class Command(ExceptionCommand):
         def _try_to_login(session):
             response = session.post(
                 url='%s/signin' % url,
-                data={ 'username': username, 'password': password, 'csrfmiddlewaretoken': csrf_token },
-                headers = {'Referer': '%s/signin?next=/' % url }
+                data={'username': username, 'password': password, 'csrfmiddlewaretoken': csrf_token},
+                headers={'Referer': '%s/signin?next=/' % url}
             )
             if response.status_code != 200:
                 raise Exception('Invalid response code from demo signin')
@@ -62,7 +62,7 @@ class Command(ExceptionCommand):
 
         def _fetch_all_accounts_nav(session):
             response = session.get(
-                url='%s/api/all_accounts/nav/' % url, headers = {'Accept':'application/json', }
+                url='%s/api/all_accounts/nav/' % url, headers={'Accept': 'application/json', }
             )
             if response.status_code != 200:
                 raise Exception('Invalid response code from demo nav')
@@ -70,7 +70,6 @@ class Command(ExceptionCommand):
             if not data.get('success', False):
                 raise Exception("Couldn't get basic nav data")
             return session
-
 
         url = demo_instance['url']
         password = demo_instance['password']
