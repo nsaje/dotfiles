@@ -1,4 +1,4 @@
-/* globals oneApp, constants */
+/* globals angular, oneApp, constants */
 /* eslint-disable camelcase*/
 'use strict';
 
@@ -7,7 +7,7 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
     return {
         convertBreakdownFromApi: convertBreakdownFromApi,
         convertConfigToApi: convertConfigToApi,
-        convertField: convertField,
+        convertSettingsToApi: convertSettingsToApi,
     };
 
     function convertBreakdownFromApi (config, breakdown, metaData) {
@@ -17,6 +17,7 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
             pagination: breakdown.pagination,
         };
 
+        // TODO: find better solution for optional fields (and camelcase converting)
         if (breakdown.campaign_goals) {
             convertedBreakdown.campaignGoals = breakdown.campaign_goals;
         }
@@ -32,8 +33,13 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         if (breakdown.batches) {
             convertedBreakdown.batches = breakdown.batches;
         }
+        if (breakdown.notification) {
+            convertedBreakdown.notification = breakdown.notification;
+        }
+        if (breakdown.totals) {
+            convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
+        }
 
-        convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
         convertedBreakdown.rows = breakdown.rows.map(function (row) {
             return {
                 stats: convertStatsFromApi(row, metaData),
@@ -63,17 +69,32 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         };
     }
 
+    function convertSettingsToApi (settings) {
+        var convertedSettings = {};
+        Object.keys(settings).forEach(function (key) {
+            switch (key) {
+            case zemGridEndpointColumns.COLUMNS.bidCpcSetting.field:
+                convertedSettings['cpc_cc'] = settings[key];
+                break;
+            case zemGridEndpointColumns.COLUMNS.dailyBudgetSetting.field:
+                convertedSettings['daily_budget_cc'] = settings[key];
+                break;
+            default:
+                convertedSettings[key] = settings[key];
+            }
+        });
+        return convertedSettings;
+    }
+
     function convertStatsFromApi (row, metaData) {
         var convertedStats = {};
         metaData.columns.forEach(function (column) {
             convertedStats[column.field] = convertField(row[column.field], column.type);
         });
-        convertedStats = setLinkFields(
-            convertedStats, row.url, row.redirector_url, row.title, row.supply_dash_disabled_message
-        );
+        convertedStats = setUrlLinkField(convertedStats, row.url);
+        convertedStats = setBreakdownField(convertedStats, metaData, row.url, row.redirector_url, row.title);
         convertedStats = setEditableFields(convertedStats, row.editable_fields);
         convertedStats = setGoalStatuses(convertedStats, row.styles);
-        convertedStats = updateNameFieldData(convertedStats, metaData);
         return convertedStats;
     }
 
@@ -90,20 +111,25 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         }
     }
 
-    function setLinkFields (stats, url, redirectorUrl, title, supplyDashDisabledMessage) {
+    function setUrlLinkField (stats, url) {
         if (url !== undefined) {
             stats.urlLink = {
                 text: url !== '' ? url : 'N/A',
                 url: url !== '' ? url : null,
             };
+        }
+        return stats;
+    }
 
-            stats.titleLink = {
+    function setBreakdownField (stats, metaData, url, redirectorUrl, title) {
+        if (metaData.breakdown === constants.breakdown.CONTENT_AD) {
+            var titleLink = {
                 text: title,
                 url: url !== '' ? url : null,
                 redirectorUrl: redirectorUrl !== '' ? redirectorUrl : null,
             };
+            angular.extend(stats[zemGridEndpointColumns.COLUMNS.name.field], titleLink);
         }
-
         return stats;
     }
 
@@ -129,13 +155,6 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
                 stats[field].goalStatus = goalStatuses[field];
             }
         });
-        return stats;
-    }
-
-    function updateNameFieldData (stats, metaData) {
-        if (metaData.breakdown === constants.breakdown.CONTENT_AD) {
-            stats[zemGridEndpointColumns.COLUMNS.name.field] = stats.titleLink;
-        }
         return stats;
     }
 

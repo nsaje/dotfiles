@@ -1,18 +1,36 @@
 /* globals oneApp, options, constants */
 oneApp.controller('AddScheduledReportModalCtrl', ['$scope', '$modalInstance', 'api', 'zemFilterService', function ($scope, $modalInstance, api, zemFilterService) {  // eslint-disable-line max-len
     $scope.exportSchedulingFrequencies = options.exportFrequency;
+    $scope.exportSchedulingTimePeriods = options.exportTimePeriod;
+    $scope.exportSchedulingDayOfWeek = options.exportDayOfWeek;
     $scope.showInProgress = false;
     $scope.hasError = false;
     $scope.breakdownByDayDisabled = false;
+    $scope.dayOfWeekShown = false;
 
     $scope.export = {};
     $scope.validationErrors = {};
 
-    $scope.checkBreakdownAvailable = function () {
+    $scope.timePeriodChanged = function () {
         $scope.breakdownByDayDisabled = false;
-        if ($scope.export.frequency.value === constants.exportFrequency.DAILY) {
+        if ($scope.export.timePeriod.value === constants.exportTimePeriod.YESTERDAY) {
             $scope.breakdownByDayDisabled = true;
             $scope.export.byDay = false;
+        }
+    };
+
+    $scope.frequencyChanged = function () {
+        $scope.dayOfWeekShown = false;
+        if ($scope.export.frequency.value === constants.exportFrequency.WEEKLY) {
+            $scope.dayOfWeekShown = true;
+        }
+
+        if (!$scope.hasPermission('zemauth.can_set_time_period_in_scheduled_reports')) {
+            $scope.breakdownByDayDisabled = false;
+            if ($scope.export.frequency.value === constants.exportFrequency.DAILY) {
+                $scope.breakdownByDayDisabled = true;
+                $scope.export.byDay = false;
+            }
         }
     };
 
@@ -22,14 +40,16 @@ oneApp.controller('AddScheduledReportModalCtrl', ['$scope', '$modalInstance', 'a
         var url = $scope.baseUrl + 'export/';
         var data = {
             'type': $scope.export.type.value,
-            'start_date': $scope.startDate.format(),
-            'end_date': $scope.endDate.format(),
+            'start_date': $scope.dateRange.startDate.format(),
+            'end_date': $scope.dateRange.endDate.format(),
             'order': $scope.order,
             'by_day': $scope.export.byDay,
             'additional_fields': $scope.getAdditionalColumns().join(','),
             'filtered_sources': zemFilterService.isSourceFilterOn() ?
                 zemFilterService.getFilteredSources().join(',') : '',
             'frequency': $scope.export.frequency.value,
+            'day_of_week': $scope.export.dayOfWeek.value,
+            'time_period': $scope.export.timePeriod.value,
             'recipient_emails': $scope.export.recipientEmails,
             'report_name': $scope.export.reportName,
         };
@@ -68,8 +88,11 @@ oneApp.controller('AddScheduledReportModalCtrl', ['$scope', '$modalInstance', 'a
 
     $scope.init = function () {
         $scope.export.frequency = $scope.exportSchedulingFrequencies[0];
+        $scope.export.dayOfWeek = $scope.exportSchedulingDayOfWeek[1];
         $scope.export.type = $scope.defaultOption;
-        $scope.checkBreakdownAvailable();
+        $scope.export.timePeriod = $scope.exportSchedulingTimePeriods[0];
+        $scope.timePeriodChanged();
+        $scope.frequencyChanged();
     };
     $scope.init();
 }]);

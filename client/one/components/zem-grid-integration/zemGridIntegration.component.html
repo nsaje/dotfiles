@@ -7,15 +7,6 @@
         functionalities! <a href="https://zemanta.supporthero.io/article/show/15188">Read more ...</a>
     </alert>
 
-    <div ng-repeat="notification in ctrl.notifications">
-        <alert ng-if="notification.closable" type="{{ notification.type }}" class="alert-{{ notification.type }}" close="ctrl.closeNotification(notification)">
-            {{ notification.message }}
-        </alert>
-        <alert ng-if="!notification.closable" type="{{ notification.type }}" class="alert-{{ notification.type }}">
-            {{ notification.message }}
-        </alert>
-    </div>
-
     <zem-grid data-data-source="ctrl.grid.dataSource"
               api="ctrl.grid.api"
               options="ctrl.grid.options"

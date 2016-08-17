@@ -5,6 +5,7 @@ from dash import constants
 from dash import forms
 from dash import table
 from dash.views import helpers
+from dash.views import grid
 
 from utils import api_common
 from utils import exc
@@ -164,16 +165,7 @@ def get_report_all_accounts_accounts(user, view_filter, start_date, end_date,
         size,
         show_archived
     )
-
-    for row in response['rows']:
-        row['account_id'] = int(row['id'])
-        row['account_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['account_id'], row)
-        row['breakdown_name'] = row['name']
-        row['parent_breakdown_id'] = None
-        row['status'] = {'value': row['status']}
-
-    return response
+    return grid.convert_resource_response(constants.Level.ALL_ACCOUNTS, constants.Breakdown.ACCOUNT, response)
 
 
 def get_report_account_campaigns(user, filtered_sources, start_date, end_date,
@@ -188,21 +180,10 @@ def get_report_account_campaigns(user, filtered_sources, start_date, end_date,
         show_archived=show_archived,
         **kwargs
     )
-
-    for row in response['rows']:
-        row['campaign_id'] = int(row['campaign'])
-        row['campaign_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['campaign_id'], row)
-        row['breakdown_name'] = row['name']
-        row['parent_breakdown_id'] = None
-        row['status'] = {'value': row['state']}
-        del row['state']
-
     response['pagination'] = {
         'count': len(response['rows'])
     }
-
-    return response
+    return grid.convert_resource_response(constants.Level.ACCOUNTS, constants.Breakdown.CAMPAIGN, response)
 
 
 def get_report_campaign_ad_groups(user, filtered_sources, start_date, end_date,
@@ -218,23 +199,10 @@ def get_report_campaign_ad_groups(user, filtered_sources, start_date, end_date,
         **kwargs
     )
 
-    for row in response['rows']:
-        row['ad_group_id'] = int(row['ad_group'])
-        row['ad_group_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['ad_group_id'], row)
-        row['breakdown_name'] = row['name']
-        row['parent_breakdown_id'] = None
-        row['status'] = {'value': row['state']}
-        row['state'] = {'value': row['state']}
-
     response['pagination'] = {
         'count': len(response['rows'])
     }
-
-    response['conversion_goals'] = response.get('conversion_goals')
-    response['campaign_goals'] = response.get('campaign_goals')
-
-    return response
+    return grid.convert_resource_response(constants.Level.CAMPAIGNS, constants.Breakdown.AD_GROUP, response)
 
 
 def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date,
@@ -251,22 +219,7 @@ def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date
         size=size,
         ad_group_id=kwargs['ad_group_id']
     )
-
-    for row in response['rows']:
-        row['content_ad_id'] = int(row['id'])
-        row['content_ad_name'] = row['title']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['content_ad_id'], row)
-        row['breakdown_name'] = row['title']
-        row['parent_breakdown_id'] = None
-        row['status'] = {'value': row['status_setting']}
-        row['state'] = {'value': row['status_setting']}
-        del row['status_setting']
-
-        if 'status_setting' in row['editable_fields']:
-            row['editable_fields']['state'] = row['editable_fields']['status_setting']
-            del row['editable_fields']['status_setting']
-
-    return response
+    return grid.convert_resource_response(constants.Level.AD_GROUPS, constants.Breakdown.CONTENT_AD, response)
 
 
 def get_report_all_accounts_sources(user, view_filter, start_date, end_date,
@@ -280,16 +233,7 @@ def get_report_all_accounts_sources(user, view_filter, start_date, end_date,
         end_date,
         order
     )
-
-    for row in response['rows']:
-        row['source_id'] = int(row['id'])
-        row['source_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source_id'], row)
-        row['breakdown_name'] = row['name']
-        row['parent_breakdown_id'] = None
-        row['status'] = {'value': row['status']}
-
-    return response
+    return grid.convert_resource_response(constants.Level.ALL_ACCOUNTS, constants.Breakdown.SOURCE, response)
 
 
 def get_report_account_sources(user, filtered_sources, start_date, end_date,
@@ -307,16 +251,7 @@ def get_report_account_sources(user, filtered_sources, start_date, end_date,
         order,
         id_=kwargs['account_id']
     )
-
-    for row in response['rows']:
-        row['source_id'] = int(row['id'])
-        row['source_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source_id'], row)
-        row['breakdown_name'] = row['name']
-        row['parent_breakdown_id'] = None
-        row['status'] = {'value': row['status']}
-
-    return response
+    return grid.convert_resource_response(constants.Level.ACCOUNTS, constants.Breakdown.SOURCE, response)
 
 
 def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
@@ -334,19 +269,7 @@ def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
         order,
         id_=kwargs['campaign_id']
     )
-
-    for row in response['rows']:
-        row['source_id'] = int(row['id'])
-        row['source_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source_id'], row)
-        row['breakdown_name'] = row['name']
-        row['parent_breakdown_id'] = None
-        row['status'] = {'value': row['status']}
-
-    response['conversion_goals'] = response.get('conversion_goals')
-    response['campaign_goals'] = response.get('campaign_goals')
-
-    return response
+    return grid.convert_resource_response(constants.Level.CAMPAIGNS, constants.Breakdown.SOURCE, response)
 
 
 def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
@@ -364,33 +287,7 @@ def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
         order,
         id_=kwargs['ad_group_id']
     )
-
-    for row in response['rows']:
-        row['source_id'] = int(row['id'])
-        row['source_name'] = row['name']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['source_id'], row)
-        row['breakdown_name'] = row['name']
-        row['parent_breakdown_id'] = None
-
-        status = {'value': row['status']}
-        if 'notifications' in response:
-            # Notifications are only set for rows for enabled sources in paused ad groups. This is a workaround to
-            # append notification message to status dict and changing status value to inactive (sources can not have
-            # enabled status in paused ad groups).
-            for notification_row_id in response['notifications']:
-                if int(row['id']) == notification_row_id:
-                    status['value'] = constants.AdGroupSourceSettingsState.INACTIVE
-                    status['popover_message'] = response['notifications'][notification_row_id]['message']
-                    status['important'] = True
-        row['status'] = status
-        row['state'] = {'value': row['status_setting']}
-        del row['status_setting']
-
-        if 'status_setting' in row['editable_fields']:
-            row['editable_fields']['state'] = row['editable_fields']['status_setting']
-            del row['editable_fields']['status_setting']
-
-    return response
+    return grid.convert_resource_response(constants.Level.AD_GROUPS, constants.Breakdown.SOURCE, response)
 
 
 def get_report_ad_group_publishers(user, filtered_sources, start_date, end_date,
@@ -408,20 +305,7 @@ def get_report_ad_group_publishers(user, filtered_sources, start_date, end_date,
         size,
         id_=kwargs['ad_group_id']
     )
-
-    for row in response['rows']:
-        row['publisher'] = row['domain']
-        row['publisher_name'] = row['domain']
-        row['breakdown_id'] = stats.helpers.create_breakdown_id(['publisher'], row)
-        row['breakdown_name'] = row['domain']
-        row['parent_breakdown_id'] = None
-
-        status = {'value': row['status']}
-        if 'blacklisted_level_description' in row:
-            status['popover_message'] = row['blacklisted_level_description']
-        row['status'] = status
-
-    return response
+    return grid.convert_resource_response(constants.Level.AD_GROUPS, constants.Breakdown.PUBLISHER, response)
 
 
 class AllAccountsBreakdown(api_common.BaseApiView):
@@ -607,6 +491,9 @@ class AdGroupBreakdown(api_common.BaseApiView):
                 show_blacklisted_publishers=form.cleaned_data.get('show_blacklisted_publishers'),
             )
             return self.create_api_response(report)
+
+        if stats.constants.get_base_dimension(breakdown) == 'publisher':
+            breakdown = ['publisher', 'source_id'] + breakdown[1:]
 
         report = stats.api_breakdowns.query(
             request.user,

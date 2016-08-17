@@ -1247,6 +1247,46 @@ class ScheduledReportSendingFrequency(ConstantBase):
     }
 
 
+class ScheduledReportDayOfWeek(ConstantBase):
+    MONDAY = 1
+    TUESDAY = 2
+    WEDNESDAY = 3
+    THURSDAY = 4
+    FRIDAY = 5
+    SATURDAY = 6
+    SUNDAY = 7
+
+    _VALUES = {
+        MONDAY: 'Monday',
+        TUESDAY: 'Tuesday',
+        WEDNESDAY: 'Wednesday',
+        THURSDAY: 'Thursday',
+        FRIDAY: 'Friday',
+        SATURDAY: 'Saturday',
+        SUNDAY: 'Sunday',
+    }
+
+
+class ScheduledReportTimePeriod(ConstantBase):
+    YESTERDAY = 1
+    LAST_7_DAYS = 2
+    LAST_30_DAYS = 3
+    THIS_WEEK = 4
+    LAST_WEEK = 5
+    THIS_MONTH = 6
+    LAST_MONTH = 7
+
+    _VALUES = {
+        YESTERDAY: 'Yesterday',
+        LAST_7_DAYS: 'Last 7 Days',
+        LAST_30_DAYS: 'Last 30 Days',
+        THIS_WEEK: 'This Week',
+        LAST_WEEK: 'Last Week',
+        THIS_MONTH: 'This Month',
+        LAST_MONTH: 'Last Month',
+    }
+
+
 class ScheduledReportState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
@@ -1611,8 +1651,32 @@ class FacebookAccountStatus(ConstantBase):
 class RuleType(ConstantBase):
     STARTS_WITH = 1
     CONTAINS = 2
+    NOT_STARTS_WITH = 3
+    NOT_CONTAINS = 4
 
     _VALUES = {
         STARTS_WITH: 'Starts with',
         CONTAINS: 'Contains',
+        NOT_STARTS_WITH: 'Not starts with',
+        NOT_CONTAINS: 'Not contains',
     }
+
+
+#
+# Breakdown related constants
+#
+class Level(object):
+    ALL_ACCOUNTS = 'all_accounts'
+    ACCOUNTS = 'accounts'
+    CAMPAIGNS = 'campaigns'
+    AD_GROUPS = 'ad_groups'
+    CONTENT_ADS = 'content_ads'
+
+
+class Breakdown(object):
+    ACCOUNT = 'account'
+    CAMPAIGN = 'campaign'
+    AD_GROUP = 'ad_group'
+    CONTENT_AD = 'contentad'
+    SOURCE = 'source'
+    PUBLISHER = 'publisher'

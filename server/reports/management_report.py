@@ -45,7 +45,7 @@ class ReportContext(object):
 
     def __init__(self, date):
         self.date = date
-        self.date_before = date - datetime.timedelta(1)
+        self.date_after = date + datetime.timedelta(1)
 
         self._prepare_main_model()
 
@@ -70,8 +70,8 @@ class ReportContext(object):
         }
 
         yesterday_range = {
-            'created_dt__lt': self.date,
-            'created_dt__gte': self.date_before,
+            'created_dt__lt': self.date_after,
+            'created_dt__gte': self.date,
         }
         self.yesterday_created = {
             'accounts': dash.models.Account.objects.filter(**yesterday_range),
@@ -81,8 +81,8 @@ class ReportContext(object):
         }
 
         yesterday_range = {
-            'modified_dt__lt': self.date,
-            'modified_dt__gte': self.date_before
+            'modified_dt__lt': self.date_after,
+            'modified_dt__gte': self.date,
         }
         self.yesterday_modified = {
             'budgets': dash.models.BudgetLineItem.objects.filter(**yesterday_range),

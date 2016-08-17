@@ -182,7 +182,7 @@ class ContentAdStats(materialize_views.Materialize):
 
             media_source = media_sources_map.get(media_source_slug)
             if media_source is None:
-                logger.error("Got postclick data for invalid media_source: %s", media_source_slug)
+                logger.info("Got postclick data for invalid media_source: %s", media_source_slug)
                 continue
 
             post_click = self._get_post_click_data(
@@ -457,7 +457,7 @@ class Publishers(materialize_views.Materialize):
 
             media_source = media_sources_map.get(media_source_slug)
             if media_source is None:
-                logger.error("Got postclick data for invalid media_source: %s", media_source_slug)
+                logger.info("Got postclick data for invalid media_source: %s", media_source_slug)
                 continue
 
             if not publisher:

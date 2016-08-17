@@ -51,19 +51,16 @@ class K1APIView(View):
         }, status=status)
 
 
-class get_accounts(K1APIView):
+class AccountsView(K1APIView):
 
     def get(self, request):
-        account_id = request.GET.get('account_id')
-        if account_id:
-            accounts = (dash.models.Account.objects
-                        .filter(id=account_id)
-                        .prefetch_related('conversionpixel_set', 'conversionpixel_set__sourcetypepixel_set'))
-        else:
-            accounts = (dash.models.Account.objects
-                        .all()
-                        .exclude_archived()
-                        .prefetch_related('conversionpixel_set', 'conversionpixel_set__sourcetypepixel_set'))
+        account_ids = request.GET.get('account_ids')
+        accounts = (dash.models.Account.objects
+                    .all()
+                    .exclude_archived()
+                    .prefetch_related('conversionpixel_set', 'conversionpixel_set__sourcetypepixel_set'))
+        if account_ids:
+            accounts = accounts.filter(id__in=account_ids.split(','))
 
         account_dicts = []
         for account in accounts:
@@ -85,65 +82,65 @@ class get_accounts(K1APIView):
                 }
                 pixels.append(pixel_dict)
 
+            audiences = dash.models.Audience.objects.filter(pixel__account__id=account.id).prefetch_related('rule_set')
+            audiences_dicts = []
+            for audience in audiences:
+                rules = []
+                for rule in audience.rule_set.all():
+                    rule_dict = {
+                        'id': rule.id,
+                        'type': rule.type,
+                        'values': rule.value,
+                    }
+                    rules.append(rule_dict)
+
+                audience_dict = {
+                    'id': audience.id,
+                    'name': audience.name,
+                    'pixel_id': audience.pixel.id,
+                    'ttl': audience.ttl,
+                    'rules': rules,
+                }
+                audiences_dicts.append(audience_dict)
+
             account_dict = {
                 'id': account.id,
                 'pixels': pixels,
+                'custom_audiences': audiences_dicts,
                 'outbrain_marketer_id': account.outbrain_marketer_id,
             }
             account_dicts.append(account_dict)
-        response = {'accounts': account_dicts}
 
-        bidder_slug = request.GET.get("bidder_slug")
-        if bidder_slug:
-            default_source_settings = dash.models.DefaultSourceSettings.objects.get(source__bidder_slug=bidder_slug)
-            response['credentials'] = default_source_settings.credentials.credentials
+        return self.response_ok(account_dicts)
 
+
+class SourcesView(K1APIView):
+    def get(self, request):
+        source_slugs = request.GET.get("source_slugs")
+        sources = dash.models.Source.objects.all().select_related('defaultsourcesettings')
+        if source_slugs:
+            sources = sources.filter(bidder_slug__in=source_slugs.split(','))
+
+        response = []
+        for source in sources:
+            source_dict = {
+                'id': source.id,
+                'slug': source.tracking_slug,
+                'credentials': None
+            }
+            try:
+                default_credentials = source.defaultsourcesettings.credentials
+                source_dict['credentials'] = {
+                    'id': default_credentials.id,
+                    'credentials': default_credentials.credentials
+                }
+            except dash.models.DefaultSourceSettings.DoesNotExist:
+                pass
+            response.append(source_dict)
         return self.response_ok(response)
 
 
-class get_default_source_credentials(K1APIView):
-    def get(self, request):
-        bidder_slug = request.GET.get("bidder_slug")
-        if not bidder_slug:
-            return self.response_error("Must provide bidder slug.")
-
-        default_source_settings = dash.models.DefaultSourceSettings.objects.get(source__bidder_slug=bidder_slug)
-        return self.response_ok(default_source_settings.credentials.credentials)
-
-
-class get_custom_audiences(K1APIView):
-
-    def get(self, request):
-        account_id = request.GET.get('account_id')
-        if not account_id:
-            return self.response_error('Account id must be specified.')
-
-        audiences = dash.models.Audience.objects.filter(pixel__account__id=account_id).prefetch_related('rule_set')
-
-        audiences_dicts = []
-        for audience in audiences:
-            rules = []
-            for rule in audience.rule_set.all():
-                rule_dict = {
-                    'id': rule.id,
-                    'type': rule.type,
-                    'values': rule.value,
-                }
-                rules.append(rule_dict)
-
-            audience_dict = {
-                'id': audience.id,
-                'name': audience.name,
-                'pixel_id': audience.pixel.id,
-                'ttl': audience.ttl,
-                'rules': rules,
-            }
-            audiences_dicts.append(audience_dict)
-
-        return self.response_ok(audiences_dicts)
-
-
-class update_source_pixel(K1APIView):
+class SourcePixelsView(K1APIView):
 
     def put(self, request):
         data = json.loads(request.body)
@@ -165,28 +162,7 @@ class update_source_pixel(K1APIView):
         return self.response_ok(data)
 
 
-class get_source_credentials_for_reports_sync(K1APIView):
-
-    def get(self, request):
-        source_types = request.GET.getlist('source_type')
-
-        source_credentials_list = (
-            dash.models.SourceCredentials.objects
-                .filter(sync_reports=True)
-                .filter(source__source_type__type__in=source_types)
-                .annotate(
-                    source_type=F('source__source_type__type'),
-                ).values(
-                    'id',
-                    'credentials',
-                    'source_type',
-                )
-        )
-
-        return self.response_ok({'source_credentials_list': list(source_credentials_list)})
-
-
-class get_ga_accounts(K1APIView):
+class GAAccountsView(K1APIView):
 
     def get(self, request):
         all_current_settings = dash.models.AdGroupSettings.objects.all().group_current_settings().prefetch_related(
@@ -203,21 +179,7 @@ class get_ga_accounts(K1APIView):
         return self.response_ok({'ga_accounts': list(ga_accounts)})
 
 
-class get_sources_by_tracking_slug(K1APIView):
-
-    def get(self, request):
-        data = {}
-
-        sources = dash.models.Source.objects.all()
-        for source in sources:
-            data[source.tracking_slug] = {
-                'id': source.id,
-            }
-
-        return self.response_ok(data)
-
-
-class get_accounts_slugs_ad_groups(K1APIView):
+class R1MappingView(K1APIView):
 
     def get(self, request):
         accounts = [int(account) for account in request.GET.getlist('account')]
@@ -242,7 +204,7 @@ class get_accounts_slugs_ad_groups(K1APIView):
         return self.response_ok(data)
 
 
-class get_publishers_blacklist_outbrain(K1APIView):
+class OutbrainPublishersBlacklistView(K1APIView):
 
     def get(self, request):
         marketer_id = request.GET.get('marketer_id')
@@ -255,7 +217,7 @@ class get_publishers_blacklist_outbrain(K1APIView):
         return self.response_ok({'blacklist': list(blacklisted_publishers)})
 
 
-class get_publishers_blacklist(K1APIView):
+class PublishersBlacklistView(K1APIView):
 
     def get(self, request):
         ad_group_id = request.GET.get('ad_group_id')
@@ -482,6 +444,7 @@ class AdGroupSourcesView(K1APIView):
 
         ad_groups_settings_query = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups)
         ad_groups_settings = ad_groups_settings_query.group_current_settings()
+
         ad_group_settings_map = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
         ag_source_settings_query = (dash.models.AdGroupSourceSettings.objects
@@ -701,7 +664,7 @@ class ContentAdSourcesView(K1APIView):
         return self.response_ok(data)
 
 
-class get_outbrain_marketer_id(K1APIView):
+class OutbrainMarketerIdView(K1APIView):
 
     def get(self, request):
 
@@ -729,7 +692,7 @@ class get_outbrain_marketer_id(K1APIView):
         return self.response_ok(ad_group.campaign.account.outbrain_marketer_id)
 
 
-class get_facebook_accounts(K1APIView):
+class FacebookAccountsView(K1APIView):
 
     def get(self, request):
         ad_group_id = request.GET.get('ad_group_id')
@@ -764,9 +727,6 @@ class get_facebook_accounts(K1APIView):
         except dash.models.FacebookAccount.DoesNotExist:
             facebook_account = None
         return self.response_ok(facebook_account)
-
-
-class update_facebook_account(K1APIView):
 
     def put(self, request):
         values = json.loads(request.body)

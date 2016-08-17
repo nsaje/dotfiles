@@ -896,15 +896,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
                 $scope.sources = sources;
                 $scope.sourcesWaiting = data.sourcesWaiting;
-                if ($scope.sourcesWaiting && $scope.sourcesWaiting.length > 0) {
-                    // Create grid notification (and close old one if exists)
-                    var msg = 'We are adding the following media source(s): ' +
-                        $scope.sourcesWaiting.join(', ') + '. This may take some time.';
-                    if ($scope.grid.sourcesWaitingNotification) {
-                        $scope.grid.api.closeNotification ($scope.grid.sourcesWaitingNotification);
-                    }
-                    $scope.grid.sourcesWaitingNotification = $scope.grid.api.notify (constants.notificationType.info, msg, false);
-                }
             },
             function (data) {
                 // error
@@ -921,6 +912,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         api.adGroupSources.add($state.params.id, sourceIdToAdd).then(
             function (data) {
                 getSources();
+                if ($scope.grid && $scope.grid.api) {
+                    $scope.grid.api.loadData();
+                }
             },
             function (data) {
                 // error

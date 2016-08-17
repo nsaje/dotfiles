@@ -224,7 +224,7 @@
         }
 
         .zem-grid-body {
-            max-height: 510px;
+            max-height: 1845px;
             min-height: 45px;
             overflow: auto;
 
@@ -566,6 +566,10 @@
             background-color: @zem-grid-bg-color;
         }
 
+        .wait-message {
+            padding: 5px;
+        }
+
         .state-list {
             list-style: none;
             display: inline-block;
@@ -603,12 +607,17 @@
     }
 
     &.editable-currency-field-modal {
-        width: 284px;
+        width: 290px;
         padding: 8px;
         background-color: @zem-grid-bg-color;
         border: 1px solid @default-color;
         border-radius: 3px;
         font-size: @zem-grid-default-font-size;
+
+        .wait-message {
+            height: 34px;
+            line-height: 34px;
+        }
 
         .currency-input {
             position: relative;

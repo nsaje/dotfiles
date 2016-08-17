@@ -128,9 +128,9 @@ class ExportTestCase(test.TestCase):
         content = export.get_csv_content(fieldnames, self.data)
 
         expected_content = '''Date,Media Cost,Data Cost,Clicks,CTR\r
-2014-07-01,1000.12,10.10,103,0.0103\r
-2014-07-01,2000.12,23.10,203,0.0203\r
-2014-07-01,3000.12,33.10,303,0.0303\r
+2014-07-01,1000.1200,10.1000,103,0.0103\r
+2014-07-01,2000.1200,23.1000,203,0.0203\r
+2014-07-01,3000.1200,33.1000,303,0.0303\r
 '''
         expected_content = test_helper.format_csv_content(expected_content)
         self.assertEqual(content, expected_content)
@@ -151,9 +151,9 @@ class ExportTestCase(test.TestCase):
         content = export.get_csv_content(fieldnames, self.data)
 
         expected_content = '''Date,Media Cost,Data Cost,Clicks,CTR,Status\r
-2014-07-01,1000.12,10.10,103,0.0103,Active\r
-2014-07-01,2000.12,23.10,203,0.0203,Inactive\r
-2014-07-01,3000.12,33.10,303,0.0303,Archived\r
+2014-07-01,1000.1200,10.1000,103,0.0103,Active\r
+2014-07-01,2000.1200,23.1000,203,0.0203,Inactive\r
+2014-07-01,3000.1200,33.1000,303,0.0303,Archived\r
 '''
         expected_content = test_helper.format_csv_content(expected_content)
         self.assertEqual(content, expected_content)
@@ -903,59 +903,59 @@ class ExportTestCase(test.TestCase):
     def test_add_missing_stats_content_ad(self):
         stats = list(self.mock_generate_rows_stats)
         data = {obj.id: obj for obj in models.ContentAd.objects.all()}
-        sources = {obj.ad_group_id: [1, 2] for obj in data.itervalues()}
+        sources = {obj.ad_group_id: [3, 4] for obj in data.itervalues()}
         export._add_missing_stats(stats, ['content_ad', 'date', 'source'], data, sources,
                                   datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
-        self.assertEqual(43, len(stats))
+        self.assertEqual(50, len(stats))
         self.assertEqual({
             'account': 1,
             'ad_group': 2,
             'campaign': 2,
             'content_ad': 5,
-            'date': datetime.date(2014, 7, 4),
-            'source': 2
+            'date': datetime.date(2014, 7, 5),
+            'source': 4
         }, stats[len(stats) - 1])
 
     def test_add_missing_stats_ad_group(self):
         stats = list(self.mock_generate_rows_stats)
         data = {obj.id: obj for obj in models.AdGroup.objects.all()}
-        sources = {id: [1, 2] for id in data}
+        sources = {id: [3, 4] for id in data}
         export._add_missing_stats(stats, ['ad_group', 'date', 'source'], data, sources,
                                   datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
-        self.assertEqual(83, len(stats))
+        self.assertEqual(101, len(stats))
         self.assertEqual({
             'account': 1,
             'ad_group': 10,
             'campaign': 1,
-            'date': datetime.date(2014, 7, 4),
-            'source': 2
+            'date': datetime.date(2014, 7, 5),
+            'source': 4
         }, stats[len(stats) - 1])
 
     def test_add_missing_stats_campaign(self):
         stats = list(self.mock_generate_rows_stats)
         data = {obj.id: obj for obj in models.Campaign.objects.all()}
-        sources = {id: [1, 2] for id in data}
+        sources = {id: [3, 4] for id in data}
         export._add_missing_stats(stats, ['campaign', 'date', 'source'], data, sources,
                                   datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
-        self.assertEqual(51, len(stats))
+        self.assertEqual(61, len(stats))
         self.assertEqual({
             'account': 4,
             'campaign': 6,
-            'date': datetime.date(2014, 7, 4),
-            'source': 2
+            'date': datetime.date(2014, 7, 5),
+            'source': 4
         }, stats[len(stats) - 1])
 
     def test_add_missing_stats_account(self):
         stats = list(self.mock_generate_rows_stats)
         data = {obj.id: obj for obj in models.Account.objects.all()}
-        sources = {id: [1, 2] for id in data}
+        sources = {id: [3, 4] for id in data}
         export._add_missing_stats(stats, ['account', 'date', 'source'], data, sources,
                                   datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
-        self.assertEqual(35, len(stats))
+        self.assertEqual(41, len(stats))
         self.assertEqual({
             'account': 4,
-            'date': datetime.date(2014, 7, 4),
-            'source': 2
+            'date': datetime.date(2014, 7, 5),
+            'source': 4
         }, stats[len(stats) - 1])
 
 

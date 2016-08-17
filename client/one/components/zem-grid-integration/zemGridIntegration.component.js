@@ -33,8 +33,6 @@ oneApp.controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'ze
     $scope.isPermissionInternal = this.isPermissionInternal;
 
     vm.grid = undefined;
-    vm.notifications = [];
-    vm.closeNotification = closeNotification;
 
     initialize();
 
@@ -49,11 +47,6 @@ oneApp.controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'ze
 
             // pass api back to host controller
             vm.api = vm.grid.api;
-
-            // extend api with notification capabilities
-            vm.api.notify = notify;
-            vm.api.closeNotification = closeNotification;
-
             if (vm.selection) initializeSelectionBind();
         });
     }
@@ -185,24 +178,6 @@ oneApp.controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'ze
             }
         });
         vm.selectionCallback();
-    }
-
-    function notify (type, message, closable) {
-        if (closable === undefined) closable = true;
-        var notification = {
-            type: type,
-            message: message,
-            closable: closable,
-        };
-        vm.notifications.push (notification);
-        return notification;
-    }
-
-    function closeNotification (notification) {
-        var idx = vm.notifications.indexOf(notification);
-        if (idx >= 0) {
-            vm.notifications.splice(idx, 1);
-        }
     }
 }]);
 

@@ -1190,6 +1190,8 @@ class ScheduledExportReportAdmin(admin.ModelAdmin):
         'report',
         'report_',
         'sending_frequency',
+        'day_of_week',
+        'time_period',
         'get_sources',
         '_agencies',
         '_account_types',

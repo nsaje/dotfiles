@@ -94,11 +94,16 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'daily_budget', 'current_daily_budget', 'yesterday_cost',
                        'image_urls', 'urlLink', 'upload_time',
                        'batch_name', 'display_url', 'brand_name',
-                       'description', 'call_to_action', 'e_yesterday_cost']
+                       'description', 'call_to_action', 'e_yesterday_cost',
+                       'breakdown_name']
 
-FORMAT_1_DECIMAL = ['avg_tos']
+FORMAT_1_DECIMAL = []
 
-FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'data_cost', 'media_cost',
+FORMAT_2_DECIMALS = []
+
+FORMAT_3_DECIMALS = []
+
+FORMAT_4_DECIMALS = ['pv_per_visit', 'data_cost', 'media_cost',
                      'e_media_cost', 'e_data_cost',
                      'billing_cost', 'margin', 'agency_total',
                      'license_fee', 'total_fee', 'flat_fee',
@@ -106,9 +111,7 @@ FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'data_cost', 'media_cost',
                      'license_fee_projection', 'total_fee_projection',
                      'avg_cost_per_minute', 'avg_cost_per_pageview',
                      'avg_cost_per_visit', 'avg_cost_per_non_bounced_visit',
-                     'avg_cost_for_new_visitor', ]
-
-FORMAT_3_DECIMALS = ['cpc']
+                     'avg_cost_for_new_visitor', 'avg_tos', 'cpc', 'ctr']
 
 FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate', 'ctr', 'click_discrepancy', 'pacing']
 
@@ -178,6 +181,9 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
 
     sorted_ret = list(sort_results(stats, [ordering]))
 
+    if len(sorted_ret) == 0:
+        return sorted_ret
+
     is_breakdown_by_day = 'date' in dimensions
     first_stat_date = is_breakdown_by_day and list(
         sorted(stat.get('date') for stat in sorted_ret)
@@ -195,7 +201,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
 def _generate_stats_date(dimensions, prefetched_data, sources, start_date, end_date):
     if 'date' in dimensions:
         date = start_date
-        while date < end_date:
+        while date <= end_date:
             for stat in _generate_stats_source(dimensions, prefetched_data, sources):
                 stat['date'] = date
                 yield stat
@@ -482,6 +488,9 @@ def _adjust_breakdown_by_day(first_stat_date, stat):
 
 
 def _adjust_breakdown_by_account(stat, account_appeared):
+    if 'account' not in stat:
+        return
+
     if not account_appeared[stat['account']]:
         account_appeared[stat['account']] = True
         return
@@ -494,7 +503,7 @@ def _adjust_breakdown_by_account(stat, account_appeared):
 def _populate_source_stat(stat, user=None, source_names=None):
     ad_group_sources = models.AdGroupSource.objects.filter(
         ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
-        source=stat['source'])
+        source=stat['source']).select_related('ad_group')
     stat['status'] = stat['status'] = _get_sources_state(ad_group_sources)
 
 
@@ -932,11 +941,13 @@ def _format_statuses_and_dates(value, field, archived):
 
 def _format_decimals(value, field):
     if value and field in FORMAT_1_DECIMAL:
-        return '{:.1f}'.format(value)
+        return '{:.1f}'.format(Decimal(value or 0))
     elif value and field in FORMAT_2_DECIMALS or 'avg_cost_per' in field:
-        return '{:.2f}'.format(value or 0.0)
+        return '{:.2f}'.format(Decimal(value or 0))
     elif value and field in FORMAT_3_DECIMALS:
-        return '{:.3f}'.format(value)
+        return '{:.3f}'.format(Decimal(value or 0))
+    elif value and field in FORMAT_4_DECIMALS:
+        return '{:.4f}'.format(Decimal(value or 0))
     return value
 
 

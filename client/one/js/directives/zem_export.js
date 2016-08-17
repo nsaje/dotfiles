@@ -6,8 +6,7 @@ oneApp.directive('zemExport', function () {
         restrict: 'E',
         scope: {
             baseUrl: '=',
-            startDate: '=',
-            endDate: '=',
+            dateRange: '=',
             options: '=',
             columns: '=',
             order: '=',

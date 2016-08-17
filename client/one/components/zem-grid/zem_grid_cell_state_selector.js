@@ -18,6 +18,7 @@ oneApp.directive('zemGridCellStateSelector', [function () {
         controller: ['$scope', 'zemGridConstants', 'zemGridStateAndStatusHelpers', function ($scope, zemGridConstants, zemGridStateAndStatusHelpers) { // eslint-disable-line max-len
             var vm = this;
 
+            vm.isSaveRequestInProgress = vm.grid.meta.dataService.isSaveRequestInProgress;
             vm.stateValues = zemGridStateAndStatusHelpers.getStateValues(vm.grid.meta.data.level, vm.grid.meta.data.breakdown);
             vm.setState = setState;
 

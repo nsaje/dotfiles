@@ -22,8 +22,10 @@ describe('AddScheduledReportModalCtrl', function () {
     beforeEach(inject(function ($controller, $rootScope, _$q_) {
         $q = _$q_;
         $scope = $rootScope.$new();
-        $scope.startDate = moment('2015-01-12');
-        $scope.endDate = moment('2015-01-19');
+        $scope.dateRange = {
+            startDate: moment('2015-01-12'),
+            endDate: moment('2015-01-19'),
+        };
         $scope.order = '-cost';
         $scope.baseUrl = 'test/';
         $scope.exportSchedulingFrequencies = [{value: 'weekly'}];
@@ -93,6 +95,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     additional_fields: '',
                     filtered_sources: '',
                     frequency: 'daily',
+                    day_of_week: 1,
+                    time_period: 1,
                     recipient_emails: undefined,
                     report_name: undefined,
                     include_model_ids: undefined
@@ -136,6 +140,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     additional_fields: '',
                     filtered_sources: '',
                     frequency: 'daily',
+                    day_of_week: 1,
+                    time_period: 1,
                     recipient_emails: undefined,
                     report_name: undefined,
                     include_model_ids: undefined
@@ -179,6 +185,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     additional_fields: '',
                     filtered_sources: '',
                     frequency: 'daily',
+                    day_of_week: 1,
+                    time_period: 1,
                     recipient_emails: undefined,
                     report_name: undefined,
                     include_model_ids: undefined

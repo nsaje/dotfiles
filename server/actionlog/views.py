@@ -21,7 +21,7 @@ ACTION_LOG_STATE_OPTIONS = {-1, 1, 2}
 
 @permission_required('actionlog.manual_view')
 def action_log(request):
-    return render(request, 'action_log.html', {'staticUrl': settings.CLIENT_STATIC_URL})
+    return render(request, 'action_log.html', {'staticUrl': settings.CLIENT_STATIC_URL, 'debug': settings.DEBUG})
 
 
 class ActionLogApiView(api_common.BaseApiView):

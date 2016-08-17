@@ -26,6 +26,8 @@ oneApp.directive('zemGridCellInternalLink', [function () {
             $scope.$watch('ctrl.data', update);
 
             function update () {
+                vm.id = -1;
+                vm.state = 'unknown';
                 if (vm.data && vm.row.data && vm.row.level === zemGridConstants.gridRowLevel.BASE) {
                     vm.id = vm.row.data.breakdownId || -1;
                     vm.state = getState(vm.grid.meta.data.level);

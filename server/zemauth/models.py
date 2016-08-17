@@ -194,6 +194,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('hide_old_table_on_ad_group_level', 'Hide old table on ad group level.'),
             ('can_access_table_breakdowns_feature', 'Can access table breakdowns feature on all accounts, account and campaign level.'),
             ('can_access_table_breakdowns_feature_on_ad_group_level', 'Can access table breakdowns feature on ad group level.'),
+            ('can_access_table_breakdowns_feature_on_ad_group_level_publishers', 'Can access table breakdowns feature on ad group level on publishers tab.'),
             ('can_view_sidetabs', 'Can view sidetabs.'),
             ('can_view_campaign_content_insights_side_tab', 'Can view content insights side tab on campaign level.'),
             ('can_modify_campaign_manager', 'Can view and set campaign manager on campaign settings tab.'),
@@ -210,6 +211,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_agency_margin', 'User can view margin in budget tab and view margin columns in tables and reports.'),
             ('can_view_platform_cost_breakdown', 'User can view platform costs broken down into media, data and fee.'),
             ('can_view_breakdown_by_delivery', 'User can view breakdowns by delivery.'),
+            ('can_set_time_period_in_scheduled_reports', 'User can set time period when creating scheduled reports'),
+            ('can_set_day_of_week_in_scheduled_reports', 'User can set day of week when creating scheduled reports'),
         )
 
     def get_full_name(self):

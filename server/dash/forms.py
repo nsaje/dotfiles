@@ -886,6 +886,16 @@ class ScheduleReportForm(forms.Form):
         choices=constants.ScheduledReportSendingFrequency.get_choices(),
         coerce=int
     )
+    day_of_week = forms.TypedChoiceField(
+        required=True,
+        choices=constants.ScheduledReportTimePeriod.get_choices(),
+        coerce=int
+    )
+    time_period = forms.TypedChoiceField(
+        required=True,
+        choices=constants.ScheduledReportTimePeriod.get_choices(),
+        coerce=int
+    )
     recipient_emails = MultiEmailField(
         required=True
     )

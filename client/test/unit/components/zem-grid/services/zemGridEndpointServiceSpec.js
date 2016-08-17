@@ -129,8 +129,7 @@ describe('zemGridEndpointServiceSpec', function () {
                 })
             ),
         };
-        spyOn(zemGridEndpointApi, 'getApi').and.returnValue(api);
-        spyOn(zemGridEndpointApiConverter, 'convertField').and.callThrough();
+        spyOn(zemGridEndpointApi, 'createInstance').and.returnValue(api);
 
         var metaData = zemGridEndpointService.createMetaData($scope, constants.level.ACCOUNTS, 1, constants.breakdown.CAMPAIGN);
         var endpoint = zemGridEndpointService.createEndpoint(metaData);
@@ -138,10 +137,8 @@ describe('zemGridEndpointServiceSpec', function () {
         $scope.$apply();
 
         expect(api.save).toHaveBeenCalled();
-        expect(zemGridEndpointApiConverter.convertField).toHaveBeenCalled();
         expect(promise.$$state.value).toEqual({
-            property: 'some property',
-            value: {
+            field: {
                 valueProperty: value
             }
         });

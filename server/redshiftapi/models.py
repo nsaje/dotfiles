@@ -97,6 +97,26 @@ MATERIALIZED_VIEWS = [
         sc.StructureDimension.ACCOUNT,
         sc.StructureDimension.CAMPAIGN,
         sc.StructureDimension.AD_GROUP,
+        sc.StructureDimension.PUBLISHER,
+    }, {
+        'base': 'mv_pubs_master',
+        'conversions': 'mv_conversions',
+        'touchpointconversions': 'mv_touchpointconversions',
+    }),
+    ({
+        sc.StructureDimension.SOURCE,
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.CAMPAIGN,
+        sc.StructureDimension.AD_GROUP,
+        sc.StructureDimension.PUBLISHER,
+    } | DeliveryGeo | DeliveryDemo, {
+        'base': 'mv_pubs_master',
+    }),
+    ({
+        sc.StructureDimension.SOURCE,
+        sc.StructureDimension.ACCOUNT,
+        sc.StructureDimension.CAMPAIGN,
+        sc.StructureDimension.AD_GROUP,
         sc.StructureDimension.CONTENT_AD
     }, {
         'base': 'mv_content_ad',

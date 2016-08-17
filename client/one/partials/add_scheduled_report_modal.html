@@ -61,7 +61,7 @@
                       id="frequency-select"
                       class="form-control"
                       ng-model="export.frequency"
-                      ng-change="checkBreakdownAvailable()">
+                      ng-change="frequencyChanged()">
                   <ui-select-match placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
                   <ui-select-choices repeat="freq in exportSchedulingFrequencies">
                       <div>{{freq.name}}</div>
@@ -71,6 +71,62 @@
 
             <div class="col-xs-3">
                 <label ng-repeat="error in validationErrors.frequency" class="control-label small error" for="frequency-select">{{ error }}</label>
+            </div>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!validationErrors.day_of_week}" ng-if="dayOfWeekShown && hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">
+            <div class="col-xs-4">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_day_of_week_in_scheduled_reports')" popover-placement="right"></zem-internal-feature>
+                <label for="day-of-week-select" class="control-label">
+                    Day of week
+                    <zem-help-popover content="Report will be delivered every week on this day." placement="top"></zem-help-popover>
+                </label>
+            </div>
+            <div class="col-xs-5">
+              <ui-select
+                      theme="select2"
+                      search-enabled="false"
+                      id="day-of-week-select"
+                      class="form-control"
+                      ng-model="export.dayOfWeek">
+                  <ui-select-match placeholder="Choose day of week">{{$select.selected.name}}</ui-select-match>
+                  <ui-select-choices repeat="dow in exportSchedulingDayOfWeek">
+                      <div>{{dow.name}}</div>
+                  </ui-select-choices>
+              </ui-select>
+            </div>
+
+            <div class="col-xs-3">
+                <label ng-repeat="error in validationErrors.day_of_week" class="control-label small error" for="day-of-week-select">{{ error }}</label>
+            </div>
+        </div>
+
+
+        <div class="form-group" ng-class="{'has-error': !!validationErrors.time_period}" ng-if="hasPermission('zemauth.can_set_time_period_in_scheduled_reports')">
+            <div class="col-xs-4">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_time_period_in_scheduled_reports')" popover-placement="right"></zem-internal-feature>
+                <label for="time-period-select" class="control-label">
+                    Time period
+                    <zem-help-popover content="Report will contain data for selected time period." placement="top"></zem-help-popover>
+                </label>
+            </div>
+            <div class="col-xs-5">
+              <ui-select
+                      theme="select2"
+                      search-enabled="false"
+                      id="time-period-select"
+                      class="form-control"
+                      ng-model="export.timePeriod"
+                      ng-change="timePeriodChanged()">
+                  <ui-select-match placeholder="Choose Time period">{{$select.selected.name}}</ui-select-match>
+                  <ui-select-choices repeat="tp in exportSchedulingTimePeriods">
+                      <div>{{tp.name}}</div>
+                  </ui-select-choices>
+              </ui-select>
+            </div>
+
+            <div class="col-xs-3">
+                <label ng-repeat="error in validationErrors.time_period" class="control-label small error" for="time-period-select">{{ error }}</label>
             </div>
         </div>
 

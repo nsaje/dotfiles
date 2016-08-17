@@ -22,8 +22,10 @@ describe('DownloadExportReportModalCtrl', function () {
     beforeEach(inject(function ($controller, $rootScope, _$q_) {
         $q = _$q_;
         $scope = $rootScope.$new();
-        $scope.startDate = moment.utc('2015-01-12');
-        $scope.endDate = moment.utc('2015-01-19');
+        $scope.dateRange = {
+            startDate: moment.utc('2015-01-12'),
+            endDate: moment.utc('2015-01-19'),
+        };
         $scope.order = '-cost';
         $scope.baseUrl = 'test/';
         $scope.options = [{value: 'view-csv'}];

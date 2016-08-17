@@ -242,8 +242,6 @@ class AllAccountsBreakdownTestCase(TestCase):
 
         self.assertItemsEqual(result['data'][0]['rows'], [{
             u'account': 116,
-            u'account_id': 116,
-            u'account_name': u"Cat's Pride",
             u'account_type': u'Self-managed',
             u'agency': u'MBuy',
             u'archived': False,
@@ -261,8 +259,6 @@ class AllAccountsBreakdownTestCase(TestCase):
             u'status': {'value': 1},
         }, {
             u'account': 305,  # TODO remove when doing stats
-            u'account_id': 305,
-            u'account_name': u'Outbrain',
             u'account_type': u'Pilot',
             u'agency': u'',
             u'archived': False,
@@ -434,32 +430,30 @@ class AccountBreakdownTestCase(TestCase):
         self.assertEqual(len(result['data']), 1)
 
         self.assertItemsEqual(result['data'][0]['rows'], [{
-            u'archived': False,
+            u'id': 198,
             u'breakdown_id': u'198',
             u'breakdown_name': u'Blog Campaign [Desktop]',
+            u'parent_breakdown_id': None,
+            u'archived': False,
             u'campaign': 198,
-            u'campaign_id': 198,
             u'campaign_manager': u'Ana Dejanovi\u0107',
-            u'campaign_name': u'Blog Campaign [Desktop]',
             u'cost': 9196.1064,
             u'impressions': 9621740,
             u'name': u'Blog Campaign [Desktop]',
             u'pageviews': 78853,
-            u'parent_breakdown_id': None,
             u'status': {'value': 1},
         }, {
-            u'archived': False,
+            u'id': 413,
             u'breakdown_id': u'413',
             u'breakdown_name': u'Learning Center',
+            u'parent_breakdown_id': None,
+            u'archived': False,
             u'campaign': 413,  # TODO remove when doing stats
-            u'campaign_id': 413,
             u'campaign_manager': u'Ana Dejanovi\u0107',
-            u'campaign_name': u'Learning Center',
             u'cost': 7726.1054,
             u'impressions': 10441143,
             u'name': u'Learning Center',  # TODO remove when doing stats
             u'pageviews': 51896,
-            u'parent_breakdown_id': None,
             u'status': {'value': 1},
         }])
 

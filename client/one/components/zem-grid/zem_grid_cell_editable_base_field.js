@@ -23,13 +23,14 @@ oneApp.directive('zemGridCellEditableBaseField', [function () {
                 vm.grid.meta.data.level, vm.grid.meta.data.breakdown
             );
 
+            vm.isSaveRequestInProgress = vm.grid.meta.dataService.isSaveRequestInProgress;
             vm.isAutopilotIconShown = isAutopilotIconShown;
             vm.filterInput = filterInput;
             vm.save = save;
             vm.closeModal = closeModal;
 
             $scope.$watch('ctrl.row', update);
-            $scope.$watch('ctrl.data', update);
+            $scope.$watch('ctrl.data', update, true); // TODO: use pubsub for propagating data updates
 
             function update () {
                 vm.formattedValue = '';
@@ -98,6 +99,10 @@ oneApp.directive('zemGridCellEditableBaseField', [function () {
             }
 
             function save () {
+                if (vm.isSaveRequestInProgress()) {
+                    return;
+                }
+
                 if (prevValidInputValue === initialValue) {
                     closeModal();
                     return;
@@ -107,11 +112,10 @@ oneApp.directive('zemGridCellEditableBaseField', [function () {
                 vm.errors = [];
                 var value = zemGridDataFormatter.parseInputValue(prevValidInputValue, vm.column.data);
 
-                vm.grid.meta.service.saveData(value, vm.row, vm.column)
+                vm.grid.meta.dataService.saveData(value, vm.row, vm.column)
                 .then(function () {
                     // FIXME: Revisit after response is refactored on backend
                     vm.showLoader = false;
-                    closeModal();
                 })
                 .catch(function (response) {
                     Object.keys(response).forEach(function (key) {

@@ -42,6 +42,9 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
         this.setVisibleColumns = grid.meta.columnsService.setVisibleColumns;
         this.getVisibleColumns = grid.meta.columnsService.getVisibleColumns;
 
+        // Notifications service API
+        this.notify = grid.meta.notificationService.notify;
+
         // Listeners - pubsub rewiring
         this.onMetaDataUpdated = onMetaDataUpdated;
         this.onDataUpdated = onDataUpdated;

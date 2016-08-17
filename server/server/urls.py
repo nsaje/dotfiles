@@ -26,6 +26,7 @@ import dash.views.views
 import dash.views.navigation
 import dash.views.callbacks
 import dash.views.upload
+import dash.views.grid
 
 
 admin.site.login = login_required(admin.site.login)
@@ -62,6 +63,21 @@ urlpatterns = [
 
 # Api
 urlpatterns += [
+    url(
+        r'^api/grid/ad_groups/(?P<ad_group_id>\d+)/settings/',
+        login_required(dash.views.grid.AdGroupSettings.as_view()),
+        name='grid_ad_group_settings'
+    ),
+    url(
+        r'^api/grid/content_ads/(?P<content_ad_id>\d+)/settings/',
+        login_required(dash.views.grid.ContentAdSettings.as_view()),
+        name='grid_content_ad_settings'
+    ),
+    url(
+        r'^api/grid/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/settings/',
+        login_required(dash.views.grid.AdGroupSourceSettings.as_view()),
+        name='grid_ad_group_source_settings'
+    ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/state/',
         login_required(dash.views.agency.AdGroupSettingsState.as_view()),
@@ -684,6 +700,51 @@ urlpatterns += [
         r'^k1api_new/content_ads/sources$',
         k1api.views.ContentAdSourcesView.as_view(),
         name='k1api_new.content_ads.sources',
+    ),
+    url(
+        r'^k1api_new/accounts$',
+        k1api.views.AccountsView.as_view(),
+        name='k1api_new.accounts',
+    ),
+    url(
+        r'^k1api_new/sources$',
+        k1api.views.SourcesView.as_view(),
+        name='k1api_new.sources',
+    ),
+    url(
+        r'k1api_new/source_pixels$',
+        k1api.views.SourcePixelsView.as_view(),
+        name='k1api_new.source_pixels',
+    ),
+    url(
+        r'^k1api_new/ga_accounts$',
+        k1api.views.GAAccountsView.as_view(),
+        name='k1api_new.ga_accounts',
+    ),
+    url(
+        r'^k1api_new/r1_mapping$',
+        k1api.views.R1MappingView.as_view(),
+        name='k1api_new.r1_mapping',
+    ),
+    url(
+        r'^k1api_new/publishers_blacklist$',
+        k1api.views.PublishersBlacklistView.as_view(),
+        name='k1api_new.publishers_blacklist',
+    ),
+    url(
+        r'^k1api_new/outbrain/publishers_blacklist$',
+        k1api.views.OutbrainPublishersBlacklistView.as_view(),
+        name='k1api_new.outbrain_publishers_blacklist',
+    ),
+    url(
+        r'^k1api_new/outbrain/marketer_id$',
+        k1api.views.OutbrainMarketerIdView.as_view(),
+        name='k1api_new.outbrain_marketer_id',
+    ),
+    url(
+        r'^k1api_new/facebook/accounts$',
+        k1api.views.FacebookAccountsView.as_view(),
+        name='k1api_new.facebook_accounts',
     ),
 ]
 

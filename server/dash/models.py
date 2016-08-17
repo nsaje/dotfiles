@@ -2639,6 +2639,15 @@ class ContentAd(models.Model):
 
     class QuerySet(models.QuerySet):
 
+        def filter_by_user(self, user):
+            return self.filter(
+                models.Q(ad_group__campaign__users__id=user.id) |
+                models.Q(ad_group__campaign__groups__user__id=user.id) |
+                models.Q(ad_group__campaign__account__users__id=user.id) |
+                models.Q(ad_group__campaign__account__groups__user__id=user.id) |
+                models.Q(ad_group__campaign__account__agency__users__id=user.id)
+            ).distinct()
+
         def filter_by_sources(self, sources):
             if not should_filter_by_sources(sources):
                 return self
@@ -3690,6 +3699,16 @@ class ScheduledExportReport(models.Model):
     sending_frequency = models.IntegerField(
         default=constants.ScheduledReportSendingFrequency.DAILY,
         choices=constants.ScheduledReportSendingFrequency.get_choices()
+    )
+
+    day_of_week = models.IntegerField(
+        default=constants.ScheduledReportDayOfWeek.MONDAY,
+        choices=constants.ScheduledReportDayOfWeek.get_choices()
+    )
+
+    time_period = models.IntegerField(
+        default=constants.ScheduledReportTimePeriod.YESTERDAY,
+        choices=constants.ScheduledReportTimePeriod.get_choices()
     )
 
     def __unicode__(self):
