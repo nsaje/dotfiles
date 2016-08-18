@@ -545,7 +545,11 @@ class ContentAdsView(K1APIView):
     def get(self, request):
         content_ad_ids = request.GET.get('content_ad_ids')
         ad_group_ids = request.GET.get('ad_group_ids')
-        content_ads = dash.models.ContentAd.objects.all().exclude_archived()
+        include_archived = request.GET.get('include_archived') == 'True'
+
+        content_ads = dash.models.ContentAd.objects.all()
+        if not include_archived:
+            content_ads = content_ads.exclude_archived()
         if content_ad_ids:
             content_ad_ids = content_ad_ids.split(',')
             content_ads = content_ads.filter(id__in=content_ad_ids)

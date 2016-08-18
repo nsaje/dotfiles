@@ -738,6 +738,28 @@ class K1ApiTest(TestCase):
         }]
         self.assertEqual(data, expected)
 
+    def test_get_content_ads(self):
+        response = self.client.get(
+            reverse('k1api_new.content_ads'),
+            {'include_archived': False}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data_without_archived = data['response']
+
+        response = self.client.get(
+            reverse('k1api_new.content_ads'),
+            {'include_archived': True}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data_with_archived = data['response']
+
+        self.assertEqual(5, len(data_without_archived))
+        self.assertEqual(6, len(data_with_archived))
+
     def test_get_content_ads_sources(self):
         response = self.client.get(
             reverse('k1api_new.content_ads.sources'),
