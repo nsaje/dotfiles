@@ -133,7 +133,7 @@ def _convert_breakdown_fields(level, breakdown, response):
     if breakdown == constants.Breakdown.PUBLISHER:
         id_key = 'domain'
         name_key = 'domain'
-        breakdown_id_fields += ['domain', 'source_id']
+        breakdown_id_fields = ['domain', 'source_id']
 
     for row in response['rows']:
         if id_key in row:
