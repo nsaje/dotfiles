@@ -1,13 +1,15 @@
-actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', 'api', function ($scope, $location, api) {
+actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', '$modal', 'config', 'api', function ($scope, $location, $modal, config, api) {
 
     $scope.user = null;
     $scope.actionLogItems = null;
     $scope.actionLogItemsMax = null;
+    $scope.pixelData = {};
+    $scope.errors = {};
 
     $scope.states = [
-        ['Failed', -1],
-        ['Waiting', 1],
-        ['Success', 2],
+        [actionLogConstants.state.FAILED.name, actionLogConstants.state.FAILED.value],
+        [actionLogConstants.state.WAITING.name, actionLogConstants.state.WAITING.value],
+        [actionLogConstants.state.SUCCESS.name, actionLogConstants.state.SUCCESS.value],
     ];
     $scope.stateClass = function (log, state) {
         var cls = 'btn-' + state[0].toLowerCase();
@@ -18,12 +20,45 @@ actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', 'api', function
         return cls;
     };
     $scope.updateState = function (log, state) {
+        // if creating pixel and action is successful
+        if (log.action == 'create_pixel' && state[1] == actionLogConstants.state.SUCCESS.value) {
+            $modal.open({
+                templateUrl: config.static_url + '/actionlog/pixel_modal.html',
+                scope: $scope,
+                controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
+                    $scope.ok = function () {
+                        executeUpdatePixel(log, state, $modalInstance);
+                    };
+
+                    $scope.cancel = function () {
+                        $modalInstance.dismiss('cancel');
+                    };
+                }],
+                size: 'lg',
+            });
+        } else {
+            executeSave(log, state);
+        }
+    };
+
+    function executeUpdatePixel(log, state, $modalInstance) {
+        api.actionLog.updateOutbrainSourcePixel(log.conversion_pixel[1], $scope.pixelData.url, $scope.pixelData.id)
+            .then(function (data) {
+                executeSave(log, state);
+                $modalInstance.close();
+            },
+            function (data) {
+                $scope.errors = data;
+            });
+    }
+
+    function executeSave(log, state) {
         api.actionLog.save_state(log.id, state[1]).then(function (data) {
             log.state = data.actionLogItem.state;
             log.modified_dt = data.actionLogItem.modified_dt;
             log.modified_by = data.actionLogItem.modified_by;
         });
-    };
+    }
 
     $scope.filters = {
         items: {},

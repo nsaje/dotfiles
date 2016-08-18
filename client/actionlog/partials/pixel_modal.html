@@ -1,0 +1,19 @@
+<div class="modal-header">
+    <h3 class="modal-title">Pixel data</h3>
+</div>
+<div class="modal-body">
+    <div class="row form-group indented" ng-class="{'has-error': !!errors.url}">
+        <label class="col-xs-2">Url</label>
+        <input id="urlInput" class="col-xs-6" type="text" data-ng-model="pixelData.url">
+        <label ng-repeat="error in errors.url" class="col-xs-4 control-label error" for="urlInput">{{ error }}</label>
+    </div>
+    <div class="row form-group indented" ng-class="{'has-error': !!errors.pixelId}">
+        <label class="col-xs-2">Pixel id</label>
+        <input id="pixelId" class="col-xs-4" type="text" data-ng-model="pixelData.id">
+        <label ng-repeat="error in errors.pixelId" class="col-xs-4 control-label error" for="pixelId">{{ error }}</label>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" type="button" ng-click="ok()">Ok</button>
+    <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+</div>

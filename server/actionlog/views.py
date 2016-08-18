@@ -13,6 +13,7 @@ import dash.constants
 
 from actionlog import models
 from actionlog import constants
+from actionlog import forms
 
 
 ACTION_LOG_DISPLAY_MAX_ACTION = 100
@@ -91,10 +92,11 @@ class ActionLogApiView(api_common.BaseApiView):
             state = action.payload.get('args', {}).get('conf', {}).get('state')
 
             if state not in dash.constants.AdGroupSourceSettingsState.get_all():
-                 raise Exception('Unsupported state %s for action SET_CAMPAIGN_STATE' % state)
+                raise Exception('Unsupported state %s for action SET_CAMPAIGN_STATE' % state)
 
             return '{} set to {}'.format(NAMES.get('state'), dash.constants.AdGroupSourceSettingsState.get_text(state))
-        elif action.action == constants.Action.SET_PUBLISHER_BLACKLIST:
+        elif action.action in [constants.Action.SET_PUBLISHER_BLACKLIST, constants.Action.CREATE_PIXEL,
+                               constants.Action.CREATE_CUSTOM_AUDIENCE]:
             return action.message
         else:
             raise Exception('Unsupported action %s' % action.action)
@@ -140,27 +142,13 @@ class ActionLogApiView(api_common.BaseApiView):
         )
 
     def _get_action_item(self, action):
-        return {
+        result = {
             'id': action.id,
 
             'action': action.action,
             'state': [
                 constants.ActionState.get_text(action.state),
                 action.state
-            ],
-
-            'ad_group_source': [
-                str(action.ad_group_source),
-                action.ad_group_source.id,
-            ],
-
-            'ad_group': [
-                self._get_ad_group_full_name(action.ad_group_source.ad_group),
-                action.ad_group_source.ad_group.id,
-            ],
-            'source': [
-                str(action.ad_group_source.source),
-                action.ad_group_source.source.id,
             ],
 
             'created_dt': action.created_dt,
@@ -172,9 +160,33 @@ class ActionLogApiView(api_common.BaseApiView):
             'order': action.order and action.order.id,
 
             'take_action': self._get_take_action(action),
-            'supply_dash_url': urlresolvers.reverse('dash.views.views.supply_dash_redirect') \
-                + '?ad_group_id={}&source_id={}'.format(action.ad_group_source.ad_group.id, action.ad_group_source.source.id)
         }
+
+        if action.ad_group_source:
+            result['ad_group_source'] = [
+                str(action.ad_group_source),
+                action.ad_group_source.id,
+            ]
+            result['ad_group'] = [
+                self._get_ad_group_full_name(action.ad_group_source.ad_group),
+                action.ad_group_source.ad_group.id,
+            ]
+            result['source'] = [
+                str(action.ad_group_source.source),
+                action.ad_group_source.source.id,
+            ]
+            result['supply_dash_url'] = (
+                '{}?ad_group_id={}&source_id={}'.format(urlresolvers.reverse('dash.views.views.supply_dash_redirect'),
+                                                        action.ad_group_source.ad_group.id,
+                                                        action.ad_group_source.source.id))
+
+        if action.conversion_pixel:
+            result['conversion_pixel'] = [
+                str(action.conversion_pixel.name),
+                action.conversion_pixel.id,
+            ]
+
+        return result
 
     @method_decorator(permission_required('actionlog.manual_acknowledge'))
     def put(self, request, action_log_id):
@@ -189,7 +201,33 @@ class ActionLogApiView(api_common.BaseApiView):
         action.state = new_state
         action.save()
 
-        response = {}
-        response['actionLogItem'] = self._get_action_item(action)
-
+        response = {'actionLogItem': self._get_action_item(action)}
         return self.create_api_response(response)
+
+
+class ActionLogPixelApiView(api_common.BaseApiView):
+
+    @method_decorator(permission_required('actionlog.manual_acknowledge'))
+    def put(self, request):
+        data = json.loads(request.body)
+
+        form = forms.SourcePixelForm(data)
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        pixel_id = data['pixel_id']
+        source_type = data['source_type']
+
+        source_pixel, created = dash.models.SourceTypePixel.objects.get_or_create(
+            pixel__id=pixel_id,
+            source_type__type=source_type,
+            defaults={
+                'pixel': dash.models.ConversionPixel.objects.get(id=pixel_id),
+                'source_type': dash.models.SourceType.objects.get(type=source_type),
+            })
+
+        source_pixel.url = data['url']
+        source_pixel.source_pixel_id = data['source_pixel_id']
+        source_pixel.save()
+
+        return self.create_api_response(data)
