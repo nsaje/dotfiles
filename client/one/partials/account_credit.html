@@ -29,6 +29,7 @@
                     <th>Credit Amount</th>
                     <th>Allocated Budgets</th>
                     <th>Available Credit</th>
+                    <th ng-if="account.agency">Agency Credit</th>
                     <th>Notes</th>
                     <th>Actions</th>
                 </tr>
@@ -47,6 +48,7 @@
                         <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+                    <td ng-if="account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
                     <td>
                         <zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover>
                     </td>
@@ -82,6 +84,7 @@
                     <th>Total Credit Amount</th>
                     <th>Allocated Budgets</th>
                     <th>Available Credit</th>
+                    <th ng-if="account.agency">Agency Credit</th>
                     <th>Notes</th>
                     <th>Actions</th>
                 </tr>
@@ -100,6 +103,7 @@
                         <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+                    <td ng-if="account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
                     <td>
                         <zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover>
                     </td>
@@ -110,10 +114,10 @@
 							</li>
                         </ul>
                     </td>
-                </tr>   
+                </tr>
                 <tr ng-show="!pastCredit.length" class="message">
                     <td colspan="9">No past credit items.</td>
-                </tr>           
+                </tr>
             </tbody>
         </table>
     </div>

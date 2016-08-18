@@ -45,7 +45,10 @@ class AccountCreditView(api_common.BaseApiView):
         data.update(request_data)
 
         data['status'] = constants.CreditLineItemStatus.PENDING
-        data['account'] = account.id
+        if 'is_agency' in data and data['is_agency'] and account.is_agency():
+            data['agency'] = account.agency_id
+        else:
+            data['account'] = account.id
 
         if 'is_signed' in data:
             if data['is_signed']:
@@ -80,6 +83,7 @@ class AccountCreditView(api_common.BaseApiView):
             'total': credit.effective_amount(),
             'allocated': allocated,
             'comment': credit.comment,
+            'is_agency': credit.is_agency(),
             'budgets': [
                 {'id': b.pk, 'amount': b.amount} for b in credit.budgets.all()
             ],
@@ -172,6 +176,12 @@ class AccountCreditItemView(api_common.BaseApiView):
         data.update(request_data)
         data['status'] = item.status
 
+        if 'is_agency' in data and data['is_agency'] and account.is_agency():
+            data['account'] = None
+            data['agency'] = account.agency_id
+        else:
+            data['account'] = account.id
+            data['agency'] = None
         if 'is_signed' in data:
             if data['is_signed']:
                 data['status'] = constants.CreditLineItemStatus.SIGNED
@@ -199,6 +209,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             'amount': item.amount,
             'account_id': account_id,
             'comment': item.comment,
+            'is_agency': item.is_agency(),
             'budgets': [
                 {
                     'campaign': str(b.campaign),

@@ -462,6 +462,9 @@ class Account(models.Model):
         current_settings = self.get_current_settings()
         return current_settings.archived
 
+    def is_agency(self):
+        return self.agency is not None
+
     @transaction.atomic
     def archive(self, request):
         if not self.can_archive():
@@ -3138,6 +3141,9 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     def is_available(self):
         return not self.is_past() and self.status == constants.CreditLineItemStatus.SIGNED\
             and (self.effective_amount() - self.get_allocated_amount()) > 0
+
+    def is_agency(self):
+        return self.agency is not None
 
     def clean(self):
         if self.account is not None and self.agency is not None:

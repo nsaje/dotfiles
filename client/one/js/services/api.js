@@ -2608,6 +2608,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     allocated: obj.allocated,
                     available: obj.available,
                     amount: obj.amount,
+                    isAgency: obj.is_agency,
                     budgets: (obj.budgets || []).map(function (itm) {
                         return {
                             id: itm.id,
@@ -2631,7 +2632,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     license_fee: obj.licenseFee,
                     comment: obj.comment,
                     account: obj.account,
-                    is_signed: obj.isSigned
+                    is_signed: obj.isSigned,
+                    is_agency: obj.isAgency,
                 };
             },
             errors: function (resp) {
