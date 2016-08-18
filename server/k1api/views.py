@@ -130,10 +130,11 @@ class SourcesView(K1APIView):
             }
             try:
                 default_credentials = source.defaultsourcesettings.credentials
-                source_dict['credentials'] = {
-                    'id': default_credentials.id,
-                    'credentials': default_credentials.credentials
-                }
+                if default_credentials:
+                    source_dict['credentials'] = {
+                        'id': default_credentials.id,
+                        'credentials': default_credentials.credentials
+                    }
             except dash.models.DefaultSourceSettings.DoesNotExist:
                 pass
             response.append(source_dict)
