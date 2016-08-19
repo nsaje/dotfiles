@@ -26,6 +26,7 @@ oneApp.directive('zemGridCellEditableBaseField', [function () {
             vm.isSaveRequestInProgress = vm.grid.meta.dataService.isSaveRequestInProgress;
             vm.isAutopilotIconShown = isAutopilotIconShown;
             vm.filterInput = filterInput;
+            vm.onKeyDown = onKeyDown;
             vm.save = save;
             vm.closeModal = closeModal;
 
@@ -98,6 +99,11 @@ oneApp.directive('zemGridCellEditableBaseField', [function () {
                 }
             }
 
+            function onKeyDown ($event) {
+                if ($event.keyCode === 13) save();  // Enter
+                if ($event.keyCode === 27) closeModal(); // ESC
+            }
+
             function save () {
                 if (vm.isSaveRequestInProgress()) {
                     return;
@@ -116,6 +122,7 @@ oneApp.directive('zemGridCellEditableBaseField', [function () {
                 .then(function () {
                     // FIXME: Revisit after response is refactored on backend
                     vm.showLoader = false;
+                    closeModal();
                 })
                 .catch(function (response) {
                     Object.keys(response).forEach(function (key) {
