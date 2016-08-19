@@ -2093,6 +2093,7 @@ class AdGroupSettings(SettingsBase):
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
     retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
+    exclusion_retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
     enable_ga_tracking = models.BooleanField(default=True)
     ga_tracking_type = models.IntegerField(

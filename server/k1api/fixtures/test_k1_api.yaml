@@ -434,6 +434,8 @@
         brand_name: 'brand1'
         display_url: 'brand1.com'
         tracking_code: '?tracking1&tracking2'
+        retargeting_ad_groups: '[100]'
+        exclusion_retargeting_ad_groups: '[200]'
     model: dash.adgroupsettings
     pk: 1
 
