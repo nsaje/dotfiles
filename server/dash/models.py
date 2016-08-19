@@ -2203,6 +2203,7 @@ class AdGroupSettings(SettingsBase):
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
             'retargeting_ad_groups': 'Retargeting ad groups',
+            'exclusion_retargeting_ad_groups': 'Exclusion retargeting ad groups',
             'tracking_code': 'Tracking code',
             'state': 'State',
             'archived': 'Archived',
