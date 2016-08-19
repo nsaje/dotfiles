@@ -37,7 +37,6 @@ class AdGroupSettingsTest(TestCase):
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)
         model_fields = set(models.AdGroupSettings._meta.get_all_field_names())
-        model_fields.remove('exclusion_retargeting_ad_groups')
 
         self.assertEqual(model_fields, all_fields)
 
@@ -53,6 +52,7 @@ class AdGroupSettingsTest(TestCase):
             'tracking_code': u'',
             'target_regions': ['US'],
             'retargeting_ad_groups': [1, 2],
+            'exclusion_retargeting_ad_groups': [3, 4],
             'display_url': 'example.com',
             'brand_name': 'Example',
             'description': 'Example description',
@@ -137,6 +137,7 @@ class AdGroupSettingsTest(TestCase):
             'Device targeting set to "Mobile", '
             'Display URL set to "example.com", '
             'Brand name set to "Example", '
+            'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot", '
             'State set to "Enabled", '
             'Call to action set to "Call to action", '
             'Ad group name set to "AdGroup name", '

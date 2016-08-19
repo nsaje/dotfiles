@@ -2045,6 +2045,7 @@ class AdGroupSettings(SettingsBase):
         'target_devices',
         'target_regions',
         'retargeting_ad_groups',
+        'exclusion_retargeting_ad_groups',
         'tracking_code',
         'archived',
         'display_url',
@@ -2202,6 +2203,7 @@ class AdGroupSettings(SettingsBase):
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
             'retargeting_ad_groups': 'Retargeting ad groups',
+            'exclusion_retargeting_ad_groups': 'Exclusion ad groups',
             'tracking_code': 'Tracking code',
             'state': 'State',
             'archived': 'Archived',
@@ -2243,7 +2245,7 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
-        elif prop_name == 'retargeting_ad_groups':
+        elif prop_name in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups'):
             if not value:
                 value = ''
             else:
@@ -2264,7 +2266,7 @@ class AdGroupSettings(SettingsBase):
 
         valid_changes = {}
         for key, value in changes.iteritems():
-            if key == 'retargeting_ad_groups' and\
+            if key in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups') and\
                     not user.has_perm('zemauth.can_view_retargeting_settings'):
                 continue
             valid_changes[key] = value
