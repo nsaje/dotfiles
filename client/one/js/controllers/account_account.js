@@ -286,7 +286,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         var user = getUser(userId);
         user.requestInProgress = true;
 
-        api.userActivation.post($state.params.id, userId).then(
+        api.accountUserAction.post($state.params.id, userId, 'activate').then(
             function (userId) {
                 user.saved = true;
                 user.emailResent = true;
@@ -309,6 +309,30 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
             function (data) {
                 user.removed = false;
                 $scope.getSettings();
+            }
+        ).finally(function () {
+            user.requestInProgress = false;
+        });
+    };
+
+    $scope.promoteUser = function (user) {
+        user.requestInProgress = true;
+
+        api.accountUserAction.post($scope.account.id, user.id, 'promote').then(
+            function (data) {
+                user.is_agency_manager = true;
+            }
+        ).finally(function () {
+            user.requestInProgress = false;
+        });
+    };
+
+    $scope.downgradeUser = function (user) {
+        user.requestInProgress = true;
+
+        api.accountUserAction.post($scope.account.id, user.id, 'downgrade').then(
+            function (data) {
+                user.is_agency_manager = false;
             }
         ).finally(function () {
             user.requestInProgress = false;

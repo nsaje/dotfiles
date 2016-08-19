@@ -7,6 +7,7 @@ from mock import patch, ANY, Mock, call
 from decimal import Decimal
 
 from django.test import TestCase, RequestFactory
+from django.contrib.auth import models as authmodels
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
@@ -1187,7 +1188,7 @@ class UserActivationTest(TestCase):
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
     def test_permissions(self):
-        url = reverse('account_reactivation', kwargs={'account_id': 0, 'user_id': 0})
+        url = reverse('account_user_action', kwargs={'account_id': 0, 'user_id': 0, 'action': 'activate'})
 
         response = self.client.post(url)
         self.assertEqual(response.status_code, 401)
@@ -1200,7 +1201,7 @@ class UserActivationTest(TestCase):
 
         add_permissions(self.user, ['account_agency_access_permissions'])
         response = self.client.post(
-            reverse('account_reactivation', kwargs={'account_id': 1, 'user_id': 1}),
+            reverse('account_user_action', kwargs={'account_id': 1, 'user_id': 1, 'action': 'activate'}),
             data,
             follow=True
         )
@@ -1225,7 +1226,7 @@ class UserActivationTest(TestCase):
 
         add_permissions(self.user, ['account_agency_access_permissions'])
         response = self.client.post(
-            reverse('account_reactivation', kwargs={'account_id': 1, 'user_id': 1}),
+            reverse('account_user_action', kwargs={'account_id': 1, 'user_id': 1, 'action': 'activate'}),
             data,
             follow=True
         )
@@ -2206,7 +2207,7 @@ class AccountUsersTest(TestCase):
 
     def _get_client_with_permissions(self, permissions_list):
         password = 'secret'
-        user = User.objects.get(pk=1)
+        user = User.objects.get(pk=2)
         add_permissions(user, permissions_list)
         user.save()
         client = Client()
@@ -2220,29 +2221,32 @@ class AccountUsersTest(TestCase):
         response = client.get(
             reverse('account_users', kwargs={'account_id': 1}),
         )
-        user = User.objects.get(pk=1)
+        user = User.objects.get(pk=2)
 
         self.assertIsNone(response.json()['data']['agency_managers'])
         self.assertItemsEqual([
             {
                 u'name': u'',
-                u'is_active': False,
+                u'is_active': True,
+                u'is_agency_manager': False,
                 u'id': 2,
-                u'last_login': u'2014-06-16',
+                u'last_login': user.last_login.date().isoformat(),
                 u'email': u'user@test.com'
             },
             {
                 u'name': u'',
                 u'is_active': False,
+                u'is_agency_manager': False,
                 u'id': 3,
                 u'last_login': u'2014-06-16',
                 u'email': u'john@test.com'
             },
             {
                 u'name': u'',
-                u'is_active': True,
+                u'is_active': False,
+                u'is_agency_manager': False,
                 u'id': 1,
-                u'last_login': user.last_login.date().isoformat(),
+                u'last_login': u'2014-06-16',
                 u'email': u'superuser@test.com'
             }
         ],
@@ -2262,7 +2266,7 @@ class AccountUsersTest(TestCase):
         user = User.objects.get(pk=1)
         agency.users.add(User.objects.get(pk=1))
 
-        user = User.objects.get(pk=1)
+        user = User.objects.get(pk=2)
         response = client.get(
             reverse('account_users', kwargs={'account_id': 1}),
         )
@@ -2270,9 +2274,71 @@ class AccountUsersTest(TestCase):
         self.assertItemsEqual([
             {
                 u'name': u'',
-                u'is_active': True,
+                u'is_active': False,
+                u'is_agency_manager': True,
                 u'id': 1,
+                u'last_login': u'2014-06-16',
+                u'email': u'superuser@test.com'
+            }
+        ],
+            response.json()['data']['agency_managers']
+        )
+
+        self.assertItemsEqual([
+            {
+                u'name': u'',
+                u'is_active': True,
+                u'is_agency_manager': False,
+                u'id': 2,
                 u'last_login': user.last_login.date().isoformat(),
+                u'email': u'user@test.com'
+            },
+            {
+                u'name': u'',
+                u'is_active': False,
+                u'is_agency_manager': False,
+                u'id': 3,
+                u'last_login': u'2014-06-16',
+                u'email': u'john@test.com'
+            },
+            {
+                u'name': u'',
+                u'is_active': False,
+                u'is_agency_manager': False,
+                u'id': 1,
+                u'last_login': u'2014-06-16',
+                u'email': u'superuser@test.com'
+            }
+        ],
+            response.json()['data']['users']
+        )
+
+    def test_get_agency_with_can_see_agency_managers(self):
+        client = self._get_client_with_permissions([
+            'account_agency_access_permissions',
+            'can_see_agency_managers_under_access_permissions',
+        ])
+
+        acc = models.Account.objects.get(pk=1)
+        agency = models.Agency.objects.get(pk=1)
+        acc.agency = agency
+        acc.save(fake_request(User.objects.get(pk=1)))
+
+        user = User.objects.get(pk=1)
+        agency.users.add(User.objects.get(pk=1))
+
+        user = User.objects.get(pk=2)
+        response = client.get(
+            reverse('account_users', kwargs={'account_id': 1}),
+        )
+
+        self.assertItemsEqual([
+            {
+                u'name': u'',
+                u'is_active': False,
+                u'is_agency_manager': True,
+                u'id': 1,
+                u'last_login': u'2014-06-16',
                 u'email': u'superuser@test.com'
             }
         ],
@@ -2283,27 +2349,137 @@ class AccountUsersTest(TestCase):
             {
                 u'name': u'',
                 u'is_active': False,
-                u'id': 2,
+                u'is_agency_manager': True,
+                u'id': 1,
                 u'last_login': u'2014-06-16',
+                u'email': u'superuser@test.com'
+            },
+            {
+                u'name': u'',
+                u'is_active': True,
+                u'is_agency_manager': False,
+                u'id': 2,
+                u'last_login': user.last_login.date().isoformat(),
                 u'email': u'user@test.com'
             },
             {
                 u'name': u'',
                 u'is_active': False,
+                u'is_agency_manager': False,
                 u'id': 3,
                 u'last_login': u'2014-06-16',
                 u'email': u'john@test.com'
             },
             {
                 u'name': u'',
-                u'is_active': True,
+                u'is_active': False,
+                u'is_agency_manager': False,
                 u'id': 1,
-                u'last_login': user.last_login.date().isoformat(),
+                u'last_login': u'2014-06-16',
                 u'email': u'superuser@test.com'
             }
         ],
             response.json()['data']['users']
         )
+
+
+class UserPromoteTest(TestCase):
+    fixtures = ['test_views.yaml', 'test_agency.yaml']
+
+    def _get_client_with_permissions(self, permissions_list):
+        password = 'secret'
+        user = User.objects.get(pk=2)
+        add_permissions(user, permissions_list)
+        user.save()
+        client = Client()
+        client.login(username=user.email, password=password)
+        return client
+
+    def test_without_permission(self):
+        client = self._get_client_with_permissions([])
+
+        response = client.post(
+            reverse('account_user_action', kwargs={'account_id': 1000, 'user_id': 2, 'action': 'promote'}),
+        )
+
+        self.assertEqual(401, response.status_code)
+
+    def test_promote(self):
+        client = self._get_client_with_permissions([
+            'can_promote_agency_managers',
+        ])
+
+        account = models.Account.objects.get(pk=1000)
+        agency = models.Agency.objects.get(pk=1)
+        user = User.objects.get(pk=2)
+        permission = authmodels.Permission.objects.get(codename='group_agency_manager_add')
+        group = authmodels.Group()
+        group.save()
+        group.permissions.add(permission)
+        account.users.add(user)
+
+        response = client.post(
+            reverse('account_user_action', kwargs={'account_id': 1000, 'user_id': 2, 'action': 'promote'}),
+        )
+        self.assertEqual(200, response.status_code)
+
+        account = models.Account.objects.get(pk=1000)
+        agency = models.Agency.objects.get(pk=1)
+        user = User.objects.get(pk=2)
+
+        self.assertIn(user, agency.users.all())
+        self.assertNotIn(user, account.users.all())
+        self.assertIn(group, user.groups.all())
+
+
+class UserDowngradeTest(TestCase):
+    fixtures = ['test_views.yaml', 'test_agency.yaml']
+
+    def _get_client_with_permissions(self, permissions_list):
+        password = 'secret'
+        user = User.objects.get(pk=2)
+        add_permissions(user, permissions_list)
+        user.save()
+        client = Client()
+        client.login(username=user.email, password=password)
+        return client
+
+    def test_without_permission(self):
+        client = self._get_client_with_permissions([])
+
+        response = client.post(
+            reverse('account_user_action', kwargs={'account_id': 1000, 'user_id': 2, 'action': 'downgrade'}),
+        )
+
+        self.assertEqual(401, response.status_code)
+
+    def test_downgrade(self):
+        client = self._get_client_with_permissions([
+            'can_promote_agency_managers',
+        ])
+
+        account = models.Account.objects.get(pk=1000)
+        agency = models.Agency.objects.get(pk=1)
+        user = User.objects.get(pk=2)
+        permission = authmodels.Permission.objects.get(codename='group_agency_manager_add')
+        group = authmodels.Group()
+        group.save()
+        group.permissions.add(permission)
+        agency.users.add(user)
+        user.groups.add(group)
+
+        response = client.post(
+            reverse('account_user_action', kwargs={'account_id': 1000, 'user_id': 2, 'action': 'downgrade'}),
+        )
+        self.assertEqual(200, response.status_code)
+
+        account = models.Account.objects.get(pk=1000)
+        agency = models.Agency.objects.get(pk=1)
+        user = User.objects.get(pk=2)
+
+        self.assertNotIn(user, agency.users.all())
+        self.assertIn(user, account.users.all())
+        self.assertNotIn(group, user.groups.all())
 
 
 class CampaignContentInsightsTest(TestCase):

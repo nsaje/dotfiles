@@ -126,7 +126,7 @@
         <span ng-show="discarded" class="success feedback-text">Your updates have been discarded.</span>
     </form>
 
-    <div class="form-horizontal table-access-permissions" ng-if="hasPermission('zemauth.account_agency_access_permissions') && agencyManagers !== null && agencyManagers !== undefined">
+    <div class="form-horizontal table-access-permissions" ng-if="hasPermission('zemauth.account_agency_access_permissions') && agencyManagers !== null && agencyManagers !== undefined && !hasPermission('zemauth.can_see_agency_managers_under_access_permissions')">
         <div class="form-group">
             <label for="first-name-input" class="col-xs-2 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.account_agency_access_permissions')" popover-placement="bottom"></zem-internal-feature>
@@ -164,7 +164,7 @@
                     </div>
                     <div ng-if="!user.removed">
                         <div class="col-xs-7 user-name-col">
-                            <p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
+                            <p class="control-label"><b>{{user.name}} </b>({{user.email}})<b ng-if="user.is_agency_manager"> - Agency Manager</b></p>
                             <span ng-show="user.saved && !user.emailSent && !user.emailResent" class="success">This user can now access this account. Since this is an existing user, no activation email was sent.</span>
                             <span ng-show="user.saved && user.emailSent && !user.emailResent" class="success">An introductory email was sent to this user.</span>
                             <span ng-show="user.saved && user.emailResent" class="success">New activation email sent.</span>
@@ -176,6 +176,14 @@
                                 <ul class="dropdown-menu dropdown-menu-activation" role="menu">
                                     <li><a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
                                     <li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
+                                    <li ng-if="account.agency && !user.is_agency_manager && hasPermission('zemauth.can_promote_agency_managers')">
+                                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_promote_agency_managers')" popover-placement="bottom"></zem-internal-feature>
+                                        <a tabindex="-1" ng-click="promoteUser(user)" href="#">Promote to Agency Manager</a>
+                                    </li>
+                                    <li ng-if="account.agency && user.is_agency_manager && hasPermission('zemauth.can_promote_agency_managers')">
+                                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_promote_agency_managers')" popover-placement="bottom"></zem-internal-feature>
+                                        <a tabindex="-1" ng-click="downgradeUser(user)" href="#">Downgrade to Normal User</a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>

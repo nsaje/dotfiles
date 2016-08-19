@@ -213,6 +213,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_breakdown_by_delivery', 'User can view breakdowns by delivery.'),
             ('can_set_time_period_in_scheduled_reports', 'User can set time period when creating scheduled reports'),
             ('can_set_day_of_week_in_scheduled_reports', 'User can set day of week when creating scheduled reports'),
+            ('can_see_agency_managers_under_access_permissions', 'User can see agency managers under access permissions'),
+            ('can_promote_agency_managers', 'User can promote agency managers on account settings tab'),
+            ('group_agency_manager_add', 'Agency managers are added to this group when promoted'),
         )
 
     def get_full_name(self):

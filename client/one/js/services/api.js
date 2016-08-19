@@ -811,10 +811,10 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function UserActivation () {
-        this.post = function (accountId, userId) {
+    function AccountUserAction () {
+        this.post = function (accountId, userId, action) {
             var deferred = $q.defer(),
-                url = '/api/accounts/' + accountId + '/users/' + userId + '/activate',
+                url = '/api/accounts/' + accountId + '/users/' + userId + '/' + action,
                 config = {
                     params: {}
                 },
@@ -2916,7 +2916,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
         checkPublisherBlacklistSyncProgress: new CheckPublisherBlacklistSyncProgress(),
-        userActivation: new UserActivation(),
+        accountUserAction: new AccountUserAction(),
         dailyStats: new DailyStats(),
         allAccountsOverview: new AllAccountsOverview(),
         accountUsers: new AccountUsers(),

@@ -298,9 +298,9 @@ urlpatterns += [
         name='account_settings'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/activate',
-        login_required(dash.views.agency.UserActivation.as_view()),
-        name='account_reactivation',
+        r'^api/accounts/(?P<account_id>\d+)/users/(?P<user_id>\d+)/(?P<action>\w+)',
+        login_required(dash.views.agency.AccountUserAction.as_view()),
+        name='account_user_action',
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/conversion_pixels/',

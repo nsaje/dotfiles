@@ -6,6 +6,7 @@ from django.db import transaction
 from django.db.models import Prefetch
 from django.conf import settings
 from django.contrib.auth import models as authmodels
+from django.http import Http404
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
@@ -1009,7 +1010,10 @@ class AccountUsers(api_common.BaseApiView):
         agency_users = account.agency.users.all() if account.agency else []
 
         users = [self._get_user_dict(u) for u in account.users.all()]
-        agency_managers = [self._get_user_dict(u) for u in agency_users]
+        agency_managers = [self._get_user_dict(u, agency_managers=True) for u in agency_users]
+
+        if request.user.has_perm('zemauth.can_see_agency_managers_under_access_permissions'):
+            users = agency_managers + users
 
         return self.create_api_response({
             'users': users,
@@ -1109,37 +1113,87 @@ class AccountUsers(api_common.BaseApiView):
             'user_id': user.id
         })
 
-    def _get_user_dict(self, user):
+    def _get_user_dict(self, user, agency_managers=False):
         return {
             'id': user.id,
             'name': user.get_full_name(),
             'email': user.email,
             'last_login': user.last_login.date(),
             'is_active': user.last_login != user.date_joined,
+            'is_agency_manager': agency_managers,
         }
 
 
-class UserActivation(api_common.BaseApiView):
+class AccountUserAction(api_common.BaseApiView):
+    ACTIVATE = 'activate'
+    PROMOTE = 'promote'
+    DOWNGRADE = 'downgrade'
 
-    def post(self, request, account_id, user_id):
-        if not request.user.has_perm('zemauth.account_agency_access_permissions'):
+    def __init__(self):
+        self.actions = {
+            AccountUserAction.ACTIVATE: self._activate,
+            AccountUserAction.PROMOTE: self._promote,
+            AccountUserAction.DOWNGRADE: self._downgrade,
+        }
+        self.permissions = {
+            AccountUserAction.ACTIVATE: 'zemauth.account_agency_access_permissions',
+            AccountUserAction.PROMOTE: 'zemauth.can_promote_agency_managers',
+            AccountUserAction.DOWNGRADE: 'zemauth.can_promote_agency_managers',
+        }
+
+    def post(self, request, account_id, user_id, action):
+        if action not in self.actions:
+            raise Http404('Action does not exist')
+
+        if not request.user.has_perm(self.permissions[action]):
             raise exc.AuthorizationError()
 
         try:
             user = ZemUser.objects.get(pk=user_id)
-            email_helper.send_email_to_new_user(user, request)
-
-            account = helpers.get_account(request.user, account_id)
-
-            changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
-            account.write_history(changes_text, user=request.user)
-
         except ZemUser.DoesNotExist:
             raise exc.ValidationError(
-                pretty_message=u'Cannot activate nonexisting user.'
+                pretty_message=u'Cannot {action} nonexisting user.'.format(action=action)
             )
 
-        return self.create_api_response({})
+        account = helpers.get_account(request.user, account_id)
+
+        self.actions[action](request, user, account)
+
+        return self.create_api_response()
+
+    def _activate(self, request, user, account):
+        email_helper.send_email_to_new_user(user, request)
+
+        changes_text = u'Resent activation mail {} ({})'.format(user.get_full_name(), user.email)
+        account.write_history(changes_text, user=request.user)
+
+    def _promote(self, request, user, account):
+        groups = self._get_agency_manager_groups()
+
+        self._check_is_agency_account(account)
+
+        account.agency.users.add(user)
+        account.users.remove(user)
+        user.groups.add(*groups)
+
+    def _downgrade(self, request, user, account):
+        groups = self._get_agency_manager_groups()
+
+        self._check_is_agency_account(account)
+
+        account.agency.users.remove(user)
+        account.users.add(user)
+        user.groups.remove(*groups)
+
+    def _check_is_agency_account(self, account):
+        if not account.is_agency():
+            raise exc.ValidationError(
+                pretty_message=u'Cannot promote user on account without agency.'
+            )
+
+    def _get_agency_manager_groups(self):
+        perm = authmodels.Permission.objects.get(codename='group_agency_manager_add')
+        return authmodels.Group.objects.filter(permissions=perm)
 
 
 class CampaignContentInsights(api_common.BaseApiView):
