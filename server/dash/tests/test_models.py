@@ -37,7 +37,6 @@ class AdGroupSettingsTest(TestCase):
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)
         model_fields = set(models.AdGroupSettings._meta.get_all_field_names())
-        model_fields.remove('exclusion_retargeting_ad_groups')
 
         self.assertEqual(model_fields, all_fields)
 

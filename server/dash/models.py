@@ -2045,6 +2045,7 @@ class AdGroupSettings(SettingsBase):
         'target_devices',
         'target_regions',
         'retargeting_ad_groups',
+        'exclusion_retargeting_ad_groups',
         'tracking_code',
         'archived',
         'display_url',
