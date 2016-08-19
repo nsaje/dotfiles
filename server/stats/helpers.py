@@ -33,7 +33,6 @@ def extract_stats_breakdown_constraints(breakdown, breakdown_page):
     return [extract_breakdown_id(breakdown, breakdown_id_str) for breakdown_id_str in breakdown_page]
 
 
-# TODO breakdown_id might need different delimiter
 def extract_breakdown_id(breakdown, breakdown_id_str):
     """
     Creates a dict with constraints for a breakdown page.

@@ -165,7 +165,7 @@ def get_report_all_accounts_accounts(user, view_filter, start_date, end_date,
         size,
         show_archived
     )
-    return grid.convert_resource_response(constants.Level.ALL_ACCOUNTS, constants.Breakdown.ACCOUNT, response)
+    return grid.convert_resource_response(constants.Level.ALL_ACCOUNTS, 'account_id', response)
 
 
 def get_report_account_campaigns(user, filtered_sources, start_date, end_date,
@@ -183,7 +183,7 @@ def get_report_account_campaigns(user, filtered_sources, start_date, end_date,
     response['pagination'] = {
         'count': len(response['rows'])
     }
-    return grid.convert_resource_response(constants.Level.ACCOUNTS, constants.Breakdown.CAMPAIGN, response)
+    return grid.convert_resource_response(constants.Level.ACCOUNTS, 'campaign_id', response)
 
 
 def get_report_campaign_ad_groups(user, filtered_sources, start_date, end_date,
@@ -202,7 +202,7 @@ def get_report_campaign_ad_groups(user, filtered_sources, start_date, end_date,
     response['pagination'] = {
         'count': len(response['rows'])
     }
-    return grid.convert_resource_response(constants.Level.CAMPAIGNS, constants.Breakdown.AD_GROUP, response)
+    return grid.convert_resource_response(constants.Level.CAMPAIGNS, 'ad_group_id', response)
 
 
 def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date,
@@ -219,7 +219,7 @@ def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date
         size=size,
         ad_group_id=kwargs['ad_group_id']
     )
-    return grid.convert_resource_response(constants.Level.AD_GROUPS, constants.Breakdown.CONTENT_AD, response)
+    return grid.convert_resource_response(constants.Level.AD_GROUPS, 'content_ad_id', response)
 
 
 def get_report_all_accounts_sources(user, view_filter, start_date, end_date,
@@ -233,7 +233,7 @@ def get_report_all_accounts_sources(user, view_filter, start_date, end_date,
         end_date,
         order
     )
-    return grid.convert_resource_response(constants.Level.ALL_ACCOUNTS, constants.Breakdown.SOURCE, response)
+    return grid.convert_resource_response(constants.Level.ALL_ACCOUNTS, 'source_id', response)
 
 
 def get_report_account_sources(user, filtered_sources, start_date, end_date,
@@ -251,7 +251,7 @@ def get_report_account_sources(user, filtered_sources, start_date, end_date,
         order,
         id_=kwargs['account_id']
     )
-    return grid.convert_resource_response(constants.Level.ACCOUNTS, constants.Breakdown.SOURCE, response)
+    return grid.convert_resource_response(constants.Level.ACCOUNTS, 'source_id', response)
 
 
 def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
@@ -269,7 +269,7 @@ def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
         order,
         id_=kwargs['campaign_id']
     )
-    return grid.convert_resource_response(constants.Level.CAMPAIGNS, constants.Breakdown.SOURCE, response)
+    return grid.convert_resource_response(constants.Level.CAMPAIGNS, 'source_id', response)
 
 
 def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
@@ -287,7 +287,7 @@ def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
         order,
         id_=kwargs['ad_group_id']
     )
-    return grid.convert_resource_response(constants.Level.AD_GROUPS, constants.Breakdown.SOURCE, response)
+    return grid.convert_resource_response(constants.Level.AD_GROUPS, 'source_id', response)
 
 
 def get_report_ad_group_publishers(user, filtered_sources, start_date, end_date,
@@ -305,7 +305,7 @@ def get_report_ad_group_publishers(user, filtered_sources, start_date, end_date,
         size,
         id_=kwargs['ad_group_id']
     )
-    return grid.convert_resource_response(constants.Level.AD_GROUPS, constants.Breakdown.PUBLISHER, response)
+    return grid.convert_resource_response(constants.Level.AD_GROUPS, 'publisher', response)
 
 
 class AllAccountsBreakdown(api_common.BaseApiView):

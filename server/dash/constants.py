@@ -1662,21 +1662,9 @@ class RuleType(ConstantBase):
     }
 
 
-#
-# Breakdown related constants
-#
 class Level(object):
     ALL_ACCOUNTS = 'all_accounts'
     ACCOUNTS = 'accounts'
     CAMPAIGNS = 'campaigns'
     AD_GROUPS = 'ad_groups'
     CONTENT_ADS = 'content_ads'
-
-
-class Breakdown(object):
-    ACCOUNT = 'account'
-    CAMPAIGN = 'campaign'
-    AD_GROUP = 'ad_group'
-    CONTENT_AD = 'contentad'
-    SOURCE = 'source'
-    PUBLISHER = 'publisher'
