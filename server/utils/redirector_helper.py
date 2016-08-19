@@ -129,12 +129,14 @@ def fetch_redirects_impressions(date, timeout=300):
 def insert_audience(audience):
     try:
         rules = [{'id': rule.id, 'type': rule.type, 'value': rule.value} for rule in audience.rule_set.all()]
+        source_pixels = [{'url': pixel.url, 'type': pixel.source_type.type} for pixel in audience.pixel.sourcetypepixel_set.all()]
 
         audience_dict = {
             'id': str(audience.id),
             'accountid': audience.pixel.account.id,
             'pixieslug': audience.pixel.slug,
             'rules': rules,
+            'pixels': source_pixels,
             'ttl': audience.ttl,
             'modifieddt': audience.modified_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
         }
