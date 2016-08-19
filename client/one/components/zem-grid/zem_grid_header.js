@@ -41,7 +41,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
             }
 
             function updatePivotColumns () {
-                zemGridUIService.updatePivotColumns(ctrl.grid);
+                //zemGridUIService.updatePivotColumns(ctrl.grid); - Temporary shut down pivot columns (problem on OSx)
             }
 
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, resizeColumns);

@@ -277,7 +277,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         calculateColumnWidths(grid);
         resizeCells(grid);
         resizeBreakdownRows(grid);
-        initializePivotColumns(grid);
+        // initializePivotColumns(grid); - Temporary shut down pivot columns (problem on OSx)
     }
 
     function getBreakdownColumnStyle (grid, row) {
