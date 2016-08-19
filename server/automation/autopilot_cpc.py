@@ -31,7 +31,8 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
         source_type = ag_source.source.source_type
         max_decimal_places = _get_cpc_max_decimal_places(source_type.cpc_decimal_places)
         proposed_cpc = _round_cpc(proposed_cpc, decimal_places=max_decimal_places)
-        proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments, max_decimal_places)
+        proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments,
+                                                       max_decimal_places)
         proposed_cpc = _threshold_source_constraints(proposed_cpc, source_type, cpc_change_comments)
         proposed_cpc = _threshold_account_source_constraints(ad_group.campaign.account_id,
                                                              proposed_cpc,
