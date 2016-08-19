@@ -16,7 +16,12 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_body.html',
         link: function (scope, element) {
-            scope.ctrl.grid.body.ui.element = element;
+            var grid = scope.ctrl.grid;
+            var pubsub = grid.meta.pubsub;
+
+            grid.body.ui.element = element;
+            grid.body.ui.scrollLeft = 0;
+            grid.body.ui.scrollTop = 0;
             scope.state = {
                 renderedRows: [],
             };
@@ -24,7 +29,6 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
             var visibleRows;
             var numberOfRenderedRows = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE
                                      + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
-            var pubsub = scope.ctrl.grid.meta.pubsub;
             var requestAnimationFrame = zemGridUIService.requestAnimationFrame;
 
             function getTranslateYStyle (top) {
@@ -46,22 +50,21 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                 }
             }
 
-            var prevScrollLeft = 0;
             var prevScrollTop = 0;
             function scrollListener (event) {
-                if (prevScrollLeft !== event.target.scrollLeft) {
-                    prevScrollLeft = event.target.scrollLeft;
+                if (grid.body.ui.scrollLeft !== event.target.scrollLeft) {
+                    grid.body.ui.scrollLeft = event.target.scrollLeft;
                     pubsub.notify(
                         pubsub.EVENTS.BODY_HORIZONTAL_SCROLL,
-                        prevScrollLeft
+                        grid.body.ui.scrollLeft
                     );
                 }
 
-                if (prevScrollTop !== event.target.scrollTop) {
-                    prevScrollTop = event.target.scrollTop;
+                if (grid.body.ui.scrollTop !== event.target.scrollTop) {
+                    grid.body.ui.scrollTop = event.target.scrollTop;
                     pubsub.notify(
                         pubsub.EVENTS.BODY_VERTICAL_SCROLL,
-                        prevScrollTop
+                        grid.body.ui.scrollTop
                     );
                 }
             }
@@ -90,7 +93,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
             function updateVisibleRows () {
                 visibleRows = [];
                 visibleRowsCount = 0;
-                scope.ctrl.grid.body.rows.forEach(function (row) {
+                grid.body.rows.forEach(function (row) {
                     if (row.visible) {
                         row.style = getTranslateYStyle(
                             visibleRowsCount * zemGridConstants.gridBodyRendering.ROW_HEIGHT

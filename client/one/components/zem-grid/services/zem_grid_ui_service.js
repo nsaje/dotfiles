@@ -166,13 +166,12 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
 
         var paginationCellPadding = breakdownSplitWidths[0] + zemGridConstants.gridStyle.CELL_PADDING;
         var paginationCellWidth = breakdownSplitWidths[0] + breakdownSplitWidths[1];
-        var loadMoreCellWidth = breakdownSplitWidths[2];
-
+        var loadMoreCellWidth = grid.ui.headerWidth - paginationCellWidth;
         if (breakdownSplitWidths.length === 1) {
             // Fallback if BREAKDOWN column has not been found
             paginationCellPadding = 50;
             paginationCellWidth = 200;
-            loadMoreCellWidth = grid.ui.width - 250;
+            loadMoreCellWidth = grid.ui.headerWidth - 250;
         }
 
         element.find('.breakdown-row-primary-cell').css({
@@ -187,6 +186,88 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         });
     }
 
+    function initializePivotColumns (grid) {
+        // Prepare styles for pivot columns (e.g. absolute position, z-index)
+        // Set correct margin to the first non-pivot column (pivot columns are absolutely positioned)
+        var left = 0;
+        for (var idx = 0; idx < grid.header.visibleColumns.length; ++idx) {
+            var column = grid.header.visibleColumns[idx];
+            column.style = {
+                'z-index': 10,
+                position: 'absolute',
+                left: left + 'px',
+            };
+            column.left = left; // cache correct position for later use
+            left += grid.ui.columnsWidths[idx];
+            column.pivot = true;
+
+            if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN) {
+                if (idx + 1 < grid.header.visibleColumns.length) {
+                    grid.header.visibleColumns[idx + 1].style = {
+                        'margin-left': left + 'px',
+                    };
+                }
+                break;
+            }
+        }
+        updatePivotColumns(grid);
+    }
+
+    function updatePivotColumns (grid) {
+        if (!grid.body.ui.element) return;
+        grid.header.ui.element.find('.zem-grid-header-cell').each(updateCell);
+        grid.footer.ui.element.find('.zem-grid-row > .zem-grid-cell').each(updateCell);
+        grid.body.ui.element.find('.zem-grid-row-breakdown').each(updateBreakdownRow);
+        grid.body.ui.element.find('.zem-grid-row').each(function (idx, row) {
+            angular.element(row).find('.zem-grid-cell').each(updateCell);
+        });
+
+        function updateBreakdownRow (idx, _row) {
+            // Fix entire breakdown row
+            var leftOffset = grid.body.ui.scrollLeft;
+            var row = angular.element(_row);
+            var style = {
+                position: 'absolute',
+                left: leftOffset + 'px',
+            };
+            row.css(style);
+            // Add style to primary cell to be consistent with data rows/cells
+            row.find('.breakdown-row-primary-cell').css(getBreakdownColumnStyle(leftOffset));
+        }
+
+        function updateCell (idx, _cell) {
+            var cell = angular.element(_cell);
+            var column = grid.header.visibleColumns[idx];
+            if (column) cell.css(getColumnStyle(column));
+        }
+
+        function getColumnStyle (column) {
+            var leftOffset = grid.body.ui.scrollLeft;
+            var style = column.style || {};
+            if (!column.pivot) return style;
+            style['left'] = (column.left + leftOffset) + 'px';
+            if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN) {
+                angular.extend(style, getBreakdownColumnStyle(leftOffset));
+            }
+            return style;
+        }
+
+        function getBreakdownColumnStyle (leftOffset) {
+            // TODO: this will probably change in the future - create util functions/styles
+            // fade right border to show pivot column break when h-scrolled
+            var style = {};
+            var fadePercentage = Math.min(1, leftOffset / 300);
+            var borderStyle = 'solid 1px ' + fadeColor(254, 224, fadePercentage);
+            style['border-right'] = leftOffset ? borderStyle : '';
+            return style;
+        }
+
+        function fadeColor (from, to, percentage) {
+            var c = from - Math.round(percentage * (from - to));
+            return 'rgb(' + c + ',' + c + ',' + c + ')';
+        }
+    }
+
     function resizeGridColumns (grid) {
         // Ignore resizing request when grid was emptied while column widths are already available
         // This can happen when DataSource destroys data tree (e.g. ordering event) and to
@@ -196,6 +277,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         calculateColumnWidths(grid);
         resizeCells(grid);
         resizeBreakdownRows(grid);
+        initializePivotColumns(grid);
     }
 
     function getBreakdownColumnStyle (grid, row) {
@@ -222,6 +304,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
     return {
         requestAnimationFrame: requestAnimationFrame,
         resizeGridColumns: resizeGridColumns,
+        updatePivotColumns: updatePivotColumns,
         getBreakdownColumnStyle: getBreakdownColumnStyle,
         getFieldGoalStatusClass: getFieldGoalStatusClass,
     };

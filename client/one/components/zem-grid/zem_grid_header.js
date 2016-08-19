@@ -29,8 +29,8 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 }, 0, false);
             }
 
-            function handleHorizontalScroll (leftOffset) {
-                leftOffset = -1 * leftOffset;
+            function handleHorizontalScroll () {
+                var leftOffset = -1 * ctrl.grid.body.ui.scrollLeft;
                 var translateCssProperty = 'translateX(' + leftOffset + 'px)';
 
                 element.css({
@@ -40,13 +40,16 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 });
             }
 
+            function updatePivotColumns () {
+                zemGridUIService.updatePivotColumns(ctrl.grid);
+            }
+
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, resizeColumns);
             pubsub.register(pubsub.EVENTS.EXT_COLUMNS_UPDATED, resizeColumns);
-            resizeColumns();
+            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, handleHorizontalScroll);
+            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, updatePivotColumns);
 
-            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, leftOffset) {
-                handleHorizontalScroll(leftOffset);
-            });
+            resizeColumns();
         },
         controller: [function () {
             var vm = this;
