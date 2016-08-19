@@ -52,6 +52,7 @@ class AdGroupSettingsTest(TestCase):
             'tracking_code': u'',
             'target_regions': ['US'],
             'retargeting_ad_groups': [1, 2],
+            'exclusion_retargeting_ad_groups': [3, 4],
             'display_url': 'example.com',
             'brand_name': 'Example',
             'description': 'Example description',
