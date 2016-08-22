@@ -1,0 +1,504 @@
+# Ad group structure (by ids) and state settings
+# 
+# | Account:                 | 1                       |
+# |--------------------------+-------------------------|
+# | Campaign                 | 1                     2 |
+# |--------------------------+-------------------------|
+# | Ad group                 | 1     2               3 |
+# | Ad Group Settings state: | 1     2               2 |
+# |--------------------------+-------------------------|
+# | Ad Group Source          | 1  2  3  4            5 |
+# |                          |                         |
+# |--------------------------+-------------------------|
+# | Source                   | 1  2  1  2            1 |
+# |--------------------------+-------------------------|
+# | Ad Group Source Settings | 1  2  3  4            5 |
+# | State:                   | 1  2  1  2            2 |
+# 
+# | Ad Group:         | 1         |
+# |-------------------+-----------|
+# | Content ad:       | 1     2 3 |
+# |-------------------+-----------|
+# | Upload batch      | 1     1 2 |
+# |-------------------+-----------|
+# | Content Ad Source | 1  2  3   |
+# | State             | 1  2  1   |
+# |-------------------+-----------|
+# | Source            | 1  2  2   |
+
+
+# test user
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: luka.silovinac@zemanta.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: true
+        is_superuser: true
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        user_permissions: []
+        username: 'alpha'
+    model: zemauth.user
+    pk: 1
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: mad.max@zemanta.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: false
+        is_superuser: false
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$20000$uBSBDTI89lC9$KIa//Zqrj258fQLcMIhv1GKax3sH5wvXY/5IrON4IWw=
+        user_permissions: []
+        username: 'beta'
+    model: zemauth.user
+    pk: 2
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: supertestuser@test.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: true
+        is_superuser: true
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: 'gamma'
+    model: zemauth.user
+    pk: 3
+
+
+# test account
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        users: [1, 2, 3]
+        allowed_sources: [1,2]
+        name: 'test account 1'
+    model: dash.account
+    pk: 1
+
+
+# test accountsettings
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: False
+        name: 'Test settings 1'
+        account: 1
+        account_type: 5
+    model: dash.accountsettings
+    pk: 1
+
+
+# test campaign
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 1 # test account 1
+        name: 'test campaign 1'
+    model: dash.campaign
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 1 # test account 1
+        name: 'test campaign 2'
+    model: dash.campaign
+    pk: 2
+
+
+# test campaignsettings
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        name: 'test campaign 1'
+        campaign_manager: NULL
+        iab_category: 'IAB24'
+        campaign_goal: 4
+        goal_quantity: 10
+        target_devices: ['mobile']
+        target_regions: ['US']
+        campaign: 1
+    model: dash.campaignsettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        name: 'test campaign 4'
+        campaign_manager: NULL
+        iab_category: 'IAB24'
+        campaign: 2
+        archived: True
+    model: dash.campaignsettings
+    pk: 2
+
+
+# test adgroup
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 1'
+    model: dash.adgroup
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 2'
+    model: dash.adgroup
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 2
+        name: 'test adgroup 3'
+    model: dash.adgroup
+    pk: 3
+
+
+# test adgroupsettings
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: False
+        ad_group: 1
+        tracking_code: 'param1=foo&param2=bar'
+        target_devices: ['desktop', 'mobile']
+        target_regions: ['GB', 'US', 'CA']
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+        daily_budget_cc: 100
+        ad_group_name: 'AdGroup name'
+        start_date: '2015-03-02'
+        end_date: '2015-04-02'
+        enable_ga_tracking: True
+        ga_property_id: 'UA-123456789-1'
+        enable_adobe_tracking: True
+        adobe_tracking_param: 'pid'
+        autopilot_state: 1
+        autopilot_daily_budget: '50.0000'
+        retargeting_ad_groups: [3]
+        state: 1
+    model: dash.adgroupsettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: False
+        ad_group: 2
+        tracking_code: 'param1=foo&param2=bar'
+        enable_ga_tracking: False
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+        target_regions: ['693']
+        state: 2
+    model: dash.adgroupsettings
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: True
+        ad_group: 3
+        state: 2
+    model: dash.adgroupsettings
+    pk: 3
+
+# source types
+
+-   fields:
+        type: 'b1'
+        available_actions: [4, 19, 20]
+    model: dash.sourcetype
+    pk: 1
+
+-   fields:
+        type: 'gravity'
+        available_actions: [1, 2, 3, 20]
+    model: dash.sourcetype
+    pk: 2
+
+
+# sources
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: AdsNative
+        tracking_slug: 'industrybrains'
+        source_type: 1
+        maintenance: false
+        bidder_slug: 'adsnative'
+    model: dash.source
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Gravity
+        tracking_slug: 'gravity'
+        source_type: 2
+        maintenance: false
+        default_cpc_cc: 0.18
+        default_mobile_cpc_cc: 0.22
+        default_daily_budget_cc: 22
+    model: dash.source
+    pk: 2
+
+
+# test defaultsourcesettings
+
+-   fields:
+        source: 1
+        params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
+    model: dash.defaultsourcesettings
+    pk: 1
+
+-   fields:
+        source: 2
+        params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
+    model: dash.defaultsourcesettings
+    pk: 2
+
+
+# test adgroupsource
+
+-   fields:
+        source: 1
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+        can_manage_content_ads: true
+    model: dash.adgroupsource
+    pk: 1
+
+-   fields:
+        source: 2
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 2
+
+-   fields:
+        source: 1
+        ad_group: 2
+        source_campaign_key: '["fake"]'
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 3
+
+-   fields:
+        source: 2
+        ad_group: 2
+        source_campaign_key: '["fake"]'
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 4
+
+-   fields:
+        source: 1
+        ad_group: 3
+        source_campaign_key: {}
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 5
+
+
+# test adgroupsourcesettings
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 1
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 2
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 3
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 4
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 4
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 5
+        cpc_cc: null
+        daily_budget_cc: null
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 5
+
+
+# test contentad
+
+-   fields:
+        image_id: '100'
+        image_hash: '100'
+        image_width: 200
+        image_height: 300
+        batch: 1
+        archived: False
+        url: 'http://testurl1.com'
+        tracker_urls: ['http://testurl1.com', 'http://testurl2.com']
+        title: 'Title 1'
+        ad_group: 1
+        redirect_id: 'r1'
+        created_dt: '2015-02-21T00:00:00'
+        state: 1
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+        crop_areas: '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
+    model: dash.contentad
+    pk: 1
+
+-   fields:
+        image_id: '200'
+        image_hash: '200'
+        image_width: 200
+        image_height: 300
+        batch: 1
+        archived: False
+        url: 'http://testurl2.com'
+        title: 'Title 2'
+        ad_group: 1
+        redirect_id: 'r2'
+        created_dt: '2015-02-21T00:00:01'
+        state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+    model: dash.contentad
+    pk: 2
+
+-   fields:
+        image_id: '300'
+        image_hash: '300'
+        image_width: 200
+        image_height: 300
+        batch: 2
+        archived: True
+        url: 'http://testurl3.com'
+        title: 'Title 3'
+        ad_group: 1
+        created_dt: '2015-02-23T00:00:00'
+        state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+    model: dash.contentad
+    pk: 3
+
+
+# test uploadbatch
+
+-   fields:
+        name: 'batch 1'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.uploadbatch
+    pk: 1
+
+-   fields:
+        name: 'batch 2'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.uploadbatch
+    pk: 2
+
+
+# test contentadsource
+
+-   fields:
+        source: 1
+        content_ad: 1
+        submission_status: 1
+        state: 1
+        source_state: NULL
+        source_content_ad_id: NULL
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 1
+
+-   fields:
+        source: 2
+        content_ad: 1
+        submission_status: 2
+        state: 2
+        source_state: 2
+        source_content_ad_id: '123456789'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 2
+
+-   fields:
+        source: 2
+        content_ad: 2
+        submission_status: 2
+        state: 1
+        source_state: 1
+        source_content_ad_id: NULL
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 3

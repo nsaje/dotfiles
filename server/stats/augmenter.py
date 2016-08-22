@@ -3,6 +3,7 @@ import datetime
 
 from dash import models
 from dash import constants as dash_constants
+from dash import campaign_goals as dash_campaign_goals
 
 from stats import constants
 from stats import helpers

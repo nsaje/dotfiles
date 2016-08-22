@@ -817,15 +817,12 @@ def _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_
 
 
 def get_ad_group_sources_states(ad_group_sources):
-    return get_fake_ad_group_source_states(ad_group_sources)
+    """
+    Return ad group sources states in a list.
+    NOTE: uses a workaround function that calculates AdGroupSourceState as those are not
+    saved anymore.
+    """
 
-    # return models.AdGroupSourceState.objects\
-    #                                .filter(ad_group_source__in=ad_group_sources)\
-    #                                .group_current_states()\
-    #                                .select_related('ad_group_source')
-
-
-def get_fake_ad_group_source_states(ad_group_sources):
     ad_group_sources_settings = {
         ags.ad_group_source_id: ags for ags in models.AdGroupSourceSettings.objects.filter(
             ad_group_source__in=ad_group_sources,
@@ -838,10 +835,14 @@ def get_fake_ad_group_source_states(ad_group_sources):
         ).group_current_settings()
     }
 
+    return get_fake_ad_group_source_states(ad_group_sources, ad_group_sources_settings, ad_groups_settings)
+
+
+def get_fake_ad_group_source_states(ad_group_sources, ad_group_sources_settings_map, ad_groups_settings_map):
     states = []
     for ags in ad_group_sources:
-        ad_group_settings = ad_groups_settings.get(ags.ad_group.id)
-        agss = ad_group_sources_settings.get(ags.id)
+        ad_group_settings = ad_groups_settings_map.get(ags.ad_group.id)
+        agss = ad_group_sources_settings_map.get(ags.id)
 
         if ad_group_settings is None or agss is None:
             logger.error("Missing settings got ad group source: %s", ags.id)
@@ -863,6 +864,13 @@ def get_fake_ad_group_source_states(ad_group_sources):
         )
 
     return states
+
+
+def get_source_status_from_ad_group_source_states(ad_group_source_states):
+    if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in ad_group_source_states):
+        return constants.AdGroupSourceSettingsState.ACTIVE
+
+    return constants.AdGroupSourceSettingsState.INACTIVE
 
 
 def get_ad_group_sources_settings(ad_group_sources):

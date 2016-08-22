@@ -642,12 +642,6 @@ class SourcesTable(object):
 
         return result
 
-    def get_state(self, states):
-        if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in states):
-            return constants.AdGroupSourceSettingsState.ACTIVE
-
-        return constants.AdGroupSourceSettingsState.INACTIVE
-
     def _get_supply_dash_disabled_message(self, ad_group_source):
         if not ad_group_source.source.has_3rd_party_dashboard():
             return "This media source doesn't have a dashboard of its own. " \
@@ -714,7 +708,7 @@ class SourcesTable(object):
                 'id': str(source.id),
                 'name': source.name,
                 'daily_budget': daily_budget,
-                'status': self.get_state(states),
+                'status': helpers.get_source_status_from_ad_group_source_states(states),
                 'last_sync': last_sync,
                 'maintenance': source.maintenance,
                 'archived': source.deprecated,
@@ -1172,21 +1166,6 @@ class AdGroupAdsTable(object):
         helpers.copy_stats_to_row(stats, totals)
         return totals
 
-    def _get_url(self, ad_group, content_ad, is_demo):
-        if is_demo:
-            return 'http://www.example.com/{}/{}'.format(ad_group.name, content_ad.id)
-
-        return content_ad.url
-
-    def _get_redirector_url(self, content_ad, is_demo):
-        if is_demo:
-            return None
-
-        return settings.R1_BLANK_REDIRECT_URL.format(
-            redirect_id=content_ad.redirect_id,
-            content_ad_id=content_ad.id
-        )
-
     def _get_rows(self, content_ads, stats, ad_group, show_archived, user):
         stats = {s['content_ad']: s for s in stats}
         rows = []
@@ -1200,8 +1179,8 @@ class AdGroupAdsTable(object):
             if not show_archived and archived:
                 continue
 
-            url = self._get_url(ad_group, content_ad, is_demo)
-            redirector_url = self._get_redirector_url(content_ad, is_demo)
+            url = content_ad.get_url(ad_group, is_demo)
+            redirector_url = content_ad.get_redirector_url(is_demo)
 
             row = {
                 'id': str(content_ad.id),

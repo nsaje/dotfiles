@@ -2628,6 +2628,20 @@ class ContentAd(models.Model):
 
         return urlparse.urlunparse(parsed)
 
+    def get_url(self, ad_group, is_demo):
+        if is_demo:
+            return 'http://www.example.com/{}/{}'.format(ad_group.name, self.id)
+        return self.url
+
+    def get_redirector_url(self, is_demo):
+        if is_demo:
+            return None
+
+        return settings.R1_BLANK_REDIRECT_URL.format(
+            redirect_id=self.redirect_id,
+            content_ad_id=self.id
+        )
+
     def __unicode__(self):
         return '{cn}(id={id}, ad_group={ad_group}, image_id={image_id}, state={state})'.format(
             cn=self.__class__.__name__,
@@ -2699,6 +2713,8 @@ class ContentAdSource(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
+    objects = QuerySetManager()
+
     def get_source_id(self):
         if self.source.source_type and self.source.source_type.type in [
                 constants.SourceType.B1, constants.SourceType.GRAVITY]:
@@ -2720,6 +2736,10 @@ class ContentAdSource(models.Model):
 
     def __str__(self):
         return unicode(self).encode('ascii', 'ignore')
+
+    class QuerySet(models.QuerySet):
+        def filter_by_sources(self, sources):
+            return self.filter(source__in=sources)
 
 
 class ContentAdCandidate(FootprintModel):
