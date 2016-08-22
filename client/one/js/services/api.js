@@ -2761,6 +2761,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                             id: obj.id,
                             comment: obj.comment,
                             isAvailable: obj.is_available,
+                            isAgency: obj.is_agency,
                         };
                     }),
                     minAmount: data.min_amount,

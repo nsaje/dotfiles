@@ -601,7 +601,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "comment": "Test case",
                     "license_fee": "20",
                     "total": "100000.0000",
-                    "start_date": "2015-10-01"
+                    "start_date": "2015-10-01",
+                    "is_agency": False,
                 }
             ],
             u"min_amount": 0,
@@ -651,7 +652,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "comment": "Test case",
                     "license_fee": "20",
                     "total": "100000.0000",
-                    "start_date": "2015-10-01"
+                    "start_date": "2015-10-01",
+                    "is_agency": False,
                 }
             ],
             "min_amount": 0,
@@ -706,7 +708,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "comment": "Test case",
                     "license_fee": "20",
                     "total": "100000.0000",
-                    "start_date": "2015-10-01"
+                    "start_date": "2015-10-01",
+                    "is_agency": False,
                 }
             ],
             "min_amount": 0,
@@ -743,7 +746,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             "comment": "Test case",
             "license_fee": "20",
             "total": "100000.0000",
-            "start_date": "2015-10-01"
+            "start_date": "2015-10-01",
+            "is_agency": False,
         }])
 
         r = RequestFactory().get('')
@@ -767,7 +771,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             "comment": "Test case",
             "license_fee": "20",
             "total": "100000.0000",
-            "start_date": "2015-10-01"
+            "start_date": "2015-10-01",
+            "is_agency": False,
         }, {
             'available': u'99900.0000',
             'comment': u'Agency credit',
@@ -777,6 +782,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             'license_fee': u'20',
             'total': u'99900.0000',
             'id': 1000,
+            "is_agency": True,
         }])
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
@@ -1280,7 +1286,8 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     u"license_fee": u"20",
                     u"comment": "Test case",
                     u"total": "250000.0000",
-                    u"start_date": u"2015-10-01"
+                    u"start_date": u"2015-10-01",
+                    u"is_agency": False,
                 }
             ],
             u"totals": {

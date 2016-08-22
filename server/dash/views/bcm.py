@@ -308,7 +308,8 @@ class CampaignBudgetView(api_common.BaseApiView):
                 'start_date': credit.start_date,
                 'end_date': credit.end_date,
                 'comment': credit.comment,
-                'is_available': credit.is_available()
+                'is_available': credit.is_available(),
+                'is_agency': credit.is_agency(),
             }
             for credit in available_credits
         ]
