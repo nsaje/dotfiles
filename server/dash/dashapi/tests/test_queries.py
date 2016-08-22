@@ -1,6 +1,6 @@
 import datetime
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from utils.sort_helper import dissect_order
 
@@ -12,6 +12,7 @@ def extract_keys(key, rows):
     return [x[key] for x in rows]
 
 
+@override_settings(R1_BLANK_REDIRECT_URL, 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/')
 class QueryContentAdsTest(TestCase):
 
     fixtures = ['test_api_breakdowns.yaml']
