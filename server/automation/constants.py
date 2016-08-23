@@ -18,6 +18,8 @@ class CpcChangeComment(ConstantBase):
     UNDER_AUTOPILOT_MIN_CPC = 14
     OVER_ACCOUNT_SOURCE_MIN_CPC = 15
     UNDER_ACCOUNT_SOURCE_MIN_CPC = 16
+    OVER_AD_GROUP_SOURCE_MIN_CPC = 17
+    UNDER_AD_GROUP_SOURCE_MIN_CPC = 18
 
     _VALUES = {
         BUDGET_MANUALLY_CHANGED: 'budget was manually changed recently',
@@ -36,6 +38,8 @@ class CpcChangeComment(ConstantBase):
         UNDER_AUTOPILOT_MIN_CPC: 'lower bid CPC would not meet Autopilot\'s minimum allowed CPC constraint',
         OVER_ACCOUNT_SOURCE_MIN_CPC: 'higher bid CPC would not meet Account-Source specific CPC constraint',
         UNDER_ACCOUNT_SOURCE_MIN_CPC: 'lower bid CPC would not meet Account-Source specific CPC constraint',
+        OVER_AD_GROUP_SOURCE_MIN_CPC: 'higher bid CPC would not meet Ad Group-Source specific CPC constraint',
+        UNDER_AD_GROUP_SOURCE_MIN_CPC: 'lower bid CPC would not meet Ad Group-Source specific CPC constraint',
     }
 
 

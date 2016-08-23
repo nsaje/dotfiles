@@ -9,7 +9,12 @@ logger = logging.getLogger(__name__)
 
 ACCOUNT_SOURCE_CPC_CONSTRAINTS = {
     # King Content - Cisco
-    (324, SourceType.OUTBRAIN): (decimal.Decimal('0.65'), None),
+    (324, SourceType.OUTBRAIN): (decimal.Decimal('0.65'), None),  # Reason: OB blacklist > 30
+}
+AD_GROUP_SOURCE_CPC_CONSTRAINTS = {
+    # BuildDirect: Sample Orders Experiment
+    (2183, SourceType.OUTBRAIN): (decimal.Decimal('0.65'), None),  # Reason: vertical targeting
+    (2184, SourceType.OUTBRAIN): (decimal.Decimal('0.65'), None),  # Reason: vertical targeting
 }
 
 
@@ -38,6 +43,8 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
                                                              proposed_cpc,
                                                              source_type,
                                                              cpc_change_comments)
+        proposed_cpc = _threshold_ad_group_source_constraints(ad_group.pk, proposed_cpc,
+                                                              source_type, cpc_change_comments)
         new_cpc_cc = proposed_cpc
         cpc_change_not_allowed_comments = set(cpc_change_comments) -\
             set(autopilot_settings.CPC_CHANGE_ALLOWED_COMMENTS)
@@ -128,6 +135,20 @@ def _threshold_account_source_constraints(account_id, proposed_cpc, source_type,
         return max_cpc
     if min_cpc and proposed_cpc < min_cpc:
         cpc_change_comments += [CpcChangeComment.UNDER_ACCOUNT_SOURCE_MIN_CPC]
+        return min_cpc
+    return proposed_cpc
+
+
+def _threshold_ad_group_source_constraints(ad_group_id, proposed_cpc, source_type, cpc_change_comments):
+    if (ad_group_id, source_type.type) not in AD_GROUP_SOURCE_CPC_CONSTRAINTS:
+        return proposed_cpc
+
+    min_cpc, max_cpc = AD_GROUP_SOURCE_CPC_CONSTRAINTS[(ad_group_id, source_type.type)]
+    if max_cpc and proposed_cpc > max_cpc:
+        cpc_change_comments += [CpcChangeComment.OVER_AD_GROUP_SOURCE_MIN_CPC]
+        return max_cpc
+    if min_cpc and proposed_cpc < min_cpc:
+        cpc_change_comments += [CpcChangeComment.UNDER_AD_GROUP_SOURCE_MIN_CPC]
         return min_cpc
     return proposed_cpc
 
