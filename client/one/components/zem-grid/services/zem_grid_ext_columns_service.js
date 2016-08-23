@@ -17,8 +17,8 @@ oneApp.factory('zemGridColumnsService', ['zemGridConstants', 'zemGridStorageServ
         this.setColumnVisibility = setColumnVisibility;
 
         function initialize () {
-            pubsub.register(pubsub.EVENTS.METADATA_UPDATED, initializeColumns);
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, initializeColumnsState);
+            pubsub.register(pubsub.EVENTS.METADATA_UPDATED, null, initializeColumns);
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, null, initializeColumnsState);
         }
 
         function initializeColumns () {

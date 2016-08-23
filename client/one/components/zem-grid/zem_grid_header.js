@@ -45,14 +45,14 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                 //zemGridUIService.updatePivotColumns(ctrl.grid); - Temporary shut down pivot columns (problem on OSx)
             }
 
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, resizeColumns);
-            pubsub.register(pubsub.EVENTS.EXT_COLUMNS_UPDATED, resizeColumns);
-            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, handleHorizontalScroll);
-            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, updatePivotColumns);
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, scope, resizeColumns);
+            pubsub.register(pubsub.EVENTS.EXT_COLUMNS_UPDATED, scope, resizeColumns);
+            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, scope, handleHorizontalScroll);
+            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, scope, updatePivotColumns);
 
             resizeColumns();
         },
-        controller: [function () {
+        controller: ['$scope', function ($scope) {
             var vm = this;
             var pubsub = this.grid.meta.pubsub;
             var columnsService = this.grid.meta.columnsService;
@@ -63,7 +63,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
 
             function initialize () {
                 initializeColumns();
-                pubsub.register(pubsub.EVENTS.EXT_COLUMNS_UPDATED, initializeColumns);
+                pubsub.register(pubsub.EVENTS.EXT_COLUMNS_UPDATED, $scope, initializeColumns);
             }
 
             function initializeColumns () {

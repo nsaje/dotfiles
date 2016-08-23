@@ -18,14 +18,19 @@ oneApp.directive('zemGridRow', ['zemGridConstants', function (zemGridConstants) 
             var pubsub = scope.ctrl.grid.meta.pubsub;
 
             updateRow();
-            pubsub.register(pubsub.EVENTS.BODY_ROWS_UPDATED, updateRow);
-            pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, function () {
+            pubsub.register(pubsub.EVENTS.BODY_ROWS_UPDATED, scope, updateRow);
+            pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, scope, function () {
                 var updated = updateRow();
                 if (updated) scope.$digest();
             });
 
             function updateRow () {
                 var visibleRows = grid.body.visibleRows.length;
+                if (!visibleRows) {
+                    // Ignore when there is no visibleRows (data updated -> this row will be destroyed)
+                    return;
+                }
+
                 var renderedRows = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE
                     + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
 

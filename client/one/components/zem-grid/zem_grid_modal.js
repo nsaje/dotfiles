@@ -67,8 +67,8 @@ oneApp.directive('zemGridModal', ['$rootScope', '$timeout', '$http', '$templateC
         // Close modal when navigating to different route (e.g. using navigation search)
         deregisterLocationChangeStart = $rootScope.$on('$locationChangeStart', closeModal);
 
-        deregisterVerticalScroll = pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, closeModal);
-        deregisterHorizontalScroll = pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, closeModal);
+        deregisterVerticalScroll = pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, null, closeModal);
+        deregisterHorizontalScroll = pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, null, closeModal);
     }
 
     function closeModal () {

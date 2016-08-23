@@ -112,7 +112,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
                 pubsub.notify(pubsub.EVENTS.BODY_ROWS_UPDATED);
             }
 
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, updateBody);
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, scope, updateBody);
 
             element.on('scroll', scrollListener);
         },

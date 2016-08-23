@@ -32,7 +32,7 @@ oneApp.factory('zemGridSelectionService', ['zemGridConstants', function (zemGrid
         this.setRowSelection = setRowSelection;
 
         function initialize () {
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, function () {
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, null, function () {
                 if (grid.body.rows.length === 0) {
                     grid.ext.selection.selected = [];
                     grid.ext.selection.unselected = [];

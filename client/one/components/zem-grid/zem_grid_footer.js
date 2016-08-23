@@ -28,7 +28,7 @@ oneApp.directive('zemGridFooter', [function () {
                 });
             }
 
-            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, leftOffset) {
+            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, scope, function (event, leftOffset) {
                 handleHorizontalScroll(leftOffset);
             });
         },

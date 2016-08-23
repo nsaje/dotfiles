@@ -24,7 +24,7 @@ oneApp.directive('zemGridHeaderCellData', ['$timeout', 'zemGridUIService', funct
             initialize();
 
             function initialize () {
-                pubsub.register(pubsub.EVENTS.EXT_ORDER_UPDATED, updateModel);
+                pubsub.register(pubsub.EVENTS.EXT_ORDER_UPDATED, $scope, updateModel);
                 $scope.$watch('ctrl.column', updateModel);
             }
 

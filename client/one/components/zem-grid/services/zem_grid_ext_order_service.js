@@ -16,8 +16,8 @@ oneApp.factory('zemGridOrderService', ['zemGridConstants', 'zemGridUIService', '
         this.setColumnOrder = setColumnOrder;
 
         function initialize () {
-            pubsub.register(pubsub.EVENTS.METADATA_UPDATED, initializeOrder);
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, initializeOrder);
+            pubsub.register(pubsub.EVENTS.METADATA_UPDATED, null, initializeOrder);
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, null, initializeOrder);
         }
 
         function initializeOrder () {
