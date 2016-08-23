@@ -7,7 +7,7 @@ oneApp.factory('zemGridConstants', [function () {
         gridBodyRendering: {
             ROW_HEIGHT: 45,
             NUM_OF_ROWS_PER_PAGE: 41,
-            NUM_OF_PRERENDERED_ROWS: 3,
+            NUM_OF_PRERENDERED_ROWS: 2,
         },
         gridColumnOrder: {
             NONE: 'none',

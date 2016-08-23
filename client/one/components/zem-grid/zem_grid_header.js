@@ -35,6 +35,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
 
                 element.css({
                     '-webkit-transform': translateCssProperty,
+                    '-moz-transform': translateCssProperty,
                     '-ms-transform': translateCssProperty,
                     'transform': translateCssProperty,
                 });

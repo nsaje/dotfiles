@@ -23,6 +23,7 @@ oneApp.directive('zemGridFooter', [function () {
                 element.css({
                     '-webkit-transform': translateCssProperty,
                     '-ms-transform': translateCssProperty,
+                    '-moz-transform': translateCssProperty,
                     'transform': translateCssProperty,
                 });
             }

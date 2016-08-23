@@ -12,6 +12,7 @@ oneApp.factory('zemGridPubSub', [function () {
     var EVENTS = {
         BODY_HORIZONTAL_SCROLL: 'zem-grid-pubsub-bodyHorizontalScroll',
         BODY_VERTICAL_SCROLL: 'zem-grid-pubsub-bodyVerticalScroll',
+        BODY_ROWS_UPDATED: 'zem-grid-pubsub-bodyRowsUpdated',
         METADATA_UPDATED: 'zem-grid-pubsub-metadataUpdated',
         DATA_UPDATED: 'zem-grid-pubsub-dataUpdated',
 
