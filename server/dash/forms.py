@@ -9,6 +9,7 @@ from collections import OrderedDict
 from collections import Counter
 
 from django import forms
+from django.contrib.postgres import forms as postgres_forms
 from django.db import transaction
 from django.core import validators
 
@@ -52,6 +53,55 @@ class TypedMultipleAnyChoiceField(forms.TypedMultipleChoiceField):
 
     def valid_value(self, value):
         return True
+
+
+class AdGroupAdminForm(forms.ModelForm):
+    SETTINGS_FIELDS = [
+        'notes',
+        'bluekai_targeting',
+        'interest_targeting',
+        'exclusion_interest_targeting',
+        'redirect_pixel_urls',
+        'redirect_javascript'
+    ]
+    notes = forms.CharField(required=False, widget=forms.Textarea)
+    bluekai_targeting = postgres_forms.JSONField(required=False)
+    interest_targeting = postgres_forms.SimpleArrayField(
+        forms.CharField(),
+        required=False,
+        delimiter='\n',
+        widget=forms.Textarea,
+        help_text='Put every entry on a separate line'
+    )
+    exclusion_interest_targeting = postgres_forms.SimpleArrayField(
+        forms.CharField(),
+        required=False,
+        delimiter='\n',
+        widget=forms.Textarea,
+        help_text='Put every entry on a separate line'
+    )
+    redirect_pixel_urls = postgres_forms.SimpleArrayField(
+        forms.CharField(),
+        required=False,
+        delimiter='\n',
+        widget=forms.Textarea,
+        help_text='Put every entry on a separate line'
+    )
+    redirect_javascript = forms.CharField(required=False, widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        initial = kwargs.get('initial', {})
+        initial['bluekai_targeting'] = []  # default to empty list instead of null
+        if 'instance' in kwargs:
+            settings = kwargs['instance'].get_current_settings()
+            for field in self.SETTINGS_FIELDS:
+                initial[field] = getattr(settings, field)
+        kwargs['initial'] = initial
+        super(AdGroupAdminForm, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = models.Campaign
+        fields = '__all__'
 
 
 class AdGroupSettingsForm(forms.Form):

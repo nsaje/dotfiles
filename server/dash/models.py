@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import jsonfield
 import binascii
 import datetime
@@ -2046,6 +2047,12 @@ class AdGroupSettings(SettingsBase):
         'target_regions',
         'retargeting_ad_groups',
         'exclusion_retargeting_ad_groups',
+        'bluekai_targeting',
+        'interest_targeting',
+        'exclusion_interest_targeting',
+        'redirect_pixel_urls',
+        'redirect_javascript',
+        'notes',
         'tracking_code',
         'archived',
         'display_url',
@@ -2095,6 +2102,12 @@ class AdGroupSettings(SettingsBase):
     target_regions = jsonfield.JSONField(blank=True, default=[])
     retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
     exclusion_retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
+    bluekai_targeting = jsonfield.JSONField(blank=True, default=[])
+    interest_targeting = jsonfield.JSONField(blank=True, default=[])
+    exclusion_interest_targeting = jsonfield.JSONField(blank=True, default=[])
+    redirect_pixel_urls = jsonfield.JSONField(blank=True, default=[])
+    redirect_javascript = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
     tracking_code = models.TextField(blank=True)
     enable_ga_tracking = models.BooleanField(default=True)
     ga_tracking_type = models.IntegerField(
@@ -2204,6 +2217,12 @@ class AdGroupSettings(SettingsBase):
             'target_regions': 'Locations',
             'retargeting_ad_groups': 'Retargeting ad groups',
             'exclusion_retargeting_ad_groups': 'Exclusion ad groups',
+            'bluekai_targeting': 'Bluekai targeting',
+            'interest_targeting': 'Vertical targeting',
+            'exclusion_interest_targeting': 'Exclusion interest targeting',
+            'redirect_pixel_urls': 'Redirect pixel URLs',
+            'redirect_javascript': 'Redirect JavaScript',
+            'notes': 'Notes',
             'tracking_code': 'Tracking code',
             'state': 'State',
             'archived': 'Archived',
@@ -2251,6 +2270,15 @@ class AdGroupSettings(SettingsBase):
             else:
                 names = AdGroup.objects.filter(pk__in=value).values_list('name', flat=True)
                 value = ', '.join(names)
+        elif prop_name == 'bluekai_targeting':
+            value = json.dumps(value)
+        elif prop_name in ('interest_targeting', 'exclusion_interest_targeting'):
+            if value:
+                value = ', '.join(value)
+            else:
+                value = 'all'
+        elif prop_name == 'redirect_pixel_urls':
+            value = ', '.join(value)
         elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):
             value = str(value)
         elif prop_name == 'ga_tracking_type':

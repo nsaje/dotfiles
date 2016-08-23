@@ -28,6 +28,7 @@ from dash import forms as dash_forms
 from dash import validation_helpers
 
 import utils.k1_helper
+import utils.email_helper
 
 import actionlog.api_contentads
 import actionlog.zwei_actions
@@ -697,7 +698,7 @@ class IsArchivedFilter(admin.SimpleListFilter):
         return queryset
 
 
-class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+class AdGroupAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
@@ -715,6 +716,16 @@ class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     inlines = (
         AdGroupSourcesInline,
     )
+    form = dash_forms.AdGroupAdminForm
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'campaign', 'is_demo', 'created_dt', 'modified_dt', 'modified_by', 'settings_'),
+        }),
+        ('Additional targeting', {
+            'classes': ('collapse',),
+            'fields': dash_forms.AdGroupAdminForm.SETTINGS_FIELDS,
+        }),
+    )
 
     def view_on_site(self, obj):
         return '/ad_groups/{}/ads'.format(obj.id)
@@ -729,6 +740,22 @@ class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     is_archived_.allow_tags = True
     is_archived_.short_description = 'Is archived'
     is_archived_.boolean = True
+
+    def save_model(self, request, ad_group, form, change):
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        for field in form.SETTINGS_FIELDS:
+            value = form.cleaned_data.get(field)
+            if getattr(new_settings, field) != value:
+                setattr(new_settings, field, value)
+        changes = current_settings.get_setting_changes(new_settings)
+        if changes:
+            new_settings.save(request)
+            utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroup admin')
+            changes_text = models.AdGroupSettings.get_changes_text(
+                current_settings, new_settings, request.user, separator='\n')
+            utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
+        ad_group.save(request)
 
     def settings_(self, obj):
         return '<a href="{admin_url}">List ({num_settings})</a>'.format(

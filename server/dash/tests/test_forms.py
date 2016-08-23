@@ -6,8 +6,8 @@ import StringIO
 
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth.models import Permission
-from mock import patch
+from django.contrib.auth.models import Permission, User
+from mock import patch, Mock
 
 from dash import constants
 from dash import forms
@@ -130,6 +130,57 @@ class AccountSettingsFormTest(TestCase):
             })
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('name'))
+
+
+class AdGroupAdminFormTest(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def setUp(self):
+        self.request = Mock()
+        user = User()
+        user.save()
+        self.request.user = user
+
+    def test_instance_without_settings(self):
+        ad_group = models.AdGroup(
+            name='Test',
+            campaign_id=1,
+        )
+        ad_group.save(self.request)
+        form = forms.AdGroupAdminForm(
+            instance=ad_group
+        )
+        self.assertEqual('', form.initial['notes'])
+        self.assertEqual([], form.initial['bluekai_targeting'])
+        self.assertEqual([], form.initial['interest_targeting'])
+        self.assertEqual([], form.initial['exclusion_interest_targeting'])
+        self.assertEqual([], form.initial['redirect_pixel_urls'])
+        self.assertEqual('', form.initial['redirect_javascript'])
+
+    def test_instance_with_settings(self):
+        ad_group = models.AdGroup(
+            name='Test',
+            campaign_id=1,
+        )
+        ad_group.save(self.request)
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.notes = 'a'
+        settings.bluekai_targeting = ['a']
+        settings.interest_targeting = ['a']
+        settings.exclusion_interest_targeting = ['a']
+        settings.redirect_pixel_urls = ['a']
+        settings.redirect_javascript = 'alert("a");'
+        settings.save(None)
+
+        form = forms.AdGroupAdminForm(
+            instance=ad_group
+        )
+        self.assertEqual('a', form.initial['notes'])
+        self.assertEqual(['a'], form.initial['bluekai_targeting'])
+        self.assertEqual(['a'], form.initial['interest_targeting'])
+        self.assertEqual(['a'], form.initial['exclusion_interest_targeting'])
+        self.assertEqual(['a'], form.initial['redirect_pixel_urls'])
+        self.assertEqual('alert("a");', form.initial['redirect_javascript'])
 
 
 class AdGroupSettingsFormTest(TestCase):
