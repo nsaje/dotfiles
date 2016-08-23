@@ -191,6 +191,27 @@ class SwitchToLandingModeTestCase(TestCase):
                     active_ad_group_sources.add(ags)
 
     @patch('automation.campaign_stop._set_end_date_to_today')
+    @patch('utils.email_helper.send_notification_mail')
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    @patch('automation.campaign_stop._switch_campaign_to_landing_mode')
+    def test_all_ad_groups_over_end_date(self, mock_switch, mock_get_mrb, mock_send_email, mock_set_end_date):
+        today = datetime.date(2016, 8, 23)
+        campaign = dash.models.Campaign.objects.get(id=1)
+        for ad_group in campaign.adgroup_set.all():
+            ag_settings = ad_group.get_current_settings().copy_settings()
+            ag_settings.end_date = today - datetime.timedelta(days=1)
+            ag_settings.save(None)
+
+        mock_get_mrb.return_value = Decimal('0'), Decimal('0'), Decimal('0')
+        has_changed = campaign_stop.perform_landing_mode_check(
+            campaign,
+            campaign.get_current_settings()
+        )
+        self.assertFalse(has_changed)
+        self.assertFalse(mock_send_email.called)
+        self.assertFalse(mock_set_end_date.called)
+
+    @patch('automation.campaign_stop._set_end_date_to_today')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_switch_to_landing_mode_manual(self, mock_get_mrb, mock_send_email, mock_set_end_date):
