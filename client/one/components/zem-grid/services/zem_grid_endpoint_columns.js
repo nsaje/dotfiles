@@ -323,16 +323,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             field: 'source_id',
             type: zemGridConstants.gridColumnTypes.TEXT,
         },
-        domain: {
-            name: 'Domain',
-            field: 'domain',
-            type: zemGridConstants.gridColumnTypes.TEXT,
-            shown: true,
-            totalRow: false,
-            help: 'A publisher where your content is being promoted.',
-            order: true,
-            initialOrder: zemGridConstants.gridColumnOrder.ASC,
-        },
         domainLink: {
             name: 'Link',
             field: 'domain_link',
@@ -926,6 +916,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
 
     // Default columns - columns present by default (non permanent can be hidden)
     var DEFAULT_COLUMNS_GROUP = PERMANENT_COLUMNS_GROUP.concat([
+        COLUMNS.exchange,
         COLUMNS.imageUrls,
         COLUMNS.dailyBudget,
         COLUMNS.yesterdayCost,
@@ -958,7 +949,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     var PUBLISHER_GROUP = [
         COLUMNS.sourceId,
         COLUMNS.externalId,
-        COLUMNS.domain,
         COLUMNS.domainLink,
         COLUMNS.exchange,
     ];
@@ -1090,65 +1080,87 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         METRICS_GROUP
     );
 
+
     // Configure special column properties
     PERMANENT_COLUMNS_GROUP.forEach(function (column) { column.permanent = true; });
     DEFAULT_COLUMNS_GROUP.forEach(function (column) { column.default = true; });
     CAMPAIGN_GOALS_GROUP.forEach(function (column) { column.goal = true; });
 
+    // Exceptions object
+    COLUMNS_ORDERED.forEach(function (column) {
+        column.exceptions = {
+            levels: undefined,     // levels where this column is available; defaults to ALL
+            breakdowns: undefined, // breakdowns where this column is available; defaults to ALL
+            breakdownBaseLevelOnly: false, // column only available on base level (level 1)
+            custom: [],            // custom exceptions -> level/breakdown pairs; overwrites previous properties
+        };
+    });
+
     // Configuration (availability based on breakdown)
-    configureBreakdowns(ACCOUNT_MANAGEMENT_GROUP, [constants.breakdown.ACCOUNT]);
-    configureBreakdowns(CAMPAIGN_MANAGEMENT_GROUP, [constants.breakdown.CAMPAIGN]);
-    configureBreakdowns(CONTENT_GROUP, [constants.breakdown.CONTENT_AD]);
-    configureBreakdowns(SOURCE_GROUP, [constants.breakdown.MEDIA_SOURCE]);
-    configureBreakdowns(PUBLISHER_GROUP, [constants.breakdown.PUBLISHER]);
-    configureBreakdowns(
+    configureBreakdownExceptions(ACCOUNT_MANAGEMENT_GROUP, [constants.breakdown.ACCOUNT]);
+    configureBreakdownExceptions(CAMPAIGN_MANAGEMENT_GROUP, [constants.breakdown.CAMPAIGN]);
+    configureBreakdownExceptions(CONTENT_GROUP, [constants.breakdown.CONTENT_AD]);
+    configureBreakdownExceptions(SOURCE_GROUP, [constants.breakdown.MEDIA_SOURCE]);
+    configureBreakdownExceptions(PUBLISHER_GROUP, [constants.breakdown.PUBLISHER]);
+    configureBreakdownExceptions(
         [COLUMNS.yesterdayCost, COLUMNS.eYesterdayCost],
         [constants.breakdown.CAMPAIGN, constants.breakdown.AD_GROUP, constants.breakdown.MEDIA_SOURCE]
     );
 
-    // Configuration (availability based on level)
-    configureLevels(PROJECTIONS_GROUP, [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS]);
+    // Exceptions (Projections) - ALL_ACCOUNTS, ACCOUNTS level, MEDIA_SOURCE breakdown are only shown on ALL_ACCOUNTS level
+    configureLevelExceptions(PROJECTIONS_GROUP, [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS]);
+    configureCustomException(PROJECTIONS_GROUP, {level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
 
     // Exceptions (state - not yet supported everywhere, only available on base level)
-    COLUMNS.state.breakdowns = [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD, constants.breakdown.MEDIA_SOURCE];
-    COLUMNS.state.breakdownBaseLevelOnly = true;
+    COLUMNS.state.exceptions.breakdowns = [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD];
+    COLUMNS.state.exceptions.breakdownBaseLevelOnly = true;
+    // State selector is only shown on MEDIA_SOURCE breakdown on AD_GROUPS level
+    COLUMNS.state.exceptions.custom.push({level: constants.level.AD_GROUPS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: true});
 
     // Exceptions (submission status - only shown on AD_GROUPS level for CONTENT_AD breakdown)
-    COLUMNS.submissionStatus.breakdowns = [constants.breakdown.CONTENT_AD];
-    COLUMNS.submissionStatus.levels = [constants.level.AD_GROUPS];
+    COLUMNS.submissionStatus.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];
+    COLUMNS.submissionStatus.exceptions.levels = [constants.level.AD_GROUPS];
 
-    // Exceptions (performance - not shown on ALL_ACCOUNTS level)
-    COLUMNS.performance.levels = [constants.level.ACCOUNTS, constants.level.CAMPAIGNS, constants.level.AD_GROUPS];
+    // Exceptions (performance - not shown on ALL_ACCOUNTS level and on ACCOUNT - MEDIA SOURCES)
+    COLUMNS.performance.exceptions.levels = [constants.level.ACCOUNTS, constants.level.CAMPAIGNS, constants.level.AD_GROUPS];
+    COLUMNS.performance.exceptions.custom.push({level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
 
     // Exceptions (total fee and recognized flat fee - only shown on ALL_ACCOUNTS level)
-    COLUMNS.totalFee.levels = [constants.level.ALL_ACCOUNTS];
-    COLUMNS.flatFee.levels = [constants.level.ALL_ACCOUNTS];
+    COLUMNS.totalFee.exceptions.levels = [constants.level.ALL_ACCOUNTS];
+    COLUMNS.flatFee.exceptions.levels = [constants.level.ALL_ACCOUNTS];
 
     // Exceptions (total fee projection - only shown on ALL_ACCOUNTS level)
-    COLUMNS.totalFeeProjection.levels = [constants.level.ALL_ACCOUNTS];
+    COLUMNS.totalFeeProjection.exceptions.levels = [constants.level.ALL_ACCOUNTS];
 
     // Exceptions (supply dash url - only shown on AD_GROUPS level on base row level)
-    COLUMNS.supplyDashUrl.levels = [constants.level.AD_GROUPS];
-    COLUMNS.supplyDashUrl.breakdownBaseLevelOnly = true;
+    COLUMNS.supplyDashUrl.exceptions.levels = [constants.level.AD_GROUPS];
+    COLUMNS.supplyDashUrl.exceptions.breakdownBaseLevelOnly = true;
 
     // Exceptions (source editable fields)
-    COLUMNS.minBidCpc.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
-    COLUMNS.maxBidCpc.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
-    COLUMNS.dailyBudget.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
-    COLUMNS.bidCpcSetting.levels = [constants.level.AD_GROUPS];
-    COLUMNS.dailyBudgetSetting.levels = [constants.level.AD_GROUPS];
-    COLUMNS.bidCpcSetting.breakdownBaseLevelOnly = true;
-    COLUMNS.dailyBudgetSetting.breakdownBaseLevelOnly = true;
+    COLUMNS.minBidCpc.exceptions.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
+    COLUMNS.maxBidCpc.exceptions.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
+    COLUMNS.dailyBudget.exceptions.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
+    COLUMNS.bidCpcSetting.exceptions.levels = [constants.level.AD_GROUPS];
+    COLUMNS.dailyBudgetSetting.exceptions.levels = [constants.level.AD_GROUPS];
+    COLUMNS.bidCpcSetting.exceptions.breakdownBaseLevelOnly = true;
+    COLUMNS.dailyBudgetSetting.exceptions.breakdownBaseLevelOnly = true;
 
-    function configureBreakdowns (columns, breakdowns) {
+
+    function configureBreakdownExceptions (columns, breakdowns) {
         columns.forEach(function (column) {
-            column.breakdowns = breakdowns;
+            column.exceptions.breakdowns = breakdowns;
         });
     }
 
-    function configureLevels (columns, levels) {
+    function configureLevelExceptions (columns, levels) {
         columns.forEach(function (column) {
-            column.levels = levels;
+            column.exceptions.levels = levels;
+        });
+    }
+
+    function configureCustomException (columns, customException) {
+        columns.forEach(function (column) {
+            column.exceptions.custom.push(customException);
         });
     }
 
@@ -1263,22 +1275,14 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     function getColumns (level, breakdowns) {
         return COLUMNS_ORDERED.filter(function (column) {
             var result = true;
-            if (column.breakdowns) result &= intersects(column.breakdowns, breakdowns);
-            if (column.breakdownBaseLevelOnly) result &= column.breakdowns.indexOf(breakdowns[0]) >= 0;
-            if (column.levels) result &= column.levels.indexOf(level) >= 0;
-
-            // FIXME: Find a better solution for columns thet are shown only in certain breakdown-level combinations
-            // State selector is only shown on CAMPAIGNS level for AD_GROUP breakdown and not for MEDIA_SOURCE
-            // breakdown
-            if (column === COLUMNS.state && breakdowns[0] === constants.breakdown.MEDIA_SOURCE) {
-                result &= level === constants.level.AD_GROUPS;
-            }
-
-            // Projections for MEDIA_SOURCE breakdown are only shown on ALL_ACCOUNTS level
-            if (PROJECTIONS_GROUP.indexOf(column) >= 0 && breakdowns[0] === constants.breakdown.MEDIA_SOURCE) {
-                result &= level === constants.level.ALL_ACCOUNTS;
-            }
-
+            if (column.exceptions.breakdowns) result &= intersects(column.exceptions.breakdowns, breakdowns);
+            if (column.exceptions.breakdownBaseLevelOnly) result &= column.exceptions.breakdowns.indexOf(breakdowns[0]) >= 0;
+            if (column.exceptions.levels) result &= column.exceptions.levels.indexOf(level) >= 0;
+            column.exceptions.custom.forEach(function (customException) {
+                if (level === customException.level && breakdowns[0] === customException.breakdown) {
+                    result = customException.shown;
+                }
+            });
             return result;
         });
     }

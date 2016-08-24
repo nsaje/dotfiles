@@ -1,6 +1,6 @@
 /* globals angular, constants, moment, jasmine, describe, it, beforeEach, expect, module, inject, spyOn */
 
-describe('zemGridEndpointServiceSpec', function () {
+describe('zemGridEndpointColumnsSpec', function () {
     var $scope;
     var zemGridEndpointColumns;
 
@@ -29,25 +29,25 @@ describe('zemGridEndpointServiceSpec', function () {
         var nameColumn = findColumn(zemGridEndpointColumns.COLUMNS.name, columns);
         expect (nameColumn.permanent).toBe(true);
         expect (nameColumn.default).toBe(true);
-        expect (nameColumn.breakdowns).toBeFalsy();
+        expect (nameColumn.exceptions.breakdowns).toBeFalsy();
         expect (nameColumn.goal).toBeFalsy();
 
         var cpcColumn = findColumn(zemGridEndpointColumns.COLUMNS.cpc, columns);
         expect (cpcColumn.permanent).toBeFalsy();
         expect (cpcColumn.default).toBe(true);
-        expect (cpcColumn.breakdowns).toBeFalsy();
+        expect (cpcColumn.exceptions.breakdowns).toBeFalsy();
         expect (cpcColumn.goal).toBeFalsy();
 
         var minBidCpcColumn = findColumn(zemGridEndpointColumns.COLUMNS.minBidCpc, columns);
         expect (minBidCpcColumn.permanent).toBeFalsy();
         expect (minBidCpcColumn.default).toBeFalsy();
-        expect (minBidCpcColumn.breakdowns).toEqual(['source']);
+        expect (minBidCpcColumn.exceptions.breakdowns).toEqual(['source']);
         expect (minBidCpcColumn.goal).toBeFalsy();
 
         var avgCostPerMinuteColumn = findColumn(zemGridEndpointColumns.COLUMNS.avgCostPerMinute, columns);
         expect (avgCostPerMinuteColumn.permanent).toBeFalsy();
         expect (avgCostPerMinuteColumn.default).toBeFalsy();
-        expect (avgCostPerMinuteColumn.breakdowns).toBeFalsy();
+        expect (avgCostPerMinuteColumn.exceptions.breakdowns).toBeFalsy();
         expect (avgCostPerMinuteColumn.goal).toBe(true);
     });
 
