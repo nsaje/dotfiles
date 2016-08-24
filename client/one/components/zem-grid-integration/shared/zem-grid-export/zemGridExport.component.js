@@ -37,12 +37,14 @@ oneApp.controller('zemGridExportCtrl', ['$scope', '$modal', 'zemGridExportOption
         $scope.defaultOption = zemGridExportOptions.getDefaultOption($scope.options);
         $scope.exportSources = metaData.breakdown === constants.breakdown.MEDIA_SOURCE;
 
-        $scope.dateRange = vm.api.getDateRange();
-        $scope.order = vm.api.getOrder();
-
         $scope.getAdditionalColumns = getAdditionalColumns;
         $scope.hasPermission = vm.api.hasPermission;
         $scope.isPermissionInternal = vm.api.isPermissionInternal;
+    }
+
+    function initializeData () {
+        $scope.dateRange = vm.api.getDateRange();
+        $scope.order = vm.api.getOrder();
     }
 
     function getAdditionalColumns () {
@@ -56,6 +58,9 @@ oneApp.controller('zemGridExportCtrl', ['$scope', '$modal', 'zemGridExportOption
     }
 
     function showScheduledReportModal (exportModalType) {
+        // Initialize data (date range, order) before modal is opened
+        initializeData();
+
         var modalInstance;
         if (exportModalType === 'schedule') {
             modalInstance = $modal.open({
