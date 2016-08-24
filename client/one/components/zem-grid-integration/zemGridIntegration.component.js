@@ -98,7 +98,7 @@ oneApp.controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'ze
         }
 
         if (vm.breakdown === constants.breakdown.PUBLISHER) {
-            vm.grid.dataSource.setFilter(FILTER.SHOW_BLACKLISTED_PUBLISHERS, zemFilterService.getShowBlacklistedPublishers());
+            vm.grid.dataSource.setFilter(FILTER.SHOW_BLACKLISTED_PUBLISHERS, zemFilterService.getBlacklistedPublishers());
         }
     }
 
@@ -123,7 +123,7 @@ oneApp.controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'ze
         $scope.$watchCollection(zemFilterService.getFilteredAccountTypes, filterWatch);
         $scope.$watchCollection(zemFilterService.getFilteredSources, filterWatch);
         $scope.$watch(zemFilterService.getShowArchived, filterWatch);
-        $scope.$watch(zemFilterService.getShowBlacklistedPublishers, filterWatch);
+        $scope.$watch(zemFilterService.getBlacklistedPublishers, filterWatch);
     }
 
     function initializeSelectionBind () {
