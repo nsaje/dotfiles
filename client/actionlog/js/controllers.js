@@ -46,6 +46,7 @@ actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', '$modal', 'conf
             .then(function (data) {
                 executeSave(log, state);
                 $modalInstance.close();
+                $scope.pixelData = {};
             },
             function (data) {
                 $scope.errors = data;

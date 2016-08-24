@@ -218,6 +218,19 @@ def create_campaign(ad_group_source, name, request, send=True):
     return action
 
 
+def create_conversion_pixel(conversion_pixel, request):
+    action = models.ActionLog(
+        action=constants.Action.CREATE_PIXEL,
+        action_type=constants.ActionType.MANUAL,
+        expiration_dt=None,
+        state=constants.ActionState.WAITING,
+        conversion_pixel=conversion_pixel,
+        message='Create conversion pixel on Outbrain for account {} (#{})'.format(conversion_pixel.account.name,
+                                                                                  conversion_pixel.account.id)
+    )
+    action.save(request)
+
+
 @transaction.atomic
 def cancel_expired_actionlogs():
     waiting_actionlogs = models.ActionLog.objects.\

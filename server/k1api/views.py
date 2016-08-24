@@ -69,6 +69,9 @@ class AccountsView(K1APIView):
         for account in accounts:
             pixels = []
             for pixel in account.conversionpixel_set.all():
+                if pixel.archived:
+                    continue
+
                 source_pixels = []
                 for source_pixel in pixel.sourcetypepixel_set.all():
                     source_pixel_dict = {

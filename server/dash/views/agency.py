@@ -606,6 +606,7 @@ class AccountConversionPixels(api_common.BaseApiView):
 
         with transaction.atomic():
             conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, name=name)
+            actionlog_api.create_conversion_pixel(conversion_pixel, request)
 
             changes_text = u'Added conversion pixel named {}.'.format(name)
             account.write_history(
