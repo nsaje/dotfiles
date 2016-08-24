@@ -78,8 +78,8 @@ describe('zemGridOrderService', function () {
         spyOn(grid.meta.pubsub, 'notify').and.callThrough();
 
         var orderService = zemGridOrderService.createInstance(grid);
-        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.METADATA_UPDATED, jasmine.any(Function));
-        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.DATA_UPDATED, jasmine.any(Function));
+        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.METADATA_UPDATED, null, jasmine.any(Function));
+        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.DATA_UPDATED, null, jasmine.any(Function));
 
         pubsub.notify(pubsub.EVENTS.METADATA_UPDATED);
         expect(grid.meta.pubsub.notify).toHaveBeenCalledWith(pubsub.EVENTS.EXT_ORDER_UPDATED);

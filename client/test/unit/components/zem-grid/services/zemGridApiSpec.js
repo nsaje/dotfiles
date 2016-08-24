@@ -63,15 +63,15 @@ describe('zemGridApi', function () {
 
         var callback = function () {};
         api.onMetaDataUpdated(null, callback);
-        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.METADATA_UPDATED, callback);
+        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.METADATA_UPDATED, null, callback);
 
         api.onDataUpdated(null, callback);
-        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.DATA_UPDATED, callback);
+        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.DATA_UPDATED, null, callback);
 
         api.onColumnsUpdated(null, callback);
-        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.EXT_COLUMNS_UPDATED, callback);
+        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.EXT_COLUMNS_UPDATED, null, callback);
 
         api.onSelectionUpdated(null, callback);
-        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.EXT_SELECTION_UPDATED, callback);
+        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.EXT_SELECTION_UPDATED, null, callback);
     });
 });

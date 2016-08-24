@@ -54,7 +54,7 @@ describe('zemGridSelectionService', function () {
 
         var selectionService = zemGridSelectionService.createInstance(grid);
 
-        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.DATA_UPDATED, jasmine.any(Function));
+        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.DATA_UPDATED, null, jasmine.any(Function));
         expect(grid.meta.pubsub.notify).toHaveBeenCalledWith(pubsub.EVENTS.EXT_SELECTION_UPDATED, jasmine.any(Object));
 
         expect(selectionService.getSelection()).toEqual({

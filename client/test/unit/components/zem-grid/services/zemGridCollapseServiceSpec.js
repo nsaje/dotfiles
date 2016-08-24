@@ -113,8 +113,8 @@ describe('zemGridCollapseService', function () {
         var dataUpdatedSpy = jasmine.createSpy();
         var collapseUpdatedSpy = jasmine.createSpy();
 
-        grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.DATA_UPDATED, dataUpdatedSpy);
-        grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.EXT_COLLAPSE_UPDATED, collapseUpdatedSpy);
+        grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.DATA_UPDATED, null, dataUpdatedSpy);
+        grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.EXT_COLLAPSE_UPDATED, null, collapseUpdatedSpy);
 
         collapseService.setRowCollapsed(grid.body.rows[0], true);
         expect(dataUpdatedSpy).toHaveBeenCalled();
