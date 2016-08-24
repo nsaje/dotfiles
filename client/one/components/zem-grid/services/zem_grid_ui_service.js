@@ -195,7 +195,6 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             column.style = {
                 'z-index': 10,
                 position: 'absolute',
-                left: left + 'px',
             };
             column.left = left; // cache correct position for later use
             left += grid.ui.columnsWidths[idx];
@@ -207,13 +206,14 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
                         'margin-left': left + 'px',
                     };
                 }
+                grid.ui.pivotColumnsWidth = left;
                 break;
             }
         }
-        updatePivotColumns(grid);
+        updatePivotColumns(grid, grid.body.ui.scrolleft || 0);
     }
 
-    function updatePivotColumns (grid) {
+    function updatePivotColumns (grid, leftOffset, animate) {
         if (!grid.body.ui.element) return;
         grid.header.ui.element.find('.zem-grid-header-cell').each(updateCell);
         grid.footer.ui.element.find('.zem-grid-row > .zem-grid-cell').each(updateCell);
@@ -224,12 +224,9 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
 
         function updateBreakdownRow (idx, _row) {
             // Fix entire breakdown row
-            var leftOffset = grid.body.ui.scrollLeft;
             var row = angular.element(_row);
-            var style = {
-                position: 'absolute',
-                left: leftOffset + 'px',
-            };
+            var style = getTranslateStyle(leftOffset);
+            style['position'] = 'absolute';
             row.css(style);
             // Add style to primary cell to be consistent with data rows/cells
             row.find('.breakdown-row-primary-cell').css(getBreakdownColumnStyle(leftOffset));
@@ -242,12 +239,29 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         }
 
         function getColumnStyle (column) {
-            var leftOffset = grid.body.ui.scrollLeft;
             var style = column.style || {};
             if (!column.pivot) return style;
-            style['left'] = (column.left + leftOffset) + 'px';
+
+            style = getTranslateStyle(leftOffset + column.left);
+            angular.extend(style, column.style);
+
             if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN) {
                 angular.extend(style, getBreakdownColumnStyle(leftOffset));
+            }
+            return style;
+        }
+
+        function getTranslateStyle (left) {
+            var translateCssProperty = 'translateX(' + left + 'px)';
+            var style = {
+                '-webkit-transform': translateCssProperty,
+                '-ms-transform': translateCssProperty,
+                'transform': translateCssProperty,
+                'transition': 'none',
+            };
+
+            if (animate) {
+                style['transition'] = 'transform 200ms linear';
             }
             return style;
         }
@@ -256,15 +270,9 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             // TODO: this will probably change in the future - create util functions/styles
             // fade right border to show pivot column break when h-scrolled
             var style = {};
-            var fadePercentage = Math.min(1, leftOffset / 300);
-            var borderStyle = 'solid 1px ' + fadeColor(254, 224, fadePercentage);
+            var borderStyle = 'solid 1px rgb(224,224,224)';
             style['border-right'] = leftOffset ? borderStyle : '';
             return style;
-        }
-
-        function fadeColor (from, to, percentage) {
-            var c = from - Math.round(percentage * (from - to));
-            return 'rgb(' + c + ',' + c + ',' + c + ')';
         }
     }
 
@@ -277,7 +285,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         calculateColumnWidths(grid);
         resizeCells(grid);
         resizeBreakdownRows(grid);
-        // initializePivotColumns(grid); - Temporary shut down pivot columns (problem on OSx)
+        initializePivotColumns(grid);
     }
 
     function getBreakdownColumnStyle (grid, row) {
