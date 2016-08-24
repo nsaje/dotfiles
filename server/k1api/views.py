@@ -408,27 +408,27 @@ class AdGroupsView(K1APIView):
 
     @staticmethod
     def _get_ad_groups_and_campaigns_settings(ad_group_ids, source_types, slugs):
-        ad_groups = dash.models.AdGroup.objects.all().exclude_archived()
+        current_ad_groups_settings = dash.models.AdGroupSettings.objects.all().group_current_settings()
 
         if ad_group_ids:
-            ad_groups = ad_groups.filter(id__in=ad_group_ids)
+            current_ad_groups_settings = current_ad_groups_settings.filter(ad_group_id__in=ad_group_ids)
 
         if source_types or slugs:
-            ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups)
+            ad_group_sources = dash.models.AdGroupSource.objects.all()
             if source_types:
                 ad_group_sources = ad_group_sources.filter(source__source_type__type__in=source_types)
             if slugs:
                 ad_group_sources = ad_group_sources.filter(source__bidder_slug__in=slugs)
-            ad_groups = ad_groups.filter(id__in=ad_group_sources.values('ad_group_id'))
+            current_ad_groups_settings = current_ad_groups_settings.filter(ad_group_id__in=ad_group_sources.values('ad_group_id'))
 
         ad_groups_settings = (dash.models.AdGroupSettings.objects
-                              .filter(ad_group__in=ad_groups)
-                              .group_current_settings()
+                              .filter(pk__in=current_ad_groups_settings)
+                              .filter(archived=False)
                               .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
                               .prefetch_related('audience_set'))
 
         campaigns_settings = (dash.models.CampaignSettings.objects
-                              .filter(campaign__adgroup__in=ad_groups)
+                              .filter(campaign_id__in=set([ag.ad_group.campaign_id for ag in ad_groups_settings]))
                               .group_current_settings()
                               .values('campaign_id', 'iab_category'))
         campaigns_settings_map = {cs['campaign_id']: cs for cs in campaigns_settings}
