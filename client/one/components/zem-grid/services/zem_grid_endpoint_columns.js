@@ -323,6 +323,16 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             field: 'source_id',
             type: zemGridConstants.gridColumnTypes.TEXT,
         },
+        domain: {
+            name: 'Domain',
+            field: 'domain',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            shown: false,
+            totalRow: false,
+            help: 'A publisher where your content is being promoted.',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.ASC,
+        },
         domainLink: {
             name: 'Link',
             field: 'domain_link',
@@ -949,6 +959,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     var PUBLISHER_GROUP = [
         COLUMNS.sourceId,
         COLUMNS.externalId,
+        COLUMNS.domain,
         COLUMNS.domainLink,
         COLUMNS.exchange,
     ];
