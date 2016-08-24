@@ -912,11 +912,11 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.status,
         COLUMNS.submissionStatus,
         COLUMNS.performance,
+        COLUMNS.exchange,
     ];
 
     // Default columns - columns present by default (non permanent can be hidden)
     var DEFAULT_COLUMNS_GROUP = PERMANENT_COLUMNS_GROUP.concat([
-        COLUMNS.exchange,
         COLUMNS.imageUrls,
         COLUMNS.dailyBudget,
         COLUMNS.yesterdayCost,
