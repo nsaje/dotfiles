@@ -27,6 +27,7 @@ class BreakdownFormTest(TestCase):
             'filtered_agencies': ['1', '2'],
             'filtered_account_types': ['1', '3', '2'],
             'show_archived': 'true',
+            'show_blacklisted_publishers': 'all',
             'breakdown_page': ['123-7', '23-33', '23-24'],
             'offset': 12,
             'limit': 20,
@@ -48,7 +49,7 @@ class BreakdownFormTest(TestCase):
             'offset': 12,
             'limit': 20,
             'order': '-clicks',
-            'show_blacklisted_publishers': False,
+            'show_blacklisted_publishers': 'all',
         })
 
     def test_required_fields(self):
