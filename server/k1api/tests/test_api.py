@@ -617,6 +617,9 @@ class K1ApiTest(TestCase):
                              {u'event_id': u'200', u'event_type': u'redirect_adgroup', u'exclusion': True},
                              {u'event_id': u'1', u'event_type': u'aud', u'exclusion': False},
                              {u'event_id': u'2', u'event_type': u'aud', u'exclusion': False}],
+            u'demographic_targeting': [u"or", "bluekai:1", "bluekai:2"],
+            u'interest_targeting': [u"tech", u"entertainment"],
+            u'exclusion_interest_targeting': [u"politics", u"war"],
             u'campaign_id': 1,
             u'account_id': 1,
             u'agency_id': 20,
@@ -651,6 +654,9 @@ class K1ApiTest(TestCase):
             u'account_id',
             u'agency_id',
             u'goal_types',
+            u'demographic_targeting',
+            u'interest_targeting',
+            u'exclusion_interest_targeting',
         }
 
         for item in data:
