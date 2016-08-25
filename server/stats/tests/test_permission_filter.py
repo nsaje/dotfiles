@@ -37,13 +37,20 @@ class FilterTestCase(TestCase):
 
         self.conversion_goals = self.campaign.conversiongoal_set.all()
         self.campaign_goal_values = campaign_goals.get_campaign_goal_values(self.campaign)
+        self.pixels = self.campaign.account.conversionpixel_set.all()
 
         for x in self.conversion_goals:
             row[x.get_view_key(self.conversion_goals)] = 1
             row['avg_cost_per_{}'.format(x.get_view_key(self.conversion_goals))] = 1
 
+        for x in self.pixels:
+            for window in [24, 168, 720, 2160]:
+                row[x.get_view_key(window)] = 1
+                row['avg_cost_per_{}'.format(x.get_view_key(window))] = 1
+
         # just check we actually inserted something
-        self.assertIn('conversion_goal_1', row)
+        self.assertIn('pixel_1_168', row)
+        self.assertIn('conversion_goal_2', row)
 
         self.rows = [row]
         self.default_cleaned_rows = [
@@ -54,6 +61,9 @@ class FilterTestCase(TestCase):
                 'avg_cost_per_pageview': 1, 'avg_cost_per_minute': 1, 'avg_cost_per_non_bounced_visit': 1,
                 'avg_cost_for_new_visitor': 1, 'cpm': 1,
                 'title': 1, 'url': 1,  # these two are in TRAFFIC_FIELDS
+                'pixel_1_24': 1, 'pixel_1_168': 1, 'pixel_1_720': 1, 'pixel_1_2160': 1,
+                'avg_cost_per_pixel_1_24': 1, 'avg_cost_per_pixel_1_168': 1, 'avg_cost_per_pixel_1_720': 1,
+                'avg_cost_per_pixel_1_2160': 1,
             },
         ]
 
@@ -64,7 +74,8 @@ class FilterTestCase(TestCase):
     def test_filter_columns_by_permission_no_perm(self):
         user = User.objects.get(pk=1)
 
-        permission_filter.filter_columns_by_permission(user, self.rows, self.campaign_goal_values, self.conversion_goals)
+        permission_filter.filter_columns_by_permission(
+            user, self.rows, self.campaign_goal_values, self.conversion_goals, self.pixels)
 
         # only default field should be left
         self.assertItemsEqual(self.rows, self.default_cleaned_rows)
@@ -73,25 +84,25 @@ class FilterTestCase(TestCase):
         user = User.objects.get(pk=1)
         add_permissions(user, ['can_view_platform_cost_breakdown'])
 
-        permission_filter.filter_columns_by_permission(user, self.rows, self.campaign_goal_values, self.conversion_goals)
+        permission_filter.filter_columns_by_permission(
+            user, self.rows, self.campaign_goal_values, self.conversion_goals, self.pixels)
 
         self.default_cleaned_rows[0].update({
             'license_fee': 1, 'e_media_cost': 1,
             'e_data_cost': 1, 'e_yesterday_cost': 1,
         })
 
-        self.maxDiff = None
         self.assertItemsEqual(self.rows, self.default_cleaned_rows)
 
     def test_filter_columns_by_permission_campaign_goal_optimization(self):
         user = User.objects.get(pk=1)
         add_permissions(user, ['campaign_goal_optimization'])
 
-        permission_filter.filter_columns_by_permission(user, self.rows, self.campaign_goal_values, self.conversion_goals)
+        permission_filter.filter_columns_by_permission(
+            user, self.rows, self.campaign_goal_values, self.conversion_goals, self.pixels)
 
-        self.maxDiff = None
         self.default_cleaned_rows[0].update({
-            'avg_cost_per_conversion_goal_1': 1, 'avg_cost_per_conversion_goal_2': 1,
+            'avg_cost_per_pixel_1_168': 1, 'avg_cost_per_conversion_goal_2': 1,
             'avg_cost_per_conversion_goal_4': 1, 'avg_cost_per_conversion_goal_5': 1,
             'avg_cost_per_conversion_goal_3': 1,
         })
@@ -102,10 +113,11 @@ class FilterTestCase(TestCase):
         user = User.objects.get(pk=1)
         add_permissions(user, ['can_see_redshift_postclick_statistics'])
 
-        permission_filter.filter_columns_by_permission(user, self.rows, self.campaign_goal_values, self.conversion_goals)
+        permission_filter.filter_columns_by_permission(
+            user, self.rows, self.campaign_goal_values, self.conversion_goals, self.pixels)
 
         self.default_cleaned_rows[0].update({
-            'conversion_goal_1': 1, 'conversion_goal_2': 1,
+            'pixel_1_168': 1, 'conversion_goal_2': 1,
             'conversion_goal_4': 1, 'conversion_goal_5': 1,
             'conversion_goal_3': 1,
         })

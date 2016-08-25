@@ -1,6 +1,6 @@
 /*globals angular,oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService) {
+oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.selectedTotals = true;
     $scope.selectedColumnsCount = 0;
     $scope.constants = constants;
@@ -692,11 +692,13 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         },
         {
             'name': 'Conversions',
-            'fields': ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5',
-                       'conversion_goal_6', 'conversion_goal_7', 'conversion_goal_8', 'conversion_goal_9', 'conversion_goal_10',
-                       'conversion_goal_11', 'conversion_goal_12', 'conversion_goal_13', 'conversion_goal_14', 'conversion_goal_15']
-        }, zemOptimisationMetricsService.createColumnCategories(),
-    ];
+            'fields': ['conversion_goals_placeholder', 'pixels_placeholder'],
+        }, {
+            'name': 'Goals',
+            'fields': ['avg_cost_per_visit', 'avg_cost_for_new_visitor', 'avg_cost_per_pageview',
+                       'avg_cost_per_non_bounced_visit', 'avg_cost_per_minute', 'conversion_goals_avg_cost_placeholder',
+                       'pixels_avg_cost_placeholder'],
+        }];
 
     $scope.initColumns = function () {
         zemPostclickMetricsService.insertAcquisitionColumns(
@@ -713,18 +715,19 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             false
         );
 
-        zemPostclickMetricsService.insertConversionGoalColumns(
+        zemPostclickMetricsService.insertConversionsPlaceholders(
             $scope.columns,
-            $scope.columns.length,
-            true,
-            false
+            $scope.columns.length - 2
         );
 
-        zemOptimisationMetricsService.insertAudienceOptimizationColumns(
+        zemPostclickMetricsService.insertAudienceOptimizationColumns(
             $scope.columns,
-            $scope.columns.length,
-            $scope.hasPermission('zemauth.campaign_goal_optimization'),
-            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+            $scope.columns.length
+        );
+
+        zemPostclickMetricsService.insertCPAPlaceholders(
+            $scope.columns,
+            $scope.columns.length - 2
         );
     };
 
@@ -763,7 +766,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         api.adGroupPublishersTable.get($state.params.id, $scope.pagination.currentPage, $scope.page.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
-                var defaultChartMetrics;
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.totals.checked = $scope.selectedTotals;
@@ -776,14 +778,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.updatePublisherSelection();
                 $scope.updateOutbrainPublisherSelection();
                 $scope.updateRowBlacklistInfo();
-                zemOptimisationMetricsService.updateVisibility($scope.columns, $scope.campaignGoals);
-                zemOptimisationMetricsService.updateChartOptionsVisibility($scope.chartMetricOptions, $scope.campaignGoals);
-                // when switching windows between campaigns with campaign goals defined and campaigns without campaign goals defined
-                // make sure chart selection gets updated
-                defaultChartMetrics = $scope.defaultChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
-                $scope.chartMetric1 = defaultChartMetrics.metric1 || $scope.chartMetric1;
-                $scope.chartMetric2 = defaultChartMetrics.metric2 || $scope.chartMetric2;
-                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals);
+
+                zemPostclickMetricsService.insertConversionGoalColumns($scope.columns, $scope.columnCategories, data.conversionGoals);
+                zemPostclickMetricsService.insertPixelColumns($scope.columns, $scope.columnCategories, data.pixels);
             },
             function (data) {
                 // error
@@ -796,35 +793,20 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
     var getDailyStatsMetrics = function () {
-        var values = $scope.chartMetricOptions.map(function (option) {
-            return option.value;
-        });
-
         // always query for default metrics
         var metrics = [constants.chartMetric.CLICKS, constants.chartMetric.IMPRESSIONS];
-        if (values.indexOf($scope.chartMetric1) === -1) {
-            $scope.chartMetric1 = constants.chartMetric.CLICKS;
-        } else {
-            metrics.push($scope.chartMetric1);
-        }
-
-        if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
-            $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
-        } else {
-            metrics.push($scope.chartMetric2);
-        }
-
+        metrics.push($scope.chartMetric1);
+        metrics.push($scope.chartMetric2);
         return metrics;
     };
 
-    var setConversionGoalChartOptions = function (conversionGoals) {
-        var validChartMetrics = zemPostclickMetricsService.getValidChartMetrics($scope.chartMetric1, $scope.chartMetric2, conversionGoals);
-        $scope.chartMetric1 = validChartMetrics.chartMetric1;
-        $scope.chartMetric2 = validChartMetrics.chartMetric2;
-        zemPostclickMetricsService.setConversionGoalChartOptions(
-            $scope.chartMetricOptions,
-            conversionGoals
-        );
+    var refreshChartOptions = function (conversionGoals, pixels) {
+        zemPostclickMetricsService.insertConversionsGoalChartOptions($scope.chartMetricOptions, conversionGoals);
+        zemPostclickMetricsService.insertPixelChartOptions($scope.chartMetricOptions, pixels);
+
+        var validChartMetrics = zemPostclickMetricsService.getValidChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
+        if ($scope.chartMetric1 !== validChartMetrics.metric1) $scope.chartMetric1 = validChartMetrics.metric1;
+        if ($scope.chartMetric2 !== validChartMetrics.metric2) $scope.chartMetric2 = validChartMetrics.metric2;
     };
 
     var setChartOptions = function (goals) {
@@ -839,12 +821,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
             $scope.chartMetricOptions,
-            false
-        );
-
-        $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
-            $scope.chartMetricOptions,
-            options.campaignConversionGoalChartMetrics,
             false
         );
 
@@ -872,15 +848,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
             $scope.chartMetricOptions,
-            options.goalChartMetrics,
-            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+            options.conversionChartMetrics
         );
 
-        $scope.chartMetricOptions = zemOptimisationMetricsService.concatChartOptions(
-            $scope.campaignGoals,
+        $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
             $scope.chartMetricOptions,
-            options.campaignGoalConversionGoalChartMetrics,
-            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+            options.goalChartMetrics
         );
     };
 
@@ -889,7 +862,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.selectedTotals = true;
         api.dailyStats.listPublishersStats($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedPublisherIds,  $scope.selectedTotals, getDailyStatsMetrics()).then(
             function (data) {
-                setConversionGoalChartOptions(data.conversionGoals);
+                refreshChartOptions(data.conversionGoals, data.pixels);
 
                 $scope.chartData = data.chartData;
                 $scope.chartGoalMetrics = data.goals;
@@ -924,20 +897,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }, 0);
     };
 
-    var hasMetricData = function (metric) {
-        var hasData = false;
-        $scope.chartData.groups.forEach(function (group) {
-            if (group.seriesData[metric] !== undefined) {
-                hasData = true;
-            }
-        });
-
-        return hasData;
-    };
-
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            if (!hasMetricData($scope.chartMetric1)) {
+            if (!$scope.isMetricInChartData(newValue, $scope.chartData)) {
                 getDailyStats();
             } else {
                 // create a copy to trigger watch
@@ -948,7 +910,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            if (!hasMetricData($scope.chartMetric2)) {
+            if (!$scope.isMetricInChartData(newValue, $scope.chartData)) {
                 getDailyStats();
             } else {
                 // create a copy to trigger watch

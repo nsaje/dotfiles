@@ -3,7 +3,7 @@
 
 'use strict';
 
-oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemNavigationService', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemNavigationService) { // eslint-disable-line max-len
+oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemNavigationService', 'zemGridEndpointApiConverter', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemNavigationService, zemGridEndpointApiConverter) { // eslint-disable-line max-len
 
     function EndpointService (metaData) {
 
@@ -21,14 +21,14 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
             var deferred = $q.defer();
             var promise = api.get(config);
             promise.then(function (breakdowns) {
-                breakdowns.forEach(function (breakdown) {
-                    checkPaginationCount(config, breakdown);
-                });
-
                 // Base level data comes with some additional metadata (e.g. goals)
                 if (config.level === 1) {
                     extendMetaData(breakdowns[0], metaData);
                 }
+
+                breakdowns.forEach(function (breakdown) {
+                    checkPaginationCount(config, breakdown);
+                });
 
                 deferred.resolve(breakdowns);
             }, function (error) {
@@ -118,8 +118,6 @@ oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', '
     }
 
     function extendMetaData (breakdown, metaData) {
-        zemGridEndpointColumns.updateConversionGoalColumns(metaData.columns, breakdown.conversionGoals);
-        zemGridEndpointColumns.updateOptimizationGoalColumns(metaData.columns, breakdown.campaignGoals);
 
         if (breakdown.batches) {
             metaData.ext.batches = breakdown.batches;

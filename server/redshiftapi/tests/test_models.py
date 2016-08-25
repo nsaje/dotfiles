@@ -4,7 +4,6 @@ import mock
 from django.test import TestCase
 
 import dash.models
-from utils import test_helper
 
 from redshiftapi import models
 from redshiftapi import model_helpers
@@ -15,9 +14,11 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_views.yaml']
 
     def test_create_columns(self):
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
+        campaign = dash.models.Campaign.objects.get(id=1)
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
+        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
 
-        m = models.MVMaster(conversion_goals)
+        m = models.MVMaster(conversion_goals, pixels)
 
         conversion_columns = m.select_columns(group=model_helpers.CONVERSION_AGGREGATES)
         touchpoint_columns = m.select_columns(group=model_helpers.TOUCHPOINTCONVERSION_AGGREGATES)
@@ -31,28 +32,39 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         ])
 
         self.assertListEqual([x.column_as_alias('a') for x in touchpoint_columns], [
-            backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.conversion_window<=168
-            THEN conversion_count ELSE 0 END) conversion_goal_1""")
+            backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24
+            THEN conversion_count ELSE 0 END) pixel_1_24"""),
+            backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168
+            THEN conversion_count ELSE 0 END) pixel_1_168"""),
+            backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720
+            THEN conversion_count ELSE 0 END) pixel_1_720"""),
+            backtosql.SQLMatcher("""SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160
+            THEN conversion_count ELSE 0 END) pixel_1_2160"""),
         ])
 
         # prefixes should be added afterwards
         self.assertListEqual([x.column_as_alias('a') for x in after_join_columns], [
-            'media_cost / NULLIF(conversion_goal_1, 0) avg_cost_per_conversion_goal_1',
             'media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2',
             'media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3',
             'media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4',
             'media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5',
+            'media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24',
+            'media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168',
+            'media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720',
+            'media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160',
         ])
 
         columns = m.get_columns()
-        self.assertEquals(len(columns), 64)
+        self.assertEquals(len(columns), 70)
 
         columns = m.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
 
     def test_get_default_context(self):
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
-        m = models.MVMaster(conversion_goals)
+        campaign = dash.models.Campaign.objects.get(id=1)
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
+        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
+        m = models.MVMaster(conversion_goals, pixels)
 
         constraints = {
             'account_id': 123,
@@ -71,7 +83,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             ['account_id', 'source_id'],
             constraints,
             breakdown_constraints,
-            '-conversion_goal_1',
+            'pixel_1_24',
             2,
             33
         )
@@ -85,22 +97,30 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         ]))
 
         self.assertListEqual(context['touchpointconversions_aggregates'], m.select_columns([
-            'conversion_goal_1',
+            'pixel_1_24',
+            'pixel_1_168',
+            'pixel_1_720',
+            'pixel_1_2160',
         ]))
 
         self.assertListEqual(context['after_join_conversions_calculations'], m.select_columns([
-            'avg_cost_per_conversion_goal_1',
             'avg_cost_per_conversion_goal_2',
             'avg_cost_per_conversion_goal_3',
             'avg_cost_per_conversion_goal_4',
             'avg_cost_per_conversion_goal_5',
+            'avg_cost_per_pixel_1_24',
+            'avg_cost_per_pixel_1_168',
+            'avg_cost_per_pixel_1_720',
+            'avg_cost_per_pixel_1_2160',
         ]))
 
-        self.assertEquals(context['order'].alias, 'conversion_goal_1')
+        self.assertEquals(context['order'].alias, 'pixel_1_24')
 
     def test_get_default_context_conversions_not_supported(self):
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
-        m = models.MVMaster(conversion_goals)
+        campaign = dash.models.Campaign.objects.get(id=1)
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
+        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
+        m = models.MVMaster(conversion_goals, pixels)
 
         constraints = {
             'account_id': 123,
@@ -119,7 +139,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             ['account_id', 'source_id', 'dma'],
             constraints,
             breakdown_constraints,
-            '-conversion_goal_1',
+            '-pixel_1_24',
             2,
             33
         )

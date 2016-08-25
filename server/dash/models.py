@@ -2876,6 +2876,9 @@ class ConversionPixel(models.Model):
         return settings.CONVERSION_PIXEL_PREFIX + '{}/{}/'.format(
             self.account.id, self.slug)
 
+    def get_view_key(self, conversion_window):
+        return 'pixel_{}_{}'.format(self.id, conversion_window)
+
     class Meta:
         unique_together = ('slug', 'account')
 
@@ -2909,7 +2912,9 @@ class ConversionGoal(models.Model):
         return prefix + '__' + self.goal_id
 
     def get_view_key(self, conversion_goals):
-        # the key in view is based on the index of the conversion goal compared to others for the same campaign
+        if self.type == constants.ConversionGoalType.PIXEL:
+            return self.pixel.get_view_key(self.conversion_window)
+
         for i, cg in enumerate(sorted(conversion_goals, key=lambda x: x.id)):
             if cg.id == self.id:
                 return 'conversion_goal_' + str(i + 1)

@@ -950,6 +950,31 @@ def get_target_regions_string(regions):
     return ', '.join(constants.AdTargetLocation.get_text(x) for x in regions)
 
 
+def get_conversion_goal_list(conversion_goals):
+    """
+    Returns conversions goals not of pixel type to be used by in client. Pixels
+    are to be returned separately.
+    """
+    return [
+        {'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+        for cg in conversion_goals if cg.type != constants.ConversionGoalType.PIXEL
+    ]
+
+
+def get_pixels_list(pixels):
+    pixels_list = []
+    for pixel in sorted(pixels, key=lambda x: x.name.lower()):
+        for conversion_window in sorted(constants.ConversionWindows.get_all()):
+            conversion_window_days = conversion_window / 24
+            name = '{} {} day{}'.format(pixel.name, conversion_window_days,
+                                        's' if conversion_window_days > 1 else '')
+            pixels_list.append({
+                'id': pixel.get_view_key(conversion_window),
+                'name': name,
+            })
+    return pixels_list
+
+
 def copy_stats_to_row(stat, row):
     for key in ['impressions', 'clicks', 'data_cost', 'cpc', 'ctr', 'cpm',
                 'visits', 'click_discrepancy', 'pageviews', 'media_cost',
@@ -961,8 +986,9 @@ def copy_stats_to_row(stat, row):
                 'avg_cost_per_visit']:
         row[key] = stat.get(key)
 
-    for key in [k for k in stat.keys() if k.startswith('conversion_goal_')]:
-        row[key] = stat.get(key)
+    for key in stat.keys():
+        if key.startswith('conversion_goal_') or key.startswith('pixel_') or key.startswith('avg_cost_per_pixel_'):
+            row[key] = stat.get(key)
 
     for key in SPECIAL_COLUMNS:
         if key in stat:
