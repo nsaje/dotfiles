@@ -22,7 +22,7 @@ the code less verbose) for proper production code.
 """
 
 
-def query(breakdown, constraints, parents, conversion_goals, pixel, order, offset, limit):
+def query(breakdown, constraints, parents, conversion_goals, pixels, order, offset, limit):
     """
     Returns an array of rows that are represented as dicts.
     """
