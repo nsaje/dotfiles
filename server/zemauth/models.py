@@ -211,6 +211,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_agency_margin', 'User can view margin in budget tab and view margin columns in tables and reports.'),
             ('can_view_platform_cost_breakdown', 'User can view platform costs broken down into media, data and fee.'),
             ('can_view_breakdown_by_delivery', 'User can view breakdowns by delivery.'),
+            ('account_custom_audiences_view', 'User can manage custom audiences.'),
+            ('can_target_custom_audiences', 'User can target custom audiences.'),
             ('can_set_time_period_in_scheduled_reports', 'User can set time period when creating scheduled reports'),
             ('can_set_day_of_week_in_scheduled_reports', 'User can set day of week when creating scheduled reports'),
             ('can_see_agency_managers_under_access_permissions', 'User can see agency managers under access permissions'),

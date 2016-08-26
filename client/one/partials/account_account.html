@@ -168,7 +168,7 @@
                 Access Permissions
                 <zem-help-popover content="Users who have access to the account you're currently on." placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-8">
+            <div class="col-xs-7">
                 <div ng-repeat="user in users" class="form-group existing-user-row">
                     <div ng-if="user.removed">
                         <label class="col-xs-6 control-label undo">The user was removed. <a ng-show="!user.requestInProgress" ng-click="undoRemove(user.id)">Undo?</a></label>
@@ -181,7 +181,7 @@
                             <span ng-show="user.saved && user.emailSent && !user.emailResent" class="success">An introductory email was sent to this user.</span>
                             <span ng-show="user.saved && user.emailResent" class="success">New activation email sent.</span>
                         </div>
-                        <div class="col-xs-1">
+                        <div class="col-xs-5 text-right">
                             <div class="loader" ng-show="user.requestInProgress"></div>
                             <div class="dropdown" dropdown ng-show="!user.requestInProgress" aria-haspopup="true">
                                 <a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></span></a>

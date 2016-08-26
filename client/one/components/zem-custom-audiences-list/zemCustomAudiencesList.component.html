@@ -1,0 +1,36 @@
+<div class="zem-custom-audiences-list">
+    <table class="table table-hover middle-alignment">
+        <thead>
+            <tr>
+                <th class="arrow">
+                    <a href class="order" ng-click="orderField = 'name'; orderReverse = !orderReverse">Audiences name</a>
+                    <zem-help-popover content="Audience's name" placement="top"></zem-help-popover>
+                </th>
+                <th>Size</th>
+                <th>Seen yesterday</th>
+                <th>Date created</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-class="{'archived': item.archived}" ng-repeat="item in audiences">
+                <td class="audience-name">
+                    {{ item.name }}
+                    <span class="loader" ng-if="item.requestInProgress"></span>
+                </td>
+                <td class="audience-size">
+                    23423434
+                </td>
+                <td>
+                    1234
+                </td>
+                <td>
+                </td>
+                <td class="text-right">
+                    <a tabindex="-1" href="#" class="btn btn-default btn-big">View</a>
+                    <a tabindex="-1" href="#" class="btn btn-default btn-big">Archive</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
