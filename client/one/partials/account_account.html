@@ -72,7 +72,7 @@
                 <zem-help-popover content="Agency that this account is part of." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
-                <div ui-select2="agencySelect2Config" id="agency-select" class="form-control" ng-model="settings.agency"></div>
+                <div ui-select2="agencySelect2Config" id="agency-select" class="form-control" ng-model="settings.agency" ng-change="updateAgencyDefaults()"></div>
             </div>
             <label ng-repeat="error in errors.agency" class="control-label error" for="agency-select">{{ error }}</label>
         </div>

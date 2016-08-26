@@ -349,10 +349,11 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         return user.name;
     };
 
-    var convertSelect2 = function (name) {
+    var convertSelect2 = function (obj) {
         return {
-            id: name,
-            text: name,
+            id: obj.name,
+            text: obj.name,
+            obj: obj,
         };
     };
 
@@ -370,6 +371,17 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                 results: agencies.map(convertSelect2),
             };
         },
+    };
+
+    $scope.updateAgencyDefaults = function () {
+        if ($scope.settings.agency && $scope.settings.agency.obj) {
+            if ($scope.settings.accountType == constants.accountTypes.UNKNOWN) {
+                $scope.settings.accountType = $scope.settings.agency.obj.default_account_type;
+            }
+            if (!$scope.settings.defaultSalesRepresentative) {
+                $scope.settings.defaultSalesRepresentative = $scope.settings.agency.obj.sales_representative;
+            }
+        }
     };
 
     $scope.init = function () {

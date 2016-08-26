@@ -1752,7 +1752,12 @@ class AccountSettingsTest(TestCase):
             'archived': False,
             'agency': u'Alfa&Omega',
         })
-        self.assertEqual([u'Alfa&Omega'], response['data']['agencies'])
+        agencies = [{
+            u'name': u'Alfa&Omega',
+            u'default_account_type': 1,
+            u'sales_representative': None,
+        }]
+        self.assertEqual(agencies, response['data']['agencies'])
 
     def test_put_as_agency_manager(self):
         client = self._get_client_with_permissions([

@@ -715,8 +715,7 @@ class AccountSettings(api_common.BaseApiView):
             'can_restore': account.can_restore(),
         }
 
-        if request.user.has_perm('zemauth.can_set_agency_for_account'):
-            response['agencies'] = list(models.Agency.objects.all().values_list('name', flat=True))
+        self._add_agencies(request, response)
 
         if request.user.has_perm('zemauth.can_modify_account_manager'):
             response['account_managers'] = self.get_user_list(account_settings, agency=user_agency)
@@ -737,10 +736,17 @@ class AccountSettings(api_common.BaseApiView):
             'can_restore': account.can_restore(),
         }
 
-        if request.user.has_perm('zemauth.can_set_agency_for_account'):
-            response['agencies'] = list(models.Agency.objects.all().values_list('name', flat=True))
+        self._add_agencies(request, response)
 
         return self.create_api_response(response)
+
+    def _add_agencies(self, request, response):
+        if request.user.has_perm('zemauth.can_set_agency_for_account'):
+            response['agencies'] = list(models.Agency.objects.all().values(
+                'name',
+                'sales_representative',
+                'default_account_type',
+            ))
 
     def save_settings(self, request, account, form):
         with transaction.atomic():

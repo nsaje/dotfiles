@@ -344,6 +344,10 @@ class Agency(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    default_account_type = models.IntegerField(
+        default=constants.AccountType.UNKNOWN,
+        choices=constants.AccountType.get_choices()
+    )
 
     objects = QuerySetManager()
 
@@ -413,6 +417,8 @@ class Account(models.Model):
     allowed_sources = models.ManyToManyField('Source')
 
     outbrain_marketer_id = models.CharField(null=True, blank=True, max_length=255)
+
+    salesforce_url = models.URLField(null=True, blank=True, max_length=255)
 
     class Meta:
         ordering = ('-created_dt',)

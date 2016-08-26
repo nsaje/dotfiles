@@ -359,6 +359,7 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
         '_users',
         '_accounts',
         'sales_representative',
+        'default_account_type',
         'created_dt',
         'modified_dt',
     )
@@ -429,7 +430,8 @@ class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'name',
         'created_dt',
-        'modified_dt'
+        'modified_dt',
+        'salesforce_url',
     )
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     exclude = ('users', 'groups')

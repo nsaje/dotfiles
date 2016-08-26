@@ -984,6 +984,12 @@ class Account(api_common.BaseApiView):
             user=request.user,
             action_type=constants.HistoryActionType.CREATE)
 
+        if managed_agency is not None:
+            settings = account.get_current_settings()
+            settings.default_sales_representative = managed_agency.sales_representative
+            settings.account_type = managed_agency.default_account_type
+            settings.save(request)
+
         response = {
             'name': account.name,
             'id': account.id
