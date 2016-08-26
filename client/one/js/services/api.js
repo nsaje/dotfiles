@@ -1409,6 +1409,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 allowedSources: settings.allowed_sources,
                 facebookPage: settings.facebook_page,
                 facebookStatus: settings.facebook_status,
+                agency: {id: settings.agency, text: settings.agency},
             };
         }
 
@@ -1422,6 +1423,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 allowed_sources: settings.allowedSources,
                 facebook_page: settings.facebookPage,
                 facebook_status: settings.facebookStatus,
+                agency: settings.agency.id,
             };
         }
 
@@ -1435,6 +1437,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 allowedSources: data.errors.allowed_sources,
                 allowedSourcesData: data.errors.allowed_sources,
                 facebookPage: data.errors.facebook_page,
+                agency: data.errors.agency,
             };
         }
 
@@ -1452,7 +1455,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         accountManagers: data.data.account_managers,
                         salesReps: data.data.sales_reps,
                         canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore
+                        canRestore: data.data.can_restore,
+                        agencies: data.data.agencies,
                     });
                 }).
                 error(function (data, status, headers) {
@@ -1482,6 +1486,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         settings: convertSettingsFromApi(data.data.settings),
                         canArchive: data.data.can_archive,
                         canRestore: data.data.can_restore,
+                        agencies: data.data.agencies,
                     });
                 }).
                 error(function (data, status, headers, config) {

@@ -1,4 +1,4 @@
-/* globals angular,oneApp,constants,options,moment */
+/* globals angular,oneApp,constants,options,moment,$ */
 oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'api', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $modal, api, zemNavigationService, $timeout) { // eslint-disable-line max-len
 
     $scope.canEditAccount = false;
@@ -25,6 +25,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
     $scope.facebookPageChangedInfo = {
         changed: false
     };
+    var agencies = [];
 
     $scope.isAnySettingSettable = function () {
         return $scope.hasPermission('zemauth.can_modify_allowed_sources') ||
@@ -120,6 +121,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                 } else {
                     $scope.accountManagers = data.accountManagers;
                     $scope.salesReps = data.salesReps;
+                    agencies = data.agencies;
                 }
             },
             function (data) {
@@ -167,8 +169,12 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                 $scope.settings = data.settings;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
+                agencies = data.agencies;
                 $scope.checkFacebookAccountStatus();
-                zemNavigationService.updateAccountCache($state.params.id, {name: data.settings.name});
+                zemNavigationService.updateAccountCache($state.params.id, {
+                    name: data.settings.name,
+                    agency: data.settings.agency.id || null,
+                });
                 $scope.saved = true;
             },
             function (data) {
@@ -341,6 +347,29 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
 
     $scope.getName = function (user) {
         return user.name;
+    };
+
+    var convertSelect2 = function (name) {
+        return {
+            id: name,
+            text: name,
+        };
+    };
+
+    $scope.agencySelect2Config = {
+        dropdownCssClass: 'service-fee-select2',
+        createSearchChoice: function (term, data) {
+            if ($(data).filter(function () {
+                return this.text.localeCompare(term) === 0;
+            }).length === 0) {
+                return {id: term, text: term + ' (Create new agency)'};
+            }
+        },
+        data: function () {
+            return {
+                results: agencies.map(convertSelect2),
+            };
+        },
     };
 
     $scope.init = function () {

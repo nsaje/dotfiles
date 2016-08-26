@@ -1729,6 +1729,31 @@ class AccountSettingsTest(TestCase):
             'archived': False,
         })
 
+    def test_get_can_set_agency(self):
+        client = self._get_client_with_permissions([
+            'can_modify_account_name',
+            'can_modify_account_manager',
+            'can_set_agency_for_account',
+        ])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        response = client.get(
+            reverse('account_settings', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
+            'name': 'Chuck ads',
+            'default_account_manager': None,
+            'id': '1000',
+            'archived': False,
+            'agency': u'Alfa&Omega',
+        })
+        self.assertEqual([u'Alfa&Omega'], response['data']['agencies'])
+
     def test_put_as_agency_manager(self):
         client = self._get_client_with_permissions([
             'can_modify_account_name',
@@ -1800,6 +1825,63 @@ class AccountSettingsTest(TestCase):
 
         response, _ = self._put_account_agency(client, basic_settings, 1000)
         self.assertEqual(response.status_code, 200)
+
+    def test_put_agency_no_permission(self):
+        client = self._get_client_with_permissions([
+            'can_modify_account_name',
+            'can_modify_account_manager',
+        ])
+
+        basic_settings = {
+            'id': 1,
+            'name': 'changed name',
+            'default_account_manager': '3',
+            'agency': 'Alfa&Omega',
+        }
+
+        response, _ = self._put_account_agency(client, basic_settings, 1)
+        self.assertEqual(response.status_code, 401)
+
+    def test_put_agency(self):
+        client = self._get_client_with_permissions([
+            'can_modify_account_name',
+            'can_modify_account_manager',
+            'can_set_agency_for_account',
+        ])
+
+        basic_settings = {
+            'id': 1,
+            'name': 'changed name',
+            'default_account_manager': '3',
+            'agency': 'Alfa&Omega',
+        }
+
+        response, _ = self._put_account_agency(client, basic_settings, 1)
+        self.assertEqual(response.status_code, 200)
+
+        account = models.Account.objects.get(pk=1)
+        self.assertEqual(1, account.agency_id)
+
+    def test_put_new_agency(self):
+        client = self._get_client_with_permissions([
+            'can_modify_account_name',
+            'can_modify_account_manager',
+            'can_set_agency_for_account',
+        ])
+
+        basic_settings = {
+            'id': 1,
+            'name': 'changed name',
+            'default_account_manager': '3',
+            'agency': 'New agency',
+        }
+
+        response, _ = self._put_account_agency(client, basic_settings, 1)
+        self.assertEqual(response.status_code, 200)
+
+        account = models.Account.objects.select_related('agency').get(pk=1)
+        self.assertEqual('New agency', account.agency.name)
+        self.assertEqual(2, account.agency_id)
 
     def test_get_as_agency_manager_users(self):
         client = self._get_client_with_permissions([

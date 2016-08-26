@@ -65,6 +65,18 @@
             <label ng-repeat="error in errors.accountType" class="control-label error" for="account-type-select">{{ error }}</label>
         </div>
 
+        <div class="form-group" ng-class="{'has-error': !!errors.agency}" ng-if="hasPermission('zemauth.can_set_agency_for_account')">
+            <label for="agency-select" class="col-xs-2 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_agency_for_account')" popover-placement="right"></zem-internal-feature>
+                Agency
+                <zem-help-popover content="Agency that this account is part of." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <div ui-select2="agencySelect2Config" id="agency-select" class="form-control" ng-model="settings.agency"></div>
+            </div>
+            <label ng-repeat="error in errors.agency" class="control-label error" for="agency-select">{{ error }}</label>
+        </div>
+
         <div class="form-group" ng-class="{'has-error': !!errors.allowedSources}" ng-if="hasPermission('zemauth.can_modify_allowed_sources')">
             <label for="media-sources-options-choices" class="col-xs-2 control-label"><zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_allowed_sources')" popover-placement="right"></zem-internal-feature> Media Sources <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>
             <div class="col-xs-10">

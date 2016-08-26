@@ -715,6 +715,9 @@ class AccountSettings(api_common.BaseApiView):
             'can_restore': account.can_restore(),
         }
 
+        if request.user.has_perm('zemauth.can_set_agency_for_account'):
+            response['agencies'] = list(models.Agency.objects.all().values_list('name', flat=True))
+
         if request.user.has_perm('zemauth.can_modify_account_manager'):
             response['account_managers'] = self.get_user_list(account_settings, agency=user_agency)
 
@@ -734,6 +737,9 @@ class AccountSettings(api_common.BaseApiView):
             'can_restore': account.can_restore(),
         }
 
+        if request.user.has_perm('zemauth.can_set_agency_for_account'):
+            response['agencies'] = list(models.Agency.objects.all().values_list('name', flat=True))
+
         return self.create_api_response(response)
 
     def save_settings(self, request, account, form):
@@ -745,7 +751,7 @@ class AccountSettings(api_common.BaseApiView):
 
             self._validate_essential_account_settings(request.user, form)
 
-            self.set_account(account, form.cleaned_data)
+            self.set_account(request, account, form.cleaned_data)
 
             settings = account.get_current_settings().copy_settings()
             self.set_settings(settings, account, form.cleaned_data)
@@ -813,9 +819,23 @@ class AccountSettings(api_common.BaseApiView):
         )
         return data
 
-    def set_account(self, account, resource):
+    def set_account(self, request, account, resource):
         if resource['name']:
             account.name = resource['name']
+        if resource['agency']:
+            if not request.user.has_perm('zemauth.can_set_agency_for_account'):
+                raise exc.AuthorizationError()
+
+            try:
+                agency = models.Agency.objects.get(name=resource['agency'])
+                account.agency = agency
+            except models.Agency.DoesNotExist:
+                agency = models.Agency(
+                    name=resource['agency'],
+                    sales_representative=resource['default_sales_representative'],
+                )
+                agency.save(request)
+                account.agency = agency
 
     def get_non_removable_sources(self, account, sources_to_be_removed):
         non_removable_source_ids_list = []
@@ -974,6 +994,11 @@ class AccountSettings(api_common.BaseApiView):
             )
         if request.user.has_perm('zemauth.can_modify_facebook_page'):
             self.add_facebook_account_to_result(result, account)
+        if request.user.has_perm('zemauth.can_set_agency_for_account'):
+            if account.agency:
+                result['agency'] = account.agency.name
+            else:
+                result['agency'] = ''
         return result
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):

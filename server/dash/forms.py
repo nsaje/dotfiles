@@ -331,6 +331,10 @@ class AccountSettingsForm(forms.Form):
         required=False,
         error_messages={'required': 'Please specify account name.'}
     )
+    agency = forms.CharField(
+        max_length=127,
+        required=False,
+    )
     default_account_manager = forms.IntegerField(
         required=False
     )
