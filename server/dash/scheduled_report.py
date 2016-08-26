@@ -44,7 +44,7 @@ def send_scheduled_report(scheduled_report):
     report_log.scheduled_report = scheduled_report
 
     try:
-        start_date, end_date = scheduled_report.get_scheduled_report_date_range(scheduled_report.time_period)
+        start_date, end_date = get_scheduled_report_date_range(scheduled_report.time_period)
         email_adresses = scheduled_report.get_recipients_emails_list()
         report_log.start_date = start_date
         report_log.end_date = end_date
