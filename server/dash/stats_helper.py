@@ -250,9 +250,6 @@ def _get_stats_with_conversions(
 
         return result[0]
 
-    if 'account' in breakdown:
-        raise exc.MissingDataError(message='Touchpoint conversions can not be broken down by account')
-
     touchpoint_conversion_stats = api_touchpointconversions.query(
         start_date,
         end_date,
