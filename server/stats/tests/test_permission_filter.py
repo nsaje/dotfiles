@@ -1,11 +1,12 @@
 from django.test import TestCase
 
-from utils.test_helper import add_permissions
+from utils.test_helper import add_permissions, remove_permissions
 from utils import exc
 from zemauth.models import User
 
 from dash import models
 from dash import campaign_goals
+from dash.constants import Level
 
 from stats import permission_filter
 
@@ -128,16 +129,47 @@ class FilterTestCase(TestCase):
 class BreakdownAllowedTest(TestCase):
     fixtures = ['test_non_superuser']
 
-    def test_breakdown_delivery_not_allowed(self):
+    def add_permission_and_test(self, level, breakdown, permissions):
         user = User.objects.get(pk=1)
+        with self.assertRaises(exc.MissingDataError):
+            permission_filter.validate_breakdown_by_permissions(level, user, breakdown)
 
-        permission_filter.check_breakdown_allowed(user, ['account_id'])
+        # load it again as it seems that user backend caches permissions collection once it is asked about it
+        user = User.objects.get(pk=1)
+        add_permissions(user, permissions)
+        permission_filter.validate_breakdown_by_permissions(level, user, breakdown)
+
+        remove_permissions(user, permissions)
+
+    def test_breakdown_validate_by_permissions(self):
+        self.add_permission_and_test(Level.ALL_ACCOUNTS, ['account_id'], ['all_accounts_accounts_view'])
+        self.add_permission_and_test(Level.ALL_ACCOUNTS, ['source_id'], ['all_accounts_sources_view'])
+
+        self.add_permission_and_test(Level.ACCOUNTS, ['campaign_id'], ['account_campaigns_view'])
+        self.add_permission_and_test(Level.ACCOUNTS, ['source_id'], ['account_sources_view'])
+
+        self.add_permission_and_test(Level.AD_GROUPS, ['publisher'], ['can_see_publishers'])
+
+    def test_breakdown_validate_by_delivery_permissions(self):
+        user = User.objects.get(pk=1)
+        add_permissions(user, ['all_accounts_accounts_view'])
 
         with self.assertRaises(exc.MissingDataError):
-            permission_filter.check_breakdown_allowed(user, ['account_id', 'dma'])
+            permission_filter.validate_breakdown_by_permissions(Level.ALL_ACCOUNTS, user, ['account_id', 'dma'])
 
-    def test_breakdown_delivery_allowed(self):
         user = User.objects.get(pk=1)
-        add_permissions(user, ['can_view_breakdown_by_delivery'])
+        add_permissions(user, ['all_accounts_accounts_view', 'can_view_breakdown_by_delivery'])
 
-        permission_filter.check_breakdown_allowed(user, ['account_id', 'dma'])
+        permission_filter.validate_breakdown_by_permissions(Level.ALL_ACCOUNTS, user, ['account_id', 'dma'])
+
+    def test_validate_breakdown_structure(self):
+        # should succeed, no exception
+        permission_filter.validate_breakdown_by_structure(['account_id', 'campaign_id', 'device_type', 'week'])
+        permission_filter.validate_breakdown_by_structure(['account_id'])
+        permission_filter.validate_breakdown_by_structure([])
+
+        with self.assertRaisesMessage(exc.InvalidBreakdownError, "Unsupported breakdowns set(['bla'])"):
+            permission_filter.validate_breakdown_by_structure(['account_id', 'bla', 'device_type'])
+
+        with self.assertRaisesMessage(exc.InvalidBreakdownError, "Wrong breakdown order"):
+            permission_filter.validate_breakdown_by_structure(['account_id', 'day', 'device_type'])

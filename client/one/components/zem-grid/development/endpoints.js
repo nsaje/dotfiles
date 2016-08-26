@@ -247,7 +247,7 @@ oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$
             range.push([1000, 0]);
         }
 
-        config.breakdownPage.forEach(function (breakdownId) {
+        config.breakdownParents.forEach(function (breakdownId) {
             var position = JSON.parse(breakdownId);
             for (var i = 0; i < config.level - 1; ++i) {
                 range[i][0] = Math.min(range[i][0], position[i + 1]);

@@ -2,6 +2,7 @@ import backtosql
 import datetime
 import mock
 from django.test import TestCase
+from utils import test_helper
 
 import dash.models
 
@@ -24,11 +25,15 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         touchpoint_columns = m.select_columns(group=model_helpers.TOUCHPOINTCONVERSION_AGGREGATES)
         after_join_columns = m.select_columns(group=model_helpers.AFTER_JOIN_CALCULATIONS)
 
-        self.assertListEqual([x.column_as_alias('a') for x in conversion_columns], [
-            "SUM(CASE WHEN a.slug='ga__2' THEN conversion_count ELSE 0 END) conversion_goal_2",
-            "SUM(CASE WHEN a.slug='ga__3' THEN conversion_count ELSE 0 END) conversion_goal_3",
-            "SUM(CASE WHEN a.slug='omniture__4' THEN conversion_count ELSE 0 END) conversion_goal_4",
-            "SUM(CASE WHEN a.slug='omniture__5' THEN conversion_count ELSE 0 END) conversion_goal_5",
+        self.assertItemsEqual([x.column_as_alias('a') for x in conversion_columns], [
+            backtosql.SQLMatcher(
+                "SUM(CASE WHEN a.slug='ga__2' THEN conversion_count ELSE 0 END) conversion_goal_2"),
+            backtosql.SQLMatcher(
+                "SUM(CASE WHEN a.slug='ga__3' THEN conversion_count ELSE 0 END) conversion_goal_3"),
+            backtosql.SQLMatcher(
+                "SUM(CASE WHEN a.slug='omniture__4' THEN conversion_count ELSE 0 END) conversion_goal_4"),
+            backtosql.SQLMatcher(
+                "SUM(CASE WHEN a.slug='omniture__5' THEN conversion_count ELSE 0 END) conversion_goal_5"),
         ])
 
         self.assertListEqual([x.column_as_alias('a') for x in touchpoint_columns], [
@@ -44,14 +49,14 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         # prefixes should be added afterwards
         self.assertListEqual([x.column_as_alias('a') for x in after_join_columns], [
-            'media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2',
-            'media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3',
-            'media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4',
-            'media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5',
-            'media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24',
-            'media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168',
-            'media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720',
-            'media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160',
+            backtosql.SQLMatcher('media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2'),
+            backtosql.SQLMatcher('media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3'),
+            backtosql.SQLMatcher('media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4'),
+            backtosql.SQLMatcher('media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5'),
+            backtosql.SQLMatcher('media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24'),
+            backtosql.SQLMatcher('media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168'),
+            backtosql.SQLMatcher('media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720'),
+            backtosql.SQLMatcher('media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160'),
         ])
 
         columns = m.get_columns()
@@ -73,7 +78,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 7, 10),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'content_ad_id': 32, 'source_id': 1},
             {'content_ad_id': 33, 'source_id': [2, 3]},
             {'content_ad_id': 35, 'source_id': [2, 4, 22]},
@@ -82,7 +87,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         context = m.get_default_context(
             ['account_id', 'source_id'],
             constraints,
-            breakdown_constraints,
+            parents,
             'pixel_1_24',
             2,
             33
@@ -129,7 +134,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 7, 10),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'content_ad_id': 32, 'source_id': 1},
             {'content_ad_id': 33, 'source_id': [2, 3]},
             {'content_ad_id': 35, 'source_id': [2, 4, 22]},
@@ -138,7 +143,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         context = m.get_default_context(
             ['account_id', 'source_id', 'dma'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-pixel_1_24',
             2,
             33
@@ -217,7 +222,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             'date__lte': date_to,
         }
 
-        breakdown_constraints = [
+        parents = [
             {'content_ad_id': 32, 'source_id': 1},
             {'content_ad_id': 33, 'source_id': [2, 3]},
             {'content_ad_id': 35, 'source_id': [2, 4, 22]},
@@ -226,7 +231,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         context = m.get_default_context(
             ['account_id', 'source_id'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-clicks',
             2,
             33
@@ -238,7 +243,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             "(A.account_id=%s AND A.campaign_id=%s AND A.date>=%s AND A.date<=%s)")
         self.assertEqual(q.get_params(), [123, 223, date_from, date_to])
 
-        q = context['breakdown_constraints']
+        q = context['parent_constraints']
         self.assertSQLEquals(
             q.generate('A'),
             """\

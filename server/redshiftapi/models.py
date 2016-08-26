@@ -330,16 +330,15 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             'touchpointconversions': 'mv_touchpointconversions',
         }
 
-    def get_default_context(self, breakdown, constraints, breakdown_constraints,
-                            order, offset, limit):
+    def get_default_context(self, breakdown, constraints, parents, order, offset, limit):
         """
         Returns the template context that is used by most of templates
         """
 
-        breakdown_constraints_q = None
-        if breakdown_constraints:
-            breakdown_constraints_q = backtosql.Q(self, *[backtosql.Q(self, **x) for x in breakdown_constraints])
-            breakdown_constraints_q.join_operator = breakdown_constraints_q.OR
+        parent_constraints = None
+        if parents:
+            parent_constraints = backtosql.Q(self, *[backtosql.Q(self, **x) for x in parents])
+            parent_constraints.join_operator = parent_constraints.OR
 
         breakdown_supports_conversions = self.breakdown_supports_conversions(breakdown)
 
@@ -364,7 +363,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             'breakdown_partition': self.get_breakdown(breakdown)[:-1],
 
             'constraints': backtosql.Q(self, **constraints),
-            'breakdown_constraints': breakdown_constraints_q,
+            'parent_constraints': parent_constraints,
             'aggregates': self.get_aggregates(),
             'order': order_column,
             'offset': offset,

@@ -142,9 +142,9 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = []
+        parents = []
 
-        context = m.get_default_context([], constraints, breakdown_constraints, 'total_seconds', None, None)
+        context = m.get_default_context([], constraints, parents, 'total_seconds', None, None)
 
         sql, params = queries.prepare_breakdown_top_rows(context)
 
@@ -185,9 +185,9 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = []
+        parents = []
 
-        context = m.get_default_context(['account_id'], constraints, breakdown_constraints, 'total_seconds', None, None)
+        context = m.get_default_context(['account_id'], constraints, parents, 'total_seconds', None, None)
 
         sql, params = queries.prepare_breakdown_top_rows(context)
 
@@ -234,12 +234,12 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(['account_id', 'source_id'], constraints,
-                                        breakdown_constraints, 'total_seconds', 0, 10)
+                                        parents, 'total_seconds', 0, 10)
 
         sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
 
@@ -302,11 +302,11 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 8, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
-        context = m.get_default_context(['account_id'], constraints, breakdown_constraints, 'total_seconds', 0, 10)
+        context = m.get_default_context(['account_id'], constraints, parents, 'total_seconds', 0, 10)
 
         sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
 
@@ -349,7 +349,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
         WHERE r <= 10
         """)
 
-    def test_breakdown_struct_delivery_required_breakdown_constraints(self):
+    def test_breakdown_struct_delivery_required_parents(self):
         m = models.MVMaster()
         constraints = {
             'date__gte': datetime.date(2016, 4, 1),
@@ -372,14 +372,14 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 2, 16),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(
             ['account_id', 'week'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-clicks',
             1,
             2
@@ -440,14 +440,14 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 8, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(
             ['account_id', 'week'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-clicks',
             1,
             2
@@ -761,14 +761,14 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(
             ['account_id', 'campaign_id', 'week'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-clicks',
             0,
             10
@@ -812,14 +812,14 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(
             ['account_id', 'campaign_id'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-clicks',
             0,
             10
@@ -857,14 +857,14 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(
             ['account_id', 'device_type'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-clicks',
             0,
             10
@@ -894,7 +894,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
@@ -912,7 +912,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             context = m.get_default_context(
                 ['account_id', 'campaign_id'],
                 constraints,
-                breakdown_constraints,
+                parents,
                 order,
                 0,
                 10

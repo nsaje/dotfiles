@@ -24,6 +24,14 @@ def add_permissions(user, permissions):
         )
 
 
+def remove_permissions(user, permissions):
+    ''' utility intended to be used in unit tests only '''
+    for permission in permissions:
+        user.user_permissions.remove(
+            Permission.objects.get(codename=permission)
+        )
+
+
 def fake_request(user, url=''):
     rf = RequestFactory()
     r = rf.get(url)
@@ -46,7 +54,7 @@ class QuerySetMatcher():
 
 
 class ListMatcher():
-    """Checks if both lists contain the same elements.
+    """Checks if both lists (or list like objects) contain the same elements.
     For use with Mock.assert_called_with()."""
 
     def __init__(self, obj):
@@ -54,6 +62,14 @@ class ListMatcher():
 
     def __eq__(self, other):
         return sorted(self.obj) == sorted(other)
+
+
+class TypeMatcher():
+    def __init__(self, expected_type):
+        self.expected_type = expected_type
+
+    def __eq__(self, other):
+        return isinstance(other, self.expected_type)
 
 
 def is_equal(val1, val2):

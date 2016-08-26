@@ -243,7 +243,7 @@ describe('zemGridEndpointApiConverter', function () {
         var endDate = moment('2016-06-14');
 
         config = {
-            breakdownPage: [],
+            breakdownParents: [],
             breakdown: [{name: 'By Ad Group', query: 'ad_group'}],
             startDate: startDate,
             endDate: endDate,
@@ -259,7 +259,7 @@ describe('zemGridEndpointApiConverter', function () {
         };
 
         expectedResult = {
-            breakdown_page: [],
+            parents: [],
             start_date: '2016-05-17',
             end_date: '2016-06-14',
             show_archived: true,

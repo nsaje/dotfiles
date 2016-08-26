@@ -13,7 +13,7 @@ WITH
             -- so that they maintain the same order (cached generated query in backtosql)
             -- this way params are always correctly ordered
             {{ constraints|generate:"a" }} AND
-            {{ breakdown_constraints|generate:"a" }}
+            {{ parent_constraints|generate:"a" }}
         GROUP BY {{ breakdown|indices }}
     ),
     {% endif %}
@@ -26,7 +26,7 @@ WITH
             FROM {{ view.touchpointconversions }} a
         WHERE
             {{ constraints|generate:"a" }} AND
-            {{ breakdown_constraints|generate:"a" }}
+            {{ parent_constraints|generate:"a" }}
         GROUP BY {{ breakdown|indices }}
     ),
     {% endif %}
@@ -39,7 +39,7 @@ WITH
         FROM {{ view.base }} a
         WHERE
             {{ yesterday_constraints|generate:"a" }} AND
-            {{ breakdown_constraints|generate:"a" }}
+            {{ parent_constraints|generate:"a" }}
         GROUP BY {{ breakdown|indices }}
     ),
     {% endif %}
@@ -56,7 +56,7 @@ WITH
         FROM {{ view.base }} a
         WHERE
             {{ constraints|generate:"a" }} AND
-            {{ breakdown_constraints|generate:"a" }}
+            {{ parent_constraints|generate:"a" }}
         GROUP BY {{ breakdown|indices }}
     )
 

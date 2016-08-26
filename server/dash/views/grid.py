@@ -141,7 +141,7 @@ def _convert_breakdown_fields(base_dimension, response):
     for row in response['rows']:
         if id_key in row:
             row['id'] = row[id_key]
-            row['breakdown_id'] = stats.helpers.create_breakdown_id(breakdown_id_fields, row)
+            row['breakdown_id'] = stats.helpers.encode_breakdown_id(breakdown_id_fields, row)
             row['parent_breakdown_id'] = None
         if name_key in row:
             row['breakdown_name'] = row[name_key]

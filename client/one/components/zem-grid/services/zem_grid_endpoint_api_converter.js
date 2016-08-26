@@ -66,7 +66,7 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
 
     function convertConfigToApi (config) {
         return {
-            breakdown_page: config.breakdownPage,
+            parents: config.breakdownParents,
             start_date: config.startDate.format('YYYY-MM-DD'),
             end_date: config.endDate.format('YYYY-MM-DD'),
             show_archived: config.showArchived,

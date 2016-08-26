@@ -12,6 +12,6 @@ def apply_offset_limit(qs, offset, limit):
     return qs
 
 
-def apply_breakdown_page_to_rows(breakdown_page, rows):
+def apply_parents_to_rows(parents, rows):
     for row in rows:
-        row.update(breakdown_page)
+        row.update(parents)

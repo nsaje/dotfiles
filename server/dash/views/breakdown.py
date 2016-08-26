@@ -20,33 +20,47 @@ DEFAULT_LIMIT = 10
 REQUEST_LIMIT_OVERFLOW = 1  # [workaround] Request additional rows to check if more data is available
 
 
-def extract_constraints(form_data, **kwargs):
+def extract_constraints(form_data, account=None, campaign=None, ad_group=None):
+    # TODO rename date_gte and date_lte to start_date and end_date
     constraints = {
         'date__gte': form_data['start_date'],
         'date__lte': form_data['end_date'],
         'filtered_sources': form_data['filtered_sources'],
-        'filtered_agencies': form_data.get('filtered_agencies'),
-        'filtered_account_types': form_data.get('filtered_account_types'),
         'show_archived': form_data.get('show_archived'),
     }
-    constraints.update(kwargs)
+
+    if form_data.get('filtered_agencies'):
+        constraints['filtered_agencies'] = form_data['filtered_agencies']
+
+    if form_data.get('filtered_account_types'):
+        constraints['filtered_account_types'] = form_data['filtered_account_types']
+
+    if account:
+        constraints['account'] = account
+
+    if campaign:
+        constraints['campaign'] = campaign
+
+    if ad_group:
+        constraints['ad_group'] = ad_group
+
     return constraints
 
 
-def format_breakdown_response(report_rows, offset, limit, breakdown_page):
+def format_breakdown_response(report_rows, offset, limit, parents):
     blocks = []
 
-    # map rows by breakdown pages
+    # map rows by parent breakdown ids
     rows_by_parent_br_id = collections.defaultdict(list)
     for row in report_rows:
         rows_by_parent_br_id[row['parent_breakdown_id']].append(row)
 
-    # create blocks for every breakdown_page
-    for parent_br_id in breakdown_page:
-        rows = rows_by_parent_br_id[parent_br_id]
+    # create blocks for every parent
+    for parent in parents:
+        rows = rows_by_parent_br_id[parent]
 
         blocks.append({
-            'breakdown_id': parent_br_id,
+            'breakdown_id': parent,
             'rows': rows,
             'totals': {},
             'pagination': {
@@ -323,9 +337,6 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.MissingDataError()
 
-        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
-            raise exc.MissingDataError()
-
         request_body = json.loads(request.body).get('params')
         form = forms.BreakdownForm(request.user, breakdown, request_body)
         if not form.is_valid():
@@ -334,7 +345,10 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
         breakdown = form.cleaned_data.get('breakdown')
-        breakdown_page = form.cleaned_data.get('breakdown_page', None)
+        parents = form.cleaned_data.get('parents', None)
+        level = constants.Level.ALL_ACCOUNTS
+
+        stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
@@ -347,16 +361,17 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             return self.create_api_response(report)
 
         report = stats.api_breakdowns.query(
+            level,
             request.user,
             breakdown,
             extract_constraints(form.cleaned_data),
-            breakdown_page,
+            parents,
             form.cleaned_data.get('order', None),
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, breakdown_page)
+        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)
 
@@ -383,7 +398,10 @@ class AccountBreakdown(api_common.BaseApiView):
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
         breakdown = form.cleaned_data.get('breakdown')
-        breakdown_page = form.cleaned_data.get('breakdown_page', None)
+        parents = form.cleaned_data.get('parents', None)
+        level = constants.Level.ACCOUNTS
+
+        stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
@@ -396,16 +414,17 @@ class AccountBreakdown(api_common.BaseApiView):
             return self.create_api_response(report)
 
         report = stats.api_breakdowns.query(
+            level,
             request.user,
             breakdown,
-            extract_constraints(form.cleaned_data, account_id=account.id),
-            breakdown_page,
+            extract_constraints(form.cleaned_data, account=account),
+            parents,
             form.cleaned_data.get('order', None),
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, breakdown_page)
+        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)
 
@@ -432,7 +451,10 @@ class CampaignBreakdown(api_common.BaseApiView):
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
         breakdown = form.cleaned_data.get('breakdown')
-        breakdown_page = form.cleaned_data.get('breakdown_page', None)
+        parents = form.cleaned_data.get('parents', None)
+        level = constants.Level.CAMPAIGNS
+
+        stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
@@ -445,16 +467,17 @@ class CampaignBreakdown(api_common.BaseApiView):
             return self.create_api_response(report)
 
         report = stats.api_breakdowns.query(
+            level,
             request.user,
             breakdown,
-            extract_constraints(form.cleaned_data, campaign_id=campaign.id),
-            breakdown_page,
+            extract_constraints(form.cleaned_data, campaign=campaign),
+            parents,
             form.cleaned_data.get('order', None),
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, breakdown_page)
+        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)
 
@@ -482,7 +505,10 @@ class AdGroupBreakdown(api_common.BaseApiView):
         offset = form.cleaned_data.get('offset', DEFAULT_OFFSET)
         limit = form.cleaned_data.get('limit', DEFAULT_LIMIT)
         breakdown = form.cleaned_data.get('breakdown')
-        breakdown_page = form.cleaned_data.get('breakdown_page', None)
+        parents = form.cleaned_data.get('parents', None)
+        level = constants.Level.AD_GROUPS
+
+        stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         # FIXME redirect to table.py if base level request for a breakdown
         if len(breakdown) == 1:
@@ -499,15 +525,16 @@ class AdGroupBreakdown(api_common.BaseApiView):
             breakdown = ['publisher', 'source_id'] + breakdown[1:]
 
         report = stats.api_breakdowns.query(
+            level,
             request.user,
             breakdown,
-            extract_constraints(form.cleaned_data, ad_group_id=ad_group.id),
-            breakdown_page,
+            extract_constraints(form.cleaned_data, ad_group=ad_group),
+            parents,
             form.cleaned_data.get('order', None),
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, breakdown_page)
+        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)

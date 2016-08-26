@@ -13,8 +13,8 @@ WITH
             -- so that they maintain the same order (cached generated query)
             -- this way params are correctly ordered
             {{ constraints|generate:"a" }}
-            {% if breakdown_constraints %}
-                AND {{ breakdown_constraints|generate:"a" }}
+            {% if parent_constraints %}
+                AND {{ parent_constraints|generate:"a" }}
             {% endif %}
         -- use indices to refer to breakdown fields, this way if a field name is the same
         -- for source column from database and calculated fields alias the aliase get chosen.
@@ -35,8 +35,8 @@ WITH
             FROM {{ view.touchpointconversions }} a
         WHERE
             {{ constraints|generate:"a" }}
-            {% if breakdown_constraints %}
-                AND {{ breakdown_constraints|generate:"a" }}
+            {% if parent_constraints %}
+                AND {{ parent_constraints|generate:"a" }}
             {% endif %}
         {% if breakdown %} GROUP BY {{ breakdown|indices }} {% endif %}
     ),
@@ -50,8 +50,8 @@ WITH
         FROM {{ view.base }} a
         WHERE
             {{ yesterday_constraints|generate:"a" }}
-            {% if breakdown_constraints %}
-                AND {{ breakdown_constraints|generate:"a" }}
+            {% if parent_constraints %}
+                AND {{ parent_constraints|generate:"a" }}
             {% endif %}
         {% if breakdown %} GROUP BY {{ breakdown|indices }} {% endif %}
     ),
@@ -68,8 +68,8 @@ WITH
         FROM {{ view.base }} a
         WHERE
             {{ constraints|generate:"a" }}
-            {% if breakdown_constraints %}
-                AND {{ breakdown_constraints|generate:"a" }}
+            {% if parent_constraints %}
+                AND {{ parent_constraints|generate:"a" }}
             {% endif %}
         {% if breakdown %} GROUP BY {{ breakdown|indices }} {% endif %}
     )

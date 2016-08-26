@@ -27,8 +27,8 @@ class BreakdownFormTest(TestCase):
             'filtered_agencies': ['1', '2'],
             'filtered_account_types': ['1', '3', '2'],
             'show_archived': 'true',
+            'parents': ['123-7', '23-33', '23-24'],
             'show_blacklisted_publishers': 'all',
-            'breakdown_page': ['123-7', '23-33', '23-24'],
             'offset': 12,
             'limit': 20,
             'order': '-clicks',
@@ -45,7 +45,7 @@ class BreakdownFormTest(TestCase):
             'filtered_agencies': test_helper.QuerySetMatcher(models.Agency.objects.filter(pk=1)),
             'filtered_account_types': test_helper.ListMatcher([1, 3, 2]),
             'show_archived': True,
-            'breakdown_page': ['123-7', '23-33', '23-24'],
+            'parents': ['123-7', '23-33', '23-24'],
             'offset': 12,
             'limit': 20,
             'order': '-clicks',
@@ -64,7 +64,7 @@ class BreakdownFormTest(TestCase):
         self.assertIn('breakdown', form.errors)
 
         self.assertNotIn('show_archived', form.errors)
-        self.assertNotIn('breakdown_page', form.errors)
+        self.assertNotIn('parents', form.errors)
         self.assertNotIn('filtered_sources', form.errors)
         self.assertNotIn('order', form.errors)
 
