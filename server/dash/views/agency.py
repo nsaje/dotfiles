@@ -172,6 +172,11 @@ class AdGroupSettings(api_common.BaseApiView):
                     '{:.2f}'.format(settings.autopilot_daily_budget)
                     if settings.autopilot_daily_budget is not None else '',
                 'retargeting_ad_groups': settings.retargeting_ad_groups,
+                'notes': settings.notes,
+                'interest_targeting': settings.interest_targeting,
+                'exclusion_interest_targeting': settings.exclusion_interest_targeting,
+                'redirect_pixel_urls': settings.redirect_pixel_urls,
+                'redirect_javascript': settings.redirect_javascript,
                 'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
                 'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None
             }

@@ -30,6 +30,7 @@ class AdGroupSettingsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
+        self.maxDiff = None
         self.settings_dict = {
             'settings': {
                 'start_date': '2015-05-01',
@@ -134,7 +135,12 @@ class AdGroupSettingsTest(TestCase):
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
                     'autopilot_min_budget': '0',
-                    'autopilot_optimization_goal': None
+                    'autopilot_optimization_goal': None,
+                    'notes': 'Some note',
+                    'interest_targeting': ["a", "b"],
+                    'exclusion_interest_targeting': ["c", "d"],
+                    'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
+                    'redirect_javascript': "alert('a')",
                 },
                 'warnings': {}
             },
@@ -261,7 +267,12 @@ class AdGroupSettingsTest(TestCase):
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
                         'autopilot_min_budget': '0',
-                        'autopilot_optimization_goal': None
+                        'autopilot_optimization_goal': None,
+                        'notes': 'Some note',
+                        'interest_targeting': ["a", "b"],
+                        'exclusion_interest_targeting': ["c", "d"],
+                        'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
+                        'redirect_javascript': "alert('a')",
                     }
                 },
                 'success': True
@@ -350,7 +361,12 @@ class AdGroupSettingsTest(TestCase):
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
                         'autopilot_min_budget': '0',
-                        'autopilot_optimization_goal': None
+                        'autopilot_optimization_goal': None,
+                        'notes': 'Some note',
+                        'interest_targeting': ["a", "b"],
+                        'exclusion_interest_targeting': ["c", "d"],
+                        'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
+                        'redirect_javascript': "alert('a')",
                     }
                 },
                 'success': True
@@ -564,7 +580,12 @@ class AdGroupSettingsTest(TestCase):
                         'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
                         'autopilot_min_budget': '0',
-                        'autopilot_optimization_goal': None
+                        'autopilot_optimization_goal': None,
+                        'notes': '',
+                        'interest_targeting': [],
+                        'exclusion_interest_targeting': [],
+                        'redirect_pixel_urls': [],
+                        'redirect_javascript': '',
                     }
                 },
                 'success': True

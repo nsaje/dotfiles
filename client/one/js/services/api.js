@@ -950,6 +950,11 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 retargetingAdGroups: settings.retargeting_ad_groups,
                 autopilotMinBudget: settings.autopilot_min_budget,
                 autopilotOptimizationGoal: settings.autopilot_optimization_goal,
+                notes: settings.notes,
+                interestTargeting: settings.interest_targeting,
+                exclusionInterestTargeting: settings.exclusion_interest_targeting,
+                redirectPixelUrls: settings.redirect_pixel_urls,
+                redirectJavascript: settings.redirect_javascript,
             };
         }
 

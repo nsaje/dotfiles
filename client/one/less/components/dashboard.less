@@ -135,6 +135,16 @@
             border: none;
         }
     }
+    
+    .textarea-with-border {
+        border: 1px dashed @border-input-color;
+        width: 100%;
+        padding: 5px 10px;
+    }
+
+    .pre {
+        white-space: pre;
+    }
 }
 
 .form-control {
@@ -1665,6 +1675,22 @@ ul.icon-list li {
 
 ul.icon-list li:first-child {
     font-weight: 600;
+}
+
+ul.with-icons {
+    padding-left: 20px;
+    list-style: none;
+    
+    &.ul-checkmarks li {
+        background: url('img/checkmark-green.svg') no-repeat left 5px;
+        background-size: 14px;
+        padding-left: 20px;
+    }
+    &.ul-remove li {
+        background: url('img/remove-red.svg') no-repeat left 4px;
+        background-size: 10px;
+        padding-left: 20px;
+    }
 }
 
 .help-popover,
