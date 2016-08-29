@@ -159,13 +159,13 @@
                     <div class="col-xs-2" ng-if="settings.interestTargeting.length">
                         <div class="text-success">Included</div>
                         <ul class="with-icons ul-checkmarks">
-                            <li ng-repeat="category in settings.interestTargeting">{{category}}</li>
+                            <li ng-repeat="category in settings.interestTargeting" class="capitalized">{{category}}</li>
                         </ul>
                         </div>
                     <div class="col-xs-2" ng-if="settings.exclusionInterestTargeting.length">
                         <div class="text-danger">Excluded</div>
                         <ul class="with-icons ul-remove">
-                            <li ng-repeat="category in settings.exclusionInterestTargeting">{{category}}</li>
+                            <li ng-repeat="category in settings.exclusionInterestTargeting" class="capitalized">{{category}}</li>
                         </ul>
                     </div>
                 </div>
