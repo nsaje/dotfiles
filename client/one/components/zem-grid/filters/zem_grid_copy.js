@@ -14,7 +14,7 @@ oneApp.directive('zemGridCopy', ['$timeout', 'zemGridConstants', 'zemGridDataFor
                 if (selection.anchorNode === selection.extentNode) return;
 
                 // Find all rows between selected elements including header footer
-                // export them and apply new text to copy selection
+                // export them as a html table and apply it to copy selection
                 var anchorElement = angular.element(selection.anchorNode);
                 var extentElement = angular.element(selection.extentNode);
 
@@ -26,8 +26,8 @@ oneApp.directive('zemGridCopy', ['$timeout', 'zemGridConstants', 'zemGridDataFor
                     to = temp;
                 }
 
-                var text = exportGrid(grid, from, to);
-                applyTextToSelection(selection, text);
+                var htmlTable = convertGridToTable(grid, from, to);
+                applyTableToSelection(selection, htmlTable);
             }
 
             function getExportIndex (element) {
@@ -43,17 +43,17 @@ oneApp.directive('zemGridCopy', ['$timeout', 'zemGridConstants', 'zemGridDataFor
                 return idx;
             }
 
-            function exportGrid (grid, from, to) {
-                // Export all rows between from and to
+            function convertGridToTable (grid, from, to) {
+                // Export all rows between from and to as HTML table that will be used for selection
                 // Special case
                 //      from<0: include header and all row until to
                 //      to > #rows: include footer and all rows starting with from
                 var exportColumns = getExportColumns(grid);
-                var exportText = '';
+                var htmlTable = '';
 
                 // Header
                 if (from < 0) {
-                    exportText += exportHeader(exportColumns) + '<br>';
+                    htmlTable += convertHeader(exportColumns);
                     from = 0;
                 }
 
@@ -61,14 +61,15 @@ oneApp.directive('zemGridCopy', ['$timeout', 'zemGridConstants', 'zemGridDataFor
                 for (var idx = from; idx <= Math.min(to, grid.body.rows.length - 1); ++idx) {
                     var row = grid.body.rows[idx];
                     if (row.type === zemGridConstants.gridRowType.BREAKDOWN) continue;
-                    exportText += exportRow(exportColumns, row) + '<br>';
+                    htmlTable += convertRow(exportColumns, row);
                 }
 
                 // Footer
                 if (to === Number.MAX_VALUE) {
-                    exportText += exportRow(exportColumns, grid.footer.row) + '<br>';
+                    htmlTable += convertRow(exportColumns, grid.footer.row);
                 }
-                return exportText;
+
+                return '<table>' + htmlTable + '</table>';
             }
 
             function getExportColumns (grid) {
@@ -77,15 +78,16 @@ oneApp.directive('zemGridCopy', ['$timeout', 'zemGridConstants', 'zemGridDataFor
                 });
             }
 
-            function exportHeader (columns) {
-                return columns.map(function (column) {
+            function convertHeader (columns) {
+                var htmlTableHeader = columns.map(function (column) {
                     if (!column.data) return undefined;
                     return column.data.name;
-                }).join('\t');
+                }).join('</th><th>');
+                return '<tr><th>' + htmlTableHeader + '</th></tr>';
             }
 
-            function exportRow (columns, row) {
-                return columns.map(function (column) {
+            function convertRow (columns, row) {
+                var htmlTableRow = columns.map(function (column) {
                     if (!column.data || !column.data.name) return undefined;
 
                     if (row.level === zemGridConstants.gridRowLevel.FOOTER
@@ -94,7 +96,8 @@ oneApp.directive('zemGridCopy', ['$timeout', 'zemGridConstants', 'zemGridDataFor
                     }
                     var stat = row.data.stats[column.field];
                     return exportStat(stat, column);
-                }).join('\t');
+                }).join('</td><td>');
+                return '<tr><td>' + htmlTableRow +  '</td></tr>';
             }
 
             function exportStat (stat, column) {
@@ -102,22 +105,22 @@ oneApp.directive('zemGridCopy', ['$timeout', 'zemGridConstants', 'zemGridDataFor
                 if (zemGridConstants.gridColumnTypes.BASE_TYPES.indexOf(column.type) >= 0) {
                     return zemGridDataFormatter.formatValue(stat.value, column);
                 }
-                return stat.value || stat.url || ' ';
+                return (stat.value || stat.url || ' ');
             }
 
-            function applyTextToSelection (selection, text) {
+            function applyTableToSelection (selection, htmlTable) {
                 // Create new element, apply text to it
                 // and update selection to target this new element
-                var newdiv = document.createElement('div');
-                newdiv.style.position = 'absolute';
-                newdiv.style.left = '-99999px';
+                var div = document.createElement('div');
+                div.style.position = 'absolute';
+                div.style.left = '-99999px';
 
                 //insert the container, fill it with the extended text, and define the new selection
-                document.body.appendChild(newdiv);
-                newdiv.innerHTML = text;
-                selection.selectAllChildren(newdiv);
+                document.body.appendChild(div);
+                div.innerHTML = htmlTable;
+                selection.selectAllChildren(div);
                 $timeout(function () {
-                    document.body.removeChild(newdiv);
+                    document.body.removeChild(div);
                 }, 100);
             }
         }
