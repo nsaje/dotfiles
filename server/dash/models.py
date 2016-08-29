@@ -2280,9 +2280,9 @@ class AdGroupSettings(SettingsBase):
             value = json.dumps(value)
         elif prop_name in ('interest_targeting', 'exclusion_interest_targeting'):
             if value:
-                value = ', '.join(value)
+                value = ', '.join(category.capitalize() for category in value)
             else:
-                value = 'all'
+                value = ''
         elif prop_name == 'redirect_pixel_urls':
             value = ', '.join(value)
         elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):

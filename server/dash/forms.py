@@ -10,6 +10,7 @@ from collections import Counter
 
 from django import forms
 from django.contrib.postgres import forms as postgres_forms
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.db import transaction
 from django.core import validators
 
@@ -66,19 +67,17 @@ class AdGroupAdminForm(forms.ModelForm):
     ]
     notes = forms.CharField(required=False, widget=forms.Textarea)
     bluekai_targeting = postgres_forms.JSONField(required=False)
-    interest_targeting = postgres_forms.SimpleArrayField(
-        forms.CharField(),
+    interest_targeting = forms.MultipleChoiceField(
         required=False,
-        delimiter='\n',
-        widget=forms.Textarea,
-        help_text='Put every entry on a separate line'
+        choices=constants.InterestCategory.get_choices(),
+        widget=FilteredSelectMultiple(verbose_name="inclusion interest categories",
+                                      is_stacked=False)
     )
-    exclusion_interest_targeting = postgres_forms.SimpleArrayField(
-        forms.CharField(),
+    exclusion_interest_targeting = forms.MultipleChoiceField(
         required=False,
-        delimiter='\n',
-        widget=forms.Textarea,
-        help_text='Put every entry on a separate line'
+        choices=constants.InterestCategory.get_choices(),
+        widget=FilteredSelectMultiple(verbose_name="exclusion interest categories",
+                                      is_stacked=False)
     )
     redirect_pixel_urls = postgres_forms.SimpleArrayField(
         forms.CharField(),

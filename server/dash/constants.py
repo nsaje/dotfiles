@@ -1016,6 +1016,52 @@ class IABCategory(ConstantBase):
     }
 
 
+class InterestCategory(ConstantBase):
+    FASHION = "fashion"
+    FAMILY = "family"
+    COMMUNICATION = "communication"
+    HOBBIES = "hobbies"
+    WEATHER = "weather"
+    SPANISH = "spanish"
+    HOME = "home"
+    EDUCATION = "education"
+    TECHNOLOGY = "technology"
+    UTILITY = "utility"
+    ENTERTAINMENT = "entertainment"
+    MENT = "ment"
+    MEDIA = "media"
+    TRAVEL = "travel"
+    SPORTS = "sports"
+    QUIZZES = "quizzes"
+    OTHER = "other"
+    HEALTH = "health"
+    PETS = "pets"
+    MUSIC = "music"
+    DATING = "dating"
+    UNKNOWN = "?"
+    SHOPPING = "shopping"
+    FINANCE = "finance"
+    FOOD = "food"
+    CARS = "cars"
+    MEN = "men"
+    FRENCH = "french"
+    HOBBY = "hobby"
+    LAW = "law"
+    COUPONS = "coupons"
+    WOMEN = "women"
+    SCIENCE = "science"
+    FOREIGN = "foreign"
+    POLITICS = "politics"
+    DSASA = "dsasa"
+    GAMES = "games"
+    FUN = "fun"
+    RELIGION = "religion"
+
+    @classmethod
+    def get_text(cls, cons):
+        return cons.capitalize()
+
+
 class PromotionGoal(ConstantBase):
     BRAND_BUILDING = 1
     TRAFFIC_ACQUISITION = 2
