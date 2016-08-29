@@ -318,7 +318,7 @@ class Command(BaseCommand):
             budget.end_date,
             budget.amount,
             utils.converters.CC_TO_DECIMAL_DOLAR * budget.freed_cc,
-            budget.margin,            
+            budget.margin,
         ))
 
     def _print_credit(self, credit):
