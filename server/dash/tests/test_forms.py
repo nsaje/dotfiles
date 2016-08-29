@@ -261,7 +261,7 @@ class AdGroupSettingsFormTest(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            'cpc_cc': ['Maximum CPC can\'t be lower than $0.03.'],
+            'cpc_cc': ['Maximum CPC can\'t be lower than $0.05.'],
             'daily_budget_cc': ['Please provide budget of at least $10.00.']})
 
     def test_max_cpc_setting_min_value(self):
