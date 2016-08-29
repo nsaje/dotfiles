@@ -80,5 +80,11 @@ oneApp.factory('zemGridConstants', [function () {
         constants.gridColumnTypes.TEXT_LINK,
     ];
 
+    constants.gridColumnTypes.EXPORT_TYPES = [].concat(
+        [constants.gridColumnTypes.BREAKDOWN, constants.gridColumnTypes.STATUS],
+        constants.gridColumnTypes.BASE_TYPES,
+        constants.gridColumnTypes.EXTERNAL_LINK_TYPES
+    );
+
     return constants;
 }]);
