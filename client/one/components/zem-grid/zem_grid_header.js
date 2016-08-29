@@ -59,7 +59,7 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
                     zemGridUIService.updatePivotColumns(ctrl.grid, endPosition, true);
                     scrolling = false;
                 });
-            }, 200);
+            }, 100);
 
             function handleHorizontalScrollPivotColumns () {
                 if (!scrolling) {

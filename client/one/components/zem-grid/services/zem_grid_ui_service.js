@@ -261,7 +261,7 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             };
 
             if (animate) {
-                style['transition'] = 'transform 200ms linear';
+                style['transition'] = 'transform 50ms ease-out';
             }
             return style;
         }
