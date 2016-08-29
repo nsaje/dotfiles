@@ -45,9 +45,10 @@ UPDATABLE_FIELDS = {
     'license_fee': str,
     'flat_fee_cc': int,
     'freed_cc': int,
+    'margin': str,
 }
 
-INVALIDATE_DAILY_STATEMENTS_FIELDS = ('license_fee', )
+INVALIDATE_DAILY_STATEMENTS_FIELDS = ('license_fee', 'margin', )
 
 
 class CommandError(Exception):
@@ -309,14 +310,15 @@ class Command(BaseCommand):
             self._print_credit(credit)
 
     def _print_budget(self, budget):
-        self._print(' - #{} {}, {}, {} - {} (${}, freed ${})'.format(
+        self._print(' - #{} {}, {}, {} - {} (${}, freed ${}, margin {})'.format(
             budget.pk,
             budget.campaign.account,
             budget.campaign,
             budget.start_date,
             budget.end_date,
             budget.amount,
-            utils.converters.CC_TO_DECIMAL_DOLAR * budget.freed_cc
+            utils.converters.CC_TO_DECIMAL_DOLAR * budget.freed_cc,
+            budget.margin,            
         ))
 
     def _print_credit(self, credit):
