@@ -323,7 +323,7 @@ class AdGroupSettingsTest(TestCase):
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
-            new_settings['settings']['cpc_cc'] = '0.06'
+            new_settings['settings']['cpc_cc'] = '0.05'
 
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -340,7 +340,7 @@ class AdGroupSettingsTest(TestCase):
                         'target_regions': ['NC', '501'],
                     },
                     'settings': {
-                        'cpc_cc': '0.060',
+                        'cpc_cc': '0.050',
                         'daily_budget_cc': '200.00',
                         'end_date': str(datetime.date.today()),
                         'id': '1',
@@ -381,8 +381,8 @@ class AdGroupSettingsTest(TestCase):
 
             for ags in ad_group.adgroupsource_set.all():
                 cpc = ags.get_current_settings().cpc_cc
-                # All cpc are adjusted to be lower or equal to 0.06
-                self.assertTrue(cpc <= Decimal('0.06'))
+                # All cpc are adjusted to be lower or equal to 0.05
+                self.assertTrue(cpc <= Decimal('0.05'))
 
             mock_manager.assert_has_calls([
                 call.mock_order_ad_group_settings_update(

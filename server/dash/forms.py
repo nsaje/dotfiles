@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import magic
+import decimal
 import re
 import unicodecsv
 import dateutil.parser
@@ -116,8 +117,8 @@ class AdGroupSettingsForm(forms.Form):
     )
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(
-        min_value=0.05,
-        max_value=10,
+        min_value=decimal.Decimal('0.05'),
+        max_value=decimal.Decimal('10'),
         decimal_places=4,
         required=False,
         error_messages={
