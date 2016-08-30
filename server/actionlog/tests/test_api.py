@@ -179,9 +179,6 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).latest('created_dt'),
                          action)
 
-
-
-
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_init_enable_ad_group_maintenance_source(self):
         utcnow = datetime.datetime.utcnow()

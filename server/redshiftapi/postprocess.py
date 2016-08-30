@@ -14,7 +14,7 @@ but are easier to do in python than in sql.
 """
 
 
-def postprocess_time_dimension(target_dimension, rows, empty_row, breakdown, constraints, breakdown_constraints):
+def postprocess_time_dimension(target_dimension, rows, empty_row, breakdown, constraints, parent):
     """
     When querying time dimensions add rows that are missing from a query
     so that result is a nice constant time series.
@@ -22,20 +22,20 @@ def postprocess_time_dimension(target_dimension, rows, empty_row, breakdown, con
 
     all_dates = _get_representative_dates(target_dimension, constraints)
     fill_in_missing_rows(
-        target_dimension, rows, empty_row, breakdown, breakdown_constraints, all_dates)
+        target_dimension, rows, empty_row, breakdown, parent, all_dates)
 
 
-def postprocess_device_type_dimension(target_dimension, rows, empty_row, breakdown, breakdown_constraints,
+def postprocess_device_type_dimension(target_dimension, rows, empty_row, breakdown, parent,
                                       offset, limit):
     all_values = sorted(dash_constants.DeviceType._VALUES.keys())
 
     fill_in_missing_rows(
-        target_dimension, rows, empty_row, breakdown, breakdown_constraints,
+        target_dimension, rows, empty_row, breakdown, parent,
         all_values[offset:offset + limit]
     )
 
 
-def fill_in_missing_rows(target_dimension, rows, empty_row, breakdown, breakdown_constraints, all_values):
+def fill_in_missing_rows(target_dimension, rows, empty_row, breakdown, parent, all_values):
     parent_breakdown = constants.get_parent_breakdown(breakdown)
 
     rows_per_parent_breakdown = collections.defaultdict(list)
@@ -43,7 +43,7 @@ def fill_in_missing_rows(target_dimension, rows, empty_row, breakdown, breakdown
         parent_br_key = _get_breakdown_key_tuple(parent_breakdown, row)
         rows_per_parent_breakdown[parent_br_key].append(row)
 
-    for bc in breakdown_constraints:
+    for bc in parent:
         parent_br_key = _get_breakdown_key_tuple(parent_breakdown, bc)
 
         # collect used constants for rows returned

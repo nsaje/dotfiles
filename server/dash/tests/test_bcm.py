@@ -1600,8 +1600,8 @@ class BCMCommandTestCase(TestCase):
     def test_list_budget(self):
         self.assertEqual(
             self._call_command('bcm', 'list', 'budgets', str(self.b1.pk), str(self.b2.pk)),
-            ''' - #{} test account 1, test campaign 1, 2015-11-30 - 2015-12-02 ($200, freed $0.0000)
- - #{} test account 1, test campaign 1, 2015-11-30 - 2015-12-02 ($500, freed $0.0000)
+            ''' - #{} test account 1, test campaign 1, 2015-11-30 - 2015-12-02 ($200, freed $0.0000, margin 0.0000)
+ - #{} test account 1, test campaign 1, 2015-11-30 - 2015-12-02 ($500, freed $0.0000, margin 0.0000)
 '''.format(self.b1.pk, self.b2.pk)
         )
 
@@ -1637,6 +1637,13 @@ class BCMCommandTestCase(TestCase):
                            '--no-confirm')
         self.b1.refresh_from_db()
         self.assertEqual(self.b1.freed_cc, 1234)
+
+    def test_update_budget_margin(self):
+        self.assertEqual(self.b1.margin, Decimal('0'))
+        self._call_command('bcm', 'update', 'budgets', str(self.b1.pk), '--margin', '0.15',
+                           '--no-confirm')
+        self.b1.refresh_from_db()
+        self.assertEqual(self.b1.margin, Decimal('0.15'))
 
     def test_update_budget_multiple_fields(self):
         self._call_command('bcm', 'update', 'budgets', str(self.b1.pk),

@@ -817,15 +817,12 @@ def _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_
 
 
 def get_ad_group_sources_states(ad_group_sources):
-    return get_fake_ad_group_source_states(ad_group_sources)
+    """
+    Return ad group sources states in a list.
+    NOTE: uses a workaround function that calculates AdGroupSourceState as those are not
+    saved anymore.
+    """
 
-    # return models.AdGroupSourceState.objects\
-    #                                .filter(ad_group_source__in=ad_group_sources)\
-    #                                .group_current_states()\
-    #                                .select_related('ad_group_source')
-
-
-def get_fake_ad_group_source_states(ad_group_sources):
     ad_group_sources_settings = {
         ags.ad_group_source_id: ags for ags in models.AdGroupSourceSettings.objects.filter(
             ad_group_source__in=ad_group_sources,
@@ -838,10 +835,14 @@ def get_fake_ad_group_source_states(ad_group_sources):
         ).group_current_settings()
     }
 
+    return get_fake_ad_group_source_states(ad_group_sources, ad_group_sources_settings, ad_groups_settings)
+
+
+def get_fake_ad_group_source_states(ad_group_sources, ad_group_sources_settings_map, ad_groups_settings_map):
     states = []
     for ags in ad_group_sources:
-        ad_group_settings = ad_groups_settings.get(ags.ad_group.id)
-        agss = ad_group_sources_settings.get(ags.id)
+        ad_group_settings = ad_groups_settings_map.get(ags.ad_group.id)
+        agss = ad_group_sources_settings_map.get(ags.id)
 
         if ad_group_settings is None or agss is None:
             logger.error("Missing settings got ad group source: %s", ags.id)
@@ -863,6 +864,13 @@ def get_fake_ad_group_source_states(ad_group_sources):
         )
 
     return states
+
+
+def get_source_status_from_ad_group_source_states(ad_group_source_states):
+    if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE for s in ad_group_source_states):
+        return constants.AdGroupSourceSettingsState.ACTIVE
+
+    return constants.AdGroupSourceSettingsState.INACTIVE
 
 
 def get_ad_group_sources_settings(ad_group_sources):
@@ -942,6 +950,31 @@ def get_target_regions_string(regions):
     return ', '.join(constants.AdTargetLocation.get_text(x) for x in regions)
 
 
+def get_conversion_goals_wo_pixels(conversion_goals):
+    """
+    Returns conversions goals not of pixel type to be used by in client. Pixels
+    are to be returned separately.
+    """
+    return [
+        {'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+        for cg in conversion_goals if cg.type != constants.ConversionGoalType.PIXEL
+    ]
+
+
+def get_pixels_list(pixels):
+    pixels_list = []
+    for pixel in sorted(pixels, key=lambda x: x.name.lower()):
+        for conversion_window in sorted(constants.ConversionWindows.get_all()):
+            conversion_window_days = conversion_window / 24
+            name = '{} {} day{}'.format(pixel.name, conversion_window_days,
+                                        's' if conversion_window_days > 1 else '')
+            pixels_list.append({
+                'id': pixel.get_view_key(conversion_window),
+                'name': name,
+            })
+    return pixels_list
+
+
 def copy_stats_to_row(stat, row):
     for key in ['impressions', 'clicks', 'data_cost', 'cpc', 'ctr', 'cpm',
                 'visits', 'click_discrepancy', 'pageviews', 'media_cost',
@@ -953,8 +986,9 @@ def copy_stats_to_row(stat, row):
                 'avg_cost_per_visit']:
         row[key] = stat.get(key)
 
-    for key in [k for k in stat.keys() if k.startswith('conversion_goal_')]:
-        row[key] = stat.get(key)
+    for key in stat.keys():
+        if key.startswith('conversion_goal_') or key.startswith('pixel_') or key.startswith('avg_cost_per_pixel_'):
+            row[key] = stat.get(key)
 
     for key in SPECIAL_COLUMNS:
         if key in stat:

@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict
 
 from django.conf import settings
-from django.db.models import F, Q
+from django.db.models import Q
 from django.http import JsonResponse, Http404
 from django.views.generic import View
 from django.utils.decorators import method_decorator
@@ -58,14 +58,20 @@ class AccountsView(K1APIView):
         accounts = (dash.models.Account.objects
                     .all()
                     .exclude_archived()
-                    .prefetch_related('conversionpixel_set', 'conversionpixel_set__sourcetypepixel_set'))
+                    .prefetch_related('conversionpixel_set',
+                                      'conversionpixel_set__sourcetypepixel_set',
+                                      'conversionpixel_set__sourcetypepixel_set__source_type'))
         if account_ids:
             accounts = accounts.filter(id__in=account_ids.split(','))
 
+        accounts_audiences = self._get_audiences_for_accounts(accounts)
         account_dicts = []
         for account in accounts:
             pixels = []
             for pixel in account.conversionpixel_set.all():
+                if pixel.archived:
+                    continue
+
                 source_pixels = []
                 for source_pixel in pixel.sourcetypepixel_set.all():
                     source_pixel_dict = {
@@ -82,42 +88,48 @@ class AccountsView(K1APIView):
                 }
                 pixels.append(pixel_dict)
 
-            audiences = dash.models.Audience.objects.filter(pixel__account__id=account.id).prefetch_related('rule_set')
-            audiences_dicts = []
-            for audience in audiences:
-                rules = []
-                for rule in audience.rule_set.all():
-                    rule_dict = {
-                        'id': rule.id,
-                        'type': rule.type,
-                        'values': rule.value,
-                    }
-                    rules.append(rule_dict)
-
-                audience_dict = {
-                    'id': audience.id,
-                    'name': audience.name,
-                    'pixel_id': audience.pixel.id,
-                    'ttl': audience.ttl,
-                    'rules': rules,
-                }
-                audiences_dicts.append(audience_dict)
-
             account_dict = {
                 'id': account.id,
                 'pixels': pixels,
-                'custom_audiences': audiences_dicts,
+                'custom_audiences': accounts_audiences[account.id],
                 'outbrain_marketer_id': account.outbrain_marketer_id,
             }
             account_dicts.append(account_dict)
 
         return self.response_ok(account_dicts)
 
+    def _get_audiences_for_accounts(self, accounts):
+        accounts_audiences = defaultdict(list)
+        audiences = (dash.models.Audience.objects
+                     .filter(pixel__account__in=accounts, archived=False)
+                     .select_related('pixel')
+                     .prefetch_related('rule_set'))
+        for audience in audiences:
+            rules = []
+            for rule in audience.rule_set.all():
+                rule_dict = {
+                    'id': rule.id,
+                    'type': rule.type,
+                    'values': rule.value,
+                }
+                rules.append(rule_dict)
+
+            audience_dict = {
+                'id': audience.id,
+                'name': audience.name,
+                'pixel_id': audience.pixel.id,
+                'ttl': audience.ttl,
+                'rules': rules,
+            }
+            accounts_audiences[audience.pixel.account_id].append(audience_dict)
+        return accounts_audiences
+
 
 class SourcesView(K1APIView):
     def get(self, request):
         source_slugs = request.GET.get("source_slugs")
-        sources = dash.models.Source.objects.all().select_related('defaultsourcesettings')
+        sources = dash.models.Source.objects.all().select_related('defaultsourcesettings',
+                                                                  'defaultsourcesettings__credentials')
         if source_slugs:
             sources = sources.filter(bidder_slug__in=source_slugs.split(','))
 
@@ -349,16 +361,19 @@ class AdGroupsView(K1APIView):
                 'tracking_codes': ad_group_settings.get_tracking_codes(),
                 'target_devices': ad_group_settings.target_devices,
                 'target_regions': ad_group_settings.target_regions,
-                'iab_category': campaigns_settings_map[ad_group_settings.ad_group.campaign.id].iab_category,
+                'iab_category': campaigns_settings_map[ad_group_settings.ad_group.campaign.id]['iab_category'],
                 'retargeting': self._get_retargeting(ad_group_settings),
+                'demographic_targeting': ad_group_settings.bluekai_targeting,
+                'interest_targeting': ad_group_settings.interest_targeting,
+                'exclusion_interest_targeting': ad_group_settings.exclusion_interest_targeting,
                 'campaign_id': ad_group_settings.ad_group.campaign.id,
                 'account_id': ad_group_settings.ad_group.campaign.account.id,
                 'agency_id': None,
                 'goal_types': campaign_goal_types[ad_group_settings.ad_group.campaign.id],
             }
 
-            if ad_group_settings.ad_group.campaign.account.agency:
-                ad_group['agency_id'] = ad_group_settings.ad_group.campaign.account.agency.id
+            if ad_group_settings.ad_group.campaign.account.agency_id:
+                ad_group['agency_id'] = ad_group_settings.ad_group.campaign.account.agency_id
 
             ad_groups.append(ad_group)
 
@@ -372,8 +387,13 @@ class AdGroupsView(K1APIView):
             retargeting.append(
                 {'event_type': EVENT_RETARGET_ADGROUP, 'event_id': str(retargeting_ad_group_id), 'exclusion': False})
 
-        for audience in ad_group_settings.audience_set.all():
-            retargeting.append({'event_type': EVENT_CUSTOM_AUDIENCE, 'event_id': str(audience.id), 'exclusion': False})
+        for retargeting_ad_group_id in ad_group_settings.exclusion_retargeting_ad_groups:
+            retargeting.append(
+                {'event_type': EVENT_RETARGET_ADGROUP, 'event_id': str(retargeting_ad_group_id), 'exclusion': True})
+
+        # TODO: maticz, 26.8.2016: This will be changed.
+        # for audience in ad_group_settings.audience_set.all():
+        #     retargeting.append({'event_type': EVENT_CUSTOM_AUDIENCE, 'event_id': str(audience.id), 'exclusion': False})
 
         return retargeting
 
@@ -385,37 +405,36 @@ class AdGroupsView(K1APIView):
         '''
         campaign_goals = {cid: [] for cid in campaign_ids}
         for goal in dash.models.CampaignGoal.objects.filter(campaign__in=campaign_ids):
-            campaign_goals[goal.campaign.id].append((goal.primary, goal.type))
+            campaign_goals[goal.campaign_id].append((goal.primary, goal.type))
         for cid in campaign_goals.keys():
             campaign_goals[cid] = [tup[1] for tup in sorted(campaign_goals[cid], reverse=True)]
         return campaign_goals
 
     @staticmethod
     def _get_ad_groups_and_campaigns_settings(ad_group_ids, source_types, slugs):
-        ad_groups = dash.models.AdGroup.objects.all().exclude_archived()
+        current_ad_groups_settings = dash.models.AdGroupSettings.objects.all().group_current_settings()
 
         if ad_group_ids:
-            ad_groups = ad_groups.filter(id__in=ad_group_ids)
+            current_ad_groups_settings = current_ad_groups_settings.filter(ad_group_id__in=ad_group_ids)
 
         if source_types or slugs:
-            ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__in=ad_groups)
+            ad_group_sources = dash.models.AdGroupSource.objects.all()
             if source_types:
                 ad_group_sources = ad_group_sources.filter(source__source_type__type__in=source_types)
             if slugs:
                 ad_group_sources = ad_group_sources.filter(source__bidder_slug__in=slugs)
-            ad_groups = ad_groups.filter(id__in=ad_group_sources.values('ad_group_id'))
+            current_ad_groups_settings = current_ad_groups_settings.filter(ad_group_id__in=ad_group_sources.values('ad_group_id'))
 
         ad_groups_settings = (dash.models.AdGroupSettings.objects
-                              .filter(ad_group__in=ad_groups)
-                              .group_current_settings()
-                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
-                              .prefetch_related('audience_set'))
+                              .filter(pk__in=current_ad_groups_settings)
+                              .filter(archived=False)
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
 
         campaigns_settings = (dash.models.CampaignSettings.objects
-                              .filter(campaign__adgroup__in=ad_groups)
+                              .filter(campaign_id__in=set([ag.ad_group.campaign_id for ag in ad_groups_settings]))
                               .group_current_settings()
-                              .select_related('campaign'))
-        campaigns_settings_map = {cs.campaign.id: cs for cs in campaigns_settings}
+                              .values('campaign_id', 'iab_category'))
+        campaigns_settings_map = {cs['campaign_id']: cs for cs in campaigns_settings}
 
         return ad_groups_settings, campaigns_settings_map
 
@@ -463,7 +482,8 @@ class AdGroupSourcesView(K1APIView):
         ad_group_source_settings = (ag_source_settings_query
                                     .group_current_settings()
                                     .select_related('ad_group_source',
-                                                    'ad_group_source__source'))
+                                                    'ad_group_source__source',
+                                                    'ad_group_source__source__source_type'))
 
         # build the list of objects
         ad_group_sources = []
@@ -545,7 +565,11 @@ class ContentAdsView(K1APIView):
     def get(self, request):
         content_ad_ids = request.GET.get('content_ad_ids')
         ad_group_ids = request.GET.get('ad_group_ids')
-        content_ads = dash.models.ContentAd.objects.all().exclude_archived()
+        include_archived = request.GET.get('include_archived') == 'True'
+
+        content_ads = dash.models.ContentAd.objects.all()
+        if not include_archived:
+            content_ads = content_ads.exclude_archived()
         if content_ad_ids:
             content_ad_ids = content_ad_ids.split(',')
             content_ads = content_ads.filter(id__in=content_ad_ids)

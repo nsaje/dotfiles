@@ -17,8 +17,8 @@ describe('zemGridPubSub', function () {
 
         var spyOnMetaDataUpdate = jasmine.createSpy();
         var spyOnDataUpdate = jasmine.createSpy();
-        pubsub.register(pubsub.EVENTS.METADATA_UPDATED, spyOnMetaDataUpdate);
-        pubsub.register(pubsub.EVENTS.DATA_UPDATED, spyOnDataUpdate);
+        pubsub.register(pubsub.EVENTS.METADATA_UPDATED, null, spyOnMetaDataUpdate);
+        pubsub.register(pubsub.EVENTS.DATA_UPDATED, null, spyOnDataUpdate);
 
         var metaData = {};
         var data = {};

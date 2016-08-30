@@ -23,11 +23,12 @@ oneApp.directive('zemGridFooter', [function () {
                 element.css({
                     '-webkit-transform': translateCssProperty,
                     '-ms-transform': translateCssProperty,
+                    '-moz-transform': translateCssProperty,
                     'transform': translateCssProperty,
                 });
             }
 
-            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, function (event, leftOffset) {
+            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, scope, function (event, leftOffset) {
                 handleHorizontalScroll(leftOffset);
             });
         },

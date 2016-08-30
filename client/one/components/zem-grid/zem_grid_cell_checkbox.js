@@ -26,7 +26,7 @@ oneApp.directive('zemGridCellCheckbox', [function () {
             function initialize () {
                 var pubsub = vm.grid.meta.pubsub;
                 updateModel();
-                pubsub.register(pubsub.EVENTS.EXT_SELECTION_UPDATED, updateModel);
+                pubsub.register(pubsub.EVENTS.EXT_SELECTION_UPDATED, $scope, updateModel);
                 $scope.$watch('ctrl.row', updateModel);
             }
 

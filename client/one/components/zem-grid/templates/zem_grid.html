@@ -1,4 +1,4 @@
-<div>
+<div zem-grid-copy>
     <zem-grid-notifications ng-if="ctrl.grid.meta.initialized" grid="ctrl.grid"></zem-grid-notifications>
     <div class="zem-grid-container loader-container">
         <div class="loader" ng-show="ctrl.grid.meta.loading"></div>
@@ -97,7 +97,7 @@
             <div ng-if="!ctrl.isSaveRequestInProgress() || ctrl.showLoader" class="edit-form">
                 <span class="currency-input">
                     <span class="prefix">$</span>
-                    <input type="text" ng-model="ctrl.editFormInputValue" ng-trim="false" ng-change="ctrl.filterInput()" focus ng-keydown="$event.keyCode === 13 && ctrl.save()"><!-- key code 13 = Enter -->
+                    <input type="text" ng-model="ctrl.editFormInputValue" ng-trim="false" ng-change="ctrl.filterInput()" focus ng-keydown="ctrl.onKeyDown($event)">
                 </span>
                 <button class="save-button btn btn-primary" ng-class="{'disabled': ctrl.showLoader}" ng-click="ctrl.save()"><span ng-show="ctrl.showLoader" class="loader-image"></span><span ng-show="!ctrl.showLoader">Save</span></button>
                 <button class="cancel-button btn btn-default" ng-click="ctrl.closeModal()">Cancel</button>

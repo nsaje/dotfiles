@@ -612,8 +612,14 @@ class K1ApiTest(TestCase):
             u'target_devices': [],
             u'iab_category': u'IAB24',
             u'target_regions': [],
-            u'retargeting': [{u'event_id': u'1', u'event_type': u'aud', u'exclusion': False},
-                             {u'event_id': u'2', u'event_type': u'aud', u'exclusion': False}],
+            u'retargeting': [
+                             {u'event_id': u'100', u'event_type': u'redirect_adgroup', u'exclusion': False},
+                             {u'event_id': u'200', u'event_type': u'redirect_adgroup', u'exclusion': True}],
+                             # {u'event_id': u'1', u'event_type': u'aud', u'exclusion': False},
+                             # {u'event_id': u'2', u'event_type': u'aud', u'exclusion': False}],
+            u'demographic_targeting': [u"or", "bluekai:1", "bluekai:2"],
+            u'interest_targeting': [u"tech", u"entertainment"],
+            u'exclusion_interest_targeting': [u"politics", u"war"],
             u'campaign_id': 1,
             u'account_id': 1,
             u'agency_id': 20,
@@ -648,6 +654,9 @@ class K1ApiTest(TestCase):
             u'account_id',
             u'agency_id',
             u'goal_types',
+            u'demographic_targeting',
+            u'interest_targeting',
+            u'exclusion_interest_targeting',
         }
 
         for item in data:
@@ -737,6 +746,28 @@ class K1ApiTest(TestCase):
             "tracker_urls": None
         }]
         self.assertEqual(data, expected)
+
+    def test_get_content_ads(self):
+        response = self.client.get(
+            reverse('k1api_new.content_ads'),
+            {'include_archived': False}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data_without_archived = data['response']
+
+        response = self.client.get(
+            reverse('k1api_new.content_ads'),
+            {'include_archived': True}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data_with_archived = data['response']
+
+        self.assertEqual(5, len(data_without_archived))
+        self.assertEqual(6, len(data_with_archived))
 
     def test_get_content_ads_sources(self):
         response = self.client.get(

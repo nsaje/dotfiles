@@ -215,7 +215,7 @@ describe('zemDataSource', function () {
             level: 2,
             offset: 1,
             limit: 10,
-            breakdownPage: [11],
+            breakdownParents: [11],
             breakdown: jasmine.any(Array),
             order: jasmine.any(String)
         });
@@ -341,7 +341,7 @@ describe('zemDataSource', function () {
             offset: jasmine.any(Number),
             limit: jasmine.any(Number),
             breakdown: jasmine.any(Array),
-            breakdownPage: jasmine.any(Array),
+            breakdownParents: jasmine.any(Array),
             order: order,
             startDate: dateRange.startDate,
             endDate: dateRange.endDate,

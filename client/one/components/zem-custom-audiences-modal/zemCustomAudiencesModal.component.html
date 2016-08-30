@@ -1,0 +1,88 @@
+<div>
+    <div class="modal-header">
+        <h4 class="modal-title">Create Custom Audience</h4>
+    </div>
+    <div class="modal-body form-horizontal">
+        <div class="form-group">
+            <label for="zem-custom-audiences-modal-name" class="col-xs-4 control-label">
+                Audience Name
+            </label>
+            <div class="col-xs-8">
+                <input type="text" id="zem-custom-audiences-modal-name" class="form-control" ng-model="audience.name" placeholder="Audience Name" />
+            </div>
+        </div>
+
+        <div class="form-group">
+             <label for="zem-custom-audience-modal-pixie-select" class="col-xs-4 control-label">
+                Choose pixel
+                <zem-help-popover content="The pixel that is the source of this traffic." placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
+            </label>
+            <div class="col-xs-8">
+                <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-pixie-select" class="form-control" ng-model="audience.pixelId">
+                    <ui-select-match placeholder="Select Pixel">{{ $select.selected.name }}</ui-select-match>
+                    <ui-select-choices repeat="pixel.id as pixel in pixels">
+                        {{ pixel.name }}
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="zem-custom-audience-modal-rule-select" class="col-xs-4 control-label">
+                Website traffic
+                <zem-help-popover content="Choose how you want to add people to your audience. Include all of your website visitors, or create rules that only add people who visit specific parts of your website." placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
+            </label>
+            <div class="col-xs-8">
+                <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-rule-select" class="form-control" ng-model="audience.ruleId">
+                    <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
+                    <ui-select-choices repeat="rule.id as rule in rules">
+                        {{ rule.name }}
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+        </div>
+
+        <div class="form-group m-b-l" ng-if="showRefererRules()">
+            <label class="col-xs-4 control-label"></label>
+            <div class="col-xs-8">
+                <div class="row">
+                    <div class="description">Include people who visit any web page that meets the following rules.</div>
+                    <div class="col-xs-4 p-l-none p-r-none">
+                        <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="audience.refererRuleId">
+                            <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
+                            <ui-select-choices repeat="rule.id as rule in refererRules">
+                                {{ rule.name }}
+                            </ui-select-choices>
+                        </ui-select>
+                    </div>
+                    <div class="col-xs-8 p-r-none">
+                        <input type="text" id="zem-custom-audiences-modal-referer-rule-value" class="form-control" ng-model="audience.refererRuleValue" placeholder="Add URL keywords" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="zem-custom-audience-modal-rule-select" class="col-xs-4 control-label">
+                In the last
+                <zem-help-popover content="<p class='m-b-s'>The number of days people will remain in your audience after they've visited your website. People will be removed from your audience after the set time period, unless they visit your website again.</p><p><strong>Maximum time:</strong> 90 days.</p>" placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
+            </label>
+            <div class="col-xs-8">
+                <div class="input-group">
+                    <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="audience.ttlDays">
+                        <ui-select-match placeholder="Select Days">{{ $select.selected.name }}</ui-select-match>
+                        <ui-select-choices repeat="ttlDay.value as ttlDay in ttlDays">
+                            {{ ttlDay.name }}
+                        </ui-select-choices>
+                    </ui-select>
+                    <span class="input-group-addon" id="basic-addon2">days</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-gray">Cancel</button>
+        <button type="button" class="btn btn-add pull-right">Create Audience</button>
+    </div>
+</div>

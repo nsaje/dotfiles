@@ -85,6 +85,10 @@ def count_ranked(field_name, rank):
     return 'SUM(CASE WHEN {} = {} THEN 1 ELSE 0 END)'.format(field_name, rank)
 
 
+def sum_mv_touchpointconversions(window):
+    return 'SUM(CASE WHEN conversion_window <= {} THEN conversion_count ELSE 0 END)'.format(window)
+
+
 def min_agr(field_name):
     return 'MAX("{field_name}")'.format(field_name=field_name)
 

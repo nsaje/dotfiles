@@ -20,14 +20,14 @@ def prepare_breakdown_top_rows(default_context):
     sql = backtosql.generate_sql('breakdown_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
-    if default_context.get('breakdown_constraints'):
-        params.extend(default_context['breakdown_constraints'].get_params())
+    if default_context.get('parent_constraints'):
+        params.extend(default_context['parent_constraints'].get_params())
 
     yesterday_params = []
     if 'yesterday_constraints' in default_context:
         yesterday_params = default_context['yesterday_constraints'].get_params()
-        if default_context.get('breakdown_constraints'):
-            yesterday_params.extend(default_context['breakdown_constraints'].get_params())
+        if default_context.get('parent_constraints'):
+            yesterday_params.extend(default_context['parent_constraints'].get_params())
 
     conversion_params = []
     if default_context.get('conversions_aggregates'):
@@ -51,15 +51,15 @@ def prepare_breakdown_struct_delivery_top_rows(default_context):
     sql = backtosql.generate_sql('breakdown_struct_delivery_top_rows.sql', default_context)
 
     params = default_context['constraints'].get_params()
-    if not default_context.get('breakdown_constraints'):
+    if not default_context.get('parent_constraints'):
         raise exc.MissingBreakdownConstraintsError()
 
-    params.extend(default_context['breakdown_constraints'].get_params())
+    params.extend(default_context['parent_constraints'].get_params())
 
     yesterday_params = []
     if 'yesterday_constraints' in default_context:
         yesterday_params = default_context['yesterday_constraints'].get_params()
-        yesterday_params.extend(default_context['breakdown_constraints'].get_params())
+        yesterday_params.extend(default_context['parent_constraints'].get_params())
 
     conversion_params = []
     if default_context.get('conversions_aggregates'):
@@ -107,11 +107,11 @@ def prepare_breakdown_time_top_rows(model, time_dimension, default_context, cons
     if 'yesterday_constraints' in default_context:
         yesterday_params = default_context['yesterday_constraints'].get_params()
 
-    if default_context.get('breakdown_constraints'):
-        params.extend(default_context['breakdown_constraints'].get_params())
+    if default_context.get('parent_constraints'):
+        params.extend(default_context['parent_constraints'].get_params())
 
         if 'yesterday_constraints' in default_context:
-            yesterday_params.extend(default_context['breakdown_constraints'].get_params())
+            yesterday_params.extend(default_context['parent_constraints'].get_params())
 
     conversion_params = []
     if default_context.get('conversions_aggregates'):

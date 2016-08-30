@@ -11,7 +11,7 @@ oneApp.directive('zemGridHeaderCellCheckbox', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_header_cell_checkbox.html',
-        controller: ['$element', 'zemGridConstants', function ($element, zemGridConstants) {
+        controller: ['$scope', '$element', 'zemGridConstants', function ($scope, $element, zemGridConstants) {
             var vm = this;
             var pubsub = this.grid.meta.pubsub;
             var selectionService = vm.grid.meta.selectionService;
@@ -27,7 +27,7 @@ oneApp.directive('zemGridHeaderCellCheckbox', [function () {
             initialize();
 
             function initialize () {
-                pubsub.register(pubsub.EVENTS.EXT_SELECTION_UPDATED, function () {
+                pubsub.register(pubsub.EVENTS.EXT_SELECTION_UPDATED, $scope, function () {
                     var selection = selectionService.getSelection();
                     var indeterminate =
                         selection.type === zemGridConstants.gridSelectionFilterType.CUSTOM ||

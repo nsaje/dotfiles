@@ -9,6 +9,8 @@ class Action(ConstantBase):
     SET_PUBLISHER_BLACKLIST = 'set_publisher_blacklist'
     SET_PROPERTY = 'set_property'
     CREATE_CAMPAIGN = 'create_campaign'
+    CREATE_CUSTOM_AUDIENCE = 'create_custom_audience'
+    CREATE_PIXEL = 'create_pixel'
 
     GET_CONTENT_AD_STATUS = 'get_content_ad_status'
     INSERT_CONTENT_AD = 'insert_content_ad'
@@ -25,6 +27,8 @@ class Action(ConstantBase):
         SET_PUBLISHER_BLACKLIST: 'Set publisher blacklist',
         SET_PROPERTY: 'Set property',
         CREATE_CAMPAIGN: 'Create campaign',
+        CREATE_CUSTOM_AUDIENCE: 'Create custom audience',
+        CREATE_PIXEL: 'Create pixel',
 
         GET_CONTENT_AD_STATUS: 'Get content ad status',
         INSERT_CONTENT_AD: 'Insert content ad',

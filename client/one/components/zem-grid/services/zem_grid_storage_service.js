@@ -5,6 +5,8 @@ oneApp.factory('zemGridStorageService', ['zemLocalStorageService', function (zem
     var LOCAL_STORAGE_NAMESPACE = 'zem-grid-local-storage';
     var KEY_COLUMNS = 'columns';
     var KEY_COLUMN_PRIMARY_GOAL = 'primary-goal';
+    var KEY_ORDER = 'order';
+    var DEFAULT_ORDER = '-clicks';
 
     function loadColumns (grid) {
         var columns = zemLocalStorageService.get(KEY_COLUMNS, LOCAL_STORAGE_NAMESPACE);
@@ -38,7 +40,7 @@ oneApp.factory('zemGridStorageService', ['zemLocalStorageService', function (zem
             var field = column.field;
             if (column.data.goal && column.data.default) field = KEY_COLUMN_PRIMARY_GOAL;
 
-            var idx = columns.indexOf (field);
+            var idx = columns.indexOf(field);
             if (column.visible && idx < 0) {
                 columns.push(field);
             }
@@ -49,8 +51,51 @@ oneApp.factory('zemGridStorageService', ['zemLocalStorageService', function (zem
         zemLocalStorageService.set(KEY_COLUMNS, columns, LOCAL_STORAGE_NAMESPACE);
     }
 
+    function loadOrder (grid) {
+        // Load order from local storage
+        // If order is used for column that is not available in
+        // current configuration (level, breakdown) use default one (-clicks)
+
+        var order = zemLocalStorageService.get(KEY_ORDER, LOCAL_STORAGE_NAMESPACE) || DEFAULT_ORDER;
+
+        var orderField = order;
+        if (orderField[0] === '-') orderField = orderField.substr(1);
+        var column = grid.meta.data.columns.filter(function (column) {
+            return orderField === (column.orderField || column.field);
+        })[0];
+
+        if (!column) order = DEFAULT_ORDER;
+
+        if (column && column.breakdowns) {
+            // check if column is available in current breakdown configuration
+            var breakdowns = grid.meta.dataService.getBreakdown().map(function (breakdown) {
+                return breakdown.query;
+            });
+            if (!intersects(column.breakdowns, breakdowns)) {
+                order = DEFAULT_ORDER;
+            }
+        }
+
+        grid.meta.dataService.setOrder(order, false);
+    }
+
+    function intersects (array1, array2) {
+        // TODO: move to util service
+        // Simple solution for finding if arrays are having common element
+        return array1.filter(function (n) {
+                return array2.indexOf(n) != -1;
+            }).length > 0;
+    }
+
+    function saveOrder (grid) {
+        var order = grid.meta.dataService.getOrder();
+        zemLocalStorageService.set(KEY_ORDER, order, LOCAL_STORAGE_NAMESPACE);
+    }
+
     return {
         loadColumns: loadColumns,
         saveColumns: saveColumns,
+        saveOrder: saveOrder,
+        loadOrder: loadOrder,
     };
 }]);

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import magic
+import decimal
 import re
 import unicodecsv
 import dateutil.parser
@@ -9,6 +10,8 @@ from collections import OrderedDict
 from collections import Counter
 
 from django import forms
+from django.contrib.postgres import forms as postgres_forms
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.db import transaction
 from django.core import validators
 
@@ -54,6 +57,53 @@ class TypedMultipleAnyChoiceField(forms.TypedMultipleChoiceField):
         return True
 
 
+class AdGroupAdminForm(forms.ModelForm):
+    SETTINGS_FIELDS = [
+        'notes',
+        'bluekai_targeting',
+        'interest_targeting',
+        'exclusion_interest_targeting',
+        'redirect_pixel_urls',
+        'redirect_javascript'
+    ]
+    notes = forms.CharField(required=False, widget=forms.Textarea)
+    bluekai_targeting = postgres_forms.JSONField(required=False)
+    interest_targeting = forms.MultipleChoiceField(
+        required=False,
+        choices=constants.InterestCategory.get_choices(),
+        widget=FilteredSelectMultiple(verbose_name="inclusion interest categories",
+                                      is_stacked=False)
+    )
+    exclusion_interest_targeting = forms.MultipleChoiceField(
+        required=False,
+        choices=constants.InterestCategory.get_choices(),
+        widget=FilteredSelectMultiple(verbose_name="exclusion interest categories",
+                                      is_stacked=False)
+    )
+    redirect_pixel_urls = postgres_forms.SimpleArrayField(
+        forms.CharField(),
+        required=False,
+        delimiter='\n',
+        widget=forms.Textarea,
+        help_text='Put every entry on a separate line'
+    )
+    redirect_javascript = forms.CharField(required=False, widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        initial = kwargs.get('initial', {})
+        initial['bluekai_targeting'] = []  # default to empty list instead of null
+        if 'instance' in kwargs:
+            settings = kwargs['instance'].get_current_settings()
+            for field in self.SETTINGS_FIELDS:
+                initial[field] = getattr(settings, field)
+        kwargs['initial'] = initial
+        super(AdGroupAdminForm, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = models.Campaign
+        fields = '__all__'
+
+
 class AdGroupSettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
@@ -67,12 +117,12 @@ class AdGroupSettingsForm(forms.Form):
     )
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(
-        min_value=0.03,
-        max_value=10,
+        min_value=decimal.Decimal('0.05'),
+        max_value=decimal.Decimal('10'),
         decimal_places=4,
         required=False,
         error_messages={
-            'min_value': 'Maximum CPC can\'t be lower than $0.03.',
+            'min_value': 'Maximum CPC can\'t be lower than $0.05.',
             'max_value': 'Maximum CPC can\'t be higher than $10.00.'
         }
     )
@@ -280,6 +330,10 @@ class AccountSettingsForm(forms.Form):
         max_length=127,
         required=False,
         error_messages={'required': 'Please specify account name.'}
+    )
+    agency = forms.CharField(
+        max_length=127,
+        required=False,
     )
     default_account_manager = forms.IntegerField(
         required=False
@@ -1025,12 +1079,17 @@ class BreakdownForm(forms.Form):
     )
 
     show_archived = forms.BooleanField(required=False)
-    show_blacklisted_publishers = forms.BooleanField(required=False)
+    show_blacklisted_publishers = forms.TypedChoiceField(
+            required=False,
+            choices=constants.PublisherBlacklistFilter.get_choices(),
+            coerce=str,
+            empty_value=None
+    )
 
     offset = forms.IntegerField(min_value=0, required=True)
     limit = forms.IntegerField(min_value=0, max_value=100, required=True)
 
-    breakdown_page = TypedMultipleAnyChoiceField(
+    parents = TypedMultipleAnyChoiceField(
         required=False,
         coerce=str,
     )

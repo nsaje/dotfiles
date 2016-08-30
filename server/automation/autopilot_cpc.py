@@ -2,9 +2,20 @@ import decimal
 import logging
 
 from automation.constants import CpcChangeComment
+from dash.constants import SourceType
 from automation import autopilot_settings
 
 logger = logging.getLogger(__name__)
+
+ACCOUNT_SOURCE_CPC_CONSTRAINTS = {
+    # King Content - Cisco
+    (324, SourceType.OUTBRAIN): (decimal.Decimal('0.65'), None),  # Reason: OB blacklist > 30
+}
+AD_GROUP_SOURCE_CPC_CONSTRAINTS = {
+    # BuildDirect: Sample Orders Experiment
+    (2183, SourceType.OUTBRAIN): (decimal.Decimal('0.65'), None),  # Reason: vertical targeting
+    (2184, SourceType.OUTBRAIN): (decimal.Decimal('0.65'), None),  # Reason: vertical targeting
+}
 
 
 def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
@@ -25,8 +36,15 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
         source_type = ag_source.source.source_type
         max_decimal_places = _get_cpc_max_decimal_places(source_type.cpc_decimal_places)
         proposed_cpc = _round_cpc(proposed_cpc, decimal_places=max_decimal_places)
-        proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments, max_decimal_places)
+        proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments,
+                                                       max_decimal_places)
         proposed_cpc = _threshold_source_constraints(proposed_cpc, source_type, cpc_change_comments)
+        proposed_cpc = _threshold_account_source_constraints(ad_group.campaign.account_id,
+                                                             proposed_cpc,
+                                                             source_type,
+                                                             cpc_change_comments)
+        proposed_cpc = _threshold_ad_group_source_constraints(ad_group.pk, proposed_cpc,
+                                                              source_type, cpc_change_comments)
         new_cpc_cc = proposed_cpc
         cpc_change_not_allowed_comments = set(cpc_change_comments) -\
             set(autopilot_settings.CPC_CHANGE_ALLOWED_COMMENTS)
@@ -105,6 +123,34 @@ def _threshold_increasing_cpc(current_cpc, new_cpc):
     if cpc_change > autopilot_settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE:
         return current_cpc + autopilot_settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE
     return new_cpc
+
+
+def _threshold_account_source_constraints(account_id, proposed_cpc, source_type, cpc_change_comments):
+    if (account_id, source_type.type) not in ACCOUNT_SOURCE_CPC_CONSTRAINTS:
+        return proposed_cpc
+
+    min_cpc, max_cpc = ACCOUNT_SOURCE_CPC_CONSTRAINTS[(account_id, source_type.type)]
+    if max_cpc and proposed_cpc > max_cpc:
+        cpc_change_comments += [CpcChangeComment.OVER_ACCOUNT_SOURCE_MIN_CPC]
+        return max_cpc
+    if min_cpc and proposed_cpc < min_cpc:
+        cpc_change_comments += [CpcChangeComment.UNDER_ACCOUNT_SOURCE_MIN_CPC]
+        return min_cpc
+    return proposed_cpc
+
+
+def _threshold_ad_group_source_constraints(ad_group_id, proposed_cpc, source_type, cpc_change_comments):
+    if (ad_group_id, source_type.type) not in AD_GROUP_SOURCE_CPC_CONSTRAINTS:
+        return proposed_cpc
+
+    min_cpc, max_cpc = AD_GROUP_SOURCE_CPC_CONSTRAINTS[(ad_group_id, source_type.type)]
+    if max_cpc and proposed_cpc > max_cpc:
+        cpc_change_comments += [CpcChangeComment.OVER_AD_GROUP_SOURCE_MIN_CPC]
+        return max_cpc
+    if min_cpc and proposed_cpc < min_cpc:
+        cpc_change_comments += [CpcChangeComment.UNDER_AD_GROUP_SOURCE_MIN_CPC]
+        return min_cpc
+    return proposed_cpc
 
 
 def _threshold_source_constraints(proposed_cpc, source_type, cpc_change_comments):

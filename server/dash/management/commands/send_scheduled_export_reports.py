@@ -2,13 +2,9 @@ import logging
 
 import influx
 
-from dash import models
 from dash import constants
 from dash import scheduled_report
-from dash import export
-
 from utils.command_helpers import ExceptionCommand
-from utils import email_helper
 
 logger = logging.getLogger(__name__)
 
@@ -21,39 +17,11 @@ class Command(ExceptionCommand):
         due_scheduled_reports = scheduled_report.get_due_scheduled_reports()
         num_reports_logs_made = num_success_logs = num_failed_logs = 0
         for sr in due_scheduled_reports:
-            report_log = models.ScheduledExportReportLog()
-            report_log.scheduled_report = sr
-
-            try:
-                start_date, end_date = scheduled_report.get_scheduled_report_date_range(sr.time_period)
-                email_adresses = sr.get_recipients_emails_list()
-                report_log.start_date = start_date
-                report_log.end_date = end_date
-                report_log.recipient_emails = ', '.join(email_adresses)
-
-                report_contents, report_filename = export.get_report_from_export_report(sr.report, start_date, end_date)
-                report_log.report_filename = report_filename
-
-                email_helper.send_scheduled_export_report(
-                    report_name=sr.name,
-                    frequency=constants.ScheduledReportSendingFrequency.get_text(sr.sending_frequency),
-                    granularity=constants.ScheduledReportGranularity.get_text(sr.report.granularity),
-                    entity_level=constants.ScheduledReportLevel.get_text(sr.report.level),
-                    entity_name=sr.report.get_exported_entity_name(),
-                    scheduled_by=sr.created_by.email,
-                    email_adresses=email_adresses,
-                    report_contents=report_contents,
-                    report_filename=report_filename)
-
-                report_log.state = constants.ScheduledReportSent.SUCCESS
+            report_log = scheduled_report.send_scheduled_report(sr)
+            if report_log.state == constants.ScheduledReportSent.SUCCESS:
                 num_success_logs += 1
-
-            except Exception as e:
-                logger.exception('Exception raised while sending scheduled export report.')
-                report_log.add_error(e.message)
+            elif report_log.state == constants.ScheduledReportSent.FAILED:
                 num_failed_logs += 1
-
-            report_log.save()
             num_reports_logs_made += 1
 
         influx.gauge('dash.scheduled_reposts.num_reports.total', len(due_scheduled_reports), type='due')

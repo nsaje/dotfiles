@@ -42,29 +42,26 @@ class Command(ExceptionCommand):
             'password': ret.get('instance_password'),
         }
 
-    def _find_string_in_login_page(session):
-        response = session.get(url)
+    def _find_string_in_login_page(self, session, demo_instance):
+        response = session.get(demo_instance['url'])
         body = response.text
-        csrf_token = session.cookies['csrftoken']
         if 'Zemanta One' not in body or 'Sign in' not in body:
             raise Exception('Invalid response from demo')
-        return session
 
-    def _try_to_login(session, demo_instance):
+    def _try_to_login(self, session, demo_instance):
         response = session.post(
-            url='%s/signin' % url,
+            url='%s/signin' % demo_instance['url'],
             data={
                 'username': demo_instance['username'],
                 'password': demo_instance['password'],
-                'csrfmiddlewaretoken': csrf_token
+                'csrfmiddlewaretoken': session.cookies['csrftoken']
                 },
             headers={'Referer': '%s/signin?next=/' % demo_instance['url']}
         )
         if response.status_code != 200:
             raise Exception('Invalid response code from demo signin')
-        return session
 
-    def _fetch_all_accounts_nav(session, demo_instance):
+    def _fetch_all_accounts_nav(self, session, demo_instance):
         response = session.get(
             url='%s/api/all_accounts/nav/' % demo_instance['url'], headers={'Accept': 'application/json', }
         )
@@ -73,6 +70,7 @@ class Command(ExceptionCommand):
         data = json.loads(response.text)
         if not data.get('success', False):
             raise Exception("Couldn't get basic nav data")
+
         return session
 
     def _check_demo_url(self, demo_instance):
@@ -80,9 +78,9 @@ class Command(ExceptionCommand):
         for _ in range(NUM_RETRIES):
             try:
                 session = requests.Session()
-                _find_string_in_login_page(session)
-                _try_to_login(session, demo_instance)
-                _fetch_all_accounts_nav(session, demo_instance)
+                self._find_string_in_login_page(session, demo_instance)
+                self._try_to_login(session, demo_instance)
+                self._fetch_all_accounts_nav(session, demo_instance)
                 return
 
             except Exception as err:

@@ -3,6 +3,7 @@ import datetime
 
 from dash import models
 from dash import constants as dash_constants
+from dash import campaign_goals as dash_campaign_goals
 
 from stats import constants
 from stats import helpers
@@ -30,8 +31,8 @@ def augment(breakdown, stats_rows, target_dimension=None):
 
     if target_dimension:
         for row in stats_rows:
-            row['breakdown_id'] = helpers.create_breakdown_id(breakdown, row)
-            row['parent_breakdown_id'] = helpers.create_breakdown_id(
+            row['breakdown_id'] = helpers.encode_breakdown_id(breakdown, row)
+            row['parent_breakdown_id'] = helpers.encode_breakdown_id(
                 constants.get_parent_breakdown(breakdown), row) if breakdown else None
 
             augment_row_delivery(row)

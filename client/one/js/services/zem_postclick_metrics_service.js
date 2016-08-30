@@ -167,20 +167,217 @@ oneApp.factory('zemPostclickMetricsService', function () {
         );
     }
 
-    function insertConversionGoalColumns (columns, position, isShown, isInternal) {
-        for (var i = 15; i > 0; i--) {
-            columns.splice(position, 0, {
-                name: 'Conversion Goal ' + i,
-                field: 'conversion_goal_' + i,
-                checked: false,
+    function insertAudienceOptimizationColumns (columns, position) {
+        columns.splice(position, 0, {
+            name: 'Avg. Cost per Minute',
+            field: 'avg_cost_per_minute',
+            checked: true,
+            type: 'currency',
+            shown: true,
+            internal: false,
+            help: 'Average cost per minute spent on site.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
+            name: 'Avg. Cost per Pageview',
+            field: 'avg_cost_per_pageview',
+            checked: true,
+            type: 'currency',
+            shown: true,
+            internal: false,
+            help: 'Average cost per pageview.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
+            name: 'Avg. Cost per Visit',
+            field: 'avg_cost_per_visit',
+            checked: true,
+            type: 'currency',
+            shown: true,
+            internal: false,
+            help: 'Average cost per visit.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
+            name: 'Avg. Cost per Non-Bounced Visit',
+            field: 'avg_cost_per_non_bounced_visit',
+            checked: true,
+            type: 'currency',
+            shown: true,
+            internal: false,
+            help: 'Average cost per non-bounced visit.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
+            name: 'Avg. Cost for New Visitor',
+            field: 'avg_cost_for_new_visitor',
+            checked: true,
+            type: 'currency',
+            shown: true,
+            internal: false,
+            help: 'Average cost for new visitor.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
+            field: 'conversion_goals_avg_cost_placeholder',
+            shown: false,
+        }, {
+            field: 'pixels_avg_cost_placeholder',
+            shown: false,
+        });
+    }
+
+
+    function insertConversionsPlaceholders (columns, position) {
+        columns.splice(
+            position,
+            0,
+            {
+                field: 'conversion_goals_placeholder',
+                shown: false,
+            },
+            {
+                field: 'pixels_placeholder',
+                shown: false,
+            }
+        );
+    }
+
+    function insertCPAPlaceholders (columns, position) {
+        columns.splice(
+            position,
+            0,
+            {
+                field: 'conversion_goals_avg_cost_placeholder',
+                shown: false,
+            },
+            {
+                field: 'pixels_avg_cost_placeholder',
+                shown: false,
+            }
+        );
+    }
+
+    function insertIntoColumns (columns, newColumns, placeholder) {
+        var columnPosition = findColumnPosition(columns, placeholder);
+        if (!columnPosition) return;
+
+        Array.prototype.splice.apply(columns, [columnPosition, 0].concat(newColumns));
+    }
+
+    function insertIntoCategories (categories, newFields, placeholder) {
+        var categoryPosition = findCategoryPosition(categories, placeholder);
+        if (!categoryPosition) return;
+
+        Array.prototype.splice.apply(categoryPosition.fields, [categoryPosition.position, 0].concat(newFields));
+    }
+
+    function setColumns (columns, categories, newColumns, placeholder) {
+        // add dynamic columns and category fields to position after placeholder
+        var newFields = newColumns.map(function (column) {
+            return column.field;
+        });
+
+        insertIntoColumns(columns, newColumns, placeholder);
+        insertIntoCategories(categories, newFields, placeholder);
+    }
+
+    function insertPixelColumns (columns, categories, pixels) {
+        if (!pixels) return;
+
+        var newColumns = [],
+            newAvgCostColumns = [];
+        angular.forEach(pixels, function (pixel) {
+            newColumns.push({
+                name: pixel.name,
+                field: pixel.id,
                 type: 'number',
                 help: 'Number of completions of the conversion goal',
-                shown: false,
-                internal: isInternal,
+                shown: true,
+                checked: false,
+                internal: false,
                 totalRow: true,
                 order: true,
                 initialOrder: 'desc',
             });
+
+            newAvgCostColumns.push({
+                name: 'CPA (' + pixel.name + ')',
+                field: 'avg_cost_per_' + pixel.id,
+                type: 'currency',
+                help: 'Average cost per acquisition.',
+                shown: true,
+                checked: false,
+                internal: false,
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc',
+            });
+        });
+
+        setColumns(columns, categories, newColumns, 'pixels_placeholder');
+        setColumns(columns, categories, newAvgCostColumns, 'pixels_avg_cost_placeholder');
+    }
+
+    function insertConversionGoalColumns (columns, categories, conversionGoals) {
+        if (!conversionGoals) return;
+
+        var newColumns = [],
+            newAvgCostColumns = [];
+        angular.forEach(conversionGoals, function (goal) {
+            newColumns.push({
+                name: goal.name,
+                field: goal.id,
+                type: 'number',
+                help: 'Number of completions of the conversion goal',
+                shown: true,
+                internal: false,
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc',
+            });
+
+            newAvgCostColumns.push({
+                name: 'CPA (' + goal.name + ')',
+                field: 'avg_cost_per_' + goal.id,
+                type: 'currency',
+                shown: true,
+                internal: false,
+                help: 'Average cost per acquisition.',
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc',
+            });
+        });
+
+        setColumns(columns, categories, newColumns, 'conversion_goals_placeholder');
+        setColumns(columns, categories, newAvgCostColumns, 'conversion_goals_avg_cost_placeholder');
+    }
+
+    function findCategoryPosition (categories, field) {
+        for (var i = 0; i < categories.length; i++) {
+            for (var j = 0; j < categories[i].fields.length; j++) {
+                if (categories[i].fields[j] === field) {
+                    return {
+                        fields: categories[i].fields,
+                        position: j + 1 // return next index
+                    };
+                }
+            }
+        }
+    }
+
+    function findColumnPosition (columns, field) {
+        for (var i = 0; i < columns.length; i++) {
+            if (columns[i].field === field) {
+                // return next index
+                return i + 1;
+            }
         }
     }
 
@@ -211,84 +408,94 @@ oneApp.factory('zemPostclickMetricsService', function () {
         }));
     }
 
-    function getValidChartMetrics (chartMetric1, chartMetric2, conversionGoals) {
-        conversionGoals = conversionGoals || [];
+    function findChartOptionPosition (chartOptions, field) {
+        for (var i = 0; i < chartOptions.length; i++) {
+            if (chartOptions[i].value === field) {
+                // return next index
+                return i + 1;
+            }
+        }
+    }
 
-        var cgIds = conversionGoals.map(function (conversionGoal) {
-            return conversionGoal.id;
+    function insertConversionsGoalChartOptions (chartOptions, conversionGoals) {
+        if (!conversionGoals) return;
+
+        var newOptions = [],
+            newGoalsOptions = [];
+        angular.forEach(conversionGoals, function (goal) {
+            newOptions.push({
+                value: goal.id,
+                name: goal.name,
+            });
+
+            newGoalsOptions.push({
+                value: 'avg_cost_per_' + goal.id,
+                name: 'CPA (' + goal.name + ')',
+            });
+        });
+        var conversionsPosition = findChartOptionPosition(chartOptions, constants.chartMetric.CONVERSION_GOALS_PLACEHOLDER);
+        Array.prototype.splice.apply(chartOptions, [conversionsPosition, 0].concat(newOptions));
+
+        var goalsPosition = findChartOptionPosition(chartOptions, constants.chartMetric.CONVERSION_GOALS_AVG_COST_PLACEHOLDER);
+        Array.prototype.splice.apply(chartOptions, [goalsPosition, 0].concat(newGoalsOptions));
+    }
+
+    function insertPixelChartOptions (chartOptions, pixels) {
+        if (!pixels) return;
+
+        var newOptions = [],
+            newGoalsOptions = [];
+        angular.forEach(pixels, function (pixel) {
+            newOptions.push({
+                value: pixel.id,
+                name: pixel.name,
+            });
+
+            newGoalsOptions.push({
+                value: 'avg_cost_per_' + pixel.id,
+                name: 'CPA (' + pixel.name + ')',
+            });
+        });
+        var conversionsPosition = findChartOptionPosition(chartOptions, constants.chartMetric.PIXELS_PLACEHOLDER);
+        Array.prototype.splice.apply(chartOptions, [conversionsPosition, 0].concat(newOptions));
+
+        var goalsPosition = findChartOptionPosition(chartOptions, constants.chartMetric.PIXELS_AVG_COST_PLACEHOLDER);
+        Array.prototype.splice.apply(chartOptions, [goalsPosition, 0].concat(newGoalsOptions));
+    }
+
+    function getValidChartMetrics (chartMetric1, chartMetric2, chartMetricOptions) {
+        var values = chartMetricOptions.filter(function (option) {
+            return !option.placeholder;
+        }).map(function (option) {
+            return option.value;
         });
 
-        var cgChartMetrics = [
-            constants.chartMetric.CONVERSION_GOAL1,
-            constants.chartMetric.CONVERSION_GOAL2,
-            constants.chartMetric.CONVERSION_GOAL3,
-            constants.chartMetric.CONVERSION_GOAL4,
-            constants.chartMetric.CONVERSION_GOAL5,
-            constants.chartMetric.CONVERSION_GOAL6,
-            constants.chartMetric.CONVERSION_GOAL7,
-            constants.chartMetric.CONVERSION_GOAL8,
-            constants.chartMetric.CONVERSION_GOAL9,
-            constants.chartMetric.CONVERSION_GOAL10,
-            constants.chartMetric.CONVERSION_GOAL11,
-            constants.chartMetric.CONVERSION_GOAL12,
-            constants.chartMetric.CONVERSION_GOAL13,
-            constants.chartMetric.CONVERSION_GOAL14,
-            constants.chartMetric.CONVERSION_GOAL15,
-        ];
-
-        if (cgChartMetrics.indexOf(chartMetric1) > -1 && cgIds.indexOf(chartMetric1) === -1) {
+        if (!chartMetric1 || !values || values.indexOf(chartMetric1) < 0) {
             chartMetric1 = constants.chartMetric.CLICKS;
         }
-
-        if (cgChartMetrics.indexOf(chartMetric2) > -1 && cgIds.indexOf(chartMetric2) === -1) {
+        if (!chartMetric2 || !values || values.indexOf(chartMetric2) < 0) {
             chartMetric2 = constants.chartMetric.IMPRESSIONS;
         }
 
         return {
-            chartMetric1: chartMetric1,
-            chartMetric2: chartMetric2,
+            metric1: chartMetric1,
+            metric2: chartMetric2,
         };
     }
 
-    function setConversionGoalChartOptions (chartOptions, conversionGoals) {
-        if (!conversionGoals || !conversionGoals.length) {
-            return;
-        }
-
-        conversionGoals.forEach(function (el, ix) {
-            for (var i = 0; i < chartOptions.length; i++) {
-                if (chartOptions[i].value === el.id) {
-                    chartOptions[i].name = el.name;
-                    chartOptions[i].shown = true;
-                }
-            }
-        });
-    }
-
-    function setConversionGoalColumnsDefaults (cols, conversionGoals) {
-        if (!conversionGoals || !conversionGoals.length) {
-            return;
-        }
-
-        conversionGoals.forEach(function (el, ix) {
-            for (var i = 0; i < cols.length; i++) {
-                if (cols[i].field === el.id) {
-                    cols[i].name = el.name;
-                    cols[i].shown = true;
-                }
-            }
-        });
-    }
-
     return {
+        insertAudienceOptimizationColumns: insertAudienceOptimizationColumns,
         insertAcquisitionColumns: insertAcquisitionColumns,
         insertEngagementColumns: insertEngagementColumns,
         insertConversionGoalColumns: insertConversionGoalColumns,
+        insertPixelColumns: insertPixelColumns,
+        insertConversionsPlaceholders: insertConversionsPlaceholders,
+        insertCPAPlaceholders: insertCPAPlaceholders,
         concatAcquisitionChartOptions: concatAcquisitionChartOptions,
         concatEngagementChartOptions: concatEngagementChartOptions,
         concatChartOptions: concatChartOptions,
+        insertPixelChartOptions: insertPixelChartOptions,
+        insertConversionsGoalChartOptions: insertConversionsGoalChartOptions,
         getValidChartMetrics: getValidChartMetrics,
-        setConversionGoalChartOptions: setConversionGoalChartOptions,
-        setConversionGoalColumnsDefaults: setConversionGoalColumnsDefaults
     };
 });

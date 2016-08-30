@@ -332,7 +332,7 @@ class get_custom_audiences(K1APIView):
         if not account_id:
             return self.response_error('Account id must be specified.')
 
-        audiences = dash.models.Audience.objects.filter(pixel__account__id=account_id).prefetch_related('rule_set')
+        audiences = dash.models.Audience.objects.filter(pixel__account__id=account_id, archived=False).prefetch_related('rule_set')
 
         audiences_dicts = []
         for audience in audiences:

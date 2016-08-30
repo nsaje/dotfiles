@@ -25,14 +25,23 @@
         width: 100%;
         overflow: hidden;
         background-color: @zem-grid-bg-color;
+        position: relative;
 
         .zem-grid-row {
             height: 45px;
+
+            // Rendering optimizations (speed up virtual scroll)
+            -webkit-transform: translateZ(0);
+            -ms-transform: translateZ(0);
+            -moz-transform: translateZ(0);
+            transform: translateZ(0);
+            will-change: transform;
 
             font-size: 0; // Hide whitespaces between inline elements
             white-space: nowrap; // Show all cells in the same row
 
             .zem-grid-cell {
+                background-color: inherit;
                 display: inline-block;
                 vertical-align: middle;
                 height: 45px;
@@ -120,6 +129,9 @@
 
         .zem-grid-header {
             font-weight: 500;
+            position: relative;
+            z-index: 100;
+
             .zem-grid-header-cell {
                 display: inline-block;
             }
@@ -341,6 +353,7 @@
 
                 &.expanded {
                     -webkit-transform: rotate(90deg);
+                    -moz-transform: rotate(90deg);
                     -ms-transform: rotate(90deg);
                     transform: rotate(90deg);
                 }

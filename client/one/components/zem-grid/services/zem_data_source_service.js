@@ -218,7 +218,7 @@ oneApp.factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($
                 offset: offset,
                 limit: limit,
                 breakdown: selectedBreakdown.slice(0, level),
-                breakdownPage: breakdowns.map(function (breakdown) {
+                breakdownParents: breakdowns.map(function (breakdown) {
                     return breakdown.breakdownId;
                 }),
             };

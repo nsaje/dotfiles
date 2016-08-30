@@ -119,6 +119,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/account_account.html',
             controller: 'AccountAccountCtrl',
         })
+        .state('main.accounts.customAudiences', {
+            url: '/audiences',
+            templateUrl: '/partials/account_custom_audiences.html',
+            controller: 'AccountCustomAudiencesCtrl',
+        })
         .state('main.accounts.archived', {
             url: '/archived',
             templateUrl: '/partials/account_settings.html',

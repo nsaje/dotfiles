@@ -1,5 +1,5 @@
 /*globals angular,oneApp,constants,options,moment*/
-oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService) { // eslint-disable-line max-len
+oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService) { // eslint-disable-line max-len
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -411,7 +411,15 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                 'campaign_manager'
             ]
         },
-        zemOptimisationMetricsService.createColumnCategories(),
+        {
+            name: 'Conversions',
+            fields: ['conversion_goals_placeholder', 'pixels_placeholder']
+        },
+        {
+            'name': 'Goals',
+            'fields': ['avg_cost_per_visit', 'avg_cost_for_new_visitor', 'avg_cost_per_pageview',
+                       'avg_cost_per_non_bounced_visit', 'avg_cost_per_minute', 'pixels_avg_cost_placeholder'],
+        },
         {
             'name': 'Data Sync',
             'fields': ['last_sync']
@@ -433,11 +441,19 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );
 
-        zemOptimisationMetricsService.insertAudienceOptimizationColumns(
+        zemPostclickMetricsService.insertConversionsPlaceholders(
             $scope.columns,
-            $scope.columns.length - 2,
-            $scope.hasPermission('zemauth.campaign_goal_optimization'),
-            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+            $scope.columns.length - 2
+        );
+
+        zemPostclickMetricsService.insertAudienceOptimizationColumns(
+            $scope.columns,
+            $scope.columns.length - 2
+        );
+
+        zemPostclickMetricsService.insertCPAPlaceholders(
+            $scope.columns,
+            $scope.columns.length - 2
         );
     };
 
@@ -469,35 +485,35 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            getDailyStats();
+            if (!$scope.isMetricInChartData(newValue, $scope.chartData)) {
+                getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
         }
     });
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
-            getDailyStats();
+            if (!$scope.isMetricInChartData(newValue, $scope.chartData)) {
+                getDailyStats();
+            } else {
+                // create a copy to trigger watch
+                $scope.chartData = angular.copy($scope.chartData);
+            }
         }
     });
 
     var getDailyStatsMetrics = function () {
-        var values = $scope.chartMetricOptions.map(function (option) {
-            return option.value;
-        });
-
         // always query for default metrics
-        var metrics = [constants.chartMetric.CLICKS, constants.chartMetric.IMPRESSIONS];
-        if (values.indexOf($scope.chartMetric1) === -1) {
-            $scope.chartMetric1 = constants.chartMetric.CLICKS;
-        } else {
-            metrics.push($scope.chartMetric1);
+        var metrics = [$scope.chartMetric1, $scope.chartMetric2];
+        if (metrics.indexOf(constants.chartMetric.CLICKS) < 0) {
+            metrics.push(constants.chartMetric.CLICKS);
         }
-
-        if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
-            $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
-        } else {
-            metrics.push($scope.chartMetric2);
+        if (metrics.indexOf(constants.chartMetric.IMPRESSIONS) < 0) {
+            metrics.push(constants.chartMetric.IMPRESSIONS);
         }
-
         return metrics;
     };
 
@@ -542,15 +558,19 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
         $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
             $scope.chartMetricOptions,
-            options.goalChartMetrics,
-            false
+            options.conversionChartMetrics
+        );
+
+        $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+            $scope.chartMetricOptions,
+            options.goalChartMetrics
         );
     };
 
     var getDailyStats = function () {
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), null).then(
             function (data) {
-                setChartOptions();
+                refreshChartOptions(data.pixels);
                 $scope.chartData = data.chartData;
             },
             function (data) {
@@ -558,6 +578,19 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                 return;
             }
         );
+    };
+
+    var refreshChartOptions = function (pixels) {
+        zemPostclickMetricsService.insertPixelChartOptions($scope.chartMetricOptions, pixels);
+
+        var validChartMetrics = zemPostclickMetricsService.getValidChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
+        if ($scope.chartMetric1 !== validChartMetrics.metric1) {
+            $scope.chartMetric1 = validChartMetrics.metric1;
+        }
+
+        if ($scope.chartMetric2 !== validChartMetrics.metric2) {
+            $scope.chartMetric2 = validChartMetrics.metric2;
+        }
     };
 
     $scope.getInfoboxData = function () {
@@ -598,6 +631,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                 $scope.order = data.order;
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
+                zemPostclickMetricsService.insertPixelColumns($scope.columns, $scope.columnCategories, data.pixels);
 
                 $scope.rows = $scope.rows.map(function (x) {
                     x.id = x.campaign;

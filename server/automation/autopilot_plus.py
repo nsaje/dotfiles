@@ -227,7 +227,7 @@ def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterd
 def _fetch_data(ad_groups, sources):
     today = dates_helper.local_today()
     yesterday = today - datetime.timedelta(days=1)
-    campaign_goals, conversion_goals = _get_autopilot_goals(ad_groups)
+    campaign_goals, conversion_goals, pixels = _get_autopilot_goals(ad_groups)
 
     yesterday_data = reports.api_contentads.query(
         yesterday,
@@ -251,6 +251,7 @@ def _fetch_data(ad_groups, sources):
         yesterday,
         breakdown=['ad_group', 'source'],
         conversion_goals=conversion_goals,
+        pixels=pixels,
         constraints={
             'ad_group': ad_groups,
             'source': sources,
@@ -279,6 +280,7 @@ def _find_corresponding_source_data(ag_source, days_ago_data, yesterday_data):
 def _get_autopilot_goals(ad_groups):
     campaign_goals = {}
     conversion_goals = []
+    pixels = []
     for adg in ad_groups:
         camp = adg.campaign
         if camp not in campaign_goals:
@@ -286,7 +288,9 @@ def _get_autopilot_goals(ad_groups):
             campaign_goals[camp] = primary_goal
             if primary_goal and primary_goal.type == dash.constants.CampaignGoalKPI.CPA:
                 conversion_goals.append(primary_goal.conversion_goal)
-    return campaign_goals, conversion_goals
+                if primary_goal.conversion_goal.type == dash.constants.ConversionGoalType.PIXEL:
+                    pixels.append(primary_goal.conversion_goal.pixel)
+    return campaign_goals, conversion_goals, pixels
 
 
 def _report_autopilot_exception(element, e):

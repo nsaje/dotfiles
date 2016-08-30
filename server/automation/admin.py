@@ -22,7 +22,7 @@ admin.site.register(models.CampaignBudgetDepletionNotification, CampaignBudgetDe
 
 
 class AutopilotAdGroupSourceBidCpcLogAdmin(admin.ModelAdmin):
-    search_fields = ['ad_group__name']
+    search_fields = ['ad_group__name', 'ad_group_id']
     list_display = (
         'campaign',
         'ad_group',
@@ -36,6 +36,7 @@ class AutopilotAdGroupSourceBidCpcLogAdmin(admin.ModelAdmin):
         'comments'
     )
     readonly_fields = ['created_dt']
+    date_hierarchy = 'created_dt'
 
 admin.site.register(models.AutopilotAdGroupSourceBidCpcLog, AutopilotAdGroupSourceBidCpcLogAdmin)
 

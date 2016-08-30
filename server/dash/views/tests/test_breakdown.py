@@ -12,6 +12,7 @@ from utils import test_helper
 from dash import models
 from dash.views import breakdown
 from dash import table
+from dash.constants import Level
 
 
 class ExtractConstraintsTest(TestCase):
@@ -24,7 +25,7 @@ class ExtractConstraintsTest(TestCase):
             'end_date': datetime.date(2016, 2, 3),
             'filtered_sources': models.Source.objects.filter(pk__in=[1, 3, 4]),
             'show_archived': True,
-            'breakdown_page': ['123', '323'],
+            'parents': ['123', '323'],
             'offset': 12,
             'limit': 20,
             'order': '-clicks',
@@ -34,8 +35,6 @@ class ExtractConstraintsTest(TestCase):
             'date__gte': datetime.date(2016, 1, 1),
             'date__lte': datetime.date(2016, 2, 3),
             'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
-            'filtered_agencies': None,
-            'filtered_account_types': None,
             'show_archived': True,
         })
 
@@ -46,7 +45,7 @@ class ExtractConstraintsTest(TestCase):
             'end_date': datetime.date(2016, 2, 3),
             'filtered_sources': models.Source.objects.filter(pk__in=[1, 3, 4]),
             'show_archived': True,
-            'breakdown_page': ['123', '323'],
+            'parents': ['123', '323'],
             'offset': 12,
             'limit': 20,
             'order': '-clicks',
@@ -55,18 +54,16 @@ class ExtractConstraintsTest(TestCase):
         self.assertDictEqual(
             breakdown.extract_constraints(
                 form_data,
-                account_id=1,
-                campaign_id=1
+                account=models.Account.objects.get(pk=1),
+                campaign=models.Campaign.objects.get(pk=1),
             ),
             {
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
-                'filtered_agencies': None,
-                'filtered_account_types': None,
                 'show_archived': True,
-                'account_id': 1,
-                'campaign_id': 1,
+                'account': models.Account.objects.get(pk=1),
+                'campaign': models.Campaign.objects.get(pk=1),
             }
         )
 
@@ -92,7 +89,8 @@ class AllAccountsBreakdownTestCase(TestCase):
     def test_post(self, mock_query):
         mock_query.return_value = {}
 
-        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature', 'all_accounts_accounts_view'])
+        test_helper.add_permissions(self.user, [
+            'can_access_table_breakdowns_feature', 'all_accounts_accounts_view', 'can_view_breakdown_by_delivery'])
 
         params = {
             'limit': 5,
@@ -102,7 +100,7 @@ class AllAccountsBreakdownTestCase(TestCase):
             'end_date': '2016-02-03',
             'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
-            'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
+            'parents': ['1-2-33', '1-2-34', '1-3-22'],
         }
 
         response = self.client.post(
@@ -116,14 +114,13 @@ class AllAccountsBreakdownTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         mock_query.assert_called_with(
+            Level.ALL_ACCOUNTS,
             self.user,
             ['account_id', 'campaign_id', 'dma', 'day'],
             {
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
-                'filtered_agencies': None,
-                'filtered_account_types': None,
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -134,7 +131,6 @@ class AllAccountsBreakdownTestCase(TestCase):
 
     @patch.object(table.AccountsAccountsTable, 'get')
     def test_post_base_level(self, mock_table, mock_query):
-
         mock_table.return_value = {
             'order': '-clicks',
             'pagination': {
@@ -215,7 +211,7 @@ class AllAccountsBreakdownTestCase(TestCase):
             'end_date': '2016-02-03',
             'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
-            'breakdown_page': None,
+            'parents': None,
         }
 
         response = self.client.post(
@@ -297,7 +293,8 @@ class AccountBreakdownTestCase(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_post(self, mock_query):
-        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature'])
+        test_helper.add_permissions(self.user, [
+            'can_access_table_breakdowns_feature', 'account_campaigns_view', 'can_view_breakdown_by_delivery'])
 
         mock_query.return_value = {}
 
@@ -309,7 +306,7 @@ class AccountBreakdownTestCase(TestCase):
             'end_date': '2016-02-03',
             'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
-            'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
+            'parents': ['1-2-33', '1-2-34', '1-3-22'],
         }
 
         response = self.client.post(
@@ -324,15 +321,14 @@ class AccountBreakdownTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         mock_query.assert_called_with(
+            Level.ACCOUNTS,
             self.user,
             ['campaign_id', 'source_id', 'dma', 'day'],
             {
-                'account_id': 1,
+                'account': models.Account.objects.get(pk=1),
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
-                'filtered_agencies': None,
-                'filtered_account_types': None,
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -343,7 +339,7 @@ class AccountBreakdownTestCase(TestCase):
 
     @patch.object(table.AccountCampaignsTable, 'get')
     def test_post_base_level(self, mock_table, mock_query):
-        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature'])
+        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature', 'account_campaigns_view'])
 
         mock_table.return_value = {
             'rows': [{
@@ -403,7 +399,7 @@ class AccountBreakdownTestCase(TestCase):
             'end_date': '2016-02-03',
             'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
-            'breakdown_page': None,
+            'parents': None,
         }
 
         response = self.client.post(
@@ -478,7 +474,8 @@ class CampaignBreakdownTestCase(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_post(self, mock_query):
-        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature'])
+        test_helper.add_permissions(self.user, [
+            'can_access_table_breakdowns_feature', 'can_view_breakdown_by_delivery'])
 
         mock_query.return_value = {}
 
@@ -490,7 +487,7 @@ class CampaignBreakdownTestCase(TestCase):
             'end_date': '2016-02-03',
             'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
-            'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
+            'parents': ['1-2-33', '1-2-34', '1-3-22'],
         }
 
         response = self.client.post(
@@ -505,15 +502,14 @@ class CampaignBreakdownTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         mock_query.assert_called_with(
+            Level.CAMPAIGNS,
             self.user,
             ['ad_group_id', 'source_id', 'dma', 'day'],
             {
-                'campaign_id': 1,
+                'campaign': models.Campaign.objects.get(pk=1),
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
-                'filtered_agencies': None,
-                'filtered_account_types': None,
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -543,7 +539,8 @@ class AdGroupBreakdownTestCase(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_post(self, mock_query):
-        test_helper.add_permissions(self.user, ['can_access_table_breakdowns_feature_on_ad_group_level'])
+        test_helper.add_permissions(
+            self.user, ['can_access_table_breakdowns_feature_on_ad_group_level', 'can_view_breakdown_by_delivery'])
 
         mock_query.return_value = {}
 
@@ -555,7 +552,7 @@ class AdGroupBreakdownTestCase(TestCase):
             'end_date': '2016-02-03',
             'filtered_sources': ['1', '3', '4'],
             'show_archived': 'true',
-            'breakdown_page': ['1-2-33', '1-2-34', '1-3-22'],
+            'parents': ['1-2-33', '1-2-34', '1-3-22'],
         }
 
         response = self.client.post(
@@ -570,15 +567,14 @@ class AdGroupBreakdownTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         mock_query.assert_called_with(
+            Level.AD_GROUPS,
             self.user,
             ['content_ad_id', 'source_id', 'dma', 'day'],
             {
-                'ad_group_id': 1,
+                'ad_group': models.AdGroup.objects.get(pk=1),
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
-                'filtered_agencies': None,
-                'filtered_account_types': None,
                 'show_archived': True,
             },
             ['1-2-33', '1-2-34', '1-3-22'],

@@ -42,7 +42,7 @@ oneApp.directive('zemGridCellBreakdownField', [function () {
                 var pubsub = vm.grid.meta.pubsub;
                 $scope.$watch('ctrl.row', updateModel);
                 $scope.$watch('ctrl.data', updateModel);
-                pubsub.register(pubsub.EVENTS.EXT_COLLAPSE_UPDATED, updateModel);
+                pubsub.register(pubsub.EVENTS.EXT_COLLAPSE_UPDATED, $scope, updateModel);
 
                 updateModel();
             }

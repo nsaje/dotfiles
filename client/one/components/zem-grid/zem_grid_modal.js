@@ -1,7 +1,7 @@
 /* globals oneApp, angular */
 'use strict';
 
-oneApp.directive('zemGridModal', ['$rootScope', '$http', '$templateCache', '$compile', '$document', function ($rootScope, $http, $templateCache, $compile, $document) { // eslint-disable-line max-len
+oneApp.directive('zemGridModal', ['$rootScope', '$timeout', '$http', '$templateCache', '$compile', '$document', function ($rootScope, $timeout, $http, $templateCache, $compile, $document) { // eslint-disable-line max-len
     var body;
     var pubsub;
     var deregisterLocationChangeStart;
@@ -49,10 +49,13 @@ oneApp.directive('zemGridModal', ['$rootScope', '$http', '$templateCache', '$com
         modal = compiledModal;
 
         // Focus element with 'focus' attribute
-        var inputToFocus = modal.find('[focus]');
-        if (inputToFocus.length) {
-            inputToFocus[0].focus();
-        }
+        $timeout(function () {
+            var inputToFocus = modal.find('[focus]');
+            if (inputToFocus.length) {
+                inputToFocus[0].focus();
+            }
+        }, 0);
+
 
         // Listen for clicks outside modal and close the modal on click
         // NOTE: Event listener for clicks on modal is stopping event propagation so that modal is not closed if user
@@ -64,8 +67,8 @@ oneApp.directive('zemGridModal', ['$rootScope', '$http', '$templateCache', '$com
         // Close modal when navigating to different route (e.g. using navigation search)
         deregisterLocationChangeStart = $rootScope.$on('$locationChangeStart', closeModal);
 
-        deregisterVerticalScroll = pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, closeModal);
-        deregisterHorizontalScroll = pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, closeModal);
+        deregisterVerticalScroll = pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, null, closeModal);
+        deregisterHorizontalScroll = pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, null, closeModal);
     }
 
     function closeModal () {

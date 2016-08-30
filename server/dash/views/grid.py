@@ -1,3 +1,11 @@
+"""
+Settings API Workaround - use old API to save settings and return updates
+
+TODO when we move base level:
+  - converters should not be needed anymore and should be deleted
+  - with that it becomes a pure view module for saving data, rename acording to that
+"""
+
 import datetime
 import json
 
@@ -12,9 +20,6 @@ from utils import api_common
 from utils import exc
 
 
-#
-# Settings API Workaround - use old API to save settings and return updates
-#
 class AdGroupSettings (api_common.BaseApiView):
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
@@ -30,7 +35,7 @@ class AdGroupSettings (api_common.BaseApiView):
         views.agency.AdGroupSettingsState().post(request, ad_group_id)
 
         response = {'rows': [{'ad_group': ad_group_id, 'state': state}]}
-        convert_resource_response(constants.Level.CAMPAIGNS, constants.Breakdown.AD_GROUP, response)
+        convert_resource_response(constants.Level.CAMPAIGNS, 'ad_group_id', response)
         return self.create_api_response(response)
 
 
@@ -55,7 +60,7 @@ class ContentAdSettings(api_common.BaseApiView):
         views.views.AdGroupContentAdState().post(request, ad_group.id)
 
         response = {'rows': [{'id': content_ad_id, 'status_setting': state}]}
-        convert_resource_response(constants.Level.AD_GROUPS, constants.Breakdown.CONTENT_AD, response)
+        convert_resource_response(constants.Level.AD_GROUPS, 'content_ad_id', response)
         return self.create_api_response(response)
 
 
@@ -82,7 +87,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         response.update(response_save)
         response.update(response_update)
         convert_update_response(response, source_id)
-        convert_resource_response(constants.Level.AD_GROUPS, constants.Breakdown.SOURCE, response)
+        convert_resource_response(constants.Level.AD_GROUPS, 'source_id', response)
 
         if 'autopilot_changed_sources' in response and response['autopilot_changed_sources']:
             response['notification'] = self.create_changed_sources_notification(response['autopilot_changed_sources'])
@@ -98,9 +103,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         }
 
 
-#
-# Converters - converting old Stats API to Breakdown Stats API
-#
 def convert_update_response(response, updated_id):
     if 'rows' in response:
         rows = []
@@ -113,24 +115,25 @@ def convert_update_response(response, updated_id):
         del response['editable_fields']
 
 
-def convert_resource_response(level, breakdown, response):
+def convert_resource_response(level, base_dimension, response):
     if 'rows' in response:
-        _convert_breakdown_fields(level, breakdown, response)
-        _convert_status_field(level, breakdown, response)
-        _convert_status_setting_field(level, breakdown, response)
+        _convert_breakdown_fields(base_dimension, response)
+        _convert_status_field(level, base_dimension, response)
+        _convert_status_setting_field(level, base_dimension, response)
     return response
 
 
-def _convert_breakdown_fields(level, breakdown, response):
-    # id and name keys used in rows
-    id_key = 'id'
-    name_key = 'name'
-
+def _convert_breakdown_fields(base_dimension, response):
     # Keys varies in some level/breakdown variations
-    id_key = breakdown if breakdown in [constants.Breakdown.CAMPAIGN, constants.Breakdown.AD_GROUP] else id_key
-    name_key = 'title' if breakdown == constants.Breakdown.CONTENT_AD else name_key
+    id_key = {
+        'campaign_id': 'campaign',
+        'ad_group_id': 'ad_group',
+    }.get(base_dimension, 'id')
+
+    name_key = 'title' if base_dimension == 'content_ad_id' else 'name'
     breakdown_id_fields = [id_key]
-    if breakdown == constants.Breakdown.PUBLISHER:
+
+    if base_dimension == 'publisher':
         id_key = 'domain'
         name_key = 'domain'
         breakdown_id_fields = ['domain', 'source_id']
@@ -138,34 +141,35 @@ def _convert_breakdown_fields(level, breakdown, response):
     for row in response['rows']:
         if id_key in row:
             row['id'] = row[id_key]
-            row['breakdown_id'] = stats.helpers.create_breakdown_id(breakdown_id_fields, row)
+            row['breakdown_id'] = stats.helpers.encode_breakdown_id(breakdown_id_fields, row)
             row['parent_breakdown_id'] = None
         if name_key in row:
             row['breakdown_name'] = row[name_key]
 
 
-def _convert_status_field(level, breakdown, response):
+def _convert_status_field(level, base_dimension, response):
+    # TODO this shouldn't be necessary when we migrate base level to stats
     for row in response['rows']:
-        if breakdown == constants.Breakdown.ACCOUNT and 'status' in row:
+        if base_dimension == 'account_id' and 'status' in row:
             row['status'] = {'value': row['status']}
 
-        if breakdown == constants.Breakdown.CAMPAIGN and 'state' in row:
+        if base_dimension == 'campaign_id' and 'state' in row:
             row['status'] = {'value': row['state']}
             del row['state']
 
-        if breakdown == constants.Breakdown.AD_GROUP and 'state' in row:
+        if base_dimension == 'ad_group_id' and 'state' in row:
             row['status'] = {'value': row['state']}
             row['state'] = {'value': row['state']}
 
-        if breakdown == constants.Breakdown.CONTENT_AD and 'status_setting' in row:
+        if base_dimension == 'content_ad_id' and 'status_setting' in row:
             row['status'] = {'value': row['status_setting']}
 
-        if breakdown == constants.Breakdown.SOURCE and \
+        if base_dimension == 'source_id' and \
                 level in [constants.Level.ALL_ACCOUNTS, constants.Level.ACCOUNTS, constants.Level.CAMPAIGNS] \
                 and 'status' in row:
             row['status'] = {'value': row['status']}
 
-        if breakdown == constants.Breakdown.SOURCE and level == constants.Level.AD_GROUPS:
+        if base_dimension == 'source_id' and level == constants.Level.AD_GROUPS:
             status = {'value': row['status']}
             if 'notifications' in response:
                 # Notifications are only set for rows for enabled sources in paused ad groups. This is a workaround to
@@ -178,15 +182,15 @@ def _convert_status_field(level, breakdown, response):
                         status['important'] = True
             row['status'] = status
 
-        if breakdown == constants.Breakdown.PUBLISHER:
+        if base_dimension == 'publisher':
             status = {'value': row['status']}
             if 'blacklisted_level_description' in row:
                 status['popover_message'] = row['blacklisted_level_description']
             row['status'] = status
 
 
-def _convert_status_setting_field(level, breakdown, response):
-    if level != constants.Level.AD_GROUPS or breakdown not in [constants.Breakdown.CONTENT_AD, constants.Breakdown.SOURCE]:
+def _convert_status_setting_field(level, base_dimension, response):
+    if level != constants.Level.AD_GROUPS or base_dimension not in ['content_ad_id', 'source_id']:
         return
 
     for row in response['rows']:

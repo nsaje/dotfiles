@@ -199,7 +199,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 $scope.showArchivedSelected = zemFilterService.getShowArchived();
 
                 $scope.enablePublisherFilter = zemFilterService.getShowBlacklistedPublishers();
-                $scope.showPublisherSelected = zemFilterService.getBlacklistedPublishers();
+                $scope.showPublisherSelected = zemFilterService.getBlacklistedPublishers() || 'all';
                 $scope.refreshAvailableSources();
                 $scope.refreshAgencies();
                 $scope.refreshAccountTypes();

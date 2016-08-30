@@ -149,6 +149,54 @@
                 </div>
             </div>
 
+            <!-- additional targeting -->
+            <div ng-if="hasPermission('zemauth.can_view_additional_targeting')">
+                <div class="form-group m-b-s" ng-if="settings.interestTargeting.length || settings.exclusionInterestTargeting.length || settings.notes">
+                    <label class="col-xs-12 control-label">Additional targeting</label>
+                </div>
+                <div class="form-group m-l-s" ng-if="settings.interestTargeting.length || settings.exclusionInterestTargeting.length">
+                    <label class="col-xs-12">Interest targeting</label>
+                    <div class="col-xs-2" ng-if="settings.interestTargeting.length">
+                        <div class="text-success">Included</div>
+                        <ul class="with-icons ul-checkmarks">
+                            <li ng-repeat="category in settings.interestTargeting" class="capitalized">{{category}}</li>
+                        </ul>
+                        </div>
+                    <div class="col-xs-2" ng-if="settings.exclusionInterestTargeting.length">
+                        <div class="text-danger">Excluded</div>
+                        <ul class="with-icons ul-remove">
+                            <li ng-repeat="category in settings.exclusionInterestTargeting" class="capitalized">{{category}}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="form-group m-l-s" ng-if="settings.notes">
+                    <label class="col-xs-12">Notes</label>
+                    <div class="col-xs-5">
+                        <div class="textarea-with-border pre" readonly>{{settings.notes}}</div>
+                    </div>
+                </div>
+                <div class="form-group m-b-xs" ng-if="settings.redirectPixelUrls.length || settings.redirectJavascript">
+                    <label class="col-xs-12 control-label">Pixel retargeting</label>
+                </div>
+                <div class="form-group m-l-s" ng-if="settings.redirectPixelUrls.length || settings.redirectJavascript">
+                    <div ng-if="settings.redirectPixelUrls.length">
+                        <label class="col-xs-12">Tags</label>
+                        <div class="col-xs-12">
+                            <ul>
+                                  <li ng-repeat="pixelUrl in settings.redirectPixelUrls">{{pixelUrl}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div ng-if="settings.redirectJavascript">
+                        <label class="col-xs-12 m-b-xs">Javascript</label>
+                        <div class="col-xs-5">
+                            <div class="textarea-with-border pre">{{settings.redirectJavascript}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- end additional targeting -->
+
             <div class="form-group" ng-class="{'has-error': !!errors.trackingCode}">
                 <label for="tracking-input" class="col-xs-2 control-label">
                     Tracking codes

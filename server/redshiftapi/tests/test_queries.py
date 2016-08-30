@@ -142,9 +142,9 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = []
+        parents = []
 
-        context = m.get_default_context([], constraints, breakdown_constraints, 'total_seconds', None, None)
+        context = m.get_default_context([], constraints, parents, 'total_seconds', None, None)
 
         sql, params = queries.prepare_breakdown_top_rows(context)
 
@@ -185,9 +185,9 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = []
+        parents = []
 
-        context = m.get_default_context(['account_id'], constraints, breakdown_constraints, 'total_seconds', None, None)
+        context = m.get_default_context(['account_id'], constraints, parents, 'total_seconds', None, None)
 
         sql, params = queries.prepare_breakdown_top_rows(context)
 
@@ -234,12 +234,12 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(['account_id', 'source_id'], constraints,
-                                        breakdown_constraints, 'total_seconds', 0, 10)
+                                        parents, 'total_seconds', 0, 10)
 
         sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
 
@@ -302,11 +302,11 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 8, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
-        context = m.get_default_context(['account_id'], constraints, breakdown_constraints, 'total_seconds', 0, 10)
+        context = m.get_default_context(['account_id'], constraints, parents, 'total_seconds', 0, 10)
 
         sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
 
@@ -349,7 +349,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
         WHERE r <= 10
         """)
 
-    def test_breakdown_struct_delivery_required_breakdown_constraints(self):
+    def test_breakdown_struct_delivery_required_parents(self):
         m = models.MVMaster()
         constraints = {
             'date__gte': datetime.date(2016, 4, 1),
@@ -372,14 +372,14 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 2, 16),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(
             ['account_id', 'week'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-clicks',
             1,
             2
@@ -440,14 +440,14 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 8, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(
             ['account_id', 'week'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-clicks',
             1,
             2
@@ -514,8 +514,18 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                     a.account_id AS account_id,
                     a.campaign_id AS campaign_id,
                     TRUNC(DATE_TRUNC('week', a.date)) AS week,
-                    SUM(CASE WHEN a.slug='test' AND a.conversion_window<=168 THEN conversion_count ELSE 0 END)
-                        conversion_goal_1
+                    SUM(CASE WHEN a.slug='test'
+                        AND a.account_id=1
+                        AND a.conversion_window<=24 THEN conversion_count ELSE 0 END) pixel_1_24,
+                    SUM(CASE WHEN a.slug='test'
+                        AND a.account_id=1
+                        AND a.conversion_window<=168 THEN conversion_count ELSE 0 END) pixel_1_168,
+                    SUM(CASE WHEN a.slug='test'
+                        AND a.account_id=1
+                        AND a.conversion_window<=720 THEN conversion_count ELSE 0 END) pixel_1_720,
+                    SUM(CASE WHEN a.slug='test'
+                        AND a.account_id=1
+                        AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160
                 FROM mv_touch_campaign a
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
                 GROUP BY 1, 2, 3
@@ -551,12 +561,18 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             b.conversion_goal_3,
             b.conversion_goal_4,
             b.conversion_goal_5,
-            b.conversion_goal_1,
-            b.avg_cost_per_conversion_goal_1,
+            b.pixel_1_24,
+            b.pixel_1_168,
+            b.pixel_1_720,
+            b.pixel_1_2160,
             b.avg_cost_per_conversion_goal_2,
             b.avg_cost_per_conversion_goal_3,
             b.avg_cost_per_conversion_goal_4,
-            b.avg_cost_per_conversion_goal_5
+            b.avg_cost_per_conversion_goal_5,
+            b.avg_cost_per_pixel_1_24,
+            b.avg_cost_per_pixel_1_168,
+            b.avg_cost_per_pixel_1_720,
+            b.avg_cost_per_pixel_1_2160
         FROM
         (SELECT temp_base.account_id,
                 temp_base.campaign_id,
@@ -568,12 +584,18 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 temp_conversions.conversion_goal_3,
                 temp_conversions.conversion_goal_4,
                 temp_conversions.conversion_goal_5,
-                temp_touchpointconversions.conversion_goal_1,
-                media_cost / NULLIF(conversion_goal_1, 0) avg_cost_per_conversion_goal_1,
+                temp_touchpointconversions.pixel_1_24,
+                temp_touchpointconversions.pixel_1_168,
+                temp_touchpointconversions.pixel_1_720,
+                temp_touchpointconversions.pixel_1_2160,
                 media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
                 media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
                 media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
                 media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
+                media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24,
+                media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168,
+                media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720,
+                media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160,
                 ROW_NUMBER() OVER (PARTITION BY temp_base.account_id, temp_base.campaign_id
                                     ORDER BY temp_base.clicks DESC NULLS LAST) AS r
         FROM temp_base NATURAL
@@ -601,8 +623,18 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 SELECT
                     a.account_id AS account_id,
                     a.campaign_id AS campaign_id,
-                    SUM(CASE WHEN a.slug='test' AND a.conversion_window<=168 THEN conversion_count ELSE 0 END)
-                        conversion_goal_1
+                    SUM(CASE WHEN a.slug='test'
+                        AND a.account_id=1
+                        AND a.conversion_window<=24 THEN conversion_count ELSE 0 END) pixel_1_24,
+                    SUM(CASE WHEN a.slug='test'
+                        AND a.account_id=1
+                        AND a.conversion_window<=168 THEN conversion_count ELSE 0 END) pixel_1_168,
+                    SUM(CASE WHEN a.slug='test'
+                        AND a.account_id=1
+                        AND a.conversion_window<=720 THEN conversion_count ELSE 0 END) pixel_1_720,
+                    SUM(CASE WHEN a.slug='test'
+                        AND a.account_id=1
+                        AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160
                 FROM mv_touch_campaign a
                 WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
                 GROUP BY 1, 2
@@ -636,12 +668,18 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             b.conversion_goal_3,
             b.conversion_goal_4,
             b.conversion_goal_5,
-            b.conversion_goal_1,
-            b.avg_cost_per_conversion_goal_1,
+            b.pixel_1_24,
+            b.pixel_1_168,
+            b.pixel_1_720,
+            b.pixel_1_2160,
             b.avg_cost_per_conversion_goal_2,
             b.avg_cost_per_conversion_goal_3,
             b.avg_cost_per_conversion_goal_4,
-            b.avg_cost_per_conversion_goal_5
+            b.avg_cost_per_conversion_goal_5,
+            b.avg_cost_per_pixel_1_24,
+            b.avg_cost_per_pixel_1_168,
+            b.avg_cost_per_pixel_1_720,
+            b.avg_cost_per_pixel_1_2160
         FROM (
             SELECT
                 temp_base.account_id,
@@ -653,12 +691,18 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 temp_conversions.conversion_goal_3,
                 temp_conversions.conversion_goal_4,
                 temp_conversions.conversion_goal_5,
-                temp_touchpointconversions.conversion_goal_1,
-                media_cost / NULLIF(conversion_goal_1, 0) avg_cost_per_conversion_goal_1,
+                temp_touchpointconversions.pixel_1_24,
+                temp_touchpointconversions.pixel_1_168,
+                temp_touchpointconversions.pixel_1_720,
+                temp_touchpointconversions.pixel_1_2160,
                 media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
                 media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
                 media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
                 media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
+                media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24,
+                media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168,
+                media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720,
+                media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160,
                 ROW_NUMBER() OVER (PARTITION BY temp_base.account_id ORDER BY temp_base.clicks DESC NULLS LAST) AS r
         FROM temp_base NATURAL
         LEFT OUTER JOIN temp_yesterday NATURAL
@@ -706,23 +750,25 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
     def test_breakdown_time_top_rows(self, mock_local_today):
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
+        campaign = dash.models.Campaign.objects.get(id=1)
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
+        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
 
-        m = SmallMaster(conversion_goals)
+        m = SmallMaster(conversion_goals, pixels)
 
         constraints = {
             'date__gte': datetime.date(2016, 4, 1),
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(
             ['account_id', 'campaign_id', 'week'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-clicks',
             0,
             10
@@ -751,28 +797,29 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             datetime.date(2016, 5, 1),
             132,
         ])
-
         self.assertSQLEquals(sql, self.breakdown_time_sql)
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
     def test_breakdown_struct_delivery_top_rows(self, mock_local_today):
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
+        campaign = dash.models.Campaign.objects.get(id=1)
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
+        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
 
-        m = SmallMaster(conversion_goals)
+        m = SmallMaster(conversion_goals, pixels)
 
         constraints = {
             'date__gte': datetime.date(2016, 4, 1),
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(
             ['account_id', 'campaign_id'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-clicks',
             0,
             10
@@ -799,23 +846,25 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
     def test_breakdown_device_type_top_rows(self, mock_local_today):
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
+        campaign = dash.models.Campaign.objects.get(id=1)
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
+        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
 
-        m = SmallMaster(conversion_goals)
+        m = SmallMaster(conversion_goals, pixels)
 
         constraints = {
             'date__gte': datetime.date(2016, 4, 1),
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         context = m.get_default_context(
             ['account_id', 'device_type'],
             constraints,
-            breakdown_constraints,
+            parents,
             '-clicks',
             0,
             10
@@ -835,21 +884,24 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
         self.assertSQLEquals(sql, self.breakdown_device_type_sql)
 
     def test_breakdown_struct_delivery_top_rows_order(self):
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=1)
-        m = SmallMaster(conversion_goals)
+        campaign = dash.models.Campaign.objects.get(id=1)
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
+        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
+        m = SmallMaster(conversion_goals, pixels)
 
         constraints = {
             'date__gte': datetime.date(2016, 4, 1),
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        breakdown_constraints = [
+        parents = [
             {'source_id': 132},
         ]
 
         orders = {
-            '-avg_cost_per_conversion_goal_1': 'ORDER BY media_cost / NULLIF(conversion_goal_1, 0) DESC',
-            'conversion_goal_1': 'ORDER BY temp_touchpointconversions.conversion_goal_1 ASC',
+            '-avg_cost_per_pixel_1_24': 'ORDER BY media_cost / NULLIF(pixel_1_24, 0) DESC',
+            '-avg_cost_per_conversion_goal_2': 'ORDER BY media_cost / NULLIF(conversion_goal_2, 0) DESC',
+            'pixel_1_24': 'ORDER BY temp_touchpointconversions.pixel_1_24 ASC',
             'conversion_goal_2': 'ORDER BY temp_conversions.conversion_goal_2 ASC',
             'clicks': 'ORDER BY temp_base.clicks ASC',
             '-yesterday_cost': 'ORDER BY temp_yesterday.yesterday_cost DESC'
@@ -860,7 +912,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             context = m.get_default_context(
                 ['account_id', 'campaign_id'],
                 constraints,
-                breakdown_constraints,
+                parents,
                 order,
                 0,
                 10

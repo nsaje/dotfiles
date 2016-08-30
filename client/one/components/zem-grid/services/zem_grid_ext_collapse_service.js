@@ -17,7 +17,7 @@ oneApp.factory('zemGridCollapseService', ['zemGridConstants', function (zemGridC
         this.setRowCollapsed = setRowCollapsed;
 
         function initialize () {
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, function () {
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, null, function () {
                 pubsub.notify(pubsub.EVENTS.EXT_COLLAPSE_UPDATED);
             });
         }

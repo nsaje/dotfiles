@@ -11,3 +11,4 @@ django-extensions==1.6.1
 django-queryinspect==0.1.0
 
 git+git://github.com/Zemanta/ci-metric-push.git#cipush
+

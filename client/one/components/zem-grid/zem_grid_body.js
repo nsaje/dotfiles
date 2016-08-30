@@ -16,7 +16,12 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_body.html',
         link: function (scope, element) {
-            scope.ctrl.grid.body.ui.element = element;
+            var grid = scope.ctrl.grid;
+            var pubsub = grid.meta.pubsub;
+
+            grid.body.ui.element = element;
+            grid.body.ui.scrollLeft = 0;
+            grid.body.ui.scrollTop = 0;
             scope.state = {
                 renderedRows: [],
             };
@@ -24,73 +29,30 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
             var visibleRows;
             var numberOfRenderedRows = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE
                                      + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
-            var pubsub = scope.ctrl.grid.meta.pubsub;
-            var requestAnimationFrame = zemGridUIService.requestAnimationFrame;
 
-            function getTranslateYStyle (top) {
-                var translateCssProperty = 'translateY(' + top + 'px)';
-
-                return {
-                    '-webkit-transform': translateCssProperty,
-                    '-ms-transform': translateCssProperty,
-                    'transform': translateCssProperty,
-                    'display': 'block',
-                };
-            }
-
-            var updateInProgress = false;
-            function requestUpdate (cb) {
-                if (!updateInProgress) {
-                    requestAnimationFrame(cb);
-                    updateInProgress = true;
-                }
-            }
-
-            var prevScrollLeft = 0;
-            var prevScrollTop = 0;
             function scrollListener (event) {
-                if (prevScrollLeft !== event.target.scrollLeft) {
-                    prevScrollLeft = event.target.scrollLeft;
+                if (grid.body.ui.scrollLeft !== event.target.scrollLeft) {
+                    grid.body.ui.scrollLeft = event.target.scrollLeft;
                     pubsub.notify(
                         pubsub.EVENTS.BODY_HORIZONTAL_SCROLL,
-                        prevScrollLeft
+                        grid.body.ui.scrollLeft
                     );
                 }
 
-                if (prevScrollTop !== event.target.scrollTop) {
-                    prevScrollTop = event.target.scrollTop;
+                if (grid.body.ui.scrollTop !== event.target.scrollTop) {
+                    grid.body.ui.scrollTop = event.target.scrollTop;
                     pubsub.notify(
                         pubsub.EVENTS.BODY_VERTICAL_SCROLL,
-                        prevScrollTop
+                        grid.body.ui.scrollTop
                     );
                 }
             }
-
-            var prevFirstRow = 0;
-            function handleVerticalScroll (scrollTop) {
-                var currFirstRow = Math.floor(scrollTop / zemGridConstants.gridBodyRendering.ROW_HEIGHT);
-                if (currFirstRow !== prevFirstRow) {
-                    updateRenderedRows(currFirstRow, true);
-                    prevFirstRow = currFirstRow;
-                }
-            }
-
-            function updateRenderedRows (firstRow, digest) {
-                requestUpdate(function () {
-                    scope.state.renderedRows = visibleRows.slice(firstRow, firstRow + numberOfRenderedRows);
-                    if (digest) {
-                        scope.$digest();
-                    }
-                    updateInProgress = false;
-                });
-            }
-
 
             var visibleRowsCount;
             function updateVisibleRows () {
                 visibleRows = [];
                 visibleRowsCount = 0;
-                scope.ctrl.grid.body.rows.forEach(function (row) {
+                grid.body.rows.forEach(function (row) {
                     if (row.visible) {
                         row.style = getTranslateYStyle(
                             visibleRowsCount * zemGridConstants.gridBodyRendering.ROW_HEIGHT
@@ -111,32 +73,46 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
 
                 for (var i = 0; i < visibleRows.length; i++) {
                     visibleRows[i].index = i % numberOfRenderedRows;
-                }
+               }
+
+                scope.ctrl.grid.body.visibleRows = visibleRows;
+                scope.state.renderedRows = visibleRows.slice(0, numberOfRenderedRows);
             }
 
-            function getTableHeightStyle () {
-                var height = visibleRowsCount * zemGridConstants.gridBodyRendering.ROW_HEIGHT;
+            function getTranslateYStyle (top) {
+                var translateCssProperty = 'translateY(' + top + 'px)';
+
                 return {
-                    height: height + 'px',
+                    '-webkit-transform': translateCssProperty,
+                    '-ms-transform': translateCssProperty,
+                    '-moz-transform': translateCssProperty,
+                    'transform': translateCssProperty,
+                    'display': 'block',
                 };
+            }
+
+            function updateTableStyle () {
+                // Update virtual scroll viewport (zem-gird-table)
+                var height = visibleRowsCount * zemGridConstants.gridBodyRendering.ROW_HEIGHT;
+                element.find('.zem-grid-table').css({
+                    height: height + 'px',
+                });
+
+                // Update scroll top position to fit new viewport size
+                if (element.height() + element.scrollTop() > height) {
+                    var scrollTop = Math.max(0, height - element.height());
+                    element.scrollTop(scrollTop);
+                    grid.body.ui.scrollTop = scrollTop;
+                }
             }
 
             function updateBody () {
                 updateVisibleRows();
-                scope.fullTableHeight = getTableHeightStyle();
-
-                if (visibleRowsCount < (prevFirstRow + numberOfRenderedRows)) {
-                    prevFirstRow = Math.max((visibleRowsCount - numberOfRenderedRows), 0);
-                }
-
-                updateRenderedRows(prevFirstRow, true);
+                updateTableStyle();
+                pubsub.notify(pubsub.EVENTS.BODY_ROWS_UPDATED);
             }
 
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, updateBody);
-
-            pubsub.register(pubsub.EVENTS.BODY_VERTICAL_SCROLL, function (event, scrollTop) {
-                handleVerticalScroll(scrollTop);
-            });
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, scope, updateBody);
 
             element.on('scroll', scrollListener);
         },

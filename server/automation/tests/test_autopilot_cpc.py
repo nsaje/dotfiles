@@ -133,6 +133,70 @@ class AutopilotCpcTestCase(test.TestCase):
                 Decimal(test_case[1]))
             self.assertEqual(comments, test_case[2])
 
+    @patch('automation.autopilot_cpc.ACCOUNT_SOURCE_CPC_CONSTRAINTS', {
+        (2, 'yahoo'): (None, Decimal('1.8')),
+        (2, 'outbrain'): (Decimal('0.65'), None),
+        (3, 'outbrain'): (Decimal('0.65'), Decimal('0.70')),
+    })
+    def test_threshold_account_source_constraints(self):
+        yahoo = dash.models.SourceType(type='yahoo')
+        ob = dash.models.SourceType(type='outbrain')
+        test_cases = (
+            # account, source, proposed_cpc, returned_cpc, returned_comments
+            (1, yahoo, '0.1', '0.1', []),
+            (2, yahoo, '1.0', '1.0', []),
+            (2, yahoo, '1.9', '1.8', [CpcChangeComment.OVER_ACCOUNT_SOURCE_MIN_CPC]),
+            (2, ob, '1.0', '1.0', []),
+            (2, ob, '0.4', '0.65', [CpcChangeComment.UNDER_ACCOUNT_SOURCE_MIN_CPC]),
+            (3, ob, '0.4', '0.65', [CpcChangeComment.UNDER_ACCOUNT_SOURCE_MIN_CPC]),
+            (3, ob, '0.67', '0.67', []),
+            (3, ob, '0.80', '0.70', [CpcChangeComment.OVER_ACCOUNT_SOURCE_MIN_CPC]),
+        )
+
+        for test_case in test_cases:
+            comments = []
+            self.assertEqual(
+                autopilot_cpc._threshold_account_source_constraints(
+                    test_case[0],
+                    Decimal(test_case[2]),
+                    test_case[1],
+                    comments
+                ),
+                Decimal(test_case[3]))
+            self.assertEqual(comments, test_case[4])
+
+    @patch('automation.autopilot_cpc.AD_GROUP_SOURCE_CPC_CONSTRAINTS', {
+        (2, 'yahoo'): (None, Decimal('1.8')),
+        (2, 'outbrain'): (Decimal('0.65'), None),
+        (3, 'outbrain'): (Decimal('0.65'), Decimal('0.70')),
+    })
+    def test_threshold_ad_group_source_constraints(self):
+        yahoo = dash.models.SourceType(type='yahoo')
+        ob = dash.models.SourceType(type='outbrain')
+        test_cases = (
+            # account, source, proposed_cpc, returned_cpc, returned_comments
+            (1, yahoo, '0.1', '0.1', []),
+            (2, yahoo, '1.0', '1.0', []),
+            (2, yahoo, '1.9', '1.8', [CpcChangeComment.OVER_AD_GROUP_SOURCE_MIN_CPC]),
+            (2, ob, '1.0', '1.0', []),
+            (2, ob, '0.4', '0.65', [CpcChangeComment.UNDER_AD_GROUP_SOURCE_MIN_CPC]),
+            (3, ob, '0.4', '0.65', [CpcChangeComment.UNDER_AD_GROUP_SOURCE_MIN_CPC]),
+            (3, ob, '0.67', '0.67', []),
+            (3, ob, '0.80', '0.70', [CpcChangeComment.OVER_AD_GROUP_SOURCE_MIN_CPC]),
+        )
+
+        for test_case in test_cases:
+            comments = []
+            self.assertEqual(
+                autopilot_cpc._threshold_ad_group_source_constraints(
+                    test_case[0],
+                    Decimal(test_case[2]),
+                    test_case[1],
+                    comments
+                ),
+                Decimal(test_case[3]))
+            self.assertEqual(comments, test_case[4])
+
     def test_round_cpc(self):
         test_cases = (
             # cpc, rounded_cpc

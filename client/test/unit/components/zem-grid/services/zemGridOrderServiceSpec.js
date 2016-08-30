@@ -11,6 +11,7 @@ describe('zemGridOrderService', function () {
     beforeEach(module('one'));
 
     beforeEach(module(function ($provide) {
+        $provide.value('zemGridStorageService', {saveOrder: angular.noop, loadOrder: angular.noop});
         $provide.value('zemGridUIService', {resizeGridColumns: angular.noop});
     }));
 
@@ -59,13 +60,13 @@ describe('zemGridOrderService', function () {
         expect(orderService.getColumnOrder(grid.header.columns[2])).toBe(undefined);
 
         spyOn (grid.meta.dataService, 'getOrder').and.returnValue('orderField1');
-        pubsub.notify(pubsub.EVENTS.METADATA_UPDATED);
+        pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
         expect(orderService.getColumnOrder(grid.header.columns[0])).toBe(zemGridConstants.gridColumnOrder.ASC);
         expect(orderService.getColumnOrder(grid.header.columns[1])).toBe(zemGridConstants.gridColumnOrder.NONE);
         expect(orderService.getColumnOrder(grid.header.columns[2])).toBe(zemGridConstants.gridColumnOrder.NONE);
 
         grid.meta.dataService.getOrder.and.returnValue('field2');
-        pubsub.notify(pubsub.EVENTS.METADATA_UPDATED);
+        pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
         expect(orderService.getColumnOrder(grid.header.columns[0])).toBe(zemGridConstants.gridColumnOrder.NONE);
         expect(orderService.getColumnOrder(grid.header.columns[1])).toBe(zemGridConstants.gridColumnOrder.ASC);
         expect(orderService.getColumnOrder(grid.header.columns[2])).toBe(zemGridConstants.gridColumnOrder.NONE);
@@ -78,14 +79,41 @@ describe('zemGridOrderService', function () {
         spyOn(grid.meta.pubsub, 'notify').and.callThrough();
 
         var orderService = zemGridOrderService.createInstance(grid);
-        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.METADATA_UPDATED, jasmine.any(Function));
-        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.DATA_UPDATED, jasmine.any(Function));
+        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.METADATA_UPDATED, jasmine.any(Object), jasmine.any(Function));
+        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.DATA_UPDATED, jasmine.any(Object), jasmine.any(Function));
 
         pubsub.notify(pubsub.EVENTS.METADATA_UPDATED);
         expect(grid.meta.pubsub.notify).toHaveBeenCalledWith(pubsub.EVENTS.EXT_ORDER_UPDATED);
         expect(orderService.getColumnOrder(grid.header.columns[0])).toBe(zemGridConstants.gridColumnOrder.DESC);
         expect(orderService.getColumnOrder(grid.header.columns[1])).toBe(zemGridConstants.gridColumnOrder.NONE);
         expect(orderService.getColumnOrder(grid.header.columns[2])).toBe(zemGridConstants.gridColumnOrder.NONE);
+    });
+
+    it('should load order when meta data is updated for the first time', function () {
+        var grid = createGrid();
+        var pubsub = grid.meta.pubsub;
+        var orderService = zemGridOrderService.createInstance(grid);
+
+        spyOn(zemGridStorageService, 'loadOrder');
+
+        pubsub.notify(pubsub.EVENTS.METADATA_UPDATED);
+        expect(zemGridStorageService.loadOrder).toHaveBeenCalled();
+
+        zemGridStorageService.loadOrder.calls.reset();
+        pubsub.notify(pubsub.EVENTS.METADATA_UPDATED);
+        expect(zemGridStorageService.loadOrder).not.toHaveBeenCalled();
+    });
+
+    it('should save order configuration', function () {
+        var grid = createGrid();
+        var pubsub = grid.meta.pubsub;
+        var orderService = zemGridOrderService.createInstance(grid);
+
+        spyOn(zemGridStorageService, 'saveOrder');
+
+        pubsub.notify(pubsub.EVENTS.METADATA_UPDATED);
+        orderService.setColumnOrder(grid.header.columns[1], zemGridConstants.gridColumnOrder.ASC);
+        expect(zemGridStorageService.saveOrder).toHaveBeenCalled();
     });
 
     it('should keep only one order active', function () {

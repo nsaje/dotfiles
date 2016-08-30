@@ -1,6 +1,9 @@
 import copy
 
+from django.db.models import QuerySet, Model
+
 from utils import sort_helper
+from utils import exc
 
 from stats import constants
 from reports.db_raw_helpers import extract_obj_ids
@@ -11,32 +14,42 @@ def extract_stats_constraints(constraints):
     Copy constraints and remove all that are not part of the stats query.
     """
 
-    new_constraints = copy.copy(constraints)
+    new_constraints = {
+        'date__gte': constraints['date__gte'],
+        'date__lte': constraints['date__lte'],
+        'source_id': list(constraints['filtered_sources'].values_list('pk', flat=True)),
+        'account_id': (constraints['account'].id if 'account' in constraints else
+                       list(constraints['allowed_accounts'].values_list('pk', flat=True))),
+    }
 
-    filtered_sources = new_constraints.pop('filtered_sources', [])
-    new_constraints['source_id'] = [x.pk for x in filtered_sources]
+    if 'ad_group' in constraints:
+        new_constraints['ad_group_id'] = constraints['ad_group'].id
 
-    for removed in ('show_archived', 'filtered_agencies', 'filtered_account_types'):
-        new_constraints.pop(removed, None)
+    if 'campaign' in constraints:
+        new_constraints['campaign_id'] = constraints['campaign'].id
+    elif 'allowed_campaigns' in constraints:
+        new_constraints['campaign_id'] = list(constraints['allowed_campaigns'].values_list('pk', flat=True))
+
+    if 'account' in constraints:
+        new_constraints['account_id'] = constraints['account'].id
 
     return new_constraints
 
 
-def extract_stats_breakdown_constraints(breakdown, breakdown_page):
+def decode_parents(breakdown, parents):
     """
     Returns a list of parsed breakdown_ids or None.
     """
 
-    if not breakdown_page:
+    if not parents:
         return None
 
-    return [extract_breakdown_id(breakdown, breakdown_id_str) for breakdown_id_str in breakdown_page]
+    return [decode_breakdown_id(breakdown, breakdown_id_str) for breakdown_id_str in parents]
 
 
-# TODO breakdown_id might need different delimiter
-def extract_breakdown_id(breakdown, breakdown_id_str):
+def decode_breakdown_id(breakdown, breakdown_id_str):
     """
-    Creates a dict with constraints for a breakdown page.
+    Creates a dict with constraints from a breakdown id.
 
     Example:
     breakdown = [account, campaign, dma, day]
@@ -59,7 +72,7 @@ def extract_breakdown_id(breakdown, breakdown_id_str):
     return d
 
 
-def create_breakdown_id(breakdown, row):
+def encode_breakdown_id(breakdown, row):
     """
     Creates a breakdown id - string of consecutive ids separated by delimiter.
 
@@ -91,5 +104,57 @@ def extract_order_field(order, breakdown):
 
     if order_field in constants.SpecialDimensionNameKeys:
         order = prefix + constants.get_dimension_name_key(order_field)
+
+    return order
+
+
+def check_constraints_are_supported(constraints):
+    """
+    Checks whether constraints include only known keys of known types.
+    This way we check for programming mistakes.
+    """
+
+    query_set_keys = ['filtered_sources', 'filtered_agencies',
+                      'allowed_accounts', 'allowed_campaigns']
+
+    if 'filtered_sources' not in constraints:
+        raise exc.UnknownFieldBreakdownError("Missing filtered sources")
+
+    for key in query_set_keys:
+        if key in constraints and not isinstance(constraints[key], QuerySet):
+            raise exc.UnknownFieldBreakdownError("Value of '{}' should be a queryset".format(key))
+
+    if 'account' not in constraints and 'allowed_accounts' not in constraints:
+        raise exc.UnknownFieldBreakdownError("Constraints should include either 'account' or 'allowed_accounts")
+
+    model_keys = ['account', 'campaign', 'ad_group']
+    for key in model_keys:
+        if key in constraints and not isinstance(constraints[key], Model):
+            raise exc.UnknownFieldBreakdownError("Value of '{}' should be a django Model".format(key))
+
+    other_keys = ['show_archived', 'filtered_account_types', 'date__gte', 'date__lte']
+    unknown_keys = set(constraints.keys()) - set(query_set_keys) - set(model_keys) - set(other_keys)
+
+    if unknown_keys:
+        raise exc.UnknownFieldBreakdownError("Unknown fields in constraints {}".format(unknown_keys))
+
+
+# FIXME: Remove this hack
+def get_supported_order(order):
+    prefix, order_field = sort_helper.dissect_order(order)
+
+    if order_field == 'cost':
+        # cost is not supported anymore, this case needs to be handled in case this sort was cached in browser
+        return prefix + 'media_cost'
+
+    UNSUPPORTED_FIELDS = [
+        "name", "state", "status", "performance",
+        "min_bid_cpc", "max_bid_cpc", "daily_budget",
+        "pacing", "allocated_budgets", "spend_projection",
+        "license_fee_projection", "upload_time",
+    ] + [v for _, v in constants.SpecialDimensionNameKeys.items()]
+
+    if order_field in UNSUPPORTED_FIELDS:
+        return "-clicks"
 
     return order

@@ -1,1 +1,1 @@
-SUM(CASE WHEN {{ p }}slug='{{ goal_id }}' THEN conversion_count ELSE 0 END) {{ alias }}
+SUM (CASE WHEN {{ p }}slug='{{ goal_id }}' THEN conversion_count ELSE 0 END) {{ alias }}

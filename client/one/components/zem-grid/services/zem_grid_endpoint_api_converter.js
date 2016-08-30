@@ -24,6 +24,9 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         if (breakdown.conversion_goals) {
             convertedBreakdown.conversionGoals = breakdown.conversion_goals;
         }
+        if (breakdown.pixels) {
+            convertedBreakdown.pixels = breakdown.pixels;
+        }
         if (breakdown.enabling_autopilot_sources_allowed) {
             convertedBreakdown.enablingAutopilotSourcesAllowed = breakdown.enabling_autopilot_sources_allowed;
         }
@@ -36,6 +39,15 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         if (breakdown.notification) {
             convertedBreakdown.notification = breakdown.notification;
         }
+
+        zemGridEndpointColumns.setDynamicColumns(
+            metaData.columns,
+            metaData.categories,
+            breakdown.campaignGoals,
+            breakdown.conversionGoals,
+            breakdown.pixels
+        );
+
         if (breakdown.totals) {
             convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
         }
@@ -54,7 +66,7 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
 
     function convertConfigToApi (config) {
         return {
-            breakdown_page: config.breakdownPage,
+            parents: config.breakdownParents,
             start_date: config.startDate.format('YYYY-MM-DD'),
             end_date: config.endDate.format('YYYY-MM-DD'),
             show_archived: config.showArchived,

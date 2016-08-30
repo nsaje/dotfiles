@@ -9,7 +9,6 @@ from django.test import TestCase, Client, RequestFactory
 from django.test.utils import override_settings
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import Permission
 
 from zemauth.models import User
@@ -21,7 +20,6 @@ from dash.views import views
 from dash import history_helpers
 
 from utils import exc
-from utils.test_helper import add_permissions
 
 from reports import redshift
 import reports.models
@@ -183,6 +181,34 @@ class AccountsTest(TestCase):
             response_blob['data']
         )
         self.assertIsNotNone(acc.agency)
+
+    def test_put_agency_defaults(self):
+        user = User.objects.get(pk=2)
+        user.user_permissions.add(Permission.objects.get(codename='all_accounts_accounts_add_account'))
+
+        request = RequestFactory().put('accounts')
+        request.user = user
+
+        agency = models.Agency(
+            name='agency-name',
+            sales_representative=user,
+            default_account_type=constants.AccountType.TEST,
+        )
+        agency.save(request)
+        agency.users.add(user)
+
+        client = Client()
+        client.login(username=user.email, password='secret')
+
+        response = client.put(reverse('accounts_create'))
+
+        self.assertEqual(200, response.status_code)
+
+        account = models.Account.objects.all().order_by('-created_dt').first()
+        settings = account.get_current_settings()
+
+        self.assertEqual(user, settings.default_sales_representative)
+        self.assertEqual(constants.AccountType.TEST, settings.account_type)
 
 
 class AccountCampaignsTest(TestCase):

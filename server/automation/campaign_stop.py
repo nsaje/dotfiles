@@ -96,7 +96,7 @@ def _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
 
     today = dates_helper.local_today()
     max_daily_budget = _get_max_daily_budget(today, campaign)
-    current_daily_budget = _get_current_daily_budget(campaign)
+    current_daily_budget = _get_current_daily_budget(campaign, today)
     _, available_tomorrow, _ = _get_minimum_remaining_budget(campaign, max_daily_budget)
     yesterday_spend = _get_yesterday_budget_spend(campaign)
 
@@ -1074,10 +1074,11 @@ def _get_ag_settings_dict(date, ad_groups):
     return ret
 
 
-def _get_current_daily_budget_per_ags(campaign):
+def _get_current_daily_budget_per_ags(campaign, date):
     ag_settings = dash.models.AdGroupSettings.objects.filter(
         ad_group__campaign=campaign, landing_mode=False).group_current_settings().values_list('id', flat=True)
     active_ag_ids = dash.models.AdGroupSettings.objects.filter(
+        Q(end_date=None) | Q(end_date__gte=date),
         id__in=ag_settings,
         state=dash.constants.AdGroupSettingsState.ACTIVE,
     ).values_list('ad_group_id', flat=True)
@@ -1099,8 +1100,8 @@ def _get_current_daily_budget_per_ags(campaign):
     return ret
 
 
-def _get_current_daily_budget(campaign):
-    return sum(_get_current_daily_budget_per_ags(campaign).values())
+def _get_current_daily_budget(campaign, date):
+    return sum(_get_current_daily_budget_per_ags(campaign, date).values())
 
 
 def _get_user_daily_budget_per_ags(date, campaign):

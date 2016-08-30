@@ -61,12 +61,14 @@ oneApp.directive('zemCustomTableCols', ['config', function (config) {
             $scope.$watch('categories', function (newValue, oldValue) {
                 if (newValue) {
                     updateCategories();
+                    zemCustomTableColsService.load($scope.localStoragePrefix, $scope.columns);
                 }
             }, true);
 
             $scope.$watch('columns', function (newValue, oldValue) {
                 if (newValue) {
                     updateCategories();
+                    zemCustomTableColsService.load($scope.localStoragePrefix, $scope.columns);
                 }
             }, true);
         }]

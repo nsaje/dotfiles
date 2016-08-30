@@ -106,6 +106,11 @@
             font-style: italic;
         }
     }
+    
+    .description {
+        margin-bottom: 5px;
+        color: @light-gray;
+    }
 
     .input-placeholder{
         font-size: 15px;
@@ -135,6 +140,16 @@
             border: none;
         }
     }
+    
+    .textarea-with-border {
+        border: 1px dashed @border-input-color;
+        width: 100%;
+        padding: 5px 10px;
+    }
+
+    .pre {
+        white-space: pre;
+    }
 }
 
 .form-control {
@@ -142,6 +157,7 @@
     font-size: 14px;
     color: #414141;
     border-color: @border-input-color;
+    height: 36px;
     .border-radius(2px);
     .box-shadow(none);
 
@@ -530,6 +546,7 @@
         font-weight: lighter;
         font-size: 14px;
         color: #414141;
+        background: none;
     }
 }
 
@@ -1280,7 +1297,11 @@ img.zem-icon {
         margin-bottom: 10px;
 
         .select2-container {
-            width: 12em;
+            width: 200px;
+
+            .ui-select-dropdown .ui-select-choices-row .select2-result-label {
+                padding-left: 10px;
+            }
 
             &.metric1 {
                 margin-right: 0.8em;
@@ -1665,6 +1686,22 @@ ul.icon-list li {
 
 ul.icon-list li:first-child {
     font-weight: 600;
+}
+
+ul.with-icons {
+    padding-left: 20px;
+    list-style: none;
+    
+    &.ul-checkmarks li {
+        background: url('img/checkmark-green.svg') no-repeat left 5px;
+        background-size: 14px;
+        padding-left: 20px;
+    }
+    &.ul-remove li {
+        background: url('img/remove-red.svg') no-repeat left 4px;
+        background-size: 10px;
+        padding-left: 20px;
+    }
 }
 
 .help-popover,
@@ -3021,6 +3058,12 @@ ul.icon-list li:first-child {
 
     .table-ad-group-sources & {
         margin-bottom: 32px;
+    }
+    
+    &.middle-alignment {
+        td, th {
+            vertical-align: middle !important;
+        }
     }
 }
 

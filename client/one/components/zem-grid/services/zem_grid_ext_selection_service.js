@@ -18,6 +18,7 @@ oneApp.factory('zemGridSelectionService', ['zemGridConstants', function (zemGrid
         this.getConfig = getConfig;
         this.setConfig = setConfig;
         this.getSelection = getSelection;
+        this.clearSelection = clearSelection;
         this.setSelection = setSelection;
         this.setFilter = setFilter;
         this.getCustomFilters = getCustomFilters;
@@ -32,10 +33,14 @@ oneApp.factory('zemGridSelectionService', ['zemGridConstants', function (zemGrid
         this.setRowSelection = setRowSelection;
 
         function initialize () {
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, function () {
+            var restoreNeeded = false;
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, null, function () {
                 if (grid.body.rows.length === 0) {
-                    grid.ext.selection.selected = [];
-                    grid.ext.selection.unselected = [];
+                    restoreNeeded = true; // Full update in progress
+                } else if (restoreNeeded) {
+                    // Restore selection with updated rows
+                    grid.ext.selection.selected = restoreSelectionCollection(grid.ext.selection.selected);
+                    grid.ext.selection.unselected = restoreSelectionCollection(grid.ext.selection.unselected);
                     pubsub.notify(pubsub.EVENTS.EXT_SELECTION_UPDATED, grid.ext.selection);
                 }
             });
@@ -44,8 +49,27 @@ oneApp.factory('zemGridSelectionService', ['zemGridConstants', function (zemGrid
             setFilter(zemGridConstants.gridSelectionFilterType.NONE);
         }
 
+        function restoreSelectionCollection (oldSelectionCollection) {
+            var selectionCollection = [];
+            oldSelectionCollection.forEach(function (oldRow) {
+                grid.body.rows.forEach (function (newRow) {
+                    if (oldRow.id === newRow.id) {
+                        selectionCollection.push(newRow);
+                    }
+                });
+                if (grid.footer.row && grid.footer.row.id === oldRow.id) {
+                    selectionCollection.push(grid.footer.row);
+                }
+            });
+            return selectionCollection;
+        }
+
         function getSelection () {
             return grid.ext.selection;
+        }
+
+        function clearSelection () {
+            setFilter(zemGridConstants.gridSelectionFilterType.NONE);
         }
 
         function setSelection (selection) {

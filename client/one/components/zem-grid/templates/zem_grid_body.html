@@ -1,7 +1,7 @@
 <div class="zem-grid-body">
-    <div class="zem-grid-table" ng-style="fullTableHeight">
+    <div class="zem-grid-table">
         <zem-grid-row ng-repeat="row in state.renderedRows track by row.index"
-                      row="row"
+                      index="row.index"
                       grid="ctrl.grid"
         ></zem-grid-row>
     </div>

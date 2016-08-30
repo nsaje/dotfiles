@@ -22,15 +22,15 @@ the code less verbose) for proper production code.
 """
 
 
-def query(breakdown, constraints, breakdown_constraints, conversion_goals, order, offset, limit):
+def query(breakdown, constraints, parents, conversion_goals, pixels, order, offset, limit):
     """
     Returns an array of rows that are represented as dicts.
     """
 
-    model = models.MVMaster(conversion_goals)
+    model = models.MVMaster(conversion_goals, pixels)
 
     with influx.block_timer('redshiftapi.api_breakdowns.prepare_query'):
-        query, params = _prepare_query(model, breakdown, constraints, breakdown_constraints,
+        query, params = _prepare_query(model, breakdown, constraints, parents,
                                        order, offset, limit)
 
     with influx.block_timer('redshiftapi.api_breakdowns.get_cache_value_overhead'):
@@ -49,7 +49,7 @@ def query(breakdown, constraints, breakdown_constraints, conversion_goals, order
 
                 empty_row = db.get_empty_row_dict(cursor.description)
 
-        _post_process(results, empty_row, breakdown, constraints, breakdown_constraints, offset, limit)
+        _post_process(results, empty_row, breakdown, constraints, parents, offset, limit)
         remove_postclick_values(breakdown, results)
 
         with influx.block_timer('redshiftapi.api_breakdowns.set_cache_value_overhead'):
@@ -61,11 +61,11 @@ def query(breakdown, constraints, breakdown_constraints, conversion_goals, order
     return results
 
 
-def _prepare_query(model, breakdown, constraints, breakdown_constraints,
+def _prepare_query(model, breakdown, constraints, parents,
                    order, offset, limit):
 
     target_dimension = constants.get_target_dimension(breakdown)
-    default_context = model.get_default_context(breakdown, constraints, breakdown_constraints, order, offset, limit)
+    default_context = model.get_default_context(breakdown, constraints, parents, order, offset, limit)
 
     if target_dimension in constants.TimeDimension._ALL:
         # should also cover the case for len(breakdown) == 4 because in that case time dimension should be the last one
@@ -86,16 +86,16 @@ def _prepare_query(model, breakdown, constraints, breakdown_constraints,
     raise exc.InvalidBreakdownError("Selected breakdown is not supported {}".format(breakdown))
 
 
-def _post_process(rows, empty_row, breakdown, constraints, breakdown_constraints, offset, limit):
+def _post_process(rows, empty_row, breakdown, constraints, parents, offset, limit):
     target_dimension = constants.get_target_dimension(breakdown)
 
     if target_dimension in constants.TimeDimension._ALL:
         postprocess.postprocess_time_dimension(
-            target_dimension, rows, empty_row, breakdown, constraints, breakdown_constraints)
+            target_dimension, rows, empty_row, breakdown, constraints, parents)
 
     if target_dimension == 'device_type':
         postprocess.postprocess_device_type_dimension(
-            target_dimension, rows, empty_row, breakdown, breakdown_constraints, offset, limit)
+            target_dimension, rows, empty_row, breakdown, parents, offset, limit)
 
 
 POSTCLICK_FIELDS = [

@@ -7,10 +7,12 @@ from django.db import transaction
 from django.db.models import Q
 
 from utils import exc
+from utils import email_helper
 
 from dash import models
 from dash import constants
 from dash import forms
+from dash import export
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +37,42 @@ def get_due_scheduled_reports():
             sending_frequency=constants.ScheduledReportSendingFrequency.MONTHLY)
 
     return due_reports
+
+
+def send_scheduled_report(scheduled_report):
+    report_log = models.ScheduledExportReportLog()
+    report_log.scheduled_report = scheduled_report
+
+    try:
+        start_date, end_date = get_scheduled_report_date_range(scheduled_report.time_period)
+        email_adresses = scheduled_report.get_recipients_emails_list()
+        report_log.start_date = start_date
+        report_log.end_date = end_date
+        report_log.recipient_emails = ', '.join(email_adresses)
+
+        report_contents, report_filename = export.get_report_from_export_report(
+            scheduled_report.report, start_date, end_date)
+        report_log.report_filename = report_filename
+
+        email_helper.send_scheduled_export_report(
+            report_name=scheduled_report.name,
+            frequency=constants.ScheduledReportSendingFrequency.get_text(scheduled_report.sending_frequency),
+            granularity=constants.ScheduledReportGranularity.get_text(scheduled_report.report.granularity),
+            entity_level=constants.ScheduledReportLevel.get_text(scheduled_report.report.level),
+            entity_name=scheduled_report.report.get_exported_entity_name(),
+            scheduled_by=scheduled_report.created_by.email,
+            email_adresses=email_adresses,
+            report_contents=report_contents,
+            report_filename=report_filename)
+
+        report_log.state = constants.ScheduledReportSent.SUCCESS
+
+    except Exception as e:
+        logger.exception('Exception raised while sending scheduled export report.')
+        report_log.add_error(e.message)
+
+    report_log.save()
+    return report_log
 
 
 def _get_yesterday(today):

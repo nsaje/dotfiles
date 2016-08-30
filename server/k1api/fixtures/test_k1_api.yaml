@@ -434,6 +434,11 @@
         brand_name: 'brand1'
         display_url: 'brand1.com'
         tracking_code: '?tracking1&tracking2'
+        retargeting_ad_groups: '[100]'
+        exclusion_retargeting_ad_groups: '[200]'
+        bluekai_targeting: '["or", "bluekai:1", "bluekai:2"]'
+        interest_targeting: '["tech", "entertainment"]'
+        exclusion_interest_targeting: '["politics", "war"]'
     model: dash.adgroupsettings
     pk: 1
 
@@ -706,6 +711,17 @@
     model: dash.contentad
     pk: 5
 
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article 5'
+        ad_group: 3
+        created_dt: '2015-02-23T00:00:00'
+        archived: True
+    model: dash.contentad
+    pk: 6
+
 # test contentadsource
 
 -   fields:
@@ -967,7 +983,6 @@
 -   fields:
         name: 'Audience 1'
         pixel_id: 1
-        ad_group_settings: [1, 2]
         ttl: 90
         created_dt: '2015-02-23T00:00:00'
         modified_dt: '2015-02-23T00:00:00'
@@ -977,7 +992,6 @@
 -   fields:
         name: 'Audience 2'
         pixel_id: 2
-        ad_group_settings: [1]
         ttl: 60
         created_dt: '2015-02-24T00:00:00'
         modified_dt: '2015-02-24T00:00:00'

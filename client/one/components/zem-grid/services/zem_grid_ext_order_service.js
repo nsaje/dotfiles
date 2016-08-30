@@ -16,8 +16,17 @@ oneApp.factory('zemGridOrderService', ['zemGridConstants', 'zemGridUIService', '
         this.setColumnOrder = setColumnOrder;
 
         function initialize () {
-            pubsub.register(pubsub.EVENTS.METADATA_UPDATED, initializeOrder);
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, initializeOrder);
+            loadOrder();
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, grid.meta.scope, initializeOrder);
+        }
+
+        function loadOrder () {
+            // Load order when METADATA is updated for the first time (metadata is required for load)
+            var deregister = pubsub.register(pubsub.EVENTS.METADATA_UPDATED, grid.meta.scope, function () {
+                zemGridStorageService.loadOrder(grid);
+                initializeOrder();
+                deregister();
+            });
         }
 
         function initializeOrder () {
@@ -68,6 +77,7 @@ oneApp.factory('zemGridOrderService', ['zemGridConstants', 'zemGridUIService', '
                 orderField = '-' + orderField;
             }
             grid.meta.dataService.setOrder(orderField, true);
+            zemGridStorageService.saveOrder(grid);
         }
     }
 

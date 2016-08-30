@@ -2,8 +2,12 @@
 'use strict';
 
 oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridConstants) {
-    var CONVERSION_GOAL_FIELD_PREFIX = 'conversion_goal_';
-    var AVG_COST_PER_CONVERSION_GOAL_PREFIX = 'avg_cost_per_conversion_goal_';
+    var AVG_COST_PREFIX = 'avg_cost_per_';
+
+    var CONVERSION_GOALS_PLACEHOLDER = 'conversion_goals_placeholder';
+    var PIXELS_PLACEHOLDER = 'pixels_placeholder';
+    var CONVERSION_GOALS_AVG_COST_PLACEHOLDER = 'conversion_goals_avg_cost_placeholder';
+    var PIXELS_AVG_COST_PLACEHOLDER = 'pixels_avg_cost_placeholder';
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // COLUMN DEFINITIONS
@@ -327,7 +331,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             name: 'Domain',
             field: 'domain',
             type: zemGridConstants.gridColumnTypes.TEXT,
-            shown: true,
+            shown: false,
             totalRow: false,
             help: 'A publisher where your content is being promoted.',
             order: true,
@@ -809,35 +813,25 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
+
+        // placeholders that are never shown
+        conversionGoalsPlaceholder: {
+            field: CONVERSION_GOALS_PLACEHOLDER,
+            shown: false,
+        },
+        pixelsPlaceholder: {
+            field: PIXELS_PLACEHOLDER,
+            shown: false,
+        },
+        conversionGoalsAvgCostPlaceholder: {
+            field: CONVERSION_GOALS_AVG_COST_PLACEHOLDER,
+            shown: false,
+        },
+        pixelsAvgCostPlaceholder: {
+            field: PIXELS_AVG_COST_PLACEHOLDER,
+            shown: false,
+        },
     };
-
-    for (var i = 1; i <= 15; i++) {
-        COLUMNS['conversionGoal' + i] = {
-            name: 'Conversion Goal ' + i,
-            field: CONVERSION_GOAL_FIELD_PREFIX + i,
-            type: zemGridConstants.gridColumnTypes.NUMBER,
-            help: 'Number of completions of the conversion goal',
-            shown: false,
-            internal: false,
-            totalRow: true,
-            order: true,
-            initialOrder: zemGridConstants.gridColumnOrder.DESC,
-        };
-    }
-
-    for (i = 0; i < 16; i++) {
-        COLUMNS['avgCostPerConversionGoal' + i] = {
-            name: 'Avg. CPA',
-            field: AVG_COST_PER_CONVERSION_GOAL_PREFIX + i,
-            type: zemGridConstants.gridColumnTypes.CURRENCY,
-            shown: false,
-            internal: 'zemauth.campaign_goal_optimization',
-            help: 'Average cost per acquisition.',
-            totalRow: true,
-            order: true,
-            initialOrder: zemGridConstants.gridColumnOrder.DESC,
-        };
-    }
 
     // ///////////////////////////////////////////////////////////////////////////////////////////////////
     //  COLUMN BRANDING - provide properties that depends on breakdown/level (e.g. name)
@@ -922,6 +916,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.status,
         COLUMNS.submissionStatus,
         COLUMNS.performance,
+        COLUMNS.exchange,
     ];
 
     // Default columns - columns present by default (non permanent can be hidden)
@@ -1025,45 +1020,18 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     ];
 
     var CONVERSIONS_GROUP = [
-        COLUMNS.conversionGoal1,
-        COLUMNS.conversionGoal2,
-        COLUMNS.conversionGoal3,
-        COLUMNS.conversionGoal4,
-        COLUMNS.conversionGoal5,
-        COLUMNS.conversionGoal6,
-        COLUMNS.conversionGoal7,
-        COLUMNS.conversionGoal8,
-        COLUMNS.conversionGoal9,
-        COLUMNS.conversionGoal10,
-        COLUMNS.conversionGoal11,
-        COLUMNS.conversionGoal12,
-        COLUMNS.conversionGoal13,
-        COLUMNS.conversionGoal14,
-        COLUMNS.conversionGoal15,
+        COLUMNS.conversionGoalsPlaceholder,
+        COLUMNS.pixelsPlaceholder,
     ];
 
-    var CAMPAIGN_GOALS_GROUP = [
+    var GOALS_GROUP = [
         COLUMNS.avgCostPerVisit,
         COLUMNS.avgCostForNewVisitor,
         COLUMNS.avgCostPerPageview,
         COLUMNS.avgCostPerNonBouncedVisit,
         COLUMNS.avgCostPerMinute,
-        COLUMNS.avgCostPerConversionGoal0,
-        COLUMNS.avgCostPerConversionGoal1,
-        COLUMNS.avgCostPerConversionGoal2,
-        COLUMNS.avgCostPerConversionGoal3,
-        COLUMNS.avgCostPerConversionGoal4,
-        COLUMNS.avgCostPerConversionGoal5,
-        COLUMNS.avgCostPerConversionGoal6,
-        COLUMNS.avgCostPerConversionGoal7,
-        COLUMNS.avgCostPerConversionGoal8,
-        COLUMNS.avgCostPerConversionGoal9,
-        COLUMNS.avgCostPerConversionGoal10,
-        COLUMNS.avgCostPerConversionGoal11,
-        COLUMNS.avgCostPerConversionGoal12,
-        COLUMNS.avgCostPerConversionGoal13,
-        COLUMNS.avgCostPerConversionGoal14,
-        COLUMNS.avgCostPerConversionGoal15,
+        COLUMNS.conversionGoalsAvgCostPlaceholder,
+        COLUMNS.pixelsAvgCostPlaceholder,
     ];
 
     var METRICS_GROUP = [].concat(
@@ -1072,7 +1040,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         TRAFFIC_ACQUISITION_GROUP,
         AUDIENCE_METRICS_GROUP,
         CONVERSIONS_GROUP,
-        CAMPAIGN_GOALS_GROUP
+        GOALS_GROUP
     );
 
     // //////////////V////////////////////////////////////////////////////////////////////////////////////
@@ -1090,65 +1058,87 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         METRICS_GROUP
     );
 
+
     // Configure special column properties
     PERMANENT_COLUMNS_GROUP.forEach(function (column) { column.permanent = true; });
     DEFAULT_COLUMNS_GROUP.forEach(function (column) { column.default = true; });
-    CAMPAIGN_GOALS_GROUP.forEach(function (column) { column.goal = true; });
+    GOALS_GROUP.forEach(function (column) { column.goal = true; });
+
+    // Exceptions object
+    COLUMNS_ORDERED.forEach(function (column) {
+        column.exceptions = {
+            levels: undefined,     // levels where this column is available; defaults to ALL
+            breakdowns: undefined, // breakdowns where this column is available; defaults to ALL
+            breakdownBaseLevelOnly: false, // column only available on base level (level 1)
+            custom: [],            // custom exceptions -> level/breakdown pairs; overwrites previous properties
+        };
+    });
 
     // Configuration (availability based on breakdown)
-    configureBreakdowns(ACCOUNT_MANAGEMENT_GROUP, [constants.breakdown.ACCOUNT]);
-    configureBreakdowns(CAMPAIGN_MANAGEMENT_GROUP, [constants.breakdown.CAMPAIGN]);
-    configureBreakdowns(CONTENT_GROUP, [constants.breakdown.CONTENT_AD]);
-    configureBreakdowns(SOURCE_GROUP, [constants.breakdown.MEDIA_SOURCE]);
-    configureBreakdowns(PUBLISHER_GROUP, [constants.breakdown.PUBLISHER]);
-    configureBreakdowns(
+    configureBreakdownExceptions(ACCOUNT_MANAGEMENT_GROUP, [constants.breakdown.ACCOUNT]);
+    configureBreakdownExceptions(CAMPAIGN_MANAGEMENT_GROUP, [constants.breakdown.CAMPAIGN]);
+    configureBreakdownExceptions(CONTENT_GROUP, [constants.breakdown.CONTENT_AD]);
+    configureBreakdownExceptions(SOURCE_GROUP, [constants.breakdown.MEDIA_SOURCE]);
+    configureBreakdownExceptions(PUBLISHER_GROUP, [constants.breakdown.PUBLISHER]);
+    configureBreakdownExceptions(
         [COLUMNS.yesterdayCost, COLUMNS.eYesterdayCost],
         [constants.breakdown.CAMPAIGN, constants.breakdown.AD_GROUP, constants.breakdown.MEDIA_SOURCE]
     );
 
-    // Configuration (availability based on level)
-    configureLevels(PROJECTIONS_GROUP, [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS]);
+    // Exceptions (Projections) - ALL_ACCOUNTS, ACCOUNTS level, MEDIA_SOURCE breakdown are only shown on ALL_ACCOUNTS level
+    configureLevelExceptions(PROJECTIONS_GROUP, [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS]);
+    configureCustomException(PROJECTIONS_GROUP, {level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
 
     // Exceptions (state - not yet supported everywhere, only available on base level)
-    COLUMNS.state.breakdowns = [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD, constants.breakdown.MEDIA_SOURCE];
-    COLUMNS.state.breakdownBaseLevelOnly = true;
+    COLUMNS.state.exceptions.breakdowns = [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD];
+    COLUMNS.state.exceptions.breakdownBaseLevelOnly = true;
+    // State selector is only shown on MEDIA_SOURCE breakdown on AD_GROUPS level
+    COLUMNS.state.exceptions.custom.push({level: constants.level.AD_GROUPS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: true});
 
     // Exceptions (submission status - only shown on AD_GROUPS level for CONTENT_AD breakdown)
-    COLUMNS.submissionStatus.breakdowns = [constants.breakdown.CONTENT_AD];
-    COLUMNS.submissionStatus.levels = [constants.level.AD_GROUPS];
+    COLUMNS.submissionStatus.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];
+    COLUMNS.submissionStatus.exceptions.levels = [constants.level.AD_GROUPS];
 
-    // Exceptions (performance - not shown on ALL_ACCOUNTS level)
-    COLUMNS.performance.levels = [constants.level.ACCOUNTS, constants.level.CAMPAIGNS, constants.level.AD_GROUPS];
+    // Exceptions (performance - not shown on ALL_ACCOUNTS level and on ACCOUNT - MEDIA SOURCES)
+    COLUMNS.performance.exceptions.levels = [constants.level.ACCOUNTS, constants.level.CAMPAIGNS, constants.level.AD_GROUPS];
+    COLUMNS.performance.exceptions.custom.push({level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
 
     // Exceptions (total fee and recognized flat fee - only shown on ALL_ACCOUNTS level)
-    COLUMNS.totalFee.levels = [constants.level.ALL_ACCOUNTS];
-    COLUMNS.flatFee.levels = [constants.level.ALL_ACCOUNTS];
+    COLUMNS.totalFee.exceptions.levels = [constants.level.ALL_ACCOUNTS];
+    COLUMNS.flatFee.exceptions.levels = [constants.level.ALL_ACCOUNTS];
 
     // Exceptions (total fee projection - only shown on ALL_ACCOUNTS level)
-    COLUMNS.totalFeeProjection.levels = [constants.level.ALL_ACCOUNTS];
+    COLUMNS.totalFeeProjection.exceptions.levels = [constants.level.ALL_ACCOUNTS];
 
     // Exceptions (supply dash url - only shown on AD_GROUPS level on base row level)
-    COLUMNS.supplyDashUrl.levels = [constants.level.AD_GROUPS];
-    COLUMNS.supplyDashUrl.breakdownBaseLevelOnly = true;
+    COLUMNS.supplyDashUrl.exceptions.levels = [constants.level.AD_GROUPS];
+    COLUMNS.supplyDashUrl.exceptions.breakdownBaseLevelOnly = true;
 
     // Exceptions (source editable fields)
-    COLUMNS.minBidCpc.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
-    COLUMNS.maxBidCpc.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
-    COLUMNS.dailyBudget.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
-    COLUMNS.bidCpcSetting.levels = [constants.level.AD_GROUPS];
-    COLUMNS.dailyBudgetSetting.levels = [constants.level.AD_GROUPS];
-    COLUMNS.bidCpcSetting.breakdownBaseLevelOnly = true;
-    COLUMNS.dailyBudgetSetting.breakdownBaseLevelOnly = true;
+    COLUMNS.minBidCpc.exceptions.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
+    COLUMNS.maxBidCpc.exceptions.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
+    COLUMNS.dailyBudget.exceptions.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
+    COLUMNS.bidCpcSetting.exceptions.levels = [constants.level.AD_GROUPS];
+    COLUMNS.dailyBudgetSetting.exceptions.levels = [constants.level.AD_GROUPS];
+    COLUMNS.bidCpcSetting.exceptions.breakdownBaseLevelOnly = true;
+    COLUMNS.dailyBudgetSetting.exceptions.breakdownBaseLevelOnly = true;
 
-    function configureBreakdowns (columns, breakdowns) {
+
+    function configureBreakdownExceptions (columns, breakdowns) {
         columns.forEach(function (column) {
-            column.breakdowns = breakdowns;
+            column.exceptions.breakdowns = breakdowns;
         });
     }
 
-    function configureLevels (columns, levels) {
+    function configureLevelExceptions (columns, levels) {
         columns.forEach(function (column) {
-            column.levels = levels;
+            column.exceptions.levels = levels;
+        });
+    }
+
+    function configureCustomException (columns, customException) {
+        columns.forEach(function (column) {
+            column.exceptions.custom.push(customException);
         });
     }
 
@@ -1194,7 +1184,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         },
         {
             name: 'Goals',
-            columns: CAMPAIGN_GOALS_GROUP,
+            columns: GOALS_GROUP,
         },
     ];
 
@@ -1263,22 +1253,14 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     function getColumns (level, breakdowns) {
         return COLUMNS_ORDERED.filter(function (column) {
             var result = true;
-            if (column.breakdowns) result &= intersects(column.breakdowns, breakdowns);
-            if (column.breakdownBaseLevelOnly) result &= column.breakdowns.indexOf(breakdowns[0]) >= 0;
-            if (column.levels) result &= column.levels.indexOf(level) >= 0;
-
-            // FIXME: Find a better solution for columns thet are shown only in certain breakdown-level combinations
-            // State selector is only shown on CAMPAIGNS level for AD_GROUP breakdown and not for MEDIA_SOURCE
-            // breakdown
-            if (column === COLUMNS.state && breakdowns[0] === constants.breakdown.MEDIA_SOURCE) {
-                result &= level === constants.level.AD_GROUPS;
-            }
-
-            // Projections for MEDIA_SOURCE breakdown are only shown on ALL_ACCOUNTS level
-            if (PROJECTIONS_GROUP.indexOf(column) >= 0 && breakdowns[0] === constants.breakdown.MEDIA_SOURCE) {
-                result &= level === constants.level.ALL_ACCOUNTS;
-            }
-
+            if (column.exceptions.breakdowns) result &= intersects(column.exceptions.breakdowns, breakdowns);
+            if (column.exceptions.breakdownBaseLevelOnly) result &= column.exceptions.breakdowns.indexOf(breakdowns[0]) >= 0;
+            if (column.exceptions.levels) result &= column.exceptions.levels.indexOf(level) >= 0;
+            column.exceptions.custom.forEach(function (customException) {
+                if (level === customException.level && breakdowns[0] === customException.breakdown) {
+                    result = customException.shown;
+                }
+            });
             return result;
         });
     }
@@ -1303,35 +1285,141 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         });
     }
 
-    function updateConversionGoalColumns (columns, goals) {
-        if (!goals) return;
+    function insertIntoColumns (columns, newColumns, placeholder) {
+        var columnPosition = findColumnPosition(columns, placeholder);
+        if (!columnPosition) return;
 
-        goals.forEach(function (goal) {
-            columns.forEach(function (column) {
-                if (column.field !== goal.id) return;
-                column.shown = true;
-                column.name = goal.name;
+        Array.prototype.splice.apply(columns, [columnPosition, 0].concat(newColumns));
+    }
+
+    function insertIntoCategories (categories, newFields, placeholder) {
+        var categoryPosition = findCategoryPosition(categories, placeholder);
+        if (!categoryPosition) return;
+
+        Array.prototype.splice.apply(categoryPosition.fields, [categoryPosition.position, 0].concat(newFields));
+    }
+
+    function setColumns (columns, categories, newColumns, placeholder) {
+        // add dynamic columns and category fields to position after placeholder
+        var newFields = newColumns.map(function (column) {
+            return column.field;
+        });
+
+        insertIntoColumns(columns, newColumns, placeholder);
+        insertIntoCategories(categories, newFields, placeholder);
+    }
+
+    function setConversionGoalColumns (columns, categories, conversionGoals) {
+        if (!conversionGoals) return;
+
+        var newColumns = [],
+            newAvgCostColumns = [];
+        angular.forEach(conversionGoals, function (goal) {
+            newColumns.push({
+                name: goal.name,
+                field: goal.id,
+                type: zemGridConstants.gridColumnTypes.NUMBER,
+                help: 'Number of completions of the conversion goal',
+                shown: true,
+                internal: false,
+                totalRow: true,
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            });
+
+            newAvgCostColumns.push({
+                name: 'CPA (' + goal.name + ')',
+                field: AVG_COST_PREFIX + goal.id,
+                type: zemGridConstants.gridColumnTypes.CURRENCY,
+                shown: true,
+                internal: false,
+                help: 'Average cost per acquisition.',
+                totalRow: true,
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            });
+        });
+
+        setColumns(columns, categories, newColumns, CONVERSION_GOALS_PLACEHOLDER);
+        setColumns(columns, categories, newAvgCostColumns, CONVERSION_GOALS_AVG_COST_PLACEHOLDER);
+    }
+
+    function setPixelColumns (columns, categories, pixels) {
+        if (!pixels) return;
+
+        var newColumns = [],
+            newAvgCostColumns = [];
+        angular.forEach(pixels, function (pixel) {
+            newColumns.push({
+                name: pixel.name,
+                field: pixel.id,
+                type: zemGridConstants.gridColumnTypes.NUMBER,
+                help: 'Number of completions of the conversion goal',
+                shown: true,
+                internal: false,
+                totalRow: true,
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            });
+
+            newAvgCostColumns.push({
+                name: 'CPA (' + pixel.name + ')',
+                field: AVG_COST_PREFIX + pixel.id,
+                type: zemGridConstants.gridColumnTypes.CURRENCY,
+                help: 'Average cost per acquisition.',
+                shown: true,
+                internal: false,
+                totalRow: true,
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            });
+        });
+
+        setColumns(columns, categories, newColumns, PIXELS_PLACEHOLDER);
+        setColumns(columns, categories, newAvgCostColumns, PIXELS_AVG_COST_PLACEHOLDER);
+    }
+
+    function setPrimaryCampaignGoal (columns, campaignGoals) {
+        if (!campaignGoals) return;
+
+        campaignGoals.forEach(function (goal) {
+            angular.forEach(goal.fields, function (shown, field) {
+                if (!shown) return;
+                if (!goal.primary) return;
+                columns.forEach(function (column) {
+                    if (field !== column.field) return;
+                    column.default = true;
+                });
             });
         });
     }
 
-    function updateOptimizationGoalColumns (columns, goals) {
-        if (!goals) return;
+    function setDynamicColumns (columns, categories, campaignGoals, conversionGoals, pixels) {
+        setPixelColumns(columns, categories, pixels);
+        setConversionGoalColumns(columns, categories, conversionGoals);
+        setPrimaryCampaignGoal(columns, campaignGoals);
+    }
 
-        goals.forEach(function (goal) {
-            angular.forEach(goal.fields, function (shown, field) {
-                if (!shown) return;
-                if (field.indexOf(CONVERSION_GOAL_FIELD_PREFIX) === 0) return; // skip conversion goal metrics
-                columns.forEach(function (column) {
-                    if (field !== column.field) return;
-                    column.shown = true;
-                    column.default = goal.primary; // primary goal visible by default
-                    if (goal.conversion) {
-                        column.name = goal.name + ' (' + goal.conversion + ')';
-                    }
-                });
-            });
-        });
+    function findColumnPosition (columns, field) {
+        for (var i = 0; i < columns.length; i++) {
+            if (columns[i].field === field) {
+                // return next index
+                return i + 1;
+            }
+        }
+    }
+
+    function findCategoryPosition (categories, field) {
+        for (var i = 0; i < categories.length; i++) {
+            for (var j = 0; j < categories[i].fields.length; j++) {
+                if (categories[i].fields[j] === field) {
+                    return {
+                        fields: categories[i].fields,
+                        position: j + 1 // return next index
+                    };
+                }
+            }
+        }
     }
 
     function findColumnByField (field) {
@@ -1349,7 +1437,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         findColumnByField: findColumnByField,
         createColumns: createColumns,
         createCategories: createCategories,
-        updateConversionGoalColumns: updateConversionGoalColumns,
-        updateOptimizationGoalColumns: updateOptimizationGoalColumns,
+        setDynamicColumns: setDynamicColumns,
     };
 }]);

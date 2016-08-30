@@ -7,7 +7,7 @@ oneApp.factory('zemGridConstants', [function () {
         gridBodyRendering: {
             ROW_HEIGHT: 45,
             NUM_OF_ROWS_PER_PAGE: 41,
-            NUM_OF_PRERENDERED_ROWS: 3,
+            NUM_OF_PRERENDERED_ROWS: 2,
         },
         gridColumnOrder: {
             NONE: 'none',
@@ -79,6 +79,12 @@ oneApp.factory('zemGridConstants', [function () {
         constants.gridColumnTypes.VISIBLE_LINK,
         constants.gridColumnTypes.TEXT_LINK,
     ];
+
+    constants.gridColumnTypes.EXPORT_TYPES = [].concat(
+        [constants.gridColumnTypes.BREAKDOWN, constants.gridColumnTypes.STATUS],
+        constants.gridColumnTypes.BASE_TYPES,
+        constants.gridColumnTypes.EXTERNAL_LINK_TYPES
+    );
 
     return constants;
 }]);

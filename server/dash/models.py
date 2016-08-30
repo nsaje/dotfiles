@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import jsonfield
 import binascii
 import datetime
@@ -343,6 +344,10 @@ class Agency(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    default_account_type = models.IntegerField(
+        default=constants.AccountType.UNKNOWN,
+        choices=constants.AccountType.get_choices()
+    )
 
     objects = QuerySetManager()
 
@@ -413,6 +418,8 @@ class Account(models.Model):
 
     outbrain_marketer_id = models.CharField(null=True, blank=True, max_length=255)
 
+    salesforce_url = models.URLField(null=True, blank=True, max_length=255)
+
     class Meta:
         ordering = ('-created_dt',)
 
@@ -461,6 +468,9 @@ class Account(models.Model):
     def is_archived(self):
         current_settings = self.get_current_settings()
         return current_settings.archived
+
+    def is_agency(self):
+        return self.agency is not None
 
     @transaction.atomic
     def archive(self, request):
@@ -2042,6 +2052,13 @@ class AdGroupSettings(SettingsBase):
         'target_devices',
         'target_regions',
         'retargeting_ad_groups',
+        'exclusion_retargeting_ad_groups',
+        'bluekai_targeting',
+        'interest_targeting',
+        'exclusion_interest_targeting',
+        'redirect_pixel_urls',
+        'redirect_javascript',
+        'notes',
         'tracking_code',
         'archived',
         'display_url',
@@ -2090,6 +2107,13 @@ class AdGroupSettings(SettingsBase):
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
     retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
+    exclusion_retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
+    bluekai_targeting = jsonfield.JSONField(blank=True, default=[])
+    interest_targeting = jsonfield.JSONField(blank=True, default=[])
+    exclusion_interest_targeting = jsonfield.JSONField(blank=True, default=[])
+    redirect_pixel_urls = jsonfield.JSONField(blank=True, default=[])
+    redirect_javascript = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
     tracking_code = models.TextField(blank=True)
     enable_ga_tracking = models.BooleanField(default=True)
     ga_tracking_type = models.IntegerField(
@@ -2198,6 +2222,13 @@ class AdGroupSettings(SettingsBase):
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
             'retargeting_ad_groups': 'Retargeting ad groups',
+            'exclusion_retargeting_ad_groups': 'Exclusion ad groups',
+            'bluekai_targeting': 'BlueKai targeting',
+            'interest_targeting': 'Interest targeting',
+            'exclusion_interest_targeting': 'Exclusion interest targeting',
+            'redirect_pixel_urls': 'Pixel retargeting tags',
+            'redirect_javascript': 'Pixel retargeting JavaScript',
+            'notes': 'Notes',
             'tracking_code': 'Tracking code',
             'state': 'State',
             'archived': 'Archived',
@@ -2239,12 +2270,21 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
-        elif prop_name == 'retargeting_ad_groups':
+        elif prop_name in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups'):
             if not value:
                 value = ''
             else:
                 names = AdGroup.objects.filter(pk__in=value).values_list('name', flat=True)
                 value = ', '.join(names)
+        elif prop_name == 'bluekai_targeting':
+            value = json.dumps(value)
+        elif prop_name in ('interest_targeting', 'exclusion_interest_targeting'):
+            if value:
+                value = ', '.join(category.capitalize() for category in value)
+            else:
+                value = ''
+        elif prop_name == 'redirect_pixel_urls':
+            value = ', '.join(value)
         elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):
             value = str(value)
         elif prop_name == 'ga_tracking_type':
@@ -2260,7 +2300,7 @@ class AdGroupSettings(SettingsBase):
 
         valid_changes = {}
         for key, value in changes.iteritems():
-            if key == 'retargeting_ad_groups' and\
+            if key in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups') and\
                     not user.has_perm('zemauth.can_view_retargeting_settings'):
                 continue
             valid_changes[key] = value
@@ -2622,6 +2662,20 @@ class ContentAd(models.Model):
 
         return urlparse.urlunparse(parsed)
 
+    def get_url(self, ad_group, is_demo):
+        if is_demo:
+            return 'http://www.example.com/{}/{}'.format(ad_group.name, self.id)
+        return self.url
+
+    def get_redirector_url(self, is_demo):
+        if is_demo:
+            return None
+
+        return settings.R1_BLANK_REDIRECT_URL.format(
+            redirect_id=self.redirect_id,
+            content_ad_id=self.id
+        )
+
     def __unicode__(self):
         return '{cn}(id={id}, ad_group={ad_group}, image_id={image_id}, state={state})'.format(
             cn=self.__class__.__name__,
@@ -2693,6 +2747,8 @@ class ContentAdSource(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
+    objects = QuerySetManager()
+
     def get_source_id(self):
         if self.source.source_type and self.source.source_type.type in [
                 constants.SourceType.B1, constants.SourceType.GRAVITY]:
@@ -2714,6 +2770,10 @@ class ContentAdSource(models.Model):
 
     def __str__(self):
         return unicode(self).encode('ascii', 'ignore')
+
+    class QuerySet(models.QuerySet):
+        def filter_by_sources(self, sources):
+            return self.filter(source__in=sources)
 
 
 class ContentAdCandidate(FootprintModel):
@@ -2822,6 +2882,9 @@ class ConversionPixel(models.Model):
         return settings.CONVERSION_PIXEL_PREFIX + '{}/{}/'.format(
             self.account.id, self.slug)
 
+    def get_view_key(self, conversion_window):
+        return 'pixel_{}_{}'.format(self.id, conversion_window)
+
     class Meta:
         unique_together = ('slug', 'account')
 
@@ -2855,7 +2918,9 @@ class ConversionGoal(models.Model):
         return prefix + '__' + self.goal_id
 
     def get_view_key(self, conversion_goals):
-        # the key in view is based on the index of the conversion goal compared to others for the same campaign
+        if self.type == constants.ConversionGoalType.PIXEL:
+            return self.pixel.get_view_key(self.conversion_window)
+
         for i, cg in enumerate(sorted(conversion_goals, key=lambda x: x.id)):
             if cg.id == self.id:
                 return 'conversion_goal_' + str(i + 1)
@@ -3138,6 +3203,9 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     def is_available(self):
         return not self.is_past() and self.status == constants.CreditLineItemStatus.SIGNED\
             and (self.effective_amount() - self.get_allocated_amount()) > 0
+
+    def is_agency(self):
+        return self.agency is not None
 
     def clean(self):
         if self.account is not None and self.agency is not None:
@@ -3922,7 +3990,7 @@ class Audience(models.Model):
         null=False
     )
     pixel = models.ForeignKey(ConversionPixel, on_delete=models.PROTECT)
-    ad_group_settings = models.ManyToManyField(AdGroupSettings)
+    archived = models.BooleanField(default=False)
     ttl = models.PositiveSmallIntegerField()
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')

@@ -48,7 +48,10 @@ class ConversionHelperTestCase(test.TestCase):
             'source': 7,
             'publisher': 'dummy_domain',
             'slug': 'goal_1',
-            'conversion_count': 100,
+            'conversion_count_24': 20,
+            'conversion_count_168': 50,
+            'conversion_count_720': 80,
+            'conversion_count_2160': 100,
             'dummy_info': -1000,
             'account': 1,
             'conversion_window': 10
@@ -81,20 +84,28 @@ class ConversionHelperTestCase(test.TestCase):
 
     def test_empty_transform_to_conversion_goals(self):
         rows = self._get_transform_to_conversion_goals_rows()
-        conversions_helper.transform_to_conversion_goals(rows, [])
+        conversions_helper.transform_to_conversion_goals(rows, [], [])
         self.assertDictEqual(rows[0], rows[0])
 
     def test_transform_to_conversion_goals(self):
         ad_group = AdGroup.objects.get(pk=1)
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.all()
 
         rows = self._get_transform_to_conversion_goals_rows()
-        conversions_helper.transform_to_conversion_goals(rows, conversion_goals)
+        conversions_helper.transform_to_conversion_goals(rows, conversion_goals, pixels)
 
         self.assertDictEqual(rows[0], {
             'dummy_param_1': 'dummy_value_1',
             'dummy_param_2': 'dummy_value_2',
-            'conversion_goal_1': 0,
+            'pixel_1_24': 0,
+            'pixel_1_168': 0,
+            'pixel_1_720': 0,
+            'pixel_1_2160': 0,
+            'avg_cost_per_pixel_1_24': None,
+            'avg_cost_per_pixel_1_168': None,
+            'avg_cost_per_pixel_1_720': None,
+            'avg_cost_per_pixel_1_2160': None,
             'conversion_goal_2': None,
             'conversion_goal_3': 3,
             'conversion_goal_4': 4,
@@ -107,7 +118,7 @@ class ConversionHelperTestCase(test.TestCase):
                                    cg.type in conversions_helper.REPORT_GOAL_TYPES]
 
         rows = self._get_transform_to_conversion_goals_rows()
-        conversions_helper.transform_to_conversion_goals(rows, report_conversion_goals)
+        conversions_helper.transform_to_conversion_goals(rows, report_conversion_goals, [])
 
         self.assertDictEqual(rows[0], {
             'dummy_param_1': 'dummy_value_1',
@@ -143,7 +154,10 @@ class ConversionHelperTestCase(test.TestCase):
             'exchange': 'adiant',
             'dummy_info': -100,
             'conversions': {
-                ('goal_1', 1, 10): 100,
+                ('goal_1', 1, 24): 20,
+                ('goal_1', 1, 168): 50,
+                ('goal_1', 1, 720): 80,
+                ('goal_1', 1, 2160): 100,
             }
         })
         self.assertDictEqual(merged_data[1], {
@@ -163,7 +177,10 @@ class ConversionHelperTestCase(test.TestCase):
             'source': 'adiant',
             'publisher': 'dummy_domain',
             'slug': 'goal_1',
-            'conversion_count': 100,
+            'conversion_count_24': 20,
+            'conversion_count_168': 50,
+            'conversion_count_720': 80,
+            'conversion_count_2160': 100,
             'dummy_info': -1000,
             'conversion_window': 10,
             'account': 1,

@@ -71,6 +71,14 @@
             </div>
             <label ng-repeat="error in errors.comment" class="col-xs-5 control-label error" for="comment">{{ error }}</label>
         </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.agency}" ng-if="account.agency">
+            <div class="col-xs-8">
+                <label>
+                    <input id="is-agency-input" type="checkbox" ng-model="creditItem.isAgency"> Agency credit
+                </label>
+            </div>
+            <label ng-repeat="error in errors.agency" class="control-label error" for="is-agency-input">{{ error }}</label>
+        </div>
         <hr />
         <div class="form-group">
             <label for="is-signed-input" class="col-xs-8 control-label">

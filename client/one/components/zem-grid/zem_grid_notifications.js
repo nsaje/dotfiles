@@ -21,7 +21,7 @@ oneApp.directive('zemGridNotifications', [function () {
 
             function initialize () {
                 initializeNotifications();
-                pubsub.register(pubsub.EVENTS.EXT_NOTIFICATIONS_UPDATED, initializeNotifications);
+                pubsub.register(pubsub.EVENTS.EXT_NOTIFICATIONS_UPDATED, null, initializeNotifications);
             }
 
             function initializeNotifications () {

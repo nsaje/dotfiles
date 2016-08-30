@@ -32,7 +32,7 @@ oneApp.directive('zemGridCellStatusField', ['zemGridEndpointColumns', function (
 
             $scope.$watch('ctrl.row', update);
             $scope.$watch('ctrl.data', update);
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, update);
+            pubsub.register(pubsub.EVENTS.DATA_UPDATED, $scope, update);
 
             function update () {
                 vm.statusText = '';

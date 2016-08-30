@@ -27,7 +27,6 @@ class AdGroupSettingsTest(TestCase):
             'id',
             'ad_group',
             'ad_group_id',
-            'audience',
             'created_dt',
             'created_by',
             'created_by_id',
@@ -52,6 +51,13 @@ class AdGroupSettingsTest(TestCase):
             'tracking_code': u'',
             'target_regions': ['US'],
             'retargeting_ad_groups': [1, 2],
+            'exclusion_retargeting_ad_groups': [3, 4],
+            'notes': 'Some note',
+            'bluekai_targeting': ['or', 3, 4],
+            'interest_targeting': ['a', 'b'],
+            'exclusion_interest_targeting': ['c', 'd'],
+            'redirect_pixel_urls': ['http://a.com/b.jpg', 'http://a.com/c.jpg'],
+            'redirect_javascript': 'alert(\'a\')',
             'display_url': 'example.com',
             'brand_name': 'Example',
             'description': 'Example description',
@@ -133,12 +139,19 @@ class AdGroupSettingsTest(TestCase):
             'Description set to "Example description", '
             'End date set to "2014-06-05", '
             'Max CPC bid set to "$1.000", '
+            'Interest targeting set to "A, B", '
             'Device targeting set to "Mobile", '
+            'Notes set to "Some note", '
             'Display URL set to "example.com", '
+            'Pixel retargeting JavaScript set to "alert(\'a\')", '
             'Brand name set to "Example", '
+            'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot", '
             'State set to "Enabled", '
             'Call to action set to "Call to action", '
             'Ad group name set to "AdGroup name", '
+            'Exclusion interest targeting set to "C, D", '
+            'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg", '
+            'BlueKai targeting set to "["or", 3, 4]", '
             'Start date set to "2014-06-04", '
             'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
             'GA web property ID set to "UA-123456789-1"'

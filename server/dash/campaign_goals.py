@@ -702,3 +702,17 @@ def get_allowed_conversion_goals_fields(user, conversion_goals):
         allowed.extend([cg.get_view_key(conversion_goals) for cg in conversion_goals])
 
     return allowed
+
+
+def get_allowed_pixels_fields(pixels):
+    """
+    Returns pixel column names and average costs column names that should be kept for all users.
+    FIXME: This function should probably be in some other module.
+    """
+    allowed = []
+    for pixel in pixels:
+        for conversion_window in dash.constants.ConversionWindows.get_all():
+            view_key = pixel.get_view_key(conversion_window)
+            allowed.append(view_key)
+            allowed.append('avg_cost_per_' + view_key)
+    return allowed

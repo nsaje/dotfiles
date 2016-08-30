@@ -1,4 +1,4 @@
-/* globals angular,oneApp,constants,options,moment */
+/* globals angular,oneApp,constants,options,moment,$ */
 oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'api', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $modal, api, zemNavigationService, $timeout) { // eslint-disable-line max-len
 
     $scope.canEditAccount = false;
@@ -25,6 +25,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
     $scope.facebookPageChangedInfo = {
         changed: false
     };
+    var agencies = [];
 
     $scope.isAnySettingSettable = function () {
         return $scope.hasPermission('zemauth.can_modify_allowed_sources') ||
@@ -120,6 +121,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                 } else {
                     $scope.accountManagers = data.accountManagers;
                     $scope.salesReps = data.salesReps;
+                    agencies = data.agencies;
                 }
             },
             function (data) {
@@ -167,8 +169,12 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
                 $scope.settings = data.settings;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
+                agencies = data.agencies;
                 $scope.checkFacebookAccountStatus();
-                zemNavigationService.updateAccountCache($state.params.id, {name: data.settings.name});
+                zemNavigationService.updateAccountCache($state.params.id, {
+                    name: data.settings.name,
+                    agency: data.settings.agency.id || null,
+                });
                 $scope.saved = true;
             },
             function (data) {
@@ -286,7 +292,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         var user = getUser(userId);
         user.requestInProgress = true;
 
-        api.userActivation.post($state.params.id, userId).then(
+        api.accountUserAction.post($state.params.id, userId, 'activate').then(
             function (userId) {
                 user.saved = true;
                 user.emailResent = true;
@@ -315,8 +321,67 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         });
     };
 
+    $scope.promoteUser = function (user) {
+        user.requestInProgress = true;
+
+        api.accountUserAction.post($scope.account.id, user.id, 'promote').then(
+            function (data) {
+                user.is_agency_manager = true;
+            }
+        ).finally(function () {
+            user.requestInProgress = false;
+        });
+    };
+
+    $scope.downgradeUser = function (user) {
+        user.requestInProgress = true;
+
+        api.accountUserAction.post($scope.account.id, user.id, 'downgrade').then(
+            function (data) {
+                user.is_agency_manager = false;
+            }
+        ).finally(function () {
+            user.requestInProgress = false;
+        });
+    };
+
     $scope.getName = function (user) {
         return user.name;
+    };
+
+    var convertSelect2 = function (obj) {
+        return {
+            id: obj.name,
+            text: obj.name,
+            obj: obj,
+        };
+    };
+
+    $scope.agencySelect2Config = {
+        dropdownCssClass: 'service-fee-select2',
+        createSearchChoice: function (term, data) {
+            if ($(data).filter(function () {
+                return this.text.localeCompare(term) === 0;
+            }).length === 0) {
+                return {id: term, text: term + ' (Create new agency)'};
+            }
+        },
+        data: function () {
+            return {
+                results: agencies.map(convertSelect2),
+            };
+        },
+    };
+
+    $scope.updateAgencyDefaults = function () {
+        if ($scope.settings.agency && $scope.settings.agency.obj) {
+            if ($scope.settings.accountType == constants.accountTypes.UNKNOWN) {
+                $scope.settings.accountType = $scope.settings.agency.obj.default_account_type;
+            }
+            if (!$scope.settings.defaultSalesRepresentative) {
+                $scope.settings.defaultSalesRepresentative = $scope.settings.agency.obj.sales_representative;
+            }
+        }
     };
 
     $scope.init = function () {

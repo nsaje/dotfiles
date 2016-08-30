@@ -12,6 +12,7 @@ oneApp.factory('zemGridPubSub', [function () {
     var EVENTS = {
         BODY_HORIZONTAL_SCROLL: 'zem-grid-pubsub-bodyHorizontalScroll',
         BODY_VERTICAL_SCROLL: 'zem-grid-pubsub-bodyVerticalScroll',
+        BODY_ROWS_UPDATED: 'zem-grid-pubsub-bodyRowsUpdated',
         METADATA_UPDATED: 'zem-grid-pubsub-metadataUpdated',
         DATA_UPDATED: 'zem-grid-pubsub-dataUpdated',
 
@@ -22,18 +23,21 @@ oneApp.factory('zemGridPubSub', [function () {
         EXT_NOTIFICATIONS_UPDATED: 'zem-grid-ext-notifications-updated',
     };
 
-    function PubSub (scope) {
+    function PubSub ($scope) {
         this.EVENTS = EVENTS;
 
         this.register = register;
         this.notify = notify;
 
-        function register (event, listener) {
-            return scope.$on(event, listener);
+        function register (event, scope, listener) {
+            var handler = $scope.$on(event, listener);
+            scope = scope || $scope;
+            scope.$on('$destroy', handler);
+            return handler;
         }
 
         function notify (event, data) {
-            scope.$broadcast(event, data);
+            $scope.$broadcast(event, data);
         }
     }
 

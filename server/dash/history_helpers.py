@@ -40,3 +40,10 @@ def get_account_history(account):
         account=account,
         level=dash.constants.HistoryLevel.ACCOUNT,
     ).order_by('-created_dt')
+
+
+def get_agency_history(agency):
+    return dash.models.History.objects.all().filter(
+        agency=agency,
+        level=dash.constants.HistoryLevel.AGENCY,
+    ).order_by('-created_dt')

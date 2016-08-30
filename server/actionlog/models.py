@@ -49,6 +49,7 @@ class ActionLog(models.Model):
 
     ad_group_source = models.ForeignKey('dash.AdGroupSource', on_delete=models.PROTECT, null=True)
     content_ad_source = models.ForeignKey('dash.ContentAdSource', on_delete=models.PROTECT, null=True)
+    conversion_pixel = models.ForeignKey('dash.ConversionPixel', on_delete=models.PROTECT, null=True)
 
     message = models.TextField(blank=True)
 
