@@ -43,9 +43,9 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
         zemGridEndpointColumns.setDynamicColumns(
             metaData.columns,
             metaData.categories,
-            breakdown.campaignGoals,
-            breakdown.conversionGoals,
-            breakdown.pixels
+            convertedBreakdown.campaignGoals,
+            convertedBreakdown.conversionGoals,
+            convertedBreakdown.pixels
         );
 
         if (breakdown.totals) {
