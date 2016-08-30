@@ -576,7 +576,7 @@ class SourcesTable(object):
 
         conversion_goals_lst = []
         if hasattr(level_sources_table, 'conversion_goals'):
-            conversion_goals_lst = helpers.get_conversion_goal_list(level_sources_table.conversion_goals)
+            conversion_goals_lst = helpers.get_conversion_goals_wo_pixels(level_sources_table.conversion_goals)
             # only on ad group and campaign level
             response['conversion_goals'] = conversion_goals_lst
 
@@ -1150,7 +1150,7 @@ class AdGroupAdsTable(object):
             'incomplete_postclick_metrics': False,  # incomplete_postclick_metrics,
         }
 
-        conversion_goals_lst = helpers.get_conversion_goal_list(conversion_goals)
+        conversion_goals_lst = helpers.get_conversion_goals_wo_pixels(conversion_goals)
         response['conversion_goals'] = conversion_goals_lst
         response['pixels'] = helpers.get_pixels_list(pixels)
 
@@ -1340,7 +1340,7 @@ class CampaignAdGroupsTable(object):
         }
 
         conversion_goals = campaign.conversiongoal_set.all()
-        conversion_goals_lst = helpers.get_conversion_goal_list(conversion_goals)
+        conversion_goals_lst = helpers.get_conversion_goals_wo_pixels(conversion_goals)
 
         response['conversion_goals'] = conversion_goals_lst
         response['pixels'] = helpers.get_pixels_list(pixels)
@@ -1759,7 +1759,7 @@ class PublishersTable(object):
             'ob_blacklisted_count': count_ob_blacklisted_publishers,
         }
 
-        conversion_goals_lst = helpers.get_conversion_goal_list(conversion_goals)
+        conversion_goals_lst = helpers.get_conversion_goals_wo_pixels(conversion_goals)
         response['conversion_goals'] = conversion_goals_lst
         response['pixels'] = helpers.get_pixels_list(pixels)
 

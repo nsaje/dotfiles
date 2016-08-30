@@ -109,7 +109,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         result = {}
         if conversion_goals is not None:
-            result['conversion_goals'] = helpers.get_conversion_goal_list(conversion_goals)
+            result['conversion_goals'] = helpers.get_conversion_goals_wo_pixels(conversion_goals)
 
         if pixels:
             result['pixels'] = helpers.get_pixels_list(pixels)

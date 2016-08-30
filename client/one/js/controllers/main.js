@@ -308,7 +308,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         for (var i = 0; i < chartData.groups.length; i++) {
             var seriesData = chartData.groups[i].seriesData;
             if (!seriesData) return false;
-            if (!(metric in seriesData)) return false;
+            if (!seriesData.hasOwnProperty(metric)) return false;
         }
         return true;
     };

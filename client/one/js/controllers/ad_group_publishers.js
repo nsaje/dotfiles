@@ -794,9 +794,13 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     var getDailyStatsMetrics = function () {
         // always query for default metrics
-        var metrics = [constants.chartMetric.CLICKS, constants.chartMetric.IMPRESSIONS];
-        metrics.push($scope.chartMetric1);
-        metrics.push($scope.chartMetric2);
+        var metrics = [$scope.chartMetric1, $scope.chartMetric2];
+        if (metrics.indexOf(constants.chartMetric.CLICKS) < 0) {
+            metrics.push(constants.chartMetric.CLICKS);
+        }
+        if (metrics.indexOf(constants.chartMetric.IMPRESSIONS) < 0) {
+            metrics.push(constants.chartMetric.IMPRESSIONS);
+        }
         return metrics;
     };
 

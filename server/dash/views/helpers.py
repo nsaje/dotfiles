@@ -950,7 +950,7 @@ def get_target_regions_string(regions):
     return ', '.join(constants.AdTargetLocation.get_text(x) for x in regions)
 
 
-def get_conversion_goal_list(conversion_goals):
+def get_conversion_goals_wo_pixels(conversion_goals):
     """
     Returns conversions goals not of pixel type to be used by in client. Pixels
     are to be returned separately.

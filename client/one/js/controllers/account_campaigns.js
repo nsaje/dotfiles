@@ -507,9 +507,13 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
     var getDailyStatsMetrics = function () {
         // always query for default metrics
-        var metrics = [constants.chartMetric.CLICKS, constants.chartMetric.IMPRESSIONS];
-        metrics.push($scope.chartMetric1);
-        metrics.push($scope.chartMetric2);
+        var metrics = [$scope.chartMetric1, $scope.chartMetric2];
+        if (metrics.indexOf(constants.chartMetric.CLICKS) < 0) {
+            metrics.push(constants.chartMetric.CLICKS);
+        }
+        if (metrics.indexOf(constants.chartMetric.IMPRESSIONS) < 0) {
+            metrics.push(constants.chartMetric.IMPRESSIONS);
+        }
         return metrics;
     };
 
@@ -580,8 +584,13 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         zemPostclickMetricsService.insertPixelChartOptions($scope.chartMetricOptions, pixels);
 
         var validChartMetrics = zemPostclickMetricsService.getValidChartMetrics($scope.chartMetric1, $scope.chartMetric2, $scope.chartMetricOptions);
-        if ($scope.chartMetric1 !== validChartMetrics.metric1) $scope.chartMetric1 = validChartMetrics.metric1;
-        if ($scope.chartMetric2 !== validChartMetrics.metric2) $scope.chartMetric2 = validChartMetrics.metric2;
+        if ($scope.chartMetric1 !== validChartMetrics.metric1) {
+            $scope.chartMetric1 = validChartMetrics.metric1;
+        }
+
+        if ($scope.chartMetric2 !== validChartMetrics.metric2) {
+            $scope.chartMetric2 = validChartMetrics.metric2;
+        }
     };
 
     $scope.getInfoboxData = function () {
