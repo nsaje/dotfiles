@@ -30,6 +30,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         api: undefined,
         level: constants.level.ALL_ACCOUNTS,
         breakdown: constants.breakdown.ACCOUNT,
+        options: {},
     };
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
