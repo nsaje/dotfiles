@@ -614,9 +614,9 @@ class K1ApiTest(TestCase):
             u'target_regions': [],
             u'retargeting': [
                              {u'event_id': u'100', u'event_type': u'redirect_adgroup', u'exclusion': False},
-                             {u'event_id': u'200', u'event_type': u'redirect_adgroup', u'exclusion': True},
-                             {u'event_id': u'1', u'event_type': u'aud', u'exclusion': False},
-                             {u'event_id': u'2', u'event_type': u'aud', u'exclusion': False}],
+                             {u'event_id': u'200', u'event_type': u'redirect_adgroup', u'exclusion': True}],
+                             # {u'event_id': u'1', u'event_type': u'aud', u'exclusion': False},
+                             # {u'event_id': u'2', u'event_type': u'aud', u'exclusion': False}],
             u'demographic_targeting': [u"or", "bluekai:1", "bluekai:2"],
             u'interest_targeting': [u"tech", u"entertainment"],
             u'exclusion_interest_targeting': [u"politics", u"war"],

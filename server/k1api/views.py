@@ -391,8 +391,9 @@ class AdGroupsView(K1APIView):
             retargeting.append(
                 {'event_type': EVENT_RETARGET_ADGROUP, 'event_id': str(retargeting_ad_group_id), 'exclusion': True})
 
-        for audience in ad_group_settings.audience_set.all():
-            retargeting.append({'event_type': EVENT_CUSTOM_AUDIENCE, 'event_id': str(audience.id), 'exclusion': False})
+        # TODO: maticz, 26.8.2016: This will be changed.
+        # for audience in ad_group_settings.audience_set.all():
+        #     retargeting.append({'event_type': EVENT_CUSTOM_AUDIENCE, 'event_id': str(audience.id), 'exclusion': False})
 
         return retargeting
 
@@ -427,8 +428,7 @@ class AdGroupsView(K1APIView):
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .filter(pk__in=current_ad_groups_settings)
                               .filter(archived=False)
-                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
-                              .prefetch_related('audience_set'))
+                              .select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account'))
 
         campaigns_settings = (dash.models.CampaignSettings.objects
                               .filter(campaign_id__in=set([ag.ad_group.campaign_id for ag in ad_groups_settings]))

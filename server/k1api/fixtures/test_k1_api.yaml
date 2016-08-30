@@ -983,7 +983,6 @@
 -   fields:
         name: 'Audience 1'
         pixel_id: 1
-        ad_group_settings: [1, 2]
         ttl: 90
         created_dt: '2015-02-23T00:00:00'
         modified_dt: '2015-02-23T00:00:00'
@@ -993,7 +992,6 @@
 -   fields:
         name: 'Audience 2'
         pixel_id: 2
-        ad_group_settings: [1]
         ttl: 60
         created_dt: '2015-02-24T00:00:00'
         modified_dt: '2015-02-24T00:00:00'

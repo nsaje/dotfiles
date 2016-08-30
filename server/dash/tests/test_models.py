@@ -27,7 +27,6 @@ class AdGroupSettingsTest(TestCase):
             'id',
             'ad_group',
             'ad_group_id',
-            'audience',
             'created_dt',
             'created_by',
             'created_by_id',
