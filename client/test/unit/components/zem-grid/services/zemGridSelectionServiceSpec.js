@@ -36,12 +36,12 @@ describe('zemGridSelectionService', function () {
         grid.header.columns.push(zemGridObject.createColumn({}));
         grid.header.columns.push(zemGridObject.createColumn({}));
 
-        grid.footer.row = zemGridObject.createRow('', {}, 0, null);
+        grid.footer.row = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, {}, 0, null);
 
-        var baseRow = zemGridObject.createRow('', {}, 1, grid.footer.row);
+        var baseRow = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, {breakdownId: 'id-1-1'}, 1, grid.footer.row);
         grid.body.rows.push(baseRow);
-        grid.body.rows.push(zemGridObject.createRow('', {}, 2, baseRow));
-        grid.body.rows.push(zemGridObject.createRow('', {}, 2, baseRow));
+        grid.body.rows.push(zemGridObject.createRow(zemGridConstants.gridRowType.STATS, {breakdownId: 'id-2-1'}, 2, baseRow));
+        grid.body.rows.push(zemGridObject.createRow(zemGridConstants.gridRowType.STATS, {breakdownId: 'id-2-2'}, 2, baseRow));
 
         return grid;
     }
@@ -168,5 +168,53 @@ describe('zemGridSelectionService', function () {
         expect(selectionService.isRowSelected(grid.footer.row)).toBe(true);
         expect(selectionService.getSelection().selected.length).toBe(1);
         expect(selectionService.getSelection().unselected.length).toBe(1);
+    });
+
+    it('should be able to clear selection', function () {
+        var grid = createGrid();
+        var selectionService = zemGridSelectionService.createInstance(grid);
+
+        selectionService.setRowSelection(grid.body.rows[0], true);
+        selectionService.setRowSelection(grid.footer.row, true);
+        expect(selectionService.getSelection().selected.length).toBe(2);
+
+        selectionService.clearSelection();
+        expect(selectionService.getSelection().selected.length).toBe(0);
+    });
+
+    it('should preserve selection between dataup dates', function () {
+        var grid = createGrid();
+        var selectionService = zemGridSelectionService.createInstance(grid);
+
+        selectionService.setRowSelection(grid.body.rows[0], true);
+        selectionService.setRowSelection(grid.footer.row, true);
+        expect(selectionService.getSelection().selected.length).toBe(2);
+
+        selectionService.clearSelection();
+        expect(selectionService.getSelection().selected.length).toBe(0);
+    });
+
+    it('should preserve selection between data updates', function () {
+        var grid = createGrid();
+        var pubsub = grid.meta.pubsub;
+
+        var selectionService = zemGridSelectionService.createInstance(grid);
+        selectionService.setRowSelection(grid.body.rows[0], true);
+        selectionService.setRowSelection(grid.body.rows[2], true);
+        selectionService.setRowSelection(grid.footer.row, true);
+
+
+        grid.body.rows = [];
+        pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
+        expect(selectionService.getSelection().selected.length).toBe(3);
+
+        grid.body = createGrid().body;
+        pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
+        expect(selectionService.getSelection().selected.length).toBe(3);
+
+        grid.body = createGrid().body;
+        grid.body.rows = grid.body.rows.slice(0, 2);
+        pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
+        expect(selectionService.getSelection().selected.length).toBe(2);
     });
 });

@@ -192,8 +192,11 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
         var left = 0;
         for (var idx = 0; idx < grid.header.visibleColumns.length; ++idx) {
             var column = grid.header.visibleColumns[idx];
+            // Lift columns to overlay fixed ones. Additionally, Checkbox columns should be placed to
+            // highest zIndex so that dropdown menu covers all other pivot columns
+            var zIndex = column.type === zemGridConstants.gridColumnTypes.CHECKBOX ? 100 : 10;
             column.style = {
-                'z-index': 10,
+                'z-index': zIndex,
                 position: 'absolute',
             };
             column.left = left; // cache correct position for later use

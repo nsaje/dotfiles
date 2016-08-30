@@ -25,6 +25,7 @@
         width: 100%;
         overflow: hidden;
         background-color: @zem-grid-bg-color;
+        position: relative;
 
         .zem-grid-row {
             height: 45px;
@@ -128,6 +129,9 @@
 
         .zem-grid-header {
             font-weight: 500;
+            position: relative;
+            z-index: 1000;
+
             .zem-grid-header-cell {
                 display: inline-block;
             }

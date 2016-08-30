@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemGridObject', [function () {
+oneApp.factory('zemGridObject', ['zemGridConstants', function (zemGridConstants) {
 
     //
     // This service defines Grid object. It is the main
@@ -56,7 +56,9 @@ oneApp.factory('zemGridObject', [function () {
     }
 
     function createRow (type, data, level, parent) {
+        var id = createRowId(type, data, level);
         return {
+            id: id,             // Row id
             type: type,         // Type of a row (STATS, BREAKDOWN)
             data: data,         // Data that corresponds to this row (stats or breakdown object - see DataSource)
             level: level,       // Level of data in breakdown tree which this row represents
@@ -74,6 +76,19 @@ oneApp.factory('zemGridObject', [function () {
             visible: true,      // Visibility flag
         };
     }
+
+    function createRowId (type, data, level) {
+        if (type === zemGridConstants.gridRowType.STATS) {
+            if (level === zemGridConstants.gridRowLevel.FOOTER) return 'id-level0';
+            return data.breakdownId;
+        }
+
+        if (type === zemGridConstants.gridRowType.BREAKDOWN) {
+            if (level === zemGridConstants.gridRowLevel.FOOTER) return 'breakdown-id-level0';
+            return 'breakdown-' + data.breakdownId;
+        }
+    }
+
 
     return {
         createGrid: createGrid,

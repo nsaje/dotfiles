@@ -34,6 +34,7 @@ oneApp.factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($
 
         // Selection service API
         this.getSelection = grid.meta.selectionService.getSelection;
+        this.clearSelection = grid.meta.selectionService.clearSelection;
         this.setSelection = grid.meta.selectionService.setSelection;
         this.getSelectionOptions = grid.meta.selectionService.getConfig;
         this.setSelectionOptions = grid.meta.selectionService.setConfig;

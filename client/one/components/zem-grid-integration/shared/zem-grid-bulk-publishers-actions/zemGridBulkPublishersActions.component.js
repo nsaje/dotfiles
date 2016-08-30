@@ -141,6 +141,7 @@ oneApp.controller('zemGridBulkPublishersActionsCtrl', ['$window', 'api', 'zemGri
         convertedSelection.unselectedPublishers = convertRows(selection.unselected);
         convertedSelection.filterAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
 
+        vm.api.clearSelection();
         action.execute(convertedSelection);
     }
 
@@ -153,6 +154,11 @@ oneApp.controller('zemGridBulkPublishersActionsCtrl', ['$window', 'api', 'zemGri
                 external_id: row.data.stats[COLUMNS.externalId.field].value,
             };
         });
+    }
+
+    function refreshData () {
+        vm.api.loadData();
+        vm.api.clearSelection();
     }
 
     //
@@ -242,7 +248,7 @@ oneApp.controller('zemGridBulkPublishersActionsCtrl', ['$window', 'api', 'zemGri
             selection.unselectedPublishers,
             selection.filterAll
         ).then(function () {
-            vm.api.loadData();
+            refreshData();
         });
     }
 }]);

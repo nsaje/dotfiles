@@ -92,6 +92,11 @@ oneApp.controller('zemGridBulkActionsCtrl', ['$window', 'api', 'zemGridConstants
         action.execute(convertedSelection);
     }
 
+    function refreshData () {
+        vm.api.loadData();
+        vm.api.clearSelection();
+    }
+
     //
     // Actions (TODO: create service when this functionality is expanded)
     //
@@ -147,7 +152,7 @@ oneApp.controller('zemGridBulkActionsCtrl', ['$window', 'api', 'zemGridConstants
             selection.filterAll,
             selection.filterId).then(function (data) {
                 notifyArchivingSuccess(data.data.archived_count, data.data.active_count);
-                vm.api.loadData();
+                refreshData();
             });
     }
 
@@ -179,7 +184,7 @@ oneApp.controller('zemGridBulkActionsCtrl', ['$window', 'api', 'zemGridConstants
             selection.unselectedIds,
             selection.filterAll,
             selection.filterId).then(function () {
-                vm.api.loadData();
+                refreshData();
             });
     }
 
@@ -205,7 +210,7 @@ oneApp.controller('zemGridBulkActionsCtrl', ['$window', 'api', 'zemGridConstants
             selection.filterId
         ).then(function () {
             // FIXME: poll updates (editable fields)
-            vm.api.loadData();
+            refreshData();
         });
     }
 }]);
