@@ -3990,6 +3990,7 @@ class Audience(models.Model):
         null=False
     )
     pixel = models.ForeignKey(ConversionPixel, on_delete=models.PROTECT)
+    archived = models.BooleanField(default=False)
     ad_group_settings = models.ManyToManyField(AdGroupSettings)
     ttl = models.PositiveSmallIntegerField()
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')

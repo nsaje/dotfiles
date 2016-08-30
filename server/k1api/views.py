@@ -101,7 +101,7 @@ class AccountsView(K1APIView):
     def _get_audiences_for_accounts(self, accounts):
         accounts_audiences = defaultdict(list)
         audiences = (dash.models.Audience.objects
-                     .filter(pixel__account__in=accounts)
+                     .filter(pixel__account__in=accounts, archived=False)
                      .select_related('pixel')
                      .prefetch_related('rule_set'))
         for audience in audiences:
