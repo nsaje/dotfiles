@@ -166,18 +166,24 @@ oneApp.controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'ze
 
     function updateSelection () {
         var selectedRows = vm.grid.api.getSelection().selected;
-        vm.selection.totals = false;
-        vm.selection.entityIds = [];
+        var selection = {
+            totals: false,
+            entityIds: [],
+        };
 
         selectedRows.forEach(function (row) {
             if (row.level === 0) {
-                vm.selection.totals = true;
+                selection.totals = true;
             }
             if (row.level === 1) {
-                vm.selection.entityIds.push(row.data.breakdownId);
+                selection.entityIds.push(row.data.breakdownId);
             }
         });
-        vm.selectionCallback();
+
+        if (!angular.equals(selection, vm.selection)) {
+            angular.extend(vm.selection, selection);
+            vm.selectionCallback();
+        }
     }
 }]);
 

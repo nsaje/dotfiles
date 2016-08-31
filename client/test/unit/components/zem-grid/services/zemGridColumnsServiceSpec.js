@@ -34,9 +34,9 @@ describe('zemGridColumnsService', function () {
             getBreakdown: function () { return ['base_level', 'age']; }
         };
 
-        grid.header.columns.push(zemGridObject.createColumn({}));
-        grid.header.columns.push(zemGridObject.createColumn({}));
-        grid.header.columns.push(zemGridObject.createColumn({}));
+        grid.header.columns.push(zemGridObject.createColumn({exceptions: {}}));
+        grid.header.columns.push(zemGridObject.createColumn({exceptions: {}}));
+        grid.header.columns.push(zemGridObject.createColumn({exceptions: {}}));
 
         return grid;
     }
@@ -86,9 +86,9 @@ describe('zemGridColumnsService', function () {
         zemGridColumnsService.createInstance(grid);
 
         var columns = grid.header.columns;
-        columns[0].data.breakdowns = ['breakdown2', 'breakdown3'];
-        columns[1].data.breakdowns = ['breakdown4'];
-        columns[2].data.breakdowns = undefined;
+        columns[0].data.exceptions.breakdowns = ['breakdown2', 'breakdown3'];
+        columns[1].data.exceptions.breakdowns = ['breakdown4'];
+        columns[2].data.exceptions.breakdowns = undefined;
 
         grid.meta.dataService.getBreakdown.and.returnValue([
             {query: 'breakdown1'},

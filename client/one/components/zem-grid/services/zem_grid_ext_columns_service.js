@@ -29,8 +29,8 @@ oneApp.factory('zemGridColumnsService', ['zemGridConstants', 'zemGridStorageServ
         function initializeColumnsState () {
             var breakdowns = grid.meta.dataService.getBreakdown().map(function (breakdown) { return breakdown.query; });
             grid.header.columns.forEach(function (column) {
-                if (column.data.breakdowns) {
-                    column.disabled = !intersects(column.data.breakdowns, breakdowns);
+                if (column.data.exceptions && column.data.exceptions.breakdowns) {
+                    column.disabled = !intersects(column.data.exceptions.breakdowns, breakdowns);
                 } else {
                     column.disabled = false;
                 }
