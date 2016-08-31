@@ -955,7 +955,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.externalId,
         COLUMNS.domain,
         COLUMNS.domainLink,
-        COLUMNS.exchange,
     ];
 
     var CONTENT_GROUP = [
