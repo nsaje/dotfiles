@@ -219,6 +219,8 @@ class InsertAdGroupTest(TestCase):
         enable_ga_tracking = True
         enable_adobe_tracking = False
         adobe_tracking_param = 'cid'
+        redirect_pixel_urls = ['http://a.com', 'http://b.com']
+        redirect_javascript = 'alert("a");'
 
         response = Mock()
         response.read.return_value = '{"status": "ok"}'
@@ -242,6 +244,29 @@ class InsertAdGroupTest(TestCase):
             "enablegatracking": True,
             "enableadobetracking": False,
             "adobetrackingparam": 'cid'
+        }))
+
+        redirector_helper.insert_adgroup(
+            ad_group_id,
+            tracking_codes,
+            enable_ga_tracking,
+            enable_adobe_tracking,
+            adobe_tracking_param,
+            redirect_pixel_urls,
+            redirect_javascript
+        )
+
+        call = mock_urlopen.call_args[0][0]
+
+        self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id))
+        self.assertEqual(call.get_method(), 'PUT')
+        self.assertEqual(call.data, json.dumps({
+            "trackingcode": tracking_codes,
+            "enablegatracking": True,
+            "enableadobetracking": False,
+            "adobetrackingparam": 'cid',
+            "specialredirecttrackers": ['http://a.com', 'http://b.com'],
+            "specialredirectjavascript": 'alert("a");'
         }))
 
     def test_code_error(self, mock_urlopen):

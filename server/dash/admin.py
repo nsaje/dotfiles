@@ -29,6 +29,7 @@ from dash import validation_helpers
 
 import utils.k1_helper
 import utils.email_helper
+import utils.redirector_helper
 
 import actionlog.api_contentads
 import actionlog.zwei_actions
@@ -754,10 +755,25 @@ class AdGroupAdmin(admin.ModelAdmin):
         if changes:
             new_settings.save(request)
             utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroup admin')
+            if (current_settings.redirect_pixel_urls != new_settings.redirect_pixel_urls or
+                    current_settings.redirect_javascript != new_settings.redirect_javascript):
+                self._update_redirector_adgroup(ad_group, new_settings)
             changes_text = models.AdGroupSettings.get_changes_text(
                 current_settings, new_settings, request.user, separator='\n')
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)
+
+    @staticmethod
+    def _update_redirector_adgroup(ad_group, new_settings):
+        utils.redirector_helper.insert_adgroup(
+            ad_group.id,
+            new_settings.get_tracking_codes(),
+            new_settings.enable_ga_tracking,
+            new_settings.enable_adobe_tracking,
+            new_settings.adobe_tracking_param,
+            new_settings.redirect_pixel_urls,
+            new_settings.redirect_javascript
+        )
 
     def settings_(self, obj):
         return '<a href="{admin_url}">List ({num_settings})</a>'.format(

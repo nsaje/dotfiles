@@ -77,16 +77,21 @@ def update_redirect(url, redirect_id):
         raise
 
 
-def insert_adgroup(ad_group_id, tracking_codes, enable_ga_tracking, enable_adobe_tracking, adobe_tracking_param):
+def insert_adgroup(ad_group_id, tracking_codes, enable_ga_tracking, enable_adobe_tracking, adobe_tracking_param,
+                   redirect_pixel_urls=None, redirect_javascript=None):
     try:
         url = settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id)
-        data = json.dumps({
+        data = {
             'trackingcode': tracking_codes,
             'enablegatracking': enable_ga_tracking,
             'enableadobetracking': enable_adobe_tracking,
             'adobetrackingparam': adobe_tracking_param,
-        })
-        return _call_api_retry(url, data, method='PUT')
+        }
+        if redirect_pixel_urls:
+            data['specialredirecttrackers'] = redirect_pixel_urls
+        if redirect_javascript:
+            data['specialredirectjavascript'] = redirect_javascript
+        return _call_api_retry(url, json.dumps(data), method='PUT')
     except Exception:
         logger.exception('Exception in insert_adgroup')
         raise
