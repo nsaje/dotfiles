@@ -28,8 +28,8 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
             var padding = window.getComputedStyle(headerCells[i], null).getPropertyValue('padding-left');
             var maxWidth = window.getComputedStyle(headerCells[i], null).getPropertyValue('max-width');
             var minWidth = window.getComputedStyle(headerCells[i], null).getPropertyValue('min-width');
-            maxWidth = parseInt(maxWidth) || Number.MAX_VALUE;
-            minWidth = parseInt(minWidth) || 0;
+            maxWidth = parseInt(maxWidth) || zemGridConstants.gridStyle.DEFAULT_MAX_COLUMN_WIDTH;
+            minWidth = parseInt(minWidth) || zemGridConstants.gridStyle.DEFAULT_MIN_COLUMN_WIDTH;
             padding = parseInt(padding) || 0;
 
             // Calculate column column width without constraints (use only font)
@@ -106,9 +106,11 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
 
     function keepAspectRatio (columnWidths, maxColumnWidths, headerWidth) {
         // Stretch columns to fill available space, if there is any (keep ratio)
+        var computedColumnsWidth;
+        var maxedColumnsWidth;
         while (true) { // eslint-disable-line no-constant-condition
-            var computedColumnsWidth = 0;
-            var maxedColumnsWidth = 0;
+            computedColumnsWidth = 0;
+            maxedColumnsWidth = 0;
             columnWidths.forEach(function (w, i) {
                 computedColumnsWidth += w;
                 if (w >= maxColumnWidths[i]) maxedColumnsWidth += w;
@@ -122,6 +124,11 @@ oneApp.factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridData
                     columnWidths[i] = Math.min(maxColumnWidths[i], w * ratio);
                 }
             });
+        }
+
+        if (headerWidth > computedColumnsWidth) {
+            // Resize last column to fill the gap between computed widths and header width
+            columnWidths[columnWidths.length - 1] += (headerWidth - computedColumnsWidth);
         }
     }
 
