@@ -964,14 +964,10 @@ def get_conversion_goals_wo_pixels(conversion_goals):
 def get_pixels_list(pixels):
     pixels_list = []
     for pixel in sorted(pixels, key=lambda x: x.name.lower()):
-        for conversion_window in sorted(constants.ConversionWindows.get_all()):
-            conversion_window_days = conversion_window / 24
-            name = '{} {} day{}'.format(pixel.name, conversion_window_days,
-                                        's' if conversion_window_days > 1 else '')
-            pixels_list.append({
-                'id': pixel.get_view_key(conversion_window),
-                'name': name,
-            })
+        pixels_list.append({
+            'prefix': pixel.get_prefix(),
+            'name': pixel.name,
+        })
     return pixels_list
 
 

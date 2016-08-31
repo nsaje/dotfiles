@@ -24,8 +24,12 @@ oneApp.factory('zemGridStorageService', ['zemLocalStorageService', function (zem
             if (columns) {
                 // Check if it was stored as visible
                 var field = column.field;
+                var autoSelect = column.data.autoSelect;
                 if (column.data.goal && column.data.default) field = KEY_COLUMN_PRIMARY_GOAL;
                 column.visible = columns.indexOf(field) > -1;
+                if (autoSelect) {
+                    column.visible = columns.indexOf(autoSelect) > -1;
+                }
             } else {
                 // When no storage available use default value
                 column.visible = column.data.default;

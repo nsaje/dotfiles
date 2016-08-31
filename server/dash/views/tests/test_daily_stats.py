@@ -103,11 +103,8 @@ class BaseDailyStatsTest(TestCase):
 
         if with_pixels:
             expected_response['data']['pixels'] = [
-                    {'id': 'pixel_1_24', 'name': 'test 1 day'},
-                    {'id': 'pixel_1_168', 'name': 'test 7 days'},
-                    {'id': 'pixel_1_720', 'name': 'test 30 days'},
-                    {'id': 'pixel_1_2160', 'name': 'test 90 days'},
-                ]
+                {'prefix': 'pixel_1', 'name': 'test'},
+            ]
 
         self.assertDictEqual(expected_response, json_blob)
 
@@ -663,10 +660,7 @@ class AdGroupAdsDailyStatsTest(TestCase):
                 ]),
                 'campaign_goals': {},
                 'pixels': [
-                    {'id': 'pixel_1_24', 'name': 'test 1 day'},
-                    {'id': 'pixel_1_168', 'name': 'test 7 days'},
-                    {'id': 'pixel_1_720', 'name': 'test 30 days'},
-                    {'id': 'pixel_1_2160', 'name': 'test 90 days'},
+                    {'prefix': 'pixel_1', 'name': 'test'},
                 ],
             },
             'success': True
@@ -839,10 +833,7 @@ class AdGroupAdsDailyStatsTest(TestCase):
                 ]),
                 'campaign_goals': {},
                 'pixels': [
-                    {'id': 'pixel_1_24', 'name': 'test 1 day'},
-                    {'id': 'pixel_1_168', 'name': 'test 7 days'},
-                    {'id': 'pixel_1_720', 'name': 'test 30 days'},
-                    {'id': 'pixel_1_2160', 'name': 'test 90 days'},
+                    {'prefix': 'pixel_1', 'name': 'test'},
                 ],
             },
             'success': True
@@ -1022,10 +1013,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                 ]),
                 'campaign_goals': {},
                 'pixels': [
-                    {'id': 'pixel_1_24', 'name': 'test 1 day'},
-                    {'id': 'pixel_1_168', 'name': 'test 7 days'},
-                    {'id': 'pixel_1_720', 'name': 'test 30 days'},
-                    {'id': 'pixel_1_2160', 'name': 'test 90 days'},
+                    {'prefix': 'pixel_1', 'name': 'test'},
                 ],
             },
             'success': True

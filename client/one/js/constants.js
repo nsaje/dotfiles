@@ -529,6 +529,7 @@ var constants = {
         24: '1 day',
         168: '7 days',
         720: '30 days',
+        2160: '90 days',
     },
     entityType: {
         AD_GROUP: 'adGroup',
@@ -1197,6 +1198,7 @@ var options = {
         {name: '1 day', value: 24},
         {name: '7 days', value: 168},
         {name: '30 days', value: 720},
+        {name: '90 days', value: 2160},
     ],
     exportFrequency: [
         {name: 'Daily', value: constants.exportFrequency.DAILY},

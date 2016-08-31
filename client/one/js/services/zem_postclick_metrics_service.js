@@ -293,30 +293,34 @@ oneApp.factory('zemPostclickMetricsService', function () {
         var newColumns = [],
             newAvgCostColumns = [];
         angular.forEach(pixels, function (pixel) {
-            newColumns.push({
-                name: pixel.name,
-                field: pixel.id,
-                type: 'number',
-                help: 'Number of completions of the conversion goal',
-                shown: true,
-                checked: false,
-                internal: false,
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc',
-            });
+            angular.forEach(options.conversionWindows, function (window) {
+                var name = pixel.name + ' ' + window.name,
+                    field = pixel.prefix + '_' + window.value;
+                newColumns.push({
+                    name: name,
+                    field: field,
+                    type: 'number',
+                    help: 'Number of completions of the conversion goal',
+                    shown: true,
+                    checked: false,
+                    internal: false,
+                    totalRow: true,
+                    order: true,
+                    initialOrder: 'desc',
+                });
 
-            newAvgCostColumns.push({
-                name: 'CPA (' + pixel.name + ')',
-                field: 'avg_cost_per_' + pixel.id,
-                type: 'currency',
-                help: 'Average cost per acquisition.',
-                shown: true,
-                checked: false,
-                internal: false,
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc',
+                newAvgCostColumns.push({
+                    name: 'CPA (' + name + ')',
+                    field: 'avg_cost_per_' + field,
+                    type: 'currency',
+                    help: 'Average cost per acquisition.',
+                    shown: true,
+                    checked: false,
+                    internal: false,
+                    totalRow: true,
+                    order: true,
+                    initialOrder: 'desc',
+                });
             });
         });
 
@@ -446,14 +450,18 @@ oneApp.factory('zemPostclickMetricsService', function () {
         var newOptions = [],
             newGoalsOptions = [];
         angular.forEach(pixels, function (pixel) {
-            newOptions.push({
-                value: pixel.id,
-                name: pixel.name,
-            });
+            angular.forEach(options.conversionWindows, function (window) {
+                var name = pixel.name + ' ' + window.name,
+                    field = pixel.prefix + '_' + window.value;
+                newOptions.push({
+                    value: field,
+                    name: name,
+                });
 
-            newGoalsOptions.push({
-                value: 'avg_cost_per_' + pixel.id,
-                name: 'CPA (' + pixel.name + ')',
+                newGoalsOptions.push({
+                    value: 'avg_cost_per_' + field,
+                    name: 'CPA (' + name + ')',
+                });
             });
         });
         var conversionsPosition = findChartOptionPosition(chartOptions, constants.chartMetric.PIXELS_PLACEHOLDER);

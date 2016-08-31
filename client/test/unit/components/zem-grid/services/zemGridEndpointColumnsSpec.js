@@ -24,6 +24,10 @@ describe('zemGridEndpointColumnsSpec', function () {
         })[0];
     }
 
+    function findColumnByField (field, columns) {
+        return findColumn({field: field}, columns);
+    }
+
     it('should configure columns', function () {
         var columns = zemGridEndpointColumns.createColumns($scope, constants.level.CAMPAIGNS, [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD, constants.breakdown.MEDIA_SOURCE]);
         var nameColumn = findColumn(zemGridEndpointColumns.COLUMNS.name, columns);
@@ -81,6 +85,42 @@ describe('zemGridEndpointColumnsSpec', function () {
 
         var imageUrlsColumn = findColumn(zemGridEndpointColumns.COLUMNS.imageUrls, columns);
         expect(imageUrlsColumn).toBe(undefined);
+    });
+
+    it('should set dynamic columns correctly', function () {
+        var columns = zemGridEndpointColumns.createColumns($scope, constants.level.CAMPAIGNS, [constants.breakdown.AD_GROUP]);
+        var categories = zemGridEndpointColumns.createCategories();
+
+        var pixels = [{prefix: 'pixel_1', name: 'Pixel goal'}];
+        var conversionGoals = [{id: 'conversion_goal_1', name: 'Conversion goal'}];
+        var campaignGoals = [
+            {fields: {avg_cost_per_pixel_1_24: true}, name: 'Avg. CPA', conversion: 'Pixel goal - 1 day', value: 20, primary: true},
+            {fields: {avg_cost_per_conversion_goal_1: true}, name: 'Avg. CPA', conversion: 'Conversion goal', value: 50, primary: false},
+        ];
+
+        zemGridEndpointColumns.setDynamicColumns(columns, categories, campaignGoals, conversionGoals, pixels);
+
+        var pixelConversionsColumn = findColumnByField('pixel_1_24', columns);
+        expect(pixelConversionsColumn.shortName).toBe(1);
+        expect(pixelConversionsColumn.permanent).toBeFalsy();
+        expect(pixelConversionsColumn.default).toBeFalsy();
+        expect(pixelConversionsColumn.goal).toBeFalsy();
+
+        var pixelCpaColumn = findColumnByField('avg_cost_per_pixel_1_24', columns);
+        expect(pixelCpaColumn.permanent).toBeFalsy();
+        expect(pixelCpaColumn.default).toBe(true);
+        expect(pixelCpaColumn.goal).toBe(true);
+        expect(pixelCpaColumn.autoSelect).toBe('pixel_1_24');
+
+        var goalConversionsColumn = findColumnByField('conversion_goal_1', columns);
+        expect(goalConversionsColumn.permanent).toBeFalsy();
+        expect(goalConversionsColumn.default).toBeFalsy();
+        expect(goalConversionsColumn.goal).toBeFalsy();
+
+        var goalCpaColumn = findColumnByField('avg_cost_per_conversion_goal_1', columns);
+        expect(goalCpaColumn.permanent).toBeFalsy();
+        expect(goalCpaColumn.default).toBeFalsy();
+        expect(goalCpaColumn.goal).toBe(true);
     });
 
 });

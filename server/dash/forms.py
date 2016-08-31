@@ -460,7 +460,7 @@ class ConversionGoalForm(forms.Form):
     )
     conversion_window = forms.TypedChoiceField(
         required=False,
-        choices=[(24, '1 day'), (168, '7 days'), (720, '30 days')],
+        choices=constants.ConversionWindows.get_choices(),
         coerce=int,
         empty_value=None,
     )

@@ -1,4 +1,4 @@
-/* globals oneApp, angular, constants */
+/* globals oneApp, angular, constants, options */
 'use strict';
 
 oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridConstants) {
@@ -6,8 +6,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
 
     var CONVERSION_GOALS_PLACEHOLDER = 'conversion_goals_placeholder';
     var PIXELS_PLACEHOLDER = 'pixels_placeholder';
-    var CONVERSION_GOALS_AVG_COST_PLACEHOLDER = 'conversion_goals_avg_cost_placeholder';
-    var PIXELS_AVG_COST_PLACEHOLDER = 'pixels_avg_cost_placeholder';
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // COLUMN DEFINITIONS
@@ -651,6 +649,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            goal: true,
         },
         avgCostPerPageview: {
             name: 'Avg. Cost per Pageview',
@@ -662,6 +661,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            goal: true,
         },
         avgCostPerVisit: {
             name: 'Avg. Cost per Visit',
@@ -673,6 +673,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            goal: true,
         },
         avgCostPerNonBouncedVisit: {
             name: 'Avg. Cost per Non-Bounced Visit',
@@ -684,6 +685,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            goal: true,
         },
         avgCostForNewVisitor: {
             name: 'Avg. Cost for New Visitor',
@@ -695,6 +697,7 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             totalRow: true,
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            goal: true,
         },
 
         // Postclick Engagement Metrics
@@ -823,14 +826,26 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             field: PIXELS_PLACEHOLDER,
             shown: false,
         },
-        conversionGoalsAvgCostPlaceholder: {
-            field: CONVERSION_GOALS_AVG_COST_PLACEHOLDER,
+
+        // conversions and cpa templates
+        conversionCount: {
+            type: zemGridConstants.gridColumnTypes.NUMBER,
+            help: 'Number of completions of the conversion goal',
             shown: false,
+            internal: false,
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
         },
-        pixelsAvgCostPlaceholder: {
-            field: PIXELS_AVG_COST_PLACEHOLDER,
+        conversionCpa: {
+            type: zemGridConstants.gridColumnTypes.CURRENCY,
+            help: 'Average cost per acquisition.',
             shown: false,
-        },
+            internal: false,
+            totalRow: true,
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+        }
     };
 
     // ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1016,21 +1031,19 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         COLUMNS.bounceRate,
         COLUMNS.totalSeconds,
         COLUMNS.avgTos,
-    ];
-
-    var CONVERSIONS_GROUP = [
-        COLUMNS.conversionGoalsPlaceholder,
-        COLUMNS.pixelsPlaceholder,
-    ];
-
-    var GOALS_GROUP = [
         COLUMNS.avgCostPerVisit,
         COLUMNS.avgCostForNewVisitor,
         COLUMNS.avgCostPerPageview,
         COLUMNS.avgCostPerNonBouncedVisit,
         COLUMNS.avgCostPerMinute,
-        COLUMNS.conversionGoalsAvgCostPlaceholder,
-        COLUMNS.pixelsAvgCostPlaceholder,
+    ];
+
+    var PIXELS_GROUP = [
+        COLUMNS.pixelsPlaceholder,
+    ];
+
+    var CONVERSION_GOALS_GROUP = [
+        COLUMNS.conversionGoalsPlaceholder,
     ];
 
     var METRICS_GROUP = [].concat(
@@ -1038,8 +1051,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         PROJECTIONS_GROUP,
         TRAFFIC_ACQUISITION_GROUP,
         AUDIENCE_METRICS_GROUP,
-        CONVERSIONS_GROUP,
-        GOALS_GROUP
+        PIXELS_GROUP,
+        CONVERSION_GOALS_GROUP
     );
 
     // //////////////V////////////////////////////////////////////////////////////////////////////////////
@@ -1061,7 +1074,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     // Configure special column properties
     PERMANENT_COLUMNS_GROUP.forEach(function (column) { column.permanent = true; });
     DEFAULT_COLUMNS_GROUP.forEach(function (column) { column.default = true; });
-    GOALS_GROUP.forEach(function (column) { column.goal = true; });
 
     // Exceptions object
     COLUMNS_ORDERED.forEach(function (column) {
@@ -1146,13 +1158,14 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     // ///////////////////////////////////////////////////////////////////////////////////////////////////
     //  COLUMN CATEGORIES
     //
+    var CONVERSIONS_CATEGORY = 'Conversions & CPAs';
     var CATEGORIES = [
         {
             name: 'Management',
             columns: [].concat(ACCOUNT_MANAGEMENT_GROUP, CAMPAIGN_MANAGEMENT_GROUP),
         },
         {
-            name: 'Content Sync',
+            name: 'Content',
             columns: CONTENT_GROUP,
         },
         {
@@ -1180,13 +1193,14 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             columns: AUDIENCE_METRICS_GROUP,
         },
         {
-            name: 'Conversions',
-            columns: CONVERSIONS_GROUP,
+            name: CONVERSIONS_CATEGORY,
+            description: 'Choose conversion window in days.',
+            columns: PIXELS_GROUP,
         },
         {
-            name: 'Goals',
-            columns: GOALS_GROUP,
-        },
+            name: 'Google & Adobe Analytics Goals',
+            columns: CONVERSION_GOALS_GROUP,
+        }
     ];
 
     // ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1279,10 +1293,13 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
             var fields = category.columns.map(function (column) {
                 return column.field;
             });
-            return {
+            var ret = {
                 name: category.name,
                 fields: fields,
             };
+
+            if (category.description) ret.description = category.description;
+            return ret;
         });
     }
 
@@ -1300,86 +1317,6 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         Array.prototype.splice.apply(categoryPosition.fields, [categoryPosition.position, 0].concat(newFields));
     }
 
-    function setColumns (columns, categories, newColumns, placeholder) {
-        // add dynamic columns and category fields to position after placeholder
-        var newFields = newColumns.map(function (column) {
-            return column.field;
-        });
-
-        insertIntoColumns(columns, newColumns, placeholder);
-        insertIntoCategories(categories, newFields, placeholder);
-    }
-
-    function setConversionGoalColumns (columns, categories, conversionGoals) {
-        if (!conversionGoals) return;
-
-        var newColumns = [],
-            newAvgCostColumns = [];
-        angular.forEach(conversionGoals, function (goal) {
-            newColumns.push({
-                name: goal.name,
-                field: goal.id,
-                type: zemGridConstants.gridColumnTypes.NUMBER,
-                help: 'Number of completions of the conversion goal',
-                shown: true,
-                internal: false,
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            });
-
-            newAvgCostColumns.push({
-                name: 'CPA (' + goal.name + ')',
-                field: AVG_COST_PREFIX + goal.id,
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                shown: true,
-                internal: false,
-                help: 'Average cost per acquisition.',
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            });
-        });
-
-        setColumns(columns, categories, newColumns, CONVERSION_GOALS_PLACEHOLDER);
-        setColumns(columns, categories, newAvgCostColumns, CONVERSION_GOALS_AVG_COST_PLACEHOLDER);
-    }
-
-    function setPixelColumns (columns, categories, pixels) {
-        if (!pixels) return;
-
-        var newColumns = [],
-            newAvgCostColumns = [];
-        angular.forEach(pixels, function (pixel) {
-            newColumns.push({
-                name: pixel.name,
-                field: pixel.id,
-                type: zemGridConstants.gridColumnTypes.NUMBER,
-                help: 'Number of completions of the conversion goal',
-                shown: true,
-                internal: false,
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            });
-
-            newAvgCostColumns.push({
-                name: 'CPA (' + pixel.name + ')',
-                field: AVG_COST_PREFIX + pixel.id,
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                help: 'Average cost per acquisition.',
-                shown: true,
-                internal: false,
-                totalRow: true,
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-            });
-        });
-
-        setColumns(columns, categories, newColumns, PIXELS_PLACEHOLDER);
-        setColumns(columns, categories, newAvgCostColumns, PIXELS_AVG_COST_PLACEHOLDER);
-    }
-
     function setPrimaryCampaignGoal (columns, campaignGoals) {
         if (!campaignGoals) return;
 
@@ -1395,10 +1332,86 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
         });
     }
 
+    function setPixelColumns (columns, categories, pixels) {
+        var orderedColumns = [];
+        var category = findCategoryByName(categories, CONVERSIONS_CATEGORY);
+        if (!category) return;
+
+        category.subcategories = [];
+        angular.forEach(pixels, function (pixel) {
+            var subcategory = {
+                name: pixel.name,
+                fields: [],
+                type: 'condensed',
+            };
+            category.subcategories.push(subcategory);
+            angular.forEach(options.conversionWindows, function (window) {
+                var name = pixel.name + ' ' + window.name;
+                var conversionsField = pixel.prefix + '_' + window.value;
+                var conversionsCol = angular.copy(COLUMNS.conversionCount);
+                conversionsCol.name = name;
+                conversionsCol.shortName = window.value / 24;
+                conversionsCol.field = conversionsField;
+                conversionsCol.shown = true;
+
+                var cpaName = 'CPA (' + name + ')';
+                var cpaField = AVG_COST_PREFIX + conversionsField;
+                var cpaCol = angular.copy(COLUMNS.conversionCpa);
+                cpaCol.name = cpaName;
+                cpaCol.field = cpaField;
+                cpaCol.shown = true;
+                cpaCol.autoSelect = conversionsField;
+                cpaCol.goal = true;
+
+                subcategory.fields.push(conversionsField);
+                orderedColumns.push(conversionsCol);
+                orderedColumns.push(cpaCol);
+            });
+        });
+
+        insertIntoColumns(columns, orderedColumns, PIXELS_PLACEHOLDER);
+    }
+
+    function setConversionGoalColumns (columns, categories, conversionGoals) {
+        if (!conversionGoals) return;
+
+        var orderedColumns = [],
+            newFields = [];
+        angular.forEach(conversionGoals, function (goal) {
+            var conversionsCol = angular.copy(COLUMNS.conversionCount);
+            conversionsCol.name = goal.name;
+            conversionsCol.field = goal.id;
+            conversionsCol.shown = true;
+
+            var cpaCol = angular.copy(COLUMNS.conversionCpa);
+            cpaCol.name = 'CPA (' + goal.name + ')';
+            cpaCol.field = AVG_COST_PREFIX + goal.id;
+            cpaCol.shown = true;
+            cpaCol.goal = true;
+
+            newFields.push(conversionsCol.field);
+            newFields.push(cpaCol.field);
+
+            orderedColumns.push(conversionsCol);
+            orderedColumns.push(cpaCol);
+        });
+
+        insertIntoColumns(columns, orderedColumns, CONVERSION_GOALS_PLACEHOLDER);
+        insertIntoCategories(categories, newFields, CONVERSION_GOALS_PLACEHOLDER);
+    }
+
     function setDynamicColumns (columns, categories, campaignGoals, conversionGoals, pixels) {
         setPixelColumns(columns, categories, pixels);
         setConversionGoalColumns(columns, categories, conversionGoals);
         setPrimaryCampaignGoal(columns, campaignGoals);
+    }
+
+    function findCategoryByName (categories, name) {
+        for (var i = 0; i < categories.length; i++) {
+            if (categories[i].name === name) {
+                return categories[i];
+            }
+        }
     }
 
     function findColumnPosition (columns, field) {

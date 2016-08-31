@@ -5,6 +5,7 @@
   <ul class="dropdown-menu dropdown-menu-right" dropdown-menu ng-click="$event.stopPropagation()">
       <div ng-repeat="category in ctrl.categories" class="row">
           <div class="category-name col-xs-12"> <span>{{ category.name }}</span></div>
+          <div class="description col-xs-12" ng-if="category.description"><span>{{ category.description }}</span></div>
           <li ng-repeat="column in category.columns" class="col-xs-6">
               <div class="checkbox"
                    zem-lazy-popover-visible="{{ ctrl.getTooltip(column) }}"
@@ -19,6 +20,21 @@
                   </label>
               </div>
           </li>
+          <div ng-repeat="subcategory in category.subcategories" class="subcategory">
+              <div ng-if="subcategory.type === 'condensed'" class="col-xs-6 condensed">
+                <div class="sub-category-name row"><span>{{ subcategory.name }}</span></div>
+                <div class="row">
+                    <li ng-repeat="column in subcategory.columns">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" ng-model="column.visible" ng-change="ctrl.columnChecked(column)" />
+                                {{ column.data.shortName }}
+                            </label>
+                        </div>
+                    </li>
+                </div>
+              </div>
+          </div>
       </div>
   </ul>
 </span>

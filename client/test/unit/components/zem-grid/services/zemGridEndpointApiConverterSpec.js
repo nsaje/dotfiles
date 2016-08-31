@@ -111,6 +111,12 @@ describe('zemGridEndpointApiConverter', function () {
                     type: 'link',
                 },
             ],
+            categories: [
+                {
+                    name: 'category 1',
+                    fields: ['clicks', 'state']
+                }
+            ],
         };
 
         expectedResult = {

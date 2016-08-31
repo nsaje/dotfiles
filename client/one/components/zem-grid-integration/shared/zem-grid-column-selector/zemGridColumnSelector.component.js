@@ -33,6 +33,13 @@ oneApp.controller('zemGridColumnSelectorCtrl', [function () {
 
     function columnChecked (column) {
         vm.api.setVisibleColumns(column, column.visible);
+
+        var columns = vm.api.getColumns();
+        columns.forEach(function (col) {
+            if (col.data.hasOwnProperty('autoSelect') && col.data.autoSelect === column.field) {
+                vm.api.setVisibleColumns(col, column.visible);
+            }
+        });
     }
 
     function getTooltip (column) {
@@ -42,22 +49,41 @@ oneApp.controller('zemGridColumnSelectorCtrl', [function () {
         return null;
     }
 
+    function getCategoryColumns (category, columns) {
+        return columns.filter(function (column) {
+            var inCategory = category.fields.indexOf(column.field) !== -1;
+            return inCategory && column.data.shown && !column.data.permanent;
+        });
+    }
+
+    function getCategory (category, columns) {
+        var categoryColumns = getCategoryColumns(category, columns),
+            subcategories = [];
+
+        if (category.hasOwnProperty('subcategories')) {
+            subcategories = category.subcategories.map(function (subcategory) {
+                return getCategory(subcategory, columns);
+            });
+        }
+
+        return {
+            name: category.name,
+            description: category.description,
+            type: category.type,
+            subcategories: subcategories,
+            columns: categoryColumns,
+        };
+    }
+
     function initCategories () {
         // Place columns in a corresponding category
         // If column is un-selectable (always visible) or not shown skip it
         var columns = vm.api.getColumns();
         vm.categories = [];
         vm.api.getMetaData().categories.forEach(function (category) {
-            var categoryColumns = columns.filter(function (column) {
-                var inCategory = category.fields.indexOf(column.field) !== -1;
-                return inCategory && column.data.shown && !column.data.permanent;
-            });
-
-            if (categoryColumns.length > 0) {
-                vm.categories.push({
-                    'name': category.name,
-                    'columns': categoryColumns,
-                });
+            var newCategory = getCategory(category, columns);
+            if (newCategory.columns.length > 0 || newCategory.subcategories.length > 0) {
+                vm.categories.push(newCategory);
             }
         });
     }

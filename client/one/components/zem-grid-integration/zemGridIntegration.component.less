@@ -39,7 +39,7 @@
     overflow-x: hidden;
 
     .checkbox {
-      margin: 3px 20px
+        margin: 3px 20px;
     }
 
     .category-name {
@@ -47,6 +47,39 @@
       margin-left: 8px;
       font-weight: 500;
       font-size: 16px;
+    }
+
+    .sub-category-name {
+      margin-left: 8px;
+      font-weight: 400;
+      font-size: 14px;
+    }
+
+    .description {
+        margin-left: 8px;
+        font-size: 13px;
+        font-weight: 300;
+        color: @dark-gray;
+    }
+
+    .condensed {
+        li {
+            position: relative;
+            display: inline-block;
+            font-size: 12px;
+
+            input[type=checkbox] {
+                margin-top: 1px;
+            }
+
+            .checkbox {
+                margin-right: 0px;
+            }
+
+            &:not(:first-child) .checkbox {
+                margin-left: 15px;
+            }
+        }
     }
   }
 }

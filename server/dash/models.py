@@ -2882,8 +2882,11 @@ class ConversionPixel(models.Model):
         return settings.CONVERSION_PIXEL_PREFIX + '{}/{}/'.format(
             self.account.id, self.slug)
 
+    def get_prefix(self):
+        return 'pixel_{}'.format(self.id)
+
     def get_view_key(self, conversion_window):
-        return 'pixel_{}_{}'.format(self.id, conversion_window)
+        return '{}_{}'.format(self.get_prefix(), conversion_window)
 
     class Meta:
         unique_together = ('slug', 'account')
