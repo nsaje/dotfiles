@@ -40,13 +40,17 @@ oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpo
             convertedBreakdown.notification = breakdown.notification;
         }
 
-        zemGridEndpointColumns.setDynamicColumns(
-            metaData.columns,
-            metaData.categories,
-            convertedBreakdown.campaignGoals,
-            convertedBreakdown.conversionGoals,
-            convertedBreakdown.pixels
-        );
+        if (config.level === 1) {
+            // set dynamic columns based on pixels, conversion goals and campaign goals from response
+            // this has to be set before stats rows are converted since it adds new column definitions
+            zemGridEndpointColumns.setDynamicColumns(
+                metaData.columns,
+                metaData.categories,
+                convertedBreakdown.campaignGoals,
+                convertedBreakdown.conversionGoals,
+                convertedBreakdown.pixels
+            );
+        }
 
         if (breakdown.totals) {
             convertedBreakdown.totals = convertStatsFromApi(breakdown.totals, metaData);
