@@ -53,6 +53,8 @@ oneApp.factory('zemGridConstants', [function () {
             BREAKDOWN_CELL_PADDING: 20,
             DEFAULT_ICON_SIZE: 20,
             DEFAULT_SCROLLER_WIDTH: 20,
+            DEFAULT_MAX_COLUMN_WIDTH: 300,
+            DEFAULT_MIN_COLUMN_WIDTH: 40,
         },
         gridSelectionFilterType: {
             NONE: 0,
