@@ -62,10 +62,17 @@ oneApp.directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($ti
             }, 100);
 
             function handleHorizontalScrollPivotColumns () {
-                if (!scrolling) {
-                    scrollStarted();
+                // WORKAROUND: pivot columns are not synced with scroll on hiDPI screens (retina, mobile)
+                // In case of HiDPI, pivot column are animated. FIXME: find proper solution for this problem
+                if (window.devicePixelRatio > 1) {
+                    // Animate on HiDPI devices - scroll is not in sync with pivot columns translate
+                    if (!scrolling) {
+                        scrollStarted();
+                    } else {
+                        scrollStopped();
+                    }
                 } else {
-                    scrollStopped();
+                    zemGridUIService.updatePivotColumns(ctrl.grid, ctrl.grid.body.ui.scrollLeft);
                 }
             }
 
