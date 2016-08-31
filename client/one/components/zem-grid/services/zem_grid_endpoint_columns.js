@@ -1098,6 +1098,8 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     COLUMNS.submissionStatus.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];
     COLUMNS.submissionStatus.exceptions.levels = [constants.level.AD_GROUPS];
 
+    COLUMNS.exchange.exceptions.breakdowns = [constants.breakdown.PUBLISHER];
+
     // Exceptions (performance - not shown on ALL_ACCOUNTS level and on ACCOUNT - MEDIA SOURCES)
     COLUMNS.performance.exceptions.levels = [constants.level.ACCOUNTS, constants.level.CAMPAIGNS, constants.level.AD_GROUPS];
     COLUMNS.performance.exceptions.custom.push({level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
