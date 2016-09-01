@@ -27,6 +27,7 @@ import dash.views.navigation
 import dash.views.callbacks
 import dash.views.upload
 import dash.views.grid
+import dash.views.audiences
 
 
 admin.site.login = login_required(admin.site.login)
@@ -505,6 +506,16 @@ urlpatterns += [
         r'^api/live-stream/allow/$',
         login_required(dash.views.views.LiveStreamAllow.as_view()),
         name='live_stream_allow'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/audiences/(?P<audience_id>\d+)/',
+        login_required(dash.views.audiences.AudiencesView.as_view()),
+        name='accounts_audience',
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/audiences/',
+        login_required(dash.views.audiences.AudiencesView.as_view()),
+        name='accounts_audiences'
     ),
 ]
 

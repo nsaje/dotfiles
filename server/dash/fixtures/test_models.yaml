@@ -328,3 +328,35 @@
         state: 1
     model: dash.adgroupsourcesettings
     pk: 2
+
+# test conversionpixel
+
+-   fields:
+        name: 'Test Pixel 1'
+        account: 1
+        slug: '1'
+        archived: false
+        last_sync_dt: '2016-08-15T10:12:50'
+        created_dt: '2016-08-12T10:12:50'
+    model: dash.conversionpixel
+    pk: 1
+
+-   fields:
+        name: 'Test Pixel 2'
+        account: 1
+        slug: '2'
+        archived: true
+        last_sync_dt: '2016-08-15T10:12:50'
+        created_dt: '2016-08-12T10:12:50'
+    model: dash.conversionpixel
+    pk: 2
+
+-   fields:
+        name: 'Test Pixel 3'
+        account: 2
+        slug: '3'
+        archived: false
+        last_sync_dt: '2016-08-15T10:12:50'
+        created_dt: '2016-08-12T10:12:50'
+    model: dash.conversionpixel
+    pk: 3

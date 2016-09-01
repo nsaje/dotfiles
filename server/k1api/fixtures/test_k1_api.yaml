@@ -986,6 +986,7 @@
         ttl: 90
         created_dt: '2015-02-23T00:00:00'
         modified_dt: '2015-02-23T00:00:00'
+        created_by: 1
     model: dash.audience
     pk: 1
 
@@ -995,6 +996,7 @@
         ttl: 60
         created_dt: '2015-02-24T00:00:00'
         modified_dt: '2015-02-24T00:00:00'
+        created_by: 1
     model: dash.audience
     pk: 2
 

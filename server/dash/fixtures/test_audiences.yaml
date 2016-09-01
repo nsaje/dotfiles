@@ -1,0 +1,176 @@
+# test user
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: superuser@test.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: true
+        is_superuser: true
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 1
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: user@test.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: false
+        is_superuser: false
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 2
+
+# test account
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 1'
+        users: [1, 2]
+    model: dash.account
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 2'
+        users: [1]
+    model: dash.account
+    pk: 2
+
+# test conversion pixel
+
+-   fields:
+        account: 1
+        slug: '1'
+        name: 'test pixel 1'
+        archived: false
+        created_dt: '2015-08-25T09:58:21'
+    model: dash.conversionpixel
+    pk: 1
+
+-   fields:
+        account: 1
+        slug: '2'
+        name: 'test pixel 2'
+        archived: true
+        created_dt: '2015-08-25T09:58:21'
+    model: dash.conversionpixel
+    pk: 2
+
+-   fields:
+        account: 2
+        slug: '3'
+        name: 'test pixel 3'
+        archived: true
+        created_dt: '2015-08-25T09:58:21'
+    model: dash.conversionpixel
+    pk: 3
+
+# test audience
+
+-   fields:
+        name: 'test audience 1'
+        pixel: 1
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 1
+
+-   fields:
+        name: 'test audience 2'
+        pixel: 1
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 2
+
+-   fields:
+        name: 'test audience 3'
+        pixel: 1
+        archived: true
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 3
+
+-   fields:
+        name: 'test audience 4'
+        pixel: 2
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 4
+
+-   fields:
+        name: 'test audience 5'
+        pixel: 3
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 5
+
+# test audience rule
+
+-   fields:
+        audience: 1
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 1
+
+-   fields:
+        audience: 2
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 2
+
+-   fields:
+        audience: 3
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 3
+
+-   fields:
+        audience: 4
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 4
+
+-   fields:
+        audience: 5
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 5

@@ -1636,6 +1636,8 @@ class HistoryActionType(ConstantBase):
     MEDIA_SOURCE_SETTINGS_CHANGE = 15
     MEDIA_SOURCE_ADD = 16
     CONVERSION_PIXEL_RENAME = 17
+    AUDIENCE_CREATE = 18
+    AUDIENCE_ARCHIVE = 19
 
     _VALUES = {
         GOAL_CHANGE: 'Change Campaign Goal',
@@ -1654,7 +1656,9 @@ class HistoryActionType(ConstantBase):
         CONTENT_AD_ARCHIVE_RESTORE: 'Archive/Restore Content Ad(s)',
         MEDIA_SOURCE_SETTINGS_CHANGE: 'Set Media Source Settings',
         MEDIA_SOURCE_ADD: 'Add Media Source',
-        CONVERSION_PIXEL_RENAME: 'Rename conversion pixel'
+        CONVERSION_PIXEL_RENAME: 'Rename conversion pixel',
+        AUDIENCE_CREATE: 'Create custom audience',
+        AUDIENCE_ARCHIVE: 'Archive custom audience'
     }
 
 
@@ -1699,12 +1703,14 @@ class RuleType(ConstantBase):
     CONTAINS = 2
     NOT_STARTS_WITH = 3
     NOT_CONTAINS = 4
+    VISIT = 5
 
     _VALUES = {
         STARTS_WITH: 'Starts with',
         CONTAINS: 'Contains',
         NOT_STARTS_WITH: 'Not starts with',
         NOT_CONTAINS: 'Not contains',
+        VISIT: 'Visit',
     }
 
 

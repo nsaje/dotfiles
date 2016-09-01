@@ -1359,3 +1359,74 @@ class ContentAdForm(ContentAdCandidateForm):
             self.add_error('url', url_error_msg)
 
         return cleaned_data
+
+
+class AudienceRuleForm(forms.Form):
+    type = forms.ChoiceField(
+        choices=constants.RuleType.get_choices(),
+        error_messages={
+            'required': 'Please select a type of the rule.',
+        }
+    )
+    value = forms.CharField(required=False, max_length=255)
+
+    def clean_value(self):
+        value = self.cleaned_data.get('value')
+        rule_type = self.cleaned_data.get('type')
+
+        if not value and rule_type != str(constants.RuleType.VISIT):
+            raise forms.ValidationError('Please enter conditions for the audience.')
+
+        return value
+
+
+class AudienceRulesField(forms.Field):
+    def clean(self, rules):
+        if not rules:
+            raise forms.ValidationError(self.error_messages['required'])
+
+        for rule in rules:
+            rule_form = AudienceRuleForm(rule)
+            if not rule_form.is_valid():
+                for key, error in rule_form.errors.iteritems():
+                    raise forms.ValidationError(error, code=key)
+                return
+
+        return rules
+
+
+class AudienceForm(forms.Form):
+    name = forms.CharField(
+        max_length=127,
+        error_messages={
+            'required': 'Please specify audience name.',
+            'max_length': 'Name too long (max %(limit_value)d characters)',
+        }
+    )
+    pixel_id = forms.IntegerField(
+        error_messages={'required': 'Please select pixel.'}
+    )
+    ttl = forms.IntegerField(
+        error_messages={'required': 'Please select validity.'}
+    )
+    rules = AudienceRulesField(
+        error_messages={'required': 'Please select a rule.'}
+    )
+
+    def __init__(self, account, user, *args, **kwargs):
+        super(AudienceForm, self).__init__(*args, **kwargs)
+
+        self.account = account
+        self.user = user
+
+    def clean_pixel_id(self):
+        pixel_id = self.cleaned_data.get('pixel_id')
+        pixel = models.ConversionPixel.objects.filter(pk=pixel_id, account=self.account)
+        if not pixel:
+            raise forms.ValidationError('Pixel does not exist.')
+
+        pixel = pixel[0]
+        if pixel.archived:
+            raise forms.ValidationError('Pixel is archived.')
+
+        return pixel_id

@@ -1221,3 +1221,96 @@ class ContentAdFormTestCase(TestCase):
         self.assertEqual({
             'secondary_tracker_url': ['Invalid impression tracker URLs']
         }, f.errors)
+
+
+class AudienceFormTestCase(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def setUp(self):
+        self.account = models.Account.objects.get(pk=1)
+        self.user = User.objects.get(pk=1)
+
+    def _get_valid_data(self):
+        return {
+            'name': 'Test Audience',
+            'pixel_id': 1,
+            'ttl': 90,
+            'rules': [{
+                'type': constants.RuleType.CONTAINS,
+                'value': 'test',
+            }]
+        }
+
+    def _expect_error(self, field_name, error_message, data):
+        f = forms.AudienceForm(self.account, self.user, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            field_name: [error_message]
+        }, f.errors)
+
+    def test_form(self):
+        f = forms.AudienceForm(self.account, self.user, self._get_valid_data())
+        self.assertTrue(f.is_valid())
+
+    def test_invalid_name(self):
+        data = self._get_valid_data()
+        data['name'] = None
+        self._expect_error('name', 'Please specify audience name.', data)
+
+        data['name'] = ''
+        self._expect_error('name', 'Please specify audience name.', data)
+
+        del(data['name'])
+        self._expect_error('name', 'Please specify audience name.', data)
+
+        data['name'] = 'a' * 128
+        self._expect_error('name', 'Name too long (max 127 characters)', data)
+
+    def test_invalid_pixel_id(self):
+        data = self._get_valid_data()
+        data['pixel_id'] = None
+        self._expect_error('pixel_id', 'Please select pixel.', data)
+
+        del(data['pixel_id'])
+        self._expect_error('pixel_id', 'Please select pixel.', data)
+
+    def test_pixel_id_no_permissions(self):
+        data = self._get_valid_data()
+        data['pixel_id'] = 3
+        self._expect_error('pixel_id', 'Pixel does not exist.', data)
+
+    def test_pixel_id_archived(self):
+        data = self._get_valid_data()
+        data['pixel_id'] = 2
+        self._expect_error('pixel_id', 'Pixel is archived.', data)
+
+    def test_invalid_ttl(self):
+        data = self._get_valid_data()
+        data['ttl'] = None
+        self._expect_error('ttl', 'Please select validity.', data)
+
+        del(data['ttl'])
+        self._expect_error('ttl', 'Please select validity.', data)
+
+    def test_invalid_rules(self):
+        data = self._get_valid_data()
+        data['rules'] = None
+        self._expect_error('rules', 'Please select a rule.', data)
+
+        data['rules'] = []
+        self._expect_error('rules', 'Please select a rule.', data)
+
+        del(data['rules'])
+        self._expect_error('rules', 'Please select a rule.', data)
+
+        data['rules'] = [{'type': None, 'value': 'bla'}]
+        self._expect_error('rules', 'Please select a type of the rule.', data)
+
+        data['rules'] = [{'type': constants.RuleType.CONTAINS, 'value': None}]
+        self._expect_error('rules', 'Please enter conditions for the audience.', data)
+
+    def test_valid_visit_rule(self):
+        data = self._get_valid_data()
+        data['rules'] = [{'type': constants.RuleType.VISIT, 'value': None}]
+        f = forms.AudienceForm(self.account, self.user, data)
+        self.assertTrue(f.is_valid())
