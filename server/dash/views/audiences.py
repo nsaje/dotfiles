@@ -90,7 +90,7 @@ class AudiencesView(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def _get_audiences(self, request, account):
-        audiences = models.Audience.objects.filter(pixel__account=account)
+        audiences = models.Audience.objects.filter(pixel__account=account).order_by('name')
 
         rows = []
         for audience in audiences:
