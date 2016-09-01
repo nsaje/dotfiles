@@ -1,4 +1,4 @@
-actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', '$uibModal', 'config', 'api', function ($scope, $location, $uibModal, config, api) {
+actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', '$modal', 'config', 'api', function ($scope, $location, $modal, config, api) {
 
     $scope.user = null;
     $scope.actionLogItems = null;
@@ -22,17 +22,16 @@ actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', '$uibModal', 'c
     $scope.updateState = function (log, state) {
         // if creating pixel and action is successful
         if (log.action == 'create_pixel' && state[1] == actionLogConstants.state.SUCCESS.value) {
-            $uibModal.open({
+            $modal.open({
                 templateUrl: config.static_url + '/actionlog/pixel_modal.html',
                 scope: $scope,
-                controller: ['$scope', function ($scope) {
+                controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
                     $scope.ok = function () {
-                        executeUpdatePixel(log, state);
-                        $scope.$close();
+                        executeUpdatePixel(log, state, $modalInstance);
                     };
 
                     $scope.cancel = function () {
-                        $scope.$dismiss('cancel');
+                        $modalInstance.dismiss('cancel');
                     };
                 }],
                 size: 'lg',
@@ -42,10 +41,11 @@ actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', '$uibModal', 'c
         }
     };
 
-    function executeUpdatePixel(log, state) {
+    function executeUpdatePixel(log, state, $modalInstance) {
         api.actionLog.updateOutbrainSourcePixel(log.conversion_pixel[1], $scope.pixelData.url, $scope.pixelData.id)
             .then(function (data) {
                 executeSave(log, state);
+                $modalInstance.close();
                 $scope.pixelData = {};
             },
             function (data) {

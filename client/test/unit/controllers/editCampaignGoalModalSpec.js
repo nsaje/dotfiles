@@ -2,7 +2,7 @@
 'use strict';
 
 describe('EditCampaignGoalModalCtrl', function () {
-    var $timeout, $scope, $state, $q, api, openedDeferred;
+    var $modalInstance, $timeout, $scope, $state, $q, api, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -12,7 +12,6 @@ describe('EditCampaignGoalModalCtrl', function () {
             $q = _$q_;
             $timeout = _$timeout_;
             $scope = $rootScope.$new();
-            $scope.$close = function () {};
 
             var mockApiFunc = function () {
                 return {
@@ -41,8 +40,15 @@ describe('EditCampaignGoalModalCtrl', function () {
             $scope.campaign = {id: 1};
             $scope.account = {id: 1};
 
+            openedDeferred = $q.defer();
+            $modalInstance = {
+                close: function () {},
+                opened: openedDeferred.promise,
+            };
+
             $controller('EditCampaignGoalModalCtrl', {
                 $scope: $scope,
+                $modalInstance: $modalInstance,
                 api: api,
             });
         });
@@ -64,7 +70,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                     return true;
                 }
             );
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
 
             $scope.save();
 
@@ -72,7 +78,7 @@ describe('EditCampaignGoalModalCtrl', function () {
             expect(api.campaignGoalValidation.post).toHaveBeenCalledWith(1, 'goal');
 
             $timeout(function () {
-                expect($scope.$close).toHaveBeenCalled();
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
 
         });
@@ -107,7 +113,7 @@ describe('EditCampaignGoalModalCtrl', function () {
                     return true;
                 }
             );
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
 
             $scope.save();
 
@@ -115,7 +121,7 @@ describe('EditCampaignGoalModalCtrl', function () {
             expect(api.conversionPixel.post).toHaveBeenCalledWith(1, 'awesome pixel');
 
             $timeout(function () {
-                expect($scope.$close).toHaveBeenCalled();
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
 
         });

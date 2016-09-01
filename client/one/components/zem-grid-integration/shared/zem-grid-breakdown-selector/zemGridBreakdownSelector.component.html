@@ -1,8 +1,8 @@
-<span class="zem-grid-breakdown-selector dropdown" uib-dropdown>
-  <a href class="btn btn-default" uib-dropdown-toggle title="Show/hide breakdowns">
+<span class="zem-grid-breakdown-selector dropdown" dropdown>
+  <a href class="btn btn-default" dropdown-toggle title="Show/hide breakdowns">
       Breakdowns
   </a>
-  <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+  <ul class="dropdown-menu dropdown-menu-right" dropdown-menu>
       <div ng-repeat="group in ctrl.breakdownGroups" ng-click="$event.stopPropagation()">
           <div class="category-name" ng-if="group.breakdowns.length > 0">
               <zem-internal-feature ng-if="group.internal"></zem-internal-feature>

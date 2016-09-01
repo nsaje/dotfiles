@@ -1,6 +1,6 @@
-<div class="dropdown" uib-dropdown aria-haspopup="true" style="display:inline-block">
-<a href class="btn btn-default dropdown-toggle" uib-dropdown-toggle ng-model="page.size">{{ selectionText }}&nbsp;<span class="caret"></a>
-<ul class="dropdown-menu dropdown-menu-activation" role="menu" uib-dropdown-menu>
+<div class="dropdown" dropdown aria-haspopup="true" style="display:inline-block">
+<a href class="btn btn-default dropdown-toggle" dropdown-toggle ng-model="page.size">{{ selectionText }}&nbsp;<span class="caret"></a>
+<ul class="dropdown-menu dropdown-menu-activation" role="menu">
     <li ng-repeat="count in page.sizeRange"><a tabindex="-1" ng-click="select(count, count)" href="#">{{ count }}</a></li>
     <!-- max int is derived from stack exch. as 2^32-1 -->
     <!--

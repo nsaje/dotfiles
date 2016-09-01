@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.directive('zemUploadTrigger', ['$uibModal', '$rootScope', function ($uibModal, $rootScope) { // eslint-disable-line max-len
+oneApp.directive('zemUploadTrigger', ['$modal', '$rootScope', function ($modal, $rootScope) { // eslint-disable-line max-len
     return {
         restrict: 'A',
         replace: true,
@@ -19,10 +19,10 @@ oneApp.directive('zemUploadTrigger', ['$uibModal', '$rootScope', function ($uibM
                 modalScope.onSave = ctrl.onSave;
                 modalScope.user = ctrl.user;
 
-                $uibModal.open({
+                $modal.open({
                     template: '<zem-upload data-ad-group="adGroup" data-on-save="onSave" data-close-modal="closeModal" data-user="user"></zem-upload>',
-                    controller: ['$scope', function ($scope) {
-                        $scope.closeModal = $scope.$close;
+                    controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
+                        $scope.closeModal = $modalInstance.close;
                     }],
                     windowClass: 'modal-zem-upload',
                     scope: modalScope,

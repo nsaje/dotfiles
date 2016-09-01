@@ -16,7 +16,7 @@
             <div class="col-xs-4">
                 <div class="input-group">
                     <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
-                    <input id="start-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-model="creditItem.startDate" datepicker-options="startDatePickerOptions" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" ng-disabled="creditItem.isSigned" />
+                    <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.startDate" min-date="today" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" ng-disabled="creditItem.isSigned" />
                 </div>
             </div>
             <label ng-repeat="error in errors.startDate" class="col-xs-5 control-label error" for="start-date-input">{{ error }}</label>
@@ -28,7 +28,7 @@
             <div class="col-xs-4">
                 <div class="input-group">
                     <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
-                    <input id="end-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-model="creditItem.endDate" datepicker-options="endDatePickerOptions" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()" />
+                    <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.endDate" min-date="minDate" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()" />
                 </div>
             </div>
             <label ng-repeat="error in errors.endDate" class="col-xs-5 control-label error" for="end-date-input">{{ error }}</label>

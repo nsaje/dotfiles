@@ -53,17 +53,17 @@
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
         </div>
 
-        <div uib-alert class="alert-info alert-sync" ng-show="!isSyncRecent">
+        <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
             We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span>
             If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
-        </div>
+        </alert>
 
-        <div uib-alert class="alert-info alert-sync" ng-show="archivingResults" close="closeArchivingResults()">
+        <alert type="info" class="alert-sync" ng-show="archivingResults" close="closeArchivingResults()">
                 {{ archivingResults.archived_count }} {{ archivingResults.archived_count === 1 ? 'Content Ad was' : 'Content Ads were' }} archived and
                 <ng-pluralize count="archivingResults.archived_count" when="{'1': 'it {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;wasn\'t&quot; }} ',
                                                                             'other': '{{ archivingResults.active_count === 0 ? &quot;none&quot; : archivingResults.active_count }} of them {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;were&quot; }}'}"></ng-pluralize>
                 active at the time.
-        </div>
+        </alert>
 
         <zem-table class="ads-plus-table" zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-notifications="notifications" zem-table-data-status="dataStatus"></zem-table>
 

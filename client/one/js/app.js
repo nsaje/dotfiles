@@ -1,6 +1,6 @@
 /* global angular,constants */
 
-var oneApp = angular.module('one', ['templates-one', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.tooltip', 'ui.bootstrap.datetimepicker', 'daterangepicker', 'ui.select2', 'highcharts-ng', 'config', 'ui.select']);
+var oneApp = angular.module('one', ['templates-one', 'ngBootstrap', 'ngSanitize', 'ui.router', 'ui.bootstrap', 'ui.bootstrap.tooltip', 'ui.bootstrap.datetimepicker', 'ui.select2', 'highcharts-ng', 'config', 'ui.select']);
 
 oneApp.config(['$compileProvider', 'config', function ($compileProvider, config) {
     $compileProvider.debugInfoEnabled(config.debug);
@@ -222,27 +222,14 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         });
 }]);
 
-oneApp.config(['uibDatepickerConfig', 'uibDatepickerPopupConfig', function (datepickerConfig, datepickerPopupConfig) {
+oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepickerConfig, datepickerPopupConfig) {
     datepickerConfig.showWeeks = false;
     datepickerConfig.formatDayHeader = 'EEE';
     datepickerPopupConfig.showButtonBar = false;
 }]);
 
-oneApp.config(['$uibTooltipProvider', function ($tooltipProvider) {
+oneApp.config(['$tooltipProvider', function ($tooltipProvider) {
     $tooltipProvider.setTriggers({'openTutorial': 'closeTutorial'});
-}]);
-
-
-// HACK: Update ui-select2 directive priority after initialization. There's a bug in deprecated angular-ui-select2
-// library caused by library's incompatibility with Angular >= 1.5 that prevents ng-model changes to be reflected in
-// ui-select2 directive.
-oneApp.config(['$provide', function ($provide) {
-    $provide.decorator('uiSelect2Directive', function ($delegate) {
-        var directive;
-        directive = $delegate[0];
-        directive.priority = 10;
-        return $delegate;
-    });
 }]);
 
 var locationSearch;

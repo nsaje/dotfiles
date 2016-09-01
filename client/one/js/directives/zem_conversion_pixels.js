@@ -11,7 +11,7 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
             account: '=zemAccount'
         },
         templateUrl: '/partials/zem_conversion_pixels.html',
-        controller: ['$scope', '$element', '$uibModal', 'api', 'zemFilterService', function ($scope, $element, $uibModal, api, zemFilterService) {
+        controller: ['$scope', '$element', '$modal', 'api', 'zemFilterService', function ($scope, $element, $modal, api, zemFilterService) {
             $scope.conversionPixels = [];
             $scope.listInProgress = false;
             $scope.listError = false;
@@ -35,7 +35,7 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
             };
 
             $scope.addConversionPixel = function () {
-                var modalInstance = $uibModal.open({
+                var modalInstance = $modal.open({
                     templateUrl: '/partials/conversion_pixel_modal.html',
                     controller: 'AddConversionPixelModalCtrl',
                     windowClass: 'modal-default',
@@ -50,7 +50,7 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
             };
 
             $scope.renameConversionPixel = function (pixel) {
-                var modalInstance = $uibModal.open({
+                var modalInstance = $modal.open({
                     templateUrl: '/partials/conversion_pixel_modal.html',
                     controller: 'EditConversionPixelModalCtrl',
                     windowClass: 'modal-default',
@@ -108,7 +108,7 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
                 scope.conversionPixelTag = $scope.getConversionPixelTag(
                     conversionPixel.name, conversionPixel.url);
 
-                var modalInstance = $uibModal.open({
+                var modalInstance = $modal.open({
                     templateUrl: '/partials/copy_conversion_pixel_modal.html',
                     windowClass: 'modal-default',
                     scope: scope

@@ -12,7 +12,7 @@ oneApp.directive('zemCustomTableCols', ['config', function (config) {
         templateUrl: '/partials/zem_custom_table_cols.html',
         link: function postLink (scope, element) {
             // Prevent closing of dropdown-menu when clicking inside it.
-            var dropdownMenu = element.find('[uib-dropdown-menu]');
+            var dropdownMenu = element.find('[dropdown-menu]');
             dropdownMenu.on('click', function (event) {
                 event.stopPropagation();
             });

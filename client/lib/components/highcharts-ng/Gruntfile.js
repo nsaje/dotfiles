@@ -16,7 +16,8 @@ module.exports = function(grunt) {
     return connect.static(require('path').resolve(dir));
   };
 
-  require('load-grunt-tasks')(grunt);
+  // Load all grunt tasks
+  require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
   // Project configuration
   grunt.initConfig({
@@ -54,8 +55,14 @@ module.exports = function(grunt) {
         files: '<%= jshint.gruntfile.src %>',
         tasks: ['jshint:gruntfile']
       },
+      less: {
+        files: ['<%= yo.src %>/{,*/}*.less'],
+        tasks: ['less:dist']
+      },
       app: {
         files: [
+          '<%= yo.src %>/{,*/}*.html',
+          '{.tmp,<%= yo.src %>}/{,*/}*.css',
           '{.tmp,<%= yo.src %>}/{,*/}*.js'
         ],
         options: {
@@ -81,6 +88,17 @@ module.exports = function(grunt) {
               mountFolder(connect, yoConfig.src)
             ];
           }
+        }
+      }
+    },
+    less: {
+      options: {
+        // dumpLineNumbers: 'all',
+        paths: ['<%= yo.src %>']
+      },
+      dist: {
+        files: {
+          '<%= yo.src %>/<%= yo.name %>.css': '<%= yo.src %>/<%= yo.name %>.less'
         }
       }
     },
@@ -116,23 +134,28 @@ module.exports = function(grunt) {
         autoWatch: true
       }
     },
-    copy: {
+    ngmin: {
+      options: {
+        banner: '<%= meta.banner %>'
+      },
       dist: {
-        expand: true,
-        cwd: '<%= yo.src %>',
-        src: '**',
-        dest: '<%= yo.dist %>'
+        src: ['<%= yo.src %>/<%= pkg.name %>.js'],
+        dest: '<%= yo.dist %>/<%= pkg.name %>.js'
       }
+      // dist: {
+      //   files: {
+      //     '/.js': '/.js'
+      //   }
+      // }
     },
-    usebanner: {
+    concat: {
+      options: {
+        banner: '<%= meta.banner %>',
+        stripBanners: true
+      },
       dist: {
-        options: {
-          position: 'top',
-          banner: '<%= meta.banner %>'
-        },
-        files: {
-          src: [ '<%= yo.dist %>/*.js' ]
-        }
+        src: ['<%= yo.src %>/<%= pkg.name %>.js'],
+        dest: '<%= yo.dist %>/<%= pkg.name %>.js'
       }
     },
     uglify: {
@@ -140,10 +163,8 @@ module.exports = function(grunt) {
         banner: '<%= meta.banner %>'
       },
       dist: {
-        files: {
-          '<%= copy.dist.dest %>/<%= pkg.name %>.min.js': '<%= copy.dist.dest %>/<%= pkg.name %>.js',
-          '<%= copy.dist.dest %>/lazyload.min.js': '<%= copy.dist.dest %>/lazyload.js'
-        }
+        src: '<%= concat.dist.dest %>',
+        dest: '<%= yo.dist %>/<%= pkg.name %>.min.js'
       }
     }
   });
@@ -155,8 +176,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build', [
     'clean:dist',
-    'copy:dist',
-    'usebanner:dist',
+    'concat:dist',
+    'ngmin:dist',
     'uglify:dist'
   ]);
 

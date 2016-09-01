@@ -4,5 +4,4 @@ oneApp.controller('AccountHistoryCtrl', ['$scope', '$state', function ($scope, $
         account: $state.params.id,
         level: constants.historyLevel.ACCOUNT,
     };
-    $scope.setActiveTab();
 }]);

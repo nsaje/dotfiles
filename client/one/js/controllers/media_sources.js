@@ -736,8 +736,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         } else {
             $scope.sideBarVisible = false;
         }
-
-        $scope.setActiveTab();
     };
 
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {

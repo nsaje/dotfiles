@@ -36,7 +36,6 @@ describe('AdGroupAdsCtrl', function () {
         $state = _$state_;
         permissions = {};
 
-        $scope.setActiveTab = function () {};
         $scope.isPermissionInternal = function () {
             return true;
         };

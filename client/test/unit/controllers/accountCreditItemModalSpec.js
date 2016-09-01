@@ -1,5 +1,5 @@
 describe('AccountCreditItemModalCtrl', function () {
-    var $scope, api, $q, $window, $timeout, openedDeferred;
+    var $scope, $modalInstance, api, $q, $window, $timeout, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -8,12 +8,17 @@ describe('AccountCreditItemModalCtrl', function () {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
-        $scope.$close = function () {};
         $scope.account = {
             id: 1
         };
 
         $window = _$window_;
+
+        openedDeferred = $q.defer();
+        $modalInstance = {
+            close: function () {},
+            opened: openedDeferred.promise
+        };
 
         var mockApiFunc = function () {
             return {
@@ -38,7 +43,7 @@ describe('AccountCreditItemModalCtrl', function () {
 
         $controller(
             'AccountCreditItemModalCtrl',
-            {$scope: $scope, api: api}
+            {$scope: $scope, $modalInstance: $modalInstance, api: api}
         );
     }));
 
@@ -50,7 +55,7 @@ describe('AccountCreditItemModalCtrl', function () {
             };
             $scope.isNew = true;
 
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
             spyOn(api.accountCredit, 'create').and.callFake(function () { return deferred.promise; });
 
             $scope.upsertCreditItem();
@@ -60,7 +65,7 @@ describe('AccountCreditItemModalCtrl', function () {
 
             expect(api.accountCredit.create).toHaveBeenCalled();
             $timeout(function () {
-                expect($scope.$close).toHaveBeenCalled();
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
         });
 
@@ -71,7 +76,7 @@ describe('AccountCreditItemModalCtrl', function () {
             };
             $scope.isNew = false;
 
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
             spyOn(api.accountCredit, 'save').and.callFake(function () { return deferred.promise; });
 
             $scope.upsertCreditItem();
@@ -81,7 +86,7 @@ describe('AccountCreditItemModalCtrl', function () {
 
             expect(api.accountCredit.save).toHaveBeenCalled();
             $timeout(function () {
-                expect($scope.$close).toHaveBeenCalled();
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
 
         });
@@ -89,11 +94,11 @@ describe('AccountCreditItemModalCtrl', function () {
 
     describe('discardCreditItem', function () {
         it('closes the modal', function () {
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
             $scope.discardCreditItem();
             $scope.$digest();
             $timeout(function () {
-                expect($scope.$close).toHaveBeenCalled();
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1200);
         });
     });
@@ -103,7 +108,7 @@ describe('AccountCreditItemModalCtrl', function () {
             var deferred = $q.defer();
             $window.confirm = function () { return true; };
 
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
             spyOn(api.accountCredit, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
@@ -114,7 +119,7 @@ describe('AccountCreditItemModalCtrl', function () {
 
             expect(api.accountCredit.delete).toHaveBeenCalled();
             $timeout(function () {
-                expect($scope.$close).toHaveBeenCalled();
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
         });
 
@@ -122,7 +127,7 @@ describe('AccountCreditItemModalCtrl', function () {
             var deferred = $q.defer();
             $window.confirm = function () { return false; };
 
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
             spyOn(api.accountCredit, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
@@ -132,7 +137,7 @@ describe('AccountCreditItemModalCtrl', function () {
 
             expect(api.accountCredit.delete).not.toHaveBeenCalled();
             $timeout(function () {
-                expect($scope.$close).not.toHaveBeenCalled();
+                expect($modalInstance.close).not.toHaveBeenCalled();
             }, 1500);
         });
     });
@@ -146,7 +151,7 @@ describe('AccountCreditItemModalCtrl', function () {
             expect($scope.isNew).toBe(true);
             expect($scope.wasSigned).toBe(false);
             expect($scope.canDelete).toBe(false);
-            expect(moment($scope.endDatePickerOptions.minDate).format('M/D/YYYY')).toBe($scope.today);
+            expect($scope.minDate).toBe($scope.today);
         });
 
         it ('sets variables correctly for existing items', function () {
@@ -172,7 +177,7 @@ describe('AccountCreditItemModalCtrl', function () {
             expect($scope.isNew).toBe(false);
             expect($scope.wasSigned).toBe(true);
             expect($scope.canDelete).toBe(false);
-            expect(moment($scope.endDatePickerOptions.minDate).format('M/D/YYYY')).toBe('12/31/2015');
+            expect($scope.minDate).toBe('12/31/2015');
 
             expect(api.accountCredit.get).toHaveBeenCalled();
         });

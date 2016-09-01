@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.directive('zemCustomAudiencesModalTrigger', ['$uibModal', '$rootScope', function ($uibModal, $rootScope) { // eslint-disable-line max-len
+oneApp.directive('zemCustomAudiencesModalTrigger', ['$modal', '$rootScope', function ($modal, $rootScope) { // eslint-disable-line max-len
     return {
         restrict: 'A',
         replace: true,
@@ -11,10 +11,10 @@ oneApp.directive('zemCustomAudiencesModalTrigger', ['$uibModal', '$rootScope', f
             element.on('click', function () {
                 var modalScope = $rootScope.$new();
 
-                $uibModal.open({
+                $modal.open({
                     template: '<zem-custom-audiences-modal></zem-custom-audiences-modal>',
-                    controller: ['$scope', function ($scope) {
-                        $scope.closeModal = $scope.$close;
+                    controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
+                        $scope.closeModal = $modalInstance.close;
                     }],
                     windowClass: 'modal-zem-custom-audiences',
                     scope: modalScope,

@@ -729,8 +729,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         getDailyStats();
         $scope.getContentInsights();
         $scope.getInfoboxData();
-
-        $scope.setActiveTab();
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {

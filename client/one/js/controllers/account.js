@@ -15,13 +15,8 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', 'zemNavigationService', 'a
         ];
     };
     $scope.setActiveTab = function () {
-        $scope.activeTab = 0;
-        $scope.tabs.filter(function (tab) {
-            return !tab.hidden;
-        }).forEach(function (tab, index) {
-            if ($state.is(tab.route)) {
-                $scope.activeTab = index;
-            }
+        $scope.tabs.forEach(function (tab) {
+            tab.active = $state.is(tab.route);
         });
     };
 

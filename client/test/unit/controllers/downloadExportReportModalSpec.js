@@ -1,7 +1,7 @@
 'use strict';
 
 describe('DownloadExportReportModalCtrl', function () {
-    var $scope, api, $q, openedDeferred, $window;
+    var $scope, $modalInstance, api, $q, openedDeferred, $window;
     var zemFilterServiceMock;
 
     beforeEach(module('one'));
@@ -22,7 +22,6 @@ describe('DownloadExportReportModalCtrl', function () {
     beforeEach(inject(function ($controller, $rootScope, _$q_) {
         $q = _$q_;
         $scope = $rootScope.$new();
-        $scope.$close = function () {};
         $scope.dateRange = {
             startDate: moment.utc('2015-01-12'),
             endDate: moment.utc('2015-01-19'),
@@ -34,7 +33,11 @@ describe('DownloadExportReportModalCtrl', function () {
         var $state = {params: {id: 1}};
         $scope.level = 0;
         $scope.exportSources = undefined;
-
+        openedDeferred = $q.defer();
+        $modalInstance = {
+            close: function () {},
+            opened: openedDeferred.promise
+        };
         $window = {
             open: function () {}
         };
@@ -60,7 +63,7 @@ describe('DownloadExportReportModalCtrl', function () {
 
         $controller(
             'DownloadExportReportModalCtrl',
-            {$scope: $scope, api: api, $state: $state, $window: $window}
+            {$scope: $scope, $modalInstance: $modalInstance, api: api, $state: $state, $window: $window}
         );
     }));
 
@@ -68,13 +71,13 @@ describe('DownloadExportReportModalCtrl', function () {
         it('closes the modal window on download', function () {
             var deferred = $q.defer();
 
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
 
             $scope.init();
             $scope.downloadReport();
             $scope.$digest();
 
-            expect($scope.$close).toHaveBeenCalled();
+            expect($modalInstance.close).toHaveBeenCalled();
         });
 
         it('tests checkDownloadAllowed', function () {
@@ -121,7 +124,7 @@ describe('DownloadExportReportModalCtrl', function () {
             $scope.$digest();
 
             expect($window.open).toHaveBeenCalledWith(
-              'test/export/?type=view-csv&start_date=2015-01-12T00:00:00Z&end_date=2015-01-19T00:00:00Z&order=-cost&by_day=undefined&include_model_ids=undefined&additional_fields=',
+              'test/export/?type=view-csv&start_date=2015-01-12T00:00:00+00:00&end_date=2015-01-19T00:00:00+00:00&order=-cost&by_day=undefined&include_model_ids=undefined&additional_fields=',
               '_blank');
         });
     });

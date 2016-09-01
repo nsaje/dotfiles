@@ -11,9 +11,9 @@ oneApp.directive('zemStateSelector', function () {
             value: '=',
             enabledValue: '=',
             pausedValue: '=',
-            enablingAutopilotSourcesNotAllowed: '=',
             disabledMessage: '=',
             archived: '=',
+            enablingAutopilotSourcesNotAllowed: '='
         },
         templateUrl: '/partials/zem_state_selector.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {

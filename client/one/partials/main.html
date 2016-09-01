@@ -34,7 +34,7 @@
             <form id="datepicker" class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.*.agency') || $state.includes('*.*.settings') || $state.includes('*.*.budget') || $state.includes('*.*.budget')">
                 <div class="input-group calendar">
                     <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/calendar.svg"></i>
-                    <input date-range-picker class="form-control date-picker" type="text" ng-model="dateRange" options="dateRangeOptions">
+                    <input type="daterange" class="form-control" ng-model="dateRange" max-date="{{ maxDateStr }}" format="{{ inputDateFormat }}" ranges="{{ dateRanges }}" opens="left">
                 </div>
             </form>
             <zem-filter

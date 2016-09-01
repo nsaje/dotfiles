@@ -1,17 +1,15 @@
 /* globals angular,oneApp,defaults,moment */
-oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$timeout', '$window', '$filter', 'api', function ($scope, $timeout, $window, $filter, api) {
-    var currentMoment = moment();
-    $scope.today = currentMoment.format('M/D/YYYY');
+oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$timeout', '$window', '$filter', 'api', function ($scope, $modalInstance, $timeout, $window, $filter, api) {
+    $scope.today = moment().format('M/D/YYYY');
     $scope.isNew = true;
     $scope.startDatePicker = {isOpen: false};
     $scope.endDatePicker = {isOpen: false};
-    $scope.startDatePickerOptions = {minDate: currentMoment.toDate()};
-    $scope.endDatePickerOptions = {minDate: currentMoment.toDate()};
     $scope.isLoadingInProgress = false;
     $scope.saveRequestInProgress = false;
     $scope.canDelete = false;
+    $scope.minDate = $scope.today;
     $scope.creditItem = {
-        startDate: currentMoment.toDate(),
+        startDate: moment().format('MM/DD/YYYY')
     };
     $scope.errors = {};
 
@@ -62,7 +60,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$timeout', '$window'
     $scope.deleteCreditItem = function () {
         if (!$window.confirm('Are you sure you want to delete the credit line item?')) { return; }
         api.accountCredit.delete($scope.account.id, $scope.selectedCreditItemId).then(function () {
-            $scope.$close(null);
+            $modalInstance.close(null);
         });
     };
 
@@ -71,6 +69,8 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$timeout', '$window'
         $scope.isNew = true;
         $scope.wasSigned = false;
         $scope.canDelete = false;
+        $scope.minDate = $scope.today;
+        $scope.initStartDate = moment().toDate();
         $scope.discarded = false;
 
         if (itemId !== null) {
@@ -78,11 +78,9 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$timeout', '$window'
             $scope.isNew = false;
             api.accountCredit.get($scope.account.id, itemId).then(function (data) {
                 $scope.creditItem = data;
-                $scope.creditItem.startDate = moment(data.startDate, 'M/D/YYYY').toDate();
-                $scope.creditItem.endDate = moment(data.endDate, 'M/D/YYYY').toDate();
                 $scope.wasSigned = data.isSigned;
                 $scope.canDelete = !data.isSigned && !data.numOfBudgets;
-                $scope.endDatePickerOptions = {minDate: moment(data.endDate, 'M/D/YYYY').toDate()};
+                $scope.minDate = data.endDate;
                 $scope.creditItem.licenseFee = $filter('number')(
                     $scope.creditItem.licenseFee.replace('%', ''),
                     2
@@ -96,7 +94,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$timeout', '$window'
     function closeModal (data) {
         $timeout(function () {
             $scope.saveRequestInProgress = false;
-            $scope.$close(data);
+            $modalInstance.close(data);
         }, 1000);
     }
 

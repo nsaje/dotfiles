@@ -7,11 +7,11 @@
         <div class="profile-container">
             <div class="content">
                 <a href="mailto:help@zemanta.com" class="contact">Contact support</a>
-                <span class="profile dropdown" uib-dropdown>
-                    <a href class="dropdown-toggle" uib-dropdown-toggle>
+                <span class="profile dropdown">
+                    <a href class="dropdown-toggle">
                         <img ng-src="{{ config.static_url }}/actionlog/img/human.svg">
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+                    <ul class="dropdown-menu dropdown-menu-right">
                         <li class="dropdown-header">{{ user.email }}</li>
                         <li><a ng-href="/signout">Sign out</a></li>
                     </ul>
@@ -53,14 +53,14 @@
                 </tr>
                 <tr ng-repeat="log in actionLogItems" ng-class="log.orderClass">
                     <td>
-                        <div class="action-log-item-states btn-group">
+                        <div class="btn-group">
                             <label ng-repeat="state in states" ng-click="updateState(log, state)" class="btn btn-default btn-xs" ng-class="stateClass(log, state)">{{state[0]}}</label>
                         </div>
                     </td>
                     <td><strong>{{log.take_action}}</strong></td>
                     <td>
                         <a ng-href="{{log.supply_dash_url}}" target="_blank">
-                            {{log.source[0]}}
+                            {{log.source[0]}} 
                         </a>
                     </td>
                     <td>
@@ -72,7 +72,7 @@
                 </tr>
             </tbody>
         </table>
-        <div uib-alert ng-show="actionLogItems.length >= actionLogItemsMax" class="alert-danger">Only {{actionLogItemsMax}} action can be displayed. There are more actions hidden.</div>
+        <alert ng-show="actionLogItems.length >= actionLogItemsMax" type="danger">Only {{actionLogItemsMax}} action can be displayed. There are more actions hidden.</alert>
     </div>
 
     <div class="row footer" ng-include src="config.static_url + '/actionlog/footer.html'"></div>

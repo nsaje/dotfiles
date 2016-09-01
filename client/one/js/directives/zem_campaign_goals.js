@@ -13,7 +13,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
             campaignGoals: '=goals',
         },
         templateUrl: '/partials/zem_campaign_goals.html',
-        controller: ['$uibModal', '$scope', function ($uibModal, $scope) {
+        controller: ['$modal', '$scope', function ($modal, $scope) {
             $scope.campaignGoals = $scope.campaignGoals || [];
             $scope.i = 0;
 
@@ -106,7 +106,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                     scope.campaignGoal = goal;
                 }
 
-                return $uibModal.open({
+                return $modal.open({
                     templateUrl: '/partials/edit_campaign_goal_modal.html',
                     controller: 'EditCampaignGoalModalCtrl',
                     windowClass: 'modal-default',
@@ -163,7 +163,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 scope.conversionPixelTag = $scope.getConversionPixelTag(
                     conversionGoal.name, conversionGoal.pixelUrl);
 
-                var modalInstance = $uibModal.open({
+                var modalInstance = $modal.open({
                     templateUrl: '/partials/copy_conversion_pixel_modal.html',
                     windowClass: 'modal-default',
                     scope: scope,

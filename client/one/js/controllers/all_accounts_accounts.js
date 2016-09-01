@@ -772,8 +772,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.getInfoboxData();
         getTableData();
         initColumns();
-
-        $scope.setActiveTab();
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {

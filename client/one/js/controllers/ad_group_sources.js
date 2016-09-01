@@ -830,8 +830,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         getInfoboxData();
 
         getSources();
-
-        $scope.setActiveTab();
     };
 
     var getSources = function () {

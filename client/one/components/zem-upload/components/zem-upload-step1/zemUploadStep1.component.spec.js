@@ -2,7 +2,7 @@
 'use strict';
 
 describe('ZemUploadStep1Ctrl', function () {
-    var scope, $q, ctrl;
+    var scope, $modalInstance, $q, ctrl;
 
     beforeEach(module('one'));
     beforeEach(inject(function ($controller, $rootScope, _$q_) {

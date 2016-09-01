@@ -1,5 +1,5 @@
 /* globals oneApp, $, angular, constants */
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$uibModal', '$uibModalStack', '$timeout', '$window', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess) { // eslint-disable-line max-len
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modal', '$modalStack', '$timeout', '$window', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', function ($scope, $state, $location, $document, $q, $modal, $modalStack, $timeout, $window, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
@@ -7,6 +7,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
     $scope.maxDate = zemMoment().endOf('month');
+    $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.enablePublisherFilter = false;
     $scope.showSelectedPublisher = null;
     $scope.localStoragePrefix = 'main';
@@ -217,19 +218,14 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
     };
 
+    $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.dateRange = {
         startDate: zemMoment().subtract(29, 'day').hours(0).minutes(0).seconds(0).milliseconds(0),
         endDate: zemMoment().subtract(1, 'day').endOf('day'),
     };
 
     $scope.setDateRangeFromSearch();
-
-    $scope.dateRangeOptions = {
-        maxDate: $scope.maxDate.format('YYYY-MM-DD'),
-        ranges: $scope.getDateRanges(),
-        opens: 'left',
-        applyClass: 'btn-primary',
-    };
+    $scope.dateRanges = $scope.getDateRanges();
 
     $scope.breadcrumb = [];
 
@@ -318,7 +314,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.requestDemo = function () {
-        var modalInstance = $uibModal.open({
+        var modalInstance = $modal.open({
             templateUrl: '/partials/request_demo_modal.html',
             controller: 'RequestDemoModalCtrl',
             windowClass: 'modal-default',
@@ -384,7 +380,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             return;
         }
 
-        if ($uibModalStack.getTop()) {
+        if ($modalStack.getTop()) {
             // some modal window exists
             return;
         }

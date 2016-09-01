@@ -11,6 +11,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.saveRequestInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
+    $scope.minEndDate = new Date();
     $scope.retargetableAdGroups = [];
     $scope.warnings = {};
     $scope.canArchive = false;
@@ -24,7 +25,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     // https://github.com/angular/angular.js/wiki/Understanding-Scopes
     $scope.startDatePicker = {isOpen: false};
     $scope.endDatePicker = {isOpen: false};
-    $scope.endDatePickerOptions = {minDate: new Date()};
 
     $scope.closeAlert = function (index) {
         $scope.alerts.splice(index, 1);
@@ -256,7 +256,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
 
     var init = function () {
         $scope.getSettings($state.params.id);
-        $scope.setActiveTab();
     };
 
     init();

@@ -1,5 +1,5 @@
 describe('CampaignBudgetItemModalCtrl', function () {
-    var $scope, api, $q, $window, $timeout, openedDeferred;
+    var $scope, $modalInstance, api, $q, $window, $timeout, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -8,7 +8,6 @@ describe('CampaignBudgetItemModalCtrl', function () {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
-        $scope.$close = function () {};
         $scope.campaign = {
             id: 1
         };
@@ -19,6 +18,12 @@ describe('CampaignBudgetItemModalCtrl', function () {
         };
 
         $window = _$window_;
+
+        openedDeferred = $q.defer();
+        $modalInstance = {
+            close: function () {},
+            opened: openedDeferred.promise
+        };
 
         var mockApiFunc = function () {
             return {
@@ -43,7 +48,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
 
         $controller(
             'CampaignBudgetItemModalCtrl',
-            {$scope: $scope, api: api}
+            {$scope: $scope, $modalInstance: $modalInstance, api: api}
         );
     }));
 
@@ -55,7 +60,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             };
             $scope.isNew = true;
 
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
             spyOn(api.campaignBudget, 'create').and.callFake(
                 function () { return deferred.promise; }
             );
@@ -67,7 +72,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
 
             expect(api.campaignBudget.create).toHaveBeenCalled();
             $timeout(function () {
-                expect($scope.$close).toHaveBeenCalled();
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
         });
 
@@ -78,7 +83,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             };
             $scope.isNew = false;
 
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
             spyOn(api.campaignBudget, 'save').and.callFake(
                 function () { return deferred.promise; }
             );
@@ -90,7 +95,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
 
             expect(api.campaignBudget.save).toHaveBeenCalled();
             $timeout(function () {
-                expect($scope.$close).toHaveBeenCalled();
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
 
         });
@@ -98,11 +103,11 @@ describe('CampaignBudgetItemModalCtrl', function () {
 
     describe('discardBudgetItem', function () {
         it('closes the modal', function () {
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
             $scope.discardBudgetItem();
             $scope.$digest();
             $timeout(function () {
-                expect($scope.$close).toHaveBeenCalled();
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1200);
         });
     });
@@ -112,7 +117,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             var deferred = $q.defer();
             $window.confirm = function () { return true; };
 
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
             spyOn(api.campaignBudget, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
@@ -123,7 +128,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
 
             expect(api.campaignBudget.delete).toHaveBeenCalled();
             $timeout(function () {
-                expect($scope.$close).toHaveBeenCalled();
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
         });
 
@@ -131,7 +136,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             var deferred = $q.defer();
             $window.confirm = function () { return false; };
 
-            spyOn($scope, '$close');
+            spyOn($modalInstance, 'close');
             spyOn(api.campaignBudget, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
@@ -141,7 +146,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
 
             expect(api.campaignBudget.delete).not.toHaveBeenCalled();
             $timeout(function () {
-                expect($scope.$close).not.toHaveBeenCalled();
+                expect($modalInstance.close).not.toHaveBeenCalled();
             }, 1500);
         });
     });
@@ -156,8 +161,8 @@ describe('CampaignBudgetItemModalCtrl', function () {
             expect($scope.isNew).toBe(true);
             expect($scope.canDelete).toBe(false);
             expect($scope.availableCredit).toBeTruthy();
-            expect(moment($scope.minDate).format('M/D/YYYY')).toBe('12/1/2015');
-            expect(moment($scope.maxDate).format('M/D/YYYY')).toBe('12/31/2015');
+            expect($scope.minDate).toBe('12/1/2015');
+            expect($scope.maxDate).toBe('12/31/2015');
         });
 
         it ('sets defaults for future budgets correctly', function () {
@@ -247,8 +252,8 @@ describe('CampaignBudgetItemModalCtrl', function () {
 
             expect($scope.isNew).toBe(false);
             expect($scope.canDelete).toBe(false);
-            expect(moment($scope.minDate).format('M/D/YYYY')).toBe('12/1/2015');
-            expect(moment($scope.maxDate).format('M/D/YYYY')).toBe('12/31/2015');
+            expect($scope.minDate).toBe('12/1/2015');
+            expect($scope.maxDate).toBe('12/31/2015');
             expect($scope.availableCredit).toBeTruthy();
             expect(api.campaignBudget.get).toHaveBeenCalled();
         });

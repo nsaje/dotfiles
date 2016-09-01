@@ -40,6 +40,5 @@ oneApp.controller('ScheduledReportsCtrl', ['$scope', '$state', 'api', function (
     };
 
     $scope.getReports();
-    $scope.setActiveTab();
 
 }]);

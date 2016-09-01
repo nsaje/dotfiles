@@ -1,5 +1,5 @@
 /* globals oneApp */
-oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', '$uibModal',  'api', function ($scope, $state, $uibModal, api) {
+oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', '$modal',  'api', function ($scope, $state, $modal, api) {
     var availableCredit = [];
     function updateView (data) {
         $scope.activeBudget = data.active;
@@ -13,7 +13,7 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', '$uibModal',  'api'
         $scope.init();
     }
     function openModal () {
-        var modalInstance = $uibModal.open({
+        var modalInstance = $modal.open({
             templateUrl: '/partials/campaign_budget_item_modal.html',
             controller: 'CampaignBudgetItemModalCtrl',
             windowClass: 'modal-default',
@@ -51,9 +51,8 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', '$uibModal',  'api'
         }, function () {
             $scope.loadingInProgress = false;
         });
-
-        $scope.setActiveTab();
     };
+
 
     $scope.init();
 }]);

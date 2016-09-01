@@ -4,5 +4,4 @@ oneApp.controller('AdGroupHistoryCtrl', ['$scope', '$state', function ($scope, $
         adGroup: $state.params.id,
         level: constants.historyLevel.AD_GROUP,
     };
-    $scope.setActiveTab();
 }]);

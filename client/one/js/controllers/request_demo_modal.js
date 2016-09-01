@@ -1,5 +1,5 @@
 /* globals oneApp */
-oneApp.controller('RequestDemoModalCtrl', ['$scope', 'api', function ($scope, api) {
+oneApp.controller('RequestDemoModalCtrl', ['$scope', '$modalInstance', 'api', function ($scope, $modalInstance, api) {
 
     $scope.inProgress = true;
     $scope.error = false;
@@ -20,6 +20,6 @@ oneApp.controller('RequestDemoModalCtrl', ['$scope', 'api', function ($scope, ap
     );
 
     $scope.close = function () {
-        $scope.$close();
+        $modalInstance.close();
     };
 }]);

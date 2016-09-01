@@ -39,13 +39,13 @@
             <div class="clearfix"></div>
         </div>
 
-        <div uib-alert class="alert-info alert-sync" ng-show="sourcesWaiting.length">
+        <alert type="info" class="alert-sync" ng-show="sourcesWaiting.length">
             We are adding the following media source(s): {{sourcesWaiting.join(', ')}}. This may take some time.
-        </div>
-        <div uib-alert class="alert-info alert-sync" ng-show="!isSyncRecent">
+        </alert>
+        <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
             We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span>
             If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
-        </div>
+        </alert>
 
         <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-data-status="dataStatus"></zem-table>
 

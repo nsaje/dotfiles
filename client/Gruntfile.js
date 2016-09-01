@@ -66,8 +66,7 @@ module.exports = function (grunt) {
             one_lib: {
                 dest: 'dist/one/zemanta-one.lib.js',
                 mainFiles: {
-                    'highcharts-release': 'highcharts.js',
-                    'angular-bootstrap-datetimepicker': 'src/js/datetimepicker.js'
+                    'highcharts-release': 'highcharts.js'
                 },
                 dependencies: {
                     'angular': 'bootstrap-daterangepicker'
@@ -97,11 +96,11 @@ module.exports = function (grunt) {
                     src: [
                         'lib/components/bootstrap/dist/css/bootstrap.min.css',
                         'lib/components/angular-bootstrap-datetimepicker/src/css/datetimepicker.css',
-                        'lib/components/bootstrap-multiselect/dist/css/bootstrap-multiselect.css',
+                        'lib/components/bootstrap-multiselect/css/bootstrap-multiselect.css',
                         'lib/components/angular-ui-select/dist/select.css',
                         'lib/components/select2/select2.css',
                         'lib/components/select2/select2-bootstrap.css',
-                        'lib/components/bootstrap-daterangepicker/daterangepicker.css'
+                        'lib/components/bootstrap-daterangepicker/daterangepicker-bs3.css'
                     ],
                     dest: 'dist/one/zemanta-one.lib.min.css'
                 }]

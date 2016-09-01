@@ -11,7 +11,6 @@ describe('CampaignBudgetCtrl', function () {
         inject(function ($rootScope, $controller, _$state_) {
             $scope = $rootScope.$new();
 
-            $scope.setActiveTab = function () {};
             $scope.isPermissionInternal = function () {
                 return true;
             };

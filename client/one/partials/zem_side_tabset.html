@@ -1,6 +1,6 @@
-<uib-tabset class="zem-side-tabset" vertical="true" active="selectedIndex">
-<uib-tab ng-repeat="tab in tabs | filter:{hidden: '!true'}" ng-style="{'height': 100/visibleTabCount + '%'}">
-    <uib-tab-heading ng-class="{'active': tab.type === selected.type}">
+<tabset class="zem-side-tabset" vertical="true">
+<tab ng-repeat="tab in tabs | filter:{hidden: '!true'}" ng-style="{'height': 100/visibleTabCount + '%'}">
+    <tab-heading ng-class="{'active': tab.type === selected.type}">
         <div class="tab-table">
             <div class="tab-row">
                 <div class="tab-body-cell {{tab.type}}">
@@ -13,6 +13,6 @@
                 </div>
             </div>
         </div>
-    </uib-tab-heading>
-</uib-tab>
-</uib-tabset>
+    </tab-heading>
+</tab>
+</tabset>

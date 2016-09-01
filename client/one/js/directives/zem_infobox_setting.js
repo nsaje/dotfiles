@@ -11,12 +11,14 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function (config, $w
             internal: '=',
             valueDescription: '=',
             valueClass: '=',
+            detailsVisible: '=',
             detailsLabel: '=',
             detailsHideLabel: '=',
             detailsContent: '=',
-            warning: '=',
-            icon: '=',
+            statusActive: '=',
             tooltipText: '=',
+            icon: '=',
+            warning: '='
         },
         templateUrl: '/partials/zem_infobox_setting.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
@@ -43,4 +45,5 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function (config, $w
 
         }]
     };
+
 }]);

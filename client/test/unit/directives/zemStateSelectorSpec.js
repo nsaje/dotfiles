@@ -4,7 +4,8 @@ describe('zemStateSelector', function () {
     var $scope, element, isolate;
     var data = [];
 
-    var template = '<zem-state-selector id on-change is-editable value enabled-value paused-value enabling-autopilot-sources-not-allowed disabled-message archived></zem-state-selector>'; // eslint-disable-line max-len
+    var template = '<zem-state-selector></zem-state-selector>';
+
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 

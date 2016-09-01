@@ -1,6 +1,6 @@
 /* globals describe, beforeEach, inject, module, it, expect, spyOn */
 describe('zemUploadTrigger', function () {
-    var scope, $compile, $uibModal;
+    var scope, $compile, $modal;
     var template = '<button type="button" zem-upload-trigger zem-upload-ad-group="adGroup" zem-upload-on-save="onUploadSave"></button>';
     var onUploadSave = function () {};
     var adGroup = {
@@ -9,9 +9,9 @@ describe('zemUploadTrigger', function () {
     };
 
     beforeEach(module('one'));
-    beforeEach(inject(function ($rootScope, _$compile_, _$uibModal_) {
+    beforeEach(inject(function ($rootScope, _$compile_, _$modal_) {
         $compile = _$compile_;
-        $uibModal = _$uibModal_;
+        $modal = _$modal_;
 
         scope = $rootScope.$new();
         scope.onUploadSave = onUploadSave;
@@ -21,13 +21,13 @@ describe('zemUploadTrigger', function () {
     it('should open a modal window on click', function () {
         var element = $compile(template)(scope);
 
-        spyOn($uibModal, 'open').and.stub();
+        spyOn($modal, 'open').and.stub();
         scope.$digest();
 
         element.click();
-        expect($uibModal.open).toHaveBeenCalled();
+        expect($modal.open).toHaveBeenCalled();
 
-        expect($uibModal.open.calls.mostRecent().args[0].scope.adGroup).toBe(adGroup);
-        expect($uibModal.open.calls.mostRecent().args[0].scope.onSave).toBe(onUploadSave);
+        expect($modal.open.calls.mostRecent().args[0].scope.adGroup).toBe(adGroup);
+        expect($modal.open.calls.mostRecent().args[0].scope.onSave).toBe(onUploadSave);
     });
 });

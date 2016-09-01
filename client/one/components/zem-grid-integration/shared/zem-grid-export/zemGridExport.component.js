@@ -15,7 +15,7 @@ oneApp.directive('zemGridExport', function () {
 });
 
 
-oneApp.controller('zemGridExportCtrl', ['$scope', '$uibModal', 'zemGridExportOptions', function ($scope, $uibModal, zemGridExportOptions) {
+oneApp.controller('zemGridExportCtrl', ['$scope', '$modal', 'zemGridExportOptions', function ($scope, $modal, zemGridExportOptions) {
     var vm = this;
 
     vm.showScheduledReportModal = showScheduledReportModal;
@@ -63,14 +63,14 @@ oneApp.controller('zemGridExportCtrl', ['$scope', '$uibModal', 'zemGridExportOpt
 
         var modalInstance;
         if (exportModalType === 'schedule') {
-            modalInstance = $uibModal.open({
+            modalInstance = $modal.open({
                 templateUrl: '/partials/add_scheduled_report_modal.html',
                 controller: 'AddScheduledReportModalCtrl',
                 windowClass: 'modal-default',
                 scope: $scope,
             });
         } else {
-            modalInstance = $uibModal.open({
+            modalInstance = $modal.open({
                 templateUrl: '/partials/download_export_report_modal.html',
                 controller: 'DownloadExportReportModalCtrl',
                 windowClass: 'modal-default',

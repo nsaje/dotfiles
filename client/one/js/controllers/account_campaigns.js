@@ -739,8 +739,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         pollSyncStatus();
         getDailyStats();
         $scope.getInfoboxData();
-
-        $scope.setActiveTab();
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {

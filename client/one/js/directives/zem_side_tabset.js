@@ -6,6 +6,7 @@ oneApp.directive('zemSideTabset', function () {
         restrict: 'E',
         scope: {
             selected: '=zemSelected',
+            tabs: '=',
             hasPermission: '=zemHasPermission',
             isPermissionInternal: '=zemIsPermissionInternal',
         },
@@ -38,9 +39,6 @@ oneApp.directive('zemSideTabset', function () {
 
             $scope.tabClick = function (tab) {
                 $scope.selected = tab;
-                $scope.selectedIndex = $scope.tabs.filter(function (tab) {
-                    return !tab.hidden;
-                }).indexOf(tab);
             };
 
             $scope.tabs = $scope.getSideTabs();

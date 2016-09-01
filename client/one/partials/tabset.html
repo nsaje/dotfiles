@@ -1,13 +1,13 @@
-<uib-tabset class="zem-tabset" active="activeTab">
-    <uib-tab ng-repeat="tab in tabs | filter:{hidden: 'false'}">
-        <uib-tab-heading>
+<tabset class="zem-tabset">
+    <tab ng-repeat="tab in tabs | filter:{hidden: '!true'}" active="tab.active">
+        <tab-heading>
             <div class="tab-top"></div>
             <a class="tab-title" ng-click="tabClick($event)" zem-in-link="{{ tab.route }}({ id: $state.params.id })">
                 <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
                 {{ tab.heading }}
             </a>
-        </uib-tab-heading>
-    </uib-tab>
+        </tab-heading>
+    </tab>
     <span ng-show="isAdGroupPaused()"><span class="tabset-little-red-square"></span><span class="warning-paused">This Ad Group is currently not running.</span></span>
     <span ng-show="isInLanding()"><span class="tabset-landing-mode-icon"></span><span class="info-landing-mode">Campaign is running in landing mode. <a href="#" ng-click="manageBudget()">Add budget</a></span></span>
-</uib-tabset>
+</tabset>

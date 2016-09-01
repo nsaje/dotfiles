@@ -2,7 +2,7 @@
 'use strict';
 
 describe('zemConversionPixels', function () {
-    var $scope, $q, element, isolate, $uibModal;
+    var $scope, $q, element, isolate, $modal;
 
     var mockApiFunc = function () {
         return {
@@ -46,9 +46,9 @@ describe('zemConversionPixels', function () {
     beforeEach(module('one'));
     beforeEach(module('conversionPixelsApiMock'));
 
-    beforeEach(inject(function ($compile, $rootScope, _$q_, _$uibModal_) {
+    beforeEach(inject(function ($compile, $rootScope, _$q_, _$modal_) {
         $q =  _$q_;
-        $uibModal = _$uibModal_;
+        $modal = _$modal_;
 
         var template = '<zem-conversion-pixels zem-account="account" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-conversion-pixels>';
 
@@ -85,7 +85,7 @@ describe('zemConversionPixels', function () {
                 {id: 3, name: 'Old Name', archived: true}
             ];
 
-            spyOn($uibModal, 'open').and.returnValue(fakeModal);
+            spyOn($modal, 'open').and.returnValue(fakeModal);
 
             var modalInstance = isolate.renameConversionPixel(isolate.conversionPixels[0]);
             modalInstance.close({id: 3, name: 'New Name'});
