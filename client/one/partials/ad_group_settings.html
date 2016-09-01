@@ -5,10 +5,10 @@
 </div>
 
 <div class="page page-ad-group-settings" ng-if="hasPermission('dash.settings_view') && !(adGroup && adGroup.archived) && !loadRequestInProgress">
-    <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
-    <alert type="info" ng-show="actionIsWaiting">
+    <div uib-alert ng-repeat="alert in alerts" class="alert-{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></div>
+    <div uib-alert class="alert-info" ng-show="actionIsWaiting">
         Settings changes are being propagated to external sources. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
-    </alert>
+    </div>
 
     <form id="form-ad-group-settings" class="form-horizontal">
         <div class="form-group" ng-class="{'has-error': !!errors.state}" ng-if="!hasPermission('zemauth.can_control_ad_group_state_in_table')">
@@ -44,7 +44,7 @@
                 <zem-help-popover content="The date when content promotion commenced." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
-                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.startDate" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')">
+                <input id="start-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-model="settings.startDate" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')">
             </div>
 
             <label ng-repeat="error in errors.startDate" class="control-label error" for="start-date-input">{{ error }}</label>
@@ -57,7 +57,7 @@
             </label>
 
             <div class="col-xs-2">
-                <input ng-disabled="warnings.endDate !== undefined" id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" min-date="minEndDate" ng-model="settings.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
+                <input ng-disabled="warnings.endDate !== undefined" id="end-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" datepicker-options="endDatePickerOptions" ng-model="settings.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
             </div>
 
             <div class="checkbox col-xs-2">

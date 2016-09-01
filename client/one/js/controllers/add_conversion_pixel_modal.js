@@ -1,5 +1,5 @@
 /* globals oneApp */
-oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', 'api', function ($scope, $modalInstance, api) {
+oneApp.controller('AddConversionPixelModalCtrl', ['$scope', 'api', function ($scope, api) {
     $scope.inProgress = false;
     $scope.pixel = {name: ''};
     $scope.error = false;
@@ -11,7 +11,7 @@ oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', 'a
         $scope.inProgress = true;
         api.conversionPixel.post($scope.account.id, $scope.pixel.name).then(
             function (data) {
-                $modalInstance.close(data);
+                $scope.$close(data);
             },
             function (data) {
                 $scope.error = true;

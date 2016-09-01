@@ -8,11 +8,20 @@ oneApp.controller('AllAccountsCtrl', ['$scope', '$state', function ($scope, $sta
       {heading: 'Reports', route: 'main.allAccounts.scheduled_reports', active: false, hidden: false, internal: false},
     ];
 
-    $scope.tabs.forEach(function (tab) {
-        tab.active = $state.is(tab.route);
-    });
+    $scope.setActiveTab = function () {
+        $scope.activeTab = 0;
+        $scope.tabs.filter(function (tab) {
+            return !tab.hidden;
+        }).forEach(function (tab, index) {
+            if ($state.is(tab.route)) {
+                $scope.activeTab = index;
+            }
+        });
+    };
 
     $scope.$on('$stateChangeSuccess', function () {
         $scope.setBreadcrumbAndTitle([], 'All accounts');
     });
+
+    $scope.setActiveTab();
 }]);

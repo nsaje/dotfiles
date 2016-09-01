@@ -1,5 +1,5 @@
 /* globals oneApp, options, constants */
-oneApp.controller('AddScheduledReportModalCtrl', ['$scope', '$modalInstance', 'api', 'zemFilterService', function ($scope, $modalInstance, api, zemFilterService) {  // eslint-disable-line max-len
+oneApp.controller('AddScheduledReportModalCtrl', ['$scope', 'api', 'zemFilterService', function ($scope, api, zemFilterService) {  // eslint-disable-line max-len
     $scope.exportSchedulingFrequencies = options.exportFrequency;
     $scope.exportSchedulingTimePeriods = options.exportTimePeriod;
     $scope.exportSchedulingDayOfWeek = options.exportDayOfWeek;
@@ -67,7 +67,7 @@ oneApp.controller('AddScheduledReportModalCtrl', ['$scope', '$modalInstance', 'a
 
         api.scheduledReports.addScheduledReport(url, data).then(
             function (data) {
-                $modalInstance.close();
+                $scope.$close();
             },
             function (errors) {
                 if (errors) {

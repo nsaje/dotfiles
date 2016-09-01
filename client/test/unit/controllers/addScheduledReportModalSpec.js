@@ -1,7 +1,7 @@
 'use strict';
 
 describe('AddScheduledReportModalCtrl', function () {
-    var $scope, $modalInstance, api, $q, openedDeferred;
+    var $scope, api, $q, openedDeferred;
     var zemFilterServiceMock;
 
     beforeEach(module('one'));
@@ -22,6 +22,7 @@ describe('AddScheduledReportModalCtrl', function () {
     beforeEach(inject(function ($controller, $rootScope, _$q_) {
         $q = _$q_;
         $scope = $rootScope.$new();
+        $scope.$close = function () {};
         $scope.dateRange = {
             startDate: moment('2015-01-12'),
             endDate: moment('2015-01-19'),
@@ -38,11 +39,6 @@ describe('AddScheduledReportModalCtrl', function () {
         var $state = {params: {id: 1}};
         $scope.level = 0;
         $scope.exportSources = undefined;
-        openedDeferred = $q.defer();
-        $modalInstance = {
-            close: function () {},
-            opened: openedDeferred.promise
-        };
         $scope.isPermissionInternal = function () { return true; };
         $scope.hasPermission = function () { return true; };
         $scope.getAdditionalColumns = function () { return []; };
@@ -67,7 +63,7 @@ describe('AddScheduledReportModalCtrl', function () {
 
         $controller(
             'AddScheduledReportModalCtrl',
-            {$scope: $scope, $modalInstance: $modalInstance, api: api, $state: $state}
+            {$scope: $scope, api: api, $state: $state}
         );
     }));
 
@@ -79,7 +75,7 @@ describe('AddScheduledReportModalCtrl', function () {
                 return deferred.promise;
             });
 
-            spyOn($modalInstance, 'close');
+            spyOn($scope, '$close');
             $scope.init();
             $scope.addScheduledReport();
             $scope.$digest();
@@ -103,7 +99,7 @@ describe('AddScheduledReportModalCtrl', function () {
                 }
             );
             expect($scope.showInProgress).toBe(true);
-            expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($scope.$close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(false);
             expect($scope.validationErrors).toEqual({});
 
@@ -111,7 +107,7 @@ describe('AddScheduledReportModalCtrl', function () {
             $scope.$digest();
 
             expect($scope.showInProgress).toBe(false);
-            expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($scope.$close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(false);
             expect($scope.validationErrors).toEqual({'err': ['Error']});
         });
@@ -123,7 +119,7 @@ describe('AddScheduledReportModalCtrl', function () {
                 return deferred.promise;
             });
 
-            spyOn($modalInstance, 'close');
+            spyOn($scope, '$close');
 
             $scope.init();
             $scope.addScheduledReport();
@@ -148,7 +144,7 @@ describe('AddScheduledReportModalCtrl', function () {
                 }
             );
             expect($scope.showInProgress).toBe(true);
-            expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($scope.$close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(false);
             expect($scope.validationErrors).toEqual({});
 
@@ -156,7 +152,7 @@ describe('AddScheduledReportModalCtrl', function () {
             $scope.$digest();
 
             expect($scope.showInProgress).toBe(false);
-            expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($scope.$close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(true);
             expect($scope.validationErrors).toEqual({});
         });
@@ -168,7 +164,7 @@ describe('AddScheduledReportModalCtrl', function () {
                 return deferred.promise;
             });
 
-            spyOn($modalInstance, 'close');
+            spyOn($scope, '$close');
 
             $scope.init();
             $scope.addScheduledReport();
@@ -194,13 +190,13 @@ describe('AddScheduledReportModalCtrl', function () {
 
             );
             expect($scope.showInProgress).toBe(true);
-            expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($scope.$close).not.toHaveBeenCalled();
 
             deferred.resolve();
             $scope.$digest();
 
             expect($scope.showInProgress).toBe(false);
-            expect($modalInstance.close).toHaveBeenCalled();
+            expect($scope.$close).toHaveBeenCalled();
         });
     });
 });

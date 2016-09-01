@@ -54,7 +54,7 @@
             </label>
             <div class="col-xs-4">
                 <div class="input-group">
-                    <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit || !budgetItem.isEditable" init-date="initStartDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.startDate" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" />
+                    <input id="start-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-disabled="!budgetItem.credit || !budgetItem.isEditable" datepicker-options="{initDate: initStartDate, minDate: minDate, maxDate: maxDate}" ng-model="budgetItem.startDate" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" />
                     <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
                 </div>
             </div>
@@ -66,7 +66,7 @@
             </label>
             <div class="col-xs-4">
                 <div class="input-group">
-                    <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit || !(budgetItem.isUpdatable || budgetItem.isEditable)" init-date="initEndDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()">
+                    <input id="end-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-disabled="!budgetItem.credit || !(budgetItem.isUpdatable || budgetItem.isEditable)" datepicker-options="{initDate: initEndDate, minDate: minDate, maxDate: maxDate}" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()">
                     <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
                 </div>
             </div>

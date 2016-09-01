@@ -1,5 +1,5 @@
 /* globals oneApp,options,constants,defaults,angular */
-oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api', function ($scope, $modalInstance, api) { // eslint-disable-line max-len
+oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', 'api', function ($scope, api) { // eslint-disable-line max-len
     $scope.conversionGoalTypes = options.conversionGoalTypes;
     $scope.conversionWindows = options.conversionWindows;
     $scope.addConversionGoalInProgress = false;
@@ -133,7 +133,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         $scope.campaignGoal.value = Math.abs($scope.campaignGoal.value);
 
         if (!$scope.newCampaignGoal) {
-            $modalInstance.close($scope.campaignGoal);
+            $scope.$close($scope.campaignGoal);
             $scope.savingInProgress = false;
             return; // Skip server validation call if this is not a new entry
         }
@@ -173,7 +173,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
             campaignGoal
         ).then(function (goal) {
             campaignGoal.conversionGoal = goal.conversionGoal;
-            $modalInstance.close(campaignGoal);
+            $scope.$close(campaignGoal);
             $scope.savingInProgress = false;
         }, function (errors) {
             $scope.errors = errors;

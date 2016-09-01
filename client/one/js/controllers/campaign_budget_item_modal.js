@@ -1,6 +1,6 @@
 /* globals angular,oneApp,defaults,moment,constants */
-oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$filter', '$modalInstance', '$timeout', 'api', 'zemNavigationService', function ($scope, $filter, $modalInstance, $timeout, api, zemNavigationService) {
-    $scope.today = moment().format('M/D/YYYY');
+oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$filter', '$timeout', 'api', 'zemNavigationService', function ($scope, $filter, $timeout, api, zemNavigationService) {
+    $scope.today = moment().format('MM/DD/YYYY');
     $scope.isNew = true;
     $scope.startDatePicker = {isOpen: false};
     $scope.endDatePicker = {isOpen: false};
@@ -93,19 +93,24 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$filter', '$modalIn
                 $scope.campaign.id,
                 $scope.selectedBudgetId
             ).then(function (data) {
+                var creditStartDate = moment(data.startDate, 'MM/DD/YYYY').toDate(),
+                    creditEndDate = moment(data.endDate, 'MM/DD/YYYY').toDate();
+
                 $scope.budgetItem = data;
+                $scope.budgetItem.startDate = creditStartDate;
+                $scope.budgetItem.endDate = creditEndDate;
                 $scope.budgetItem.margin = $filter('number')(
                     $scope.budgetItem.margin.replace('%', ''),
                     2
                 );
 
-                $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
-                $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
+                $scope.initStartDate = $scope.minDate;
+                $scope.initEndDate = $scope.maxDate;
 
                 $scope.canDelete = data.state == constants.budgetLineItemStatus.PENDING;
                 $scope.availableCredit = $scope.getAvailableCredit(false, data.credit.id);
-                $scope.minDate = data.startDate;
-                $scope.maxDate = $scope.availableCredit[0].endDate;
+                $scope.minDate = creditStartDate;
+                $scope.maxDate = moment($scope.availableCredit[0].endDate, 'MM/DD/YYYY').toDate();
             });
         }
     };
@@ -113,18 +118,19 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$filter', '$modalIn
     function closeModal (data) {
         $timeout(function () {
             $scope.saveRequestInProgress = false;
-            $modalInstance.close(data);
+            $scope.$close(data);
         }, 1000);
     }
 
     function updateBudgetInitialValues (credit) {
-        var creditStartDate = moment(credit.startDate, 'MM/DD/YYYY'),
-            today = moment();
+        var creditStartDate = moment(credit.startDate, 'MM/DD/YYYY').toDate(),
+            creditEndDate = moment(credit.endDate, 'MM/DD/YYYY').toDate(),
+            today = moment().toDate();
 
-        $scope.minDate = credit.startDate;
-        $scope.maxDate = credit.endDate;
-        $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
-        $scope.initStartDate = (creditStartDate > today ? creditStartDate : today).toDate();
+        $scope.minDate = creditStartDate;
+        $scope.maxDate = creditEndDate;
+        $scope.initEndDate = creditEndDate;
+        $scope.initStartDate = creditStartDate > today ? creditStartDate : today;
 
         $scope.budgetItem.startDate = $scope.initStartDate;
         $scope.budgetItem.endDate = $scope.initEndDate;

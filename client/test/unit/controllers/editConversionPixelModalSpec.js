@@ -2,7 +2,7 @@
 'use strict';
 
 describe('EditConversionPixelModalCtrl', function () {
-    var $scope, $modalInstance, api, $q, $timeout, openedDeferred, pixel;
+    var $scope, api, $q, $timeout, openedDeferred, pixel;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -11,14 +11,9 @@ describe('EditConversionPixelModalCtrl', function () {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
+        $scope.$close = function () {};
         $scope.account = {
             id: 1
-        };
-
-        openedDeferred = $q.defer();
-        $modalInstance = {
-            close: function () {},
-            opened: openedDeferred.promise
         };
 
         var mockApiFunc = function () {
@@ -44,7 +39,7 @@ describe('EditConversionPixelModalCtrl', function () {
 
         $controller(
             'EditConversionPixelModalCtrl',
-            {$scope: $scope, $modalInstance: $modalInstance, api: api, pixel: pixel}
+            {$scope: $scope, api: api, pixel: pixel}
         );
     }));
 
@@ -56,14 +51,14 @@ describe('EditConversionPixelModalCtrl', function () {
                 return deferred.promise;
             });
 
-            spyOn($modalInstance, 'close');
+            spyOn($scope, '$close');
 
             $scope.submit();
             $scope.$digest();
 
             expect(api.conversionPixel.rename).toHaveBeenCalled();
             expect($scope.inProgress).toBe(true);
-            expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($scope.$close).not.toHaveBeenCalled();
             expect($scope.error).toEqual(false);
             expect($scope.errorMessage).toEqual('');
 
@@ -71,7 +66,7 @@ describe('EditConversionPixelModalCtrl', function () {
             $scope.$digest();
 
             expect($scope.inProgress).toBe(false);
-            expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($scope.$close).not.toHaveBeenCalled();
             expect($scope.error).toEqual(true);
             expect($scope.errorMessage).toEqual('error message another message');
         });
@@ -83,20 +78,20 @@ describe('EditConversionPixelModalCtrl', function () {
                 return deferred.promise;
             });
 
-            spyOn($modalInstance, 'close');
+            spyOn($scope, '$close');
 
             $scope.submit();
             $scope.$digest();
 
             expect(api.conversionPixel.rename).toHaveBeenCalled();
             expect($scope.inProgress).toBe(true);
-            expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($scope.$close).not.toHaveBeenCalled();
 
             deferred.resolve({id: 1, name: 'name', archived: false});
             $scope.$digest();
 
             expect($scope.inProgress).toBe(false);
-            expect($modalInstance.close).toHaveBeenCalledWith({id: 1, name: 'name', archived: false});
+            expect($scope.$close).toHaveBeenCalledWith({id: 1, name: 'name', archived: false});
         });
     });
 });
