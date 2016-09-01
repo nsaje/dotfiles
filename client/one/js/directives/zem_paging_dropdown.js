@@ -6,8 +6,6 @@ oneApp.directive('zemPagingDropdown', function () {
         restrict: 'E',
         scope: {
             page: '=',
-            selectionText: '=',
-            selectAllCount: '='
         },
         templateUrl: '/partials/zem_paging_dropdown.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
