@@ -1164,7 +1164,7 @@ class AdGroupAdsTable(object):
 
     def sort_rows(self, rows, order):
         if order:
-            if 'state' in order:
+            if 'status_setting' in order:
                 rows = sort_rows_by_order_and_archived(rows, order)
             else:
                 rows = sort_results(rows, [order])

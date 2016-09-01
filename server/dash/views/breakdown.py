@@ -9,6 +9,7 @@ from dash.views import grid
 
 from utils import api_common
 from utils import exc
+from utils import sort_helper
 
 import stats.api_breakdowns
 import stats.helpers
@@ -225,6 +226,14 @@ def get_report_campaign_ad_groups(user, filtered_sources, start_date, end_date,
 def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date,
                                     order, page, size, show_archived,
                                     **kwargs):
+    prefix, order_field = sort_helper.dissect_order(order)
+    if order_field == 'name':
+        order_field = 'title'
+    elif order_field in ('status', 'state', 'status_setting'):
+        order_field = 'status_setting'
+
+    order = prefix + order_field
+
     response = table.AdGroupAdsTable().get(
         user,
         filtered_sources=filtered_sources,
