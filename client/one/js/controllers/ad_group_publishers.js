@@ -997,6 +997,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getDailyStats();
         $scope.getInfoboxData();
         zemFilterService.setShowBlacklistedPublishers(true);
+
+        $scope.setActiveTab();
     };
 
     $scope.loadPage = function (page) {

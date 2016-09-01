@@ -16,7 +16,7 @@ oneApp.directive('zemExport', function () {
             isPermissionInternal: '=zemIsPermissionInternal'
         },
         templateUrl: '/partials/zem_export.html',
-        controller: ['$scope', '$modal', function ($scope, $modal) {
+        controller: ['$scope', '$uibModal', function ($scope, $uibModal) {
             $scope.exportModalTypes = [{
                 name: 'Download',
                 value: 'download'
@@ -47,14 +47,14 @@ oneApp.directive('zemExport', function () {
             $scope.showScheduledReportModal = function (exportModalType) {
                 var modalInstance;
                 if (exportModalType === 'schedule') {
-                    modalInstance = $modal.open({
+                    modalInstance = $uibModal.open({
                         templateUrl: '/partials/add_scheduled_report_modal.html',
                         controller: 'AddScheduledReportModalCtrl',
                         windowClass: 'modal-default',
                         scope: $scope,
                     });
                 } else {
-                    modalInstance = $modal.open({
+                    modalInstance = $uibModal.open({
                         templateUrl: '/partials/download_export_report_modal.html',
                         controller: 'DownloadExportReportModalCtrl',
                         windowClass: 'modal-default',

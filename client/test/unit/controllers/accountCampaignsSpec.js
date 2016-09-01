@@ -18,6 +18,7 @@ describe('AccountCampaignsCtrl', function () {
             $scope = $rootScope.$new();
             permissions = {};
 
+            $scope.setActiveTab = function () {};
             $scope.isPermissionInternal = function () {
                 return true;
             };

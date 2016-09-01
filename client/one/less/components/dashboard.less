@@ -106,7 +106,7 @@
             font-style: italic;
         }
     }
-    
+
     .description {
         margin-bottom: 5px;
         color: @light-gray;
@@ -140,7 +140,7 @@
             border: none;
         }
     }
-    
+
     .textarea-with-border {
         border: 1px dashed @border-input-color;
         width: 100%;
@@ -325,8 +325,10 @@
         }
     }
 
-    &.disabled {
+    &.disabled,
+    &[disabled] {
         color: #d9d9d9;
+        border-color: #d9d9d9;
         pointer-events: all;
         cursor: auto;
         box-shadow: none;
@@ -452,7 +454,7 @@
         }
 
         &.active > a {
-            > tab-heading {
+            > uib-tab-heading {
                 > a,
                 > a:hover,
                 > a:active,
@@ -481,7 +483,7 @@
 
             .border-radius(2px 2px 0 0);
 
-            > tab-heading {
+            > uib-tab-heading {
                 > a,
                 > a:hover,
                 > a:active,
@@ -554,22 +556,6 @@
     width: 1em !important;
 }
 
-.input-mini {
-    width: 6em !important;
-}
-
-.input-small {
-    width: 9em !important;
-}
-
-.input-medium {
-    width: 15em !important;
-}
-
-.input-large {
-    width: 18em !important;
-}
-
 .alert {
     margin-bottom: 0;
     .border-radius(0);
@@ -627,7 +613,7 @@
     }
 }
 
-div[datepicker] {
+div[uib-datepicker] {
     .btn,
     .btn:hover {
         border: 1px solid #fff;
@@ -674,20 +660,8 @@ div[datepicker] {
 }
 
 .daterangepicker {
-    padding-left: 0;
-    padding-right: 0;
-
     &.dropdown-menu {
         border: 1px solid @default-color;
-        padding-top: 0;
-    }
-
-    &.opensleft {
-        .ranges {
-            margin-left: 0;
-            margin-right: 0;
-            margin-top: 0;
-        }
     }
 
     &.opensleft:before {
@@ -698,61 +672,66 @@ div[datepicker] {
     }
 
     .ranges {
-        width: 240px;
-
-        ul {
-            margin-bottom: 8px;
-        }
-
         li {
+            margin-bottom: 2px;
+            padding: 2px 12px;
             background-color: transparent;
             border: 1px solid transparent;
             color: @default-color;
-            margin-bottom: 1px;
+
+            &:last-child {
+                margin-bottom: 12px;
+            }
 
             &:hover {
                 border: 1px solid transparent;
                 background-color: @default-color;
-                .border-radius(0);
+                color: @white;
             }
 
             &.active {
                 border: 1px solid transparent;
                 background-color: @default-color;
-                .border-radius(0);
+                color: @white;
             }
-        }
-
-        .applyBtn {
-            margin-left: 12px;
         }
     }
 
-    .daterangepicker_start_input,
-    .daterangepicker_end_input {
-        display: none;
+    .calendar-table {
+        padding: 0;
     }
 
     .calendar {
-        td.active {
-            border: 1px solid transparent;
-            background-color: @default-color;
-            .border-radius(0);
+        margin-bottom: 0;
+
+        .daterangepicker_input {
+            display: none;
         }
-    }
 
-    td,
-    th {
-        .border-radius(0);
-    }
+        td, th {
+            line-height: 20px;
+        }
 
-    td.available + td.start-date,
-    td.available + td.end-date {
-        .border-radius(0);
-    }
+        td {
+            &.available {
+                &.off.in-range {
+                    background-color: #eee;
 
-    .calendar-label {
-        font-weight: 500;
+                    &:hover {
+                        color: #999;
+                    }
+                }
+            }
+
+            &.active {
+                border: 1px solid transparent;
+                background-color: @default-color;
+
+                &.off.end-date, &.off.start-date {
+                    background-color: #ddd;
+                }
+            }
+        }
     }
 }
 
@@ -1691,7 +1670,7 @@ ul.icon-list li:first-child {
 ul.with-icons {
     padding-left: 20px;
     list-style: none;
-    
+
     &.ul-checkmarks li {
         background: url('img/checkmark-green.svg') no-repeat left 5px;
         background-size: 14px;
@@ -3059,7 +3038,7 @@ ul.with-icons {
     .table-ad-group-sources & {
         margin-bottom: 32px;
     }
-    
+
     &.middle-alignment {
         td, th {
             vertical-align: middle !important;

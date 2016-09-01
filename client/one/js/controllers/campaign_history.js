@@ -4,4 +4,5 @@ oneApp.controller('CampaignHistoryCtrl', ['$scope', '$state', function ($scope, 
         campaign: $state.params.id,
         level: constants.historyLevel.CAMPAIGN,
     };
+    $scope.setActiveTab();
 }]);

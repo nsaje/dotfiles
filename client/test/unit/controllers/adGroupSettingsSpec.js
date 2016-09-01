@@ -8,6 +8,7 @@ describe('AdGroupSettingsCtrlSpec', function () {
 
     beforeEach(inject(function ($rootScope, $controller) {
         $scope = $rootScope.$new();
+        $scope.setActiveTab = function () {};
         $scope.adGroup = {archived: false};
         $scope.account = {id: 1};
 

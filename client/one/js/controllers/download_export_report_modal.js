@@ -1,5 +1,5 @@
 /* globals oneApp, constants */
-oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 'api', 'zemFilterService', '$window', '$state', function ($scope, $modalInstance, api, zemFilterService, $window, $state) {  // eslint-disable-line max-len
+oneApp.controller('DownloadExportReportModalCtrl', ['$scope', 'api', 'zemFilterService', '$window', '$state', function ($scope, api, zemFilterService, $window, $state) {  // eslint-disable-line max-len
     $scope.showInProgress = false;
     $scope.export = {};
 
@@ -72,7 +72,7 @@ oneApp.controller('DownloadExportReportModalCtrl', ['$scope', '$modalInstance', 
 
         url += '&additional_fields=' + $scope.getAdditionalColumns().join(',');
         $window.open(url, '_blank');
-        $modalInstance.close();
+        $scope.$close();
     };
 
     $scope.init = function () {

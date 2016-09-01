@@ -1,5 +1,5 @@
 /* globals angular,oneApp,constants,options,moment,$ */
-oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'api', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $modal, api, zemNavigationService, $timeout) { // eslint-disable-line max-len
+oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$uibModal', 'api', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $uibModal, api, zemNavigationService, $timeout) { // eslint-disable-line max-len
 
     $scope.canEditAccount = false;
     $scope.salesReps = [];
@@ -138,15 +138,15 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         $scope.discarded = null;
 
         if ($scope.facebookPageChangedInfo.changed) {
-            var facebookPageChangedModalInstance = $modal.open({
+            var facebookPageChangedModalInstance = $uibModal.open({
                 templateUrl: '/partials/facebook_page_changed_modal.html',
-                controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
+                controller: ['$scope', function ($scope) {
                     $scope.ok = function () {
-                        $modalInstance.close();
+                        $scope.$close();
                     };
 
                     $scope.cancel = function () {
-                        $modalInstance.dismiss('cancel');
+                        $scope.$dismiss('cancel');
                     };
                 }],
                 size: 'lg',
@@ -389,6 +389,7 @@ oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$modal', 'ap
         if ($scope.hasPermission('zemauth.account_agency_access_permissions')) {
             $scope.getUsers();
         }
+        $scope.setActiveTab();
     };
 
     $scope.init();

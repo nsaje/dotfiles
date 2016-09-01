@@ -1,7 +1,7 @@
 /* globals oneApp, moment */
 oneApp.controller('AccountCreditCtrl',
-    ['$scope', '$state', '$modal', '$location', '$window', 'api',
-    function ($scope, $state, $modal, $location, $window, api) {
+    ['$scope', '$state', '$uibModal', '$location', '$window', 'api',
+    function ($scope, $state, $uibModal, $location, $window, api) {
         function error () {}
         function refresh (updatedId) {
             $scope.updatedId = updatedId;
@@ -13,7 +13,7 @@ oneApp.controller('AccountCreditCtrl',
             $scope.pastCredit = data.past;
         }
         function openModal () {
-            var modalInstance = $modal.open({
+            var modalInstance = $uibModal.open({
                 templateUrl: '/partials/account_credit_item_modal.html',
                 controller: 'AccountCreditItemModalCtrl',
                 windowClass: 'modal-default',
@@ -84,6 +84,7 @@ oneApp.controller('AccountCreditCtrl',
                 $scope.loadingInProgress = false;
                 error();
             });
+            $scope.setActiveTab();
         };
 
         $scope.init();

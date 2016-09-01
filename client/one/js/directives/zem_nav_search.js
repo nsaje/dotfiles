@@ -1,4 +1,4 @@
-/* globals oneApp, constants */
+/* globals oneApp, constants,$ */
 'use strict';
 
 oneApp.directive('zemNavSearch', ['config', '$state', function (config, $state) {

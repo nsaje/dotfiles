@@ -23,6 +23,7 @@ describe('AdGroupPublishersCtrl', function () {
             $scope.infoboxPerformanceSettings = null;
             permissions = {};
 
+            $scope.setActiveTab = function () {};
             $scope.isPermissionInternal = function () {
                 return true;
             };

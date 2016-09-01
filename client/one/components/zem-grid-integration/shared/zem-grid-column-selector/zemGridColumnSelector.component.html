@@ -1,8 +1,8 @@
-<span class="zem-grid-column-selector dropdown" dropdown>
-  <a href class="btn btn-default" dropdown-toggle title="Show/hide columns">
+<span class="zem-grid-column-selector dropdown" uib-dropdown>
+  <a href class="btn btn-default" uib-dropdown-toggle title="Show/hide columns">
       Columns
   </a>
-  <ul class="dropdown-menu dropdown-menu-right" dropdown-menu ng-click="$event.stopPropagation()">
+  <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu ng-click="$event.stopPropagation()">
       <div ng-repeat="category in ctrl.categories" class="row">
           <div class="category-name col-xs-12"> <span>{{ category.name }}</span></div>
           <div class="description col-xs-12" ng-if="category.description"><span>{{ category.description }}</span></div>

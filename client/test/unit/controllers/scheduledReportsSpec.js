@@ -7,10 +7,11 @@ describe('ScheduledReportsCtrl', function () {
     beforeEach(module('stateMock'));
 
     beforeEach(function () {
-        inject(function ($rootScope, $controller, _$state_, _$q_, _$modalStack_) {
+        inject(function ($rootScope, $controller, _$state_, _$q_, _$uibModalStack_) {
             $q = _$q_;
             $scope = $rootScope.$new();
 
+            $scope.setActiveTab = function () {};
             $scope.isPermissionInternal = function () { return true; };
             $scope.hasPermission = function () { return true; };
             $scope.account = {id: 1};

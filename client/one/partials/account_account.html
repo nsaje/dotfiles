@@ -182,10 +182,10 @@
                             <span ng-show="user.saved && user.emailResent" class="success">New activation email sent.</span>
                         </div>
                         <div class="col-xs-5 text-right">
-                            <div class="loader" ng-show="user.requestInProgress"></div>
-                            <div class="dropdown" dropdown ng-show="!user.requestInProgress" aria-haspopup="true">
-                                <a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></span></a>
-                                <ul class="dropdown-menu dropdown-menu-activation" role="menu">
+                            <div class="loader inline-block" ng-show="user.requestInProgress"></div>
+                            <div class="dropdown inline-block" uib-dropdown ng-show="!user.requestInProgress" aria-haspopup="true">
+                                <a href class="btn btn-default dropdown-toggle" uib-dropdown-toggle>Edit&nbsp;<span class="caret"></span></a>
+                                <ul class="dropdown-menu dropdown-menu-right dropdown-menu-activation" role="menu" uib-dropdown-menu>
                                     <li><a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
                                     <li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
                                     <li ng-if="account.agency && !user.is_agency_manager && hasPermission('zemauth.can_promote_agency_managers')">

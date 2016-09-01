@@ -1,7 +1,7 @@
 /*global $,angular,oneApp*/
 'use strict';
 
-$zemLazyPopoverDirective.$inject = ['$http', '$templateCache', '$compile', '$parse', '$timeout', '$position', '$document'];
+$zemLazyPopoverDirective.$inject = ['$http', '$templateCache', '$compile', '$parse', '$timeout', '$uibPosition', '$document'];
 function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $timeout, $position, $document) {
     // zem-lazy-popover-template = path to template (evaluated)
     // zem-lazy-popover-text = text content (safe by default, evaulated)
