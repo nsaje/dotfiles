@@ -951,6 +951,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 autopilotMinBudget: settings.autopilot_min_budget,
                 autopilotOptimizationGoal: settings.autopilot_optimization_goal,
                 notes: settings.notes,
+                bluekaiTargeting: settings.bluekai_targeting,
                 interestTargeting: settings.interest_targeting,
                 exclusionInterestTargeting: settings.exclusion_interest_targeting,
                 redirectPixelUrls: settings.redirect_pixel_urls,
