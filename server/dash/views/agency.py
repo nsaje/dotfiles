@@ -173,6 +173,7 @@ class AdGroupSettings(api_common.BaseApiView):
                     if settings.autopilot_daily_budget is not None else '',
                 'retargeting_ad_groups': settings.retargeting_ad_groups,
                 'notes': settings.notes,
+                'bluekai_targeting': settings.bluekai_targeting,
                 'interest_targeting': settings.interest_targeting,
                 'exclusion_interest_targeting': settings.exclusion_interest_targeting,
                 'redirect_pixel_urls': settings.redirect_pixel_urls,

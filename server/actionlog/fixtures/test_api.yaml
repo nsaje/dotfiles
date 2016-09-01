@@ -349,7 +349,7 @@
         autopilot_daily_budget: '50.0000'
         retargeting_ad_groups: [3]
         notes: 'Some note'
-        bluekai_targeting: ["or", 3, 4]
+        bluekai_targeting: ["or", "3", "4"]
         interest_targeting: ["a", "b"]
         exclusion_interest_targeting: ["c", "d"]
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]

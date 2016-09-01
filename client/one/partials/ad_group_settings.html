@@ -151,11 +151,17 @@
 
             <!-- additional targeting -->
             <div ng-if="hasPermission('zemauth.can_view_additional_targeting')">
-                <div class="form-group m-b-s" ng-if="settings.interestTargeting.length || settings.exclusionInterestTargeting.length || settings.notes">
+                <div class="form-group m-b-s">
                     <label class="col-xs-12 control-label">Additional targeting</label>
+                    <label class="col-xs-2 control-label">
+                        <span class="sidenote">This is a read-only section. Please contact your Zemanta Account Manager if you want to change these settings.</span>
+                    </label>
                 </div>
-                <div class="form-group m-l-s" ng-if="settings.interestTargeting.length || settings.exclusionInterestTargeting.length">
-                    <label class="col-xs-12">Interest targeting</label>
+                <div class="form-group m-l-s">
+                    <label class="col-xs-12">
+                        Interest targeting
+                        <zem-help-popover content="Define your audience by including or excluding interests and demographics." placement="top"></zem-help-popover>
+                    </label>
                     <div class="col-xs-2" ng-if="settings.interestTargeting.length">
                         <div class="text-success">Included</div>
                         <ul class="with-icons ul-checkmarks">
@@ -168,15 +174,36 @@
                             <li ng-repeat="category in settings.exclusionInterestTargeting" class="capitalized">{{category}}</li>
                         </ul>
                     </div>
+                    <label class="col-xs-2 control-label">
+                        <span class="sidenote">* Outbrain doesn't support interest targeting.</span>
+                    </label>
+                </div>
+                <div class="form-group m-l-s">
+                    <label class="col-xs-12">
+                        Third and first party targeting
+                        <zem-help-popover content="BlueKai and Liveramp targeting." placement="top"></zem-help-popover>
+                    </label>
+                    <div class="col-xs-5" ng-if="settings.bluekaiTargeting.length">
+                        <div>BlueKai targeting set up.</div>
+                    </div>
                 </div>
                 <div class="form-group m-l-s" ng-if="settings.notes">
-                    <label class="col-xs-12">Notes</label>
+                    <label class="col-xs-12">
+                        Special notes
+                        <zem-help-popover content="Description of additional targeting that was set on the backend." placement="top"></zem-help-popover>
+                    </label>
                     <div class="col-xs-5">
                         <div class="textarea-with-border pre" readonly>{{settings.notes}}</div>
                     </div>
                 </div>
-                <div class="form-group m-b-xs" ng-if="settings.redirectPixelUrls.length || settings.redirectJavascript">
-                    <label class="col-xs-12 control-label">Pixel retargeting</label>
+                <div class="form-group m-b-xs">
+                    <label class="col-xs-12 control-label">
+                        Pixel retargeting
+                        <zem-help-popover content="3rd party pixels help you retarget people who clicked on Zemanta ads." placement="top"></zem-help-popover>
+                    </label>
+                    <label class="col-xs-2 control-label">
+                        <span class="sidenote">This is a read-only section. Please contact your Zemanta Account Manager if you want to change these settings.</span>
+                    </label>
                 </div>
                 <div class="form-group m-l-s" ng-if="settings.redirectPixelUrls.length || settings.redirectJavascript">
                     <div ng-if="settings.redirectPixelUrls.length">
@@ -190,7 +217,7 @@
                     <div ng-if="settings.redirectJavascript">
                         <label class="col-xs-12 m-b-xs">Javascript</label>
                         <div class="col-xs-5">
-                            <div class="textarea-with-border pre">{{settings.redirectJavascript}}</div>
+                            <div class="textarea-with-border pre scroll">{{settings.redirectJavascript}}</div>
                         </div>
                     </div>
                 </div>
