@@ -29,13 +29,30 @@ oneApp.factory('zemGridColumnsService', ['zemGridConstants', 'zemGridStorageServ
         function initializeColumnsState () {
             var breakdowns = grid.meta.dataService.getBreakdown().map(function (breakdown) { return breakdown.query; });
             grid.header.columns.forEach(function (column) {
-                if (column.data.exceptions && column.data.exceptions.breakdowns) {
-                    column.disabled = !intersects(column.data.exceptions.breakdowns, breakdowns);
-                } else {
-                    column.disabled = false;
-                }
+                column.disabled = !isColumnAvailable(column, grid.meta.data.level, breakdowns);
             });
             pubsub.notify(grid.meta.pubsub.EVENTS.EXT_COLUMNS_UPDATED);
+        }
+
+        function isColumnAvailable (column, level, breakdowns) {
+            if (!column.data.exceptions) {
+                return true;
+            }
+
+            if (column.data.exceptions.custom) {
+                for (var i = 0; i < column.data.exceptions.custom.length; ++i) {
+                    var customException = column.data.exceptions.custom[i];
+                    if (customException.level === level && customException.breakdown === breakdowns[0]){
+                        return customException.shown;
+                    }
+                }
+            }
+
+            if (column.data.exceptions.breakdowns) {
+                return intersects(column.data.exceptions.breakdowns, breakdowns);
+            }
+
+            return true;
         }
 
         function intersects (array1, array2) {

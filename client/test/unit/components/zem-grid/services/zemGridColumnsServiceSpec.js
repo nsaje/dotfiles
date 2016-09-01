@@ -29,7 +29,7 @@ describe('zemGridColumnsService', function () {
         grid.meta.scope = scope;
         grid.meta.pubsub = zemGridPubSub.createInstance(scope);
         grid.meta.options = {};
-        grid.meta.data = {};
+        grid.meta.data = { level: 'level1' };
         grid.meta.dataService = {
             getBreakdown: function () { return ['base_level', 'age']; }
         };
@@ -111,6 +111,33 @@ describe('zemGridColumnsService', function () {
         expect(columns[0].disabled).toBe(true);
         expect(columns[1].disabled).toBe(false);
         expect(columns[2].disabled).toBe(false);
+
+    });
+
+    it('should disable columns based on custom exceptions that overwrites other ones', function () {
+        var grid = createGrid();
+        spyOn(grid.meta.dataService, 'getBreakdown');
+
+        var pubsub = grid.meta.pubsub;
+        zemGridColumnsService.createInstance(grid);
+
+        var columns = grid.header.columns;
+        columns[0].data.exceptions.breakdowns = ['breakdown1', 'breakdown2'];
+        grid.meta.dataService.getBreakdown.and.returnValue([
+            {query: 'breakdown3'},
+        ]);
+
+        pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
+        expect(columns[0].disabled).toBe(true);
+
+        columns[0].data.exceptions.custom = [{
+            level: 'level1',
+            breakdown: 'breakdown3',
+            shown: true,
+        }];
+
+        pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
+        expect(columns[0].disabled).toBe(false);
 
     });
 

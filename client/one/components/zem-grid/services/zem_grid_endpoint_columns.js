@@ -1268,9 +1268,9 @@ oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridC
     function getColumns (level, breakdowns) {
         return COLUMNS_ORDERED.filter(function (column) {
             var result = true;
-            if (column.exceptions.breakdowns) result &= intersects(column.exceptions.breakdowns, breakdowns);
-            if (column.exceptions.breakdownBaseLevelOnly) result &= column.exceptions.breakdowns.indexOf(breakdowns[0]) >= 0;
-            if (column.exceptions.levels) result &= column.exceptions.levels.indexOf(level) >= 0;
+            if (column.exceptions.breakdowns) result = result && intersects(column.exceptions.breakdowns, breakdowns);
+            if (column.exceptions.breakdownBaseLevelOnly) result = result && column.exceptions.breakdowns.indexOf(breakdowns[0]) >= 0;
+            if (column.exceptions.levels) result = result && column.exceptions.levels.indexOf(level) >= 0;
             column.exceptions.custom.forEach(function (customException) {
                 if (level === customException.level && breakdowns[0] === customException.breakdown) {
                     result = customException.shown;
