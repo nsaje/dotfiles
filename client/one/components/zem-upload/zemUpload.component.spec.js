@@ -90,7 +90,7 @@ describe('zemUpload', function () {
     });
 });
 
-fdescribe('ZemUploadCtrl', function () {
+describe('ZemUploadCtrl', function () {
     var zemUploadEndpointService, ctrl, mockEndpoint;
     var adGroup = {
         name: 'test ad group',
