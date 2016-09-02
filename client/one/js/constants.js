@@ -643,6 +643,8 @@ var constants = {
         CENTER: 'center',
         FACES: 'faces',
         ENTROPY: 'entropy',
+        LEFT: 'left',
+        RIGHT: 'right',
     },
     gaTrackingType: {
         EMAIL: 1,
@@ -1227,6 +1229,8 @@ var options = {
         {name: 'Center', value: constants.imageCrop.CENTER},
         {name: 'Faces', value: constants.imageCrop.FACES},
         {name: 'Entropy', value: constants.imageCrop.ENTROPY},
+        {name: 'Left', value: constants.imageCrop.LEFT},
+        {name: 'Right', value: constants.imageCrop.RIGHT},
     ],
     gaTrackingType: [
         {name: 'Email', value: constants.gaTrackingType.EMAIL},

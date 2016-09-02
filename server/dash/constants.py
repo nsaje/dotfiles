@@ -1591,11 +1591,15 @@ class ImageCrop(ConstantBase):
     CENTER = 'center'
     FACES = 'faces'
     ENTROPY = 'entropy'
+    LEFT = 'left'
+    RIGHT = 'right'
 
     _VALUES = {
         CENTER: 'Center',
         FACES: 'Faces',
         ENTROPY: 'Entropy',
+        LEFT: 'Left',
+        RIGHT: 'Right',
     }
 
 
