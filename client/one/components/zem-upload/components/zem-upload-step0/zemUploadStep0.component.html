@@ -3,7 +3,11 @@
         <h4 class="modal-title">How do you want to upload your ads?</h4>
     </div>
     <div class="modal-body">
-        <a href ng-click="ctrl.switchToSingleContentAdUpload()">Single Content Ad</a>
-        <a href ng-click="ctrl.switchToCsvUpload()">CSV upload</a>
+        <div class="description">Start adding your ads by choosing one of options below.</div>
+        <div class="row">
+            <div class="col-xs-4"><a href ng-click="ctrl.switchToSingleContentAdUpload()" class="btn btn-default btn-big">Single Content Ad<span>Choose this if you want to add ads one by one. You can add multiple adds.</span></a></div>
+            <div class="col-xs-4"><a href ng-click="ctrl.switchToCsvUpload()" class="btn btn-default btn-big">CSV upload<span>Choose this if you have CSV file and a lot of ads. You can download example CSV file structure in next step.</a></div>
+            <div class="col-xs-4"></div>
+        </div>
     </div>
 </div>
