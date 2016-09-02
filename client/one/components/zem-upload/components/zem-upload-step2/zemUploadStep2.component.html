@@ -22,9 +22,11 @@
                     </td>
                     <td class="image">
                         <img ng-if="candidate.hostedImageUrl" ng-src="{{candidate.hostedImageUrl}}" ng-if="candidate.imageUrl" />
+                        <img ng-if="!candidate.hostedImageUrl" ng-src="{{ ctrl.config.static_url }}/one/img/dummy_ad_image.png" />
                     </td>
                     <td class="title">
                         {{ candidate.title }}
+                        <span ng-if="!candidate.title">Content ad title</span>
                     </td>
                     <td class="link">
                         {{ candidate.url }}

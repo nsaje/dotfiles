@@ -336,5 +336,9 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         vm.stopPolling();
     });
 
+    if (vm.candidates.length < 1) {
+        vm.addCandidate();
+    }
+
     vm.startPolling();
 }]);
