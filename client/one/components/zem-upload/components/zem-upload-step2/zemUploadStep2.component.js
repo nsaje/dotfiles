@@ -336,7 +336,7 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         vm.stopPolling();
     });
 
-    if (vm.candidates.length < 1) {
+    if (vm.candidates.length < 1 && vm.hasPermission('zemauth.can_use_single_ad_upload')) {
         vm.addCandidate();
     }
 
