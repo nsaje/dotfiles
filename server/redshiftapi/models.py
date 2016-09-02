@@ -152,10 +152,12 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
     Materialized sub-views are a part of it.
     """
 
-    def __init__(self, conversion_goals=None, pixels=None):
+    def __init__(self, conversion_goals=None, pixels=None, campaign_goals=None, campaign_goal_values=None):
         super(MVMaster, self).__init__()
 
         self.init_conversion_columns(conversion_goals)
+        self.init_campaign_goal_performance_columns(
+            campaign_goals, campaign_goal_values, conversion_goals)
         self.init_pixels(pixels)
 
     date = backtosql.Column('date', mh.BREAKDOWN)
@@ -270,6 +272,42 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
             self.add_column(avg_cost_column)
 
+    def init_campaign_goal_performance_columns(self, campaign_goals, campaign_goal_values, conversion_goals):
+        map_camp_goal_vals = {x.campaign_goal_id: x for x in campaign_goal_values or []}
+        map_conversion_goals = {x.id: x for x in conversion_goals or []}
+
+        if not campaign_goals:
+            return
+
+        for campaign_goal in campaign_goals:
+            conversion_key = None
+            metric_column = None
+
+            if campaign_goal.type == dash.constants.CampaignGoalKPI.CPA:
+                conversion_goal = map_conversion_goals[campaign_goal.conversion_goal_id]
+                conversion_key = conversion_goal.get_view_key(conversion_goals)
+            else:
+                metric_column = dash.campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type]
+
+            is_cost_dependent = campaign_goal.type in dash.campaign_goals.COST_DEPENDANT_GOALS
+            is_inverse_performance = campaign_goal.type in dash.campaign_goals.INVERSE_PERFORMANCE_CAMPAIGN_GOALS
+
+            campaign_goal_value = map_camp_goal_vals.get(campaign_goal.pk)
+            if campaign_goal_value and campaign_goal_value.value:
+                planned_value = campaign_goal_value.value
+            else:
+                planned_value = 'NULL'
+
+            column = backtosql.TemplateColumn('part_performance.sql', {
+                'is_cost_dependent': is_cost_dependent,
+                'is_inverse_performance': is_inverse_performance,
+                'has_conversion_key': conversion_key is not None,
+                'conversion_key': conversion_key or '0',
+                'planned_value':  planned_value,
+                'metric_column': metric_column or '-1',
+            }, alias='performance_' + campaign_goal.get_view_key(), group=mh.AFTER_JOIN_CALCULATIONS)
+            self.add_column(column)
+
     def init_pixels(self, pixels):
         """
         Pixel columns are added dynamically like conversions, because the number and their definition
@@ -330,7 +368,8 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             'touchpointconversions': 'mv_touchpointconversions',
         }
 
-    def get_default_context(self, breakdown, constraints, parents, order, offset, limit):
+    def get_default_context(self, breakdown, constraints, parents,
+                            order=None, offset=None, limit=None):
         """
         Returns the template context that is used by most of templates
         """
@@ -342,18 +381,24 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
         breakdown_supports_conversions = self.breakdown_supports_conversions(breakdown)
 
-        order_column = self.get_column(order).as_order(order, nulls='last')
+        if order:
+            order_column = self.get_column(order).as_order(order, nulls='last')
 
-        is_ordered_by_conversions = order_column.group == mh.CONVERSION_AGGREGATES
-        is_ordered_by_touchpointconversions = order_column.group == mh.TOUCHPOINTCONVERSION_AGGREGATES
-        is_ordered_by_after_join_conversions_calculations = order_column.group == mh.AFTER_JOIN_CALCULATIONS
+            is_ordered_by_conversions = order_column.group == mh.CONVERSION_AGGREGATES
+            is_ordered_by_touchpointconversions = order_column.group == mh.TOUCHPOINTCONVERSION_AGGREGATES
+            is_ordered_by_after_join_conversions_calculations = order_column.group == mh.AFTER_JOIN_CALCULATIONS
 
-        # dont order by conversions if breakdown does not support them
-        if (not breakdown_supports_conversions and
-            (is_ordered_by_touchpointconversions or
-             is_ordered_by_conversions or
-             is_ordered_by_after_join_conversions_calculations)):
-            order_column = self.get_column('clicks').as_order(order, nulls='last')
+            # dont order by conversions if breakdown does not support them
+            if (not breakdown_supports_conversions and
+                (is_ordered_by_touchpointconversions or
+                 is_ordered_by_conversions or
+                 is_ordered_by_after_join_conversions_calculations)):
+                order_column = self.get_column('clicks').as_order(order, nulls='last')
+        else:
+            order_column = None
+            is_ordered_by_conversions = False
+            is_ordered_by_touchpointconversions = False
+            is_ordered_by_after_join_conversions_calculations = False
 
         context = {
             'view': self.get_best_view(breakdown, constraints),
@@ -440,6 +485,9 @@ def get_default_yesterday_context(model, constraints, order_column):
             'yesterday_aggregates': model.select_columns(group=mh.YESTERDAY_COST_AGGREGATES),
         }
 
-    context['is_ordered_by_yesterday_aggregates'] = order_column.group == mh.YESTERDAY_COST_AGGREGATES
+    if order_column:
+        context['is_ordered_by_yesterday_aggregates'] = order_column.group == mh.YESTERDAY_COST_AGGREGATES
+    else:
+        context['is_ordered_by_yesterday_aggregates'] = False
 
     return context

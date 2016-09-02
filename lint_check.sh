@@ -47,7 +47,7 @@ green "ESLint check successful"
 blue "Xenon (cyclomatic complexity) check in progress ..."
 xenon \
   --max-absolute D \
-  -e "server/dash/table.py,server/dash/views/views.py" \
+  -e "server/dash/table.py,server/dash/views/views.py,server/dash/dashapi/api_breakdowns.py" \
   ./server/
 
 if [ $? != 0 ]

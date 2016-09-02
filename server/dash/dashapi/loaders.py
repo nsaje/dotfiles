@@ -1,8 +1,11 @@
 import collections
 
+from automation import campaign_stop
+
 from dash import models
 from dash import constants
 from dash.views import helpers as view_helpers
+from dash.dashapi import data_helper
 
 
 """
@@ -105,6 +108,7 @@ class CampaignsLoader(Loader):
         if self._settings_qs is None:
             self._settings_qs = models.CampaignSettings.objects\
                                                        .filter(campaign_id__in=self.objs_ids)\
+                                                       .select_related('campaign_manager')\
                                                        .group_current_settings()
         return self._settings_qs
 
@@ -153,6 +157,7 @@ class AdGroupsLoader(Loader):
 
         self._sources_settings_qs = None
         self._status_map = None
+        self._other_settings_map = None
 
     @property
     def settings_qs(self):
@@ -170,6 +175,29 @@ class AdGroupsLoader(Loader):
             self._settings_map.update({x.ad_group_id: x for x in self.settings_qs})
 
         return self._settings_map
+
+    @property
+    def other_settings_map(self):
+        if self._other_settings_map is None:
+            campaign_ad_groups = collections.defaultdict(list)
+            for _, ad_group in self.objs_map.iteritems():
+                campaign_ad_groups[ad_group.campaign_id].append(ad_group)
+
+            campaigns_map = {x.id: x for x in models.Campaign.objects.filter(pk__in=campaign_ad_groups.keys())}
+
+            self._other_settings_map = {}
+            for campaign_id, ad_groups in campaign_ad_groups.items():
+                campaign = campaigns_map[campaign_id]
+                campaign_stop_check_map = campaign_stop.can_enable_ad_groups(campaign, campaign.get_current_settings())
+                campaign_has_available_budget = data_helper.campaign_has_available_budget(campaign)
+
+                for ad_group in ad_groups:
+                    self._other_settings_map[ad_group.id] = {
+                        'campaign_stop_inactive': campaign_stop_check_map.get(ad_group, True),
+                        'campaign_has_available_budget': campaign_has_available_budget,
+                    }
+
+        return self._other_settings_map
 
     @property
     def sources_settings_qs(self):
@@ -284,37 +312,50 @@ class SourcesLoader(Loader):
         self.ad_groups_sources_qs = ad_groups_sources_qs
         self._ad_groups_sources_map = None
 
-        self._status_map = None
+        self._settings_map = None
 
         self._ad_groups_sources_settings_qs = None
         self._ad_groups_sources_settings_map = None
         self._ad_groups_settings_qs = None
         self._ad_groups_settings_map = None
 
+    def _load_settings_maps(self):
+        ad_group_source_status_map = {}
+
+        ad_groups_settings_map = {x.ad_group_id: x for x in self.ad_groups_settings_qs}
+        ad_groups_sources_settings_map = {x.ad_group_source_id: x for x in self.ad_groups_sources_settings_qs}
+
+        statuses = view_helpers.get_fake_ad_group_source_states(
+            self.ad_groups_sources_qs,
+            ad_groups_sources_settings_map,
+            ad_groups_settings_map)
+
+        by_source_statuses = collections.defaultdict(list)
+        for status in statuses:
+            by_source_statuses[status.ad_group_source.source_id].append(status)
+
+        self._settings_map = {}
+
+        for source_id, _ in self.objs_map.items():
+            source_states = by_source_statuses[source_id]
+            ad_group_source_settings = self.ad_groups_sources_settings_map.get(source_id, [])
+            status = view_helpers.get_source_status_from_ad_group_source_states(source_states)
+
+            settings = {
+                'daily_budget': data_helper.get_daily_budget_total(source_states),
+                'status': status,
+                # only for ad group level
+                'state': ad_group_source_settings[0].state if len(ad_group_source_settings) == 1 else status,
+            }
+
+            settings.update(data_helper.get_source_min_max_cpc(by_source_statuses[source_id]))
+            self._settings_map[source_id] = settings
+
     @property
-    def status_map(self):
-        if self._status_map is None:
-
-            ad_group_source_status_map = {}
-
-            ad_groups_settings_map = {x.ad_group_id: x for x in self.ad_groups_settings_qs}
-            ad_groups_sources_settings_map = {x.ad_group_source_id: x for x in self.ad_groups_sources_settings_qs}
-
-            statuses = view_helpers.get_fake_ad_group_source_states(
-                self.ad_groups_sources_qs,
-                ad_groups_sources_settings_map,
-                ad_groups_settings_map)
-
-            by_source_statuses = collections.defaultdict(list)
-            for status in statuses:
-                by_source_statuses[status.ad_group_source.source_id].append(status)
-
-            self._status_map = {}
-            for source_id, source in self.objs_map.items():
-                self._status_map[source_id] = view_helpers.get_source_status_from_ad_group_source_states(
-                    by_source_statuses[source_id])
-
-        return self._status_map
+    def settings_map(self):
+        if self._settings_map is None:
+            self._load_settings_maps()
+        return self._settings_map
 
     @property
     def ad_groups_sources_settings_qs(self):
@@ -359,6 +400,6 @@ class SourcesLoader(Loader):
 
             self._ad_groups_settings_qs = models.AdGroupSettings.objects.filter(
                 ad_group_id__in=self.ad_groups_sources_qs.values_list('ad_group_id', flat=True)
-            )
+            ).group_current_settings()
 
         return self._ad_groups_settings_qs

@@ -252,19 +252,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             },
         },
         {
-            name: 'Current Bid CPC',
-            field: 'current_bid_cpc',
-            fractionSize: 3,
-            checked: false,
-            type: 'currency',
-            internal: false,
-            shown: false,
-            totalRow: false,
-            order: true,
-            help: 'Cost-per-click (CPC) bid is the approximate amount that you\'ll be charged for a click on your ad.',
-            initialOrder: 'desc'
-        },
-        {
             name: 'Daily Budget',
             field: 'daily_budget',
             fractionSize: 0,
@@ -293,19 +280,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             adGroupAutopilotOn: function () {
                 return $scope.adGroupAutopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
             },
-        },
-        {
-            name: 'Current Daily Budget',
-            field: 'current_daily_budget',
-            checked: false,
-            fractionSize: 0,
-            type: 'currency',
-            internal: false,
-            shown: false,
-            totalRow: true,
-            order: true,
-            help: 'Maximum budget per day.',
-            initialOrder: 'desc'
         },
         {
             name: 'Actual Yesterday Spend',

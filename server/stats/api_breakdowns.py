@@ -11,7 +11,15 @@ from stats import constants
 from stats import augmenter
 from stats import permission_filter
 
+# expose these helpers as API
+from stats.helpers import prepare_constraints, get_goals
+
 import redshiftapi.api_breakdowns
+import dash.dashapi.api_breakdowns
+
+
+# define the API
+__all__ = ['query', 'totals', 'validate_breakdown_allowed', 'prepare_constraints', 'get_goals']
 
 
 def validate_breakdown_allowed(level, user, breakdown):
@@ -19,7 +27,7 @@ def validate_breakdown_allowed(level, user, breakdown):
     permission_filter.validate_breakdown_by_permissions(level, user, breakdown)
 
 
-def query(level, user, breakdown, constraints, parents, order, offset, limit):
+def query(level, user, breakdown, constraints, goals, parents, order, offset, limit):
     """
     Get a breakdown report. Data is sourced from dash models and redshift.
 
@@ -27,56 +35,65 @@ def query(level, user, breakdown, constraints, parents, order, offset, limit):
     use valid field names. Field names should match those of used in dash and redshiftapi models.
     """
 
-    permission_filter.update_allowed_objects_constraints(user, breakdown, constraints)
     helpers.check_constraints_are_supported(constraints)
 
-    order = helpers.get_supported_order(helpers.extract_order_field(order, breakdown))
+    target_dimension = constants.get_target_dimension(breakdown)
+
+    order = helpers.extract_order_field(order, target_dimension, goals.primary_goal)
+    order = helpers.get_supported_order(order, target_dimension)
+
     parents = helpers.decode_parents(breakdown, parents)
 
-    conversion_goals, campaign_goal_values, pixels = get_goals(breakdown, constraints)
+    if helpers.should_query_dashapi_first(order, target_dimension):
+        rows = dash.dashapi.api_breakdowns.query(level, breakdown, constraints, parents, order, offset, limit)
+        rows = redshiftapi.api_breakdowns.augment(
+            rows,
+            breakdown,
+            helpers.extract_stats_constraints(constraints, breakdown),
+            goals
+        )
+    else:
+        stats_constraints = helpers.extract_stats_constraints(constraints, breakdown)
+        rows = redshiftapi.api_breakdowns.query(
+            breakdown,
+            stats_constraints,
+            parents,
+            goals,
+            helpers.extract_rs_order_field(order, target_dimension),
+            offset,
+            limit)
+        if helpers.should_augment_by_dash(target_dimension):
+            structure_with_stats = None
+            if target_dimension != 'publisher':
+                structure_with_stats = redshiftapi.api_breakdowns.query_structure_with_stats(
+                    breakdown, stats_constraints)
 
-    rows = redshiftapi.api_breakdowns.query(
-        breakdown,
-        helpers.extract_stats_constraints(constraints),
-        parents,
-        conversion_goals,
-        pixels,
-        order,
-        offset,
-        limit)
+            rows = dash.dashapi.api_breakdowns.augment(rows, level, breakdown, constraints)
+            rows = dash.dashapi.api_breakdowns.query_missing_rows(
+                rows, level, breakdown, constraints, parents, order, offset, limit, structure_with_stats)
 
-    """
-    TODO when fields get replaced with augmented values their sorted position might change
-    and this can lead to duplicated and missed items in "load more" requests when we request
-    number of items + offset.
-    Example: Ad group ids in DB: 1, 2, 3, 4 (by name: 1, 3, 4, 2)
-            Request first 2 + overflow: 1, 2, 3
-            Order by name: 1, 3, 2
-            Cut overflow: 1, 3
-            Load more, offset 2: 3, 4
-            Resulting collection: 1, 3, 3, 4
-    Possible solutions: cut overflow before sorting and report the count, order before augmentation (current solution)
-    """
-
-    rows = sort_helper.sort_results(rows, [order])
-
-    augmenter.augment(breakdown, rows, constants.get_target_dimension(breakdown))
-    permission_filter.filter_columns_by_permission(user, rows, campaign_goal_values, conversion_goals, pixels)
+    augmenter.augment(breakdown, rows)
+    augmenter.cleanup(rows, target_dimension, constraints)
+    permission_filter.filter_columns_by_permission(user, rows, goals)
 
     return rows
 
 
-def get_goals(breakdown, constraints):
+def totals(user, level, breakdown, constraints, goals):
+    helpers.check_constraints_are_supported(constraints)
 
-    campaign = constraints.get('campaign')
-    account = constraints.get('account')
+    stats_rows = redshiftapi.api_breakdowns.query(
+            [],
+            helpers.extract_stats_constraints(constraints, breakdown),
+            None,
+            goals,
+            None, None, None)
 
-    conversion_goals, campaign_goal_values, pixels = [], [], []
-    if campaign:
-        conversion_goals = campaign.conversiongoal_set.all()
-        campaign_goal_values = dash.campaign_goals.get_campaign_goal_values(campaign)
+    dash_total_row = dash.dashapi.api_breakdowns.get_totals(level, breakdown, constraints)
 
-    if account:
-        pixels = account.conversionpixel_set.filter(archived=False)
+    for k, v in dash_total_row.items():
+        stats_rows[0][k] = v
 
-    return conversion_goals, campaign_goal_values, pixels
+    permission_filter.filter_columns_by_permission(user, stats_rows, goals)
+
+    return stats_rows[0]

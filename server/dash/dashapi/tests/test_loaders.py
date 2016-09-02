@@ -1,4 +1,5 @@
 from django.test import TestCase
+from decimal import Decimal
 
 from utils import test_helper
 
@@ -105,7 +106,7 @@ class AdGroupsLoaderTest(TestCase):
 
     def test_settings_qs(self):
         self.assertDictEqual(self.loader.settings_map, {
-            1: models.AdGroupSettings.objects.get(pk=1),
+            1: models.AdGroupSettings.objects.get(pk=4),
             2: models.AdGroupSettings.objects.get(pk=2),
             3: models.AdGroupSettings.objects.get(pk=3),
         })
@@ -127,6 +128,18 @@ class AdGroupsLoaderTest(TestCase):
             1: constants.AdGroupRunningStatus.INACTIVE,
             2: constants.AdGroupRunningStatus.INACTIVE,
             3: constants.AdGroupRunningStatus.INACTIVE,
+        })
+
+    def test_other_settings_map(self):
+        ad_groups = models.AdGroup.objects.all()
+        sources = models.Source.objects.filter(pk=2)
+
+        loader = loaders.AdGroupsLoader(ad_groups, sources)
+
+        self.assertDictEqual(dict(loader.other_settings_map), {
+            1: {'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
+            2: {'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
+            3: {'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
         })
 
 
@@ -239,19 +252,72 @@ class SourcesLoaderTest(TestCase):
             2: test_helper.QuerySetMatcher(models.AdGroupSourceSettings.objects.filter(pk__in=[2, 4])),
         })
 
-    def test_status_map(self):
-        self.assertDictEqual(self.loader.status_map, {
-            1: constants.AdGroupSourceSettingsState.ACTIVE,
-            2: constants.AdGroupSourceSettingsState.INACTIVE,
+    def test_settings_map(self):
+        self.assertDictEqual(self.loader.settings_map, {
+            1: {
+                'state': constants.AdGroupSourceSettingsState.ACTIVE,
+                'status': constants.AdGroupSourceSettingsState.ACTIVE,
+                'daily_budget': Decimal('50.0000'),
+                'max_bid_cpc': 0.12,
+                'min_bid_cpc': 0.12,
+            },
+            2: {
+                'state': constants.AdGroupSourceSettingsState.INACTIVE,
+                'status': constants.AdGroupSourceSettingsState.INACTIVE,
+                'daily_budget': None,
+                'max_bid_cpc': None,
+                'min_bid_cpc': None,
+            },
         })
 
-    def test_status_map_filtered_ad_group_sources(self):
+    def test_settings_map_filtered_ad_group_sources(self):
         sources = models.Source.objects.all()
         ad_groups_sources = models.AdGroupSource.objects.filter(pk__in=[2, 3, 4, 5])
 
         loader = loaders.SourcesLoader(sources, ad_groups_sources)
 
-        self.assertDictEqual(loader.status_map, {
-            1: constants.AdGroupSourceSettingsState.INACTIVE,
-            2: constants.AdGroupSourceSettingsState.INACTIVE,
+        self.assertDictEqual(self.loader.settings_map, {
+            1: {
+                'state': constants.AdGroupSourceSettingsState.ACTIVE,
+                'status': constants.AdGroupSourceSettingsState.ACTIVE,
+                'daily_budget': Decimal('50.0000'),
+                'max_bid_cpc': 0.12,
+                'min_bid_cpc': 0.12,
+            },
+            2: {
+                'state': constants.AdGroupSourceSettingsState.INACTIVE,
+                'status': constants.AdGroupSourceSettingsState.INACTIVE,
+                'daily_budget': None,
+                'max_bid_cpc': None,
+                'min_bid_cpc': None,
+            },
+        })
+
+
+class AdGroupSourcesLoaderTest(TestCase):
+
+    fixtures = ['test_api_breakdowns.yaml']
+
+    def setUp(self):
+        sources = models.Source.objects.all()
+        ad_groups_sources = models.AdGroupSource.objects.filter(ad_group_id=1)
+
+        self.loader = loaders.SourcesLoader(sources, ad_groups_sources)
+
+    def test_settings_map(self):
+        self.assertDictEqual(self.loader.settings_map, {
+            1: {
+                'state': constants.AdGroupSourceSettingsState.ACTIVE,
+                'status': constants.AdGroupSourceSettingsState.ACTIVE,
+                'daily_budget': Decimal('50.0000'),
+                'max_bid_cpc': 0.12,
+                'min_bid_cpc': 0.12,
+            },
+            2: {
+                'state': constants.AdGroupSourceSettingsState.INACTIVE,
+                'status': constants.AdGroupSourceSettingsState.INACTIVE,
+                'daily_budget': None,
+                'max_bid_cpc': None,
+                'min_bid_cpc': None,
+            },
         })

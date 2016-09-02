@@ -3,6 +3,8 @@ import copy
 import datetime
 from dateutil import rrule, relativedelta
 
+from utils import sort_helper
+
 from dash import constants as dash_constants
 
 from stats import constants
@@ -12,6 +14,21 @@ from stats import constants
 Apply any modifications to reports that should be returned by redshiftapi as data source
 but are easier to do in python than in sql.
 """
+
+
+def postprocess_breakdown_query(rows, empty_row, breakdown, constraints, parents, order, offset, limit):
+    target_dimension = constants.get_target_dimension(breakdown)
+
+    if target_dimension in constants.TimeDimension._ALL:
+        postprocess_time_dimension(
+            target_dimension, rows, empty_row, breakdown, constraints, parents)
+        return sort_helper.sort_results(rows, [order])
+
+    if target_dimension == 'device_type':
+        postprocess_device_type_dimension(
+            target_dimension, rows, empty_row, breakdown, parents, offset, limit)
+        return sort_helper.sort_results(rows, [order])
+    return rows
 
 
 def postprocess_time_dimension(target_dimension, rows, empty_row, breakdown, constraints, parent):

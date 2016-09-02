@@ -1,6 +1,6 @@
 import json
 import datetime
-from mock import patch
+from mock import patch, ANY
 
 from django.test import TestCase, Client
 from django.http.request import HttpRequest
@@ -8,22 +8,24 @@ from django.core.urlresolvers import reverse
 
 from zemauth.models import User
 from utils import test_helper
+from stats.helpers import Goals
 
 from dash import models
 from dash.views import breakdown
+from dash.views import breakdown_helpers
 from dash import table
 from dash.constants import Level
 
 
 class ExtractConstraintsTest(TestCase):
-    fixtures = ['test_api', 'test_views']
+    fixtures = ['test_api_breakdowns.yaml']
 
     def test_extract_constraints(self):
         form_data = {
             'breakdown': ['account', 'source', 'dma', 'day'],
             'start_date': datetime.date(2016, 1, 1),
             'end_date': datetime.date(2016, 2, 3),
-            'filtered_sources': models.Source.objects.filter(pk__in=[1, 3, 4]),
+            'filtered_sources': models.Source.objects.filter(pk=1),
             'show_archived': True,
             'parents': ['123', '323'],
             'offset': 12,
@@ -31,11 +33,14 @@ class ExtractConstraintsTest(TestCase):
             'order': '-clicks',
         }
 
-        self.assertDictEqual(breakdown.extract_constraints(form_data), {
+        user = User.objects.get(pk=1)
+
+        self.assertDictEqual(breakdown.extract_constraints(form_data, Level.ALL_ACCOUNTS, user, []), {
             'date__gte': datetime.date(2016, 1, 1),
             'date__lte': datetime.date(2016, 2, 3),
-            'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+            'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk=1)),
             'show_archived': True,
+            'allowed_accounts': test_helper.QuerySetMatcher(models.Account.objects.all()),
         })
 
     def test_add_kwargs(self):
@@ -43,7 +48,7 @@ class ExtractConstraintsTest(TestCase):
             'breakdown': ['account', 'source', 'dma', 'day'],
             'start_date': datetime.date(2016, 1, 1),
             'end_date': datetime.date(2016, 2, 3),
-            'filtered_sources': models.Source.objects.filter(pk__in=[1, 3, 4]),
+            'filtered_sources': models.Source.objects.filter(pk=1),
             'show_archived': True,
             'parents': ['123', '323'],
             'offset': 12,
@@ -51,19 +56,20 @@ class ExtractConstraintsTest(TestCase):
             'order': '-clicks',
         }
 
+        user = User.objects.get(pk=1)
         self.assertDictEqual(
             breakdown.extract_constraints(
-                form_data,
+                form_data, Level.ACCOUNTS, user, ['account_id'],
                 account=models.Account.objects.get(pk=1),
-                campaign=models.Campaign.objects.get(pk=1),
             ),
             {
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
-                'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk=1)),
                 'show_archived': True,
                 'account': models.Account.objects.get(pk=1),
-                'campaign': models.Campaign.objects.get(pk=1),
+                'allowed_campaigns': test_helper.QuerySetMatcher(models.Campaign.objects.all()),
+                'allowed_ad_groups': test_helper.QuerySetMatcher(models.AdGroup.objects.all()),
             }
         )
 
@@ -122,7 +128,10 @@ class AllAccountsBreakdownTestCase(TestCase):
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
+                'allowed_accounts': test_helper.QuerySetMatcher(models.Account.objects.filter(pk=1)),
+                'allowed_campaigns': test_helper.QuerySetMatcher(models.Campaign.objects.filter(pk__in=[1, 2])),
             },
+            ANY,
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
@@ -329,8 +338,11 @@ class AccountBreakdownTestCase(TestCase):
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'allowed_campaigns': test_helper.QuerySetMatcher(models.Campaign.objects.filter(pk__in=[1, 2])),
+                'allowed_ad_groups': test_helper.QuerySetMatcher(models.AdGroup.objects.filter(pk__in=[1, 2, 9, 10])),
                 'show_archived': True,
             },
+            ANY,
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
@@ -486,7 +498,7 @@ class CampaignBreakdownTestCase(TestCase):
             'start_date': '2016-01-01',
             'end_date': '2016-02-03',
             'filtered_sources': ['1', '3', '4'],
-            'show_archived': 'true',
+            'show_archived': 'false',
             'parents': ['1-2-33', '1-2-34', '1-3-22'],
         }
 
@@ -500,6 +512,8 @@ class CampaignBreakdownTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+        ad_groups = models.Campaign.objects.get(pk=1).adgroup_set.all().exclude_archived()
+        content_ads = models.ContentAd.objects.filter(ad_group__in=ad_groups).exclude_archived()
 
         mock_query.assert_called_with(
             Level.CAMPAIGNS,
@@ -507,11 +521,15 @@ class CampaignBreakdownTestCase(TestCase):
             ['ad_group_id', 'source_id', 'dma', 'day'],
             {
                 'campaign': models.Campaign.objects.get(pk=1),
+                'account': models.Account.objects.get(pk=1),
+                'allowed_ad_groups': test_helper.QuerySetMatcher(ad_groups),
+                'allowed_content_ads': test_helper.QuerySetMatcher(content_ads),
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
-                'show_archived': True,
+                'show_archived': False,
             },
+            ANY,
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
@@ -571,12 +589,16 @@ class AdGroupBreakdownTestCase(TestCase):
             self.user,
             ['content_ad_id', 'source_id', 'dma', 'day'],
             {
+                'allowed_content_ads': test_helper.QuerySetMatcher(models.ContentAd.objects.filter(ad_group_id=1)),
                 'ad_group': models.AdGroup.objects.get(pk=1),
+                'campaign': models.Campaign.objects.get(pk=1),
+                'account': models.Account.objects.get(pk=1),
                 'date__gte': datetime.date(2016, 1, 1),
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
             },
+            ANY,
             ['1-2-33', '1-2-34', '1-3-22'],
             '-clicks',
             33,
@@ -690,3 +712,49 @@ class LimitOffsetToPageTest(TestCase):
         self.assertEquals(breakdown._get_page_and_size(10, 20), (1, 30))
         self.assertEquals(breakdown._get_page_and_size(30, 20), (1, 50))
         self.assertEquals(breakdown._get_page_and_size(50, 20), (1, 70))
+
+
+class BreakdownHelperTest(TestCase):
+    def test_add_performance_indicators(self):
+        rows = [
+            {'performance_campaign_goal_1': 1, 'ad_group_id': 1},
+            {'performance_campaign_goal_2': 1, 'ad_group_id': 2},
+        ]
+
+        breakdown_helpers.format_report_rows_performance_fields(rows, Goals([], [], [], [], None))
+
+        self.assertEquals(rows, [
+            {'performance_campaign_goal_1': 1, 'ad_group_id': 1,
+             'performance': {'list': [], 'overall': None}, 'styles': {}},
+            {'performance_campaign_goal_2': 1, 'ad_group_id': 2,
+             'performance': {'list': [], 'overall': None}, 'styles': {}},
+        ])
+
+    def test_dont_add_performance_indicators(self):
+        rows = [
+            {'ad_group_id': 1},
+            {'ad_group_id': 2},
+        ]
+
+        breakdown_helpers.format_report_rows_performance_fields(rows, Goals([], [], [], [], None))
+
+        self.assertEquals(rows, [
+            {'ad_group_id': 1},
+            {'ad_group_id': 2},
+        ])
+
+    def test_clean_non_relevant_fields(self):
+
+        rows = [
+            {'ad_group_id': 1, 'campaign_has_available_budget': 1, 'campaign_stop_inactive': False,
+             'performance': {}, 'performance_campaign_goal_1': 1, },
+            {'ad_group_id': 2, 'campaign_has_available_budget': 1, 'campaign_stop_inactive': False,
+             'performance': {}, 'performance_campaign_goal_1': 1, },
+        ]
+
+        breakdown_helpers.clean_non_relevant_fields(rows)
+
+        self.assertEquals(rows, [
+            {'ad_group_id': 1, 'performance': {}},
+            {'ad_group_id': 2, 'performance': {}},
+        ])

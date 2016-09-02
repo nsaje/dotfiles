@@ -1528,8 +1528,8 @@ class AgeGenderGroup(ConstantBase):
     }
 
 
-class DmaGroup(ConstantBase):
-    _VALUES = {int(key): regions.DMA_BY_CODE[key] for key in regions.DMA_BY_CODE.keys()}
+class DMA(ConstantBase):
+    _VALUES = {int(k): v for k, v in regions.DMA_BY_CODE.iteritems()}
 
 
 class ConversionWindows(ConstantBase):

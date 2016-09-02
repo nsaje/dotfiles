@@ -106,7 +106,7 @@ def get_performance_value(goal_type, metric_value, target_value):
 
 
 def format_value(goal_type, value):
-    return value and dash.campaign_goals.CAMPAIGN_GOAL_VALUE_FORMAT[goal_type](value) \
+    return value and CAMPAIGN_GOAL_VALUE_FORMAT[goal_type](value) \
         or 'N/A'
 
 
@@ -328,7 +328,8 @@ def get_campaign_goal_values(campaign):
         'campaign_goal',
         '-created_dt'
     ).distinct('campaign_goal').select_related(
-        'campaign_goal'
+        'campaign_goal',
+        'campaign_goal__conversion_goal'
     )
 
 
@@ -386,20 +387,27 @@ def _add_entry_to_history(request, campaign, history_action_type, changes_text):
     )
 
 
-def get_goal_performance_status(goal_type, metric_value, planned_value, cost=None):
-    rounded_cost = (cost and Decimal(cost) or Decimal('0')).quantize(
-        Decimal('.01'), rounding=ROUNDING
-    )
-    if goal_type in COST_DEPENDANT_GOALS and rounded_cost and not metric_value:
-        return constants.CampaignGoalPerformance.UNDERPERFORMING
-    if planned_value is None or metric_value is None:
+def get_goal_performance_category(performance):
+    if performance is None:
         return constants.CampaignGoalPerformance.AVERAGE
-    performance = get_performance_value(goal_type, Decimal(metric_value), planned_value)
+
     if performance < Decimal('0.8'):
         return constants.CampaignGoalPerformance.UNDERPERFORMING
     if performance >= Decimal('1.0'):
         return constants.CampaignGoalPerformance.SUPERPERFORMING
     return constants.CampaignGoalPerformance.AVERAGE
+
+
+def get_goal_performance_status(goal_type, metric_value, planned_value, cost=None):
+    rounded_cost = (cost and Decimal(cost) or Decimal('0')).quantize(
+        Decimal('.01'), rounding=ROUNDING
+    )
+    if goal_type in COST_DEPENDANT_GOALS and rounded_cost and not metric_value:
+        return get_goal_performance_category(0)
+    if planned_value is None or metric_value is None:
+        return get_goal_performance_category(None)
+    performance = get_performance_value(goal_type, Decimal(metric_value), planned_value)
+    return get_goal_performance_category(performance)
 
 
 def fetch_goals(campaign_ids, end_date):
@@ -432,6 +440,13 @@ def _prepare_performance_output(campaign_goal, stats, conversion_goals):
         planned_value,
         campaign_goal,
     )
+
+
+def get_goal_performance_metric(campaign_goal, conversion_goals):
+    if campaign_goal.type == constants.CampaignGoalKPI.CPA:
+        conversion_column = campaign_goal.conversion_goal.get_view_key(conversion_goals)
+        return 'avg_cost_per_' + conversion_column
+    return CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type]
 
 
 def get_goals_performance(user, constraints, start_date, end_date,
@@ -666,7 +681,7 @@ def inverted_campaign_goal_map(conversion_goals=None):
     return ret
 
 
-def get_allowed_campaign_goals_fields(user, campaign_goal_values, conversion_goals):
+def get_allowed_campaign_goals_fields(user, campaign_goals, campaign_goal_values, conversion_goals):
     """
     Returns campaign goal field names that should be kept if user has
     proper permissions.
@@ -682,11 +697,16 @@ def get_allowed_campaign_goals_fields(user, campaign_goal_values, conversion_goa
         relevant_fields = CAMPAIGN_GOAL_MAP.get(goal, [])
 
         if goal == constants.CampaignGoalKPI.CPA:
-            relevant_fields.extend(
-                ['avg_cost_per_{}'.format(cg.get_view_key(conversion_goals)) for cg in conversion_goals]
-            )
+            relevant_fields.extend([
+                'avg_cost_per_{}'.format(cg.get_view_key(conversion_goals)) for cg in conversion_goals
+            ])
 
         allowed_fields.extend(relevant_fields)
+
+    if user.has_perm('zemauth.campaign_goal_performance'):
+        allowed_fields.extend([
+            'performance_' + x.get_view_key() for x in campaign_goals
+        ])
 
     return allowed_fields
 

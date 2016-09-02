@@ -829,7 +829,7 @@ class AdGroupSettingsStateTest(TestCase):
             'success': True
         })
 
-    @patch('dash.validation_helpers.ad_group_has_available_budget')
+    @patch('dash.dashapi.data_helper.campaign_has_available_budget')
     @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
     def test_activate(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
@@ -853,7 +853,7 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.ACTIVE)
         mock_k1_ping.assert_called_with(2, msg='AdGroupSettingsState.post')
 
-    @patch('dash.validation_helpers.ad_group_has_available_budget')
+    @patch('dash.dashapi.data_helper.campaign_has_available_budget')
     @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
     def test_activate_already_activated(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
@@ -893,7 +893,7 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(mock_zwei_send.called, False)
         self.assertFalse(mock_k1_ping.called)
 
-    @patch('dash.validation_helpers.ad_group_has_available_budget')
+    @patch('dash.dashapi.data_helper.campaign_has_available_budget')
     @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
     def test_activate_no_goals(self, mock_k1_ping, mock_zwei_send, mock_budget_check):

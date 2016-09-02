@@ -13,53 +13,102 @@ from stats import api_breakdowns
 
 
 class ApiBreakdownQueryTest(TestCase):
-    fixtures = ['test_augmenter.yaml']
+    fixtures = ['test_api_breakdowns.yaml']
 
+    @mock.patch('redshiftapi.api_breakdowns.query_structure_with_stats')
     @mock.patch('redshiftapi.api_breakdowns.query')
-    def test_query(self, mock_rs_query):
-        campaign = models.Campaign.objects.get(id=1)
+    def test_query_rs_first(self, mock_rs_query, mock_str_w_stats):
+
         mock_rs_query.return_value = [
-            {'clicks': 1, 'ad_group_id': 1},
+            {'clicks': 1, 'campaign_id': 1},
         ]
 
+        mock_str_w_stats.return_value = []
+
         user = User.objects.get(pk=1)
-        breakdown = ['ad_group_id']
+        breakdown = ['campaign_id']
         constraints = {
             'show_archived': True,
-            'campaign': models.Campaign.objects.get(pk=1),
+            'account': models.Account.objects.get(pk=1),
+            'allowed_campaigns': models.Campaign.objects.filter(pk__in=[1, 2]),
             'filtered_sources': models.Source.objects.all(),
             'date__gte': datetime.date(2016, 8, 1),
             'date__lte': datetime.date(2016, 8, 5),
         }
+        goals = api_breakdowns.get_goals(constraints)
         parents = []
-        order = 'name'
+        order = 'clicks'
         offset = 1
         limit = 1
 
-        result = api_breakdowns.query(Level.ACCOUNTS, user, breakdown, constraints, parents, order, offset, limit)
+        result = api_breakdowns.query(Level.ACCOUNTS, user, breakdown, constraints, goals, parents, order, offset, limit)
 
         mock_rs_query.assert_called_with(
-            ['ad_group_id'],
+            ['campaign_id'],
             {
                 'account_id': 1,
-                'campaign_id': 1,
+                'campaign_id': test_helper.ListMatcher([1, 2]),
                 'date__gte': datetime.date(2016, 8, 1),
                 'date__lte': datetime.date(2016, 8, 5),
-                'source_id': test_helper.ListMatcher([1, 2, 3]),
+                'source_id': test_helper.ListMatcher([1, 2]),
             },
             None,
-            test_helper.QuerySetMatcher(models.ConversionGoal.objects.filter(campaign_id=campaign.id)),
-            test_helper.QuerySetMatcher(models.ConversionPixel.objects.filter(account_id=campaign.account.id)),
-            '-clicks',
+            goals,
+            'clicks',
             1,
             1
         )
 
         self.assertEqual(result, [{
-            'ad_group_id': 1,
-            'ad_group_name': 'test adgroup 1',
+            'campaign_id': 1,
+            'name': 'test campaign 1',
             'breakdown_id': '1',
-            'breakdown_name': 'test adgroup 1',
+            'breakdown_name': 'test campaign 1',
             'clicks': 1,
             'parent_breakdown_id': '',
+            'status': 1,
+        }])
+
+    @mock.patch('redshiftapi.api_breakdowns.execute_query')
+    def test_query_dash_first(self, mock_rs_query):
+
+        mock_rs_query.return_value = [
+            {'clicks': 1, 'campaign_id': 1},
+            {'clicks': 2, 'campaign_id': 2},
+        ]
+
+        user = User.objects.get(pk=1)
+        breakdown = ['campaign_id']
+        constraints = {
+            'show_archived': True,
+            'account': models.Account.objects.get(pk=1),
+            'filtered_sources': models.Source.objects.all(),
+            'allowed_campaigns': models.Campaign.objects.filter(pk__in=[1, 2]),
+            'date__gte': datetime.date(2016, 8, 1),
+            'date__lte': datetime.date(2016, 8, 5),
+        }
+        goals = api_breakdowns.get_goals(constraints)
+        parents = []
+        order = '-name'
+        offset = 0
+        limit = 10
+
+        result = api_breakdowns.query(Level.ACCOUNTS, user, breakdown, constraints, goals, parents, order, offset, limit)
+
+        self.assertEqual(result, [{
+            'campaign_id': 2,
+            'name': 'test campaign 2',
+            'breakdown_id': '2',
+            'breakdown_name': 'test campaign 2',
+            'clicks': 2,
+            'parent_breakdown_id': '',
+            'status': 2,
+        }, {
+            'campaign_id': 1,
+            'name': 'test campaign 1',
+            'breakdown_id': '1',
+            'breakdown_name': 'test campaign 1',
+            'clicks': 1,
+            'parent_breakdown_id': '',
+            'status': 1,
         }])

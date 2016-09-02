@@ -21,6 +21,9 @@ from dash import retargeting_helper
 from dash import campaign_goals
 from dash import facebook_helper
 from dash import content_insights_helper
+
+from dash.dashapi import data_helper
+
 from utils import api_common
 from utils import exc
 from utils import email_helper
@@ -329,7 +332,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
             raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
         if state == constants.AdGroupSettingsState.ACTIVE:
-            if not validation_helpers.ad_group_has_available_budget(ad_group):
+            if not data_helper.campaign_has_available_budget(campaign):
                 raise exc.ValidationError('Cannot enable ad group without available budget.')
 
             if models.CampaignGoal.objects.filter(campaign=campaign).count() == 0:

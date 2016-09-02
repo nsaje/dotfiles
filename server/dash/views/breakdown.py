@@ -4,8 +4,10 @@ import json
 from dash import constants
 from dash import forms
 from dash import table
+from dash import campaign_goals
 from dash.views import helpers
 from dash.views import grid
+from dash.views import breakdown_helpers
 
 from utils import api_common
 from utils import exc
@@ -21,55 +23,56 @@ DEFAULT_LIMIT = 10
 REQUEST_LIMIT_OVERFLOW = 1  # [workaround] Request additional rows to check if more data is available
 
 
-def extract_constraints(form_data, account=None, campaign=None, ad_group=None):
-    # TODO rename date_gte and date_lte to start_date and end_date
-    constraints = {
-        'date__gte': form_data['start_date'],
-        'date__lte': form_data['end_date'],
-        'filtered_sources': form_data['filtered_sources'],
-        'show_archived': form_data.get('show_archived'),
-    }
-
-    if form_data.get('filtered_agencies'):
-        constraints['filtered_agencies'] = form_data['filtered_agencies']
-
-    if form_data.get('filtered_account_types'):
-        constraints['filtered_account_types'] = form_data['filtered_account_types']
-
-    if account:
-        constraints['account'] = account
-
-    if campaign:
-        constraints['campaign'] = campaign
-
-    if ad_group:
-        constraints['ad_group'] = ad_group
+def extract_constraints(form_data, level, user, breakdown,  account=None, campaign=None, ad_group=None):
+    constraints = stats.api_breakdowns.prepare_constraints(
+        level, user, breakdown, form_data['start_date'], form_data['end_date'], form_data['filtered_sources'],
+        form_data.get('show_archived'), form_data.get('filtered_agencies'), form_data.get('filtered_account_types'),
+        account, campaign, ad_group
+    )
 
     return constraints
 
 
-def format_breakdown_response(report_rows, offset, limit, parents):
+def format_breakdown_response(report_rows, offset, limit, parents, totals=None, goals=None):
     blocks = []
 
-    # map rows by parent breakdown ids
-    rows_by_parent_br_id = collections.defaultdict(list)
-    for row in report_rows:
-        rows_by_parent_br_id[row['parent_breakdown_id']].append(row)
+    if parents:
+        # map rows by parent breakdown ids
+        rows_by_parent_br_id = collections.defaultdict(list)
+        for row in report_rows:
+            rows_by_parent_br_id[row['parent_breakdown_id']].append(row)
 
-    # create blocks for every parent
-    for parent in parents:
-        rows = rows_by_parent_br_id[parent]
+        # create blocks for every parent
+        for parent in parents:
+            rows = rows_by_parent_br_id[parent]
 
-        blocks.append({
-            'breakdown_id': parent,
-            'rows': rows,
-            'totals': {},
+            blocks.append({
+                'breakdown_id': parent,
+                'rows': rows,
+                'totals': {},
+                'pagination': {
+                    'offset': offset,
+                    'limit': len(rows),  # TODO count current
+                    'count': -1,  # TODO count all
+                },
+            })
+    else:
+        blocks = [{
+            'breakdown_id': None,
+            'rows': report_rows,
+            'totals': totals,
             'pagination': {
                 'offset': offset,
-                'limit': len(rows),  # TODO count current
+                'limit': len(report_rows),  # TODO count current
                 'count': -1,  # TODO count all
             },
-        })
+        }]
+
+        if goals and goals.conversion_goals:
+            blocks[0]['conversion_goals'] = helpers.get_conversion_goals_wo_pixels(goals.conversion_goals)
+
+        if goals and goals.pixels:
+            blocks[0]['pixels'] = helpers.get_pixels_list(goals.pixels)
 
     return blocks
 
@@ -104,10 +107,8 @@ def get_report_through_table(get_fn, user, form_data, all_accounts_level=False, 
     Base breakdown is always 'account'
     """
 
-    constraints = extract_constraints(form_data)
-
-    start_date = constraints['date__gte']
-    end_date = constraints['date__lte']
+    start_date = form_data['start_date']
+    end_date = form_data['end_date']
 
     view_filter = helpers.ViewFilter(user=user, data=form_data)
     filtered_sources = view_filter.filtered_sources
@@ -204,25 +205,6 @@ def get_report_account_campaigns(user, filtered_sources, start_date, end_date,
     return grid.convert_resource_response(constants.Level.ACCOUNTS, 'campaign_id', response)
 
 
-def get_report_campaign_ad_groups(user, filtered_sources, start_date, end_date,
-                                  order, page, size, show_archived,
-                                  **kwargs):
-    response = table.CampaignAdGroupsTable().get(
-        user,
-        filtered_sources=filtered_sources,
-        start_date=start_date,
-        end_date=end_date,
-        order=order,
-        show_archived=show_archived,
-        **kwargs
-    )
-
-    response['pagination'] = {
-        'count': len(response['rows'])
-    }
-    return grid.convert_resource_response(constants.Level.CAMPAIGNS, 'ad_group_id', response)
-
-
 def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date,
                                     order, page, size, show_archived,
                                     **kwargs):
@@ -278,24 +260,6 @@ def get_report_account_sources(user, filtered_sources, start_date, end_date,
         id_=kwargs['account_id']
     )
     return grid.convert_resource_response(constants.Level.ACCOUNTS, 'source_id', response)
-
-
-def get_report_campaign_sources(user, filtered_sources, start_date, end_date,
-                                order, page, size, show_archived,
-                                **kwargs):
-    view_filter = helpers.ViewFilter()
-    view_filter.filtered_sources = filtered_sources
-
-    response = table.SourcesTable().get(
-        user,
-        'campaigns',
-        view_filter,
-        start_date,
-        end_date,
-        order,
-        id_=kwargs['campaign_id']
-    )
-    return grid.convert_resource_response(constants.Level.CAMPAIGNS, 'source_id', response)
 
 
 def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
@@ -369,18 +333,26 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             )
             return self.create_api_response(report)
 
-        report = stats.api_breakdowns.query(
+        constraints = extract_constraints(form.cleaned_data, level, request.user, breakdown)
+        goals = stats.api_breakdowns.get_goals(constraints)
+
+        rows = stats.api_breakdowns.query(
             level,
             request.user,
             breakdown,
-            extract_constraints(form.cleaned_data),
+            constraints,
+            goals,
             parents,
             form.cleaned_data.get('order', None),
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
+        breakdown_helpers.format_report_rows_state_fields(rows)
+        breakdown_helpers.format_report_rows_performance_fields(rows, goals)
+        breakdown_helpers.clean_non_relevant_fields(rows)
+
+        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)
 
@@ -422,29 +394,31 @@ class AccountBreakdown(api_common.BaseApiView):
             )
             return self.create_api_response(report)
 
-        report = stats.api_breakdowns.query(
+        constraints = extract_constraints(form.cleaned_data, level, request.user, breakdown, account=account)
+        goals = stats.api_breakdowns.get_goals(constraints)
+
+        rows = stats.api_breakdowns.query(
             level,
             request.user,
             breakdown,
-            extract_constraints(form.cleaned_data, account=account),
+            constraints,
+            goals,
             parents,
             form.cleaned_data.get('order', None),
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
+        breakdown_helpers.format_report_rows_state_fields(rows)
+        breakdown_helpers.format_report_rows_performance_fields(rows, goals)
+        breakdown_helpers.clean_non_relevant_fields(rows)
+
+        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)
 
 
 class CampaignBreakdown(api_common.BaseApiView):
-
-    def _get_workaround_fn(self, base_dimension):
-        return {
-            stats.constants.StructureDimension.AD_GROUP: get_report_campaign_ad_groups,
-            stats.constants.StructureDimension.SOURCE: get_report_campaign_sources,
-        }[base_dimension]
 
     def post(self, request, campaign_id, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
@@ -464,29 +438,37 @@ class CampaignBreakdown(api_common.BaseApiView):
         level = constants.Level.CAMPAIGNS
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
+        constraints = extract_constraints(form.cleaned_data, level, request.user, breakdown, campaign=campaign)
+        goals = stats.api_breakdowns.get_goals(constraints)
 
-        # FIXME redirect to table.py if base level request for a breakdown
-        if len(breakdown) == 1:
-            report = get_report_through_table(
-                self._get_workaround_fn(stats.constants.get_base_dimension(breakdown)),
-                request.user,
-                form.cleaned_data,
-                campaign_id=campaign.id
-            )
-            return self.create_api_response(report)
-
-        report = stats.api_breakdowns.query(
+        rows = stats.api_breakdowns.query(
             level,
             request.user,
             breakdown,
-            extract_constraints(form.cleaned_data, campaign=campaign),
+            constraints,
+            goals,
             parents,
             form.cleaned_data.get('order', None),
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
+        breakdown_helpers.format_report_rows_state_fields(rows)
+        breakdown_helpers.format_report_rows_performance_fields(rows, goals)
 
-        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
+        if breakdown == ['ad_group_id']:
+            breakdown_helpers.format_report_rows_ad_group_editable_fields(rows)
+
+        breakdown_helpers.clean_non_relevant_fields(rows)
+
+        totals = None
+        if len(breakdown) == 1:
+            totals = stats.api_breakdowns.totals(request.user, level, breakdown, constraints, goals)
+
+        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
+        if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
+            report[0]['campaign_goals'] = campaign_goals.get_campaign_goals(
+                campaign, report[0].get('conversion_goals', []))
+
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)
 
@@ -533,17 +515,25 @@ class AdGroupBreakdown(api_common.BaseApiView):
         if stats.constants.get_base_dimension(breakdown) == 'publisher':
             breakdown = ['publisher', 'source_id'] + breakdown[1:]
 
-        report = stats.api_breakdowns.query(
+        constraints = extract_constraints(form.cleaned_data, level, request.user, breakdown, ad_group=ad_group)
+        goals = stats.api_breakdowns.get_goals(constraints)
+
+        rows = stats.api_breakdowns.query(
             level,
             request.user,
             breakdown,
-            extract_constraints(form.cleaned_data, ad_group=ad_group),
+            constraints,
+            goals,
             parents,
             form.cleaned_data.get('order', None),
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        report = format_breakdown_response(report, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
+        breakdown_helpers.format_report_rows_state_fields(rows)
+        breakdown_helpers.format_report_rows_performance_fields(rows, goals)
+        breakdown_helpers.clean_non_relevant_fields(rows)
+
+        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)

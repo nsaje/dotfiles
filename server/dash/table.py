@@ -13,10 +13,12 @@ from dash import stats_helper
 from dash import publisher_helpers
 from dash import validation_helpers
 from dash import campaign_goals
+from dash.dashapi import data_helper
+from dash.views import breakdown_helpers
 
 import utils.pagination
 from utils import exc
-from utils.sort_helper import sort_results
+from utils.sort_helper import sort_results, sort_rows_by_order_and_archived
 
 import reports.api
 import reports.api_helpers
@@ -26,44 +28,6 @@ import reports.constants
 import reports.models
 from reports.projections import BudgetProjections
 import actionlog.sync
-
-
-def sort_rows_by_order_and_archived(rows, order):
-    archived_order = 'archived'
-    if order.startswith('-'):
-        archived_order = '-' + archived_order
-
-    return sort_results(rows, [archived_order, order])
-
-
-def compute_daily_budget_total(data):
-    budgets = [s.daily_budget_cc for s in data if
-               s is not None and s.daily_budget_cc is not None and
-               s.state == constants.AdGroupSourceSettingsState.ACTIVE]
-
-    return sum(budgets)
-
-
-def get_current_daily_budget_total(states):
-    return compute_daily_budget_total(states)
-
-
-def get_daily_budget_total(ad_group_sources, states, settings):
-    data = []
-
-    for ad_group_source in ad_group_sources:
-        # get settings
-        ad_group_source_settings = [s for s in settings if s.ad_group_source.id == ad_group_source.id]
-        obj = ad_group_source_settings[0] if len(ad_group_source_settings) else None
-
-        if obj is None or obj.daily_budget_cc is None:
-            # if no settings, get state
-            ad_group_source_states = [s for s in states if s.ad_group_source.id == ad_group_source.id]
-            obj = ad_group_source_states[0] if len(ad_group_source_states) else None
-
-        data.append(obj)
-
-    return compute_daily_budget_total(data)
 
 
 def has_aggregate_postclick_permission(user):
@@ -85,35 +49,6 @@ def get_conversion_pixels_last_sync(conversion_pixels):
         return conversion_pixels[0].last_sync_dt
 
     return datetime.datetime.utcnow()
-
-
-def _set_goal_meta_on_row(stat, performance, conversion_goals):
-    for goal_status, goal_metric, goal_value, goal in performance:
-        performance_item = {
-            'emoticon': campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
-            'text': campaign_goals.format_campaign_goal(
-                goal.type,
-                goal_metric,
-                goal.conversion_goal
-            )
-        }
-        if goal_value:
-            performance_item['text'] += ' (planned {})'.format(
-                campaign_goals.format_value(goal.type, goal_value)
-            )
-
-        stat['performance']['list'].append(performance_item)
-
-        colored_column = campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.get(goal.type)
-        if goal.type == constants.CampaignGoalKPI.CPA:
-            colored_column = 'avg_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
-        if not colored_column:
-            continue
-
-        if goal_status == constants.CampaignGoalPerformance.SUPERPERFORMING:
-            stat['styles'][colored_column] = constants.Emoticon.HAPPY
-        elif goal_status == constants.CampaignGoalPerformance.UNDERPERFORMING:
-            stat['styles'][colored_column] = constants.Emoticon.SAD
 
 
 def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
@@ -156,7 +91,7 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
                 primary_goal
             ]
 
-        _set_goal_meta_on_row(stat, performance, conversion_goals)
+        breakdown_helpers.set_row_goal_performance_meta(stat, performance, conversion_goals)
 
 
 class AllAccountsSourcesTable(object):
@@ -475,8 +410,8 @@ class AdGroupSourcesTableUpdates(object):
             response['rows'] = rows
 
             response['totals'] = {
-                'daily_budget': get_daily_budget_total(ad_group_sources, states, settings),
-                'current_daily_budget': get_current_daily_budget_total(states)
+                'daily_budget': data_helper.get_daily_budget_total(states),
+                'current_daily_budget': data_helper.get_daily_budget_total(states)
             }
 
             response['notifications'] = notifications
@@ -642,10 +577,10 @@ class SourcesTable(object):
             result['yesterday_cost'] = yesterday_cost
 
         if ad_group_level:
-            result['daily_budget'] = get_daily_budget_total(ad_group_sources, sources_states, sources_settings)
-            result['current_daily_budget'] = get_current_daily_budget_total(sources_states)
+            result['daily_budget'] = data_helper.get_daily_budget_total(sources_states)
+            result['current_daily_budget'] = data_helper.get_daily_budget_total(sources_states)
         else:
-            result['daily_budget'] = get_current_daily_budget_total(sources_states)
+            result['daily_budget'] = data_helper.get_daily_budget_total(sources_states)
 
         return result
 
@@ -709,7 +644,7 @@ class SourcesTable(object):
             if ad_group_level:
                 daily_budget = states[0].daily_budget_cc if len(states) else None
             else:
-                daily_budget = get_current_daily_budget_total(states)
+                daily_budget = data_helper.get_daily_budget_total(states)
 
             row = {
                 'id': str(source.id),
@@ -778,18 +713,7 @@ class SourcesTable(object):
                 row['current_bid_cpc'] = bid_cpc_value
                 row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
             else:
-                bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None and
-                                  s.state == constants.AdGroupSourceSettingsState.ACTIVE]
-                row['min_bid_cpc'] = None
-                row['max_bid_cpc'] = None
-                if len(bid_cpc_values) > 0:
-                    row['min_bid_cpc'] = float(min(bid_cpc_values))
-                    row['max_bid_cpc'] = float(max(bid_cpc_values))
-
-            # add conversion fields
-            for field, val in source_data.iteritems():
-                if field.startswith('G[') and field.endswith('_conversionrate'):
-                    row[field] = val
+                row.update(data_helper.get_source_min_max_cpc(states))
 
             rows.append(row)
 
@@ -1395,6 +1319,7 @@ class CampaignAdGroupsTable(object):
 
         campaign_settings = campaign.get_current_settings()
         campaign_stop_check = campaign_stop.can_enable_ad_groups(campaign, campaign_settings)
+        has_available_budget = data_helper.campaign_has_available_budget(campaign)
 
         for ad_group in ad_groups:
             row = {
@@ -1428,8 +1353,8 @@ class CampaignAdGroupsTable(object):
             last_sync = last_actions and last_actions.get(ad_group.pk)
 
             row['last_sync'] = last_sync
-            row['editable_fields'] = self.get_editable_fields(
-                ad_group, campaign, row, campaign_stop_check.get(ad_group.id, True))
+            row['editable_fields'] = breakdown_helpers.get_ad_group_editable_fields(
+                row, campaign_stop_check.get(ad_group.id, True), has_available_budget)
 
             rows.append(row)
 
@@ -1452,21 +1377,6 @@ class CampaignAdGroupsTable(object):
                 rows = sort_results(rows, [order])
 
         return rows
-
-    def get_editable_fields(self, ad_group, campaign, row, can_enable_ad_group):
-        state = {
-            'enabled': True,
-            'message': None
-        }
-        if not can_enable_ad_group:
-            state['enabled'] = False
-            state['message'] = 'Please add additional budget to your campaign to make changes.'
-        elif row['state'] == constants.AdGroupSettingsState.INACTIVE \
-                and not validation_helpers.ad_group_has_available_budget(ad_group):
-            state['enabled'] = False
-            state['message'] = 'Cannot enable ad group without available budget.'
-
-        return {'state': state}
 
 
 class AccountCampaignsTable(object):

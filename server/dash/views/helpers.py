@@ -522,14 +522,7 @@ def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
 def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_sources):
     submission_status = []
     for content_ad_source in content_ad_sources:
-        cas_source_state = content_ad_source.source_state
-        if cas_source_state is None:
-            cas_source_state = constants.ContentAdSourceState.INACTIVE
-
-        cas_submission_status = content_ad_source.submission_status
-        if cas_submission_status != constants.ContentAdSubmissionStatus.APPROVED and\
-           cas_submission_status != constants.ContentAdSubmissionStatus.REJECTED:
-            cas_submission_status = constants.ContentAdSubmissionStatus.PENDING
+        cas_submission_status = content_ad_source.get_submission_status()
 
         status = {
             'name': content_ad_source.source.name,

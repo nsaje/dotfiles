@@ -1,12 +1,25 @@
-from utils.sort_helper import dissect_order
-from dash import table
+from utils.sort_helper import dissect_order, sort_rows_by_order_and_archived
 
 from dash.dashapi import loaders
 from dash.dashapi import augmenter
 from dash.dashapi.helpers import apply_offset_limit
 
 
+"""
+All query functions return rows only filled with fields that were relevant to query execution and ordering.
+Besides that they return a loader, that can be used to fill in other fields.
+
+General signature of query_* functions:
+
+def query_*(base_query_sets, show_archived, order, offset, limit):
+   ...
+   return rows, loader
+"""
+
+
 def query_accounts(accounts_qs, filtered_sources_qs, show_archived, order, offset, limit):
+    accounts_qs = accounts_qs.filter_by_sources(filtered_sources_qs)
+
     _, order_field = dissect_order(order)
 
     if order_field == 'name':
@@ -20,12 +33,12 @@ def query_accounts(accounts_qs, filtered_sources_qs, show_archived, order, offse
     else:
         raise Exception("This order field name is not supported")
 
-    augmenter.augment_accounts(rows, loader)
-
-    return rows
+    return rows, loader
 
 
 def query_campaigns(campaigns_qs, filtered_sources_qs, show_archived, order, offset, limit):
+    campaigns_qs = campaigns_qs.filter_by_sources(filtered_sources_qs)
+
     _, order_field = dissect_order(order)
 
     if order_field == 'name':
@@ -39,12 +52,12 @@ def query_campaigns(campaigns_qs, filtered_sources_qs, show_archived, order, off
     else:
         raise Exception("This order field name is not supported")
 
-    augmenter.augment_campaigns(rows, loader)
-
-    return rows
+    return rows, loader
 
 
 def query_ad_groups(ad_groups_qs, filtered_sources_qs, show_archived, order, offset, limit):
+    ad_groups_qs = ad_groups_qs.filter_by_sources(filtered_sources_qs)
+
     _, order_field = dissect_order(order)
     if order_field == 'name':
         rows, loader = _query_general_ordered_by_name(ad_groups_qs, filtered_sources_qs, show_archived,
@@ -57,49 +70,52 @@ def query_ad_groups(ad_groups_qs, filtered_sources_qs, show_archived, order, off
     else:
         raise Exception("This order field name is not supported")
 
-    augmenter.augment_ad_groups(rows, loader)
-
-    return rows
+    return rows, loader
 
 
 def query_content_ads(content_ads_qs, filtered_sources_qs, show_archived, order, offset, limit):
+    content_ads_qs = content_ads_qs.filter_by_sources(filtered_sources_qs)
+
     _, order_field = dissect_order(order)
 
     if order_field in ('name', 'title', 'url', 'display_url', 'brand_name', 'description', 'call_to_action',
                        'label', 'state', 'status', 'batch_name', 'upload_time'):
-
-        rows, loader = _query_content_ads_ordered_by_anything(content_ads_qs, filtered_sources_qs, show_archived, order, offset, limit)
+        rows, loader = _query_content_ads_ordered_by_anything(content_ads_qs, filtered_sources_qs, show_archived,
+                                                              order, offset, limit)
     else:
         raise Exception("This order field name is not supported")
 
-    augmenter.augment_content_ads(rows, loader)
-
-    return rows
+    return rows, loader
 
 
-def query_sources(sources_qs, ad_groups_sources, order, offset, limit):
+def query_sources(sources_qs, ad_groups_sources, show_archived, order, offset, limit):
+    # show_archived is not used because group sources passed are already cleaned of archived items in advance
+    # we still require this parameter as it is a part of the api
+
+    sources_qs = sources_qs.filter(adgroupsource__in=ad_groups_sources).distinct()
+
     _, order_field = dissect_order(order)
 
     if order_field == 'name':
-        rows, loader = _query_sources_ordered_by_name(sources_qs, ad_groups_sources, order, offset, limit)
-    elif order_field == 'status':
-        rows, loader = _query_sources_ordered_by_status(sources_qs, ad_groups_sources, order, offset, limit)
+        rows, loader = _query_sources_ordered_by_name(sources_qs, ad_groups_sources,
+                                                      order, offset, limit)
+    elif order_field in ('status', 'state', 'min_bid_cpc', 'max_bid_cpc', 'daily_budget'):
+        rows, loader = _query_sources_ordered_by_settings(sources_qs, ad_groups_sources,
+                                                          order, offset, limit)
     else:
         raise Exception("This order field name is not supported")
 
-    augmenter.augment_sources(rows, loader)
-
-    return rows
+    return rows, loader
 
 
 def _query_sources_ordered_by_name(sources_qs, ad_group_sources, order, offset, limit):
-    sources_qs = apply_offset_limit(sources_qs.order_by(order), offset, limit)
+    prefix, _ = dissect_order(order)
+    sources_qs = apply_offset_limit(sources_qs.order_by(order, prefix + 'pk'), offset, limit)
 
     loader = loaders.SourcesLoader(sources_qs, ad_group_sources)
 
     rows = []
     for source in loader.objs_qs:
-        # TODO show archived - remove sources that are deprecated and without data
         row = {'source_id': source.id}
         augmenter.augment_row_source(row, source)
         rows.append(row)
@@ -107,19 +123,20 @@ def _query_sources_ordered_by_name(sources_qs, ad_group_sources, order, offset, 
     return rows, loader
 
 
-def _query_sources_ordered_by_status(sources_qs, ad_group_sources, order, offset, limit):
+def _query_sources_ordered_by_settings(sources_qs, ad_group_sources, order, offset, limit):
     loader = loaders.SourcesLoader(sources_qs, ad_group_sources)
 
     rows = []
-    for source_id, status in loader.status_map.iteritems():
+    for source_id, settings in loader.settings_map.iteritems():
         source = loader.objs_map[source_id]
 
         row = {'source_id': source_id}
-        augmenter.augment_row_source(row, source, status)
+        augmenter.augment_row_source(row, source, settings)
 
         rows.append(row)
 
-    rows = table.sort_rows_by_order_and_archived(rows, order)
+    prefix, _ = dissect_order(order)
+    rows = sort_rows_by_order_and_archived(rows, [order, prefix + 'name', prefix + 'source_id'])
     rows = apply_offset_limit(rows, offset, limit)
 
     return rows, loader
@@ -138,10 +155,11 @@ def _query_general_ordered_by_status(objs_qs, filtered_sources_qs, show_archived
             continue
 
         row = {obj_id_key: obj_id}
-        augment_fn(row, settings=settings, status=loader.status_map[obj_id])
+        augment_fn(row, obj, settings=settings, status=loader.status_map[obj_id])
         rows.append(row)
 
-    rows = table.sort_rows_by_order_and_archived(rows, order)
+    prefix, _ = dissect_order(order)
+    rows = sort_rows_by_order_and_archived(rows, [order, prefix + 'name', prefix + obj_id_key])
     rows = apply_offset_limit(rows, offset, limit)
 
     return rows, loader
@@ -149,17 +167,14 @@ def _query_general_ordered_by_status(objs_qs, filtered_sources_qs, show_archived
 
 def _query_general_ordered_by_name(objs_qs, filtered_sources_qs, show_archived, order, offset, limit,
                                    loader_cls, obj_id_key, augment_fn):
-
-    objs_qs = objs_qs.order_by(order)
-
     if not show_archived:
-        temp_loader = loader_cls(objs_qs, filtered_sources_qs)
-        archived_ids = [
-            obj_id for obj_id, settings in temp_loader.settings_map.iteritems() if settings.archived
-        ]
-        objs_qs = objs_qs.exclude(pk__in=archived_ids)
+        objs_qs = objs_qs.exclude_archived()
 
+    prefix, _ = dissect_order(order)
+
+    objs_qs = objs_qs.order_by(order, prefix + 'pk')
     objs_qs = apply_offset_limit(objs_qs, offset, limit)
+
     loader = loader_cls(objs_qs, filtered_sources_qs)
 
     rows = []
@@ -173,6 +188,7 @@ def _query_general_ordered_by_name(objs_qs, filtered_sources_qs, show_archived, 
 
 def _query_content_ads_ordered_by_anything(content_ads_qs, filtered_sources_qs, show_archived, order, offset, limit):
     order_prefix, order_field = dissect_order(order)
+    order_by_batch = order_field in ('batch_name', 'upload_time')
 
     order_to_field = {
         'name': 'title',
@@ -184,23 +200,22 @@ def _query_content_ads_ordered_by_anything(content_ads_qs, filtered_sources_qs, 
     if order_field in order_to_field:
         order = order_prefix + order_to_field[order_field]
 
-    content_ads_qs = content_ads_qs.order_by(order)
-
     if not show_archived:
-        temp_cache = loaders.ContentAdsLoader(content_ads_qs, filtered_sources_qs)
-        archived_ids = [
-            content_ad_id for content_ad_id, content_ad in temp_cache.objs_map.iteritems() if content_ad.archived
-        ]
+        content_ads_qs = content_ads_qs.exclude_archived()
 
-        content_ads_qs = content_ads_qs.exclude(pk__in=archived_ids)
-
+    content_ads_qs = content_ads_qs.order_by(order, order_prefix + 'title', order_prefix + 'pk')
     content_ads_qs = apply_offset_limit(content_ads_qs, offset, limit)
+
     loader = loaders.ContentAdsLoader(content_ads_qs, filtered_sources_qs)
 
     rows = []
     for content_ad in loader.objs_qs:
         row = {'content_ad_id': content_ad.id}
-        augmenter.augment_row_content_ad(row, content_ad=content_ad)
+        augmenter.augment_row_content_ad(
+            row,
+            content_ad=loader.objs_map[content_ad.id],
+            batch=loader.batch_map[content_ad.id] if order_by_batch else None
+        )
         rows.append(row)
 
     return rows, loader

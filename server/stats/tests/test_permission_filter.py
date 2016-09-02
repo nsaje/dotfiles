@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from utils.test_helper import add_permissions, remove_permissions
+from utils import test_helper
 from utils import exc
 from zemauth.models import User
 
@@ -9,6 +9,7 @@ from dash import campaign_goals
 from dash.constants import Level
 
 from stats import permission_filter
+from stats.helpers import Goals
 
 from reports import api_helpers
 
@@ -21,9 +22,11 @@ class FilterTestCase(TestCase):
         self.campaign = models.Campaign.objects.get(pk=1)
 
         row = {
-            'ad_group_id': 1, 'source_id': 1, 'ad_group_name': 'test adgroup 1', 'clicks': 10, 'age': '18-20',
+            'ad_group_id': 1, 'source_id': 1, 'clicks': 10, 'age': '18-20',
             'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1',
-            'e_yesterday_cost': 1, 'yesterday_cost': 1, 'cpm': 1,
+            'name': 'test adgroup 1', 'e_yesterday_cost': 1, 'yesterday_cost': 1, 'cpm': 1,
+            'min_bid_cpc': 1, 'max_bid_cpc': 1, 'daily_budget': 1,
+            'campaign_stop_inactive': 1, 'campaign_has_available_budget': 1,
         }
 
         # add all possible fields
@@ -49,14 +52,18 @@ class FilterTestCase(TestCase):
                 row[x.get_view_key(window)] = 1
                 row['avg_cost_per_{}'.format(x.get_view_key(window))] = 1
 
+        for x in self.campaign_goal_values:
+            row['performance_' + x.campaign_goal.get_view_key()] = 1
+
         # just check we actually inserted something
         self.assertIn('pixel_1_168', row)
         self.assertIn('conversion_goal_2', row)
+        self.assertIn('performance_campaign_goal_1', row)
 
         self.rows = [row]
         self.default_cleaned_rows = [
             {
-                'ad_group_id': 1, 'source_id': 1, 'ad_group_name': 'test adgroup 1', 'clicks': 10, 'age': '18-20',
+                'ad_group_id': 1, 'source_id': 1, 'name': 'test adgroup 1', 'clicks': 10, 'age': '18-20',
                 'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1',
                 'clicks': 1, 'ctr': 1, 'cpc': 1, 'impressions': 1, 'billing_cost': 1, 'avg_cost_per_visit': 1,
                 'avg_cost_per_pageview': 1, 'avg_cost_per_minute': 1, 'avg_cost_per_non_bounced_visit': 1,
@@ -65,8 +72,16 @@ class FilterTestCase(TestCase):
                 'pixel_1_24': 1, 'pixel_1_168': 1, 'pixel_1_720': 1, 'pixel_1_2160': 1,
                 'avg_cost_per_pixel_1_24': 1, 'avg_cost_per_pixel_1_168': 1, 'avg_cost_per_pixel_1_720': 1,
                 'avg_cost_per_pixel_1_2160': 1,
+                'min_bid_cpc': 1, 'max_bid_cpc': 1, 'daily_budget': 1,
+                'campaign_stop_inactive': 1, 'campaign_has_available_budget': 1,
             },
         ]
+
+        self.goals = Goals(
+            [x.campaign_goal for x in self.campaign_goal_values],  # campaign goals without values can exist
+            self.conversion_goals, self.campaign_goal_values, self.pixels,
+            self.campaign_goal_values[0].campaign_goal
+        )
 
     def test_user_not_superuser(self):
         user = User.objects.get(pk=1)
@@ -75,18 +90,16 @@ class FilterTestCase(TestCase):
     def test_filter_columns_by_permission_no_perm(self):
         user = User.objects.get(pk=1)
 
-        permission_filter.filter_columns_by_permission(
-            user, self.rows, self.campaign_goal_values, self.conversion_goals, self.pixels)
+        permission_filter.filter_columns_by_permission(user, self.rows, self.goals)
 
         # only default field should be left
         self.assertItemsEqual(self.rows, self.default_cleaned_rows)
 
     def test_filter_columns_by_permission_effective_cost(self):
         user = User.objects.get(pk=1)
-        add_permissions(user, ['can_view_platform_cost_breakdown'])
+        test_helper.add_permissions(user, ['can_view_platform_cost_breakdown'])
 
-        permission_filter.filter_columns_by_permission(
-            user, self.rows, self.campaign_goal_values, self.conversion_goals, self.pixels)
+        permission_filter.filter_columns_by_permission(user, self.rows, self.goals)
 
         self.default_cleaned_rows[0].update({
             'license_fee': 1, 'e_media_cost': 1,
@@ -97,10 +110,9 @@ class FilterTestCase(TestCase):
 
     def test_filter_columns_by_permission_campaign_goal_optimization(self):
         user = User.objects.get(pk=1)
-        add_permissions(user, ['campaign_goal_optimization'])
+        test_helper.add_permissions(user, ['campaign_goal_optimization'])
 
-        permission_filter.filter_columns_by_permission(
-            user, self.rows, self.campaign_goal_values, self.conversion_goals, self.pixels)
+        permission_filter.filter_columns_by_permission(user, self.rows, self.goals)
 
         self.default_cleaned_rows[0].update({
             'avg_cost_per_pixel_1_168': 1, 'avg_cost_per_conversion_goal_2': 1,
@@ -110,12 +122,25 @@ class FilterTestCase(TestCase):
 
         self.assertItemsEqual(self.rows, self.default_cleaned_rows)
 
+    def test_filter_columns_by_permission_campaign_goal_performance(self):
+        user = User.objects.get(pk=1)
+        test_helper.add_permissions(user, ['campaign_goal_performance'])
+
+        permission_filter.filter_columns_by_permission(user, self.rows, self.goals)
+
+        self.default_cleaned_rows[0].update({
+            'performance_campaign_goal_1': 1,
+            'performance_campaign_goal_2': 1,
+            'performance': 1, 'styles': 1,  # TODO legacy fields, not to be inserted at this level
+        })
+
+        self.assertItemsEqual(self.rows, self.default_cleaned_rows)
+
     def test_filter_columns_by_permission_conversion_goals(self):
         user = User.objects.get(pk=1)
-        add_permissions(user, ['can_see_redshift_postclick_statistics'])
+        test_helper.add_permissions(user, ['can_see_redshift_postclick_statistics'])
 
-        permission_filter.filter_columns_by_permission(
-            user, self.rows, self.campaign_goal_values, self.conversion_goals, self.pixels)
+        permission_filter.filter_columns_by_permission(user, self.rows, self.goals)
 
         self.default_cleaned_rows[0].update({
             'pixel_1_168': 1, 'conversion_goal_2': 1,
@@ -136,10 +161,10 @@ class BreakdownAllowedTest(TestCase):
 
         # load it again as it seems that user backend caches permissions collection once it is asked about it
         user = User.objects.get(pk=1)
-        add_permissions(user, permissions)
+        test_helper.add_permissions(user, permissions)
         permission_filter.validate_breakdown_by_permissions(level, user, breakdown)
 
-        remove_permissions(user, permissions)
+        test_helper.remove_permissions(user, permissions)
 
     def test_breakdown_validate_by_permissions(self):
         self.add_permission_and_test(Level.ALL_ACCOUNTS, ['account_id'], ['all_accounts_accounts_view'])
@@ -152,13 +177,13 @@ class BreakdownAllowedTest(TestCase):
 
     def test_breakdown_validate_by_delivery_permissions(self):
         user = User.objects.get(pk=1)
-        add_permissions(user, ['all_accounts_accounts_view'])
+        test_helper.add_permissions(user, ['all_accounts_accounts_view'])
 
         with self.assertRaises(exc.MissingDataError):
             permission_filter.validate_breakdown_by_permissions(Level.ALL_ACCOUNTS, user, ['account_id', 'dma'])
 
         user = User.objects.get(pk=1)
-        add_permissions(user, ['all_accounts_accounts_view', 'can_view_breakdown_by_delivery'])
+        test_helper.add_permissions(user, ['all_accounts_accounts_view', 'can_view_breakdown_by_delivery'])
 
         permission_filter.validate_breakdown_by_permissions(Level.ALL_ACCOUNTS, user, ['account_id', 'dma'])
 

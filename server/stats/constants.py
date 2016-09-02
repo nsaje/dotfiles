@@ -57,27 +57,12 @@ IntegerDimensions = [
 ]
 
 
-SpecialDimensionNameKeys = {
-    StructureDimension.ACCOUNT: 'account_name',
-    StructureDimension.CAMPAIGN: 'campaign_name',
-    StructureDimension.AD_GROUP: 'ad_group_name',
-    StructureDimension.CONTENT_AD: 'content_ad_title',
-    StructureDimension.SOURCE: 'source_name',
-}
-
-
 def get_dimension_identifier(dimension):
     """
     Returns field name that identifies the dimension
     """
 
     return DimensionIdentifierMapping.get(dimension, dimension)
-
-
-def get_dimension_name_key(dimension):
-    if dimension in SpecialDimensionNameKeys:
-        return SpecialDimensionNameKeys[dimension]
-    return dimension
 
 
 def get_delivery_dimension(breakdown):

@@ -37,6 +37,15 @@ def sort_results(results, order_fields=None):
     return rows
 
 
+def sort_rows_by_order_and_archived(rows, order_fields, archived_field='archived'):
+    if isinstance(order_fields, (str, unicode)):
+        order_fields = [order_fields]
+
+    order_fields = [archived_field] + order_fields
+
+    return sort_results(rows, order_fields)
+
+
 def map_by_breakdown(rows, breakdown, mapper):
     result = {}
     first_dimensions = breakdown[:-1]

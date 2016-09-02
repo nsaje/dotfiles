@@ -575,7 +575,10 @@ class Account(models.Model):
 
             return self.filter(id__in=filtered_ac_ids)
 
-        def exclude_archived(self):
+        def exclude_archived(self, show_archived=False):
+            if show_archived:
+                return self
+
             related_settings = AccountSettings.objects.all().filter(
                 account__in=self
             ).group_current_settings()
@@ -783,7 +786,10 @@ class Campaign(models.Model, PermissionMixin):
                 account__id__in=filtered_accounts
             )
 
-        def exclude_archived(self):
+        def exclude_archived(self, show_archived=False):
+            if show_archived:
+                return self
+
             related_settings = CampaignSettings.objects.all().filter(
                 campaign__in=self
             ).group_current_settings()
@@ -1194,6 +1200,9 @@ class CampaignGoal(models.Model):
             ]
 
         return campaign_goal
+
+    def get_view_key(self):
+        return 'campaign_goal_' + str(self.id)
 
 
 class CampaignGoalValue(models.Model):
@@ -1828,7 +1837,10 @@ class AdGroup(models.Model):
                 models.Q(adgroupsource__source__in=sources)
             ).distinct()
 
-        def exclude_archived(self):
+        def exclude_archived(self, show_archived=False):
+            if show_archived:
+                return self
+
             related_settings = AdGroupSettings.objects.all().filter(
                 ad_group__in=self
             ).group_current_settings()
@@ -2711,11 +2723,11 @@ class ContentAd(models.Model):
 
             return self.filter(id__in=content_ad_ids)
 
-        def exclude_archived(self):
-            return self.filter(archived=False)
+        def exclude_archived(self, show_archived=False):
+            if show_archived:
+                return self
 
-        def only_archived(self):
-            return self.filter(archived=True)
+            return self.filter(archived=False)
 
 
 class ContentAdSource(models.Model):
@@ -2746,6 +2758,12 @@ class ContentAdSource(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+
+    def get_submission_status(self):
+        if self.submission_status != constants.ContentAdSubmissionStatus.APPROVED and\
+           self.submission_status != constants.ContentAdSubmissionStatus.REJECTED:
+            return constants.ContentAdSubmissionStatus.PENDING
+        return self.submission_status
 
     objects = QuerySetManager()
 

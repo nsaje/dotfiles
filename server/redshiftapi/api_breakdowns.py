@@ -7,8 +7,10 @@ from redshiftapi import db
 from redshiftapi import models
 from redshiftapi import queries
 from redshiftapi import postprocess
+from redshiftapi import helpers
 
 from stats import constants
+from stats.helpers import group_rows_by_breakdown
 from utils import exc
 from utils import cache_helper
 
@@ -22,21 +24,52 @@ the code less verbose) for proper production code.
 """
 
 
-def query(breakdown, constraints, parents, conversion_goals, pixels, order, offset, limit):
+def query(breakdown, constraints, parents, goals, order, offset, limit):
     """
     Returns an array of rows that are represented as dicts.
     """
 
-    model = models.MVMaster(conversion_goals, pixels)
+    model = models.MVMaster(goals.conversion_goals, goals.pixels, goals.campaign_goals, goals.campaign_goal_values)
+    query, params = queries.prepare_breakdown_query(model, breakdown, constraints, parents,
+                                                    order, offset, limit)
 
-    with influx.block_timer('redshiftapi.api_breakdowns.prepare_query'):
-        query, params = _prepare_query(model, breakdown, constraints, parents,
-                                       order, offset, limit)
+    def postprocess_fn(rows, empty_row):
+        return postprocess.postprocess_breakdown_query(rows, empty_row, breakdown, constraints, parents,
+                                                       order, offset, limit)
 
-    with influx.block_timer('redshiftapi.api_breakdowns.get_cache_value_overhead'):
-        cache_key = cache_helper.get_cache_key(query, params)
-        cache = caches['breakdowns_rs']
-        results = cache.get(cache_key, None)
+    results = execute_query(query, params, breakdown, postprocess_fn)
+
+    return results
+
+
+def query_structure_with_stats(breakdown, constraints):
+    """
+    Returns all structure rows that have stats. Does not return stats, just dimensions.
+    """
+
+    model = models.MVMaster()
+    query, params = queries.prepare_query_structure_with_stats_query(model, breakdown, constraints)
+
+    rows = execute_query(query, params, breakdown)
+
+    return rows
+
+
+def augment(rows, breakdown, constraints, goals):
+    model = models.MVMaster(goals.conversion_goals, goals.pixels, goals.campaign_goals, goals.campaign_goal_values)
+
+    parents = helpers.create_parents(rows, breakdown)
+    query, params = queries.prepare_augment_query(model, breakdown, constraints, parents)
+
+    stats_rows = execute_query(query, params, breakdown)
+
+    return helpers.merge_rows(breakdown, rows, stats_rows)
+
+
+def execute_query(query, params, breakdown, postprocess_fn=None):
+    cache_key = cache_helper.get_cache_key(query, params)
+    cache = caches['breakdowns_rs']
+    results = cache.get(cache_key, None)
 
     if not results:
         influx.incr('redshiftapi.api_breakdowns.cache_miss', 1)
@@ -49,8 +82,9 @@ def query(breakdown, constraints, parents, conversion_goals, pixels, order, offs
 
                 empty_row = db.get_empty_row_dict(cursor.description)
 
-        _post_process(results, empty_row, breakdown, constraints, parents, offset, limit)
-        remove_postclick_values(breakdown, results)
+        if postprocess_fn:
+            results = postprocess_fn(results, empty_row)
+        helpers.remove_postclick_values(breakdown, results)
 
         with influx.block_timer('redshiftapi.api_breakdowns.set_cache_value_overhead'):
             cache.set(cache_key, results)
@@ -59,56 +93,3 @@ def query(breakdown, constraints, parents, conversion_goals, pixels, order, offs
         logger.info('Cache hit %s', cache_key)
 
     return results
-
-
-def _prepare_query(model, breakdown, constraints, parents,
-                   order, offset, limit):
-
-    target_dimension = constants.get_target_dimension(breakdown)
-    default_context = model.get_default_context(breakdown, constraints, parents, order, offset, limit)
-
-    if target_dimension in constants.TimeDimension._ALL:
-        # should also cover the case for len(breakdown) == 4 because in that case time dimension should be the last one
-        time_dimension = constants.get_time_dimension(breakdown)
-        return queries.prepare_breakdown_time_top_rows(model, time_dimension, default_context, constraints)
-
-    if len(breakdown) == 0:
-        # only totals
-        return queries.prepare_breakdown_top_rows(default_context)
-
-    if len(breakdown) == 1:
-        # base level
-        return queries.prepare_breakdown_top_rows(default_context)
-
-    if 2 <= len(breakdown) <= 3:
-        return queries.prepare_breakdown_struct_delivery_top_rows(default_context)
-
-    raise exc.InvalidBreakdownError("Selected breakdown is not supported {}".format(breakdown))
-
-
-def _post_process(rows, empty_row, breakdown, constraints, parents, offset, limit):
-    target_dimension = constants.get_target_dimension(breakdown)
-
-    if target_dimension in constants.TimeDimension._ALL:
-        postprocess.postprocess_time_dimension(
-            target_dimension, rows, empty_row, breakdown, constraints, parents)
-
-    if target_dimension == 'device_type':
-        postprocess.postprocess_device_type_dimension(
-            target_dimension, rows, empty_row, breakdown, parents, offset, limit)
-
-
-POSTCLICK_FIELDS = [
-    'visits', 'click_discrepancy', 'pageviews', 'new_visits', 'percent_new_users', 'bounce_rate',
-    'pv_per_visit', 'avg_tos', 'returning_users', 'unique_users', 'new_users', 'bounced_visits',
-    'total_seconds', 'avg_cost_per_minute', 'non_bounced_visits', 'avg_cost_per_non_bounced_visit',
-    'total_pageviews', 'avg_cost_per_pageview', 'avg_cost_for_new_visitor', 'avg_cost_per_visit',
-]
-
-
-def remove_postclick_values(breakdown, rows):
-    # HACK: Temporary hack that removes postclick data when we breakdown by delivery
-    if constants.get_delivery_dimension(breakdown) is not None:
-        for row in rows:
-            for key in POSTCLICK_FIELDS:
-                row[key] = None

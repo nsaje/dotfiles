@@ -588,14 +588,14 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 temp_touchpointconversions.pixel_1_168,
                 temp_touchpointconversions.pixel_1_720,
                 temp_touchpointconversions.pixel_1_2160,
-                media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
-                media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
-                media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
-                media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
-                media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24,
-                media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168,
-                media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720,
-                media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160,
+                e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
+                e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
+                e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
+                e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
+                e_media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24,
+                e_media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168,
+                e_media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720,
+                e_media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160,
                 ROW_NUMBER() OVER (PARTITION BY temp_base.account_id, temp_base.campaign_id
                                     ORDER BY temp_base.clicks DESC NULLS LAST) AS r
         FROM temp_base NATURAL
@@ -695,14 +695,14 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                 temp_touchpointconversions.pixel_1_168,
                 temp_touchpointconversions.pixel_1_720,
                 temp_touchpointconversions.pixel_1_2160,
-                media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
-                media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
-                media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
-                media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
-                media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24,
-                media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168,
-                media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720,
-                media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160,
+                e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
+                e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
+                e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
+                e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
+                e_media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24,
+                e_media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168,
+                e_media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720,
+                e_media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160,
                 ROW_NUMBER() OVER (PARTITION BY temp_base.account_id ORDER BY temp_base.clicks DESC NULLS LAST) AS r
         FROM temp_base NATURAL
         LEFT OUTER JOIN temp_yesterday NATURAL
@@ -899,8 +899,8 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
         ]
 
         orders = {
-            '-avg_cost_per_pixel_1_24': 'ORDER BY media_cost / NULLIF(pixel_1_24, 0) DESC',
-            '-avg_cost_per_conversion_goal_2': 'ORDER BY media_cost / NULLIF(conversion_goal_2, 0) DESC',
+            '-avg_cost_per_pixel_1_24': 'ORDER BY e_media_cost / NULLIF(pixel_1_24, 0) DESC',
+            '-avg_cost_per_conversion_goal_2': 'ORDER BY e_media_cost / NULLIF(conversion_goal_2, 0) DESC',
             'pixel_1_24': 'ORDER BY temp_touchpointconversions.pixel_1_24 ASC',
             'conversion_goal_2': 'ORDER BY temp_conversions.conversion_goal_2 ASC',
             'clicks': 'ORDER BY temp_base.clicks ASC',
@@ -921,3 +921,151 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             sql, _ = queries.prepare_breakdown_struct_delivery_top_rows(context)
 
             self.assertTrue(order_sql in sql, "Order {}:\n{}\nNOT IN\n{}".format(order, order_sql, sql))
+
+
+@mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+class PrepareAugmentQuery(TestCase, backtosql.TestSQLMixin):
+    def test_prepare_augment_query(self, mock_local_today):
+        m = SmallMaster()
+
+        constraints = {
+            'date__gte': datetime.date(2016, 4, 1),
+            'date__lte': datetime.date(2016, 5, 1),
+        }
+
+        parents = [
+            {'source_id': 1, 'campaign_id': [1, 2, 3]},
+            {'source_id': 2, 'campaign_id': [1, 2, 3, 4]},
+        ]
+
+        sql, params = queries.prepare_augment_query(m, ['source_id', 'campaign_id'], constraints, parents)
+
+        # extracts params correctly
+        self.assertEquals(params, [
+            datetime.date(2016, 7, 1),
+            [1, 2, 3], 1,
+            [1, 2, 3, 4], 2,
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+            [1, 2, 3], 1,
+            [1, 2, 3, 4], 2,
+        ])
+
+        self.assertSQLEquals(sql, """
+        WITH temp_yesterday AS
+            (SELECT a.source_id AS source_id,
+                    a.campaign_id AS campaign_id,
+                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+            FROM mv_campaign a
+            WHERE (a.date=%s)
+                AND ((a.campaign_id=ANY(%s)
+                    AND a.source_id=%s)
+                    OR (a.campaign_id=ANY(%s)
+                        AND a.source_id=%s))
+            GROUP BY 1, 2),
+        temp_base AS
+            (SELECT a.source_id AS source_id,
+                    a.campaign_id AS campaign_id,
+                    SUM(a.clicks) clicks,
+                    SUM(a.total_time_on_site) total_seconds
+            FROM mv_campaign a
+            WHERE (a.date>=%s
+                    AND a.date<=%s)
+                AND ((a.campaign_id=ANY(%s)
+                    AND a.source_id=%s)
+                    OR (a.campaign_id=ANY(%s)
+                        AND a.source_id=%s))
+            GROUP BY 1, 2)
+        SELECT
+            temp_base.source_id,
+            temp_base.campaign_id,
+            temp_base.clicks,
+            temp_base.total_seconds,
+            temp_yesterday.yesterday_cost
+        FROM temp_base NATURAL LEFT JOIN temp_yesterday;
+        """)
+
+
+class PrepareBreakdownQueryTest(TestCase):
+    def test_prepare_query_top_rows(self):
+        constraints = {
+            'date__gte': datetime.date(2016, 7, 1),
+            'date__lte': datetime.date(2016, 7, 10),
+        }
+
+        # should be called when breakdown len == 0, totals
+        with mock.patch('redshiftapi.queries.prepare_breakdown_top_rows') as mock_prepare:
+            m = models.MVMaster()
+            queries.prepare_breakdown_query(
+                m, [], copy.copy(constraints), None, 'clicks', None, None
+            )
+
+            self.assertTrue(mock_prepare.called)
+
+        # should be called when breakdown len == 1
+        with mock.patch('redshiftapi.queries.prepare_breakdown_top_rows') as mock_prepare:
+            m = models.MVMaster()
+            queries.prepare_breakdown_query(
+                m, ['account_id'], copy.copy(constraints), None, 'clicks', None, None
+            )
+
+            self.assertTrue(mock_prepare.called)
+
+    def test_prepare_query_select_time(self):
+        constraints = {
+            'date__gte': datetime.date(2016, 7, 1),
+            'date__lte': datetime.date(2016, 7, 10),
+        }
+
+        with mock.patch('redshiftapi.queries.prepare_breakdown_time_top_rows') as mock_prepare:
+            m = models.MVMaster()
+            queries.prepare_breakdown_query(
+                m, ['account_id', 'week'], copy.copy(constraints), None, 'clicks', None, None
+            )
+
+            mock_prepare.assert_called_with(m, 'week', mock.ANY, constraints)
+
+        with mock.patch('redshiftapi.queries.prepare_breakdown_time_top_rows') as mock_prepare:
+            m = models.MVMaster()
+            queries.prepare_breakdown_query(
+                m, ['account_id', 'day'], copy.copy(constraints), None, 'impressions', None, None
+            )
+
+            mock_prepare.assert_called_with(m, 'day', mock.ANY, constraints)
+
+    def test_prepare_query_structure_and_delivery(self):
+
+        with mock.patch('redshiftapi.queries.prepare_breakdown_struct_delivery_top_rows') as mock_prepare:
+            m = models.MVMaster()
+            queries.prepare_breakdown_query(
+                m, ['account_id', 'campaign_id'], {
+                    'date__gte': datetime.date(2016, 7, 1),
+                    'date__lte': datetime.date(2016, 7, 10),
+                }, None, 'clicks', None, None
+            )
+
+            self.assertTrue(mock_prepare.called)
+
+        with mock.patch('redshiftapi.queries.prepare_breakdown_struct_delivery_top_rows') as mock_prepare:
+            m = models.MVMaster()
+            queries.prepare_breakdown_query(
+                m, ['account_id', 'campaign_id', 'dma'], {
+                    'date__gte': datetime.date(2016, 7, 1),
+                    'date__lte': datetime.date(2016, 7, 10),
+                }, None, 'clicks', None, None
+            )
+
+            self.assertTrue(mock_prepare.called)
+
+    def test_prepare_query_invalid_breakdown(self):
+
+        with self.assertRaises(exc.InvalidBreakdownError):
+            m = models.MVMaster()
+            queries.prepare_breakdown_query(
+                m, [
+                    'account_id', 'campaign_id', 'content_ad_id', 'source_id'
+                ], {
+                    'date__gte': datetime.date(2016, 7, 1),
+                    'date__lte': datetime.date(2016, 7, 10),
+                }, None, 'clicks', None, None
+            )

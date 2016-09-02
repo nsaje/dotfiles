@@ -1,9 +1,9 @@
 """
-Applies dash data to rows.
+Applies dash data to rows. No logics, only write data to proper keys.
 """
 
 
-def augment_accounts(rows, loader):
+def augment_accounts(rows, loader, is_base_level=False):
     for row in rows:
         account_id = row['account_id']
         augment_row_account(
@@ -14,7 +14,7 @@ def augment_accounts(rows, loader):
         )
 
 
-def augment_campaigns(rows, loader):
+def augment_campaigns(rows, loader, is_base_level=False):
     for row in rows:
         campaign_id = row['campaign_id']
         augment_row_campaign(
@@ -25,18 +25,19 @@ def augment_campaigns(rows, loader):
         )
 
 
-def augment_ad_groups(rows, loader):
+def augment_ad_groups(rows, loader, is_base_level=False):
     for row in rows:
         ad_group_id = row['ad_group_id']
         augment_row_ad_group(
             row,
             loader.objs_map[ad_group_id],
             loader.settings_map[ad_group_id],
-            loader.status_map[ad_group_id]
+            loader.status_map[ad_group_id],
+            loader.other_settings_map[ad_group_id] if is_base_level else None
         )
 
 
-def augment_content_ads(rows, loader):
+def augment_content_ads(rows, loader, is_base_level=False):
     for row in rows:
         content_ad_id = row['content_ad_id']
         augment_row_content_ad(
@@ -48,13 +49,13 @@ def augment_content_ads(rows, loader):
         )
 
 
-def augment_sources(rows, loader):
+def augment_sources(rows, loader, is_base_level=False):
     for row in rows:
         source_id = row['source_id']
         augment_row_source(
             row,
             loader.objs_map[source_id],
-            loader.status_map[source_id]
+            loader.settings_map[source_id]
         )
 
 
@@ -92,10 +93,10 @@ def augment_row_campaign(row, campaign=None, settings=None, status=None):
         })
 
 
-def augment_row_ad_group(row, ad_group=None, settings=None, status=None):
+def augment_row_ad_group(row, ad_group=None, settings=None, status=None, other_settings=None):
     if ad_group:
         row.update({
-            'name': ad_group.name
+            'name': ad_group.name,
         })
 
     if settings:
@@ -106,7 +107,11 @@ def augment_row_ad_group(row, ad_group=None, settings=None, status=None):
     if status is not None:
         row.update({
             'status': status,
+            'state': status,
         })
+
+    if other_settings is not None:
+        row.update(other_settings)
 
 
 def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, is_demo=None):
@@ -125,17 +130,15 @@ def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, is_d
             },
             'image_hash': content_ad.image_hash,
             'state': content_ad.state,
+            'status': content_ad.state,
             'archived': content_ad.archived,
+            'redirector_url': content_ad.get_redirector_url(is_demo)
         })
 
-        if is_demo is not None:
+        if ad_group:
             row.update({
-                'redirector_url': content_ad.get_redirector_url(is_demo)
+                'url': content_ad.get_url(ad_group, is_demo),
             })
-            if ad_group:
-                row.update({
-                    'url': content_ad.get_url(ad_group, is_demo),
-                })
 
     if batch:
         row.update({
@@ -145,7 +148,7 @@ def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, is_d
         })
 
 
-def augment_row_source(row, source=None, status=None):
+def augment_row_source(row, source=None, settings=None):
     if source:
         row.update({
             'name': source.name,
@@ -153,7 +156,5 @@ def augment_row_source(row, source=None, status=None):
             'maintenance': source.maintenance,
         })
 
-    if status is not None:
-        row.update({
-            'status': status,
-        })
+    if settings is not None:
+        row.update(settings)

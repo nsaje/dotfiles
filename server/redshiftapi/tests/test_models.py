@@ -49,14 +49,14 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         # prefixes should be added afterwards
         self.assertListEqual([x.column_as_alias('a') for x in after_join_columns], [
-            backtosql.SQLMatcher('media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2'),
-            backtosql.SQLMatcher('media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3'),
-            backtosql.SQLMatcher('media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4'),
-            backtosql.SQLMatcher('media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5'),
-            backtosql.SQLMatcher('media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24'),
-            backtosql.SQLMatcher('media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168'),
-            backtosql.SQLMatcher('media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720'),
-            backtosql.SQLMatcher('media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160'),
+            backtosql.SQLMatcher('e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2'),
+            backtosql.SQLMatcher('e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3'),
+            backtosql.SQLMatcher('e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4'),
+            backtosql.SQLMatcher('e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5'),
+            backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24'),
+            backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168'),
+            backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720'),
+            backtosql.SQLMatcher('e_media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160'),
         ])
 
         columns = m.get_columns()

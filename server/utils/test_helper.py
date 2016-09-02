@@ -2,6 +2,7 @@ import datetime
 import httplib
 import operator
 from contextlib import contextmanager
+from collections import namedtuple
 
 import mock
 import unittest
@@ -50,7 +51,15 @@ class QuerySetMatcher():
         self.obj = obj
 
     def __eq__(self, other):
-        return sorted(list(self.obj), key=lambda x: x.pk) == sorted(list(other), key=lambda x: x.pk)
+        a = sorted(list(self.obj), key=lambda x: x.pk)
+        b = sorted(list(other), key=lambda x: x.pk)
+
+        if a != b:
+            print a
+            print '  !=   '
+            print b
+
+        return a == b
 
 
 class ListMatcher():

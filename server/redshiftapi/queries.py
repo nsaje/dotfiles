@@ -8,6 +8,41 @@ from utils import exc
 from redshiftapi import models
 
 
+def prepare_breakdown_query(model, breakdown, constraints, parents, order, offset, limit):
+    target_dimension = constants.get_target_dimension(breakdown)
+    default_context = model.get_default_context(breakdown, constraints, parents, order, offset, limit)
+
+    if target_dimension in constants.TimeDimension._ALL:
+        # should also cover the case for len(breakdown) == 4 because in that case time dimension should be the last one
+        time_dimension = constants.get_time_dimension(breakdown)
+        return prepare_breakdown_time_top_rows(model, time_dimension, default_context, constraints)
+
+    if len(breakdown) == 0:
+        # only totals
+        return prepare_breakdown_top_rows(default_context)
+
+    if len(breakdown) == 1:
+        # base level
+        return prepare_breakdown_top_rows(default_context)
+
+    if 2 <= len(breakdown) <= 3:
+        return prepare_breakdown_struct_delivery_top_rows(default_context)
+
+    raise exc.InvalidBreakdownError("Selected breakdown is not supported {}".format(breakdown))
+
+
+def prepare_augment_query(model, breakdown, constraints, parents):
+    default_context = model.get_default_context(breakdown, constraints, parents)
+    return prepare_breakdown_top_rows(default_context)
+
+
+def prepare_query_structure_with_stats_query(model, breakdown, constraints):
+    default_context = model.get_default_context(breakdown, constraints, None)
+    sql = backtosql.generate_sql('breakdown_structure_with_stats.sql', default_context)
+    params = default_context['constraints'].get_params()
+    return sql, params
+
+
 def prepare_breakdown_top_rows(default_context):
     """
     Prepares a SQL query for base level or totals.
