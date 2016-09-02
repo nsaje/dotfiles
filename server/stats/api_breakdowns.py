@@ -65,8 +65,12 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
         if helpers.should_augment_by_dash(target_dimension):
             structure_with_stats = None
             if target_dimension != 'publisher':
-                structure_with_stats = redshiftapi.api_breakdowns.query_structure_with_stats(
-                    breakdown, stats_constraints)
+                if offset == 0:
+                    # when we are loading first page, we need already know everything
+                    structure_with_stats = rows
+                else:
+                    structure_with_stats = redshiftapi.api_breakdowns.query_structure_with_stats(
+                        breakdown, stats_constraints)
 
             rows = dash.dashapi.api_breakdowns.augment(rows, level, breakdown, constraints)
             rows = dash.dashapi.api_breakdowns.query_missing_rows(
