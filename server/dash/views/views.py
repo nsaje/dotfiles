@@ -1603,17 +1603,6 @@ class AllAccountsOverview(api_common.BaseApiView):
             ).values_list('account__id', flat=True)
             constraints['campaign__account__id__in'] = latest_typed_accset
 
-        daterange_proj = reports.projections.BudgetProjections(
-            start_date,
-            end_date,
-            'account',
-            **constraints
-        )
-        month_proj = reports.projections.CurrentMonthBudgetProjections(
-            'account',
-            **constraints
-        )
-
         count_active_accounts = infobox_helpers.count_active_accounts(
             view_filter.filtered_agencies,
             view_filter.filtered_account_types
@@ -1686,19 +1675,6 @@ class AllAccountsOverview(api_common.BaseApiView):
                 lc_helper.default_currency(mtd_spend),
                 tooltip='Month-to-date media spend',
             ))
-
-        settings.append(infobox_helpers.OverviewSetting(
-            'Total budgets:',
-            lc_helper.default_currency(daterange_proj.total('allocated_total_budget')),
-            section_start=True,
-            tooltip='Sum of total budgets in selected date range'
-        ))
-
-        settings.append(infobox_helpers.OverviewSetting(
-            'Monthly budgets:',
-            lc_helper.default_currency(month_proj.total('allocated_total_budget')),
-            tooltip='Sum of total budgets for current month'
-        ))
 
         return [setting.as_dict() for setting in settings]
 
