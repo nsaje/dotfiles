@@ -1,6 +1,7 @@
 import json
 
 from django.db import transaction
+from django.http import Http404
 from django.template.defaultfilters import pluralize
 
 from dash import constants
@@ -12,6 +13,26 @@ from dash.views import helpers
 
 from utils import api_common
 from utils import exc
+
+
+class UploadBatch(api_common.BaseApiView):
+
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_use_single_ad_upload'):
+            raise Http404('Forbidden')
+
+        helpers.get_ad_group(request.user, ad_group_id)  # check access permission
+
+        resource = json.loads(request.body)
+        form = forms.AdGroupAdsUploadBaseForm(resource)
+        if not form.is_valid():
+            raise exc.ValidationError(errors=form.errors)
+
+        batch = upload.create_empty_batch(ad_group_id, form.cleaned_data['batch_name'])
+        return self.create_api_response({
+            'batch_id': batch.id,
+            'batch_name': batch.name,
+        })
 
 
 class UploadCsv(api_common.BaseApiView):
@@ -148,15 +169,43 @@ class CandidatesDownload(api_common.BaseApiView):
 
 class Candidate(api_common.BaseApiView):
 
-    def put(self, request, ad_group_id, batch_id, candidate_id):
+    def _get_ad_group_batch(self, request, ad_group_id, batch_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         try:
             batch = ad_group.uploadbatch_set.get(id=batch_id)
         except models.UploadBatch.DoesNotExist:
             raise exc.MissingDataError('Upload batch does not exist')
 
-        resource = json.loads(request.body)
+        return ad_group, batch
 
+    def get(self, request, ad_group_id, batch_id, candidate_id=None):
+        if not request.user.has_perm('zemauth.can_use_single_ad_upload'):
+            raise Http404('Forbidden')
+
+        if candidate_id:
+            raise exc.ValidationError('Not supported')
+        _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
+
+        return self.create_api_response({
+            'candidates': upload.get_candidates_with_errors(batch.contentadcandidate_set.all()),
+        })
+
+    def post(self, request, ad_group_id, batch_id, candidate_id=None):
+        if not request.user.has_perm('zemauth.can_use_single_ad_upload'):
+            raise Http404('Forbidden')
+
+        if candidate_id:
+            raise exc.ValidationError('Not supported')
+        _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
+        candidate = upload.add_candidate(batch)
+
+        return self.create_api_response({
+            'candidate': candidate.to_dict(),
+        })
+
+    def put(self, request, ad_group_id, batch_id, candidate_id):
+        _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
+        resource = json.loads(request.body)
         try:
             upload.update_candidate(resource['candidate'], resource['defaults'], batch)
         except models.ContentAdCandidate.DoesNotExist:
@@ -167,12 +216,7 @@ class Candidate(api_common.BaseApiView):
         })
 
     def delete(self, request, ad_group_id, batch_id, candidate_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        try:
-            batch = ad_group.uploadbatch_set.get(id=batch_id)
-        except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError('Upload batch does not exist')
-
+        _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
         try:
             candidate = batch.contentadcandidate_set.get(id=candidate_id)
         except models.ContentAdCandidate.DoesNotExist:

@@ -150,6 +150,10 @@ urlpatterns += [
         login_required(dash.views.upload.UploadCsv.as_view()), name='upload_csv'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/batch/',
+        login_required(dash.views.upload.UploadBatch.as_view()), name='upload_batch'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload/(?P<batch_id>\d+)/status/',
         login_required(dash.views.upload.UploadStatus.as_view()), name='upload_status'
     ),
@@ -167,7 +171,7 @@ urlpatterns += [
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload'
-        '/(?P<batch_id>\d+)/candidate/(?P<candidate_id>\d+)/',
+        '/(?P<batch_id>\d+)/candidate/(?:(?P<candidate_id>\d+)/)?',
         login_required(dash.views.upload.Candidate.as_view()), name='upload_candidate'
     ),
     url(

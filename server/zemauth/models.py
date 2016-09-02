@@ -219,6 +219,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_promote_agency_managers', 'User can promote agency managers on account settings tab'),
             ('group_agency_manager_add', 'Agency managers are added to this group when promoted'),
             ('can_set_agency_for_account', 'User can set agency for account'),
+            ('can_use_single_ad_upload', 'User can use single content ad upload'),
         )
 
     def get_full_name(self):

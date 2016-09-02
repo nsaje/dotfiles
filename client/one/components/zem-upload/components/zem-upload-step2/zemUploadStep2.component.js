@@ -14,6 +14,8 @@ oneApp.directive('zemUploadStep2', ['$window', function ($window) { // eslint-di
             batchName: '=',
             candidates: '=',
             closeModal: '=close',
+            hasPermission: '=',
+            isPermissionInternal: '=',
         },
         controllerAs: 'ctrl',
         templateUrl: '/components/zem-upload/components/zem-upload-step2/zemUploadStep2.component.html',
@@ -158,6 +160,25 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
         });
     };
 
+    vm.addCandidate = function () {
+        vm.addCandidateRequestInProgress = true;
+        vm.addCandidateRequestFailed = false;
+
+        vm.endpoint.addCandidate(
+            vm.batchId
+        ).then(
+            function (data) {
+                vm.candidates.push(data.candidate);
+                vm.editFormApi.open(data.candidate);
+            },
+            function () {
+                vm.addCandidateRequestFailed = true;
+            }
+        ).finally(function () {
+            vm.addCandidateRequestInProgress = false;
+        });
+    };
+
     var hasErrors = function (candidate) {
         for (var key in candidate.errors) {
             if (candidate.errors.hasOwnProperty(key) && candidate.errors[key]) {
@@ -183,6 +204,12 @@ oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$wind
     };
 
     vm.getStatus = function (candidate) {
+        if (candidate.imageStatus === constants.asyncUploadJobStatus.PENDING_START &&
+            candidate.urlStatus === constants.asyncUploadJobStatus.PENDING_START) {
+            // newly added candidate
+            return null;
+        }
+
         if (candidate.imageStatus === constants.asyncUploadJobStatus.PENDING_START ||
             candidate.imageStatus === constants.asyncUploadJobStatus.WAITING_RESPONSE ||
             candidate.urlStatus === constants.asyncUploadJobStatus.PENDING_START ||

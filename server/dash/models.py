@@ -2777,19 +2777,19 @@ class ContentAdSource(models.Model):
 
 
 class ContentAdCandidate(FootprintModel):
-    label = models.TextField(null=True, blank=True)
-    url = models.TextField(null=True, blank=True)
-    title = models.TextField(null=True, blank=True)
-    image_url = models.TextField(null=True, blank=True)
-    image_crop = models.TextField(null=True, blank=True)
+    label = models.TextField(null=True, blank=True, default="")
+    url = models.TextField(null=True, blank=True, default="")
+    title = models.TextField(null=True, blank=True, default="")
+    image_url = models.TextField(null=True, blank=True, default=None)
+    image_crop = models.TextField(null=True, blank=True, default=constants.ImageCrop.CENTER)
 
-    display_url = models.TextField(null=True, blank=True)
-    brand_name = models.TextField(null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    call_to_action = models.TextField(null=True, blank=True)
+    display_url = models.TextField(null=True, blank=True, default="")
+    brand_name = models.TextField(null=True, blank=True, default="")
+    description = models.TextField(null=True, blank=True, default="")
+    call_to_action = models.TextField(null=True, blank=True, default=constants.DEFAULT_CALL_TO_ACTION)
 
-    primary_tracker_url = models.TextField(null=True, blank=True)
-    secondary_tracker_url = models.TextField(null=True, blank=True)
+    primary_tracker_url = models.TextField(null=True, blank=True, default=None)
+    secondary_tracker_url = models.TextField(null=True, blank=True, default=None)
 
     ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT)

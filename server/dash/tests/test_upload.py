@@ -233,6 +233,55 @@ class CancelUploadTestCase(TestCase):
             upload.cancel_upload(batch)
 
 
+class AddCandidateTestCase(TestCase):
+    fixtures = ['test_upload.yaml']
+
+    def test_add_candidate(self):
+        ad_group = models.AdGroup.objects.get(id=1)
+        new_batch = upload.create_empty_batch(ad_group.id, 'test')
+
+        candidate = upload.add_candidate(new_batch)
+        self.assertEqual(ad_group.id, candidate.ad_group_id)
+        self.assertEqual(new_batch.id, candidate.batch_id)
+        self.assertEqual({
+            'id': candidate.id,
+            'label': '',
+            'url': '',
+            'title': '',
+            'image_url': None,
+            'image_crop': constants.ImageCrop.CENTER,
+            'display_url': '',
+            'brand_name': '',
+            'description': '',
+            'call_to_action': constants.DEFAULT_CALL_TO_ACTION,
+            'primary_tracker_url': None,
+            'secondary_tracker_url': None,
+            'image_hash': None,
+            'image_height': None,
+            'image_width': None,
+            'image_id': None,
+            'image_status': constants.AsyncUploadJobStatus.PENDING_START,
+            'url_status': constants.AsyncUploadJobStatus.PENDING_START,
+            'hosted_image_url': None,
+        }, candidate.to_dict())
+
+
+class CreateEmptyBatchTestCase(TestCase):
+    fixtures = ['test_upload.yaml']
+
+    def test_create_empty_batch(self):
+        ad_group_id = 1
+        empty_batch = upload.create_empty_batch(ad_group_id, 'test')
+        self.assertEqual(ad_group_id, empty_batch.ad_group_id)
+        self.assertEqual('test', empty_batch.name)
+        self.assertEqual(None, empty_batch.original_filename)
+
+        another_empty_batch = upload.create_empty_batch(ad_group_id, 'test', 'filename')
+        self.assertEqual(ad_group_id, another_empty_batch.ad_group_id)
+        self.assertEqual('test', another_empty_batch.name)
+        self.assertEqual('filename', another_empty_batch.original_filename)
+
+
 class GetCandidatesWithErrorsTestCase(TestCase):
     fixtures = ['test_upload.yaml']
 

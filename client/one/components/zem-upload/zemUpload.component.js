@@ -1,4 +1,4 @@
-/* globals oneApp */
+/* globals oneApp, moment */
 'use strict';
 
 oneApp.directive('zemUpload', [function () { // eslint-disable-line max-len
@@ -12,6 +12,8 @@ oneApp.directive('zemUpload', [function () { // eslint-disable-line max-len
             onSave: '=',
             closeModal: '=',
             user: '=',
+            hasPermission: '=',
+            isPermissionInternal: '=',
         },
         controllerAs: 'ctrl',
         controller: 'ZemUploadCtrl',
@@ -21,7 +23,12 @@ oneApp.directive('zemUpload', [function () { // eslint-disable-line max-len
 oneApp.controller('ZemUploadCtrl', ['zemUploadEndpointService', function (zemUploadEndpointService) {
     var vm = this;
     vm.endpoint = zemUploadEndpointService.createEndpoint(vm.adGroup.id);
+    vm.defaultBatchName = moment().utc().add(vm.user ? vm.user.timezoneOffset : 0, 'seconds').format('M/D/YYYY h:mm A');
     vm.step = 1;
+
+    if (vm.hasPermission('zemauth.can_use_single_ad_upload')) {
+        vm.step = 0;
+    }
 
     vm.switchToFileUpload = function () {
         vm.step = 1;

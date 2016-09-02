@@ -589,9 +589,223 @@ class UploadCancelTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
 
+class UploadBatchTest(TestCase):
+
+    fixtures = ['test_upload.yaml']
+
+    def test_create_empty_batch(self):
+        ad_group_id = 1
+        batch_name = 'test'
+
+        response = _get_client().post(
+            reverse('upload_batch', kwargs={'ad_group_id': ad_group_id}),
+            json.dumps({'batch_name': batch_name}),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+        batch = models.UploadBatch.objects.latest('created_dt')
+
+        response = json.loads(response.content)
+        self.assertEqual({
+            'data': {
+                'batch_id': batch.id,
+                'batch_name': batch_name,
+            },
+            'success': True,
+        }, response)
+
+    def test_create_empty_batch_invalid_batch_name(self):
+        ad_group_id = 1
+        batch_name = ''
+
+        response = _get_client().post(
+            reverse('upload_batch', kwargs={'ad_group_id': ad_group_id}),
+            json.dumps({'batch_name': batch_name}),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_create_empty_batch_no_permission(self):
+        ad_group_id = 1
+        batch_name = 'test'
+
+        response = _get_client(superuser=False).post(
+            reverse('upload_batch', kwargs={'ad_group_id': ad_group_id}),
+            json.dumps({'batch_name': batch_name}),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertTemplateUsed(response, '404.html')
+
+
 class CandidateTest(TestCase):
 
     fixtures = ['test_upload.yaml']
+
+    def test_get_candidate(self):
+        batch_id = 1
+        ad_group_id = 2
+        candidate_id = 1
+
+        response = _get_client().get(
+            reverse(
+                'upload_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_get_candidate_list(self):
+        batch_id = 1
+        ad_group_id = 2
+
+        response = _get_client().get(
+            reverse(
+                'upload_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+
+        response = json.loads(response.content)
+        self.assertEqual({
+            u'data': {
+                u'candidates': [{
+                    u'id': 1,
+                    u'label': u'content ad 1',
+                    u'url': u'http://zemanta.com/blog',
+                    u'title': u'Zemanta blog čšž',
+                    u'image_url': u'http://zemanta.com/img.jpg',
+                    u'image_crop': u'entropy',
+                    u'display_url': u'zemanta.com',
+                    u'brand_name': u'Zemanta',
+                    u'description': u'Zemanta blog',
+                    u'call_to_action': u'Read more',
+                    u'errors': {
+                        u'__all__': [u'Content ad still processing'],
+                    },
+                    u'hosted_image_url': None,
+                    u'image_height': None,
+                    u'image_width': None,
+                    u'image_id': None,
+                    u'image_hash': None,
+                    u'image_status': constants.AsyncUploadJobStatus.PENDING_START,
+                    u'url_status': constants.AsyncUploadJobStatus.PENDING_START,
+                    u'primary_tracker_url': None,
+                    u'secondary_tracker_url': None,
+                }]
+            },
+            u'success': True,
+        }, response)
+
+    def test_get_candidate_list_no_permission(self):
+        batch_id = 1
+        ad_group_id = 2
+
+        response = _get_client(superuser=False).get(
+            reverse(
+                'upload_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertTemplateUsed(response, '404.html')
+
+    def test_add_candidate(self):
+        batch_id = 1
+        ad_group_id = 2
+
+        response = _get_client().post(
+            reverse(
+                'upload_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+        response = json.loads(response.content)
+        candidate = models.ContentAdCandidate.objects.latest('created_dt')
+
+        self.assertEqual({
+            'data': {
+                'candidate': {
+                    'id': candidate.id,
+                    'label': '',
+                    'url': '',
+                    'title': '',
+                    'image_url': None,
+                    'image_crop': constants.ImageCrop.CENTER,
+                    'display_url': '',
+                    'brand_name': '',
+                    'description': '',
+                    'call_to_action': constants.DEFAULT_CALL_TO_ACTION,
+                    'primary_tracker_url': None,
+                    'secondary_tracker_url': None,
+                    'image_hash': None,
+                    'image_height': None,
+                    'image_width': None,
+                    'image_id': None,
+                    'image_status': constants.AsyncUploadJobStatus.PENDING_START,
+                    'url_status': constants.AsyncUploadJobStatus.PENDING_START,
+                    'hosted_image_url': None,
+                }
+            },
+            'success': True,
+        }, response)
+
+    def test_add_candidate_with_id(self):
+        batch_id = 1
+        ad_group_id = 2
+        candidate_id = 1
+
+        response = _get_client().post(
+            reverse(
+                'upload_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                    'candidate_id': candidate_id
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_add_candidate_no_permission(self):
+        batch_id = 1
+        ad_group_id = 2
+
+        response = _get_client(superuser=False).post(
+            reverse(
+                'upload_candidate',
+                kwargs={
+                    'ad_group_id': ad_group_id,
+                    'batch_id': batch_id,
+                }
+            ),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+        self.assertTemplateUsed(response, '404.html')
 
     def test_update_candidate(self):
         batch_id = 5

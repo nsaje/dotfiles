@@ -45,6 +45,33 @@ oneApp.factory('zemUploadEndpointService', ['$http', '$q', function ($http, $q) 
             return deferred.promise;
         };
 
+        this.createBatch = function (batchName) {
+            var deferred = $q.defer();
+            var url = baseUrl + 'batch/';
+            var config = {
+                params: {},
+            };
+
+            if (batchName) {
+                config.batch_name = batchName;
+            }
+
+            $http.post(url, config).success(function (data) {
+                deferred.resolve({
+                    batchId: data.data.batch_id,
+                    batchName: data.data.batch_name,
+                });
+            }).error(function (data) {
+                var errors = null;
+                if (data.data && data.data.errors) {
+                    errors = convertBatchErrorsFromApi(data.data.errors);
+                }
+                deferred.reject(errors);
+            });
+
+            return deferred.promise;
+        };
+
         this.checkStatus = function (batchId, candidates) {
             var deferred = $q.defer();
             var url = baseUrl + batchId + '/status/';
@@ -89,7 +116,7 @@ oneApp.factory('zemUploadEndpointService', ['$http', '$q', function ($http, $q) 
                 }).error(function (data) {
                     var errors = null;
                     if (data.data && data.data.errors) {
-                        errors = convertSaveErrorsFromApi(data.data.errors);
+                        errors = convertBatchErrorsFromApi(data.data.errors);
                     }
                     deferred.reject(errors);
                 });
@@ -117,6 +144,38 @@ oneApp.factory('zemUploadEndpointService', ['$http', '$q', function ($http, $q) 
                     });
                 }).error(function (data) {
                     deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.getCandidates = function (batchId) {
+            var deferred = $q.defer();
+            var url = baseUrl + batchId + '/candidate/';
+
+            $http.get(url).
+                success(function (result) {
+                    deferred.resolve({
+                        candidates: convertCandidatesFromApi(result.data.candidates),
+                    });
+                }).error(function (result) {
+                    deferred.reject(result);
+                });
+
+            return deferred.promise;
+        };
+
+        this.addCandidate = function (batchId) {
+            var deferred = $q.defer();
+            var url = baseUrl + batchId + '/candidate/';
+
+            $http.post(url).
+                success(function (result) {
+                    deferred.resolve({
+                        candidate: convertCandidateFromApi(result.data.candidate),
+                    });
+                }).error(function (result) {
+                    deferred.reject(result);
                 });
 
             return deferred.promise;
@@ -199,6 +258,8 @@ oneApp.factory('zemUploadEndpointService', ['$http', '$q', function ($http, $q) 
         }
 
         function convertCandidateErrorsFromApi (errors) {
+            if (!errors) return {};
+
             return {
                 label: errors.label,
                 title: errors.title,
@@ -277,7 +338,7 @@ oneApp.factory('zemUploadEndpointService', ['$http', '$q', function ($http, $q) 
             return converted;
         }
 
-        function convertSaveErrorsFromApi (errors) {
+        function convertBatchErrorsFromApi (errors) {
             return {
                 batchName: errors.batch_name,
             };

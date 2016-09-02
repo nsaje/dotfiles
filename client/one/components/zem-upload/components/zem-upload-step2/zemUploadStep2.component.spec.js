@@ -16,6 +16,7 @@ describe('ZemUploadStep2Ctrl', function () {
             checkStatus: function () {},
             updateCandidate: function () {},
             removeCandidate: function () {},
+            addCandidate: function () {},
             save: function () {},
             cancel: function () {},
         };
@@ -187,6 +188,82 @@ describe('ZemUploadStep2Ctrl', function () {
 
             $interval.flush(2500);
             expect($interval.cancel).toHaveBeenCalled();
+        });
+    });
+
+    describe('candidate addition', function () {
+        it('adds new candidate and opens edit form on success', function () {
+            ctrl.candidates = [];
+            ctrl.editFormApi = {
+                open: function () {},
+            };
+            ctrl.batchId = 1234;
+
+            var deferred = $q.defer();
+            spyOn(ctrl.endpoint, 'addCandidate').and.callFake(function () {
+                return deferred.promise;
+            });
+            spyOn(ctrl.editFormApi, 'open').and.stub();
+
+            expect(ctrl.addCandidateRequestInProgress).toBeUndefined();
+            expect(ctrl.addCandidateRequestFailed).toBeUndefined();
+
+            ctrl.addCandidate();
+            expect(ctrl.addCandidateRequestInProgress).toBe(true);
+            expect(ctrl.addCandidateRequestFailed).toBe(false);
+
+            var returnedCandidate = {
+                id: 1,
+                url: 'http://example.com/url1',
+                title: 'Title 1',
+                imageUrl: 'http://exmaple.com/img1.jpg',
+                imageCrop: 'center',
+                description: '',
+                displayUrl: 'example.com',
+                brandName: '',
+                callToAction: 'Read more',
+                label: 'title1',
+                imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+            };
+            deferred.resolve({
+                candidate: returnedCandidate,
+            });
+            scope.$digest();
+
+            expect(ctrl.candidates).toEqual([returnedCandidate]);
+            expect(ctrl.editFormApi.open).toHaveBeenCalledWith(returnedCandidate);
+            expect(ctrl.addCandidateRequestInProgress).toBe(false);
+            expect(ctrl.addCandidateRequestFailed).toBe(false);
+        });
+
+        it('sets a flag on failure', function () {
+            ctrl.candidates = [];
+            ctrl.editFormApi = {
+                open: function () {},
+            };
+            ctrl.batchId = 1234;
+
+            var deferred = $q.defer();
+            spyOn(ctrl.endpoint, 'addCandidate').and.callFake(function () {
+                return deferred.promise;
+            });
+            spyOn(ctrl.editFormApi, 'open').and.stub();
+
+            expect(ctrl.addCandidateRequestInProgress).toBeUndefined();
+            expect(ctrl.addCandidateRequestFailed).toBeUndefined();
+
+            ctrl.addCandidate();
+            expect(ctrl.addCandidateRequestInProgress).toBe(true);
+            expect(ctrl.addCandidateRequestFailed).toBe(false);
+
+            deferred.reject();
+            scope.$digest();
+
+            expect(ctrl.candidates).toEqual([]);
+            expect(ctrl.editFormApi.open).not.toHaveBeenCalled();
+            expect(ctrl.addCandidateRequestInProgress).toBe(false);
+            expect(ctrl.addCandidateRequestFailed).toBe(true);
         });
     });
 

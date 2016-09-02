@@ -16,6 +16,7 @@ describe('ZemUploadEditFormCtrl', function () {
             checkStatus: function () {},
             updateCandidate: function () {},
             removeCandidate: function () {},
+            getCandidates: function () {},
             save: function () {},
             cancel: function () {},
         };
@@ -82,7 +83,7 @@ describe('ZemUploadEditFormCtrl', function () {
     });
 
     describe('edit form close', function () {
-        it('removes edit form properties', function () {
+        it('refreshes candidates list and removes edit form properties', function () {
             ctrl.selectedCandidate = {
                 url: 'http://zemanta.com',
                 title: 'Zemanta Blog',
@@ -107,8 +108,35 @@ describe('ZemUploadEditFormCtrl', function () {
                 useSecondaryTracker: false,
             };
 
+            spyOn(ctrl, 'callback').and.stub();
+            var deferred = $q.defer();
+            spyOn(ctrl.endpoint, 'getCandidates').and.callFake(function () {
+                return deferred.promise;
+            });
+
             ctrl.api.close();
+            var returnedCandidate = {
+                id: 1,
+                url: 'http://example.com/url1',
+                title: 'Title 1',
+                imageUrl: 'http://exmaple.com/img1.jpg',
+                imageCrop: 'center',
+                description: '',
+                displayUrl: 'example.com',
+                brandName: '',
+                callToAction: 'Read more',
+                label: 'title1',
+                imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+            };
+            deferred.resolve({
+                candidates: [returnedCandidate],
+            });
+            scope.$digest();
+
             expect(ctrl.selectedCandidate).toBeNull();
+            expect(ctrl.api.selectedId).toBeNull();
+            expect(ctrl.callback).toHaveBeenCalledWith([returnedCandidate]);
         });
     });
 

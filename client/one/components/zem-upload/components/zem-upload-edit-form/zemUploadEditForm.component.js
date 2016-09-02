@@ -42,9 +42,14 @@ oneApp.controller('ZemUploadEditFormCtrl', ['config', '$q', function (config, $q
     vm.callToActionOptions = defaults.callToAction;
     vm.candidateStatuses = constants.contentAdCandidateStatus;
 
+    // content ad picker API
     vm.api.requestInProgress = false;
     vm.api.selectedId = null;
-    vm.api.open = function (candidate) {
+    vm.api.open = open;
+    vm.api.close = refreshAndClose;
+    vm.api.update = scrollBottomAndUpdate;
+
+    function open (candidate, isNew) {
         vm.api.requestInProgress = false;
         vm.requestFailed = false;
         vm.selectedCandidate = angular.copy(candidate);
@@ -54,17 +59,24 @@ oneApp.controller('ZemUploadEditFormCtrl', ['config', '$q', function (config, $q
         vm.selectedCandidate.useSecondaryTracker = !!vm.selectedCandidate.secondaryTrackerUrl;
         vm.scrollTop();
         vm.api.selectedId = candidate.id;
-    };
+    }
 
-    vm.api.close = function () {
-        vm.api.selectedId = null;
-        vm.selectedCandidate = null;
-    };
-
-    vm.api.update = function () {
+    function scrollBottomAndUpdate () {
         vm.scrollBottom();
         return vm.update();
-    };
+    }
+
+    function refreshAndClose () {
+        vm.endpoint.getCandidates(vm.batchId).then(function (result) {
+            vm.callback(result.candidates);
+            close();
+        });
+    }
+
+    function close () {
+        vm.api.selectedId = null;
+        vm.selectedCandidate = null;
+    }
 
     vm.update = function () {
         vm.api.requestInProgress = true;
@@ -75,7 +87,7 @@ oneApp.controller('ZemUploadEditFormCtrl', ['config', '$q', function (config, $q
             vm.batchId
         ).then(function (result) {
             vm.callback(result.candidates);
-            vm.api.close();
+            close();
         }, function () {
             vm.requestFailed = true;
         }).finally(function () {
@@ -111,9 +123,5 @@ oneApp.controller('ZemUploadEditFormCtrl', ['config', '$q', function (config, $q
             }
         },
         data: defaults.callToAction,
-    };
-
-    vm.close = function () {
-        vm.closeModal();
     };
 }]);

@@ -11,6 +11,7 @@ oneApp.directive('zemUploadStep1', [function () { // eslint-disable-line max-len
             callback: '&',
             close: '=',
             user: '=',
+            defaultBatchName: '=',
         },
         controllerAs: 'ctrl',
         templateUrl: '/components/zem-upload/components/zem-upload-step1/zemUploadStep1.component.html',
@@ -23,8 +24,7 @@ oneApp.controller('ZemUploadStep1Ctrl', ['config', function (config) {
     vm.config = config;
 
     vm.formData = {
-        batchName: moment().utc().add(
-            vm.user ? vm.user.timezoneOffset : 0, 'seconds').format('M/D/YYYY h:mm A'),
+        batchName: vm.defaultBatchName,
     };
     vm.formErrors = null;
     vm.requestFailed = false;

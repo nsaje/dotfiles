@@ -5,6 +5,20 @@
     box-sizing: border-box;
     max-height: 70vh;
 
+    zem-internal-feature .internal {
+        position: absolute;
+
+        &:before {
+            content: " ";
+            width: 0;
+            height: 0;
+            display: block;
+            border-top: 7px solid @internal-color;
+            border-right: 7px solid transparent;
+            float: left;
+        }
+    }
+
     .modal-body {
         overflow: hidden;
         position: relative;
@@ -145,8 +159,21 @@
             }
         }
 
-        .btn-download {
-            margin: 0 0 15px 15px;
+        .content-actions {
+            .btn-action {
+                position: relative;
+                margin: 0 0 15px 15px;
+
+                .internal {
+                    position: absolute;
+                    top: 0px;
+                    left: 0px;
+                }
+            }
+
+            img.loader-icon {
+                vertical-align: initial;
+            }
         }
     }
 

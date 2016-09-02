@@ -25,13 +25,17 @@ class CandidateErrorsRemaining(Exception):
 
 @transaction.atomic
 def insert_candidates(candidates_data, ad_group, batch_name, filename):
-    batch = models.UploadBatch.objects.create(
-        name=batch_name,
-        ad_group=ad_group,
-        original_filename=filename,
-    )
+    batch = create_empty_batch(ad_group.id, batch_name, original_filename=filename)
     candidates = _create_candidates(candidates_data, ad_group, batch)
     return batch, candidates
+
+
+def create_empty_batch(ad_group_id, batch_name, original_filename=None):
+    return models.UploadBatch.objects.create(
+        name=batch_name,
+        ad_group_id=ad_group_id,
+        original_filename=original_filename,
+    )
 
 
 def _reset_candidate_async_status(candidate):
@@ -204,6 +208,11 @@ def _update_candidate(data, batch):
 def update_candidate(data, defaults, batch):
     _update_defaults(data, defaults, batch)
     _update_candidate(data, batch)
+
+
+@transaction.atomic
+def add_candidate(batch):
+    return batch.contentadcandidate_set.create(ad_group_id=batch.ad_group_id)
 
 
 def _get_cleaned_urls(candidate):

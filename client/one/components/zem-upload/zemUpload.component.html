@@ -1,5 +1,6 @@
 <ng-switch on="ctrl.step">
-    <zem-upload-step1 ng-switch-when="1" endpoint="ctrl.endpoint" callback="ctrl.switchToContentAdPicker(batchId, batchName, candidates)" close="ctrl.closeModal" user="ctrl.user"></zem-upload-step1>
-    <zem-upload-step2 ng-switch-when="2" endpoint="ctrl.endpoint" callback="ctrl.switchToSuccessScreen(numSuccessful)" candidates="ctrl.candidates" batch-id="ctrl.batchId" batch-name="ctrl.batchName" ad-group="ctrl.adGroup" close="ctrl.closeModal"></zem-upload-step2>
+    <zem-upload-step1 ng-switch-when="1" endpoint="ctrl.endpoint" callback="ctrl.switchToContentAdPicker(batchId, batchName, candidates)" close="ctrl.closeModal" user="ctrl.user" default-batch-name="ctrl.defaultBatchName"></zem-upload-step1>
+    <zem-upload-step2 ng-switch-when="2" endpoint="ctrl.endpoint" callback="ctrl.switchToSuccessScreen(numSuccessful)" candidates="ctrl.candidates" batch-id="ctrl.batchId" batch-name="ctrl.batchName" ad-group="ctrl.adGroup" close="ctrl.closeModal" has-permission="ctrl.hasPermission" is-permission-internal="ctrl.isPermissionInternal"></zem-upload-step2>
     <zem-upload-step3 ng-switch-when="3" callback="ctrl.switchToFileUpload()" ad-group="ctrl.adGroup" num-successful="ctrl.numSuccessful" on-save="ctrl.onSave" close="ctrl.closeModal"></zem-upload-step3>
+    <zem-upload-step0 ng-switch-when="0" endpoint="ctrl.endpoint" single-callback="ctrl.switchToContentAdPicker(batchId, batchName, candidates)" csv-callback="ctrl.switchToFileUpload()" close="ctrl.closeModal" default-batch-name="ctrl.defaultBatchName"></zem-upload-step1>
 </ng-switch>

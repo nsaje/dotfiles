@@ -33,7 +33,6 @@ import stats.constants
 
 
 MAX_ADS_PER_UPLOAD = 100
-DEFAULT_CALL_TO_ACTION = 'Read more'
 
 
 class BaseApiForm(forms.Form):
@@ -1127,7 +1126,7 @@ class ContentAdCandidateForm(forms.ModelForm):
     def clean_call_to_action(self):
         call_to_action = self.cleaned_data.get('call_to_action')
         if not call_to_action:
-            return DEFAULT_CALL_TO_ACTION
+            return constants.DEFAULT_CALL_TO_ACTION
 
         return call_to_action
 

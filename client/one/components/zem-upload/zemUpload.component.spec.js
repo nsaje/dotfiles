@@ -1,9 +1,9 @@
-/* globals oneApp, describe, beforeEach, inject, module, it, expect, spyOn */
+/* globals oneApp, describe, beforeEach, inject, module, it, expect, spyOn, jasmine */
 'use strict';
 
 describe('zemUpload', function () {
     var scope, $compileProvider, $compile;
-    var template = '<zem-upload data-ad-group="ctrl.adGroup" data-on-save="ctrl.onSave" data-close-modal="ctrl.nop"></zem-upload>';
+    var template = '<zem-upload data-ad-group="ctrl.adGroup" data-on-save="ctrl.onSave" data-close-modal="ctrl.nop" has-permission="ctrl.hasPermission" is-permission-internal="ctrl.isPermissionInternal"></zem-upload>';
     var onUploadSave = function () {};
     var adGroup = {
         name: 'test ad group',
@@ -31,7 +31,24 @@ describe('zemUpload', function () {
         scope.ctrl.nop = function () {};
         scope.ctrl.adGroup = adGroup;
         scope.ctrl.onSave = onUploadSave;
+        scope.ctrl.hasPermission = function () { return false; };
+        scope.ctrl.isPermissionInternal = function () { return true; };
     }));
+
+    it('should render step 0 directive on load', function () {
+        mockDirective('zemUploadStep0');
+        mockDirective('zemUploadStep1');
+        mockDirective('zemUploadStep2');
+        mockDirective('zemUploadStep3');
+
+        var element = $compile(template)(scope);
+        scope.$digest();
+
+        element.isolateScope().ctrl.step = 0;
+        scope.$digest();
+
+        expect(element.find('zem-upload-step0').length).toBe(1);
+    });
 
     it('should render step 1 directive on load', function () {
         mockDirective('zemUploadStep1');
@@ -73,7 +90,7 @@ describe('zemUpload', function () {
     });
 });
 
-describe('ZemUploadCtrl', function () {
+fdescribe('ZemUploadCtrl', function () {
     var zemUploadEndpointService, ctrl, mockEndpoint;
     var adGroup = {
         name: 'test ad group',
@@ -88,6 +105,9 @@ describe('ZemUploadCtrl', function () {
         mockEndpoint = {};
         spyOn(zemUploadEndpointService, 'createEndpoint').and.returnValue(mockEndpoint);
 
+        var mockedDate = new Date(Date.UTC(2016, 6, 1, 15, 5));
+        jasmine.clock().mockDate(mockedDate);
+
         var scope = $rootScope.$new();
         ctrl = $controller('ZemUploadCtrl', {
             $scope: scope,
@@ -95,8 +115,38 @@ describe('ZemUploadCtrl', function () {
             nop: function () {},
             adGroup: adGroup,
             onSave: onUploadSave,
+            hasPermission: function () { return false; },
+            isPermissionInternal: function () { return true; },
         });
     }));
+
+    describe('user has single content ad upload permission', function () {
+        beforeEach(inject(function ($rootScope, $controller) {
+            var scope = $rootScope.$new();
+            ctrl = $controller('ZemUploadCtrl', {
+                $scope: scope,
+            }, {
+                nop: function () {},
+                adGroup: adGroup,
+                onSave: onUploadSave,
+                hasPermission: function (permission) {
+                    if (permission === 'zemauth.can_use_single_ad_upload') return true;
+                    return false;
+                },
+                isPermissionInternal: function () { return true; },
+            });
+        }));
+
+        it('should initialize to step 0', function () {
+            expect(zemUploadEndpointService.createEndpoint).toHaveBeenCalledWith(adGroup.id);
+            expect(ctrl.endpoint).toBe(mockEndpoint);
+            expect(ctrl.step).toBe(0);
+        });
+    });
+
+    it('uses current datetime as default batch name', function () {
+        expect(ctrl.defaultBatchName).toEqual('7/1/2016 3:05 PM');
+    });
 
     it('should initialize correctly', function () {
         expect(zemUploadEndpointService.createEndpoint).toHaveBeenCalledWith(adGroup.id);

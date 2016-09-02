@@ -55,10 +55,21 @@
                     </td>
                 </tr>
             </table>
-            <button type="button" class="btn btn-secondary btn-download" ng-click="ctrl.download()">
-                <img ng-src="{{ ctrl.config.static_url }}/one/img/button-download.svg"/>
-                <span class="action-text">Download</span>
-            </button>
+
+            <div class="content-actions">
+                <button type="button" class="btn btn-add btn-action" ng-click="ctrl.addCandidate()" ng-if="ctrl.hasPermission('zemauth.can_use_single_ad_upload')" ng-disabled="ctrl.addCandidateRequestInProgress">
+                    <zem-internal-feature ng-if="ctrl.isPermissionInternal('zemauth.can_use_single_ad_upload')"></zem-internal-feature>
+                    <span class="action-text">+ Add new</span>
+                </button>
+
+                <button type="button" class="btn btn-secondary btn-action" ng-click="ctrl.download()">
+                    <img ng-src="{{ ctrl.config.static_url }}/one/img/button-download.svg"/>
+                    <span class="action-text">Download</span>
+                </button>
+
+                <span class="error" ng-if="ctrl.addCandidateRequestFailed">Something went wrong. Please try again.</span>
+                <img class="loader-icon small-icon" ng-if="ctrl.addCandidateRequestInProgress" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
+            </div>
         </div>
 
         <zem-upload-edit-form endpoint="ctrl.endpoint" api="ctrl.editFormApi" callback="ctrl.updateCandidateCallback" batch-id="ctrl.batchId"></zem-upload-edit-form>

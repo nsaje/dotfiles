@@ -1,4 +1,4 @@
-/* globals describe, beforeEach, module, inject, it, expect, constants, angular, spyOn, jasmine */
+/* globals describe, beforeEach, module, inject, it, expect, constants, angular, spyOn */
 'use strict';
 
 describe('ZemUploadStep1Ctrl', function () {
@@ -17,15 +17,13 @@ describe('ZemUploadStep1Ctrl', function () {
             cancel: function () {},
         };
 
-        var mockedDate = new Date(Date.UTC(2016, 6, 1, 15, 5));
-        jasmine.clock().mockDate(mockedDate);
-
         ctrl = $controller(
             'ZemUploadStep1Ctrl',
             {$scope: scope},
             {
                 endpoint: mockEndpoint,
                 callback: function () {},
+                defaultBatchName: 'default batch name',
             }
         );
     }));
@@ -110,7 +108,7 @@ describe('ZemUploadStep1Ctrl', function () {
     });
 
     it('uses current datetime as default batch name', function () {
-        expect(ctrl.formData.batchName).toEqual('7/1/2016 3:05 PM');
+        expect(ctrl.formData.batchName).toEqual('default batch name');
     });
 
     it('displays errors on failure', function () {
