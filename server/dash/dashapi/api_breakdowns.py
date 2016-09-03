@@ -315,8 +315,13 @@ def get_totals(level, breakdown, constraints):
     if breakdown == ['source_id']:
         sources, ad_group_sources = helpers.select_active_ad_group_sources(level, constraints, None, None, None)
         loader = loaders.SourcesLoader(sources, ad_group_sources)
-        row['min_bid_cpc'] = min([v['min_bid_cpc'] for v in loader.settings_map.values() if v['min_bid_cpc'] is not None])
-        row['max_bid_cpc'] = max([v['max_bid_cpc'] for v in loader.settings_map.values() if v['max_bid_cpc'] is not None])
+
+        min_cpcs = [v['min_bid_cpc'] for v in loader.settings_map.values() if v['min_bid_cpc'] is not None]
+        row['min_bid_cpc'] = min(min_cpcs) if min_cpcs else none
+
+        max_cpcs = [v['max_bid_cpc'] for v in loader.settings_map.values() if v['max_bid_cpc'] is not None]
+        row['max_bid_cpc'] = max(max_cpcs) if max_cpcs else None
+
         row['daily_budget'] = sum([v['daily_budget'] for v in loader.settings_map.values() if v['daily_budget']])
 
     return row
