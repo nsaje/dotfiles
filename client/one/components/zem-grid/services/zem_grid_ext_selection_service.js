@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.factory('zemGridSelectionService', ['zemGridConstants', function (zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridSelectionService', ['zemGridConstants', function (zemGridConstants) { // eslint-disable-line max-len
 
     //
     // Service providing selection functionality used by checkbox directives (header and cell)

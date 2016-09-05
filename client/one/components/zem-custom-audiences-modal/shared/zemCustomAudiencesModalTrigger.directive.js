@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemCustomAudiencesModalTrigger', ['$uibModal', '$rootScope', function ($uibModal, $rootScope) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemCustomAudiencesModalTrigger', ['$uibModal', '$rootScope', function ($uibModal, $rootScope) { // eslint-disable-line max-len
     return {
         restrict: 'A',
         replace: true,

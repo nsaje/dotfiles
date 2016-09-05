@@ -1,7 +1,7 @@
-/* globals oneApp, angular */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemGridCopy', ['$timeout', 'zemGridConstants', 'zemGridDataFormatter', function ($timeout, zemGridConstants, zemGridDataFormatter) {
+angular.module('one.legacy').directive('zemGridCopy', ['$timeout', 'zemGridConstants', 'zemGridDataFormatter', function ($timeout, zemGridConstants, zemGridDataFormatter) {
     return {
         restrict: 'A',
         link: function (scope, element) {

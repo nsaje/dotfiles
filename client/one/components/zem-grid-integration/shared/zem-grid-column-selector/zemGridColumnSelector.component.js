@@ -1,7 +1,7 @@
-/* global oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemGridColumnSelector', [function () {
+angular.module('one.legacy').directive('zemGridColumnSelector', [function () {
     return {
         restrict: 'E',
         scope: {},
@@ -15,7 +15,7 @@ oneApp.directive('zemGridColumnSelector', [function () {
 }]);
 
 
-oneApp.controller('zemGridColumnSelectorCtrl', [function () {
+angular.module('one.legacy').controller('zemGridColumnSelectorCtrl', [function () {
     var MSG_DISABLED_COLUMN = 'Column is available when coresponding breakdown is visible.';
 
     var vm = this;

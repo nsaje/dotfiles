@@ -1,7 +1,7 @@
-/* globals oneApp, constants */
+/* globals angular, constants */
 'use strict';
 
-oneApp.directive('zemGridCellPerformanceIndicator', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').directive('zemGridCellPerformanceIndicator', ['zemGridConstants', function (zemGridConstants) {
 
     var statusIcons = {},
         statusClasses = {};

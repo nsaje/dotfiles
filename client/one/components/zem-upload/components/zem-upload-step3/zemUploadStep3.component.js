@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemUploadStep3', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemUploadStep3', [function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,

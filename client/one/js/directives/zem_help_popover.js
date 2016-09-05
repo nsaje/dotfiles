@@ -1,7 +1,7 @@
-/*global $,oneApp*/
+/*global $,angular*/
 'use strict';
 
-oneApp.directive('zemHelpPopover', function () {
+angular.module('one.legacy').directive('zemHelpPopover', function () {
     return {
         restrict: 'E',
         scope: {

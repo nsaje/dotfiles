@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', function (config, zemFilterService, $state) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemRetargeting', ['config', 'zemFilterService', '$state', function (config, zemFilterService, $state) { // eslint-disable-line max-len
     return {
         restrict: 'E',
         scope: {

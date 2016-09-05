@@ -1,7 +1,7 @@
-/* globals oneApp,constants */
+/* globals angular,constants */
 'use strict';
 
-oneApp.directive('zemFacebookPage', ['$parse', function ($parse) {
+angular.module('one.legacy').directive('zemFacebookPage', ['$parse', function ($parse) {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_facebook_page.html',

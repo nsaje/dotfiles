@@ -1,6 +1,6 @@
-/* globals oneApp */
+/* globals angular */
 
-oneApp.controller('DevelopmentCtrl', ['$scope', '$state', function ($scope, $state) {
+angular.module('one.legacy').controller('DevelopmentCtrl', ['$scope', '$state', function ($scope, $state) {
     $scope.$on('$stateChangeSuccess', function () {
         if ($state.is('main.development.grid')
             && !$scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
@@ -9,7 +9,7 @@ oneApp.controller('DevelopmentCtrl', ['$scope', '$state', function ($scope, $sta
     });
 }]);
 
-oneApp.controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemGridConstants', 'zemDataSourceService', 'zemGridDebugEndpoint', function ($scope, $timeout, zemGridConstants, zemDataSourceService, zemGridDebugEndpoint) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemGridConstants', 'zemDataSourceService', 'zemGridDebugEndpoint', function ($scope, $timeout, zemGridConstants, zemDataSourceService, zemGridDebugEndpoint) { // eslint-disable-line max-len
     var dataSource = zemDataSourceService.createInstance(zemGridDebugEndpoint.createEndpoint());
 
     var options = {

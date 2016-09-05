@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemCustomAudiencesList', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemCustomAudiencesList', [function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -12,18 +12,18 @@ oneApp.directive('zemCustomAudiencesList', [function () { // eslint-disable-line
     };
 }]);
 
-oneApp.controller('ZemCustomAudiencesListCtrl', ['$scope', function ($scope) {
+angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['$scope', function ($scope) {
     $scope.audiences = [{
         id: 1,
-        name: "Test audience 1",
-    },{
+        name: 'Test audience 1',
+    }, {
         id: 2,
-        name: "Test audience 2",
-    },{
+        name: 'Test audience 2',
+    }, {
         id: 3,
-        name: "Test audience 3",
-    },{
+        name: 'Test audience 3',
+    }, {
         id: 4,
-        name: "Test audience 4",
+        name: 'Test audience 4',
     }];
 }]);

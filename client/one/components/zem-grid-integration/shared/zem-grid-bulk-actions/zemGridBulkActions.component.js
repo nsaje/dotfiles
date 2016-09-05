@@ -1,7 +1,7 @@
-/* global oneApp, constants */
+/* global angular, constants */
 'use strict';
 
-oneApp.directive('zemGridBulkActions', ['$window', 'api', function () {
+angular.module('one.legacy').directive('zemGridBulkActions', ['$window', 'api', function () {
     return {
         restrict: 'E',
         scope: {},
@@ -14,7 +14,7 @@ oneApp.directive('zemGridBulkActions', ['$window', 'api', function () {
     };
 }]);
 
-oneApp.controller('zemGridBulkActionsCtrl', ['$window', 'api', 'zemGridConstants', 'zemGridEndpointColumns', function ($window, api, zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('zemGridBulkActionsCtrl', ['$window', 'api', 'zemGridConstants', 'zemGridEndpointColumns', function ($window, api, zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
     // TODO: alert, update daily stats
     var COLUMNS = zemGridEndpointColumns.COLUMNS;
 

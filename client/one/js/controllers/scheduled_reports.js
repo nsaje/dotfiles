@@ -1,5 +1,5 @@
-/*globals oneApp,constants,options,moment*/
-oneApp.controller('ScheduledReportsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
+/*globals angular,constants,options,moment*/
+angular.module('one.legacy').controller('ScheduledReportsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.reports = [];
     $scope.requestInProgress = false;
     $scope.errorMessage = '';

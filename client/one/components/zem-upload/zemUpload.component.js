@@ -1,7 +1,7 @@
-/* globals oneApp, moment */
+/* globals angular, moment */
 'use strict';
 
-oneApp.directive('zemUpload', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemUpload', [function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -20,7 +20,7 @@ oneApp.directive('zemUpload', [function () { // eslint-disable-line max-len
     };
 }]);
 
-oneApp.controller('ZemUploadCtrl', ['zemUploadEndpointService', function (zemUploadEndpointService) {
+angular.module('one.legacy').controller('ZemUploadCtrl', ['zemUploadEndpointService', function (zemUploadEndpointService) {
     var vm = this;
     vm.endpoint = zemUploadEndpointService.createEndpoint(vm.adGroup.id);
     vm.defaultBatchName = moment().utc().add(vm.user ? vm.user.timezoneOffset : 0, 'seconds').format('M/D/YYYY h:mm A');

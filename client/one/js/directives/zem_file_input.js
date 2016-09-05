@@ -1,7 +1,7 @@
-/* globals oneApp, angular */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemFileInput', ['$parse', function ($parse) {
+angular.module('one.legacy').directive('zemFileInput', ['$parse', function ($parse) {
     function createInputElement () {
         return angular.element('<input type="file">').css({
             width: 0,

@@ -1,7 +1,7 @@
-/*globals FS, oneApp*/
+/*globals FS, angular*/
 'use strict';
 
-oneApp.factory('zemFullStoryService', function () {
+angular.module('one.legacy').factory('zemFullStoryService', function () {
     function identify (user) {
         var email = user.email;
 

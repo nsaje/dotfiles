@@ -1,7 +1,7 @@
-/*globals angular,oneApp,options,moment,JSON*/
+/*globals angular,options,moment,JSON*/
 'use strict';
 
-oneApp.factory('zemCustomTableColsService', ['zemLocalStorageService', function (zemLocalStorageService) {
+angular.module('one.legacy').factory('zemCustomTableColsService', ['zemLocalStorageService', function (zemLocalStorageService) {
     var key = 'columns';
 
     function load (namespace, columns) {

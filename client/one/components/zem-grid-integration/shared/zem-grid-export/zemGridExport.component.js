@@ -1,7 +1,7 @@
-/* globals oneApp, constants */
+/* globals angular, constants */
 'use strict';
 
-oneApp.directive('zemGridExport', function () {
+angular.module('one.legacy').directive('zemGridExport', function () {
     return {
         restrict: 'E',
         controllerAs: 'ctrl',
@@ -15,7 +15,7 @@ oneApp.directive('zemGridExport', function () {
 });
 
 
-oneApp.controller('zemGridExportCtrl', ['$scope', '$uibModal', 'zemGridExportOptions', function ($scope, $uibModal, zemGridExportOptions) {
+angular.module('one.legacy').controller('zemGridExportCtrl', ['$scope', '$uibModal', 'zemGridExportOptions', function ($scope, $uibModal, zemGridExportOptions) {
     var vm = this;
 
     vm.showScheduledReportModal = showScheduledReportModal;

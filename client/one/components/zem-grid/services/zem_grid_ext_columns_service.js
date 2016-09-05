@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.factory('zemGridColumnsService', ['zemGridConstants', 'zemGridStorageService', function (zemGridConstants, zemGridStorageService) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridColumnsService', ['zemGridConstants', 'zemGridStorageService', function (zemGridConstants, zemGridStorageService) { // eslint-disable-line max-len
 
     function ColumnsService (grid) {
         var pubsub = grid.meta.pubsub;
@@ -42,7 +42,7 @@ oneApp.factory('zemGridColumnsService', ['zemGridConstants', 'zemGridStorageServ
             if (column.data.exceptions.custom) {
                 for (var i = 0; i < column.data.exceptions.custom.length; ++i) {
                     var customException = column.data.exceptions.custom[i];
-                    if (customException.level === level && customException.breakdown === breakdowns[0]){
+                    if (customException.level === level && customException.breakdown === breakdowns[0]) {
                         return customException.shown;
                     }
                 }

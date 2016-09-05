@@ -1,7 +1,7 @@
-/* globals oneApp, constants */
+/* globals angular, constants */
 'use strict';
 
-oneApp.directive('zemGridCellSubmissionStatus', [function () {
+angular.module('one.legacy').directive('zemGridCellSubmissionStatus', [function () {
 
     return {
         restrict: 'E',

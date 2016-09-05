@@ -1,7 +1,7 @@
-/* globals oneApp, constants */
+/* globals angular, constants */
 'use strict';
 
-oneApp.directive('zemGridCellBreakdownField', [function () {
+angular.module('one.legacy').directive('zemGridCellBreakdownField', [function () {
 
     var BREAKDOWNS_WITH_INTERNAL_LINKS = [
         constants.breakdown.ACCOUNT,

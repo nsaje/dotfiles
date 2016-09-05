@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.factory('zemSupportHeroService', ['$window', function ($window) {
+angular.module('one.legacy').factory('zemSupportHeroService', ['$window', function ($window) {
     function boot (user) {
         if ($window.supportHeroWidget != undefined) {
             var properties = {

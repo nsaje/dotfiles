@@ -1,5 +1,5 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.controller('AccountCustomAudiencesCtrl', ['$scope', '$state', '$q', '$uibModal', 'api', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $uibModal, api, zemNavigationService, $timeout) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', ['$scope', '$state', '$q', '$uibModal', 'api', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $uibModal, api, zemNavigationService, $timeout) { // eslint-disable-line max-len
 }]);

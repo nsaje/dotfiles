@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemGridCellThumbnail', [function () {
+angular.module('one.legacy').directive('zemGridCellThumbnail', [function () {
 
     return {
         restrict: 'E',

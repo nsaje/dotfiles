@@ -1,7 +1,7 @@
-/* globals oneApp, angular */
+/* globals angular */
 'use strict';
 
-oneApp.factory('zemGridNotificationService', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridNotificationService', [function () { // eslint-disable-line max-len
 
     function NotificationService (grid) {
         var pubsub = grid.meta.pubsub;

@@ -1,7 +1,7 @@
-/* globals oneApp,options,constants,angular */
+/* globals options,constants,angular */
 'use strict';
 
-oneApp.factory('zemPostclickMetricsService', function () {
+angular.module('one.legacy').factory('zemPostclickMetricsService', function () {
     function insertAcquisitionColumns (columns, position, isShown, isInternal) {
         columns.splice(position, 0, {
             name: 'Visits',

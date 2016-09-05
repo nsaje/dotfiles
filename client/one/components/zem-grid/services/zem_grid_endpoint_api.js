@@ -1,7 +1,7 @@
-/* globals oneApp, constants, angular */
+/* globals angular, constants */
 'use strict';
 
-oneApp.factory('zemGridEndpointApi', ['$q', '$http', 'zemGridEndpointApiConverter', function ($q, $http, zemGridEndpointApiConverter) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridEndpointApi', ['$q', '$http', 'zemGridEndpointApiConverter', function ($q, $http, zemGridEndpointApiConverter) { // eslint-disable-line max-len
     //
     // EndpointApi - data retrieval (get) and settings persistence (save)
     //

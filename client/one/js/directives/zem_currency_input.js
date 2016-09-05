@@ -1,7 +1,7 @@
-/*globals oneApp,$*/
+/*globals angular,$*/
 'use strict';
 
-oneApp.directive('zemCurrencyInput', ['$filter', function ($filter) {
+angular.module('one.legacy').directive('zemCurrencyInput', ['$filter', function ($filter) {
     return {
         require: 'ngModel',
         restrict: 'A',

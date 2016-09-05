@@ -1,7 +1,7 @@
-/*global $,oneApp,moment,constants*/
+/*global $,angular,moment,constants*/
 'use strict';
 
-oneApp.directive('zemFocusSelect', ['$window', function ($window) {
+angular.module('one.legacy').directive('zemFocusSelect', ['$window', function ($window) {
     return {
         restrict: 'A',
         link: function (scope, element, attrs) {

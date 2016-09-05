@@ -1,7 +1,7 @@
-/* global oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemHistory', [function () {
+angular.module('one.legacy').directive('zemHistory', [function () {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_history.html',

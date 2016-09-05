@@ -1,7 +1,7 @@
-/*globals oneApp*/
+/*globals angular*/
 'use strict';
 
-oneApp.directive('zemEditableCurrencyField', function () {
+angular.module('one.legacy').directive('zemEditableCurrencyField', function () {
     return {
         restrict: 'E',
         scope: {

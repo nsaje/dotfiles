@@ -1,7 +1,7 @@
-/* global oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemIcon', ['config', function (config) {
+angular.module('one.legacy').directive('zemIcon', ['config', function (config) {
     return {
         restrict: 'E',
         scope: true,

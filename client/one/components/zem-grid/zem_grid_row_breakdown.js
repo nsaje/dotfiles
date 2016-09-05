@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemGridRowBreakdown', [function () {
+angular.module('one.legacy').directive('zemGridRowBreakdown', [function () {
 
     return {
         restrict: 'E',

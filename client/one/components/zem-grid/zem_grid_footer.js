@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemGridFooter', [function () {
+angular.module('one.legacy').directive('zemGridFooter', [function () {
 
     return {
         restrict: 'E',

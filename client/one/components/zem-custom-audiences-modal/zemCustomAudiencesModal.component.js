@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemCustomAudiencesModal', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemCustomAudiencesModal', [function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -12,7 +12,7 @@ oneApp.directive('zemCustomAudiencesModal', [function () { // eslint-disable-lin
     };
 }]);
 
-oneApp.controller('ZemCustomAudiencesModalCtrl', ['$scope', function ($scope) {
+angular.module('one.legacy').controller('ZemCustomAudiencesModalCtrl', ['$scope', function ($scope) {
     $scope.audience = {ruleId: 1, refererRuleId: 1};
     $scope.pixels = [{name: 'Test pixel 1', id: 1}, {name: 'Test pixel 2', id: 2}];
     $scope.rules = [{id: 1, name: 'Anyone who visited your website'}, {id: 2, name: 'People who visited specific web pages'}];

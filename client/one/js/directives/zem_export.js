@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemExport', function () {
+angular.module('one.legacy').directive('zemExport', function () {
     return {
         restrict: 'E',
         scope: {

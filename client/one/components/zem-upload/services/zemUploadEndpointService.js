@@ -1,8 +1,8 @@
-/* globals angular, oneApp, constants */
+/* globals angular, constants */
 /* eslint-disable camelcase */
 'use strict';
 
-oneApp.factory('zemUploadEndpointService', ['$http', '$q', function ($http, $q) {
+angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q', function ($http, $q) {
     function UploadEndpoint (baseUrl) {
 
         this.upload = function (data) {

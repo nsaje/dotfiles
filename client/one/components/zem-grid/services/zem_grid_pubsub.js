@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.factory('zemGridPubSub', [function () {
+angular.module('one.legacy').factory('zemGridPubSub', [function () {
 
     //
     // Grid PubSub is an internal message chanel through which child directives and

@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemNumericValidator', function () {
+angular.module('one.legacy').directive('zemNumericValidator', function () {
     return {
         require: 'ngModel',
         link: function (scope, element, attrs, modelCtrl) {

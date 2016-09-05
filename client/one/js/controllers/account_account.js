@@ -1,5 +1,5 @@
-/* globals angular,oneApp,constants,options,moment,$ */
-oneApp.controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$uibModal', 'api', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $uibModal, api, zemNavigationService, $timeout) { // eslint-disable-line max-len
+/* globals angular,constants,options,moment,$ */
+angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$uibModal', 'api', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $uibModal, api, zemNavigationService, $timeout) { // eslint-disable-line max-len
 
     $scope.canEditAccount = false;
     $scope.salesReps = [];

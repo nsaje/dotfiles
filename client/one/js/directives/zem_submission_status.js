@@ -1,7 +1,7 @@
-/* globals oneApp, constants */
+/* globals angular, constants */
 'use strict';
 
-oneApp.directive('zemSubmissionStatus', function () {
+angular.module('one.legacy').directive('zemSubmissionStatus', function () {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_submission_status.html',

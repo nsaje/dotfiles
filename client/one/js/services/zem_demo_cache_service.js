@@ -1,7 +1,7 @@
-/*globals angular,oneApp,constants,options,moment*/
+/*globals angular,constants,options,moment*/
 'use strict';
 
-oneApp.factory('zemDemoCacheService', function () {
+angular.module('one.legacy').factory('zemDemoCacheService', function () {
     var FIRST_ID = 1000000,
         cache = {},
         ids = {};

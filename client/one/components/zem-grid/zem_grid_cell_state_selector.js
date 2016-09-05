@@ -1,7 +1,7 @@
-/* globals oneApp, constants */
+/* globals angular, constants */
 'use strict';
 
-oneApp.directive('zemGridCellStateSelector', [function () {
+angular.module('one.legacy').directive('zemGridCellStateSelector', [function () {
 
     return {
         restrict: 'E',

@@ -1,7 +1,7 @@
-/*global $,oneApp,constants*/
+/*global $,angular,constants*/
 'use strict';
 
-oneApp.directive('zemConversionPixels', ['config', '$window', function (config, $window) {
+angular.module('one.legacy').directive('zemConversionPixels', ['config', '$window', function (config, $window) {
 
     return {
         restrict: 'E',

@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemGridRow', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').directive('zemGridRow', ['zemGridConstants', function (zemGridConstants) {
 
     return {
         restrict: 'E',

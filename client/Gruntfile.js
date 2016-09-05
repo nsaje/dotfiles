@@ -26,20 +26,25 @@ module.exports = function (grunt) {
             }
         },
         concat: {
-            options: {
-                // Replace all 'use strict' statements in the code with a single
-                // one at the top
-                banner: '\'use strict\';\n',
-                process: function (src, filepath) {
-                    return '// Source: ' + filepath + '\n' +
-                        src.replace(/(^|\n)[ \t]*('use strict'|"use strict");?\s*/g, '$1');
-                }
-            },
-            one: {
+            one_js: {
+                options: {
+                    // Replace all 'use strict' statements in the code with a single
+                    // one at the top
+                    banner: '\'use strict\';\n',
+                    process: function (src, filepath) {
+                        return '// Source: ' + filepath + '\n' +
+                            src.replace(/(^|\n)[ \t]*('use strict'|"use strict");?\s*/g, '$1');
+                    }
+                },
                 src: [
                     'dist/one/zemanta-one.templates.js',
                     'dist/build/config.js',
                     'one/js/constants.js',
+                    'one/app/app.module.js',
+                    'one/app/**/*.js',
+                    // Exclude tests
+                    '!one/app/**/*.spec.js',
+                    // Legacy app bellow
                     'one/js/app.js',
                     'one/js/constants/*.js',
                     'one/js/services/**/*.js',
@@ -51,7 +56,23 @@ module.exports = function (grunt) {
                     'one/js/demo.js',
                     '!one/**/*.spec.js',
                 ],
-                dest: 'dist/one/zemanta-one.js'
+                dest: 'dist/one/zemanta-one.js',
+            },
+            one_styles: {
+                src: [
+                    'one/app/styles/variables.less',
+                    'one/app/styles/mixins.less',
+                    'one/app/styles/utilities.less',
+                    'one/app/styles/animations.less',
+                    'one/app/styles/base.less',
+                    'one/**/*.less',
+                    // Exclude dashboard*.less and include it after any other less file in order to make it possible to
+                    // override components' styles if needed to make them fit better into dashboard's design
+                    // NOTE: dashboard.legacy.less currently exists too and it is included here
+                    '!one/app/styles/dashboard*.less',
+                    'one/app/styles/dashboard*.less',
+                ],
+                dest: 'dist/tmp/zemanta-one.less',
             },
             actionlog: {
                 src: [
@@ -88,11 +109,17 @@ module.exports = function (grunt) {
             }
         },
         cssmin: {
-            options: {
-                // used to rewrite css urls
-                target: 'lib'
+            one_styles: {
+                files: [{
+                    src: 'dist/one/zemanta-one.css',
+                    dest: 'dist/one/zemanta-one.min.css',
+                }],
             },
             one_lib: {
+                options: {
+                    // used to rewrite css urls
+                    target: 'lib'
+                },
                 files: [{
                     src: [
                         'lib/components/bootstrap/dist/css/bootstrap.min.css',
@@ -107,6 +134,10 @@ module.exports = function (grunt) {
                 }]
             },
             actionlog_lib: {
+                options: {
+                    // used to rewrite css urls
+                    target: 'lib'
+                },
                 files: [{
                     src: 'dist/actionlog/zemanta-one.actionlog.lib.css',
                     dest: 'dist/actionlog/zemanta-one.actionlog.lib.min.css'
@@ -170,14 +201,13 @@ module.exports = function (grunt) {
         },
         less: {
             options: {
-                cleancss: true,
                 rootpath: getS3BuildPath() !== '' ?
                     getS3BuildPath() + '/client/one/' :
                     undefined
             },
             one: {
                 files: {
-                    'dist/one/zemanta-one.min.css': 'one/less/zemanta-one.less',
+                    'dist/one/zemanta-one.css': 'dist/tmp/zemanta-one.less',
                 }
             },
             actionlog: {
@@ -195,13 +225,13 @@ module.exports = function (grunt) {
                     'one/**/*.js',
                     '!one/**/*.spec.js',
                 ],
-                tasks: ['concat:one']
+                tasks: ['concat:one_js', 'clean:tmp']
             },
             one_styles: {
                 files: [
                     'one/**/*.less',
                 ],
-                tasks: ['less:one']
+                tasks: ['concat:one_styles', 'less:one', 'clean:tmp']
             },
             one_templates: {
                 files: [
@@ -320,14 +350,18 @@ module.exports = function (grunt) {
                 }
             }
         },
+        clean: {
+            // Remove dist/tmp directory containing temporary files used by different steps in build process
+            tmp: ['dist/tmp'],
+        },
         build: {
-            one: ['html2js:one', 'concat:one', 'less:one', 'copy:one'],
+            one: ['html2js:one', 'concat:one_js', 'concat:one_styles', 'less:one', 'copy:one', 'clean:tmp'],
             one_lib: ['bower_concat:one_lib', 'cssmin:one_lib', 'copy:one_lib'],
             actionlog: ['concat:actionlog', 'less:actionlog', 'copy:actionlog'],
             actionlog_lib: ['bower_concat:actionlog_lib', 'cssmin:actionlog_lib'],
         },
         dist: {
-            one: ['uglify:one'],
+            one: ['uglify:one', 'cssmin:one_styles'],
             one_lib: ['uglify:one_lib'],
             actionlog: ['uglify:actionlog'],
             actionlog_lib: ['uglify:actionlog_lib']

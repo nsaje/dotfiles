@@ -1,7 +1,7 @@
-/* globals oneApp, constants */
+/* globals angular, constants */
 'use strict';
 
-oneApp.directive('zemGridCellStatusField', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
+angular.module('one.legacy').directive('zemGridCellStatusField', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
 
     function getStatusText (value, row, statusValuesAndTexts) {
         if (row.archived) {

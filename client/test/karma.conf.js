@@ -17,11 +17,13 @@ module.exports = function (config) {
       files: [
         'dist/one/zemanta-one.lib.js',
         'dist/one/zemanta-one.templates.js',
+        'one/app/app.module.js',
+        'one/app/**/*.js',
         'one/js/**/*.js',
         'one/components/**/*.js',
         'actionlog/**/*.js',
         'test/unit/**/*.js',
-    ],
+      ],
 
       preprocessors: {
         '{actionlog,one}/js/**/*.js': 'coverage'

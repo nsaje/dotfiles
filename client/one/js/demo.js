@@ -1,7 +1,7 @@
-/*globals angular,oneApp,constants,options,moment*/
+/*globals angular,constants,options,moment*/
 'use strict';
 
-oneApp.config(['$provide', function ($provide) {
+angular.module('one.legacy').config(['$provide', function ($provide) {
     ///////////////////////////
     // API SERVICE DECORATOR //
     ///////////////////////////

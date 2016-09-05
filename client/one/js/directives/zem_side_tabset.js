@@ -1,7 +1,7 @@
-/* globals oneApp,constants */
+/* globals angular,constants */
 'use strict';
 
-oneApp.directive('zemSideTabset', function () {
+angular.module('one.legacy').directive('zemSideTabset', function () {
     return {
         restrict: 'E',
         scope: {

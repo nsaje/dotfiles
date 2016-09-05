@@ -1,7 +1,7 @@
-/*globals angular,oneApp,options,moment*/
+/*globals angular,options,moment*/
 'use strict';
 
-oneApp.factory('zemMoment', function () {
+angular.module('one.legacy').factory('zemMoment', function () {
     return function () {
         return moment.apply(this, arguments);
     };

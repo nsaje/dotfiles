@@ -1,7 +1,7 @@
-/* globals oneApp,angular,$ */
+/* globals angular,$ */
 'use strict';
 
-oneApp.directive('zemContentInsights', function () {
+angular.module('one.legacy').directive('zemContentInsights', function () {
     return {
         restrict: 'E',
         scope: {

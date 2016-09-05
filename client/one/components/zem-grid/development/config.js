@@ -1,6 +1,6 @@
-/* globals oneApp */
+/* globals angular */
 
-oneApp.config(['$stateProvider', function ($stateProvider) {
+angular.module('one.legacy').config(['$stateProvider', function ($stateProvider) {
     $stateProvider
         .state('main.development', {
             url: 'development',

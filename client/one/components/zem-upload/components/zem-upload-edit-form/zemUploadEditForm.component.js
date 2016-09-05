@@ -1,7 +1,7 @@
-/* globals oneApp, options, defaults, constants, angular, $ */
+/* globals options, defaults, constants, angular, $ */
 'use strict';
 
-oneApp.directive('zemUploadEditForm', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemUploadEditForm', [function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -26,7 +26,7 @@ oneApp.directive('zemUploadEditForm', [function () { // eslint-disable-line max-
     };
 }]);
 
-oneApp.controller('ZemUploadEditFormCtrl', ['config', '$q', function (config, $q) {
+angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q', function (config, $q) {
     var vm = this;
     vm.config = config;
 

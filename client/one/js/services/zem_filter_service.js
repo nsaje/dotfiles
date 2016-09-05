@@ -1,7 +1,7 @@
-/* globals JSON, oneApp */
+/* globals JSON, angular */
 'use strict';
 
-oneApp.factory('zemFilterService', ['$location', function ($location) {
+angular.module('one.legacy').factory('zemFilterService', ['$location', function ($location) {
     var filteredSources = [];
     var filteredAgencies = [];
     var filteredAccountTypes = [];

@@ -1,7 +1,7 @@
-/*globals oneApp, angular */
+/*globals angular */
 'use strict';
 
-oneApp.directive('zemLocations', ['config', '$state', 'regions', function (config, $state, regions) {
+angular.module('one.legacy').directive('zemLocations', ['config', '$state', 'regions', function (config, $state, regions) {
     return {
         restrict: 'E',
         scope: {

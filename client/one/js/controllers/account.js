@@ -1,6 +1,6 @@
-/*globals oneApp,constants*/
+/* globals angular, constants */
 
-oneApp.controller('AccountCtrl', ['$scope', '$state', 'zemNavigationService', 'accountData', function ($scope, $state, zemNavigationService, accountData) {
+angular.module('one.legacy').controller('AccountCtrl', ['$scope', '$state', 'zemNavigationService', 'accountData', function ($scope, $state, zemNavigationService, accountData) {
     $scope.level = constants.level.ACCOUNTS;
     $scope.getTabs = function () {
         return [

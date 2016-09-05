@@ -1,7 +1,7 @@
-/* globals constants, oneApp */
+/* globals constants, angular */
 'use strict';
 
-oneApp.directive('zemStateSelector', function () {
+angular.module('one.legacy').directive('zemStateSelector', function () {
     return {
         restrict: 'E',
         scope: {

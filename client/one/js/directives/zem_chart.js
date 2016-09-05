@@ -1,7 +1,7 @@
-/*global $,oneApp,moment,constants,angular*/
+/*global $,moment,constants,angular*/
 'use strict';
 
-oneApp.directive('zemChart', ['config', '$compile', '$window', function (config, $compile, $window) {
+angular.module('one.legacy').directive('zemChart', ['config', '$compile', '$window', function (config, $compile, $window) {
     return {
         restrict: 'E',
         scope: {

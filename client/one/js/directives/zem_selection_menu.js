@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemSelectionMenu', function () {
+angular.module('one.legacy').directive('zemSelectionMenu', function () {
     return {
         restrict: 'E',
         scope: {

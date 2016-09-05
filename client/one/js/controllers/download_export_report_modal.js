@@ -1,5 +1,5 @@
-/* globals oneApp, constants */
-oneApp.controller('DownloadExportReportModalCtrl', ['$scope', 'api', 'zemFilterService', '$window', '$state', function ($scope, api, zemFilterService, $window, $state) {  // eslint-disable-line max-len
+/* globals angular, constants */
+angular.module('one.legacy').controller('DownloadExportReportModalCtrl', ['$scope', 'api', 'zemFilterService', '$window', '$state', function ($scope, api, zemFilterService, $window, $state) {  // eslint-disable-line max-len
     $scope.showInProgress = false;
     $scope.export = {};
 

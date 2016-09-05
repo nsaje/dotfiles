@@ -1,5 +1,5 @@
-/* globals oneApp, moment */
-oneApp.controller('AccountCreditCtrl',
+/* globals angular, moment */
+angular.module('one.legacy').controller('AccountCreditCtrl',
     ['$scope', '$state', '$uibModal', '$location', '$window', 'api',
     function ($scope, $state, $uibModal, $location, $window, api) {
         function error () {}

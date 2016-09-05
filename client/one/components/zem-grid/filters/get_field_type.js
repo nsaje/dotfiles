@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.filter('getFieldType', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').filter('getFieldType', ['zemGridConstants', function (zemGridConstants) {
 
     return function (column) {
         if (!column) {

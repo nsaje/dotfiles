@@ -1,7 +1,7 @@
-/* globals oneApp, constants, defaults, options, angular, $ */
+/* globals constants, defaults, options, angular, $ */
 'use strict';
 
-oneApp.directive('zemUploadStep2', ['$window', function ($window) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemUploadStep2', ['$window', function ($window) { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -38,7 +38,7 @@ oneApp.directive('zemUploadStep2', ['$window', function ($window) { // eslint-di
     };
 }]);
 
-oneApp.controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$window', '$scope', function ($scope, config, $interval, $window) {
+angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$window', '$scope', function ($scope, config, $interval, $window) {
     var vm = this;
     vm.config = config;
 

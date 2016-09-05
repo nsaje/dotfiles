@@ -1,5 +1,5 @@
-/* globals oneApp,options,constants,defaults,angular */
-oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', 'api', function ($scope, api) { // eslint-disable-line max-len
+/* globals options,constants,defaults,angular */
+angular.module('one.legacy').controller('EditCampaignGoalModalCtrl', ['$scope', 'api', function ($scope, api) { // eslint-disable-line max-len
     $scope.conversionGoalTypes = options.conversionGoalTypes;
     $scope.conversionWindows = options.conversionWindows;
     $scope.addConversionGoalInProgress = false;

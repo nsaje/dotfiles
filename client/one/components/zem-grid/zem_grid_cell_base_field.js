@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemGridCellBaseField', [function () {
+angular.module('one.legacy').directive('zemGridCellBaseField', [function () {
 
     return {
         restrict: 'E',

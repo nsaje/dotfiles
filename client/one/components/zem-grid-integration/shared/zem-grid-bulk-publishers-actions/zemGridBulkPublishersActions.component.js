@@ -1,7 +1,7 @@
-/* global oneApp, constants */
+/* global angular, constants */
 'use strict';
 
-oneApp.directive('zemGridBulkPublishersActions', ['$window', 'api', function () {
+angular.module('one.legacy').directive('zemGridBulkPublishersActions', ['$window', 'api', function () {
     return {
         restrict: 'E',
         scope: {},
@@ -14,7 +14,7 @@ oneApp.directive('zemGridBulkPublishersActions', ['$window', 'api', function () 
     };
 }]);
 
-oneApp.controller('zemGridBulkPublishersActionsCtrl', ['$window', 'api', 'zemGridConstants', 'zemGridEndpointColumns', function ($window, api, zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('zemGridBulkPublishersActionsCtrl', ['$window', 'api', 'zemGridConstants', 'zemGridEndpointColumns', function ($window, api, zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
     var COLUMNS = zemGridEndpointColumns.COLUMNS;
     var MAX_BLACKLISTED_PUBLISHERS_OUTBRAIN = 10;
     var MAX_BLACKLISTED_PUBLISHERS_YAHOO = 0;

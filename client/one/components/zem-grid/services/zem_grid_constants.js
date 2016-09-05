@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.factory('zemGridConstants', [function () {
+angular.module('one.legacy').factory('zemGridConstants', [function () {
 
     var constants = {
         gridBodyRendering: {

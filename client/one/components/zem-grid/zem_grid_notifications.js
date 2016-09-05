@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemGridNotifications', [function () {
+angular.module('one.legacy').directive('zemGridNotifications', [function () {
 
     return {
         restrict: 'E',

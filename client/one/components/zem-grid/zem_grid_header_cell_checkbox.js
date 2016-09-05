@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemGridHeaderCellCheckbox', [function () {
+angular.module('one.legacy').directive('zemGridHeaderCellCheckbox', [function () {
     return {
         restrict: 'E',
         replace: true,

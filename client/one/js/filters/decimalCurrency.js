@@ -1,4 +1,4 @@
-/*globals oneApp*/
+/*globals angular*/
 'use strict';
 
 function numberWithCommas (num) {
@@ -7,7 +7,7 @@ function numberWithCommas (num) {
     return parts.join('.');
 }
 
-oneApp.filter('decimalCurrency', function () {
+angular.module('one.legacy').filter('decimalCurrency', function () {
     return function (input, sign, fractionSize, replaceTrailingZeros) {
         var num = parseFloat(input);
 

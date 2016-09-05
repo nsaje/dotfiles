@@ -1,5 +1,5 @@
-/* globals oneApp,constants */
-oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', 'api', function ($scope, $state, $location, zemNavigationService, campaignData, api) { // eslint-disable-line max-len
+/* globals angular, constants */
+angular.module('one.legacy').controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', 'api', function ($scope, $state, $location, zemNavigationService, campaignData, api) { // eslint-disable-line max-len
     $scope.level = constants.level.CAMPAIGNS;
     $scope.contentInsights = {
         summary: null,

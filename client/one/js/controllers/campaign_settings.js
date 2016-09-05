@@ -1,5 +1,5 @@
-/* globals oneApp,options */
-oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemNavigationService) { // eslint-disable-line max-len
+/* globals angular, options */
+angular.module('one.legacy').controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemNavigationService) { // eslint-disable-line max-len
     var campaignFreshSettings = $q.defer();
     $scope.settings = {};
     $scope.errors = {};

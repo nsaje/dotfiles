@@ -1,7 +1,7 @@
-/*global $,oneApp*/
+/*global $,angular*/
 'use strict';
 
-oneApp.directive('zemInternalFeature', function () {
+angular.module('one.legacy').directive('zemInternalFeature', function () {
     return {
         restrict: 'E',
         scope: {

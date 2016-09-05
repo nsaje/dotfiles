@@ -1,7 +1,7 @@
-/* globals oneApp, constants, angular */
+/* globals angular, constants */
 'use strict';
 
-oneApp.factory('zemGridEndpointBreakdowns', [function () {
+angular.module('one.legacy').factory('zemGridEndpointBreakdowns', [function () {
     var BASE_LEVEL_GROUP_NAME = 'Base level';
     var STRUCTURE_GROUP_NAME = 'By structure';
     var DELIVERY_GROUP_NAME = 'By delivery';

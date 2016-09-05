@@ -1,4 +1,4 @@
-/*globals angular,oneApp,constants,options,moment*/
+/* globasl actionLogApp */
 'use strict';
 
 actionLogApp.factory('api', ['$http', '$q', function ($http, $q) {

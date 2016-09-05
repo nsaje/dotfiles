@@ -1,7 +1,7 @@
-/*globals angular,oneApp,constants,options,moment*/
+/*globals angular,constants,options,moment*/
 'use strict';
 
-oneApp.constant('demoDefaults', {
+angular.module('one.legacy').constant('demoDefaults', {
     newCampaignSettings: function (id) {
         return {
             id: id,

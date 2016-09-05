@@ -1,7 +1,7 @@
-/*globals angular,oneApp,constants,options,moment*/
+/*globals angular,constants,options,moment*/
 'use strict';
 
-oneApp.factory('zemDemoAdGroupsService', ['zemDemoCacheService', function (zemDemoCacheService) {
+angular.module('one.legacy').factory('zemDemoAdGroupsService', ['zemDemoCacheService', function (zemDemoCacheService) {
     var adGroupData = {},
         campaignToAdGroupsMap = {},
         newAdGroups = []; // new ad groups, form: { adGroupId1: 1, adGroupId2: 1, ...}

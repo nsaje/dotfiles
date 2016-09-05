@@ -1,8 +1,8 @@
-/* globals angular, oneApp, constants */
+/* globals angular, constants */
 /* eslint-disable camelcase*/
 'use strict';
 
-oneApp.factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpointColumns', function (zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpointColumns', function (zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
 
     return {
         convertBreakdownFromApi: convertBreakdownFromApi,

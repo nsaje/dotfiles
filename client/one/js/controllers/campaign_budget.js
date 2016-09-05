@@ -1,5 +1,5 @@
-/* globals oneApp */
-oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', '$uibModal',  'api', function ($scope, $state, $uibModal, api) {
+/* globals angular */
+angular.module('one.legacy').controller('CampaignBudgetCtrl', ['$scope', '$state', '$uibModal',  'api', function ($scope, $state, $uibModal, api) {
     var availableCredit = [];
     function updateView (data) {
         $scope.activeBudget = data.active;

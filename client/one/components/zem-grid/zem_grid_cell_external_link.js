@@ -1,7 +1,7 @@
-/* globals oneApp, constants */
+/* globals angular, constants */
 'use strict';
 
-oneApp.directive('zemGridCellExternalLink', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
+angular.module('one.legacy').directive('zemGridCellExternalLink', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
 
     return {
         restrict: 'E',

@@ -1,7 +1,7 @@
-/* globals oneApp, constants, angular */
+/* globals angular, constants */
 'use strict';
 
-oneApp.directive('zemGridIntegration', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemGridIntegration', [function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: false,
@@ -27,7 +27,7 @@ oneApp.directive('zemGridIntegration', [function () { // eslint-disable-line max
     };
 }]);
 
-oneApp.controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'zemGridEndpointService', 'zemDataSourceService', 'zemFilterService', function ($scope, $timeout, $state, zemGridEndpointService, zemDataSourceService, zemFilterService) {
+angular.module('one.legacy').controller('ZemGridIntegrationCtrl', ['$scope', '$timeout', '$state', 'zemGridEndpointService', 'zemDataSourceService', 'zemFilterService', function ($scope, $timeout, $state, zemGridEndpointService, zemDataSourceService, zemFilterService) {
     var vm = this;
     $scope.hasPermission = this.hasPermission;
     $scope.isPermissionInternal = this.isPermissionInternal;

@@ -1,7 +1,7 @@
-/*globals angular,oneApp,constants,options,moment*/
+/*globals angular,constants,options,moment*/
 'use strict';
 
-oneApp.factory('zemDemoContentAdsService', ['$q', function ($q) {
+angular.module('one.legacy').factory('zemDemoContentAdsService', ['$q', function ($q) {
     var contentAdDeltas = {},
         adGroupAds = {},
         adGroupBulkDeltas = {},

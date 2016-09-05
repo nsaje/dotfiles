@@ -1,7 +1,7 @@
-/*global $,oneApp*/
+/*global $,angular*/
 'use strict';
 
-oneApp.directive('zemNotePopover', ['$window', function ($window) {
+angular.module('one.legacy').directive('zemNotePopover', ['$window', function ($window) {
     return {
         restrict: 'E',
         scope: {

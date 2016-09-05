@@ -1,8 +1,8 @@
-/* globals angular,oneApp,constants,options,moment */
+/* globals angular,constants,options,moment */
 /* eslint-disable camelcase */
 'use strict';
 
-oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, zemFilterService) {
+angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, zemFilterService) {
 
     function createAbortableDefer () {
         var deferred = $q.defer();

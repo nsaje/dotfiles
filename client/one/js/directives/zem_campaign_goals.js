@@ -1,7 +1,7 @@
-/* global oneApp,constants*/
+/* global angular,constants*/
 'use strict';
 
-oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
+angular.module('one.legacy').directive('zemCampaignGoals', ['$filter', function ($filter) {
     return {
         restrict: 'E',
         scope: {

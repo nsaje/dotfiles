@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.factory('zemGridStorageService', ['zemLocalStorageService', function (zemLocalStorageService) {
+angular.module('one.legacy').factory('zemGridStorageService', ['zemLocalStorageService', function (zemLocalStorageService) {
     var LOCAL_STORAGE_NAMESPACE = 'zem-grid-local-storage';
     var KEY_COLUMNS = 'columns';
     var KEY_COLUMN_PRIMARY_GOAL = 'primary-goal';
@@ -87,8 +87,8 @@ oneApp.factory('zemGridStorageService', ['zemLocalStorageService', function (zem
         // TODO: move to util service
         // Simple solution for finding if arrays are having common element
         return array1.filter(function (n) {
-                return array2.indexOf(n) != -1;
-            }).length > 0;
+            return array2.indexOf(n) != -1;
+        }).length > 0;
     }
 
     function saveOrder (grid) {

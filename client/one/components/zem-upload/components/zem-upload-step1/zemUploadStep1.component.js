@@ -1,7 +1,7 @@
-/* globals oneApp, moment */
+/* globals angular, moment */
 'use strict';
 
-oneApp.directive('zemUploadStep1', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemUploadStep1', [function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -19,7 +19,7 @@ oneApp.directive('zemUploadStep1', [function () { // eslint-disable-line max-len
     };
 }]);
 
-oneApp.controller('ZemUploadStep1Ctrl', ['config', function (config) {
+angular.module('one.legacy').controller('ZemUploadStep1Ctrl', ['config', function (config) {
     var vm = this;
     vm.config = config;
 

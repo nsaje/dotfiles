@@ -1,7 +1,7 @@
-/* globals oneApp, constants */
+/* globals angular, constants */
 'use strict';
 
-oneApp.factory('zemGridDataValidator', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').factory('zemGridDataValidator', ['zemGridConstants', function (zemGridConstants) {
     return {
         validate: validate,
     };

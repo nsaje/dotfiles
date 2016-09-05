@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.factory('zemGridCollapseService', ['zemGridConstants', function (zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridCollapseService', ['zemGridConstants', function (zemGridConstants) { // eslint-disable-line max-len
 
     function CollapseService (grid) {
         var pubsub = grid.meta.pubsub;

@@ -1,7 +1,7 @@
-/*globals angular,oneApp,constants,options,moment*/
+/*globals angular,constants,options,moment*/
 'use strict';
 
-oneApp.factory('zemDemoSourcesService', ['$q', '$window', 'demoDefaults', 'zemDemoCacheService', 'zemDemoAdGroupsService', function ($q, $window, demoDefaults, zemDemoCacheService, zemDemoAdGroupsService) {
+angular.module('one.legacy').factory('zemDemoSourcesService', ['$q', '$window', 'demoDefaults', 'zemDemoCacheService', 'zemDemoAdGroupsService', function ($q, $window, demoDefaults, zemDemoCacheService, zemDemoAdGroupsService) {
     var adGroupSourcesDelta = {},
         adGroupSourcesTableRows = {},
         apiGetSourcesTable = null,

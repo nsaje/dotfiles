@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemGridHeaderCellData', ['$timeout', 'zemGridUIService', function ($timeout, zemGridUIService) {
+angular.module('one.legacy').directive('zemGridHeaderCellData', ['$timeout', 'zemGridUIService', function ($timeout, zemGridUIService) {
 
     return {
         restrict: 'E',

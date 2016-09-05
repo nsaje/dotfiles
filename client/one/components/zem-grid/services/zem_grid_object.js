@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.factory('zemGridObject', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').factory('zemGridObject', ['zemGridConstants', function (zemGridConstants) {
 
     //
     // This service defines Grid object. It is the main

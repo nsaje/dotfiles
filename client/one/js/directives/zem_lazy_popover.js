@@ -1,4 +1,4 @@
-/*global $,angular,oneApp*/
+/*global $,angular*/
 'use strict';
 
 $zemLazyPopoverDirective.$inject = ['$http', '$templateCache', '$compile', '$parse', '$timeout', '$uibPosition', '$document'];

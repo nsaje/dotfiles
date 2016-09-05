@@ -1,10 +1,10 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
 // TODO:
 // - refactor grid object
 
-oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIService', function ($timeout, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIService', function ($timeout, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
 
     return {
         restrict: 'E',
@@ -73,7 +73,7 @@ oneApp.directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIServi
 
                 for (var i = 0; i < visibleRows.length; i++) {
                     visibleRows[i].index = i % numberOfRenderedRows;
-               }
+                }
 
                 scope.ctrl.grid.body.visibleRows = visibleRows;
                 scope.state.renderedRows = visibleRows.slice(0, numberOfRenderedRows);

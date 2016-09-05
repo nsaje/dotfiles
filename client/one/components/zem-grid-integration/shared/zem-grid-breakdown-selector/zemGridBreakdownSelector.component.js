@@ -1,7 +1,7 @@
-/* global oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemGridBreakdownSelector', [function () {
+angular.module('one.legacy').directive('zemGridBreakdownSelector', [function () {
     return {
         restrict: 'E',
         scope: {},
@@ -15,7 +15,7 @@ oneApp.directive('zemGridBreakdownSelector', [function () {
 }]);
 
 
-oneApp.controller('zemGridBreakdownSelectorCtrl', [function () {
+angular.module('one.legacy').controller('zemGridBreakdownSelectorCtrl', [function () {
     var vm = this;
 
     vm.onChecked = onChecked;

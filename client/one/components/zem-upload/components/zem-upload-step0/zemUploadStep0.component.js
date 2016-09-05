@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals angular */
 'use strict';
 
-oneApp.directive('zemUploadStep0', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemUploadStep0', [function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -19,7 +19,7 @@ oneApp.directive('zemUploadStep0', [function () { // eslint-disable-line max-len
     };
 }]);
 
-oneApp.controller('ZemUploadStep0Ctrl', [function () {
+angular.module('one.legacy').controller('ZemUploadStep0Ctrl', [function () {
     var vm = this;
     vm.switchToSingleContentAdUpload = function () {
         vm.endpoint.createBatch(vm.defaultBatchName).then(

@@ -1,5 +1,5 @@
-/* globals oneApp */
-oneApp.controller('RequestDemoModalCtrl', ['$scope', 'api', function ($scope, api) {
+/* globals angular */
+angular.module('one.legacy').controller('RequestDemoModalCtrl', ['$scope', 'api', function ($scope, api) {
 
     $scope.inProgress = true;
     $scope.error = false;

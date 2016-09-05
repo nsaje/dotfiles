@@ -1,7 +1,7 @@
-/* globals JSON, oneApp */
+/* globals JSON, angular */
 'use strict';
 
-oneApp.factory('zemLocalStorageService', function () {
+angular.module('one.legacy').factory('zemLocalStorageService', function () {
     var user = null;
 
     function getKey (key, namespace) {

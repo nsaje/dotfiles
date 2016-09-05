@@ -1,5 +1,5 @@
-/* globals oneApp,constants */
-oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'api', 'zemNavigationService', 'adGroupData', function ($scope, $state, $window, $location, api, zemNavigationService, adGroupData) { // eslint-disable-line max-len
+/* globals angular, constants */
+angular.module('one.legacy').controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'api', 'zemNavigationService', 'adGroupData', function ($scope, $state, $window, $location, api, zemNavigationService, adGroupData) { // eslint-disable-line max-len
     $scope.infoboxHeader = null;
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;

@@ -1,7 +1,7 @@
-/* globals oneApp, constants,$ */
+/* globals angular, constants,$ */
 'use strict';
 
-oneApp.directive('zemNavSearch', ['config', '$state', function (config, $state) {
+angular.module('one.legacy').directive('zemNavSearch', ['config', '$state', function (config, $state) {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_nav_search.html',

@@ -1,7 +1,7 @@
-/*global $,oneApp,constants*/
+/*global $,angular,constants*/
 'use strict';
 
-oneApp.directive('zemCustomTableCols', ['config', function (config) {
+angular.module('one.legacy').directive('zemCustomTableCols', ['config', function (config) {
     return {
         restrict: 'E',
         scope: {

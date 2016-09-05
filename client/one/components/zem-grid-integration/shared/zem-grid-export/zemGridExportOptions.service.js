@@ -1,7 +1,7 @@
-/* globals oneApp, angular, constants */
+/* globals angular, constants */
 'use strict';
 
-oneApp.factory('zemGridExportOptions', [function () {
+angular.module('one.legacy').factory('zemGridExportOptions', [function () {
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // EXPORT OPTIONS DEFINITIONS

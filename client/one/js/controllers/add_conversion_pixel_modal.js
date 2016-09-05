@@ -1,5 +1,5 @@
-/* globals oneApp */
-oneApp.controller('AddConversionPixelModalCtrl', ['$scope', 'api', function ($scope, api) {
+/* globals angular */
+angular.module('one.legacy').controller('AddConversionPixelModalCtrl', ['$scope', 'api', function ($scope, api) {
     $scope.inProgress = false;
     $scope.pixel = {name: ''};
     $scope.error = false;

@@ -1,7 +1,7 @@
-/* globals oneApp, constants */
+/* globals angular, constants */
 'use strict';
 
-oneApp.factory('zemGridDataFormatter', ['$filter', 'zemGridConstants', function ($filter, zemGridConstants) {
+angular.module('one.legacy').factory('zemGridDataFormatter', ['$filter', 'zemGridConstants', function ($filter, zemGridConstants) {
     return {
         formatValue: formatValue,
         parseInputValue: parseInputValue,

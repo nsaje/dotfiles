@@ -1,7 +1,7 @@
-/*global $,oneApp,constants*/
+/*global $,angular,constants*/
 'use strict';
 
-oneApp.directive('zemFilter', ['config', function (config) {
+angular.module('one.legacy').directive('zemFilter', ['config', function (config) {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_filter.html',

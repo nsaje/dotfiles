@@ -1,7 +1,7 @@
-/* globals oneApp, angular, constants, options */
+/* globals angular, constants, options */
 'use strict';
 
-oneApp.factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridConstants) {
     var AVG_COST_PREFIX = 'avg_cost_per_';
 
     var CONVERSION_GOALS_PLACEHOLDER = 'conversion_goals_placeholder';

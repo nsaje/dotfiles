@@ -1,4 +1,4 @@
-/*global $,oneApp*/
+/* globasl actionLogApp */
 'use strict';
 
 actionLogApp.directive('zemActionLogFilter', function () {

@@ -1,4 +1,4 @@
-/* globals oneApp, describe, beforeEach, inject, module, it, expect, spyOn, jasmine */
+/* globals describe, beforeEach, inject, module, it, expect, spyOn, jasmine */
 'use strict';
 
 describe('zemUpload', function () {

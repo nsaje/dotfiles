@@ -1,8 +1,8 @@
-/* globals oneApp, angular */
+/* globals angular */
 /* eslint-disable camelcase */
 'use strict';
 
-oneApp.factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'zemGridConstants', function ($rootScope, $controller, $http, $q, $timeout, zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'zemGridConstants', function ($rootScope, $controller, $http, $q, $timeout, zemGridConstants) { // eslint-disable-line max-len
 
     function MockEndpoint (metaData) {
         this.getMetaData = function () {

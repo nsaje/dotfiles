@@ -1,7 +1,7 @@
-/*global $,oneApp,constants*/
+/*global $,angular,constants*/
 'use strict';
 
-oneApp.directive('zemInfoboxSetting', ['config', '$window', function (config, $window) {
+angular.module('one.legacy').directive('zemInfoboxSetting', ['config', '$window', function (config, $window) {
 
     return {
         restrict: 'E',

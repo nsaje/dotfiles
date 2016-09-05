@@ -1,9 +1,9 @@
-/* globals oneApp, angular, constants */
+/* globals angular, constants */
 /* eslint-disable camelcase*/
 
 'use strict';
 
-oneApp.factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemNavigationService', 'zemGridEndpointApiConverter', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemNavigationService, zemGridEndpointApiConverter) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemNavigationService', 'zemGridEndpointApiConverter', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemNavigationService, zemGridEndpointApiConverter) { // eslint-disable-line max-len
 
     function EndpointService (metaData) {
 

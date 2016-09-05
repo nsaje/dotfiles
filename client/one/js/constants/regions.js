@@ -1,7 +1,7 @@
-/*globals oneApp*/
+/* globals angular */
 'use strict';
 
-oneApp.constant('regions', {
+angular.module('one.legacy').constant('regions', {
     _regionIndexByCode: undefined,
     getByCode: function (code) {
 

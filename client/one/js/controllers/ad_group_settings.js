@@ -1,5 +1,5 @@
-/*globals oneApp,constants,options,moment*/
-oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, regions, zemNavigationService) { // eslint-disable-line max-len
+/* globals angular, constants, options, moment */
+angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, regions, zemNavigationService) { // eslint-disable-line max-len
     $scope.settings = {};
     $scope.loadRequestInProgress = true;
     $scope.actionIsWaiting = false;
