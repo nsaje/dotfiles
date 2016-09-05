@@ -641,7 +641,6 @@ def get_pre_campaign_goal_values(campaign, date, conversion_goals=False):
             '-created_dt',
     ).distinct(
             'campaign_goal',
-            'created_dt'
     ).select_related('campaign_goal')
     return {
         cgv.campaign_goal.id: cgv for cgv in campaign_goal_values
