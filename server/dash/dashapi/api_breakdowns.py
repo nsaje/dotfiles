@@ -317,7 +317,7 @@ def get_totals(level, breakdown, constraints):
         loader = loaders.SourcesLoader(sources, ad_group_sources)
 
         min_cpcs = [v['min_bid_cpc'] for v in loader.settings_map.values() if v['min_bid_cpc'] is not None]
-        row['min_bid_cpc'] = min(min_cpcs) if min_cpcs else none
+        row['min_bid_cpc'] = min(min_cpcs) if min_cpcs else None
 
         max_cpcs = [v['max_bid_cpc'] for v in loader.settings_map.values() if v['max_bid_cpc'] is not None]
         row['max_bid_cpc'] = max(max_cpcs) if max_cpcs else None
