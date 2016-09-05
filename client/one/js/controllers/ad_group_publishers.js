@@ -129,28 +129,12 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
                 numNotSelected += 1;
             }
         });
-        $scope.recountOutbrainPublishers();
 
         $scope.updatePublisherBlacklistCombo();
 
         if ($scope.selectedAll) {
             $scope.selectionMenuConfig.partialSelection = numNotSelected > 0;
         }
-
-        if (row.exchange === constants.sourceTypeName.OUTBRAIN) {
-            $scope.updateOutbrainPublisherSelection();
-            $scope.updateRowBlacklistInfo();
-        }
-    };
-
-    $scope.recountOutbrainPublishers = function () {
-        $scope.obBlacklistedSelected = 0;
-        Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
-            var pubStatus = $scope.selectedPublisherStatus[publisherId];
-            if (pubStatus.exchange === constants.sourceTypeName.OUTBRAIN && pubStatus.checked && pubStatus.blacklisted !== 'Blacklisted') {
-                $scope.obBlacklistedSelected += 1;
-            }
-        });
     };
 
     $scope.updatePublisherBlacklistCombo = function () {
@@ -270,11 +254,9 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
 
         if (selected) {
             $scope.updatePublisherSelection();
-            $scope.updateOutbrainPublisherSelection();
             $scope.updateRowBlacklistInfo();
         } else {
             $scope.clearPublisherSelection();
-            $scope.updateOutbrainPublisherSelection();
         }
 
         $scope.updatePublisherBlacklistCombo();
@@ -302,26 +284,6 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
                     row.publisherSelected = true;
                 } else {
                     row.publisherSelected = false;
-                }
-            }
-        });
-    };
-
-    $scope.updateOutbrainPublisherSelection = function () {
-        $scope.rows.forEach(function (row) {
-            if (row !== undefined) {
-                if (row.exchange === constants.sourceTypeName.OUTBRAIN) {
-                    if (!row.publisherSelected && row.blacklisted !== 'Blacklisted') {
-                        if ($scope.obBlacklistedCount + $scope.obBlacklistedSelected >= 10) {
-                            row.can_blacklist_publisher = false;
-                        }
-                    }
-
-                    if ($scope.obBlacklistedCount + $scope.obBlacklistedSelected < 10) {
-                        row.can_blacklist_publisher = true;
-                    }
-
-                    row.disabledSelection = !row.can_blacklist_publisher;
                 }
             }
         });
@@ -774,9 +736,7 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
                 $scope.obBlacklistedCount = data.obBlacklistedCount;
                 $scope.campaignGoals = data.campaign_goals;
 
-                $scope.recountOutbrainPublishers();
                 $scope.updatePublisherSelection();
-                $scope.updateOutbrainPublisherSelection();
                 $scope.updateRowBlacklistInfo();
 
                 zemPostclickMetricsService.insertConversionGoalColumns($scope.columns, $scope.columnCategories, data.conversionGoals);

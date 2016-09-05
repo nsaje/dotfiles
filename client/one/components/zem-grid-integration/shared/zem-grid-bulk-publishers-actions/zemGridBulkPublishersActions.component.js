@@ -16,7 +16,6 @@ angular.module('one.legacy').directive('zemGridBulkPublishersActions', ['$window
 
 angular.module('one.legacy').controller('zemGridBulkPublishersActionsCtrl', ['$window', 'api', 'zemGridConstants', 'zemGridEndpointColumns', function ($window, api, zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
     var COLUMNS = zemGridEndpointColumns.COLUMNS;
-    var MAX_BLACKLISTED_PUBLISHERS_OUTBRAIN = 10;
     var MAX_BLACKLISTED_PUBLISHERS_YAHOO = 0;
 
     var MSG_GLOBAL_UPDATE_ALERT = 'This action will affect all accounts. Are you sure you want to proceed?';
@@ -107,8 +106,6 @@ angular.module('one.legacy').controller('zemGridBulkPublishersActionsCtrl', ['$w
 
     function getMaxBlacklistedPublishers (exchange) {
         switch (exchange) {
-        case constants.sourceTypeName.OUTBRAIN:
-            return MAX_BLACKLISTED_PUBLISHERS_OUTBRAIN;
         case constants.sourceTypeName.YAHOO:
             return MAX_BLACKLISTED_PUBLISHERS_YAHOO;
         default:
