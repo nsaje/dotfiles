@@ -31,6 +31,7 @@ import utils.k1_helper
 import utils.email_helper
 import utils.redirector_helper
 
+import actionlog.api
 import actionlog.api_contentads
 import actionlog.zwei_actions
 
@@ -755,6 +756,8 @@ class AdGroupAdmin(admin.ModelAdmin):
         if changes:
             new_settings.save(request)
             utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroup admin')
+            self._handle_manual_interest_targeting_action(request, ad_group, constants.SourceType.FACEBOOK, current_settings, new_settings)
+            self._handle_manual_interest_targeting_action(request, ad_group, constants.SourceType.YAHOO, current_settings, new_settings)
             if (current_settings.redirect_pixel_urls != new_settings.redirect_pixel_urls or
                     current_settings.redirect_javascript != new_settings.redirect_javascript):
                 self._update_redirector_adgroup(ad_group, new_settings)
@@ -762,6 +765,30 @@ class AdGroupAdmin(admin.ModelAdmin):
                 current_settings, new_settings, request.user, separator='\n')
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)
+
+    @staticmethod
+    def _handle_manual_interest_targeting_action(request, ad_group, source_slug, current_settings, new_settings):
+        ad_group_source = models.AdGroupSource.objects.filter(
+            ad_group=ad_group,
+            source__tracking_slug=source_slug
+        ).first()
+        if not ad_group_source:
+            return
+
+        if current_settings.interest_targeting != new_settings.interest_targeting:
+            actionlog.api.init_set_ad_group_manual_property(
+                ad_group_source,
+                request,
+                'interest_targeting',
+                new_settings.interest_targeting
+            )
+        if current_settings.exclusion_interest_targeting != new_settings.exclusion_interest_targeting:
+            actionlog.api.init_set_ad_group_manual_property(
+                ad_group_source,
+                request,
+                'exclusion_interest_targeting',
+                new_settings.exclusion_interest_targeting
+            )
 
     @staticmethod
     def _update_redirector_adgroup(ad_group, new_settings):

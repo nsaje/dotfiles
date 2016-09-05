@@ -38,10 +38,12 @@ class AdGroupAdmin(TestCase):
 
     fixtures = ['test_models']
 
+    @mock.patch.object(admin.AdGroupAdmin, '_handle_manual_interest_targeting_action')
     @mock.patch.object(admin.utils.redirector_helper, 'insert_adgroup')
-    def test_save_additional_targeting(self, mock_r1_insert_adgroup):
+    def test_save_additional_targeting(self, mock_r1_insert_adgroup, mock_handle_manual):
         trackers = ['http://a.com', 'http://b.com']
         javascript = 'alert("A");'
+        interest_targeting = ['segment1', 'segment2']
 
         ad_group = models.AdGroup.objects.get(pk=1)
         old_settings = ad_group.get_current_settings()
@@ -66,12 +68,15 @@ class AdGroupAdmin(TestCase):
         old_settings = ad_group.get_current_settings()
         form.cleaned_data['redirect_pixel_urls'] = trackers
         form.cleaned_data['redirect_javascript'] = javascript
+        form.cleaned_data['interest_targeting'] = interest_targeting
+        form.cleaned_data['exclusion_interest_targeting'] = interest_targeting
         adgroup_admin.save_model(request, ad_group, form, None)
         new_settings = ad_group.get_current_settings()
         self.assertNotEqual(old_settings.redirect_pixel_urls, trackers)
         self.assertNotEqual(old_settings.redirect_javascript, javascript)
         self.assertEqual(new_settings.redirect_pixel_urls, trackers)
         self.assertEqual(new_settings.redirect_javascript, javascript)
+        self.assertEqual(new_settings.interest_targeting, interest_targeting)
         mock_r1_insert_adgroup.assert_called_with(
             ad_group.id,
             old_settings.get_tracking_codes(),
@@ -81,3 +86,15 @@ class AdGroupAdmin(TestCase):
             trackers,
             javascript
         )
+        self.assertEqual(mock_handle_manual.call_count, 4)
+
+    @mock.patch.object(admin.actionlog.api, 'init_set_ad_group_manual_property')
+    def test_handle_manual_interest_targeting_action(self, mock_actionlog_init_manual):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.interest_targeting = ['new', 'targeting']
+        new_settings.exclusion_interest_targeting = ['new', 'targeting']
+        admin.AdGroupAdmin._handle_manual_interest_targeting_action(
+            mock.Mock(), ad_group, 'adiant', current_settings, new_settings)
+        self.assertEqual(mock_actionlog_init_manual.call_count, 2)
