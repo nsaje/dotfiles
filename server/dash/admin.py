@@ -1,7 +1,6 @@
 import json
 import logging
 import urllib
-from functools import partial
 
 from django.contrib import admin
 from django.contrib import messages
@@ -13,7 +12,6 @@ from django.conf import settings
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatechars
-from django.contrib.admin.utils import flatten_fieldsets
 from django.contrib.admin import SimpleListFilter
 
 from import_export import resources, fields
@@ -334,8 +332,8 @@ class AgencyResource(resources.ModelResource):
 
     class Meta:
         model = models.Agency
-        fields = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative']
-        export_order = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative']
+        fields = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative', 'default_account_type']
+        export_order = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative', 'default_account_type']
 
     def dehydrate_sales_representative(self, obj):
         return obj.sales_representative and obj.sales_representative.get_full_name() or ''
@@ -350,6 +348,9 @@ class AgencyResource(resources.ModelResource):
         for user in obj.users.all():
             names.append(user.get_full_name())
         return ', '.join(names)
+
+    def dehydrate_default_account_type(self, obj):
+        return constants.AccountType.get_text(obj.default_account_type)
 
 
 class AgencyAdmin(ExportMixin, admin.ModelAdmin):
