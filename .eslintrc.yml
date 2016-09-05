@@ -1,3 +1,21 @@
+globals:
+  # Libraries
+  angular: false
+  $: false
+  moment: false
+  # Zemanta
+  constants: false
+  # Jasmine
+  jasmine: false
+  describe: false
+  fdescribe: false
+  it: false
+  fit: false
+  module: false
+  inject: false
+  beforeEach: false
+  expect: false
+
 rules:
   indent:
     - 2
@@ -72,6 +90,8 @@ rules:
     - 0
   no-undef:
     - 2
+
 env:
   browser: true
+
 extends: 'eslint:recommended'
