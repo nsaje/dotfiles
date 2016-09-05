@@ -102,3 +102,51 @@ class AudiencesView(api_common.BaseApiView):
             })
 
         return self.create_api_response(rows)
+
+
+class AudienceArchive(api_common.BaseApiView):
+    def post(self, request, account_id, audience_id):
+        if not request.user.has_perm('zemauth.account_custom_audiences_view'):
+            raise exc.AuthorizationError()
+
+        # This is here to see if user has permissions for this account
+        helpers.get_account(request.user, account_id)
+
+        audience = None
+        try:
+            audience = models.Audience.objects.get(pk=audience_id)
+        except models.Audience.DoesNotExist:
+            raise exc.MissingDataError('Audience does not exist')
+
+        audience.archived = True
+        audience.save(
+            request,
+            constants.HistoryActionType.AUDIENCE_ARCHIVE,
+            'Archived audience "{}".'.format(audience.name)
+        )
+
+        return self.create_api_response()
+
+
+class AudienceRestore(api_common.BaseApiView):
+    def post(self, request, account_id, audience_id):
+        if not request.user.has_perm('zemauth.account_custom_audiences_view'):
+            raise exc.AuthorizationError()
+
+        # This is here to see if user has permissions for this account
+        helpers.get_account(request.user, account_id)
+
+        audience = None
+        try:
+            audience = models.Audience.objects.get(pk=audience_id)
+        except models.Audience.DoesNotExist:
+            raise exc.MissingDataError('Audience does not exist')
+
+        audience.archived = False
+        audience.save(
+            request,
+            constants.HistoryActionType.AUDIENCE_RESTORE,
+            'Restored audience "{}".'.format(audience.name)
+        )
+
+        return self.create_api_response()

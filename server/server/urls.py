@@ -512,6 +512,16 @@ urlpatterns += [
         name='live_stream_allow'
     ),
     url(
+        r'^api/accounts/(?P<account_id>\d+)/audiences/(?P<audience_id>\d+)/archive/',
+        login_required(dash.views.audiences.AudienceArchive.as_view()),
+        name='accounts_audience_archive',
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/audiences/(?P<audience_id>\d+)/restore/',
+        login_required(dash.views.audiences.AudienceRestore.as_view()),
+        name='accounts_audience_restore',
+    ),
+    url(
         r'^api/accounts/(?P<account_id>\d+)/audiences/(?P<audience_id>\d+)/',
         login_required(dash.views.audiences.AudiencesView.as_view()),
         name='accounts_audience',

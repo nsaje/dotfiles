@@ -1642,6 +1642,7 @@ class HistoryActionType(ConstantBase):
     CONVERSION_PIXEL_RENAME = 17
     AUDIENCE_CREATE = 18
     AUDIENCE_ARCHIVE = 19
+    AUDIENCE_RESTORE = 20
 
     _VALUES = {
         GOAL_CHANGE: 'Change Campaign Goal',
@@ -1662,7 +1663,8 @@ class HistoryActionType(ConstantBase):
         MEDIA_SOURCE_ADD: 'Add Media Source',
         CONVERSION_PIXEL_RENAME: 'Rename conversion pixel',
         AUDIENCE_CREATE: 'Create custom audience',
-        AUDIENCE_ARCHIVE: 'Archive custom audience'
+        AUDIENCE_ARCHIVE: 'Archive custom audience',
+        AUDIENCE_RESTORE: 'Restore custom audience'
     }
 
 
