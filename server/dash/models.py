@@ -3709,7 +3709,7 @@ class ExportReport(models.Model):
     include_model_ids = models.BooleanField(null=False, blank=False, default=False)
 
     order_by = models.CharField(max_length=20, null=True, blank=True)
-    additional_fields = models.CharField(max_length=500, null=True, blank=True)
+    additional_fields = models.TextField(null=True, blank=True)
     filtered_sources = models.ManyToManyField(Source, blank=True)
     filtered_agencies = models.ManyToManyField(Agency, blank=True)
     filtered_account_types = jsonfield.JSONField(blank=True, default=[])
