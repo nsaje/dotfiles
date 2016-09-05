@@ -2294,45 +2294,6 @@ class PublishersBlacklistStatusTest(TestCase):
             self.assertTrue(res['success'])
 
     @patch('reports.redshift.get_cursor')
-    def test_post_outbrain_over_quota(self, cursor):
-        for i in xrange(30):
-            models.PublisherBlacklist.objects.create(
-                account=models.Account.objects.get(pk=1),
-                source=models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN),
-                name='test_{}'.format(i),
-                status=constants.PublisherStatus.BLACKLISTED,
-            )
-
-        cursor().dictfetchall.return_value = [
-            {
-                'domain': u'Test',
-                'ctr': 0.0,
-                'exchange': 'outbrain',
-                'external_id': 'sfdafkl1230899012asldas',
-                'cpc_nano': 0,
-                'media_cost_nano_sum': 1e-05,
-                'impressions_sum': 1000L,
-                'clicks_sum': 0L,
-            },
-        ]
-        start_date = datetime.datetime.utcnow()
-        end_date = start_date + datetime.timedelta(days=31)
-        payload = {
-            "state": constants.PublisherStatus.BLACKLISTED,
-            "level": constants.PublisherBlacklistLevel.ACCOUNT,
-            "start_date": start_date.isoformat(),
-            "end_date": end_date.isoformat(),
-            "select_all": True,
-            "publishers_selected": [],
-            "publishers_not_selected": []
-        }
-        res = self._post_publisher_blacklist(1, payload)
-
-        self.assertTrue(res['success'])
-
-        self.assertEqual(30, models.PublisherBlacklist.objects.count())
-
-    @patch('reports.redshift.get_cursor')
     def test_post_outbrain_manual(self, cursor):
         req = RequestFactory().get('/')
         req.user = zemauth.models.User.objects.get(pk=1)
@@ -2340,7 +2301,7 @@ class PublishersBlacklistStatusTest(TestCase):
         account.name = 'ZemAccount'
         account.save(req)
 
-        for i in xrange(11):
+        for i in xrange(31):
             models.PublisherBlacklist.objects.create(
                 account=models.Account.objects.get(pk=1),
                 source=models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN),
@@ -2382,7 +2343,7 @@ class PublishersBlacklistStatusTest(TestCase):
             u'Test #sfdafkl1230899012asldas'
         )
         self.assertTrue(res['success'])
-        self.assertEqual(12, models.PublisherBlacklist.objects.count())
+        self.assertEqual(32, models.PublisherBlacklist.objects.count())
 
         # Revert
         publisher_blacklist_action.delete()

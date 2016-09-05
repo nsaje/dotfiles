@@ -224,22 +224,6 @@ class BlacklistTestCase(TestCase):
         )
         self.assertEqual(publisher_blacklist_action.count(), 0)
 
-    def test_account_blacklist_over_max(self):
-        for i in range(dash.constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT - 1):
-            dash.models.PublisherBlacklist.objects.create(
-                source=self.ob,
-                name='www.page{}.com'.format(i),
-                status=BLACKLISTED,
-                account=self.account
-            )
-        dash.blacklist.update(self.ad_group, {'source': self.ob, 'account': self.account},
-                              BLACKLISTED, self.domains)
-        bl = dash.models.PublisherBlacklist.objects.filter(source=self.ob,
-                                                           status=BLACKLISTED,
-                                                           account=self.account)
-        self.assertEqual(bl.count(),
-                         dash.constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT - 1)
-
     def test_account_enabling(self):
         dash.models.PublisherBlacklist.objects.create(
             source=self.source,

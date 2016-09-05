@@ -158,9 +158,6 @@ def _handle_outbrain(source, constraints, status, domain_names, external_map, re
             set(domain_names) & set(ob_domains.values_list('name', flat=True))
         )
 
-    if count_ob > dash.constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT:
-        raise BlacklistException('Attempted to blacklist more publishers than allowed per account on Outbrain')
-
     if count_ob > dash.constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD:
         _trigger_manual_ob_blacklist_action(request, ad_group, status, domain_names, external_map)
 

@@ -6,8 +6,7 @@ from dash import regions
 # which corresponds to 10 blacklisted publishers per Z1 account
 # Experiment 6/13/2016: we can blacklist 30 publishers on OB dashboard, it's not documented
 #                       but we can try to enable 30 via API
-MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 30
-MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD = 10
+MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD = 30
 
 MAX_CONVERSION_GOALS_PER_CAMPAIGN = 15
 

@@ -1786,8 +1786,7 @@ class PublishersTable(object):
         # there's a separate permission for Outbrain blacklisting which
         # might get removed in the future
         can_blacklist_outbrain_publisher = known_source and publisher_source.source_type.type == constants.SourceType.OUTBRAIN and\
-            user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status') and\
-            count_ob_blacklisted_publishers < constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT
+            user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status')
 
         if known_source and publisher_source.can_modify_publisher_blacklist_automatically() and\
                 (publisher_source.source_type.type != constants.SourceType.OUTBRAIN or
