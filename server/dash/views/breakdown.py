@@ -452,11 +452,12 @@ class CampaignBreakdown(api_common.BaseApiView):
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
-        breakdown_helpers.format_report_rows_state_fields(rows)
-        breakdown_helpers.format_report_rows_performance_fields(rows, goals)
 
         if breakdown == ['ad_group_id']:
             breakdown_helpers.format_report_rows_ad_group_editable_fields(rows)
+
+        breakdown_helpers.format_report_rows_state_fields(rows)
+        breakdown_helpers.format_report_rows_performance_fields(rows, goals)
 
         breakdown_helpers.clean_non_relevant_fields(rows)
 
