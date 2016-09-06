@@ -131,7 +131,7 @@ def fetch_redirects_impressions(date, timeout=300):
     raise Exception('Redirect conversion stats timeout')
 
 
-def insert_audience(audience):
+def upsert_audience(audience):
     try:
         rules = [{'id': rule.id, 'type': rule.type, 'value': rule.value} for rule in audience.rule_set.all()]
         source_pixels = [{'url': pixel.url, 'type': pixel.source_type.type} for pixel in audience.pixel.sourcetypepixel_set.all()]
@@ -140,6 +140,7 @@ def insert_audience(audience):
             'id': str(audience.id),
             'accountid': audience.pixel.account.id,
             'pixieslug': audience.pixel.slug,
+            'archived': audience.archived,
             'rules': rules,
             'pixels': source_pixels,
             'ttl': audience.ttl,

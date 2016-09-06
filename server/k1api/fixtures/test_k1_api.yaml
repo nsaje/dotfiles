@@ -983,6 +983,7 @@
 -   fields:
         name: 'Audience 1'
         pixel_id: 1
+        archived: False
         ttl: 90
         created_dt: '2015-02-23T00:00:00'
         modified_dt: '2015-02-23T00:00:00'
@@ -993,6 +994,7 @@
 -   fields:
         name: 'Audience 2'
         pixel_id: 2
+        archived: False
         ttl: 60
         created_dt: '2015-02-24T00:00:00'
         modified_dt: '2015-02-24T00:00:00'

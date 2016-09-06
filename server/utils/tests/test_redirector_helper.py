@@ -342,18 +342,18 @@ class GetAdgroupTest(TestCase):
     R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA'
 )
 @patch('utils.request_signer._secure_opener.open')
-class InsertAudienceTest(TestCase):
+class UpsertAudienceTest(TestCase):
 
     fixtures = ['test_k1_api.yaml']
 
-    def test_insert_audience(self, mock_urlopen):
+    def test_upsert_audience(self, mock_urlopen):
         response = Mock()
         response.read.return_value = '{"status": "ok", "data":{"audienceid":"1"}}'
         response.getcode = lambda: 200
         mock_urlopen.return_value = response
 
         audience = dash.models.Audience.objects.get(pk=1)
-        resp = redirector_helper.insert_audience(audience)
+        resp = redirector_helper.upsert_audience(audience)
 
         self.assertDictEqual(resp, {u'audienceid': u'1'})
 
@@ -365,6 +365,7 @@ class InsertAudienceTest(TestCase):
             u'id': u'1',
             u'accountid': 1,
             u'pixieslug': u'testslug1',
+            u'archived': False,
             u'rules': ListMatcher(
                 [{u'id': 1, u'type': 1, u'value': u'dummy'}, {u'id': 2, u'type': 2, u'value': u'dummy2'}]),
             u'pixels': ListMatcher(
@@ -377,14 +378,14 @@ class InsertAudienceTest(TestCase):
         }
         self.assertJSONEqual(call.data, expected)
 
-    def test_insert_audience_error(self, mock_urlopen):
+    def test_upsert_audience_error(self, mock_urlopen):
         response = Mock()
         response.getcode = lambda: 400
         mock_urlopen.return_value = response
 
         audience = dash.models.Audience.objects.get(pk=1)
         with self.assertRaises(Exception):
-            redirector_helper.insert_audience(audience)
+            redirector_helper.upsert_audience(audience)
 
         self.assertEqual(len(mock_urlopen.call_args_list), 3, "Should retry the call 3-times")
 
