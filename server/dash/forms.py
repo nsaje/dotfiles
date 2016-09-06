@@ -14,6 +14,7 @@ from django.contrib.postgres import forms as postgres_forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.db import transaction
 from django.core import validators
+from django.utils.html import strip_tags
 
 from automation import autopilot_budgets
 from dash import api
@@ -56,6 +57,22 @@ class TypedMultipleAnyChoiceField(forms.TypedMultipleChoiceField):
         return True
 
 
+REDIRECT_JS_HELP_TEXT = '''<!-- Facebook Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+
+fbq('init', '531027177051024');
+fbq('track', "PageView");</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=531027177051024&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Facebook Pixel Code -->'''
+
+
 class AdGroupAdminForm(forms.ModelForm):
     SETTINGS_FIELDS = [
         'notes',
@@ -65,28 +82,30 @@ class AdGroupAdminForm(forms.ModelForm):
         'redirect_pixel_urls',
         'redirect_javascript'
     ]
-    notes = forms.CharField(required=False, widget=forms.Textarea)
-    bluekai_targeting = postgres_forms.JSONField(required=False)
+    notes = forms.CharField(required=False, widget=forms.Textarea, help_text='Describe what kind of additional targeting was setup on the backend.')
+    bluekai_targeting = postgres_forms.JSONField(required=False, help_text='Example: ["and", "bluekai:446103", ["not", ["or", "bluekai:510120", "bluekai:510122"]]]')
     interest_targeting = forms.MultipleChoiceField(
         required=False,
         choices=constants.InterestCategory.get_choices(),
         widget=FilteredSelectMultiple(verbose_name="inclusion interest categories",
-                                      is_stacked=False)
+                                      is_stacked=False),
+        help_text='Select interests and demographics you want to include.'
     )
     exclusion_interest_targeting = forms.MultipleChoiceField(
         required=False,
         choices=constants.InterestCategory.get_choices(),
         widget=FilteredSelectMultiple(verbose_name="exclusion interest categories",
-                                      is_stacked=False)
+                                      is_stacked=False),
+        help_text='Select interests and demographics you want to exclude.'
     )
     redirect_pixel_urls = postgres_forms.SimpleArrayField(
         forms.CharField(),
         required=False,
         delimiter='\n',
         widget=forms.Textarea,
-        help_text='Put every entry on a separate line'
+        help_text='Put every entry in a separate line. Example: https://www.facebook.com/tr?id=531027177051024&ev=PageView&noscript=1.'
     )
-    redirect_javascript = forms.CharField(required=False, widget=forms.Textarea)
+    redirect_javascript = forms.CharField(required=False, widget=forms.Textarea, help_text='Example: %s' % strip_tags(REDIRECT_JS_HELP_TEXT))
 
     def __init__(self, *args, **kwargs):
         initial = kwargs.get('initial', {})

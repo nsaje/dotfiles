@@ -152,12 +152,15 @@
             <!-- additional targeting -->
             <div ng-if="hasPermission('zemauth.can_view_additional_targeting')">
                 <div class="form-group m-b-s">
-                    <label class="col-xs-12 control-label">Additional targeting</label>
+                    <label class="col-xs-12 control-label">
+                        Additional targeting
+                        <zem-help-popover content="Define your audience by including or excluding interests and demographics, or set up BlueKai or LiveRamp targeting." placement="top"></zem-help-popover>
+                    </label>
                     <label class="col-xs-2 control-label">
-                        <span class="sidenote">This is a read-only section. Please contact your Zemanta Account Manager if you want to change these settings.</span>
+                        <span class="sidenote width-limit">This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change interest or first and third party targeting.</span>
                     </label>
                 </div>
-                <div class="form-group m-l-s">
+                <div class="form-group m-l-s" ng-if="settings.interestTargeting.length || settings.exclusionInterestTargeting.length">
                     <label class="col-xs-12">
                         Interest targeting
                         <zem-help-popover content="Define your audience by including or excluding interests and demographics." placement="top"></zem-help-popover>
@@ -178,10 +181,10 @@
                         <span class="sidenote">* Outbrain doesn't support interest targeting.</span>
                     </label>
                 </div>
-                <div class="form-group m-l-s">
+                <div class="form-group m-l-s" ng-if="settings.bluekaiTargeting.length">
                     <label class="col-xs-12">
                         Third and first party targeting
-                        <zem-help-popover content="BlueKai and Liveramp targeting." placement="top"></zem-help-popover>
+                        <zem-help-popover content="BlueKai and LiveRamp targeting." placement="top"></zem-help-popover>
                     </label>
                     <div class="col-xs-5" ng-if="settings.bluekaiTargeting.length">
                         <div>BlueKai targeting set up.</div>
@@ -202,7 +205,7 @@
                         <zem-help-popover content="3rd party pixels help you retarget people who clicked on Zemanta ads." placement="top"></zem-help-popover>
                     </label>
                     <label class="col-xs-2 control-label">
-                        <span class="sidenote">This is a read-only section. Please contact your Zemanta Account Manager if you want to change these settings.</span>
+                        <span class="sidenote width-limit">This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change 3rd party pixels.</span>
                     </label>
                 </div>
                 <div class="form-group m-l-s" ng-if="settings.redirectPixelUrls.length || settings.redirectJavascript">
