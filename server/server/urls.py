@@ -9,7 +9,6 @@ import django.views.defaults
 from zemauth.forms import AuthenticationForm
 
 import zweiapi.views
-import k1api_old.views
 import k1api.views
 import actionlog.views
 import reports.views
@@ -575,137 +574,72 @@ urlpatterns += [
     )
 ]
 
-# K1 Api
+# K1 API
 urlpatterns += [
     url(
-        r'^k1api/ad_group_source$',
-        k1api_old.views.get_ad_group_source.as_view(),
-        name='k1api.get_ad_group_source',
+        r'^k1api/ad_groups$',
+        k1api.views.AdGroupsView.as_view(),
+        name='k1api.ad_groups',
     ),
     url(
-        r'k1api/get_ad_group_sources_for_source_type$',
-        k1api_old.views.get_ad_group_sources_for_source_type.as_view(),
-        name='k1api.get_ad_group_sources_for_source_type'
+        r'^k1api/ad_groups/sources$',
+        k1api.views.AdGroupSourcesView.as_view(),
+        name='k1api.ad_groups.sources',
     ),
     url(
-        r'^k1api/ad_group_source_ids$',
-        k1api_old.views.get_ad_group_source_ids.as_view(),
-        name='k1api.get_ad_group_source_ids',
+        r'^k1api/content_ads$',
+        k1api.views.ContentAdsView.as_view(),
+        name='k1api.content_ads',
     ),
     url(
-        r'^k1api/content_ad_sources_for_ad_group$',
-        k1api_old.views.get_content_ad_sources_for_ad_group.as_view(),
-        name='k1api.get_content_ad_sources_for_ad_group',
+        r'^k1api/content_ads/sources$',
+        k1api.views.ContentAdSourcesView.as_view(),
+        name='k1api.content_ads.sources',
     ),
     url(
-        r'^k1api/get_accounts$',
-        k1api_old.views.get_accounts.as_view(),
-        name='k1api.get_accounts',
+        r'^k1api/accounts$',
+        k1api.views.AccountsView.as_view(),
+        name='k1api.accounts',
     ),
     url(
-        r'^k1api/get_default_source_credentials$',
-        k1api_old.views.get_default_source_credentials.as_view(),
-        name='k1api.get_default_source_credentials',
+        r'^k1api/sources$',
+        k1api.views.SourcesView.as_view(),
+        name='k1api.sources',
     ),
     url(
-        r'^k1api/get_custom_audiences$',
-        k1api_old.views.get_custom_audiences.as_view(),
-        name='k1api.get_custom_audiences',
+        r'k1api/source_pixels$',
+        k1api.views.SourcePixelsView.as_view(),
+        name='k1api.source_pixels',
     ),
     url(
-        r'k1api/update_source_pixel$',
-        k1api_old.views.update_source_pixel.as_view(),
-        name='k1api.update_source_pixel',
+        r'^k1api/ga_accounts$',
+        k1api.views.GAAccountsView.as_view(),
+        name='k1api.ga_accounts',
     ),
     url(
-        r'^k1api/get_source_credentials_for_reports_sync$',
-        k1api_old.views.get_source_credentials_for_reports_sync.as_view(),
-        name='k1api.get_source_credentials_for_reports_sync',
+        r'^k1api/r1_mapping$',
+        k1api.views.R1MappingView.as_view(),
+        name='k1api.r1_mapping',
     ),
     url(
-        r'^k1api/get_content_ad_source_mapping$',
-        k1api_old.views.get_content_ad_source_mapping.as_view(),
-        name='k1api.get_content_ad_source_mapping',
+        r'^k1api/publishers_blacklist$',
+        k1api.views.PublishersBlacklistView.as_view(),
+        name='k1api.publishers_blacklist',
     ),
     url(
-        r'^k1api/get_ga_accounts$',
-        k1api_old.views.get_ga_accounts.as_view(),
-        name='k1api.get_ga_accounts',
+        r'^k1api/outbrain/publishers_blacklist$',
+        k1api.views.OutbrainPublishersBlacklistView.as_view(),
+        name='k1api.outbrain_publishers_blacklist',
     ),
     url(
-        r'^k1api/get_sources_by_tracking_slug$',
-        k1api_old.views.get_sources_by_tracking_slug.as_view(),
-        name='k1api.get_sources_by_tracking_slug',
+        r'^k1api/outbrain/marketer_id$',
+        k1api.views.OutbrainMarketerIdView.as_view(),
+        name='k1api.outbrain_marketer_id',
     ),
     url(
-        r'^k1api/get_accounts_slugs_ad_groups$',
-        k1api_old.views.get_accounts_slugs_ad_groups.as_view(),
-        name='k1api.get_accounts_slugs_ad_groups',
-    ),
-    url(
-        r'^k1api/get_publishers_blacklist$',
-        k1api_old.views.get_publishers_blacklist.as_view(),
-        name='k1api.get_publishers_blacklist',
-    ),
-    url(
-        r'^k1api/get_publishers_blacklist_outbrain$',
-        k1api_old.views.get_publishers_blacklist_outbrain.as_view(),
-        name='k1api.get_publishers_blacklist_outbrain',
-    ),
-    url(
-        r'^k1api/get_ad_groups$',
-        k1api_old.views.get_ad_groups.as_view(),
-        name='k1api.get_ad_groups',
-    ),
-    url(
-        r'k1api/get_ad_groups_exchanges$',
-        k1api_old.views.get_ad_groups_exchanges.as_view(),
-        name='k1api.get_ad_groups_exchanges',
-    ),
-    url(
-        r'k1api/get_content_ads$',
-        k1api_old.views.get_content_ads.as_view(),
-        name='k1api.get_content_ads',
-    ),
-    url(
-        r'k1api/get_content_ads_exchanges$',
-        k1api_old.views.get_content_ads_exchanges.as_view(),
-        name='k1api.get_content_ads_exchanges',
-    ),
-    url(
-        r'^k1api/get_content_ad_ad_group$',
-        k1api_old.views.get_content_ad_ad_group.as_view(),
-        name='k1api.get_content_ad_ad_group',
-    ),
-    url(
-        r'^k1api/update_content_ad_status$',
-        k1api_old.views.update_content_ad_status.as_view(),
-        name='k1api.update_content_ad_status',
-    ),
-    url(
-        r'^k1api/set_source_campaign_key$',
-        k1api_old.views.set_source_campaign_key.as_view(),
-        name='k1api.set_source_campaign_key',
-    ),
-    url(
-        r'^k1api/get_outbrain_marketer_id$',
-        k1api_old.views.get_outbrain_marketer_id.as_view(),
-        name='k1api.get_outbrain_marketer_id',
-    ),
-    url(
-        r'^k1api/get_facebook_accounts$',
-        k1api_old.views.get_facebook_accounts.as_view(),
-        name='k1api.get_facebook_accounts',
-    ),
-    url(
-        r'^k1api/update_facebook_account$',
-        k1api_old.views.update_facebook_account.as_view(),
-        name='k1api.update_facebook_account',
-    ),
-    url(
-        r'^k1api/update_ad_group_source_state$',
-        k1api_old.views.update_ad_group_source_state.as_view(),
-        name='k1api.update_ad_group_source_state',
+        r'^k1api/facebook/accounts$',
+        k1api.views.FacebookAccountsView.as_view(),
+        name='k1api.facebook_accounts',
     ),
 ]
 

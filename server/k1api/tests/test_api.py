@@ -51,16 +51,16 @@ class K1ApiTest(TestCase):
         self.test_signature = False
         self.mock_verify_wsgi_request.side_effect = request_signer.SignatureError
         test_paths = [
-            'k1api_new.ad_groups',
-            'k1api_new.ad_groups.sources',
-            'k1api_new.content_ads',
-            'k1api_new.content_ads.sources',
-            'k1api_new.accounts',
-            'k1api_new.sources',
-            'k1api_new.source_pixels',
-            'k1api_new.ga_accounts',
-            'k1api_new.publishers_blacklist',
-            'k1api_new.facebook_accounts',
+            'k1api.ad_groups',
+            'k1api.ad_groups.sources',
+            'k1api.content_ads',
+            'k1api.content_ads.sources',
+            'k1api.accounts',
+            'k1api.sources',
+            'k1api.source_pixels',
+            'k1api.ga_accounts',
+            'k1api.publishers_blacklist',
+            'k1api.facebook_accounts',
         ]
         for path in test_paths:
             self._test_signature(path)
@@ -74,7 +74,7 @@ class K1ApiTest(TestCase):
 
     def test_get_accounts(self):
         response = self.client.get(
-            reverse('k1api_new.accounts'),
+            reverse('k1api.accounts'),
         )
 
         data = json.loads(response.content)
@@ -143,7 +143,7 @@ class K1ApiTest(TestCase):
 
     def test_get_accounts_with_id(self):
         response = self.client.get(
-            reverse('k1api_new.accounts'), {'account_ids': 1},
+            reverse('k1api.accounts'), {'account_ids': 1},
         )
 
         data = json.loads(response.content)
@@ -197,7 +197,7 @@ class K1ApiTest(TestCase):
 
     def test_get_default_source_credentials(self):
         response = self.client.get(
-            reverse('k1api_new.sources'),
+            reverse('k1api.sources'),
             {'source_slugs': 'facebook'}
         )
 
@@ -209,7 +209,7 @@ class K1ApiTest(TestCase):
 
     def test_get_custom_audience(self):
         response = self.client.get(
-            reverse('k1api_new.accounts'),
+            reverse('k1api.accounts'),
             {'account_ids': 1},
         )
 
@@ -261,7 +261,7 @@ class K1ApiTest(TestCase):
             'source_pixel_id': 'fb_dummy_id',
         }
         response = self.client.put(
-            reverse('k1api_new.source_pixels'), json.dumps(body), 'application/json',
+            reverse('k1api.source_pixels'), json.dumps(body), 'application/json',
         )
 
         data = json.loads(response.content)
@@ -279,7 +279,7 @@ class K1ApiTest(TestCase):
             'source_pixel_id': 'fb_dummy_id',
         }
         response = self.client.put(
-            reverse('k1api_new.source_pixels'), json.dumps(body), 'application/json',
+            reverse('k1api.source_pixels'), json.dumps(body), 'application/json',
         )
 
         data = json.loads(response.content)
@@ -291,7 +291,7 @@ class K1ApiTest(TestCase):
 
     def _test_source_credentials_filter(self, source_slugs=None):
         response = self.client.get(
-            reverse('k1api_new.sources'),
+            reverse('k1api.sources'),
             {'source_slugs': ','.join(source_slugs)},
         )
 
@@ -319,7 +319,7 @@ class K1ApiTest(TestCase):
     def _test_content_ad_source_ids_filters(self, source_types=None,
                                             source_content_ad_ids=None):
         response = self.client.get(
-            reverse('k1api_new.content_ads.sources'),
+            reverse('k1api.content_ads.sources'),
             data=dict(source_slugs=','.join(source_types), source_content_ad_ids=','.join(source_content_ad_ids))
         )
 
@@ -365,7 +365,7 @@ class K1ApiTest(TestCase):
 
     def test_get_ga_accounts(self):
         response = self.client.get(
-            reverse('k1api_new.ga_accounts'),
+            reverse('k1api.ga_accounts'),
         )
 
         data = json.loads(response.content)
@@ -382,7 +382,7 @@ class K1ApiTest(TestCase):
 
     def _test_get_content_ad_sources_for_ad_group(self, ad_group_id, content_ad_id):
         response = self.client.get(
-            reverse('k1api_new.content_ads.sources'),
+            reverse('k1api.content_ads.sources'),
             {'source_type': 'adblade',
              'ad_group_id': 1},
         )
@@ -419,7 +419,7 @@ class K1ApiTest(TestCase):
 
     def test_get_content_ad_sources_for_ad_group_no_adgroupsource(self):
         response = self.client.get(
-            reverse('k1api_new.content_ads.sources'),
+            reverse('k1api.content_ads.sources'),
             {'source_types': 'outbrain',
              'ad_group_ids': 1},
         )
@@ -431,7 +431,7 @@ class K1ApiTest(TestCase):
 
     def test_get_sources_by_tracking_slug(self):
         response = self.client.get(
-            reverse('k1api_new.sources')
+            reverse('k1api.sources')
         )
 
         data = json.loads(response.content)
@@ -445,7 +445,7 @@ class K1ApiTest(TestCase):
     def test_get_accounts_slugs_ad_groups(self):
         accounts = (1, 2)
         response = self.client.get(
-            reverse('k1api_new.r1_mapping'),
+            reverse('k1api.r1_mapping'),
             {'account': accounts},
         )
 
@@ -467,7 +467,7 @@ class K1ApiTest(TestCase):
 
     def test_get_publishers_blacklist_outbrain(self):
         response = self.client.get(
-            reverse('k1api_new.outbrain_publishers_blacklist'),
+            reverse('k1api.outbrain_publishers_blacklist'),
             {'marketer_id': 'abcde'}
         )
 
@@ -486,7 +486,7 @@ class K1ApiTest(TestCase):
 
     def test_get_publishers_blacklist(self):
         response = self.client.get(
-            reverse('k1api_new.publishers_blacklist'),
+            reverse('k1api.publishers_blacklist'),
         )
 
         data = json.loads(response.content)
@@ -548,7 +548,7 @@ class K1ApiTest(TestCase):
 
     def test_get_publishers_blacklist_with_ad_group_id(self):
         response = self.client.get(
-            reverse('k1api_new.publishers_blacklist'),
+            reverse('k1api.publishers_blacklist'),
             {'ad_group_id': 1},
         )
 
@@ -590,7 +590,7 @@ class K1ApiTest(TestCase):
 
     def test_get_ad_groups_with_id(self):
         response = self.client.get(
-            reverse('k1api_new.ad_groups'),
+            reverse('k1api.ad_groups'),
             {'ad_group_ids': 1},
         )
 
@@ -628,7 +628,7 @@ class K1ApiTest(TestCase):
 
     def test_get_ad_groups(self):
         response = self.client.get(
-            reverse('k1api_new.ad_groups'),
+            reverse('k1api.ad_groups'),
         )
 
         data = json.loads(response.content)
@@ -664,7 +664,7 @@ class K1ApiTest(TestCase):
 
     def test_get_ad_groups_sources(self):
         response = self.client.get(
-            reverse('k1api_new.ad_groups.sources'),
+            reverse('k1api.ad_groups.sources'),
             {'source_types': 'b1'}
         )
 
@@ -696,7 +696,7 @@ class K1ApiTest(TestCase):
 
     def test_get_ad_groups_exchanges_with_id(self):
         response = self.client.get(
-            reverse('k1api_new.ad_groups.sources'),
+            reverse('k1api.ad_groups.sources'),
             {'ad_group_ids': 1,
              'source_types': 'b1'},
         )
@@ -719,7 +719,7 @@ class K1ApiTest(TestCase):
 
     def test_get_content_ads(self):
         response = self.client.get(
-            reverse('k1api_new.content_ads'),
+            reverse('k1api.content_ads'),
             {'content_ad_ids': 1,
              'ad_group_ids': 1},
         )
@@ -749,7 +749,7 @@ class K1ApiTest(TestCase):
 
     def test_get_content_ads(self):
         response = self.client.get(
-            reverse('k1api_new.content_ads'),
+            reverse('k1api.content_ads'),
             {'include_archived': False}
         )
 
@@ -758,7 +758,7 @@ class K1ApiTest(TestCase):
         data_without_archived = data['response']
 
         response = self.client.get(
-            reverse('k1api_new.content_ads'),
+            reverse('k1api.content_ads'),
             {'include_archived': True}
         )
 
@@ -771,7 +771,7 @@ class K1ApiTest(TestCase):
 
     def test_get_content_ads_sources(self):
         response = self.client.get(
-            reverse('k1api_new.content_ads.sources'),
+            reverse('k1api.content_ads.sources'),
             {'content_ad_ids': 1,
              'ad_group_ids': 1,
              'source_slugs': 'adblade'},
@@ -802,7 +802,7 @@ class K1ApiTest(TestCase):
         cas.save()
         response = self.client.generic(
             'PUT',
-            reverse('k1api_new.content_ads.sources'),
+            reverse('k1api.content_ads.sources'),
             json.dumps({
                 'submission_status': 2, 'submission_errors': 'my-errors',
                 'source_content_ad_id': 123
@@ -820,7 +820,7 @@ class K1ApiTest(TestCase):
         self.assertEqual(cas.source_content_ad_id, '123')
 
         response = self.client.put(
-            reverse('k1api_new.content_ads.sources'),
+            reverse('k1api.content_ads.sources'),
             json.dumps({'content_ad_id': 1000, 'source_slug': 'adblade',
                         'submission_status': 2, 'submission_errors': 'my-errors',
                         'source_content_ad_id': 123}),
@@ -831,7 +831,7 @@ class K1ApiTest(TestCase):
     def test_update_content_ad_status_refuse_delete(self):
         response = self.client.generic(
             'PUT',
-            reverse('k1api_new.content_ads.sources'),
+            reverse('k1api.content_ads.sources'),
             json.dumps({
                 'submission_status': 2, 'submission_errors': 'my-errors',
                 'source_content_ad_id': ''
@@ -850,7 +850,7 @@ class K1ApiTest(TestCase):
 
         response = self.client.generic(
             'PUT',
-            reverse('k1api_new.ad_groups.sources'),
+            reverse('k1api.ad_groups.sources'),
             json.dumps({'source_campaign_key': ['abc']}),
             'application/json',
             QUERY_STRING=urllib.urlencode({'ad_group_id': 1, 'source_slug': 'adblade'})
@@ -864,7 +864,7 @@ class K1ApiTest(TestCase):
 
     def test_get_outbrain_marketer_id(self):
         response = self.client.get(
-            reverse('k1api_new.outbrain_marketer_id'),
+            reverse('k1api.outbrain_marketer_id'),
             {'ad_group_id': '1'}
         )
 
@@ -876,7 +876,7 @@ class K1ApiTest(TestCase):
 
     def test_get_outbrain_marketer_id_assign_new(self):
         response = self.client.get(
-            reverse('k1api_new.outbrain_marketer_id'),
+            reverse('k1api.outbrain_marketer_id'),
             {'ad_group_id': '3'}
         )
 
@@ -888,7 +888,7 @@ class K1ApiTest(TestCase):
 
     def test_get_facebook_accounts(self):
         response = self.client.get(
-            reverse('k1api_new.facebook_accounts'),
+            reverse('k1api.facebook_accounts'),
         )
 
         data = json.loads(response.content)
@@ -909,7 +909,7 @@ class K1ApiTest(TestCase):
 
     def test_get_facebook_accounts_with_ad_group(self):
         response = self.client.get(
-            reverse('k1api_new.facebook_accounts'),
+            reverse('k1api.facebook_accounts'),
             {'ad_group_id': '1'}
         )
 
@@ -921,7 +921,7 @@ class K1ApiTest(TestCase):
 
     def test_get_facebook_accounts_with_account(self):
         response = self.client.get(
-            reverse('k1api_new.facebook_accounts'),
+            reverse('k1api.facebook_accounts'),
             {'account_id': '1'}
         )
 
@@ -936,7 +936,7 @@ class K1ApiTest(TestCase):
                   'source_slug': 'adblade'}
         response = self.client.generic(
             'PUT',
-            reverse('k1api_new.ad_groups.sources'),
+            reverse('k1api.ad_groups.sources'),
             json.dumps({'state': 2}),
             'application/json',
             QUERY_STRING=urllib.urlencode(params)
@@ -954,7 +954,7 @@ class K1ApiTest(TestCase):
                   'source_slug': 'adblade'}
         response = self.client.generic(
             'PUT',
-            reverse('k1api_new.ad_groups.sources'),
+            reverse('k1api.ad_groups.sources'),
             json.dumps({'source_campaign_key': ''}),
             'application/json',
             QUERY_STRING=urllib.urlencode(params)
@@ -968,7 +968,7 @@ class K1ApiTest(TestCase):
                   'source_slug': 'adblade'}
         response = self.client.generic(
             'PUT',
-            reverse('k1api_new.ad_groups.sources'),
+            reverse('k1api.ad_groups.sources'),
             json.dumps({'state': 2}),
             'application/json',
             QUERY_STRING=urllib.urlencode(params)
@@ -981,7 +981,7 @@ class K1ApiTest(TestCase):
         params = {'slug': 'adblade'}
         response = self.client.generic(
             'PUT',
-            reverse('k1api_new.ad_groups.sources'),
+            reverse('k1api.ad_groups.sources'),
             json.dumps({'state': 2}),
             'application/json',
             QUERY_STRING=urllib.urlencode(params)
@@ -992,7 +992,7 @@ class K1ApiTest(TestCase):
 
     def test_update_facebook_account(self):
         response = self.client.put(
-            reverse('k1api_new.facebook_accounts'),
+            reverse('k1api.facebook_accounts'),
             json.dumps({'status': 5, 'ad_account_id': 'act_555', 'account_id': 1}),
             'application/json'
         )
@@ -1003,7 +1003,7 @@ class K1ApiTest(TestCase):
 
     def test_update_facebook_account_error(self):
         response = self.client.put(
-            reverse('k1api_new.facebook_accounts'),
+            reverse('k1api.facebook_accounts'),
             json.dumps({'status': 5, 'ad_account_id': 'act_555'}),
             'application/json'
         )
