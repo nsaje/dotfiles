@@ -96,6 +96,7 @@ def get_campaign_goal_column_importance(campaign_goal):
 def send_autopilot_changes_emails(email_changes_data, data, initialization):
     for camp, changes_data in email_changes_data.iteritems():
         emails = email_manager_list(camp)
+        emails.append(autopilot_settings.AUTOPILOT_EMAIL_FOR_COPIES)
         if initialization:
             send_budget_autopilot_initialisation_email(camp, emails, changes_data)
         else:

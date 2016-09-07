@@ -6,6 +6,7 @@ from dash.constants import CampaignGoalKPI
 SYNC_IS_RECENT_HOURS = 2
 AUTOMATION_AI_NAME = 'Zemanta Autopilot'
 AUTOPILOT_EMAIL = 'help@zemanta.com'
+AUTOPILOT_EMAIL_FOR_COPIES = 'autopilot@zemanta.com'
 
 
 # CPC Autopilot Settings
