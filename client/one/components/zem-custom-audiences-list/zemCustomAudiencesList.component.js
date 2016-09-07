@@ -7,23 +7,37 @@ angular.module('one.legacy').directive('zemCustomAudiencesList', [function () { 
         replace: true,
         scope: {},
         templateUrl: '/components/zem-custom-audiences-list/zemCustomAudiencesList.component.html',
+        bindToController: {
+            accountId: '=',
+        },
         controllerAs: 'ctrl',
         controller: 'ZemCustomAudiencesListCtrl',
     };
 }]);
 
-angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['$scope', function ($scope) {
-    $scope.audiences = [{
-        id: 1,
-        name: 'Test audience 1',
-    }, {
-        id: 2,
-        name: 'Test audience 2',
-    }, {
-        id: 3,
-        name: 'Test audience 3',
-    }, {
-        id: 4,
-        name: 'Test audience 4',
-    }];
+angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['api', function (api) {
+    var vm = this;
+    vm.audiences = [];
+    vm.listRequestInProgress = false;
+
+    vm.getAudiences = function() {
+        vm.listRequestInProgress = true;
+
+        api.customAudiences.list(vm.accountId).then(
+            function (data) {
+                vm.audiences = data;
+            },
+            function (data) {
+                return;
+            }
+        ).finally(function () {
+            vm.listRequestInProgress = false;
+        });
+    };
+
+    function init() {
+        vm.getAudiences();
+    }
+
+    init();
 }]);

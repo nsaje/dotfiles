@@ -2899,6 +2899,37 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         };
     }
 
+    function CustomAudiences () {
+        this.list = function (accountId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/audiences/';
+
+            $http.get(url).
+                success(function (data) {
+                    var resource = [];
+
+                    if (data && data.data) {
+                        for (var i = 0; i < data.data.length; i++) {
+                            resource.push({
+                                id: data.data[i].id,
+                                name: data.data[i].name,
+                                count: data.data[i].count,
+                                countYesterday: data.data[i].count_yesterday,
+                                createdDt: moment(data.data[i].created_dt).toDate(),
+                            });
+                        }
+                    }
+
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     return {
         navigation: new Navigation(),
         user: new User(),
@@ -2953,5 +2984,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         campaignGoalValidation: new CampaignGoalValidation(),
         demo: new Demo(),
         liveStream: new LiveStream(),
+        customAudiences: new CustomAudiences(),
     };
 }]);

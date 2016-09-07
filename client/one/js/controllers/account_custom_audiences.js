@@ -1,5 +1,6 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', ['$scope', '$state', '$q', '$uibModal', 'api', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $uibModal, api, zemNavigationService, $timeout) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', ['$scope', '$state', function ($scope, $state) { // eslint-disable-line max-len
+    $scope.accountId = $state.params.id;
 }]);

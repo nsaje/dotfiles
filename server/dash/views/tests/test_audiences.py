@@ -128,22 +128,26 @@ class AudiencesTest(TestCase):
                 "count": 1000,
                 "count_yesterday": 100,
                 "id": 1,
-                "name": "test audience 1"
+                "name": "test audience 1",
+                "created_dt": '2015-08-25T05:58:21'
             }, {
                 "count": 1000,
                 "count_yesterday": 100,
                 "id": 2,
-                "name": "test audience 2"
+                "name": "test audience 2",
+                "created_dt": '2015-08-25T05:58:21'
             }, {
                 "count": 1000,
                 "count_yesterday": 100,
                 "id": 3,
-                "name": "test audience 3"
+                "name": "test audience 3",
+                "created_dt": '2015-08-25T05:58:21'
             }, {
                 "count": 1000,
                 "count_yesterday": 100,
                 "id": 4,
-                "name": "test audience 4"
+                "name": "test audience 4",
+                "created_dt": '2015-08-25T05:58:21'
             }]
         }
         self.assertEqual(json.loads(response.content), response_dict)

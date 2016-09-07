@@ -99,6 +99,7 @@ class AudiencesView(api_common.BaseApiView):
                 'name': audience.name,
                 'count': 1000,  # TODO once sampling is done
                 'count_yesterday': 100,  # TODO once sampling is done
+                'created_dt': audience.created_dt,
             })
 
         return self.create_api_response(rows)
