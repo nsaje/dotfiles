@@ -4,9 +4,8 @@ angular.module(
     'one',
     [
         'one.libs', // NOTE: Must be referenced first!
-        'one.common',
         'one.core',
-        'one.layout',
+        'one.common',
         'one.services',
         'one.views',
         'one.widgets',

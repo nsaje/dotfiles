@@ -1,5 +1,5 @@
 /* globals $, angular, constants */
-angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$uibModal', '$uibModalStack', '$timeout', '$window', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$uibModal', '$uibModalStack', '$timeout', '$window', 'zemMoment', 'userService', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', 'redesignHelpersService', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, userService, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, redesignHelpersService) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
@@ -21,34 +21,14 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
 
     $scope.liveStreamOn = false;
 
-    $scope.hasPermission = function (permissions) {
-        if (!permissions) {
-            return false;
-        }
-
-        // can take string or array, returns true if user has any of the permissions
-        if (typeof permissions === 'string') {
-            permissions = [permissions];
-        }
-
-        return permissions.some(function (permission) {
-            return Object.keys($scope.user.permissions).indexOf(permission) >= 0;
-        });
-    };
+    $scope.hasPermission = userService.hasPermission;
+    $scope.isPermissionInternal = userService.isPermissionInternal;
 
     $scope.hasAgency = function () {
         if ($scope.user.agency) {
             return true;
         }
         return false;
-    };
-
-    $scope.isPermissionInternal = function (permission) {
-        if (Object.keys($scope.user.permissions).indexOf(permission) < 0) {
-            return false;
-        }
-
-        return !$scope.user.permissions[permission];
     };
 
     $scope.toggleGraph = function () {
@@ -455,4 +435,10 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
     };
 
     $scope.init();
+
+
+    // TODO: Remove once redesign is finished
+    $scope.userCanSeeNewLayout = redesignHelpersService.canSeeNewLayout;
+    $scope.toggleNewLayout = redesignHelpersService.toggleNewLayout;
+    redesignHelpersService.setBodyThemeClass();
 }]);

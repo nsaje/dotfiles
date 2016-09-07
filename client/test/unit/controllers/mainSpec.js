@@ -6,6 +6,7 @@ describe('MainCtrl', function () {
     var ctrl;
     var $state;
     var user = {permissions: []};
+    var userService;
     var zemFullStoryService;
     var zemFilterServiceMock;
     var zemUserSettings;
@@ -49,9 +50,10 @@ describe('MainCtrl', function () {
             $provide.value('api', api);
         });
 
-        inject(function ($rootScope, $controller, _$state_) {
+        inject(function ($rootScope, $controller, _$state_, _userService_) {
             $scope = $rootScope.$new();
             $state = _$state_;
+            userService = _userService_;
 
             zemFullStoryService = {identify: function (user) {}};
             zemUserSettings = {
@@ -87,16 +89,15 @@ describe('MainCtrl', function () {
 
     describe('hasPermission', function () {
         beforeEach(function () {
-            $scope.user = {permissions: {}};
+            userService.init({permissions: {availablePermission: true}});
         });
 
         it('should return true if user has the specified permission', function () {
-            $scope.user.permissions.somePermission = true;
-            expect($scope.hasPermission('somePermission')).toBe(true);
+            expect($scope.hasPermission('availablePermission')).toBe(true);
         });
 
         it('should return false if user does not have the specified permission', function () {
-            expect($scope.hasPermission('somePermission')).toBe(false);
+            expect($scope.hasPermission('unavailablePermission')).toBe(false);
         });
 
         it('should return false if called without specifying permission', function () {

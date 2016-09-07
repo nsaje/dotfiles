@@ -11,8 +11,10 @@ angular.module('one.legacy').config(['$stateProvider', function ($stateProvider)
             templateUrl: '/partials/main.html',
             controller: 'MainCtrl',
             resolve: {
-                user: ['api', 'zemLocalStorageService', 'zemFilterService', function (api, zemLocalStorageService, zemFilterService) {
+                user: ['api', 'userService', 'zemLocalStorageService', 'zemFilterService', function (api, userService, zemLocalStorageService, zemFilterService) {
                     return api.user.get('current').then(function (user) {
+                        // TODO: Handle user loading with userService instead of this api call
+                        userService.init(user);
                         zemLocalStorageService.init(user);
                         zemFilterService.init(user);
                         return user;

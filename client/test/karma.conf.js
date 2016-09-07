@@ -18,6 +18,7 @@ module.exports = function (config) {
         'dist/one/zemanta-one.lib.js',
         'dist/one/zemanta-one.templates.js',
         'one/app/app.module.js',
+        'one/app/**/*.module.js',
         'one/app/**/*.js',
         'one/js/**/*.js',
         'one/components/**/*.js',

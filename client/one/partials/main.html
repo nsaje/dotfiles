@@ -1,5 +1,6 @@
 <div class="container-fluid">
-    <div class="row header" ng-include src="'/partials/header.html'"></div>
+    <zem-header class="row m-b-s" ng-if="userCanSeeNewLayout()" user="user"></zem-header>
+    <div class="row header" ng-include src="'/partials/header.html'" ng-if="!userCanSeeNewLayout()"></div>
 
     <div class="row body">
         <div class="sidebar" ng-show="accountsAccess.hasAccounts && navigationPaneVisible">
