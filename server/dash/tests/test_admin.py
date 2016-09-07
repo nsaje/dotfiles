@@ -86,7 +86,7 @@ class AdGroupAdmin(TestCase):
             trackers,
             javascript
         )
-        self.assertEqual(mock_handle_manual.call_count, 4)
+        self.assertEqual(mock_handle_manual.call_count, 6)
 
     @mock.patch.object(admin.actionlog.api, 'init_set_ad_group_manual_property')
     def test_handle_manual_interest_targeting_action(self, mock_actionlog_init_manual):

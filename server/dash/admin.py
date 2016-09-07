@@ -759,6 +759,7 @@ class AdGroupAdmin(admin.ModelAdmin):
             utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroup admin')
             self._handle_manual_interest_targeting_action(request, ad_group, constants.SourceType.FACEBOOK, current_settings, new_settings)
             self._handle_manual_interest_targeting_action(request, ad_group, constants.SourceType.YAHOO, current_settings, new_settings)
+            self._handle_manual_interest_targeting_action(request, ad_group, constants.SourceType.OUTBRAIN, current_settings, new_settings)
             if (current_settings.redirect_pixel_urls != new_settings.redirect_pixel_urls or
                     current_settings.redirect_javascript != new_settings.redirect_javascript):
                 self._update_redirector_adgroup(ad_group, new_settings)
