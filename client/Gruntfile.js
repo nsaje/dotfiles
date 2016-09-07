@@ -40,7 +40,9 @@ module.exports = function (grunt) {
                     'dist/one/zemanta-one.templates.js',
                     'dist/build/config.js',
                     'one/js/constants.js',
+                    // App JS files - start with modules
                     'one/app/app.module.js',
+                    'one/app/**/*.module.js',
                     'one/app/**/*.js',
                     // Exclude tests
                     '!one/app/**/*.spec.js',

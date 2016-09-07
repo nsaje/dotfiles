@@ -17,5 +17,6 @@ angular.module(
         'ui.select',
         'ui.select2',
         'highcharts-ng',
+        'vs-repeat',
     ]
 );

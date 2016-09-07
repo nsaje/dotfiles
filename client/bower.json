@@ -16,7 +16,8 @@
     "angular-bootstrap-datetimepicker": "1.x",
     "angular-daterangepicker": "0.x",
     "angular-ui-router": "0.x",
-    "angular-ui-select": "0.x"
+    "angular-ui-select": "0.x",
+    "angular-vs-repeat": "1.1.x"
   },
   "devDependencies": {
     "angular-mocks": "1.5.8"

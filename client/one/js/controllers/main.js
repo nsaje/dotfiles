@@ -122,10 +122,6 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
     };
 
     $scope.getDefaultCampaignState = function () {
-        if ($state.includes('main.campaigns.*')) {
-            return $state.current.name;
-        }
-
         // keep the same tab if possible
         if ($state.includes('**.sources')) {
             return 'main.campaigns.sources';
@@ -146,10 +142,6 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
     };
 
     $scope.getDefaultAdGroupState = function () {
-        if ($state.includes('main.adGroups.*')) {
-            return $state.current.name;
-        }
-
         // keep the same tab if possible
         if ($state.includes('**.sources')) {
             return 'main.adGroups.sources';
