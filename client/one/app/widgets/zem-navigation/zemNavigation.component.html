@@ -1,14 +1,19 @@
-<div class="search"><input type="text" ng-model="$ctrl.query" ng-change="$ctrl.filter($ctrl.query)" placeholder="Search">
-    <small>Type to start searching</small>
+<div class="search"><input type="text" ng-model="$ctrl.query"
+                           ng-change="$ctrl.filter($ctrl.query)"
+                           ng-click="$event.stopPropagation()"
+                           placeholder="Search">
 </div>
 
 <div class="scroll-container">
+    <div class="loader" ng-if="!$ctrl.list"></div>
+    <div class="empty" ng-if="$ctrl.filteredList.length === 0">no matches found</div>
     <ul vs-repeat vs-scroll-parent=".scroll-container">
         <li ng-repeat="item in $ctrl.filteredList" class="item"
              ng-class="$ctrl.getItemClasses(item)"
              ng-click="$ctrl.navigateTo(item)">
             <span class="circle" ng-class="$ctrl.getItemIconClass(item)"></span>
-            <span>{{ item.data.name }}</span>
+            <span class="name">{{ item.data.name }}</span>
+            <span class="agency" ng-show="item.data.agency">({{item.data.agency}})</span>
         </li>
     </ul>
 </div>

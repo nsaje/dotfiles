@@ -18,5 +18,6 @@ angular.module(
         'ui.select2',
         'highcharts-ng',
         'vs-repeat',
+        'cfp.hotkeys',
     ]
 );

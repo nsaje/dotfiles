@@ -46,6 +46,7 @@ angular.module('one.widgets').service('zemNavigationUtils', [function () {
         filteredList = filteredList.filter(function (item, idx) {
             if (item.type !== constants.entityType.ACCOUNT) return true;
             if (filteredList[idx + 1] && filteredList[idx + 1].type === constants.entityType.CAMPAIGN) return true;
+            if (item.data.agency && item.data.agency.toLowerCase().indexOf(query) >= 0) return true;
             return item.data.name.toLowerCase().indexOf(query) >= 0;
         });
 
