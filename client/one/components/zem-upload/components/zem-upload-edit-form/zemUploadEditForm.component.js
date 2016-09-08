@@ -9,7 +9,8 @@ angular.module('one.legacy').directive('zemUploadEditForm', [function () { // es
         bindToController: {
             api: '=',
             endpoint: '=',
-            callback: '=',
+            refreshCallback: '=',
+            updateCallback: '=',
             batchId: '=',
             hasPermission: '=',
         },
@@ -33,7 +34,7 @@ angular.module('one.legacy').directive('zemUploadEditForm', [function () { // es
     };
 }]);
 
-angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q', function (config, $q) {
+angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q', '$timeout', function (config, $q, $timeout) {
     var vm = this;
     vm.config = config;
 
@@ -77,10 +78,8 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     }
 
     function refreshAndClose () {
+        vm.refreshCallback();
         close();
-        vm.endpoint.getCandidates(vm.batchId).then(function (result) {
-            vm.callback(result.candidates);
-        });
     }
 
     function close () {
@@ -96,8 +95,7 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
             vm.selectedCandidate,
             vm.batchId
         ).then(function (result) {
-            vm.callback(result.candidates);
-            close();
+            refreshAndClose();
         }, function () {
             vm.requestFailed = true;
         }).finally(function () {
@@ -108,19 +106,36 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     vm.updateField = function (field) {
         if (!vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) return;
 
+        var selectedId = vm.selectedCandidate.id;
         var data = {
             id: vm.selectedCandidate.id,
         };
         data[field] = vm.selectedCandidate[field];
 
-        vm.endpoint.updateCandidatePartial(vm.batchId, data).then(function (data) {
-            if (!data.errors.hasOwnProperty(field)) {
-                delete vm.selectedCandidate.errors[field];
-                return;
-            }
+        var persistUpdate = function () {
+            vm.endpoint.updateCandidatePartial(vm.batchId, data).then(function (data) {
+                vm.updateCallback();
 
-            vm.selectedCandidate.errors[field] = data.errors[field];
-        });
+                if (selectedId !== vm.selectedCandidate.id) {
+                    // selection changed
+                    return;
+                }
+
+                if (!data.errors.hasOwnProperty(field)) {
+                    delete vm.selectedCandidate.errors[field];
+                    return;
+                }
+
+                vm.selectedCandidate.errors[field] = data.errors[field];
+            }).catch(function () {
+                // retry on fail
+                $timeout(function () {
+                    persistUpdate();
+                }, 5000);
+            });
+        };
+
+        persistUpdate();
     };
 
     vm.addSecondaryTracker = function (candidate) {
@@ -130,6 +145,7 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     vm.removeSecondaryTracker = function (candidate) {
         candidate.useSecondaryTracker = false;
         candidate.secondaryTrackerUrl = null;
+        vm.updateField('secondaryTrackerUrl');
         vm.clearSelectedCandidateErrors('secondaryTrackerUrl');
     };
 
@@ -138,6 +154,21 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
         if (vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) return;
 
         delete vm.selectedCandidate.errors[field];
+    };
+
+    vm.toggleUseTrackers = function () {
+        if (vm.selectedCandidate.useTrackers) {
+            return;
+        }
+
+        vm.selectedCandidate.primaryTrackerUrl = null;
+        vm.updateField('primaryTrackerUrl');
+
+        if (vm.selectedCandidate.useSecondaryTracker) {
+            vm.selectedCandidate.useSecondaryTracker = false;
+            vm.selectedCandidate.secondaryTrackerUrl = null;
+            vm.updateField('secondaryTrackerUrl');
+        }
     };
 
     vm.callToActionSelect2Config = {

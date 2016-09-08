@@ -585,6 +585,10 @@ class UploadTest(TestCase):
             'Test batch',
             'test_upload.csv',
         )
+        candidates[0].image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].save()
+
         upload.process_callback({
             "id": candidates[0].pk,
             "url": {
@@ -605,3 +609,70 @@ class UploadTest(TestCase):
         candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
         self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
         self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.OK)
+
+    def test_process_callback_url_pending_start(self, *mocks):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        _, candidates = upload.insert_candidates(
+            [{
+                "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                "image_url": "http://static1.squarespace.com/image.jpg",
+
+            }],
+            ad_group,
+            'Test batch',
+            'test_upload.csv',
+        )
+        candidates[0].image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].save()
+
+        upload.process_callback({
+            "id": candidates[0].pk,
+            "url": {
+                "originUrl": "",
+                "valid": False,
+            },
+            "image": {
+                "valid": True,
+                "width": 1500,
+                "hash": "0000000000000000",
+                "id": "demo/demo-123/srv/some-batch/31eb9a632e3547039169d1b650155e14",
+                "height": 245,
+                "originUrl": "http://static1.squarespace.com/image.jpg",
+            }
+        })
+
+        candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
+        self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.PENDING_START)
+        self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.OK)
+
+    def test_process_callback_image_url_pending_start(self, *mocks):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        _, candidates = upload.insert_candidates(
+            [{
+                "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                "image_url": "http://static1.squarespace.com/image.jpg",
+
+            }],
+            ad_group,
+            'Test batch',
+            'test_upload.csv',
+        )
+        candidates[0].url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].save()
+
+        upload.process_callback({
+            "id": candidates[0].pk,
+            "url": {
+                "originUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                "valid": True,
+                "targetUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+            },
+            "image": {
+                "valid": False,
+                "originUrl": "",
+            }
+        })
+
+        candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
+        self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.PENDING_START)

@@ -44,6 +44,7 @@ describe('ZemUploadStep2Ctrl', function () {
                 batchId: 1,
                 batchName: 'mock batch',
                 closeModal: function () {},
+                hasPermission: function () { return false; },
             }
         );
     }));
@@ -64,6 +65,7 @@ describe('ZemUploadStep2Ctrl', function () {
                 label: 'title1',
                 imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
                 urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                errors: {},
             }];
         });
 
@@ -109,6 +111,55 @@ describe('ZemUploadStep2Ctrl', function () {
 
             expect($interval.cancel).toHaveBeenCalled();
             expect(ctrl.pollInterval).toBeNull();
+        });
+
+        it('partially updates candidates on success if user has permission', function () {
+            ctrl.candidates = angular.copy(candidates);
+            ctrl.hasPermission = function () { return true; };
+
+            var deferred = $q.defer();
+            spyOn(ctrl.endpoint, 'checkStatus').and.callFake(function () {
+                return deferred.promise;
+            });
+            spyOn($interval, 'cancel');
+            ctrl.startPolling();
+            $interval.flush(2501);
+
+            var resolvedCandidate = {
+                id: 1,
+                url: 'http://example.com/url1',
+                title: '',
+                imageUrl: 'http://exmaple.com/img1.jpg',
+                imageCrop: 'center',
+                description: '',
+                displayUrl: 'example.com',
+                brandName: '',
+                callToAction: 'Read more',
+                label: 'title1',
+                hostedImageUrl: 'http://zemanta.com/img1.jpg',
+                imageStatus: constants.asyncUploadJobStatus.OK,
+                urlStatus: constants.asyncUploadJobStatus.FAILED,
+                errors: {
+                    url: ['Invalid URL'],
+                    description: ['Missing description'],
+                    title: ['Invalid title'],
+                },
+            };
+            deferred.resolve({
+                candidates: [resolvedCandidate],
+            });
+            scope.$digest();
+
+            expect(ctrl.candidates).not.toEqual([resolvedCandidate]);
+            expect(ctrl.candidates[0].title).toEqual('Title 1');
+            expect(ctrl.candidates[0].imageStatus).toEqual(constants.asyncUploadJobStatus.OK);
+            expect(ctrl.candidates[0].urlStatus).toEqual(constants.asyncUploadJobStatus.FAILED);
+            expect(ctrl.candidates[0].hostedImageUrl).toBe('http://zemanta.com/img1.jpg');
+            expect(ctrl.candidates[0].errors.title).toBeUndefined();
+            expect(ctrl.candidates[0].errors.url).toEqual(['Invalid URL']);
+
+            $interval.flush(2500);
+            scope.$digest();
         });
 
         it('does nothing on failure', function () {

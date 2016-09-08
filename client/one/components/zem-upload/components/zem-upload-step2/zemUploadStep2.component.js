@@ -65,7 +65,7 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
             }
             vm.endpoint.checkStatus(vm.batchId, waitingCandidates).then(
                 function (data) {
-                    updateCandidates(data.candidates);
+                    updateCandidatesStatuses(data.candidates);
                 }
             );
         }, 2500);
@@ -78,19 +78,49 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
         }
     };
 
-    var updateCandidates = function (updatedCandidates) {
+    function updateCandidatesStatuses (updatedCandidates) {
+        if (!vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) {
+            refreshCandidates(updatedCandidates);
+            return;
+        }
+
         angular.forEach(updatedCandidates, function (updatedCandidate) {
-            var index = $.map(vm.candidates, function (candidate, ix) {
-                if (candidate.id === updatedCandidate.id) {
-                    return ix;
-                }
+            var candidate = vm.candidates.filter(function (candidate) {
+                if (candidate.id === updatedCandidate.id) return true;
             })[0];
 
-            vm.candidates.splice(index, 1, updatedCandidate);
-        });
-    };
+            if (updatedCandidate.imageStatus !== constants.asyncUploadJobStatus.PENDING_START) {
+                candidate.imageStatus = updatedCandidate.imageStatus;
+                if (updatedCandidate.errors.hasOwnProperty('imageUrl')) {
+                    candidate.errors.imageUrl = updatedCandidate.errors.imageUrl;
+                }
+                if (updatedCandidate.hasOwnProperty('hostedImageUrl')) {
+                    candidate.hostedImageUrl = updatedCandidate.hostedImageUrl;
+                }
+            }
 
-    var getWaitingCandidateIds = function () {
+            if (updatedCandidate.urlStatus !== constants.asyncUploadJobStatus.PENDING_START) {
+                candidate.urlStatus = updatedCandidate.urlStatus;
+                if (updatedCandidate.errors.hasOwnProperty('url')) {
+                    candidate.errors.url = updatedCandidate.errors.url;
+                }
+            }
+        });
+    }
+
+    function refreshCandidates (updatedCandidates) {
+        angular.forEach(updatedCandidates, function (updatedCandidate) {
+            var candidate = vm.candidates.filter(function (candidate) {
+                if (candidate.id === updatedCandidate.id) return true;
+            })[0];
+
+            Object.keys(updatedCandidate).forEach(function (field) {
+                candidate[field] = updatedCandidate[field];
+            });
+        });
+    }
+
+    function getWaitingCandidateIds () {
         var ret = vm.candidates.filter(function (candidate) {
             if (vm.getStatus(candidate) === constants.contentAdCandidateStatus.LOADING) {
                 return true;
@@ -100,7 +130,7 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
             return candidate.id;
         });
         return ret;
-    };
+    }
 
     vm.toggleBatchNameEdit = function ($event) {
         $event.stopPropagation();
@@ -211,9 +241,7 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
             return null;
         }
 
-        if (candidate.imageStatus === constants.asyncUploadJobStatus.PENDING_START ||
-            candidate.imageStatus === constants.asyncUploadJobStatus.WAITING_RESPONSE ||
-            candidate.urlStatus === constants.asyncUploadJobStatus.PENDING_START ||
+        if (candidate.imageStatus === constants.asyncUploadJobStatus.WAITING_RESPONSE ||
             candidate.urlStatus === constants.asyncUploadJobStatus.WAITING_RESPONSE) {
             return constants.contentAdCandidateStatus.LOADING;
         }
@@ -222,12 +250,27 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
             return constants.contentAdCandidateStatus.ERRORS;
         }
 
+        if (candidate.imageStatus === constants.asyncUploadJobStatus.PENDING_START ||
+            candidate.urlStatus === constants.asyncUploadJobStatus.PENDING_START) {
+            // important to check this after checking for errors
+            return null;
+        }
+
         return constants.contentAdCandidateStatus.OK;
     };
 
     vm.updateCandidateCallback = function (candidates) {
-        updateCandidates(candidates);
-        vm.startPolling();
+        vm.endpoint.getCandidates(vm.batchId).then(function (result) {
+            updateCandidatesStatuses(result.candidates);
+            vm.startPolling();
+        });
+    };
+
+    vm.refreshCandidatesCallback = function () {
+        vm.endpoint.getCandidates(vm.batchId).then(function (result) {
+            refreshCandidates(result.candidates);
+            vm.startPolling();
+        });
     };
 
     var executeSaveCall = function () {
@@ -255,7 +298,11 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
 
     vm.save = function () {
         if (vm.editFormApi.selectedId) {
-            vm.editFormApi.update().then(executeSaveCall);
+            if (!vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) {
+                vm.editFormApi.update().then(executeSaveCall);
+            } else {
+                vm.editFormApi.close();
+            }
         } else {
             executeSaveCall();
         }

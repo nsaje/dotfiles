@@ -2,14 +2,15 @@
 'use strict';
 
 describe('ZemUploadEditFormCtrl', function () {
-    var scope, api, $q, ctrl, $interval;
+    var scope, api, $q, ctrl, $interval, $timeout;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function ($controller, $rootScope, _$q_, _$interval_) {
+    beforeEach(inject(function ($controller, $rootScope, _$q_, _$interval_, _$timeout_) {
         $q = _$q_;
         $interval = _$interval_;
+        $timeout = _$timeout_;
         scope = $rootScope.$new();
         var mockEndpoint = {
             upload: function () {},
@@ -28,13 +29,20 @@ describe('ZemUploadEditFormCtrl', function () {
             {
                 api: {},
                 endpoint: mockEndpoint,
-                callback: function () {},
+                refreshCallback: function () {},
+                updateCallback: function () {},
                 batchId: 1,
                 scrollTop: function () {}, // directive link function
                 scrollBottom: function () {}, // directive link function
                 hasPermission: function () { return true; },
             }
         );
+    }));
+
+    beforeEach(inject(function ($httpBackend) {
+        // when using $timeout.flush these api endpoints get called
+        $httpBackend.when('GET', '/api/users/current/').respond({});
+        $httpBackend.when('GET', '/api/all_accounts/nav/').respond({});
     }));
 
     it('initializes api correctly', function () {
@@ -110,7 +118,7 @@ describe('ZemUploadEditFormCtrl', function () {
                 useSecondaryTracker: false,
             };
 
-            spyOn(ctrl, 'callback').and.stub();
+            spyOn(ctrl, 'refreshCallback').and.stub();
             var deferred = $q.defer();
             spyOn(ctrl.endpoint, 'getCandidates').and.callFake(function () {
                 return deferred.promise;
@@ -138,7 +146,7 @@ describe('ZemUploadEditFormCtrl', function () {
 
             expect(ctrl.selectedCandidate).toBeNull();
             expect(ctrl.api.selectedId).toBeNull();
-            expect(ctrl.callback).toHaveBeenCalledWith([returnedCandidate]);
+            expect(ctrl.refreshCallback).toHaveBeenCalled();
         });
     });
 
@@ -279,6 +287,37 @@ describe('ZemUploadEditFormCtrl', function () {
             });
         });
 
+        it('retries on fail', function () {
+            ctrl.hasPermission = function () { return true; };
+            ctrl.batchId = 1234;
+            ctrl.selectedCandidate = {
+                id: 1,
+                title: 'ad title',
+                url: 'http://example.com',
+                errors: {},
+            };
+
+            var firstDeferred = $q.defer(),
+                secondDeferred = $q.defer();
+            var firstCall = true;
+            spyOn(ctrl.endpoint, 'updateCandidatePartial').and.returnValues(firstDeferred.promise, secondDeferred.promise);
+            ctrl.updateField('title');
+
+            firstDeferred.reject({});
+            secondDeferred.resolve({
+                errors: {},
+            });
+            scope.$digest();
+
+            $timeout.flush(10000);
+            scope.$digest();
+
+            expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
+                id: 1,
+                title: 'ad title',
+            });
+        });
+
         it('saves returned errors', function () {
             ctrl.hasPermission = function () { return true; };
             ctrl.batchId = 1234;
@@ -289,17 +328,34 @@ describe('ZemUploadEditFormCtrl', function () {
                 errors: {},
             };
 
-            var deferred = $q.defer();
+            spyOn(ctrl, 'updateCallback').and.stub();
+
+            var updateDeferred = $q.defer();
             spyOn(ctrl.endpoint, 'updateCandidatePartial').and.callFake(function () {
-                return deferred.promise;
+                return updateDeferred.promise;
             });
+
+            var statusDeferred = $q.defer();
+            spyOn(ctrl.endpoint, 'getCandidates').and.callFake(function () {
+                return statusDeferred.promise;
+            });
+
             ctrl.updateField('title');
 
-            deferred.resolve({
+            updateDeferred.resolve({
                 errors: {
                     title: ['Invalid title'],
                 },
             });
+            statusDeferred.resolve({
+                candidates: [{
+                    id: 1,
+                    title: 'ad title',
+                    url: 'http://example.com',
+                    errors: {},
+                }]
+            });
+
             scope.$digest();
 
             expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
@@ -309,6 +365,7 @@ describe('ZemUploadEditFormCtrl', function () {
             expect(ctrl.selectedCandidate.errors).toEqual({
                 title: ['Invalid title'],
             });
+            expect(ctrl.updateCallback).toHaveBeenCalled();
         });
     });
 });

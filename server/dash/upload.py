@@ -39,12 +39,16 @@ def create_empty_batch(ad_group_id, batch_name, original_filename=None):
 
 
 def _reset_candidate_async_status(candidate):
-    candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-    candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-    candidate.image_id = None
-    candidate.image_hash = None
-    candidate.image_width = None
-    candidate.image_height = None
+    if candidate.url:
+        candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+
+    if candidate.image_url:
+        candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidate.image_id = None
+        candidate.image_hash = None
+        candidate.image_width = None
+        candidate.image_height = None
+
     candidate.save()
 
 
@@ -246,6 +250,44 @@ def _get_cleaned_urls(candidate):
     }
 
 
+def _process_image_url_update(candidate, image_url, callback_data):
+    if 'originUrl' not in callback_data['image'] or callback_data['image']['originUrl'] != image_url:
+        # prevent issues with concurrent jobs
+        return
+
+    if candidate.image_status == constants.AsyncUploadJobStatus.PENDING_START:
+        # image url hasn't been set yet
+        return
+
+    candidate.image_status = constants.AsyncUploadJobStatus.FAILED
+    try:
+        if callback_data['image']['valid']:
+            candidate.image_id = callback_data['image']['id']
+            candidate.image_width = callback_data['image']['width']
+            candidate.image_height = callback_data['image']['height']
+            candidate.image_hash = callback_data['image']['hash']
+            candidate.image_status = constants.AsyncUploadJobStatus.OK
+    except KeyError:
+        logger.exception('Failed to parse callback data %s', str(callback_data))
+
+
+def _process_url_update(candidate, url, callback_data):
+    if 'originUrl' not in callback_data['url'] or callback_data['url']['originUrl'] != url:
+        # prevent issues with concurrent jobs
+        return
+
+    if candidate.url_status == constants.AsyncUploadJobStatus.PENDING_START:
+        # url hasn't been set yet
+        return
+
+    candidate.url_status = constants.AsyncUploadJobStatus.FAILED
+    try:
+        if callback_data['url']['valid']:
+            candidate.url_status = constants.AsyncUploadJobStatus.OK
+    except KeyError:
+        logger.exception('Failed to parse callback data %s', str(callback_data))
+
+
 @transaction.atomic
 def process_callback(callback_data):
     try:
@@ -256,23 +298,8 @@ def process_callback(callback_data):
         return
 
     cleaned_urls = _get_cleaned_urls(candidate)
-    if 'originUrl' in callback_data['image'] and callback_data['image']['originUrl'] != cleaned_urls['image_url'] or\
-       'originUrl' in callback_data['url'] and callback_data['url']['originUrl'] != cleaned_urls['url']:
-        return
-
-    candidate.image_status = constants.AsyncUploadJobStatus.FAILED
-    candidate.url_status = constants.AsyncUploadJobStatus.FAILED
-    try:
-        if callback_data['image']['valid']:
-            candidate.image_id = callback_data['image']['id']
-            candidate.image_width = callback_data['image']['width']
-            candidate.image_height = callback_data['image']['height']
-            candidate.image_hash = callback_data['image']['hash']
-            candidate.image_status = constants.AsyncUploadJobStatus.OK
-        if callback_data['url']['valid']:
-            candidate.url_status = constants.AsyncUploadJobStatus.OK
-    except KeyError:
-        logger.exception('Failed to parse callback data %s', str(callback_data))
+    _process_url_update(candidate, cleaned_urls['url'], callback_data)
+    _process_image_url_update(candidate, cleaned_urls['image_url'], callback_data)
 
     candidate.save()
 

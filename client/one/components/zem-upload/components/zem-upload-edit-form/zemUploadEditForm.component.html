@@ -146,15 +146,15 @@
                 <div class="col-xs-2 control-label"></div>
                 <div class="col-xs-8">
                     <label class="checkbox-label">
-                        <input type="checkbox" ng-model="ctrl.selectedCandidate.useTrackers" />
+                        <input type="checkbox" ng-model="ctrl.selectedCandidate.useTrackers" ng-change="ctrl.toggleUseTrackers()" />
                         Use impression trackers
                     </label>
                 </div>
                 <div class="col-xs-2"></div>
             </div>
 
-            <div class="addon_fields" ng-if="ctrl.selectedCandidate.useTrackers" ng-class="{'has-error': ctrl.selectedCandidate.errors.primaryTrackerUrl}">
-                <div class="form-group">
+            <div class="addon_fields" ng-if="ctrl.selectedCandidate.useTrackers">
+                <div class="form-group" ng-class="{'has-error': ctrl.selectedCandidate.errors.primaryTrackerUrl}">
                     <label for="impression-trackers-input" class="col-xs-2 control-label p-t-none">
                         Primary impression tracker:
                     </label>
@@ -178,7 +178,7 @@
                         </div>
                     </div>
                     <div class="col-xs-2 control-label p-l-none">
-                        <a href class="inline-link" ng-click="removeSecondaryTracker(ctrl.selectedCandidate)">
+                        <a href class="inline-link" ng-click="ctrl.removeSecondaryTracker(ctrl.selectedCandidate)">
                             <img class="smaller_icon" ng-src="{{ ctrl.config.static_url }}/one/img/button-remove.svg" />Remove
                         </a>
                     </div>
@@ -187,7 +187,7 @@
                 <div class="form-group" ng-if="!ctrl.selectedCandidate.useSecondaryTracker">
                     <label class="col-xs-2 control-label"></label>
                     <div class="col-xs-10">
-                        <a href class="inline-link" ng-click="addSecondaryTracker(ctrl.selectedCandidate)">
+                        <a href class="inline-link" ng-click="ctrl.addSecondaryTracker(ctrl.selectedCandidate)">
                             <img ng-src="{{ ctrl.config.static_url }}/one/img/button-plus-blue.svg"/>Add secondary tracker
                         </a>
                     </div>

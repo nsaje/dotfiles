@@ -1370,7 +1370,6 @@ class ContentAdForm(ContentAdCandidateForm):
                              constants.AsyncUploadJobStatus.OK]
         if cleaned_data['image_status'] not in finished_statuses or cleaned_data['url_status'] not in finished_statuses:
             self.add_error(None, 'Content ad still processing')
-            return cleaned_data
 
         image_error_msg = self._get_image_error_msg(cleaned_data)
         if 'image_url' in cleaned_data and cleaned_data['image_url'] and image_error_msg:

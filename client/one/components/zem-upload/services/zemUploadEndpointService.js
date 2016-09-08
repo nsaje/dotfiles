@@ -159,7 +159,7 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
             };
 
             var data = {
-                candidate: convertCandidateToApi(candidate),
+                candidate: convertPartialUpdateToApi(candidate),
             };
 
             $http.put(url, data, config).
@@ -280,6 +280,23 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
             }
 
             return ret;
+        }
+
+        function convertPartialUpdateToApi (candidate) {
+            return {
+                id: candidate.id,
+                label: candidate.label,
+                url: candidate.url,
+                title: candidate.title,
+                image_url: candidate.imageUrl,
+                image_crop: candidate.imageCrop,
+                display_url: candidate.displayUrl,
+                brand_name: candidate.brandName,
+                description: candidate.description,
+                call_to_action: candidate.callToAction,
+                primary_tracker_url: candidate.primaryTrackerUrl,
+                secondary_tracker_url: candidate.secondaryTrackerUrl,
+            };
         }
 
         function convertCandidateErrorsFromApi (errors) {
