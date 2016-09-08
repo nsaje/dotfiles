@@ -1300,7 +1300,7 @@ class AudienceFormTestCase(TestCase):
         self._expect_error('name', 'Please specify audience name.', data)
 
         data['name'] = 'a' * 128
-        self._expect_error('name', 'Name too long (max 127 characters)', data)
+        self._expect_error('name', 'Name is too long (max 127 characters)', data)
 
     def test_invalid_pixel_id(self):
         data = self._get_valid_data()

@@ -50,10 +50,14 @@ class AudiencesView(api_common.BaseApiView):
             audience_id = audience.pk
 
             for rule in audience_form.cleaned_data['rules']:
+                value = rule['value'] or ''
+                if rule['type'] == constants.RuleType.CONTAINS:
+                    value = ','.join([x.strip() for x in value.split(',') if x])
+
                 rule = models.Rule(
                     audience=audience,
                     type=rule['type'],
-                    value=rule['value'],
+                    value=value,
                 )
                 rule.save()
 
@@ -68,8 +72,6 @@ class AudiencesView(api_common.BaseApiView):
             raise exc.MissingDataError('Audience does not exist')
 
         audience = audiences[0]
-        if not audience.pixel.account.users.filter(pk=request.user.pk).exists():
-            raise exc.MissingDataError('Audience does not exist')
 
         rules = models.Rule.objects.filter(audience=audience)
         rules_dicts = []
@@ -83,7 +85,7 @@ class AudiencesView(api_common.BaseApiView):
         response = {
             'id': audience.pk,
             'name': audience.name,
-            'pixel': audience.pixel.pk,
+            'pixel_id': audience.pixel.pk,
             'ttl': audience.ttl,
             'rules': rules_dicts,
         }

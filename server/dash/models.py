@@ -4042,7 +4042,7 @@ class Rule(models.Model):
     type = models.PositiveSmallIntegerField(
         choices=constants.RuleType.get_choices(),
     )
-    value = models.CharField(max_length=255)
+    value = models.CharField(max_length=255, blank=True)
 
 
 def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):

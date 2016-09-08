@@ -2900,6 +2900,59 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
     }
 
     function CustomAudiences () {
+        function convertFromApi (data) {
+            var resource = {};
+
+            if (data && data.data) {
+                resource.id = data.data.id;
+                resource.name = data.data.name;
+                resource.pixelId = data.data.pixel_id;
+                resource.ttl = data.data.ttl;
+                resource.rules = [];
+
+                if (!data.data.rules) {
+                    return resource;
+                }
+
+                for (var i = 0; i < data.data.rules.length; i++) {
+                    resource.rules.push({
+                        id: data.data.rules[i].id,
+                        type: data.data.rules[i].type,
+                        value: data.data.rules[i].value,
+                    });
+                }
+            }
+
+            return resource;
+        }
+
+        function convertValidationErrorFromApi (errors) {
+            var result = {
+                name: errors.name,
+                pixelId: errors.pixel_id,
+                rules: errors.rules,
+                ttl: errors.ttl,
+            };
+
+            return result;
+        }
+
+        this.get = function (accountId, audienceId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/audiences/' + audienceId + '/';
+
+            $http.get(url).
+                success(function (data) {
+                    var resource = convertFromApi(data);
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
         this.list = function (accountId) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/audiences/';
@@ -2924,6 +2977,26 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 }).
                 error(function (data) {
                     deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.post = function (accountId, audience) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/audiences/';
+
+            $http.post(url, audience).
+                success(function (data, status) {
+                    var resource = convertFromApi(data);
+                    deferred.resolve(resource);
+                }).
+                error(function (data, status) {
+                    var ret = null;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        ret = convertValidationErrorFromApi(data.data.errors);
+                    }
+                    deferred.reject(ret);
                 });
 
             return deferred.promise;

@@ -98,6 +98,13 @@ var constants = {
         INACTIVE: 3,
         DEPLETED: 4,
     },
+    audienceRuleType: {
+        STARTS_WITH: 1,
+        CONTAINS: 2,
+        NOT_STARTS_WITH: 3,
+        NOT_CONTAINS: 4,
+        VISIT: 5
+    },
     iabCategory: {
         IAB1: 'IAB1',
         IAB1_1: 'IAB1-1',

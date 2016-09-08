@@ -1,4 +1,4 @@
-/* globals angular */
+/*globals angular*/
 'use strict';
 
 angular.module('one.legacy').directive('zemCustomAudiencesList', [function () { // eslint-disable-line max-len

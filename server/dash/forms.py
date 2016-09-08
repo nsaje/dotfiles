@@ -1421,7 +1421,7 @@ class AudienceForm(forms.Form):
         max_length=127,
         error_messages={
             'required': 'Please specify audience name.',
-            'max_length': 'Name too long (max %(limit_value)d characters)',
+            'max_length': 'Name is too long (max %(limit_value)d characters)',
         }
     )
     pixel_id = forms.IntegerField(

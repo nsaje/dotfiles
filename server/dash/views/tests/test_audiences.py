@@ -105,7 +105,7 @@ class AudiencesTest(TestCase):
         response_dict = {
             "success": True,
             "data": {
-                "pixel": 1,
+                "pixel_id": 1,
                 "rules": [{
                     "type": 1,
                     "id": 1,

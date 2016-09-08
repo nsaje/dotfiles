@@ -1,46 +1,50 @@
 <div class="zem-custom-audiences-list">
-    <table class="table table-hover middle-alignment">
-        <thead>
-            <tr>
-                <th class="arrow">
-                    <a href class="order" ng-click="orderField = 'name'; orderReverse = !orderReverse">Audience's Name</a>
-                    <zem-help-popover content="Audience's name" placement="top"></zem-help-popover>
-                </th>
-                <th>Size</th>
-                <th>Seen Yesterday</th>
-                <th>Date Created</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td colspan="5" class="loader-container" ng-if="ctrl.listRequestInProgress">
-                    <span class="loader"></span>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="5" class="text-center" ng-if="!ctrl.audiences.length">
-                    No Audiences
-                </td>
-            </tr>
-            <tr ng-class="{'archived': audience.archived}" ng-repeat="audience in ctrl.audiences">
-                <td class="audience-name">
-                    {{ audience.name }}
-                </td>
-                <td class="audience-size">
-                    {{ audience.count }}
-                </td>
-                <td>
-                    {{ audience.countYesterday }}
-                </td>
-                <td>
-                    {{ audience.createdDt | date:'MMM d, y h:mm:ss a' }}
-                </td>
-                <td class="text-right">
-                    <a tabindex="-1" href="#" class="btn btn-default btn-big">View</a>
-                    <a tabindex="-1" href="#" class="btn btn-default btn-big">Archive</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="loader-container">
+        <span class="loader" ng-if="ctrl.listRequestInProgress && ctrl.audiences.length"></span>
+
+        <table class="table table-hover middle-alignment">
+            <thead>
+                <tr>
+                    <th class="arrow">
+                        <a href class="order" ng-click="orderField = 'name'; orderReverse = !orderReverse">Audience's Name</a>
+                        <zem-help-popover content="Audience's name" placement="top"></zem-help-popover>
+                    </th>
+                    <th>Size</th>
+                    <th>Seen Yesterday</th>
+                    <th>Date Created</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="5" class="loader-container" ng-if="ctrl.listRequestInProgress && !ctrl.audiences.length">
+                        <span class="loader"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="5" class="text-center" ng-if="!ctrl.listRequestInProgress && !ctrl.audiences.length">
+                        No Audiences
+                    </td>
+                </tr>
+                <tr ng-class="{'archived': audience.archived}" ng-repeat="audience in ctrl.audiences">
+                    <td class="audience-name">
+                        {{ audience.name }}
+                    </td>
+                    <td class="audience-size">
+                        {{ audience.count }}
+                    </td>
+                    <td>
+                        {{ audience.countYesterday }}
+                    </td>
+                    <td>
+                        {{ audience.createdDt | date:'MMM d, y h:mm:ss a' }}
+                    </td>
+                    <td class="text-right">
+                        <a tabindex="-1" href="#" class="btn btn-default btn-big" zem-custom-audiences-modal-trigger account-id="ctrl.accountId" audience-id="audience.id" readonly="true">View</a>
+                        <a tabindex="-1" href="#" class="btn btn-default btn-big">Archive</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
