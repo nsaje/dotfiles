@@ -971,6 +971,7 @@ class Account(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = models.Account(name=create_name(models.Account.objects, 'New account'))
+
         managed_agency = models.Agency.objects.all().filter(
             users=request.user
         ).first()
@@ -984,11 +985,14 @@ class Account(api_common.BaseApiView):
             user=request.user,
             action_type=constants.HistoryActionType.CREATE)
 
+        settings = account.get_current_settings()
+        settings.default_account_manager = request.user
+
         if managed_agency is not None:
-            settings = account.get_current_settings()
             settings.default_sales_representative = managed_agency.sales_representative
             settings.account_type = managed_agency.default_account_type
-            settings.save(request)
+
+        settings.save(request)
 
         response = {
             'name': account.name,
@@ -1006,7 +1010,6 @@ class AccountCampaigns(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
-        account_settings = account.get_current_settings()
 
         name = create_name(models.Campaign.objects.filter(account=account), 'New campaign')
 
@@ -1018,8 +1021,7 @@ class AccountCampaigns(api_common.BaseApiView):
 
         settings = campaign.get_current_settings()  # creates new settings with default values
         settings.name = name
-        settings.campaign_manager = (account_settings.default_account_manager
-                                     if account_settings.default_account_manager else request.user)
+        settings.campaign_manager = request.user
         settings.save(request, action_type=constants.HistoryActionType.CREATE)
 
         response = {

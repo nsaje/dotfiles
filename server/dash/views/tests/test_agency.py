@@ -1261,7 +1261,7 @@ class UserActivationTest(TestCase):
 
 
 class CampaignSettingsTest(TestCase):
-    fixtures = ['test_views.yaml', 'test_non_superuser.yaml']
+    fixtures = ['test_views.yaml', 'test_non_superuser.yaml', 'test_agency.yaml']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
@@ -1579,6 +1579,74 @@ class CampaignSettingsTest(TestCase):
             content['data']['goals'][0]['conversion_goal'],
         )
 
+    def test_get_campaign_managers_no_permission(self):
+        add_permissions(self.user, [])
+
+        user = User.objects.get(pk=1)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        response = self.client.get(
+            '/api/campaigns/1000/settings/'
+        )
+        content = json.loads(response.content)
+
+        self.assertTrue(content['success'])
+        self.assertIsNone(content['data'].get('campaign_managers'))
+
+    def test_get_campaign_managers_from_agency(self):
+        add_permissions(self.user, ['can_modify_campaign_manager'])
+
+        user = User.objects.get(pk=1)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        response = self.client.get(
+            '/api/campaigns/1000/settings/'
+        )
+        content = json.loads(response.content)
+
+        self.assertTrue(content['success'])
+        self.assertEqual(content['data'].get('campaign_managers'), [{
+            'id': '1',
+            'name': 'non_superuser@zemanta.com',
+        }])
+
+    def test_get_campaign_managers_from_account(self):
+        add_permissions(self.user, ['can_modify_campaign_manager'])
+
+        user = User.objects.get(pk=1)
+        account = models.Account.objects.get(pk=1000)
+        account.users.add(user)
+
+        response = self.client.get(
+            '/api/campaigns/1000/settings/'
+        )
+        content = json.loads(response.content)
+
+        self.assertTrue(content['success'])
+        self.assertEqual(content['data'].get('campaign_managers'), [
+            {
+                'id': '1',
+                'name': 'non_superuser@zemanta.com',
+            }
+        ])
+
+    def test_get_campaign_managers_can_see_all_users(self):
+        add_permissions(self.user, ['can_modify_campaign_manager', 'can_see_all_users_for_managers'])
+
+        user = User.objects.get(pk=1)
+        account = models.Account.objects.get(pk=1000)
+        account.users.add(user)
+
+        response = self.client.get(
+            '/api/campaigns/1000/settings/'
+        )
+        content = json.loads(response.content)
+
+        self.assertTrue(content['success'])
+        self.assertEqual(len(content['data'].get('campaign_managers')), 4)
+
 
 class AccountSettingsTest(TestCase):
     fixtures = ['test_views.yaml', 'test_account_agency.yaml', 'test_agency.yaml', 'test_facebook.yaml']
@@ -1892,7 +1960,21 @@ class AccountSettingsTest(TestCase):
         self.assertEqual('New agency', account.agency.name)
         self.assertEqual(2, account.agency_id)
 
-    def test_get_as_agency_manager_users(self):
+    def test_get_account_manager_users_no_permission(self):
+        client = self._get_client_with_permissions([])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        response = client.get(
+            reverse('account_settings', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertIsNone(response['data'].get('account_managers'))
+
+    def test_get_account_manager_users_from_agency(self):
         client = self._get_client_with_permissions([
             'can_modify_account_manager'
         ])
@@ -1913,9 +1995,13 @@ class AccountSettingsTest(TestCase):
             }
         ])
 
-        johnnie = User.objects.get(pk=1)
-        agency_acc = models.Account.objects.get(pk=1000)
-        agency_acc.users.add(johnnie)
+    def test_get_account_manager_users_from_account(self):
+        client = self._get_client_with_permissions([
+            'can_modify_account_manager'
+        ])
+        user = User.objects.get(pk=2)
+        account = models.Account.objects.get(pk=1000)
+        account.users.add(user)
 
         response = client.get(
             reverse('account_settings', kwargs={'account_id': 1000}),
@@ -1927,12 +2013,25 @@ class AccountSettingsTest(TestCase):
             {
                 'id': '2',
                 'name': 'user@test.com',
-            },
-            {
-                'id': '1',
-                'name': 'superuser@test.com',
             }
         ])
+
+    def test_get_account_manager_users_can_see_all_users(self):
+        client = self._get_client_with_permissions([
+            'can_modify_account_manager',
+            'can_see_all_users_for_managers',
+        ])
+        user = User.objects.get(pk=2)
+        account = models.Account.objects.get(pk=1000)
+        account.users.add(user)
+
+        response = client.get(
+            reverse('account_settings', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertEqual(len(response['data']['account_managers']), 5)
 
     def test_get_no_permission_can_modify_account_type(self):
         client = self._get_client_with_permissions([])

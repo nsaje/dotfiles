@@ -142,8 +142,11 @@ class AccountsTest(TestCase):
             response_blob['data']
         )
 
-        acc = models.Account.objects.get(pk=2)
-        self.assertIsNone(acc.agency)
+        account = models.Account.objects.get(pk=2)
+        self.assertIsNone(account.agency)
+
+        settings = account.get_current_settings()
+        self.assertEqual(settings.default_account_manager_id, 2)
 
     def test_put_as_agency_manager(self):
         johnny = User.objects.get(pk=2)
@@ -250,7 +253,7 @@ class AccountCampaignsTest(TestCase):
         self.assertEqual(settings.target_devices, constants.AdTargetDevice.get_all())
         self.assertEqual(settings.target_regions, ['US'])
         self.assertEqual(settings.name, campaign_name)
-        self.assertEqual(settings.campaign_manager.id, 2)
+        self.assertEqual(settings.campaign_manager.id, 1)
 
         hist = history_helpers.get_campaign_history(campaign).first()
         self.assertEqual(constants.HistoryActionType.CREATE, hist.action_type)

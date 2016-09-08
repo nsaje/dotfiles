@@ -21,11 +21,12 @@ import automation.autopilot_settings
 from dash import models
 from dash import constants
 from dash import api
-from dash import history_helpers
 
 from utils import exc
 from utils import email_helper
 from utils import k1_helper
+
+import zemauth.models
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
@@ -1256,3 +1257,17 @@ def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings
             action_type=constants.HistoryActionType.SETTINGS_CHANGE)
         changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator='\n')
         email_helper.send_campaign_notification_email(campaign, request, changes_text)
+
+
+def get_users_for_manager(user, account, current_manager=None):
+    if user.has_perm('zemauth.can_see_all_users_for_managers'):
+        users = zemauth.models.User.objects.all()
+    else:
+        users = account.users.all()
+        if account.is_agency():
+            users |= account.agency.users.all()
+
+    if current_manager is not None:
+        users |= zemauth.models.User.objects.filter(pk=current_manager.id)
+
+    return users.filter(is_active=True).distinct()

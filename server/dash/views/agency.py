@@ -16,7 +16,6 @@ from dash import forms
 from dash import models
 from dash import api
 from dash import constants
-from dash import validation_helpers
 from dash import retargeting_helper
 from dash import campaign_goals
 from dash import facebook_helper
@@ -382,7 +381,7 @@ class CampaignSettings(api_common.BaseApiView):
             'can_restore': campaign.can_restore(),
         }
         if request.user.has_perm('zemauth.can_modify_campaign_manager'):
-            response['campaign_managers'] = self.get_user_list(campaign_settings)
+            response['campaign_managers'] = self.get_campaign_managers(request, campaign, campaign_settings)
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
             response['goals'] = self.get_campaign_goals(
@@ -562,13 +561,8 @@ class CampaignSettings(api_common.BaseApiView):
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
 
-    def get_user_list(self, settings):
-        users = ZemUser.objects.all()
-
-        manager = settings.campaign_manager
-        if manager is not None and manager not in users:
-            users.append(manager)
-
+    def get_campaign_managers(self, request, campaign, settings):
+        users = helpers.get_users_for_manager(request.user, campaign.account, settings.campaign_manager)
         return [{'id': str(user.id),
                  'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
@@ -709,10 +703,6 @@ class AccountSettings(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account_settings = account.get_current_settings()
 
-        user_agency = None
-        if helpers.is_agency_manager(request.user, account):
-            user_agency = helpers.get_user_agency(request.user)
-
         response = {
             'settings': self.get_dict(request, account_settings, account),
             'can_archive': account.can_archive(),
@@ -722,10 +712,10 @@ class AccountSettings(api_common.BaseApiView):
         self._add_agencies(request, response)
 
         if request.user.has_perm('zemauth.can_modify_account_manager'):
-            response['account_managers'] = self.get_user_list(account_settings, agency=user_agency)
+            response['account_managers'] = self.get_account_managers(request, account, account_settings)
 
         if request.user.has_perm('zemauth.can_set_account_sales_representative'):
-            response['sales_reps'] = self.get_user_list(account_settings, 'campaign_settings_sales_rep')
+            response['sales_reps'] = self.get_sales_representatives()
         return self.create_api_response(response)
 
     def put(self, request, account_id):
@@ -1025,19 +1015,15 @@ class AccountSettings(api_common.BaseApiView):
 
         return ', '.join(sources_text_list)
 
-    def get_user_list(self, settings, perm_name=None, agency=None):
-        users = ZemUser.objects.get_users_with_perm(perm_name) if perm_name else ZemUser.objects.all()
+    def get_account_managers(self, request, account, settings):
+        users = helpers.get_users_for_manager(request.user, account, settings.default_account_manager)
+        return self.format_user_list(users)
 
-        if agency is not None:
-            users = users.filter(pk__in=agency.users.all()) | \
-                users.filter(account__agency=agency)
+    def get_sales_representatives(self):
+        users = ZemUser.objects.get_users_with_perm('campaign_settings_sales_rep').filter(is_active=True)
+        return self.format_user_list(users)
 
-        users = list(users.filter(is_active=True).distinct())
-
-        manager = settings.default_account_manager
-        if manager is not None and manager not in users:
-            users.append(manager)
-
+    def format_user_list(self, users):
         return [{'id': str(user.id), 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 

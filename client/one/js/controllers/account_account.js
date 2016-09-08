@@ -379,7 +379,7 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
                 $scope.settings.accountType = $scope.settings.agency.obj.default_account_type;
             }
             if (!$scope.settings.defaultSalesRepresentative) {
-                $scope.settings.defaultSalesRepresentative = $scope.settings.agency.obj.sales_representative;
+                $scope.settings.defaultSalesRepresentative = $scope.settings.agency.obj.sales_representative.toString();
             }
         }
     };
