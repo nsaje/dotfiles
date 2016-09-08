@@ -89,49 +89,6 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(action.payload, payload)
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
-    def test_set_ad_group_source_settings_maintenance(self):
-        utcnow = datetime.datetime.utcnow()
-        models.datetime.utcnow = classmethod(lambda cls: utcnow)
-
-        changes = {
-            'state': dashconstants.AdGroupSourceSettingsState.ACTIVE,
-            'cpc_cc': 0.33,
-            'daily_budget_cc': 100,
-        }
-
-        ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group, source__maintenance=True)[0]
-
-        source_settings = dashmodels.AdGroupSourceSettings(
-            ad_group_source=ad_group_source,
-            cpc_cc=0.20,
-            daily_budget_cc=50,
-            state=dashconstants.AdGroupSourceSettingsState.ACTIVE
-        )
-
-        request = HttpRequest()
-        request.user = User.objects.create_user('test@example.com')
-
-        source_settings.save(request)
-
-        api.set_ad_group_source_settings(changes, source_settings.ad_group_source, request)
-
-        actions = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).order_by('created_dt')[:3]
-
-        for action in actions:
-            self.assertEqual(action.action, constants.Action.SET_PROPERTY)
-            self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-            self.assertEqual(action.state, constants.ActionState.WAITING)
-            self.assertTrue('property' in action.payload)
-            self.assertTrue('value' in action.payload)
-
-            for k, v in changes.iteritems():
-                if k == action.payload['property']:
-                    self.assertEqual(action.payload['value'], v)
-
-    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_init_enable_ad_group_non_maintenance_source(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
@@ -178,53 +135,6 @@ class ActionLogApiTestCase(TestCase):
         # Nothing changed, since the source is inactive
         self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).latest('created_dt'),
                          action)
-
-    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
-    def test_init_enable_ad_group_maintenance_source(self):
-        utcnow = datetime.datetime.utcnow()
-        models.datetime.utcnow = classmethod(lambda cls: utcnow)
-
-        ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
-                                                                  source__maintenance=True)[0]
-
-        ad_group.campaign.account.allowed_sources.add(ad_group_source.source_id)
-
-        source_settings = dashmodels.AdGroupSourceSettings(
-            ad_group_source=ad_group_source,
-            cpc_cc=0.20,
-            daily_budget_cc=50,
-            state=dashconstants.AdGroupSourceSettingsState.INACTIVE
-        )
-
-        request = HttpRequest()
-        request.user = User.objects.create_user('test@example.com')
-
-        source_settings.save(request)
-
-        api.init_enable_ad_group(ad_group, request)
-
-        # No manual action is created
-        self.assertEqual(list(models.ActionLog.objects.filter(ad_group_source=ad_group_source)), [])
-
-        source_settings = dashmodels.AdGroupSourceSettings(
-            ad_group_source=ad_group_source,
-            cpc_cc=0.20,
-            daily_budget_cc=50,
-            state=dashconstants.AdGroupSourceSettingsState.ACTIVE
-        )
-        source_settings.save(request)
-
-        api.init_enable_ad_group(ad_group, request)
-
-        action = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).latest('created_dt')
-
-        self.assertEqual(action.action, constants.Action.SET_PROPERTY)
-        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload, {'property': 'state', 'value': dashconstants.AdGroupSourceSettingsState.ACTIVE})
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_init_pause_ad_group_non_maintenance_source(self):
@@ -284,100 +194,13 @@ class ActionLogApiTestCase(TestCase):
                          {'state': dashconstants.AdGroupSourceSettingsState.INACTIVE})
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
-    def test_init_pause_ad_group_maintenance_source(self):
-        utcnow = datetime.datetime.utcnow()
-        models.datetime.utcnow = classmethod(lambda cls: utcnow)
-
-        ad_group = dashmodels.AdGroup.objects.get(id=1)
-        ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
-                                                                  source__maintenance=True)[0]
-
-        source_settings = dashmodels.AdGroupSourceSettings(
-            ad_group_source=ad_group_source,
-            cpc_cc=0.20,
-            daily_budget_cc=50,
-            state=dashconstants.AdGroupSourceSettingsState.ACTIVE
-        )
-
-        request = HttpRequest()
-        request.user = User.objects.create_user('test@example.com')
-
-        source_settings.save(request)
-
-        api.init_pause_ad_group(ad_group, request)
-
-        action = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).latest('created_dt')
-
-        self.assertEqual(action.action, constants.Action.SET_PROPERTY)
-        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload, {'property': 'state', 'value': dashconstants.AdGroupSourceSettingsState.INACTIVE})
-
-        source_settings = dashmodels.AdGroupSourceSettings(
-            ad_group_source=ad_group_source,
-            cpc_cc=0.20,
-            daily_budget_cc=50,
-            state=dashconstants.AdGroupSourceSettingsState.INACTIVE
-        )
-        source_settings.save(request)
-
-        api.init_pause_ad_group(ad_group, request)
-
-        action = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).latest('created_dt')
-
-        self.assertEqual(action.action, constants.Action.SET_PROPERTY)
-        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload, {'property': 'state', 'value': dashconstants.AdGroupSourceSettingsState.INACTIVE})
-
-    @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_delaying_set_ad_group_source_settings(self):
         utcnow = datetime.datetime.utcnow()
         models.datetime.utcnow = classmethod(lambda cls: utcnow)
         ad_group = dashmodels.AdGroup.objects.get(id=1)
 
-        # Source is IS in maintenance mode
-        ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
-                                                                  source__maintenance=True)[0]
-
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
-
-        # Only one change per ad_group_source
-        changes = {'cpc_cc': 0.3}
-        api.set_ad_group_source_settings(changes, ad_group_source, request)
-
-        action = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).latest('created_dt')
-
-        self.assertEqual(action.action, constants.Action.SET_PROPERTY)
-        self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-        self.assertEqual(action.payload, {'property': 'cpc_cc', 'value': 3000})
-
-        # Two changes
-        changes = {'cpc_cc': 0.3, 'daily_budget_cc': 100.0}
-        api.set_ad_group_source_settings(changes, ad_group_source, request)
-
-        actions = models.ActionLog.objects.filter(
-            ad_group_source=ad_group_source
-        ).order_by('created_dt')[:3]
-
-        for action in actions:
-            self.assertEqual(action.action, constants.Action.SET_PROPERTY)
-            self.assertEqual(action.action_type, constants.ActionType.MANUAL)
-            self.assertEqual(action.state, constants.ActionState.WAITING)
-            self.assertTrue('property' in action.payload)
-            self.assertTrue('value' in action.payload)
-
-            for k, v in changes.iteritems():
-                if k == action.payload['property']:
-                    self.assertEqual(action.payload['value'], v)
 
         # Source is NOT in maintenance mode
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
