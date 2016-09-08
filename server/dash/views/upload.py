@@ -208,9 +208,6 @@ class Candidate(api_common.BaseApiView):
         return ad_group, batch
 
     def get(self, request, ad_group_id, batch_id, candidate_id=None):
-        if not request.user.has_perm('zemauth.can_use_single_ad_upload'):
-            raise Http404('Forbidden')
-
         if candidate_id:
             raise exc.ValidationError('Not supported')
         _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
