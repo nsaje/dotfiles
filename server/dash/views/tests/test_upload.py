@@ -714,23 +714,6 @@ class CandidateTest(TestCase):
             u'success': True,
         }, response)
 
-    def test_get_candidate_list_no_permission(self):
-        batch_id = 1
-        ad_group_id = 2
-
-        response = _get_client(superuser=False).get(
-            reverse(
-                'upload_candidate',
-                kwargs={
-                    'ad_group_id': ad_group_id,
-                    'batch_id': batch_id,
-                }
-            ),
-            follow=True,
-        )
-        self.assertEqual(404, response.status_code)
-        self.assertTemplateUsed(response, '404.html')
-
     def test_add_candidate(self):
         batch_id = 1
         ad_group_id = 2
