@@ -13,6 +13,7 @@ angular.module('one.legacy').directive('zemUploadEditForm', [function () { // es
             updateCallback: '=',
             batchId: '=',
             hasPermission: '=',
+            isPermissionInternal: '=',
         },
         controllerAs: 'ctrl',
         templateUrl: '/components/zem-upload/components/zem-upload-edit-form/zemUploadEditForm.component.html',

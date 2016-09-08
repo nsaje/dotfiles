@@ -43,6 +43,11 @@
                     <div class="help-block">
                         Recommended image size is above 1200x1200px. Some media sources will not work with smaller images.
                     </div>
+                    <button type="button" class="btn btn-secondary" ng-if="ctrl.hasPermission('zemauth.can_use_own_images_in_upload') && ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
+                        <zem-internal-feature ng-if="ctrl.isPermissionInternal('zemauth.can_use_own_images_in_upload') || ctrl.isPermissionInternal('zemauth.can_use_partial_updates_in_upload')"></zem-internal-feature>
+                        <img ng-src="{{ ctrl.config.static_url }}/one/img/button-folder.svg"/>
+                        <span class="action-text">Choose file</span>
+                    </button>
                 </div>
                 <div class="col-xs-2 control-label small p-l-none">
                     <img ng-if="ctrl.fieldsLoading.imageUrl" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
