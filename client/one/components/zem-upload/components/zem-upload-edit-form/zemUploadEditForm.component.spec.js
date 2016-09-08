@@ -275,12 +275,16 @@ describe('ZemUploadEditFormCtrl', function () {
                 return deferred.promise;
             });
             ctrl.updateField('title');
+            expect(ctrl.fieldsLoading.title).toBe(true);
+            expect(ctrl.fieldsSaved.title).toBe(false);
 
             deferred.resolve({
                 errors: {},
             });
             scope.$digest();
 
+            expect(ctrl.fieldsLoading.title).toBe(false);
+            expect(ctrl.fieldsSaved.title).toBe(true);
             expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
                 id: 1,
                 title: 'ad title',
@@ -341,6 +345,8 @@ describe('ZemUploadEditFormCtrl', function () {
             });
 
             ctrl.updateField('title');
+            expect(ctrl.fieldsLoading.title).toBe(true);
+            expect(ctrl.fieldsSaved.title).toBe(false);
 
             updateDeferred.resolve({
                 errors: {
@@ -358,6 +364,8 @@ describe('ZemUploadEditFormCtrl', function () {
 
             scope.$digest();
 
+            expect(ctrl.fieldsLoading.title).toBe(false);
+            expect(ctrl.fieldsSaved.title).toBe(false);
             expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
                 id: 1,
                 title: 'ad title',

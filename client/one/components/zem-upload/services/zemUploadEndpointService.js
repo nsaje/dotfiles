@@ -302,7 +302,7 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
         function convertCandidateErrorsFromApi (errors) {
             if (!errors) return {};
 
-            return {
+            var result = {
                 label: errors.label,
                 title: errors.title,
                 url: errors.url,
@@ -316,6 +316,14 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
                 primaryTrackerUrl: errors.primary_tracker_url,
                 secondaryTrackerUrl: errors.secondary_tracker_url,
             };
+
+            Object.keys(result).forEach(function (key) {
+                if (result[key] === undefined) {
+                    delete result[key];
+                }
+            });
+
+            return result;
         }
 
         function convertCandidateFromApi (candidate) {

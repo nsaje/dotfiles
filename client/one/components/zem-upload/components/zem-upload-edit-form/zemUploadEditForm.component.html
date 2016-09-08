@@ -13,6 +13,8 @@
                 </div>
                 <div class="col-xs-2 control-label small p-l-none">
                     {{ ctrl.selectedCandidate.url.length }}/{{ ctrl.MAX_URL_LENGTH }}
+                    <img ng-if="ctrl.fieldsLoading.url" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
+                    <img ng-if="ctrl.fieldsSaved.url" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
             </div>
 
@@ -26,6 +28,8 @@
                 </div>
                 <div class="col-xs-2 control-label small p-l-none">
                     {{ ctrl.selectedCandidate.title.length }}/{{ ctrl.MAX_TITLE_LENGTH }}
+                    <img ng-if="ctrl.fieldsLoading.title" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
+                    <img ng-if="ctrl.fieldsSaved.title" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
             </div>
 
@@ -40,7 +44,10 @@
                         Recommended image size is above 1200x1200px. Some media sources will not work with smaller images.
                     </div>
                 </div>
-                <div class="col-xs-2 control-label small p-l-none"></div>
+                <div class="col-xs-2 control-label small p-l-none">
+                    <img ng-if="ctrl.fieldsLoading.imageUrl" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
+                    <img ng-if="ctrl.fieldsSaved.imageUrl" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
+                </div>
             </div>
 
             <div class="form-group" ng-class="{'has-error': ctrl.selectedCandidate.errors.imageCrop}">
@@ -61,6 +68,8 @@
                     <label class="checkbox-label checkbox-label-default">
                         <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.imageCrop" />Use as default
                     </label>
+                    <img ng-if="ctrl.fieldsLoading.imageCrop" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
+                    <img ng-if="ctrl.fieldsSaved.imageCrop" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
             </div>
 
@@ -77,6 +86,8 @@
                     <label class="checkbox-label checkbox-label-default">
                         <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.description"/>Use as default
                     </label>
+                    <img ng-if="ctrl.fieldsLoading.description" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
+                    <img ng-if="ctrl.fieldsSaved.description" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
             </div>
 
@@ -93,6 +104,8 @@
                     <label class="checkbox-label checkbox-label-default">
                         <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.displayUrl"/>Use as default
                     </label>
+                    <img ng-if="ctrl.fieldsLoading.displayUrl" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
+                    <img ng-if="ctrl.fieldsSaved.displayUrl" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
             </div>
 
@@ -110,6 +123,8 @@
                     <label class="checkbox-label checkbox-label-default">
                         <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.brandName"/>Use as default
                     </label>
+                    <img ng-if="ctrl.fieldsLoading.brandName" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
+                    <img ng-if="ctrl.fieldsSaved.brandName" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
             </div>
 
@@ -126,6 +141,8 @@
                     <label class="checkbox-label checkbox-label-default">
                         <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.callToAction" />Use as default
                     </label>
+                    <img ng-if="ctrl.fieldsLoading.callToAction" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
+                    <img ng-if="ctrl.fieldsSaved.callToAction" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
             </div>
 
@@ -139,6 +156,8 @@
                 </div>
                 <div class="col-xs-2 control-label small p-l-none">
                     {{ ctrl.selectedCandidate.label.length }}/{{ ctrl.MAX_LABEL_LENGTH }}
+                    <img ng-if="ctrl.fieldsLoading.label" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
+                    <img ng-if="ctrl.fieldsSaved.label" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
             </div>
 
@@ -165,7 +184,10 @@
                             Paste your impression tracker link to track impressions.
                         </div>
                     </div>
-                    <div class="col-xs-2"></div>
+                    <div class="col-xs-2">
+                        <img ng-if="ctrl.fieldsLoading.primaryTrackerUrl" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
+                        <img ng-if="ctrl.fieldsSaved.primaryTrackerUrl" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
+                    </div>
                 </div>
 
                 <div class="form-group" ng-if="!!ctrl.selectedCandidate.useSecondaryTracker" ng-class="{'has-error': ctrl.selectedCandidate.errors.secondaryTrackerUrl}">
@@ -181,6 +203,8 @@
                         <a href class="inline-link" ng-click="ctrl.removeSecondaryTracker(ctrl.selectedCandidate)">
                             <img class="smaller_icon" ng-src="{{ ctrl.config.static_url }}/one/img/button-remove.svg" />Remove
                         </a>
+                        <img ng-if="ctrl.fieldsLoading.secondaryTrackerUrl" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
+                        <img ng-if="ctrl.fieldsSaved.secondaryTrackerUrl" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                     </div>
                 </div>
 

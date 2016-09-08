@@ -49,6 +49,8 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     vm.imageCrops = options.imageCrops;
     vm.callToActionOptions = defaults.callToAction;
     vm.candidateStatuses = constants.contentAdCandidateStatus;
+    vm.fieldsLoading = {};
+    vm.fieldsSaved = {};
 
     // content ad picker API
     vm.api.requestInProgress = false;
@@ -70,6 +72,8 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
         vm.selectedCandidate.useSecondaryTracker = !!vm.selectedCandidate.secondaryTrackerUrl;
         vm.scrollTop();
         vm.api.selectedId = candidate.id;
+        vm.fieldsLoading = {};
+        vm.fieldsSaved = {};
     }
 
     function scrollBottomAndUpdate () {
@@ -112,8 +116,11 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
         };
         data[field] = vm.selectedCandidate[field];
 
+        vm.fieldsSaved[field] = false;
+        vm.fieldsLoading[field] = true;
         var persistUpdate = function () {
             vm.endpoint.updateCandidatePartial(vm.batchId, data).then(function (data) {
+                vm.fieldsLoading[field] = false;
                 vm.updateCallback();
 
                 if (selectedId !== vm.selectedCandidate.id) {
@@ -122,6 +129,7 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
                 }
 
                 if (!data.errors.hasOwnProperty(field)) {
+                    vm.fieldsSaved[field] = true;
                     delete vm.selectedCandidate.errors[field];
                     return;
                 }
