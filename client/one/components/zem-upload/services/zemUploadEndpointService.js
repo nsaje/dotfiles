@@ -60,6 +60,7 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
                 deferred.resolve({
                     batchId: data.data.batch_id,
                     batchName: data.data.batch_name,
+                    candidates: convertCandidatesFromApi(data.data.candidates),
                 });
             }).error(function (data) {
                 var errors = null;
@@ -141,6 +142,30 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
                 success(function (data) {
                     deferred.resolve({
                         candidates: convertCandidatesFromApi(data.data.candidates),
+                    });
+                }).error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.updateCandidatePartial = function (batchId, candidate) {
+            var deferred = $q.defer();
+            var url = baseUrl + batchId + '/candidate_update/' + candidate.id + '/';
+
+            var config = {
+                params: {},
+            };
+
+            var data = {
+                candidate: convertCandidateToApi(candidate),
+            };
+
+            $http.put(url, data, config).
+                success(function (data) {
+                    deferred.resolve({
+                        errors: convertCandidateErrorsFromApi(data.data.errors),
                     });
                 }).error(function (data) {
                     deferred.reject(data);

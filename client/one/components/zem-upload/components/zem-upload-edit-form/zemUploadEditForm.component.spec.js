@@ -15,6 +15,7 @@ describe('ZemUploadEditFormCtrl', function () {
             upload: function () {},
             checkStatus: function () {},
             updateCandidate: function () {},
+            updateCandidatePartial: function () {},
             removeCandidate: function () {},
             getCandidates: function () {},
             save: function () {},
@@ -31,6 +32,7 @@ describe('ZemUploadEditFormCtrl', function () {
                 batchId: 1,
                 scrollTop: function () {}, // directive link function
                 scrollBottom: function () {}, // directive link function
+                hasPermission: function () { return true; },
             }
         );
     }));
@@ -65,7 +67,7 @@ describe('ZemUploadEditFormCtrl', function () {
 
         it('initializes edit form properties', function () {
             ctrl.api.open(candidate);
-            expect(ctrl.selectedCandidate).not.toBe(candidate);
+            expect(ctrl.selectedCandidate).toBe(candidate);
             expect(ctrl.selectedCandidate.defaults).toEqual({});
             expect(ctrl.selectedCandidate.useTrackers).toBe(false);
             expect(ctrl.selectedCandidate.useSecondaryTracker).toBe(false);
@@ -234,6 +236,79 @@ describe('ZemUploadEditFormCtrl', function () {
             expect(ctrl.api.requestInProgress).toBe(false);
             expect(ctrl.requestFailed).toBe(true);
             expect(ctrl.selectedCandidate).not.toBeNull();
+        });
+    });
+
+    describe('update field', function () {
+        it('doesn\'t do anything if user doesn\'t have permission', function () {
+            ctrl.hasPermission = function (permission) {
+                if (permission === 'zemauth.can_use_partial_updates_in_upload') return false;
+                return true;
+            };
+
+            spyOn(ctrl.endpoint, 'updateCandidatePartial').and.stub();
+            ctrl.updateField('title');
+
+            expect(ctrl.endpoint.updateCandidatePartial).not.toHaveBeenCalled();
+        });
+
+        it('calls the endpoint', function () {
+            ctrl.hasPermission = function () { return true; };
+            ctrl.batchId = 1234;
+            ctrl.selectedCandidate = {
+                id: 1,
+                title: 'ad title',
+                url: 'http://example.com',
+                errors: {},
+            };
+
+            var deferred = $q.defer();
+            spyOn(ctrl.endpoint, 'updateCandidatePartial').and.callFake(function () {
+                return deferred.promise;
+            });
+            ctrl.updateField('title');
+
+            deferred.resolve({
+                errors: {},
+            });
+            scope.$digest();
+
+            expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
+                id: 1,
+                title: 'ad title',
+            });
+        });
+
+        it('saves returned errors', function () {
+            ctrl.hasPermission = function () { return true; };
+            ctrl.batchId = 1234;
+            ctrl.selectedCandidate = {
+                id: 1,
+                title: 'ad title',
+                url: 'http://example.com',
+                errors: {},
+            };
+
+            var deferred = $q.defer();
+            spyOn(ctrl.endpoint, 'updateCandidatePartial').and.callFake(function () {
+                return deferred.promise;
+            });
+            ctrl.updateField('title');
+
+            deferred.resolve({
+                errors: {
+                    title: ['Invalid title'],
+                },
+            });
+            scope.$digest();
+
+            expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
+                id: 1,
+                title: 'ad title',
+            });
+            expect(ctrl.selectedCandidate.errors).toEqual({
+                title: ['Invalid title'],
+            });
         });
     });
 });

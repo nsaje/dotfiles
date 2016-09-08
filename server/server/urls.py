@@ -174,6 +174,11 @@ urlpatterns += [
         login_required(dash.views.upload.Candidate.as_view()), name='upload_candidate'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/upload'
+        '/(?P<batch_id>\d+)/candidate_update/(?:(?P<candidate_id>\d+)/)?',
+        login_required(dash.views.upload.CandidateUpdate.as_view()), name='upload_candidate_update'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
         login_required(dash.views.views.AdGroupContentAdState.as_view()),
         name='ad_group_content_ad_state'

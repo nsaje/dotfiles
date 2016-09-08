@@ -195,19 +195,41 @@ def _update_candidate(data, batch):
     candidate = batch.contentadcandidate_set.get(id=data['id'])
     form = forms.ContentAdCandidateForm(data)
     form.is_valid()  # used only to clean data of any possible unsupported fields
-    for field, val in form.cleaned_data.items():
-        setattr(candidate, field, val)
+
+    errors = {}
+    for field in data:
+        if field not in form.cleaned_data:
+            continue
+
+        if field in form.errors:
+            errors[field] = form.errors[field]
+        setattr(candidate, field, form.cleaned_data[field])
 
     if candidate.has_changed('url') or candidate.has_changed('image_url'):
         invoke_external_validation(candidate, batch)
 
     candidate.save()
+    return errors
+
+
+def _get_partial_errors(data):
+    form = forms.ContentAdForm(data)
+    if form.is_valid():
+        return {}
+
+    errors = {}
+    for field in data.keys():
+        if field not in form.errors:
+            continue
+        errors[field] = form.errors[field]
+    return errors
 
 
 @transaction.atomic
 def update_candidate(data, defaults, batch):
     _update_defaults(data, defaults, batch)
     _update_candidate(data, batch)
+    return _get_partial_errors(data)
 
 
 @transaction.atomic

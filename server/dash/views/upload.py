@@ -29,9 +29,11 @@ class UploadBatch(api_common.BaseApiView):
             raise exc.ValidationError(errors=form.errors)
 
         batch = upload.create_empty_batch(ad_group_id, form.cleaned_data['batch_name'])
+        candidate = upload.add_candidate(batch)
         return self.create_api_response({
             'batch_id': batch.id,
             'batch_name': batch.name,
+            'candidates': [candidate.to_dict()],
         })
 
 
@@ -167,6 +169,33 @@ class CandidatesDownload(api_common.BaseApiView):
         return self.create_csv_response(batch_name, content=content)
 
 
+class CandidateUpdate(api_common.BaseApiView):
+
+    def _get_ad_group_batch(self, request, ad_group_id, batch_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        try:
+            batch = ad_group.uploadbatch_set.get(id=batch_id)
+        except models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError('Upload batch does not exist')
+
+        return ad_group, batch
+
+    def put(self, request, ad_group_id, batch_id, candidate_id):
+        if not request.user.has_perm('zemauth.can_use_partial_updates_in_upload'):
+            raise Http404('Forbidden')
+
+        _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
+        resource = json.loads(request.body)
+        try:
+            partial_errors = upload.update_candidate(resource['candidate'], [], batch)
+        except models.ContentAdCandidate.DoesNotExist:
+            raise exc.MissingDataError('Candidate does not exist')
+
+        return self.create_api_response({
+            'errors': partial_errors,
+        })
+
+
 class Candidate(api_common.BaseApiView):
 
     def _get_ad_group_batch(self, request, ad_group_id, batch_id):
@@ -200,7 +229,7 @@ class Candidate(api_common.BaseApiView):
         candidate = upload.add_candidate(batch)
 
         return self.create_api_response({
-            'candidate': candidate.to_dict(),
+            'candidate': candidate.to_dict(),  # don't add errors for new candidate
         })
 
     def put(self, request, ad_group_id, batch_id, candidate_id):

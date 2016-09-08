@@ -11,6 +11,7 @@ angular.module('one.legacy').directive('zemUploadEditForm', [function () { // es
             endpoint: '=',
             callback: '=',
             batchId: '=',
+            hasPermission: '=',
         },
         controllerAs: 'ctrl',
         templateUrl: '/components/zem-upload/components/zem-upload-edit-form/zemUploadEditForm.component.html',
@@ -21,6 +22,12 @@ angular.module('one.legacy').directive('zemUploadEditForm', [function () { // es
             ctrl.scrollBottom = function () {
                 element[0].scrollTop = element[0].scrollHeight;
             };
+
+            var callToActionInput = element.find('#call-to-action-input');
+            callToActionInput.on('select2-opening', function () {
+                // workaround for select 2 that doesn't broadcast ng-click very well
+                ctrl.clearSelectedCandidateErrors('callToAction');
+            });
         },
         controller: 'ZemUploadEditFormCtrl',
     };
@@ -49,10 +56,13 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     vm.api.close = refreshAndClose;
     vm.api.update = scrollBottomAndUpdate;
 
-    function open (candidate, isNew) {
+    function open (candidate) {
         vm.api.requestInProgress = false;
         vm.requestFailed = false;
-        vm.selectedCandidate = angular.copy(candidate);
+        vm.selectedCandidate = candidate;
+        if (!vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) {
+            vm.selectedCandidate = angular.copy(vm.selectedCandidate);
+        }
         vm.selectedCandidate.defaults = {};
         vm.selectedCandidate.useTrackers = !!vm.selectedCandidate.primaryTrackerUrl ||
             !!vm.selectedCandidate.secondaryTrackerUrl;
@@ -67,9 +77,9 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     }
 
     function refreshAndClose () {
+        close();
         vm.endpoint.getCandidates(vm.batchId).then(function (result) {
             vm.callback(result.candidates);
-            close();
         });
     }
 
@@ -95,6 +105,24 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
         });
     };
 
+    vm.updateField = function (field) {
+        if (!vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) return;
+
+        var data = {
+            id: vm.selectedCandidate.id,
+        };
+        data[field] = vm.selectedCandidate[field];
+
+        vm.endpoint.updateCandidatePartial(vm.batchId, data).then(function (data) {
+            if (!data.errors.hasOwnProperty(field)) {
+                delete vm.selectedCandidate.errors[field];
+                return;
+            }
+
+            vm.selectedCandidate.errors[field] = data.errors[field];
+        });
+    };
+
     vm.addSecondaryTracker = function (candidate) {
         candidate.useSecondaryTracker = true;
     };
@@ -106,9 +134,8 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     };
 
     vm.clearSelectedCandidateErrors = function (field) {
-        if (!vm.selectedCandidate || !vm.selectedCandidate.errors) {
-            return;
-        }
+        if (!vm.selectedCandidate || !vm.selectedCandidate.errors) return;
+        if (vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) return;
 
         delete vm.selectedCandidate.errors[field];
     };

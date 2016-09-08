@@ -27,7 +27,8 @@ angular.module('one.legacy').controller('ZemUploadStep0Ctrl', [function () {
                 vm.singleUploadCallback({
                     batchId: result.batchId,
                     batchName: result.batchName,
-                    candidates: [],
+                    candidates: result.candidates,
+                    autoOpenEditForm: true,
                 });
             });
     };

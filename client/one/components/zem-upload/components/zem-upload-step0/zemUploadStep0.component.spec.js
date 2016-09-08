@@ -37,13 +37,21 @@ describe('ZemUploadStep0Ctrl', function () {
         deferred.resolve({
             batchId: 1234,
             batchName: 'batch name',
+            candidates: [{
+                id: 1,
+                title: 'ad title'
+            }],
         });
         scope.$digest();
 
         expect(ctrl.singleUploadCallback).toHaveBeenCalledWith({
             batchId: 1234,
             batchName: 'batch name',
-            candidates: [],
+            candidates: [{
+                id: 1,
+                title: 'ad title',
+            }],
+            autoOpenEditForm: true,
         });
     });
 

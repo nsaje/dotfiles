@@ -1324,11 +1324,21 @@ class ContentAdForm(ContentAdCandidateForm):
 
     def _get_image_error_msg(self, cleaned_data):
         image_status = cleaned_data['image_status']
-        if image_status != constants.AsyncUploadJobStatus.OK or\
-           not cleaned_data['image_id'] or\
-           not cleaned_data['image_hash'] or\
-           not cleaned_data['image_width'] or\
-           not cleaned_data['image_height']:
+        if image_status not in [
+                constants.AsyncUploadJobStatus.FAILED,
+                constants.AsyncUploadJobStatus.OK,
+        ]:
+            return
+
+        if image_status == constants.AsyncUploadJobStatus.FAILED:
+            return 'Image could not be processed'
+
+        if image_status == constants.AsyncUploadJobStatus.OK and not (
+            cleaned_data['image_id'] and
+            cleaned_data['image_hash'] and
+            cleaned_data['image_width'] and
+            cleaned_data['image_height']
+        ):
             return 'Image could not be processed'
 
         if cleaned_data['image_width'] < self.MIN_IMAGE_SIZE or cleaned_data['image_height'] < self.MIN_IMAGE_SIZE:
@@ -1339,7 +1349,7 @@ class ContentAdForm(ContentAdCandidateForm):
 
     def _get_url_error_msg(self, cleaned_data):
         url_status = cleaned_data['url_status']
-        if url_status != constants.AsyncUploadJobStatus.OK:
+        if url_status == constants.AsyncUploadJobStatus.FAILED:
             return 'Content unreachable'
 
     def _set_tracker_urls(self, cleaned_data):
@@ -1356,9 +1366,9 @@ class ContentAdForm(ContentAdCandidateForm):
         cleaned_data = super(ContentAdForm, self).clean()
         self._set_tracker_urls(cleaned_data)
 
-        pending_statuses = [constants.AsyncUploadJobStatus.PENDING_START,
-                            constants.AsyncUploadJobStatus.WAITING_RESPONSE]
-        if cleaned_data['image_status'] in pending_statuses or cleaned_data['url_status'] in pending_statuses:
+        finished_statuses = [constants.AsyncUploadJobStatus.FAILED,
+                             constants.AsyncUploadJobStatus.OK]
+        if cleaned_data['image_status'] not in finished_statuses or cleaned_data['url_status'] not in finished_statuses:
             self.add_error(None, 'Content ad still processing')
             return cleaned_data
 

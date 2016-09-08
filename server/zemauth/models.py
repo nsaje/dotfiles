@@ -221,6 +221,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_set_agency_for_account', 'User can set agency for account'),
             ('can_use_single_ad_upload', 'User can use single content ad upload'),
             ('can_see_new_design', 'User can see new design'),
+            ('can_use_partial_updates_in_upload', 'Partially update upload candidate fields'),
         )
 
     def get_full_name(self):

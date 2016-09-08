@@ -34,10 +34,11 @@ angular.module('one.legacy').controller('ZemUploadCtrl', ['zemUploadEndpointServ
         vm.step = 1;
     };
 
-    vm.switchToContentAdPicker = function (batchId, batchName, candidates) {
+    vm.switchToContentAdPicker = function (batchId, batchName, candidates, autoOpenEditForm) {
         vm.batchId = batchId;
         vm.batchName = batchName;
         vm.candidates = candidates;
+        vm.autoOpenEditForm = autoOpenEditForm;
         vm.step = 2;
     };
 

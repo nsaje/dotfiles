@@ -14,6 +14,7 @@ angular.module('one.legacy').directive('zemUploadStep2', ['$window', function ($
             batchName: '=',
             candidates: '=',
             closeModal: '=close',
+            autoOpenEditForm: '=',
             hasPermission: '=',
             isPermissionInternal: '=',
         },
@@ -38,7 +39,7 @@ angular.module('one.legacy').directive('zemUploadStep2', ['$window', function ($
     };
 }]);
 
-angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$window', '$scope', function ($scope, config, $interval, $window) {
+angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$window', '$timeout', function ($scope, config, $interval, $window, $timeout) {
     var vm = this;
     vm.config = config;
 
@@ -336,8 +337,10 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
         vm.stopPolling();
     });
 
-    if (vm.candidates.length < 1 && vm.hasPermission('zemauth.can_use_single_ad_upload')) {
-        vm.addCandidate();
+    if (vm.autoOpenEditForm && vm.hasPermission('zemauth.can_use_single_ad_upload')) {
+        $timeout(function () { // wait until edit form is loaded
+            vm.editFormApi.open(vm.candidates[0]);
+        }, 0);
     }
 
     vm.startPolling();

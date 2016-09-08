@@ -887,6 +887,42 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(self._get_valid_data())
         self.assertTrue(f.is_valid())
 
+    def test_image_status_pending_start(self):
+        data = self._get_valid_data()
+        data['image_status'] = constants.AsyncUploadJobStatus.PENDING_START
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            '__all__': ['Content ad still processing'],
+        }, f.errors)
+
+    def test_image_status_waiting_response(self):
+        data = self._get_valid_data()
+        data['image_status'] = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            '__all__': ['Content ad still processing'],
+        }, f.errors)
+
+    def test_url_status_pending_start(self):
+        data = self._get_valid_data()
+        data['url_status'] = constants.AsyncUploadJobStatus.PENDING_START
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            '__all__': ['Content ad still processing'],
+        }, f.errors)
+
+    def test_url_status_waiting_response(self):
+        data = self._get_valid_data()
+        data['url_status'] = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        f = forms.ContentAdForm(data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({
+            '__all__': ['Content ad still processing'],
+        }, f.errors)
+
     def test_invalid_image_status(self):
         data = self._get_valid_data()
         data['image_status'] = constants.AsyncUploadJobStatus.FAILED

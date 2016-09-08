@@ -605,12 +605,16 @@ class UploadBatchTest(TestCase):
         )
         self.assertEqual(200, response.status_code)
         batch = models.UploadBatch.objects.latest('created_dt')
+        new_candidate = batch.contentadcandidate_set.get()
 
         response = json.loads(response.content)
         self.assertEqual({
             'data': {
                 'batch_id': batch.id,
                 'batch_name': batch_name,
+                'candidates': [
+                    new_candidate.to_dict(),
+                ],
             },
             'success': True,
         }, response)

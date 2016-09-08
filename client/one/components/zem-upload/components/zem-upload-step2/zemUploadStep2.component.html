@@ -22,7 +22,6 @@
                     </td>
                     <td class="image">
                         <img ng-if="candidate.hostedImageUrl" ng-src="{{candidate.hostedImageUrl}}" ng-if="candidate.imageUrl" />
-                        <img ng-if="!candidate.hostedImageUrl" ng-src="{{ ctrl.config.static_url }}/one/img/dummy_ad_image.png" />
                     </td>
                     <td class="title">
                         {{ candidate.title }}
@@ -74,7 +73,7 @@
             </div>
         </div>
 
-        <zem-upload-edit-form endpoint="ctrl.endpoint" api="ctrl.editFormApi" callback="ctrl.updateCandidateCallback" batch-id="ctrl.batchId"></zem-upload-edit-form>
+        <zem-upload-edit-form endpoint="ctrl.endpoint" api="ctrl.editFormApi" callback="ctrl.updateCandidateCallback" batch-id="ctrl.batchId" has-permission="ctrl.hasPermission"></zem-upload-edit-form>
         <div class="clear"></div>
     </div>
     <div class="modal-footer">
