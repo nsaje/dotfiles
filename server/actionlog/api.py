@@ -557,6 +557,9 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
             ad_group_source.ad_group.id))
         return
 
+    if ad_group_source.source.maintenance:
+        return
+
     if 'daily_budget_cc' in conf and\
        not ad_group_source.source.can_update_daily_budget_automatic() and\
        ad_group_source.source.can_update_daily_budget_manual():
