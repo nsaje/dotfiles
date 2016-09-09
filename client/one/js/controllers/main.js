@@ -138,11 +138,7 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
     };
 
     $scope.getDateRanges = function () {
-        var result = {},
-            i = 0,
-            monthsCount = 2,
-            formatStr = 'MMMM YYYY',
-            currentMonthStart = null;
+        var result = {};
 
         result.Yesterday = [
             zemMoment().subtract(1, 'days').startOf('day'),
@@ -152,20 +148,11 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
         result['Last 7 Days'] = [zemMoment().subtract(7, 'days'), zemMoment().subtract(1, 'days')];
         result['Last 30 Days'] = [zemMoment().subtract(30, 'days'), zemMoment().subtract(1, 'days')];
 
-        if (zemMoment().date() === 1) {
-            monthsCount += 1;
-        } else {
-            currentMonthStart = zemMoment().startOf('month');
-            result['Month to date'] = [currentMonthStart, zemMoment().subtract(1, 'days')];
-            result[currentMonthStart.format(formatStr)] = [currentMonthStart, zemMoment().endOf('month')];
-        }
-
-        for (i = 0; i < monthsCount; i++) {
-            result[zemMoment().subtract(i + 1, 'month').format(formatStr)] = [
-                zemMoment().subtract(i + 1, 'month').startOf('month'),
-                zemMoment().subtract(i + 1, 'month').endOf('month'),
-            ];
-        }
+        result['This Month'] = [zemMoment().startOf('month'), zemMoment().endOf('month')];
+        result['Last Month'] = [
+            zemMoment().subtract(1, 'month').startOf('month'),
+            zemMoment().subtract(1, 'month').endOf('month'),
+        ];
 
         result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract(1, 'days')];
         return result;
