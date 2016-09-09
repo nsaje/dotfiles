@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 import json
 
+import mock
 from django.contrib.auth import models as authmodels
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from dash import constants
 from dash import models
+from reports import redshift
 from zemauth import models as zmodels
 
 
@@ -118,8 +120,14 @@ class AudiencesTest(TestCase):
         }
         self.assertEqual(json.loads(response.content), response_dict)
 
-    def test_get_audiences(self):
-        url = reverse('accounts_audiences', kwargs={'account_id': 1})
+    @mock.patch.object(redshift, 'get_audience_sample_size')
+    def test_get_audiences(self, redshift_mock):
+        def side_effect(*args):
+            return 10 if args[2] != 1 else 1
+
+        redshift_mock.side_effect = side_effect
+
+        url = reverse('accounts_audiences', kwargs={'account_id': 1}) + '?include_audience_size=True'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         response_dict = {
@@ -149,6 +157,15 @@ class AudiencesTest(TestCase):
         }
         self.assertEqual(json.loads(response.content), response_dict)
 
+        redshift_mock.assert_has_calls([
+            mock.call(1, u'1', 90, mock.ANY),
+            mock.call(1, u'1', 1, mock.ANY),
+            mock.call(1, u'1', 90, mock.ANY),
+            mock.call(1, u'1', 1, mock.ANY),
+            mock.call(1, u'2', 90, mock.ANY),
+            mock.call(1, u'2', 1, mock.ANY),
+        ])
+
     def test_get_audiences_include_archived(self):
         url = reverse('accounts_audiences', kwargs={'account_id': 1})
         response = self.client.get(url + '?include_archived=1')
@@ -156,29 +173,29 @@ class AudiencesTest(TestCase):
         response_dict = {
             "success": True,
             "data": [{
-                "count": 1000,
-                "count_yesterday": 100,
+                "count": -1,
+                "count_yesterday": -1,
                 "id": 1,
                 "name": "test audience 1",
                 "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
-                "count": 1000,
-                "count_yesterday": 100,
+                "count": -1,
+                "count_yesterday": -1,
                 "id": 2,
                 "name": "test audience 2",
                 "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
-                "count": 1000,
-                "count_yesterday": 100,
+                "count": -1,
+                "count_yesterday": -1,
                 "id": 3,
                 "name": "test audience 3",
                 "archived": True,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
-                "count": 1000,
-                "count_yesterday": 100,
+                "count": -1,
+                "count_yesterday": -1,
                 "id": 4,
                 "name": "test audience 4",
                 "archived": False,

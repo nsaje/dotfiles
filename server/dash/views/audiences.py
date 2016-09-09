@@ -5,6 +5,7 @@ from django.db import transaction
 from dash import constants
 from dash import forms
 from dash import models
+from reports import redshift
 from utils import api_common
 from utils import exc
 import helpers
@@ -20,7 +21,8 @@ class AudiencesView(api_common.BaseApiView):
         if audience_id:
             return self._get_audience(request, account, audience_id)
 
-        return self._get_audiences(request, account)
+        include_audience_size = request.GET.get('include_audience_size', 'False')
+        return self._get_audiences(request, account, include_audience_size)
 
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.account_custom_audiences_view'):
@@ -91,7 +93,7 @@ class AudiencesView(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
-    def _get_audiences(self, request, account):
+    def _get_audiences(self, request, account, include_audience_size):
         audiences = models.Audience.objects.filter(pixel__account=account).order_by('name')
 
         if request.GET.get('include_archived', '') != '1':
@@ -99,11 +101,20 @@ class AudiencesView(api_common.BaseApiView):
 
         rows = []
         for audience in audiences:
+            if include_audience_size.lower() == 'true':
+                count = redshift.get_audience_sample_size(audience.pixel.account.id, audience.pixel.slug, audience.ttl,
+                                                          audience.rule_set.all()) * 100
+                count_yesterday = redshift.get_audience_sample_size(audience.pixel.account.id, audience.pixel.slug, 1,
+                                                                    audience.rule_set.all()) * 100
+            else:
+                count = -1
+                count_yesterday = -1
+
             rows.append({
                 'id': audience.pk,
                 'name': audience.name,
-                'count': 1000,  # TODO once sampling is done
-                'count_yesterday': 100,  # TODO once sampling is done
+                'count': count,
+                'count_yesterday': count_yesterday,
                 'archived': audience.archived,
                 'created_dt': audience.created_dt,
             })
