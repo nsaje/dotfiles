@@ -1,6 +1,3 @@
-/* globals oneApp, constants, angular, describe, beforeEach, inject, module, it, expect, spyOn */
-'use strict';
-
 describe('ZemNavigationUtils', function () {
     var zemNavigationUtils;
 
@@ -14,7 +11,7 @@ describe('ZemNavigationUtils', function () {
 
         var accounts = [];
         for (var accountIdx = 0; accountIdx < size[0]; ++accountIdx) {
-            var account = {name: 'account ' + accountIdx, agency: 'agency '+accountIdx, campaigns: []};
+            var account = {name: 'account ' + accountIdx, agency: 'agency ' + accountIdx, campaigns: []};
             accounts.push(account);
             for (var campaignIdx = 0; campaignIdx < size[1]; ++campaignIdx) {
                 var campaign = {name: 'campaign ' + campaignIdx, adGroups: []};

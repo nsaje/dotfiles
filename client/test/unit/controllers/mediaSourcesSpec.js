@@ -37,12 +37,12 @@ describe('MediaSourcesCtrl', function () {
             };
             $scope.dateRange = {
                 startDate: {
-                    isSame: function () {
-                    },
+                    isValid: function () {},
+                    isSame: function () {},
                 },
                 endDate: {
-                    isSame: function () {
-                    },
+                    isValid: function () {},
+                    isSame: function () {},
                 },
             };
             $scope.level = constants.level.ALL_ACCOUNTS;

@@ -48,9 +48,11 @@ describe('AdGroupPublishersCtrl', function () {
             };
             $scope.dateRange = {
                 startDate: {
+                    isValid: function () {},
                     isSame: function () {},
                 },
                 endDate: {
+                    isValid: function () {},
                     isSame: function () {},
                 },
             };

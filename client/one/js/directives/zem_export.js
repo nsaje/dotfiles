@@ -50,14 +50,14 @@ angular.module('one.legacy').directive('zemExport', function () {
                     modalInstance = $uibModal.open({
                         templateUrl: '/partials/add_scheduled_report_modal.html',
                         controller: 'AddScheduledReportModalCtrl',
-                        windowClass: 'modal-default',
+                        windowClass: 'modal-default-legacy',
                         scope: $scope,
                     });
                 } else {
                     modalInstance = $uibModal.open({
                         templateUrl: '/partials/download_export_report_modal.html',
                         controller: 'DownloadExportReportModalCtrl',
-                        windowClass: 'modal-default',
+                        windowClass: 'modal-default-legacy',
                         scope: $scope,
                     });
                 }

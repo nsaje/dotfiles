@@ -754,8 +754,10 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state
             return;
         }
 
-        $scope.getDailyStats();
-        getTableData();
+        if (newValue.startDate.isValid() && newValue.endDate.isValid()) {
+            $scope.getDailyStats();
+            getTableData();
+        }
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {

@@ -1,21 +1,16 @@
 angular.module('one.widgets').component('zemHeaderMenu', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-menu/zemHeaderMenu.component.html',
-    controller: ['zemHeaderMenuService', 'userService', function (zemHeaderMenuService, userService) {
+    controller: ['zemHeaderMenuService', 'zemUserService', function (zemHeaderMenuService, zemUserService) {
         var $ctrl = this;
+        $ctrl.getActions = zemHeaderMenuService.getAvailableActions;
         $ctrl.execute = execute;
 
         $ctrl.$onInit = function () {
-            $ctrl.userEmail = userService.getEmail();
-            updateAvailableActions();
+            $ctrl.userEmail = zemUserService.getUserEmail();
         };
-
-        function updateAvailableActions () {
-            $ctrl.actions = zemHeaderMenuService.getAvailableActions();
-        }
 
         function execute (action) {
             action.callback(action.params);
-            updateAvailableActions();
         }
     }],
 });

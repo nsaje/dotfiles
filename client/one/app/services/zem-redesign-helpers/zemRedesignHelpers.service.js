@@ -1,5 +1,5 @@
 // TODO: Temporary service used to handle redesing related permission. Remove once redesign is finished.
-angular.module('one.services').service('redesignHelpersService', ['$window', 'userService', 'zemLocalStorageService', function ($window, userService, zemLocalStorageService) {
+angular.module('one.services').service('zemRedesignHelpersService', ['$window', 'zemUserService', 'zemLocalStorageService', function ($window, zemUserService, zemLocalStorageService) { // eslint-disable-line max-len
     this.canSeeNewLayout = canSeeNewLayout;
     this.canSeeNewTheme = canSeeNewTheme;
     this.toggleNewLayout = toggleNewLayout;
@@ -7,15 +7,17 @@ angular.module('one.services').service('redesignHelpersService', ['$window', 'us
     this.setBodyThemeClass = setBodyThemeClass;
 
     function canSeeNewLayout () {
-        return userService.hasPermission('zemauth.can_see_new_design') && zemLocalStorageService.get('newLayout');
+        return zemUserService.userHasPermissions('zemauth.can_see_new_design')
+               && zemLocalStorageService.get('newLayout');
     }
 
     function canSeeNewTheme () {
-        return userService.hasPermission('zemauth.can_see_new_design') && zemLocalStorageService.get('newTheme');
+        return zemUserService.userHasPermissions('zemauth.can_see_new_design')
+               && zemLocalStorageService.get('newTheme');
     }
 
     function toggleNewLayout () {
-        if (userService.hasPermission('zemauth.can_see_new_design')) {
+        if (zemUserService.userHasPermissions('zemauth.can_see_new_design')) {
             zemLocalStorageService.set('newLayout', !zemLocalStorageService.get('newLayout'));
         } else {
             zemLocalStorageService.set('newLayout', false);
@@ -23,7 +25,7 @@ angular.module('one.services').service('redesignHelpersService', ['$window', 'us
     }
 
     function toggleNewTheme () {
-        if (userService.hasPermission('zemauth.can_see_new_design')) {
+        if (zemUserService.userHasPermissions('zemauth.can_see_new_design')) {
             zemLocalStorageService.set('newTheme', !zemLocalStorageService.get('newTheme'));
         } else {
             zemLocalStorageService.set('newTheme', false);

@@ -347,7 +347,7 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
         function setDateRange (dateRange, fetch) {
             config.startDate = dateRange.startDate;
             config.endDate = dateRange.endDate;
-            if (fetch) {
+            if (fetch && config.startDate.isValid() && config.endDate.isValid()) {
                 return getData();
             }
         }

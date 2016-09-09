@@ -1,11 +1,9 @@
 /* globals JSON, angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemLocalStorageService', function () {
-    var user = null;
-
+angular.module('one.legacy').factory('zemLocalStorageService', ['zemUserService', function (zemUserService) {
     function getKey (key, namespace) {
-        var components = ['oneApp', user.id];
+        var components = ['oneApp', zemUserService.getUserId()];
 
         if (namespace) {
             components.push(namespace);
@@ -34,13 +32,8 @@ angular.module('one.legacy').factory('zemLocalStorageService', function () {
         return JSON.parse(value);
     }
 
-    function init (currentUser) {
-        user = currentUser;
-    }
-
     return {
-        init: init,
         get: get,
         set: set
     };
-});
+}]);

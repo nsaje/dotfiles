@@ -1,5 +1,3 @@
-/* global angular */
-
 angular.module(
     'one',
     [
@@ -31,7 +29,7 @@ angular.module('one').config(['$locationProvider', function ($locationProvider) 
     $locationProvider.hashPrefix('!');
 }]);
 
-angular.module('one').config(['uibDatepickerConfig', 'uibDatepickerPopupConfig', function (datepickerConfig, datepickerPopupConfig) {
+angular.module('one').config(['uibDatepickerConfig', 'uibDatepickerPopupConfig', function (datepickerConfig, datepickerPopupConfig) { // eslint-disable-line max-len
     datepickerConfig.showWeeks = false;
     datepickerConfig.formatDayHeader = 'EEE';
     datepickerPopupConfig.showButtonBar = false;
@@ -55,16 +53,16 @@ angular.module('one').config(['$provide', function ($provide) {
 
 var locationSearch;
 // Fixes https://github.com/angular-ui/ui-router/issues/679
-angular.module('one').run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService', function ($state, $rootScope, $location, config, zemIntercomService) {
+angular.module('one').run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService', function ($state, $rootScope, $location, config, zemIntercomService) {  // eslint-disable-line max-len
     $rootScope.config = config;
     $rootScope.$state = $state;
 
-    $rootScope.$on('$stateChangeStart', function (e, toState, toParams, fromState, fromParams) {
+    $rootScope.$on('$stateChangeStart', function () {
         // Save location.search so we can add it back after transition is done
         locationSearch = $location.search();
     });
 
-    $rootScope.$on('$stateChangeSuccess', function (e, toState, toParams, fromState, fromParams) {
+    $rootScope.$on('$stateChangeSuccess', function () {
         // Restore all query string parameters back to $location.search
         $location.search(locationSearch);
         $rootScope.stateChangeFired = true;

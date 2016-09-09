@@ -16,7 +16,7 @@ angular.module('one.legacy').controller('CampaignBudgetCtrl', ['$scope', '$state
         var modalInstance = $uibModal.open({
             templateUrl: '/partials/campaign_budget_item_modal.html',
             controller: 'CampaignBudgetItemModalCtrl',
-            windowClass: 'modal-default',
+            windowClass: 'modal-default-legacy',
             backdrop: 'static',
             scope: $scope,
             size: 'wide',

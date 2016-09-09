@@ -1,7 +1,7 @@
 'use strict';
 
 describe('AdGroupCtrl', function () {
-    var $scope, parentScope, $state, user, api, zemFilterServiceMock;
+    var $scope, parentScope, $state, api, zemFilterServiceMock;
 
     beforeEach(function () {
         module('one');
@@ -48,19 +48,13 @@ describe('AdGroupCtrl', function () {
             $state = _$state_;
             $state.params.id = 1;
 
-            user = {
-                permissions: {}
-            };
-
-            zemLocalStorageService.init(user);
             $controller('MainCtrl', {
                 $scope: parentScope,
                 $state: $state,
-                user: user,
                 accountsAccess: {
                     hasAccounts: true,
                 },
-                zemFullStoryService: {identify: function () {}}
+                zemFullStoryService: {identifyUser: function () {}}
             });
             $controller('AdGroupCtrl', {
                 $scope: $scope,

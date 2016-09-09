@@ -1,16 +1,24 @@
-angular.module('one.services').service('userService', [function () {
+angular.module('one.services').service('zemUserService', ['zemUserEndpoint', function (zemUserEndpoint) {
     this.init = init;
-    this.hasPermission = hasPermission;
+    this.getUser = getUser;
+    this.userHasPermissions = userHasPermissions;
     this.isPermissionInternal = isPermissionInternal;
-    this.getEmail = getEmail;
+    this.getUserId = getUserId;
+    this.getUserEmail = getUserEmail;
 
     var user = null;
 
-    function init (currentUser) {
-        user = currentUser;
+    function init () {
+        return zemUserEndpoint.loadUser('current').then(function (_user_) {
+            user = _user_;
+        });
     }
 
-    function hasPermission (permissions) {
+    function getUser () {
+        return user;
+    }
+
+    function userHasPermissions (permissions) {
         if (!user || !permissions) {
             return false;
         }
@@ -33,7 +41,11 @@ angular.module('one.services').service('userService', [function () {
         return !user.permissions[permission];
     }
 
-    function getEmail () {
+    function getUserId () {
+        return user ? user.id : null;
+    }
+
+    function getUserEmail () {
         return user ? user.email : null;
     }
 }]);

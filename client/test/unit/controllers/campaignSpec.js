@@ -2,7 +2,7 @@
 'use strict';
 
 describe('CampaignCtrl', function () {
-    var $scope, parentScope, $state, user, api, zemServiceMock, zemFilterServiceMock;
+    var $scope, parentScope, $state, api, zemServiceMock, zemFilterServiceMock;
 
     beforeEach(function () {
         module('one');
@@ -52,10 +52,6 @@ describe('CampaignCtrl', function () {
             $state = _$state_;
             $state.params.id = 1;
 
-            user = {
-                permissions: {},
-            };
-
             var mockApiFunc = function () {
                 return {
                     then: function (dataFunc) {
@@ -74,15 +70,13 @@ describe('CampaignCtrl', function () {
                 },
             };
 
-            zemLocalStorageService.init(user);
             $controller('MainCtrl', {
                 $scope: parentScope,
                 $state: $state,
-                user: user,
                 accountsAccess: {
                     hasAccounts: true,
                 },
-                zemFullStoryService: {identify: function () {}},
+                zemFullStoryService: {identifyUser: function () {}},
             });
             $controller('CampaignCtrl', {
                 $scope: $scope,

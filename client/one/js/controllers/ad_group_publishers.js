@@ -889,8 +889,10 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
             return;
         }
 
-        getTableData();
-        getDailyStats();
+        if (newValue.startDate.isValid() && newValue.endDate.isValid()) {
+            getTableData();
+            getDailyStats();
+        }
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {

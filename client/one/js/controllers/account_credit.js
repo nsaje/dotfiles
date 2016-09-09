@@ -16,7 +16,7 @@ angular.module('one.legacy').controller('AccountCreditCtrl',
             var modalInstance = $uibModal.open({
                 templateUrl: '/partials/account_credit_item_modal.html',
                 controller: 'AccountCreditItemModalCtrl',
-                windowClass: 'modal-default',
+                windowClass: 'modal-default-legacy',
                 scope: $scope,
                 backdrop: 'static',
                 size: 'wide',

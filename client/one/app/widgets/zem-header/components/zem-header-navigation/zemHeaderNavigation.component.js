@@ -1,7 +1,4 @@
-/* globals oneApp, constants */
-'use strict';
-
-angular.module('one.widgets').component('zemHeaderNavigation', { // eslint-disable-line max-len
+angular.module('one.widgets').component('zemHeaderNavigation', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-navigation/zemHeaderNavigation.component.html',
     controller: ['$scope', '$element', 'hotkeys', function ($scope, $element, hotkeys) {
         var $ctrl = this;

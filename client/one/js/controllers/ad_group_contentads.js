@@ -671,8 +671,10 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
             return;
         }
 
-        getDailyStats();
-        getTableData();
+        if (newValue.startDate.isValid() && newValue.endDate.isValid()) {
+            getDailyStats();
+            getTableData();
+        }
     });
 
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {

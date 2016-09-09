@@ -1,6 +1,3 @@
-/* globals oneApp, constants, angular, describe, beforeEach, inject, module, it, expect, spyOn */
-'use strict';
-
 describe('ZemNavigationCtrl', function () {
     var ctrl;
 

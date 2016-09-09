@@ -752,16 +752,18 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
             return;
         }
 
-        // on all accounts some settings depend on date range
-        if ($scope.level === constants.level.ALL_ACCOUNTS) {
-            $scope.getInfoboxData();
-        }
-        getDailyStats();
-        getTableData();
+        if (newValue.startDate.isValid() && newValue.endDate.isValid()) {
+            // on all accounts some settings depend on date range
+            if ($scope.level === constants.level.ALL_ACCOUNTS) {
+                $scope.getInfoboxData();
+            }
+            getDailyStats();
+            getTableData();
 
-        if ($scope.hasPermission('zemauth.can_view_sidetabs') && $scope.level === constants.level.CAMPAIGNS) {
-            $scope.sideBarVisible = true;
-            $scope.getContentInsights();
+            if ($scope.hasPermission('zemauth.can_view_sidetabs') && $scope.level === constants.level.CAMPAIGNS) {
+                $scope.sideBarVisible = true;
+                $scope.getContentInsights();
+            }
         }
     });
 

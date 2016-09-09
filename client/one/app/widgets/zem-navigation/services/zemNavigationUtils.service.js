@@ -1,7 +1,3 @@
-/* globals angular, oneApp, constants */
-/* eslint-disable camelcase */
-'use strict';
-
 angular.module('one.widgets').service('zemNavigationUtils', [function () {
     this.convertToEntityList = convertToEntityList;
     this.filterEntityList = filterEntityList;

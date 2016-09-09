@@ -138,7 +138,7 @@ angular.module('one.legacy').controller('ZemCustomAudiencesModalCtrl', ['api', f
         });
     };
 
-    function init() {
+    function init () {
         vm.getPixels();
         if (vm.audienceId) {
             vm.getAudience(vm.audienceId);

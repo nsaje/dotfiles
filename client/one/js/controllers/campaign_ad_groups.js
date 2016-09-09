@@ -749,10 +749,12 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
             return;
         }
 
-        getDailyStats();
-        getTableData();
+        if (newValue.startDate.isValid() && newValue.endDate.isValid()) {
+            getDailyStats();
+            getTableData();
 
-        $scope.getContentInsights();
+            $scope.getContentInsights();
+        }
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {

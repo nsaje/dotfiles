@@ -171,41 +171,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         };
     }
 
-    function User () {
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/users/' + id + '/';
-            var config = {
-                params: {}
-            };
-
-            $http.get(url, config).
-                success(function (data, status) {
-                    var resource;
-                    if (data && data.data) {
-                        resource = data.data.user;
-                    }
-                    deferred.resolve(convertFromApi(resource));
-                }).
-                error(function (data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        function convertFromApi (data) {
-            return {
-                id: data.id,
-                name: data.name,
-                email: data.email,
-                agency: data.agency,
-                permissions: data.permissions,
-                timezoneOffset: data.timezone_offset,
-            };
-        }
-    }
-
     function AdGroupSources () {
         function convertFromApi (data) {
             var sources = [];
@@ -2883,22 +2848,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         };
     }
 
-    function Demo () {
-        this.request = function () {
-            var url = '/api/demov3/';
-            return $http.get(url);
-        };
-    }
-
-    function LiveStream () {
-        this.allow = function (sessionUrl) {
-            var url = '/api/live-stream/allow/';
-            return $http.post(url, {
-                session_url: sessionUrl
-            });
-        };
-    }
-
     function CustomAudiences () {
         function convertFromApi (data) {
             var resource = {};
@@ -3005,7 +2954,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
 
     return {
         navigation: new Navigation(),
-        user: new User(),
         adGroupSettings: new AdGroupSettings(),
         adGroupSettingsState: new AdGroupSettingsState(),
         adGroupSources: new AdGroupSources(),
@@ -3055,8 +3003,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         accountCredit: new AccountCredit(),
         campaignBudget: new CampaignBudget(),
         campaignGoalValidation: new CampaignGoalValidation(),
-        demo: new Demo(),
-        liveStream: new LiveStream(),
         customAudiences: new CustomAudiences(),
     };
 }]);

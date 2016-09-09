@@ -1,9 +1,6 @@
-/* globals oneApp, constants */
-'use strict';
-
-angular.module('one.widgets').component('zemNavigation', { // eslint-disable-line max-len
+angular.module('one.widgets').component('zemNavigation', {
     templateUrl: '/app/widgets/zem-navigation/zemNavigation.component.html',
-    controller: ['$scope', '$state', '$element', 'hotkeys', 'zemNavigationUtils', 'zemNavigationService', 'zemFilterService', function ($scope, $state, $element, hotkeys, zemNavigationUtils, zemNavigationService, zemFilterService) {
+    controller: ['$scope', '$state', '$element', 'hotkeys', 'zemNavigationUtils', 'zemNavigationService', 'zemFilterService', function ($scope, $state, $element, hotkeys, zemNavigationUtils, zemNavigationService, zemFilterService) { // eslint-disable-line max-len
         // TODO: prepare navigation service
         // TODO: check permission for filtering by agency
         // TODO: check active entity -> bold - $state.includes('main.campaigns', { id: campaign.id.toString()})

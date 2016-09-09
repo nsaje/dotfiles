@@ -1,3 +1,4 @@
+# Rules apply only for files inside /client/one/app/**
 root: true
 
 globals:
@@ -39,19 +40,19 @@ rules:
     - 2
     - 10
   dot-notation:
-    - 0
+    - 1
   eqeqeq:
-    - 0
+    - 1
   guard-for-in:
-    - 0
+    - 1
   no-alert:
-    - 0
+    - 1
   no-else-return:
     - 2
   no-trailing-spaces:
     - 2
   max-len:
-    - 0
+    - 2
     - 120
     - 4
   brace-style:
@@ -90,7 +91,7 @@ rules:
   space-unary-ops:
     - 2
   no-unused-vars:
-    - 0
+    - 2
   no-undef:
     - 2
 

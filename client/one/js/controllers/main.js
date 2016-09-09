@@ -1,9 +1,9 @@
 /* globals $, angular, constants */
-angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$uibModal', '$uibModalStack', '$timeout', '$window', 'zemMoment', 'userService', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', 'redesignHelpersService', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, userService, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, redesignHelpersService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$uibModal', '$uibModalStack', '$timeout', '$window', 'zemMoment', 'zemUserService', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', 'zemRedesignHelpersService', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, zemUserService, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, zemRedesignHelpersService) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
-    $scope.user = user;
+    $scope.user = zemUserService.getUser();
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
     $scope.maxDate = zemMoment().endOf('month');
@@ -19,10 +19,11 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
     $scope.graphVisible = true;
     $scope.navigationPaneVisible = false;
 
-    $scope.liveStreamOn = false;
+    $scope.hasPermission = zemUserService.userHasPermissions;
+    $scope.isPermissionInternal = zemUserService.isPermissionInternal;
 
-    $scope.hasPermission = userService.hasPermission;
-    $scope.isPermissionInternal = userService.isPermissionInternal;
+    $scope.allowLivestream = zemFullStoryService.allowLivestream;
+    $scope.liveStreamOn = zemFullStoryService.isLivestreamAllowed;
 
     $scope.hasAgency = function () {
         if ($scope.user.agency) {
@@ -277,19 +278,10 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
     };
 
     $scope.requestDemo = function () {
-        var modalInstance = $uibModal.open({
-            templateUrl: '/partials/request_demo_modal.html',
-            controller: 'RequestDemoModalCtrl',
-            windowClass: 'modal-default',
-            scope: $scope,
+        $uibModal.open({
+            component: 'zemDemoRequest',
+            windowClass: 'modal-default-legacy',
         });
-        return modalInstance;
-    };
-
-    $scope.allowLivestream = function () {
-        $scope.liveStreamOn = true;
-        if (!$window.FS) { return; }
-        api.liveStream.allow($window.FS.getCurrentSessionURL());
     };
 
     $scope.$on('$stateChangeSuccess', function () {
@@ -363,11 +355,19 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
             return;
         }
 
-        $location.search('start_date',
-            $scope.dateRange.startDate ? $scope.dateRange.startDate.format('YYYY-MM-DD') : null);
+        if (newValue.startDate.isValid()) {
+            $location.search(
+                'start_date',
+                $scope.dateRange.startDate ? $scope.dateRange.startDate.format('YYYY-MM-DD') : null
+            );
+        }
 
-        $location.search('end_date',
-            $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null);
+        if (newValue.endDate.isValid()) {
+            $location.search(
+                'end_date',
+                $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null
+            );
+        }
     });
 
     $scope.getShowArchived = function () {
@@ -406,9 +406,9 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
 
 
     $scope.init = function () {
-        zemFullStoryService.identify($scope.user);
-        zemIntercomService.boot($scope.user);
-        zemSupportHeroService.boot($scope.user);
+        zemFullStoryService.identifyUser(zemUserService.getUser());
+        zemIntercomService.boot(zemUserService.getUser());
+        zemSupportHeroService.boot(zemUserService.getUser());
         zemNavigationService.reload();
 
         var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
@@ -425,7 +425,7 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
 
 
     // TODO: Remove once redesign is finished
-    $scope.userCanSeeNewLayout = redesignHelpersService.canSeeNewLayout;
-    $scope.toggleNewLayout = redesignHelpersService.toggleNewLayout;
-    redesignHelpersService.setBodyThemeClass();
+    $scope.userCanSeeNewLayout = zemRedesignHelpersService.canSeeNewLayout;
+    $scope.toggleNewLayout = zemRedesignHelpersService.toggleNewLayout;
+    zemRedesignHelpersService.setBodyThemeClass();
 }]);

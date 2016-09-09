@@ -5,9 +5,9 @@ describe('MainCtrl', function () {
     var $scope;
     var ctrl;
     var $state;
-    var user = {permissions: []};
-    var userService;
     var zemFullStoryService;
+    var user;
+    var zemUserServiceMock;
     var zemFilterServiceMock;
     var zemUserSettings;
     var accountsAccess;
@@ -37,6 +37,10 @@ describe('MainCtrl', function () {
                 },
             };
 
+            user = {
+                permissions: {},
+            };
+
             zemFilterServiceMock = {
                 getShowArchived: function () {
                     return true;
@@ -50,12 +54,11 @@ describe('MainCtrl', function () {
             $provide.value('api', api);
         });
 
-        inject(function ($rootScope, $controller, _$state_, _userService_) {
+        inject(function ($rootScope, $controller, _$state_, zemUserService) {
             $scope = $rootScope.$new();
             $state = _$state_;
-            userService = _userService_;
 
-            zemFullStoryService = {identify: function (user) {}};
+            zemFullStoryService = {identifyUser: function (user) {}};
             zemUserSettings = {
                 getInstance: function () {
                     return {
@@ -65,7 +68,8 @@ describe('MainCtrl', function () {
                 }
             };
 
-            spyOn(zemFullStoryService, 'identify');
+            spyOn(zemFullStoryService, 'identifyUser');
+            spyOn(zemUserService, 'getUser').and.returnValue(user);
 
             accountsAccess = {
                 hasAccounts: true
@@ -75,7 +79,6 @@ describe('MainCtrl', function () {
                 $scope: $scope,
                 $state: $state,
                 api: api,
-                user: user,
                 accountsAccess: accountsAccess,
                 zemFullStoryService: zemFullStoryService,
                 zemUserSettings: zemUserSettings,
@@ -87,25 +90,7 @@ describe('MainCtrl', function () {
         expect($scope.accountsAccess).toEqual(accountsAccess);
     });
 
-    describe('hasPermission', function () {
-        beforeEach(function () {
-            userService.init({permissions: {availablePermission: true}});
-        });
-
-        it('should return true if user has the specified permission', function () {
-            expect($scope.hasPermission('availablePermission')).toBe(true);
-        });
-
-        it('should return false if user does not have the specified permission', function () {
-            expect($scope.hasPermission('unavailablePermission')).toBe(false);
-        });
-
-        it('should return false if called without specifying permission', function () {
-            expect($scope.hasPermission()).toBe(false);
-        });
-
-        it('should identify user with FullStory', function () {
-            expect(zemFullStoryService.identify).toHaveBeenCalledWith(user);
-        });
+    it('should identify user with FullStory', function () {
+        expect(zemFullStoryService.identifyUser).toHaveBeenCalledWith(user);
     });
 });

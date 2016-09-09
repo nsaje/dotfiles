@@ -20,7 +20,7 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['api', fu
     vm.audiences = [];
     vm.listRequestInProgress = false;
 
-    vm.getAudiences = function() {
+    vm.getAudiences = function () {
         vm.listRequestInProgress = true;
 
         api.customAudiences.list(vm.accountId).then(
@@ -35,7 +35,7 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['api', fu
         });
     };
 
-    function init() {
+    function init () {
         vm.getAudiences();
     }
 

@@ -624,9 +624,11 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
             return;
         }
 
-        $scope.getInfoboxData();
-        getDailyStats();
-        getTableData();
+        if (newValue.startDate.isValid() && newValue.endDate.isValid()) {
+            $scope.getInfoboxData();
+            getDailyStats();
+            getTableData();
+        }
     });
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {

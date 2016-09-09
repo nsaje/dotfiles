@@ -31,8 +31,14 @@ describe('AdGroupSourcesCtrlSpec', function () {
         $scope.setAdGroupData = function () {};
         $scope.adGroupData = {};
         $scope.dateRange = {
-            startDate: {isSame: function () {}},
-            endDate: {isSame: function () {}}
+            startDate: {
+                isValid: function () {},
+                isSame: function () {},
+            },
+            endDate: {
+                isValid: function () {},
+                isSame: function () {},
+            },
         };
         $scope.columns = [];
 
