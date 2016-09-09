@@ -70,9 +70,12 @@
                     <label for="image-crop-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageCrop" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label p-l-none">
-                    <label class="checkbox-label checkbox-label-default">
+                    <label class="checkbox-label checkbox-label-default" ng-if="!ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
                         <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.imageCrop" />Use as default
                     </label>
+                    <a href class="action-link" ng-if="ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')" ng-click="ctrl.updateField('imageCrop', true)">
+                        Use as default
+                    </a>
                     <img ng-if="ctrl.fieldsLoading.imageCrop" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
                     <img ng-if="ctrl.fieldsSaved.imageCrop" class="small-icon input-indicator input-success" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
@@ -88,9 +91,12 @@
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ ctrl.selectedCandidate.description.length }}/{{ ctrl.MAX_DESCRIPTION_LENGTH }}
-                    <label class="checkbox-label checkbox-label-default">
+                    <label class="checkbox-label checkbox-label-default" ng-if="!ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
                         <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.description"/>Use as default
                     </label>
+                    <a href class="action-link" ng-if="ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')" ng-click="ctrl.updateField('description', true)">
+                        Use as default
+                    </a>
                     <img ng-if="ctrl.fieldsLoading.description" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
                     <img ng-if="ctrl.fieldsSaved.description" class="small-icon input-indicator input-success" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
@@ -106,9 +112,12 @@
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ ctrl.selectedCandidate.displayUrl.length }}/{{ ctrl.MAX_DISPLAY_URL_LENGTH }}
-                    <label class="checkbox-label checkbox-label-default">
+                    <label class="checkbox-label checkbox-label-default" ng-if="!ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
                         <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.displayUrl"/>Use as default
                     </label>
+                    <a href class="action-link" ng-if="ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')" ng-click="ctrl.updateField('displayUrl', true)">
+                        Use as default
+                    </a>
                     <img ng-if="ctrl.fieldsLoading.displayUrl" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
                     <img ng-if="ctrl.fieldsSaved.displayUrl" class="small-icon input-indicator input-success" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
@@ -125,9 +134,12 @@
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ ctrl.selectedCandidate.brandName.length }}/{{ ctrl.MAX_BRAND_NAME_LENGTH }}
-                    <label class="checkbox-label checkbox-label-default">
+                    <label class="checkbox-label checkbox-label-default" ng-if="!ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
                         <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.brandName"/>Use as default
                     </label>
+                    <a href class="action-link" ng-if="ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')" ng-click="ctrl.updateField('brandName', true)">
+                        Use as default
+                    </a>
                     <img ng-if="ctrl.fieldsLoading.brandName" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
                     <img ng-if="ctrl.fieldsSaved.brandName" class="small-icon input-indicator input-success" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>
@@ -143,9 +155,12 @@
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ ctrl.selectedCandidate.callToAction.length }}/{{ ctrl.MAX_CALL_TO_ACTION_LENGTH }}
-                    <label class="checkbox-label checkbox-label-default">
+                    <label class="checkbox-label checkbox-label-default" ng-if="!ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
                         <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.callToAction" />Use as default
                     </label>
+                    <a href class="action-link" ng-if="ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')" ng-click="ctrl.updateField('callToAction', true)">
+                        Use as default
+                    </a>
                     <img ng-if="ctrl.fieldsLoading.callToAction" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
                     <img ng-if="ctrl.fieldsSaved.callToAction" class="small-icon input-indicator input-success" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg" />
                 </div>

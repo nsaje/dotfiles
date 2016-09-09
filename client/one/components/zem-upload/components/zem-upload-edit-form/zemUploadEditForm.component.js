@@ -108,12 +108,16 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
         });
     };
 
-    vm.updateField = function (field) {
+    vm.updateField = function (field, useAsDefault) {
         if (!vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) return;
 
         var selectedId = vm.selectedCandidate.id;
+        var defaults = [];
+        if (useAsDefault) defaults.push(field);
+
         var data = {
             id: vm.selectedCandidate.id,
+            defaults: defaults,
         };
         data[field] = vm.selectedCandidate[field];
 
@@ -122,7 +126,7 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
         var persistUpdate = function () {
             vm.endpoint.updateCandidatePartial(vm.batchId, data).then(function (data) {
                 vm.fieldsLoading[field] = false;
-                vm.updateCallback();
+                vm.updateCallback(defaults);
 
                 if (selectedId !== vm.selectedCandidate.id) {
                     // selection changed

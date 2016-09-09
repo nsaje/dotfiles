@@ -108,14 +108,29 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
         });
     }
 
-    function refreshCandidates (updatedCandidates) {
+    function refreshCandidates (updatedCandidates, fields) {
+        // fields parameter can be used to only selectively update fields and their error messages
+        // If not specified, it updates all fields.
+        // Example: use as default button in edit form
         angular.forEach(updatedCandidates, function (updatedCandidate) {
             var candidate = vm.candidates.filter(function (candidate) {
                 if (candidate.id === updatedCandidate.id) return true;
             })[0];
 
             Object.keys(updatedCandidate).forEach(function (field) {
+                if (field === 'errors') return;
+                if (fields && fields.length && fields.indexOf(field) < 0) return;
                 candidate[field] = updatedCandidate[field];
+            });
+
+            if (!fields || !fields.length) {
+                candidate.errors = updatedCandidate.errors;
+                return;
+            }
+
+            fields.forEach(function (field) {
+                delete candidate.errors[field];
+                if (updatedCandidate.errors[field]) candidate.errors[field] = updatedCandidate.errors[field];
             });
         });
     }
@@ -259,9 +274,10 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
         return constants.contentAdCandidateStatus.OK;
     };
 
-    vm.updateCandidateCallback = function (candidates) {
+    vm.updateCandidateCallback = function (fields) {
         vm.endpoint.getCandidates(vm.batchId).then(function (result) {
             updateCandidatesStatuses(result.candidates);
+            if (fields && fields.length) refreshCandidates(result.candidates, fields);
             vm.startPolling();
         });
     };

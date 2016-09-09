@@ -160,6 +160,7 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
 
             var data = {
                 candidate: convertPartialUpdateToApi(candidate),
+                defaults: convertDefaultFields(candidate.defaults),
             };
 
             $http.put(url, data, config).
@@ -229,6 +230,31 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
             return deferred.promise;
         };
 
+        function convertDefaultFields (defaults) {
+            if (!defaults || !defaults.length) return [];
+
+            var ret = [];
+            if (defaults.indexOf('description') >= 0) {
+                ret.push('description');
+            }
+
+            if (defaults.indexOf('imageCrop') >= 0) {
+                ret.push('image_crop');
+            }
+
+            if (defaults.indexOf('brandName') >= 0) {
+                ret.push('brand_name');
+            }
+
+            if (defaults.indexOf('callToAction') >= 0) {
+                ret.push('call_to_action');
+            }
+
+            if (defaults.indexOf('displayUrl') >= 0) {
+                ret.push('display_url');
+            }
+            return ret;
+        }
 
         function getDefaultFields (candidate) {
             var ret = [];

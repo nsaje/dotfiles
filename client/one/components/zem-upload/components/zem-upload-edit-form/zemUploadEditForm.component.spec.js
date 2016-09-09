@@ -288,7 +288,42 @@ describe('ZemUploadEditFormCtrl', function () {
             expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
                 id: 1,
                 title: 'ad title',
+                defaults: [],
             });
+        });
+
+        it('adds defaults', function () {
+            ctrl.hasPermission = function () { return true; };
+            ctrl.batchId = 1234;
+            ctrl.selectedCandidate = {
+                id: 1,
+                description: 'description',
+                errors: {},
+            };
+
+            spyOn(ctrl, 'updateCallback').and.stub();
+
+            var deferred = $q.defer();
+            spyOn(ctrl.endpoint, 'updateCandidatePartial').and.callFake(function () {
+                return deferred.promise;
+            });
+            ctrl.updateField('description', true);
+            expect(ctrl.fieldsLoading.description).toBe(true);
+            expect(ctrl.fieldsSaved.description).toBe(false);
+
+            deferred.resolve({
+                errors: {},
+            });
+            scope.$digest();
+
+            expect(ctrl.fieldsLoading.description).toBe(false);
+            expect(ctrl.fieldsSaved.description).toBe(true);
+            expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
+                id: 1,
+                description: 'description',
+                defaults: ['description'],
+            });
+            expect(ctrl.updateCallback).toHaveBeenCalledWith(['description']);
         });
 
         it('retries on fail', function () {
@@ -319,6 +354,7 @@ describe('ZemUploadEditFormCtrl', function () {
             expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
                 id: 1,
                 title: 'ad title',
+                defaults: [],
             });
         });
 
@@ -369,6 +405,7 @@ describe('ZemUploadEditFormCtrl', function () {
             expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
                 id: 1,
                 title: 'ad title',
+                defaults: [],
             });
             expect(ctrl.selectedCandidate.errors).toEqual({
                 title: ['Invalid title'],

@@ -187,7 +187,7 @@ class CandidateUpdate(api_common.BaseApiView):
         _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
         resource = json.loads(request.body)
         try:
-            partial_errors = upload.update_candidate(resource['candidate'], [], batch)
+            partial_errors = upload.update_candidate(resource['candidate'], resource.get('defaults', []), batch)
         except models.ContentAdCandidate.DoesNotExist:
             raise exc.MissingDataError('Candidate does not exist')
 
