@@ -2902,11 +2902,19 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
             return deferred.promise;
         };
 
-        this.list = function (accountId) {
+        this.list = function (accountId, includeArchived) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/audiences/';
 
-            $http.get(url).
+            var config = {
+                params: {}
+            };
+
+            if (includeArchived) {
+                config.params.include_archived = '1';
+            }
+
+            $http.get(url, config).
                 success(function (data) {
                     var resource = [];
 
@@ -2917,6 +2925,7 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                                 name: data.data[i].name,
                                 count: data.data[i].count,
                                 countYesterday: data.data[i].count_yesterday,
+                                archived: data.data[i].archived,
                                 createdDt: moment(data.data[i].created_dt).toDate(),
                             });
                         }
@@ -2946,6 +2955,49 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                         ret = convertValidationErrorFromApi(data.data.errors);
                     }
                     deferred.reject(ret);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function CustomAudiencesArchive () {
+        this.archive = function (accountId, audienceId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/audiences/' + audienceId + '/archive/';
+            var config = {
+                params: {}
+            };
+
+            var data = {};
+
+            $http.post(url, data, config).
+                success(function (data, status) {
+                    deferred.resolve();
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.restore = function (accountId, audienceId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/audiences/' + audienceId + '/restore/';
+
+            var config = {
+                params: {}
+            };
+
+            var data = {};
+
+            $http.post(url, data, config).
+                success(function (data, status) {
+                    deferred.resolve();
+                }).
+                error(function (data, status, headers) {
+                    deferred.reject(data);
                 });
 
             return deferred.promise;
@@ -3004,5 +3056,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         campaignBudget: new CampaignBudget(),
         campaignGoalValidation: new CampaignGoalValidation(),
         customAudiences: new CustomAudiences(),
+        customAudiencesArchive: new CustomAudiencesArchive(),
     };
 }]);

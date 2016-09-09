@@ -129,24 +129,59 @@ class AudiencesTest(TestCase):
                 "count_yesterday": 100,
                 "id": 1,
                 "name": "test audience 1",
+                "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
                 "count": 1000,
                 "count_yesterday": 100,
                 "id": 2,
                 "name": "test audience 2",
-                "created_dt": '2015-08-25T05:58:21'
-            }, {
-                "count": 1000,
-                "count_yesterday": 100,
-                "id": 3,
-                "name": "test audience 3",
+                "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
                 "count": 1000,
                 "count_yesterday": 100,
                 "id": 4,
                 "name": "test audience 4",
+                "archived": False,
+                "created_dt": '2015-08-25T05:58:21'
+            }]
+        }
+        self.assertEqual(json.loads(response.content), response_dict)
+
+    def test_get_audiences_include_archived(self):
+        url = reverse('accounts_audiences', kwargs={'account_id': 1})
+        response = self.client.get(url + '?include_archived=1')
+        self.assertEqual(response.status_code, 200)
+        response_dict = {
+            "success": True,
+            "data": [{
+                "count": 1000,
+                "count_yesterday": 100,
+                "id": 1,
+                "name": "test audience 1",
+                "archived": False,
+                "created_dt": '2015-08-25T05:58:21'
+            }, {
+                "count": 1000,
+                "count_yesterday": 100,
+                "id": 2,
+                "name": "test audience 2",
+                "archived": False,
+                "created_dt": '2015-08-25T05:58:21'
+            }, {
+                "count": 1000,
+                "count_yesterday": 100,
+                "id": 3,
+                "name": "test audience 3",
+                "archived": True,
+                "created_dt": '2015-08-25T05:58:21'
+            }, {
+                "count": 1000,
+                "count_yesterday": 100,
+                "id": 4,
+                "name": "test audience 4",
+                "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
             }]
         }

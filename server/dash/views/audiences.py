@@ -94,6 +94,9 @@ class AudiencesView(api_common.BaseApiView):
     def _get_audiences(self, request, account):
         audiences = models.Audience.objects.filter(pixel__account=account).order_by('name')
 
+        if request.GET.get('include_archived', '') != '1':
+            audiences = audiences.filter(archived=False)
+
         rows = []
         for audience in audiences:
             rows.append({
@@ -101,6 +104,7 @@ class AudiencesView(api_common.BaseApiView):
                 'name': audience.name,
                 'count': 1000,  # TODO once sampling is done
                 'count_yesterday': 100,  # TODO once sampling is done
+                'archived': audience.archived,
                 'created_dt': audience.created_dt,
             })
 

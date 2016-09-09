@@ -41,7 +41,13 @@
                     </td>
                     <td class="text-right">
                         <a tabindex="-1" href="#" class="btn btn-default btn-big" zem-custom-audiences-modal-trigger account-id="ctrl.accountId" audience-id="audience.id" readonly="true">View</a>
-                        <a tabindex="-1" href="#" class="btn btn-default btn-big">Archive</a>
+                        <a class="archive-button btn btn-default btn-big" ng-if="!audience.archived"  ng-class="{'disabled': ctrl.archiveRequestInProgress[audience.id]}" ng-click="ctrl.archiveAudience(audience.id)">
+                            <span class="loader-image" ng-show="ctrl.archiveRequestInProgress[audience.id]"></span><span ng-show="!ctrl.archiveRequestInProgress[audience.id]">Archive</span>
+                        </a>
+
+                        <a class="restore-button btn btn-default btn-big" ng-if="audience.archived" ng-class="{'disabled': ctrl.restoreRequestInProgress[audience.id]}" ng-click="ctrl.restoreAudience(audience.id)">
+                            <span class="loader-image" ng-show="ctrl.restoreRequestInProgress[audience.id]"></span><span ng-show="!ctrl.restoreRequestInProgress[audience.id]">Restore</span>
+                        </a>
                     </td>
                 </tr>
             </tbody>
