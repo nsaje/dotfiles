@@ -283,7 +283,7 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
     };
 
     vm.refreshCandidatesCallback = function () {
-        vm.endpoint.getCandidates(vm.batchId).then(function (result) {
+        return vm.endpoint.getCandidates(vm.batchId).then(function (result) {
             refreshCandidates(result.candidates);
             vm.startPolling();
         });
@@ -317,7 +317,7 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
             if (!vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) {
                 vm.editFormApi.update().then(executeSaveCall);
             } else {
-                vm.editFormApi.close();
+                vm.editFormApi.close().then(executeSaveCall);
             }
         } else {
             executeSaveCall();

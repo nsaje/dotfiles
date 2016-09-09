@@ -83,8 +83,9 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     }
 
     function refreshAndClose () {
-        vm.refreshCallback();
+        var promise = vm.refreshCallback();
         close();
+        return promise;
     }
 
     function close () {
