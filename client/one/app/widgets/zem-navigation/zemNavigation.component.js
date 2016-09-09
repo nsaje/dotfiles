@@ -1,17 +1,17 @@
 angular.module('one.widgets').component('zemNavigation', {
     templateUrl: '/app/widgets/zem-navigation/zemNavigation.component.html',
-    controller: ['$scope', '$state', '$element', 'hotkeys', 'zemNavigationUtils', 'zemNavigationService', 'zemFilterService', function ($scope, $state, $element, hotkeys, zemNavigationUtils, zemNavigationService, zemFilterService) { // eslint-disable-line max-len
-        // TODO: prepare navigation service
-        // TODO: check permission for filtering by agency
-        // TODO: check active entity -> bold - $state.includes('main.campaigns', { id: campaign.id.toString()})
+    controller: ['$scope', '$element', '$timeout', 'hotkeys', 'zemUserService', 'zemNavigationUtils', 'zemNavigationNewService', 'zemFilterService', function ($scope, $element, $timeout, hotkeys, zemUserService, zemNavigationUtils, zemNavigationNewService, zemFilterService) {
         var KEY_UP_ARROW = 38;
         var KEY_DOWN_ARROW = 40;
         var KEY_ENTER = 13;
 
+
         var $ctrl = this;
+        $ctrl.selectedEntity = null;
+        $ctrl.activeEntity = null;
         $ctrl.query = '';
         $ctrl.list = null;
-        $ctrl.selection = null;
+        $ctrl.showAgency = zemUserService.userHasPermissions('zemauth.can_filter_by_agency');
 
         $ctrl.filter = filterList;
         $ctrl.navigateTo = navigateTo;
@@ -19,8 +19,12 @@ angular.module('one.widgets').component('zemNavigation', {
         $ctrl.getItemIconClass = getItemIconClass;
 
         $ctrl.$onInit = function () {
-            // TODO: Update zemNavigationService
-            zemNavigationService.onUpdate($scope, initializeList);
+            zemNavigationNewService.onHierarchyUpdate(initializeList);
+            zemNavigationNewService.onActiveEntityChange(initializeList);
+            $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
+                if (angular.equals(newValue, oldValue)) { return; }
+                filterList();
+            });
             $element.keydown(handleKeyDown);
         };
 
@@ -33,27 +37,32 @@ angular.module('one.widgets').component('zemNavigation', {
 
         function upSelection (event) {
             event.preventDefault();
-            var idx = $ctrl.filteredList.indexOf($ctrl.selection);
-            $ctrl.selection = $ctrl.filteredList[idx - 1];
-            scrollToItem($ctrl.selection);
+            var idx = $ctrl.filteredList.indexOf($ctrl.selectedEntity);
+            $ctrl.selectedEntity = $ctrl.filteredList[idx - 1];
+            scrollToItem($ctrl.selectedEntity);
         }
 
         function downSelection () {
             event.preventDefault();
-            var idx = $ctrl.filteredList.indexOf($ctrl.selection);
-            $ctrl.selection = $ctrl.filteredList[idx + 1];
-            scrollToItem($ctrl.selection);
+            var idx = $ctrl.filteredList.indexOf($ctrl.selectedEntity);
+            $ctrl.selectedEntity = $ctrl.filteredList[idx + 1];
+            scrollToItem($ctrl.selectedEntity);
         }
 
         function enterSelection () {
-            navigateTo($ctrl.selection);
+            var entity = $ctrl.selectedEntity;
+            if (!entity && $ctrl.query.length > 0) {
+                // If searching select first item if no selection has been made
+                entity  = $ctrl.filteredList[0];
+            }
+            navigateTo(entity);
         }
 
         function getItemClasses (item) {
             var classes = [];
             if (item.data.archived) classes.push('archived');
-            if (item.active) classes.push('active');
-            if (item === $ctrl.selection) classes.push('selected');
+            if (item === $ctrl.activeEntity) classes.push('active');
+            if (item === $ctrl.selectedEntity) classes.push('selected');
             if (item.type === constants.entityType.ACCOUNT) classes.push('account');
             if (item.type === constants.entityType.CAMPAIGN) classes.push('campaign');
             if (item.type === constants.entityType.AD_GROUP) classes.push('ad-group');
@@ -73,15 +82,28 @@ angular.module('one.widgets').component('zemNavigation', {
         }
 
         function initializeList () {
-            $ctrl.list = zemNavigationUtils.convertToEntityList(zemNavigationService.getAccounts());
-            filterList($ctrl.query);
+            var hierarchy = zemNavigationNewService.getNavigationHierarchy();
+            if (hierarchy) {
+                var account = zemNavigationNewService.getActiveAccount();
+                $ctrl.activeEntity = zemNavigationNewService.getActiveEntity();
+                $ctrl.list = zemNavigationUtils.convertToEntityList(hierarchy);
+                $ctrl.entityList = account ? zemNavigationUtils.convertToEntityList(account) : null;
+                filterList();
+            }
         }
 
-        function filterList (query) {
+        function filterList () {
             if (!$ctrl.list) return;
             var showArchived = zemFilterService.getShowArchived();
-            $ctrl.filteredList = zemNavigationUtils.filterEntityList($ctrl.list, query, showArchived);
-            $ctrl.selection = null;
+
+            var list = $ctrl.list;
+            if ($ctrl.entityList && $ctrl.query.length === 0) {
+                list = $ctrl.entityList;
+            }
+
+            $ctrl.filteredList = zemNavigationUtils.filterEntityList(list, $ctrl.query, showArchived, $ctrl.showAgency);
+
+            $ctrl.selectedEntity = null;
             scrollToTop();
         }
 
@@ -106,41 +128,13 @@ angular.module('one.widgets').component('zemNavigation', {
             if (selectedPos < viewFrom) {
                 $scrollContainer.scrollTop(selectedPos);
             }
-
             if (selectedPos >= viewTo) {
                 $scrollContainer.scrollTop(selectedPos - height + itemHeight);
             }
         }
 
-        //
-        // TODO Refactor: move to new navigation service
-        //
-        function navigateTo (item) {
-            var state = '';
-            switch (item.type) {
-            case constants.entityType.ACCOUNT:
-                state = 'main.accounts';
-                break;
-            case constants.entityType.CAMPAIGN:
-                state = 'main.campaigns';
-                break;
-            case constants.entityType.AD_GROUP:
-                state = 'main.adGroups';
-                break;
-            }
-            // keep the same tab if possible
-            if ($state.includes('**.sources')) {
-                state += '.sources';
-            }
-            if ($state.includes('**.history')) {
-                state += '.history';
-            }
-            if ($state.includes('**.settings')) {
-                state += '.settings';
-            }
-
-            // TODO: check permissions - account - campaign, history, sources view
-            $state.go(state, {id: item.data.id});
+        function navigateTo (entity) {
+            zemNavigationNewService.navigateTo(entity);
         }
     }]
 });

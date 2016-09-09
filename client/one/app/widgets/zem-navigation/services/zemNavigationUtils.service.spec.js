@@ -1,33 +1,64 @@
 describe('ZemNavigationUtils', function () {
     var zemNavigationUtils;
+    var zemUserService;
 
     beforeEach(module('one'));
-    beforeEach(inject(function (_zemNavigationUtils_) {
+    beforeEach(inject(function (_zemNavigationUtils_, _zemUserService_) {
         zemNavigationUtils = _zemNavigationUtils_;
+        zemUserService = _zemUserService_;
     }));
 
     function createEntityHierarchy () {
         var size = [2, 2, 4];
 
-        var accounts = [];
+        var hierarchy = {};
+        hierarchy.children = [];
         for (var accountIdx = 0; accountIdx < size[0]; ++accountIdx) {
-            var account = {name: 'account ' + accountIdx, agency: 'agency ' + accountIdx, campaigns: []};
-            accounts.push(account);
+            var account = createAccount(accountIdx);
+            hierarchy.children.push(account);
             for (var campaignIdx = 0; campaignIdx < size[1]; ++campaignIdx) {
-                var campaign = {name: 'campaign ' + campaignIdx, adGroups: []};
-                account.campaigns.push(campaign);
+                var campaign = createCampaign(campaignIdx);
+                account.children.push(campaign);
                 for (var adGroupIdx = 0; adGroupIdx < size[2]; ++adGroupIdx) {
-                    var adGroup = {name: 'adgroup ' + adGroupIdx};
-                    campaign.adGroups.push(adGroup);
+                    var adGroup = createAdGroup(adGroupIdx);
+                    campaign.children.push(adGroup);
                 }
             }
         }
-        return accounts;
+        return hierarchy;
+    }
+
+    function createAccount (idx) {
+        return {
+            type: constants.entityType.ACCOUNT,
+            name: 'account ' + idx,
+            data: {
+                agency: 'agency ' + idx,
+            },
+            children: [],
+        };
+    }
+
+    function createCampaign (idx) {
+        return {
+            type: constants.entityType.CAMPAIGN,
+            name: 'campaign ' + idx,
+            data: {},
+            children: [],
+        };
+    }
+
+    function createAdGroup (idx) {
+        return {
+            type: constants.entityType.AD_GROUP,
+            name: 'adgroup ' + idx,
+            data: {},
+        };
     }
 
     it('should convert entity hierarchy into flat list', function () {
-        var accounts = createEntityHierarchy();
-        var list = zemNavigationUtils.convertToEntityList(accounts);
+        var hierarchy = createEntityHierarchy();
+        var list = zemNavigationUtils.convertToEntityList(hierarchy);
         expect(list.length).toBe(22);
 
         expect(list[0].type).toEqual(constants.entityType.ACCOUNT);
@@ -41,8 +72,8 @@ describe('ZemNavigationUtils', function () {
     });
 
     it('should filter list while keeping parent entities', function () {
-        var accounts = createEntityHierarchy();
-        var list = zemNavigationUtils.convertToEntityList(accounts);
+        var hierarchy = createEntityHierarchy();
+        var list = zemNavigationUtils.convertToEntityList(hierarchy);
 
         var filteredList = zemNavigationUtils.filterEntityList(list, 'account');
         expect(filteredList.length).toBe(2);
@@ -83,9 +114,12 @@ describe('ZemNavigationUtils', function () {
         var list = zemNavigationUtils.convertToEntityList(accounts);
 
         var filteredList = zemNavigationUtils.filterEntityList(list, 'agency', false);
+        expect(filteredList.length).toBe(0);
+
+        filteredList = zemNavigationUtils.filterEntityList(list, 'agency', false, true);
         expect(filteredList.length).toBe(2);
 
-        filteredList = zemNavigationUtils.filterEntityList(list, 'agency 1', false);
+        filteredList = zemNavigationUtils.filterEntityList(list, 'agency 1', false, true);
         expect(filteredList.length).toBe(1);
     });
 

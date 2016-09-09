@@ -1,65 +1,123 @@
 zem-header {
+  display: block;
+  height: 60px;
+  background-color: red;
+
+  .logo-container {
+    height: 20px;
+    margin: 20px 0;
+
+    a {
+      display: inline-block;
+      height: 100%;
+    }
+
+    img {
+      width: auto;
+      height: 100%;
+    }
+  }
+
+  zem-header-navigation {
     display: block;
-    height: 60px;
-    background-color: red;
+    height: 20px;
+    margin: 20px 0;
 
-    .logo-container {
-        height: 20px;
-        margin: 20px 0;
+    .dropdown-toggle{
+      img {
+        width: 20px;
+      }
+    }
 
+    .dropdown-menu {
+      margin-top: 15px;
+      width: 300px;
+      height: 500px;
+
+      zem-navigation {
+        height: 100%;
+      }
+    }
+  }
+
+  zem-header-breadcrumb {
+    display: block;
+    height: 40px;
+    margin: 10px 0;
+
+    color: @white;
+    line-height: 16px;
+    font-size: 12px;
+
+    div {
+      float: left;
+      height: 40px;
+
+      &.home {
         a {
-            display: inline-block;
-            height: 100%;
+          display: block;
+          margin-top: 12px;
         }
 
         img {
-            width: auto;
-            height: 100%;
+          width: 16px;
+          opacity: 0.5;
+          .transition(opacity 100ms ease-in-out);
         }
+
+        &:hover img {
+          opacity: 1.0;
+        }
+      }
+
+      &.slash {
+        padding: 0 10px;
+        color: fade(@white, 20%);
+        font-size: 34px;
+        line-height: 40px;
+        font-weight: 100;
+      }
+
+      span {
+        color: fade(@white, 50%);
+        padding-top: 4px;
+        display: inline-block;
+      }
+
+      a {
+        color: @white !important;
+        font-size: 14px;
+
+        &:hover {
+          color: @white;
+        }
+      }
+
+    }
+  }
+
+  zem-header-menu {
+    display: block;
+    height: 20px;
+    margin: 20px 0;
+    text-align: right;
+
+    .dropdown-toggle {
+      color: @white;
+      font-size: 20px;
     }
 
-    zem-header-navigation {
-        display: block;
-        height: 20px;
-        margin: 20px 0;
-
-        .dropdown-toggle {
-            color: @white;
-            font-size: 20px;
-        }
-
-        .dropdown-menu {
-              width: 300px;
-              height: 500px;
-
-              zem-navigation {
-                  height: 100%;
-              }
-        }
+    .internal {
+      position: absolute;
+      border-top: 7px solid @internal-color;
+      border-right: 7px solid transparent;
+      z-index: 1;
+      top: 5px;
+      left: 5px;
     }
-
-    zem-header-menu {
-        display: block;
-        height: 20px;
-        margin: 20px 0;
-        text-align: right;
-
-        .dropdown-toggle {
-            color: @white;
-            font-size: 20px;
-        }
-
-        .internal {
-            position: absolute;
-            border-top: 7px solid @internal-color;
-            border-right: 7px solid transparent;
-            z-index: 1;
-            top: 5px;
-            left: 5px;
-        }
-    }
+  }
 }
 
 .legacy-theme zem-header {
-    background-color: @default-color;
+  background-color: @default-color;
 }

@@ -18,14 +18,21 @@ describe('ZemNavigationCtrl', function () {
         };
         expect(ctrl.getItemClasses(item)).toEqual(['account']);
 
-        item.active = true;
+        ctrl.activeEntity = item;
         item.type = constants.entityType.CAMPAIGN;
         expect(ctrl.getItemClasses(item)).toEqual(['active', 'campaign']);
 
-        item.active = false;
+        ctrl.selectedEntity = item;
+        expect(ctrl.getItemClasses(item)).toEqual(['active', 'selected', 'campaign']);
+
+        ctrl.activeEntity = null;
+        expect(ctrl.getItemClasses(item)).toEqual(['selected', 'campaign']);
+
         item.type = constants.entityType.AD_GROUP;
         item.data.archived = true;
-        expect(ctrl.getItemClasses(item)).toEqual(['archived', 'ad-group']);
+        expect(ctrl.getItemClasses(item)).toEqual(['archived', 'selected', 'ad-group']);
+
+
     });
 
     it('should provide correct icon based on state', function () {

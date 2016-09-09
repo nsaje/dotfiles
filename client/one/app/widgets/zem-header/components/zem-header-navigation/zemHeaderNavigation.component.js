@@ -1,8 +1,9 @@
 angular.module('one.widgets').component('zemHeaderNavigation', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-navigation/zemHeaderNavigation.component.html',
-    controller: ['$scope', '$element', 'hotkeys', function ($scope, $element, hotkeys) {
+    controller: ['$scope', '$element', 'config', 'hotkeys', function ($scope, $element, config, hotkeys) {
         var $ctrl = this;
 
+        $ctrl.config = config;
         $ctrl.open = false;
         $ctrl.onToggle = onToggle;
 
@@ -31,6 +32,7 @@ angular.module('one.widgets').component('zemHeaderNavigation', {
                 // Reset zem-navigation filter input
                 $element.find('zem-navigation input').val('');
                 $element.find('zem-navigation input').triggerHandler('change');
+                $element.find('.scroll-container').scrollTop(0);
             }
         }
     }]
