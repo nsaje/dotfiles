@@ -83,6 +83,7 @@ class AccountsView(K1APIView):
 
                 pixel_dict = {
                     'id': pixel.id,
+                    'name': pixel.name,
                     'slug': pixel.slug,
                     'source_pixels': source_pixels,
                 }
@@ -90,6 +91,7 @@ class AccountsView(K1APIView):
 
             account_dict = {
                 'id': account.id,
+                'name': account.name,
                 'pixels': pixels,
                 'custom_audiences': accounts_audiences[account.id],
                 'outbrain_marketer_id': account.outbrain_marketer_id,

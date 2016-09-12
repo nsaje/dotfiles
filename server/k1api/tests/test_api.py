@@ -84,6 +84,7 @@ class K1ApiTest(TestCase):
         self.assertTrue(len(data), 3)
         self.assertEqual(data, ListMatcher([
             {u'id': 1,
+             u'name': u'test account 1',
              u'outbrain_marketer_id': u'abcde',
              u'custom_audiences': [{u'pixel_id': 1, u'rules': [{u'type': 1, u'values': u'dummy', u'id': 1},
                                                                {u'type': 2, u'values': u'dummy2', u'id': 2}],
@@ -93,6 +94,7 @@ class K1ApiTest(TestCase):
                                     u'name': 'Audience 2', u'id': 2, u'ttl': 60}],
              u'pixels': [
                  {u'id': 1,
+                  u'name': u'Pixel 1',
                   u'slug': u'testslug1',
                   u'source_pixels': ListMatcher([
                       {u'url': u'http://www.ob.com/pixelendpoint',
@@ -109,6 +111,7 @@ class K1ApiTest(TestCase):
                        },
                   ])},
                  {u'id': 2,
+                  u'name': u'Pixel 2',
                   u'slug': u'testslug2',
                   u'source_pixels': ListMatcher([
                       {u'url': u'http://www.ob.com/pixelendpoint',
@@ -126,15 +129,18 @@ class K1ApiTest(TestCase):
                   ])},
              ]},
             {u'id': 2,
+             u'name': u'test account 2',
              u'custom_audiences': [],
              u'outbrain_marketer_id': None,
              u'pixels': [
                  {u'id': 3,
+                  u'name': u'Pixel 3',
                   u'slug': u'testslug3',
                   u'source_pixels': []
                   },
              ]},
             {u'id': 3,
+             u'name': u'test account 3',
              u'custom_audiences': [],
              u'outbrain_marketer_id': None,
              u'pixels': [],
@@ -153,6 +159,7 @@ class K1ApiTest(TestCase):
         self.assertTrue(len(data), 1)
         self.assertEqual(data[0], {
             u'id': 1,
+            u'name': u'test account 1',
             u'outbrain_marketer_id': u'abcde',
             u'custom_audiences': [{u'pixel_id': 1, u'rules': [{u'type': 1, u'values': u'dummy', u'id': 1},
                                                               {u'type': 2, u'values': u'dummy2', u'id': 2}],
@@ -162,6 +169,7 @@ class K1ApiTest(TestCase):
                                    u'name': 'Audience 2', u'id': 2, u'ttl': 60}],
             u'pixels': [
                 {u'id': 1,
+                 u'name': u'Pixel 1',
                  u'slug': u'testslug1',
                  u'source_pixels': ListMatcher([
                      {u'url': u'http://www.ob.com/pixelendpoint',
@@ -178,6 +186,7 @@ class K1ApiTest(TestCase):
                       },
                  ])},
                 {u'id': 2,
+                 u'name': u'Pixel 2',
                  u'slug': u'testslug2',
                  u'source_pixels': ListMatcher([
                      {u'url': u'http://www.ob.com/pixelendpoint',
