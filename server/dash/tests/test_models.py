@@ -56,6 +56,8 @@ class AdGroupSettingsTest(TestCase):
             'bluekai_targeting': ['or', 3, 4],
             'interest_targeting': ['a', 'b'],
             'exclusion_interest_targeting': ['c', 'd'],
+            'audience_targeting': [1, 2],
+            'exclusion_audience_targeting': [3, 4],
             'redirect_pixel_urls': ['http://a.com/b.jpg', 'http://a.com/c.jpg'],
             'redirect_javascript': 'alert(\'a\')',
             'display_url': 'example.com',
@@ -135,26 +137,27 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(
             models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
             'Daily budget set to "$50.00", '
-            'Locations set to "United States", '
-            'Description set to "Example description", '
-            'End date set to "2014-06-05", '
+            'Brand name set to "Example", '
             'Max CPC bid set to "$1.000", '
             'Interest targeting set to "A, B", '
+            'Exclusion interest targeting set to "C, D", '
+            'GA web property ID set to "UA-123456789-1", '
+            'State set to "Enabled", '
+            'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg", '
+            'Start date set to "2014-06-04", '
+            'Description set to "Example description", '
+            'End date set to "2014-06-05", '
+            'Custom audience targeting set to "test audience 1, test audience 2", '
+            'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot", '
+            'Exclusion custom audience targeting set to "test audience 3, test audience 4", '
+            'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
+            'Locations set to "United States", '
+            'Display URL set to "example.com", '
             'Device targeting set to "Mobile", '
             'Notes set to "Some note", '
-            'Display URL set to "example.com", '
-            'Pixel retargeting JavaScript set to "alert(\'a\')", '
-            'Brand name set to "Example", '
-            'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot", '
-            'State set to "Enabled", '
             'Call to action set to "Call to action", '
-            'Ad group name set to "AdGroup name", '
-            'Exclusion interest targeting set to "C, D", '
-            'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg", '
-            'BlueKai targeting set to "["or", 3, 4]", '
-            'Start date set to "2014-06-04", '
-            'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
-            'GA web property ID set to "UA-123456789-1"'
+            'Pixel retargeting JavaScript set to "alert(\'a\')", '
+            'Ad group name set to "AdGroup name", BlueKai targeting set to "["or", 3, 4]"'
         )
 
 

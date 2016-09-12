@@ -2068,6 +2068,8 @@ class AdGroupSettings(SettingsBase):
         'bluekai_targeting',
         'interest_targeting',
         'exclusion_interest_targeting',
+        'audience_targeting',
+        'exclusion_audience_targeting',
         'redirect_pixel_urls',
         'redirect_javascript',
         'notes',
@@ -2123,6 +2125,8 @@ class AdGroupSettings(SettingsBase):
     bluekai_targeting = jsonfield.JSONField(blank=True, default=[])
     interest_targeting = jsonfield.JSONField(blank=True, default=[])
     exclusion_interest_targeting = jsonfield.JSONField(blank=True, default=[])
+    audience_targeting = jsonfield.JSONField(blank=True, default=[])
+    exclusion_audience_targeting = jsonfield.JSONField(blank=True, default=[])
     redirect_pixel_urls = jsonfield.JSONField(blank=True, default=[])
     redirect_javascript = models.TextField(blank=True)
     notes = models.TextField(blank=True)
@@ -2238,6 +2242,8 @@ class AdGroupSettings(SettingsBase):
             'bluekai_targeting': 'BlueKai targeting',
             'interest_targeting': 'Interest targeting',
             'exclusion_interest_targeting': 'Exclusion interest targeting',
+            'audience_targeting': 'Custom audience targeting',
+            'exclusion_audience_targeting': 'Exclusion custom audience targeting',
             'redirect_pixel_urls': 'Pixel retargeting tags',
             'redirect_javascript': 'Pixel retargeting JavaScript',
             'notes': 'Notes',
@@ -2295,6 +2301,12 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(category.capitalize() for category in value)
             else:
                 value = ''
+        elif prop_name in ('audience_targeting', 'exclusion_audience_targeting'):
+            if not value:
+                value = ''
+            else:
+                names = Audience.objects.filter(pk__in=value).values_list('name', flat=True)
+                value = ', '.join(names)
         elif prop_name == 'redirect_pixel_urls':
             value = ', '.join(value)
         elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):

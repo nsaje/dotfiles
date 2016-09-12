@@ -223,6 +223,8 @@
         bluekai_targeting: ["or", 3, 4]
         interest_targeting: ["a", "b"]
         exclusion_interest_targeting: ["c", "d"]
+        audience_targeting: [1, 2]
+        exclusion_audience_targeting: [3, 4]
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
         redirect_javascript: "alert('a')"
     model: dash.adgroupsettings
@@ -360,3 +362,97 @@
         created_dt: '2016-08-12T10:12:50'
     model: dash.conversionpixel
     pk: 3
+
+# test audience
+
+-   fields:
+        name: 'test audience 1'
+        pixel: 1
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 1
+
+-   fields:
+        name: 'test audience 2'
+        pixel: 1
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 2
+
+-   fields:
+        name: 'test audience 3'
+        pixel: 1
+        archived: true
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 3
+
+-   fields:
+        name: 'test audience 4'
+        pixel: 2
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 4
+
+-   fields:
+        name: 'test audience 5'
+        pixel: 3
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 5
+
+# test audience rule
+
+-   fields:
+        audience: 1
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 1
+
+-   fields:
+        audience: 2
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 2
+
+-   fields:
+        audience: 3
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 3
+
+-   fields:
+        audience: 4
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 4
+
+-   fields:
+        audience: 5
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 5
