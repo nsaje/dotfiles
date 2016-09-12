@@ -306,6 +306,9 @@ def extract_order_field(order, target_dimension, primary_goal=None):
 
     prefix, order_field = sort_helper.dissect_order(order)
 
+    if order_field == 'state':
+        order_field = 'status'
+
     if target_dimension != 'content_ad_id' and order_field in CONTENT_ADS_FIELDS:
         order_field = 'name'
 
@@ -363,7 +366,7 @@ def should_query_dashapi_first(order, target_dimension):
        target_dimension != constants.StructureDimension.PUBLISHER):
         return True
 
-    if order_field in ('state', 'status') and target_dimension in constants.StructureDimension._ALL:
+    if order_field == 'status' and target_dimension in constants.StructureDimension._ALL:
         return True
 
     if order_field in SOURCE_FIELDS and target_dimension == 'source_id':

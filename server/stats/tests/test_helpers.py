@@ -172,6 +172,9 @@ class HelpersTest(TestCase):
         self.assertEqual(helpers.extract_order_field('-status', 'country'), '-status')
         self.assertEqual(helpers.extract_order_field('-status', 'state'), '-status')
 
+        self.assertEqual(helpers.extract_order_field('-state', 'ad_group_id'), '-status')
+        self.assertEqual(helpers.extract_order_field('-state', 'state'), '-status')
+
     def test_extract_performance_order_field(self):
         self.assertEqual(helpers.extract_order_field('-performance', 'ad_group_id'), '-clicks')
         self.assertEqual(helpers.extract_order_field('performance', 'ad_group_id'), 'clicks')
