@@ -88,8 +88,8 @@
     </div>
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-gray" ng-if="ctrl.readonly" ng-click="ctrl.closeModal()">Close</button>
-        <button type="button" class="btn btn-gray" ng-if="!ctrl.readonly" ng-click="ctrl.closeModal()">Cancel</button>
+        <button type="button" class="btn btn-gray" ng-if="ctrl.readonly" ng-click="ctrl.modalInstance.close()">Close</button>
+        <button type="button" class="btn btn-gray" ng-if="!ctrl.readonly" ng-click="ctrl.modalInstance.close()">Cancel</button>
         <button type="button" class="btn btn-add pull-right" ng-if="!ctrl.readonly" ng-click="ctrl.createAudience()">Create Audience</button>
     </div>
 </div>

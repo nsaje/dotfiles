@@ -9,18 +9,23 @@ angular.module('one.legacy').directive('zemCustomAudiencesList', [function () { 
         templateUrl: '/components/zem-custom-audiences-list/zemCustomAudiencesList.component.html',
         bindToController: {
             accountId: '=',
+            api: '=',
         },
         controllerAs: 'ctrl',
         controller: 'ZemCustomAudiencesListCtrl',
     };
 }]);
 
-angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['api', 'zemFilterService', '$scope', function (api, zemFilterService, $scope) {
+angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['api', 'zemFilterService', '$scope', '$uibModal', function (api, zemFilterService, $scope, $uibModal) {
     var vm = this;
     vm.audiences = [];
     vm.listRequestInProgress = false;
     vm.archiveRequestInProgress = {};
     vm.restoreRequestInProgress = {};
+
+    vm.api.refreshAudiences = function () {
+        vm.getAudiences();
+    };
 
     vm.archiveAudience = function (audienceId) {
         vm.archiveRequestInProgress[audienceId] = true;
@@ -72,6 +77,24 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['api', 'z
             }
         ).finally(function () {
             vm.listRequestInProgress = false;
+        });
+    };
+
+    vm.openAudienceModal = function (audienceId) {
+        $uibModal.open({
+            component: 'zemCustomAudiencesModal',
+            windowClass: 'modal-default',
+            resolve: {
+                accountId: function () {
+                    return vm.accountId;
+                },
+                audienceId: function () {
+                    return audienceId;
+                },
+                readonly: function () {
+                    return true;
+                }
+            },
         });
     };
 
