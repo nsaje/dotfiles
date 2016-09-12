@@ -127,7 +127,7 @@ class AudiencesTest(TestCase):
 
         redshift_mock.side_effect = side_effect
 
-        url = reverse('accounts_audiences', kwargs={'account_id': 1}) + '?include_audience_size=True'
+        url = reverse('accounts_audiences', kwargs={'account_id': 1}) + '?include_size=1'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         response_dict = {
@@ -173,29 +173,29 @@ class AudiencesTest(TestCase):
         response_dict = {
             "success": True,
             "data": [{
-                "count": -1,
-                "count_yesterday": -1,
+                "count": None,
+                "count_yesterday": None,
                 "id": 1,
                 "name": "test audience 1",
                 "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
-                "count": -1,
-                "count_yesterday": -1,
+                "count": None,
+                "count_yesterday": None,
                 "id": 2,
                 "name": "test audience 2",
                 "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
-                "count": -1,
-                "count_yesterday": -1,
+                "count": None,
+                "count_yesterday": None,
                 "id": 3,
                 "name": "test audience 3",
                 "archived": True,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
-                "count": -1,
-                "count_yesterday": -1,
+                "count": None,
+                "count_yesterday": None,
                 "id": 4,
                 "name": "test audience 4",
                 "archived": False,

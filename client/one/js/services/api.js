@@ -2902,7 +2902,7 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
             return deferred.promise;
         };
 
-        this.list = function (accountId, includeArchived) {
+        this.list = function (accountId, includeArchived, includeSize) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/audiences/';
 
@@ -2912,6 +2912,10 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
 
             if (includeArchived) {
                 config.params.include_archived = '1';
+            }
+
+            if (includeSize) {
+                config.params.include_size = '1';
             }
 
             $http.get(url, config).

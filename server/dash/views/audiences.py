@@ -21,8 +21,7 @@ class AudiencesView(api_common.BaseApiView):
         if audience_id:
             return self._get_audience(request, account, audience_id)
 
-        include_audience_size = request.GET.get('include_audience_size', 'False')
-        return self._get_audiences(request, account, include_audience_size)
+        return self._get_audiences(request, account)
 
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.account_custom_audiences_view'):
@@ -93,22 +92,23 @@ class AudiencesView(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
-    def _get_audiences(self, request, account, include_audience_size):
+    def _get_audiences(self, request, account):
         audiences = models.Audience.objects.filter(pixel__account=account).order_by('name')
 
         if request.GET.get('include_archived', '') != '1':
             audiences = audiences.filter(archived=False)
 
+        include_size = request.GET.get('include_size', '') == '1'
+
+        count = None
+        count_yesterday = None
         rows = []
         for audience in audiences:
-            if include_audience_size.lower() == 'true':
+            if include_size:
                 count = redshift.get_audience_sample_size(audience.pixel.account.id, audience.pixel.slug, audience.ttl,
                                                           audience.rule_set.all()) * 100
                 count_yesterday = redshift.get_audience_sample_size(audience.pixel.account.id, audience.pixel.slug, 1,
                                                                     audience.rule_set.all()) * 100
-            else:
-                count = -1
-                count_yesterday = -1
 
             rows.append({
                 'id': audience.pk,

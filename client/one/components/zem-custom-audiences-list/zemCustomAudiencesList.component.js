@@ -68,8 +68,12 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['api', 'z
     vm.getAudiences = function () {
         vm.listRequestInProgress = true;
 
-        api.customAudiences.list(vm.accountId, zemFilterService.getShowArchived()).then(
+        api.customAudiences.list(vm.accountId, zemFilterService.getShowArchived(), true).then(
             function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    data[i].count = data[i].count || 'N/A';
+                    data[i].countYesterday = data[i].countYesterday || 'N/A';
+                }
                 vm.audiences = data;
             },
             function (data) {
