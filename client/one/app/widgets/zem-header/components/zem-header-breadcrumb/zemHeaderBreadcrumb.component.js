@@ -1,9 +1,6 @@
-/* globals oneApp, constants */
-'use strict';
-
-angular.module('one.widgets').component('zemHeaderBreadcrumb', { // eslint-disable-line max-len
+angular.module('one.widgets').component('zemHeaderBreadcrumb', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-breadcrumb/zemHeaderBreadcrumb.component.html',
-    controller: ['$document', 'config', 'zemUserService', 'zemNavigationNewService', function ($document, config, zemUserService, zemNavigationNewService) {
+    controller: ['$document', 'config', 'zemUserService', 'zemNavigationNewService', function ($document, config, zemUserService, zemNavigationNewService) { // eslint-disable-line max-len
 
         var $ctrl = this;
         $ctrl.config = config;

@@ -1,11 +1,9 @@
 describe('ZemNavigationUtils', function () {
     var zemNavigationUtils;
-    var zemUserService;
 
     beforeEach(module('one'));
-    beforeEach(inject(function (_zemNavigationUtils_, _zemUserService_) {
+    beforeEach(inject(function (_zemNavigationUtils_) {
         zemNavigationUtils = _zemNavigationUtils_;
-        zemUserService = _zemUserService_;
     }));
 
     function createEntityHierarchy () {

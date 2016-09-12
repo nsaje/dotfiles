@@ -14,7 +14,7 @@ describe('component: zemHeaderNavigation', function () {
     }));
 
     it('should add shortcuts on initialization', function () {
-        var addSpy = { add: jasmine.createSpy() };
+        var addSpy = {add: jasmine.createSpy()};
         spyOn(hotkeys, 'bindTo').and.returnValue(addSpy);
         ctrl.$onInit();
         expect(addSpy.add).toHaveBeenCalledWith({combo: 'f', callback: jasmine.any(Function)});

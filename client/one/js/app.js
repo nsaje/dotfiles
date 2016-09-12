@@ -11,7 +11,7 @@ angular.module('one.legacy').config(['$stateProvider', function ($stateProvider)
             templateUrl: '/partials/main.html',
             controller: 'MainCtrl',
             resolve: {
-                initServices: ['$q', 'zemUserService', 'zemFilterService', 'zemNavigationNewService', function ($q, zemUserService, zemFilterService, zemNavigationNewService) {
+                initServices: ['zemUserService', 'zemFilterService', 'zemNavigationNewService', function (zemUserService, zemFilterService, zemNavigationNewService) {
                     // Service initialization - TODO: find cleaner solution
                     zemNavigationNewService.initialize();
                     return zemUserService.init().then(function () {

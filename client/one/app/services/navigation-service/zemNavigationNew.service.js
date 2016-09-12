@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemNavigationNewService', ['$rootScope', '$state', 'zemNavigationService', function ($rootScope, $state, zemNavigationService) {
+angular.module('one.services').service('zemNavigationNewService', ['$rootScope', '$state', 'zemNavigationService', function ($rootScope, $state, zemNavigationService) { // eslint-disable-line max-len
     var EVENTS = {
         ON_HIERARCHY_UPDATE: 'zem-navigation-service-on-data-updated',
         ON_ACTIVE_ENTITY_CHANGE: 'zem-navigation-service-on-active-entity-change',

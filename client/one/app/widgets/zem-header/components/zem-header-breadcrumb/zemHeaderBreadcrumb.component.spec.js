@@ -60,7 +60,7 @@ describe('component: zemHeaderBreadcrumb', function () {
                 name: 'Campaign XY',
                 type: constants.entityType.CAMPAIGN,
                 parent: account,
-            }
+            };
 
             callback({}, account);
             expect(ctrl.breadcrumb).toEqual([{

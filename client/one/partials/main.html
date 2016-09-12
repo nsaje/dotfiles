@@ -1,5 +1,5 @@
 <div class="container-fluid">
-    <zem-header class="row m-b-s" ng-if="userCanSeeNewLayout()" user="user"></zem-header>
+    <zem-header class="row m-b-s" ng-if="userCanSeeNewLayout()" date-range="$parent.dateRange" date-range-picker-options="$parent.dateRangeOptions"></zem-header>
     <div class="row header" ng-include src="'/partials/header.html'" ng-if="!userCanSeeNewLayout()"></div>
 
     <div class="row body">
@@ -32,10 +32,10 @@
             </div>
         </div>
         <div class="content" ng-show="accountsAccess.hasAccounts" ng-class="{'content-short': navigationPaneVisible && !userCanSeeNewLayout(), 'content-full': !navigationPaneVisible || userCanSeeNewLayout()}">
-            <form id="datepicker" class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.*.agency') || $state.includes('*.*.settings') || $state.includes('*.*.budget') || $state.includes('*.*.budget')">
+            <form id="datepicker" ng-if="!userCanSeeNewLayout()" class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.*.agency') || $state.includes('*.*.settings') || $state.includes('*.*.budget') || $state.includes('*.*.budget')">
                 <div class="input-group calendar">
                     <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/calendar.svg"></i>
-                    <input date-range-picker class="form-control date-picker" type="text" ng-model="dateRange" options="dateRangeOptions">
+                    <input date-range-picker class="form-control date-picker" type="text" ng-model="$parent.dateRange" options="$parent.dateRangeOptions">
                 </div>
             </form>
             <zem-filter

@@ -28,14 +28,14 @@ angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibM
         {
             text: 'Toggle new layout',
             callback: zemRedesignHelpersService.toggleNewLayout,
-            isAvailable: zemUserService.userHasPermissions('zemauth.can_see_new_design'),
-            isInternalFeature: zemUserService.isPermissionInternal('zemauth.can_see_new_design'),
+            isAvailable: zemUserService.userHasPermissions('zemauth.can_toggle_new_design'),
+            isInternalFeature: zemUserService.isPermissionInternal('zemauth.can_toggle_new_design'),
         },
         {
             text: 'Toggle new theme',
             callback: zemRedesignHelpersService.toggleNewTheme,
-            isAvailable: zemUserService.userHasPermissions('zemauth.can_see_new_design'),
-            isInternalFeature: zemUserService.isPermissionInternal('zemauth.can_see_new_design'),
+            isAvailable: zemUserService.userHasPermissions('zemauth.can_toggle_new_design'),
+            isInternalFeature: zemUserService.isPermissionInternal('zemauth.can_toggle_new_design'),
         },
     ];
 
