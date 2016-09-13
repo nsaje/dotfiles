@@ -193,17 +193,45 @@ class AdGroupSettingsForm(forms.Form):
         }
     )
 
+    audience_targeting = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=None,
+        error_messages={
+            'invalid_choice': 'Invalid audience selection.'
+        }
+    )
+
+    exclusion_audience_targeting = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=None,
+        error_messages={
+            'invalid_choice': 'Invalid audience selection.'
+        }
+    )
+
     def __init__(self, ad_group, user, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
         self.ad_group = ad_group
         self.fields['retargeting_ad_groups'].queryset = models.AdGroup.objects.filter(
             campaign__account=ad_group.campaign.account).filter_by_user(user)
+        self.fields['audience_targeting'].queryset = models.Audience.objects.filter(
+            pixel__account_id=ad_group.campaign.account.pk)
+        self.fields['exclusion_audience_targeting'].queryset = models.Audience.objects.filter(
+            pixel__account_id=ad_group.campaign.account.pk)
         self.current_settings = self.ad_group.get_current_settings()
 
     def clean_retargeting_ad_groups(self):
         ad_groups = self.cleaned_data.get('retargeting_ad_groups')
         return [ag.id for ag in ad_groups]
+
+    def clean_audience_targeting(self):
+        audiences = self.cleaned_data.get('audience_targeting')
+        return [x.id for x in audiences]
+
+    def clean_exclusion_audience_targeting(self):
+        audiences = self.cleaned_data.get('exclusion_audience_targeting')
+        return [x.id for x in audiences]
 
     def clean_end_date(self):
         state = self.current_settings.state

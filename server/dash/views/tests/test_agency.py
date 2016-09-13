@@ -44,6 +44,8 @@ class AdGroupSettingsTest(TestCase):
                 'autopilot_state': 2,
                 'autopilot_daily_budget': '150.0000',
                 'retargeting_ad_groups': [2],
+                'audience_targeting': [1],
+                'exclusion_audience_targeting': [4],
                 'enable_ga_tracking': False,
                 'enable_adobe_tracking': False,
                 'ga_tracking_type': 2,
@@ -76,6 +78,7 @@ class AdGroupSettingsTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         add_permissions(self.user, ['settings_view', 'can_view_retargeting_settings'])
+        add_permissions(self.user, ['settings_view', 'can_target_custom_audiences'])
         response = self.client.get(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
@@ -113,6 +116,28 @@ class AdGroupSettingsTest(TestCase):
                         "id": 10, "name": "test adgroup 10",
                     },
                 ],
+                'audiences': [
+                    {
+                        'id': 1,
+                        'name': 'test audience 1',
+                        'archived': False,
+                    },
+                    {
+                        'id': 2,
+                        'name': 'test audience 2',
+                        'archived': False,
+                    },
+                    {
+                        'id': 3,
+                        'name': 'test audience 3',
+                        'archived': True,
+                    },
+                    {
+                        'id': 4,
+                        'name': 'test audience 4',
+                        'archived': False,
+                    },
+                ],
                 'settings': {
                     'adobe_tracking_param': '',
                     'cpc_cc': '',
@@ -128,6 +153,8 @@ class AdGroupSettingsTest(TestCase):
                     'autopilot_state': 1,
                     'autopilot_daily_budget': '50.00',
                     'retargeting_ad_groups': [3],
+                    'audience_targeting': [1, 2],
+                    'exclusion_audience_targeting': [3, 4],
                     'enable_ga_tracking': True,
                     'ga_property_id': 'UA-123456789-1',
                     'ga_tracking_type': 1,
@@ -230,7 +257,8 @@ class AdGroupSettingsTest(TestCase):
                 'settings_view',
                 'can_set_ad_group_max_cpc',
                 'can_set_adgroup_to_auto_pilot',
-                'can_view_retargeting_settings'
+                'can_view_retargeting_settings',
+                'can_target_custom_audiences'
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -261,6 +289,8 @@ class AdGroupSettingsTest(TestCase):
                         'autopilot_state': 2,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
+                        'audience_targeting': [1],
+                        'exclusion_audience_targeting': [4],
                         'enable_ga_tracking': False,
                         'ga_property_id': 'UA-123456789-1',
                         'ga_tracking_type': 1,
@@ -321,7 +351,8 @@ class AdGroupSettingsTest(TestCase):
                 'settings_view',
                 'can_set_ad_group_max_cpc',
                 'can_set_adgroup_to_auto_pilot',
-                'can_view_retargeting_settings'
+                'can_view_retargeting_settings',
+                'can_target_custom_audiences'
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -368,6 +399,8 @@ class AdGroupSettingsTest(TestCase):
                         'bluekai_targeting': ["or", "3", "4"],
                         'interest_targeting': ["a", "b"],
                         'exclusion_interest_targeting': ["c", "d"],
+                        'audience_targeting': [1],
+                        'exclusion_audience_targeting': [4],
                         'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
                         'redirect_javascript': "alert('a')",
                     }
@@ -544,7 +577,8 @@ class AdGroupSettingsTest(TestCase):
                 'settings_view',
                 'can_set_ad_group_max_cpc',
                 'can_set_adgroup_to_auto_pilot',
-                'can_view_retargeting_settings'
+                'can_view_retargeting_settings',
+                'can_target_custom_audiences'
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -588,6 +622,8 @@ class AdGroupSettingsTest(TestCase):
                         'bluekai_targeting': [],
                         'interest_targeting': [],
                         'exclusion_interest_targeting': [],
+                        'audience_targeting': [1],
+                        'exclusion_audience_targeting': [4],
                         'redirect_pixel_urls': [],
                         'redirect_javascript': '',
                     }

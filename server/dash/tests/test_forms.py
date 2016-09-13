@@ -201,6 +201,8 @@ class AdGroupSettingsFormTest(TestCase):
             'target_regions': ['US'],
             'tracking_code': 'code=test',
             'retargeting_ad_groups': [3],
+            'audience_targeting': [1, 2],
+            'exclusion_audience_targeting': [3, 4],
             'enable_ga_tracking': True,
             'ga_tracking_type': 2,
             'ga_property_id': 'UA-123456789-1',
@@ -229,6 +231,8 @@ class AdGroupSettingsFormTest(TestCase):
             'ga_tracking_type': 2,
             'ga_property_id': 'UA-123456789-1',
             'retargeting_ad_groups': [3],
+            'audience_targeting': [1, 2],
+            'exclusion_audience_targeting': [3, 4],
             'enable_adobe_tracking': False,
             'adobe_tracking_param': '',
             'autopilot_state': 2,
@@ -404,7 +408,18 @@ class AdGroupSettingsFormTest(TestCase):
         form = forms.AdGroupSettingsForm(ad_group, self.user, self.data)
 
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'retargeting_ad_groups': ['Invalid ad group selection.']})
+        expected = {
+            'retargeting_ad_groups': [
+                'Invalid ad group selection.'
+            ],
+            'audience_targeting': [
+                'Invalid audience selection.'
+            ],
+            'exclusion_audience_targeting': [
+                'Invalid audience selection.'
+            ],
+        }
+        self.assertEqual(form.errors, expected)
 
     @patch('utils.dates_helper.local_today')
     def test_retargeting_ad_groups_no_access(self, mock_today):
@@ -413,7 +428,12 @@ class AdGroupSettingsFormTest(TestCase):
         form = forms.AdGroupSettingsForm(self.ad_group, user, self.data)
 
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'retargeting_ad_groups': ['Invalid ad group selection.']})
+        expected = {
+            'retargeting_ad_groups': [
+                'Invalid ad group selection.'
+            ]
+        }
+        self.assertEqual(form.errors, expected)
 
 
 class ConversionGoalFormTestCase(TestCase):

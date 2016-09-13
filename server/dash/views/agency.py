@@ -51,6 +51,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': False,
             'retargetable_adgroups': self.get_retargetable_adgroups(request, ad_group_id),
+            'audiences': self.get_audiences(request, ad_group),
             'warnings': self.get_warnings(request, settings),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),
@@ -178,6 +179,8 @@ class AdGroupSettings(api_common.BaseApiView):
                 'bluekai_targeting': settings.bluekai_targeting,
                 'interest_targeting': settings.interest_targeting,
                 'exclusion_interest_targeting': settings.exclusion_interest_targeting,
+                'audience_targeting': settings.audience_targeting,
+                'exclusion_audience_targeting': settings.exclusion_audience_targeting,
                 'redirect_pixel_urls': settings.redirect_pixel_urls,
                 'redirect_javascript': settings.redirect_javascript,
                 'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
@@ -218,6 +221,11 @@ class AdGroupSettings(api_common.BaseApiView):
         if user.has_perm('zemauth.can_view_retargeting_settings') and\
                 retargeting_helper.supports_retargeting(ad_group):
             settings.retargeting_ad_groups = resource['retargeting_ad_groups']
+
+        if user.has_perm('zemauth.can_target_custom_audiences') and\
+                retargeting_helper.supports_retargeting(ad_group):
+            settings.audience_targeting = resource['audience_targeting']
+            settings.exclusion_audience_targeting = resource['exclusion_audience_targeting']
 
     def _send_update_actions(self, ad_group, current_settings, new_settings, request):
         actionlogs_to_send = []
@@ -282,6 +290,21 @@ class AdGroupSettings(api_common.BaseApiView):
                 'campaign_name': adg.campaign.name,
             }
             for adg in ad_groups
+        ]
+
+    def get_audiences(self, request, ad_group):
+        if not request.user.has_perm('zemauth.can_target_custom_audiences'):
+            return []
+
+        audiences = models.Audience.objects.filter(pixel__account_id=ad_group.campaign.account.pk).order_by('name')
+
+        return [
+            {
+                'id': audience.pk,
+                'name': audience.name,
+                'archived': audience.archived or False,
+            }
+            for audience in audiences
         ]
 
 

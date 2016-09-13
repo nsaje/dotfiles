@@ -217,3 +217,80 @@
         created_dt: '2015-09-23T09:57:22'
     model: dash.uploadbatch
     pk: 2
+
+
+# test audiences
+
+-   fields:
+        name: 'test audience 1'
+        pixel: 1
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 1
+
+-   fields:
+        name: 'test audience 2'
+        pixel: 1
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 2
+
+-   fields:
+        name: 'test audience 3'
+        pixel: 1
+        archived: true
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 3
+
+-   fields:
+        name: 'test audience 4'
+        pixel: 1
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 4
+
+# test audience rule
+
+-   fields:
+        audience: 1
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 1
+
+-   fields:
+        audience: 2
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 2
+
+-   fields:
+        audience: 3
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 3
+
+-   fields:
+        audience: 4
+        type: 1
+        value: "test"
+    model: dash.rule
+    pk: 4
