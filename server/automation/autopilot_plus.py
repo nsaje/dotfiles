@@ -207,9 +207,9 @@ def _get_conversions_per_cost_value(ag_source, data, conversion_goal, conversion
     view_key = conversion_goal.get_view_key(conversion_goals)
     for r in data:
         if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
-            spend = Decimal(r['media_cost']) + Decimal(r['data_cost'])
-            return r.get(view_key) / spend if spend > 0 else 0
-    return 0
+            spend = r['media_cost'] + r['data_cost']
+            return r.get(view_key) / spend if spend > 0 else 0.0
+    return 0.0
 
 
 def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterdays_spend_cc, yesterdays_clicks):
