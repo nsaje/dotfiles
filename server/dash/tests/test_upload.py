@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from mock import patch
+from mock import patch, Mock
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
@@ -486,6 +486,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(updated_fields, {'display_url': 'new display url 123'})
         self.assertEqual(errors, {'display_url': ['Enter a valid URL.']})
 
+    @patch('dash.upload.invoke_external_validation', Mock())
     @patch('dash.image_helper.upload_image_to_s3')
     def test_image_file(self, mock_upload_to_s3):
         mock_upload_to_s3.return_value = 'http://example.com/path/to/image'
@@ -504,6 +505,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(updated_fields, {'image_url': 'http://example.com/path/to/image'})
         self.assertEqual(errors, {})
 
+    @patch('dash.upload.invoke_external_validation', Mock())
     @patch('dash.image_helper.upload_image_to_s3')
     def test_invalid_image_file(self, mock_upload_to_s3):
         mock_upload_to_s3.return_value = 'http://example.com/path/to/image'
