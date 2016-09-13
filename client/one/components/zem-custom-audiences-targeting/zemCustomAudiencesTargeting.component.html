@@ -1,0 +1,47 @@
+<div class="zem-custom-audiences-targeting">
+    <div ng-show="ctrl.adGroupTargeting.length || ctrl.audienceTargeting.length || ctrl.exclusionAudienceTargeting.length" class="targeting-list">
+        <div class="targeting-list-item" ng-if="ctrl.adGroupTargeting.length || ctrl.audienceTargeting.length">
+            <div class="targeting-list-title">Targeted Audiences</div>
+            <div class="targeting-list-tag" ng-repeat="adGroup in ctrl.selectedAdGroupTargeting" ng-click="ctrl.removeAdGroupTargeting(adGroup)">
+                Users that clicked on ad group "{{adGroup.name}}" ({{ adGroup.id }})
+                <img class="remove" ng-src="{{ ctrl.config.static_url }}/one/img/x_gray.svg" />
+            </div>
+            <div class="targeting-list-tag" ng-repeat="audience in ctrl.selectedAudienceTargeting" ng-click="ctrl.removeAudienceTargeting(audience)">
+                Users in audience "{{ audience.name }}"
+                <img class="remove" ng-src="{{ ctrl.config.static_url }}/one/img/x_gray.svg" />
+            </div>
+        </div>
+        <div class="targeting-list-item" ng-if="ctrl.exclusionAudienceTargeting.length">
+            <div class="targeting-list-title">Excluded Audiences</div>
+            <div class="targeting-list-tag" ng-repeat="audience in ctrl.selectedExclusionAudienceTargeting" ng-click="ctrl.removeExclusionAudienceTargeting(audience)">
+                Exclude users in audience "{{ audience.name }}"
+                <img class="remove" ng-src="{{ ctrl.config.static_url }}/one/img/x_gray.svg" />
+             </div>
+         </div>
+    </div>
+
+    <ui-select theme="select2" ng-if="ctrl.getAvailableAdGroups().length" ng-model="ctrl.selectedAdGroup" on-select="ctrl.addAdgroup($select.selected)">
+        <ui-select-match placeholder="Add Users That Clicked Previously">{{ $select.selected.name }}</ui-select-match>
+        <ui-select-choices 
+                group-by="ctrl.groupByCampaign" 
+                repeat="adgroup in ctrl.getAvailableAdGroups() | filter: {name: $select.search} track by adgroup.id"
+                position="down">
+            <div 
+                ng-bind-html="adgroup.id + ' - ' + adgroup.name + adgroup.suffix | highlight: $select.search">
+            </div>
+        </ui-select-choices>
+    </ui-select>
+
+    <ui-select theme="select2" ng-if="ctrl.availableAudiences.length" ng-model="ctrl.selectedAudience" on-select="ctrl.addAudienceTargeting($select.selected)">
+        <ui-select-match placeholder="Add Custom Audience">{{ $select.selected.name }}</ui-select-match>
+        <ui-select-choices repeat="audience in ctrl.getAvailableAudiences() | filter: {name: $select.search} track by audience.id" position="down">
+            <div class="audience-select-option">
+                <span ng-bind-html="audience.name | highlight: $select.search"></span>
+                <span class="audience-select-buttons">
+                    <a ng-click="ctrl.addAudienceTargeting(audience)">Add</a> 
+                    <a ng-click="ctrl.addExclusionAudienceTargeting(audience)">Exclude</a>
+                </span>
+            </div>
+        </ui-select-choices>
+    </ui-select>
+</div>

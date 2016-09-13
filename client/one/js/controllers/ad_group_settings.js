@@ -1,5 +1,6 @@
 /* globals angular, constants, options, moment */
 angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, regions, zemNavigationService) { // eslint-disable-line max-len
+    $scope.adGroupId = $state.params.id;
     $scope.settings = {};
     $scope.loadRequestInProgress = true;
     $scope.actionIsWaiting = false;
@@ -12,6 +13,7 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
     $scope.saved = null;
     $scope.discarded = null;
     $scope.retargetableAdGroups = [];
+    $scope.audiences = [];
     $scope.warnings = {};
     $scope.canArchive = false;
     $scope.canRestore = false;
@@ -49,6 +51,7 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
                 $scope.defaultSettings = data.defaultSettings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.retargetableAdGroups = data.retargetableAdGroups;
+                $scope.audiences = data.audiences;
                 $scope.warnings = data.warnings;
                 $scope.updateWarningText();
                 $scope.retargetingEnabled = $scope.settings.retargetingAdGroups && !!$scope.settings.retargetingAdGroups.length;

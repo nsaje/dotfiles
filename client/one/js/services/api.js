@@ -919,6 +919,8 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 bluekaiTargeting: settings.bluekai_targeting,
                 interestTargeting: settings.interest_targeting,
                 exclusionInterestTargeting: settings.exclusion_interest_targeting,
+                audienceTargeting: settings.audience_targeting,
+                exclusionAudienceTargeting: settings.exclusion_audience_targeting,
                 redirectPixelUrls: settings.redirect_pixel_urls,
                 redirectJavascript: settings.redirect_javascript,
             };
@@ -944,6 +946,8 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 autopilot_state: settings.autopilotState,
                 autopilot_daily_budget: settings.autopilotBudget,
                 retargeting_ad_groups: settings.retargetingAdGroups,
+                audience_targeting: settings.audienceTargeting,
+                exclusion_audience_targeting: settings.exclusionAudienceTargeting,
             };
 
             return result;
@@ -972,6 +976,8 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 autopilotState: errors.autopilot_state,
                 autopilotBudget: errors.autopilot_daily_budget,
                 retargetingAdGroups: errors.retargeting_ad_groups,
+                audienceTargeting: errors.audience_targeting,
+                exclusionAudienceTargeting: errors.exclusion_audience_targeting,
             };
 
             return result;
@@ -998,6 +1004,19 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
             return ret;
         }
 
+        function convertAudiencesFromApi (rows) {
+            var ret = [];
+            for (var id in rows) {
+                var row = rows[id];
+                ret.push({
+                    id: row.id,
+                    name: row.name,
+                    archived: row.archived,
+                });
+            }
+            return ret;
+        }
+
         function convertWarningsFromApi (warnings) {
             var ret = {};
             ret.retargeting = warnings.retargeting;
@@ -1018,7 +1037,7 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
 
             $http.get(url, config).
                 success(function (data) {
-                    var settings, defaultSettings, warnings, retargetableAdGroups = [];
+                    var settings, defaultSettings, warnings, retargetableAdGroups, audiences = [];
                     if (data && data.data && data.data.settings) {
                         settings = convertFromApi(data.data.settings);
                     }
@@ -1030,6 +1049,10 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                         retargetableAdGroups = convertRetargetingAdgroupsFromApi(data.data.retargetable_adgroups);
                     }
 
+                    if (data && data.data && data.data.audiences) {
+                        audiences = convertAudiencesFromApi(data.data.audiences);
+                    }
+
                     if (data && data.data && data.data.warnings) {
                         warnings = convertWarningsFromApi(data.data.warnings);
                     }
@@ -1039,6 +1062,7 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                         defaultSettings: defaultSettings,
                         actionIsWaiting: data.data.action_is_waiting,
                         retargetableAdGroups: retargetableAdGroups,
+                        audiences: audiences,
                         warnings: warnings,
                         canArchive: data.data.can_archive,
                         canRestore: data.data.can_restore,
