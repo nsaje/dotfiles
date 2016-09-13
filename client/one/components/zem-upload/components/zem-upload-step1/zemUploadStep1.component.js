@@ -19,7 +19,7 @@ angular.module('one.legacy').directive('zemUploadStep1', [function () { // eslin
     };
 }]);
 
-angular.module('one.legacy').controller('ZemUploadStep1Ctrl', ['config', function (config) {
+angular.module('one.legacy').controller('ZemUploadStep1Ctrl', ['config', '$scope', function (config, $scope) {
     var vm = this;
     vm.config = config;
 
@@ -35,6 +35,11 @@ angular.module('one.legacy').controller('ZemUploadStep1Ctrl', ['config', functio
             return;
         }
         delete vm.formErrors[field];
+    };
+
+    vm.fileUploadCallback = function (file) {
+        vm.formData.file = file;
+        $scope.$digest();
     };
 
     vm.upload = function () {

@@ -180,19 +180,22 @@ class CandidateUpdate(api_common.BaseApiView):
 
         return ad_group, batch
 
-    def put(self, request, ad_group_id, batch_id, candidate_id):
+    def post(self, request, ad_group_id, batch_id, candidate_id):
         if not request.user.has_perm('zemauth.can_use_partial_updates_in_upload'):
             raise Http404('Forbidden')
 
         _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
-        resource = json.loads(request.body)
+        resource = json.loads(request.POST['data'])
+
         try:
-            partial_errors = upload.update_candidate(resource['candidate'], resource.get('defaults', []), batch)
+            updated_fields, errors = upload.update_candidate(
+                resource['candidate'], resource['defaults'], batch, request.FILES)
         except models.ContentAdCandidate.DoesNotExist:
             raise exc.MissingDataError('Candidate does not exist')
 
         return self.create_api_response({
-            'errors': partial_errors,
+            'updated_fields': updated_fields,
+            'errors': errors,
         })
 
 

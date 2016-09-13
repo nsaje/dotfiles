@@ -20,6 +20,7 @@ from automation import autopilot_budgets, autopilot_settings
 from dash import api
 from dash import constants
 from dash import models
+from dash import image_helper
 from dash import regions
 from dash import validation_helpers
 from dash.views import helpers
@@ -1159,6 +1160,17 @@ class BreakdownForm(forms.Form):
 
 
 class ContentAdCandidateForm(forms.ModelForm):
+    image = forms.ImageField(
+        required=False,
+        error_messages={
+            'invalid_image': 'Invalid image file',
+        }
+    )
+
+    def __init__(self, data, files=None):
+        if files and 'image' in files:
+            files['image'].seek(0)
+        super(ContentAdCandidateForm, self).__init__(data, files)
 
     def clean_image_crop(self):
         image_crop = self.cleaned_data.get('image_crop')
@@ -1312,7 +1324,7 @@ class ContentAdForm(ContentAdCandidateForm):
             url = url.encode('ascii')
             validate_url(url)
         except (forms.ValidationError, UnicodeEncodeError):
-            raise forms.ValidationError('Invalid impression tracker URLs')
+            raise forms.ValidationError('Invalid impression tracker URL')
         return url
 
     def clean_url(self):

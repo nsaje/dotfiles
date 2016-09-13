@@ -150,22 +150,29 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
             return deferred.promise;
         };
 
-        this.updateCandidatePartial = function (batchId, candidate) {
+        this.updateCandidatePartial = function (batchId, candidate, defaults) {
             var deferred = $q.defer();
             var url = baseUrl + batchId + '/candidate_update/' + candidate.id + '/';
 
-            var config = {
-                params: {},
-            };
-
-            var data = {
+            var jsonData = {
                 candidate: convertPartialUpdateToApi(candidate),
-                defaults: convertDefaultFields(candidate.defaults),
+                defaults: convertDefaultFields(defaults),
             };
 
-            $http.put(url, data, config).
+            var formData = new FormData();
+            formData.append('data', angular.toJson(jsonData));
+            if (candidate.hasOwnProperty('image')) {
+                // handle file separately
+                formData.append('image', candidate.image);
+            }
+
+            $http.post(url, formData, {
+                transformRequest: angular.identity,
+                headers: {'Content-Type': undefined},
+            }).
                 success(function (data) {
                     deferred.resolve({
+                        updatedFields: convertCandidateFromApi(data.data.updated_fields),
                         errors: convertCandidateErrorsFromApi(data.data.errors),
                     });
                 }).error(function (data) {
@@ -325,13 +332,23 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
             };
         }
 
+        function removeUndefinedValues (obj) {
+            Object.keys(obj).forEach(function (key) {
+                if (obj[key] === undefined) {
+                    delete obj[key];
+                }
+            });
+            return obj;
+        }
+
         function convertCandidateErrorsFromApi (errors) {
             if (!errors) return {};
 
-            var result = {
+            return removeUndefinedValues({
                 label: errors.label,
                 title: errors.title,
                 url: errors.url,
+                image: errors.image,
                 imageUrl: errors.image_url,
                 imageCrop: errors.image_crop,
                 displayUrl: errors.display_url,
@@ -341,19 +358,11 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
                 trackerUrls: errors.tracker_urls,
                 primaryTrackerUrl: errors.primary_tracker_url,
                 secondaryTrackerUrl: errors.secondary_tracker_url,
-            };
-
-            Object.keys(result).forEach(function (key) {
-                if (result[key] === undefined) {
-                    delete result[key];
-                }
             });
-
-            return result;
         }
 
         function convertCandidateFromApi (candidate) {
-            return {
+            var ret = {
                 id: candidate.id,
                 label: candidate.label,
                 url: candidate.url,
@@ -374,13 +383,19 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
                 trackerUrls: candidate.tracker_urls,
                 primaryTrackerUrl: candidate.primary_tracker_url,
                 secondaryTrackerUrl: candidate.secondary_tracker_url,
-                errors: convertCandidateErrorsFromApi(candidate.errors),
             };
+
+            if (candidate.errors) {
+                ret.errors = convertCandidateErrorsFromApi(candidate.errors);
+            }
+
+            return removeUndefinedValues(ret);
         }
 
         function convertCandidatesFromApi (candidates) {
             var result = [];
             angular.forEach(candidates, function (candidate) {
+                if (!candidate.hasOwnProperty('errors')) candidate.errors = {};
                 result.push(convertCandidateFromApi(candidate));
             });
             return result;

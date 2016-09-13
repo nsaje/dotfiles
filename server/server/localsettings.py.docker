@@ -117,6 +117,7 @@ AWS_SECRET_ACCESS_KEY = Secret('').get()
 S3_BUCKET = ''
 S3_BUCKET_STATS = ''
 S3_BUCKET_DEMO = ''
+S3_BUCKET_THUMBNAILER = ''
 USE_S3 = False
 
 # adgroup-level reports aggregations

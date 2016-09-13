@@ -8,6 +8,7 @@ import unicodecsv
 from dash import constants
 from dash import forms
 from dash import models
+from dash import image_helper
 from utils import lambda_helper, k1_helper, redirector_helper
 
 logger = logging.getLogger(__name__)
@@ -195,34 +196,44 @@ def _update_defaults(data, defaults, batch):
     })
 
 
-def _update_candidate(data, batch):
+def _update_candidate(data, batch, files):
     candidate = batch.contentadcandidate_set.get(id=data['id'])
-    form = forms.ContentAdCandidateForm(data)
+    form = forms.ContentAdCandidateForm(data, files)
     form.is_valid()  # used only to clean data of any possible unsupported fields
 
-    errors = {}
+    updated_fields = {}
     for field in data:
-        if field not in form.cleaned_data:
+        if field == 'image' or field not in form.cleaned_data:
             continue
-
-        if field in form.errors:
-            errors[field] = form.errors[field]
+        updated_fields[field] = form.cleaned_data[field]
         setattr(candidate, field, form.cleaned_data[field])
+
+    if form.cleaned_data.get('image'):
+        image_url = image_helper.upload_image_to_s3(form.cleaned_data['image'], batch.id)
+        candidate.image_url = image_url
+        updated_fields['image_url'] = image_url
+    elif form.errors.get('image'):
+        candidate.image_url = None
+        updated_fields['image_url'] = None
 
     if candidate.has_changed('url') or candidate.has_changed('image_url'):
         invoke_external_validation(candidate, batch)
 
     candidate.save()
-    return errors
+    return updated_fields
 
 
-def _get_partial_errors(data):
-    form = forms.ContentAdForm(data)
-    if form.is_valid():
-        return {}
-
+def _get_field_errors(data, files):
     errors = {}
-    for field in data.keys():
+    form = forms.ContentAdForm(data, files=files)
+    if form.is_valid():
+        return errors
+
+    fields = set(data.keys())
+    if files:
+        fields |= set(files.keys())
+
+    for field in fields:
         if field not in form.errors:
             continue
         errors[field] = form.errors[field]
@@ -230,10 +241,11 @@ def _get_partial_errors(data):
 
 
 @transaction.atomic
-def update_candidate(data, defaults, batch):
+def update_candidate(data, defaults, batch, files=None):
     _update_defaults(data, defaults, batch)
-    _update_candidate(data, batch)
-    return _get_partial_errors(data)
+    updated_fields = _update_candidate(data, batch, files)
+    errors = _get_field_errors(data, files)
+    return updated_fields, errors
 
 
 @transaction.atomic
@@ -309,11 +321,13 @@ def _create_candidates(content_ads_data, ad_group, batch):
     for content_ad in content_ads_data:
         form = forms.ContentAdCandidateForm(content_ad)
         form.is_valid()  # used only to clean data of any possible unsupported fields
+
+        fields = {k: v for k, v in form.cleaned_data.items() if k != 'image'}
         candidates_added.append(
             models.ContentAdCandidate.objects.create(
                 ad_group=ad_group,
                 batch=batch,
-                **form.cleaned_data
+                **fields
             )
         )
     return candidates_added

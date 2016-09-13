@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from mock import patch
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
 from dash import constants
@@ -458,6 +459,68 @@ class UpdateCandidateTest(TestCase):
         self.assertNotEqual(self.other_candidate.image_url, self.new_candidate['image_url'])
         self.assertNotEqual(self.other_candidate.primary_tracker_url, self.new_candidate['primary_tracker_url'])
         self.assertNotEqual(self.other_candidate.secondary_tracker_url, self.new_candidate['secondary_tracker_url'])
+
+    def test_partial_update(self):
+        data = {
+            'id': self.candidate.id,
+            'title': 'new title 123',
+        }
+
+        updated_fields, errors = upload.update_candidate(data, [], self.candidate.batch)
+
+        self.candidate.refresh_from_db()
+        self.assertEqual(self.candidate.title, 'new title 123')
+        self.assertEqual(updated_fields, {'title': 'new title 123'})
+        self.assertEqual(errors, {})
+
+    def test_invalid_partial_update(self):
+        data = {
+            'id': self.candidate.id,
+            'display_url': 'new display url 123',
+        }
+
+        updated_fields, errors = upload.update_candidate(data, [], self.candidate.batch)
+
+        self.candidate.refresh_from_db()
+        self.assertEqual(self.candidate.display_url, 'new display url 123')
+        self.assertEqual(updated_fields, {'display_url': 'new display url 123'})
+        self.assertEqual(errors, {'display_url': ['Enter a valid URL.']})
+
+    @patch('dash.image_helper.upload_image_to_s3')
+    def test_image_file(self, mock_upload_to_s3):
+        mock_upload_to_s3.return_value = 'http://example.com/path/to/image'
+        files = {
+            'image': SimpleUploadedFile(
+                name='test.jpg',
+                content=open('./dash/tests/test.jpg').read(),
+                content_type='image/jpg'
+            )
+        }
+        updated_fields, errors = upload.update_candidate(
+            {'id': self.candidate.id}, [], self.candidate.batch, files=files)
+
+        self.candidate.refresh_from_db()
+        self.assertEqual(self.candidate.image_url, 'http://example.com/path/to/image')
+        self.assertEqual(updated_fields, {'image_url': 'http://example.com/path/to/image'})
+        self.assertEqual(errors, {})
+
+    @patch('dash.image_helper.upload_image_to_s3')
+    def test_invalid_image_file(self, mock_upload_to_s3):
+        mock_upload_to_s3.return_value = 'http://example.com/path/to/image'
+        files = {
+            'image': SimpleUploadedFile(
+                name='test.csv',
+                content=open('./dash/tests/test.csv').read(),
+                content_type='text/csv'
+            )
+        }
+        updated_fields, errors = upload.update_candidate(
+            {'id': self.candidate.id}, [], self.candidate.batch, files=files)
+
+        self.candidate.refresh_from_db()
+        self.assertEqual(self.candidate.image_url, None)
+        self.assertEqual(updated_fields, {'image_url': None})
+        self.assertEqual(errors, {'image': ['Invalid image file']})
 
     def test_invalid_candidate_fields(self):
         new_candidate = {

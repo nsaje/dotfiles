@@ -6,7 +6,7 @@ import StringIO
 
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth.models import Permission
 from mock import patch, Mock
 
 from dash import constants
@@ -821,7 +821,7 @@ class CampaignAdminFormTest(TestCase):
 class ContentAdCandidateFormTestCase(TestCase):
 
     def _get_valid_data(self):
-        return {
+        data = {
             'label': 'label',
             'url': 'http://zemanta.com',
             'title': 'Title',
@@ -834,14 +834,31 @@ class ContentAdCandidateFormTestCase(TestCase):
             'primary_tracker_url': 'https://zemanta.com/px1',
             'secondary_tracker_url': 'https://zemanta.com/px2',
         }
+        files = {
+            'image': self.valid_image,
+        }
+        return data, files
+
+    def setUp(self):
+        self.valid_image = SimpleUploadedFile(
+            name='test.jpg',
+            content=open('./dash/tests/test.jpg').read(),
+            content_type='image/jpg'
+        )
+        self.invalid_image = SimpleUploadedFile(
+            name='test.jpg',
+            content=open('./dash/tests/test.csv').read(),
+            content_type='text/csv'
+        )
 
     def test_valid(self):
-        f = forms.ContentAdCandidateForm(self._get_valid_data())
+        f = forms.ContentAdCandidateForm(*self._get_valid_data())
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data, {
             'label': 'label',
             'url': 'http://zemanta.com',
             'title': 'Title',
+            'image': self.valid_image,
             'image_url': 'http://zemanta.com/img.jpg',
             'image_crop': 'center',
             'display_url': 'zemanta.com',
@@ -852,30 +869,37 @@ class ContentAdCandidateFormTestCase(TestCase):
             'secondary_tracker_url': 'https://zemanta.com/px2',
         })
 
+    def test_invalid_image(self):
+        data, files = self._get_valid_data()
+        files['image'] = self.invalid_image
+        f = forms.ContentAdCandidateForm(data, files)
+        self.assertFalse(f.is_valid())
+        self.assertEqual(f.errors['image'], ['Invalid image file'])
+
     def test_capitalized_image_crop(self):
-        data = self._get_valid_data()
+        data, files = self._get_valid_data()
         data['image_crop'] = 'Center'
-        f = forms.ContentAdCandidateForm(data)
+        f = forms.ContentAdCandidateForm(data, files)
         self.assertTrue(f.is_valid())
 
     def test_skipped_image_crop(self):
-        data = self._get_valid_data()
+        data, files = self._get_valid_data()
         del data['image_crop']
-        f = forms.ContentAdCandidateForm(data)
+        f = forms.ContentAdCandidateForm(data, files)
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data['image_crop'], 'center')
 
     def test_empty_image_crop(self):
-        data = self._get_valid_data()
+        data, files = self._get_valid_data()
         data['image_crop'] = ''
-        f = forms.ContentAdCandidateForm(data)
+        f = forms.ContentAdCandidateForm(data, files)
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data['image_crop'], 'center')
 
     def test_skipped_call_to_action(self):
-        data = self._get_valid_data()
+        data, files = self._get_valid_data()
         del data['call_to_action']
-        f = forms.ContentAdCandidateForm(data)
+        f = forms.ContentAdCandidateForm(data, files)
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data['call_to_action'], 'Read more')
 
@@ -1266,7 +1290,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'primary_tracker_url': ['Invalid impression tracker URLs']
+            'primary_tracker_url': ['Invalid impression tracker URL']
         }, f.errors)
 
     def test_unicode_secondary_tracker(self):
@@ -1275,7 +1299,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'secondary_tracker_url': ['Invalid impression tracker URLs']
+            'secondary_tracker_url': ['Invalid impression tracker URL']
         }, f.errors)
 
 

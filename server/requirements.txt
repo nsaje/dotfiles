@@ -53,3 +53,6 @@ fake-factory==0.5.7
 
 # for backtosql
 sqlparse==0.1.19
+
+# handling image uploads in forms
+Pillow==3.3.1
