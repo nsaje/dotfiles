@@ -170,7 +170,7 @@
                 </div>
 
                 <div ng-if="retargetingEnabled && warnings.retargeting === undefined" class="col-xs-6 col-md-4 after-form-alert-box">
-                    <zem-custom-audiences-targeting available-ad-groups="retargetableAdGroups" available-audiences="audiences" current-ad-group-id="adGroupId" ad-group-targeting="settings.retargetingAdGroups" audience-targeting="settings.audienceTargeting" exclusion-audience-targeting="settings.exclusionAudienceTargeting"></zem-custom-audiences-targeting>
+                    <zem-custom-audiences-targeting available-ad-groups="retargetableAdGroups" available-audiences="audiences" current-ad-group-id="adGroupId" ad-group-targeting="settings.retargetingAdGroups" audience-targeting="settings.audienceTargeting" exclusion-audience-targeting="settings.exclusionAudienceTargeting" add-targeting="addTargeting(type, id)" remove-targeting="removeTargeting(type, id)"></zem-custom-audiences-targeting>
                 </div>
             </div>
 

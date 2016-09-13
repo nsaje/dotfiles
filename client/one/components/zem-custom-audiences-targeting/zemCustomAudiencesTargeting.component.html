@@ -1,6 +1,6 @@
 <div class="zem-custom-audiences-targeting">
-    <div ng-show="ctrl.adGroupTargeting.length || ctrl.audienceTargeting.length || ctrl.exclusionAudienceTargeting.length" class="targeting-list">
-        <div class="targeting-list-item" ng-if="ctrl.adGroupTargeting.length || ctrl.audienceTargeting.length">
+    <div ng-show="ctrl.selectedAdGroupTargeting.length || ctrl.selectedAudienceTargeting.length || ctrl.selectedExclusionAudienceTargeting.length" class="targeting-list">
+        <div class="targeting-list-item" ng-if="ctrl.selectedAdGroupTargeting.length || ctrl.selectedAudienceTargeting.length">
             <div class="targeting-list-title">Targeted Audiences</div>
             <div class="targeting-list-tag" ng-repeat="adGroup in ctrl.selectedAdGroupTargeting" ng-click="ctrl.removeAdGroupTargeting(adGroup)">
                 Users that clicked on ad group "{{adGroup.name}}" ({{ adGroup.id }})
@@ -11,7 +11,7 @@
                 <img class="remove" ng-src="{{ ctrl.config.static_url }}/one/img/x_gray.svg" />
             </div>
         </div>
-        <div class="targeting-list-item" ng-if="ctrl.exclusionAudienceTargeting.length">
+        <div class="targeting-list-item" ng-if="ctrl.selectedExclusionAudienceTargeting.length">
             <div class="targeting-list-title">Excluded Audiences</div>
             <div class="targeting-list-tag" ng-repeat="audience in ctrl.selectedExclusionAudienceTargeting" ng-click="ctrl.removeExclusionAudienceTargeting(audience)">
                 Exclude users in audience "{{ audience.name }}"
@@ -20,7 +20,7 @@
          </div>
     </div>
 
-    <ui-select theme="select2" ng-if="ctrl.getAvailableAdGroups().length" ng-model="ctrl.selectedAdGroup" on-select="ctrl.addAdgroup($select.selected)">
+    <ui-select theme="select2" ng-if="ctrl.getAvailableAdGroups().length" ng-model="ctrl.selectedAdGroup" on-select="ctrl.addAdGroup($select.selected)">
         <ui-select-match placeholder="Add Users That Clicked Previously">{{ $select.selected.name }}</ui-select-match>
         <ui-select-choices 
                 group-by="ctrl.groupByCampaign" 

@@ -7,9 +7,11 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
         currentAdGroupId: '<',
         availableAdGroups: '<',
         availableAudiences: '<',
-        adGroupTargeting: '=',
-        audienceTargeting: '=',
-        exclusionAudienceTargeting: '=',
+        adGroupTargeting: '<',
+        audienceTargeting: '<',
+        exclusionAudienceTargeting: '<',
+        addTargeting: '&',
+        removeTargeting: '&',
     },
     controllerAs: 'ctrl',
     controller: ['config', function (config) {
@@ -65,8 +67,8 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
             return audiences;
         };
 
-        vm.addAdgroup = function (adGroup) {
-            vm.adGroupTargeting.push(adGroup.id);
+        vm.addAdGroup = function (adGroup) {
+            vm.addTargeting({type: 'adGroupTargeting', id: adGroup.id});
             vm.selectedAdGroupTargeting.push({
                 id: adGroup.id,
                 name: adGroup.name
@@ -75,10 +77,7 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
         };
 
         vm.removeAdGroupTargeting = function (adGroup) {
-            var selectedIdx = vm.adGroupTargeting.indexOf(adGroup.id);
-            if (selectedIdx >= 0) {
-                vm.adGroupTargeting.splice(selectedIdx, 1);
-            }
+            vm.removeTargeting({type: 'adGroupTargeting', id: adGroup.id});
 
             for (var i = 0; i < vm.selectedAdGroupTargeting.length; i++) {
                 if (vm.selectedAdGroupTargeting[i].id === adGroup.id) {
@@ -89,7 +88,7 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
         };
 
         vm.addAudienceTargeting = function (audience) {
-            vm.audienceTargeting.push(audience.id);
+            vm.addTargeting({type: 'audienceTargeting', id: audience.id});
             vm.selectedAudienceTargeting.push({
                 id: audience.id,
                 name: audience.name
@@ -98,10 +97,7 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
         };
 
         vm.removeAudienceTargeting = function (audience) {
-            var selectedIdx = vm.audienceTargeting.indexOf(audience.id);
-            if (selectedIdx >= 0) {
-                vm.audienceTargeting.splice(selectedIdx, 1);
-            }
+            vm.removeTargeting({type: 'audienceTargeting', id: audience.id});
 
             for (var i = 0; i < vm.selectedAudienceTargeting.length; i++) {
                 if (vm.selectedAudienceTargeting[i].id === audience.id) {
@@ -112,7 +108,7 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
         };
 
         vm.addExclusionAudienceTargeting = function (audience) {
-            vm.exclusionAudienceTargeting.push(audience.id);
+            vm.addTargeting({type: 'exclusionAudienceTargeting', id: audience.id});
             vm.selectedExclusionAudienceTargeting.push({
                 id: audience.id,
                 name: audience.name
@@ -121,10 +117,7 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
         };
 
         vm.removeExclusionAudienceTargeting = function (audience) {
-            var selectedIdx = vm.exclusionAudienceTargeting.indexOf(audience.id);
-            if (selectedIdx >= 0) {
-                vm.exclusionAudienceTargeting.splice(selectedIdx, 1);
-            }
+            vm.removeTargeting({type: 'exclusionAudienceTargeting', id: audience.id});
 
             for (var i = 0; i < vm.selectedExclusionAudienceTargeting.length; i++) {
                 if (vm.selectedExclusionAudienceTargeting[i].id === audience.id) {
