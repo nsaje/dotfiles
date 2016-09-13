@@ -159,9 +159,8 @@ def predict_outcome_success(source, data, campaign_goal, min_value_of_campaign_g
 def _get_campaign_goal_value(campaign_goal_type, data_value, max_value_of_campaign_goal, min_value_of_campaign_goal):
     if campaign_goal_type == CampaignGoalKPI.MAX_BOUNCE_RATE:
         return (100 - data_value) / 100
-    if campaign_goal_type == CampaignGoalKPI.NEW_UNIQUE_VISITORS:
-        return data_value / 100
-    if campaign_goal_type in (CampaignGoalKPI.TIME_ON_SITE, CampaignGoalKPI.PAGES_PER_SESSION, CampaignGoalKPI.CPA):
+    if campaign_goal_type in (CampaignGoalKPI.TIME_ON_SITE, CampaignGoalKPI.PAGES_PER_SESSION,
+                              CampaignGoalKPI.CPA, CampaignGoalKPI.NEW_UNIQUE_VISITORS):
         return data_value / max_value_of_campaign_goal if max_value_of_campaign_goal > 0 else 0
     if campaign_goal_type in (CampaignGoalKPI.CPC, CampaignGoalKPI.CPV, CampaignGoalKPI.CP_NON_BOUNCED_VISIT):
         return float(min_value_of_campaign_goal / data_value) if (data_value > 0.0 and
