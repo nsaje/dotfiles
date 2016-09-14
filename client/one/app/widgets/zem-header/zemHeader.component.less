@@ -96,6 +96,184 @@ zem-header {
         }
     }
 
+    // TODO: Refactor
+    zem-header-filter {
+        display: block;
+
+        zem-filter {
+            display: block;
+
+            .internal {
+                .header-button-internal();
+            }
+
+            div.btn {
+                min-width: 34px;
+                height: 34px;
+                padding: 0;
+
+                &:hover {
+                    border-color: @add-filter-color;
+                }
+
+                &.filter-enabled {
+                    background-color: @add-filter-color;
+
+                    span {
+                        color: #fff;
+                        top: 2px;
+                        position: relative;
+                        margin-right: 5px;
+                    }
+
+                    .btn-remove {
+                        display: inline-block;
+                        width: 25px;
+                        height: 34px;
+                        cursor: pointer;
+                        padding-left: 11px;
+                        padding-right: 5px;
+                        padding-top: 11px;
+                        padding-bottom: 14px;
+                        vertical-align: top;
+
+                        img {
+                            width: 9px;
+                            vertical-align: top;
+                        }
+                    }
+
+                    .dropdown-toggle {
+                        display: inline-block;
+
+                        .filter-icon {
+                            border-left: 1px solid white;
+                        }
+                    }
+                }
+
+                img.filter-icon {
+                    margin: 3.5px 3.5px 3.5px 0;
+                    padding-left: 3.5px;
+                    width: 28.5px;
+                    height: 25px;
+                }
+            }
+
+            ul.filter-menu {
+                width: 400px;
+                left: auto;
+                right: 0;
+                top: 100%;
+                margin-left: -125px;
+                border: 1px solid @default-color;
+                padding: 15px 15px 5px 15px;
+
+                li {
+
+                    &:not(:last-child) {
+                        margin-bottom: 15px;
+                    }
+
+                    margin-bottom: 0;
+
+                    .agency-filter select2-input{
+                        margin-top: 7px;
+                    }
+
+                    .select2-container {
+                        vertical-align: top;
+                        margin-top: 5px;
+                        margin-right: 5px;
+
+                        &.add-filter .select2-choice {
+                            background-color: @add-filter-color;
+                            border-color: @add-filter-color;
+                            height: 28px;
+                            font-size: 13px;
+                            line-height: 28px;
+                            border-radius: 2px;
+
+                            .select2-chosen {
+                                margin-right: 15px;
+                            }
+
+                            span {
+                                color: #fff;
+                            }
+
+                            span.select2-arrow b {
+                                background-image: none !important;
+                            }
+
+                            @media(-webkit-min-device-pixel-ratio: 2) {
+                                span.select2-arrow b {
+                                    background-image: none !important;
+                                }
+                            }
+                        }
+                    }
+
+                    .filtered {
+                        &:first-child {
+                            margin-left: 5px;
+                        }
+
+                        cursor: pointer;
+                        margin-right: 5px;
+                        margin-top: 5px;
+                        padding-right: 27px;
+                        padding-left: 8px;
+                        height: 28px;
+                        line-height: 28px;
+                        display: inline-block;
+                        position: relative;
+                        border-radius: 2px;
+                        border: 1px solid @add-filter-color;
+                        font-size: 13px;
+
+                        img.remove {
+                            width: 7px;
+                            position: absolute;
+                            right: 8px;
+                            top: 10px;
+                            display: inline-block;
+                        }
+                    }
+
+                    .title {
+                        color: #454545;
+                        font-size: 15px;
+                        line-height: 15px;
+                        font-weight: 500;
+                    }
+
+                    .checkbox {
+                        margin-top: 0;
+                        padding-left: 15px;
+                        margin-left: 5px;
+
+                        label {
+                            margin-left: -2px;
+                        }
+                    }
+
+                    .radio {
+                        display: block;
+                        margin-top: 0;
+                        padding-left: 15px;
+                        margin-left: 5px;
+
+                        label {
+                            display: block;
+                            margin-left: -2px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     zem-header-date-range-picker {
         display: block;
 

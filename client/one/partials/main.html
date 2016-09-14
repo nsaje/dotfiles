@@ -1,5 +1,5 @@
 <div class="container-fluid">
-    <zem-header class="row m-b-s" ng-if="userCanSeeNewLayout()" date-range="$parent.dateRange" date-range-picker-options="$parent.dateRangeOptions"></zem-header>
+    <zem-header class="row m-b-s" ng-if="userCanSeeNewLayout()" date-range="$parent.dateRange" date-range-picker-options="$parent.dateRangeOptions" level="$parent.level" enable-publisher-filter="$parent.enablePublisherFilter" show-publisher-selected="$parent.showPublisherSelected"></zem-header>
     <div class="row header" ng-include src="'/partials/header.html'" ng-if="!userCanSeeNewLayout()"></div>
 
     <div class="row body">
@@ -39,11 +39,12 @@
                 </div>
             </form>
             <zem-filter
-                zem-has-permission="hasPermission"
-                zem-is-permission-internal="isPermissionInternal"
-                zem-level="level"
-                enable-publisher-filter="enablePublisherFilter"
-                show-publisher-selected="showPublisherSelected">
+                ng-if="!userCanSeeNewLayout()"
+                zem-has-permission="$parent.hasPermission"
+                zem-is-permission-internal="$parent.isPermissionInternal"
+                zem-level="$parent.level"
+                enable-publisher-filter="$parent.enablePublisherFilter"
+                show-publisher-selected="$parent.showPublisherSelected">
             </zem-filter>
             <div ng-if="hasPermission('zemauth.can_hide_chart') && isChartVisible()" class="btn btn-default graph-button pull-right" ng-click="toggleGraph()">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_hide_chart')" popover-placement="left"></zem-internal-feature>
