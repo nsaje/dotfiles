@@ -195,20 +195,21 @@ def prefetch_autopilot_data(ad_groups):
             col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
             goal_value = autopilot_settings.GOALS_WORST_VALUE.get(col)
             if campaign_goal.type == CampaignGoalKPI.CPA:
-                    goal_value = _get_conversion_value(ag_source, conv_days_ago_data,
-                                                       campaign_goal.conversion_goal, conv_goals)
+                    goal_value = _get_conversions_per_cost_value(ag_source, conv_days_ago_data,
+                                                                 campaign_goal.conversion_goal, conv_goals)
             elif col in row and row[col]:
                 goal_value = row[col]
             data[adg][ag_source][col] = goal_value
     return data, campaign_goals
 
 
-def _get_conversion_value(ag_source, data, conversion_goal, conversion_goals):
+def _get_conversions_per_cost_value(ag_source, data, conversion_goal, conversion_goals):
     view_key = conversion_goal.get_view_key(conversion_goals)
     for r in data:
         if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
-            return r.get(view_key)
-    return 0
+            spend = r['media_cost'] + r['data_cost']
+            return r.get(view_key) / spend if spend > 0 else 0.0
+    return 0.0
 
 
 def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterdays_spend_cc, yesterdays_clicks):
