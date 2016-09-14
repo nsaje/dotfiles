@@ -794,12 +794,13 @@ class AdGroupAdmin(admin.ModelAdmin):
 
     @staticmethod
     def _update_redirector_adgroup(ad_group, new_settings):
+        campaign_settings = ad_group.campaign.get_current_settings()
         utils.redirector_helper.insert_adgroup(
             ad_group.id,
             new_settings.get_tracking_codes(),
-            new_settings.enable_ga_tracking,
-            new_settings.enable_adobe_tracking,
-            new_settings.adobe_tracking_param,
+            campaign_settings.enable_ga_tracking,
+            campaign_settings.enable_adobe_tracking,
+            campaign_settings.adobe_tracking_param,
             new_settings.redirect_pixel_urls,
             new_settings.redirect_javascript
         )

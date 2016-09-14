@@ -989,15 +989,15 @@ class UpdateAdGroupSourceSettings(TestCase):
         )
         ad_group_source.source.source_type.save()
 
-        adgs1 = models.AdGroupSettings()
-        adgs1.enable_adobe_tracking = True
-        adgs1.adobe_tracking_param = 'cid'
-        adgs2 = models.AdGroupSettings()
-        adgs2.enable_ga_tracking = False
-        adgs2.enable_adobe_tracking = False
-        adgs2.adobe_tracking_param = ''
+        adgs = models.AdGroupSettings()
+        cs = ad_group_source.ad_group.campaign.get_current_settings().copy_settings()
+        cs.enable_ga_tracking = False
+        cs.enable_adobe_tracking = False
+        cs.adobe_tracking_param = ''
+        cs.save(None)
 
-        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
+        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs, adgs, None, campaign_tracking_changes=True)
+
         self.mock_insert_adgroup.assert_called_with(1, '', False, False, '')
 
         manual_actions = self._get_manual_set_property_actions(ad_group_source)
@@ -1021,16 +1021,14 @@ class UpdateAdGroupSourceSettings(TestCase):
         )
         ad_group_source.source.source_type.save()
 
-        adgs1 = models.AdGroupSettings()
-        adgs1.enable_ga_tracking = False
-        adgs1.enable_adobe_tracking = False
-        adgs1.adobe_tracking_param = ''
-        adgs2 = models.AdGroupSettings()
-        adgs2.enable_ga_tracking = True
-        adgs2.enable_adobe_tracking = True
-        adgs2.adobe_tracking_param = 'cid'
+        adgs = models.AdGroupSettings()
+        cs = ad_group_source.ad_group.campaign.get_current_settings().copy_settings()
+        cs.enable_ga_tracking = True
+        cs.enable_adobe_tracking = True
+        cs.adobe_tracking_param = 'cid'
+        cs.save(None)
 
-        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
+        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs, adgs, None, campaign_tracking_changes=True)
         self.mock_insert_adgroup.assert_called_with(1, '', True, True, 'cid')
 
         manual_actions = self._get_manual_set_property_actions(ad_group_source)

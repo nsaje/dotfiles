@@ -88,16 +88,4 @@ describe('AdGroupSettingsCtrlSpec', function () {
             expect($scope.isDefaultTargetDevices()).toBe(false);
         });
     });
-
-    describe('getGaTrackingTypeByValue', function () {
-        it('returns correct tracking type by value', function () {
-            var type = $scope.getGaTrackingTypeByValue(constants.gaTrackingType.EMAIL);
-            expect(type).toEqual({name: 'Email', value: 1});
-        });
-
-        it('returns undefined when matching type does not exist', function () {
-            var type = $scope.getGaTrackingTypeByValue(999);
-            expect(type).toBeUndefined();
-        });
-    });
 });

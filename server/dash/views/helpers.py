@@ -1215,15 +1215,18 @@ def get_source_default_settings(source):
     return default_settings
 
 
-def save_campaign_settings_and_propagate(campaign, settings, request):
+def save_campaign_settings_and_propagate(campaign, old_settings, new_settings, request):
     actions = []
 
     with transaction.atomic():
         campaign.save(request)
-        settings.save(request)
+        new_settings.save(request)
 
         # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
         campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+
+        tracking_changes = any(prop in old_settings.get_setting_changes(new_settings) for prop in
+                               ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param'])
 
         for ad_group in campaign_ad_groups:
             adgroup_settings = ad_group.get_current_settings()
@@ -1234,7 +1237,8 @@ def save_campaign_settings_and_propagate(campaign, settings, request):
                     adgroup_settings,
                     request,
                     send=False,
-                    iab_update=True
+                    iab_update=True,
+                    campaign_tracking_changes=tracking_changes
                 )
             )
 

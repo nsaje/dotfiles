@@ -1,8 +1,9 @@
-/* globals angular, options */
+/* globals angular, constants, options */
 angular.module('one.legacy').controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemNavigationService) { // eslint-disable-line max-len
     var campaignFreshSettings = $q.defer();
     $scope.settings = {};
     $scope.errors = {};
+    $scope.constants = constants;
     $scope.options = options;
     $scope.requestInProgress = false;
     $scope.saved = null;
@@ -127,6 +128,18 @@ angular.module('one.legacy').controller('CampaignSettingsCtrl', ['$scope', '$sta
     $scope.refreshPage = function () {
         $scope.getSettings();
         zemNavigationService.reload();
+    };
+
+    $scope.getGaTrackingTypeByValue = function (value) {
+        var result;
+        for (var i = 0; i < options.gaTrackingType.length; i++) {
+            var type = options.gaTrackingType[i];
+            if (type.value === value) {
+                result = type;
+                break;
+            }
+        }
+        return result;
     };
 
     $scope.getSettings();

@@ -46,11 +46,6 @@ class AdGroupSettingsTest(TestCase):
                 'retargeting_ad_groups': [2],
                 'audience_targeting': [1],
                 'exclusion_audience_targeting': [4],
-                'enable_ga_tracking': False,
-                'enable_adobe_tracking': False,
-                'ga_tracking_type': 2,
-                'ga_property_id': 'UA-0123456789-1',
-                'adobe_tracking_param': 'cid',
                 'tracking_code': 'def=123',
                 'autopilot_min_budget': '0'
             }
@@ -139,7 +134,6 @@ class AdGroupSettingsTest(TestCase):
                     },
                 ],
                 'settings': {
-                    'adobe_tracking_param': '',
                     'cpc_cc': '',
                     'daily_budget_cc': '100.00',
                     'end_date': '2015-04-02',
@@ -155,11 +149,6 @@ class AdGroupSettingsTest(TestCase):
                     'retargeting_ad_groups': [3],
                     'audience_targeting': [1, 2],
                     'exclusion_audience_targeting': [3, 4],
-                    'enable_ga_tracking': True,
-                    'ga_property_id': 'UA-123456789-1',
-                    'ga_tracking_type': 1,
-                    'enable_adobe_tracking': True,
-                    'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
                     'autopilot_min_budget': '0',
                     'autopilot_optimization_goal': None,
@@ -285,17 +274,11 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
                         'tracking_code': '',
-                        'adobe_tracking_param': '',
                         'autopilot_state': 2,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'audience_targeting': [1],
                         'exclusion_audience_targeting': [4],
-                        'enable_ga_tracking': False,
-                        'ga_property_id': 'UA-123456789-1',
-                        'ga_tracking_type': 1,
-                        'enable_adobe_tracking': False,
-                        'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
                         'autopilot_min_budget': '0',
                         'autopilot_optimization_goal': None,
@@ -383,15 +366,9 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
                         'tracking_code': '',
-                        'adobe_tracking_param': '',
                         'autopilot_state': 2,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
-                        'enable_ga_tracking': False,
-                        'ga_property_id': 'UA-123456789-1',
-                        'ga_tracking_type': 1,
-                        'enable_adobe_tracking': False,
-                        'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
                         'autopilot_min_budget': '0',
                         'autopilot_optimization_goal': None,
@@ -604,17 +581,9 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
                         'tracking_code': '',
-                        'enable_ga_tracking': True,
-                        'adobe_tracking_param': '',
-                        'enable_adobe_tracking': False,
                         'autopilot_state': 2,
-                        'ga_property_id': '',
-                        'ga_tracking_type': 1,
                         'autopilot_daily_budget': '0.00',
                         'retargeting_ad_groups': [2],
-                        'enable_ga_tracking': False,
-                        'enable_adobe_tracking': False,
-                        'adobe_tracking_param': 'cid',
                         'tracking_code': 'def=123',
                         'autopilot_min_budget': '0',
                         'autopilot_optimization_goal': None,
@@ -663,7 +632,6 @@ class AdGroupSettingsTest(TestCase):
             mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
             self.settings_dict['settings']['tracking_code'] = 'asd=123'
-            self.settings_dict['settings']['enable_ga_tracking'] = False
 
             add_permissions(self.user, ['settings_view'])
             response = self.client.put(
@@ -675,7 +643,6 @@ class AdGroupSettingsTest(TestCase):
             response_settings_dict = json.loads(response.content)['data']['settings']
 
             self.assertEqual(response_settings_dict['tracking_code'], 'asd=123')
-            self.assertEqual(response_settings_dict['enable_ga_tracking'], False)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
@@ -767,8 +734,6 @@ class AdGroupSettingsTest(TestCase):
             self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
             self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
-            self.assertNotEqual(response_settings_dict['ga_tracking_type'], 2)
-            self.assertNotEqual(response_settings_dict['ga_property_id'], 'UA-0123456789-1')
 
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
@@ -1321,14 +1286,20 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['goal_quantity'], '0.00')
         self.assertEqual(content['data']['settings']['target_devices'], ['mobile'])
         self.assertEqual(content['data']['settings']['target_regions'], ['NC', '501'])
+        self.assertEqual(content['data']['settings']['enable_ga_tracking'], True)
+        self.assertEqual(content['data']['settings']['enable_adobe_tracking'], False)
+        self.assertEqual(content['data']['settings']['ga_tracking_type'], 1)
+        self.assertEqual(content['data']['settings']['ga_property_id'], '')
+        self.assertEqual(content['data']['settings']['adobe_tracking_param'], '')
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, _):
+    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_r1_insert_adgroup):
         add_permissions(self.user, [
             'can_modify_campaign_manager',
             'can_modify_campaign_iab_category',
+            'can_set_ga_api_tracking',
         ])
         campaign = models.Campaign.objects.get(pk=1)
 
@@ -1338,6 +1309,10 @@ class CampaignSettingsTest(TestCase):
         self.assertNotEqual(settings.campaign_goal, 2)
         self.assertNotEqual(settings.target_devices, ['desktop'])
         self.assertNotEqual(settings.target_regions, ['CA', '502'])
+        self.assertNotEqual(settings.ga_tracking_type, 2)
+        self.assertNotEqual(settings.ga_property_id, 'UA-123456789-3')
+        self.assertNotEqual(settings.enable_adobe_tracking, True)
+        self.assertNotEqual(settings.adobe_tracking_param, 'cid')
 
         # ensure this campaign has a goal
         models.CampaignGoal.objects.create(campaign_id=campaign.id)
@@ -1354,6 +1329,11 @@ class CampaignSettingsTest(TestCase):
                     'target_regions': ['CA', '502'],
                     'campaign_manager': 1,
                     'iab_category': 'IAB17',
+                    'enable_ga_tracking': True,
+                    'enable_adobe_tracking': True,
+                    'ga_tracking_type': 2,
+                    'ga_property_id': 'UA-123456789-3',
+                    'adobe_tracking_param': 'cid',
                 }
             }),
             content_type='application/json',
@@ -1373,8 +1353,16 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.target_regions, ['CA', '502'])
         self.assertEqual(settings.campaign_manager_id, 1)
         self.assertEqual(settings.iab_category, 'IAB17')
+        self.assertEqual(settings.enable_ga_tracking, True)
+        self.assertEqual(settings.ga_tracking_type, 2)
+        self.assertEqual(settings.ga_property_id, 'UA-123456789-3')
+        self.assertEqual(settings.enable_adobe_tracking, True)
+        self.assertEqual(settings.adobe_tracking_param, 'cid')
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
+        mock_r1_insert_adgroup.assert_has_calls(
+            [call(ag.id, ag.get_current_settings().get_tracking_codes(), True, True, 'cid')
+             for ag in campaign.adgroup_set.all()])
 
         hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
@@ -1395,7 +1383,12 @@ class CampaignSettingsTest(TestCase):
                     'campaign_goal': 2,
                     'goal_quantity': 10,
                     'target_devices': ['desktop'],
-                    'target_regions': ['CA', '502']
+                    'target_regions': ['CA', '502'],
+                    'enable_ga_tracking': False,
+                    'enable_adobe_tracking': False,
+                    'ga_tracking_type': 2,
+                    'ga_property_id': 'UA-123456789-1',
+                    'adobe_tracking_param': 'cid',
                 },
                 'goals': {
                     'added': [
@@ -1428,7 +1421,12 @@ class CampaignSettingsTest(TestCase):
                     'campaign_goal': 2,
                     'goal_quantity': 10,
                     'target_devices': ['desktop'],
-                    'target_regions': ['CA', '502']
+                    'target_regions': ['CA', '502'],
+                    'enable_ga_tracking': False,
+                    'enable_adobe_tracking': False,
+                    'ga_tracking_type': 2,
+                    'ga_property_id': 'UA-123456789-1',
+                    'adobe_tracking_param': 'cid',
                 },
                 'goals': {
                     'added': [
@@ -1475,7 +1473,12 @@ class CampaignSettingsTest(TestCase):
                     'campaign_goal': 2,
                     'goal_quantity': 10,
                     'target_devices': ['desktop'],
-                    'target_regions': ['CA', '502']
+                    'target_regions': ['CA', '502'],
+                    'enable_ga_tracking': False,
+                    'enable_adobe_tracking': False,
+                    'ga_tracking_type': 2,
+                    'ga_property_id': 'UA-123456789-1',
+                    'adobe_tracking_param': 'cid',
                 },
                 'goals': {
                     'added': [],
@@ -1524,7 +1527,12 @@ class CampaignSettingsTest(TestCase):
                     'campaign_goal': 2,
                     'goal_quantity': 10,
                     'target_devices': ['desktop'],
-                    'target_regions': ['CA', '502']
+                    'target_regions': ['CA', '502'],
+                    'enable_ga_tracking': False,
+                    'enable_adobe_tracking': False,
+                    'ga_tracking_type': 2,
+                    'ga_property_id': 'UA-123456789-1',
+                    'adobe_tracking_param': 'cid',
                 },
                 'goals': {
                     'added': [],

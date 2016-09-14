@@ -51,6 +51,11 @@ describe('api', function () {
                 target_regions: ['NC', '501'],
                 campaign_manager: 1,
                 iab_category: 'IAB-24',
+                enable_ga_tracking: true,
+                ga_tracking_type: constants.gaTrackingType.API,
+                ga_property_id: 'UA-123-1',
+                enable_adobe_tracking: true,
+                adobe_tracking_param: 'cid'
             },
             goals: [],
         };
@@ -64,6 +69,11 @@ describe('api', function () {
                 target_regions: ['NC', '501'],
                 campaign_manager: 1,
                 iab_category: 'IAB-24',
+                enable_ga_tracking: true,
+                ga_tracking_type: constants.gaTrackingType.API,
+                ga_property_id: 'UA-123-1',
+                enable_adobe_tracking: true,
+                adobe_tracking_param: 'cid'
             },
             goals: {
                 primary: null,
@@ -92,7 +102,12 @@ describe('api', function () {
                 value: constants.adTargetDevice.MOBILE,
                 checked: true
             }],
-            targetRegions: ['NC', '501']
+            targetRegions: ['NC', '501'],
+            enableGaTracking: true,
+            gaTrackingType: constants.gaTrackingType.API,
+            gaPropertyId: 'UA-123-1',
+            enableAdobeTracking: true,
+            adobeTrackingParam: 'cid'
         };
 
         describe('get', function () {
@@ -137,6 +152,11 @@ describe('api', function () {
                         target_regions: ['Target regions are wrong'],
                         iab_category: ['Invalid IAB category'],
                         campaign_manager: ['Invalid campaign manager'],
+                        enable_ga_tracking: ['Invalid campaign manager'],
+                        ga_tracking_type: ['Invalid GA tracking type'],
+                        ga_property_id: ['Invalid GA property id'],
+                        enable_adobe_tracking: ['Invalid adobe tracking'],
+                        adobe_tracking_param: ['Invalid adobe tracking param']
                     }
                 };
 
@@ -156,6 +176,11 @@ describe('api', function () {
                     goals: ['CPA goal cannot be set as primary because ...'],
                     IABCategory: ['Invalid IAB category'],
                     campaignManager: ['Invalid campaign manager'],
+                    enableGaTracking: ['Invalid campaign manager'],
+                    gaTrackingType: ['Invalid GA tracking type'],
+                    gaPropertyId: ['Invalid GA property id'],
+                    enableAdobeTracking: ['Invalid adobe tracking'],
+                    adobeTrackingParam: ['Invalid adobe tracking param']
                 });
             });
         });

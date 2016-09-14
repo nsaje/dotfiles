@@ -183,6 +183,144 @@ class AdGroupAdminFormTest(TestCase):
         self.assertEqual('alert("a");', form.initial['redirect_javascript'])
 
 
+class CampaignSettingsFormTest(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def setUp(self):
+        self.campaign = models.Campaign.objects.get(pk=1)
+
+        self.user = User.objects.get(pk=1)
+        self.data = {
+            'id': '1',
+            'name': 'Test campaign',
+            'campaign_manager': self.user.pk,
+            'iab_category': 'IAB1',
+            'campaign_goal': 2,
+            'goal_quantity': 10,
+            'target_devices': ['desktop', 'mobile'],
+            'target_regions': ['US'],
+            'enable_ga_tracking': True,
+            'ga_tracking_type': 2,
+            'ga_property_id': 'UA-123456789-1',
+        }
+
+    @patch('utils.dates_helper.local_today')
+    def test_form(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
+        form = forms.CampaignSettingsForm(self.data)
+
+        self.assertTrue(form.is_valid())
+
+        self.maxDiff = None
+        self.assertEqual(form.cleaned_data, {
+            'id': 1,
+            'name': 'Test campaign',
+            'campaign_manager': self.user,
+            'iab_category': constants.IABCategory.IAB1,
+            'campaign_goal': 2,
+            'goal_quantity': Decimal('10'),
+            'target_devices': ['desktop', 'mobile'],
+            'target_regions': ['US'],
+            'enable_ga_tracking': True,
+            'ga_tracking_type': 2,
+            'ga_property_id': 'UA-123456789-1',
+            'enable_adobe_tracking': False,
+            'adobe_tracking_param': '',
+        })
+
+    @patch('utils.dates_helper.local_today')
+    def test_default_value_enable_ga_tracking(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
+        form = forms.CampaignSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_ga_tracking', form.cleaned_data)
+        self.assertTrue(form.cleaned_data['enable_ga_tracking'])
+
+        del self.data['enable_ga_tracking']
+
+        # should be True if not set
+        form = forms.CampaignSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_ga_tracking', form.cleaned_data)
+        self.assertTrue(form.cleaned_data['enable_ga_tracking'])
+
+        self.data['enable_ga_tracking'] = False
+
+        form = forms.CampaignSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_ga_tracking', form.cleaned_data)
+        self.assertFalse(form.cleaned_data['enable_ga_tracking'])
+
+    @patch('utils.dates_helper.local_today')
+    def test_default_value_enable_adobe_tracking(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
+        # should be False if not set
+        form = forms.CampaignSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_adobe_tracking', form.cleaned_data)
+
+        # We need to use assertEqual here, because assertFalse passes
+        # even if the value is falsy (None), which is not ok here
+        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
+
+        self.data['enable_adobe_tracking'] = False
+        form = forms.CampaignSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_adobe_tracking', form.cleaned_data)
+        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
+
+        self.data['enable_adobe_tracking'] = True
+        form = forms.CampaignSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_adobe_tracking', form.cleaned_data)
+        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], True)
+
+    @patch('utils.dates_helper.local_today')
+    def test_ga_tracking_type_email(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
+        self.data['ga_tracking_type'] = 1
+        self.data['ga_property_id'] = 'abcd'
+
+        form = forms.CampaignSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('ga_property_id', form.cleaned_data)
+        self.assertIsNone(form.cleaned_data['ga_property_id'])
+
+    @patch('utils.dates_helper.local_today')
+    def test_ga_tracking_disabled(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
+        self.data['enable_ga_tracking'] = False
+        self.data['ga_tracking_type'] = 2
+        self.data['ga_property_id'] = 'abcd'
+
+        form = forms.CampaignSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('ga_property_id', form.cleaned_data)
+        self.assertIsNone(form.cleaned_data['ga_property_id'])
+
+    @patch('utils.dates_helper.local_today')
+    def test_ga_property_id_missing(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
+        self.data['ga_tracking_type'] = 2
+        self.data['ga_property_id'] = ''
+
+        form = forms.CampaignSettingsForm(self.data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('ga_property_id', form.errors)
+        self.assertEqual(form.errors['ga_property_id'], ['Web property ID is required.'])
+
+    @patch('utils.dates_helper.local_today')
+    def test_ga_property_id_invalid(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
+        self.data['ga_tracking_type'] = 2
+        self.data['ga_property_id'] = 'ABC'
+
+        form = forms.CampaignSettingsForm(self.data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('ga_property_id', form.errors)
+        self.assertEqual(form.errors['ga_property_id'], ['Web property ID is not valid.'])
+
+
 class AdGroupSettingsFormTest(TestCase):
     fixtures = ['test_models.yaml']
 
@@ -203,9 +341,6 @@ class AdGroupSettingsFormTest(TestCase):
             'retargeting_ad_groups': [3],
             'audience_targeting': [1, 2],
             'exclusion_audience_targeting': [3, 4],
-            'enable_ga_tracking': True,
-            'ga_tracking_type': 2,
-            'ga_property_id': 'UA-123456789-1',
             'autopilot_state': 2,
             'autopilot_daily_budget': '100.00'
         }
@@ -227,14 +362,9 @@ class AdGroupSettingsFormTest(TestCase):
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
             'tracking_code': 'code=test',
-            'enable_ga_tracking': True,
-            'ga_tracking_type': 2,
-            'ga_property_id': 'UA-123456789-1',
             'retargeting_ad_groups': [3],
             'audience_targeting': [1, 2],
             'exclusion_audience_targeting': [3, 4],
-            'enable_adobe_tracking': False,
-            'adobe_tracking_param': '',
             'autopilot_state': 2,
             'autopilot_daily_budget': Decimal('100.00')
         })
@@ -310,98 +440,6 @@ class AdGroupSettingsFormTest(TestCase):
         self.data['cpc_cc'] = 10.01
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
-
-    @patch('utils.dates_helper.local_today')
-    def test_default_value_enable_ga_tracking(self, mock_today):
-        mock_today.return_value = datetime.date(2014, 12, 31)
-        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertTrue(form.is_valid())
-        self.assertIn('enable_ga_tracking', form.cleaned_data)
-        self.assertTrue(form.cleaned_data['enable_ga_tracking'])
-
-        del self.data['enable_ga_tracking']
-
-        # should be True if not set
-        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertTrue(form.is_valid())
-        self.assertIn('enable_ga_tracking', form.cleaned_data)
-        self.assertTrue(form.cleaned_data['enable_ga_tracking'])
-
-        self.data['enable_ga_tracking'] = False
-
-        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertTrue(form.is_valid())
-        self.assertIn('enable_ga_tracking', form.cleaned_data)
-        self.assertFalse(form.cleaned_data['enable_ga_tracking'])
-
-    @patch('utils.dates_helper.local_today')
-    def test_default_value_enable_adobe_tracking(self, mock_today):
-        mock_today.return_value = datetime.date(2014, 12, 31)
-        # should be False if not set
-        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertTrue(form.is_valid())
-        self.assertIn('enable_adobe_tracking', form.cleaned_data)
-
-        # We need to use assertEqual here, because assertFalse passes
-        # even if the value is falsy (None), which is not ok here
-        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
-
-        self.data['enable_adobe_tracking'] = False
-        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertTrue(form.is_valid())
-        self.assertIn('enable_adobe_tracking', form.cleaned_data)
-        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
-
-        self.data['enable_adobe_tracking'] = True
-        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertTrue(form.is_valid())
-        self.assertIn('enable_adobe_tracking', form.cleaned_data)
-        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], True)
-
-    @patch('utils.dates_helper.local_today')
-    def test_ga_tracking_type_email(self, mock_today):
-        mock_today.return_value = datetime.date(2014, 12, 31)
-        self.data['ga_tracking_type'] = 1
-        self.data['ga_property_id'] = 'abcd'
-
-        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertTrue(form.is_valid())
-        self.assertIn('ga_property_id', form.cleaned_data)
-        self.assertIsNone(form.cleaned_data['ga_property_id'])
-
-    @patch('utils.dates_helper.local_today')
-    def test_ga_tracking_disabled(self, mock_today):
-        mock_today.return_value = datetime.date(2014, 12, 31)
-        self.data['enable_ga_tracking'] = False
-        self.data['ga_tracking_type'] = 2
-        self.data['ga_property_id'] = 'abcd'
-
-        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertTrue(form.is_valid())
-        self.assertIn('ga_property_id', form.cleaned_data)
-        self.assertIsNone(form.cleaned_data['ga_property_id'])
-
-    @patch('utils.dates_helper.local_today')
-    def test_ga_property_id_missing(self, mock_today):
-        mock_today.return_value = datetime.date(2014, 12, 31)
-        self.data['ga_tracking_type'] = 2
-        self.data['ga_property_id'] = ''
-
-        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('ga_property_id', form.errors)
-        self.assertEqual(form.errors['ga_property_id'], ['Web property ID is required.'])
-
-    @patch('utils.dates_helper.local_today')
-    def test_ga_property_id_invalid(self, mock_today):
-        mock_today.return_value = datetime.date(2014, 12, 31)
-        self.data['ga_tracking_type'] = 2
-        self.data['ga_property_id'] = 'ABC'
-
-        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('ga_property_id', form.errors)
-        self.assertEqual(form.errors['ga_property_id'], ['Web property ID is not valid.'])
 
     def test_retargeting_ad_groups_wrong_account(self):
         ad_group = models.AdGroup.objects.get(pk=2)

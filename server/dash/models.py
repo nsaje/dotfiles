@@ -1004,7 +1004,12 @@ class CampaignSettings(SettingsBase):
         'target_devices',
         'target_regions',
         'automatic_campaign_stop',
-        'landing_mode'
+        'landing_mode',
+        'enable_ga_tracking',
+        'ga_tracking_type',
+        'ga_property_id',
+        'enable_adobe_tracking',
+        'adobe_tracking_param',
     ]
     history_fields = list(_settings_fields)
 
@@ -1051,6 +1056,15 @@ class CampaignSettings(SettingsBase):
 
     automatic_campaign_stop = models.BooleanField(default=True)
     landing_mode = models.BooleanField(default=False)
+
+    enable_ga_tracking = models.BooleanField(default=True)
+    ga_tracking_type = models.IntegerField(
+        default=constants.GATrackingType.EMAIL,
+        choices=constants.GATrackingType.get_choices()
+    )
+    ga_property_id = models.CharField(max_length=25, blank=True, default='')
+    enable_adobe_tracking = models.BooleanField(default=False)
+    adobe_tracking_param = models.CharField(max_length=10, blank=True, default='')
 
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
@@ -1116,6 +1130,11 @@ class CampaignSettings(SettingsBase):
             'target_regions': 'Locations',
             'automatic_campaign_stop': 'Automatic Campaign Stop',
             'landing_mode': 'Landing Mode',
+            'enable_ga_tracking': 'Enable GA tracking',
+            'ga_tracking_type': 'GA tracking type (via API or e-mail).',
+            'ga_property_id': 'GA web property ID',
+            'enable_adobe_tracking': 'Enable Adobe tracking',
+            'adobe_tracking_param': 'Adobe tracking parameter',
         }
 
         return NAMES[prop_name]
@@ -1143,6 +1162,8 @@ class CampaignSettings(SettingsBase):
             value = str(value)
         elif prop_name == 'archived':
             value = str(value)
+        elif prop_name == 'ga_tracking_type':
+            value = constants.GATrackingType.get_text(value)
 
         return value
 

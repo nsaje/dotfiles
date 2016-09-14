@@ -312,6 +312,11 @@ class CampaignSettingsTest(TestCase):
             'goal_quantity': Decimal('10.00'),
             'automatic_campaign_stop': True,
             'landing_mode': False,
+            'enable_ga_tracking': True,
+            'ga_property_id': u'',
+            'ga_tracking_type': 1,
+            'enable_adobe_tracking': False,
+            'adobe_tracking_param': u'',
         }
 
         self.assertEqual(

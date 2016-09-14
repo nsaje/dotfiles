@@ -159,21 +159,6 @@ class AdGroupSettingsForm(forms.Form):
     )
     tracking_code = forms.CharField(required=False)
 
-    enable_ga_tracking = forms.NullBooleanField(required=False)
-
-    ga_tracking_type = forms.TypedChoiceField(
-        required=False,
-        choices=constants.GATrackingType.get_choices(),
-        coerce=int,
-        empty_value=None
-    )
-
-    ga_property_id = forms.CharField(max_length=25, required=False)
-
-    enable_adobe_tracking = forms.NullBooleanField(required=False)
-
-    adobe_tracking_param = forms.CharField(max_length=10, required=False)
-
     autopilot_state = forms.TypedChoiceField(
         required=False,
         choices=constants.AdGroupSettingsAutopilotState.get_choices(),
@@ -250,30 +235,6 @@ class AdGroupSettingsForm(forms.Form):
             raise forms.ValidationError('End date cannot be set when campaign is in landing mode.')
 
         return end_date
-
-    def clean_enable_ga_tracking(self):
-        # return True if the field is not set or set to True
-        return self.cleaned_data.get('enable_ga_tracking', True) is not False
-
-    def clean_ga_property_id(self):
-        property_id = self.cleaned_data.get('ga_property_id').strip()
-        tracking_type = self.cleaned_data.get('ga_tracking_type')
-        enable_ga_tracking = self.cleaned_data.get('enable_ga_tracking')
-
-        if not enable_ga_tracking or tracking_type == constants.GATrackingType.EMAIL:
-            return None  # property ID should not be set when email type is selected
-
-        if not property_id:
-            raise forms.ValidationError('Web property ID is required.')
-
-        if not re.match(constants.GA_PROPERTY_ID_REGEX, property_id):
-            raise forms.ValidationError('Web property ID is not valid.')
-
-        return property_id
-
-    def clean_enable_adobe_tracking(self):
-        # return False if the field is not set or set to False
-        return self.cleaned_data.get('enable_adobe_tracking', False) or False
 
     def clean_tracking_code(self):
         tracking_code = self.cleaned_data.get('tracking_code')
@@ -650,6 +611,21 @@ class CampaignSettingsForm(forms.Form):
         required=False,
     )
 
+    enable_ga_tracking = forms.NullBooleanField(required=False)
+
+    ga_tracking_type = forms.TypedChoiceField(
+        required=False,
+        choices=constants.GATrackingType.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+
+    ga_property_id = forms.CharField(max_length=25, required=False)
+
+    enable_adobe_tracking = forms.NullBooleanField(required=False)
+
+    adobe_tracking_param = forms.CharField(max_length=10, required=False)
+
     def clean_campaign_manager(self):
         campaign_manager_id = self.cleaned_data.get('campaign_manager')
         if campaign_manager_id is None:
@@ -663,6 +639,30 @@ class CampaignSettingsForm(forms.Form):
             raise forms.ValidationError(err_msg)
 
         return campaign_manager
+
+    def clean_enable_ga_tracking(self):
+        # return True if the field is not set or set to True
+        return self.cleaned_data.get('enable_ga_tracking', True) is not False
+
+    def clean_ga_property_id(self):
+        property_id = self.cleaned_data.get('ga_property_id').strip()
+        tracking_type = self.cleaned_data.get('ga_tracking_type')
+        enable_ga_tracking = self.cleaned_data.get('enable_ga_tracking')
+
+        if not enable_ga_tracking or tracking_type == constants.GATrackingType.EMAIL:
+            return None  # property ID should not be set when email type is selected
+
+        if not property_id:
+            raise forms.ValidationError('Web property ID is required.')
+
+        if not re.match(constants.GA_PROPERTY_ID_REGEX, property_id):
+            raise forms.ValidationError('Web property ID is not valid.')
+
+        return property_id
+
+    def clean_enable_adobe_tracking(self):
+        # return False if the field is not set or set to False
+        return self.cleaned_data.get('enable_adobe_tracking', False) or False
 
 
 class UserForm(forms.Form):

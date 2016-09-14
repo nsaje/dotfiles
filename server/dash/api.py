@@ -702,14 +702,16 @@ def update_content_ad_source_state(content_ad_source, data):
 
 
 def update_ad_group_redirector_settings(ad_group, ad_group_settings):
+    campaign_settings = ad_group.campaign.get_current_settings()
     redirector_helper.insert_adgroup(ad_group.id,
                                      ad_group_settings.get_tracking_codes(),
-                                     ad_group_settings.enable_ga_tracking,
-                                     ad_group_settings.enable_adobe_tracking,
-                                     ad_group_settings.adobe_tracking_param)
+                                     campaign_settings.enable_ga_tracking,
+                                     campaign_settings.enable_adobe_tracking,
+                                     campaign_settings.adobe_tracking_param)
 
 
-def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True, iab_update=False):
+def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True, iab_update=False,
+                                   campaign_tracking_changes=False):
     changes = current_settings.get_setting_changes(new_settings)
 
     campaign_settings = ad_group.campaign.get_current_settings()
@@ -718,8 +720,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     if iab_update:
         changes['iab_category'] = campaign_settings.iab_category
 
-    has_tracking_changes = any(prop in changes for prop in
-                               ['tracking_code', 'enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param'])
+    has_tracking_changes = 'tracking_code' in changes or campaign_tracking_changes
 
     # insert settings into redirector if settings are fresh or if there are some changes
     # this way the ad groups settings are kept consistent between external sources, z1 and
@@ -762,7 +763,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             if field_name == 'tracking_code':
                 new_field_value = utils.url_helper.combine_tracking_codes(
                     new_settings.get_tracking_codes(),
-                    ad_group_source.get_tracking_ids() if new_settings.enable_ga_tracking else ''
+                    ad_group_source.get_tracking_ids() if campaign_settings.enable_ga_tracking else ''
                 )
 
                 # Temporary bug fix for a bug in Gravity - codes that don't have a value assigned can not

@@ -245,18 +245,6 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
         $scope.getSettings($state.params.id);
     };
 
-    $scope.getGaTrackingTypeByValue = function (value) {
-        var result;
-        options.gaTrackingType.forEach(function (type) {
-            if (type.value === value) {
-                result = type;
-                return;
-            }
-        });
-
-        return result;
-    };
-
     $scope.addTargeting = function (type, id) {
         switch (type) {
         case 'adGroupTargeting':

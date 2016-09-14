@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from collections import defaultdict
 
 from django.conf import settings
@@ -180,18 +181,29 @@ class SourcePixelsView(K1APIView):
 class GAAccountsView(K1APIView):
 
     def get(self, request):
-        all_current_settings = dash.models.AdGroupSettings.objects.all().group_current_settings().prefetch_related(
-            'ad_group')
-        adgroup_ga_api_enabled = [current_settings.ad_group.id for current_settings in all_current_settings if
-                                  current_settings.enable_ga_tracking and
-                                  current_settings.ga_tracking_type == dash.constants.GATrackingType.API]
+        all_current_settings = dash.models.CampaignSettings.objects.all().group_current_settings()
+        ga_accounts = set()
+        for current_settings in all_current_settings:
+            if not (current_settings.enable_ga_tracking and
+                    current_settings.ga_tracking_type == dash.constants.GATrackingType.API):
+                continue
+            ga_property_id = current_settings.ga_property_id
+            ga_accounts.add((
+                current_settings.campaign.account_id,
+                self._extract_ga_account_id(ga_property_id),
+                ga_property_id
+            ))
+        ga_accounts_dicts = [
+            {'account_id': account_id, 'ga_account_id': ga_account_id, 'ga_web_property_id': ga_property_id}
+            for account_id, ga_account_id, ga_web_property_id in ga_accounts
+        ]
 
-        ga_accounts = (dash.models.GAAnalyticsAccount.objects
-                       .filter(account__campaign__adgroup__id__in=adgroup_ga_api_enabled)
-                       .values('account_id', 'ga_account_id', 'ga_web_property_id')
-                       .distinct()
-                       .order_by('account_id', 'ga_account_id'))
-        return self.response_ok({'ga_accounts': list(ga_accounts)})
+        return self.response_ok({'ga_accounts': list(ga_accounts_dicts)})
+
+    @staticmethod
+    def _extract_ga_account_id(ga_property_id):
+        result = re.search(constants.GA_PROPERTY_ID_REGEX, ga_property_id)
+        return result.group(1)
 
 
 class R1MappingView(K1APIView):

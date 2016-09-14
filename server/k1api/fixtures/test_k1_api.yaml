@@ -135,6 +135,9 @@
         name: 'test campaign 1'
         campaign: 1
         iab_category: IAB24
+        enable_ga_tracking: true
+        ga_tracking_type: 2
+        ga_property_id: 'UA-123-2'
     model: dash.campaignsettings
     pk: 1
 

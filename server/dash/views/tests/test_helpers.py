@@ -16,7 +16,7 @@ from dash import constants
 from dash import publisher_helpers
 from utils.test_helper import fake_request
 from utils import exc
-from mock import patch
+from mock import call, patch, Mock, ANY
 from zemauth.models import User
 
 
@@ -270,6 +270,26 @@ class ViewHelpersTestCase(TestCase):
                 'ok': True
             },
         }, data_status)
+
+    @patch.object(helpers.api, 'order_ad_group_settings_update')
+    def test_save_campaign_settings_and_propagate(self, mock_adgroup_update):
+        campaign = models.Campaign.objects.get(pk=1)
+        s1 = models.CampaignSettings(campaign=campaign)
+        s1.enable_ga_tracking = False
+        s1.enable_adobe_tracking = False
+        s1.adobe_tracking_param = ''
+        s2 = models.CampaignSettings(campaign=campaign)
+        s2.enable_ga_tracking = True
+        s2.enable_adobe_tracking = True
+        s2.adobe_tracking_param = 'cid'
+
+        request = HttpRequest()
+        request.user = User.objects.get(pk=1)
+        helpers.save_campaign_settings_and_propagate(campaign, s1, s2, request)
+
+        mock_adgroup_update.assert_called_with(
+            ANY, ANY, ANY, request, send=False,
+            iab_update=True, campaign_tracking_changes=True)
 
 
 class RunningStateHelpersTestCase(TestCase):

@@ -165,11 +165,6 @@ class AdGroupSettings(api_common.BaseApiView):
                 'target_devices': settings.target_devices,
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code,
-                'enable_ga_tracking': settings.enable_ga_tracking,
-                'ga_property_id': settings.ga_property_id,
-                'ga_tracking_type': settings.ga_tracking_type,
-                'enable_adobe_tracking': settings.enable_adobe_tracking,
-                'adobe_tracking_param': settings.adobe_tracking_param,
                 'autopilot_state': settings.autopilot_state,
                 'autopilot_daily_budget':
                     '{:.2f}'.format(settings.autopilot_daily_budget)
@@ -199,19 +194,10 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
-        settings.enable_ga_tracking = resource['enable_ga_tracking']
         settings.tracking_code = resource['tracking_code']
-        settings.enable_adobe_tracking = resource['enable_adobe_tracking']
-        settings.adobe_tracking_param = resource['adobe_tracking_param']
 
         if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
-
-        if settings.enable_ga_tracking and user.has_perm('zemauth.can_set_ga_api_tracking'):
-            settings.ga_tracking_type = resource['ga_tracking_type']
-
-            if settings.ga_tracking_type == constants.GATrackingType.API:
-                settings.ga_property_id = resource['ga_property_id']
 
         if not settings.landing_mode and user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
             settings.autopilot_state = resource['autopilot_state']
@@ -452,7 +438,7 @@ class CampaignSettings(api_common.BaseApiView):
         self.set_campaign(campaign, settings_form.cleaned_data)
 
         if current_settings.get_setting_changes(new_settings):
-            helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
+            helpers.save_campaign_settings_and_propagate(campaign, current_settings, new_settings, request)
             helpers.log_and_notify_campaign_settings_change(
                 campaign, current_settings, new_settings, request
             )
@@ -556,6 +542,11 @@ class CampaignSettings(api_common.BaseApiView):
             'name': campaign.name,
             'campaign_goal': settings.campaign_goal,
             'goal_quantity': settings.goal_quantity,
+            'enable_ga_tracking': settings.enable_ga_tracking,
+            'ga_property_id': settings.ga_property_id,
+            'ga_tracking_type': settings.ga_tracking_type,
+            'enable_adobe_tracking': settings.enable_adobe_tracking,
+            'adobe_tracking_param': settings.adobe_tracking_param,
         }
 
         result['target_devices'] = settings.target_devices
@@ -576,10 +567,18 @@ class CampaignSettings(api_common.BaseApiView):
         settings.goal_quantity = resource['goal_quantity']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
+        settings.enable_ga_tracking = resource['enable_ga_tracking']
+        settings.enable_adobe_tracking = resource['enable_adobe_tracking']
+        settings.adobe_tracking_param = resource['adobe_tracking_param']
         if request.user.has_perm('zemauth.can_modify_campaign_manager'):
             settings.campaign_manager = resource['campaign_manager']
         if request.user.has_perm('zemauth.can_modify_campaign_iab_category'):
             settings.iab_category = resource['iab_category']
+        if settings.enable_ga_tracking and request.user.has_perm('zemauth.can_set_ga_api_tracking'):
+            settings.ga_tracking_type = resource['ga_tracking_type']
+
+            if settings.ga_tracking_type == constants.GATrackingType.API:
+                settings.ga_property_id = resource['ga_property_id']
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
