@@ -83,7 +83,6 @@ class AdGroupSettings(api_common.BaseApiView):
         new_settings.ad_group_name = ad_group.name
 
         self._send_update_actions(ad_group, current_settings, new_settings, request)
-        self._add_ga_account(request.user, ad_group, new_settings)
         self._adjust_adgroup_sources(ad_group, new_settings, request)
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
@@ -104,26 +103,6 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
-
-    def _extract_ga_account_id(self, ga_property_id):
-        result = re.search(constants.GA_PROPERTY_ID_REGEX, ga_property_id)
-        return result.group(1)
-
-    def _add_ga_account(self, user, ad_group, settings):
-        if not user.has_perm('zemauth.can_set_ga_api_tracking'):
-            return
-        if not settings.ga_property_id:
-            return
-        if models.GAAnalyticsAccount.objects.filter(
-                account=ad_group.campaign.account,
-                ga_web_property_id=settings.ga_property_id).exists():
-            return  # no need to add it
-
-        models.GAAnalyticsAccount.objects.create(
-            account=ad_group.campaign.account,
-            ga_web_property_id=settings.ga_property_id,
-            ga_account_id=self._extract_ga_account_id(settings.ga_property_id)
-        )
 
     def get_warnings(self, request, ad_group_settings):
         warnings = {}

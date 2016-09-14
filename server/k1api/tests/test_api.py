@@ -687,7 +687,7 @@ class K1ApiTest(TestCase):
             u'cpc_cc': u'0.1200',
             u'daily_budget_cc': u'1.5000',
             u'source_campaign_key': [u'fake'],
-            u'tracking_code': u'tracking1&tracking2&_z1_adgid=1&_z1_msid={sourceDomain}',
+            u'tracking_code': u'tracking1&tracking2',
         })
 
         self.assertDictEqual(data[1], {
@@ -697,7 +697,7 @@ class K1ApiTest(TestCase):
             u'cpc_cc': u'0.1300',
             u'daily_budget_cc': u'1.6000',
             u'source_campaign_key': [u'fake'],
-            u'tracking_code': u'tracking1&tracking2&_z1_adgid=2&_z1_msid={sourceDomain}',
+            u'tracking_code': u'tracking1&tracking2',
         })
 
     def test_get_ad_groups_exchanges_with_id(self):
@@ -720,7 +720,7 @@ class K1ApiTest(TestCase):
             u'cpc_cc': u'0.1200',
             u'daily_budget_cc': u'1.5000',
             u'source_campaign_key': [u'fake'],
-            u'tracking_code': u'tracking1&tracking2&_z1_adgid=1&_z1_msid={sourceDomain}',
+            u'tracking_code': u'tracking1&tracking2',
         })
 
     def test_get_content_ads(self):

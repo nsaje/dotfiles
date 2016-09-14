@@ -1446,15 +1446,6 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     actions = [reenable_global]
 
 
-class GAAnalyticsAccount(admin.ModelAdmin):
-    list_display = (
-        'account',
-        'ga_account_id',
-        'ga_web_property_id',
-    )
-    search_fields = ('ga_account_id', 'ga_web_property_id')
-
-
 class EmailTemplateAdmin(admin.ModelAdmin):
     actions = None
 
@@ -1678,7 +1669,6 @@ admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdm
 admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
 admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
-admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)
 admin.site.register(models.FacebookAccount, FacebookAccount)
 admin.site.register(models.EmailTemplate, EmailTemplateAdmin)
 admin.site.register(models.History, HistoryAdmin)

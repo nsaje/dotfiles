@@ -831,7 +831,7 @@ def _init_create_campaign(ad_group_source, name, request):
             payload['args']['extra'].update({
                 'tracking_code': utils.url_helper.combine_tracking_codes(
                     ad_group_tracking_codes,
-                    ad_group_source.get_tracking_ids() if ad_group_settings.enable_ga_tracking else ''
+                    ''
                 ),
                 'tracking_slug': ad_group_source.source.tracking_slug
             })

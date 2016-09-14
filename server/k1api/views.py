@@ -510,9 +510,7 @@ class AdGroupSourcesView(K1APIView):
                 source_state = constants.AdGroupSettingsState.INACTIVE
 
             tracking_code = url_helper.combine_tracking_codes(
-                ad_group_settings.get_tracking_codes(),
-                (ad_group_source_settings.ad_group_source.get_tracking_ids()
-                    if ad_group_settings.enable_ga_tracking else '')
+                ad_group_settings.get_tracking_codes(), ''
             )
 
             source = {

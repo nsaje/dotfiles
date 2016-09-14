@@ -65,13 +65,8 @@ class AdGroupSettingsTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
-            'enable_ga_tracking': True,
-            'ga_property_id': 'UA-123456789-1',
-            'enable_adobe_tracking': False,
-            'adobe_tracking_param': '',
             'autopilot_daily_budget': Decimal('0.0000'),
             'autopilot_state': 2,
-            'ga_tracking_type': GATrackingType.EMAIL,
             'landing_mode': False,
         }
         self.assertEqual(
@@ -141,7 +136,6 @@ class AdGroupSettingsTest(TestCase):
             'Max CPC bid set to "$1.000", '
             'Interest targeting set to "A, B", '
             'Exclusion interest targeting set to "C, D", '
-            'GA web property ID set to "UA-123456789-1", '
             'State set to "Enabled", '
             'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg", '
             'Start date set to "2014-06-04", '

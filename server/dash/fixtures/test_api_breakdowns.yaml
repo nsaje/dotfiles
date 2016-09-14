@@ -204,10 +204,6 @@
         ad_group_name: 'AdGroup name'
         start_date: '2015-03-02'
         end_date: '2015-04-02'
-        enable_ga_tracking: True
-        ga_property_id: 'UA-123456789-1'
-        enable_adobe_tracking: True
-        adobe_tracking_param: 'pid'
         autopilot_state: 1
         autopilot_daily_budget: '50.0000'
         retargeting_ad_groups: [3]
@@ -231,10 +227,6 @@
         ad_group_name: 'AdGroup name'
         start_date: '2015-03-02'
         end_date: '2015-04-02'
-        enable_ga_tracking: True
-        ga_property_id: 'UA-123456789-1'
-        enable_adobe_tracking: True
-        adobe_tracking_param: 'pid'
         autopilot_state: 1
         autopilot_daily_budget: '50.0000'
         retargeting_ad_groups: [3]
@@ -248,7 +240,6 @@
         archived: False
         ad_group: 2
         tracking_code: 'param1=foo&param2=bar'
-        enable_ga_tracking: False
         display_url: 'example.com'
         brand_name: 'Example'
         description: 'Example description'

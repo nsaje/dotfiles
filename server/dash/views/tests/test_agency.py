@@ -405,52 +405,6 @@ class AdGroupSettingsTest(TestCase):
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
-    @patch('utils.k1_helper.update_ad_group')
-    def test_put_add_ga_analytics(self, mock_k1_ping, mock_actionlog_api,
-                                  mock_order_ad_group_settings_update):
-        with patch('utils.dates_helper.local_today') as mock_now:
-            # mock datetime so that budget is always valid
-            mock_now.return_value = datetime.date(2016, 1, 5)
-
-            ad_group = models.AdGroup.objects.get(pk=1)
-
-            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
-
-            old_settings = ad_group.get_current_settings()
-            self.assertIsNotNone(old_settings.pk)
-
-            add_permissions(self.user, [
-                'settings_view',
-                'can_set_ad_group_max_cpc',
-                'can_set_adgroup_to_auto_pilot',
-                'can_view_retargeting_settings',
-                'can_set_ga_api_tracking'
-            ])
-            self.client.put(
-                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-                json.dumps(self.settings_dict),
-                follow=True
-            )
-
-            new_settings = ad_group.get_current_settings()
-            self.assertEquals(models.GAAnalyticsAccount.objects.filter(
-                account=ad_group.campaign.account,
-                ga_web_property_id=new_settings.ga_property_id).count(), 1)
-
-            # put again - this time no new GAAnalyticsAccount should be created
-            self.client.put(
-                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-                json.dumps(self.settings_dict),
-                follow=True
-            )
-
-            new_settings = ad_group.get_current_settings()
-            self.assertEquals(models.GAAnalyticsAccount.objects.filter(
-                account=ad_group.campaign.account,
-                ga_web_property_id=new_settings.ga_property_id).count(), 1)
-
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
     def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid

@@ -67,28 +67,6 @@
     model: dash.agency
     pk: 20
 
-# test ga accounts
-
--   fields:
-        account: 1
-        ga_account_id: 'acc1'
-        ga_web_property_id: 'prop1'
-    model: dash.gaanalyticsaccount
-    pk: 1
-
--   fields:
-        account: 1
-        ga_account_id: 'acc2'
-        ga_web_property_id: 'prop2'
-    model: dash.gaanalyticsaccount
-    pk: 2
-
--   fields:
-        account: 2
-        ga_account_id: 'acc3'
-        ga_web_property_id: 'prop3'
-    model: dash.gaanalyticsaccount
-    pk: 3
 
 # test campaign
 
@@ -431,8 +409,6 @@
         ad_group: 1
         created_dt: '2014-06-04T00:00:00'
         start_date: '2014-06-04'
-        enable_ga_tracking: true
-        ga_tracking_type: 2
         state: 1
         brand_name: 'brand1'
         display_url: 'brand1.com'
@@ -449,8 +425,6 @@
         ad_group: 2
         created_dt: '2014-01-02T00:00:00'
         start_date: '2014-06-04'
-        enable_ga_tracking: true
-        ga_tracking_type: 2
         state: 1
         brand_name: 'brand2'
         display_url: 'brand2.com'
@@ -462,8 +436,6 @@
         ad_group: 3
         created_dt: '2014-01-01T00:00:00'
         start_date: '2014-06-04'
-        enable_ga_tracking: true
-        ga_tracking_type: 2
         state: 1
         brand_name: 'brand3'
         display_url: 'brand3.com'
@@ -475,8 +447,6 @@
         ad_group: 3
         created_dt: '2014-01-02T00:00:00'
         start_date: '2014-06-04'
-        enable_ga_tracking: false
-        ga_tracking_type: 1
         state: 2
         brand_name: 'brand4'
         display_url: 'brand4.com'

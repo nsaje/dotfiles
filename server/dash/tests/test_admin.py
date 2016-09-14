@@ -66,6 +66,7 @@ class AdGroupAdmin(TestCase):
         mock_r1_insert_adgroup.assert_not_called()
 
         old_settings = ad_group.get_current_settings()
+        campaign_settings = ad_group.campaign.get_current_settings()
         form.cleaned_data['redirect_pixel_urls'] = trackers
         form.cleaned_data['redirect_javascript'] = javascript
         form.cleaned_data['interest_targeting'] = interest_targeting
@@ -80,9 +81,9 @@ class AdGroupAdmin(TestCase):
         mock_r1_insert_adgroup.assert_called_with(
             ad_group.id,
             old_settings.get_tracking_codes(),
-            old_settings.enable_ga_tracking,
-            old_settings.enable_adobe_tracking,
-            old_settings.adobe_tracking_param,
+            campaign_settings.enable_ga_tracking,
+            campaign_settings.enable_adobe_tracking,
+            campaign_settings.adobe_tracking_param,
             trackers,
             javascript
         )

@@ -342,21 +342,6 @@ class AdGroupOverview(api_common.BaseApiView):
             )
         settings.append(tracking_code_settings.as_dict())
 
-        post_click_tracking = []
-        if ad_group_settings.enable_ga_tracking:
-            post_click_tracking.append('Google Analytics')
-        if ad_group_settings.enable_adobe_tracking:
-            post_click_tracking.append('Adobe')
-
-        if post_click_tracking == []:
-            post_click_tracking.append("N/A")
-
-        post_click_tracking_setting = infobox_helpers.OverviewSetting(
-            'Post click tracking:',
-            ', '.join(post_click_tracking),
-        )
-        settings.append(post_click_tracking_setting.as_dict())
-
         daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
         daily_cap_setting = infobox_helpers.OverviewSetting(
             'Daily budget:',
@@ -632,6 +617,21 @@ class CampaignOverview(api_common.BaseApiView):
             campaign_settings.target_regions
         )
         settings.append(targeting_region_setting.as_dict())
+
+        post_click_tracking = []
+        if campaign_settings.enable_ga_tracking:
+            post_click_tracking.append('Google Analytics')
+        if campaign_settings.enable_adobe_tracking:
+            post_click_tracking.append('Adobe')
+
+        if post_click_tracking == []:
+            post_click_tracking.append("N/A")
+
+        post_click_tracking_setting = infobox_helpers.OverviewSetting(
+            'Post click tracking:',
+            ', '.join(post_click_tracking),
+        )
+        settings.append(post_click_tracking_setting.as_dict())
 
         # take the num
         daily_cap = infobox_helpers.OverviewSetting(

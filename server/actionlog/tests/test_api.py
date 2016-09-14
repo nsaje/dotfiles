@@ -438,7 +438,7 @@ class ActionLogApiTestCase(TestCase):
                 'extra': {
                     'tracking_code': url_helper.combine_tracking_codes(
                         ad_group_settings.get_tracking_codes(),
-                        ad_group_source.get_tracking_ids(),  # should have tracking ids
+                        ''
                     ),
                     'tracking_slug': 'yahoo',
                     'target_regions': ['GB', 'US', 'CA'],
