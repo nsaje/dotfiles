@@ -381,10 +381,13 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertEqual(len(data['ga_accounts']), 1)
+        self.assertEqual(len(data['ga_accounts']), 2)
         self.assertEqual(data['ga_accounts'][0]['account_id'], 1)
         self.assertEqual(data['ga_accounts'][0]['ga_account_id'], '123')
         self.assertEqual(data['ga_accounts'][0]['ga_web_property_id'], 'UA-123-2')
+        self.assertEqual(data['ga_accounts'][1]['account_id'], 2)
+        self.assertEqual(data['ga_accounts'][1]['ga_account_id'], '123')
+        self.assertEqual(data['ga_accounts'][1]['ga_web_property_id'], 'UA-123-3')
 
     def _test_get_content_ad_sources_for_ad_group(self, ad_group_id, content_ad_id):
         response = self.client.get(

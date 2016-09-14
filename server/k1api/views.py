@@ -194,7 +194,7 @@ class GAAccountsView(K1APIView):
                 ga_property_id
             ))
         ga_accounts_dicts = [
-            {'account_id': account_id, 'ga_account_id': ga_account_id, 'ga_web_property_id': ga_property_id}
+            {'account_id': account_id, 'ga_account_id': ga_account_id, 'ga_web_property_id': ga_web_property_id}
             for account_id, ga_account_id, ga_web_property_id in ga_accounts
         ]
 
