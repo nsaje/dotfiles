@@ -246,55 +246,51 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
     };
 
     $scope.addTargeting = function (type, id) {
-        switch (type) {
-        case 'adGroupTargeting':
+        if (type === 'adGroupTargeting') {
             if (!$scope.settings.retargetingAdGroups) {
                 $scope.settings.retargetingAdGroups = [];
             }
             $scope.settings.retargetingAdGroups.push(id);
-            break;
-        case 'audienceTargeting':
-            if (!$scope.settings.audienceTargeting) {
-                $scope.settings.audiencetargeting = [];
+        } else if (type === 'exclusionAdGroupTargeting') {
+            if (!$scope.settings.exclusionRetargetingAdGroups) {
+                $scope.settings.exclusionRetargetingAdGroups = [];
             }
-            $scope.settings.audiencetargeting.push(id);
-            break;
-        case 'exclusionAudienceTargeting':
+            $scope.settings.exclusionRetargetingAdGroups.push(id);
+        } else if (type === 'audienceTargeting') {
+            if (!$scope.settings.audienceTargeting) {
+                $scope.settings.audienceTargeting = [];
+            }
+            $scope.settings.audienceTargeting.push(id);
+        } else if (type === 'exclusionAudienceTargeting') {
             if (!$scope.settings.exclusionAudienceTargeting) {
                 $scope.settings.exclusionAudienceTargeting = [];
             }
             $scope.settings.exclusionAudienceTargeting.push(id);
-            break;
         }
     };
 
     $scope.removeTargeting = function (type, id) {
         var index = -1;
-        switch (type) {
-        case 'adGroupTargeting':
-            if ($scope.settings.retargetingAdGroups) {
-                index = $scope.settings.retargetingAdGroups.indexOf(id);
-                if (index >= 0) {
-                    $scope.settings.retargetingAdGroups.splice(index, 1);
-                }
+        if (type === 'adGroupTargeting' && $scope.settings.retargetingAdGroups) {
+            index = $scope.settings.retargetingAdGroups.indexOf(id);
+            if (index >= 0) {
+                $scope.settings.retargetingAdGroups.splice(index, 1);
             }
-            break;
-        case 'audienceTargeting':
-            if ($scope.settings.audienceTargeting) {
-                index = $scope.settings.audienceTargeting.indexOf(id);
-                if (index >= 0) {
-                    $scope.settings.audienceTargeting.splice(index, 1);
-                }
+        } else if (type === 'exclusionAdGroupTargeting' && $scope.settings.exclusionRetargetingAdGroups) {
+            index = $scope.settings.exclusionRetargetingAdGroups.indexOf(id);
+            if (index >= 0) {
+                $scope.settings.exclusionRetargetingAdGroups.splice(index, 1);
             }
-            break;
-        case 'exclusionAudienceTargeting':
-            if ($scope.settings.exclusionAudienceTargeting) {
-                index = $scope.settings.exclusionAudienceTargeting.indexOf(id);
-                if (index >= 0) {
-                    $scope.settings.exclusionAudienceTargeting.splice(index, 1);
-                }
+        } else if (type === 'audienceTargeting' && $scope.settings.audienceTargeting) {
+            index = $scope.settings.audienceTargeting.indexOf(id);
+            if (index >= 0) {
+                $scope.settings.audienceTargeting.splice(index, 1);
             }
-            break;
+        } else if (type === 'exclusionAudienceTargeting' && $scope.settings.exclusionAudienceTargeting) {
+            index = $scope.settings.exclusionAudienceTargeting.indexOf(id);
+            if (index >= 0) {
+                $scope.settings.exclusionAudienceTargeting.splice(index, 1);
+            }
         }
     };
 

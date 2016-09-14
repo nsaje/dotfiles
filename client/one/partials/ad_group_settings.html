@@ -149,7 +149,7 @@
                 </div>
             </div>
 
-            <div class="form-group" ng-if="hasPermission('zemauth.can_target_custom_audiences')" ng-class="{'has-error': !!errors.audience_targeting || !!errors.exclusion_audience_targeting}">
+            <div class="form-group" ng-if="hasPermission('zemauth.can_target_custom_audiences')" ng-class="{'has-error': !!errors.audienceTargeting || !!errors.exclusionAudienceTargeting || !!errors.retargetingAdGroups || !!errors.exclusionRetargetingAdGroups}">
                 <label class="col-xs-2 control-label">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_target_custom_audiences')" popover-placement="right"></zem-internal-feature>
                     Audience targeting
@@ -170,8 +170,13 @@
                 </div>
 
                 <div ng-if="retargetingEnabled && warnings.retargeting === undefined" class="col-xs-6 col-md-4 after-form-alert-box">
-                    <zem-custom-audiences-targeting available-ad-groups="retargetableAdGroups" available-audiences="audiences" current-ad-group-id="adGroupId" ad-group-targeting="settings.retargetingAdGroups" audience-targeting="settings.audienceTargeting" exclusion-audience-targeting="settings.exclusionAudienceTargeting" add-targeting="addTargeting(type, id)" remove-targeting="removeTargeting(type, id)"></zem-custom-audiences-targeting>
+                    <zem-custom-audiences-targeting available-ad-groups="retargetableAdGroups" available-audiences="audiences" current-ad-group-id="adGroupId" ad-group-targeting="settings.retargetingAdGroups" exclusion-ad-group-targeting="settings.exclusionRetargetingAdGroups" audience-targeting="settings.audienceTargeting" exclusion-audience-targeting="settings.exclusionAudienceTargeting" add-targeting="addTargeting(type, id)" remove-targeting="removeTargeting(type, id)"></zem-custom-audiences-targeting>
                 </div>
+
+                <label ng-repeat="error in errors.retargetingAdGroups" class="control-label error">{{ error }}</label>
+                <label ng-repeat="error in errors.exclusionRetargetingAdGroups" class="control-label error">{{ error }}</label>
+                <label ng-repeat="error in errors.audienceTargeting" class="control-label error">{{ error }}</label>
+                <label ng-repeat="error in errors.exclusionAudienceTargeting" class="control-label error">{{ error }}</label>
             </div>
 
             <!-- additional targeting -->

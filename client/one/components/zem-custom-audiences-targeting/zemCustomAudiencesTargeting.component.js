@@ -8,6 +8,7 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
         availableAdGroups: '<',
         availableAudiences: '<',
         adGroupTargeting: '<',
+        exclusionAdGroupTargeting: '<',
         audienceTargeting: '<',
         exclusionAudienceTargeting: '<',
         addTargeting: '&',
@@ -15,128 +16,170 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
     },
     controllerAs: 'ctrl',
     controller: ['config', function (config) {
+        var AD_GROUP_ENTITY = 'adGroup';
+        var AUDIENCE_ENTITY = 'audience';
+        var AD_GROUP_TARGETING = 'adGroupTargeting';
+        var AUDIENCE_TARGETING = 'audienceTargeting';
+        var EXCLUSION_AD_GROUP_TARGETING = 'exclusionAdGroupTargeting';
+        var EXCLUSION_AUDIENCE_TARGETING = 'exclusionAudienceTargeting';
+
         var vm = this;
-        vm.selectedAdGroup = null;
-        vm.selectedAudience = null;
-        vm.selectedAdGroupTargeting = [];
-        vm.selectedAudienceTargeting = [];
-        vm.selectedExclusionAudienceTargeting = [];
+        vm.availableAudiencesAndAdGroups = [];
+        vm.selectedTargeting = undefined;
+        vm.selectedTargetings = [];
+        vm.selectedExclusionTargetings = [];
         vm.config = config;
 
-        vm.getAvailableAdGroups = function () {
-            if (!vm.availableAdGroups) {
-                return [];
+        vm.groupBySection = function (entity) {
+            return entity.section;
+        };
+
+        vm.getAvailableAudiencesAndAdGroups = function () {
+            var result = [];
+            var i = 0;
+            var audience = null;
+            var adGroup = null;
+
+            if (!vm.availableAudiences && !vm.availableAdGroups) {
+                return result;
             }
 
-            var adgroups = vm.availableAdGroups.filter(function (adgroup) {
-                return vm.adGroupTargeting.indexOf(adgroup.id) < 0;
-            }).filter(function (adgroup) {
-                return adgroup.id !== parseInt(vm.currentAdGroupId, 10);
-            });
-
-            adgroups.forEach(function (adgroup) {
-                adgroup.suffix = '';
-                if (adgroup.archived) {
-                    adgroup.suffix = ' (Archived)';
+            for (i = 0; i < vm.availableAudiences.length; i++) {
+                audience = vm.availableAudiences[i];
+                if (vm.audienceTargeting.indexOf(audience.id) >= 0 || vm.exclusionAudienceTargeting.indexOf(audience.id) >= 0) {
+                    continue;
                 }
-            });
 
-            return adgroups;
-        };
-
-        vm.groupByCampaign = function (adgroup) {
-            return adgroup.campaignName;
-        };
-
-        vm.getAvailableAudiences = function () {
-            if (!vm.availableAudiences) {
-                return [];
+                result.push(vm.getTargetingEntity(AUDIENCE_ENTITY, audience));
             }
 
-            var audiences = vm.availableAudiences.filter(function (audience) {
-                return vm.audienceTargeting.indexOf(audience.id) < 0 && vm.exclusionAudienceTargeting.indexOf(audience.id) < 0;
-            });
-
-            audiences.forEach(function (adgroup) {
-                audiences.suffix = '';
-                if (audiences.archived) {
-                    audiences.suffix = ' (Archived)';
+            for (i = 0; i < vm.availableAdGroups.length; i++) {
+                adGroup = vm.availableAdGroups[i];
+                if (vm.adGroupTargeting.indexOf(adGroup.id) >= 0 || vm.exclusionAdGroupTargeting.indexOf(adGroup.id) >= 0 || adGroup.id === parseInt(vm.currentAdGroupId, 10)) {
+                    continue;
                 }
-            });
 
-            return audiences;
+                result.push(vm.getTargetingEntity(AD_GROUP_ENTITY, adGroup));
+            }
+
+            return result;
         };
 
-        vm.addAdGroup = function (adGroup) {
-            vm.addTargeting({type: 'adGroupTargeting', id: adGroup.id});
-            vm.selectedAdGroupTargeting.push({
-                id: adGroup.id,
-                name: adGroup.name
-            });
-            vm.selectedAdGroup = undefined;
+        vm.addSelectedTargeting = function (entity) {
+            var type = AD_GROUP_TARGETING;
+            if (entity.type === AUDIENCE_ENTITY) {
+                type = AUDIENCE_TARGETING;
+            }
+            vm.addTargeting({type: type, id: entity.id});
+
+            vm.selectedTargetings.push(entity);
+
+            vm.selectedTargeting = undefined;
+
+            vm.availableAudiencesAndAdGroups = vm.getAvailableAudiencesAndAdGroups();
         };
 
-        vm.removeAdGroupTargeting = function (adGroup) {
-            vm.removeTargeting({type: 'adGroupTargeting', id: adGroup.id});
+        vm.addSelectedExclusionTargeting = function (entity) {
+            var type = EXCLUSION_AD_GROUP_TARGETING;
+            if (entity.type === AUDIENCE_ENTITY) {
+                type = EXCLUSION_AUDIENCE_TARGETING;
+            }
+            vm.addTargeting({type: type, id: entity.id});
 
-            for (var i = 0; i < vm.selectedAdGroupTargeting.length; i++) {
-                if (vm.selectedAdGroupTargeting[i].id === adGroup.id) {
-                    vm.selectedAdGroupTargeting.splice(i, 1);
+            vm.selectedExclusionTargetings.push(entity);
+
+            vm.selectedTargeting = undefined;
+
+            vm.availableAudiencesAndAdGroups = vm.getAvailableAudiencesAndAdGroups();
+        };
+
+        vm.removeSelectedTargeting = function (entity) {
+            var type = AD_GROUP_TARGETING;
+            var i = 0;
+
+            if (entity.type === AUDIENCE_ENTITY) {
+                type = AUDIENCE_TARGETING;
+            }
+
+            vm.removeTargeting({type: type, id: entity.id});
+
+            for (i = 0; i < vm.selectedTargetings.length; i++) {
+                if (vm.selectedTargetings[i].id === entity.id && vm.selectedTargetings[i].type === entity.type) {
+                    vm.selectedTargetings.splice(i, 1);
+                    break;
+                }
+            }
+
+            vm.availableAudiencesAndAdGroups = vm.getAvailableAudiencesAndAdGroups();
+        };
+
+        vm.removeSelectedExclusionTargeting = function (entity) {
+            var type = EXCLUSION_AD_GROUP_TARGETING;
+            var i = 0;
+
+            if (entity.type === AUDIENCE_ENTITY) {
+                type = EXCLUSION_AUDIENCE_TARGETING;
+            }
+
+            vm.removeTargeting({type: type, id: entity.id});
+
+            for (i = 0; i < vm.selectedExclusionTargetings.length; i++) {
+                if (vm.selectedExclusionTargetings[i].id === entity.id && vm.selectedExclusionTargetings[i].type === entity.type) {
+                    vm.selectedExclusionTargetings.splice(i, 1);
                     break;
                 }
             }
         };
 
-        vm.addAudienceTargeting = function (audience) {
-            vm.addTargeting({type: 'audienceTargeting', id: audience.id});
-            vm.selectedAudienceTargeting.push({
-                id: audience.id,
-                name: audience.name
-            });
-            vm.selectedAudience = undefined;
-        };
-
-        vm.removeAudienceTargeting = function (audience) {
-            vm.removeTargeting({type: 'audienceTargeting', id: audience.id});
-
-            for (var i = 0; i < vm.selectedAudienceTargeting.length; i++) {
-                if (vm.selectedAudienceTargeting[i].id === audience.id) {
-                    vm.selectedAudienceTargeting.splice(i, 1);
-                    break;
-                }
+        vm.getTargetingEntity = function (type, entity) {
+            if (type === AD_GROUP_ENTITY) {
+                return {
+                    type: AD_GROUP_ENTITY,
+                    section: entity.campaignName,
+                    id: entity.id,
+                    name: entity.name,
+                    suffix: entity.archived ? ' (Archived)' : '',
+                };
             }
-        };
 
-        vm.addExclusionAudienceTargeting = function (audience) {
-            vm.addTargeting({type: 'exclusionAudienceTargeting', id: audience.id});
-            vm.selectedExclusionAudienceTargeting.push({
-                id: audience.id,
-                name: audience.name
-            });
-            vm.selectedAudience = undefined;
-        };
-
-        vm.removeExclusionAudienceTargeting = function (audience) {
-            vm.removeTargeting({type: 'exclusionAudienceTargeting', id: audience.id});
-
-            for (var i = 0; i < vm.selectedExclusionAudienceTargeting.length; i++) {
-                if (vm.selectedExclusionAudienceTargeting[i].id === audience.id) {
-                    vm.selectedExclusionAudienceTargeting.splice(i, 1);
-                    break;
-                }
-            }
+            return {
+                type: AUDIENCE_ENTITY,
+                section: 'Custom Audiences',
+                id: entity.id,
+                name: entity.name,
+                suffix: entity.archived ? ' (Archived)' : '',
+            };
         };
 
         vm.init = function () {
-            vm.selectedAdGroupTargeting = vm.availableAdGroups.filter(function (adGroup) {
-                return vm.adGroupTargeting.indexOf(adGroup.id) >= 0;
-            });
-            vm.selectedAudienceTargeting = vm.availableAudiences.filter(function (audience) {
-                return vm.audienceTargeting.indexOf(audience.id) >= 0;
-            });
-            vm.selectedExclusionAudienceTargeting = vm.availableAudiences.filter(function (audience) {
-                return vm.exclusionAudienceTargeting.indexOf(audience.id) >= 0;
-            });
+            var i = 0;
+            var adGroup = null;
+            var audience = null;
+
+            for (i = 0; i < vm.availableAdGroups.length; i++) {
+                adGroup = vm.availableAdGroups[i];
+                if (vm.adGroupTargeting.indexOf(adGroup.id) >= 0) {
+                    vm.selectedTargetings.push(vm.getTargetingEntity(AD_GROUP_ENTITY, adGroup));
+                }
+
+                if (vm.exclusionAdGroupTargeting.indexOf(adGroup.id) >= 0) {
+                    vm.selectedExclusionTargetings.push(vm.getTargetingEntity(AD_GROUP_ENTITY, adGroup));
+                }
+
+            }
+
+            for (i = 0; i < vm.availableAudiences.length; i++) {
+                audience = vm.availableAudiences[i];
+                if (vm.audienceTargeting.indexOf(audience.id) >= 0) {
+                    vm.selectedTargetings.push(vm.getTargetingEntity(AUDIENCE_ENTITY, audience));
+                }
+
+                if (vm.exclusionAudienceTargeting.indexOf(audience.id) >= 0) {
+                    vm.selectedExclusionTargetings.push(vm.getTargetingEntity(AUDIENCE_ENTITY, audience));
+                }
+            }
+
+            vm.availableAudiencesAndAdGroups = vm.getAvailableAudiencesAndAdGroups();
         };
 
         vm.init();
