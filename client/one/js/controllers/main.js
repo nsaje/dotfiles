@@ -133,6 +133,9 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
         if ($state.includes('**.settings') && $scope.hasPermission('dash.settings_view')) {
             return 'main.adGroups.settings';
         }
+        if ($state.includes('**.publishers')) {
+            return 'main.adGroups.publishers';
+        }
 
         // otherwise get default state
         return 'main.adGroups.ads';
