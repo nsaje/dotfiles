@@ -342,7 +342,7 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
             order=['date'],
             conversion_goals=None,
             pixels=ListMatcher(pixels),
-            constraints={'account': 1, 'ad_group__campaign__id': [campaign_id]}
+            constraints={'account': 1, 'ad_group__campaign__id': [campaign_id], 'source': matcher}
         )
 
         campaign = models.Campaign.objects.get(pk=campaign_id)
@@ -427,7 +427,7 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
             order=['date'],
             conversion_goals=QuerySetMatcher(conversion_goals),
             pixels=ListMatcher(pixels),
-            constraints={'campaign': 1, 'ad_group_id': [ad_group_id]}
+            constraints={'campaign': 1, 'ad_group_id': [ad_group_id], 'source': matcher}
         )
 
         ad_group = models.AdGroup.objects.get(pk=ad_group_id)

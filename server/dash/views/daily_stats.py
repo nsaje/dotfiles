@@ -14,6 +14,7 @@ from utils.sort_helper import sort_results
 
 
 class BaseDailyStatsView(api_common.BaseApiView):
+
     def get_stats(self, request, totals_kwargs, selected_kwargs=None,
                   group_key=None, conversion_goals=None, pixels=None):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
@@ -149,6 +150,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
 
 class AccountDailyStats(BaseDailyStatsView):
+
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
 
@@ -191,6 +193,9 @@ class AccountDailyStats(BaseDailyStatsView):
                 campaigns = models.Campaign.objects.filter(pk__in=ids)
                 group_names = {campaign.id: campaign.name for campaign in campaigns}
 
+            if filtered_sources and not (set(('source_id', 'source')) & set(selected_kwargs.keys())):
+                selected_kwargs['source'] = filtered_sources
+
         pixels = account.conversionpixel_set.filter(archived=False)
         stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key, pixels=pixels)
 
@@ -212,6 +217,7 @@ class AccountDailyStats(BaseDailyStatsView):
 
 
 class CampaignDailyStats(BaseDailyStatsView):
+
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
 
@@ -248,6 +254,9 @@ class CampaignDailyStats(BaseDailyStatsView):
                 ad_groups = models.AdGroup.objects.filter(pk__in=ids)
                 group_names = {ad_group.id: ad_group.name for ad_group in ad_groups}
 
+            if filtered_sources and not (set(('source_id', 'source')) & set(selected_kwargs.keys())):
+                selected_kwargs['source'] = filtered_sources
+
         conversion_goals = campaign.conversiongoal_set.all()
         pixels = campaign.account.conversionpixel_set.filter(archived=False)
         stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key, conversion_goals, pixels=pixels)
@@ -274,6 +283,7 @@ class CampaignDailyStats(BaseDailyStatsView):
 
 
 class AdGroupDailyStats(BaseDailyStatsView):
+
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -294,6 +304,8 @@ class AdGroupDailyStats(BaseDailyStatsView):
             ids = map(int, selected_ids)
             sources = models.Source.objects.filter(id__in=tuple(ids))
             selected_kwargs = {'ad_group': int(ad_group.id), 'source': sources}
+            if filtered_sources and not (set(('source_id', 'source')) & set(selected_kwargs.keys())):
+                selected_kwargs['source'] = filtered_sources
 
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
         pixels = ad_group.campaign.account.conversionpixel_set.filter(archived=False)
@@ -325,6 +337,7 @@ class AdGroupDailyStats(BaseDailyStatsView):
 
 
 class AdGroupPublishersDailyStats(BaseDailyStatsView):
+
     def get(self, request, ad_group_id, ):
         if not request.user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
@@ -333,7 +346,8 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
 
         metrics = request.GET.getlist('metrics')
         totals = request.GET.get('totals')
-        show_blacklisted_publishers = request.GET.get('show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL)
+        show_blacklisted_publishers = request.GET.get(
+            'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL)
 
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         totals_constraints = None
@@ -451,6 +465,7 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
 
 
 class AccountsDailyStats(BaseDailyStatsView):
+
     def get(self, request):
         # Permission check
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
@@ -496,6 +511,7 @@ class AccountsDailyStats(BaseDailyStatsView):
 
 
 class AdGroupAdsDailyStats(BaseDailyStatsView):
+
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
