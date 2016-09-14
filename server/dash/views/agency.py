@@ -149,6 +149,7 @@ class AdGroupSettings(api_common.BaseApiView):
                     '{:.2f}'.format(settings.autopilot_daily_budget)
                     if settings.autopilot_daily_budget is not None else '',
                 'retargeting_ad_groups': settings.retargeting_ad_groups,
+                'exclusion_retargeting_ad_groups': settings.exclusion_retargeting_ad_groups,
                 'notes': settings.notes,
                 'bluekai_targeting': settings.bluekai_targeting,
                 'interest_targeting': settings.interest_targeting,
@@ -189,6 +190,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         if user.has_perm('zemauth.can_target_custom_audiences') and\
                 retargeting_helper.supports_retargeting(ad_group):
+            settings.exclusion_retargeting_ad_groups = resource['exclusion_retargeting_ad_groups']
             settings.audience_targeting = resource['audience_targeting']
             settings.exclusion_audience_targeting = resource['exclusion_audience_targeting']
 

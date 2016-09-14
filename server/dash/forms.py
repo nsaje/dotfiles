@@ -179,6 +179,14 @@ class AdGroupSettingsForm(forms.Form):
         }
     )
 
+    exclusion_retargeting_ad_groups = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=None,
+        error_messages={
+            'invalid_choice': 'Invalid ad group selection.'
+        }
+    )
+
     audience_targeting = forms.ModelMultipleChoiceField(
         required=False,
         queryset=None,
@@ -201,6 +209,8 @@ class AdGroupSettingsForm(forms.Form):
         self.ad_group = ad_group
         self.fields['retargeting_ad_groups'].queryset = models.AdGroup.objects.filter(
             campaign__account=ad_group.campaign.account).filter_by_user(user)
+        self.fields['exclusion_retargeting_ad_groups'].queryset = models.AdGroup.objects.filter(
+            campaign__account=ad_group.campaign.account).filter_by_user(user)
         self.fields['audience_targeting'].queryset = models.Audience.objects.filter(
             pixel__account_id=ad_group.campaign.account.pk)
         self.fields['exclusion_audience_targeting'].queryset = models.Audience.objects.filter(
@@ -209,6 +219,10 @@ class AdGroupSettingsForm(forms.Form):
 
     def clean_retargeting_ad_groups(self):
         ad_groups = self.cleaned_data.get('retargeting_ad_groups')
+        return [ag.id for ag in ad_groups]
+
+    def clean_exclusion_retargeting_ad_groups(self):
+        ad_groups = self.cleaned_data.get('exclusion_retargeting_ad_groups')
         return [ag.id for ag in ad_groups]
 
     def clean_audience_targeting(self):

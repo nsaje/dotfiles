@@ -339,6 +339,7 @@ class AdGroupSettingsFormTest(TestCase):
             'target_regions': ['US'],
             'tracking_code': 'code=test',
             'retargeting_ad_groups': [3],
+            'exclusion_retargeting_ad_groups': [5],
             'audience_targeting': [1, 2],
             'exclusion_audience_targeting': [3, 4],
             'autopilot_state': 2,
@@ -363,6 +364,7 @@ class AdGroupSettingsFormTest(TestCase):
             'target_regions': ['US'],
             'tracking_code': 'code=test',
             'retargeting_ad_groups': [3],
+            'exclusion_retargeting_ad_groups': [5],
             'audience_targeting': [1, 2],
             'exclusion_audience_targeting': [3, 4],
             'autopilot_state': 2,
@@ -450,6 +452,9 @@ class AdGroupSettingsFormTest(TestCase):
             'retargeting_ad_groups': [
                 'Invalid ad group selection.'
             ],
+            'exclusion_retargeting_ad_groups': [
+                'Invalid ad group selection.'
+            ],
             'audience_targeting': [
                 'Invalid audience selection.'
             ],
@@ -468,6 +473,9 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertFalse(form.is_valid())
         expected = {
             'retargeting_ad_groups': [
+                'Invalid ad group selection.'
+            ],
+            'exclusion_retargeting_ad_groups': [
                 'Invalid ad group selection.'
             ]
         }

@@ -195,6 +195,15 @@
     model: dash.adgroup
     pk: 4
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 3
+        name: 'test adgroup 5'
+    model: dash.adgroup
+    pk: 5
+
 
 # test adgroupsettings
 

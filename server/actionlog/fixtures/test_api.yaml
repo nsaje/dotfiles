@@ -344,6 +344,7 @@
         autopilot_state: 1
         autopilot_daily_budget: '50.0000'
         retargeting_ad_groups: [3]
+        exclusion_retargeting_ad_groups: [4]
         notes: 'Some note'
         bluekai_targeting: ["or", "3", "4"]
         interest_targeting: ["a", "b"]
