@@ -207,7 +207,7 @@ def _get_conversions_per_cost_value(ag_source, data, conversion_goal, conversion
     view_key = conversion_goal.get_view_key(conversion_goals)
     for r in data:
         if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
-            spend = r['media_cost'] + r['data_cost']
+            spend = r.get('media_cost', 0.0) + r.get('data_cost', 0.0)
             return r.get(view_key) / spend if spend > 0 else 0.0
     return 0.0
 
