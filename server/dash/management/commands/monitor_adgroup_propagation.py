@@ -11,7 +11,8 @@ import influx
 logger = logging.getLogger(__name__)
 
 
-KEYS_TO_CHECK = ('tracking_code', 'enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param')
+KEYS_TO_CHECK_ADGROUP = ('tracking_code')
+KEYS_TO_CHECK_CAMPAIGN = ('enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param')
 
 
 class Command(ExceptionCommand):
@@ -22,6 +23,18 @@ class Command(ExceptionCommand):
         parser.add_argument('--adgroups', metavar='ADGROUPS', nargs='+',
                             help='A list of Ad Group IDs. Separated with spaces.')
         parser.add_argument('--no-statsd', action='store_true')
+
+    def __init__(self, *args, **kwargs):
+        self._campaign_settings = {}
+        super(Command, self).__init__(*args, **kwargs)
+
+    def _get_campaign_settings(self, campaign):
+        settings = self._campaign_settings.get(campaign.id)
+        if settings:
+            return settings
+        settings = campaign.get_current_settings()
+        self._campaign_settings[campaign.id] = settings
+        return settings
 
     def handle(self, *args, **options):
         ad_group_ids = options['adgroups']
@@ -49,6 +62,16 @@ class Command(ExceptionCommand):
                 if not ad_group_ids or ad_group.id not in ad_group_ids:
                     continue
 
+            campaign_settings = self._get_campaign_settings(ad_group.campaign)
+            if campaign_settings.id is None:
+                logger.warning('Campaign %s does not have settings', ad_group.id)
+
+            if campaign_settings.archived:
+                # if ad group was specifically selected than let it through
+                # else skip it
+                if not ad_group_ids or ad_group.id not in ad_group_ids:
+                    continue
+
             scanned_ad_groups += 1
 
             redirector_adgroup_data = None
@@ -61,10 +84,14 @@ class Command(ExceptionCommand):
                 continue
 
             ad_group_settings_dict = ad_group_settings.get_settings_dict()
+            campaign_settings_dict = campaign_settings.get_settings_dict()
 
             diff = []
-            for diff_key in KEYS_TO_CHECK:
+            for diff_key in KEYS_TO_CHECK_ADGROUP:
                 if redirector_adgroup_data.get(diff_key) != ad_group_settings_dict.get(diff_key):
+                    diff.append(diff_key)
+            for diff_key in KEYS_TO_CHECK_CAMPAIGN:
+                if redirector_adgroup_data.get(diff_key) != campaign_settings_dict.get(diff_key):
                     diff.append(diff_key)
 
             if diff:
