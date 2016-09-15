@@ -613,9 +613,6 @@ class AccountConversionPixels(api_common.BaseApiView):
         with transaction.atomic():
             conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, name=name)
 
-            # TODO matijav 09.09.2016 disabled until we figure out how to do this properly
-            # actionlog_api.create_conversion_pixel(conversion_pixel, request)
-
             changes_text = u'Added conversion pixel named {}.'.format(name)
             account.write_history(
                 changes_text,
@@ -623,6 +620,7 @@ class AccountConversionPixels(api_common.BaseApiView):
                 action_type=constants.HistoryActionType.CONVERSION_PIXEL_CREATE)
 
         email_helper.send_account_pixel_notification(account, request)
+        k1_helper.update_account(int(account_id))
 
         return self.create_api_response({
             'id': conversion_pixel.id,

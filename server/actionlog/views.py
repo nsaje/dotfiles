@@ -95,8 +95,7 @@ class ActionLogApiView(api_common.BaseApiView):
                 raise Exception('Unsupported state %s for action SET_CAMPAIGN_STATE' % state)
 
             return '{} set to {}'.format(NAMES.get('state'), dash.constants.AdGroupSourceSettingsState.get_text(state))
-        elif action.action in [constants.Action.SET_PUBLISHER_BLACKLIST, constants.Action.CREATE_PIXEL,
-                               constants.Action.CREATE_CUSTOM_AUDIENCE]:
+        elif action.action in [constants.Action.SET_PUBLISHER_BLACKLIST, constants.Action.CREATE_CUSTOM_AUDIENCE]:
             return action.message
         else:
             raise Exception('Unsupported action %s' % action.action)
@@ -180,12 +179,6 @@ class ActionLogApiView(api_common.BaseApiView):
                                                         action.ad_group_source.ad_group.id,
                                                         action.ad_group_source.source.id))
 
-        if action.conversion_pixel:
-            result['conversion_pixel'] = [
-                str(action.conversion_pixel.name),
-                action.conversion_pixel.id,
-            ]
-
         return result
 
     @method_decorator(permission_required('actionlog.manual_acknowledge'))
@@ -203,31 +196,3 @@ class ActionLogApiView(api_common.BaseApiView):
 
         response = {'actionLogItem': self._get_action_item(action)}
         return self.create_api_response(response)
-
-
-class ActionLogPixelApiView(api_common.BaseApiView):
-
-    @method_decorator(permission_required('actionlog.manual_acknowledge'))
-    def put(self, request):
-        data = json.loads(request.body)
-
-        form = forms.SourcePixelForm(data)
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        pixel_id = data['pixel_id']
-        source_type = data['source_type']
-
-        source_pixel, created = dash.models.SourceTypePixel.objects.get_or_create(
-            pixel__id=pixel_id,
-            source_type__type=source_type,
-            defaults={
-                'pixel': dash.models.ConversionPixel.objects.get(id=pixel_id),
-                'source_type': dash.models.SourceType.objects.get(type=source_type),
-            })
-
-        source_pixel.url = data['url']
-        source_pixel.source_pixel_id = data['source_pixel_id']
-        source_pixel.save()
-
-        return self.create_api_response(data)

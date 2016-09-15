@@ -1,10 +1,8 @@
-actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', '$uibModal', 'config', 'api', function ($scope, $location, $uibModal, config, api) {
+actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', 'config', 'api', function ($scope, $location, config, api) {
 
     $scope.user = null;
     $scope.actionLogItems = null;
     $scope.actionLogItemsMax = null;
-    $scope.pixelData = {};
-    $scope.errors = {};
 
     $scope.states = [
         [actionLogConstants.state.FAILED.name, actionLogConstants.state.FAILED.value],
@@ -20,46 +18,12 @@ actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', '$uibModal', 'c
         return cls;
     };
     $scope.updateState = function (log, state) {
-        // if creating pixel and action is successful
-        if (log.action == 'create_pixel' && state[1] == actionLogConstants.state.SUCCESS.value) {
-            $uibModal.open({
-                templateUrl: config.static_url + '/actionlog/pixel_modal.html',
-                scope: $scope,
-                controller: ['$scope', function ($scope) {
-                    $scope.ok = function () {
-                        executeUpdatePixel(log, state);
-                        $scope.$close();
-                    };
-
-                    $scope.cancel = function () {
-                        $scope.$dismiss('cancel');
-                    };
-                }],
-                size: 'lg',
-            });
-        } else {
-            executeSave(log, state);
-        }
-    };
-
-    function executeUpdatePixel(log, state) {
-        api.actionLog.updateOutbrainSourcePixel(log.conversion_pixel[1], $scope.pixelData.url, $scope.pixelData.id)
-            .then(function (data) {
-                executeSave(log, state);
-                $scope.pixelData = {};
-            },
-            function (data) {
-                $scope.errors = data;
-            });
-    }
-
-    function executeSave(log, state) {
         api.actionLog.save_state(log.id, state[1]).then(function (data) {
             log.state = data.actionLogItem.state;
             log.modified_dt = data.actionLogItem.modified_dt;
             log.modified_by = data.actionLogItem.modified_by;
         });
-    }
+    };
 
     $scope.filters = {
         items: {},

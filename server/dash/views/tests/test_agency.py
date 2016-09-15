@@ -960,7 +960,8 @@ class AccountConversionPixelsTestCase(TestCase):
 
         self.assertEqual(404, response.status_code)
 
-    def test_post(self):
+    @patch('utils.k1_helper.update_account')
+    def test_post(self, ping_mock):
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
             json.dumps({'name': 'name'}),
@@ -986,6 +987,8 @@ class AccountConversionPixelsTestCase(TestCase):
                          hist.changes_text)
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
+
+        ping_mock.assert_called_once_with(1)
 
     def test_post_name_empty(self):
         pixels_before = list(models.ConversionPixel.objects.all())

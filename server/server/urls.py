@@ -563,11 +563,6 @@ urlpatterns += [
         login_required(actionlog.views.ActionLogApiView.as_view()),
         name='action_log_api_put',
     ),
-    url(
-        r'^action_log/pixel_api/$',
-        login_required(actionlog.views.ActionLogPixelApiView.as_view()),
-        name='action_log_pixel_api',
-    )
 ]
 
 # Zwei Api
