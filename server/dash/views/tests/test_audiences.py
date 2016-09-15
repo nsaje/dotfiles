@@ -5,6 +5,7 @@ import mock
 from django.contrib.auth import models as authmodels
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.conf import settings
 
 from dash import constants
 from dash import models
@@ -16,9 +17,15 @@ class AudiencesTest(TestCase):
     fixtures = ['test_audiences.yaml']
 
     def setUp(self):
+        self.original_k1_demo_mode = settings.K1_DEMO_MODE
+        settings.K1_DEMO_MODE = True
+
         self.user = zmodels.User.objects.get(pk=1)
         self.assertTrue(self.user.is_superuser)
         self.client.login(username=self.user.email, password='secret')
+
+    def tearDown(self):
+        settings.K1_DEMO_MODE = self.original_k1_demo_mode
 
     def _get_valid_post_data(self):
         return {

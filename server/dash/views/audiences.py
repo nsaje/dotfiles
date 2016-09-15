@@ -8,6 +8,7 @@ from dash import models
 from reports import redshift
 from utils import api_common
 from utils import exc
+from utils import k1_helper
 import helpers
 
 
@@ -61,6 +62,8 @@ class AudiencesView(api_common.BaseApiView):
                     value=value,
                 )
                 rule.save()
+
+        k1_helper.update_account(account_id)
 
         response = {'id': str(audience_id)}
         response.update(data)
