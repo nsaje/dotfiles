@@ -225,6 +225,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_use_partial_updates_in_upload', 'Partially update upload candidate fields'),
             ('can_use_own_images_in_upload', 'User can use their own images in upload'),
             ('can_see_all_users_for_managers', 'User can see all users when selecting account or campaign manager'),
+            ('can_view_additional_targeting', 'Can view additional targeting'),
         )
 
     def get_full_name(self):
