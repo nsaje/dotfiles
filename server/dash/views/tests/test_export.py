@@ -492,7 +492,14 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
                 'clicks': 203,
                 'impressions': 200000,
                 'ctr': 2.03
-            }]
+            }],
+            {
+                'cost': 3000.12,
+                'cpc': 30.23,
+                'clicks': 303,
+                'impressions': 300000,
+                'ctr': 3.03
+            }
         ]
 
     def tearDown(self):
@@ -727,6 +734,51 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,' +
             str(agency.id) + ',Test Agency,' +
             '1,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,20.2300,203,200000\r\n'
+        )
+        expected_content = test_helper.format_csv_content(expected_content)
+
+        filename = 'ZemantaOne_-_by_account_report_2014-06-30_2014-07-01.csv'
+
+        self.assertEqual(
+            response['Content-Type'],
+            'text/csv; name="%s"' % filename
+        )
+        self.assertEqual(
+            response['Content-Disposition'],
+            'attachment; filename="%s"' % filename
+        )
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_by_account_with_totals(self):
+        request = http.HttpRequest()
+        request.method = 'GET'
+        request.GET['type'] = 'account-csv'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.GET['include_totals'] = 'true'
+        request.GET['additional_fields'] = 'account_type,cpc,clicks,impressions'
+
+        user = models.User.objects.get(pk=2)
+        add_permissions(user, ['can_include_totals_in_reports', 'can_view_account_agency_information'])
+        request.user = user
+
+        agency = dash.models.Agency(
+            name='Test Agency'
+        )
+        agency.save(request)
+
+        account = dash.models.Account.objects.get(pk=1)
+        account.agency = agency
+        account.save(request)
+
+        response = export.AllAccountsExport().get(request)
+
+        expected_content = (
+            'Start Date,End Date,Agency,Account,Status (' +
+            time.strftime('%Y-%m-%d') + ')'
+            ',Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,' +
+            'Test Agency,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,20.2300,203,200000\r\n'
+            ',,,,,30.2300,303,300000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 

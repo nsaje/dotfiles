@@ -66,6 +66,10 @@ angular.module('one.legacy').controller('AddScheduledReportModalCtrl', ['$scope'
             data.include_model_ids = $scope.export.includeIds;
         }
 
+        if ($scope.hasPermission('zemauth.can_include_totals_in_reports')) {
+            data.include_totals = $scope.export.includeTotals;
+        }
+
         api.scheduledReports.addScheduledReport(url, data).then(
             function (data) {
                 $scope.$close();

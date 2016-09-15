@@ -134,7 +134,7 @@ ACCOUNT_CAMPAIGN_ONLY_ONCE_FIELDS = ACCOUNT_ONLY_ONCE_FIELDS + ('allocated_budge
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
                    conversion_goals, pixels=None, include_settings=False, include_account_settings=False, include_budgets=False,
-                   include_flat_fees=False, include_projections=False, **constraints):
+                   include_flat_fees=False, include_projections=False, include_totals=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
         start_date,
@@ -196,7 +196,35 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         else:
             _adjust_breakdown_by_account(stat, account_appeared)
 
+    if include_totals:
+        totals = stats_helper.get_stats_with_conversions(
+            user,
+            start_date,
+            end_date,
+            ignore_diff_rows=ignore_diff_rows,
+            conversion_goals=conversion_goals,
+            pixels=pixels,
+            constraints=constraints
+        )
+        _populate_projections_totals(totals, projections, account_projections, include_projections, include_flat_fees)
+        if user.has_perm('zemauth.campaign_goal_optimization') and campaign:
+            totals = campaign_goals.create_goal_totals(campaign, totals)
+        sorted_ret.append(totals)
+
     return sorted_ret
+
+
+def _populate_projections_totals(totals, projections, account_projections, include_projections, include_flat_fees):
+    if include_projections and projections is not None:
+        totals['allocated_budgets'] = projections.total('allocated_media_budget')
+        totals['pacing'] = projections.total('pacing')
+        totals['spend_projection'] = projections.total('media_spend_projection')
+        totals['license_fee_projection'] = projections.total('license_fee_projection')
+    if include_flat_fees and account_projections is not None:
+        totals['flat_fee'] = account_projections.total('flat_fee')
+        totals['total_fee'] = account_projections.total('total_fee')
+        if include_projections:
+            totals['total_fee_projection'] = account_projections.total('total_fee_projection')
 
 
 def _generate_stats_date(dimensions, prefetched_data, sources, start_date, end_date):
@@ -290,9 +318,11 @@ def _prefetch_rows_data(user, dimensions, constraints, start_date, end_date, inc
     settings = None
     account_settings = None
     account_ids = None
+    campaign_ids = None
     if 'content_ad' in dimensions:
         data = _prefetch_content_ad_data(constraints)
         account_ids = set(content_ad.ad_group.campaign.account_id for content_ad in data.itervalues())
+        campaign_ids = set(content_ad.ad_group.campaign_id for content_ad in data.itervalues())
         if by_source:
             adgroups = set(content_ad.ad_group_id for content_ad in data.itervalues())
             adgroup_sources = (models.AdGroupSource.objects.values('ad_group_id', 'source_id')
@@ -309,6 +339,7 @@ def _prefetch_rows_data(user, dimensions, constraints, start_date, end_date, inc
             include_account_settings=include_account_settings
         )
         account_ids = set(ad_group.campaign.account_id for ad_group in data.itervalues())
+        campaign_ids = set(ad_group.campaign_id for ad_group in data.itervalues())
         if by_source:
             adgroup_sources = (helpers.get_active_ad_group_sources(models.AdGroup, data.values())
                                .values('ad_group_id', 'source_id')
@@ -324,6 +355,7 @@ def _prefetch_rows_data(user, dimensions, constraints, start_date, end_date, inc
             include_account_settings=include_account_settings
         )
         account_ids = set(campaign.account_id for campaign in data.itervalues())
+        campaign_ids = set(campaign.id for campaign in data.itervalues())
         if by_source:
             adgroup_sources = (helpers.get_active_ad_group_sources(models.Campaign, data.values())
                                .values('ad_group__campaign_id', 'source_id')
@@ -365,7 +397,7 @@ def _prefetch_rows_data(user, dimensions, constraints, start_date, end_date, inc
         budgets = None if not include_budgets \
             else _prefetch_budgets(data, level)
 
-    projections, account_projections = _prefetch_projections(start_date, end_date, account_ids, level, user)
+    projections, account_projections = _prefetch_projections(start_date, end_date, account_ids, level, user, campaign_ids)
     return data, sources, budgets, projections, account_projections, statuses, settings, account_settings
 
 
@@ -847,7 +879,7 @@ def _prefetch_account_data(constraints, include_settings=False, include_account_
     return data, settings
 
 
-def _prefetch_projections(start_date, end_date, account_ids, level, user):
+def _prefetch_projections(start_date, end_date, account_ids, level, user, campaign_ids):
     if level not in ['all_accounts', 'account', 'campaign', 'ad_group']:
         return None, None
     projections_accounts = []
@@ -864,16 +896,21 @@ def _prefetch_projections(start_date, end_date, account_ids, level, user):
         projections_level = level
     else:
         projections_level = 'account'
+    constraints = {}
+    if campaign_ids is not None:
+        constraints['campaign_id__in'] = campaign_ids
     return BudgetProjections(
         start_date,
         end_date,
         projections_level,
         accounts=projections_accounts,
+        **constraints
     ), BudgetProjections(
         start_date,
         end_date,
         'account',
         accounts=projections_accounts,
+        **constraints
     )
 
 
@@ -932,6 +969,8 @@ def _format_percentages(value, field):
 
 def _format_statuses_and_dates(value, field, archived):
     if field == 'date':
+        if not value:
+            return ''
         return value.strftime('%Y-%m-%d')
     elif field == 'status':
         if archived:
@@ -1033,7 +1072,8 @@ def _include_model_ids(required_fields):
 class AllAccountsExport(object):
 
     def get_data(self, user, filtered_sources, start_date, end_date, order,
-                 additional_fields, view_filter=None, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
+                 additional_fields, view_filter=None, breakdown=None, by_source=False, by_day=False,
+                 include_model_ids=False, include_totals=False):
         accounts = models.Account.objects.all()\
             .filter_by_user(user)\
             .filter_by_sources(filtered_sources)
@@ -1106,6 +1146,7 @@ class AllAccountsExport(object):
             include_account_settings=include_account_settings,
             include_flat_fees=include_flat_fees,
             include_projections=include_projections,
+            include_totals=include_totals,
             account=accounts,
             source=filtered_sources)
 
@@ -1115,7 +1156,8 @@ class AllAccountsExport(object):
 class AccountExport(object):
 
     def get_data(self, user, account_id, filtered_sources, start_date, end_date,
-                 order, additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False,
+                 include_model_ids=False, include_totals=False):
         account = helpers.get_account(user, account_id)
         pixels = account.conversionpixel_set.filter(archived=False)
 
@@ -1164,6 +1206,7 @@ class AccountExport(object):
             pixels=pixels,
             include_settings=True,
             include_projections=include_projections,
+            include_totals=include_totals,
             account=account,
             source=filtered_sources)
 
@@ -1173,7 +1216,8 @@ class AccountExport(object):
 class CampaignExport(object):
 
     def get_data(self, user, campaign_id, filtered_sources, start_date, end_date,
-                 order, additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False,
+                 include_model_ids=False, include_totals=False):
         campaign = helpers.get_campaign(user, campaign_id)
 
         dimensions = ['campaign']
@@ -1209,6 +1253,7 @@ class CampaignExport(object):
             conversion_goals,
             pixels=pixels,
             include_settings=True,
+            include_totals=include_totals,
             campaign=campaign,
             source=filtered_sources)
 
@@ -1218,7 +1263,8 @@ class CampaignExport(object):
 class AdGroupAdsExport(object):
 
     def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date,
-                 order, additional_fields, breakdown=None, by_source=False, by_day=False, include_model_ids=False):
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False,
+                 include_model_ids=False, include_totals=False):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
@@ -1252,6 +1298,7 @@ class AdGroupAdsExport(object):
             breakdown == 'content_ad',
             conversion_goals,
             pixels=pixels,
+            include_totals=include_totals,
             ad_group=ad_group,
             source=filtered_sources)
 
@@ -1308,6 +1355,7 @@ def get_report_from_export_report(export_report, start_date, end_date):
         by_day=export_report.breakdown_by_day,
         ad_group=export_report.ad_group,
         include_model_ids=export_report.include_model_ids,
+        include_totals=export_report.include_totals,
         campaign=export_report.campaign,
         account=export_report.account
     )
@@ -1335,6 +1383,7 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
         by_source=by_source,
         by_day=request.GET.get('by_day') == 'true',
         include_model_ids=request.GET.get('include_model_ids') == 'true',
+        include_totals=request.GET.get('include_totals') == 'true',
         ad_group=ad_group,
         campaign=campaign,
         account=account
@@ -1354,12 +1403,16 @@ def _get_report(
         by_day=False,
         by_source=False,
         include_model_ids=False,
+        include_totals=False,
         ad_group=None,
         campaign=None,
         account=None):
 
     if not user.has_perm('zemauth.can_include_model_ids_in_reports'):
         include_model_ids = False
+
+    if not user.has_perm('zemauth.can_include_totals_in_reports'):
+        include_totals = False
 
     if not filtered_sources:
         filtered_sources = []
@@ -1394,6 +1447,7 @@ def _get_report(
         by_source=by_source,
         by_day=by_day,
         include_model_ids=include_model_ids,
+        include_totals=include_totals,
         account_id=account_id,
         campaign_id=campaign_id,
         ad_group_id=ad_group_id)
@@ -1413,7 +1467,7 @@ def _get_report(
 
 
 def _get_report_contents(user, filtered_sources, view_filter, start_date, end_date, order, additional_fields,
-                         breakdown, by_source, by_day, include_model_ids=False,
+                         breakdown, by_source, by_day, include_model_ids=False, include_totals=False,
                          account_id=None, campaign_id=None, ad_group_id=None):
     arguments = {
         'user': user,
@@ -1425,7 +1479,8 @@ def _get_report_contents(user, filtered_sources, view_filter, start_date, end_da
         'breakdown': breakdown,
         'by_source': by_source,
         'by_day': by_day,
-        'include_model_ids': include_model_ids
+        'include_model_ids': include_model_ids,
+        'include_totals': include_totals,
     }
 
     if account_id:

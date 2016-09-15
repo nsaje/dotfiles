@@ -767,6 +767,45 @@ class ExportTestCase(test.TestCase):
         self.assertEqual(rows[1].get('status'), constants.ExportStatus.INACTIVE)
         self.assertEqual(rows[2].get('status'), constants.ExportStatus.ACTIVE)
 
+    @patch('dash.export._add_missing_stats')
+    @patch('reports.api_contentads.query')
+    def test_generate_rows_totals(self, mock_query, mock_missing_stats):
+        totals = {
+            'clicks': 203,
+            'media_cost': 2000.12,
+            'cpc': 20.23,
+            'ctr': 2.03,
+            'data_cost': 23.1,
+        }
+        mock_query.side_effect = [self.mock_generate_rows_stats, totals]
+
+        dimensions = ['ad_group', 'content_ad', 'source']
+        start_date = datetime.date(2014, 6, 30)
+        end_date = datetime.date(2014, 7, 2)
+        user = User.objects.get(id=1)
+
+        sources = models.Source.objects.all()
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        rows = export._generate_rows(
+            dimensions,
+            start_date,
+            end_date,
+            user,
+            'impressions',
+            True,
+            [],
+            source=sources,
+            ad_group=ad_group,
+            include_totals=True,
+        )
+
+        self.assertEqual(2, mock_query.call_count)
+        self.assertEqual(1, mock_missing_stats.call_count)
+
+        self.assertEqual(rows[-1], totals)
+
     def test_get_report_filename(self):
         self.assertEqual(
             'acc_camp_adg_-_by_content_ad_media_source_report_2014-06-03_2014-06-10',
@@ -818,16 +857,16 @@ class ExportTestCase(test.TestCase):
     @mock.patch('dash.export.AdGroupAdsExport.get_data')
     def test_get_report_contents_ad_group(self, get_data_mock):
         report_contents = export._get_report_contents(
-            User.objects.get(pk=1),
-            [],
-            None,
-            datetime.date(2014, 6, 3),
-            datetime.date(2014, 6, 10),
-            'name',
-            ['aa', 'bb'],
-            ['ad_group', 'date'],
-            False,
-            True,
+            user=User.objects.get(pk=1),
+            filtered_sources=[],
+            view_filter=None,
+            start_date=datetime.date(2014, 6, 3),
+            end_date=datetime.date(2014, 6, 10),
+            order='name',
+            additional_fields=['aa', 'bb'],
+            breakdown=['ad_group', 'date'],
+            by_source=False,
+            by_day=True,
             ad_group_id=1)
 
         get_data_mock.assert_called_with(
@@ -840,6 +879,7 @@ class ExportTestCase(test.TestCase):
             start_date=datetime.date(2014, 6, 3),
             by_source=False,
             include_model_ids=False,
+            include_totals=False,
             user=User.objects.get(pk=1),
             order='name'
         )
@@ -847,16 +887,16 @@ class ExportTestCase(test.TestCase):
     @mock.patch('dash.export.CampaignExport.get_data')
     def test_get_report_contents_campaign(self, get_data_mock):
         report_contents = export._get_report_contents(
-            User.objects.get(pk=1),
-            [],
-            None,
-            datetime.date(2014, 6, 3),
-            datetime.date(2014, 6, 10),
-            'media_cost',
-            [],
-            ['campaign', 'source'],
-            True,
-            False,
+            user=User.objects.get(pk=1),
+            filtered_sources=[],
+            view_filter=None,
+            start_date=datetime.date(2014, 6, 3),
+            end_date=datetime.date(2014, 6, 10),
+            order='media_cost',
+            additional_fields=[],
+            breakdown=['campaign', 'source'],
+            by_source=True,
+            by_day=False,
             campaign_id=1)
 
         get_data_mock.assert_called_with(
@@ -868,6 +908,36 @@ class ExportTestCase(test.TestCase):
             start_date=datetime.date(2014, 6, 3),
             by_source=True, user=User.objects.get(pk=1),
             include_model_ids=False,
+            include_totals=False,
+            order='media_cost'
+        )
+
+    @mock.patch('dash.export.CampaignExport.get_data')
+    def test_get_report_contents_totals(self, get_data_mock):
+        report_contents = export._get_report_contents(
+            user=User.objects.get(pk=1),
+            filtered_sources=[],
+            view_filter=None,
+            start_date=datetime.date(2014, 6, 3),
+            end_date=datetime.date(2014, 6, 10),
+            order='media_cost',
+            additional_fields=[],
+            breakdown=['campaign', 'source'],
+            by_source=True,
+            by_day=False,
+            include_totals=True,
+            campaign_id=1)
+
+        get_data_mock.assert_called_with(
+            additional_fields=[],
+            breakdown=['campaign', 'source'],
+            filtered_sources=[],
+            end_date=datetime.date(2014, 6, 10),
+            by_day=False, campaign_id=1,
+            start_date=datetime.date(2014, 6, 3),
+            by_source=True, user=User.objects.get(pk=1),
+            include_model_ids=False,
+            include_totals=True,
             order='media_cost'
         )
 
@@ -891,6 +961,7 @@ class ExportTestCase(test.TestCase):
             filtered_sources=mock.ANY,
             by_source=False,
             include_model_ids=False,
+            include_totals=False,
             ad_group=None,
             granularity=2,
             order=None)

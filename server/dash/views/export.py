@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from functools import partial
 import json
 
 import influx
@@ -433,6 +432,7 @@ def _add_scheduled_report_from_request(request, by_source=False, ad_group=None, 
         by_day=r.get('by_day') or False,
         by_source=by_source,
         include_model_ids=r.get('include_model_ids') or False,
+        include_totals=r.get('include_totals') or False,
         ad_group=ad_group,
         campaign=campaign,
         account=account,

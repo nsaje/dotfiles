@@ -143,6 +143,7 @@ def add_scheduled_report(
         by_day=False,
         by_source=False,
         include_model_ids=False,
+        include_totals=False,
         ad_group=None,
         campaign=None,
         account=None,
@@ -153,6 +154,9 @@ def add_scheduled_report(
 
     if not user.has_perm('zemauth.can_include_model_ids_in_reports'):
         include_model_ids = False
+
+    if not user.has_perm('zemauth.can_include_totals_in_reports'):
+        include_totals = False
 
     if not user.has_perm('zemauth.can_set_time_period_in_scheduled_reports'):
         time_period = _get_default_time_period(sending_frequency)
@@ -184,6 +188,7 @@ def add_scheduled_report(
             breakdown_by_source=by_source,
             breakdown_by_day=by_day,
             include_model_ids=include_model_ids,
+            include_totals=include_totals,
             additional_fields=additional_fields,
             filtered_account_types=filtered_account_types
         )

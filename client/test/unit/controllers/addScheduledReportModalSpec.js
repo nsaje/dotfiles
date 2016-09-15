@@ -95,7 +95,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     time_period: 1,
                     recipient_emails: undefined,
                     report_name: undefined,
-                    include_model_ids: undefined
+                    include_model_ids: undefined,
+                    include_totals: undefined,
                 }
             );
             expect($scope.showInProgress).toBe(true);
@@ -140,7 +141,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     time_period: 1,
                     recipient_emails: undefined,
                     report_name: undefined,
-                    include_model_ids: undefined
+                    include_model_ids: undefined,
+                    include_totals: undefined,
                 }
             );
             expect($scope.showInProgress).toBe(true);
@@ -185,7 +187,8 @@ describe('AddScheduledReportModalCtrl', function () {
                     time_period: 1,
                     recipient_emails: undefined,
                     report_name: undefined,
-                    include_model_ids: undefined
+                    include_model_ids: undefined,
+                    include_totals: undefined,
                 }
 
             );

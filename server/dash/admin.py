@@ -1313,6 +1313,8 @@ class ExportReportAdmin(admin.ModelAdmin):
         'granularity',
         'breakdown_by_day',
         'breakdown_by_source',
+        'include_model_ids',
+        'include_totals',
         'order_by',
         'ad_group',
         'campaign',

@@ -225,3 +225,53 @@ class ScheduledReportTestCase(test.TestCase):
         self.assertEqual(ser.sending_frequency, constants.ScheduledReportSendingFrequency.WEEKLY)
         self.assertEqual(ser.time_period, constants.ScheduledReportTimePeriod.YESTERDAY)
         self.assertEqual(ser.get_recipients_emails_list(), ['test@zem.com'])
+
+    def test_add_scheduled_report_totals(self):
+        user = zemauth.models.User.objects.get(pk=2)
+        permission = Permission.objects.get(codename='can_include_totals_in_reports')
+        user.user_permissions.add(permission)
+        camp = models.Campaign.objects.get(pk=1)
+        scheduled_report.add_scheduled_report(
+            user,
+            report_name='rep',
+            filtered_sources=models.Source.objects.all().filter(pk=1),
+            order='name',
+            additional_fields='cost,impressions',
+            granularity=constants.ScheduledReportGranularity.AD_GROUP,
+            by_day=False,
+            by_source=False,
+            ad_group=None,
+            campaign=camp,
+            account=None,
+            sending_frequency=constants.ScheduledReportSendingFrequency.WEEKLY,
+            recipient_emails='test@zem.com',
+            include_totals=True,
+        )
+
+        self.assertEqual(len(models.ExportReport.objects.filter(created_by=user)), 1)
+        er = models.ExportReport.objects.filter(created_by=user)[0]
+        self.assertEqual(er.include_totals, True)
+
+    def test_add_scheduled_report_totals_no_permission(self):
+        user = zemauth.models.User.objects.get(pk=2)
+        camp = models.Campaign.objects.get(pk=1)
+        scheduled_report.add_scheduled_report(
+            user,
+            report_name='rep',
+            filtered_sources=models.Source.objects.all().filter(pk=1),
+            order='name',
+            additional_fields='cost,impressions',
+            granularity=constants.ScheduledReportGranularity.AD_GROUP,
+            by_day=False,
+            by_source=False,
+            ad_group=None,
+            campaign=camp,
+            account=None,
+            sending_frequency=constants.ScheduledReportSendingFrequency.WEEKLY,
+            recipient_emails='test@zem.com',
+            include_totals=True,
+        )
+
+        self.assertEqual(len(models.ExportReport.objects.filter(created_by=user)), 1)
+        er = models.ExportReport.objects.filter(created_by=user)[0]
+        self.assertEqual(er.include_totals, False)
