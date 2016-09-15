@@ -31,6 +31,7 @@ class SmallMaster(models.MVMaster):
         columns += self.select_columns(group=model_helpers.CONVERSION_AGGREGATES)
         columns += self.select_columns(group=model_helpers.TOUCHPOINTCONVERSION_AGGREGATES)
         columns += self.select_columns(group=model_helpers.AFTER_JOIN_CALCULATIONS)
+        columns += self.select_columns(group=model_helpers.AFTER_JOIN_CONVERSIONS_CALCULATIONS)
 
         self.columns = columns
         self.columns_dict = {x.alias: x for x in self.columns}
@@ -777,7 +778,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
         self.assertDictContainsSubset({
             'is_ordered_by_conversions':  False,
             'is_ordered_by_touchpointconversions': False,
-            'is_ordered_by_after_join_conversions_calculations': False,
+            'is_ordered_by_after_join_calculations': False,
             'is_ordered_by_yesterday_aggregates': False,
         }, context)
 

@@ -23,7 +23,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         conversion_columns = m.select_columns(group=model_helpers.CONVERSION_AGGREGATES)
         touchpoint_columns = m.select_columns(group=model_helpers.TOUCHPOINTCONVERSION_AGGREGATES)
-        after_join_columns = m.select_columns(group=model_helpers.AFTER_JOIN_CALCULATIONS)
+        after_join_columns = m.select_columns(group=model_helpers.AFTER_JOIN_CONVERSIONS_CALCULATIONS)
 
         self.assertItemsEqual([x.column_as_alias('a') for x in conversion_columns], [
             backtosql.SQLMatcher(
@@ -95,7 +95,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertFalse(context['is_ordered_by_conversions'])
         self.assertTrue(context['is_ordered_by_touchpointconversions'])
-        self.assertFalse(context['is_ordered_by_after_join_conversions_calculations'])
+        self.assertFalse(context['is_ordered_by_after_join_calculations'])
 
         self.assertListEqual(context['conversions_aggregates'], m.select_columns([
             'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5',
@@ -108,7 +108,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             'pixel_1_2160',
         ]))
 
-        self.assertListEqual(context['after_join_conversions_calculations'], m.select_columns([
+        self.assertListEqual(context['after_join_calculations'], m.select_columns([
             'avg_cost_per_conversion_goal_2',
             'avg_cost_per_conversion_goal_3',
             'avg_cost_per_conversion_goal_4',
@@ -151,14 +151,62 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertFalse(context['is_ordered_by_conversions'])
         self.assertFalse(context['is_ordered_by_touchpointconversions'])
-        self.assertFalse(context['is_ordered_by_after_join_conversions_calculations'])
+        self.assertFalse(context['is_ordered_by_after_join_calculations'])
 
         self.assertListEqual(context['conversions_aggregates'], [])
         self.assertListEqual(context['touchpointconversions_aggregates'], [])
-        self.assertListEqual(context['after_join_conversions_calculations'], [])
+        self.assertListEqual(context['after_join_calculations'], [])
 
         # the order specified is not supported for this breakdown so select the default
         self.assertEquals(context['order'].alias, 'clicks')
+
+
+class MVMasterAfterJoinTest(TestCase, backtosql.TestSQLMixin):
+
+    fixtures = ['test_augmenter.yaml']
+
+    def test_after_join_columns(self):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
+        campaign_goals = dash.models.CampaignGoal.objects.filter(campaign_id=campaign.id)
+        campaign_goal_values = dash.models.CampaignGoalValue.objects.filter(campaign_goal__in=campaign_goals)
+
+        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
+        m = models.MVMaster(conversion_goals, pixels, campaign_goals, campaign_goal_values)
+
+        constraints = {
+            'account_id': 123,
+            'campaign_id': 223,
+            'date__gte': datetime.date(2016, 7, 1),
+            'date__lte': datetime.date(2016, 7, 10),
+        }
+
+        parents = [
+            {'content_ad_id': 32, 'source_id': 1},
+            {'content_ad_id': 33, 'source_id': [2, 3]},
+            {'content_ad_id': 35, 'source_id': [2, 4, 22]},
+        ]
+
+        order_field = 'performance_' + campaign_goals.get(pk=1).get_view_key()
+
+        context = m.get_default_context(
+            ['account_id', 'source_id', 'dma'],
+            constraints,
+            parents,
+            '-' + order_field,
+            2,
+            33
+        )
+
+        self.assertFalse(context['is_ordered_by_conversions'])
+        self.assertFalse(context['is_ordered_by_touchpointconversions'])
+        self.assertTrue(context['is_ordered_by_after_join_calculations'])
+
+        self.assertListEqual(context['conversions_aggregates'], [])
+        self.assertListEqual(context['touchpointconversions_aggregates'], [])
+        self.assertListEqual(context['after_join_calculations'], [m.get_column(order_field)])
+
+        self.assertEquals(context['order'].alias, order_field)
 
 
 class MVMasterTest(TestCase, backtosql.TestSQLMixin):
@@ -176,7 +224,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
     def test_no_conversion_columns(self):
         conversion_columns = self.model.select_columns(group=model_helpers.CONVERSION_AGGREGATES)
         touchpoint_columns = self.model.select_columns(group=model_helpers.TOUCHPOINTCONVERSION_AGGREGATES)
-        after_join_columns = self.model.select_columns(group=model_helpers.AFTER_JOIN_CALCULATIONS)
+        after_join_columns = self.model.select_columns(group=model_helpers.AFTER_JOIN_CONVERSIONS_CALCULATIONS)
 
         self.assertItemsEqual(conversion_columns, [])
         self.assertItemsEqual(touchpoint_columns, [])

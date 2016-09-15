@@ -65,7 +65,7 @@ class Model(object):
                 raise helpers.BackToSQLException('Unknown columns in subset {}'.format(unknown))
 
         else:
-            columns = self.get_columns()
+            columns = [x for x in self.get_columns()]
 
         if group:
             columns = [x for x in columns if x.group == group]

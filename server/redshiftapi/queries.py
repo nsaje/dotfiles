@@ -132,7 +132,6 @@ def prepare_breakdown_time_top_rows(model, time_dimension, default_context, cons
 
     default_context['is_ordered_by_conversions'] = False
     default_context['is_ordered_by_touchpointconversions'] = False
-    default_context['is_ordered_by_after_join_conversions_calculations'] = False
     default_context['is_ordered_by_yesterday_aggregates'] = False
 
     sql = backtosql.generate_sql('breakdown_top_rows.sql', default_context)

@@ -43,17 +43,17 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
     order = helpers.get_supported_order(order, target_dimension)
 
     parents = helpers.decode_parents(breakdown, parents)
+    stats_constraints = helpers.extract_stats_constraints(constraints, breakdown)
 
     if helpers.should_query_dashapi_first(order, target_dimension):
         rows = dash.dashapi.api_breakdowns.query(level, breakdown, constraints, parents, order, offset, limit)
         rows = redshiftapi.api_breakdowns.augment(
             rows,
             breakdown,
-            helpers.extract_stats_constraints(constraints, breakdown),
+            stats_constraints,
             goals
         )
     else:
-        stats_constraints = helpers.extract_stats_constraints(constraints, breakdown)
         rows = redshiftapi.api_breakdowns.query(
             breakdown,
             stats_constraints,

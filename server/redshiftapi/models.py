@@ -267,7 +267,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
             avg_cost_column = backtosql.TemplateColumn(
                 'part_avg_cost_per_conversion_goal.sql', {'conversion_key': conversion_key},
-                alias='avg_cost_per_' + conversion_key, group=mh.AFTER_JOIN_CALCULATIONS
+                alias='avg_cost_per_' + conversion_key, group=mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS
             )
 
             self.add_column(avg_cost_column)
@@ -284,10 +284,16 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             metric_column = None
 
             if campaign_goal.type == dash.constants.CampaignGoalKPI.CPA:
+                if campaign_goal.conversion_goal_id not in map_conversion_goals:
+                    # if conversion goal is not amongst campaign goals do not calculate performance
+                    continue
+
                 conversion_goal = map_conversion_goals[campaign_goal.conversion_goal_id]
                 conversion_key = conversion_goal.get_view_key(conversion_goals)
+                column_group = mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS
             else:
                 metric_column = dash.campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type]
+                column_group = mh.AFTER_JOIN_CALCULATIONS
 
             is_cost_dependent = campaign_goal.type in dash.campaign_goals.COST_DEPENDANT_GOALS
             is_inverse_performance = campaign_goal.type in dash.campaign_goals.INVERSE_PERFORMANCE_CAMPAIGN_GOALS
@@ -305,7 +311,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
                 'conversion_key': conversion_key or '0',
                 'planned_value':  planned_value,
                 'metric_column': metric_column or '-1',
-            }, alias='performance_' + campaign_goal.get_view_key(), group=mh.AFTER_JOIN_CALCULATIONS)
+            }, alias='performance_' + campaign_goal.get_view_key(), group=column_group)
             self.add_column(column)
 
     def init_pixels(self, pixels):
@@ -332,7 +338,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
                 avg_cost_column = backtosql.TemplateColumn(
                     'part_avg_cost_per_conversion_goal.sql', {'conversion_key': pixel_key},
-                    alias='avg_cost_per_' + pixel_key, group=mh.AFTER_JOIN_CALCULATIONS
+                    alias='avg_cost_per_' + pixel_key, group=mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS
                 )
 
                 self.add_column(avg_cost_column)
@@ -386,19 +392,24 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
             is_ordered_by_conversions = order_column.group == mh.CONVERSION_AGGREGATES
             is_ordered_by_touchpointconversions = order_column.group == mh.TOUCHPOINTCONVERSION_AGGREGATES
-            is_ordered_by_after_join_conversions_calculations = order_column.group == mh.AFTER_JOIN_CALCULATIONS
 
             # dont order by conversions if breakdown does not support them
             if (not breakdown_supports_conversions and
                 (is_ordered_by_touchpointconversions or
-                 is_ordered_by_conversions or
-                 is_ordered_by_after_join_conversions_calculations)):
+                 is_ordered_by_conversions)):
                 order_column = self.get_column('clicks').as_order(order, nulls='last')
+
+            is_ordered_by_after_join_calculations = order_column.group in (
+                mh.AFTER_JOIN_CALCULATIONS, mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS)
         else:
             order_column = None
             is_ordered_by_conversions = False
             is_ordered_by_touchpointconversions = False
-            is_ordered_by_after_join_conversions_calculations = False
+            is_ordered_by_after_join_calculations = False
+
+        after_join_calculations = self.select_columns(group=mh.AFTER_JOIN_CALCULATIONS)
+        if breakdown_supports_conversions:
+            after_join_calculations.extend(self.select_columns(group=mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS))
 
         context = {
             'view': self.get_best_view(breakdown, constraints),
@@ -422,10 +433,8 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             'touchpointconversions_aggregates': (self.select_columns(group=mh.TOUCHPOINTCONVERSION_AGGREGATES)
                                                  if breakdown_supports_conversions else []),
 
-            'after_join_conversions_calculations': (self.select_columns(group=mh.AFTER_JOIN_CALCULATIONS)
-                                                    if breakdown_supports_conversions else []),
-            'is_ordered_by_after_join_conversions_calculations': (is_ordered_by_after_join_conversions_calculations and
-                                                                  breakdown_supports_conversions),
+            'after_join_calculations': after_join_calculations,
+            'is_ordered_by_after_join_calculations': is_ordered_by_after_join_calculations,
         }
 
         context.update(get_default_yesterday_context(self, constraints, order_column))

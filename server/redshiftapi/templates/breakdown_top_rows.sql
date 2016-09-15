@@ -90,8 +90,8 @@ SELECT
     {% if touchpointconversions_aggregates %}
         ,{{ touchpointconversions_aggregates|only_alias:"temp_touchpointconversions" }}
     {% endif %}
-    {% if after_join_conversions_calculations %}
-        ,{{ after_join_conversions_calculations|column_as_alias }}
+    {% if after_join_calculations %}
+        ,{{ after_join_calculations|column_as_alias }}
     {% endif %}
 FROM
     temp_base

@@ -71,8 +71,8 @@ SELECT
     {% if touchpointconversions_aggregates %}
         ,{{ touchpointconversions_aggregates|only_alias:"b" }}
     {% endif %}
-    {% if after_join_conversions_calculations %}
-        ,{{ after_join_conversions_calculations|only_alias:"b" }}
+    {% if after_join_calculations %}
+        ,{{ after_join_calculations|only_alias:"b" }}
     {% endif %}
 
 FROM (
@@ -94,8 +94,8 @@ FROM (
             {{ touchpointconversions_aggregates|only_alias:"temp_touchpointconversions" }},
         {% endif %}
 
-        {% if after_join_conversions_calculations %}
-            {{ after_join_conversions_calculations|column_as_alias }},
+        {% if after_join_calculations %}
+            {{ after_join_calculations|column_as_alias }},
         {% endif %}
 
         {% if is_ordered_by_yesterday_aggregates and yesterday_constraints %}
@@ -107,7 +107,7 @@ FROM (
         {% elif is_ordered_by_touchpointconversions %}
             ROW_NUMBER() OVER (PARTITION BY {{ breakdown_partition|only_column:"temp_base" }}
             ORDER BY {{ order|only_alias:"temp_touchpointconversions" }}) AS r
-        {% elif is_ordered_by_after_join_conversions_calculations %}
+        {% elif is_ordered_by_after_join_calculations %}
             ROW_NUMBER() OVER (PARTITION BY {{ breakdown_partition|only_column:"temp_base" }}
             ORDER BY {{ order|only_column }}) AS r
         {% else %}
