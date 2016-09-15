@@ -1,5 +1,5 @@
 /* globals angular, constants */
-angular.module('one.legacy').controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', 'api', function ($scope, $state, $location, zemNavigationService, campaignData, api) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', 'api', 'zemDataFilterService', function ($scope, $state, $location, zemNavigationService, campaignData, api, zemDataFilterService) { // eslint-disable-line max-len
     $scope.level = constants.level.CAMPAIGNS;
     $scope.contentInsights = {
         summary: null,
@@ -115,10 +115,11 @@ angular.module('one.legacy').controller('CampaignCtrl', ['$scope', '$state', '$l
         if (!$scope.hasPermission('zemauth.can_view_campaign_content_insights_side_tab')) {
             return;
         }
+        var dateRange = zemDataFilterService.getDateRange();
         api.campaignContentInsights.get(
             $state.params.id,
-            $scope.dateRange.startDate,
-            $scope.dateRange.endDate
+            dateRange.startDate,
+            dateRange.endDate
         ).then(
             function (data) {
                 $scope.contentInsights = data;

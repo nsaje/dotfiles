@@ -45,16 +45,6 @@ describe('AdGroupAdsCtrl', function () {
             if (!permissions.hasOwnProperty(permission)) return true;
             return permissions[permission];
         };
-        $scope.dateRange = {
-            startDate: {
-                isValid: function () {},
-                isSame: function () {},
-            },
-            endDate: {
-                isValid: function () {},
-                isSame: function () {},
-            },
-        };
 
         $scope.adGroup = {};
 

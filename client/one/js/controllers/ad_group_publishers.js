@@ -1,6 +1,6 @@
 /*globals angular,moment,constants,options*/
 
-angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemDataFilterService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemDataFilterService) {
     $scope.selectedTotals = true;
     $scope.selectedColumnsCount = 0;
     $scope.constants = constants;
@@ -702,12 +702,13 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
 
 
     var bulkUpdatePublishers = function (publishersSelected, publishersNotSelected, state, level) {
+        var dateRange = zemDataFilterService.getDateRange();
         api.adGroupPublishersState.save(
             $state.params.id,
             state,
             level,
-            $scope.dateRange.startDate,
-            $scope.dateRange.endDate,
+            dateRange.startDate,
+            dateRange.endDate,
             publishersSelected,
             publishersNotSelected,
             $scope.selectedAll
@@ -726,7 +727,8 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupPublishersTable.get($state.params.id, $scope.pagination.currentPage, $scope.page.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        var dateRange = zemDataFilterService.getDateRange();
+        api.adGroupPublishersTable.get($state.params.id, $scope.pagination.currentPage, $scope.page.size, dateRange.startDate, dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -824,7 +826,9 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
     var getDailyStats = function () {
         $scope.selectedPublisherIds = [];
         $scope.selectedTotals = true;
-        api.dailyStats.listPublishersStats($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedPublisherIds,  $scope.selectedTotals, getDailyStatsMetrics()).then(
+
+        var dateRange = zemDataFilterService.getDateRange();
+        api.dailyStats.listPublishersStats($state.params.id, dateRange.startDate, dateRange.endDate, $scope.selectedPublisherIds,  $scope.selectedTotals, getDailyStatsMetrics()).then(
             function (data) {
                 refreshChartOptions(data.conversionGoals, data.pixels);
 
@@ -839,10 +843,11 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
     };
 
     $scope.getInfoboxData = function () {
+        var dateRange = zemDataFilterService.getDateRange();
         api.adGroupOverview.get(
             $state.params.id,
-            $scope.dateRange.startDate,
-            $scope.dateRange.endDate).then(
+            dateRange.startDate,
+            dateRange.endDate).then(
             function (data) {
                 $scope.setInfoboxHeader(data.header);
                 $scope.infoboxBasicSettings = data.basicSettings;
@@ -880,18 +885,6 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
             }
-        }
-    });
-
-    // From parent scope (mainCtrl).
-    $scope.$watch('dateRange', function (newValue, oldValue) {
-        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
-            return;
-        }
-
-        if (newValue.startDate.isValid() && newValue.endDate.isValid()) {
-            getTableData();
-            getDailyStats();
         }
     });
 
@@ -959,6 +952,11 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
         getDailyStats();
         $scope.getInfoboxData();
         zemFilterService.setShowBlacklistedPublishers(true);
+
+        zemDataFilterService.onDateRangeUpdate(function () {
+            getTableData();
+            getDailyStats();
+        });
 
         $scope.setActiveTab();
     };

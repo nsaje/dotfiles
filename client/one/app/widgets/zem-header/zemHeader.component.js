@@ -1,7 +1,5 @@
 angular.module('one.widgets').component('zemHeader', {
     bindings: {
-        dateRange: '=',
-        dateRangePickerOptions: '=',
         level: '=',
         enablePublisherFilter: '=',
         showPublisherSelected: '=',

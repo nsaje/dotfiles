@@ -1,5 +1,5 @@
 /* globals angular, options, constants */
-angular.module('one.legacy').controller('AddScheduledReportModalCtrl', ['$scope', 'api', 'zemFilterService', function ($scope, api, zemFilterService) {  // eslint-disable-line max-len
+angular.module('one.legacy').controller('AddScheduledReportModalCtrl', ['$scope', 'api', 'zemFilterService', 'zemDataFilterService', function ($scope, api, zemFilterService, zemDataFilterService) {  // eslint-disable-line max-len
     $scope.exportSchedulingFrequencies = options.exportFrequency;
     $scope.exportSchedulingTimePeriods = options.exportTimePeriod;
     $scope.exportSchedulingDayOfWeek = options.exportDayOfWeek;
@@ -38,10 +38,11 @@ angular.module('one.legacy').controller('AddScheduledReportModalCtrl', ['$scope'
         $scope.clearErrors();
         $scope.showInProgress = true;
         var url = $scope.baseUrl + 'export/';
+        var dateRange = zemDataFilterService.getDateRange();
         var data = {
             'type': $scope.export.type.value,
-            'start_date': $scope.dateRange.startDate.format(),
-            'end_date': $scope.dateRange.endDate.format(),
+            'start_date': dateRange.startDate.format(),
+            'end_date': dateRange.endDate.format(),
             'order': $scope.order,
             'by_day': $scope.export.byDay,
             'additional_fields': $scope.getAdditionalColumns().join(','),

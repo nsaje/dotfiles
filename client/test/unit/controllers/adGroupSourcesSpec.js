@@ -30,16 +30,6 @@ describe('AdGroupSourcesCtrlSpec', function () {
         };
         $scope.setAdGroupData = function () {};
         $scope.adGroupData = {};
-        $scope.dateRange = {
-            startDate: {
-                isValid: function () {},
-                isSame: function () {},
-            },
-            endDate: {
-                isValid: function () {},
-                isSame: function () {},
-            },
-        };
         $scope.columns = [];
 
         $timeout = _$timeout_;

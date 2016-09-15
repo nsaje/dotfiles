@@ -26,8 +26,6 @@ angular.module('one.legacy').factory('zemGridDataService', ['$q', 'zemGridParser
         this.getBreakdownLevel = dataSource.getBreakdownLevel;
         this.setOrder = dataSource.setOrder;
         this.getOrder = dataSource.getOrder;
-        this.setDateRange = dataSource.setDateRange;
-        this.getDateRange = dataSource.getDateRange;
         this.setFilter = dataSource.setFilter;
         this.getFilter = dataSource.getFilter;
 

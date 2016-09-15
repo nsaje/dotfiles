@@ -14,7 +14,7 @@ angular.module('one.legacy').directive('zemGridBulkPublishersActions', ['$window
     };
 }]);
 
-angular.module('one.legacy').controller('zemGridBulkPublishersActionsCtrl', ['$window', 'api', 'zemGridConstants', 'zemGridEndpointColumns', function ($window, api, zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('zemGridBulkPublishersActionsCtrl', ['$window', 'api', 'zemGridConstants', 'zemGridEndpointColumns', 'zemDataFilterService', function ($window, api, zemGridConstants, zemGridEndpointColumns, zemDataFilterService) { // eslint-disable-line max-len
     var COLUMNS = zemGridEndpointColumns.COLUMNS;
     var MAX_BLACKLISTED_PUBLISHERS_YAHOO = 0;
 
@@ -235,12 +235,13 @@ angular.module('one.legacy').controller('zemGridBulkPublishersActionsCtrl', ['$w
     }
 
     function bulkUpdatePublishers (selection, state, level) {
+        var dateRange = zemDataFilterService.getDateRange();
         api.adGroupPublishersState.save(
             selection.id,
             state,
             level,
-            vm.api.getDateRange().startDate,
-            vm.api.getDateRange().endDate,
+            dateRange.startDate,
+            dateRange.endDate,
             selection.selectedPublishers,
             selection.unselectedPublishers,
             selection.filterAll

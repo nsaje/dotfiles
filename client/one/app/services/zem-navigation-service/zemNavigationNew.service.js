@@ -1,4 +1,12 @@
 angular.module('one.services').service('zemNavigationNewService', ['$rootScope', '$state', 'zemNavigationService', function ($rootScope, $state, zemNavigationService) { // eslint-disable-line max-len
+    this.init = init;
+    this.navigateTo = navigateTo;
+    this.getActiveEntity = getActiveEntity;
+    this.getActiveAccount = getActiveAccount;
+    this.getNavigationHierarchy = getNavigationHierarchy;
+    this.onHierarchyUpdate = onHierarchyUpdate;
+    this.onActiveEntityChange = onActiveEntityChange;
+
     var EVENTS = {
         ON_HIERARCHY_UPDATE: 'zem-navigation-service-on-data-updated',
         ON_ACTIVE_ENTITY_CHANGE: 'zem-navigation-service-on-active-entity-change',
@@ -8,16 +16,7 @@ angular.module('one.services').service('zemNavigationNewService', ['$rootScope',
     var hierarchyRoot; // Root of the navigation hierarchy tree (account -> campaign -> adgroup)
     var activeEntity; // Current navigation entity (e.g. ad group)
 
-    // Public API
-    this.initialize = initialize;
-    this.navigateTo = navigateTo;
-    this.getActiveEntity = getActiveEntity;
-    this.getActiveAccount = getActiveAccount;
-    this.getNavigationHierarchy = getNavigationHierarchy;
-    this.onHierarchyUpdate = onHierarchyUpdate;
-    this.onActiveEntityChange = onActiveEntityChange;
-
-    function initialize () {
+    function init () {
         zemNavigationService.onUpdate($scope, handleDataUpdate);
         $rootScope.$on('$stateChangeSuccess', handleStateChange);
     }

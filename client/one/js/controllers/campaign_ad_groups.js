@@ -1,5 +1,5 @@
 /* globals moment,constants,options,angular */
-angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataSourceService', 'zemGridEndpointService', function ($location, $scope, $state, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataSourceService', 'zemGridEndpointService', 'zemDataFilterService', function ($location, $scope, $state, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService, zemDataFilterService) { // eslint-disable-line max-len
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -469,10 +469,11 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
     };
 
     $scope.getInfoboxData = function () {
+        var dateRange = zemDataFilterService.getDateRange();
         api.campaignOverview.get(
             $state.params.id,
-            $scope.dateRange.startDate,
-            $scope.dateRange.endDate
+            dateRange.startDate,
+            dateRange.endDate
         ).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
@@ -577,7 +578,8 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), null).then(
+        var dateRange = zemDataFilterService.getDateRange();
+        api.dailyStats.list($scope.level, $state.params.id, dateRange.startDate, dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), null).then(
             function (data) {
                 refreshChartOptions(data.conversionGoals, data.pixels);
                 $scope.chartData = data.chartData;
@@ -603,7 +605,8 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
     var getTableData = function () {
         $scope.getTableDataRequestInProgress = true;
 
-        api.campaignAdGroupsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        var dateRange = zemDataFilterService.getDateRange();
+        api.campaignAdGroupsTable.get($state.params.id, dateRange.startDate, dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
@@ -744,17 +747,10 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
         }
     });
 
-    $scope.$watch('dateRange', function (newValue, oldValue) {
-        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
-            return;
-        }
-
-        if (newValue.startDate.isValid() && newValue.endDate.isValid()) {
-            getDailyStats();
-            getTableData();
-
-            $scope.getContentInsights();
-        }
+    zemDataFilterService.onDateRangeUpdate(function () {
+        getDailyStats();
+        getTableData();
+        $scope.getContentInsights();
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {

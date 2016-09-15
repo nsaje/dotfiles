@@ -25,7 +25,6 @@
 
             <div class="button-bar-item pull-right">
                 <zem-export
-                    date-range="dateRange"
                     base-url="'api/accounts/' + $state.params.id + '/'"
                     options="exportOptions"
                     columns="columns"
@@ -76,7 +75,6 @@
                 entity-id="grid.entityId"
                 options="grid.options"
 
-                date-range="dateRange"
                 selection="selection"
                 selection-callback="updateSelectedRowsData"
 

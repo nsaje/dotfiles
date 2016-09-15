@@ -34,14 +34,6 @@ describe('AccountCampaignsCtrl', function () {
                 return;
             };
             $scope.account = {id: 1};
-            $scope.dateRange = {
-                startDate: {
-                    isSame: function () {},
-                },
-                endDate: {
-                    isSame: function () {},
-                },
-            };
 
             var mockApiFunc = function () {
                 return {

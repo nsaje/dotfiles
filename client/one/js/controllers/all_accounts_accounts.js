@@ -1,5 +1,5 @@
 /*globals angular,moment,constants,options*/
-angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', 'zemNavigationService', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', 'zemNavigationService', 'zemDataFilterService', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataFilterService) { // eslint-disable-line max-len
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
@@ -551,7 +551,8 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, null, $scope.dateRange.startDate, $scope.dateRange.endDate, null, true, getDailyStatsMetrics(), null).then(
+        var dateRange = zemDataFilterService.getDateRange();
+        api.dailyStats.list($scope.level, null, dateRange.startDate, dateRange.endDate, null, true, getDailyStatsMetrics(), null).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
@@ -564,7 +565,8 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
     };
 
     $scope.getInfoboxData = function () {
-        api.allAccountsOverview.get($scope.dateRange.startDate, $scope.dateRange.endDate).then(
+        var dateRange = zemDataFilterService.getDateRange();
+        api.allAccountsOverview.get(dateRange.startDate, dateRange.endDate).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
@@ -582,7 +584,8 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.page.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        var dateRange = zemDataFilterService.getDateRange();
+        api.accountAccountsTable.get($scope.pagination.currentPage, $scope.page.size, dateRange.startDate, dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -618,17 +621,10 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
         });
     };
 
-    // From parent scope (mainCtrl).
-    $scope.$watch('dateRange', function (newValue, oldValue) {
-        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
-            return;
-        }
-
-        if (newValue.startDate.isValid() && newValue.endDate.isValid()) {
-            $scope.getInfoboxData();
-            getDailyStats();
-            getTableData();
-        }
+    zemDataFilterService.onDateRangeUpdate(function () {
+        $scope.getInfoboxData();
+        getDailyStats();
+        getTableData();
     });
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {

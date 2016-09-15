@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$http', '$q', function ($rootScope, $http, $q) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemDataFilterService', function ($rootScope, $http, $q, zemDataFilterService) { // eslint-disable-line max-len
 
     //
     // DataSource is responsible for fetching data with help of passed Endpoint and
@@ -48,7 +48,10 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
         var activeLoadRequests = [];
         var saveRequestInProgress = false;
 
+        var dateRange = zemDataFilterService.getDateRange();
         var config = {
+            startDate: dateRange.startDate,
+            endDate: dateRange.endDate,
             order: '-clicks',
         };
 
@@ -73,11 +76,9 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
 
         this.isSaveRequestInProgress = isSaveRequestInProgress;
 
-        this.setDateRange = setDateRange;
         this.setOrder = setOrder;
         this.setFilter = setFilter;
         this.setBreakdown = setBreakdown;
-        this.getDateRange = getDateRange;
         this.getOrder = getOrder;
         this.getFilter = getFilter;
         this.getBreakdown = getBreakdown;
@@ -86,6 +87,12 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
         this.onLoad = onLoad;
         this.onStatsUpdated = onStatsUpdated;
         this.onDataUpdated = onDataUpdated;
+
+        zemDataFilterService.onDateRangeUpdate(function (event, newDateRange) {
+            config.startDate = newDateRange.startDate;
+            config.endDate = newDateRange.endDate;
+            getData();
+        });
 
         //
         // Definitions
@@ -344,14 +351,6 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
             };
         }
 
-        function setDateRange (dateRange, fetch) {
-            config.startDate = dateRange.startDate;
-            config.endDate = dateRange.endDate;
-            if (fetch && config.startDate.isValid() && config.endDate.isValid()) {
-                return getData();
-            }
-        }
-
         function setOrder (order, fetch) {
             config.order = order;
             if (fetch) {
@@ -448,13 +447,6 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
             });
 
             return result;
-        }
-
-        function getDateRange () {
-            return {
-                startDate: config.startDate,
-                endDate: config.endDate,
-            };
         }
 
         function getOrder () {

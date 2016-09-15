@@ -43,7 +43,6 @@ angular.module('one.legacy').controller('zemGridExportCtrl', ['$scope', '$uibMod
     }
 
     function initializeData () {
-        $scope.dateRange = vm.api.getDateRange();
         $scope.order = vm.api.getOrder();
     }
 

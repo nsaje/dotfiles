@@ -1,12 +1,11 @@
 /* globals $, angular, constants */
-angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$uibModal', '$uibModalStack', '$timeout', '$window', 'zemMoment', 'zemUserService', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', 'zemRedesignHelpersService', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, zemUserService, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, zemRedesignHelpersService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$uibModal', '$uibModalStack', '$timeout', '$window', 'zemMoment', 'zemUserService', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', 'zemHeaderDateRangePickerService', 'zemDataFilterService', 'zemRedesignHelpersService', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, zemUserService, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, zemHeaderDateRangePickerService, zemDataFilterService, zemRedesignHelpersService) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
     $scope.user = zemUserService.getUser();
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
-    $scope.maxDate = zemMoment().endOf('month');
     $scope.enablePublisherFilter = false;
     $scope.showSelectedPublisher = null;
     $scope.localStoragePrefix = 'main';
@@ -141,58 +140,21 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
         return 'main.adGroups.ads';
     };
 
-    $scope.getDateRanges = function () {
-        var result = {};
-
-        result.Yesterday = [
-            zemMoment().subtract(1, 'days').startOf('day'),
-            zemMoment().subtract(1, 'days').endOf('day'),
-        ];
-
-        result['Last 7 Days'] = [zemMoment().subtract(7, 'days'), zemMoment().subtract(1, 'days')];
-        result['Last 30 Days'] = [zemMoment().subtract(30, 'days'), zemMoment().subtract(1, 'days')];
-
-        result['This Month'] = [zemMoment().startOf('month'), zemMoment().endOf('month')];
-        result['Last Month'] = [
-            zemMoment().subtract(1, 'month').startOf('month'),
-            zemMoment().subtract(1, 'month').endOf('month'),
-        ];
-
-        result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract(1, 'days')];
-        return result;
-    };
-
-    $scope.setDateRangeFromSearch = function () {
-        var startDate = $location.search().start_date;
-        var endDate = $location.search().end_date;
-        var dateRange = {};
-
-        if (startDate !== undefined && $scope.startDate !== startDate) {
-            dateRange.startDate = zemMoment(startDate);
-        }
-
-        if (endDate !== undefined && $scope.endDate !== endDate) {
-            dateRange.endDate = zemMoment(endDate);
-        }
-
-        if (!$.isEmptyObject(dateRange)) {
-            $scope.dateRange = dateRange;
-        }
-    };
-
-    $scope.dateRange = {
-        startDate: zemMoment().subtract(29, 'day').hours(0).minutes(0).seconds(0).milliseconds(0),
-        endDate: zemMoment().subtract(1, 'day').endOf('day'),
-    };
-
-    $scope.setDateRangeFromSearch();
-
+    $scope.dateRange = zemDataFilterService.getDateRange();
     $scope.dateRangeOptions = {
-        maxDate: $scope.maxDate.format('YYYY-MM-DD'),
-        ranges: $scope.getDateRanges(),
+        maxDate: moment().endOf('month'),
+        ranges: zemHeaderDateRangePickerService.getPredefinedRanges(),
         opens: 'left',
         applyClass: 'btn-primary',
+        eventHandlers: {
+            'apply.daterangepicker': function () {
+                zemDataFilterService.setDateRange($scope.dateRange);
+            },
+        },
     };
+    zemDataFilterService.onDateRangeUpdate(function (event, updatedDateRange) {
+        $scope.dateRange = updatedDateRange;
+    });
 
     $scope.breadcrumb = [];
 
@@ -289,7 +251,6 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
 
     $scope.$on('$stateChangeSuccess', function () {
         $scope.currentRoute = $state.current;
-        $scope.setDateRangeFromSearch();
 
         // Redirect from default state
         var state = null;
@@ -345,31 +306,6 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
 
         if (el) {
             el.select2('open');
-        }
-    });
-
-    $scope.$watch('dateRange', function (newValue, oldValue) {
-        if ($.isEmptyObject(newValue) || $.isEmptyObject(oldValue)) {
-            return;
-        }
-
-        if (newValue.startDate.valueOf() === oldValue.startDate.valueOf() &&
-            newValue.endDate.valueOf() === oldValue.endDate.valueOf()) {
-            return;
-        }
-
-        if (newValue.startDate.isValid()) {
-            $location.search(
-                'start_date',
-                $scope.dateRange.startDate ? $scope.dateRange.startDate.format('YYYY-MM-DD') : null
-            );
-        }
-
-        if (newValue.endDate.isValid()) {
-            $location.search(
-                'end_date',
-                $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null
-            );
         }
     });
 

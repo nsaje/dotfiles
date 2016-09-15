@@ -1,12 +1,13 @@
 /* globals angular, constants */
-angular.module('one.legacy').controller('DownloadExportReportModalCtrl', ['$scope', 'api', 'zemFilterService', '$window', '$state', function ($scope, api, zemFilterService, $window, $state) {  // eslint-disable-line max-len
+angular.module('one.legacy').controller('DownloadExportReportModalCtrl', ['$scope', 'api', 'zemFilterService', '$window', '$state', 'zemDataFilterService', function ($scope, api, zemFilterService, $window, $state, zemDataFilterService) {  // eslint-disable-line max-len
     $scope.showInProgress = false;
     $scope.export = {};
 
     $scope.setDisabledExportOptions = function () {
         $scope.showInProgress = true;
+        var dateRange = zemDataFilterService.getDateRange();
         api.exportAllowed.get($state.params.id, $scope.level,
-            $scope.exportSources, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+            $scope.exportSources, dateRange.startDate, dateRange.endDate).then(
             function (data) {
                 $scope.options.forEach(function (opt) {
                     if (opt.value === constants.exportType.CONTENT_AD) {
@@ -51,9 +52,10 @@ angular.module('one.legacy').controller('DownloadExportReportModalCtrl', ['$scop
     };
 
     $scope.downloadReport = function () {
+        var dateRange = zemDataFilterService.getDateRange();
         var url = $scope.baseUrl + 'export/?type=' + $scope.export.type.value +
-            '&start_date=' + $scope.dateRange.startDate.format() +
-            '&end_date=' + $scope.dateRange.endDate.format() +
+            '&start_date=' + dateRange.startDate.format() +
+            '&end_date=' + dateRange.endDate.format() +
             '&order=' + $scope.order +
             '&by_day=' + $scope.export.byDay;
 

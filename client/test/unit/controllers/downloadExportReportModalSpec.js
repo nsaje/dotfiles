@@ -19,14 +19,14 @@ describe('DownloadExportReportModalCtrl', function () {
     }));
 
 
-    beforeEach(inject(function ($controller, $rootScope, _$q_) {
+    beforeEach(inject(function ($controller, $rootScope, _$q_, zemDataFilterService) {
         $q = _$q_;
         $scope = $rootScope.$new();
         $scope.$close = function () {};
-        $scope.dateRange = {
+        zemDataFilterService.setDateRange({
             startDate: moment.utc('2015-01-12'),
             endDate: moment.utc('2015-01-19'),
-        };
+        });
         $scope.order = '-cost';
         $scope.baseUrl = 'test/';
         $scope.options = [{value: 'view-csv'}];

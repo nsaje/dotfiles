@@ -15,7 +15,6 @@ angular.module('one.legacy').directive('zemGridIntegration', [function () { // e
             breakdown: '=breakdown',
             entityId: '=entityId',
 
-            dateRange: '=dateRange',
             selection: '=',
             selectionCallback: '=',
 
@@ -38,7 +37,6 @@ angular.module('one.legacy').controller('ZemGridIntegrationCtrl', ['$scope', '$t
 
     function initialize () {
         initializeGrid();
-        initializeDateRangeWatch();
         initializeFilterWatches();
         loadState();
 
@@ -82,7 +80,6 @@ angular.module('one.legacy').controller('ZemGridIntegrationCtrl', ['$scope', '$t
     }
 
     function loadState () {
-        vm.grid.dataSource.setDateRange(vm.dateRange, false);
         loadFilters();
     }
 
@@ -100,16 +97,6 @@ angular.module('one.legacy').controller('ZemGridIntegrationCtrl', ['$scope', '$t
         if (vm.breakdown === constants.breakdown.PUBLISHER) {
             vm.grid.dataSource.setFilter(FILTER.SHOW_BLACKLISTED_PUBLISHERS, zemFilterService.getBlacklistedPublishers());
         }
-    }
-
-    function initializeDateRangeWatch () {
-        $scope.$watch('ctrl.dateRange', function (newValue, oldValue) {
-            if (!newValue) return;
-            if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
-                return;
-            }
-            vm.grid.dataSource.setDateRange(newValue, true);
-        });
     }
 
     function initializeFilterWatches () {

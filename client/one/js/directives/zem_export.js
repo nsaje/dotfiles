@@ -6,7 +6,6 @@ angular.module('one.legacy').directive('zemExport', function () {
         restrict: 'E',
         scope: {
             baseUrl: '=',
-            dateRange: '=',
             options: '=',
             columns: '=',
             order: '=',

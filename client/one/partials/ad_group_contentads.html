@@ -41,7 +41,6 @@
 
             <div class="button-bar-item pull-right">
                 <zem-export
-                    date-range="dateRange"
                     base-url="'api/ad_groups/' + $state.params.id + '/'"
                     options="exportOptions"
                     columns="columns"
@@ -120,8 +119,6 @@
                 level="grid.level"
                 breakdown="grid.breakdown"
                 entity-id="grid.entityId"
-
-                date-range="dateRange"
 
                 zem-has-permission="hasPermission"
                 zem-is-permission-internal="isPermissionInternal">

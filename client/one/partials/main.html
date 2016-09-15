@@ -1,5 +1,5 @@
 <div class="container-fluid">
-    <zem-header class="row m-b-s" ng-if="userCanSeeNewLayout()" date-range="$parent.dateRange" date-range-picker-options="$parent.dateRangeOptions" level="$parent.level" enable-publisher-filter="$parent.enablePublisherFilter" show-publisher-selected="$parent.showPublisherSelected"></zem-header>
+    <zem-header class="row m-b-s" ng-if="userCanSeeNewLayout()" level="$parent.level" enable-publisher-filter="$parent.enablePublisherFilter" show-publisher-selected="$parent.showPublisherSelected"></zem-header>
     <div class="row header" ng-include src="'/partials/header.html'" ng-if="!userCanSeeNewLayout()"></div>
 
     <div class="row body">

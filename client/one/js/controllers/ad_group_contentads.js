@@ -1,5 +1,5 @@
 /* globals options, angular, constants, moment */
-angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$location', '$q', 'api', 'zemGridConstants', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService',  function ($scope, $window, $state, $location, $q, api, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$location', '$q', 'api', 'zemGridConstants', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemDataFilterService', function ($scope, $window, $state, $location, $q, api, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService) { // eslint-disable-line max-len
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -665,18 +665,6 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
         }
     });
 
-    // From parent scope (mainCtrl).
-    $scope.$watch('dateRange', function (newValue, oldValue) {
-        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
-            return;
-        }
-
-        if (newValue.startDate.isValid() && newValue.endDate.isValid()) {
-            getDailyStats();
-            getTableData();
-        }
-    });
-
     $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
         if (newValue === true && oldValue === false) {
             pollSyncStatus();
@@ -744,7 +732,8 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
     var getTableData = function () {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.page.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        var dateRange = zemDataFilterService.getDateRange();
+        api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.page.size, dateRange.startDate, dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
@@ -880,6 +869,11 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
         getDailyStats();
         getInfoboxData();
 
+        zemDataFilterService.onDateRangeUpdate(function () {
+            getDailyStats();
+            getTableData();
+        });
+
         initColumns();
 
         pollSyncStatus();
@@ -952,7 +946,8 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
     };
 
     var getDailyStats = function () {
-        api.dailyStats.listContentAdStats($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, getDailyStatsMetrics()).then(
+        var dateRange = zemDataFilterService.getDateRange();
+        api.dailyStats.listContentAdStats($state.params.id, dateRange.startDate, dateRange.endDate, getDailyStatsMetrics()).then(
             function (data) {
                 setChartOptions(data.goals);
                 refreshChartOptions(data.conversionGoals, data.pixels);
@@ -966,10 +961,11 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
     };
 
     var getInfoboxData = function () {
+        var dateRange = zemDataFilterService.getDateRange();
         api.adGroupOverview.get(
             $state.params.id,
-            $scope.dateRange.startDate,
-            $scope.dateRange.endDate).then(
+            dateRange.startDate,
+            dateRange.endDate).then(
             function (data) {
                 $scope.setInfoboxHeader(data.header);
                 $scope.infoboxBasicSettings = data.basicSettings;

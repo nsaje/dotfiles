@@ -1,5 +1,5 @@
 /* globals moment,constants,options,angular */
-angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', '$timeout', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, $timeout) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', '$timeout', 'zemDataFilterService', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, $timeout, zemDataFilterService) { // eslint-disable-line max-len
     $scope.localStoragePrefix = null;
     $scope.chartMetrics = [];
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -529,7 +529,8 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
-        api.sourcesTable.get($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        var dateRange = zemDataFilterService.getDateRange();
+        api.sourcesTable.get($scope.level, $state.params.id, dateRange.startDate, dateRange.endDate, $scope.order).then(
             function (data) {
                 var defaultChartMetrics;
                 $scope.rows = data.rows;
@@ -564,8 +565,9 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
             $scope.dailyStatsPromise.abort();
         }
 
-        $scope.dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate,
-            $scope.dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), true);
+        var dateRange = zemDataFilterService.getDateRange();
+        $scope.dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, dateRange.startDate,
+            dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), true);
 
         $scope.dailyStatsPromise.then(
             function (data) {
@@ -589,8 +591,9 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
     };
 
     $scope.getInfoboxData = function () {
+        var dateRange = zemDataFilterService.getDateRange();
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
-            api.allAccountsOverview.get($scope.dateRange.startDate, $scope.dateRange.endDate).then(
+            api.allAccountsOverview.get(dateRange.startDate, dateRange.endDate).then(
                 function (data) {
                     updateInfoboxData(data);
                 }
@@ -604,8 +607,8 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
         } else if ($scope.level === constants.level.CAMPAIGNS) {
             api.campaignOverview.get(
                 $state.params.id,
-                $scope.dateRange.startDate,
-                $scope.dateRange.endDate
+                dateRange.startDate,
+                dateRange.endDate
             ).then(
                 function (data) {
                     updateInfoboxData(data);
@@ -746,24 +749,16 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
         }
     });
 
-    // From parent scope (mainCtrl).
-    $scope.$watch('dateRange', function (newValue, oldValue) {
-        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
-            return;
+    zemDataFilterService.onDateRangeUpdate(function () {
+        if ($scope.level === constants.level.ALL_ACCOUNTS) {
+            $scope.getInfoboxData();
         }
+        getDailyStats();
+        getTableData();
 
-        if (newValue.startDate.isValid() && newValue.endDate.isValid()) {
-            // on all accounts some settings depend on date range
-            if ($scope.level === constants.level.ALL_ACCOUNTS) {
-                $scope.getInfoboxData();
-            }
-            getDailyStats();
-            getTableData();
-
-            if ($scope.hasPermission('zemauth.can_view_sidetabs') && $scope.level === constants.level.CAMPAIGNS) {
-                $scope.sideBarVisible = true;
-                $scope.getContentInsights();
-            }
+        if ($scope.hasPermission('zemauth.can_view_sidetabs') && $scope.level === constants.level.CAMPAIGNS) {
+            $scope.sideBarVisible = true;
+            $scope.getContentInsights();
         }
     });
 

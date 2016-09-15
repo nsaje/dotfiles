@@ -6,6 +6,7 @@ describe('zemDataSource', function () {
     var $timeout;
     var dataSource;
     var endpoint;
+    var zemDataFilterService;
 
     beforeEach(module('one'));
 
@@ -14,12 +15,13 @@ describe('zemDataSource', function () {
         $httpBackend.when('GET', '/api/all_accounts/nav/').respond({});
     }));
 
-    beforeEach(inject(function ($rootScope, _$q_, _$timeout_, zemDataSourceService, zemGridDebugEndpoint) { // eslint-disable-line max-len
+    beforeEach(inject(function ($rootScope, _$q_, _$timeout_, zemDataSourceService, zemGridDebugEndpoint, _zemDataFilterService_) { // eslint-disable-line max-len
         $scope = $rootScope.$new();
         $q = _$q_;
         $timeout = _$timeout_;
         endpoint = zemGridDebugEndpoint.createEndpoint();
         dataSource = zemDataSourceService.createInstance(endpoint);
+        zemDataFilterService = _zemDataFilterService_;
     }));
 
     it('should request meta data from endpoint if needed', function () {
@@ -217,7 +219,9 @@ describe('zemDataSource', function () {
             limit: 10,
             breakdownParents: [11],
             breakdown: jasmine.any(Array),
-            order: jasmine.any(String)
+            order: jasmine.any(String),
+            startDate: jasmine.any(Object),
+            endDate: jasmine.any(Object),
         });
     });
 
@@ -324,13 +328,13 @@ describe('zemDataSource', function () {
 
         var order = '-cost';
         var dateRange = {
-            startDate: new Date(2016, 1, 1),
-            endDate: new Date(2016, 1, 10),
+            startDate: moment(new Date(2016, 1, 1)),
+            endDate: moment(new Date(2016, 1, 10)),
         };
         dataSource.setFilter(dataSource.FILTER.SHOW_ARCHIVED_SOURCES, true);
         dataSource.setFilter(dataSource.FILTER.SHOW_BLACKLISTED_PUBLISHERS, true);
         dataSource.setFilter(dataSource.FILTER.FILTERED_MEDIA_SOURCES, [1, 2, 3]);
-        dataSource.setDateRange(dateRange);
+        zemDataFilterService.setDateRange(dateRange);
         dataSource.setOrder(order);
 
         expect(endpoint.getData).not.toHaveBeenCalled();

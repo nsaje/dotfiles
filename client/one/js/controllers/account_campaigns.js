@@ -1,5 +1,5 @@
 /*globals angular,constants,options,moment*/
-angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataFilterService', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService) { // eslint-disable-line max-len
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -568,7 +568,8 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$lo
     };
 
     var getDailyStats = function () {
-        api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), null).then(
+        var dateRange = zemDataFilterService.getDateRange();
+        api.dailyStats.list($scope.level, $state.params.id, dateRange.startDate, dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), null).then(
             function (data) {
                 refreshChartOptions(data.pixels);
                 $scope.chartData = data.chartData;
@@ -618,7 +619,8 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$lo
     var getTableData = function () {
         $scope.getTableDataRequestInProgress = true;
 
-        api.accountCampaignsTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
+        var dateRange = zemDataFilterService.getDateRange();
+        api.accountCampaignsTable.get($state.params.id, dateRange.startDate, dateRange.endDate, $scope.order).then(
             function (data) {
                 $scope.rows = data.rows;
                 $scope.totalRow = data.totals;
@@ -741,6 +743,11 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$lo
         $scope.getInfoboxData();
 
         $scope.setActiveTab();
+
+        zemDataFilterService.onDateRangeUpdate(function () {
+            getTableData();
+            getDailyStats();
+        });
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
@@ -752,15 +759,6 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$lo
         if (newValue === true && oldValue === false) {
             pollSyncStatus();
         }
-    });
-
-    $scope.$watch('dateRange', function (newValue, oldValue) {
-        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
-            return;
-        }
-
-        getTableData();
-        getDailyStats();
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {

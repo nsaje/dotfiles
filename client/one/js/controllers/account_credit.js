@@ -1,7 +1,7 @@
 /* globals angular, moment */
 angular.module('one.legacy').controller('AccountCreditCtrl',
-    ['$scope', '$state', '$uibModal', '$location', '$window', 'api',
-    function ($scope, $state, $uibModal, $location, $window, api) {
+    ['$scope', '$state', '$uibModal', '$location', '$window', 'api', 'zemDataFilterService',
+    function ($scope, $state, $uibModal, $location, $window, api, zemDataFilterService) {
         function error () {}
         function refresh (updatedId) {
             $scope.updatedId = updatedId;
@@ -39,13 +39,6 @@ angular.module('one.legacy').controller('AccountCreditCtrl',
 
             return urlStartDate <= creditEndDate && urlEndDate >= creditStartDate;
         };
-
-        $scope.$watch('dateRange', function (newValue, oldValue) {
-            if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
-                return;
-            }
-            refresh();
-        });
 
         $scope.addCreditItem = function () {
             $scope.canceledIds = {};
@@ -87,5 +80,6 @@ angular.module('one.legacy').controller('AccountCreditCtrl',
             $scope.setActiveTab();
         };
 
+        zemDataFilterService.onDateRangeUpdate(refresh);
         $scope.init();
     }]);

@@ -35,16 +35,6 @@ describe('MediaSourcesCtrl', function () {
             $scope.setModels = function () {
                 return;
             };
-            $scope.dateRange = {
-                startDate: {
-                    isValid: function () {},
-                    isSame: function () {},
-                },
-                endDate: {
-                    isValid: function () {},
-                    isSame: function () {},
-                },
-            };
             $scope.level = constants.level.ALL_ACCOUNTS;
 
             var mockApiFunc = function () {

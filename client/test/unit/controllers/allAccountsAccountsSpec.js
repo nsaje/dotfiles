@@ -37,16 +37,6 @@ describe('AllAccountsAccountsCtrl', function () {
             $scope.setModels = function () {
                 return;
             };
-            $scope.dateRange = {
-                startDate: {
-                    isValid: function () {},
-                    isSame: function () {},
-                },
-                endDate: {
-                    isValid: function () {},
-                    isSame: function () {},
-                },
-            };
 
             var mockApiFunc = function () {
                 return {
