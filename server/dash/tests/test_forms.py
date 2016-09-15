@@ -4,6 +4,7 @@ import datetime
 from decimal import Decimal
 import StringIO
 
+from django.forms import ValidationError
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import Permission
@@ -118,7 +119,7 @@ class AccountSettingsFormTest(TestCase):
             'default_account_manager': 3,
             'default_sales_representative': 2,
             'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
-            })
+        })
         self.assertTrue(form.is_valid(), "Form should be valid as the account id is the same")
 
         form = forms.AccountSettingsForm({
@@ -127,7 +128,7 @@ class AccountSettingsFormTest(TestCase):
             'default_account_manager': 3,
             'default_sales_representative': 2,
             'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
-            })
+        })
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('name'))
 
@@ -607,22 +608,46 @@ class AdGroupAdsUploadFormTest(TestCase):
         self.brand_name = 'testbrandname'
         self.call_to_action = 'testcalltoaction'
         self.primary_tracker_url = 'http://example1.com'
+        self.file_contents = [
+            ['URL', 'title', 'image URL', 'crop areas'],
+            [
+                'http://www.nextadvisor.com/blog/2014/12/11/best-credit-cards-2015/?kw=zem_dsk_bc15q15_33',
+                'See The Best Credit Cards of 2015',
+                'http://i.zemanta.com/319205478_350_350.jpg',
+                self.crop_areas,
+            ],
+        ]
 
-    def test_filetypes(self):
+    def test_parse_unknown_file(self):
         csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
         form = self._init_form(csv_file, {})
         with open('./dash/tests/test.gif') as f:
-            valid = form.is_valid_input_file(f.read())
-            self.assertFalse(valid)
+            with self.assertRaises(ValidationError):
+                form._parse_file(f)
         with open('./dash/tests/test.jpg') as f:
-            valid = form.is_valid_input_file(f.read())
-            self.assertFalse(valid)
-        with open('./dash/tests/test.xlsx') as f:
-            valid = form.is_valid_input_file(f.read())
-            self.assertFalse(valid)
+            with self.assertRaises(ValidationError):
+                form._parse_file(f)
+
+    def test_parse_csv_file(self):
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
+        form = self._init_form(csv_file, {})
         with open('./dash/tests/test.csv') as f:
-            valid = form.is_valid_input_file(f.read())
-            self.assertTrue(valid)
+            rows = form._parse_file(f)
+            self.assertEqual(self.file_contents, rows)
+
+    def test_parse_xls_file(self):
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
+        form = self._init_form(csv_file, {})
+        with open('./dash/tests/test.xls') as f:
+            rows = form._parse_file(f)
+            self.assertEqual(self.file_contents, rows)
+
+    def test_parse_xlsx_file(self):
+        csv_file = self._get_csv_file(['Url', 'Title', 'Image Url', 'Crop Areas'], [])
+        form = self._init_form(csv_file, {})
+        with open('./dash/tests/test.xlsx') as f:
+            rows = form._parse_file(f)
+            self.assertEqual(self.file_contents, rows)
 
     def test_missing_all_columns(self):
         csv_file = self._get_csv_file([], ['http://example.com', 'Example', 'img.jpg'])

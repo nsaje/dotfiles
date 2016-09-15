@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 import magic
 import decimal
+import mimetypes
 import re
 import unicodecsv
 import dateutil.parser
 import rfc3987
 from collections import OrderedDict
-
 from collections import Counter
+
+import xlrd
 
 from django import forms
 from django.contrib.postgres import forms as postgres_forms
@@ -758,20 +760,15 @@ class AdGroupAdsUploadBaseForm(forms.Form):
     )
 
 
+EXCEL_MIMETYPES = ('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+
 class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
     candidates = forms.FileField(
         error_messages={'required': 'Please choose a file to upload.'}
     )
 
-    def _get_csv_header(self, lines):
-        reader = unicodecsv.reader(lines)
-
-        try:
-            return next(reader)
-        except StopIteration:
-            raise forms.ValidationError('Uploaded file is empty.')
-
-    def _get_csv_column_names(self, header):
+    def _get_column_names(self, header):
         # this function maps original CSV column names to internal, normalized
         # ones that are then used across the application
         column_names = [col.strip(" _").lower().replace(' ', '_') for col in header]
@@ -805,50 +802,19 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
 
         return column_names
 
-    def _get_csv_content_ad_data(self, reader):
-        next(reader)  # ignore header
+    def _parse_file(self, candidates_file):
+        content = candidates_file.read()
+        filename_mimetype, _ = mimetypes.guess_type(candidates_file.name)
+        content_mimetype = magic.from_buffer(content, mime=True).split('/')
 
-        count_rows = 0
-        data = []
-        for row in reader:
-            # unicodecsv stores values of all unneeded columns
-            # under key None. This can be removed.
-            if None in row:
-                del row[None]
-
-            if all(row[example_key] == example_value for example_key, example_value in EXAMPLE_CSV_CONTENT.iteritems()):
-                continue
-
-            count_rows += 1
-
-            # Remove ignored fields from row dict
-            for ignored_field in IGNORED_CSV_FIELDS:
-                row.pop(ignored_field, None)
-
-            data.append(row)
-
-        if count_rows == 0:
-            raise forms.ValidationError('Uploaded file is empty.')
-
-        return data
-
-    def is_valid_input_file(self, content):
-        # detect file content type
-        m = magic.Magic(mime=True)
-        mime = m.from_buffer(content[:1024])
-        if 'text' in mime:  # accept variants of text/plain, text/html, etc.
-            return True
+        if filename_mimetype in EXCEL_MIMETYPES and content_mimetype[0] == 'application':
+            return self._parse_excel_file(content)
+        elif filename_mimetype == 'text/csv' and content_mimetype[0] == 'text':
+            return self._parse_csv_file(content)
         else:
-            return False
-
-    def clean_candidates(self):
-        candidates_file = self.cleaned_data['candidates']
-
-        file_content = candidates_file.read()
-        valid = self.is_valid_input_file(file_content)
-        if not valid:
             raise forms.ValidationError('Input file was not recognized.')
 
+    def _parse_csv_file(self, content):
         # If the file contains ctrl-M chars instead of
         # new line breaks, DictReader will fail to parse it.
         # Therefore we split the file by lines first and
@@ -857,28 +823,70 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
         # location on upload and then open it with 'rU'
         # (universal-newline mode).
         # Additionally remove empty lines and Example CSV content if present.
-        lines = [line for line in file_content.splitlines() if line]
+        lines = [line for line in content.splitlines() if line]
 
         encodings = ['utf-8', 'windows-1252']
-        data = None
+        rows = None
 
         # try all supported encodings one by one
         for encoding in encodings:
             try:
-                header = self._get_csv_header(lines)
-                # we save self.csv_column_names to be used by form-wide clean()
-                self.csv_column_names = self._get_csv_column_names(header)
+                reader = unicodecsv.reader(lines, encoding=encoding)
+                rows = [row for row in reader]
 
-                reader = unicodecsv.DictReader(lines, self.csv_column_names, encoding=encoding)
-                data = self._get_csv_content_ad_data(reader)
                 break
             except unicodecsv.Error:
                 raise forms.ValidationError('Uploaded file is not a valid CSV file.')
             except UnicodeDecodeError:
                 pass
 
-        if data is None:
+        if rows is None:
             raise forms.ValidationError('Unknown file encoding.')
+
+        return rows
+
+    def _get_sheet_row(self, sheet, i):
+        return [cell.value for cell in sheet.row(i)]
+
+    def _parse_excel_file(self, content):
+        wb = xlrd.open_workbook(file_contents=content)
+
+        if wb.nsheets < 1:
+            raise forms.ValidationError('No sheets in excel file.')
+        sheet = wb.sheet_by_index(0)
+
+        return [self._get_sheet_row(sheet, i) for i in range(sheet.nrows)]
+
+    def _is_example_row(self, row):
+        return all(row[example_key] == example_value for example_key, example_value in EXAMPLE_CSV_CONTENT.iteritems())
+
+    def _remove_unnecessary_fields(self, row):
+        # unicodecsv stores values of all unneeded columns
+        # under key None. This can be removed.
+        if None in row:
+            del row[None]
+
+        # Remove ignored fields from row dict
+        for ignored_field in IGNORED_CSV_FIELDS:
+            row.pop(ignored_field, None)
+
+        return row
+
+    def clean_candidates(self):
+        candidates_file = self.cleaned_data['candidates']
+
+        rows = self._parse_file(candidates_file)
+
+        if len(rows) < 1:
+            raise forms.ValidationError('Uploaded file is empty.')
+
+        column_names = self._get_column_names(rows[0])
+
+        data = (dict(zip(column_names, row)) for row in rows[1:])
+        data = [self._remove_unnecessary_fields(row) for row in data if not self._is_example_row(row)]
+
+        if len(data) < 1:
+            raise forms.ValidationError('Uploaded file is empty.')
 
         if len(data) > MAX_ADS_PER_UPLOAD:
             raise forms.ValidationError('Too many content ads (max. {})'.format(MAX_ADS_PER_UPLOAD))
@@ -1138,10 +1146,10 @@ class BreakdownForm(forms.Form):
 
     show_archived = forms.BooleanField(required=False)
     show_blacklisted_publishers = forms.TypedChoiceField(
-            required=False,
-            choices=constants.PublisherBlacklistFilter.get_choices(),
-            coerce=str,
-            empty_value=None
+        required=False,
+        choices=constants.PublisherBlacklistFilter.get_choices(),
+        coerce=str,
+        empty_value=None
     )
 
     offset = forms.IntegerField(min_value=0, required=True)
