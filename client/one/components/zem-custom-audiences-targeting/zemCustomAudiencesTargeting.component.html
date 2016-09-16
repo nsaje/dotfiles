@@ -1,6 +1,6 @@
 <div class="zem-custom-audiences-targeting">
-    <div ng-show="ctrl.selectedTargetings.length || ctrl.selectedAudienceTargeting.length || ctrl.selectedExclusionAudienceTargeting.length" class="targeting-list form-group m-b-none">
-        <div class="col-xs-3 m-t-xs" ng-if="ctrl.selectedTargetings.length || ctrl.selectedAudienceTargeting.length">
+    <div ng-show="ctrl.selectedTargetings.length || ctrl.selectedExclusionTargetings.length" class="targeting-list form-group m-b-none">
+        <div class="col-xs-3 m-t-xs" ng-if="ctrl.selectedTargetings.length">
             <div class="text-success">Included Audiences</div>
             <ul class="with-icons ul-checkmarks">
                 <li class="targeting-list-tag" ng-repeat="entity in ctrl.selectedTargetings | orderBy:'type'" ng-click="ctrl.removeSelectedTargeting(entity)">
