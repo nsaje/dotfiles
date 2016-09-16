@@ -31,10 +31,13 @@ angular.module('one.legacy').factory('zemGridEndpointApi', ['$q', '$http', 'zemG
         function save (breakdownId, data) {
             var deferred = $q.defer();
             var url = createSaveUrl(breakdownId);
+            var config = angular.copy(data.config); // Save unconverted config used when converting breakdown from api
             data.config = zemGridEndpointApiConverter.convertConfigToApi(data.config);
             data.settings = zemGridEndpointApiConverter.convertSettingsToApi(data.settings);
             $http.post(url, data).success(function (response) {
-                var breakdown = zemGridEndpointApiConverter.convertBreakdownFromApi({}, response.data, metaData);
+                var breakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(
+                    config, response.data, metaData, true
+                );
                 deferred.resolve(breakdown);
             }).error(function (data, status) {
                 if (status === 400 && data && data.data.error_code === 'ValidationError') {

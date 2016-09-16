@@ -184,6 +184,8 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
 
             var deferred = $q.defer();
             saveRequestInProgress = true;
+            config.level = row.row ? row.row.level : 1;
+            config.breakdown = getBreakdown();
             endpoint.saveData(value, row, column, config).then(function (breakdown) {
                 // For each row in breakdown patch find cached row by id and apply values
                 var updatedStats = [];

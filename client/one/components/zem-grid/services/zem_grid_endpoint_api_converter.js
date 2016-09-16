@@ -10,7 +10,7 @@ angular.module('one.legacy').factory('zemGridEndpointApiConverter', ['zemGridCon
         convertSettingsToApi: convertSettingsToApi,
     };
 
-    function convertBreakdownFromApi (config, breakdown, metaData) {
+    function convertBreakdownFromApi (config, breakdown, metaData, convertDiffAfterSave) {
         var convertedBreakdown = {
             breakdownId: breakdown.breakdown_id,
             level: config.level,
@@ -40,7 +40,7 @@ angular.module('one.legacy').factory('zemGridEndpointApiConverter', ['zemGridCon
             convertedBreakdown.notification = breakdown.notification;
         }
 
-        if (config.level === 1) {
+        if (config.level === 1 && !convertDiffAfterSave) {
             // set dynamic columns based on pixels, conversion goals and campaign goals from response
             // this has to be set before stats rows are converted since it adds new column definitions
             zemGridEndpointColumns.setDynamicColumns(
