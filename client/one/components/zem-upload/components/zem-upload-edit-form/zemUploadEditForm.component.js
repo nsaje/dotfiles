@@ -221,6 +221,8 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     };
 
     vm.toggleImageUpload = function () {
+        vm.fieldsSaved['image'] = false;
+        vm.fieldsSaved['imageUrl'] = false;
         vm.showImageUpload = !vm.showImageUpload;
     };
 
