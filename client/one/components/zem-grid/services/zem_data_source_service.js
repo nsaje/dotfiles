@@ -106,7 +106,9 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
                 // is available as first element in breakdownGroups
                 metaData = _metaData;
                 var baseLevelBreakdown = metaData.breakdownGroups.base.breakdowns[0];
-                selectedBreakdown = [baseLevelBreakdown];
+                if (!selectedBreakdown) {
+                    selectedBreakdown = [baseLevelBreakdown];
+                }
                 deferred.resolve(metaData);
             });
             return deferred.promise;

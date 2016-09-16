@@ -43,7 +43,7 @@ angular.module('one.legacy').directive('zemGridRow', ['zemGridConstants', functi
                 // Be sure no to fall out -> renderedRows <= visibleRows
                 if (rowPos >= visibleRows) rowPos -= renderedRows;
                 var row = scope.ctrl.grid.body.visibleRows[rowPos];
-                if (scope.ctrl.row !== row) {
+                if (row && scope.ctrl.row !== row) {
                     scope.ctrl.row = row;
                     element.css(row.style);
                     return true;

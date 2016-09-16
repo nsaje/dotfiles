@@ -30,6 +30,23 @@ angular.module('one.legacy').controller('zemGridBreakdownSelectorCtrl', [functio
             vm.api.getMetaData().breakdownGroups.delivery,
             vm.api.getMetaData().breakdownGroups.time,
         ].filter (function (group) { return group.available !== false; });
+
+        setDefaultBreakdowns(constants.level.ACCOUNTS, constants.breakdown.CAMPAIGN, [constants.breakdown.AD_GROUP]);
+    }
+
+    function setDefaultBreakdowns (level, breakdown, defaultBreakdowns) {
+        // Set which breakdowns to load by default for different level/breakdown combinations
+        var metaData = vm.api.getMetaData();
+        if (metaData.level === level && metaData.breakdown === breakdown) {
+            vm.breakdownGroups.forEach(function (group) {
+                group.breakdowns.forEach(function (b) {
+                    if (defaultBreakdowns.indexOf(b.query) !== -1) {
+                        b.checked = true;
+                        onChecked(b, group);
+                    }
+                });
+            });
+        }
     }
 
     function onChecked (breakdown, group) {
