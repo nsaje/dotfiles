@@ -44,7 +44,7 @@ GOALS_COLUMNS = {
     CampaignGoalKPI.MAX_BOUNCE_RATE: {'col': ['bounce_rate', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.TIME_ON_SITE: {'col': ['avg_tos', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.PAGES_PER_SESSION: {'col': ['pv_per_visit', 0.7], 'spend_perc': Decimal(0.3)},
-    CampaignGoalKPI.CPA: {'col': ['conversions', 0.6], 'spend_perc': Decimal(0.4)},
+    CampaignGoalKPI.CPA: {'col': ['conversions', 0.8], 'spend_perc': Decimal(0.2)},
     CampaignGoalKPI.CPC: {'col': ['cpc', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.NEW_UNIQUE_VISITORS: {'col': ['percent_new_users', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.CPV: {'col': ['avg_cost_per_visit', 0.7], 'spend_perc': Decimal(0.3)},
