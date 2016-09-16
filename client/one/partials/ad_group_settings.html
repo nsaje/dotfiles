@@ -169,7 +169,7 @@
                     </div>
                 </div>
 
-                <div ng-if="retargetingEnabled && warnings.retargeting === undefined" class="col-xs-6 col-md-4 after-form-alert-box">
+                <div ng-if="retargetingEnabled && warnings.retargeting === undefined" class="col-xs-12 after-form-alert-box">
                     <zem-custom-audiences-targeting available-ad-groups="retargetableAdGroups" available-audiences="audiences" current-ad-group-id="adGroupId" ad-group-targeting="settings.retargetingAdGroups" exclusion-ad-group-targeting="settings.exclusionRetargetingAdGroups" audience-targeting="settings.audienceTargeting" exclusion-audience-targeting="settings.exclusionAudienceTargeting" add-targeting="addTargeting(type, id)" remove-targeting="removeTargeting(type, id)"></zem-custom-audiences-targeting>
                 </div>
 
@@ -181,58 +181,56 @@
 
             <!-- additional targeting -->
             <div ng-if="hasPermission('zemauth.can_view_additional_targeting')">
-                <div class="form-group m-b-s">
+                <div class="form-group">
                     <label class="col-xs-12 control-label">
-                        Additional targeting
-                        <zem-help-popover content="Define your audience by including or excluding interests and demographics, or set up BlueKai or LiveRamp targeting." placement="top"></zem-help-popover>
+                        Interest targeting
                     </label>
                     <label class="col-xs-2 control-label">
-                        <span class="sidenote width-limit">This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change interest or first and third party targeting.</span>
+                        <span class="sidenote width-limit">Define your audience by including or excluding interests and demographics. This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change interest targeting.</span>
                     </label>
-                </div>
-                <div class="form-group m-l-s" ng-if="settings.interestTargeting.length || settings.exclusionInterestTargeting.length">
-                    <label class="col-xs-12">
-                        Interest targeting
-                        <zem-help-popover content="Define your audience by including or excluding interests and demographics." placement="top"></zem-help-popover>
-                    </label>
-                    <div class="col-xs-2" ng-if="settings.interestTargeting.length">
-                        <div class="text-success">Included</div>
-                        <ul class="with-icons ul-checkmarks">
-                            <li ng-repeat="category in settings.interestTargeting" class="capitalized">{{category}}</li>
-                        </ul>
+                    <div ng-if="settings.interestTargeting.length || settings.exclusionInterestTargeting.length">
+                        <div class="col-xs-3 m-t-xs" ng-if="settings.interestTargeting.length">
+                            <div class="text-success">Included</div>
+                            <ul class="with-icons ul-checkmarks">
+                                <li ng-repeat="category in settings.interestTargeting" class="capitalized">{{category}}</li>
+                            </ul>
                         </div>
-                    <div class="col-xs-2" ng-if="settings.exclusionInterestTargeting.length">
-                        <div class="text-danger">Excluded</div>
-                        <ul class="with-icons ul-remove">
-                            <li ng-repeat="category in settings.exclusionInterestTargeting" class="capitalized">{{category}}</li>
-                        </ul>
+                        <div class="col-xs-3 m-t-xs" ng-if="settings.exclusionInterestTargeting.length">
+                            <div class="text-danger">Excluded</div>
+                            <ul class="with-icons ul-remove">
+                                <li ng-repeat="category in settings.exclusionInterestTargeting" class="capitalized">{{category}}</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group m-l-s" ng-if="settings.bluekaiTargeting.length">
-                    <label class="col-xs-12">
-                        Third and first party targeting
-                        <zem-help-popover content="BlueKai and LiveRamp targeting." placement="top"></zem-help-popover>
+                <div class="form-group">
+                    <label class="col-xs-12 control-label">
+                        BlueKai audience targeting
+                    </label>
+                    <label class="col-xs-2 control-label">
+                        <span class="sidenote width-limit">This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change BlueKai audience targeting.</span>
                     </label>
                     <div class="col-xs-5" ng-if="settings.bluekaiTargeting.length">
                         <div>BlueKai targeting set up.</div>
                     </div>
                 </div>
-                <div class="form-group m-l-s" ng-if="settings.notes">
-                    <label class="col-xs-12">
+                <div class="form-group">
+                    <label class="col-xs-12 control-label">
                         Special notes
-                        <zem-help-popover content="Description of additional targeting that was set on the backend." placement="top"></zem-help-popover>
                     </label>
-                    <div class="col-xs-5">
+                    <label class="col-xs-2 control-label">
+                        <span class="sidenote width-limit">Any additional targeting set on the backend will be described here. This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change it.</span>
+                    </label>
+                    <div class="col-xs-5 m-t-xs" ng-if="settings.notes">
                         <div class="textarea-with-border pre" readonly>{{settings.notes}}</div>
                     </div>
                 </div>
                 <div class="form-group m-b-xs">
                     <label class="col-xs-12 control-label">
-                        Pixel retargeting
-                        <zem-help-popover content="3rd party pixels help you retarget people who clicked on Zemanta ads." placement="top"></zem-help-popover>
+                        3rd party pixel tracking
                     </label>
                     <label class="col-xs-2 control-label">
-                        <span class="sidenote width-limit">This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change 3rd party pixels.</span>
+                        <span class="sidenote width-limit">3rd party pixels help you retarget people who clicked on Zemanta ads. This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change 3rd party pixel tracking.</span>
                     </label>
                 </div>
                 <div class="form-group m-l-s" ng-if="settings.redirectPixelUrls.length || settings.redirectJavascript">

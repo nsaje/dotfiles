@@ -1,23 +1,40 @@
 .zem-custom-audiences-targeting {
-    .targeting-list {
-        .targeting-list-tag {
-            .remove {
-                width: 0.8em;
-                height: 0.8em;
-            }
-        }
+    .remove {
+         border-left: 1px solid @line-color;
+         padding-left: 5px;
+         margin-left: 5px;
+         color: @light-gray;
     }
+
 
     .audience-select-buttons {
         float: right;
-        font-size: 0.8em;
-        margin-top: auto;
-        margin-bottom: 0px;
+        font-size: 13px;
+        line-height: 22px;
 
         a {
+            padding: 0 5px;
+            
             &:first-child {
-                border-right: 1px solid #000;
+                border-right: 1px solid @line-color;
             }
+            
+            &.text-success:hover {
+                color: @green !important; 
+            }
+            
+            &.text-danger:hover {
+                color: @red !important; 
+            }
+        }
+    }
+    
+    .select2-highlighted {
+        background-color: transparent !important;
+        color: inherit !important;
+        
+        &:hover {
+            background-color: #f5f5f5 !important; 
         }
     }
 }
