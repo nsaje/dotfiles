@@ -59,8 +59,8 @@ describe('zemGridCellBreakdownField', function () {
         expect(element.isolateScope().ctrl.fieldType).toEqual('totalsLabel');
     });
 
-    it('should set field type to baseField for rows on level > 1', function () {
-        scope.ctrl.row = {level: 2};
+    it('should set field type to baseField in rows for entities without links', function () {
+        scope.ctrl.row = {entity: null};
 
         element = $compile(template)(scope);
         scope.$digest();
@@ -68,22 +68,20 @@ describe('zemGridCellBreakdownField', function () {
         expect(element.isolateScope().ctrl.fieldType).toEqual('baseField');
     });
 
-    it('should set field type to internalLink for rows on first level only if breakdown has internal links', function () { // eslint-disable-line max-len
+    it('should set correct field type based on row entity type', function () {
         var tests = [
-            {breakdown: 'account', expectedResult: 'internalLink'},
-            {breakdown: 'campaign', expectedResult: 'internalLink'},
-            {breakdown: 'ad_group', expectedResult: 'internalLink'},
-            {breakdown: 'content_ad', expectedResult: 'externalLink'},
-            {breakdown: 'source', expectedResult: 'baseField'},
-            {breakdown: 'publisher', expectedResult: 'baseField'},
+            {entityType: 'account', expectedResult: 'internalLink'},
+            {entityType: 'campaign', expectedResult: 'internalLink'},
+            {entityType: 'adGroup', expectedResult: 'internalLink'},
+            {entityType: 'contentAd', expectedResult: 'externalLink'},
+            {entityType: 'source', expectedResult: 'baseField'},
+            {entityType: 'publisher', expectedResult: 'baseField'},
         ];
-
-        scope.ctrl.row = {level: 1};
 
         tests.forEach(function (test) {
             var meta = createMockGridMeta();
-            meta.data.breakdown = test.breakdown;
             scope.ctrl.grid = {meta: meta};
+            scope.ctrl.row = {entity: {type: test.entityType}};
 
             element = $compile(template)(scope);
             scope.$digest();

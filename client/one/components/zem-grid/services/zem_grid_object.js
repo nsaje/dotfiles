@@ -58,13 +58,14 @@ angular.module('one.legacy').factory('zemGridObject', ['zemGridConstants', funct
     function createRow (type, data, level, parent) {
         var id = createRowId(type, data, level);
         return {
-            id: id,             // Row id
-            type: type,         // Type of a row (STATS, BREAKDOWN)
-            data: data,         // Data that corresponds to this row (stats or breakdown object - see DataSource)
-            level: level,       // Level of data in breakdown tree which this row represents
-            parent: parent,     // Parent row - row on which breakdown has been made
-            collapsed: false,   // Collapse flag used by collapsing feature
-            visible: true,      // Visibility flag - row can be hidden for different reasons (e.g. collapsed parent)
+            id: id,              // Row id
+            type: type,          // Type of a row (STATS, BREAKDOWN)
+            entity: data.entity, // Which entity's stats does row display (account, campaign, ad_group, content_ad)
+            data: data,          // Data that corresponds to this row (stats or breakdown object - see DataSource)
+            level: level,        // Level of data in breakdown tree which this row represents
+            parent: parent,      // Parent row - row on which breakdown has been made
+            collapsed: false,    // Collapse flag used by collapsing feature
+            visible: true,       // Visibility flag - row can be hidden for different reasons (e.g. collapsed parent)
         };
     }
 

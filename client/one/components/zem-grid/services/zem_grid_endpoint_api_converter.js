@@ -62,6 +62,7 @@ angular.module('one.legacy').factory('zemGridEndpointApiConverter', ['zemGridCon
                 breakdownId: row.breakdown_id,
                 archived: row.archived,
                 supplyDashDisabledMessage: row.supply_dash_disabled_message,
+                entity: getRowEntity(config, row.breakdown_id),
             };
         });
 
@@ -138,14 +139,12 @@ angular.module('one.legacy').factory('zemGridEndpointApiConverter', ['zemGridCon
     }
 
     function setBreakdownField (stats, metaData, url, redirectorUrl, title) {
-        if (metaData.breakdown === constants.breakdown.CONTENT_AD) {
-            var titleLink = {
-                text: title,
-                url: url !== '' ? url : null,
-                redirectorUrl: redirectorUrl !== '' ? redirectorUrl : null,
-            };
-            angular.extend(stats[zemGridEndpointColumns.COLUMNS.name.field], titleLink);
-        }
+        var titleLink = {
+            text: title,
+            url: url !== '' ? url : null,
+            redirectorUrl: redirectorUrl !== '' ? redirectorUrl : null,
+        };
+        angular.extend(stats[zemGridEndpointColumns.COLUMNS.name.field], titleLink);
         return stats;
     }
 
@@ -202,6 +201,35 @@ angular.module('one.legacy').factory('zemGridEndpointApiConverter', ['zemGridCon
     function convertValueToDefaultObject (value) {
         return {
             value: value,
+        };
+    }
+
+    function getRowEntity (config, breakdownId) {
+        var type;
+        var breakdown = config.breakdown[config.level - 1].query;
+
+        switch (breakdown) {
+        case constants.breakdown.ACCOUNT:
+            type = constants.entityType.ACCOUNT;
+            break;
+        case constants.breakdown.CAMPAIGN:
+            type = constants.entityType.CAMPAIGN;
+            break;
+        case constants.breakdown.AD_GROUP:
+            type = constants.entityType.AD_GROUP;
+            break;
+        case constants.breakdown.CONTENT_AD:
+            type = constants.entityType.CONTENT_AD;
+            break;
+        default:
+            return null;
+        }
+
+        var id = typeof breakdownId === 'string' ? breakdownId.split('||')[config.level - 1] : breakdownId;
+
+        return {
+            type: type,
+            id: parseInt(id),
         };
     }
 }]);

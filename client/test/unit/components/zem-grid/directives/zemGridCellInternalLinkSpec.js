@@ -31,20 +31,20 @@ describe('zemGridCellInternalLink', function () {
         expect(element.isolateScope().ctrl.state).toEqual('unknown');
 
         var tests = [
-            {level: 'all_accounts', breakdownId: 123, expectedId: 123, expectedState: 'main.accounts.campaigns'},
-            {level: 'accounts', breakdownId: 456, expectedId: 456, expectedState: 'main.campaigns.ad_groups'},
-            {level: 'campaigns', breakdownId: 789, expectedId: 789, expectedState: 'main.adGroups.ads'},
-            {level: 'ad_groups', breakdownId: undefined, expectedId: -1, expectedState: 'unknown'},
+            {entityType: 'account', id: 123, expectedId: 123, expectedState: 'main.accounts.campaigns'},
+            {entityType: 'campaign', id: 456, expectedId: 456, expectedState: 'main.campaigns.ad_groups'},
+            {entityType: 'adGroup', id: 789, expectedId: 789, expectedState: 'main.adGroups.ads'},
+            {entityType: 'unknown', id: undefined, expectedId: -1, expectedState: 'unknown'},
         ];
 
         tests.forEach(function (test) {
             scope.ctrl.row = {
-                data: {
-                    breakdownId: test.breakdownId,
+                data: {},
+                entity: {
+                    type: test.entityType,
+                    id: test.id,
                 },
-                level: 1,
             };
-            scope.ctrl.grid.meta.data.level = test.level;
             scope.$digest();
 
             expect(element.isolateScope().ctrl.id).toEqual(test.expectedId);

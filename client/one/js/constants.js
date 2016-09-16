@@ -539,6 +539,7 @@ var constants = {
         2160: '90 days',
     },
     entityType: {
+        CONTENT_AD: 'contentAd',
         AD_GROUP: 'adGroup',
         CAMPAIGN: 'campaign',
         ACCOUNT: 'account',

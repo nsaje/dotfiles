@@ -2,15 +2,14 @@
 'use strict';
 
 angular.module('one.legacy').directive('zemGridCellBreakdownField', [function () {
-
-    var BREAKDOWNS_WITH_INTERNAL_LINKS = [
-        constants.breakdown.ACCOUNT,
-        constants.breakdown.CAMPAIGN,
-        constants.breakdown.AD_GROUP,
+    var ENTITIES_WITH_INTERNAL_LINKS = [
+        constants.entityType.ACCOUNT,
+        constants.entityType.CAMPAIGN,
+        constants.entityType.AD_GROUP,
     ];
 
-    var BREAKDOWNS_WITH_EXTERNAL_LINK = [
-        constants.breakdown.CONTENT_AD,
+    var ENTITIES_WITH_EXTERNAL_LINKS = [
+        constants.entityType.CONTENT_AD,
     ];
 
     return {
@@ -50,7 +49,7 @@ angular.module('one.legacy').directive('zemGridCellBreakdownField', [function ()
             function updateModel () {
                 if (!vm.row) return;
 
-                vm.fieldType = getFieldType(vm.grid.meta.data.breakdown, vm.row.level);
+                vm.fieldType = getFieldType(vm.grid.meta.data.breakdown, vm.row);
                 vm.collapsable = collapseService.isRowCollapsable(vm.row);
                 vm.collapsed = collapseService.isRowCollapsed(vm.row);
             }
@@ -64,19 +63,17 @@ angular.module('one.legacy').directive('zemGridCellBreakdownField', [function ()
                 return collapseService.setRowCollapsed(vm.row, !vm.collapsed);
             }
 
-            function getFieldType (breakdown, rowLevel) {
+            function getFieldType (breakdown, row) {
                 // Footer row
-                if (rowLevel === zemGridConstants.gridRowLevel.FOOTER) {
+                if (row.level === zemGridConstants.gridRowLevel.FOOTER) {
                     return zemGridConstants.gridColumnTypes.TOTALS_LABEL;
                 }
-                // Display internal links for rows on first level in 'Account', 'Campaign' or 'Ad Group' breakdowns
-                if (BREAKDOWNS_WITH_INTERNAL_LINKS.indexOf(breakdown) !== -1 &&
-                    rowLevel === zemGridConstants.gridRowLevel.BASE) {
+
+                if (row.entity && ENTITIES_WITH_INTERNAL_LINKS.indexOf(row.entity.type) !== -1) {
                     return zemGridConstants.gridColumnTypes.INTERNAL_LINK;
                 }
 
-                if (BREAKDOWNS_WITH_EXTERNAL_LINK.indexOf(breakdown) !== -1 &&
-                    rowLevel === zemGridConstants.gridRowLevel.BASE) {
+                if (row.entity && ENTITIES_WITH_EXTERNAL_LINKS.indexOf(row.entity.type) !== -1) {
                     return zemGridConstants.gridColumnTypes.EXTERNAL_LINK;
                 }
 

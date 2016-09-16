@@ -28,17 +28,17 @@ angular.module('one.legacy').directive('zemGridCellInternalLink', [function () {
             function update () {
                 vm.id = -1;
                 vm.state = 'unknown';
-                if (vm.data && vm.row.data && vm.row.level === zemGridConstants.gridRowLevel.BASE) {
-                    vm.id = vm.row.data.breakdownId || -1;
-                    vm.state = getState(vm.grid.meta.data.level);
+                if (vm.data && vm.row.data && vm.row.entity) {
+                    vm.id = vm.row.entity.id || -1;
+                    vm.state = getState(vm.row.entity.type);
                 }
             }
 
-            function getState (level) {
-                switch (level) {
-                case constants.level.ALL_ACCOUNTS: return 'main.accounts.campaigns';
-                case constants.level.ACCOUNTS: return 'main.campaigns.ad_groups';
-                case constants.level.CAMPAIGNS: return 'main.adGroups.ads';
+            function getState (entityType) {
+                switch (entityType) {
+                case constants.entityType.ACCOUNT: return 'main.accounts.campaigns';
+                case constants.entityType.CAMPAIGN: return 'main.campaigns.ad_groups';
+                case constants.entityType.AD_GROUP: return 'main.adGroups.ads';
                 default: return 'unknown';
                 }
             }

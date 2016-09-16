@@ -17,12 +17,13 @@ describe('zemGridEndpointApiConverter', function () {
     it('should correctly convert breakdown object', function () {
         config = {
             level: 2,
+            breakdown: [{query: 'campaign'}, {query: 'ad_group'}],
         };
 
         breakdown = {
             rows: [
                 {
-                    breakdown_id: 3,
+                    breakdown_id: '3||33',
                     parent_breakdown_id: 2,
                     breakdown_name: 'Test breakdown 1',
                     archived: false,
@@ -42,7 +43,7 @@ describe('zemGridEndpointApiConverter', function () {
                     supply_dash_disabled_message: 'Disabled',
                 },
                 {
-                    breakdown_id: 4,
+                    breakdown_id: '4||44',
                     parent_breakdown_id: 2,
                     breakdown_name: 'Test breakdown 2',
                     archived: false,
@@ -61,7 +62,7 @@ describe('zemGridEndpointApiConverter', function () {
                     supply_dash_url: 'supplydashurl.com',
                 },
                 {
-                    breakdown_id: 5,
+                    breakdown_id: '5||55',
                     parent_breakdown_id: 2,
                     breakdown_name: 'Test breakdown 3',
                     archived: true,
@@ -148,9 +149,13 @@ describe('zemGridEndpointApiConverter', function () {
                             url: 'supplydashurl.com',
                         },
                     },
-                    breakdownId: 3,
+                    breakdownId: '3||33',
                     archived: false,
                     supplyDashDisabledMessage: 'Disabled',
+                    entity: {
+                        type: 'adGroup',
+                        id: 33,
+                    },
                 },
                 {
                     stats: {
@@ -179,9 +184,13 @@ describe('zemGridEndpointApiConverter', function () {
                             url: 'supplydashurl.com',
                         },
                     },
-                    breakdownId: 4,
+                    breakdownId: '4||44',
                     archived: false,
                     supplyDashDisabledMessage: undefined,
+                    entity: {
+                        type: 'adGroup',
+                        id: 44,
+                    },
                 },
                 {
                     stats: {
@@ -210,9 +219,13 @@ describe('zemGridEndpointApiConverter', function () {
                             url: 'supplydashurl.com',
                         },
                     },
-                    breakdownId: 5,
+                    breakdownId: '5||55',
                     archived: true,
                     supplyDashDisabledMessage: undefined,
+                    entity: {
+                        type: 'adGroup',
+                        id: 55,
+                    },
                 },
             ],
             totals: {
