@@ -4,6 +4,7 @@ import re
 from collections import defaultdict
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, Http404
 from django.views.generic import View
@@ -13,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 import dash.constants
 import dash.models
 from dash import constants, publisher_helpers
+from utils import redirector_helper
 from utils import url_helper, request_signer, converters
 
 
@@ -158,6 +160,7 @@ class SourcesView(K1APIView):
 
 class SourcePixelsView(K1APIView):
 
+    @transaction.atomic
     def put(self, request):
         data = json.loads(request.body)
         pixel_id = data['pixel_id']
@@ -175,7 +178,15 @@ class SourcePixelsView(K1APIView):
         source_pixel.source_pixel_id = data['source_pixel_id']
         source_pixel.save()
 
+        self._propagate_pixels_to_r1(pixel_id)
+
         return self.response_ok(data)
+
+    def _propagate_pixels_to_r1(self, pixel_id):
+        audiences = dash.models.Audience.objects.filter(pixel_id=pixel_id, archived=False)
+
+        for audience in audiences:
+            redirector_helper.upsert_audience(audience)
 
 
 class GAAccountsView(K1APIView):

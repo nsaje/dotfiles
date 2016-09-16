@@ -262,7 +262,8 @@ class K1ApiTest(TestCase):
             u'ttl': 60,
         })
 
-    def test_update_source_pixel_with_existing(self):
+    @patch('utils.redirector_helper.upsert_audience')
+    def test_update_source_pixel_with_existing(self, redirector_mock):
         body = {
             'pixel_id': 1,
             'source_type': 'facebook',
@@ -280,7 +281,11 @@ class K1ApiTest(TestCase):
         self.assertEqual(updated_pixel.url, 'http://www.dummy_fb.com/pixie_endpoint')
         self.assertEqual(updated_pixel.source_pixel_id, 'fb_dummy_id')
 
-    def test_update_source_pixel_create_new(self):
+        audience = dash.models.Audience.objects.get(pixel_id=1)
+        redirector_mock.assert_called_once_with(audience)
+
+    @patch('utils.redirector_helper.upsert_audience')
+    def test_update_source_pixel_create_new(self, redirector_mock):
         body = {
             'pixel_id': 3,
             'source_type': 'facebook',
@@ -297,6 +302,8 @@ class K1ApiTest(TestCase):
         updated_pixel = dash.models.SourceTypePixel.objects.get(pk=7)
         self.assertEqual(updated_pixel.url, 'http://www.dummy_fb.com/pixie_endpoint')
         self.assertEqual(updated_pixel.source_pixel_id, 'fb_dummy_id')
+
+        self.assertFalse(redirector_mock.called)
 
     def _test_source_credentials_filter(self, source_slugs=None):
         response = self.client.get(
