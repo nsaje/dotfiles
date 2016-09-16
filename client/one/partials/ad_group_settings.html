@@ -126,7 +126,7 @@
                 <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>
             </div>
 
-            <div class="form-group" ng-if="hasPermission('zemauth.can_view_retargeting_settings')" ng-class="{'has-error': !!errors.retargetingIds}">
+            <div class="form-group" ng-if="hasPermission('zemauth.can_view_retargeting_settings') && !hasPermission('zemauth.can_target_custom_audiences')" ng-class="{'has-error': !!errors.retargetingIds}">
                 <label class="col-xs-2 control-label">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_view_retargeting_settings')" popover-placement="right"></zem-internal-feature>
                     Retargeting
