@@ -1,6 +1,6 @@
 angular.module('one.widgets').component('zemHeaderDateRangePicker', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-date-range-picker/zemHeaderDateRangePicker.component.html', // eslint-disable-line max-len
-    controller: ['$state', 'config', 'zemDataFilterService', 'zemHeaderDateRangePickerService', function ($state, config, zemDataFilterService, zemHeaderDateRangePickerService) { // eslint-disable-line max-len
+    controller: ['$state', '$timeout', 'config', 'zemDataFilterService', 'zemHeaderDateRangePickerService', function ($state, $timeout, config, zemDataFilterService, zemHeaderDateRangePickerService) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.config = config;
         $ctrl.isVisible = isVisible;
@@ -23,6 +23,11 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
                     },
                 },
             };
+
+            $timeout(function () {
+                // Workaround to add a class used for styling to date range picker dropdown after DOM was rendered
+                angular.element('.daterangepicker.dropdown-menu').addClass('zem-header-date-range-picker-dropdown');
+            }, 0);
 
             $ctrl.dateRange = zemDataFilterService.getDateRange();
 
