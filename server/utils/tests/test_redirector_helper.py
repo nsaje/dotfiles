@@ -373,7 +373,7 @@ class UpsertAudienceTest(TestCase):
             u'pixieslug': u'testslug1',
             u'archived': False,
             u'rules': ListMatcher(
-                [{u'id': 1, u'type': 1, u'value': u'dummy'}, {u'id': 2, u'type': 2, u'value': u'dummy2'}]),
+                [{u'id': u'1', u'type': 1, u'value': u'dummy'}, {u'id': u'2', u'type': 2, u'value': u'dummy2'}]),
             u'pixels': ListMatcher(
                 [{u'url': u'http://www.fb.com/pixelendpoint', u'type': u'facebook'},
                  {u'url': u'http://www.y.com/pixelendpoint', u'type': u'yahoo'},
