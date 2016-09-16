@@ -1,12 +1,16 @@
-<div class="home">
-    <a href="#" ng-click="$ctrl.navigateToHome()"><img ng-src="{{$ctrl.config.static_url}}/one/img/home.svg"></a>
+<div class="breadcrumb">
+    <div class="item">
+        <span class="type-name">Home:</span><br>
+        <a href="#" ng-click="$ctrl.navigateToHome()" ng-if="$ctrl.userCanSeeAllAccounts">All accounts</a>
+        <a href="#" ng-click="$ctrl.navigateToHome()" ng-if="!$ctrl.userCanSeeAllAccounts">My account</a>
+    </div>
 </div>
 
 <div class="breadcrumb" ng-repeat="item in $ctrl.breadcrumb">
     <div class="slash">\</div>
     <div class="item">
         <span class="type-name">{{ item.typeName }}:</span><br>
-        <a href="#" ng-click="$ctrl.navigateTo(item)">{{ item.name }}</a>
+        <a href="#" ng-click="$ctrl.navigateTo(item)" title="{{ item.name }}">{{ item.name }}</a>
     </div>
 </div>
 

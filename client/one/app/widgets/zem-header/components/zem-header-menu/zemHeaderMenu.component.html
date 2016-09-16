@@ -1,9 +1,10 @@
-<span uib-dropdown>
+<div uib-dropdown>
     <a href class="dropdown-toggle" uib-dropdown-toggle>
-        <i class="glyphicon glyphicon-menu-hamburger"></i>
+        <img ng-src="{{$ctrl.config.static_url}}/one/images/menu.svg"/>
     </a>
     <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
-        <li>{{$ctrl.userEmail}}</li>
+        <div class="shadow"></div>
+        <li class="logged-user">{{$ctrl.userEmail}}</li>
         <li ng-repeat="action in $ctrl.getActions()">
             <zem-internal-feature ng-if="action.isInternalFeature" popover-placement="bottom"></zem-internal-feature>
             <a href ng-click="$ctrl.execute(action)">
@@ -11,4 +12,4 @@
             </a>
         </li>
     </ul>
-</span>
+</div>

@@ -1,8 +1,7 @@
 angular.module('one.widgets').component('zemHeaderNavigation', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-navigation/zemHeaderNavigation.component.html',
-    controller: ['$scope', '$element', 'config', 'hotkeys', function ($scope, $element, config, hotkeys) {
+    controller: ['$scope', '$element', '$timeout', 'config', 'hotkeys', function ($scope, $element, $timeout, config, hotkeys) { // eslint-disable-line max-length
         var $ctrl = this;
-
         $ctrl.config = config;
         $ctrl.open = false;
         $ctrl.onToggle = onToggle;
@@ -26,8 +25,10 @@ angular.module('one.widgets').component('zemHeaderNavigation', {
 
         function onToggle (open) {
             if (open) {
-                // Focus input on open
-                $element.find('zem-navigation input').focus();
+                // Focus input on open (wait for animation to finish)
+                $timeout(function () {
+                    $element.find('zem-navigation input').focus();
+                }, 250);
             } else {
                 // Reset zem-navigation filter input
                 $element.find('zem-navigation input').val('');

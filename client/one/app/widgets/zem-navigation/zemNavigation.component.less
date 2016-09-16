@@ -21,13 +21,18 @@ zem-navigation {
 
     input {
       width: 100%;
+      padding: 0 5px;
       height: 40px;
       .box-shadow (none);
+      
+      &:focus {
+        outline: none; 
+      }
     }
   }
 
   .scroll-container {
-    overflow: auto;
+    overflow: scroll;
     width: 100%;
     position: absolute;
     top: 90px;
@@ -45,7 +50,7 @@ zem-navigation {
     background-size: 20px auto;
   }
 
-  ul {
+  .scroll-container ul {
     margin: 0 4px 0 @default-spacing;
     padding: 0;
     list-style: none;
@@ -58,19 +63,14 @@ zem-navigation {
       overflow: hidden;
       text-overflow: ellipsis;
       font-size: 14px;
-      padding: 0 5px 0 5px;
+      padding: 5px 0;
 
       &.active {
-        background: #f8f8f8;
+        border-right: 3px solid @default-color;
       }
 
       &.selected {
         background-color: #50b9d3;
-        color: white;
-      }
-
-      &.selected {
-        background-color: #25A8C9;
         color: white;
       }
 
@@ -84,10 +84,14 @@ zem-navigation {
 
       &.account {
         font-weight: 500;
-        color: @orange;
+        font-size: 14px;
+        color: @default-color;
+        border-bottom: 1px solid @default-color;
+        
         &.selected {
           color: @white;
         }
+        
         .agency {
           color: @light-gray;
           font-size: 12px;
@@ -96,14 +100,13 @@ zem-navigation {
       }
 
       &.campaign {
-        margin-left: 10px;
+        padding-left: 10px;
         font-weight: 500;
       }
 
-      &.ad-group {
+      &.group {
         font-weight: 300;
-        padding-left: 30px;
-        margin-left: 20px;
+        padding: 2px 0 2px 35px;
       }
     }
 
@@ -130,14 +133,14 @@ zem-navigation {
       }
       &.landing {
         background-color: transparent;
-        background: url("img/landing.svg") no-repeat;
+        background: url("images/landing.svg") no-repeat;
         width: 18px;
         height: 18px;
         left: 6px;
       }
       &.autopilot {
         background-color: transparent;
-        background: url("img/autopilot.svg") no-repeat;
+        background: url("images/autopilot.svg") no-repeat;
         width: 14px;
         height: 14px;
         left: 14px;

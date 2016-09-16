@@ -32,6 +32,15 @@
     -webkit-border-bottom-left-radius: @radius;
 }
 
+.border-bottom-radius (@radius) {
+    border-bottom-left-radius: @radius;
+    -moz-border-bottom-left-radius: @radius;
+    -webkit-border-bottom-left-radius: @radius;
+    border-bottom-right-radius: @radius;
+    -moz-border-bottom-right-radius: @radius;
+    -webkit-border-bottom-right-radius: @radius;
+}
+
 .transition (@transition) {
     -webkit-transition: @transition;
     -moz-transition: @transition;
@@ -108,4 +117,10 @@
     width: 10px;
     height: 10px;
     margin: 0 5px 0 0;
+}
+
+.rotate (@deg) {
+    -ms-transform: rotate(@deg);
+    -webkit-transform: rotate(@deg);
+    transform: rotate(@deg); 
 }

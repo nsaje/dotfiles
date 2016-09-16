@@ -21,7 +21,7 @@ angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibM
             isAvailable: isAllowLivestreamActionAvailable,
         },
         {
-            text: 'Sing out',
+            text: 'Sign out',
             callback: navigate,
             params: {href: '/signout'},
         },

@@ -14,6 +14,13 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
                 applyClass: 'btn-primary',
                 eventHandlers: {
                     'apply.daterangepicker': handleDateRangeUpdateFromPicker,
+                    // Add/remove open class from date range picker dropdown menu in order to apply opening animation
+                    'show.daterangepicker': function () {
+                        angular.element('.daterangepicker.dropdown-menu').addClass('open');
+                    },
+                    'hide.daterangepicker': function () {
+                        angular.element('.daterangepicker.dropdown-menu').removeClass('open');
+                    },
                 },
             };
 

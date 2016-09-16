@@ -1,11 +1,11 @@
-<div class="logo-container col-xs-2">
+<div class="logo-container pull-left">
     <a ui-sref="{{'main'}}">
-        <img ng-src="{{$ctrl.config.static_url}}/one/img/logo_one_white.png">
+        <img ng-src="{{$ctrl.config.static_url}}/one/images/zemanta-logo-white.svg">
     </a>
 </div>
 
-<zem-header-navigation class="col-xs-1"></zem-header-navigation>
-<zem-header-breadcrumb class="col-xs-4"></zem-header-breadcrumb>
-<zem-header-filter class="col-xs-1" level="$ctrl.level" enable-publisher-filter="$ctrl.enablePublisherFilter" show-publisher-selected="$ctrl.showPublisherSelected"></zem-header-filter>
-<zem-header-date-range-picker class="col-xs-3"></zem-header-date-range-picker>
-<zem-header-menu class="col-xs-1"></zem-header-menu>
+<zem-header-navigation class="pull-left"></zem-header-navigation>
+<zem-header-breadcrumb class="pull-left"></zem-header-breadcrumb>
+<zem-header-menu class="pull-right"></zem-header-menu>
+<zem-header-date-range-picker class="pull-right"></zem-header-date-range-picker>
+<zem-header-filter class="pull-right" level="$ctrl.level" enable-publisher-filter="$ctrl.enablePublisherFilter" show-publisher-selected="$ctrl.showPublisherSelected"></zem-header-filter>

@@ -1,8 +1,9 @@
-<span uib-dropdown is-open="$ctrl.open" on-toggle="$ctrl.onToggle(open)">
+<div uib-dropdown is-open="$ctrl.open" on-toggle="$ctrl.onToggle(open)">
     <a href class="dropdown-toggle" uib-dropdown-toggle>
-        <img ng-src="{{$ctrl.config.static_url}}/one/img/magnifier.svg">
+        <img ng-src="{{$ctrl.config.static_url}}/one/images/magnifier.svg">
     </a>
-    <ul class="dropdown-menu dropdown-menu-left" uib-dropdown-menu>
+    <div class="dropdown-menu dropdown-menu-left" uib-dropdown-menu>
+        <div class="shadow"></div>
         <zem-navigation></zem-navigation>
-    </ul>
-</span>
+    </div>
+</div>

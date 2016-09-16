@@ -150,6 +150,7 @@ module.exports = function (grunt) {
             one: {
                 files: [
                     {expand: true, flatten: true, src: 'one/img/*', dest: 'dist/one/img/'},
+                    {expand: true, flatten: true, src: 'one/images/*', dest: 'dist/one/images/'},
                     {expand: true, flatten: true, src: 'one/assets/*', dest: 'dist/one/assets/'}
                 ]
             },
@@ -239,6 +240,7 @@ module.exports = function (grunt) {
                 files: [
                     'one/**/*.html',
                     'one/img/**/*',
+                    'one/images/**/*',
                     'one/assets/**/*',
                 ],
                 tasks: ['build:one']

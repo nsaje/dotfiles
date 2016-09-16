@@ -8,6 +8,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         $ctrl.navigateToHome = navigateToHome;
 
         $ctrl.$onInit = function () {
+            $ctrl.userCanSeeAllAccounts = zemUserService.userHasPermissions('dash.group_account_automatically_add');
             zemNavigationNewService.onActiveEntityChange(onEntityChange);
         };
 

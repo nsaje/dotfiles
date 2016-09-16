@@ -1,23 +1,20 @@
 <div id="filter" class="pull-right">
     <div id="filter-dropdown" class="dropdown" uib-dropdown on-toggle="onToggle(open)" is-open="isFilterOpen">
         <div class="btn btn-default" ng-class="{'filter-enabled': isFilterOn()}">
-            <div ng-if="isFilterOn()">
+            <div class="dropdown-toggle" ng-if="isFilterOn()" uib-dropdown-toggle>
                 <div class="btn-remove" ng-click="removeFiltering()">
-                    <img ng-src="{{ config.static_url }}/one/img/x.svg">
+                    <img ng-src="{{ config.static_url }}/one/images/remove-white.svg"/>
                 </div>
-                <div class="dropdown-toggle" uib-dropdown-toggle>
-                    <span>Filter ON</span>
-                    <img class="filter-icon" ng-src="{{ config.static_url }}/one/img/filter_icon_white.svg"></img>
-                </div>
+                <span>Filter ON</span>
+                <img class="filter-icon" ng-src="{{ config.static_url }}/one/images/filter.svg"/>
             </div>
-            <div ng-if="!isFilterOn()">
-                <div class="dropdown-toggle" uib-dropdown-toggle>
-                    <img class="filter-icon" ng-src="{{ config.static_url }}/one/img/filter_icon_black.svg"></img>
-                </div>
+            <div class="dropdown-toggle" uib-dropdown-toggle ng-if="!isFilterOn()">
+                <img class="filter-icon" ng-src="{{ config.static_url }}/one/images/filter.svg"/><span class="hide-old">Filter</span><img class="arrow-icon" ng-src="{{ config.static_url }}/one/images/arrow-white.svg"/>
             </div>
         </div>
 
         <ul class="filter-menu dropdown-menu" uib-dropdown-menu>
+            <div class="shadow"></div>
             <li>
                 <div class="title">Filter by Media Source {{sourceIdToFilter}}</div>
                 <select ui-select2="{dropdownAutoWidth: true, formatNoMatches: 'No sources', dropdownCssClass: 'select2-filter'}" ng-model="sourceIdToFilter" ng-change="addFilteredSource(sourceIdToFilter)" class="add-filter" data-placeholder="+ Media Source">

@@ -1,11 +1,13 @@
 zem-header {
     display: block;
     height: 60px;
-    background-color: red;
+    background-color: @default-color;
 
     .logo-container {
-        height: 20px;
-        margin: 20px 0;
+        margin: 10px 0;
+        height: 40px;
+        padding: 10px 20px 10px @default-spacing;
+        border-right: 1px solid fade(@white, 20%);
 
         a {
             display: inline-block;
@@ -14,23 +16,60 @@ zem-header {
 
         img {
             width: auto;
-            height: 100%;
+            height: 20px;
+        }
+    }
+    
+    .dropdown-menu {
+        margin: 0;
+        padding: 0;
+        height: 0;
+        opacity: 0;
+        visibility: hidden;
+        overflow: hidden;
+        border: none !important;
+        background-color: @white;
+        display: block;
+        z-index: 9999;
+        .border-radius (0);
+        .border-bottom-radius (@border-radius);
+        .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.1));
+        .transition(all 200ms ease-in-out);
+    
+        // bug fix for mac os scroll bars
+        transform: translateZ(0);
+        
+        .shadow {
+            .gradient-vertical (fade(@black,20%), fade(@black,0%));
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 6px;
+        }
+    }
+    
+    .dropdown-toggle {
+        display: block;
+        height: 40px;
+        padding: 10px 20px;
+        .transition(all 250ms ease-in-out);
+
+        &:hover {
+            background-color: fade(@white, 10%);
         }
     }
 
     zem-header-navigation {
         display: block;
-        height: 20px;
-        margin: 20px 0;
+        margin: 10px 0;
+        border-right: 1px solid fade(@white, 20%);
 
-        .dropdown-toggle{
-            img {
-                width: 20px;
-            }
+        .dropdown-toggle img {
+            width: 20px;
         }
 
-        .dropdown-menu {
-            margin-top: 15px;
+        .dropdown .dropdown-menu {
+            margin-top: 10px;
             width: 300px;
             height: 500px;
 
@@ -38,61 +77,83 @@ zem-header {
                 height: 100%;
             }
         }
+        
+        .dropdown.open .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+        }
     }
 
     zem-header-breadcrumb {
         display: block;
         height: 40px;
-        margin: 10px 0;
+        margin: 10px 0 10px 20px;
 
         color: @white;
         line-height: 16px;
         font-size: 12px;
 
-        div {
+        .breadcrumb {
             float: left;
             height: 40px;
 
-            &.home {
-                a {
-                    display: block;
-                    margin-top: 12px;
-                }
-
-                img {
-                    width: 16px;
-                    opacity: 0.5;
-                    .transition(opacity 100ms ease-in-out);
-                }
-
-                &:hover img {
-                    opacity: 1.0;
-                }
-            }
-
-            &.slash {
+            .slash {
                 padding: 0 10px;
                 color: fade(@white, 20%);
                 font-size: 34px;
                 line-height: 40px;
                 font-weight: 100;
+                float: left;
+                height: 40px;
             }
-
-            span {
-                color: fade(@white, 50%);
-                padding-top: 4px;
-                display: inline-block;
-            }
-
-            a {
-                color: @white !important;
-                font-size: 14px;
-
-                &:hover {
+            
+            .item {
+                float: left;
+                
+                .type-name {
+                    color: fade(@white, 50%);
+                    padding-top: 4px;
+                    display: inline-block;
+                }
+    
+                a {
                     color: @white;
+                    font-size: 14px;
+                    max-width: 90px;
+                    display: block;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+    
+                    &:hover {
+                        color: @white;
+                    }
+                }
+                
+                @media only screen and (min-width: 1300px) {
+                    a { max-width: 110px; } 
+                }
+                
+                @media only screen and (min-width: 1400px) {
+                    a { max-width: 150px; } 
+                }
+                
+                @media only screen and (min-width: 1500px) {
+                    a { max-width: 190px; } 
+                }
+    
+                @media only screen and (min-width: 1600px) {
+                    a { max-width: 230px; } 
+                }
+    
+                @media only screen and (min-width: 1700px) {
+                    a { max-width: 270px; } 
+                }
+    
+                @media only screen and (min-width: 1800px) {
+                    a { max-width: 310px; }
                 }
             }
-
         }
     }
 
@@ -102,52 +163,83 @@ zem-header {
 
         zem-filter {
             display: block;
-
+            margin: 10px 0;
+            
             .internal {
                 .header-button-internal();
             }
+            
+            .dropdown .dropdown-menu {
+                margin-top: 10px;
+                height: auto;
+                
+                .shadow {
+                    margin-left: -15px; 
+                }
+            }    
+            
+            .dropdown.open .dropdown-menu {
+                opacity: 1;
+                visibility: visible;
+            }
 
             div.btn {
-                min-width: 34px;
-                height: 34px;
+                height: 40px;
                 padding: 0;
+                color: @white;
+                line-height: 40px;
+                border: none;
+                background-color: fade(@white, 20%);
+                .border-radius(@default-radius);
+                .transition(all 250ms ease-in-out);
 
-                &:hover {
-                    border-color: @add-filter-color;
+                &:hover, &:focus, &:active {
+                    background-color: fade(@white, 40%) !important;
+                    border: none;
+                    color: @white !important;
+                }
+                
+                .dropdown-toggle {
+                    display: inline-block;
+                    padding: 0 40px 0 40px;
+                    
+                    span {
+                        line-height: 42px;
+                    }
+
+                    .filter-icon {
+                        position: absolute;
+                        width: 24px;
+                        left: 8px;
+                        top: 4px;
+                    }
+                    
+                    .arrow-icon {
+                        position: absolute;
+                        height: 12px;
+                        right: 15px;
+                        top: 14px;
+                        .rotate(90deg);
+                    }
                 }
 
                 &.filter-enabled {
-                    background-color: @add-filter-color;
-
                     span {
                         color: #fff;
-                        top: 2px;
                         position: relative;
                         margin-right: 5px;
                     }
 
                     .btn-remove {
-                        display: inline-block;
-                        width: 25px;
-                        height: 34px;
+                        position: absolute;
+                        right: 10px;
+                        top: 10px;
                         cursor: pointer;
-                        padding-left: 11px;
-                        padding-right: 5px;
-                        padding-top: 11px;
-                        padding-bottom: 14px;
-                        vertical-align: top;
+                        padding: 5px;
 
                         img {
-                            width: 9px;
-                            vertical-align: top;
-                        }
-                    }
-
-                    .dropdown-toggle {
-                        display: inline-block;
-
-                        .filter-icon {
-                            border-left: 1px solid white;
+                            width: 12px;
+                            display: block;
                         }
                     }
                 }
@@ -279,61 +371,140 @@ zem-header {
 
         .date-range-picker-container {
             position: relative;
-            float: right;
-            width: 205px;
             height: 40px;
-            margin: 10px 0;
+            margin: 10px 20px;
 
             .date-range-picker-icon {
                 position: absolute;
-                top: 0;
-                left: 0;
-                width: 40px;
-                height: 100%;
-                padding: 4px 3px 4px 4px;
-                text-align: center;
-
-                img {
-                    width: 100%;
-                    height: 100%;
-                    fill: @white;
-                }
+                top: 9px;
+                left: 10px;
+                width: 24px;
+                pointer-events: none;
+            }
+            
+            .arrow-icon {
+                position: absolute;
+                height: 12px;
+                right: 15px;
+                top: 14px;
+                .rotate(90deg);
+                pointer-events: none;
             }
 
             .date-range-picker-input {
-                width: 100%;
+                padding-left: 45px;
+                padding-right: 35px;
+                background-color: fade(@white, 20%);
                 height: 100%;
-                padding-left: 40px;
-                background: transparent;
-                border: 1px solid @white;
+                width: 235px;
+                border: none;
                 color: @white;
-                border-radius: 3px;
+                .border-radius (@default-radius);
+                .transition(all 250ms ease-in-out);
+                
+                &:focus {
+                    outline: none; 
+                }
+                
+                &:hover {
+                    background-color: fade(@white, 40%);
+                }
             }
         }
     }
 
     zem-header-menu {
         display: block;
-        height: 20px;
-        margin: 20px 0;
-        text-align: right;
+        margin: 10px 0;
+        border-left: 1px solid fade(@white, 20%);
 
-        .dropdown-toggle {
-            display: inline-block;
-            vertical-align: top;
-            margin-top: -2px;
-            color: @white;
-            font-size: 20px;
+        .dropdown-toggle img {
+            width: 30px;
         }
+        
+        .dropdown .dropdown-menu {
+            margin-top: 10px;
+            height: auto;
+            min-width: 100px;
+            max-width: 300px;
+            background-color: @default-color;
 
-        .internal {
-            position: absolute;
-            border-top: 7px solid @internal-color;
-            border-right: 7px solid transparent;
-            z-index: 1;
-            top: 5px;
-            left: 5px;
+            zem-navigation {
+                height: 100%;
+            }
+            
+            li {
+                position: relative;
+                padding: 0;
+                
+                a {
+                    color: @white;
+                    padding: 8px 20px;
+                    .transition(background-color 200ms ease-in-out);
+                    display: block;
+                    
+                    &.internal {
+                        position: absolute;
+                        border-top: 7px solid @internal-color;
+                        border-right: 7px solid transparent;
+                        z-index: 1;
+                        top: 0px;
+                        left: 0px;
+                        padding: 0px;
+                    }
+                }
+                
+                a:hover {
+                    background-color: fade(@white, 10%);
+                }
+                
+                &.logged-user {
+                    color: fade(@white, 50%);
+                    padding: @default-spacing;
+                    border-bottom: 1px solid fade(@white, 20%);
+                    line-height: 16px;
+                    background-color: fade(@black, 5%);
+                    
+                    span {
+                        color: fade(@white, 25%); 
+                    }
+                }
+            }
         }
+        
+        .dropdown.open .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+        }
+    }
+}
+
+.daterangepicker.dropdown-menu {
+    margin-top: 10px;
+    overflow: hidden;
+    border: none !important;
+    opacity: 0;
+    visibility: hidden;
+    display: block !important;
+    .border-radius (0);
+    .border-bottom-radius (@border-radius);
+    .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.1));
+    .transition(opacity 200ms ease-in-out);
+    
+    &.open {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .ranges:before {
+        .gradient-vertical (fade(@black,20%), fade(@black,0%));
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        content: "";
+        display: block;
     }
 }
 

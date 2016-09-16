@@ -65,7 +65,7 @@ angular.module('one.widgets').component('zemNavigation', {
             if (item === $ctrl.selectedEntity) classes.push('selected');
             if (item.type === constants.entityType.ACCOUNT) classes.push('account');
             if (item.type === constants.entityType.CAMPAIGN) classes.push('campaign');
-            if (item.type === constants.entityType.AD_GROUP) classes.push('ad-group');
+            if (item.type === constants.entityType.AD_GROUP) classes.push('group');
             return classes;
         }
 
