@@ -7,7 +7,7 @@
 <div class="scroll-container custom-scroller">
     <div class="loader" ng-if="!$ctrl.list"></div>
     <div class="empty" ng-if="$ctrl.filteredList.length === 0">no matches found</div>
-    <ul vs-repeat vs-scroll-parent=".scroll-container">
+    <ul vs-repeat vs-scroll-parent=".scroll-container" vs-size="$ctrl.getItemHeight(item)">
         <li ng-repeat="item in $ctrl.filteredList" class="item"
              ng-class="$ctrl.getItemClasses(item)"
              ng-click="$ctrl.navigateTo(item)">

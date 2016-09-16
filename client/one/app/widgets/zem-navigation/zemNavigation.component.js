@@ -5,6 +5,10 @@ angular.module('one.widgets').component('zemNavigation', {
         var KEY_DOWN_ARROW = 40;
         var KEY_ENTER = 13;
 
+        var ITEM_HEIGHT_DEFAULT = 30; // NOTE: Change in CSS too!
+        var ITEM_HEIGHT_ACCOUNT = 31; // NOTE: Change in CSS too!
+        var ITEM_HEIGHT_CAMPAIGN = 30; // NOTE: Change in CSS too!
+        var ITEM_HEIGHT_AD_GROUP = 24; // NOTE: Change in CSS too!
 
         var $ctrl = this;
         $ctrl.selectedEntity = null;
@@ -15,6 +19,7 @@ angular.module('one.widgets').component('zemNavigation', {
 
         $ctrl.filter = filterList;
         $ctrl.navigateTo = navigateTo;
+        $ctrl.getItemHeight = getItemHeight;
         $ctrl.getItemClasses = getItemClasses;
         $ctrl.getItemIconClass = getItemIconClass;
 
@@ -39,6 +44,9 @@ angular.module('one.widgets').component('zemNavigation', {
             event.preventDefault();
             var idx = $ctrl.filteredList.indexOf($ctrl.selectedEntity);
             $ctrl.selectedEntity = $ctrl.filteredList[idx - 1];
+            if (!$ctrl.selectedEntity) {
+                $ctrl.selectedEntity = $ctrl.filteredList[$ctrl.filteredList.length - 1];
+            }
             scrollToItem($ctrl.selectedEntity);
         }
 
@@ -46,6 +54,9 @@ angular.module('one.widgets').component('zemNavigation', {
             event.preventDefault();
             var idx = $ctrl.filteredList.indexOf($ctrl.selectedEntity);
             $ctrl.selectedEntity = $ctrl.filteredList[idx + 1];
+            if (!$ctrl.selectedEntity) {
+                $ctrl.selectedEntity = $ctrl.filteredList[0];
+            }
             scrollToItem($ctrl.selectedEntity);
         }
 
@@ -56,6 +67,14 @@ angular.module('one.widgets').component('zemNavigation', {
                 entity  = $ctrl.filteredList[0];
             }
             navigateTo(entity);
+        }
+
+        function getItemHeight (item) {
+            // Return item's height defined in CSS because vs-repeat only works with predefined element heights
+            if (item.type === constants.entityType.ACCOUNT) return ITEM_HEIGHT_ACCOUNT;
+            if (item.type === constants.entityType.CAMPAIGN) return ITEM_HEIGHT_CAMPAIGN;
+            if (item.type === constants.entityType.AD_GROUP) return ITEM_HEIGHT_AD_GROUP;
+            return ITEM_HEIGHT_DEFAULT;
         }
 
         function getItemClasses (item) {
@@ -112,15 +131,19 @@ angular.module('one.widgets').component('zemNavigation', {
         }
 
         function scrollToItem (item) {
+            if (!item) return;
+
             // Scroll to item in case that is currently not shown
             // If it is lower in list scroll down so that it is displayed at the bottom,
             // otherwise scroll up to show it at the top.
             var $scrollContainer = $element.find('.scroll-container');
             var height = $scrollContainer.height();
-            var itemHeight = $element.find('.item').height();
 
+            var selectedPos = 0;
             var idx = $ctrl.filteredList.indexOf(item);
-            var selectedPos = idx * itemHeight;
+            for (var i = 0; i < idx; i++) {
+                selectedPos += getItemHeight($ctrl.filteredList[i]);
+            }
 
             var viewFrom = $scrollContainer.scrollTop();
             var viewTo = viewFrom + height;
@@ -129,7 +152,7 @@ angular.module('one.widgets').component('zemNavigation', {
                 $scrollContainer.scrollTop(selectedPos);
             }
             if (selectedPos >= viewTo) {
-                $scrollContainer.scrollTop(selectedPos - height + itemHeight);
+                $scrollContainer.scrollTop(selectedPos - height + getItemHeight($ctrl.filteredList[idx]));
             }
         }
 
