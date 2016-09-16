@@ -218,6 +218,21 @@ def create_campaign(ad_group_source, name, request, send=True):
     return action
 
 
+def create_audience(audience, request):
+    action = models.ActionLog(
+        action=constants.Action.CREATE_AUDIENCE,
+        action_type=constants.ActionType.MANUAL,
+        expiration_dt=None,
+        state=constants.ActionState.WAITING,
+        message='Create audience "{}" on Outbrain for account {} (#{}) with rules'.format(
+            audience.name,
+            audience.pixel.account.name,
+            audience.pixel.account_id
+        )
+    )
+    action.save(request)
+
+
 @transaction.atomic
 def cancel_expired_actionlogs():
     waiting_actionlogs = models.ActionLog.objects.\

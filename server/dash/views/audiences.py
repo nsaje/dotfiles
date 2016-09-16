@@ -2,6 +2,7 @@ import json
 
 from django.db import transaction
 
+from actionlog import api
 from dash import constants
 from dash import forms
 from dash import models
@@ -62,6 +63,8 @@ class AudiencesView(api_common.BaseApiView):
                     value=value,
                 )
                 rule.save()
+
+            api.create_audience(audience, request)
 
         k1_helper.update_account(account_id)
 

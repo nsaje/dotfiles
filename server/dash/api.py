@@ -823,6 +823,9 @@ def is_adg_setting_auto_updateable(field_name, source, current_settings, new_set
         field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic(),
         field_name == 'ad_group_name' and source.can_modify_ad_group_name(),
         field_name == 'retargeting_ad_groups' and source.can_modify_retargeting_automatically(),
+        field_name == 'exclusion_retargeting_ad_groups' and source.can_modify_retargeting_automatically(),
+        field_name == 'audience_targeting' and source.can_modify_retargeting_automatically(),
+        field_name == 'exclusion_audience_targeting' and source.can_modify_retargeting_automatically(),
         field_name == 'target_regions' and region_targeting_helper.can_modify_selected_target_regions_automatically(
             source,
             current_settings,
@@ -875,7 +878,11 @@ def adg_setting_manual_update(
         # do not create an action - only used for our redirector
         return
 
-    if field_name in ['retargeting_ad_groups'] and not source.can_modify_retargeting_manually():
+    if field_name in [
+            'retargeting_ad_groups',
+            'exclusion_retargeting_ad_groups',
+            'audience_targeting',
+            'exclusion_audience_targeting'] and not source.can_modify_retargeting_manually():
         return
 
     if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():
