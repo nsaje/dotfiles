@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import json
 
-import mock
 from django.contrib.auth import models as authmodels
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.conf import settings
+import mock
 
 from dash import constants
 from dash import models
@@ -211,7 +211,10 @@ class AudiencesTest(TestCase):
         }
         self.assertEqual(json.loads(response.content), response_dict)
 
-    def test_post(self):
+    @mock.patch('utils.k1_helper.update_account')
+    @mock.patch('utils.redirector_helper.upsert_audience')
+    @mock.patch('actionlog.api.create_audience')
+    def test_post(self, actionlog_create_audience_mock, redirector_upsert_audience_mock, k1_update_account_mock):
         data = self._get_valid_post_data()
         url = reverse('accounts_audiences', kwargs={'account_id': 1})
 
@@ -271,6 +274,10 @@ class AudiencesTest(TestCase):
         self.assertEqual(history[0].changes, None)
         self.assertEqual(history[0].created_by_id, 1)
 
+        actionlog_create_audience_mock.assert_called_with(audiences[0], mock.ANY)
+        redirector_upsert_audience_mock.assert_called_with(audiences[0])
+        k1_update_account_mock.assert_called_with(audiences[0].pixel.account_id)
+
 
 class AudienceArchiveTest(TestCase):
     fixtures = ['test_audiences.yaml']
@@ -300,7 +307,8 @@ class AudienceArchiveTest(TestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
 
-    def test_archive(self):
+    @mock.patch('utils.redirector_helper.upsert_audience')
+    def test_archive(self, redirector_upsert_audience_mock):
         url = reverse('accounts_audience_archive', kwargs={'account_id': 1, 'audience_id': 1})
 
         audiences = models.Audience.objects.filter(pk=1)
@@ -334,6 +342,8 @@ class AudienceArchiveTest(TestCase):
         self.assertEqual(history[0].changes, None)
         self.assertEqual(history[0].created_by_id, 1)
 
+        redirector_upsert_audience_mock.assert_called_with(audiences[0])
+
 
 class AudienceRestoreTest(TestCase):
     fixtures = ['test_audiences.yaml']
@@ -363,7 +373,8 @@ class AudienceRestoreTest(TestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
 
-    def test_restore(self):
+    @mock.patch('utils.redirector_helper.upsert_audience')
+    def test_restore(self, redirector_upsert_audience_mock):
         url = reverse('accounts_audience_restore', kwargs={'account_id': 1, 'audience_id': 3})
 
         audiences = models.Audience.objects.filter(pk=3)
@@ -396,3 +407,5 @@ class AudienceRestoreTest(TestCase):
         self.assertEqual(history[0].changes_text, 'Restored audience "test audience 3".')
         self.assertEqual(history[0].changes, None)
         self.assertEqual(history[0].created_by_id, 1)
+
+        redirector_upsert_audience_mock.assert_called_with(audiences[0])

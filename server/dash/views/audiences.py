@@ -10,6 +10,7 @@ from reports import redshift
 from utils import api_common
 from utils import exc
 from utils import k1_helper
+from utils import redirector_helper
 import helpers
 
 
@@ -17,6 +18,10 @@ class AudiencesView(api_common.BaseApiView):
     def get(self, request, account_id, audience_id=None):
         if not request.user.has_perm('zemauth.account_custom_audiences_view'):
             raise exc.AuthorizationError()
+
+        account_id = int(account_id)
+        if audience_id:
+            audience_id = int(audience_id)
 
         account = helpers.get_account(request.user, account_id)
 
@@ -29,6 +34,7 @@ class AudiencesView(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.account_custom_audiences_view'):
             raise exc.AuthorizationError()
 
+        account_id = int(account_id)
         account = helpers.get_account(request.user, account_id)
 
         resource = json.loads(request.body)
@@ -65,6 +71,7 @@ class AudiencesView(api_common.BaseApiView):
                 rule.save()
 
             api.create_audience(audience, request)
+            redirector_helper.upsert_audience(audience)
 
         k1_helper.update_account(account_id)
 
@@ -133,6 +140,9 @@ class AudienceArchive(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.account_custom_audiences_view'):
             raise exc.AuthorizationError()
 
+        account_id = int(account_id)
+        audience_id = int(audience_id)
+
         # This is here to see if user has permissions for this account
         helpers.get_account(request.user, account_id)
 
@@ -143,11 +153,13 @@ class AudienceArchive(api_common.BaseApiView):
             raise exc.MissingDataError('Audience does not exist')
 
         audience.archived = True
-        audience.save(
-            request,
-            constants.HistoryActionType.AUDIENCE_ARCHIVE,
-            'Archived audience "{}".'.format(audience.name)
-        )
+        with transaction.atomic():
+            audience.save(
+                request,
+                constants.HistoryActionType.AUDIENCE_ARCHIVE,
+                'Archived audience "{}".'.format(audience.name)
+            )
+            redirector_helper.upsert_audience(audience)
 
         return self.create_api_response()
 
@@ -156,6 +168,9 @@ class AudienceRestore(api_common.BaseApiView):
     def post(self, request, account_id, audience_id):
         if not request.user.has_perm('zemauth.account_custom_audiences_view'):
             raise exc.AuthorizationError()
+
+        account_id = int(account_id)
+        audience_id = int(audience_id)
 
         # This is here to see if user has permissions for this account
         helpers.get_account(request.user, account_id)
@@ -167,10 +182,12 @@ class AudienceRestore(api_common.BaseApiView):
             raise exc.MissingDataError('Audience does not exist')
 
         audience.archived = False
-        audience.save(
-            request,
-            constants.HistoryActionType.AUDIENCE_RESTORE,
-            'Restored audience "{}".'.format(audience.name)
-        )
+        with transaction.atomic():
+            audience.save(
+                request,
+                constants.HistoryActionType.AUDIENCE_RESTORE,
+                'Restored audience "{}".'.format(audience.name)
+            )
+            redirector_helper.upsert_audience(audience)
 
         return self.create_api_response()
