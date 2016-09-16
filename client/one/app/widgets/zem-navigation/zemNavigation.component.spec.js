@@ -30,7 +30,7 @@ describe('ZemNavigationCtrl', function () {
 
         item.type = constants.entityType.AD_GROUP;
         item.data.archived = true;
-        expect(ctrl.getItemClasses(item)).toEqual(['archived', 'selected', 'ad-group']);
+        expect(ctrl.getItemClasses(item)).toEqual(['archived', 'selected', 'group']);
 
 
     });
