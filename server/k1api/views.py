@@ -108,10 +108,10 @@ class AccountsView(K1APIView):
         audiences = (dash.models.Audience.objects
                      .filter(pixel__account__in=accounts, archived=False)
                      .select_related('pixel')
-                     .prefetch_related('rule_set'))
+                     .prefetch_related('audiencerule_set'))
         for audience in audiences:
             rules = []
-            for rule in audience.rule_set.all():
+            for rule in audience.audiencerule_set.all():
                 rule_dict = {
                     'id': rule.id,
                     'type': rule.type,

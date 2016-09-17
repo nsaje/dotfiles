@@ -60,10 +60,10 @@ class AudiencesView(api_common.BaseApiView):
 
             for rule in audience_form.cleaned_data['rules']:
                 value = rule['value'] or ''
-                if rule['type'] == constants.RuleType.CONTAINS:
+                if rule['type'] == constants.AudienceRuleType.CONTAINS:
                     value = ','.join([x.strip() for x in value.split(',') if x])
 
-                rule = models.Rule(
+                rule = models.AudienceRule(
                     audience=audience,
                     type=rule['type'],
                     value=value,
@@ -87,7 +87,7 @@ class AudiencesView(api_common.BaseApiView):
 
         audience = audiences[0]
 
-        rules = models.Rule.objects.filter(audience=audience)
+        rules = models.AudienceRule.objects.filter(audience=audience)
         rules_dicts = []
         for rule in rules:
             rules_dicts.append({
@@ -119,9 +119,9 @@ class AudiencesView(api_common.BaseApiView):
         for audience in audiences:
             if include_size:
                 count = redshift.get_audience_sample_size(audience.pixel.account.id, audience.pixel.slug, audience.ttl,
-                                                          audience.rule_set.all()) * 100
+                                                          audience.audiencerule_set.all()) * 100
                 count_yesterday = redshift.get_audience_sample_size(audience.pixel.account.id, audience.pixel.slug, 1,
-                                                                    audience.rule_set.all()) * 100
+                                                                    audience.audiencerule_set.all()) * 100
 
             rows.append({
                 'id': audience.pk,

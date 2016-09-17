@@ -4038,11 +4038,11 @@ class Audience(models.Model):
         )
 
 
-class Rule(models.Model):
+class AudienceRule(models.Model):
     id = models.AutoField(primary_key=True)
     audience = models.ForeignKey(Audience, on_delete=models.PROTECT)
     type = models.PositiveSmallIntegerField(
-        choices=constants.RuleType.get_choices(),
+        choices=constants.AudienceRuleType.get_choices(),
     )
     value = models.CharField(max_length=255, blank=True)
 

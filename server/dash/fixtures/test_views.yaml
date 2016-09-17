@@ -272,26 +272,26 @@
         audience: 1
         type: 1
         value: "test"
-    model: dash.rule
+    model: dash.audiencerule
     pk: 1
 
 -   fields:
         audience: 2
         type: 1
         value: "test"
-    model: dash.rule
+    model: dash.audiencerule
     pk: 2
 
 -   fields:
         audience: 3
         type: 1
         value: "test"
-    model: dash.rule
+    model: dash.audiencerule
     pk: 3
 
 -   fields:
         audience: 4
         type: 1
         value: "test"
-    model: dash.rule
+    model: dash.audiencerule
     pk: 4

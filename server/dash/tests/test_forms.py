@@ -1387,7 +1387,7 @@ class AudienceFormTestCase(TestCase):
             'pixel_id': 1,
             'ttl': 90,
             'rules': [{
-                'type': constants.RuleType.CONTAINS,
+                'type': constants.AudienceRuleType.CONTAINS,
                 'value': 'test',
             }]
         }
@@ -1457,11 +1457,11 @@ class AudienceFormTestCase(TestCase):
         data['rules'] = [{'type': None, 'value': 'bla'}]
         self._expect_error('rules', 'Please select a type of the rule.', data)
 
-        data['rules'] = [{'type': constants.RuleType.CONTAINS, 'value': None}]
+        data['rules'] = [{'type': constants.AudienceRuleType.CONTAINS, 'value': None}]
         self._expect_error('rules', 'Please enter conditions for the audience.', data)
 
     def test_valid_visit_rule(self):
         data = self._get_valid_data()
-        data['rules'] = [{'type': constants.RuleType.VISIT, 'value': None}]
+        data['rules'] = [{'type': constants.AudienceRuleType.VISIT, 'value': None}]
         f = forms.AudienceForm(self.account, self.user, data)
         self.assertTrue(f.is_valid())

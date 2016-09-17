@@ -988,27 +988,27 @@
         audience: 1
         type: 1
         value: 'dummy'
-    model: dash.rule
+    model: dash.audiencerule
     pk: 1
 
 -   fields:
         audience: 1
         type: 2
         value: 'dummy2'
-    model: dash.rule
+    model: dash.audiencerule
     pk: 2
 
 -   fields:
         audience: 2
         type: 1
         value: 'dummy3'
-    model: dash.rule
+    model: dash.audiencerule
     pk: 3
 
 -   fields:
         audience: 2
         type: 2
         value: 'dummy4'
-    model: dash.rule
+    model: dash.audiencerule
     pk: 4
 

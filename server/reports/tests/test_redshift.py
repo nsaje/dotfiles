@@ -136,9 +136,9 @@ class RedshiftTest(TestCase):
         mock_get_cursor.return_value = mock_cursor
 
         rules = [
-            models.Rule(type=1, value='a,b'),
-            models.Rule(type=2, value='c'),
-            models.Rule(type=3, value='d,e'),
+            models.AudienceRule(type=1, value='a,b'),
+            models.AudienceRule(type=2, value='c'),
+            models.AudienceRule(type=3, value='d,e'),
         ]
         redshift.get_audience_sample_size(1, 'slug1', 10, rules)
 

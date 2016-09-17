@@ -1636,15 +1636,15 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
         return True
 
 
-class RuleAdmin(admin.TabularInline):
-    model = models.Rule
+class AudienceRuleAdmin(admin.TabularInline):
+    model = models.AudienceRule
     extra = 3
 
 
 class AudienceAdmin(admin.ModelAdmin):
     list_display = ('pixel', 'ttl', 'created_dt', 'modified_dt')
 
-    inlines = [RuleAdmin]
+    inlines = [AudienceRuleAdmin]
     exclude = ('ad_group_settings',)
 
 

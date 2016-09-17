@@ -6,7 +6,7 @@ from django.db import connections
 import influx
 
 from datetime import datetime, timedelta
-from dash.constants import RuleType
+from dash.constants import AudienceRuleType
 from reports import exc
 from reports.db_raw_helpers import MyCursor, is_collection
 
@@ -206,23 +206,23 @@ def get_audience_sample_size(account_id, slug, ttl, rules):
     timelimit = datetime.now().date() - timedelta(days=ttl)
     params = [account_id, slug, timelimit.isoformat()]
 
-    if not [rule for rule in rules if rule.type == RuleType.VISIT]:
+    if not [rule for rule in rules if rule.type == AudienceRuleType.VISIT]:
         rule_query = []
         for rule in rules:
             values = rule.value.split(',')
             for value in values:
                 value = value.strip()
 
-                if rule.type == RuleType.STARTS_WITH:
+                if rule.type == AudienceRuleType.STARTS_WITH:
                     rule_query.append('referer LIKE %s')
                     params.append(value + "%")
-                elif rule.type == RuleType.CONTAINS:
+                elif rule.type == AudienceRuleType.CONTAINS:
                     rule_query.append('referer LIKE %s')
                     params.append("%" + value + "%")
-                elif rule.type == RuleType.NOT_STARTS_WITH:
+                elif rule.type == AudienceRuleType.NOT_STARTS_WITH:
                     rule_query.append('referer NOT LIKE %s')
                     params.append(value + "%")
-                elif rule.type == RuleType.NOT_CONTAINS:
+                elif rule.type == AudienceRuleType.NOT_CONTAINS:
                     rule_query.append('referer NOT LIKE %s')
                     params.append("%" + value + "%")
                 else:

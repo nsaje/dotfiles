@@ -1449,7 +1449,7 @@ class ContentAdForm(ContentAdCandidateForm):
 
 class AudienceRuleForm(forms.Form):
     type = forms.ChoiceField(
-        choices=constants.RuleType.get_choices(),
+        choices=constants.AudienceRuleType.get_choices(),
         error_messages={
             'required': 'Please select a type of the rule.',
         }
@@ -1460,7 +1460,7 @@ class AudienceRuleForm(forms.Form):
         value = self.cleaned_data.get('value')
         rule_type = self.cleaned_data.get('type')
 
-        if not value and rule_type != str(constants.RuleType.VISIT):
+        if not value and rule_type != str(constants.AudienceRuleType.VISIT):
             raise forms.ValidationError('Please enter conditions for the audience.')
 
         return value

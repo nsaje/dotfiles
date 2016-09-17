@@ -33,7 +33,7 @@ class AudiencesTest(TestCase):
             'pixel_id': 1,
             'ttl': 90,
             'rules': [{
-                'type': constants.RuleType.CONTAINS,
+                'type': constants.AudienceRuleType.CONTAINS,
                 'value': 'test',
             }]
         }
@@ -221,7 +221,7 @@ class AudiencesTest(TestCase):
         audiences = models.Audience.objects.filter(pk=6)
         self.assertEqual(len(audiences), 0)
 
-        rules = models.Rule.objects.filter(pk=6)
+        rules = models.AudienceRule.objects.filter(pk=6)
         self.assertEqual(len(rules), 0)
 
         history = models.History.objects.all()
@@ -256,10 +256,10 @@ class AudiencesTest(TestCase):
         self.assertEqual(audiences[0].ttl, 90)
         self.assertEqual(audiences[0].created_by_id, 1)
 
-        rules = models.Rule.objects.filter(pk=6)
+        rules = models.AudienceRule.objects.filter(pk=6)
         self.assertEqual(len(rules), 1)
         self.assertEqual(rules[0].audience_id, 6)
-        self.assertEqual(rules[0].type, constants.RuleType.CONTAINS)
+        self.assertEqual(rules[0].type, constants.AudienceRuleType.CONTAINS)
         self.assertEqual(rules[0].value, 'test')
 
         history = models.History.objects.all()

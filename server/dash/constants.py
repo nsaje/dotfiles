@@ -1704,7 +1704,7 @@ class FacebookAccountStatus(ConstantBase):
     }
 
 
-class RuleType(ConstantBase):
+class AudienceRuleType(ConstantBase):
     STARTS_WITH = 1
     CONTAINS = 2
     NOT_STARTS_WITH = 3
