@@ -41,26 +41,31 @@
                         {{ rule.name }}
                     </ui-select-choices>
                 </ui-select>
-                <label ng-repeat="error in ctrl.errors.rules" class="control-label error">{{ error }}</label>
             </div>
-        </div>
 
-        <div class="form-group m-b-l" ng-if="ctrl.showRefererRules()">
-            <label class="col-xs-4 control-label"></label>
-            <div class="col-xs-8">
-                <div class="row">
-                    <div class="description">Include people who visit any web page that meets the following rules.</div>
-                    <div class="col-xs-4 p-l-none p-r-none">
-                        <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly">
-                            <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
-                            <ui-select-choices repeat="rule.id as rule in ctrl.refererRules">
-                                {{ rule.name }}
-                            </ui-select-choices>
-                        </ui-select>
+            <div ng-if="ctrl.showRefererRules()">
+                <label class="col-xs-4 control-label"></label>
+                <div class="col-xs-8">
+                    <div class="row">
+                        <div class="description">Include people who visit any web page that meets the following rules.</div>
+                        <div class="col-xs-4 p-l-none p-r-none">
+                            <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly">
+                                <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
+                                <ui-select-choices repeat="rule.id as rule in ctrl.refererRules">
+                                    {{ rule.name }}
+                                </ui-select-choices>
+                            </ui-select>
+                        </div>
+                        <div class="col-xs-8 p-r-none">
+                            <input type="text" id="zem-custom-audiences-modal-referer-rule-value" class="form-control" ng-model="ctrl.selectedRefererRuleValue" placeholder="Add URL keywords" ng-readonly="ctrl.readonly" />
+                        </div>
                     </div>
-                    <div class="col-xs-8 p-r-none">
-                        <input type="text" id="zem-custom-audiences-modal-referer-rule-value" class="form-control" ng-model="ctrl.selectedRefererRuleValue" placeholder="Add URL keywords" ng-readonly="ctrl.readonly" />
-                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-offset-4 col-xs-8 p-r-none">
+                    <label ng-repeat="error in ctrl.errors.rules" class="control-label error">{{ error }}</label>
                 </div>
             </div>
         </div>
