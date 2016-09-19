@@ -15,6 +15,7 @@ import logging
 
 from utils.test_helper import ListMatcher
 from utils import request_signer
+from utils import email_helper
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -890,7 +891,8 @@ class K1ApiTest(TestCase):
         ag = dash.models.AdGroup.objects.get(pk=1)
         self.assertEqual(ag.campaign.account.outbrain_marketer_id, data['response'])
 
-    def test_get_outbrain_marketer_id_assign_new(self):
+    @patch.object(email_helper, 'send_outbrain_accounts_running_out_email')
+    def test_get_outbrain_marketer_id_assign_new(self, mock_sendmail):
         response = self.client.get(
             reverse('k1api.outbrain_marketer_id'),
             {'ad_group_id': '3'}
@@ -901,6 +903,7 @@ class K1ApiTest(TestCase):
 
         ag = dash.models.AdGroup.objects.get(pk=3)
         self.assertEqual(ag.campaign.account.outbrain_marketer_id, data['response'])
+        mock_sendmail.assert_called_with(3)
 
     def test_get_facebook_accounts(self):
         response = self.client.get(

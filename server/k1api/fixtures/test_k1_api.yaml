@@ -26,6 +26,24 @@
     model: dash.outbrainaccount
     pk: 1
 
+-   fields:
+        marketer_id: 'dcefg'
+        marketer_name: 'Zemanta_XY'
+        used: False
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+    model: dash.outbrainaccount
+    pk: 2
+
+-   fields:
+        marketer_id: 'dcefg'
+        marketer_name: 'Zemanta_XY'
+        used: False
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+    model: dash.outbrainaccount
+    pk: 3
+
 # test account
 
 -   fields:

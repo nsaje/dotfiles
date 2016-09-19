@@ -363,6 +363,17 @@ def send_daily_management_report_email():
     email.send(fail_silently=False)
 
 
+def send_outbrain_accounts_running_out_email(n):
+    subject, body, recipients = format_email(
+        EmailTemplateType.OUTBRAIN_ACCOUNTS_RUNNING_OUT,
+        n=n,
+    )
+    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL
+    ), recipients)
+    email.send()
+
+
 def _format_changes_text(changes_text):
     lines = changes_text.split('\n')
     for i in range(len(lines)):

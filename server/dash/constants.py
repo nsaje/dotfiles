@@ -1564,6 +1564,7 @@ class EmailTemplateType(ConstantBase):
     DEMO_RUNNING = 15
     LIVESTREAM_SESSION = 16
     DAILY_MANAGEMENT_REPORT = 17
+    OUTBRAIN_ACCOUNTS_RUNNING_OUT = 18
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1583,6 +1584,7 @@ class EmailTemplateType(ConstantBase):
         DEMO_RUNNING: 'Demo is running',
         LIVESTREAM_SESSION: 'Livestream sesion id',
         DAILY_MANAGEMENT_REPORT: 'Daily management report',
+        OUTBRAIN_ACCOUNTS_RUNNING_OUT: 'Unused Outbrain accounts running out',
     }
 
 

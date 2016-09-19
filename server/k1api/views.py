@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 import dash.constants
 import dash.models
 from dash import constants, publisher_helpers
-from utils import redirector_helper
+from utils import redirector_helper, email_helper
 from utils import url_helper, request_signer, converters
 
 
@@ -726,8 +726,11 @@ class OutbrainMarketerIdView(K1APIView):
             return self.response_ok(ad_group.campaign.account.outbrain_marketer_id)
 
         try:
-            outbrain_account = dash.models.OutbrainAccount.objects.\
-                filter(used=False).order_by('created_dt')[0]
+            unused_accounts = dash.models.OutbrainAccount.objects.\
+                filter(used=False).order_by('created_dt')
+            if len(unused_accounts) == 3:
+                email_helper.send_outbrain_accounts_running_out_email(len(unused_accounts))
+            outbrain_account = unused_accounts[0]
         except IndexError:
             raise Exception('No unused Outbrain accounts available.')
 
