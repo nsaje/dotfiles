@@ -1054,7 +1054,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_url': ['Missing image URL']
+            'image_url': ['Missing image']
         }, f.errors)
 
     def test_not_reachable_url(self):
@@ -1217,7 +1217,7 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(data)
         self.assertFalse(f.is_valid())
         self.assertEqual({
-            'image_url': ['Missing image URL']
+            'image_url': ['Missing image']
         }, f.errors)
 
     def test_invalid_image_url(self):

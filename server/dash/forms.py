@@ -1249,7 +1249,7 @@ class ContentAdForm(ContentAdCandidateForm):
     )
     image_url = forms.CharField(
         error_messages={
-            'required': 'Missing image URL',
+            'required': 'Missing image',
         }
     )
     image_crop = forms.ChoiceField(
