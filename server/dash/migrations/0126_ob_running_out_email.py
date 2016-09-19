@@ -13,7 +13,7 @@ def load_data(apps, schema_editor):
         template_type=EmailTemplateType.OUTBRAIN_ACCOUNTS_RUNNING_OUT,
         subject=u'Unused Outbrain accounts running out',
         body=u'''Hi,
-there are only {{ n }} unused Outbrain accounts left on Z1.
+there are only {n} unused Outbrain accounts left on Z1.
     '''
     ).save()
 
