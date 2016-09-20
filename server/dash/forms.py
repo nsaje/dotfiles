@@ -1493,7 +1493,11 @@ class AudienceForm(forms.Form):
         error_messages={'required': 'Please select pixel.'}
     )
     ttl = forms.IntegerField(
-        error_messages={'required': 'Please select validity.'}
+        max_value=365,
+        error_messages={
+            'required': 'Please select days.',
+            'max_value': 'Maximum number of days is 365.'
+        }
     )
     rules = AudienceRulesField(
         error_messages={'required': 'Please select a rule.'}

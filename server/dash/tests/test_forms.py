@@ -1438,10 +1438,13 @@ class AudienceFormTestCase(TestCase):
     def test_invalid_ttl(self):
         data = self._get_valid_data()
         data['ttl'] = None
-        self._expect_error('ttl', 'Please select validity.', data)
+        self._expect_error('ttl', 'Please select days.', data)
 
         del(data['ttl'])
-        self._expect_error('ttl', 'Please select validity.', data)
+        self._expect_error('ttl', 'Please select days.', data)
+
+        data['ttl'] = 366
+        self._expect_error('ttl', 'Maximum number of days is 365.', data)
 
     def test_invalid_rules(self):
         data = self._get_valid_data()
