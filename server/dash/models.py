@@ -434,7 +434,7 @@ class Account(models.Model):
         agency = ''
         if self.agency:
             agency = self.agency.get_long_name() + ', '
-        return '{}Account {}'.format(agency, self.name)
+        return u'{}Account {}'.format(agency, self.name)
 
     def get_current_settings(self):
         if not self.pk:
