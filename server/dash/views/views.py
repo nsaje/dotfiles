@@ -64,6 +64,7 @@ logger = logging.getLogger(__name__)
 
 YAHOO_DASH_URL = 'https://gemini.yahoo.com/advertiser/{advertiser_id}/campaign/{campaign_id}'
 OUTBRAIN_DASH_URL = 'https://my.outbrain.com/amplify/selfserve/manage-content?ecampaignId={campaign_id}&eadvId={marketer_id}'
+FACEBOOK_DASH_URL = 'https://business.facebook.com/ads/manager/campaign/?ids={campaign_id}&business_id={business_id}'
 
 
 def create_name(objects, name):
@@ -115,10 +116,7 @@ def supply_dash_redirect(request):
     except models.AdGroupSource.DoesNotExist:
         raise exc.MissingDataError()
 
-    credentials = ad_group_source.source_credentials and \
-        ad_group_source.source_credentials.decrypt()
-
-    # TODO wessel, temporary hack to re-enable links to 3rd party dashboards
+    credentials = ad_group_source.source_credentials and ad_group_source.source_credentials.decrypt()
     if ad_group_source.source.source_type.type == constants.SourceType.YAHOO:
         url = YAHOO_DASH_URL.format(
             advertiser_id=json.loads(credentials)['advertiser_id'],
@@ -128,6 +126,11 @@ def supply_dash_redirect(request):
         url = OUTBRAIN_DASH_URL.format(
             campaign_id=ad_group_source.source_campaign_key['campaign_id'],
             marketer_id=str(ad_group_source.source_campaign_key['marketer_id'])
+        )
+    elif ad_group_source.source.source_type.type == constants.SourceType.FACEBOOK:
+        url = FACEBOOK_DASH_URL.format(
+            campaign_id=ad_group_source.source_campaign_key,
+            business_id=json.loads(credentials)['business_id'],
         )
     else:
         raise exc.MissingDataError()
