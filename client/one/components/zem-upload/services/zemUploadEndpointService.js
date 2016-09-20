@@ -125,32 +125,7 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
             return deferred.promise;
         };
 
-        this.updateCandidate = function (candidate, batchId) {
-            var deferred = $q.defer();
-            var url = baseUrl + batchId + '/candidate/' + candidate.id + '/';
-
-            var config = {
-                params: {},
-            };
-
-            var data = {
-                candidate: convertCandidateToApi(candidate),
-                defaults: getDefaultFields(candidate),
-            };
-
-            $http.put(url, data, config).
-                success(function (data) {
-                    deferred.resolve({
-                        candidates: convertCandidatesFromApi(data.data.candidates),
-                    });
-                }).error(function (data) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.updateCandidatePartial = function (batchId, candidate, defaults) {
+        this.updateCandidate = function (batchId, candidate, defaults) {
             var deferred = $q.defer();
             var url = baseUrl + batchId + '/candidate_update/' + candidate.id + '/';
 
@@ -172,7 +147,7 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
             }).
                 success(function (data) {
                     deferred.resolve({
-                        updatedFields: convertCandidateFromApi(data.data.updated_fields),
+                        updatedFields: convertCandidateFieldsFromApi(data.data.updated_fields),
                         errors: convertCandidateErrorsFromApi(data.data.errors),
                     });
                 }).error(function (data) {
@@ -361,8 +336,8 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
             });
         }
 
-        function convertCandidateFromApi (candidate) {
-            var ret = {
+        function convertCandidateFieldsFromApi (candidate) {
+            return removeUndefinedValues({
                 id: candidate.id,
                 label: candidate.label,
                 url: candidate.url,
@@ -383,19 +358,23 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
                 trackerUrls: candidate.tracker_urls,
                 primaryTrackerUrl: candidate.primary_tracker_url,
                 secondaryTrackerUrl: candidate.secondary_tracker_url,
-            };
+            });
+        }
+
+        function convertCandidateFromApi (candidate) {
+            candidate = convertCandidateFieldsFromApi(candidate);
+            candidate.errors = {};
 
             if (candidate.errors) {
-                ret.errors = convertCandidateErrorsFromApi(candidate.errors);
+                candidate.errors = convertCandidateErrorsFromApi(candidate.errors);
             }
 
-            return removeUndefinedValues(ret);
+            return removeUndefinedValues(candidate);
         }
 
         function convertCandidatesFromApi (candidates) {
             var result = [];
             angular.forEach(candidates, function (candidate) {
-                if (!candidate.hasOwnProperty('errors')) candidate.errors = {};
                 result.push(convertCandidateFromApi(candidate));
             });
             return result;

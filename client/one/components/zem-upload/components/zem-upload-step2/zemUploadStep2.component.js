@@ -79,11 +79,6 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
     };
 
     function updateCandidatesStatuses (updatedCandidates) {
-        if (!vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) {
-            refreshCandidates(updatedCandidates);
-            return;
-        }
-
         angular.forEach(updatedCandidates, function (updatedCandidate) {
             var candidate = vm.candidates.filter(function (candidate) {
                 if (candidate.id === updatedCandidate.id) return true;
@@ -314,11 +309,7 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
 
     vm.save = function () {
         if (vm.editFormApi.selectedId) {
-            if (!vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) {
-                vm.editFormApi.update().then(executeSaveCall);
-            } else {
-                vm.editFormApi.close().then(executeSaveCall);
-            }
+            vm.editFormApi.close().then(executeSaveCall);
         } else {
             executeSaveCall();
         }

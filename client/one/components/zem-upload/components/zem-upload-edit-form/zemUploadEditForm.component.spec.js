@@ -16,7 +16,6 @@ describe('ZemUploadEditFormCtrl', function () {
             upload: function () {},
             checkStatus: function () {},
             updateCandidate: function () {},
-            updateCandidatePartial: function () {},
             removeCandidate: function () {},
             getCandidates: function () {},
             save: function () {},
@@ -33,7 +32,6 @@ describe('ZemUploadEditFormCtrl', function () {
                 updateCallback: function () {},
                 batchId: 1,
                 scrollTop: function () {}, // directive link function
-                scrollBottom: function () {}, // directive link function
                 hasPermission: function () { return true; },
             }
         );
@@ -48,9 +46,7 @@ describe('ZemUploadEditFormCtrl', function () {
     it('initializes api correctly', function () {
         expect(ctrl.api.open).toBeDefined();
         expect(ctrl.api.close).toBeDefined();
-        expect(ctrl.api.update).toBeDefined();
         expect(ctrl.api.selectedId).toBeNull();
-        expect(ctrl.api.requestInProgress).toBe(false);
     });
 
     describe('edit form open', function () {
@@ -150,116 +146,7 @@ describe('ZemUploadEditFormCtrl', function () {
         });
     });
 
-    describe('candidate update', function () {
-        it('closes edit form and updates candidates on success', function () {
-            var candidate = {
-                id: 1,
-                url: 'http://example.com/url1',
-                title: 'Title 1',
-                imageUrl: 'http://exmaple.com/img1.jpg',
-                imageCrop: 'center',
-                description: '',
-                displayUrl: 'example.com',
-                brandName: '',
-                callToAction: 'Read more',
-                label: 'title1',
-                imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
-                urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
-            };
-            ctrl.candidates = [candidate];
-            ctrl.api.open(ctrl.candidates[0]);
-            ctrl.batchId = 1234;
-
-            var deferred = $q.defer();
-            spyOn(ctrl.endpoint, 'updateCandidate').and.callFake(function () {
-                return deferred.promise;
-            });
-
-            ctrl.update();
-            expect(ctrl.endpoint.updateCandidate).toHaveBeenCalledWith(
-                ctrl.selectedCandidate, ctrl.batchId);
-            expect(ctrl.api.requestInProgress).toBe(true);
-            expect(ctrl.requestFailed).toBe(false);
-            expect(ctrl.endpoint.updateCandidate).toHaveBeenCalledWith(
-                ctrl.selectedCandidate, ctrl.batchId);
-
-            var returnedCandidate = {
-                id: 1,
-                url: 'http://example.com/url1',
-                title: 'Title 1',
-                imageUrl: 'http://exmaple.com/img1.jpg',
-                imageCrop: 'center',
-                description: '',
-                displayUrl: 'example.com',
-                brandName: '',
-                callToAction: 'Read more',
-                label: 'title1',
-                imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
-                urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
-            };
-            deferred.resolve({
-                candidates: [returnedCandidate],
-            });
-            scope.$digest();
-
-            expect(ctrl.api.requestInProgress).toBe(false);
-            expect(ctrl.requestFailed).toBe(false);
-            expect(ctrl.selectedCandidate).toBeNull();
-            expect(ctrl.api.selectedId).toBeNull();
-        });
-
-        it('sets a flag on failure', function () {
-            var candidate = {
-                id: 1,
-                url: 'http://example.com/url1',
-                title: 'Title 1',
-                imageUrl: 'http://exmaple.com/img1.jpg',
-                imageCrop: 'center',
-                description: '',
-                displayUrl: 'example.com',
-                brandName: '',
-                callToAction: 'Read more',
-                label: 'title1',
-                imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
-                urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
-            };
-            ctrl.candidates = [candidate];
-            ctrl.api.open(ctrl.candidates[0]);
-            ctrl.batchId = 1234;
-
-            var deferred = $q.defer();
-            spyOn(ctrl.endpoint, 'updateCandidate').and.callFake(function () {
-                return deferred.promise;
-            });
-
-            ctrl.api.update();
-            expect(ctrl.endpoint.updateCandidate).toHaveBeenCalledWith(
-                ctrl.selectedCandidate, ctrl.batchId);
-            expect(ctrl.api.requestInProgress).toBe(true);
-            expect(ctrl.requestFailed).toBe(false);
-
-            deferred.reject({});
-            scope.$digest();
-
-            expect(ctrl.api.requestInProgress).toBe(false);
-            expect(ctrl.requestFailed).toBe(true);
-            expect(ctrl.selectedCandidate).not.toBeNull();
-        });
-    });
-
     describe('update field', function () {
-        it('doesn\'t do anything if user doesn\'t have permission', function () {
-            ctrl.hasPermission = function (permission) {
-                if (permission === 'zemauth.can_use_partial_updates_in_upload') return false;
-                return true;
-            };
-
-            spyOn(ctrl.endpoint, 'updateCandidatePartial').and.stub();
-            ctrl.updateField('title');
-
-            expect(ctrl.endpoint.updateCandidatePartial).not.toHaveBeenCalled();
-        });
-
         it('calls the endpoint', function () {
             ctrl.hasPermission = function () { return true; };
             ctrl.batchId = 1234;
@@ -271,7 +158,7 @@ describe('ZemUploadEditFormCtrl', function () {
             };
 
             var deferred = $q.defer();
-            spyOn(ctrl.endpoint, 'updateCandidatePartial').and.callFake(function () {
+            spyOn(ctrl.endpoint, 'updateCandidate').and.callFake(function () {
                 return deferred.promise;
             });
             ctrl.updateField('title');
@@ -288,7 +175,7 @@ describe('ZemUploadEditFormCtrl', function () {
 
             expect(ctrl.fieldsLoading.title).toBe(false);
             expect(ctrl.fieldsSaved.title).toBe(true);
-            expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
+            expect(ctrl.endpoint.updateCandidate).toHaveBeenCalledWith(1234, {
                 id: 1,
                 title: 'ad title',
             }, []);
@@ -306,7 +193,7 @@ describe('ZemUploadEditFormCtrl', function () {
             spyOn(ctrl, 'updateCallback').and.stub();
 
             var deferred = $q.defer();
-            spyOn(ctrl.endpoint, 'updateCandidatePartial').and.callFake(function () {
+            spyOn(ctrl.endpoint, 'updateCandidate').and.callFake(function () {
                 return deferred.promise;
             });
             ctrl.updateField('description', true);
@@ -323,7 +210,7 @@ describe('ZemUploadEditFormCtrl', function () {
 
             expect(ctrl.fieldsLoading.description).toBe(false);
             expect(ctrl.fieldsSaved.description).toBe(true);
-            expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
+            expect(ctrl.endpoint.updateCandidate).toHaveBeenCalledWith(1234, {
                 id: 1,
                 description: 'description',
             }, ['description']);
@@ -343,7 +230,7 @@ describe('ZemUploadEditFormCtrl', function () {
             var firstDeferred = $q.defer(),
                 secondDeferred = $q.defer();
             var firstCall = true;
-            spyOn(ctrl.endpoint, 'updateCandidatePartial').and.returnValues(firstDeferred.promise, secondDeferred.promise);
+            spyOn(ctrl.endpoint, 'updateCandidate').and.returnValues(firstDeferred.promise, secondDeferred.promise);
             ctrl.updateField('title');
 
             firstDeferred.reject({});
@@ -358,7 +245,7 @@ describe('ZemUploadEditFormCtrl', function () {
             $timeout.flush(10000);
             scope.$digest();
 
-            expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
+            expect(ctrl.endpoint.updateCandidate).toHaveBeenCalledWith(1234, {
                 id: 1,
                 title: 'ad title',
             }, []);
@@ -377,7 +264,7 @@ describe('ZemUploadEditFormCtrl', function () {
             spyOn(ctrl, 'updateCallback').and.stub();
 
             var updateDeferred = $q.defer();
-            spyOn(ctrl.endpoint, 'updateCandidatePartial').and.callFake(function () {
+            spyOn(ctrl.endpoint, 'updateCandidate').and.callFake(function () {
                 return updateDeferred.promise;
             });
 
@@ -409,7 +296,7 @@ describe('ZemUploadEditFormCtrl', function () {
 
             expect(ctrl.fieldsLoading.title).toBe(false);
             expect(ctrl.fieldsSaved.title).toBe(true);
-            expect(ctrl.endpoint.updateCandidatePartial).toHaveBeenCalledWith(1234, {
+            expect(ctrl.endpoint.updateCandidate).toHaveBeenCalledWith(1234, {
                 id: 1,
                 title: 'ad title',
             }, []);

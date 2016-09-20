@@ -18,9 +18,6 @@ from utils import exc
 class UploadBatch(api_common.BaseApiView):
 
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.can_use_single_ad_upload'):
-            raise Http404('Forbidden')
-
         helpers.get_ad_group(request.user, ad_group_id)  # check access permission
 
         resource = json.loads(request.body)
@@ -181,9 +178,6 @@ class CandidateUpdate(api_common.BaseApiView):
         return ad_group, batch
 
     def post(self, request, ad_group_id, batch_id, candidate_id):
-        if not request.user.has_perm('zemauth.can_use_partial_updates_in_upload'):
-            raise Http404('Forbidden')
-
         _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
         resource = json.loads(request.POST['data'])
 
@@ -220,9 +214,6 @@ class Candidate(api_common.BaseApiView):
         })
 
     def post(self, request, ad_group_id, batch_id, candidate_id=None):
-        if not request.user.has_perm('zemauth.can_use_single_ad_upload'):
-            raise Http404('Forbidden')
-
         if candidate_id:
             raise exc.ValidationError('Not supported')
         _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
@@ -230,18 +221,6 @@ class Candidate(api_common.BaseApiView):
 
         return self.create_api_response({
             'candidate': candidate.to_dict(),  # don't add errors for new candidate
-        })
-
-    def put(self, request, ad_group_id, batch_id, candidate_id):
-        _, batch = self._get_ad_group_batch(request, ad_group_id, batch_id)
-        resource = json.loads(request.body)
-        try:
-            upload.update_candidate(resource['candidate'], resource['defaults'], batch)
-        except models.ContentAdCandidate.DoesNotExist:
-            raise exc.MissingDataError('Candidate does not exist')
-
-        return self.create_api_response({
-            'candidates': upload.get_candidates_with_errors(batch.contentadcandidate_set.all()),
         })
 
     def delete(self, request, ad_group_id, batch_id, candidate_id):

@@ -69,53 +69,8 @@ describe('ZemUploadStep2Ctrl', function () {
             }];
         });
 
-        it('updates candidates on success', function () {
+        it('partially updates candidates on success', function () {
             ctrl.candidates = angular.copy(candidates);
-
-            var deferred = $q.defer();
-            spyOn(ctrl.endpoint, 'checkStatus').and.callFake(function () {
-                return deferred.promise;
-            });
-            spyOn($interval, 'cancel');
-            ctrl.startPolling();
-            $interval.flush(2501);
-
-            var resolvedCandidate = {
-                id: 1,
-                url: 'http://example.com/url1',
-                title: 'Title 1',
-                imageUrl: 'http://exmaple.com/img1.jpg',
-                imageCrop: 'center',
-                description: '',
-                displayUrl: 'example.com',
-                brandName: '',
-                callToAction: 'Read more',
-                label: 'title1',
-                imageStatus: constants.asyncUploadJobStatus.OK,
-                urlStatus: constants.asyncUploadJobStatus.OK,
-                errors: {
-                    imageUrl: ['Invalid image URL'],
-                    description: ['Missing description'],
-                },
-            };
-            deferred.resolve({
-                candidates: [resolvedCandidate],
-            });
-            scope.$digest();
-
-            expect(ctrl.candidates).toEqual([resolvedCandidate]);
-            expect($interval.cancel).not.toHaveBeenCalled();
-
-            $interval.flush(2500);
-            scope.$digest();
-
-            expect($interval.cancel).toHaveBeenCalled();
-            expect(ctrl.pollInterval).toBeNull();
-        });
-
-        it('partially updates candidates on success if user has permission', function () {
-            ctrl.candidates = angular.copy(candidates);
-            ctrl.hasPermission = function () { return true; };
 
             var deferred = $q.defer();
             spyOn(ctrl.endpoint, 'checkStatus').and.callFake(function () {
@@ -247,7 +202,8 @@ describe('ZemUploadStep2Ctrl', function () {
             });
 
             scope.$digest();
-            expect(ctrl.candidates).toEqual([resolvedCandidate]);
+            expect(ctrl.candidates[0].imageStatus).toEqual(resolvedCandidate.imageStatus);
+            expect(ctrl.candidates[0].urlStatus).toEqual(resolvedCandidate.urlStatus);
             expect($interval.cancel).not.toHaveBeenCalled();
 
             $interval.flush(2500);

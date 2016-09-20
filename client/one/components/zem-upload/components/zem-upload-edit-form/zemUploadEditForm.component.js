@@ -21,9 +21,6 @@ angular.module('one.legacy').directive('zemUploadEditForm', [function () { // es
             ctrl.scrollTop = function () {
                 element[0].scrollTop = 0;
             };
-            ctrl.scrollBottom = function () {
-                element[0].scrollTop = element[0].scrollHeight;
-            };
 
             var callToActionInput = element.find('#call-to-action-input');
             callToActionInput.on('select2-opening', function () {
@@ -57,19 +54,13 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     vm.fieldsApiErrors = {};
 
     // content ad picker API
-    vm.api.requestInProgress = false;
     vm.api.selectedId = null;
     vm.api.open = open;
     vm.api.close = refreshAndClose;
-    vm.api.update = scrollBottomAndUpdate;
 
     function open (candidate) {
-        vm.api.requestInProgress = false;
         vm.requestFailed = false;
         vm.selectedCandidate = candidate;
-        if (!vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) {
-            vm.selectedCandidate = angular.copy(vm.selectedCandidate);
-        }
         vm.selectedCandidate.defaults = {};
         vm.selectedCandidate.useTrackers = !!vm.selectedCandidate.primaryTrackerUrl ||
             !!vm.selectedCandidate.secondaryTrackerUrl;
@@ -82,11 +73,6 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
         vm.fieldsApiErrors = {};
     }
 
-    function scrollBottomAndUpdate () {
-        vm.scrollBottom();
-        return vm.update();
-    }
-
     function refreshAndClose () {
         var promise = vm.refreshCallback();
         close();
@@ -97,22 +83,6 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
         vm.api.selectedId = null;
         vm.selectedCandidate = null;
     }
-
-    vm.update = function () {
-        vm.api.requestInProgress = true;
-        vm.requestFailed = false;
-
-        return vm.endpoint.updateCandidate(
-            vm.selectedCandidate,
-            vm.batchId
-        ).then(function (result) {
-            refreshAndClose();
-        }, function () {
-            vm.requestFailed = true;
-        }).finally(function () {
-            vm.api.requestInProgress = false;
-        });
-    };
 
     function refreshSelectedCandidateFields (field, updatedFields, errors) {
         // multiple fields can be updated as a result of initiang update of a single one
@@ -134,8 +104,6 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     };
 
     vm.updateField = function (field, useAsDefault) {
-        if (!vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) return;
-
         var selectedId = vm.selectedCandidate.id;
         var defaults = [];
         if (useAsDefault) defaults.push(field);
@@ -151,7 +119,7 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
 
         var retries = 0;
         var persistUpdate = function () {
-            vm.endpoint.updateCandidatePartial(vm.batchId, data, defaults).then(function (data) {
+            vm.endpoint.updateCandidate(vm.batchId, data, defaults).then(function (data) {
                 vm.updateCallback(defaults);
                 if (selectedId !== vm.selectedCandidate.id) {
                     // selection changed
@@ -187,13 +155,6 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
         candidate.secondaryTrackerUrl = null;
         vm.updateField('secondaryTrackerUrl');
         vm.clearSelectedCandidateErrors('secondaryTrackerUrl');
-    };
-
-    vm.clearSelectedCandidateErrors = function (field) {
-        if (!vm.selectedCandidate || !vm.selectedCandidate.errors) return;
-        if (vm.hasPermission('zemauth.can_use_partial_updates_in_upload')) return;
-
-        delete vm.selectedCandidate.errors[field];
     };
 
     vm.fieldsHaveErrors = function (fields) {

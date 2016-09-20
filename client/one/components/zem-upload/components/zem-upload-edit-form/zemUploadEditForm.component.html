@@ -8,7 +8,7 @@
                     URL:
                 </label>
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="url-input" ng-model="ctrl.selectedCandidate.url" ng-focus="ctrl.clearSelectedCandidateErrors('url')" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('url')" />
+                    <input type="text" class="form-control" id="url-input" ng-model="ctrl.selectedCandidate.url" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('url')" />
                     <label for="url-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['url']">Something went wrong. <a href ng-click="ctrl.updateField('url')">Try again</a></label>
                     <label for="url-input" ng-repeat="error in ctrl.selectedCandidate.errors.url" class="control-label small error">{{ error }}</label>
                 </div>
@@ -24,8 +24,8 @@
                     Ad Title:
                 </label>
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="title-input" ng-model="ctrl.selectedCandidate.title" ng-focus="ctrl.clearSelectedCandidateErrors('title')" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('title')" />
-                    <label for="title-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['title']">Something went wrong. <a href ng-click="ctrl.updateField('title')">Try again</a></label>
+                    <input type="text" class="form-control" id="title-input" ng-model="ctrl.selectedCandidate.title" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('title')" />
+                    <label for="title-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['title']">Something went wrong. <a href ng-click="ctrl.updateField('title')" tabindex="-1">Try again</a></label>
                     <label for="title-input" ng-repeat="error in ctrl.selectedCandidate.errors.title" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-l-none">
@@ -35,18 +35,18 @@
                 </div>
             </div>
 
-            <div class="form-group" ng-class="{'has-error': ctrl.fieldsHaveErrors(['image', 'imageUrl'])}" ng-if="!ctrl.hasPermission('zemauth.can_use_own_images_in_upload') || !ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload') || !ctrl.showImageUpload">
+            <div class="form-group" ng-class="{'has-error': ctrl.fieldsHaveErrors(['image', 'imageUrl'])}" ng-if="!ctrl.showImageUpload">
                 <label for="image-url-input" class="col-xs-2 control-label">
                     Image URL:
                 </label>
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="image-url-input" ng-model="ctrl.selectedCandidate.imageUrl" ng-focus="ctrl.clearSelectedCandidateErrors('imageUrl')" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('imageUrl')" />
-                    <label for="image-url-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['imageUrl']">Something went wrong. <a href ng-click="ctrl.updateField('imageUrl')">Try again</a></label>
+                    <input type="text" class="form-control" id="image-url-input" ng-model="ctrl.selectedCandidate.imageUrl" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('imageUrl')" />
+                    <label for="image-url-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['imageUrl']">Something went wrong. <a href ng-click="ctrl.updateField('imageUrl')" tabindex="-1">Try again</a></label>
                     <label for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageUrl" ng-if="!ctrl.showImageUpload" class="control-label small error">{{ error }}</label>
                     <div class="help-block m-b-none">
                         Recommended image size is above 1200x1200px. Some media sources will not work with smaller images.
                     </div>
-                    <a href class="action-link" ng-if="ctrl.hasPermission('zemauth.can_use_own_images_in_upload') && ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')" ng-click="ctrl.toggleImageUpload()">
+                    <a href class="action-link" ng-click="ctrl.toggleImageUpload()" tabindex="-1">
                         If you have image on your computer, switch to image uploading form.
                     </a>
                 </div>
@@ -56,7 +56,7 @@
                 </div>
             </div>
 
-            <div class="form-group" ng-class="{'has-error': ctrl.fieldsHaveErrors(['image', 'imageUrl'])}" ng-if="ctrl.hasPermission('zemauth.can_use_own_images_in_upload') && ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload') && ctrl.showImageUpload">
+            <div class="form-group" ng-class="{'has-error': ctrl.fieldsHaveErrors(['image', 'imageUrl'])}" ng-if="ctrl.showImageUpload">
                 <label for="image-url-input" class="col-xs-2 control-label">
                     Image:
                 </label>
@@ -64,18 +64,17 @@
                     <div>
                         <zem-file-input zem-file-input-change="ctrl.imageUploadCallback(file)" zem-file-input-accept="image/*">
                             <button type="button" class="btn btn-secondary" zem-file-input-trigger>
-                                <zem-internal-feature ng-if="ctrl.isPermissionInternal('zemauth.can_use_own_images_in_upload') || ctrl.isPermissionInternal('zemauth.can_use_partial_updates_in_upload')"></zem-internal-feature>
                                 <img ng-src="{{ ctrl.config.static_url }}/one/img/button-folder.svg"/>
                                 <span class="action-text">Choose file</span>
                             </button>
                         </zem-file-input>
                     </div>
-                    <label for="image-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['image']">Something went wrong. <a href ng-click="ctrl.updateField('image')">Try again</a></label>
+                    <label for="image-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['image']">Something went wrong. <a href ng-click="ctrl.updateField('image')" tabindex="-1">Try again</a></label>
                     <label for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.image" ng-if="ctrl.showImageUpload" class="control-label small error">{{ error }}</label>
                     <div class="help-block m-b-none">
                         Recommended image size is above 1200x1200px. Some media sources will not work with smaller images.
                     </div>
-                    <a href class="action-link" ng-click="ctrl.toggleImageUpload()">
+                    <a href class="action-link" ng-click="ctrl.toggleImageUpload()" tabindex="-1">
                         If you already have image hosted, switch to URL adding form.
                     </a>
                 </div>
@@ -91,20 +90,17 @@
                 </label>
 
                 <div class="col-xs-8">
-                    <ui-select theme="select2" search-enabled="false" id="image-crop-input" class="form-control" ng-model="ctrl.selectedCandidate.imageCrop" ng-focus="ctrl.clearSelectedCandidateErrors('imageCrop')" ng-change="ctrl.updateField('imageCrop')">
+                    <ui-select theme="select2" search-enabled="false" id="image-crop-input" class="form-control" ng-model="ctrl.selectedCandidate.imageCrop" ng-change="ctrl.updateField('imageCrop')">
                         <ui-select-match placeholder="Choose image crop">{{$select.selected.name}}</ui-select-match>
                         <ui-select-choices repeat="crop.value as crop in ctrl.imageCrops">
                             {{crop.name}}
                         </ui-select-choices>
                     </ui-select>
-                    <label for="image-crop-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['imageCrop']">Something went wrong. <a href ng-click="ctrl.updateField('imageCrop')">Try again</a></label>
+                    <label for="image-crop-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['imageCrop']">Something went wrong. <a href ng-click="ctrl.updateField('imageCrop')" tabindex="-1">Try again</a></label>
                     <label for="image-crop-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageCrop" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label p-l-none">
-                    <label class="checkbox-label checkbox-label-default" ng-if="!ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
-                        <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.imageCrop" />Use as default
-                    </label>
-                    <a href class="action-link" ng-if="ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')" ng-click="ctrl.updateField('imageCrop', true)">
+                    <a href class="action-link" ng-click="ctrl.updateField('imageCrop', true)" tabindex="-1">
                         Use as default
                     </a>
                     <img ng-if="ctrl.fieldsLoading.imageCrop" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
@@ -117,16 +113,13 @@
                     Description:
                 </label>
                 <div class="col-xs-8">
-                    <textarea type="text" class="form-control" rows="3" id="description-input" ng-model="ctrl.selectedCandidate.description" ng-focus="ctrl.clearSelectedCandidateErrors('description')" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('description')" ></textarea>
-                    <label for="description-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['description']">Something went wrong. <a href ng-click="ctrl.updateField('description')">Try again</a></label>
+                    <textarea type="text" class="form-control" rows="3" id="description-input" ng-model="ctrl.selectedCandidate.description" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('description')"></textarea>
+                    <label for="description-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['description']">Something went wrong. <a href ng-click="ctrl.updateField('description')" tabindex="-1">Try again</a></label>
                     <label for="description-input" ng-repeat="error in ctrl.selectedCandidate.errors.description" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ ctrl.selectedCandidate.description.length }}/{{ ctrl.MAX_DESCRIPTION_LENGTH }}
-                    <label class="checkbox-label checkbox-label-default" ng-if="!ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
-                        <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.description"/>Use as default
-                    </label>
-                    <a href class="action-link" ng-if="ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')" ng-click="ctrl.updateField('description', true)">
+                    <a href class="action-link" ng-click="ctrl.updateField('description', true)" tabindex="-1">
                         Use as default
                     </a>
                     <img ng-if="ctrl.fieldsLoading.description" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
@@ -139,16 +132,13 @@
                     Display URL:
                 </label>
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="display-url-input" ng-model="ctrl.selectedCandidate.displayUrl" ng-focus="ctrl.clearSelectedCandidateErrors('displayUrl')" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('displayUrl')" />
-                    <label for="display-url-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['displayUrl']">Something went wrong. <a href ng-click="ctrl.updateField('displayUrl')">Try again</a></label>
+                    <input type="text" class="form-control" id="display-url-input" ng-model="ctrl.selectedCandidate.displayUrl" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('displayUrl')" />
+                    <label for="display-url-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['displayUrl']">Something went wrong. <a href ng-click="ctrl.updateField('displayUrl')" tabindex="-1">Try again</a></label>
                     <label for="display-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.displayUrl" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ ctrl.selectedCandidate.displayUrl.length }}/{{ ctrl.MAX_DISPLAY_URL_LENGTH }}
-                    <label class="checkbox-label checkbox-label-default" ng-if="!ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
-                        <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.displayUrl"/>Use as default
-                    </label>
-                    <a href class="action-link" ng-if="ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')" ng-click="ctrl.updateField('displayUrl', true)">
+                    <a href class="action-link" ng-click="ctrl.updateField('displayUrl', true)" tabindex="-1">
                         Use as default
                     </a>
                     <img ng-if="ctrl.fieldsLoading.displayUrl" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
@@ -162,16 +152,13 @@
                 </label>
 
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="brand-name-input" ng-model="ctrl.selectedCandidate.brandName" ng-focus="ctrl.clearSelectedCandidateErrors('brandName')" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('brandName')" />
-                    <label for="brand-name-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['brandName']">Something went wrong. <a href ng-click="ctrl.updateField('brandName')">Try again</a></label>
+                    <input type="text" class="form-control" id="brand-name-input" ng-model="ctrl.selectedCandidate.brandName" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('brandName')" />
+                    <label for="brand-name-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['brandName']">Something went wrong. <a href ng-click="ctrl.updateField('brandName')" tabindex="-1">Try again</a></label>
                     <label for="brand-name-input" ng-repeat="error in ctrl.selectedCandidate.errors.brandName" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ ctrl.selectedCandidate.brandName.length }}/{{ ctrl.MAX_BRAND_NAME_LENGTH }}
-                    <label class="checkbox-label checkbox-label-default" ng-if="!ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
-                        <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.brandName"/>Use as default
-                    </label>
-                    <a href class="action-link" ng-if="ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')" ng-click="ctrl.updateField('brandName', true)">
+                    <a href class="action-link" ng-click="ctrl.updateField('brandName', true)" tabindex="-1">
                         Use as default
                     </a>
                     <img ng-if="ctrl.fieldsLoading.brandName" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
@@ -185,15 +172,12 @@
                 </label>
                 <div class="col-xs-8">
                     <div ui-select2="ctrl.callToActionSelect2Config" id="call-to-action-input" class="form-control" ng-model="ctrl.selectedCandidate.callToAction" zem-select2-model-transform="text" ng-change="ctrl.updateField('callToAction')"></div>
-                    <label for="call-to-action-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['callToAction']">Something went wrong. <a href ng-click="ctrl.updateField('callToAction')">Try again</a></label>
+                    <label for="call-to-action-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['callToAction']">Something went wrong. <a href ng-click="ctrl.updateField('callToAction')" tabindex="-1">Try again</a></label>
                     <label for="call-to-action-input" ng-repeat="error in ctrl.selectedCandidate.errors.callToAction" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ ctrl.selectedCandidate.callToAction.length }}/{{ ctrl.MAX_CALL_TO_ACTION_LENGTH }}
-                    <label class="checkbox-label checkbox-label-default" ng-if="!ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
-                        <input type="checkbox" ng-model="ctrl.selectedCandidate.defaults.callToAction" />Use as default
-                    </label>
-                    <a href class="action-link" ng-if="ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')" ng-click="ctrl.updateField('callToAction', true)">
+                    <a href class="action-link" ng-click="ctrl.updateField('callToAction', true)" tabindex="-1">
                         Use as default
                     </a>
                     <img ng-if="ctrl.fieldsLoading.callToAction" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
@@ -206,8 +190,8 @@
                     Label:
                 </label>
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="label-input" ng-model="ctrl.selectedCandidate.label" ng-focus="ctrl.clearSelectedCandidateErrors('label')" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('label')" />
-                    <label for="label-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['label']">Something went wrong. <a href ng-click="ctrl.updateField('label')">Try again</a></label>
+                    <input type="text" class="form-control" id="label-input" ng-model="ctrl.selectedCandidate.label" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('label')" />
+                    <label for="label-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['label']">Something went wrong. <a href ng-click="ctrl.updateField('label')" tabindex="-1">Try again</a></label>
                     <label for="label-input" ng-repeat="error in ctrl.selectedCandidate.errors.label" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label small p-l-none">
@@ -234,8 +218,8 @@
                         Primary impression tracker:
                     </label>
                     <div class="col-xs-8">
-                        <input type="text" class="form-control" id="primary-tracker-input" ng-model="ctrl.selectedCandidate.primaryTrackerUrl" ng-focus="ctrl.clearSelectedCandidateErrors('primaryTrackerUrl')" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('primaryTrackerUrl')" />
-                        <label for="primary-tracker-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['primaryTrackerUrl']">Something went wrong. <a href ng-click="ctrl.updateField('primaryTrackerUrl')">Try again</a></label>
+                        <input type="text" class="form-control" id="primary-tracker-input" ng-model="ctrl.selectedCandidate.primaryTrackerUrl" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('primaryTrackerUrl')" />
+                        <label for="primary-tracker-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['primaryTrackerUrl']">Something went wrong. <a href ng-click="ctrl.updateField('primaryTrackerUrl')" tabindex="-1">Try again</a></label>
                         <label for="primary-tracker-input" ng-repeat="error in ctrl.selectedCandidate.errors.primaryTrackerUrl" class="control-label small error">{{ error }}</label>
                         <div class="help-block">
                             Paste your impression tracker link to track impressions.
@@ -250,15 +234,15 @@
                 <div class="form-group" ng-if="!!ctrl.selectedCandidate.useSecondaryTracker" ng-class="{'has-error': ctrl.fieldsHaveErrors('secondaryTrackerUrl')}">
                     <label class="col-xs-2 control-label p-t-none">Secondary impression tracker:</label>
                     <div class="col-xs-8">
-                        <input type="text" class="form-control" id="secondary-tracker-input" ng-model="ctrl.selectedCandidate.secondaryTrackerUrl" ng-focus="ctrl.clearSelectedCandidateErrors('secondaryTrackerUrl')" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('secondaryTrackerUrl')" />
-                        <label for="secondary-tracker-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['secondaryTrackerUrl']">Something went wrong. <a href ng-click="ctrl.updateField('secondaryTrackerUrl')">Try again</a></label>
+                        <input type="text" class="form-control" id="secondary-tracker-input" ng-model="ctrl.selectedCandidate.secondaryTrackerUrl" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('secondaryTrackerUrl')" />
+                        <label for="secondary-tracker-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['secondaryTrackerUrl']">Something went wrong. <a href ng-click="ctrl.updateField('secondaryTrackerUrl')" tabindex="-1">Try again</a></label>
                         <label for="secondary-tracker-input" ng-repeat="error in ctrl.selectedCandidate.errors.secondaryTrackerUrl" class="control-label small error">{{ error }}</label>
                         <div class="help-block">
                             Paste your impression tracker link to track impressions.
                         </div>
                     </div>
                     <div class="col-xs-2 control-label p-l-none">
-                        <a href class="inline-link" ng-click="ctrl.removeSecondaryTracker(ctrl.selectedCandidate)">
+                        <a href class="inline-link" ng-click="ctrl.removeSecondaryTracker(ctrl.selectedCandidate)" tabindex="-1">
                             <img class="smaller_icon" ng-src="{{ ctrl.config.static_url }}/one/img/button-remove.svg" />Remove
                         </a>
                         <img ng-if="ctrl.fieldsLoading.secondaryTrackerUrl" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
@@ -269,21 +253,11 @@
                 <div class="form-group" ng-if="!ctrl.selectedCandidate.useSecondaryTracker">
                     <label class="col-xs-2 control-label"></label>
                     <div class="col-xs-10">
-                        <a href class="inline-link" ng-click="ctrl.addSecondaryTracker(ctrl.selectedCandidate)">
+                        <a href class="inline-link" ng-click="ctrl.addSecondaryTracker(ctrl.selectedCandidate)" tabindex="-1">
                             <img ng-src="{{ ctrl.config.static_url }}/one/img/button-plus-blue.svg"/>Add secondary tracker
                         </a>
                     </div>
                 </div>
-            </div>
-
-            <div class="form-group" ng-if="!ctrl.hasPermission('zemauth.can_use_partial_updates_in_upload')">
-                <div class="col-xs-2 control-label"></div>
-                <div class="col-xs-8">
-                    <button type="button" class="btn btn-add" ng-click="ctrl.update()" ng-disabled="ctrl.api.requestInProgress">Update ad</button>
-                    <img class="loader-icon small-icon" ng-if="ctrl.api.requestInProgress" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
-                    <span class="error" ng-if="ctrl.requestFailed">Oops. Something went wrong. Please try again.</span>
-                </div>
-                <div class="col-xs-2"></div>
             </div>
         </form>
 

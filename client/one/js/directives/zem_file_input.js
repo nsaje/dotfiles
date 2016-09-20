@@ -2,7 +2,7 @@
 'use strict';
 
 angular.module('one.legacy').component('zemFileInput', {
-    template: '<ng-transclude></ng-transclude><input type="file" style="width: 0; height: 0; overflow: hidden; position: absolute; padding: 0; margin: 0; opacity: 0" />',
+    template: '<ng-transclude></ng-transclude><input tabindex="-1" type="file" style="width: 0; height: 0; overflow: hidden; position: absolute; padding: 0; margin: 0; opacity: 0" />',
     bindings: {
         callback: '&zemFileInputChange',
         accept: '@zemFileInputAccept',
