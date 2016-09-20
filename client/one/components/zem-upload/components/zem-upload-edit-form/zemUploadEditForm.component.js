@@ -206,6 +206,9 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
     };
 
     vm.toggleUseTrackers = function () {
+        vm.fieldsSaved['primaryTrackerUrl'] = false;
+        vm.fieldsSaved['secondaryTrackerUrl'] = false;
+
         if (vm.selectedCandidate.useTrackers) {
             return;
         }
