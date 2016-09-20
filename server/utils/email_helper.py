@@ -379,7 +379,7 @@ def send_ga_setup_instructions(user):
     subject, body, _ = format_email(EmailTemplateType.GA_SETUP_INSTRUCTIONS)
     email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
-    ), user.email)
+    ), (user.email))
     email.attach_alternative(render_to_string('ga_setup_instructions.html'), "text/html")
     email.send()
 
