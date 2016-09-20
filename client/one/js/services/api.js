@@ -1669,6 +1669,7 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 enableGaTracking: settings.enable_ga_tracking,
                 gaTrackingType: settings.ga_tracking_type,
                 gaPropertyId: settings.ga_property_id,
+                gaPropertyReadable: settings.ga_property_readable,
                 enableAdobeTracking: settings.enable_adobe_tracking,
                 adobeTrackingParam: settings.adobe_tracking_param,
             };

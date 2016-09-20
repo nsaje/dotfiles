@@ -19,6 +19,7 @@ from dash import constants
 from dash import retargeting_helper
 from dash import campaign_goals
 from dash import facebook_helper
+from dash import ga_helper
 from dash import content_insights_helper
 
 from dash.dashapi import data_helper
@@ -423,6 +424,15 @@ class CampaignSettings(api_common.BaseApiView):
             helpers.log_and_notify_campaign_settings_change(
                 campaign, current_settings, new_settings, request
             )
+            if (current_settings.ga_property_id != new_settings.ga_property_id and
+                    new_settings.enable_ga_tracking and
+                    new_settings.ga_property_id):
+                try:
+                    is_readable = ga_helper.is_readable(new_settings.ga_property_id)
+                except:
+                    is_readable = False
+                if not is_readable:
+                    email_helper.send_ga_setup_instructions(request.user)
 
         response = {
             'settings': self.get_dict(request, new_settings, campaign)
@@ -539,6 +549,12 @@ class CampaignSettings(api_common.BaseApiView):
 
         if request.user.has_perm('zemauth.can_modify_campaign_iab_category'):
             result['iab_category'] = settings.iab_category
+
+        if settings.enable_ga_tracking and settings.ga_property_id:
+            try:
+                result['ga_property_readable'] = ga_helper.is_readable(settings.ga_property_id)
+            except:
+                logger.exception("Google Analytics validation failed")
 
         return result
 

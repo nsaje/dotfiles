@@ -54,6 +54,7 @@ describe('api', function () {
                 enable_ga_tracking: true,
                 ga_tracking_type: constants.gaTrackingType.API,
                 ga_property_id: 'UA-123-1',
+                ga_property_readable: true,
                 enable_adobe_tracking: true,
                 adobe_tracking_param: 'cid'
             },
@@ -106,6 +107,7 @@ describe('api', function () {
             enableGaTracking: true,
             gaTrackingType: constants.gaTrackingType.API,
             gaPropertyId: 'UA-123-1',
+            gaPropertyReadable: true,
             enableAdobeTracking: true,
             adobeTrackingParam: 'cid'
         };

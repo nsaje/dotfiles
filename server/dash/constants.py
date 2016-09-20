@@ -1565,6 +1565,7 @@ class EmailTemplateType(ConstantBase):
     LIVESTREAM_SESSION = 16
     DAILY_MANAGEMENT_REPORT = 17
     OUTBRAIN_ACCOUNTS_RUNNING_OUT = 18
+    GA_SETUP_INSTRUCTIONS = 19
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1585,6 +1586,7 @@ class EmailTemplateType(ConstantBase):
         LIVESTREAM_SESSION: 'Livestream sesion id',
         DAILY_MANAGEMENT_REPORT: 'Daily management report',
         OUTBRAIN_ACCOUNTS_RUNNING_OUT: 'Unused Outbrain accounts running out',
+        GA_SETUP_INSTRUCTIONS: 'Google Analytics Setup Instructions',
     }
 
 

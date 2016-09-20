@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.core.mail.message import EmailMessage, EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 from dash.constants import EmailTemplateType
 import dash.models
@@ -371,6 +372,15 @@ def send_outbrain_accounts_running_out_email(n):
     email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), recipients)
+    email.send()
+
+
+def send_ga_setup_instructions(user):
+    subject, body, _ = format_email(EmailTemplateType.GA_SETUP_INSTRUCTIONS)
+    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL
+    ), user.email)
+    email.attach_alternative(render_to_string('ga_setup_instructions.html'), "text/html")
     email.send()
 
 

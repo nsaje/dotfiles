@@ -21,6 +21,7 @@ from dash import constants
 from dash.views import agency
 from dash import forms
 from dash import history_helpers
+from dash import ga_helper
 
 from utils import exc
 from utils.test_helper import add_permissions, fake_request
@@ -1254,10 +1255,14 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['ga_property_id'], '')
         self.assertEqual(content['data']['settings']['adobe_tracking_param'], '')
 
+    @patch('dash.views.agency.ga_helper.is_readable')
     @patch('utils.redirector_helper.insert_adgroup')
+    @patch('dash.views.agency.email_helper.send_ga_setup_instructions')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_r1_insert_adgroup):
+    def test_put(self, mock_k1_ping, mock_send_campaign_notification_email, mock_send_ga_email, mock_r1_insert_adgroup, mock_ga_readable):
+        mock_ga_readable.return_value = False
+
         add_permissions(self.user, [
             'can_modify_campaign_manager',
             'can_modify_campaign_iab_category',
@@ -1322,6 +1327,8 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.adobe_tracking_param, 'cid')
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
+        mock_send_ga_email.assert_called_with(self.user)
+        mock_ga_readable.assert_called_with('UA-123456789-3')
         mock_r1_insert_adgroup.assert_has_calls(
             [call(ag.id, ag.get_current_settings().get_tracking_codes(), True, True, 'cid')
              for ag in campaign.adgroup_set.all()])
@@ -1652,6 +1659,36 @@ class CampaignSettingsTest(TestCase):
 
         self.assertTrue(content['success'])
         self.assertEqual(len(content['data'].get('campaign_managers')), 4)
+
+    @patch.object(ga_helper, 'is_readable')
+    def test_ga_property_validation(self, mock_is_readable):
+        ga_property_id = 'UA-123-1'
+        request = HttpRequest
+        request.user = User.objects.get(pk=1)
+        campaign = models.Campaign.objects.get(pk=1)
+        settings = campaign.get_current_settings()
+        settings_view = agency.CampaignSettings()
+
+        # not set
+        settings_dict = settings_view.get_dict(request, settings, campaign)
+        mock_is_readable.assert_not_called()
+        self.assertNotIn('ga_property_readable', settings_dict)
+
+        # is set
+        settings.enable_ga_tracking = True
+        settings.ga_property_id = ga_property_id
+
+        # is readable
+        mock_is_readable.return_value = True
+        settings_dict = settings_view.get_dict(request, settings, campaign)
+        mock_is_readable.called_with(ga_property_id)
+        self.assertEquals(settings_dict['ga_property_readable'], True)
+
+        # not readable
+        mock_is_readable.return_value = False
+        settings_dict = settings_view.get_dict(request, settings, campaign)
+        mock_is_readable.called_with(ga_property_id)
+        self.assertEquals(settings_dict['ga_property_readable'], False)
 
 
 class AccountSettingsTest(TestCase):
