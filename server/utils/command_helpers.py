@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 class ExceptionCommand(BaseCommand):
     # execute in BaseCommand calls handle()
     # this is extended here to catch exceptions
+
     def execute(self, *args, **options):
         try:
             return super(ExceptionCommand, self).execute(*args, **options)

@@ -35,6 +35,14 @@ class TimeLimits:
     MONTH = 12
 
 
+class SlackMsgTypes:
+    SUCCESS = ':sunglasses:'
+    INFO = ':information_source:'
+    WARNING = ':warning:'
+    CRITICAL = ':rage:'
+
+    _ALL = [SUCCESS, INFO, WARNING, CRITICAL]
+
 DimensionIdentifierMapping = {
     'account': 'account_id',
     'campaign': 'campaign_id',

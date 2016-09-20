@@ -198,6 +198,9 @@ LAMBDA_CONTENT_UPLOAD_NAMESPACE = 't'
 LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test1'
 LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = 'https://z1-1452281140.us-east-1.elb.amazonaws.com/api/callbacks/content-upload/'
 
+# Slack hooks
+SLACK_INCOMING_HOOK_URL = ''
+
 # GA credentials
 GA_PRIVATE_KEY = Secret('').get()
 GA_CLIENT_EMAIL = Secret('').get()

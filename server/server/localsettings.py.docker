@@ -192,6 +192,10 @@ LAMBDA_CONTENT_UPLOAD_NAMESPACE = 't'
 LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'z1-content-upload-test1'
 LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = ''
 
+# Slack hooks
+SLACK_INCOMING_HOOK_URL = Secret('').get()
+
 # GA credentials
 GA_PRIVATE_KEY = Secret('').get()
 GA_CLIENT_EMAIL = Secret('').get()
+
