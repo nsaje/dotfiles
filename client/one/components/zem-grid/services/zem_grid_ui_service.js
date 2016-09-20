@@ -62,6 +62,12 @@ angular.module('one.legacy').factory('zemGridUIService', ['$timeout', 'zemGridCo
         if (!column || !column.data) return -1;
 
         var width = getTextWidth(column.data.name, font);
+
+        // Add breakdown by structure text width if displayed
+        if (column.data.breakdownByStructureText) {
+            width += getTextWidth(column.data.breakdownByStructureText, font);
+        }
+
         width = Math.max(width, zemGridConstants.gridStyle.DEFAULT_ICON_SIZE);  // Column without text (e.g. only icon)
         if (column.data.internal) {
             width += zemGridConstants.gridStyle.DEFAULT_ICON_SIZE;

@@ -24,6 +24,7 @@ angular.module('one.legacy').directive('zemGridHeaderCellData', ['$timeout', 'ze
             initialize();
 
             function initialize () {
+                pubsub.register(pubsub.EVENTS.DATA_UPDATED, $scope, setBreakdownByStructureText);
                 pubsub.register(pubsub.EVENTS.EXT_ORDER_UPDATED, $scope, updateModel);
                 $scope.$watch('ctrl.column', updateModel);
             }
@@ -33,6 +34,28 @@ angular.module('one.legacy').directive('zemGridHeaderCellData', ['$timeout', 'ze
                 vm.model.orderClass = getOrderClass();
             }
 
+            function setBreakdownByStructureText () {
+                vm.column.data.breakdownByStructureText = null;
+
+                if (!vm.grid || !vm.grid.meta || !vm.grid.meta.api) {
+                    return;
+                }
+
+                if (vm.column.type !== zemGridConstants.gridColumnTypes.BREAKDOWN) {
+                    return;
+                }
+
+                var breakdown = vm.grid.meta.api.getBreakdown();
+                var structureBreakdowns = vm.grid.meta.api.getMetaData().breakdownGroups.structure.breakdowns;
+
+                if (breakdown[1]) {
+                    structureBreakdowns.forEach(function (b) {
+                        if (b.query === breakdown[1].query) {
+                            vm.column.data.breakdownByStructureText = ' > ' + breakdown[1].name;
+                        }
+                    });
+                }
+            }
 
             function getOrderClass () {
                 if (vm.column.order === zemGridConstants.gridColumnOrder.DESC) {

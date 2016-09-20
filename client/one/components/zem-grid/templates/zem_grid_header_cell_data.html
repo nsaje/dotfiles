@@ -5,9 +5,15 @@
         <a ng-switch-when='true' href ng-class="ctrl.column.data.nameCssClass"
            ng-click="ctrl.setOrder(column)">
             {{ ctrl.column.data.name }}
+            <span ng-if="ctrl.column.data.breakdownByStructureText">
+                {{ctrl.column.data.breakdownByStructureText}}
+            </span>
         </a>
         <span ng-switch-default ng-class="ctrl.column.data.nameCssClass">
             {{ ctrl.column.data.name }}
+            <span ng-if="ctrl.column.data.breakdownByStructureText">
+                {{ctrl.column.data.breakdownByStructureText}}
+            </span>
         </span>
     </span>
 

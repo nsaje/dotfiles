@@ -865,7 +865,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
         help: 'Name of the ad group.',
     };
     NAME_COLUMN_BRANDING[constants.breakdown.CONTENT_AD] = {
-        name: 'Title',
+        name: 'Content Ad',
         help: 'The creative title/headline of a content ad. The link to landing page includes tracking codes.',
     };
     NAME_COLUMN_BRANDING[constants.breakdown.MEDIA_SOURCE] = {
