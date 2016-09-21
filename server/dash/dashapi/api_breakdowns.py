@@ -25,9 +25,9 @@ def query(level, breakdown, constraints, parents, order, offset, limit):
     rows = []
 
     filtered_sources = constraints['filtered_sources']
-    show_archived = constraints['show_archived']
 
-    params = {'show_archived': show_archived, 'order': order, 'offset': offset, 'limit': limit}
+    params = {'start_date': constraints.get('date__gte'), 'end_date': constraints.get('date__lte'),
+              'show_archived': constraints['show_archived'], 'order': order, 'offset': offset, 'limit': limit}
 
     if level is Level.ALL_ACCOUNTS:
         allowed_accounts = constraints['allowed_accounts']
@@ -224,6 +224,8 @@ def augment(rows, level, breakdown, constraints):
     parent_dimension = get_base_dimension(breakdown[:-1])  # we expect max [base_level, target_level] breakdown depth
     filtered_sources = constraints['filtered_sources']
 
+    params = {'start_date': constraints.get('date__gte'), 'end_date': constraints.get('date__lte')}
+
     if target_dimension in ('account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'):
         for parent_id, breakdown_rows, target_ids in helpers.group_rows_by_parents(
                 rows, parent_dimension, target_dimension, flat=('source_id' != parent_dimension)):
@@ -236,22 +238,22 @@ def augment(rows, level, breakdown, constraints):
 
             if target_dimension == 'account_id':
                 accounts = models.Account.objects.filter(pk__in=target_ids)
-                loader = loaders.AccountsLoader(accounts, sources)
+                loader = loaders.AccountsLoader(accounts, sources, **params)
                 augmenter.augment_accounts(breakdown_rows, loader, is_base_level=(parent_dimension is None))
 
             elif target_dimension == 'campaign_id':
                 campaigns = models.Campaign.objects.filter(pk__in=target_ids)
-                loader = loaders.CampaignsLoader(campaigns, sources)
+                loader = loaders.CampaignsLoader(campaigns, sources, **params)
                 augmenter.augment_campaigns(breakdown_rows, loader, is_base_level=(parent_dimension is None))
 
             elif target_dimension == 'ad_group_id':
                 ad_groups = models.AdGroup.objects.filter(pk__in=target_ids)
-                loader = loaders.AdGroupsLoader(ad_groups, sources)
+                loader = loaders.AdGroupsLoader(ad_groups, sources, **params)
                 augmenter.augment_ad_groups(breakdown_rows, loader, is_base_level=(parent_dimension is None))
 
             elif target_dimension == 'content_ad_id':
                 content_ads = models.ContentAd.objects.filter(pk__in=target_ids)
-                loader = loaders.ContentAdsLoader(content_ads, sources)
+                loader = loaders.ContentAdsLoader(content_ads, sources, **params)
                 augmenter.augment_content_ads(breakdown_rows, loader, is_base_level=(parent_dimension is None))
     elif target_dimension == 'source_id':
         for parent_id, breakdown_rows, target_ids in helpers.group_rows_by_parents(
@@ -259,7 +261,7 @@ def augment(rows, level, breakdown, constraints):
 
             sources, ad_group_sources = helpers.select_active_ad_group_sources(
                 level, constraints, parent_dimension, parent_id, target_ids)
-            loader = loaders.SourcesLoader(sources, ad_group_sources)
+            loader = loaders.SourcesLoader(sources, ad_group_sources, **params)
             augmenter.augment_sources(breakdown_rows, loader, is_base_level=(parent_dimension is None))
 
     return rows
@@ -314,14 +316,18 @@ def get_totals(level, breakdown, constraints):
     row = {}
     if breakdown == ['source_id']:
         sources, ad_group_sources = helpers.select_active_ad_group_sources(level, constraints, None, None, None)
-        loader = loaders.SourcesLoader(sources, ad_group_sources)
+        loader = loaders.SourcesLoader(sources, ad_group_sources,
+                                       start_date=constraints.get('date__gte'), end_date=constraints.get('date__lte'))
+        augmenter.augment_sources_totals(row, loader)
 
-        min_cpcs = [v['min_bid_cpc'] for v in loader.settings_map.values() if v['min_bid_cpc'] is not None]
-        row['min_bid_cpc'] = min(min_cpcs) if min_cpcs else None
+    elif breakdown == ['account_id']:
+        loader = loaders.AccountsLoader(constraints['allowed_accounts'], constraints['filtered_sources'],
+                                        start_date=constraints.get('date__gte'), end_date=constraints.get('date__lte'))
+        augmenter.augment_accounts_totals(row, loader)
 
-        max_cpcs = [v['max_bid_cpc'] for v in loader.settings_map.values() if v['max_bid_cpc'] is not None]
-        row['max_bid_cpc'] = max(max_cpcs) if max_cpcs else None
-
-        row['daily_budget'] = sum([v['daily_budget'] for v in loader.settings_map.values() if v['daily_budget']])
+    elif breakdown == ['campaign_id']:
+        loader = loaders.CampaignsLoader(constraints['allowed_campaigns'], constraints['filtered_sources'],
+                                         start_date=constraints.get('date__gte'), end_date=constraints.get('date__lte'))
+        augmenter.augment_campaigns_totals(row, loader)
 
     return row

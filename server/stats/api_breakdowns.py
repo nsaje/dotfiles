@@ -12,14 +12,18 @@ from stats import augmenter
 from stats import permission_filter
 
 # expose these helpers as API
-from stats.helpers import prepare_constraints, get_goals
+from stats.helpers import get_goals
+from stats.constraints_helper import prepare_all_accounts_constraints, prepare_account_constraints
+from stats.constraints_helper import prepare_campaign_constraints, prepare_ad_group_constraints
 
 import redshiftapi.api_breakdowns
 import dash.dashapi.api_breakdowns
 
 
 # define the API
-__all__ = ['query', 'totals', 'validate_breakdown_allowed', 'prepare_constraints', 'get_goals']
+__all__ = ['query', 'totals', 'validate_breakdown_allowed', 'get_goals',
+           'prepare_all_accounts_constraints', 'prepare_account_constraints',
+           'prepare_campaign_constraints', 'prepare_ad_group_constraints']
 
 
 def validate_breakdown_allowed(level, user, breakdown):
@@ -39,7 +43,7 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
 
     target_dimension = constants.get_target_dimension(breakdown)
 
-    order = helpers.extract_order_field(order, target_dimension, goals.primary_goal)
+    order = helpers.extract_order_field(order, target_dimension, goals.primary_goals)
     order = helpers.get_supported_order(order, target_dimension)
 
     parents = helpers.decode_parents(breakdown, parents)

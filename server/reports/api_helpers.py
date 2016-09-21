@@ -32,37 +32,41 @@ CONTENTADSTATS_FIELD_MAPPING = {
 CONTENTADSTATS_FIELD_REVERSE_MAPPING = {v: k for k, v in CONTENTADSTATS_FIELD_MAPPING.iteritems()}
 
 FIELD_PERMISSION_MAPPING = {
-    'e_media_cost':     'zemauth.can_view_platform_cost_breakdown',
-    'e_data_cost':      'zemauth.can_view_platform_cost_breakdown',
-    'license_fee':      'zemauth.can_view_platform_cost_breakdown',
+    'e_media_cost':     ('zemauth.can_view_platform_cost_breakdown',),
+    'e_data_cost':      ('zemauth.can_view_platform_cost_breakdown',),
+    'license_fee':      ('zemauth.can_view_platform_cost_breakdown',),
 
-    'media_cost':       'zemauth.can_view_actual_costs',
-    'data_cost':        'zemauth.can_view_actual_costs',
+    'media_cost':       ('zemauth.can_view_actual_costs',),
+    'data_cost':        ('zemauth.can_view_actual_costs',),
 
-    'yesterday_cost':   'zemauth.can_view_actual_costs',
-    'e_yesterday_cost': 'zemauth.can_view_platform_cost_breakdown',
+    'yesterday_cost':   ('zemauth.can_view_actual_costs',),
+    'e_yesterday_cost': ('zemauth.can_view_platform_cost_breakdown',),
 
-    'margin':           'zemauth.can_view_agency_margin',
-    'agency_total':     'zemauth.can_view_agency_margin',
+    'margin':           ('zemauth.can_view_agency_margin',),
+    'agency_total':     ('zemauth.can_view_agency_margin',),
 
-    'total_fee': 'zemauth.can_view_flat_fees',
-    'flat_fee': 'zemauth.can_view_flat_fees',
-    'total_fee_projection': 'zemauth.can_view_flat_fees',
+    'pacing':                 ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
+    'allocated_budgets':      ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
+    'spend_projection':       ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
+    'license_fee_projection': ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown'),
+    'total_fee':              ('zemauth.can_view_flat_fees', 'zemauth.can_view_platform_cost_breakdown'),
+    'flat_fee':               ('zemauth.can_view_flat_fees', 'zemauth.can_view_platform_cost_breakdown'),
 
-    'allocated_budget': 'zemauth.can_see_projections',
-    'spend_projection': 'zemauth.can_see_projections',
-    'pacing': 'zemauth.can_see_projections',
-    'license_fee_projection': 'zemauth.can_see_projections',
-    'total_fee_projection': 'zemauth.can_see_projections',
+    'total_fee_projection':   ('zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown',
+                               'zemauth.can_view_flat_fees'),
 
-    'default_account_manager': 'zemauth.can_see_managers_in_accounts_table',
-    'default_sales_representative': 'zemauth.can_see_managers_in_accounts_table',
+    'default_account_manager':      ('zemauth.can_see_managers_in_accounts_table',),
+    'default_sales_representative': ('zemauth.can_see_managers_in_accounts_table',),
 
-    'campaign_manager': 'zemauth.can_see_managers_in_campaigns_table',
-    'account_type': 'zemauth.can_see_account_type',
+    'campaign_manager': ('zemauth.can_see_managers_in_campaigns_table',),
+    'account_type':     ('zemauth.can_see_account_type',),
+    'agency':           ('zemauth.can_view_account_agency_information',),
 
-    'performance': 'zemauth.campaign_goal_performance',
-    'styles': 'zemauth.campaign_goal_performance',
+    'performance':      ('zemauth.campaign_goal_performance',),
+    'styles':           ('zemauth.campaign_goal_performance',),
+
+    'archived': None,
+    'maintenance': None,
 }
 
 
@@ -96,7 +100,7 @@ def filter_by_permissions(result, user):
 
         filtered_row = {
             field: value for field, value in filtered_row.iteritems()
-            if field not in FIELD_PERMISSION_MAPPING or user.has_perm(FIELD_PERMISSION_MAPPING[field])
+            if field not in FIELD_PERMISSION_MAPPING or user.has_perms(FIELD_PERMISSION_MAPPING[field])
         }
         return filtered_row
     if isinstance(result, dict):
@@ -117,8 +121,8 @@ def get_fields_to_keep(user):
 
     fields_to_keep.extend(GOAL_FIELDS)
 
-    for field, permission in FIELD_PERMISSION_MAPPING.iteritems():
-        if user.has_perm(permission):
+    for field, permissions in FIELD_PERMISSION_MAPPING.iteritems():
+        if not permissions or user.has_perms(permissions):
             fields_to_keep.append(field)
 
     return fields_to_keep

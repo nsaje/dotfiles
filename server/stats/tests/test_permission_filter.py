@@ -21,12 +21,16 @@ class FilterTestCase(TestCase):
     def setUp(self):
         self.campaign = models.Campaign.objects.get(pk=1)
 
+        # all the fields that can be put into a row
         row = {
             'ad_group_id': 1, 'source_id': 1, 'clicks': 10, 'age': '18-20',
             'breakdown_id': '1||1', 'breakdown_name': 'test adgroup 1', 'parent_breakdown_id': '1',
             'name': 'test adgroup 1', 'e_yesterday_cost': 1, 'yesterday_cost': 1, 'cpm': 1,
             'min_bid_cpc': 1, 'max_bid_cpc': 1, 'daily_budget': 1,
             'campaign_stop_inactive': 1, 'campaign_has_available_budget': 1,
+            'pacing': 1, 'allocated_budgets': 1, 'spend_projection': 1, 'license_fee_projection': 1,
+            'flat_fee': 1, 'total_fee': 1, 'total_fee_projection': 1,
+            'agency': 1, 'default_account_manager': 1, 'default_sales_representative': 1, 'campaign_manager': 1,
         }
 
         # add all possible fields
@@ -74,6 +78,7 @@ class FilterTestCase(TestCase):
                 'avg_cost_per_pixel_1_2160': 1,
                 'min_bid_cpc': 1, 'max_bid_cpc': 1, 'daily_budget': 1,
                 'campaign_stop_inactive': 1, 'campaign_has_available_budget': 1,
+                'archived': 1, 'maintenance': 1,
             },
         ]
 
@@ -148,6 +153,43 @@ class FilterTestCase(TestCase):
             'conversion_goal_3': 1,
         })
 
+        self.assertItemsEqual(self.rows, self.default_cleaned_rows)
+
+    def test_filter_columns_by_permission_projections(self):
+        user = User.objects.get(pk=1)
+        test_helper.add_permissions(
+            user,
+            ('can_see_projections', 'can_view_platform_cost_breakdown', 'can_view_flat_fees'))
+
+        permission_filter.filter_columns_by_permission(user, self.rows, self.goals)
+
+        self.default_cleaned_rows[0].update({
+            'pacing': 1, 'allocated_budgets': 1, 'spend_projection': 1, 'license_fee_projection': 1,
+            'flat_fee': 1, 'total_fee': 1, 'total_fee_projection': 1,
+            'e_data_cost': 1, 'e_media_cost': 1, 'e_yesterday_cost': 1, 'license_fee': 1,
+        })
+        self.assertItemsEqual(self.rows, self.default_cleaned_rows)
+
+    def test_filter_columns_by_permission_agency(self):
+        user = User.objects.get(pk=1)
+        test_helper.add_permissions(user, ['can_view_account_agency_information'])
+
+        permission_filter.filter_columns_by_permission(user, self.rows, self.goals)
+
+        self.default_cleaned_rows[0].update({
+            'agency': 1,
+        })
+        self.assertItemsEqual(self.rows, self.default_cleaned_rows)
+
+    def test_filter_columns_by_permission_managers(self):
+        user = User.objects.get(pk=1)
+        test_helper.add_permissions(user, ['can_see_managers_in_accounts_table', 'can_see_managers_in_campaigns_table'])
+
+        permission_filter.filter_columns_by_permission(user, self.rows, self.goals)
+
+        self.default_cleaned_rows[0].update({
+            'default_account_manager': 1, 'default_sales_representative': 1, 'campaign_manager': 1,
+        })
         self.assertItemsEqual(self.rows, self.default_cleaned_rows)
 
 

@@ -3,10 +3,32 @@ from decimal import Decimal
 
 from django.test import TestCase, override_settings
 
+from utils.dict_helper import dict_join
+from dash.dashapi.tests.test_queries import extract_keys
+
 from dash import models
 from dash.constants import Level
 from dash.dashapi import api_breakdowns
 from dash.dashapi import helpers
+
+
+START_DATE, END_DATE = datetime.date(2016, 7, 1), datetime.date(2016, 8, 31)
+EMPTY_ACCOUNT_PROJECTIONS = {
+    'pacing': None,
+    'allocated_budgets': Decimal('0'),
+    'spend_projection': Decimal('0'),
+    'license_fee_projection': Decimal('0'),
+    'flat_fee': 0,
+    'total_fee': 0,
+    'total_fee_projection': Decimal('0'),
+}
+
+EMPTY_CAMPAIGN_PROJECTIONS = {
+    'pacing': None,
+    'allocated_budgets': None,
+    'spend_projection': None,
+    'license_fee_projection': None,
+}
 
 
 @override_settings(R1_BLANK_REDIRECT_URL='http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/')
@@ -19,6 +41,8 @@ class QueryTest(TestCase):
             Level.ALL_ACCOUNTS,
             ['account_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'allowed_accounts': models.Account.objects.all(),
                 'show_archived': False,
                 'filtered_sources': models.Source.objects.all(),
@@ -28,7 +52,11 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
+            dict_join({'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
+                      {'default_account_manager': 'mad.max@zemanta.com',
+                       'default_sales_representative': 'supertestuser@test.com',
+                       'agency': '', 'account_type': 'Self-managed'},
+                      EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
     def test_query_all_accounts_break_source(self):
@@ -76,6 +104,8 @@ class QueryTest(TestCase):
             Level.ALL_ACCOUNTS,
             ['source_id', 'account_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'allowed_accounts': models.Account.objects.all(),
                 'show_archived': False,
                 'filtered_sources': models.Source.objects.all(),
@@ -85,8 +115,16 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'source_id': 1, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
-            {'source_id': 2, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 2},
+            dict_join({'source_id': 1, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
+                      {'default_account_manager': 'mad.max@zemanta.com',
+                       'default_sales_representative': 'supertestuser@test.com',
+                       'agency': '', 'account_type': 'Self-managed'},
+                      EMPTY_ACCOUNT_PROJECTIONS),
+            dict_join({'source_id': 2, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 2},
+                      {'default_account_manager': 'mad.max@zemanta.com',
+                       'default_sales_representative': 'supertestuser@test.com',
+                       'agency': '', 'account_type': 'Self-managed'},
+                      EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
     def test_query_all_accounts_break_source_campaign(self):
@@ -94,6 +132,8 @@ class QueryTest(TestCase):
             Level.ALL_ACCOUNTS,
             ['source_id', 'campaign_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'allowed_accounts': models.Account.objects.all(),
                 'allowed_campaigns': models.Campaign.objects.filter(pk=1),
                 'show_archived': False,
@@ -104,8 +144,12 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'source_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-            {'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 2},
+            dict_join({'source_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
+                      {'campaign_manager': 'supertestuser@test.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 2},
+                      {'campaign_manager': 'supertestuser@test.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
         ])
 
     def test_query_all_accounts_break_account_campaign(self):
@@ -113,6 +157,8 @@ class QueryTest(TestCase):
             Level.ALL_ACCOUNTS,
             ['account_id', 'campaign_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'allowed_accounts': models.Account.objects.all(),
                 'allowed_campaigns': models.Campaign.objects.filter(pk=1),
                 'show_archived': False,
@@ -123,7 +169,9 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
+            dict_join({'account_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
+                      {'campaign_manager': 'supertestuser@test.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
         ])
 
     def test_query_accounts_break_campaign(self):
@@ -131,6 +179,8 @@ class QueryTest(TestCase):
             Level.ACCOUNTS,
             ['campaign_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'account': models.Account.objects.get(pk=1),
                 'allowed_campaigns': models.Campaign.objects.filter(account_id=1),
                 'show_archived': True,
@@ -141,8 +191,12 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-            {'campaign_id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 2},
+            dict_join({'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
+                      {'campaign_manager': 'supertestuser@test.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'campaign_id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 2},
+                      {'campaign_manager': 'mad.max@zemanta.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
         ])
 
     def test_query_accounts_break_source(self):
@@ -192,6 +246,8 @@ class QueryTest(TestCase):
             Level.ACCOUNTS,
             ['source_id', 'campaign_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'account': models.Account.objects.get(pk=1),
                 'allowed_campaigns': models.Campaign.objects.filter(account_id=1),
                 'show_archived': True,
@@ -202,9 +258,15 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'source_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-            {'source_id': 1, 'campaign_id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 2},
-            {'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 2},
+            dict_join({'source_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
+                      {'campaign_manager': 'supertestuser@test.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'source_id': 1, 'campaign_id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 2},
+                      {'campaign_manager': 'mad.max@zemanta.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 2},
+                      {'campaign_manager': 'supertestuser@test.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
         ])
 
     def test_query_accounts_break_source_ad_group(self):
@@ -434,13 +496,19 @@ class AugmentTest(TestCase):
             Level.ALL_ACCOUNTS,
             ['account_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'allowed_accounts': models.Account.objects.all(),
                 'show_archived': False,
                 'filtered_sources': models.Source.objects.all(),
             })
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'clicks': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
+            dict_join({'account_id': 1, 'clicks': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
+                      {'default_account_manager': 'mad.max@zemanta.com',
+                       'default_sales_representative': 'supertestuser@test.com',
+                       'agency': '', 'account_type': 'Self-managed'},
+                      EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
     def test_augment_all_accounts_break_source(self):
@@ -494,14 +562,26 @@ class AugmentTest(TestCase):
             Level.ALL_ACCOUNTS,
             ['source_id', 'account_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'allowed_accounts': models.Account.objects.all(),
                 'show_archived': False,
                 'filtered_sources': models.Source.objects.all(),
             })
 
         self.assertEqual(rows, [
-            {'source_id': 1, 'account_id': 1, 'clicks': 11, 'archived': False, 'name': 'test account 1', 'status': 1},
-            {'source_id': 2, 'account_id': 1, 'clicks': 12, 'archived': False, 'name': 'test account 1', 'status': 2},
+            dict_join({'source_id': 1, 'account_id': 1, 'clicks': 11, 'archived': False,
+                       'name': 'test account 1', 'status': 1},
+                      {'default_account_manager': 'mad.max@zemanta.com',
+                       'default_sales_representative': 'supertestuser@test.com',
+                       'agency': '', 'account_type': 'Self-managed'},
+                      EMPTY_ACCOUNT_PROJECTIONS),
+            dict_join({'source_id': 2, 'account_id': 1, 'clicks': 12, 'archived': False,
+                       'name': 'test account 1', 'status': 2},
+                      {'default_account_manager': 'mad.max@zemanta.com',
+                       'default_sales_representative': 'supertestuser@test.com',
+                       'agency': '', 'account_type': 'Self-managed'},
+                      EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
     def test_augment_accounts_break_campaign(self):
@@ -513,6 +593,8 @@ class AugmentTest(TestCase):
             Level.ACCOUNTS,
             ['campaign_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'account': models.Account.objects.get(pk=1),
                 'allowed_campaigns': models.Campaign.objects.filter(account_id=1),
                 'allowed_ad_groups': models.AdGroup.objects.filter(campaign__account_id=1),
@@ -522,8 +604,12 @@ class AugmentTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'campaign_id': 1, 'clicks': 11, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-            {'campaign_id': 2, 'clicks': 22, 'archived': True, 'name': 'test campaign 2', 'status': 2},
+            dict_join({'campaign_id': 1, 'clicks': 11, 'archived': False, 'name': 'test campaign 1', 'status': 1},
+                      {'campaign_manager': 'supertestuser@test.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'campaign_id': 2, 'clicks': 22, 'archived': True, 'name': 'test campaign 2', 'status': 2},
+                      {'campaign_manager': 'mad.max@zemanta.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
         ])
 
     def test_augment_accounts_break_source(self):
@@ -596,6 +682,8 @@ class AugmentTest(TestCase):
             Level.ACCOUNTS,
             ['source_id', 'campaign_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'account': models.Account.objects.get(pk=1),
                 'allowed_campaigns': models.Campaign.objects.filter(account_id=1),
                 'show_archived': True,
@@ -604,10 +692,22 @@ class AugmentTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'campaign_id': 1, 'source_id': 1, 'clicks': 11, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-            {'campaign_id': 1, 'source_id': 2, 'clicks': 12, 'archived': False, 'name': 'test campaign 1', 'status': 2},
-            {'campaign_id': 2, 'source_id': 1, 'clicks': 21, 'archived': True, 'name': 'test campaign 2', 'status': 2},
-            {'campaign_id': 2, 'source_id': 2, 'clicks': 22, 'archived': True, 'name': 'test campaign 2', 'status': 2},
+            dict_join({'campaign_id': 1, 'source_id': 1, 'clicks': 11, 'archived': False,
+                       'name': 'test campaign 1', 'status': 1},
+                      {'campaign_manager': 'supertestuser@test.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'campaign_id': 1, 'source_id': 2, 'clicks': 12, 'archived': False,
+                       'name': 'test campaign 1', 'status': 2},
+                      {'campaign_manager': 'supertestuser@test.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'campaign_id': 2, 'source_id': 1, 'clicks': 21, 'archived': True,
+                       'name': 'test campaign 2', 'status': 2},
+                      {'campaign_manager': 'mad.max@zemanta.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'campaign_id': 2, 'source_id': 2, 'clicks': 22, 'archived': True,
+                       'name': 'test campaign 2', 'status': 2},
+                      {'campaign_manager': 'mad.max@zemanta.com'},
+                      EMPTY_CAMPAIGN_PROJECTIONS),
         ])
 
     def test_augment_campaigns_break_ad_group(self):
@@ -798,6 +898,8 @@ class QueryMissingRowsTest(TestCase):
             Level.ALL_ACCOUNTS,
             ['account_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'allowed_accounts': models.Account.objects.all(),
                 'show_archived': False,
                 'filtered_sources': models.Source.objects.all(),
@@ -806,7 +908,11 @@ class QueryMissingRowsTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
+            dict_join({'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
+                      {'default_account_manager': 'mad.max@zemanta.com',
+                       'default_sales_representative': 'supertestuser@test.com',
+                       'agency': '', 'account_type': 'Self-managed'},
+                      EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
     def test_all_accounts_break_account_filled_sometimeago(self):
@@ -895,6 +1001,8 @@ class QueryMissingRowsTest(TestCase):
             Level.ALL_ACCOUNTS,
             ['source_id', 'account_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'allowed_accounts': models.Account.objects.all(),
                 'show_archived': False,
                 'filtered_sources': models.Source.objects.all(),
@@ -908,8 +1016,12 @@ class QueryMissingRowsTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'source_id': 1, 'clicks': 11},
-            {'source_id': 2, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 2},
+            dict_join({'account_id': 1, 'source_id': 1, 'clicks': 11}),
+            dict_join({'source_id': 2, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 2},
+                      {'default_account_manager': 'mad.max@zemanta.com',
+                       'default_sales_representative': 'supertestuser@test.com',
+                       'agency': '', 'account_type': 'Self-managed'},
+                      EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
     def test_all_accounts_break_source_account_filled_sometimeago(self):
@@ -918,6 +1030,8 @@ class QueryMissingRowsTest(TestCase):
             Level.ALL_ACCOUNTS,
             ['source_id', 'account_id'],
             {
+                'date__gte': datetime.date(2016, 7, 1),
+                'date__lte': datetime.date(2016, 7, 31),
                 'allowed_accounts': models.Account.objects.all(),
                 'show_archived': False,
                 'filtered_sources': models.Source.objects.all(),
@@ -931,7 +1045,11 @@ class QueryMissingRowsTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'source_id': 2, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 2},
+            dict_join({'source_id': 2, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 2},
+                      {'default_account_manager': 'mad.max@zemanta.com',
+                       'default_sales_representative': 'supertestuser@test.com',
+                       'agency': '', 'account_type': 'Self-managed'},
+                      EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
     def test_campaigns_break_ad_group(self):

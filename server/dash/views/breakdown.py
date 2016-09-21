@@ -23,14 +23,24 @@ DEFAULT_LIMIT = 10
 REQUEST_LIMIT_OVERFLOW = 1  # [workaround] Request additional rows to check if more data is available
 
 
-def extract_constraints(form_data, level, user, breakdown,  account=None, campaign=None, ad_group=None):
-    constraints = stats.api_breakdowns.prepare_constraints(
-        level, user, breakdown, form_data['start_date'], form_data['end_date'], form_data['filtered_sources'],
-        form_data.get('show_archived'), form_data.get('filtered_agencies'), form_data.get('filtered_account_types'),
-        account, campaign, ad_group
-    )
+def get_constraints_kwargs(form_data, **overrides):
+    kwargs = {
+        'start_date': form_data['start_date'],
+        'end_date': form_data['end_date'],
+        'filtered_sources': form_data['filtered_sources'],
+        'show_archived': form_data.get('show_archived'),
+    }
 
-    return constraints
+    if form_data.get('filtered_agencies'):
+        kwargs['filtered_agencies'] = form_data.get('filtered_agencies')
+
+    if form_data.get('filtered_account_types'):
+        kwargs['filtered_account_types'] = form_data.get('filtered_account_types')
+
+    for k, v in overrides.items():
+        kwargs[k] = v
+
+    return kwargs
 
 
 def format_breakdown_response(report_rows, offset, limit, parents, totals=None, goals=None):
@@ -171,40 +181,6 @@ def get_report_through_table(get_fn, user, form_data, all_accounts_level=False, 
     return [base]
 
 
-def get_report_all_accounts_accounts(user, view_filter, start_date, end_date,
-                                     order, page, size, show_archived,
-                                     **kwargs):
-    response = table.AccountsAccountsTable().get(
-        user,
-        view_filter,
-        start_date,
-        end_date,
-        order,
-        page,
-        size,
-        show_archived
-    )
-    return grid.convert_resource_response(constants.Level.ALL_ACCOUNTS, 'account_id', response)
-
-
-def get_report_account_campaigns(user, filtered_sources, start_date, end_date,
-                                 order, page, size, show_archived,
-                                 **kwargs):
-    response = table.AccountCampaignsTable().get(
-        user,
-        filtered_sources=filtered_sources,
-        start_date=start_date,
-        end_date=end_date,
-        order=order,
-        show_archived=show_archived,
-        **kwargs
-    )
-    response['pagination'] = {
-        'count': len(response['rows'])
-    }
-    return grid.convert_resource_response(constants.Level.ACCOUNTS, 'campaign_id', response)
-
-
 def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date,
                                     order, page, size, show_archived,
                                     **kwargs):
@@ -228,38 +204,6 @@ def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date
         ad_group_id=kwargs['ad_group_id']
     )
     return grid.convert_resource_response(constants.Level.AD_GROUPS, 'content_ad_id', response)
-
-
-def get_report_all_accounts_sources(user, view_filter, start_date, end_date,
-                                    order, page, size, show_archived,
-                                    **kwargs):
-    response = table.SourcesTable().get(
-        user,
-        'all_accounts',
-        view_filter,
-        start_date,
-        end_date,
-        order
-    )
-    return grid.convert_resource_response(constants.Level.ALL_ACCOUNTS, 'source_id', response)
-
-
-def get_report_account_sources(user, filtered_sources, start_date, end_date,
-                               order, page, size, show_archived,
-                               **kwargs):
-    view_filter = helpers.ViewFilter()
-    view_filter.filtered_sources = filtered_sources
-
-    response = table.SourcesTable().get(
-        user,
-        'accounts',
-        view_filter,
-        start_date,
-        end_date,
-        order,
-        id_=kwargs['account_id']
-    )
-    return grid.convert_resource_response(constants.Level.ACCOUNTS, 'source_id', response)
 
 
 def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
@@ -300,12 +244,6 @@ def get_report_ad_group_publishers(user, filtered_sources, start_date, end_date,
 
 class AllAccountsBreakdown(api_common.BaseApiView):
 
-    def _get_workaround_fn(self, base_dimension):
-        return {
-            stats.constants.StructureDimension.ACCOUNT: get_report_all_accounts_accounts,
-            stats.constants.StructureDimension.SOURCE: get_report_all_accounts_sources,
-        }[base_dimension]
-
     def post(self, request, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.MissingDataError()
@@ -320,20 +258,14 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         breakdown = form.cleaned_data.get('breakdown')
         parents = form.cleaned_data.get('parents', None)
         level = constants.Level.ALL_ACCOUNTS
+        base_dim = stats.constants.get_base_dimension(breakdown)
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
-        # FIXME redirect to table.py if base level request for a breakdown
-        if len(breakdown) == 1:
-            report = get_report_through_table(
-                self._get_workaround_fn(stats.constants.get_base_dimension(breakdown)),
-                request.user,
-                form.cleaned_data,
-                all_accounts_level=True
-            )
-            return self.create_api_response(report)
+        constraints = stats.api_breakdowns.prepare_all_accounts_constraints(
+            request.user, breakdown, only_used_sources=base_dim == 'source_id',
+            **get_constraints_kwargs(form.cleaned_data))
 
-        constraints = extract_constraints(form.cleaned_data, level, request.user, breakdown)
         goals = stats.api_breakdowns.get_goals(constraints)
 
         rows = stats.api_breakdowns.query(
@@ -350,20 +282,23 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
         breakdown_helpers.format_report_rows_state_fields(rows)
         breakdown_helpers.format_report_rows_performance_fields(rows, goals)
+
         breakdown_helpers.clean_non_relevant_fields(rows)
 
-        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
+        totals = None
+        if len(breakdown) == 1:
+            constraints = stats.api_breakdowns.prepare_all_accounts_constraints(
+                request.user, breakdown, only_used_sources=False,
+                **get_constraints_kwargs(form.cleaned_data, show_archived=True))
+            totals = stats.api_breakdowns.totals(request.user, level, breakdown, constraints, goals)
+
+        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
+
         return self.create_api_response(report)
 
 
 class AccountBreakdown(api_common.BaseApiView):
-
-    def _get_workaround_fn(self, base_dimension):
-        return {
-            stats.constants.StructureDimension.CAMPAIGN: get_report_account_campaigns,
-            stats.constants.StructureDimension.SOURCE: get_report_account_sources,
-        }[base_dimension]
 
     def post(self, request, account_id, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
@@ -381,20 +316,14 @@ class AccountBreakdown(api_common.BaseApiView):
         breakdown = form.cleaned_data.get('breakdown')
         parents = form.cleaned_data.get('parents', None)
         level = constants.Level.ACCOUNTS
+        base_dim = stats.constants.get_base_dimension(breakdown)
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
-        # FIXME redirect to table.py if base level request for a breakdown
-        if len(breakdown) == 1:
-            report = get_report_through_table(
-                self._get_workaround_fn(stats.constants.get_base_dimension(breakdown)),
-                request.user,
-                form.cleaned_data,
-                account_id=account.id
-            )
-            return self.create_api_response(report)
+        constraints = stats.api_breakdowns.prepare_account_constraints(
+            request.user, account, breakdown, only_used_sources=base_dim == 'source_id',
+            **get_constraints_kwargs(form.cleaned_data))
 
-        constraints = extract_constraints(form.cleaned_data, level, request.user, breakdown, account=account)
         goals = stats.api_breakdowns.get_goals(constraints)
 
         rows = stats.api_breakdowns.query(
@@ -413,8 +342,17 @@ class AccountBreakdown(api_common.BaseApiView):
         breakdown_helpers.format_report_rows_performance_fields(rows, goals)
         breakdown_helpers.clean_non_relevant_fields(rows)
 
-        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
+        totals = None
+        if len(breakdown) == 1:
+            constraints = stats.api_breakdowns.prepare_account_constraints(
+                request.user, account, breakdown,
+                only_used_sources=False,
+                **get_constraints_kwargs(form.cleaned_data, show_archived=True))
+            totals = stats.api_breakdowns.totals(request.user, level, breakdown, constraints, goals)
+
+        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
+
         return self.create_api_response(report)
 
 
@@ -436,9 +374,13 @@ class CampaignBreakdown(api_common.BaseApiView):
         breakdown = form.cleaned_data.get('breakdown')
         parents = form.cleaned_data.get('parents', None)
         level = constants.Level.CAMPAIGNS
+        base_dim = stats.constants.get_base_dimension(breakdown)
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
-        constraints = extract_constraints(form.cleaned_data, level, request.user, breakdown, campaign=campaign)
+
+        constraints = stats.api_breakdowns.prepare_campaign_constraints(
+            request.user, campaign, breakdown, only_used_sources=base_dim == 'source_id',
+            **get_constraints_kwargs(form.cleaned_data))
         goals = stats.api_breakdowns.get_goals(constraints)
 
         rows = stats.api_breakdowns.query(
@@ -463,7 +405,11 @@ class CampaignBreakdown(api_common.BaseApiView):
 
         totals = None
         if len(breakdown) == 1:
-            totals = stats.api_breakdowns.totals(request.user, level, breakdown, constraints, goals)
+            constraints = stats.api_breakdowns.prepare_campaign_constraints(
+                request.user, campaign, breakdown, only_used_sources=False,
+                **get_constraints_kwargs(form.cleaned_data, show_archived=True))
+            totals = stats.api_breakdowns.totals(
+                request.user, level, breakdown, constraints, goals)
 
         report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
@@ -499,6 +445,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
         breakdown = form.cleaned_data.get('breakdown')
         parents = form.cleaned_data.get('parents', None)
         level = constants.Level.AD_GROUPS
+        base_dim = stats.constants.get_base_dimension(breakdown)
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
@@ -516,7 +463,10 @@ class AdGroupBreakdown(api_common.BaseApiView):
         if stats.constants.get_base_dimension(breakdown) == 'publisher':
             breakdown = ['publisher', 'source_id'] + breakdown[1:]
 
-        constraints = extract_constraints(form.cleaned_data, level, request.user, breakdown, ad_group=ad_group)
+        constraints = stats.api_breakdowns.prepare_ad_group_constraints(
+            request.user, ad_group, breakdown,
+            only_used_sources=base_dim == 'source_id',
+            **get_constraints_kwargs(form.cleaned_data))
         goals = stats.api_breakdowns.get_goals(constraints)
 
         rows = stats.api_breakdowns.query(

@@ -45,6 +45,29 @@ class HelpersTest(TestCase):
 
         self.assertEqual(constraints, initial_constraints, 'Input Constraints should not be modified')
 
+    def test_extract_stats_constraints_wo_allowed_campaigns(self):
+        # breakdown does not include campaigns so there is no limit on campaigns put into constraints
+        constraints = {
+            'date__gte': datetime.date(2016, 1, 1),
+            'date__lte': datetime.date(2016, 2, 3),
+            'filtered_sources': models.Source.objects.filter(pk__in=[1, 3, 4]),
+            'show_archived': True,
+            'allowed_accounts': models.Account.objects.filter(pk=1),
+            'allowed_campaigns': models.Campaign.objects.filter(pk=1),
+        }
+
+        stats_constraints = helpers.extract_stats_constraints(constraints, ['account_id'])
+
+        self.assertDictEqual(
+            stats_constraints,
+            {
+                'date__gte': datetime.date(2016, 1, 1),
+                'date__lte': datetime.date(2016, 2, 3),
+                'source_id': test_helper.ListMatcher([1, 3, 4]),
+                'account_id': [1],
+            },
+        )
+
     def test_extract_stats_constraints_allowed_objects(self):
         constraints = {
             'date__gte': datetime.date(2016, 1, 1),
@@ -182,9 +205,9 @@ class HelpersTest(TestCase):
         primary_goal = models.CampaignGoal(campaign_id=1)
         primary_goal.save()
 
-        self.assertEqual(helpers.extract_order_field('-performance', 'ad_group_id', primary_goal),
+        self.assertEqual(helpers.extract_order_field('-performance', 'ad_group_id', [primary_goal]),
                          '-performance_campaign_goal_' + str(primary_goal.id))
-        self.assertEqual(helpers.extract_order_field('performance', 'ad_group_id', primary_goal),
+        self.assertEqual(helpers.extract_order_field('performance', 'ad_group_id', [primary_goal]),
                          'performance_campaign_goal_' + str(primary_goal.id))
 
     def test_extract_rs_order_field(self):
@@ -228,131 +251,6 @@ class HelpersTest(TestCase):
             self.assertFalse(helpers.should_query_dashapi_first('clicks', dimension))
 
 
-class PrepareConstraints(TestCase):
-    fixtures = ['test_api_breakdowns.yaml']
-
-    def test_prepare_constraints(self):
-        sources = models.Source.objects.all()
-        user = User.objects.get(pk=1)
-        start_date = datetime.date(2016, 1, 1)
-        end_date = datetime.date(2016, 2, 1)
-
-        self.assertDictEqual(
-            helpers.prepare_constraints(Level.ALL_ACCOUNTS, user, ['account_id'], start_date, end_date, sources),
-            {
-                'date__gte': start_date,
-                'date__lte': end_date,
-                'show_archived': False,
-                'filtered_sources': test_helper.QuerySetMatcher(sources),
-                'allowed_accounts': test_helper.QuerySetMatcher(models.Account.objects.all()),
-            }
-        )
-
-        self.assertDictEqual(
-            helpers.prepare_constraints(
-                Level.ALL_ACCOUNTS, user, ['account_id', 'campaign_id'], start_date, end_date, sources
-            ),
-            {
-                'date__gte': start_date,
-                'date__lte': end_date,
-                'show_archived': False,
-                'filtered_sources': test_helper.QuerySetMatcher(sources),
-                'allowed_accounts': test_helper.QuerySetMatcher(models.Account.objects.all()),
-                'allowed_campaigns': test_helper.QuerySetMatcher(models.Campaign.objects.filter(pk__in=[1])),
-            }
-        )
-
-        self.assertDictEqual(
-            helpers.prepare_constraints(Level.ALL_ACCOUNTS, user, ['source_id'], start_date, end_date, sources),
-            {
-                'date__gte': start_date,
-                'date__lte': end_date,
-                'show_archived': False,
-                'filtered_sources': test_helper.QuerySetMatcher(sources),
-                'allowed_accounts': test_helper.QuerySetMatcher(models.Account.objects.all()),
-            }
-        )
-
-        self.assertDictEqual(
-            helpers.prepare_constraints(Level.ACCOUNTS, user, ['source_id', 'campaign_id'],
-                                        start_date, end_date, sources),
-            {
-                'date__gte': start_date,
-                'date__lte': end_date,
-                'show_archived': False,
-                'filtered_sources': test_helper.QuerySetMatcher(sources),
-                'allowed_accounts': test_helper.QuerySetMatcher(models.Account.objects.all()),
-                'allowed_campaigns': test_helper.QuerySetMatcher(models.Campaign.objects.filter(pk__in=[1])),
-            }
-        )
-
-        account = models.Account.objects.get(pk=1)
-
-        self.assertDictEqual(
-            helpers.prepare_constraints(Level.ACCOUNTS, user, ['source_id', 'campaign_id'],
-                                        start_date, end_date, sources, account=account),
-            {
-                'date__gte': start_date,
-                'date__lte': end_date,
-                'show_archived': False,
-                'filtered_sources': test_helper.QuerySetMatcher(sources),
-                'account': account,
-                'allowed_campaigns': test_helper.QuerySetMatcher(models.Campaign.objects.filter(pk__in=[1])),
-                'allowed_ad_groups': test_helper.QuerySetMatcher(models.AdGroup.objects.filter(campaign_id=1)),
-            }
-        )
-
-        campaign = models.Campaign.objects.get(pk=1)
-
-        self.assertDictEqual(
-            helpers.prepare_constraints(Level.ACCOUNTS, user, ['campaign_id', 'ad_group_id'],
-                                        start_date, end_date, sources, campaign=campaign),
-            {
-                'date__gte': start_date,
-                'date__lte': end_date,
-                'show_archived': False,
-                'filtered_sources': test_helper.QuerySetMatcher(sources),
-                'account': models.Account.objects.get(pk=1),
-                'campaign': models.Campaign.objects.get(pk=1),
-                'allowed_ad_groups': test_helper.QuerySetMatcher(models.AdGroup.objects.filter(campaign_id=1)),
-                'allowed_content_ads': test_helper.QuerySetMatcher(
-                    models.ContentAd.objects.filter(ad_group__campaign_id=1).exclude_archived()),
-            }
-        )
-
-        self.assertDictEqual(
-            helpers.prepare_constraints(Level.ACCOUNTS, user, ['campaign_id', 'content_ad_id'],
-                                        start_date, end_date, sources, campaign=campaign),
-            {
-                'date__gte': start_date,
-                'date__lte': end_date,
-                'show_archived': False,
-                'filtered_sources': test_helper.QuerySetMatcher(sources),
-                'account': models.Account.objects.get(pk=1),
-                'campaign': models.Campaign.objects.get(pk=1),
-                'allowed_ad_groups': test_helper.QuerySetMatcher(models.AdGroup.objects.filter(campaign_id=1)),
-                'allowed_content_ads': test_helper.QuerySetMatcher(
-                    models.ContentAd.objects.filter(ad_group__campaign_id=1).exclude_archived()),
-            }
-        )
-
-        self.assertDictEqual(
-            helpers.prepare_constraints(Level.CAMPAIGNS, user, ['ad_group_id', 'content_ad_id'],
-                                        start_date, end_date, sources, ad_group=models.AdGroup.objects.get(pk=1)),
-            {
-                'date__gte': start_date,
-                'date__lte': end_date,
-                'show_archived': False,
-                'filtered_sources': test_helper.QuerySetMatcher(sources),
-                'account': models.Account.objects.get(pk=1),
-                'campaign': models.Campaign.objects.get(pk=1),
-                'ad_group': models.AdGroup.objects.get(pk=1),
-                'allowed_content_ads': test_helper.QuerySetMatcher(
-                    models.ContentAd.objects.filter(ad_group_id=1).exclude_archived()),
-            }
-        )
-
-
 class CampaignGoalTest(TestCase):
     fixtures = ['test_augmenter.yaml']
 
@@ -381,8 +279,8 @@ class CampaignGoalTest(TestCase):
                          test_helper.QuerySetMatcher(models.CampaignGoalValue.objects.filter(pk__in=[1, 2])))
         self.assertEqual(goals.pixels,
                          test_helper.QuerySetMatcher(models.ConversionPixel.objects.filter(pk=1)))
-        self.assertEqual(goals.primary_goal,
-                         models.CampaignGoal.objects.get(pk=2))
+        self.assertEqual(goals.primary_goals,
+                         [models.CampaignGoal.objects.get(pk=2)])
 
     def test_get_goals_no_constraints(self):
         sources = models.Source.objects.all()
@@ -400,7 +298,7 @@ class CampaignGoalTest(TestCase):
         self.assertEqual(goals.conversion_goals, [])
         self.assertEqual(goals.campaign_goal_values, [])
         self.assertEqual(goals.pixels, [])
-        self.assertEqual(goals.primary_goal, None)
+        self.assertEqual(goals.primary_goals, [])
 
 
 class CheckConstraintsSupportedTest(TestCase):

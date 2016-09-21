@@ -67,6 +67,12 @@ class ApiBreakdownQueryTest(TestCase):
             'clicks': 1,
             'parent_breakdown_id': '',
             'status': 1,
+            'pacing': None,
+            'allocated_budgets': None,
+            'spend_projection': None,
+            'license_fee_projection': None,
+            'campaign_manager': 'supertestuser@test.com',
+            'archived': False,
         }])
 
     @mock.patch('redshiftapi.api_breakdowns.execute_query')
@@ -93,7 +99,8 @@ class ApiBreakdownQueryTest(TestCase):
         offset = 0
         limit = 10
 
-        result = api_breakdowns.query(Level.ACCOUNTS, user, breakdown, constraints, goals, parents, order, offset, limit)
+        result = api_breakdowns.query(Level.ACCOUNTS, user, breakdown, constraints, goals, parents,
+                                      order, offset, limit)
 
         self.assertEqual(result, [{
             'campaign_id': 2,
@@ -103,6 +110,12 @@ class ApiBreakdownQueryTest(TestCase):
             'clicks': 2,
             'parent_breakdown_id': '',
             'status': 2,
+            'pacing': None,
+            'allocated_budgets': None,
+            'spend_projection': None,
+            'license_fee_projection': None,
+            'campaign_manager': 'mad.max@zemanta.com',
+            'archived': True,
         }, {
             'campaign_id': 1,
             'name': 'test campaign 1',
@@ -111,4 +124,10 @@ class ApiBreakdownQueryTest(TestCase):
             'clicks': 1,
             'parent_breakdown_id': '',
             'status': 1,
+            'pacing': None,
+            'allocated_budgets': None,
+            'spend_projection': None,
+            'license_fee_projection': None,
+            'campaign_manager': 'supertestuser@test.com',
+            'archived': False,
         }])

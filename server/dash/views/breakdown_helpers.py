@@ -1,9 +1,11 @@
+import collections
+
+import dash.campaign_goals
+from dash import constants
+
 """
 Helper functions that transform breakdown responses into what frontend expects.
 """
-
-from dash import campaign_goals
-from dash import constants
 
 
 def format_report_rows_state_fields(rows):
@@ -15,39 +17,61 @@ def format_report_rows_state_fields(rows):
 
 
 def format_report_rows_performance_fields(rows, goals):
-    primary_goal_key = 'performance_' + goals.primary_goal.get_view_key() if goals.primary_goal else None
     map_values = {x.campaign_goal_id: x for x in (goals.campaign_goal_values or [])}
 
+    campaign_goals_by_campaign_id = collections.defaultdict(list)
+    for campaign_goal in goals.campaign_goals:
+        campaign_goals_by_campaign_id[campaign_goal.campaign_id].append(campaign_goal)
+
+    conversion_goals_by_campaign_id = collections.defaultdict(list)
+    for conversion_goal in goals.conversion_goals:
+        conversion_goals_by_campaign_id[conversion_goal.campaign_id].append(conversion_goal)
+
+    rows_by_campaign_id = collections.defaultdict(list)
     for row in rows:
+        if row.get('campaign_id'):
+            rows_by_campaign_id[row['campaign_id']].append(row)
 
-        # user rights for performance were already checked in the stats module
-        # here just add additional formatting if keys are present
-        if any(x for x in row.keys() if x.startswith('performance_')):
-            row.update({
-                'performance': {
-                    'overall': None,
-                    'list': [],
-                },
-                'styles': {},
-            })
+    if len(campaign_goals_by_campaign_id.keys()) > 1 and len(rows_by_campaign_id.keys()) <= 1:
+        # in case we have data for multiple campaigns but we couldn't separate rows by campaigns
+        # then don't add performance info
+        return
 
-            if primary_goal_key and primary_goal_key in row:
-                row['performance']['overall'] = _get_campaign_goal_emoticon(row[primary_goal_key])
+    for campaign_id, campaign_goals in campaign_goals_by_campaign_id.items():
+        primary_goal = next((x for x in goals.primary_goals if x.campaign_id == campaign_id), None)
+        primary_goal_key = 'performance_' + primary_goal.get_view_key() if primary_goal else None
+        conversion_goals = conversion_goals_by_campaign_id[campaign_id]
 
-            goals_performances = []
-            for goal in goals.campaign_goals:
-                performance = row.get('performance_' + goal.get_view_key())
-                metric = campaign_goals.get_goal_performance_metric(goal, goals.conversion_goals)
-                metric_value = row.get(metric)
+        for row in rows_by_campaign_id[campaign_id] if rows_by_campaign_id else rows:
 
-                goals_performances.append((
-                    campaign_goals.get_goal_performance_category(performance),
-                    metric_value,
-                    map_values.get(goal.id) and map_values[goal.id].value,
-                    goal
-                ))
+            # user rights for performance were already checked in the stats module
+            # here just add additional formatting if keys are present
+            if any(x for x in row.keys() if x.startswith('performance_')):
+                row.update({
+                    'performance': {
+                        'overall': None,
+                        'list': [],
+                    },
+                    'styles': {},
+                })
 
-            set_row_goal_performance_meta(row, goals_performances, goals.conversion_goals)
+                if primary_goal_key and primary_goal_key in row:
+                    row['performance']['overall'] = _get_campaign_goal_emoticon(row[primary_goal_key])
+
+                goals_performances = []
+                for goal in campaign_goals:
+                    performance = row.get('performance_' + goal.get_view_key())
+                    metric = dash.campaign_goals.get_goal_performance_metric(goal, conversion_goals_by_campaign_id[campaign_id])
+                    metric_value = row.get(metric)
+
+                    goals_performances.append((
+                        dash.campaign_goals.get_goal_performance_category(performance),
+                        metric_value,
+                        map_values.get(goal.id) and map_values[goal.id].value,
+                        goal
+                    ))
+
+                set_row_goal_performance_meta(row, goals_performances, goals.conversion_goals)
 
 
 def format_report_rows_ad_group_editable_fields(rows):
@@ -60,8 +84,8 @@ def format_report_rows_ad_group_editable_fields(rows):
 def set_row_goal_performance_meta(row, goals_performances, conversion_goals):
     for goal_status, goal_metric, goal_value, goal in goals_performances:
         performance_item = {
-            'emoticon': campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
-            'text': campaign_goals.format_campaign_goal(
+            'emoticon': dash.campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
+            'text': dash.campaign_goals.format_campaign_goal(
                 goal.type,
                 goal_metric,
                 goal.conversion_goal
@@ -70,12 +94,12 @@ def set_row_goal_performance_meta(row, goals_performances, conversion_goals):
 
         if goal_value:
             performance_item['text'] += ' (planned {})'.format(
-                campaign_goals.format_value(goal.type, goal_value)
+                dash.campaign_goals.format_value(goal.type, goal_value)
             )
 
         row['performance']['list'].append(performance_item)
 
-        colored_column = campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.get(goal.type)
+        colored_column = dash.campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP.get(goal.type)
         if goal.type == constants.CampaignGoalKPI.CPA:
             colored_column = 'avg_cost_per_' + goal.conversion_goal.get_view_key(conversion_goals)
         if not colored_column:
@@ -104,8 +128,8 @@ def get_ad_group_editable_fields(row, can_enable_ad_group, has_available_budget)
 
 
 def _get_campaign_goal_emoticon(performance):
-    return campaign_goals.STATUS_TO_EMOTICON_MAP[
-        campaign_goals.get_goal_performance_category(performance)
+    return dash.campaign_goals.STATUS_TO_EMOTICON_MAP[
+        dash.campaign_goals.get_goal_performance_category(performance)
     ]
 
 

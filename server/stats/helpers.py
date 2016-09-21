@@ -22,92 +22,7 @@ SOURCE_FIELDS = [
 ]
 
 
-Goals = collections.namedtuple('Goals', 'campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goal')
-
-
-def prepare_constraints(level, user, breakdown, start_date, end_date, filtered_sources, show_archived=False,
-                        filtered_agencies=None, filtered_account_types=None,
-                        account=None, campaign=None, ad_group=None):
-    """
-    Sets constraints so that only objects for which user has proper permissions get queried.
-    In case constraints are set to query objects that are not allowed an error gets raised.
-
-    This function also sets parent objects.
-
-    NOTE: we expect an abject for whom we demand a breakdown is already checked and allowed - eg. account, campaign,
-    ad group.
-
-    NOTE: show_archived filter is primarily applied here, we used it elsewhere only for minor adjustments.
-    """
-
-    constraints = {
-        'date__gte': start_date,
-        'date__lte': end_date,
-        'show_archived': show_archived,
-    }
-
-    if filtered_agencies:
-        constraints['filtered_agencies'] = filtered_agencies
-
-    if filtered_account_types:
-        constraints['filtered_account_types'] = filtered_account_types
-
-    # only one can be set
-    if len([x for x in (account, campaign, ad_group) if x is not None]) > 1:
-        raise Exception("Only account, campaign, or ad_group can be set")
-
-    allowed_campaigns = dash.models.Campaign.objects.all()\
-                                                    .filter_by_user(user)\
-                                                    .filter_by_sources(filtered_sources)\
-                                                    .filter_by_agencies(filtered_agencies)\
-                                                    .filter_by_account_types(filtered_account_types)\
-                                                    .exclude_archived(show_archived)
-
-    target_dimension = constants.get_target_dimension(breakdown)
-    if account:
-        constraints['account'] = account
-        allowed_campaigns = allowed_campaigns.filter(account_id=account.id)
-        constraints['allowed_campaigns'] = allowed_campaigns
-        constraints['allowed_ad_groups'] = dash.models.AdGroup.objects.filter(campaign__in=allowed_campaigns)\
-                                                                      .exclude_archived(show_archived)
-        # add also inactive ad group sources as we need to query all. We remove them later
-        ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__campaign__account_id=account.id)
-
-    elif campaign:
-        constraints['campaign'] = campaign
-        constraints['account'] = campaign.account
-        allowed_ad_groups = campaign.adgroup_set.all().exclude_archived(show_archived)
-        constraints['allowed_ad_groups'] = allowed_ad_groups
-        constraints['allowed_content_ads'] = dash.models.ContentAd.objects.filter(ad_group__in=allowed_ad_groups)\
-                                                                          .exclude_archived(show_archived)
-        ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__campaign_id=campaign.id)
-
-    elif ad_group:
-        constraints['ad_group'] = ad_group
-        constraints['campaign'] = ad_group.campaign
-        constraints['account'] = ad_group.campaign.account
-        constraints['allowed_content_ads'] = dash.models.ContentAd.objects.filter(ad_group=ad_group)\
-                                                                          .exclude_archived(show_archived)
-        ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group_id=ad_group.id)
-
-    # base safety
-    if not constraints.get('account'):
-        allowed_accounts = dash.models.Account.objects.all()\
-                                                      .filter_by_user(user)\
-                                                      .filter_by_sources(filtered_sources)\
-                                                      .filter_by_agencies(filtered_agencies)\
-                                                      .filter_by_account_types(filtered_account_types)\
-                                                      .exclude_archived(show_archived)
-        constraints['allowed_accounts'] = allowed_accounts
-        ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__campaign__account__in=allowed_accounts)
-
-    if not constraints.get('campaign'):
-        if level != Level.ALL_ACCOUNTS or 'campaign_id' in breakdown:
-            constraints['allowed_campaigns'] = allowed_campaigns
-
-    constraints['filtered_sources'] = filtered_sources.filter(
-        pk__in=ad_group_sources.distinct('source_id').values_list('source_id', flat=True))
-    return constraints
+Goals = collections.namedtuple('Goals', 'campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals')
 
 
 def get_goals(constraints):
@@ -115,19 +30,38 @@ def get_goals(constraints):
     account = constraints.get('account')
 
     campaign_goals, conversion_goals, campaign_goal_values, pixels = [], [], [], []
-    primary_goal = None
+    primary_goals = []
 
     if campaign:
         conversion_goals = campaign.conversiongoal_set.all().select_related('pixel')
         campaign_goals = campaign.campaigngoal_set.all().order_by('-primary', 'created_dt').select_related(
             'conversion_goal', 'conversion_goal__pixel')
-        primary_goal = campaign_goals.first()
+        primary_goals = [campaign_goals.first()]
         campaign_goal_values = dash.campaign_goals.get_campaign_goal_values(campaign)
+
+    elif 'allowed_campaigns' in constraints and 'account' in constraints:
+        # only take for campaigns when constraints for 1 account, otherwise its too much
+        allowed_campaigns = constraints['allowed_campaigns']
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign__in=allowed_campaigns)\
+                                                             .select_related('pixel')
+
+        campaign_goals = dash.models.CampaignGoal.objects.filter(campaign__in=allowed_campaigns)\
+                                                         .order_by('-primary', 'created_dt')\
+                                                         .select_related('conversion_goal', 'conversion_goal__pixel')
+
+        primary_goals_by_campaign = {}
+        for cg in campaign_goals:
+            if cg.campaign_id not in primary_goals_by_campaign:
+                primary_goals_by_campaign[cg.campaign_id] = cg
+        primary_goals = primary_goals_by_campaign.values()
+
+        for campaign in allowed_campaigns:
+            campaign_goal_values.extend(dash.campaign_goals.get_campaign_goal_values(campaign))
 
     if account:
         pixels = account.conversionpixel_set.filter(archived=False)
 
-    return Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goal)
+    return Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals)
 
 
 def extract_stats_constraints(constraints, breakdown):
@@ -294,7 +228,7 @@ def get_supported_order(order, target_dimension):
     return order
 
 
-def extract_order_field(order, target_dimension, primary_goal=None):
+def extract_order_field(order, target_dimension, primary_goals=None):
     """
     Returns the order field that should be used to get visually pleasing results. Time is always
     shown ordered by time, so we don't get mixed dates etc.
@@ -316,8 +250,10 @@ def extract_order_field(order, target_dimension, primary_goal=None):
         order_field = 'clicks'
 
     if order_field == 'performance':
-        if primary_goal:
-            order_field = 'performance_' + primary_goal.get_view_key()
+        if primary_goals:
+            # TODO supports only by 1 primary goal ordering
+            # should have 'performance' column selected and than use 'performance_' column
+            order_field = 'performance_' + primary_goals[0].get_view_key()
         else:
             order_field = 'clicks'
 

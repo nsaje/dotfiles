@@ -101,6 +101,8 @@
         name: 'Test settings 1'
         account: 1
         account_type: 5
+        default_account_manager: 2
+        default_sales_representative: 3
     model: dash.accountsettings
     pk: 1
 
@@ -134,7 +136,7 @@
         created_dt: '2014-06-04T00:00:00'
         created_by: 1
         name: 'test campaign 1'
-        campaign_manager: NULL
+        campaign_manager: 3
         iab_category: 'IAB24'
         campaign_goal: 4
         goal_quantity: 10
@@ -148,7 +150,7 @@
         created_dt: '2014-06-04T00:00:00'
         created_by: 1
         name: 'test campaign 4'
-        campaign_manager: NULL
+        campaign_manager: 2
         iab_category: 'IAB24'
         campaign: 2
         archived: True

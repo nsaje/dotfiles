@@ -38,20 +38,22 @@ def augment(breakdown, rows):
 
 
 def cleanup(rows, target_dimension, constraints):
+    to_remove = []
+
     # remove rows of deprecated sources without stats
     if target_dimension == 'source_id':
         deprecated_source_ids = list(
             constraints['filtered_sources'].filter(deprecated=True).values_list('pk', flat=True))
         if deprecated_source_ids:
-            to_remove = []
             for row in rows:
                 if row['source_id'] in deprecated_source_ids and\
                    not row_has_traffic_data(row) and\
                    not row_has_postclick_data(row) and\
                    not row_has_conversion_goal_data(row):
                     to_remove.append(row)
-            for row in to_remove:
-                rows.remove(row)
+
+    for row in to_remove:
+        rows.remove(row)
 
 
 def augment_row_delivery(row, target_dimension):
