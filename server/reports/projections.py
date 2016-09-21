@@ -69,8 +69,8 @@ class BudgetProjections(object):
         row = self.projections.get(breakdown_value, {})
         return row.get(field) if field else row
 
-    def total(self, breakdown_value):
-        return self.totals[breakdown_value]
+    def total(self, field=None):
+        return self.totals[field] if field else self.totals
 
     @newrelic.agent.function_trace()
     def _prepare_budgets(self, constraints):
@@ -122,13 +122,42 @@ class BudgetProjections(object):
             self.totals['pacing'] = self.totals['attributed_media_spend'] / \
                 self.totals['ideal_media_spend'] * Decimal(100)
 
+    def _get_credit_line_items_by_account(self):
+        if self.breakdown != 'account':
+            return {}
+        credit_line_items = dash.models.CreditLineItem.objects.filter(account_id__in=self.accounts.keys())
+
+        m = collections.defaultdict(list)
+        for cli in credit_line_items:
+            m[cli.account_id].append(cli)
+        return m
+
+    def _get_accounts_with_spend_by_agency(self):
+        if self.breakdown != 'account':
+            return {}
+
+        agency_ids = dash.models.Account.objects.filter(pk__in=self.accounts).values_list('agency_id', flat=True)
+        res = reports.models.BudgetDailyStatement.objects.filter(
+            budget__campaign__account__agency_id__in=agency_ids).filter(
+                media_spend_nano__gt=0
+        ).values_list('budget__campaign__account_id', 'budget__campaign__account__agency_id')
+
+        m = collections.defaultdict(set)
+        for account_id, agency_id in res:
+            m[agency_id].add(account_id)
+
+        return m
+
     @newrelic.agent.function_trace()
     def _calculate_rows(self):
+        credit_line_items_map = self._get_credit_line_items_by_account()
+        accounts_with_spend_map = self._get_accounts_with_spend_by_agency()
+
         for key, budgets in self.calculation_groups.iteritems():
             if self.past_days <= 0:
                 row = self._blank_projections()
                 self._calculate_allocated_budgets(row, budgets)
-                self._calculate_recognized_fees(row, budgets, key)
+                self._calculate_recognized_fees(row, budgets, key, credit_line_items_map, accounts_with_spend_map)
                 self.projections[key] = row
                 continue
             statements_on_date, row = {}, {}
@@ -143,7 +172,7 @@ class BudgetProjections(object):
 
             self._calculate_allocated_budgets(row, budgets)
             self._calculate_pacing(row, budgets)
-            self._calculate_recognized_fees(row, budgets, key)
+            self._calculate_recognized_fees(row, budgets, key, credit_line_items_map, accounts_with_spend_map)
             self._calculate_media_spend_projection(row, budgets, statements_on_date,
                                                    num_of_positive_statements)
             self._calculate_license_fee_projection(row, budgets, statements_on_date,
@@ -221,7 +250,7 @@ class BudgetProjections(object):
             row['allocated_media_budget']
         )
 
-    def _calculate_recognized_fees(self, row, budgets, account_id):
+    def _calculate_recognized_fees(self, row, budgets, account_id, credit_line_items_map, accounts_with_spend_map):
         if self.breakdown != 'account':
             return
         row['attributed_license_fee'] = sum(
@@ -232,17 +261,18 @@ class BudgetProjections(object):
         )
         row['flat_fee'] = sum(
             credit.get_flat_fee_on_date_range(self.start_date, self.end_date)
-            for credit in dash.models.CreditLineItem.objects.filter(account_id=account_id)
+            for credit in credit_line_items_map[account_id]
         ) + self._calculate_agency_credit_flat_fee_share(
-            self.accounts.get(account_id)
+            self.accounts.get(account_id),
+            accounts_with_spend_map
         )
         row['total_fee'] = row['attributed_license_fee'] + row['flat_fee']
 
-    def _calculate_agency_credit_flat_fee_share(self, account):
+    def _calculate_agency_credit_flat_fee_share(self, account, accounts_with_spend_by_agency):
         if not account or not account.agency:
             return 0
 
-        agency_account_count = account.agency.account_set.all().filter_with_spend().count()
+        agency_account_count = len(accounts_with_spend_by_agency[account.agency_id])
         if agency_account_count == 0:
             return 0
 
