@@ -195,6 +195,10 @@ def _update_defaults(data, defaults, batch):
         field: data[field] for field in defaults
     })
 
+    for field in defaults:
+        setattr(batch, 'default_' + field, data[field])
+    batch.save()
+
 
 def _update_candidate(data, batch, files):
     candidate = batch.contentadcandidate_set.get(id=data['id'])
@@ -250,7 +254,14 @@ def update_candidate(data, defaults, batch, files=None):
 
 @transaction.atomic
 def add_candidate(batch):
-    return batch.contentadcandidate_set.create(ad_group_id=batch.ad_group_id)
+    return batch.contentadcandidate_set.create(
+        ad_group_id=batch.ad_group_id,
+        image_crop=batch.default_image_crop,
+        display_url=batch.default_display_url,
+        brand_name=batch.default_brand_name,
+        description=batch.default_description,
+        call_to_action=batch.default_call_to_action,
+    )
 
 
 def _get_cleaned_urls(candidate):

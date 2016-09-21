@@ -2607,6 +2607,12 @@ class UploadBatch(models.Model):
     ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, null=True)
     original_filename = models.CharField(max_length=1024, null=True)
 
+    default_image_crop = models.TextField(null=True, blank=True, default=constants.ImageCrop.CENTER)
+    default_display_url = models.TextField(null=True, blank=True, default="")
+    default_brand_name = models.TextField(null=True, blank=True, default="")
+    default_description = models.TextField(null=True, blank=True, default="")
+    default_call_to_action = models.TextField(null=True, blank=True, default=constants.DEFAULT_CALL_TO_ACTION)
+
     class Meta:
         get_latest_by = 'created_dt'
 

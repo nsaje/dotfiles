@@ -266,6 +266,40 @@ class AddCandidateTestCase(TestCase):
             'hosted_image_url': None,
         }, candidate.to_dict())
 
+    def test_with_defaults(self):
+        ad_group = models.AdGroup.objects.get(id=1)
+        new_batch = upload.create_empty_batch(ad_group.id, 'test')
+        new_batch.default_image_crop = 'abc'
+        new_batch.default_display_url = 'example.com'
+        new_batch.default_brand_name = 'Example'
+        new_batch.default_description = 'description'
+        new_batch.default_call_to_action = 'Contact us!'
+
+        candidate = upload.add_candidate(new_batch)
+        self.assertEqual(ad_group.id, candidate.ad_group_id)
+        self.assertEqual(new_batch.id, candidate.batch_id)
+        self.assertEqual({
+            'id': candidate.id,
+            'label': '',
+            'url': '',
+            'title': '',
+            'image_url': None,
+            'image_crop': 'abc',
+            'display_url': 'example.com',
+            'brand_name': 'Example',
+            'description': 'description',
+            'call_to_action': 'Contact us!',
+            'primary_tracker_url': None,
+            'secondary_tracker_url': None,
+            'image_hash': None,
+            'image_height': None,
+            'image_width': None,
+            'image_id': None,
+            'image_status': constants.AsyncUploadJobStatus.PENDING_START,
+            'url_status': constants.AsyncUploadJobStatus.PENDING_START,
+            'hosted_image_url': None,
+        }, candidate.to_dict())
+
 
 class CreateEmptyBatchTestCase(TestCase):
     fixtures = ['test_upload.yaml']
@@ -434,6 +468,12 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(self.other_candidate.brand_name, self.new_candidate['brand_name'])
         self.assertEqual(self.other_candidate.description, self.new_candidate['description'])
         self.assertEqual(self.other_candidate.call_to_action, self.new_candidate['call_to_action'])
+
+        self.assertEqual(self.candidate.batch.default_image_crop, self.new_candidate['image_crop'])
+        self.assertEqual(self.candidate.batch.default_display_url, self.new_candidate['display_url'])
+        self.assertEqual(self.candidate.batch.default_brand_name, self.new_candidate['brand_name'])
+        self.assertEqual(self.candidate.batch.default_description, self.new_candidate['description'])
+        self.assertEqual(self.candidate.batch.default_call_to_action, self.new_candidate['call_to_action'])
 
     def test_unknown_defaults(self):
         defaults = ['title', 'url', 'label', 'image_url', 'primary_tracker_url', 'secondary_tracker_url']
