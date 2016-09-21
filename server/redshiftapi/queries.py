@@ -2,12 +2,15 @@ import backtosql
 import datetime
 import dateutil
 
+import newrelic.agent
+
 from stats import constants
 from utils import exc
 
 from redshiftapi import models
 
 
+@newrelic.agent.function_trace()
 def prepare_breakdown_query(model, breakdown, constraints, parents, order, offset, limit):
     target_dimension = constants.get_target_dimension(breakdown)
     default_context = model.get_default_context(breakdown, constraints, parents, order, offset, limit)
@@ -31,11 +34,13 @@ def prepare_breakdown_query(model, breakdown, constraints, parents, order, offse
     raise exc.InvalidBreakdownError("Selected breakdown is not supported {}".format(breakdown))
 
 
+@newrelic.agent.function_trace()
 def prepare_augment_query(model, breakdown, constraints, parents):
     default_context = model.get_default_context(breakdown, constraints, parents)
     return prepare_breakdown_top_rows(default_context)
 
 
+@newrelic.agent.function_trace()
 def prepare_query_structure_with_stats_query(model, breakdown, constraints):
     default_context = model.get_default_context(breakdown, constraints, None)
     sql = backtosql.generate_sql('breakdown_structure_with_stats.sql', default_context)

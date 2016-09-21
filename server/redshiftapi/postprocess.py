@@ -3,6 +3,8 @@ import copy
 import datetime
 from dateutil import rrule, relativedelta
 
+import newrelic.agent
+
 from utils import sort_helper
 
 from dash import constants as dash_constants
@@ -16,6 +18,7 @@ but are easier to do in python than in sql.
 """
 
 
+@newrelic.agent.function_trace()
 def postprocess_breakdown_query(rows, empty_row, breakdown, constraints, parents, order, offset, limit):
     target_dimension = constants.get_target_dimension(breakdown)
 

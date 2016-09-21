@@ -1,5 +1,7 @@
 import copy
 
+import newrelic.agent
+
 from utils import exc
 from utils import sort_helper
 
@@ -15,6 +17,7 @@ from dash.views.helpers import get_active_ad_group_sources
 from dash import models
 
 
+@newrelic.agent.function_trace()
 def query(level, breakdown, constraints, parents, order, offset, limit):
     """
     Queries breakdowns by dash data.
@@ -215,6 +218,7 @@ def query(level, breakdown, constraints, parents, order, offset, limit):
     return rows
 
 
+@newrelic.agent.function_trace()
 def augment(rows, level, breakdown, constraints):
     """
     NOTE: does not handle allowed objects
@@ -267,6 +271,7 @@ def augment(rows, level, breakdown, constraints):
     return rows
 
 
+@newrelic.agent.function_trace()
 def query_missing_rows(rows, level, breakdown, constraints, parents, order, offset, limit, structure_with_stats):
     """
     Adds rows that are in dash but do not have statistics.
@@ -310,6 +315,7 @@ def query_missing_rows(rows, level, breakdown, constraints, parents, order, offs
     return rows
 
 
+@newrelic.agent.function_trace()
 def get_totals(level, breakdown, constraints):
     target_dimension = get_target_dimension(breakdown)
 
