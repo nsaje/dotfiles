@@ -224,7 +224,7 @@ def create_audience(audience, request):
         action_type=constants.ActionType.MANUAL,
         expiration_dt=None,
         state=constants.ActionState.WAITING,
-        message='Create audience "{}" on Outbrain for account {} (#{}) with rules'.format(
+        message=u'Create audience "{}" on Outbrain for account {} (#{}) with rules'.format(
             audience.name,
             audience.pixel.account.name,
             audience.pixel.account_id

@@ -54,7 +54,7 @@ class AudiencesView(api_common.BaseApiView):
             audience.save(
                 request,
                 constants.HistoryActionType.AUDIENCE_CREATE,
-                'Created audience "{}".'.format(audience.name)
+                u'Created audience "{}".'.format(audience.name)
             )
             audience_id = audience.pk
 
