@@ -1,6 +1,8 @@
 from utils import exc
 from utils import sort_helper
 
+import newrelic.agent
+
 import dash.models
 import dash.campaign_goals
 
@@ -31,6 +33,7 @@ def validate_breakdown_allowed(level, user, breakdown):
     permission_filter.validate_breakdown_by_permissions(level, user, breakdown)
 
 
+@newrelic.agent.function_trace()
 def query(level, user, breakdown, constraints, goals, parents, order, offset, limit):
     """
     Get a breakdown report. Data is sourced from dash models and redshift.
@@ -87,6 +90,7 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
     return rows
 
 
+@newrelic.agent.function_trace()
 def totals(user, level, breakdown, constraints, goals):
     helpers.check_constraints_are_supported(constraints)
 
