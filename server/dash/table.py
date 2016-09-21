@@ -1889,7 +1889,7 @@ class PublishersTable(object):
             if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
                 result['avg_cost_per_' + key] = None
                 if totals_data[key]:
-                    result['avg_cost_per_' + key] = totals_data.get('e_media_cost', 0) / totals_data[key]
+                    result['avg_cost_per_' + key] = (totals_data.get('e_media_cost') or 0) / totals_data[key]
 
         return result
 
