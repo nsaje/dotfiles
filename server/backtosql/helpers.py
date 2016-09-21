@@ -9,9 +9,14 @@ class BackToSQLException(Exception):
     pass
 
 
-def generate_sql(template_name, context):
+def generate_sql(template_name, context, clean=False):
     template = loader.get_template(template_name)
-    return clean_sql(template.render(context))
+    sql = template.render(context)
+
+    # clean affects performance so you might not want to use it if not needed
+    if clean:
+        return clean_sql(sql)
+    return sql
 
 
 def clean_alias(alias):

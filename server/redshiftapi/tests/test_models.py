@@ -286,7 +286,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         )
 
         q = context['constraints']
-        self.assertEqual(
+        self.assertSQLEquals(
             q.generate('A'),
             "(A.account_id=%s AND A.campaign_id=%s AND A.date>=%s AND A.date<=%s)")
         self.assertEqual(q.get_params(), [123, 223, date_from, date_to])

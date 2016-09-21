@@ -4,7 +4,7 @@ import datetime
 from django.test import TestCase
 
 
-class QTestCase(TestCase):
+class QTestCase(TestCase, backtosql.TestSQLMixin):
     class ModelA(backtosql.Model):
         py_foo = backtosql.Column('foo', group=1)
         py_bar = backtosql.Column('bar', group=2)
@@ -19,12 +19,12 @@ class QTestCase(TestCase):
 
         c = backtosql.Q(self.ModelA(), **constraints_dict)
         constraints = c.generate()
-        self.assertEquals(constraints, "(bar=%s AND foo=ANY(%s))")
+        self.assertSQLEquals(constraints, "(bar=%s AND foo=ANY(%s))")
         self.assertItemsEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
 
         c = backtosql.Q(self.ModelA(), **constraints_dict)
         constraints = c.generate(prefix="v")
-        self.assertEquals(constraints, "(v.bar=%s AND v.foo=ANY(%s))")
+        self.assertSQLEquals(constraints, "(v.bar=%s AND v.foo=ANY(%s))")
         self.assertItemsEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
 
     def test_generate_nested_constraints(self):
@@ -54,7 +54,7 @@ class QTestCase(TestCase):
         (v.bar=%s AND v.foo=ANY(%s)))\
         '''
 
-        self.assertEquals(constraints, expected.replace('        ', ''))
+        self.assertSQLEquals(constraints, expected.replace('        ', ''))
         self.assertItemsEqual(q.get_params(), [[1, 2, 3], datetime.date.today()] * 11)
 
     def test_generate_nested_constraints_too_deep(self):
@@ -93,5 +93,5 @@ class QTestCase(TestCase):
         (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
         (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
         (TROL.bar=%s AND TROL.foo=ANY(%s)))'''
-        self.assertEquals(constraints, expected.replace('        ', ''))
+        self.assertSQLEquals(constraints, expected.replace('        ', ''))
         self.assertItemsEqual(q.get_params(), [[1, 2, 3], datetime.date.today()] * 10)

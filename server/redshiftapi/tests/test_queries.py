@@ -920,6 +920,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             )
 
             sql, _ = queries.prepare_breakdown_struct_delivery_top_rows(context)
+            sql = backtosql.clean_sql(sql)
 
             self.assertTrue(order_sql in sql, "Order {}:\n{}\nNOT IN\n{}".format(order, order_sql, sql))
 
