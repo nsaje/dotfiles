@@ -362,14 +362,14 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
         }
 
         function convertCandidateFromApi (candidate) {
-            candidate = convertCandidateFieldsFromApi(candidate);
-            candidate.errors = {};
+            var newCandidate = convertCandidateFieldsFromApi(candidate);
+            newCandidate.errors = {};
 
             if (candidate.errors) {
-                candidate.errors = convertCandidateErrorsFromApi(candidate.errors);
+                newCandidate.errors = convertCandidateErrorsFromApi(candidate.errors);
             }
 
-            return removeUndefinedValues(candidate);
+            return removeUndefinedValues(newCandidate);
         }
 
         function convertCandidatesFromApi (candidates) {
