@@ -2,6 +2,7 @@ import backtosql
 import copy
 
 from utils import dates_helper
+from utils import queryset_helper
 
 import dash.constants
 from dash import conversions_helper
@@ -157,7 +158,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
         self.init_conversion_columns(conversion_goals)
         self.init_campaign_goal_performance_columns(
-            campaign_goals, campaign_goal_values, conversion_goals)
+            campaign_goals, campaign_goal_values, conversion_goals, pixels)
         self.init_pixels(pixels)
 
     date = backtosql.Column('date', mh.BREAKDOWN)
@@ -272,9 +273,10 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
 
             self.add_column(avg_cost_column)
 
-    def init_campaign_goal_performance_columns(self, campaign_goals, campaign_goal_values, conversion_goals):
+    def init_campaign_goal_performance_columns(self, campaign_goals, campaign_goal_values, conversion_goals, pixels):
         map_camp_goal_vals = {x.campaign_goal_id: x for x in campaign_goal_values or []}
         map_conversion_goals = {x.id: x for x in conversion_goals or []}
+        pixel_ids = [x.id for x in pixels] if pixels else []
 
         if not campaign_goals:
             return
@@ -289,6 +291,11 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
                     continue
 
                 conversion_goal = map_conversion_goals[campaign_goal.conversion_goal_id]
+
+                if conversion_goal.pixel_id not in pixel_ids:
+                    # in case pixel is not part of this query (eg archived etc)
+                    continue
+
                 conversion_key = conversion_goal.get_view_key(conversion_goals)
                 column_group = mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS
             else:
