@@ -270,8 +270,19 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
         goals = stats.api_breakdowns.get_goals(constraints)
 
-        query_fn = partial(
-            stats.api_breakdowns.query,
+        totals_thread = None
+        if len(breakdown) == 1:
+            constraints = stats.api_breakdowns.prepare_all_accounts_constraints(
+                request.user, breakdown, only_used_sources=False,
+                **get_constraints_kwargs(form.cleaned_data, show_archived=True))
+            totals_fn = partial(
+                stats.api_breakdowns.totals,
+                request.user, level, breakdown, constraints, goals
+            )
+            totals_thread = threads.AsyncFunction(totals_fn)
+            totals_thread.start()
+
+        rows = stats.api_breakdowns.query(
             level,
             request.user,
             breakdown,
@@ -282,22 +293,14 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
-        query_thread = threads.AsyncFunction(query_fn)
-        query_thread.start()
-
-        totals = None
-        if len(breakdown) == 1:
-            constraints = stats.api_breakdowns.prepare_all_accounts_constraints(
-                request.user, breakdown, only_used_sources=False,
-                **get_constraints_kwargs(form.cleaned_data, show_archived=True))
-            totals = stats.api_breakdowns.totals(request.user, level, breakdown, constraints, goals)
-
-        query_thread.join()
-        rows = query_thread.result
 
         breakdown_helpers.format_report_rows_state_fields(rows)
-        breakdown_helpers.format_report_rows_performance_fields(rows, goals)
         breakdown_helpers.clean_non_relevant_fields(rows)
+
+        totals = None
+        if totals_thread is not None:
+            totals_thread.join()
+            totals = totals_thread.result
 
         report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
@@ -330,11 +333,22 @@ class AccountBreakdown(api_common.BaseApiView):
         constraints = stats.api_breakdowns.prepare_account_constraints(
             request.user, account, breakdown, only_used_sources=base_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
-
         goals = stats.api_breakdowns.get_goals(constraints)
 
-        query_fn = partial(
-            stats.api_breakdowns.query,
+        totals_thread = None
+        if len(breakdown) == 1:
+            constraints = stats.api_breakdowns.prepare_account_constraints(
+                request.user, account, breakdown,
+                only_used_sources=False,
+                **get_constraints_kwargs(form.cleaned_data, show_archived=True))
+            totals_fn = partial(
+                stats.api_breakdowns.totals,
+                request.user, level, breakdown, constraints, goals
+            )
+            totals_thread = threads.AsyncFunction(totals_fn)
+            totals_thread.start()
+
+        rows = stats.api_breakdowns.query(
             level,
             request.user,
             breakdown,
@@ -345,25 +359,15 @@ class AccountBreakdown(api_common.BaseApiView):
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
-        query_thread = threads.AsyncFunction(query_fn)
-        query_thread.start()
-
-        totals = None
-        if len(breakdown) == 1:
-            constraints = stats.api_breakdowns.prepare_account_constraints(
-                request.user, account, breakdown,
-                only_used_sources=False,
-                **get_constraints_kwargs(form.cleaned_data, show_archived=True))
-
-            totals = stats.api_breakdowns.totals(
-                request.user, level, breakdown, constraints, goals)
-
-        query_thread.join()
-        rows = query_thread.result
 
         breakdown_helpers.format_report_rows_state_fields(rows)
         breakdown_helpers.format_report_rows_performance_fields(rows, goals)
         breakdown_helpers.clean_non_relevant_fields(rows)
+
+        totals = None
+        if totals_thread is not None:
+            totals_thread.join()
+            totals = totals_thread.result
 
         report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
@@ -398,8 +402,18 @@ class CampaignBreakdown(api_common.BaseApiView):
             **get_constraints_kwargs(form.cleaned_data))
         goals = stats.api_breakdowns.get_goals(constraints)
 
-        query_fn = partial(
-            stats.api_breakdowns.query,
+        totals_thread = None
+        if len(breakdown) == 1:
+            constraints = stats.api_breakdowns.prepare_campaign_constraints(
+                request.user, campaign, breakdown, only_used_sources=False,
+                **get_constraints_kwargs(form.cleaned_data, show_archived=True))
+            totals_fn = partial(
+                stats.api_breakdowns.totals,
+                request.user, level, breakdown, constraints, goals)
+            totals_thread = threads.AsyncFunction(totals_fn)
+            totals_thread.start()
+
+        rows = stats.api_breakdowns.query(
             level,
             request.user,
             breakdown,
@@ -410,25 +424,18 @@ class CampaignBreakdown(api_common.BaseApiView):
             offset,
             limit + REQUEST_LIMIT_OVERFLOW,
         )
-        query_thread = threads.AsyncFunction(query_fn)
-        query_thread.start()
 
-        totals = None
-        if len(breakdown) == 1:
-            constraints = stats.api_breakdowns.prepare_campaign_constraints(
-                request.user, campaign, breakdown, only_used_sources=False,
-                **get_constraints_kwargs(form.cleaned_data, show_archived=True))
-            totals = stats.api_breakdowns.totals(
-                request.user, level, breakdown, constraints, goals)
-
-        query_thread.join()
-        rows = query_thread.result
         if breakdown == ['ad_group_id']:
             breakdown_helpers.format_report_rows_ad_group_editable_fields(rows)
 
         breakdown_helpers.format_report_rows_state_fields(rows)
         breakdown_helpers.format_report_rows_performance_fields(rows, goals)
         breakdown_helpers.clean_non_relevant_fields(rows)
+
+        totals = None
+        if totals_thread is not None:
+            totals_thread.join()
+            totals = totals_thread.result
 
         report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
