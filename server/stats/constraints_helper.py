@@ -1,5 +1,7 @@
 from utils.queryset_helper import simplify_query
 
+import newrelic.agent
+
 from dash import models
 
 from stats import constants
@@ -20,6 +22,7 @@ def _get_basic_constraints(start_date, end_date, show_archived, filtered_sources
     }
 
 
+@newrelic.agent.function_trace()
 def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filtered_sources, show_archived=False,
                                      filtered_agencies=None, filtered_account_types=None, only_used_sources=True):
 
@@ -53,6 +56,7 @@ def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filt
     return constraints
 
 
+@newrelic.agent.function_trace()
 def prepare_account_constraints(user, account, breakdown, start_date, end_date, filtered_sources,
                                 show_archived=False, only_used_sources=True):
     allowed_campaigns = account.campaign_set.all()\
@@ -80,6 +84,7 @@ def prepare_account_constraints(user, account, breakdown, start_date, end_date, 
     return constraints
 
 
+@newrelic.agent.function_trace()
 def prepare_campaign_constraints(user, campaign, breakdown, start_date, end_date, filtered_sources,
                                  show_archived=False, only_used_sources=True):
     allowed_ad_groups = campaign.adgroup_set.all().exclude_archived(show_archived)
@@ -101,6 +106,7 @@ def prepare_campaign_constraints(user, campaign, breakdown, start_date, end_date
     return constraints
 
 
+@newrelic.agent.function_trace()
 def prepare_ad_group_constraints(user, ad_group, breakdown, start_date, end_date, filtered_sources,
                                  show_archived=False, only_used_sources=True):
     constraints = {

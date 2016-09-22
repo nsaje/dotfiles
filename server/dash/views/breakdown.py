@@ -2,6 +2,8 @@ import collections
 import json
 from functools import partial
 
+import newrelic.agent
+
 from dash import constants
 from dash import forms
 from dash import table
@@ -246,6 +248,7 @@ def get_report_ad_group_publishers(user, filtered_sources, start_date, end_date,
 
 class AllAccountsBreakdown(api_common.BaseApiView):
 
+    @newrelic.agent.function_trace()
     def post(self, request, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.MissingDataError()
@@ -310,6 +313,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
 class AccountBreakdown(api_common.BaseApiView):
 
+    @newrelic.agent.function_trace()
     def post(self, request, account_id, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.AuthorizationError()
@@ -377,6 +381,7 @@ class AccountBreakdown(api_common.BaseApiView):
 
 class CampaignBreakdown(api_common.BaseApiView):
 
+    @newrelic.agent.function_trace()
     def post(self, request, campaign_id, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.AuthorizationError()
@@ -455,6 +460,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
             stats.constants.StructureDimension.PUBLISHER: get_report_ad_group_publishers,
         }[base_dimension]
 
+    @newrelic.agent.function_trace()
     def post(self, request, ad_group_id, breakdown):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature_on_ad_group_level'):
             raise exc.AuthorizationError()
