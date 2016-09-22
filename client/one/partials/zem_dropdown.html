@@ -1,7 +1,7 @@
-<span ng-attr-popover="{{ disabledTitleOrUndefined }}"
-      ng-attr-popover-placement="top"
-      ng-attr-popover-append-to-body="true"
-      ng-attr-popover-trigger="mouseenter">
+<span zem-lazy-popover-text="{{ disabledTitleOrUndefined }}"
+      zem-lazy-popover-placement="top"
+      zem-lazy-popover-append-to-body="true"
+      zem-lazy-popover-trigger="mouseenter">
 <select
     ui-select2="dropdownConfig"
     data-placeholder="{{ placeholder }}"
@@ -10,6 +10,6 @@
     class="{{ cssClass }}"
     ng-disabled="checkDisabled()">
         <option value=""></option>
-        <option ng-repeat="option in dropdownOptions | filter: {hasPermission: true}" ng-disabled="option.disabled" value="{{ option.value }}">{{ option.name }}</option>
+        <option ng-repeat="option in dropdownOptions | filter: {hasPermission: true}" ng-disabled="option.checkDisabled && option.checkDisabled() || option.disabled" value="{{ option.value }}">{{ option.name }}</option>
 </select>
 </span>

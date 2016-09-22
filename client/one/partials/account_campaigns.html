@@ -63,6 +63,10 @@
                 </button>
                 <div class="loader" ng-show="addCampaignRequestInProgress"></div>
             </div>
+            <div ng-if="hasPermission('zemauth.bulk_actions_on_all_levels')" class="button-bar-item">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.bulk_actions_on_all_levels')" popover-placement="bottom"></zem-internal-feature>
+                <zem-grid-bulk-actions api="grid.api"></zem-grid-bulk-actions>
+            </div>
             <zem-grid-export api="grid.api" class="pull-right"></zem-grid-export>
             <zem-grid-column-selector api="grid.api" class="pull-right"></zem-grid-column-selector>
             <zem-grid-breakdown-selector api="grid.api" class="pull-right"></zem-grid-breakdown-selector>

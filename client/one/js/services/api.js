@@ -836,7 +836,8 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
             }
 
             if (selectedIds) {
-                config.params.selected_ids = selectedIds;
+                // TODO: show combined line for all selected instead of this hack
+                config.params.selected_ids = selectedIds.slice(0, 3);
             }
 
             if (totals) {

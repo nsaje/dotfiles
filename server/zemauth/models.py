@@ -227,6 +227,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_all_users_for_managers', 'User can see all users when selecting account or campaign manager'),
             ('can_include_totals_in_reports', 'Can include totals in reports'),
             ('can_view_additional_targeting', 'Can view additional targeting'),
+            ('bulk_actions_on_all_levels', 'User can do bulk actions on all levels'),
         )
 
     def get_full_name(self):

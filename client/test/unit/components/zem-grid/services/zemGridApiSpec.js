@@ -26,6 +26,7 @@ describe('zemGridApi', function () {
         grid.meta.selectionService = {};
         grid.meta.columnsService = {};
         grid.meta.notificationService = {};
+        grid.meta.bulkActionsService = {};
 
         grid.header.columns.push(zemGridObject.createColumn({}));
         grid.header.columns.push(zemGridObject.createColumn({}));

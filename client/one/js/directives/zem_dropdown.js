@@ -23,17 +23,22 @@ angular.module('one.legacy').directive('zemDropdown', function () {
                         option = item;
                     }
                 });
-                var notification = option.notification;
+                var notification;
                 var element = angular.element(document.createElement('div'));
+                if (option.notificationDisabled && object.disabled) {
+                    notification = option.notificationDisabled;
+                } else {
+                    notification = option.notification;
+                }
                 if (notification) {
-                    element.attr('popover', notification);
-                    element.attr('popover-trigger', 'mouseenter');
-                    element.attr('popover-placement', 'right');
-                    element.attr('popover-append-to-body', 'true');
+                    element.attr('zem-lazy-popover-text', notification);
+                    element.attr('zem-lazy-popover-trigger', 'mouseenter');
+                    element.attr('zem-lazy-popover-placement', 'right');
+                    element.attr('zem-lazy-popover-append-to-body', 'true');
 
                     // hide immediately without animation - solves a glitch when
                     // the element is selected
-                    element.attr('popover-animation', 'false');
+                    element.attr('zem-lazy-popover-animation', 'false');
                     element.on('$destroy', function () {
                         element.trigger('mouseleave');
                     });

@@ -44,6 +44,9 @@ angular.module('one.legacy').factory('zemGridApi', ['$rootScope', 'zemGridStorag
         // Notifications service API
         this.notify = grid.meta.notificationService.notify;
 
+        // Bulk Actions service API
+        this.getBulkActions = grid.meta.bulkActionsService.getActions;
+
         // Listeners - pubsub rewiring
         this.onMetaDataUpdated = onMetaDataUpdated;
         this.onDataUpdated = onDataUpdated;

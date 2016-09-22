@@ -30,8 +30,10 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
         api: undefined,
         level: constants.level.ALL_ACCOUNTS,
         breakdown: constants.breakdown.ACCOUNT,
-        options: {},
     };
+    if (!$scope.hasPermission('zemauth.bulk_actions_on_all_levels')) {
+        $scope.grid.options = {};
+    }
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 

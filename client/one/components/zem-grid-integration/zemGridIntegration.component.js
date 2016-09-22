@@ -65,18 +65,21 @@ angular.module('one.legacy').controller('ZemGridIntegrationCtrl', ['$scope', '$t
     }
 
     function createDefaultGridOptions () {
-        return {
+        var options = {
             selection: {
                 enabled: true,
                 levels: [0, 1],
-                callbacks: {
-                    isRowSelectable: function () {
-                        // Allow at most 4 rows to be selected
-                        return vm.api.getSelection().selected.length < 4;
-                    }
-                }
             }
         };
+        if (!vm.hasPermission('zemauth.bulk_actions_on_all_levels')) {
+            options.selection.callbacks = {
+                isRowSelectable: function () {
+                    // Allow at most 4 rows to be selected
+                    return vm.api.getSelection().selected.length < 4;
+                }
+            };
+        }
+        return options;
     }
 
     function loadState () {
