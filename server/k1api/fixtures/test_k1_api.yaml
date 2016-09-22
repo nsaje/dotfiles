@@ -436,6 +436,8 @@
         tracking_code: '?tracking1&tracking2'
         retargeting_ad_groups: '[100]'
         exclusion_retargeting_ad_groups: '[200]'
+        audience_targeting: '[1]'
+        exclusion_audience_targeting: '[2]'
         bluekai_targeting: '["or", "bluekai:1", "bluekai:2"]'
         interest_targeting: '["tech", "entertainment"]'
         exclusion_interest_targeting: '["politics", "war"]'

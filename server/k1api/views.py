@@ -416,9 +416,11 @@ class AdGroupsView(K1APIView):
             retargeting.append(
                 {'event_type': EVENT_RETARGET_ADGROUP, 'event_id': str(retargeting_ad_group_id), 'exclusion': True})
 
-        # TODO: maticz, 26.8.2016: This will be changed.
-        # for audience in ad_group_settings.audience_set.all():
-        #     retargeting.append({'event_type': EVENT_CUSTOM_AUDIENCE, 'event_id': str(audience.id), 'exclusion': False})
+        for audience_id in ad_group_settings.audience_targeting:
+            retargeting.append({'event_type': EVENT_CUSTOM_AUDIENCE, 'event_id': str(audience_id), 'exclusion': False})
+
+        for audience_id in ad_group_settings.exclusion_audience_targeting:
+            retargeting.append({'event_type': EVENT_CUSTOM_AUDIENCE, 'event_id': str(audience_id), 'exclusion': True})
 
         return retargeting
 
