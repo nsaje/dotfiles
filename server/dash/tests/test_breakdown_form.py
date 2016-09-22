@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import copy
 import datetime
 import json
@@ -51,6 +52,31 @@ class BreakdownFormTest(TestCase):
             'order': '-clicks',
             'show_blacklisted_publishers': 'all',
         })
+
+    def test_funky_parents(self):
+        request_body = {
+            'start_date': '2016-01-01',
+            'end_date': '2016-02-03',
+            'limit': 10,
+            'offset': 20,
+            'parents': [None],
+        }
+
+        form = forms.BreakdownForm(self.user, '/account', copy.copy(request_body))
+        self.assertTrue(form.is_valid())
+        self.assertEqual([], form.cleaned_data['parents'])
+
+        request_body = {
+            'start_date': '2016-01-01',
+            'end_date': '2016-02-03',
+            'limit': 10,
+            'offset': 20,
+            'parents': [None, u'mekani ć', 1],
+        }
+
+        form = forms.BreakdownForm(self.user, '/account', copy.copy(request_body))
+        self.assertTrue(form.is_valid())
+        self.assertEqual([u'mekani ć', '1'], form.cleaned_data['parents'])
 
     def test_required_fields(self):
         form = forms.BreakdownForm(self.user, '', {})

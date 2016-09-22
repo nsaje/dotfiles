@@ -1157,7 +1157,7 @@ class BreakdownForm(forms.Form):
 
     parents = TypedMultipleAnyChoiceField(
         required=False,
-        coerce=str,
+        coerce=unicode,
     )
 
     filtered_sources = TypedMultipleAnyChoiceField(required=False, coerce=str)
@@ -1179,6 +1179,12 @@ class BreakdownForm(forms.Form):
 
     def clean_breakdown(self):
         return [stats.constants.get_dimension_identifier(x) for x in self.cleaned_data['breakdown'].split('/') if x]
+
+    def clean_parents(self):
+        parents = []
+        if self.data.get('parents'):
+            parents = [unicode(x) for x in self.data['parents'] if x]
+        return parents
 
 
 class ContentAdCandidateForm(forms.ModelForm):
