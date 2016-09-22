@@ -275,12 +275,12 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
         totals_thread = None
         if len(breakdown) == 1:
-            constraints = stats.api_breakdowns.prepare_all_accounts_constraints(
+            totals_constraints = stats.api_breakdowns.prepare_all_accounts_constraints(
                 request.user, breakdown, only_used_sources=False,
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
             totals_fn = partial(
                 stats.api_breakdowns.totals,
-                request.user, level, breakdown, constraints, goals
+                request.user, level, breakdown, totals_constraints, goals
             )
             totals_thread = threads.AsyncFunction(totals_fn)
             totals_thread.start()
@@ -341,13 +341,13 @@ class AccountBreakdown(api_common.BaseApiView):
 
         totals_thread = None
         if len(breakdown) == 1:
-            constraints = stats.api_breakdowns.prepare_account_constraints(
+            totals_constraints = stats.api_breakdowns.prepare_account_constraints(
                 request.user, account, breakdown,
                 only_used_sources=False,
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
             totals_fn = partial(
                 stats.api_breakdowns.totals,
-                request.user, level, breakdown, constraints, goals
+                request.user, level, breakdown, totals_constraints, goals
             )
             totals_thread = threads.AsyncFunction(totals_fn)
             totals_thread.start()
@@ -409,12 +409,12 @@ class CampaignBreakdown(api_common.BaseApiView):
 
         totals_thread = None
         if len(breakdown) == 1:
-            constraints = stats.api_breakdowns.prepare_campaign_constraints(
+            totals_constraints = stats.api_breakdowns.prepare_campaign_constraints(
                 request.user, campaign, breakdown, only_used_sources=False,
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
             totals_fn = partial(
                 stats.api_breakdowns.totals,
-                request.user, level, breakdown, constraints, goals)
+                request.user, level, breakdown, totals_constraints, goals)
             totals_thread = threads.AsyncFunction(totals_fn)
             totals_thread.start()
 
