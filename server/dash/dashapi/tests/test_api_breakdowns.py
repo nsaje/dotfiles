@@ -350,7 +350,7 @@ class QueryTest(TestCase):
             {'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1,
              'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
             {'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2,
-             'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
+             'campaign_has_available_budget': False, 'campaign_stop_inactive': False},
         ])
 
     def test_query_campaigns_break_source(self):
@@ -729,7 +729,7 @@ class AugmentTest(TestCase):
             {'ad_group_id': 1, 'clicks': 11, 'archived': False, 'name': 'test adgroup 1', 'status': 1,
              'state': 1, 'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
             {'ad_group_id': 2, 'clicks': 22, 'archived': False, 'name': 'test adgroup 2', 'status': 2,
-             'state': 2, 'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
+             'state': 2, 'campaign_has_available_budget': False, 'campaign_stop_inactive': False},
         ])
 
     def test_augment_campaigns_break_source(self):
@@ -1071,7 +1071,7 @@ class QueryMissingRowsTest(TestCase):
         self.assertEqual(rows,  [
             {'ad_group_id': 1, 'clicks': 11},
             {'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2,
-             'state': 2, 'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
+             'state': 2, 'campaign_has_available_budget': False, 'campaign_stop_inactive': False},
         ])
 
     def test_campaigns_break_source(self):

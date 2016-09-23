@@ -210,7 +210,7 @@ def can_enable_ad_group(ad_group, campaign, campaign_settings):
         return False
 
     ad_groups = [ad_group]
-    return _can_enable_ad_groups(ad_groups, campaign)
+    return _can_enable_ad_groups(ad_groups, campaign)[ad_group.id]
 
 
 def can_enable_ad_groups(campaign, campaign_settings):

@@ -218,7 +218,7 @@ class AdGroupsLoader(Loader):
 
             for ad_group in ad_groups:
                 other_settings_map[ad_group.id] = {
-                    'campaign_stop_inactive': campaign_stop_check_map.get(ad_group, True),
+                    'campaign_stop_inactive': campaign_stop_check_map.get(ad_group.id, True),
                     'campaign_has_available_budget': campaign_has_available_budget,
                 }
 

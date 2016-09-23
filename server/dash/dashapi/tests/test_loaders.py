@@ -138,7 +138,7 @@ class AdGroupsLoaderTest(TestCase):
 
         self.assertDictEqual(dict(loader.other_settings_map), {
             1: {'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
-            2: {'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
+            2: {'campaign_has_available_budget': False, 'campaign_stop_inactive': False},
             3: {'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
         })
 
