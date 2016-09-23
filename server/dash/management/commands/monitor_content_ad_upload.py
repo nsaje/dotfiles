@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from django.db.models import Q
 
@@ -8,6 +9,8 @@ from utils.command_helpers import ExceptionCommand
 from utils import dates_helper
 
 import influx
+
+logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
@@ -37,3 +40,5 @@ class Command(ExceptionCommand):
         else:
             influx.gauge('upload.candidates_num', num_pending, status='pending')
             influx.gauge('upload.candidates_num', num_waiting, status='waiting')
+            if num_waiting > 0:
+                logger.warning('%s content ad candidates in waiting state.', num_waiting)
