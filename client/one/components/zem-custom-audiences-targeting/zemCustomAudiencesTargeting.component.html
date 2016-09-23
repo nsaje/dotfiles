@@ -3,28 +3,28 @@
         <div class="col-xs-3 m-t-xs" ng-if="ctrl.selectedTargetings.length">
             <div class="text-success">Included Audiences</div>
             <ul class="with-icons ul-checkmarks">
-                <li class="targeting-list-tag" ng-repeat="entity in ctrl.selectedTargetings | orderBy:'type'" ng-click="ctrl.removeSelectedTargeting(entity)">
+                <li class="targeting-list-tag" ng-repeat="entity in ctrl.selectedTargetings | orderBy:'type'">
                     <span ng-if="entity.type === 'adGroup'">
                         Users that clicked on ad group "{{entity.name}}" ({{ entity.id }})
                     </span>
                     <span ng-if="entity.type === 'audience'">
                         Users in audience "{{ entity.name }}" ({{ entity.id }})
                     </span>
-                    <a href="" class="remove">Remove</a>
+                    <a href="" class="remove" ng-click="ctrl.removeSelectedTargeting(entity)">Remove</a>
                 </li>
             </ul>
         </div>
         <div class="col-xs-3 m-t-xs" ng-if="ctrl.selectedExclusionTargetings.length">
             <div class="text-danger">Excluded Audiences</div>
             <ul class="with-icons ul-remove">
-                <li class="targeting-list-tag" ng-repeat="entity in ctrl.selectedExclusionTargetings | orderBy:'type'" ng-click="ctrl.removeSelectedExclusionTargeting(entity)">
+                <li class="targeting-list-tag" ng-repeat="entity in ctrl.selectedExclusionTargetings | orderBy:'type'">
                     <span ng-if="entity.type === 'adGroup'">
                         Users that clicked on ad group "{{entity.name}}" ({{ entity.id }})
                     </span>
                     <span ng-if="entity.type === 'audience'">
                         Users in audience "{{ entity.name }}" ({{ entity.id }})
                     </span>
-                    <a href="" class="remove">Remove</a>
+                    <a href="" class="remove" ng-click="ctrl.removeSelectedExclusionTargeting(entity)">Remove</a>
                  </li>
              </ul>
          </div>
