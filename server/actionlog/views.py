@@ -95,7 +95,10 @@ class ActionLogApiView(api_common.BaseApiView):
                 raise Exception('Unsupported state %s for action SET_CAMPAIGN_STATE' % state)
 
             return '{} set to {}'.format(NAMES.get('state'), dash.constants.AdGroupSourceSettingsState.get_text(state))
-        elif action.action in [constants.Action.SET_PUBLISHER_BLACKLIST, constants.Action.CREATE_CUSTOM_AUDIENCE]:
+        elif action.action in (
+                constants.Action.SET_PUBLISHER_BLACKLIST,
+                constants.Action.CREATE_CUSTOM_AUDIENCE,
+                constants.Action.CREATE_AUDIENCE, ):
             return action.message
         else:
             raise Exception('Unsupported action %s' % action.action)
