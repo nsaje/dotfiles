@@ -6,6 +6,7 @@ import dash.models
 import dash.constants
 import reports.models
 import reports.projections
+from utils import converters
 from utils.html_helpers import TableCell, TableRow, Url
 
 NEW_ITEMS_LIST_REPORT_TITLES = {
@@ -30,15 +31,40 @@ LIST_REPORT_DISPLAY = {
         _url(['accounts', obj.pk, 'campaigns']),
         obj.get_long_name()
     ).as_html(),
-    'credits': lambda obj: Url(
+    'credits': lambda obj: '{} ({})'.format(Url(
         obj.account and _url(['accounts', obj.account_id, 'campaigns']) or '#',
         str(obj)
-    ).as_html(),
-    'budgets': lambda obj: Url(
+    ).as_html(), _get_bcm_changes('credit', obj)),
+    'budgets': lambda obj: '{} ({})'.format(Url(
         _url(['campaigns', obj.campaign_id, 'ad_groups']),
         '{}, {}'.format(str(obj), obj.campaign.account.get_long_name())
-    ).as_html(),
+    ).as_html(), _get_bcm_changes('budget', obj)),
 }
+
+
+def _format_change(key, change):
+    if '_nano' in key:
+        return map(converters.nano_to_decimal, change)
+    if '_cc' in key:
+        return map(converters.cc_to_decimal, change)
+    return change
+
+
+def _get_dict_change(d_prev, d_after):
+    return {
+        k: (d_after[k], d_prev.get(k)) for k in d_after if d_after[k] != d_prev.get(k)
+    }
+
+
+def _get_bcm_changes(name, obj):
+    history = obj.history.all().order_by('-created_dt')[:2]
+    if len(history) < 2:
+        return ''
+    changes = _get_dict_change(history[1].snapshot, history[0].snapshot)
+    return ', '.join([
+        '{}: {} -> {}'.format(key, *_format_change(key, chng))
+        for key, chng in changes.iteritems()
+    ])
 
 
 class ReportContext(object):
