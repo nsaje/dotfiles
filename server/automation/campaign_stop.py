@@ -28,6 +28,9 @@ from utils import dates_helper, email_helper, url_helper, pagerduty_helper
 logger = logging.getLogger(__name__)
 
 NON_SPENDING_SOURCE_THRESHOLD_DOLLARS = decimal.Decimal('1')
+CAMPAIGN_STOP_IGNORE_SOURCES = set([
+    67,  # All RTB source
+])
 
 
 def run_job():
@@ -506,6 +509,9 @@ def _stop_non_spending_sources(campaign):
 
         to_stop = set()
         for ags in active_ad_group_sources:
+            if ags.source_id in CAMPAIGN_STOP_IGNORE_SOURCES:
+                continue
+
             if yesterday_spends.get((ags.ad_group_id, ags.source_id), 0) < NON_SPENDING_SOURCE_THRESHOLD_DOLLARS:
                 to_stop.add(ags)
 
