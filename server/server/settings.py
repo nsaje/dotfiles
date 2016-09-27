@@ -132,6 +132,7 @@ DEFAULT_FROM_EMAIL = ''
 DEMO_USERS = tuple()
 
 ENABLE_DJANGO_EXTENSIONS = False
+ENABLE_DEBUG_TOOLBAR = False
 
 # cache settings
 CACHES = {
@@ -164,6 +165,47 @@ from localsettings import *
 
 if ENABLE_DJANGO_EXTENSIONS:
     INSTALLED_APPS.append('django_extensions')
+
+if ENABLE_DEBUG_TOOLBAR:
+    INSTALLED_APPS.extend([
+        'debug_toolbar',
+        'debug_panel',
+        'template_profiler_panel',
+    ])
+
+    MIDDLEWARE_CLASSES = [
+        'debug_panel.middleware.DebugPanelMiddleware',
+    ] + MIDDLEWARE_CLASSES
+
+    DEBUG_TOOLBAR_PANELS = [
+        'debug_toolbar.panels.versions.VersionsPanel',
+        'debug_toolbar.panels.timer.TimerPanel',
+        'debug_toolbar.panels.settings.SettingsPanel',
+        'debug_toolbar.panels.headers.HeadersPanel',
+        'debug_toolbar.panels.request.RequestPanel',
+        'debug_toolbar.panels.sql.SQLPanel',
+        'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+        'debug_toolbar.panels.templates.TemplatesPanel',
+        'debug_toolbar.panels.cache.CachePanel',
+        'debug_toolbar.panels.signals.SignalsPanel',
+        'debug_toolbar.panels.logging.LoggingPanel',
+        'debug_toolbar.panels.redirects.RedirectsPanel',
+        'debug_toolbar.panels.profiling.ProfilingPanel',
+        'template_profiler_panel.panels.template.TemplateProfilerPanel',
+    ]
+
+    # django debug panel cache
+    CACHES['debug-panel'] = {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/var/tmp/debug-panel-cache',
+        'TIMEOUT': 86400,
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000000
+        }
+    }
+
+    SHOW_TOOLBAR_CALLBACK = True
+    RESULTS_CACHE_SIZE = 10000000
 
 STATIC_URL = SERVER_STATIC_URL + '/'
 

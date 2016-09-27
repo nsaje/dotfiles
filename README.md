@@ -207,6 +207,33 @@ For development, you can run grunt dev which also runs server on port 9999 and i
 ```bash
 grunt dev
 ```
+### Debug toolbar
+
+The debug toolbar will help you profile your code and templates, find slow and duplicated queries, find if cache is hit or miss etc. If you're interested
+in using it, you can do so by:
+
+1. installing development requirements `pip install -r requirements_dev.txt` and then 
+2. enabling the toolbar in `localsettings.py`:
+
+    ```
+    ENABLE_DEBUG_TOOLBAR = True
+    ```
+
+3. After that debug toolbar will be shown as a part of developemnt z1 client app. This toolbar is not meant for one page apps (it doesn't refresh for ajax requests)
+and thus we need to install a [debug toolbar panel chrome extension](https://chrome.google.com/webstore/detail/django-debug-panel/nbiajhhibgfgkjegbnflpdccejocmbbn) that will
+show the panel in a separate developemnt tools tab for every request we make. If the one behind the given link doesn't work for you
+try with [this fork](https://github.com/perython/chrome-django-panel/tree/master) - it solves display problems and at the time I was writting this it wasn't yet merged
+into the master panel. 
+
+_NOTE_: In case you're not running your development django server on localhost, add `INTERNAL_IPS` to your settings, where you list your server IPs. For example:
+
+```
+INTERNAL_IPS = ['127.0.0.1', '192.168.10.1', '10.0.2.2']
+```
+
+![Image](docs/debug_toolbar.png)
+
+
 ## Linting
 
 We have [pep8](https://pypi.python.org/pypi/pep8) and [eslint](http://eslint.org/docs/rules/) set up on circle CI. Meaning, that the build will break, if you will commit unconventional code.

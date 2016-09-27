@@ -12,3 +12,6 @@ django-queryinspect==0.1.0
 
 git+git://github.com/Zemanta/ci-metric-push.git#cipush
 
+django-debug-panel==0.8.3
+django-debug-toolbar==1.5
+django-debug-toolbar-template-profiler==1.0.1
