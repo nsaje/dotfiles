@@ -561,6 +561,11 @@ def _prepare_for_autopilot(campaign, daily_caps, per_source_spend):
             key=lambda x: per_source_spend.get((x.ad_group_id, x.source_id), 0),
         )
 
+        sorted_ad_group_sources = filter(
+            lambda x: x.source not in CAMPAIGN_STOP_IGNORE_SOURCES,
+            sorted_ad_group_sources,
+        )
+
         to_stop = set()
         while len(sorted_ad_group_sources) > 0 and ag_daily_cap < _get_min_ap_budget(sorted_ad_group_sources):
             to_stop.add(sorted_ad_group_sources.pop(0))
