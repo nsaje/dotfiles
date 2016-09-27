@@ -562,7 +562,7 @@ def _prepare_for_autopilot(campaign, daily_caps, per_source_spend):
         )
 
         sorted_ad_group_sources = filter(
-            lambda x: x.source not in CAMPAIGN_STOP_IGNORE_SOURCES,
+            lambda x: x.source_id not in CAMPAIGN_STOP_IGNORE_SOURCES,
             sorted_ad_group_sources,
         )
 
