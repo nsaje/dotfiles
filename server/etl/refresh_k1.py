@@ -27,7 +27,7 @@ NEW_MATERIALIZED_VIEWS = [
     materialize_views.MVHelpersNormalizedStats,
 
     materialize_views.MasterView,
-    materialize_views.MasterPublishersView,
+    # materialize_views.MasterPublishersView,
 
     materialize_views.MVConversions,
     materialize_views.MVTouchpointConversions,
