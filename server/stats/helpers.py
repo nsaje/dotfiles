@@ -14,7 +14,7 @@ from reports.db_raw_helpers import extract_obj_ids
 
 CONTENT_ADS_FIELDS = [
     'url', 'title', 'display_url', 'brand_name', 'description', 'call_to_action', 'label', 'batch_name', 'batch_id',
-    'upload_time', 'image_hash', 'image_urls', 'redirector_url',
+    'upload_time', 'image_hash', 'image_urls', 'redirector_url', 'status_per_source'
 ]
 
 SOURCE_FIELDS = [
@@ -251,8 +251,6 @@ def extract_order_field(order, target_dimension, primary_goals=None):
 
     if order_field == 'performance':
         if primary_goals:
-            # TODO supports only by 1 primary goal ordering
-            # should have 'performance' column selected and than use 'performance_' column
             order_field = 'performance_' + primary_goals[0].get_view_key()
         else:
             order_field = 'clicks'
@@ -306,6 +304,9 @@ def should_query_dashapi_first(order, target_dimension):
         return True
 
     if order_field in SOURCE_FIELDS and target_dimension == 'source_id':
+        return True
+
+    if order_field in CONTENT_ADS_FIELDS and target_dimension == 'content_ad_id':
         return True
 
     return False
