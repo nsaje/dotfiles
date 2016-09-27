@@ -457,6 +457,22 @@ class QueryTest(TestCase):
                 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
                 'batch_id': 1,
                 'title': 'Title 1',
+                'status_per_source': {
+                    1: {
+                        'source_id': 1,
+                        'submission_status': 1,
+                        'source_name': 'AdsNative',
+                        'source_status': 1,
+                        'submission_errors': None
+                    },
+                    2: {
+                        'source_id': 2,
+                        'submission_status': 2,
+                        'source_name': 'Gravity',
+                        'source_status': 2,
+                        'submission_errors': None
+                    }
+                },
             }, {
                 'image_hash': '200',
                 'description': 'Example description',
@@ -479,6 +495,15 @@ class QueryTest(TestCase):
                 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
                 'batch_id': 1,
                 'title': 'Title 2',
+                'status_per_source': {
+                    2: {
+                        'source_id': 2,
+                        'submission_status': 2,
+                        'source_name': 'Gravity',
+                        'source_status': 2,
+                        'submission_errors': None
+                    }
+                },
             },
         ])
 
@@ -856,6 +881,22 @@ class AugmentTest(TestCase):
                 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
                 'batch_id': 1,
                 'title': 'Title 1',
+                'status_per_source': {
+                    1: {
+                        'source_id': 1,
+                        'submission_status': 1,
+                        'source_name': 'AdsNative',
+                        'source_status': 1,
+                        'submission_errors': None
+                    },
+                    2: {
+                        'source_id': 2,
+                        'submission_status': 2,
+                        'source_name': 'Gravity',
+                        'source_status': 2,
+                        'submission_errors': None
+                    }
+                },
             }, {
                 'clicks': 22,
                 'image_hash': '200',
@@ -879,6 +920,15 @@ class AugmentTest(TestCase):
                 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
                 'batch_id': 1,
                 'title': 'Title 2',
+                'status_per_source': {
+                    2: {
+                        'source_id': 2,
+                        'submission_status': 2,
+                        'source_name': 'Gravity',
+                        'source_status': 2,
+                        'submission_errors': None
+                    }
+                },
             },
         ])
 
@@ -1205,7 +1255,16 @@ class QueryMissingRowsTest(TestCase):
                 'state': 2,
                 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
                 'batch_id': 1,
-                'title': 'Title 2'
+                'title': 'Title 2',
+                'status_per_source': {
+                    2: {
+                        'source_id': 2,
+                        'submission_status': 2,
+                        'source_name': 'Gravity',
+                        'source_status': 2,
+                        'submission_errors': None
+                    }
+                },
             }, {
                 'status': 2,
                 'image_hash': '300',
@@ -1228,7 +1287,7 @@ class QueryMissingRowsTest(TestCase):
                 'state': 2,
                 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
                 'batch_id': 2,
-                'title': 'Title 3'
+                'title': 'Title 3',
             }])
 
 

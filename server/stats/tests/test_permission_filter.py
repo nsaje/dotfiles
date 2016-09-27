@@ -31,6 +31,10 @@ class FilterTestCase(TestCase):
             'pacing': 1, 'allocated_budgets': 1, 'spend_projection': 1, 'license_fee_projection': 1,
             'flat_fee': 1, 'total_fee': 1, 'total_fee_projection': 1,
             'agency': 1, 'default_account_manager': 1, 'default_sales_representative': 1, 'campaign_manager': 1,
+            'status_per_source': {1: {
+                'source_id': 1,
+                'source_status': 1,
+            }},
         }
 
         # add all possible fields
@@ -78,7 +82,9 @@ class FilterTestCase(TestCase):
                 'avg_cost_per_pixel_1_2160': 1,
                 'min_bid_cpc': 1, 'max_bid_cpc': 1, 'daily_budget': 1,
                 'campaign_stop_inactive': 1, 'campaign_has_available_budget': 1,
-                'archived': 1, 'maintenance': 1,
+                'archived': 1, 'maintenance': 1, 'status_per_source': {1: {
+                    'source_id': 1,
+                }},
             },
         ]
 
@@ -189,6 +195,20 @@ class FilterTestCase(TestCase):
 
         self.default_cleaned_rows[0].update({
             'default_account_manager': 1, 'default_sales_representative': 1, 'campaign_manager': 1,
+        })
+        self.assertItemsEqual(self.rows, self.default_cleaned_rows)
+
+    def test_filter_columns_by_permission_content_ad_source_status(self):
+        user = User.objects.get(pk=1)
+        test_helper.add_permissions(user, ['can_see_media_source_status_on_submission_popover'])
+
+        permission_filter.filter_columns_by_permission(user, self.rows, self.goals)
+
+        self.default_cleaned_rows[0].update({
+            'status_per_source': {1: {
+                'source_id': 1,
+                'source_status': 1,
+            }},
         })
         self.assertItemsEqual(self.rows, self.default_cleaned_rows)
 

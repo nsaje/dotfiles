@@ -43,6 +43,7 @@ def filter_columns_by_permission(user, rows, goals):
     fields_to_keep.extend(dash.campaign_goals.get_allowed_pixels_fields(goals.pixels))
 
     api_helpers.remove_fields(rows, fields_to_keep)
+    api_helpers.custom_cleanup(user, rows)
 
 
 def validate_breakdown_by_permissions(level, user, breakdown):

@@ -222,6 +222,52 @@ class ContentAdLoaderTest(TestCase):
             1: [models.ContentAdSource.objects.get(pk=1)],
         })
 
+    def test_status_per_source(self):
+        self.assertDictEqual(self.loader.per_source_status_map, {
+            1: {
+                1: {
+                    'source_id': 1,
+                    'submission_status': 1,
+                    'source_name': 'AdsNative',
+                    'source_status': 1,
+                    'submission_errors': None
+                },
+                2: {
+                    'source_id': 2,
+                    'submission_status': 2,
+                    'source_name': 'Gravity',
+                    'source_status': 2,
+                    'submission_errors': None
+                }
+            },
+            2: {
+                2: {
+                    'source_id': 2,
+                    'submission_status': 2,
+                    'source_name': 'Gravity',
+                    'source_status': 2,
+                    'submission_errors': None
+                }
+            }
+        })
+
+    def test_status_per_source_filtered(self):
+        content_ads = models.ContentAd.objects.all()
+        sources = models.Source.objects.filter(pk=1)
+
+        loader = loaders.ContentAdsLoader(content_ads, sources)
+        self.assertDictEqual(loader.per_source_status_map, {
+            1: {
+                1: {
+                    'source_id': 1,
+                    'submission_status': 1,
+                    'source_name': 'AdsNative',
+                    'source_status': 1,
+                    'submission_errors': None
+                },
+            },
+        })
+
 
 class SourcesLoaderTest(TestCase):
 

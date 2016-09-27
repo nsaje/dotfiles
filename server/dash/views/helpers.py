@@ -218,16 +218,6 @@ def get_campaign(user, campaign_id, sources=None):
         raise exc.MissingDataError('Campaign does not exist')
 
 
-def get_upload_batch(user, batch_id):
-    try:
-        batch = models.UploadBatch.objects.all().filter_by_user(user).\
-            filter(id=int(batch_id))
-
-        return batch.get()
-    except models.UploadBatch.DoesNotExist:
-        raise exc.MissingDataError('Upload batch does not exist')
-
-
 def get_user_agency(user):
     try:
         return user.agency_set.get()
@@ -1275,3 +1265,8 @@ def get_users_for_manager(user, account, current_manager=None):
         users |= zemauth.models.User.objects.filter(pk=current_manager.id)
 
     return users.filter(is_active=True).distinct()
+
+
+def get_upload_batches_for_ad_group(ad_group):
+    batch_ids = models.ContentAd.objects.filter(ad_group_id=ad_group.id).distinct('batch_id').values_list('batch_id')
+    return models.UploadBatch.objects.filter(pk__in=batch_ids)

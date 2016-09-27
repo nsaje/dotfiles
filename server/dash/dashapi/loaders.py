@@ -234,6 +234,14 @@ class AdGroupsLoader(Loader):
                      .select_related('ad_group_source')
 
     @cached_property
+    def sources_settings_map(self):
+        m = collections.defaultdict(dict)
+        for ad_group_id in self.objs_ids:
+            for ad_group_source_settings in self.sources_settings_qs:
+                m[ad_group_id][ad_group_source_settings.ad_group_source.source_id] = ad_group_source_settings
+        return m
+
+    @cached_property
     def status_map(self):
         status_map = view_helpers.get_ad_group_state_by_sources_running_status(
             self.objs_qs,
@@ -260,9 +268,13 @@ class ContentAdsLoader(Loader):
         return {x.pk: x.batch for x in self.objs_qs}
 
     @cached_property
+    def ad_groups_qs(self):
+        return models.AdGroup.objects.filter(
+            pk__in=set(x.ad_group_id for x in self.objs_qs))
+
+    @cached_property
     def ad_group_loader(self):
-        return AdGroupsLoader(models.AdGroup.objects.filter(
-            pk__in=set(x.ad_group_id for x in self.objs_qs)), self.filtered_sources_qs)
+        return AdGroupsLoader(self.ad_groups_qs, self.filtered_sources_qs)
 
     @cached_property
     def ad_group_map(self):
@@ -293,6 +305,28 @@ class ContentAdsLoader(Loader):
             else:
                 status_map[content_ad_id] = constants.ContentAdSourceState.INACTIVE
         return status_map
+
+    @cached_property
+    def per_source_status_map(self):
+        per_source_map = collections.defaultdict(dict)
+        sources = {x.id: x.name for x in self.filtered_sources_qs}
+
+        for content_ad_id, content_ad in self.objs_map.iteritems():
+            for content_ad_source in self.content_ads_sources_map[content_ad_id]:
+                source_id = content_ad_source.source_id
+                ad_group_source_settings = self.ad_group_loader.sources_settings_map[content_ad.ad_group_id].get(source_id)
+                source_status = (ad_group_source_settings.state if ad_group_source_settings else
+                                 constants.AdGroupSourceSettingsState.INACTIVE)
+
+                per_source_map[content_ad_id][content_ad_source.source_id] = {
+                    'source_id': source_id,
+                    'source_name': sources.get(source_id),
+                    'source_status': source_status,
+                    'submission_status': content_ad_source.get_submission_status(),
+                    'submission_errors': content_ad_source.submission_errors,
+                }
+
+        return per_source_map
 
     @cached_property
     def content_ads_sources_qs(self):

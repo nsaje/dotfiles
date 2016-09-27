@@ -47,7 +47,7 @@ def get_constraints_kwargs(form_data, **overrides):
     return kwargs
 
 
-def format_breakdown_response(report_rows, offset, limit, parents, totals=None, goals=None):
+def format_breakdown_response(report_rows, offset, limit, parents, totals=None, goals=None, batches=None):
     blocks = []
 
     if parents:
@@ -82,11 +82,14 @@ def format_breakdown_response(report_rows, offset, limit, parents, totals=None, 
             },
         }]
 
-        if goals and goals.conversion_goals:
+        if goals and goals.conversion_goals is not None:
             blocks[0]['conversion_goals'] = helpers.get_conversion_goals_wo_pixels(goals.conversion_goals)
 
-        if goals and goals.pixels:
+        if goals and goals.pixels is not None:
             blocks[0]['pixels'] = helpers.get_pixels_list(goals.pixels)
+
+        if batches is not None:
+            blocks[0]['batches'] = breakdown_helpers.get_upload_batches_response_list(batches)
 
     return blocks
 
@@ -183,31 +186,6 @@ def get_report_through_table(get_fn, user, form_data, all_accounts_level=False, 
         base['ob_blacklisted_count'] = response['ob_blacklisted_count']
 
     return [base]
-
-
-def get_report_ad_group_content_ads(user, filtered_sources, start_date, end_date,
-                                    order, page, size, show_archived,
-                                    **kwargs):
-    prefix, order_field = sort_helper.dissect_order(order)
-    if order_field == 'name':
-        order_field = 'title'
-    elif order_field in ('status', 'state', 'status_setting'):
-        order_field = 'status_setting'
-
-    order = prefix + order_field
-
-    response = table.AdGroupAdsTable().get(
-        user,
-        filtered_sources=filtered_sources,
-        start_date=start_date,
-        end_date=end_date,
-        order=order,
-        show_archived=show_archived,
-        page=page,
-        size=size,
-        ad_group_id=kwargs['ad_group_id']
-    )
-    return grid.convert_resource_response(constants.Level.AD_GROUPS, 'content_ad_id', response)
 
 
 def get_report_ad_group_sources(user, filtered_sources, start_date, end_date,
@@ -455,7 +433,6 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
     def _get_workaround_fn(self, base_dimension):
         return {
-            stats.constants.StructureDimension.CONTENT_AD: get_report_ad_group_content_ads,
             stats.constants.StructureDimension.SOURCE: get_report_ad_group_sources,
             stats.constants.StructureDimension.PUBLISHER: get_report_ad_group_publishers,
         }[base_dimension]
@@ -482,7 +459,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         # FIXME redirect to table.py if base level request for a breakdown
-        if len(breakdown) == 1:
+        if len(breakdown) == 1 and base_dim != 'content_ad_id':
             report = get_report_through_table(
                 self._get_workaround_fn(stats.constants.get_base_dimension(breakdown)),
                 request.user,
@@ -492,14 +469,25 @@ class AdGroupBreakdown(api_common.BaseApiView):
             )
             return self.create_api_response(report)
 
-        if stats.constants.get_base_dimension(breakdown) == 'publisher':
-            breakdown = ['publisher', 'source_id'] + breakdown[1:]
-
         constraints = stats.api_breakdowns.prepare_ad_group_constraints(
             request.user, ad_group, breakdown,
             only_used_sources=base_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
         goals = stats.api_breakdowns.get_goals(constraints)
+
+        totals_thread = None
+        if len(breakdown) == 1:
+            totals_constraints = stats.api_breakdowns.prepare_ad_group_constraints(
+                request.user, ad_group, breakdown, only_used_sources=False,
+                **get_constraints_kwargs(form.cleaned_data, show_archived=True))
+            totals_fn = partial(
+                stats.api_breakdowns.totals,
+                request.user, level, breakdown, totals_constraints, goals)
+            totals_thread = threads.AsyncFunction(totals_fn)
+            totals_thread.start()
+
+        if stats.constants.get_base_dimension(breakdown) == 'publisher':
+            breakdown = ['publisher', 'source_id'] + breakdown[1:]
 
         rows = stats.api_breakdowns.query(
             level,
@@ -513,10 +501,27 @@ class AdGroupBreakdown(api_common.BaseApiView):
             limit + REQUEST_LIMIT_OVERFLOW,
         )
 
+        if breakdown == ['content_ad_id']:
+            breakdown_helpers.format_report_rows_content_ad_editable_fields(rows)
+
         breakdown_helpers.format_report_rows_state_fields(rows)
         breakdown_helpers.format_report_rows_performance_fields(rows, goals)
         breakdown_helpers.clean_non_relevant_fields(rows)
 
-        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents)
+        totals = None
+        if totals_thread is not None:
+            totals_thread.join()
+            totals = totals_thread.result
+
+        batches = None
+        if base_dim == 'content_ad_id':
+            batches = helpers.get_upload_batches_for_ad_group(ad_group)
+
+        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals,
+                                           batches)
+        if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
+            report[0]['campaign_goals'] = campaign_goals.get_campaign_goals(
+                ad_group.campaign, report[0].get('conversion_goals', []))
+
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
         return self.create_api_response(report)

@@ -58,7 +58,8 @@ def augment_content_ads(rows, loader, is_base_level=False):
             loader.objs_map[content_ad_id],
             loader.batch_map[content_ad_id],
             loader.ad_group_map[content_ad_id],
-            loader.is_demo_map[content_ad_id]
+            loader.is_demo_map[content_ad_id],
+            loader.per_source_status_map[content_ad_id]
         )
 
 
@@ -158,7 +159,7 @@ def augment_row_ad_group(row, ad_group=None, settings=None, status=None, other_s
         row.update(other_settings)
 
 
-def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, is_demo=None):
+def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, is_demo=None, status_per_source=None):
     if content_ad:
         row.update({
             'name': content_ad.title,
@@ -190,6 +191,9 @@ def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, is_d
             'batch_name': batch.name,
             'upload_time': batch.created_dt,
         })
+
+    if status_per_source:
+        row['status_per_source'] = status_per_source
 
 
 def augment_row_source(row, source=None, settings=None):

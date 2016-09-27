@@ -67,6 +67,7 @@ FIELD_PERMISSION_MAPPING = {
 
     'archived': None,
     'maintenance': None,
+    'status_per_source': None,
 }
 
 
@@ -130,6 +131,20 @@ def get_fields_to_keep(user):
 
 def remove_fields(rows, fields_to_keep):
     for row in rows:
-        for field in row.keys():
-            if field not in fields_to_keep:
-                row.pop(field, None)
+        for row_field in row.keys():
+            if row_field not in fields_to_keep:
+                row.pop(row_field, None)
+
+
+def custom_cleanup(user, rows):
+    """
+    Put here custom logics for cleaning fields that doesn't fit 'remove_fields'.
+    """
+
+    remove_content_ad_source_status = not user.has_perm('zemauth.can_see_media_source_status_on_submission_popover')
+
+    if remove_content_ad_source_status:
+        for row in rows:
+            if row.get('status_per_source'):
+                for source_status in row['status_per_source'].values():
+                    source_status.pop('source_status', None)

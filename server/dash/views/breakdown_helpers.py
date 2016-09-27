@@ -81,6 +81,43 @@ def format_report_rows_ad_group_editable_fields(rows):
         )
 
 
+def format_report_rows_content_ad_editable_fields(rows):
+    for row in rows:
+        submission_states = []
+
+        for _, source_status in row.get('status_per_source', {}).items():
+
+            source_status_text = ''
+            if ('source_status' in source_status and
+               source_status['source_status'] != constants.AdGroupSourceSettingsState.ACTIVE):
+                source_status_text = '(paused)'
+
+            submission_status = source_status['submission_status']
+            submission_errors = source_status['submission_errors']
+
+            text = constants.ContentAdSubmissionStatus.get_text(submission_status)
+            if (submission_status == constants.ContentAdSubmissionStatus.REJECTED and submission_errors is not None):
+                text = '{} ({})'.format(text, submission_errors)
+
+            submission_states.append({
+                'name': source_status['source_name'],
+                'status': source_status['submission_status'],
+                'source_state': source_status_text,
+                'text': text,
+            })
+
+        row.update({
+            'id': row['content_ad_id'],
+            'submission_status': submission_states,
+            'editable_fields': {
+                'state': {
+                    'enabled': True,
+                    'message': None,
+                },
+            }
+        })
+
+
 def set_row_goal_performance_meta(row, goals_performances, conversion_goals):
     for goal_status, goal_metric, goal_value, goal in goals_performances:
         performance_item = {
@@ -137,7 +174,13 @@ def clean_non_relevant_fields(rows):
     for row in rows:
         row.pop('campaign_stop_inactive', None)
         row.pop('campaign_has_available_budget', None)
+        row.pop('status_per_source', None)
 
         for key in row.keys():
             if key.startswith('performance_'):
                 row.pop(key, None)
+
+
+def get_upload_batches_response_list(upload_batches):
+    upload_batches = upload_batches.order_by('-created_dt')
+    return list(upload_batches.values('id', 'name'))

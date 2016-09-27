@@ -151,6 +151,8 @@ class AllAccountsBreakdownTestCase(TestCase):
             'success': True,
             'data': [{
                 'breakdown_id': None,
+                'conversion_goals': [],
+                'pixels': [],
                 'pagination': {
                     'count': 3,
                     'limit': 2,
@@ -512,6 +514,82 @@ class AdGroupBreakdownTestCase(TestCase):
             5 + breakdown.REQUEST_LIMIT_OVERFLOW  # [workaround] see implementation
         )
 
+    @patch('stats.api_breakdowns.totals')
+    def test_post_base_level(self, mock_totals, mock_query):
+        test_helper.add_permissions(
+            self.user, ['can_access_table_breakdowns_feature_on_ad_group_level'])
+
+        mock_query.return_value = {}
+
+        mock_totals.return_value = {
+            'clicks': 123,
+        }
+
+        params = {
+            'limit': 5,
+            'offset': 33,
+            'order': '-clicks',
+            'start_date': '2016-01-01',
+            'end_date': '2016-02-03',
+            'filtered_sources': ['1', '3', '4'],
+            'show_archived': 'true',
+            'parents': [],
+        }
+
+        response = self.client.post(
+            reverse('breakdown_ad_groups', kwargs={
+                'ad_group_id': 1,
+                'breakdown': '/content_ad'
+            }),
+            data=json.dumps({'params': params}),
+            content_type='application/json'
+        )
+
+        print response.content
+        self.assertEqual(response.status_code, 200)
+
+        mock_query.assert_called_with(
+            Level.AD_GROUPS,
+            self.user,
+            ['content_ad_id'],
+            {
+                'allowed_content_ads': test_helper.QuerySetMatcher(models.ContentAd.objects.filter(ad_group_id=1)),
+                'ad_group': models.AdGroup.objects.get(pk=1),
+                'campaign': models.Campaign.objects.get(pk=1),
+                'account': models.Account.objects.get(pk=1),
+                'date__gte': datetime.date(2016, 1, 1),
+                'date__lte': datetime.date(2016, 2, 3),
+                'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'show_archived': True,
+            },
+            ANY,
+            [],
+            '-clicks',
+            33,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW  # [workaround] see implementation
+        )
+
+        self.assertDictEqual(json.loads(response.content), {
+            "data": [{
+                "pagination": {"count": 33, "limit": 0, "offset": 33},
+                "rows": {},
+                "breakdown_id": None,
+                "totals": {"clicks": 123},
+                "batches": [
+                    {"id": 2, "name": "Ich bin eine UploadBatch"},
+                    {"id": 1, "name": "batch 1"}
+                ],
+                "conversion_goals": [
+                    {"id": "conversion_goal_2", "name": "test conversion goal 2"},
+                    {"id": "conversion_goal_3", "name": "test conversion goal 3"},
+                    {"id": "conversion_goal_4", "name": "test conversion goal 4"},
+                    {"id": "conversion_goal_5", "name": "test conversion goal 5"}
+                ],
+                "pixels": [{"prefix": "pixel_1", "name": "test"}]}
+            ],
+            "success": True
+        })
+
 
 class RequestOverflowTest(TestCase):
     def create_test_data(self):
@@ -664,7 +742,7 @@ class BreakdownHelperTest(TestCase):
 
         rows = [
             {'ad_group_id': 1, 'campaign_has_available_budget': 1, 'campaign_stop_inactive': False,
-             'performance': {}, 'performance_campaign_goal_1': 1, },
+             'performance': {}, 'performance_campaign_goal_1': 1, 'status_per_source': 1},
             {'ad_group_id': 2, 'campaign_has_available_budget': 1, 'campaign_stop_inactive': False,
              'performance': {}, 'performance_campaign_goal_1': 1, },
         ]
@@ -675,3 +753,63 @@ class BreakdownHelperTest(TestCase):
             {'ad_group_id': 1, 'performance': {}},
             {'ad_group_id': 2, 'performance': {}},
         ])
+
+    def test_content_ad_editable_rows(self):
+        rows = [
+            {'content_ad_id': 1, 'status_per_source': {
+                1: {
+                    'source_id': 1,
+                    'source_name': 'Gravity',
+                    'source_status': 1,
+                    'submission_status': 1,
+                    'submission_errors': None,
+                },
+                2: {
+                    'source_id': 2,
+                    'source_name': 'AdsNative',
+                    'source_status': 2,
+                    'submission_status': 2,
+                    'submission_errors': 'Sumtingwoing',
+                }
+            }}
+        ]
+
+        breakdown_helpers.format_report_rows_content_ad_editable_fields(rows)
+
+        self.assertEquals(rows, [{
+            'content_ad_id': 1,
+            'id': 1,
+            'submission_status': [{
+                'status': 1,
+                'text': 'Pending',
+                'name': 'Gravity',
+                'source_state': ''
+            }, {
+                'status': 2,
+                'text': 'Approved',
+                'name': 'AdsNative',
+                'source_state': '(paused)'
+            }],
+            'status_per_source': {  # this node gets removed in cleanup
+                1: {
+                    'source_id': 1,
+                    'submission_status': 1,
+                    'source_name': 'Gravity',
+                    'source_status': 1,
+                    'submission_errors': None
+                },
+                2: {
+                    'source_id': 2,
+                    'submission_status': 2,
+                    'source_name': 'AdsNative',
+                    'source_status': 2,
+                    'submission_errors': 'Sumtingwoing'
+                }
+            },
+            'editable_fields': {
+                'state': {
+                    'message': None,
+                    'enabled': True
+                }
+            }
+        }])
