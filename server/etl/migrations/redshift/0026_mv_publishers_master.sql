@@ -7,6 +7,7 @@ CREATE TABLE mv_pubs_master (
        campaign_id int2 encode lzo,
        ad_group_id int2 encode lzo,
        publisher varchar(255) encode lzo,
+       external_id varchar(255) encode lzo,
 
        device_type int2 encode bytedict,
        country varchar(2) encode bytedict,

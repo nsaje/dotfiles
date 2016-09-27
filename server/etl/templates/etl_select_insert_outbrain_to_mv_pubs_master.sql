@@ -8,6 +8,7 @@ INSERT INTO mv_pubs_master(
       c.campaign_id as campaign_id,
       a.ad_group_id as ad_group_id,
       a.publisher_name as publisher,
+      a.publisher_id as external_id,
 
       null as device_type,
       null as country,
@@ -54,5 +55,5 @@ INSERT INTO mv_pubs_master(
     join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
     left outer join mvh_ad_group_cost_per_click ad_cpc on a.ad_group_id=ad_cpc.ad_group_id and a.date=ad_cpc.date
   WHERE
-  a.date BETWEEN %(date_from)s AND %(date_to)s
+  a.date BETWEEN %(date_from)s AND %(date_to)s AND (publisher IS NOT NULL AND publisher <> '')
 )

@@ -8,6 +8,7 @@ INSERT INTO mv_pubs_master(
         campaign_id,
         ad_group_id,
         publisher,
+        NULL,
 
         device_type,
         country,
@@ -39,6 +40,6 @@ INSERT INTO mv_pubs_master(
         SUM(returning_users) as returning_users
 
     FROM mv_master
-    WHERE date BETWEEN %(date_from)s AND %(date_to)s
-    GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+    WHERE date BETWEEN %(date_from)s AND %(date_to)s AND publisher IS NOT NULL AND publisher <> ''
+    GROUP BY 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15
 )
