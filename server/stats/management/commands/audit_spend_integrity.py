@@ -2,11 +2,11 @@ import datetime
 
 import utils.command_helpers
 import utils.slack
-import stats.monitor
+import analytics.monitor
 import dash.models
 import dash.constants
 from utils import converters
-from stats.constants import SlackMsgTypes
+from analytics.constants import SlackMsgTypes
 
 VALID_ACCOUNT_TYPES = (
     dash.constants.AccountType.SELF_MANAGED,
@@ -60,7 +60,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         all_issues = []
         for date in dates:
-            issues = stats.monitor.audit_spend_integrity(date)
+            issues = analytics.monitor.audit_spend_integrity(date)
             all_issues.extend(issues)
 
         if not all_issues:

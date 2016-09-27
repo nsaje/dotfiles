@@ -6,7 +6,7 @@ from django.conf import settings
 import utils.command_helpers
 import utils.slack
 import utils.email_helper
-import stats.monitor
+import analytics.monitor
 import dash.models
 import dash.constants
 
@@ -64,7 +64,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             if c.account.get_current_settings().account_type in VALID_ACCOUNT_TYPES
         }
 
-        alarms = stats.monitor.audit_pacing(
+        alarms = analytics.monitor.audit_pacing(
             date,
             campaign__in=flying_campaigns.values(),
         )

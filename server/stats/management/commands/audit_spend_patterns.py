@@ -2,8 +2,8 @@ import datetime
 
 import utils.command_helpers
 import utils.slack
-import stats.monitor
-from stats.constants import SlackMsgTypes
+import analytics.monitor
+from analytics.constants import SlackMsgTypes
 
 ALERT_MSG = """Spend on {d2} is {change}% lower than on {d1} (below threshold {thr}%). Check <https://one.zemanta.com/all_accounts/accounts?start_date={fd}&end_date={td}&page=1|Zemanta one>."""
 
@@ -34,7 +34,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         if options['date']:
             date = datetime.datetime.strptime(options['date'], "%Y-%m-%d").date()
 
-        alarms = stats.monitor.audit_spend_patterns(
+        alarms = analytics.monitor.audit_spend_patterns(
             date,
             threshold=float(options['threshold']),
             first_in_month_threshold=float(options['fdm_threshold']),
