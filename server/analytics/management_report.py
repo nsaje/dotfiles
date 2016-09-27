@@ -52,7 +52,7 @@ def _format_change(key, change):
 
 def _get_dict_change(d_prev, d_after):
     return {
-        k: (d_after[k], d_prev.get(k)) for k in d_after if d_after[k] != d_prev.get(k)
+        k: (d_prev.get(k), d_after[k], ) for k in d_after if d_after[k] != d_prev.get(k)
     }
 
 
