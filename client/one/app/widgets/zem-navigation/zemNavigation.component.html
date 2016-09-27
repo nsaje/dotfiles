@@ -12,7 +12,7 @@
              ng-class="$ctrl.getItemClasses(item)"
              ng-click="$ctrl.navigateTo(item)">
             <span class="circle" ng-class="$ctrl.getItemIconClass(item)"></span>
-            <span class="name">{{ item.data.name }}</span>
+            <span class="name" title="{{ item.data.name }}">{{ item.data.name }}</span>
             <span class="agency" ng-if="$ctrl.showAgency" ng-show="item.data.agency">({{item.data.agency}})</span>
         </li>
     </ul>
