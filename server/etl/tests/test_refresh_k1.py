@@ -8,6 +8,14 @@ from etl import refresh_k1
 
 class RefreshTest(TestCase):
 
+    def setUp(self):
+        self.tmp_NEW_MATERIALIZED_VIEWS = refresh_k1.NEW_MATERIALIZED_VIEWS
+        self.tmp_MATERIALIZED_VIEWS = refresh_k1.MATERIALIZED_VIEWS
+
+    def tearDown(self):
+        refresh_k1.NEW_MATERIALIZED_VIEWS = self.tmp_NEW_MATERIALIZED_VIEWS
+        refresh_k1.MATERIALIZED_VIEWS = self.tmp_MATERIALIZED_VIEWS
+
     @mock.patch('etl.daily_statements_k1.reprocess_daily_statements')
     @mock.patch('etl.refresh_k1.generate_job_id', return_value='asd')
     def test_refresh_k1_reports(self, mock_generate_job_id, mock_reprocess):

@@ -11,7 +11,7 @@ from django.template.loader import render_to_string
 
 from dash.constants import EmailTemplateType
 import dash.models
-import reports.management_report
+import analytics.management_report
 
 from utils import pagerduty_helper
 
@@ -360,7 +360,7 @@ def send_daily_management_report_email():
     email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), recipients)
-    email.attach_alternative(reports.management_report.get_daily_report_html(), "text/html")
+    email.attach_alternative(analytics.management_report.get_daily_report_html(), "text/html")
     email.send(fail_silently=False)
 
 

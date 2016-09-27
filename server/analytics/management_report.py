@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 import dash.models
 import dash.constants
 import reports.models
-import reports.projections
+import analytics.projections
 from utils import converters
 from utils.html_helpers import TableCell, TableRow, Url
 
@@ -214,7 +214,7 @@ def _populate_agency(context, type_filter):
     ) & context.agency_campaigns
 
     monthly_campaigns = context.campaigns['this_month'] & valid_campaigns
-    projections = reports.projections.CurrentMonthBudgetProjections(
+    projections = analytics.projections.CurrentMonthBudgetProjections(
         'account',
         campaign_id__in=monthly_campaigns
     )
@@ -241,7 +241,7 @@ def _populate_clientdirect(context, type_filter):
     ) - context.agency_campaigns
 
     monthly_campaigns = context.campaigns['this_month'] & valid_campaigns
-    projections = reports.projections.CurrentMonthBudgetProjections(
+    projections = analytics.projections.CurrentMonthBudgetProjections(
         'account',
         campaign_id__in=monthly_campaigns
     )

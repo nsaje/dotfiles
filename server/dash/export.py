@@ -12,7 +12,7 @@ from dash import constants
 from dash import bcm_helpers
 from dash import campaign_goals
 from dash.views import helpers
-from reports.projections import BudgetProjections
+from analytics.projections import BudgetProjections
 
 from utils.sort_helper import sort_results
 

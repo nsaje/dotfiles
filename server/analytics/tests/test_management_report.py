@@ -2,8 +2,7 @@ import datetime
 
 from django import test
 
-import reports.management_report
-import reports.models
+import analytics.management_report
 import dash.models
 import zemauth.models
 from utils.html_helpers import TableCell, TableRow
@@ -71,7 +70,7 @@ class ManagementReportTestCase(test.TestCase):
         }
 
     def test_daily_empty(self):
-        html = reports.management_report.get_daily_report_html(self.today)
+        html = analytics.management_report.get_daily_report_html(self.today)
         self.assertIn('<caption>Daily Management Report</caption>', html)
         self.assertIn(
             '<div class="section"><table',
@@ -99,13 +98,13 @@ class ManagementReportTestCase(test.TestCase):
             end_date=credit.end_date
         )
 
-        html = reports.management_report.get_daily_report_html(
+        html = analytics.management_report.get_daily_report_html(
             today
         )
         self.assertIn('<li><a href="https://one.zemanta.com/accounts/1/campaigns">1 - test account 1 - $5000 - ', html)
         self.assertIn('<li><a href="https://one.zemanta.com/campaigns/1/ad_groups">$5000', html)
 
-        html = reports.management_report.get_daily_report_html(
+        html = analytics.management_report.get_daily_report_html(
             today + datetime.timedelta(1)
         )
         self.assertNotIn('<li><a href="https://one.zemanta.com/accounts/1/campaigns">1 - test account 1 - $5000', html)
@@ -126,7 +125,7 @@ class ManagementReportTestCase(test.TestCase):
             account=acc,
             name='Campaign 2'
         ).save(r)
-        html = reports.management_report.get_daily_report_html(
+        html = analytics.management_report.get_daily_report_html(
             today
         )
 
@@ -135,7 +134,7 @@ class ManagementReportTestCase(test.TestCase):
         self.assertIn('<li><a href="https://one.zemanta.com/accounts/2/campaigns">Account Account 2</a></li>', html)
 
     def test_fixture_context(self):
-        context = reports.management_report.ReportContext(self.today)
+        context = analytics.management_report.ReportContext(self.today)
         self.assertEqual(context.account_types, {})
         self.assertEqual(context.campaign_types, {1: 1, 2: 1})
         self.assertEqual(context.agency_accounts, set([]))
@@ -147,11 +146,11 @@ class ManagementReportTestCase(test.TestCase):
             [TableCell(30), TableCell(50)],
         ]
         self.assertEqual(
-            reports.management_report._get_totals(table, 0).value,
+            analytics.management_report._get_totals(table, 0).value,
             40
         )
         self.assertEqual(
-            reports.management_report._get_totals(table, 1).value,
+            analytics.management_report._get_totals(table, 1).value,
             70
         )
 
@@ -164,15 +163,15 @@ class ManagementReportTestCase(test.TestCase):
             'prev_week': set([3, 5]),
         }
         self.assertEqual(
-            reports.management_report._get_change('month', accounts, set([1, 2, 3, 4, 5])),
+            analytics.management_report._get_change('month', accounts, set([1, 2, 3, 4, 5])),
             -2
         )
         self.assertEqual(
-            reports.management_report._get_change('week', accounts, set([1, 2, 3, 4, 5])),
+            analytics.management_report._get_change('week', accounts, set([1, 2, 3, 4, 5])),
             2
         )
         self.assertEqual(
-            reports.management_report._get_change('week', accounts, set([3, 5])),
+            analytics.management_report._get_change('week', accounts, set([3, 5])),
             -1
         )
 
@@ -187,7 +186,7 @@ class ManagementReportTestCase(test.TestCase):
             'this_day': set([1, 2]),
             'prev_day': set([3, ]),
         }
-        cell = reports.management_report._get_counts(accounts, set([1, 2, 3, 4, 5]))
+        cell = analytics.management_report._get_counts(accounts, set([1, 2, 3, 4, 5]))
         self.assertEqual(
             cell.as_html(),
             '<td>3 (<b>+1</b>, <b>+2</b>, <b>-2</b>)</td>',
@@ -201,31 +200,31 @@ class ManagementReportTestCase(test.TestCase):
             [1, 2, -2],
         )
 
-        cell = reports.management_report._get_counts(accounts, set([1, 2, 3, 4, 5]), total_only=True)
+        cell = analytics.management_report._get_counts(accounts, set([1, 2, 3, 4, 5]), total_only=True)
         self.assertEqual(
             cell.as_html(),
             '<td>3</td>',
         )
 
     def test_populate_agency(self):
-        row1 = TableRow(reports.management_report._populate_agency(self.context, 1))
+        row1 = TableRow(analytics.management_report._populate_agency(self.context, 1))
         self.assertEqual(
             row1.as_html(),
             '<tr><td>1 (<span>0</span>, <span>0</span>, <b>+1</b>)</td><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td></tr>'
         )
-        row2 = TableRow(reports.management_report._populate_agency(self.context, 2))
+        row2 = TableRow(analytics.management_report._populate_agency(self.context, 2))
         self.assertEqual(
             row2.as_html(),
             '<tr><td>1 (<b>+1</b>, <span>0</span>, <span>0</span>)</td><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td></tr>'
         )
 
     def test_populate_clientdirect(self):
-        row1 = TableRow(reports.management_report._populate_clientdirect(self.context, 3))
+        row1 = TableRow(analytics.management_report._populate_clientdirect(self.context, 3))
         self.assertEqual(
             row1.as_html(),
             '<tr><td>2 (<span>0</span>, <b>+2</b>, <b>+1</b>)</td><td>1 (<b>+1</b>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td></tr>'
         )
-        row2 = TableRow(reports.management_report._populate_clientdirect(self.context, 4))
+        row2 = TableRow(analytics.management_report._populate_clientdirect(self.context, 4))
         self.assertEqual(
             row2.as_html(),
             '<tr><td>1 (<span>0</span>, <span>0</span>, <b>+1</b>)</td><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td></tr>'

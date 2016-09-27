@@ -72,6 +72,9 @@ class BudgetProjections(object):
     def total(self, field=None):
         return self.totals[field] if field else self.totals
 
+    def keys(self):
+        return self.projections.keys()
+
     @newrelic.agent.function_trace()
     def _prepare_budgets(self, constraints):
         self.budgets = dash.models.BudgetLineItem.objects.all().exclude(
@@ -315,8 +318,8 @@ class BudgetProjections(object):
 
 class CurrentMonthBudgetProjections(BudgetProjections):
 
-    def __init__(self, breakdown, **constraints):
-        today = datetime.date.today()
+    def __init__(self, breakdown, date=None, **constraints):
+        today = date or datetime.date.today()
         _, end = calendar.monthrange(today.year, today.month)
         super(CurrentMonthBudgetProjections, self).__init__(
             datetime.date(today.year, today.month, 1),

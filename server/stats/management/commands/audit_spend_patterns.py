@@ -5,7 +5,7 @@ import utils.slack
 import stats.monitor
 from stats.constants import SlackMsgTypes
 
-ALERT_MSG = """Spend change on {d} is bellow threshold ({change}% < {thr}%). Check <https://one.zemanta.com/all_accounts/accounts?start_date={fd}&end_date={td}&page=1|Zemanta one>."""
+ALERT_MSG = """Spend on {d2} is {change}% lower than on {d1} (below threshold {thr}%). Check <https://one.zemanta.com/all_accounts/accounts?start_date={fd}&end_date={td}&page=1|Zemanta one>."""
 
 
 class Command(utils.command_helpers.ExceptionCommand):
@@ -34,22 +34,23 @@ class Command(utils.command_helpers.ExceptionCommand):
         if options['date']:
             date = datetime.datetime.strptime(options['date'], "%Y-%m-%d").date()
 
-        status, alarming_dates = stats.monitor.audit_spend_patterns(
+        alarms = stats.monitor.audit_spend_patterns(
             date,
             threshold=float(options['threshold']),
             first_in_month_threshold=float(options['fdm_threshold']),
             day_range=int(options['day_range']),
         )
 
-        if not status:
+        if alarms:
             self._print('FAIL')
-            for date, change in alarming_dates:
+            for date, change in alarms:
                 thr = float(options['fdm_threshold'] if date.day == 1 else options['threshold'])
                 self._print(' - {}: {} < {}'.format(date, change, thr))
                 utils.slack.publish(ALERT_MSG.format(
-                    d=date.strftime('%b %d %Y'),
-                    change=change * 100,
-                    thr=thr * 100,
+                    d2=date.strftime('%b %d %Y'),
+                    d1=(date - datetime.timedelta(1)).strftime('%b %d %Y'),
+                    change=(1 - change) * 100,
+                    thr=(1 - thr) * 100,
                     fd=str(date - datetime.timedelta(7)),
                     td=str(date + datetime.timedelta(1)),
                 ), msg_type=SlackMsgTypes.WARNING, username='Spend patterns')

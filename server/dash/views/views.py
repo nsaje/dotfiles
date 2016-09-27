@@ -58,7 +58,7 @@ from dash import history_helpers
 from dash import blacklist
 
 import reports.api_publishers
-import reports.projections
+import analytics.projections
 
 logger = logging.getLogger(__name__)
 
@@ -382,7 +382,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         async_query.join()
         yesterday_cost = async_query.yesterday_cost
-        monthly_proj = reports.projections.CurrentMonthBudgetProjections(
+        monthly_proj = analytics.projections.CurrentMonthBudgetProjections(
             'campaign',
             campaign=ad_group.campaign
         )
@@ -656,7 +656,7 @@ class CampaignOverview(api_common.BaseApiView):
                               start_date, end_date):
         settings = []
 
-        monthly_proj = reports.projections.CurrentMonthBudgetProjections(
+        monthly_proj = analytics.projections.CurrentMonthBudgetProjections(
             'campaign',
             campaign=campaign
         )

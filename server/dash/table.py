@@ -26,7 +26,7 @@ import reports.api_contentads
 import reports.api_publishers
 import reports.constants
 import reports.models
-from reports.projections import BudgetProjections
+from analytics.projections import BudgetProjections
 import actionlog.sync
 
 

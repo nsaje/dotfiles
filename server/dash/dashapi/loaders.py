@@ -3,7 +3,7 @@ from django.utils.functional import cached_property
 
 from automation import campaign_stop
 
-from reports.projections import BudgetProjections
+from analytics.projections import BudgetProjections
 
 from dash import models
 from dash import constants

@@ -7,7 +7,7 @@ import mock
 import dash.models
 import dash.constants
 import reports.models
-import reports.projections
+import analytics.projections
 import utils.dates_helper
 from utils.test_helper import fake_request
 
@@ -49,7 +49,7 @@ class ProjectionsTestCase(test.TestCase):
         )
         with mock.patch('utils.dates_helper.local_today') as local_today:
             local_today.return_value = start_date
-            stats = reports.projections.BudgetProjections(start_date, end_date, 'account')
+            stats = analytics.projections.BudgetProjections(start_date, end_date, 'account')
 
         self.assertEqual(stats.row(1), {
             'total_fee_projection': Decimal('5892.15686274509803921568627'),
@@ -71,8 +71,8 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = reports.projections.BudgetProjections(start_date, end_date, 'account',
-                                                      projection_date=self.today)
+        stats = analytics.projections.BudgetProjections(start_date, end_date, 'account',
+                                                        projection_date=self.today)
 
         self.assertEqual(stats.row(1), {
             'total_fee_projection': Decimal('3999.9990'),
@@ -88,8 +88,8 @@ class ProjectionsTestCase(test.TestCase):
             'attributed_license_fee': Decimal('2000.0000'),
         })
 
-        stats = reports.projections.BudgetProjections(start_date, end_date, 'campaign',
-                                                      projection_date=self.today)
+        stats = analytics.projections.BudgetProjections(start_date, end_date, 'campaign',
+                                                        projection_date=self.today)
 
         self.assertEqual(stats.row(1), {
             'ideal_media_spend': Decimal('4784.313725490196078431372549'),
@@ -167,7 +167,7 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = reports.projections.BudgetProjections(
+        stats = analytics.projections.BudgetProjections(
             start_date,
             end_date,
             'account',
@@ -221,7 +221,7 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = reports.projections.BudgetProjections(
+        stats = analytics.projections.BudgetProjections(
             start_date,
             end_date,
             'account',
@@ -269,7 +269,7 @@ class ProjectionsTestCase(test.TestCase):
                 margin_nano=0,
             )
 
-        stats = reports.projections.BudgetProjections(
+        stats = analytics.projections.BudgetProjections(
             start_date,
             end_date,
             'account',
@@ -288,8 +288,8 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = reports.projections.BudgetProjections(start_date, end_date, 'account',
-                                                      projection_date=self.today)
+        stats = analytics.projections.BudgetProjections(start_date, end_date, 'account',
+                                                        projection_date=self.today)
 
         self.assertEqual(stats.row(1), {
             'total_fee_projection': Decimal('4365.68627450980392156862745'),
@@ -305,8 +305,8 @@ class ProjectionsTestCase(test.TestCase):
             'attributed_license_fee': Decimal('2000.0000'),
         })
 
-        stats = reports.projections.BudgetProjections(start_date, end_date, 'campaign',
-                                                      projection_date=self.today)
+        stats = analytics.projections.BudgetProjections(start_date, end_date, 'campaign',
+                                                        projection_date=self.today)
 
         self.assertEqual(stats.row(1), {
             'ideal_media_spend': Decimal('2189.355742296918767507002801'),
@@ -334,8 +334,8 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = reports.projections.BudgetProjections(start_date, end_date, 'campaign',
-                                                      projection_date=self.today)
+        stats = analytics.projections.BudgetProjections(start_date, end_date, 'campaign',
+                                                        projection_date=self.today)
 
         self.assertEqual(stats.total('ideal_media_spend'),
                          Decimal('8034.313725490196078431372549'))
@@ -358,7 +358,7 @@ class ProjectionsTestCase(test.TestCase):
             self.today - datetime.timedelta(3),
             self.today + datetime.timedelta(3)
         )
-        stats = reports.projections.BudgetProjections(
+        stats = analytics.projections.BudgetProjections(
             self.today + datetime.timedelta(1),
             self.today + datetime.timedelta(3),
             'account',
