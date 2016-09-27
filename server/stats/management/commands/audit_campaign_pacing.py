@@ -4,7 +4,6 @@ from decimal import Decimal
 from django.conf import settings
 
 import utils.command_helpers
-import utils.slack
 import utils.email_helper
 import analytics.monitor
 import dash.models

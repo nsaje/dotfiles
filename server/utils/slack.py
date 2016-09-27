@@ -4,7 +4,7 @@ import urllib2
 
 from django.conf import settings
 
-from stats.constants import SlackMsgTypes
+from analytics.constants import SlackMsgTypes
 
 DEFAULT_USERNAME = 'z1'
 
