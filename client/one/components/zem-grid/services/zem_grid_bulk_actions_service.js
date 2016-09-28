@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'api', function ($window, api) {
+angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'api', 'zemAlertsService', function ($window, api, zemAlertsService) {
 
     function BulkActionsService (grid) {
         this.getActions = getActions;
@@ -201,7 +201,7 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
             }
             msg += ' active at the time.';
 
-            grid.meta.api.notify(constants.notificationType.info, msg);
+            zemAlertsService.notify(constants.notificationType.warning, msg, true);
         }
 
         function refreshData () {

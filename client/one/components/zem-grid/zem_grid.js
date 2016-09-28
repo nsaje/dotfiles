@@ -15,7 +15,7 @@ angular.module('one.legacy').directive('zemGrid', [function () {
             isPermissionInternal: '=zemIsPermissionInternal',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid.html',
-        controller: ['$scope', '$element', 'zemGridObject', 'zemGridPubSub', 'zemGridDataService', 'zemGridColumnsService', 'zemGridOrderService', 'zemGridSelectionService', 'zemGridCollapseService', 'zemGridNotificationService', 'zemGridApi', 'zemGridBulkActionsService', function ($scope, $element, zemGridObject, zemGridPubSub, zemGridDataService, zemGridColumnsService, zemGridOrderService, zemGridSelectionService, zemGridCollapseService, zemGridNotificationService, zemGridApi, zemGridBulkActionsService) { // eslint-disable-line max-len
+        controller: ['$scope', '$element', 'zemGridObject', 'zemGridPubSub', 'zemGridDataService', 'zemGridColumnsService', 'zemGridOrderService', 'zemGridSelectionService', 'zemGridCollapseService', 'zemGridApi', 'zemGridBulkActionsService', function ($scope, $element, zemGridObject, zemGridPubSub, zemGridDataService, zemGridColumnsService, zemGridOrderService, zemGridSelectionService, zemGridCollapseService, zemGridApi, zemGridBulkActionsService) { // eslint-disable-line max-len
             this.grid = new zemGridObject.createGrid();
             this.grid.ui.element = $element;
             this.grid.meta.scope = $scope;
@@ -28,7 +28,6 @@ angular.module('one.legacy').directive('zemGrid', [function () {
             this.grid.meta.orderService = zemGridOrderService.createInstance(this.grid);
             this.grid.meta.collapseService = zemGridCollapseService.createInstance(this.grid);
             this.grid.meta.selectionService = zemGridSelectionService.createInstance(this.grid);
-            this.grid.meta.notificationService = zemGridNotificationService.createInstance(this.grid);
             this.grid.meta.bulkActionsService = zemGridBulkActionsService.createInstance(this.grid);
 
             // Define Grid API and assign to api variable to enable binding between zem-grid and controller

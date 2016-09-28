@@ -45,6 +45,8 @@ var constants = {
     notificationType: {
         info: 'info',
         success: 'success',
+        warning: 'warning',
+        danger: 'danger',
     },
     adTargetDevice: {
         DESKTOP: 'desktop',

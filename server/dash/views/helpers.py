@@ -161,15 +161,12 @@ def get_additional_columns(additional_columns):
     return []
 
 
-def get_account(user, account_id, select_related=False, sources=None):
+def get_account(user, account_id, sources=None):
     try:
         account = models.Account.objects.all().filter_by_user(user)
 
         if sources:
             account = account.filter_by_sources(sources)
-
-        if select_related:
-            account = account.select_related('campaign_set')
 
         return account.filter(id=int(account_id)).get()
     except models.Account.DoesNotExist:

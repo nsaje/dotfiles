@@ -54,18 +54,19 @@
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
         </div>
 
-        <div uib-alert class="alert-info alert-sync" ng-show="!isSyncRecent">
+        <div uib-alert class="alert-warning alert-sync" ng-show="!isSyncRecent">
             We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span>
             If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </div>
 
-        <div uib-alert class="alert-info alert-sync" ng-show="archivingResults" close="closeArchivingResults()">
+        <div uib-alert class="alert-warning alert-sync" ng-show="archivingResults" close="closeArchivingResults()">
                 {{ archivingResults.archived_count }} {{ archivingResults.archived_count === 1 ? 'Content Ad was' : 'Content Ads were' }} archived and
                 <ng-pluralize count="archivingResults.archived_count" when="{'1': 'it {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;wasn\'t&quot; }} ',
                                                                             'other': '{{ archivingResults.active_count === 0 ? &quot;none&quot; : archivingResults.active_count }} of them {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;were&quot; }}'}"></ng-pluralize>
                 active at the time.
         </div>
 
+        <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
         <zem-table class="ads-plus-table" zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-notifications="notifications" zem-table-data-status="dataStatus"></zem-table>
 
         <div class="table-footnotes">
@@ -112,6 +113,7 @@
             <zem-grid-column-selector api="grid.api" class="pull-right"></zem-grid-column-selector>
             <zem-grid-breakdown-selector api="grid.api" class="pull-right"></zem-grid-breakdown-selector>
         </div>
+        <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
         <zem-grid-integration
                 api="grid.api"
                 options="grid.options"

@@ -27,6 +27,7 @@ import dash.views.callbacks
 import dash.views.upload
 import dash.views.grid
 import dash.views.audiences
+import dash.views.alerts
 
 
 admin.site.login = login_required(admin.site.login)
@@ -534,6 +535,26 @@ urlpatterns += [
         r'^api/accounts/(?P<account_id>\d+)/audiences/',
         login_required(dash.views.audiences.AudiencesView.as_view()),
         name='accounts_audiences'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/alerts/',
+        login_required(dash.views.alerts.AdGroupAlerts.as_view()),
+        name='ad_group_alerts',
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/alerts/',
+        login_required(dash.views.alerts.CampaignAlerts.as_view()),
+        name='campaign_alerts',
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/alerts/',
+        login_required(dash.views.alerts.AccountAlerts.as_view()),
+        name='account_alerts',
+    ),
+    url(
+        r'^api/all_accounts/alerts/',
+        login_required(dash.views.alerts.AllAccountsAlerts.as_view()),
+        name='all_account_alerts',
     ),
 ]
 

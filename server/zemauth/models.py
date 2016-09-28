@@ -228,6 +228,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_include_totals_in_reports', 'Can include totals in reports'),
             ('can_view_additional_targeting', 'Can view additional targeting'),
             ('bulk_actions_on_all_levels', 'User can do bulk actions on all levels'),
+            ('can_see_landing_mode_alerts', 'User can see landing mode alerts above tables'),
         )
 
     def get_full_name(self):

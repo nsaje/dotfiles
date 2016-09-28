@@ -90,38 +90,43 @@ def perform_landing_mode_check(campaign, campaign_settings):
     return False
 
 
-def _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
+def is_campaign_running_out_of_budget(campaign, campaign_settings):
+    return _check_campaign_for_landing_mode(campaign, campaign_settings)[1]
+
+
+def _check_campaign_for_landing_mode(campaign, campaign_settings):
     if not campaign_settings.automatic_campaign_stop:
-        return False, []
+        return False, False
 
     if campaign_settings.landing_mode:
-        return False, []
+        return False, False
 
     today = dates_helper.local_today()
     max_daily_budget = _get_max_daily_budget(today, campaign)
     current_daily_budget = _get_current_daily_budget(campaign, today)
     _, available_tomorrow, _ = _get_minimum_remaining_budget(campaign, max_daily_budget)
-    yesterday_spend = _get_yesterday_budget_spend(campaign)
 
-    switched_to_landing = available_tomorrow < current_daily_budget
-    is_near_depleted = available_tomorrow < current_daily_budget * 2
+    should_switch = available_tomorrow < current_daily_budget
+    is_near_depleted = current_daily_budget <= available_tomorrow < current_daily_budget * 2
+
+    return should_switch, is_near_depleted
+
+
+def _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     actions = []
-    if switched_to_landing:
+    should_switch, is_near_depleted = _check_campaign_for_landing_mode(campaign, campaign_settings)
+    if should_switch:
         with transaction.atomic():
             actions.extend(_switch_campaign_to_landing_mode(campaign))
-        _send_campaign_stop_notification_email(
-            campaign, available_tomorrow, current_daily_budget, yesterday_spend)
-    elif is_near_depleted:
-        _send_depleting_budget_notification_email(
-            campaign, available_tomorrow, current_daily_budget, yesterday_spend)
-
-    if switched_to_landing:
         utils.k1_helper.update_ad_groups(
             (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
             msg='campaign_stop.check_and_switch_campaign_to_landing_mode'
         )
+        _send_campaign_stop_notification_email(campaign)
+    elif is_near_depleted:
+        _send_depleting_budget_notification_email(campaign)
 
-    return switched_to_landing, actions
+    return should_switch, actions
 
 
 def _check_and_resume_campaign(campaign, campaign_settings):
@@ -1310,15 +1315,11 @@ def _trigger_pagerduty(campaign, incident_key, description):
     )
 
 
-def _send_campaign_stop_notification_email(campaign, available_tomorrow,
-                                           max_daily_budget, yesterday_spend):
+def _send_campaign_stop_notification_email(campaign):
     args = {
         'campaign': campaign,
         'account': campaign.account,
         'link_url': url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk)),
-        'available_tomorrow': available_tomorrow,
-        'max_daily_budget': max_daily_budget,
-        'yesterday_spend': yesterday_spend,
     }
     subject, body, _ = email_helper.format_email(
         dash.constants.EmailTemplateType.CAMPAIGN_LANDING_MODE_SWITCH,
@@ -1327,15 +1328,11 @@ def _send_campaign_stop_notification_email(campaign, available_tomorrow,
     _send_notification_email(subject, body, campaign)
 
 
-def _send_depleting_budget_notification_email(campaign, available_tomorrow,
-                                              max_daily_budget, yesterday_spend):
+def _send_depleting_budget_notification_email(campaign):
     args = {
         'campaign': campaign,
         'account': campaign.account,
         'link_url': url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk)),
-        'available_tomorrow': available_tomorrow,
-        'max_daily_budget': max_daily_budget,
-        'yesterday_spend': yesterday_spend,
     }
 
     subject, body, _ = email_helper.format_email(

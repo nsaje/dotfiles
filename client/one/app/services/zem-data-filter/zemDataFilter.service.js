@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemDataFilterService', ['$rootScope', '$location', function ($rootScope, $location) { // eslint-disable-line max-len
+angular.module('one.services').service('zemDataFilterService', ['$rootScope', '$location', 'zemPubSubService', function ($rootScope, $location, zemPubSubService) { // eslint-disable-line max-len
     this.init = init;
     this.getDateRange = getDateRange;
     this.setDateRange = setDateRange;
@@ -50,7 +50,7 @@ angular.module('one.services').service('zemDataFilterService', ['$rootScope', '$
         }
 
         if (updated) {
-            notifyListeners(EVENTS.ON_DATE_RANGE_UPDATE, getDateRange());
+            pubSub.notify(EVENTS.ON_DATE_RANGE_UPDATE, getDateRange());
 
             $location.search(
                 'start_date',
@@ -63,20 +63,11 @@ angular.module('one.services').service('zemDataFilterService', ['$rootScope', '$
         }
     }
 
-
     //
-    // Listener functionality (TODO: pubsub service)
+    // Listener functionality
     //
-    var $scope = $rootScope.$new(); // Scope used for listener stuff (TODO: remove dependency)
+    var pubSub = zemPubSubService.createInstance();
     function onDateRangeUpdate (callback) {
-        return registerListener(EVENTS.ON_DATE_RANGE_UPDATE, callback);
-    }
-
-    function registerListener (event, callback) {
-        return $scope.$on(event, callback);
-    }
-
-    function notifyListeners (event, data) {
-        $scope.$emit(event, data);
+        return pubSub.register(EVENTS.ON_DATE_RANGE_UPDATE, callback);
     }
 }]);

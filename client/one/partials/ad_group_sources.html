@@ -40,10 +40,10 @@
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
         </div>
 
-        <div uib-alert class="alert-info alert-sync" ng-show="sourcesWaiting.length">
+        <div uib-alert class="alert-warning alert-sync" ng-show="sourcesWaiting.length">
             We are adding the following media source(s): {{sourcesWaiting.join(', ')}}. This may take some time.
         </div>
-        <div uib-alert class="alert-info alert-sync" ng-show="!isSyncRecent">
+        <div uib-alert class="alert-warning alert-sync" ng-show="!isSyncRecent">
             We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span>
             If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </div>
@@ -51,6 +51,7 @@
             Following Your change to a Media Source's state, Autopilot has successfully adjusted daily budgets of the following Media Sources: {{autopilotChanges}}.
         </div>
 
+        <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
         <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-notifications="notifications" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-data-status="dataStatus"></zem-table>
 
         <div class="table-footnotes">
@@ -82,6 +83,7 @@
             <zem-grid-column-selector api="grid.api" class="pull-right"></zem-grid-column-selector>
             <zem-grid-breakdown-selector api="grid.api" class="pull-right"></zem-grid-breakdown-selector>
         </div>
+        <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
         <zem-grid-integration
                 api="grid.api"
                 level="grid.level"

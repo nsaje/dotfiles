@@ -1730,3 +1730,10 @@ class Level(object):
     CAMPAIGNS = 'campaigns'
     AD_GROUPS = 'ad_groups'
     CONTENT_ADS = 'content_ads'
+
+
+class AlertType(object):
+    INFO = 'info'
+    SUCCESS = 'success'
+    WARNING = 'warning'
+    DANGER = 'danger'

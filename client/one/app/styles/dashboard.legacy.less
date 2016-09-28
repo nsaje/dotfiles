@@ -566,12 +566,24 @@
 
 .alert {
     margin-bottom: 0;
+    font-size: 12px;
     .border-radius(0);
 
     &.alert-info {
+        background-color: #e5f1f9;
+        border: 1px solid #a6d1eb;
+        color: #414141;
+    }
+
+    &.alert-danger {
+        background-color: #f9e5e5;
+        border: 1px solid #eba6a6;
+        color: #414141;
+    }
+
+    &.alert-warning {
         background-color: #fffee9;
         border: 1px solid #ede652;
-        font-size: 12px;
         color: #414141;
     }
 
@@ -2495,7 +2507,7 @@ ul.with-icons {
 
 .page-ad-group-agency,
 .page-ad-group-settings {
-    .alert-info {
+    .alert-warning {
         width: 700px;
     }
 }

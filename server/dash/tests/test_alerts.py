@@ -1,0 +1,91 @@
+import mock
+
+from django.test import TestCase
+
+import dash.alerts
+from dash import models
+from dash import constants
+from zemauth.models import User
+
+
+class AccountLandingModeAlertsTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.normal_user = User.objects.get(id=2)
+        self.superuser = User.objects.get(id=1)
+        self.account = models.Account.objects.get(id=1)
+        self.campaign = self.account.campaign_set.get(id=1)
+
+    @mock.patch('automation.campaign_stop.is_campaign_running_out_of_budget')
+    def test_landing_campaign(self, mock_out_of_budget):
+        mock_out_of_budget.return_value = False
+        new_campaign_settings = self.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
+
+        alerts = dash.alerts.get_account_landing_mode_alerts(self.normal_user, self.account)
+        self.assertEqual(0, len(alerts))
+
+        alerts = dash.alerts.get_account_landing_mode_alerts(self.superuser, self.account)
+        self.assertEqual(1, len(alerts))
+        self.assertEqual(constants.AlertType.INFO, alerts[0]['type'])
+        self.assertTrue(self.campaign.name in alerts[0]['message'])
+
+    @mock.patch('automation.campaign_stop.is_campaign_running_out_of_budget')
+    def test_depleting_budget_campaigns(self, mock_out_of_budget):
+        def _mock_out_of_budget(campaign, campaign_settings):
+            if campaign.id == self.campaign.id:
+                return True
+            return False
+
+        mock_out_of_budget.side_effect = _mock_out_of_budget
+
+        alerts = dash.alerts.get_account_landing_mode_alerts(self.normal_user, self.account)
+        self.assertEqual(0, len(alerts))
+
+        alerts = dash.alerts.get_account_landing_mode_alerts(self.superuser, self.account)
+        self.assertEqual(1, len(alerts))
+        self.assertEqual(constants.AlertType.DANGER, alerts[0]['type'])
+        self.assertTrue(self.campaign.name in alerts[0]['message'])
+
+
+class CampaignLandingModeAlertsTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.normal_user = User.objects.get(id=2)
+        self.superuser = User.objects.get(id=1)
+        self.campaign = models.Campaign.objects.get(id=1)
+
+    @mock.patch('automation.campaign_stop.is_campaign_running_out_of_budget')
+    def test_landing_campaign(self, mock_out_of_budget):
+        mock_out_of_budget.return_value = False
+        new_campaign_settings = self.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.landing_mode = True
+        new_campaign_settings.save(None)
+
+        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.normal_user, self.campaign)
+        self.assertEqual(0, len(alerts))
+
+        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.superuser, self.campaign)
+        self.assertEqual(1, len(alerts))
+        self.assertEqual(constants.AlertType.INFO, alerts[0]['type'])
+
+    @mock.patch('automation.campaign_stop.is_campaign_running_out_of_budget')
+    def test_depleting_budget_campaigns(self, mock_out_of_budget):
+        def _mock_out_of_budget(campaign, campaign_settings):
+            if campaign.id == self.campaign.id:
+                return True
+            return False
+
+        mock_out_of_budget.side_effect = _mock_out_of_budget
+
+        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.normal_user, self.campaign)
+        self.assertEqual(0, len(alerts))
+
+        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.superuser, self.campaign)
+        self.assertEqual(1, len(alerts))
+        self.assertEqual(constants.AlertType.DANGER, alerts[0]['type'])

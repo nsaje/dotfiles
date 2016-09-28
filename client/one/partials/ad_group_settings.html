@@ -6,7 +6,7 @@
 
 <div class="page page-ad-group-settings" ng-if="hasPermission('dash.settings_view') && !(adGroup && adGroup.archived) && !loadRequestInProgress">
     <div uib-alert ng-repeat="alert in alerts" class="alert-{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></div>
-    <div uib-alert class="alert-info" ng-show="actionIsWaiting">
+    <div uib-alert class="alert-warning" ng-show="actionIsWaiting">
         Settings changes are being propagated to external sources. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
     </div>
 
@@ -68,7 +68,7 @@
 
             <label ng-if="warnings.endDate === undefined" ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
 
-            <div class="col-xs-6 alert alert-info form-alert-box" ng-if="warnings.endDate !== undefined" >
+            <div class="col-xs-6 alert alert-warning form-alert-box" ng-if="warnings.endDate !== undefined" >
                 <div class="form-alert-exclamation">
                     <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                 </div>
@@ -135,7 +135,7 @@
                 <div class="col-xs-6 col-md-4">
                     <input type="checkbox" id="enable-retargeting" ng-model="retargetingEnabled"> Enable retargeting
                 </div>
-                <div ng-if="retargetingEnabled && warnings.retargeting !== undefined" class="col-xs-6 alert alert-info form-alert-box">
+                <div ng-if="retargetingEnabled && warnings.retargeting !== undefined" class="col-xs-6 alert alert-warning form-alert-box">
                     <div class="form-alert-exclamation">
                         <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                     </div>
@@ -160,7 +160,7 @@
                         <input type="checkbox" id="enable-audience-targeting" ng-model="retargetingEnabled"> Enable audience targeting
                     </label>
                 </div>
-                <div ng-if="retargetingEnabled && warnings.retargeting !== undefined" class="col-xs-6 alert alert-info form-alert-box">
+                <div ng-if="retargetingEnabled && warnings.retargeting !== undefined" class="col-xs-6 alert alert-warning form-alert-box">
                     <div class="form-alert-exclamation">
                         <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                     </div>
@@ -272,7 +272,7 @@
                 Autopilot
                 <zem-help-popover content="Bids and Daily Budget Allocation Automation Settings." placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-12 alert alert-info form-alert-box" ng-if="isInLanding()" >
+            <div class="col-xs-12 alert alert-warning form-alert-box" ng-if="isInLanding()" >
                 <div class="form-alert-exclamation">
                     <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                 </div>
