@@ -201,7 +201,7 @@ def execute_multi_insert_sql(cursor, table, fields_sql, all_row_tuples, max_at_a
 
 
 def get_audience_sample_size(account_id, slug, ttl, rules):
-    query = 'SELECT COUNT(*) FROM pixie_sample WHERE account_id = %s AND slug = %s AND timestamp > %s '
+    query = 'SELECT COUNT(DISTINCT(zuid)) FROM pixie_sample WHERE account_id = %s AND slug = %s AND timestamp > %s '
 
     timelimit = datetime.now().date() - timedelta(days=ttl)
     params = [account_id, slug, timelimit.isoformat()]
