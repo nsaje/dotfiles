@@ -411,7 +411,7 @@ class Publishers(materialize_views.Materialize):
 
             media_source = source.tracking_slug
             publisher = row[2]
-            post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, row[1])
+            post_click = self._get_post_click_data(content_ad_postclick, ad_group_id, media_source, publisher)
 
             yield (
                 date,
