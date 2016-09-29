@@ -1,5 +1,5 @@
 /* globals options, angular, constants, moment */
-angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$location', '$q', 'api', 'zemGridConstants', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemDataFilterService', 'zemGridEndpointColumns', function ($scope, $window, $state, $location, $q, api, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService, zemGridEndpointColumns) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$location', '$q', 'api', 'zemGridConstants', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemDataFilterService', function ($scope, $window, $state, $location, $q, api, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService) { // eslint-disable-line max-len
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -841,39 +841,6 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
         }];
     };
 
-    function initializeSelectionConfig () {
-        var config = {
-            enabled: true,
-            filtersEnabled: true,
-            levels: [1],
-            customFilters: [],
-        };
-        $scope.grid.api.setSelectionOptions(config);
-    }
-
-    function initializeCustomFilters () {
-        var metaData = $scope.grid.api.getMetaData();
-        if (!metaData || !metaData.ext.batches) return;
-
-        var filters = metaData.ext.batches.map(function (batch) {
-            return {
-                name: batch.name,
-                batch: batch, // store for later use
-                callback: function (row) { return row.data.stats[zemGridEndpointColumns.COLUMNS.batchId.field].value === batch.id; },
-            };
-        });
-
-        var customFilter = {
-            type: zemGridConstants.gridSelectionCustomFilterType.LIST,
-            name: 'Upload batch',
-            filters: filters
-        };
-
-        var config = $scope.grid.api.getSelectionOptions();
-        config.customFilters = [customFilter];
-        $scope.grid.api.setSelectionOptions(config);
-    }
-
     var init = function () {
         var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
         var page = parseInt($location.search().page || '1');
@@ -912,14 +879,6 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
         pollSyncStatus();
 
         $scope.setActiveTab();
-
-        var unbindGridApiWatch = $scope.$watch('grid.api', function () {
-            if ($scope.grid && $scope.grid.api) {
-                initializeSelectionConfig();
-                $scope.grid.api.onMetaDataUpdated(null, initializeCustomFilters);
-                unbindGridApiWatch();
-            }
-        });
     };
 
     $scope.pollTableUpdates = function () {

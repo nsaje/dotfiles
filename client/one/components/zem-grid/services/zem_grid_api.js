@@ -41,9 +41,6 @@ angular.module('one.legacy').factory('zemGridApi', ['$rootScope', 'zemGridStorag
         this.setVisibleColumns = grid.meta.columnsService.setVisibleColumns;
         this.getVisibleColumns = grid.meta.columnsService.getVisibleColumns;
 
-        // Bulk Actions service API
-        this.getBulkActions = grid.meta.bulkActionsService.getActions;
-
         // Listeners - pubsub rewiring
         this.onMetaDataUpdated = onMetaDataUpdated;
         this.onDataUpdated = onDataUpdated;

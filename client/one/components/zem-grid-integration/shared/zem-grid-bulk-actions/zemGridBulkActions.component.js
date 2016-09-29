@@ -14,7 +14,7 @@ angular.module('one.legacy').directive('zemGridBulkActions', ['$window', 'api', 
     };
 }]);
 
-angular.module('one.legacy').controller('zemGridBulkActionsCtrl', ['zemGridConstants', 'zemGridEndpointColumns', function (zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('zemGridBulkActionsCtrl', ['zemGridConstants', 'zemGridBulkActionsService', function (zemGridConstants, zemGridBulkActionsService) { // eslint-disable-line max-len
     // TODO: alert, update daily stats
 
     var vm = this;
@@ -22,6 +22,14 @@ angular.module('one.legacy').controller('zemGridBulkActionsCtrl', ['zemGridConst
     vm.actions = []; // Defined below
     vm.isEnabled = isEnabled;
     vm.execute = execute;
+
+    var service = zemGridBulkActionsService.createInstance(vm.api);
+
+    initialize();
+
+    function initialize () {
+        service.setSelectionConfig();
+    }
 
     function isEnabled () {
         var selection = vm.api.getSelection();
@@ -54,7 +62,7 @@ angular.module('one.legacy').controller('zemGridBulkActionsCtrl', ['zemGridConst
         action.execute(convertedSelection);
     }
 
-    vm.actions = vm.api.getBulkActions();
+    vm.actions = service.getActions();
 
     function getActionByValue (value) {
         return vm.actions.filter(function (action) {
