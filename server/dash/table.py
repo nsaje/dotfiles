@@ -1962,9 +1962,6 @@ class PublishersTable(object):
                 if not key.startswith('conversion_goal_') and not key.startswith('pixel_'):
                     continue
                 row[key] = publisher_data[key]
-                if (source_name or '').lower() == constants.SourceType.OUTBRAIN:
-                    # We have no conversion data for OB
-                    row[key] = None
                 if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
                     row['avg_cost_per_' + key] = row.get('e_media_cost', 0) / row[key] if row[key] else None
 
