@@ -13,7 +13,7 @@ Plugin 'VundleVim/Vundle.vim'
 Plugin 'tpope/vim-fugitive'
 Plugin 'scrooloose/nerdtree'
 Plugin 'kien/ctrlp.vim'
-Plugin 'bling/vim-airline'
+Plugin 'vim-airline/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'fatih/vim-go'
@@ -25,6 +25,7 @@ Plugin 'avakhov/vim-yaml'
 Plugin 'scrooloose/nerdcommenter'
 Plugin 'junegunn/goyo.vim'
 Plugin 'reedes/vim-pencil'
+Plugin 'tpope/vim-sleuth' " automatic indentation settings
 
 
 " allow changing buffer without saving
@@ -83,6 +84,7 @@ let g:airline_symbols.readonly = ''
 let g:airline_symbols.linenr = ''
 " Enable the list of buffers
 let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#show_buffers=2
 " Show just the filename
 let g:airline#extensions#tabline#fnamemod = ':t'
 

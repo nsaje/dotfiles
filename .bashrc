@@ -68,3 +68,9 @@ export PATH="$PATH:~/go_appengine"
 
 # git completion
 source ~/.local/bin/git-completion.bash
+
+# The next line updates PATH for the Google Cloud SDK.
+source '/home/nsaje/Downloads/google-cloud-sdk/path.bash.inc'
+
+# The next line enables shell command completion for gcloud.
+source '/home/nsaje/Downloads/google-cloud-sdk/completion.bash.inc'

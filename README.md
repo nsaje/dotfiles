@@ -8,6 +8,7 @@ feh
 pulseaudio-utils
 xbacklight
 fonts-roboto
+scrot
 ```
 
 For Vim:
