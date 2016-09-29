@@ -378,8 +378,9 @@ def get_min_budget_increase(campaign):
     _, available_tomorrow, min_needed_today = _get_minimum_remaining_budget(campaign, max_daily_budget)
 
     user_daily_budget_sum = sum(user_db for user_db in user_daily_budget_per_ags.values() if user_db is not None)
-    min_needed_tomorrow = user_daily_budget_sum - available_tomorrow
-    return max(min_needed_today, min_needed_tomorrow, 0)
+    min_needed_tomorrow = max(user_daily_budget_sum - available_tomorrow, 0)
+
+    return min_needed_today + min_needed_tomorrow
 
 
 def _combined_active_budget_from_other_items(budget_item):

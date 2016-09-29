@@ -803,7 +803,7 @@ class GetMinBudgetIncreaseTestCase(TestCase):
 
         min_budget_increase = campaign_stop.get_min_budget_increase(campaign)
         mock_min_remaining.assert_called_once_with(campaign, Decimal('90.00'))
-        self.assertEqual(min_budget_increase, Decimal('50.0'))
+        self.assertEqual(min_budget_increase, Decimal('80'))
 
     @patch('automation.campaign_stop._get_user_daily_budget_per_ags')
     @patch('automation.campaign_stop._get_max_daily_budget_per_ags')
@@ -827,7 +827,7 @@ class GetMinBudgetIncreaseTestCase(TestCase):
 
         min_budget_increase = campaign_stop.get_min_budget_increase(campaign)
         mock_min_remaining.assert_called_once_with(campaign, Decimal('90.00'))
-        self.assertEqual(min_budget_increase, Decimal('30.0'))
+        self.assertEqual(min_budget_increase, Decimal('30'))
 
 
 class GetUserDailyBudgetTestCase(TestCase):
