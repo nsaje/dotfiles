@@ -19,6 +19,23 @@ class CreateUpdateContentAdsActions(Thread):
             self.join()
 
 
+class MockAsyncFunction(object):
+    """
+    When running tests use this mock as otherwise we dont have access to data
+    that is not in transaction where data from fixtures is.
+    """
+
+    def __init__(self, func):
+        self.func = func
+        self.result = None
+
+    def start(self):
+        self.result = self.func()
+
+    def join(self):
+        pass
+
+
 class AsyncFunction(Thread):
     """
     A more general class that takes a function and runs it in a new thread.

@@ -1,5 +1,6 @@
 import collections
 from django.utils.functional import cached_property
+from django.db.models.query import QuerySet
 
 from automation import campaign_stop
 
@@ -23,6 +24,19 @@ Notes on implementation:
   - settings_map properties should return a default dict that returns default field values
   - same for status_map - should return default value
 """
+
+
+def get_loader_for_dimension(target_dimension):
+    if target_dimension == 'account_id':
+        return AccountsLoader
+    elif target_dimension == 'campaign_id':
+        return CampaignsLoader
+    elif target_dimension == 'ad_group_id':
+        return AdGroupsLoader
+    elif target_dimension == 'content_ad_id':
+        return ContentAdsLoader
+    elif target_dimension == 'source_id':
+        return SourcesLoader
 
 
 class Loader(object):
@@ -59,6 +73,14 @@ class AccountsLoader(Loader):
 
         super(AccountsLoader, self).__init__(accounts_qs, **kwargs)
         self.filtered_sources_qs = filtered_sources_qs
+
+    @classmethod
+    def from_constraints(cls, level, constraints):
+        return cls(
+            constraints['allowed_accounts'], constraints['filtered_sources'],
+            start_date=constraints.get('date__gte'),
+            end_date=constraints.get('date__lte')
+        )
 
     @cached_property
     def settings_qs(self):
@@ -125,7 +147,16 @@ class AccountsLoader(Loader):
 class CampaignsLoader(Loader):
     def __init__(self, campaigns_qs, filtered_sources_qs, **kwargs):
         super(CampaignsLoader, self).__init__(campaigns_qs, **kwargs)
+
         self.filtered_sources_qs = filtered_sources_qs
+
+    @classmethod
+    def from_constraints(cls, level, constraints):
+        return cls(
+            constraints['allowed_campaigns'], constraints['filtered_sources'],
+            start_date=constraints.get('date__gte'),
+            end_date=constraints.get('date__lte')
+        )
 
     @cached_property
     def settings_qs(self):
@@ -186,6 +217,14 @@ class AdGroupsLoader(Loader):
     def __init__(self, ad_groups_qs, filtered_sources_qs, **kwargs):
         super(AdGroupsLoader, self).__init__(ad_groups_qs, **kwargs)
         self.filtered_sources_qs = filtered_sources_qs
+
+    @classmethod
+    def from_constraints(cls, level, constraints):
+        return cls(
+            constraints['allowed_ad_groups'], constraints['filtered_sources'],
+            start_date=constraints.get('date__gte'),
+            end_date=constraints.get('date__lte')
+        )
 
     @cached_property
     def settings_qs(self):
@@ -262,6 +301,14 @@ class ContentAdsLoader(Loader):
     def __init__(self, content_ads_qs, filtered_sources_qs, **kwargs):
         super(ContentAdsLoader, self).__init__(content_ads_qs.select_related('batch'), **kwargs)
         self.filtered_sources_qs = filtered_sources_qs
+
+    @classmethod
+    def from_constraints(cls, level, constraints):
+        return cls(
+            constraints['allowed_content_ads'], constraints['filtered_sources'],
+            start_date=constraints.get('date__gte'),
+            end_date=constraints.get('date__lte')
+        )
 
     @cached_property
     def batch_map(self):
@@ -344,10 +391,27 @@ class ContentAdsLoader(Loader):
 
 class SourcesLoader(Loader):
 
-    def __init__(self, sources_qs, ad_groups_sources_qs, **kwargs):
+    def __init__(self, sources_qs, base_objects, **kwargs):
         super(SourcesLoader, self).__init__(sources_qs, **kwargs)
 
-        self.ad_groups_sources_qs = ad_groups_sources_qs
+        self.base_objects = base_objects
+
+    @classmethod
+    def from_constraints(cls, level, constraints):
+        if level == constants.Level.ALL_ACCOUNTS:
+            objs = constraints['allowed_accounts']
+        elif level == constants.Level.ACCOUNTS:
+            objs = constraints['allowed_campaigns']
+        elif level == constants.Level.CAMPAIGNS:
+            objs = constraints['allowed_ad_groups']
+        elif level == constants.Level.AD_GROUPS:
+            objs = [constraints['ad_group']]
+
+        return cls(
+            constraints['filtered_sources'], objs,
+            start_date=constraints.get('date__gte'),
+            end_date=constraints.get('date__lte')
+        )
 
     @cached_property
     def settings_map(self):
@@ -405,6 +469,15 @@ class SourcesLoader(Loader):
             ad_groups_sources_settings_map[source_id].append(ad_group_source_settings)
 
         return ad_groups_sources_settings_map
+
+    @cached_property
+    def ad_groups_sources_qs(self):
+        if isinstance(self.base_objects, QuerySet):
+            modelcls = self.base_objects.model
+        else:
+            modelcls = type(self.base_objects[0])
+
+        return view_helpers.get_active_ad_group_sources(modelcls, self.base_objects)
 
     @cached_property
     def ad_groups_sources_map(self):

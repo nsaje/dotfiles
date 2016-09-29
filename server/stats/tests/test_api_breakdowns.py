@@ -7,11 +7,13 @@ from utils import test_helper
 
 from zemauth.models import User
 from dash import models
+from dash import threads
 from dash.constants import Level
 
 from stats import api_breakdowns
 
 
+@mock.patch('dash.threads.AsyncFunction', threads.MockAsyncFunction)
 class ApiBreakdownQueryTest(TestCase):
     fixtures = ['test_api_breakdowns.yaml']
 
@@ -39,7 +41,7 @@ class ApiBreakdownQueryTest(TestCase):
         parents = []
         order = 'clicks'
         offset = 1
-        limit = 1
+        limit = 2
 
         result = api_breakdowns.query(Level.ACCOUNTS, user, breakdown, constraints, goals, parents, order, offset, limit)
 
@@ -56,7 +58,7 @@ class ApiBreakdownQueryTest(TestCase):
             goals,
             'clicks',
             1,
-            1
+            2
         )
 
         self.assertEqual(result, [{
@@ -73,6 +75,19 @@ class ApiBreakdownQueryTest(TestCase):
             'license_fee_projection': None,
             'campaign_manager': 'supertestuser@test.com',
             'archived': False,
+        }, {
+            'status': 2,
+            'archived': True,
+            'breakdown_name': 'test campaign 2',
+            'name': 'test campaign 2',
+            'breakdown_id': '2',
+            'campaign_id': 2,
+            'pacing': None,
+            'spend_projection': None,
+            'allocated_budgets': None,
+            'campaign_manager': 'mad.max@zemanta.com',
+            'parent_breakdown_id': '',
+            'license_fee_projection': None
         }])
 
     @mock.patch('redshiftapi.api_breakdowns.execute_query')
@@ -103,20 +118,6 @@ class ApiBreakdownQueryTest(TestCase):
                                       order, offset, limit)
 
         self.assertEqual(result, [{
-            'campaign_id': 2,
-            'name': 'test campaign 2',
-            'breakdown_id': '2',
-            'breakdown_name': 'test campaign 2',
-            'clicks': 2,
-            'parent_breakdown_id': '',
-            'status': 2,
-            'pacing': None,
-            'allocated_budgets': None,
-            'spend_projection': None,
-            'license_fee_projection': None,
-            'campaign_manager': 'mad.max@zemanta.com',
-            'archived': True,
-        }, {
             'campaign_id': 1,
             'name': 'test campaign 1',
             'breakdown_id': '1',
@@ -130,4 +131,18 @@ class ApiBreakdownQueryTest(TestCase):
             'license_fee_projection': None,
             'campaign_manager': 'supertestuser@test.com',
             'archived': False,
+        }, {
+            'campaign_id': 2,
+            'name': 'test campaign 2',
+            'breakdown_id': '2',
+            'breakdown_name': 'test campaign 2',
+            'clicks': 2,
+            'parent_breakdown_id': '',
+            'status': 2,
+            'pacing': None,
+            'allocated_budgets': None,
+            'spend_projection': None,
+            'license_fee_projection': None,
+            'campaign_manager': 'mad.max@zemanta.com',
+            'archived': True,  # archived last
         }])

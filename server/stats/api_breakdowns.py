@@ -1,12 +1,13 @@
-from utils import exc
+from functools import partial
+
 from utils import sort_helper
 
 import newrelic.agent
 
 import dash.models
 import dash.campaign_goals
+from dash import threads
 
-from reports.db_raw_helpers import is_collection
 
 from stats import helpers
 from stats import constants
@@ -15,17 +16,13 @@ from stats import permission_filter
 
 # expose these helpers as API
 from stats.helpers import get_goals
-from stats.constraints_helper import prepare_all_accounts_constraints, prepare_account_constraints
-from stats.constraints_helper import prepare_campaign_constraints, prepare_ad_group_constraints
 
 import redshiftapi.api_breakdowns
 import dash.dashapi.api_breakdowns
 
 
 # define the API
-__all__ = ['query', 'totals', 'validate_breakdown_allowed', 'get_goals',
-           'prepare_all_accounts_constraints', 'prepare_account_constraints',
-           'prepare_campaign_constraints', 'prepare_ad_group_constraints']
+__all__ = ['query', 'totals', 'validate_breakdown_allowed', 'get_goals']
 
 
 def validate_breakdown_allowed(level, user, breakdown):
@@ -52,16 +49,26 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
     parents = helpers.decode_parents(breakdown, parents)
     stats_constraints = helpers.extract_stats_constraints(constraints, breakdown)
 
+    should_query_dashapi = helpers.should_query_dashapi(target_dimension)
+    if should_query_dashapi:
+        queries = dash.dashapi.api_breakdowns.query_async_start(level, breakdown, constraints, parents)
+
     if helpers.should_query_dashapi_first(order, target_dimension):
-        rows = dash.dashapi.api_breakdowns.query(level, breakdown, constraints, parents, order, offset, limit)
-        rows = redshiftapi.api_breakdowns.augment(
-            rows,
+        dash_rows = dash.dashapi.api_breakdowns.query_async_get_results(queries, order, offset, limit)
+        stats_rows = redshiftapi.api_breakdowns.query_stats_for_rows(
+            dash_rows,
             breakdown,
             stats_constraints,
             goals
         )
+        rows = helpers.merge_rows(breakdown, dash_rows, stats_rows)
     else:
-        rows = redshiftapi.api_breakdowns.query(
+        if should_query_dashapi:
+            query_structure_fn = partial(redshiftapi.api_breakdowns.query_structure_with_stats, breakdown, stats_constraints)
+            structure_thread = threads.AsyncFunction(query_structure_fn)
+            structure_thread.start()
+
+        stats_rows = redshiftapi.api_breakdowns.query(
             breakdown,
             stats_constraints,
             parents,
@@ -69,20 +76,25 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
             helpers.extract_rs_order_field(order, target_dimension),
             offset,
             limit)
-        if helpers.should_augment_by_dash(target_dimension):
-            structure_with_stats = None
-            if target_dimension != 'publisher':
-                if offset == 0:
-                    # when we are loading first page, we need already know everything
-                    structure_with_stats = rows
-                else:
-                    structure_with_stats = redshiftapi.api_breakdowns.query_structure_with_stats(
-                        breakdown, stats_constraints)
+        if should_query_dashapi:
+            if offset == 0:
+                str_w_stats = stats_rows
+                # NOTE: when we make the first request (offset == 0) then we actually don't need this structure as
+                # the collection is the same as rows without stats columns. But we still keep the structure thread
+                # running until it finishes as we get the benefit that that thread will put its results into cache
+                # which we can use in the next request, when the structure is actually needed.
+            else:
+                structure_thread.join()
+                str_w_stats = structure_thread.result
 
-            rows = dash.dashapi.api_breakdowns.augment(rows, level, breakdown, constraints)
-            rows = dash.dashapi.api_breakdowns.query_missing_rows(
-                rows, level, breakdown, constraints, parents, order, offset, limit, structure_with_stats)
+            dash_rows = dash.dashapi.api_breakdowns.query_async_get_results_for_rows(
+                queries, stats_rows, breakdown, parents, order, offset, limit, str_w_stats)
+            rows = helpers.merge_rows(breakdown, dash_rows, stats_rows)
+        else:
+            rows = stats_rows
 
+    rows = sort_helper.sort_rows_by_order_and_archived(rows, [order] + dash.dashapi.api_breakdowns.get_default_order(
+        target_dimension, order))
     augmenter.augment(breakdown, rows)
     augmenter.cleanup(rows, target_dimension, constraints)
     permission_filter.filter_columns_by_permission(user, rows, goals)

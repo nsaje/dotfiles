@@ -18,6 +18,7 @@ from utils import exc
 from utils import sort_helper
 
 import stats.api_breakdowns
+import stats.constraints_helper
 import stats.helpers
 import stats.constants
 
@@ -245,7 +246,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
-        constraints = stats.api_breakdowns.prepare_all_accounts_constraints(
+        constraints = stats.constraints_helper.prepare_all_accounts_constraints(
             request.user, breakdown, only_used_sources=base_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
 
@@ -253,7 +254,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
         totals_thread = None
         if len(breakdown) == 1:
-            totals_constraints = stats.api_breakdowns.prepare_all_accounts_constraints(
+            totals_constraints = stats.constraints_helper.prepare_all_accounts_constraints(
                 request.user, breakdown, only_used_sources=False,
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
             totals_fn = partial(
@@ -312,14 +313,14 @@ class AccountBreakdown(api_common.BaseApiView):
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
-        constraints = stats.api_breakdowns.prepare_account_constraints(
+        constraints = stats.constraints_helper.prepare_account_constraints(
             request.user, account, breakdown, only_used_sources=base_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
         goals = stats.api_breakdowns.get_goals(constraints)
 
         totals_thread = None
         if len(breakdown) == 1:
-            totals_constraints = stats.api_breakdowns.prepare_account_constraints(
+            totals_constraints = stats.constraints_helper.prepare_account_constraints(
                 request.user, account, breakdown,
                 only_used_sources=False,
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
@@ -380,14 +381,14 @@ class CampaignBreakdown(api_common.BaseApiView):
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
-        constraints = stats.api_breakdowns.prepare_campaign_constraints(
+        constraints = stats.constraints_helper.prepare_campaign_constraints(
             request.user, campaign, breakdown, only_used_sources=base_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
         goals = stats.api_breakdowns.get_goals(constraints)
 
         totals_thread = None
         if len(breakdown) == 1:
-            totals_constraints = stats.api_breakdowns.prepare_campaign_constraints(
+            totals_constraints = stats.constraints_helper.prepare_campaign_constraints(
                 request.user, campaign, breakdown, only_used_sources=False,
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
             totals_fn = partial(
@@ -469,7 +470,10 @@ class AdGroupBreakdown(api_common.BaseApiView):
             )
             return self.create_api_response(report)
 
-        constraints = stats.api_breakdowns.prepare_ad_group_constraints(
+        if stats.constants.get_base_dimension(breakdown) == 'publisher':
+            breakdown = ['publisher', 'source_id'] + breakdown[1:]
+
+        constraints = stats.constraints_helper.prepare_ad_group_constraints(
             request.user, ad_group, breakdown,
             only_used_sources=base_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
@@ -477,7 +481,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
         totals_thread = None
         if len(breakdown) == 1:
-            totals_constraints = stats.api_breakdowns.prepare_ad_group_constraints(
+            totals_constraints = stats.constraints_helper.prepare_ad_group_constraints(
                 request.user, ad_group, breakdown, only_used_sources=False,
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
             totals_fn = partial(

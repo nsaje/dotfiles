@@ -55,7 +55,7 @@ def query_structure_with_stats(breakdown, constraints):
     return rows
 
 
-def augment(rows, breakdown, constraints, goals):
+def query_stats_for_rows(rows, breakdown, constraints, goals):
     model = models.MVMaster(goals.conversion_goals, goals.pixels, goals.campaign_goals, goals.campaign_goal_values)
 
     parents = helpers.create_parents(rows, breakdown)

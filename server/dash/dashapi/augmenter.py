@@ -6,6 +6,19 @@ Applies dash data to rows. No logics, only write data to proper keys.
 """
 
 
+def get_augmenter_for_dimension(target_dimension):
+    if target_dimension == 'account_id':
+        return augment_accounts
+    elif target_dimension == 'campaign_id':
+        return augment_campaigns
+    elif target_dimension == 'ad_group_id':
+        return augment_ad_groups
+    elif target_dimension == 'content_ad_id':
+        return augment_content_ads
+    elif target_dimension == 'source_id':
+        return augment_sources
+
+
 def augment_accounts(rows, loader, is_base_level=False):
     for row in rows:
         account_id = row['account_id']

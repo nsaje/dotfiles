@@ -250,6 +250,35 @@ class HelpersTest(TestCase):
             self.assertFalse(helpers.should_query_dashapi_first('status', dimension), dimension)
             self.assertFalse(helpers.should_query_dashapi_first('clicks', dimension))
 
+    def test_make_rows(self):
+        self.assertItemsEqual(helpers.make_rows('account_id', [1, 2, 3]), [
+            {'account_id': 1},
+            {'account_id': 2},
+            {'account_id': 3},
+        ])
+
+        self.assertItemsEqual(helpers.make_rows('account_id', [1, 2, 3], {'source_id': 2}), [
+            {'account_id': 1, 'source_id': 2},
+            {'account_id': 2, 'source_id': 2},
+            {'account_id': 3, 'source_id': 2},
+        ])
+
+    def test_merge_rows(self):
+        self.assertItemsEqual(helpers.merge_rows(
+            ['account_id', 'source_id'], [
+                {'account_id': 1, 'source_id': 1, 'bla': 11},
+                {'account_id': 1, 'source_id': 2, 'bla': 22},
+                {'account_id': 1, 'source_id': 3, 'bla': 33},
+            ], [
+                {'account_id': 1, 'source_id': 1, 'clicks': 12},
+                {'account_id': 1, 'source_id': 3, 'clicks': 13},
+            ]
+        ), [
+            {'account_id': 1, 'source_id': 1, 'bla': 11, 'clicks': 12},
+            {'account_id': 1, 'source_id': 2, 'bla': 22},
+            {'account_id': 1, 'source_id': 3, 'bla': 33, 'clicks': 13},
+        ])
+
 
 class CampaignGoalTest(TestCase):
     fixtures = ['test_augmenter.yaml']

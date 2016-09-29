@@ -545,7 +545,6 @@ class AdGroupBreakdownTestCase(TestCase):
             content_type='application/json'
         )
 
-        print response.content
         self.assertEqual(response.status_code, 200)
 
         mock_query.assert_called_with(

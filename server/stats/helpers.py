@@ -312,5 +312,40 @@ def should_query_dashapi_first(order, target_dimension):
     return False
 
 
-def should_augment_by_dash(target_dimension):
+def should_query_dashapi(target_dimension):
     return target_dimension in constants.StructureDimension._ALL
+
+
+def make_rows(target_dimension, obj_ids, parent=None):
+    rows = []
+    for obj_id in obj_ids:
+        row = {target_dimension: obj_id}
+        if parent:
+            row.update(parent)
+        rows.append(row)
+    return rows
+
+
+def merge_rows(breakdown, dash_rows, stats_rows):
+    group_a = group_rows_by_breakdown(breakdown, dash_rows)
+    group_b = group_rows_by_breakdown(breakdown, stats_rows)
+
+    rows = []
+    for key, group_rows in group_a.iteritems():
+        row_a = group_rows[0]
+        row_b = group_b.pop(key, None)
+        if row_b:
+            row_a = merge_row(row_a, row_b[0])
+        rows.append(row_a)
+
+    if group_b:
+        raise Exception("Got stats for unknown objects")
+
+    return rows
+
+
+def merge_row(row_a, row_b):
+    row = {}
+    row.update(row_a)
+    row.update(row_b)
+    return row

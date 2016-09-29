@@ -8,6 +8,15 @@ from dash import constants
 from dash.dashapi import loaders
 
 
+class GetLoaderTest(TestCase):
+    def test_get_loader(self):
+        self.assertEqual(loaders.get_loader_for_dimension('content_ad_id'), loaders.ContentAdsLoader)
+        self.assertEqual(loaders.get_loader_for_dimension('ad_group_id'), loaders.AdGroupsLoader)
+        self.assertEqual(loaders.get_loader_for_dimension('campaign_id'), loaders.CampaignsLoader)
+        self.assertEqual(loaders.get_loader_for_dimension('account_id'), loaders.AccountsLoader)
+        self.assertEqual(loaders.get_loader_for_dimension('source_id'), loaders.SourcesLoader)
+
+
 class AccountsLoaderTest(TestCase):
 
     fixtures = ['test_api_breakdowns.yaml']
@@ -17,6 +26,15 @@ class AccountsLoaderTest(TestCase):
         sources = models.Source.objects.all()
 
         self.loader = loaders.AccountsLoader(accounts, sources)
+
+    def test_from_constraints(self):
+        loader = loaders.AccountsLoader.from_constraints(constants.Level.ALL_ACCOUNTS, {
+            'allowed_accounts': models.Account.objects.all(),
+            'filtered_sources': models.Source.objects.all(),
+        })
+
+        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
 
     def test_objs(self):
         self.assertItemsEqual(self.loader.objs_ids, [1])
@@ -54,6 +72,15 @@ class CampaignsLoaderTest(TestCase):
         sources = models.Source.objects.all()
 
         self.loader = loaders.CampaignsLoader(campaigns, sources)
+
+    def test_from_constraints(self):
+        loader = loaders.CampaignsLoader.from_constraints(constants.Level.ACCOUNTS, {
+            'allowed_campaigns': models.Campaign.objects.all(),
+            'filtered_sources': models.Source.objects.all(),
+        })
+
+        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
 
     def test_objs(self):
         self.assertItemsEqual(self.loader.objs_ids, [1, 2])
@@ -95,6 +122,15 @@ class AdGroupsLoaderTest(TestCase):
         sources = models.Source.objects.all()
 
         self.loader = loaders.AdGroupsLoader(ad_groups, sources)
+
+    def test_from_constraints(self):
+        loader = loaders.AdGroupsLoader.from_constraints(constants.Level.CAMPAIGNS, {
+            'allowed_ad_groups': models.AdGroup.objects.all(),
+            'filtered_sources': models.Source.objects.all(),
+        })
+
+        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
 
     def test_objs(self):
         self.assertItemsEqual(self.loader.objs_ids, [1, 2, 3])
@@ -152,6 +188,15 @@ class ContentAdLoaderTest(TestCase):
         sources = models.Source.objects.all()
 
         self.loader = loaders.ContentAdsLoader(content_ads, sources)
+
+    def test_from_constraints(self):
+        loader = loaders.ContentAdsLoader.from_constraints(constants.Level.AD_GROUPS, {
+            'allowed_content_ads': models.ContentAd.objects.all(),
+            'filtered_sources': models.Source.objects.all(),
+        })
+
+        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertItemsEqual(loader.status_map, self.loader.status_map)
 
     def test_objs(self):
         self.assertItemsEqual(self.loader.objs_ids, [1, 2, 3])
@@ -275,9 +320,7 @@ class SourcesLoaderTest(TestCase):
 
     def setUp(self):
         sources = models.Source.objects.all()
-        ad_groups_sources = models.AdGroupSource.objects.all()
-
-        self.loader = loaders.SourcesLoader(sources, ad_groups_sources)
+        self.loader = loaders.SourcesLoader(sources, models.AdGroup.objects.all())
 
     def test_objs(self):
         self.assertItemsEqual(self.loader.objs_ids, [1, 2])
@@ -288,13 +331,13 @@ class SourcesLoaderTest(TestCase):
 
     def test_ad_groups_sources_map(self):
         self.assertDictEqual(self.loader.ad_groups_sources_map, {
-            1: test_helper.QuerySetMatcher(models.AdGroupSource.objects.filter(pk__in=[1, 3, 5])),
+            1: test_helper.QuerySetMatcher(models.AdGroupSource.objects.filter(pk__in=[1, 3])),
             2: test_helper.QuerySetMatcher(models.AdGroupSource.objects.filter(pk__in=[2, 4])),
         })
 
     def test_ad_groups_sources_settings_map(self):
         self.assertDictEqual(self.loader.ad_groups_sources_settings_map, {
-            1: test_helper.QuerySetMatcher(models.AdGroupSourceSettings.objects.filter(pk__in=[1, 3, 5])),
+            1: test_helper.QuerySetMatcher(models.AdGroupSourceSettings.objects.filter(pk__in=[1, 3])),
             2: test_helper.QuerySetMatcher(models.AdGroupSourceSettings.objects.filter(pk__in=[2, 4])),
         })
 
@@ -303,9 +346,9 @@ class SourcesLoaderTest(TestCase):
             1: {
                 'state': constants.AdGroupSourceSettingsState.ACTIVE,
                 'status': constants.AdGroupSourceSettingsState.ACTIVE,
-                'daily_budget': Decimal('50.0000'),
-                'max_bid_cpc': 0.12,
-                'min_bid_cpc': 0.12,
+                'daily_budget': Decimal('10.0000'),
+                'max_bid_cpc': 0.501,
+                'min_bid_cpc': 0.501,
             },
             2: {
                 'state': constants.AdGroupSourceSettingsState.INACTIVE,
@@ -317,48 +360,13 @@ class SourcesLoaderTest(TestCase):
         })
 
     def test_settings_map_filtered_ad_group_sources(self):
-        sources = models.Source.objects.all()
-        ad_groups_sources = models.AdGroupSource.objects.filter(pk__in=[2, 3, 4, 5])
+        sources = models.Source.objects.filter(pk=2)
+        loader = loaders.SourcesLoader(sources, models.AdGroup.objects.all())
 
-        loader = loaders.SourcesLoader(sources, ad_groups_sources)
+        self.assertItemsEqual([1, 2, 3, 4], list(
+            loader.ad_groups_sources_qs.values_list('pk', flat=True)))
 
-        self.assertDictEqual(self.loader.settings_map, {
-            1: {
-                'state': constants.AdGroupSourceSettingsState.ACTIVE,
-                'status': constants.AdGroupSourceSettingsState.ACTIVE,
-                'daily_budget': Decimal('50.0000'),
-                'max_bid_cpc': 0.12,
-                'min_bid_cpc': 0.12,
-            },
-            2: {
-                'state': constants.AdGroupSourceSettingsState.INACTIVE,
-                'status': constants.AdGroupSourceSettingsState.INACTIVE,
-                'daily_budget': None,
-                'max_bid_cpc': None,
-                'min_bid_cpc': None,
-            },
-        })
-
-
-class AdGroupSourcesLoaderTest(TestCase):
-
-    fixtures = ['test_api_breakdowns.yaml']
-
-    def setUp(self):
-        sources = models.Source.objects.all()
-        ad_groups_sources = models.AdGroupSource.objects.filter(ad_group_id=1)
-
-        self.loader = loaders.SourcesLoader(sources, ad_groups_sources)
-
-    def test_settings_map(self):
-        self.assertDictEqual(self.loader.settings_map, {
-            1: {
-                'state': constants.AdGroupSourceSettingsState.ACTIVE,
-                'status': constants.AdGroupSourceSettingsState.ACTIVE,
-                'daily_budget': Decimal('50.0000'),
-                'max_bid_cpc': 0.12,
-                'min_bid_cpc': 0.12,
-            },
+        self.assertDictEqual(loader.settings_map, {
             2: {
                 'state': constants.AdGroupSourceSettingsState.INACTIVE,
                 'status': constants.AdGroupSourceSettingsState.INACTIVE,

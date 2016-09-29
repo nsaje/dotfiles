@@ -7,7 +7,7 @@ from zemauth.models import User
 
 from dash import models
 
-from stats import api_breakdowns
+from stats import constraints_helper
 
 
 class PrepareConstraints(TestCase):
@@ -20,7 +20,7 @@ class PrepareConstraints(TestCase):
         end_date = datetime.date(2016, 2, 1)
 
         self.assertDictEqual(
-            api_breakdowns.prepare_all_accounts_constraints(user, ['account_id'], start_date, end_date, sources),
+            constraints_helper.prepare_all_accounts_constraints(user, ['account_id'], start_date, end_date, sources),
             {
                 'date__gte': start_date,
                 'date__lte': end_date,
@@ -32,7 +32,7 @@ class PrepareConstraints(TestCase):
         )
 
         self.assertDictEqual(
-            api_breakdowns.prepare_all_accounts_constraints(
+            constraints_helper.prepare_all_accounts_constraints(
                 user, ['account_id', 'campaign_id'], start_date, end_date, sources
             ),
             {
@@ -46,7 +46,7 @@ class PrepareConstraints(TestCase):
         )
 
         self.assertDictEqual(
-            api_breakdowns.prepare_all_accounts_constraints(user, ['source_id'], start_date, end_date, sources),
+            constraints_helper.prepare_all_accounts_constraints(user, ['source_id'], start_date, end_date, sources),
             {
                 'date__gte': start_date,
                 'date__lte': end_date,
@@ -66,8 +66,8 @@ class PrepareConstraints(TestCase):
         account = models.Account.objects.get(pk=1)
 
         self.assertDictEqual(
-            api_breakdowns.prepare_account_constraints(user, account, ['source_id', 'campaign_id'],
-                                                       start_date, end_date, sources),
+            constraints_helper.prepare_account_constraints(user, account, ['source_id', 'campaign_id'],
+                                                           start_date, end_date, sources),
             {
                 'date__gte': start_date,
                 'date__lte': end_date,
@@ -87,8 +87,8 @@ class PrepareConstraints(TestCase):
         campaign = models.Campaign.objects.get(pk=1)
 
         self.assertDictEqual(
-            api_breakdowns.prepare_campaign_constraints(user, campaign, ['campaign_id', 'ad_group_id'],
-                                                        start_date, end_date, sources),
+            constraints_helper.prepare_campaign_constraints(user, campaign, ['campaign_id', 'ad_group_id'],
+                                                            start_date, end_date, sources),
             {
                 'date__gte': start_date,
                 'date__lte': end_date,
@@ -103,8 +103,8 @@ class PrepareConstraints(TestCase):
         )
 
         self.assertDictEqual(
-            api_breakdowns.prepare_campaign_constraints(user, campaign, ['campaign_id', 'content_ad_id'],
-                                                        start_date, end_date, sources),
+            constraints_helper.prepare_campaign_constraints(user, campaign, ['campaign_id', 'content_ad_id'],
+                                                            start_date, end_date, sources),
             {
                 'date__gte': start_date,
                 'date__lte': end_date,
@@ -126,8 +126,8 @@ class PrepareConstraints(TestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         self.assertDictEqual(
-            api_breakdowns.prepare_ad_group_constraints(user, ad_group, ['ad_group_id', 'content_ad_id'],
-                                                        start_date, end_date, sources),
+            constraints_helper.prepare_ad_group_constraints(user, ad_group, ['ad_group_id', 'content_ad_id'],
+                                                            start_date, end_date, sources),
             {
                 'date__gte': start_date,
                 'date__lte': end_date,

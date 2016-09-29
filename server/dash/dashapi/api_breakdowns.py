@@ -1,316 +1,107 @@
-import copy
-
 import newrelic.agent
 
-from utils import exc
+from functools import partial
+
 from utils import sort_helper
 
-from stats.constants import get_target_dimension, get_base_dimension
-from dash.constants import Level
+from stats.constants import get_target_dimension
+import stats.constraints_helper
+import stats.helpers
 
-from dash.dashapi import queries
 from dash.dashapi import loaders
 from dash.dashapi import augmenter
 from dash.dashapi import helpers
-from dash.dashapi import data_helper
-from dash.views.helpers import get_active_ad_group_sources
-from dash import models
+from dash import threads
 
 
-@newrelic.agent.function_trace()
 def query(level, breakdown, constraints, parents, order, offset, limit):
-    """
-    Queries breakdowns by dash data.
+    query_threads = query_async_start(level, breakdown, constraints, parents)
+    return query_async_get_results(query_threads, order, offset, limit)
 
-    NOTE: special attention is given on how querysets are constructed and that they are not executed if not necessary.
-    """
 
+def query_for_rows(rows, level, breakdown, constraints, parents, order, offset, limit, structure_w_stats):
+    query_threads = query_async_start(level, breakdown, constraints, parents)
+    return query_async_get_results_for_rows(query_threads, rows, breakdown, parents, order, offset, limit, structure_w_stats)
+
+
+def query_async_start(level, breakdown, constraints, parents):
+    query_threads = []
+    for parent in (parents or [None]):
+        fn = partial(query_section, level, breakdown, constraints, parent)
+        thread = threads.AsyncFunction(fn)
+        thread.start()
+
+        query_threads.append(thread)
+
+    return query_threads
+
+
+def query_async_get_results(query_threads, order=None, offset=None, limit=None):
     rows = []
+    for thread in query_threads:
+        thread.join()
+        thread_rows = thread.result
 
-    filtered_sources = constraints['filtered_sources']
+        if order:
+            thread_rows = sort_helper.sort_rows_by_order_and_archived(thread_rows, order)
+            thread_rows = helpers.apply_offset_limit(thread_rows, offset, limit)
 
-    params = {'start_date': constraints.get('date__gte'), 'end_date': constraints.get('date__lte'),
-              'show_archived': constraints['show_archived'], 'order': order, 'offset': offset, 'limit': limit}
-
-    if level is Level.ALL_ACCOUNTS:
-        allowed_accounts = constraints['allowed_accounts']
-        model = models.Account
-
-        if breakdown == ['account_id']:
-            rows, loader = queries.query_accounts(allowed_accounts, filtered_sources, **params)
-            augmenter.augment_accounts(rows, loader, is_base_level=True)
-
-        elif breakdown == ['source_id']:
-            rows, loader = queries.query_sources(filtered_sources, get_active_ad_group_sources(model, allowed_accounts),
-                                                 **params)
-            augmenter.augment_sources(rows, loader, is_base_level=True)
-
-        elif breakdown == ['account_id', 'source_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_sources(
-                    filtered_sources,
-                    get_active_ad_group_sources(model, allowed_accounts.filter(pk=parent['account_id'])),
-                    **params)
-                augmenter.augment_sources(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        elif breakdown == ['source_id', 'account_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_accounts(
-                    allowed_accounts, filtered_sources.filter(pk=parent['source_id']), **params)
-                augmenter.augment_accounts(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        elif breakdown == ['account_id', 'campaign_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_campaigns(
-                    constraints['allowed_campaigns'].filter(account_id=parent['account_id']), filtered_sources,
-                    **params)
-                augmenter.augment_campaigns(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        elif breakdown == ['source_id', 'campaign_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_campaigns(
-                    constraints['allowed_campaigns'], filtered_sources.filter(pk=parent['source_id']),
-                    **params)
-                augmenter.augment_campaigns(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        else:
-            raise exc.InvalidBreakdownError()
-
-    elif level is Level.ACCOUNTS:
-        account = constraints['account']
-        allowed_campaigns = constraints['allowed_campaigns']
-
-        if breakdown == ['campaign_id']:
-            rows, loader = queries.query_campaigns(allowed_campaigns, filtered_sources, **params)
-            augmenter.augment_campaigns(rows, loader, is_base_level=True)
-
-        elif breakdown == ['source_id']:
-            rows, loader = queries.query_sources(filtered_sources, get_active_ad_group_sources(models.Account, [account]),
-                                                 **params)
-            augmenter.augment_sources(rows, loader, is_base_level=True)
-
-        elif breakdown == ['campaign_id', 'source_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_sources(
-                    filtered_sources,
-                    get_active_ad_group_sources(models.Campaign, allowed_campaigns.filter(pk=parent['campaign_id'])),
-                    **params)
-                augmenter.augment_sources(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        elif breakdown == ['source_id', 'campaign_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_campaigns(
-                    allowed_campaigns, filtered_sources.filter(pk=parent['source_id']), **params)
-                augmenter.augment_campaigns(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        elif breakdown == ['campaign_id', 'ad_group_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_ad_groups(
-                    constraints['allowed_ad_groups'].filter(campaign_id=parent['campaign_id']),
-                    filtered_sources, **params)
-                augmenter.augment_ad_groups(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        elif breakdown == ['source_id', 'ad_group_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_ad_groups(
-                    constraints['allowed_ad_groups'],
-                    filtered_sources.filter(pk=parent['source_id']), **params)
-                augmenter.augment_ad_groups(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        else:
-            raise exc.InvalidBreakdownError()
-
-    elif level is Level.CAMPAIGNS:
-        campaign = constraints['campaign']
-        ad_groups = constraints['allowed_ad_groups']
-
-        if breakdown == ['ad_group_id']:
-            rows, loader = queries.query_ad_groups(ad_groups, filtered_sources, **params)
-            augmenter.augment_ad_groups(rows, loader, is_base_level=True)
-
-        elif breakdown == ['source_id']:
-            rows, loader = queries.query_sources(filtered_sources,
-                                                 get_active_ad_group_sources(models.Campaign, [campaign]),
-                                                 **params)
-            augmenter.augment_sources(rows, loader, is_base_level=True)
-
-        elif breakdown == ['ad_group_id', 'source_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_sources(
-                    filtered_sources,
-                    get_active_ad_group_sources(models.AdGroup, ad_groups.filter(pk=parent['ad_group_id'])),
-                    **params)
-                augmenter.augment_sources(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        elif breakdown == ['source_id', 'ad_group_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_ad_groups(
-                    ad_groups, filtered_sources.filter(pk=parent['source_id']), **params)
-                augmenter.augment_ad_groups(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        elif breakdown == ['source_id', 'content_ad_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_content_ads(
-                    constraints['allowed_content_ads'],
-                    filtered_sources.filter(pk=parent['source_id']), **params)
-                augmenter.augment_content_ads(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        elif breakdown == ['ad_group_id', 'content_ad_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_content_ads(
-                    constraints['allowed_content_ads'].filter(ad_group_id=parent['ad_group_id']),
-                    filtered_sources, **params)
-                augmenter.augment_content_ads(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        else:
-            raise exc.InvalidBreakdownError()
-
-    elif level is Level.AD_GROUPS:
-        ad_group = constraints['ad_group']
-        content_ads = constraints['allowed_content_ads']
-
-        if breakdown == ['content_ad_id']:
-            rows, loader = queries.query_content_ads(content_ads, filtered_sources, **params)
-            augmenter.augment_content_ads(rows, loader, is_base_level=True)
-
-        elif breakdown == ['source_id']:
-            rows, loader = queries.query_sources(filtered_sources,
-                                                 get_active_ad_group_sources(models.AdGroup, [ad_group]),
-                                                 **params)
-            augmenter.augment_sources(rows, loader, is_base_level=True)
-
-        elif breakdown == ['source_id', 'content_ad_id']:
-            for parent in parents:
-                group_rows, loader = queries.query_content_ads(content_ads,
-                                                               filtered_sources.filter(pk=parent['source_id']),
-                                                               **params)
-                augmenter.augment_content_ads(group_rows, loader)
-                rows.extend(helpers.apply_parent_to_rows(parent, group_rows))
-
-        elif breakdown == ['content_ad_id', 'source_id']:
-            # TODO currently sources are not prefiltered by content ad, we could select that based on content ad sources
-            # the result is that all sources of the ad group are shown
-            same_rows, loader = queries.query_sources(
-                filtered_sources, get_active_ad_group_sources(models.AdGroup, [ad_group]), **params)
-            augmenter.augment_sources(same_rows, loader)
-
-            for parent in parents:
-                copied_rows = []
-                for row in same_rows:
-                    copied_rows.append(copy.copy(row))
-                rows.extend(helpers.apply_parent_to_rows(parent, copied_rows))
-        else:
-            # TODO: content ad sources, publishers
-            raise NotImplementedError("Breakdown is not yet supported")
+        rows.extend(thread_rows)
 
     return rows
 
 
-@newrelic.agent.function_trace()
-def augment(rows, level, breakdown, constraints):
-    """
-    NOTE: does not handle allowed objects
-    """
+def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, order, offset, limit, structure_w_stats):
+    parent_breakdown = stats.constants.get_parent_breakdown(breakdown)
+    target_dimension = stats.constants.get_target_dimension(breakdown)
 
-    target_dimension = get_target_dimension(breakdown)
-    parent_dimension = get_base_dimension(breakdown[:-1])  # we expect max [base_level, target_level] breakdown depth
-    filtered_sources = constraints['filtered_sources']
+    rows_by_parent = stats.helpers.group_rows_by_breakdown(parent_breakdown, rows)
+    dash_rows_by_parent = stats.helpers.group_rows_by_breakdown(
+        parent_breakdown,
+        query_async_get_results(query_threads))
+    structure_by_parent = stats.helpers.group_rows_by_breakdown(parent_breakdown, structure_w_stats)
 
-    params = {'start_date': constraints.get('date__gte'), 'end_date': constraints.get('date__lte')}
+    result = []
 
-    if target_dimension in ('account_id', 'campaign_id', 'ad_group_id', 'content_ad_id'):
-        for parent_id, breakdown_rows, target_ids in helpers.group_rows_by_parents(
-                rows, parent_dimension, target_dimension, flat=('source_id' != parent_dimension)):
+    for parent in (parents or [None]):
+        parent_id_tuple = stats.helpers.get_breakdown_id_tuple(parent, parent_breakdown)
 
-            sources = filtered_sources
-            if 'source_id' == parent_dimension:
-                # parent_id is only needed in case when source_id dimension is one of the parent dimensions
-                # this is the only dimension affecting the state of child dimensions.
-                sources = sources.filter(pk=parent_id)
+        rows_4p = rows_by_parent[parent_id_tuple]
+        dash_rows_4p = dash_rows_by_parent[parent_id_tuple]
 
-            if target_dimension == 'account_id':
-                accounts = models.Account.objects.filter(pk__in=target_ids)
-                loader = loaders.AccountsLoader(accounts, sources, **params)
-                augmenter.augment_accounts(breakdown_rows, loader, is_base_level=(parent_dimension is None))
+        rows_target_ids = [x[target_dimension] for x in rows_4p]
+        selected_rows = [x for x in dash_rows_4p if x[target_dimension] in rows_target_ids]
 
-            elif target_dimension == 'campaign_id':
-                campaigns = models.Campaign.objects.filter(pk__in=target_ids)
-                loader = loaders.CampaignsLoader(campaigns, sources, **params)
-                augmenter.augment_campaigns(breakdown_rows, loader, is_base_level=(parent_dimension is None))
+        # check if we need to add some additional rows
+        if len(rows_target_ids) < limit:
+            # select additional rows from
+            structure_4p = structure_by_parent[parent_id_tuple]
+            all_used_ids = [x[target_dimension] for x in structure_4p]
 
-            elif target_dimension == 'ad_group_id':
-                ad_groups = models.AdGroup.objects.filter(pk__in=target_ids)
-                loader = loaders.AdGroupsLoader(ad_groups, sources, **params)
-                augmenter.augment_ad_groups(breakdown_rows, loader, is_base_level=(parent_dimension is None))
+            new_offset, new_limit = helpers.get_adjusted_limits_for_additional_rows(
+                rows_target_ids, all_used_ids, offset, limit)
 
-            elif target_dimension == 'content_ad_id':
-                content_ads = models.ContentAd.objects.filter(pk__in=target_ids)
-                loader = loaders.ContentAdsLoader(content_ads, sources, **params)
-                augmenter.augment_content_ads(breakdown_rows, loader, is_base_level=(parent_dimension is None))
-    elif target_dimension == 'source_id':
-        for parent_id, breakdown_rows, target_ids in helpers.group_rows_by_parents(
-                rows, parent_dimension, target_dimension, flat=(parent_dimension is None)):
+            extra_rows = [x for x in dash_rows_4p if x[target_dimension] not in all_used_ids]
+            extra_rows = sort_helper.sort_rows_by_order_and_archived(extra_rows,
+                                                                     get_default_order(target_dimension, order))
+            selected_rows.extend(helpers.apply_offset_limit(extra_rows, new_offset, new_limit))
 
-            sources, ad_group_sources = helpers.select_active_ad_group_sources(
-                level, constraints, parent_dimension, parent_id, target_ids)
-            loader = loaders.SourcesLoader(sources, ad_group_sources, **params)
-            augmenter.augment_sources(breakdown_rows, loader, is_base_level=(parent_dimension is None))
-
-    return rows
+        result.extend(selected_rows)
+    return result
 
 
 @newrelic.agent.function_trace()
-def query_missing_rows(rows, level, breakdown, constraints, parents, order, offset, limit, structure_with_stats):
-    """
-    Adds rows that are in dash but do not have statistics.
-    """
-
-    if structure_with_stats is None:
-        return rows
-
+def query_section(level, breakdown, constraints, parent=None):
     target_dimension = get_target_dimension(breakdown)
-    parent_dimension = get_base_dimension(breakdown[:-1])  # we expect max [base_level, target_level] breakdown depth
-    filtered_sources = constraints['filtered_sources']
 
-    prefix, _ = sort_helper.dissect_order(order)
-    order = prefix + 'name'
+    constraints = stats.constraints_helper.reduce_to_parent(breakdown, constraints, parent)
+    loader_cls = loaders.get_loader_for_dimension(target_dimension)
+    loader = loader_cls.from_constraints(level, constraints)
 
-    flat = parent_dimension is None
-    for parent_id, _, target_ids in helpers.group_rows_by_parents(
-            rows,
-            parent_dimension, target_dimension,
-            flat=flat,
-            parents=parents):
+    rows = stats.helpers.make_rows(target_dimension, loader.objs_ids, parent)
+    augmenter_fn = augmenter.get_augmenter_for_dimension(target_dimension)
 
-        if not helpers.needs_to_query_additional_rows(target_ids, limit):
-            continue
-
-        # used ids (the ones with stats) that need to be excluded when querying
-        all_excluded_ids = helpers.get_used_ids(
-            target_dimension, structure_with_stats, parent_dimension, parent_id)
-
-        new_offset, new_limit = helpers.get_adjusted_limits_for_additional_rows(
-            target_ids, all_excluded_ids, offset, limit)
-
-        new_constraints = copy.copy(constraints)
-        allowed_field = helpers.get_allowed_constraints_field(target_dimension)
-        new_constraints[allowed_field] = constraints[allowed_field].exclude(pk__in=all_excluded_ids)
-
-        parents = [{parent_dimension: parent_id}] if parent_dimension else None
-
-        rows.extend(query(level, breakdown, new_constraints, parents, order, new_offset, new_limit))
+    augmenter_fn(rows, loader, not bool(parent))
 
     return rows
 
@@ -321,19 +112,21 @@ def get_totals(level, breakdown, constraints):
 
     row = {}
     if breakdown == ['source_id']:
-        sources, ad_group_sources = helpers.select_active_ad_group_sources(level, constraints, None, None, None)
-        loader = loaders.SourcesLoader(sources, ad_group_sources,
-                                       start_date=constraints.get('date__gte'), end_date=constraints.get('date__lte'))
+        loader = loaders.SourcesLoader.from_constraints(level, constraints)
         augmenter.augment_sources_totals(row, loader)
 
     elif breakdown == ['account_id']:
-        loader = loaders.AccountsLoader(constraints['allowed_accounts'], constraints['filtered_sources'],
-                                        start_date=constraints.get('date__gte'), end_date=constraints.get('date__lte'))
+        loader = loaders.AccountsLoader.from_constraints(level, constraints)
         augmenter.augment_accounts_totals(row, loader)
 
     elif breakdown == ['campaign_id']:
-        loader = loaders.CampaignsLoader(constraints['allowed_campaigns'], constraints['filtered_sources'],
-                                         start_date=constraints.get('date__gte'), end_date=constraints.get('date__lte'))
+        loader = loaders.CampaignsLoader.from_constraints(level, constraints)
         augmenter.augment_campaigns_totals(row, loader)
 
     return row
+
+
+def get_default_order(target_dimension, order):
+    prefix, order_field = sort_helper.dissect_order(order)
+
+    return [prefix + 'name', prefix + target_dimension]
