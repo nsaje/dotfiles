@@ -9,31 +9,31 @@ angular.module('one.legacy').controller('AdGroupCtrl', ['$scope', '$state', '$wi
             heading: 'Content Ads',
             route: 'main.adGroups.ads',
             active: true,
-            hidden: ($scope.adGroup && $scope.adGroup.archived),
+            hidden: ($scope.adGroup && $scope.adGroup.archived === true),
         }, {
             heading: 'Media Sources',
             route: 'main.adGroups.sources',
             active: false,
-            hidden: ($scope.adGroup && $scope.adGroup.archived),
+            hidden: ($scope.adGroup && $scope.adGroup.archived === true),
         }, {
             heading: 'Publishers',
             route: 'main.adGroups.publishers',
             active: false,
             hidden: !$scope.hasPermission('zemauth.can_see_publishers') ||
-                ($scope.adGroup && $scope.adGroup.archived),
+                ($scope.adGroup && $scope.adGroup.archived === true),
             internal: $scope.isPermissionInternal('zemauth.can_see_publishers'),
         }, {
             heading: 'Settings',
             route: 'main.adGroups.settings',
             active: false,
             hidden: !$scope.hasPermission('dash.settings_view') ||
-                ($scope.adGroup && $scope.adGroup.archived),
+                ($scope.adGroup && $scope.adGroup.archived === true),
         }, {
             heading: 'History',
             route: 'main.adGroups.history',
             active: false,
             hidden: !$scope.hasPermission('zemauth.ad_group_history_view') ||
-                ($scope.adGroup && $scope.adGroup.archived),
+                ($scope.adGroup && $scope.adGroup.archived === true),
             internal: $scope.isPermissionInternal('zemauth.ad_group_history_view'),
         }];
 

@@ -27,28 +27,28 @@ angular.module('one.legacy').controller('CampaignCtrl', ['$scope', '$state', '$l
                 heading: 'Ad groups',
                 route: 'main.campaigns.ad_groups',
                 active: true,
-                hidden: $scope.campaign && $scope.campaign.archived,
+                hidden: $scope.campaign && $scope.campaign.archived === true,
                 internal: false,
             },
             {
                 heading: 'Media sources',
                 route: 'main.campaigns.sources',
                 active: false,
-                hidden: $scope.campaign && $scope.campaign.archived,
+                hidden: $scope.campaign && $scope.campaign.archived === true,
                 internal: false,
             },
             {
                 heading: 'Settings',
                 route: 'main.campaigns.settings',
                 active: false,
-                hidden: $scope.campaign && $scope.campaign.archived,
+                hidden: $scope.campaign && $scope.campaign.archived === true,
                 internal: false,
             },
             {
                 heading: 'History',
                 route: 'main.campaigns.history',
                 active: false,
-                hidden: $scope.campaign && $scope.campaign.archived ||
+                hidden: $scope.campaign && $scope.campaign.archived === true ||
                     !$scope.hasPermission('zemauth.campaign_history_view'),
                 internal: $scope.isPermissionInternal('zemauth.campaign_history_view'),
             },
@@ -56,7 +56,7 @@ angular.module('one.legacy').controller('CampaignCtrl', ['$scope', '$state', '$l
                 heading: 'Budget',
                 route: 'main.campaigns.budget',
                 active: false,
-                hidden: $scope.campaign && $scope.campaign.archived,
+                hidden: $scope.campaign && $scope.campaign.archived === true,
                 internal: false,
             },
         ];
