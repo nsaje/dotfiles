@@ -145,6 +145,12 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
             });
         };
 
+        vm.removeError = function (field) {
+            if (vm.errors) {
+                delete vm.errors[field];
+            }
+        };
+
         function init () {
             vm.getPixels();
             if (vm.audienceId) {

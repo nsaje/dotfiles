@@ -4482,6 +4482,24 @@ select.media-source-select {
 
 /* TAGS CONTROLER */
 
+.has-error tags-input .host .tags {
+    border: 1px solid #c70000;
+}
+
+tags-input[disabled] {
+    .tags {
+        background-color: #fff;
+
+        .tag-item .remove-button {
+            display: none;
+        }
+    }
+ 
+    .input {
+        display: none;
+    }
+}
+
 tags-input {
     .host {
         margin: 0;
@@ -4494,6 +4512,9 @@ tags-input {
             min-height: 36px;
             .border-radius(2px);
             .box-shadow(none);
+            // maticz, 30.9.2016: I had to add this in order for border and radius to
+            // work. By default, it is set to -webkit-appearance: textfield;.
+            -webkit-appearance: none;
             
             .input {
                 &.invalid-tag {

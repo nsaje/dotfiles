@@ -6,11 +6,17 @@
             <thead>
                 <tr>
                     <th class="arrow">
-                        <a href class="order" ng-click="orderField = 'name'; orderReverse = !orderReverse">Audience's Name</a>
+                        Audience's Name
                         <zem-help-popover content="Audience's name" placement="top"></zem-help-popover>
                     </th>
-                    <th>Size</th>
-                    <th>Seen Yesterday</th>
+                    <th>
+                        Size
+                        <zem-help-popover content="Count of all unique users in the audience" placement="top"></zem-help-popover>
+                    </th>
+                    <th>
+                        Added Yesterday
+                        <zem-help-popover content="Count of unique users added to the audience yesterday" placement="top"></zem-help-popover>
+                    </th>
                     <th>Date Created</th>
                     <th></th>
                 </tr>

@@ -1,4 +1,4 @@
-<div>
+<div class="zem-custom-audiences-modal">
     <div class="modal-header">
         <h4 class="modal-title">Create Custom Audience</h4>
     </div>
@@ -8,7 +8,7 @@
                 Audience Name
             </label>
             <div class="col-xs-8">
-                <input type="text" id="zem-custom-audiences-modal-name" class="form-control" ng-model="ctrl.selectedName" placeholder="Audience Name" ng-readonly="ctrl.readonly" />
+                <input type="text" id="zem-custom-audiences-modal-name" class="form-control" ng-model="ctrl.selectedName" ng-change="ctrl.removeError('name')" placeholder="Audience Name" ng-readonly="ctrl.readonly" />
                 <label ng-repeat="error in ctrl.errors.name" class="control-label error">{{ error }}</label>
             </div>
         </div>
@@ -19,7 +19,7 @@
                 <zem-help-popover content="The pixel that is the source of this traffic." placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
             <div class="col-xs-8">
-                <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-pixie-select" class="form-control" ng-model="ctrl.selectedPixelId" ng-disabled="ctrl.readonly">
+                <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-pixie-select" class="form-control" ng-model="ctrl.selectedPixelId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('pixelId')">
                     <ui-select-match placeholder="Select Pixel">{{ $select.selected.name }}</ui-select-match>
                     <ui-select-choices repeat="pixel.id as pixel in ctrl.pixels">
                         {{ pixel.name }}
@@ -35,7 +35,7 @@
                 <zem-help-popover content="Choose how you want to add people to your audience. Include all of your website visitors, or create rules that only add people who visit specific parts of your website." placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
             <div class="col-xs-8">
-                <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-rule-select" class="form-control" ng-model="ctrl.selectedTopRuleId" ng-disabled="ctrl.readonly">
+                <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-rule-select" class="form-control" ng-model="ctrl.selectedTopRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
                     <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
                     <ui-select-choices repeat="rule.id as rule in ctrl.rules">
                         {{ rule.name }}
@@ -49,7 +49,7 @@
                     <div class="row m-b-s">
                         <label class="control-label m-t-s m-b-xs">Include people who visit any web page that meets the following rules:</label>
                         <div class="col-xs-4 p-l-none p-r-none">
-                            <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly">
+                            <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
                                 <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
                                 <ui-select-choices repeat="rule.id as rule in ctrl.refererRules">
                                     {{ rule.name }}
@@ -59,8 +59,8 @@
                     </div>
                     <div class="row m-b-xs">
                         <div class="col-xs-12 p-r-none p-l-none">
-                            <input type="text" id="zem-custom-audiences-modal-referer-rule-value" class="form-control" ng-show="ctrl.selectedRefererRuleId=='startsWith'" ng-model="ctrl.selectedRefererRuleStartsWithValue" placeholder="Add URL keywords" ng-readonly="ctrl.readonly" />
-                            <tags-input ng-show="ctrl.selectedRefererRuleId=='contains'" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly"></tags-input>
+                            <input type="text" id="zem-custom-audiences-modal-referer-rule-value" class="form-control" ng-show="ctrl.selectedRefererRuleId=='startsWith'" ng-model="ctrl.selectedRefererRuleStartsWithValue" placeholder="Add URL keywords" ng-readonly="ctrl.readonly" ng-change="ctrl.removeError('rules')" />
+                            <tags-input ng-show="ctrl.selectedRefererRuleId=='contains'" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly"></tags-input>
                             <div class="description small m-t-xs m-b-none" ng-show="ctrl.selectedRefererRuleId=='contains'">Confirm tag with ENTER or delete previously added tag with double BACKSPACE or by clicking X.</div>
                         </div>
                     </div>
@@ -81,7 +81,7 @@
             </label>
             <div class="col-xs-8">
                 <div class="input-group">
-                    <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedTtl" ng-disabled="ctrl.readonly">
+                    <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedTtl" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('ttl')">
                         <ui-select-match placeholder="Select Days">{{ $select.selected.name }}</ui-select-match>
                         <ui-select-choices repeat="ttlDay.value as ttlDay in ctrl.ttlDays">
                             {{ ttlDay.name }}
@@ -99,6 +99,8 @@
     <div class="modal-footer">
         <button type="button" class="btn btn-gray" ng-if="ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Close</button>
         <button type="button" class="btn btn-gray" ng-if="!ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Cancel</button>
-        <button type="button" class="btn btn-add pull-right" ng-if="!ctrl.readonly" ng-click="ctrl.createAudience()">Create Audience</button>
+        <a class="create-button btn btn-add" ng-if="!ctrl.readonly" ng-click="ctrl.createAudience()">
+            <span class="loader-image" ng-show="ctrl.putRequestInProgress"></span><span ng-show="!ctrl.putRequestInProgress">Create Audience</span>
+        </a>
     </div>
 </div>
