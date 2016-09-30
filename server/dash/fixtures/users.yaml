@@ -3,7 +3,7 @@
 
 - fields:
     email: one-test@zemanta.com
-    password: pbkdf2_sha256$12000$rlp6AeDBOQtf$1b2Pt7OZoQM59iYkQWvuOnzU/5toZx4E9kmgsVafszs=
+    password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
     date_joined: "2014-06-10T10:00:00"
     is_staff: false
     is_superuser: false
@@ -13,7 +13,7 @@
 - fields:
     username: 'chuck.norris'
     email: chuck.norris@zemanta.com
-    password: pbkdf2_sha256$20000$PA7jSi8FyyqF$aSGoLmeb89itpPz+xzT2Fh1t07g+6nYlaim5AHWx3x0=
+    password: md5$TCWmcuTLNaOl$b46c45b8c2f584f22c7fde19d6f632b6  # norris
     date_joined: "2014-06-10T10:00:00"
     is_staff: false
     is_superuser: false

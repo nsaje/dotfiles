@@ -10,7 +10,7 @@
     is_superuser: false
     last_login: '2014-06-04T12:20:46'
     last_name: ''
-    password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
+    password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
     user_permissions: []
     username: test_user
   model: zemauth.user
@@ -26,7 +26,7 @@
     is_superuser: true
     last_login: '2014-06-04T12:20:46'
     last_name: ''
-    password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
+    password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
     user_permissions: [] # 197]  # 'Can see Redshift postclick statistics'
     username: test_user
   model: zemauth.user

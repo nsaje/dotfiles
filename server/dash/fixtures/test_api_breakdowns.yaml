@@ -40,7 +40,7 @@
         is_superuser: true
         last_login: '2014-06-16T12:21:29'
         last_name: ''
-        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
         user_permissions: []
         username: 'alpha'
     model: zemauth.user
@@ -56,7 +56,7 @@
         is_superuser: false
         last_login: '2014-06-16T12:21:29'
         last_name: ''
-        password: pbkdf2_sha256$20000$uBSBDTI89lC9$KIa//Zqrj258fQLcMIhv1GKax3sH5wvXY/5IrON4IWw=
+        password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
         user_permissions: []
         username: 'beta'
     model: zemauth.user
@@ -72,7 +72,7 @@
         is_superuser: true
         last_login: '2014-06-16T12:21:29'
         last_name: ''
-        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
         user_permissions: []
         username: 'gamma'
     model: zemauth.user

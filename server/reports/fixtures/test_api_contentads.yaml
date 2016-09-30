@@ -10,7 +10,7 @@
         is_superuser: true
         last_login: '2014-06-16T12:21:29'
         last_name: ''
-        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
         user_permissions: []
         username: ''
     model: zemauth.user
