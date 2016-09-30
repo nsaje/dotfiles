@@ -157,7 +157,7 @@ class AudienceArchive(api_common.BaseApiView):
             audience.save(
                 request,
                 constants.HistoryActionType.AUDIENCE_ARCHIVE,
-                'Archived audience "{}".'.format(audience.name)
+                u'Archived audience "{}".'.format(audience.name)
             )
             redirector_helper.upsert_audience(audience)
 
@@ -186,7 +186,7 @@ class AudienceRestore(api_common.BaseApiView):
             audience.save(
                 request,
                 constants.HistoryActionType.AUDIENCE_RESTORE,
-                'Restored audience "{}".'.format(audience.name)
+                u'Restored audience "{}".'.format(audience.name)
             )
             redirector_helper.upsert_audience(audience)
 
