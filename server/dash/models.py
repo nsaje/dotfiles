@@ -1363,10 +1363,6 @@ class SourceType(models.Model):
         elif region_type == constants.RegionType.DMA:
             return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
 
-    def can_modify_tracking_codes(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_TRACKING_CODES in self.available_actions
-
     def can_modify_ad_group_name(self):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME in self.available_actions
@@ -1489,9 +1485,6 @@ class Source(models.Model):
 
     def can_modify_targeting_for_region_type_manually(self, region_type):
         return self.source_type.can_modify_targeting_for_region_type_manually(region_type)
-
-    def can_modify_tracking_codes(self):
-        return self.source_type.can_modify_tracking_codes() and not self.maintenance and not self.deprecated
 
     def can_modify_ad_group_name(self):
         return self.source_type.can_modify_ad_group_name() and not self.maintenance and not self.deprecated

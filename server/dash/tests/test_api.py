@@ -386,11 +386,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
         self.assertEqual([], ret)
 
-        expected_value = 'test={amazing}' +\
-            '&blob={slug}&x={slug}&_z1_adgid=7&_z1_msid={slug}'.format(slug=ad_group_source.source.tracking_slug)
-
-        mock_api.init_set_ad_group_manual_property.assert_called_with(
-            mock.ANY, None, 'tracking_code', expected_value)
+        self.assertFalse(mock_api.init_set_ad_group_manual_property.called)
 
         self.assertTrue(self.mock_insert_adgroup.called)
         self.assertEqual(self.mock_insert_adgroup.call_args[0][0], ad_group_source.ad_group_id)
@@ -398,10 +394,6 @@ class UpdateAdGroupSourceSettings(TestCase):
 
     def test_tracking_codes_automatic(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
-        ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
-        )
-        ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
@@ -419,9 +411,6 @@ class UpdateAdGroupSourceSettings(TestCase):
 
         ad_group_source1.source.source_type.available_actions.append(
             constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS
-        )
-        ad_group_source1.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
         )
         ad_group_source1.source.source_type.save()
 
@@ -862,9 +851,6 @@ class UpdateAdGroupSourceSettings(TestCase):
         """
 
         ad_group_source = models.AdGroupSource.objects.get(id=2)
-        ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
-        )
         ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
@@ -898,9 +884,6 @@ class UpdateAdGroupSourceSettings(TestCase):
         """
 
         ad_group_source = models.AdGroupSource.objects.get(id=2)  # should be Gravity
-        ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
-        )
         ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
@@ -984,9 +967,6 @@ class UpdateAdGroupSourceSettings(TestCase):
 
     def test_tracking_propagation_remove_tracking_ids(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
-        ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
-        )
         ad_group_source.source.source_type.save()
 
         adgs = models.AdGroupSettings()
@@ -1016,9 +996,6 @@ class UpdateAdGroupSourceSettings(TestCase):
 
     def test_tracking_propagation_add_tracking_ids(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
-        ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_TRACKING_CODES
-        )
         ad_group_source.source.source_type.save()
 
         adgs = models.AdGroupSettings()
