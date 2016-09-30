@@ -2505,6 +2505,13 @@ ul.with-icons {
     margin-top: 11vh;
 }
 
+.modal.modal-wide {
+    .modal-dialog {
+        width: 800px;
+        margin-top: 11vh;
+    }
+}
+
 .page-ad-group-agency,
 .page-ad-group-settings {
     .alert-warning {
@@ -4469,6 +4476,46 @@ select.media-source-select {
             position: absolute;
             border-top: 10px solid @internal-color;
             border-right: 10px solid transparent;
+        }
+    }
+}
+
+/* TAGS CONTROLER */
+
+tags-input {
+    .host {
+        margin: 0;
+        
+        .tags {
+            font-weight: 400;
+            font-size: 14px;
+            color: #414141;
+            border-color: @border-input-color;
+            min-height: 36px;
+            .border-radius(2px);
+            .box-shadow(none);
+            
+            .input {
+                &.invalid-tag {
+                    color: @red; 
+                }
+            }
+            
+            .tag-item {
+                background: none;
+                background-color: @background-light-gray;
+                border: 1px solid @background-light-gray;
+                
+                &.selected {
+                    background-color: @red;
+                    border: 1px solid @red;
+                    color: @white;
+                    
+                    .remove-button {
+                        color: @white; 
+                    }
+                }
+            }
         }
     }
 }

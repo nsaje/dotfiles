@@ -46,8 +46,8 @@
             <div ng-if="ctrl.showRefererRules()">
                 <label class="col-xs-4 control-label"></label>
                 <div class="col-xs-8">
-                    <div class="row">
-                        <div class="description">Include people who visit any web page that meets the following rules.</div>
+                    <div class="row m-b-s">
+                        <label class="control-label m-t-s m-b-xs">Include people who visit any web page that meets the following rules:</label>
                         <div class="col-xs-4 p-l-none p-r-none">
                             <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly">
                                 <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
@@ -56,8 +56,12 @@
                                 </ui-select-choices>
                             </ui-select>
                         </div>
-                        <div class="col-xs-8 p-r-none">
-                            <input type="text" id="zem-custom-audiences-modal-referer-rule-value" class="form-control" ng-model="ctrl.selectedRefererRuleValue" placeholder="Add URL keywords" ng-readonly="ctrl.readonly" />
+                    </div>
+                    <div class="row m-b-xs">
+                        <div class="col-xs-12 p-r-none p-l-none">
+                            <input type="text" id="zem-custom-audiences-modal-referer-rule-value" class="form-control" ng-show="ctrl.selectedRefererRuleId=='startsWith'" ng-model="ctrl.selectedRefererRuleStartsWithValue" placeholder="Add URL keywords" ng-readonly="ctrl.readonly" />
+                            <tags-input ng-show="ctrl.selectedRefererRuleId=='contains'" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly"></tags-input>
+                            <div class="description small m-t-xs m-b-none" ng-show="ctrl.selectedRefererRuleId=='contains'">Confirm tag with ENTER or delete previously added tag with double BACKSPACE or by clicking X.</div>
                         </div>
                     </div>
                 </div>

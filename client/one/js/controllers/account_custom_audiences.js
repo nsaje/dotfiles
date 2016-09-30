@@ -10,7 +10,7 @@ angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', ['$scope',
     $scope.openAudienceModal = function () {
         var modal = $uibModal.open({
             component: 'zemCustomAudiencesModal',
-            windowClass: 'modal-default',
+            windowClass: 'modal-default modal-wide',
             resolve: {
                 accountId: function () {
                     return $scope.accountId;

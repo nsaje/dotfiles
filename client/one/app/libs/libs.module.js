@@ -19,5 +19,6 @@ angular.module(
         'highcharts-ng',
         'vs-repeat',
         'cfp.hotkeys',
+        'ngTagsInput'
     ]
 );

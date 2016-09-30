@@ -34,7 +34,6 @@
     "commit": "b0a4af7a0c022bd0d27ba8c3eb5824d53b2f2395"
   },
   "_source": "https://github.com/kamilkp/angular-vs-repeat.git",
-  "_target": "^1.1.7",
-  "_originalSource": "angular-vs-repeat",
-  "_direct": true
+  "_target": "1.1.x",
+  "_originalSource": "angular-vs-repeat"
 }

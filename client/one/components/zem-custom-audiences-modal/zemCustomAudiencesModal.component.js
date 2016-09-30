@@ -24,7 +24,8 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
 
         vm.selectedTopRuleId = '';
         vm.selectedRefererRuleId = '';
-        vm.selectedRefererRuleValue = '';
+        vm.selectedRefererRuleStartsWithValue = '';
+        vm.selectedRefererRuleContainsValue = '';
         vm.selectedName = '';
         vm.selectedPixelId = null;
         vm.selectedTtl = null;
@@ -73,11 +74,15 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
                             } else if (rule.type === constants.audienceRuleType.STARTS_WITH) {
                                 vm.selectedTopRuleId = 'referer';
                                 vm.selectedRefererRuleId = 'startsWith';
-                                vm.selectedRefererRuleValue = rule.value;
+                                vm.selectedRefererRuleStartsWithValue = rule.value;
                             } else if (rule.type === constants.audienceRuleType.CONTAINS) {
                                 vm.selectedTopRuleId = 'referer';
                                 vm.selectedRefererRuleId = 'contains';
-                                vm.selectedRefererRuleValue = rule.value;
+                                if (rule.value && rule.value.length > 0) {
+                                    vm.selectedRefererRuleContainsValue = rule.value.split(',').map(function (elem) {
+                                        return {text: elem};
+                                    });
+                                }
                             }
                         }
                     }
@@ -93,6 +98,7 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
 
         vm.createAudience = function () {
             vm.putRequestInProgress = true;
+            var i = 0;
 
             var audience = {
                 name: vm.selectedName,
@@ -108,11 +114,16 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
                 } else if (vm.selectedTopRuleId === 'referer') {
                     if (vm.selectedRefererRuleId === 'startsWith') {
                         selectedRuleType = constants.audienceRuleType.STARTS_WITH;
+                        selectedRuleValue = vm.selectedRefererRuleStartsWithValue;
                     } else if (vm.selectedRefererRuleId === 'contains') {
                         selectedRuleType = constants.audienceRuleType.CONTAINS;
-                    }
+                        if (vm.selectedRefererRuleContainsValue && vm.selectedRefererRuleContainsValue.length > 0) {
 
-                    selectedRuleValue = vm.selectedRefererRuleValue;
+                            selectedRuleValue = vm.selectedRefererRuleContainsValue.map(function (elem) {
+                                return elem.text;
+                            }).join(',');
+                        }
+                    }
                 }
             }
 

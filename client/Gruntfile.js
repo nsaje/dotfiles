@@ -130,7 +130,8 @@ module.exports = function (grunt) {
                         'lib/components/angular-ui-select/dist/select.css',
                         'lib/components/select2/select2.css',
                         'lib/components/select2/select2-bootstrap.css',
-                        'lib/components/bootstrap-daterangepicker/daterangepicker.css'
+                        'lib/components/bootstrap-daterangepicker/daterangepicker.css',
+                        'lib/components/ng-tags-input/ng-tags-input.css'
                     ],
                     dest: 'dist/one/zemanta-one.lib.min.css'
                 }]
