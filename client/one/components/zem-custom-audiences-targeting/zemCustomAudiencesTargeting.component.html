@@ -36,7 +36,7 @@
          </div>
     </div>
 
-    <ui-select theme="select2" ng-if="ctrl.availableAudiencesAndAdGroups.length" ng-model="ctrl.selectedTargeting" on-select="ctrl.addSelectedTargeting($select.selected)" class="larger m-t-s">
+    <ui-select theme="select2" ng-model="ctrl.selectedTargeting" on-select="ctrl.addSelectedTargeting($select.selected)" class="larger m-t-s">
         <ui-select-match placeholder="Add Custom Audience">{{ $select.selected.name }}</ui-select-match>
         <ui-select-choices group-by="ctrl.groupBySection" repeat="entity in ctrl.availableAudiencesAndAdGroups | filter: {name: $select.search} track by entity.id" position="down">
             <div class="audience-select-option">
@@ -47,5 +47,8 @@
                 </span>
             </div>
         </ui-select-choices>
+        <ui-select-no-choice>
+            No available ad group or audience
+        </ui-select-no-choice>
     </ui-select>
 </div>

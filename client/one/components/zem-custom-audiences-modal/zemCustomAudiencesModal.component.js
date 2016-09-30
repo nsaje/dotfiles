@@ -97,6 +97,10 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         };
 
         vm.createAudience = function () {
+            if (vm.putRequestInProgress) {
+                return;
+            }
+
             vm.putRequestInProgress = true;
             var i = 0;
 

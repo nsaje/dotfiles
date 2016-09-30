@@ -40,6 +40,22 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
         }
     };
 
+    $scope.getRetargetingEnabled = function () {
+        var settings = $scope.settings;
+        if (!$scope.hasPermission('zemauth.can_target_custom_audiences') && settings.retargetingAdGroups && !!settings.retargetingAdGroups.length) {
+            return true;
+        }
+
+        if ((settings.retargetingAdGroups && !!settings.retargetingAdGroups.length) ||
+                (settings.exclusionRetargetingAdGroups && !!settings.exclusionRetargetingAdGroups.length) ||
+                (settings.audienceTargeting && !!settings.audienceTargeting.length) ||
+                (settings.exclusionAudienceTargeting && !!settings.exclusionAudienceTargeting.length)) {
+            return true;
+        }
+
+        return false;
+    };
+
     $scope.getSettings = function (id) {
         $scope.loadRequestInProgress = true;
 
@@ -54,7 +70,7 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
                 $scope.audiences = data.audiences;
                 $scope.warnings = data.warnings;
                 $scope.updateWarningText();
-                $scope.retargetingEnabled = $scope.settings.retargetingAdGroups && !!$scope.settings.retargetingAdGroups.length;
+                $scope.retargetingEnabled = $scope.getRetargetingEnabled();
             },
             function () {
                 // error
@@ -95,7 +111,7 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.saveRequestInProgress = false;
                 $scope.discarded = true;
-                $scope.retargetingEnabled = $scope.settings.retargetingAdGroups && !!$scope.settings.retargetingAdGroups.length;
+                $scope.retargetingEnabled = $scope.getRetargetingEnabled();
             },
             function () {
                 // error
