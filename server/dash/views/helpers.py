@@ -15,12 +15,13 @@ import actionlog.api
 import actionlog.constants
 import actionlog.models
 import actionlog.zwei_actions
-import automation.autopilot_budgets
-import automation.autopilot_settings
+import automation
 
 from dash import models
 from dash import constants
 from dash import api
+
+from dash.dashapi import data_helper
 
 from utils import exc
 from utils import email_helper
@@ -706,23 +707,43 @@ def get_last_pixel_sync_message(last_pixel_sync):
     return message, ok
 
 
-def get_selected_content_ads(
-        ad_group_id, select_all, select_batch_id, content_ad_ids_selected, content_ad_ids_not_selected, include_archived):
+def get_selected_entities(objects, select_all, selected_ids, not_selected_ids, include_archived, select_batch_id=None, **constraints):
     if select_all:
-        content_ads = models.ContentAd.objects.filter(
-            Q(ad_group__id=ad_group_id) | Q(id__in=content_ad_ids_selected)).exclude(
-                id__in=content_ad_ids_not_selected)
+        entities = objects.filter(Q(**constraints) | Q(id__in=selected_ids)).exclude(id__in=not_selected_ids)
     elif select_batch_id is not None:
-        content_ads = models.ContentAd.objects.filter(
-            Q(batch__id=select_batch_id) | Q(id__in=content_ad_ids_selected)).exclude(
-                id__in=content_ad_ids_not_selected)
+        entities = objects.filter(Q(batch__id=select_batch_id) | Q(id__in=selected_ids)).exclude(id__in=not_selected_ids)
     else:
-        content_ads = models.ContentAd.objects.filter(id__in=content_ad_ids_selected)
+        entities = objects.filter(id__in=selected_ids)
 
     if not include_archived:
-        content_ads = content_ads.exclude_archived()
+        entities = entities.exclude_archived()
 
-    return content_ads.order_by('created_dt', 'id')
+    return entities.order_by('created_dt', 'id')
+
+
+def get_selected_adgroup_sources(objects, data, **constraints):
+    select_all = data.get('select_all', False)
+
+    selected_ids = parse_post_request_ids(data, 'selected_ids')
+    not_selected_ids = parse_post_request_ids(data, 'not_selected_ids')
+
+    entities = objects.filter(Q(**constraints))
+    if select_all:
+        entities = entities.exclude(source_id__in=not_selected_ids)
+    else:
+        entities = entities.filter(source_id__in=selected_ids)
+
+    return entities.order_by('id')
+
+
+def get_selected_entities_post_request(objects, data, include_archived=False, **constraints):
+    select_all = data.get('select_all', False)
+    select_batch_id = data.get('select_batch')
+
+    selected_ids = parse_post_request_ids(data, 'selected_ids')
+    not_selected_ids = parse_post_request_ids(data, 'not_selected_ids')
+
+    return get_selected_entities(objects, select_all, selected_ids, not_selected_ids, include_archived, select_batch_id, **constraints)
 
 
 def get_ad_group_sources_state_messages(ad_group_sources, ad_group_settings,
@@ -907,11 +928,11 @@ def parse_get_request_content_ad_ids(request_data, param_name):
         raise exc.ValidationError()
 
 
-def parse_post_request_content_ad_ids(request_data, param_name):
-    content_ad_ids = request_data.get(param_name, [])
+def parse_post_request_ids(request_data, param_name):
+    ids = request_data.get(param_name, [])
 
     try:
-        return map(int, content_ad_ids)
+        return map(int, ids)
     except ValueError:
         raise exc.ValidationError()
 
@@ -1262,6 +1283,21 @@ def get_users_for_manager(user, account, current_manager=None):
         users |= zemauth.models.User.objects.filter(pk=current_manager.id)
 
     return users.filter(is_active=True).distinct()
+
+
+def validate_ad_groups_state(ad_groups, campaign, campaign_settings, state):
+    if state is None or state not in constants.AdGroupSettingsState.get_all():
+        raise exc.ValidationError()
+
+    if not automation.campaign_stop.can_enable_all_ad_groups(campaign, campaign_settings, ad_groups):
+        raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
+
+    if state == constants.AdGroupSettingsState.ACTIVE:
+        if not data_helper.campaign_has_available_budget(campaign):
+            raise exc.ValidationError('Cannot enable ad group without available budget.')
+
+        if models.CampaignGoal.objects.filter(campaign=campaign).count() == 0:
+            raise exc.ValidationError('Please add a goal to your campaign before enabling this ad group.')
 
 
 def get_upload_batches_for_ad_group(ad_group):

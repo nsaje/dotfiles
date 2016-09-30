@@ -1784,6 +1784,18 @@ class AdGroup(models.Model):
                 request,
                 action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
+    @transaction.atomic
+    def set_state(self, request, new_state):
+        current_settings = self.get_current_settings()
+
+        if current_settings.state != new_state:
+            new_settings = current_settings.copy_settings()
+            new_settings.state = new_state
+            new_settings.save(request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
+            return True
+
+        return False
+
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,
                       action_type=None):

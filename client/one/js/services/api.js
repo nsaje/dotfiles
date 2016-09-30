@@ -2368,58 +2368,49 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         };
     }
 
-    function AdGroupContentAdState () {
-        this.save = function (adGroupId, state, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+    function BulkActions () {
+        function postToApi (url, selection, state) {
             var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/state/';
 
             $http.post(url, {
                 state: state,
-                content_ad_ids_selected: contentAdIdsSelected,
-                content_ad_ids_not_selected: contentAdIdsNotSelected,
-                select_all: selectedAll,
-                select_batch: selectedBatch
-            }).
-                success(function (data) {
-                    deferred.resolve(data);
-                }).error(function (data) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function AdGroupContentAdArchive () {
-        function postToApi (url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
-            var deferred = $q.defer();
-
-            $http.post(url, {
-                content_ad_ids_selected: contentAdIdsSelected,
-                content_ad_ids_not_selected: contentAdIdsNotSelected,
-                select_all: selectedAll,
-                select_batch: selectedBatch
-            }).
-                success(function (data) {
-                    deferred.resolve(data);
-                }).
-                error(function (data) {
-                    deferred.reject(data);
-                });
+                selected_ids: selection.selectedIds,
+                not_selected_ids: selection.unselectedIds,
+                select_all: selection.filterAll,
+                select_batch: selection.filterId
+            }).success(function (data) {
+                deferred.resolve(data);
+            }).error(function (data) {
+                deferred.reject(data);
+            });
 
             return deferred.promise;
         }
 
-        this.archive = function (adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/archive/';
+        var breakdownUrlMap = {};
+        breakdownUrlMap[constants.breakdown.ACCOUNT] = 'accounts';
+        breakdownUrlMap[constants.breakdown.CAMPAIGN] = 'campaigns';
+        breakdownUrlMap[constants.breakdown.AD_GROUP] = 'ad_groups';
+        breakdownUrlMap[constants.breakdown.CONTENT_AD] = 'contentads';
+        breakdownUrlMap[constants.breakdown.MEDIA_SOURCE] = 'sources';
 
-            return postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch);
+        function getUrl (level, breakdown, id, action) {
+            if (id) {
+                return '/api/' + level + '/' + id + '/' + breakdownUrlMap[breakdown] + '/' + action + '/';
+            }
+            return '/api/' + level + '/' + breakdownUrlMap[breakdown] + '/' + action + '/';
+        }
+
+        this.archive = function (level, breakdown, id, selection) {
+            return postToApi(getUrl(level, breakdown, id, 'archive'), selection);
         };
 
-        this.restore = function (adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
-            var url = '/api/ad_groups/' + adGroupId + '/contentads/restore/';
+        this.restore = function (level, breakdown, id, selection) {
+            return postToApi(getUrl(level, breakdown, id, 'restore'), selection);
+        };
 
-            return postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch);
+        this.state = function (level, breakdown, id, selection, state) {
+            return postToApi(getUrl(level, breakdown, id, 'state'), selection, state);
         };
     }
 
@@ -3083,12 +3074,11 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         availableSources: new AvailableSources(),
         agencies: new Agencies(),
         conversionPixel: new ConversionPixel(),
-        adGroupContentAdState: new AdGroupContentAdState(),
-        adGroupContentAdArchive: new AdGroupContentAdArchive(),
         accountCredit: new AccountCredit(),
         campaignBudget: new CampaignBudget(),
         campaignGoalValidation: new CampaignGoalValidation(),
         customAudiences: new CustomAudiences(),
         customAudiencesArchive: new CustomAudiencesArchive(),
+        bulkActions: new BulkActions(),
     };
 }]);

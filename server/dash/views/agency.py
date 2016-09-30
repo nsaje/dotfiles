@@ -11,7 +11,7 @@ from django.http import Http404
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets, autopilot_plus, campaign_stop
+from automation import autopilot_budgets, autopilot_plus
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -22,8 +22,6 @@ from dash import campaign_goals
 from dash import facebook_helper
 from dash import ga_helper
 from dash import content_insights_helper
-
-from dash.dashapi import data_helper
 
 from utils import api_common
 from utils import exc
@@ -316,35 +314,17 @@ class AdGroupSettingsState(api_common.BaseApiView):
         new_state = data.get('state')
 
         campaign_settings = ad_group.campaign.get_current_settings()
-        self._validate_state(ad_group, ad_group.campaign, campaign_settings, new_state)
+        helpers.validate_ad_groups_state([ad_group], ad_group.campaign, campaign_settings, new_state)
 
-        current_settings = ad_group.get_current_settings()
-        new_settings = current_settings.copy_settings()
-
-        if new_settings.state != new_state:
-            new_settings.state = new_state
-            new_settings.save(request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
-            actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=True)
+        changed = ad_group.set_state(request, new_state)
+        if changed:
+            actionlog_api.init_set_ad_group_state(ad_group, new_state, request, send=True)
             k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettingsState.post')
 
         return self.create_api_response({
             'id': str(ad_group.pk),
-            'state': new_settings.state,
+            'state': new_state,
         })
-
-    def _validate_state(self, ad_group, campaign, campaign_settings, state):
-        if state is None or state not in constants.AdGroupSettingsState.get_all():
-            raise exc.ValidationError()
-
-        if not campaign_stop.can_enable_ad_group(ad_group, campaign, campaign_settings):
-            raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
-
-        if state == constants.AdGroupSettingsState.ACTIVE:
-            if not data_helper.campaign_has_available_budget(campaign):
-                raise exc.ValidationError('Cannot enable ad group without available budget.')
-
-            if models.CampaignGoal.objects.filter(campaign=campaign).count() == 0:
-                raise exc.ValidationError('Please add a goal to your campaign before enabling this ad group.')
 
 
 class CampaignGoalValidation(api_common.BaseApiView):

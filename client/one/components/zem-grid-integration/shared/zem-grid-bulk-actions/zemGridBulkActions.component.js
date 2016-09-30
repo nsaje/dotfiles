@@ -43,17 +43,19 @@ angular.module('one.legacy').controller('zemGridBulkActionsCtrl', ['zemGridConst
     }
 
     function execute (actionValue) {
-        var metaData = vm.api.getMetaData();
         var selection = vm.api.getSelection();
         var action = getActionByValue(actionValue);
 
         var convertedSelection = {};
-        convertedSelection.id = metaData.id;
-        convertedSelection.selectedIds = selection.selected.map(function (row) {
-            return row.data.stats.id.value;
+        convertedSelection.selectedIds = selection.selected.filter(function (row) {
+            return row.level == 1;
+        }).map(function (row) {
+            return row.id;
         });
-        convertedSelection.unselectedIds = selection.unselected.map(function (row) {
-            return row.data.stats.id.value;
+        convertedSelection.unselectedIds = selection.unselected.filter(function (row) {
+            return row.level == 1;
+        }).map(function (row) {
+            return row.id;
         });
         convertedSelection.filterAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
         convertedSelection.filterId = selection.type === zemGridConstants.gridSelectionFilterType.CUSTOM ?

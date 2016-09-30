@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
-import pytz
 
 from django.db import connection
 from django.test import TestCase, RequestFactory
-from django.conf import settings
 from django.http.request import HttpRequest
 from django.core.exceptions import MultipleObjectsReturned
 
@@ -16,7 +14,7 @@ from dash import constants
 from dash import publisher_helpers
 from utils.test_helper import fake_request
 from utils import exc
-from mock import call, patch, Mock, ANY
+from mock import patch, ANY
 from zemauth.models import User
 
 
@@ -189,9 +187,9 @@ class ViewHelpersTestCase(TestCase):
             helpers.parse_get_request_content_ad_ids({'ids': '1,a'}, 'ids')
 
     def test_parse_post_request_array(self):
-        self.assertEqual(helpers.parse_post_request_content_ad_ids({'ids': ['1', '2']}, 'ids'), [1, 2])
+        self.assertEqual(helpers.parse_post_request_ids({'ids': ['1', '2']}, 'ids'), [1, 2])
         with self.assertRaises(exc.ValidationError):
-            helpers.parse_post_request_content_ad_ids({'ids': ['1', 'a']}, 'ids')
+            helpers.parse_post_request_ids({'ids': ['1', 'a']}, 'ids')
 
     def test_get_content_ad_data_status_pending(self):
         ad_group = models.AdGroup.objects.get(id=1)
@@ -405,7 +403,7 @@ class GetChangedContentAdsTestCase(TestCase):
         self.assertItemsEqual([], changed_content_ads)
 
 
-class GetSelectedContentAdsTest(TestCase):
+class GetSelectedEntityTest(TestCase):
     fixtures = ['test_api']
 
     def test_get_content_ads_all(self):
@@ -416,13 +414,14 @@ class GetSelectedContentAdsTest(TestCase):
         content_ad_ids_not_selected = []
         include_archived = True
 
-        content_ads = helpers.get_selected_content_ads(
-            ad_group_id,
+        content_ads = helpers.get_selected_entities(
+            models.ContentAd.objects,
             select_all,
-            select_batch_id,
             content_ad_ids_selected,
             content_ad_ids_not_selected,
-            include_archived
+            include_archived=include_archived,
+            select_batch_id=select_batch_id,
+            ad_group_id=ad_group_id,
         )
 
         self._assert_content_ads(content_ads, [1, 2, 3])
@@ -435,13 +434,14 @@ class GetSelectedContentAdsTest(TestCase):
         content_ad_ids_not_selected = [1]
         include_archived = True
 
-        content_ads = helpers.get_selected_content_ads(
-            ad_group_id,
+        content_ads = helpers.get_selected_entities(
+            models.ContentAd.objects,
             select_all,
-            select_batch_id,
             content_ad_ids_selected,
             content_ad_ids_not_selected,
-            include_archived
+            include_archived=include_archived,
+            select_batch_id=select_batch_id,
+            ad_group_id=ad_group_id,
         )
 
         self._assert_content_ads(content_ads, [2, 3])
@@ -454,13 +454,14 @@ class GetSelectedContentAdsTest(TestCase):
         content_ad_ids_not_selected = []
         include_archived = True
 
-        content_ads = helpers.get_selected_content_ads(
-            ad_group_id,
+        content_ads = helpers.get_selected_entities(
+            models.ContentAd.objects,
             select_all,
-            select_batch_id,
             content_ad_ids_selected,
             content_ad_ids_not_selected,
-            include_archived
+            include_archived=include_archived,
+            select_batch_id=select_batch_id,
+            ad_group_id=ad_group_id,
         )
 
         self._assert_content_ads(content_ads, [1, 2])
@@ -473,13 +474,14 @@ class GetSelectedContentAdsTest(TestCase):
         content_ad_ids_not_selected = []
         include_archived = True
 
-        content_ads = helpers.get_selected_content_ads(
-            ad_group_id,
+        content_ads = helpers.get_selected_entities(
+            models.ContentAd.objects,
             select_all,
-            select_batch_id,
             content_ad_ids_selected,
             content_ad_ids_not_selected,
-            include_archived
+            include_archived=include_archived,
+            select_batch_id=select_batch_id,
+            ad_group_id=ad_group_id,
         )
 
         self._assert_content_ads(content_ads, [1, 2, 3])
@@ -492,13 +494,14 @@ class GetSelectedContentAdsTest(TestCase):
         content_ad_ids_not_selected = [1]
         include_archived = True
 
-        content_ads = helpers.get_selected_content_ads(
-            ad_group_id,
+        content_ads = helpers.get_selected_entities(
+            models.ContentAd.objects,
             select_all,
-            select_batch_id,
             content_ad_ids_selected,
             content_ad_ids_not_selected,
-            include_archived
+            include_archived=include_archived,
+            select_batch_id=select_batch_id,
+            ad_group_id=ad_group_id,
         )
 
         self._assert_content_ads(content_ads, [2])
@@ -511,13 +514,14 @@ class GetSelectedContentAdsTest(TestCase):
         content_ad_ids_not_selected = []
         include_archived = True
 
-        content_ads = helpers.get_selected_content_ads(
-            ad_group_id,
+        content_ads = helpers.get_selected_entities(
+            models.ContentAd.objects,
             select_all,
-            select_batch_id,
             content_ad_ids_selected,
             content_ad_ids_not_selected,
-            include_archived
+            include_archived=include_archived,
+            select_batch_id=select_batch_id,
+            ad_group_id=ad_group_id,
         )
 
         self._assert_content_ads(content_ads, [1, 3])
@@ -530,16 +534,61 @@ class GetSelectedContentAdsTest(TestCase):
         content_ad_ids_not_selected = []
         include_archived = False
 
-        content_ads = helpers.get_selected_content_ads(
-            ad_group_id,
+        content_ads = helpers.get_selected_entities(
+            models.ContentAd.objects,
             select_all,
-            select_batch_id,
             content_ad_ids_selected,
             content_ad_ids_not_selected,
-            include_archived
+            include_archived=include_archived,
+            select_batch_id=select_batch_id,
+            ad_group_id=ad_group_id,
         )
 
         self._assert_content_ads(content_ads, [1, 2])
+
+    @patch('dash.views.helpers.get_selected_entities')
+    def test_get_selected_entities_post_request(self, mock_get_selected_entities):
+        objects = 'test_objects'
+        data = {
+            'select_all': True,
+            'select_batch': 3,
+            'selected_ids': ['1', '2'],
+            'not_selected_ids': ['3', '4'],
+        }
+
+        ret = helpers.get_selected_entities_post_request(
+            objects,
+            data,
+            include_archived=True,
+            ad_group_id=1,
+        )
+
+        mock_get_selected_entities.assert_called_once_with(
+            objects,
+            True,
+            [1, 2],
+            [3, 4],
+            True,
+            3,
+            ad_group_id=1,
+        )
+        self.assertEqual(ret, mock_get_selected_entities.return_value)
+
+    def test_get_selected_adgroup_sources(self):
+        data = {
+            'select_all': False,
+            'selected_ids': ['1', '2'],
+        }
+        ad_group_id = 1
+
+        adgroup_sources = helpers.get_selected_adgroup_sources(
+            models.AdGroupSource.objects,
+            data,
+            ad_group_id=ad_group_id,
+        )
+
+        self.assertTrue(all(adgroup_source.ad_group_id == ad_group_id for adgroup_source in adgroup_sources))
+        self.assertItemsEqual([1, 2], [adgroup_source.id for adgroup_source in adgroup_sources])
 
     def _assert_content_ads(self, content_ads, expected_ids):
         self.assertQuerysetEqual(
@@ -1445,3 +1494,57 @@ class UtilityHelpers(TestCase):
 
         result = helpers.check_facebook_source(fb_ad_group_source)
         self.assertFalse(result)
+
+
+class ValidateAdGroupsStateTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def test_ad_group_state_invalid(self):
+        ad_groups = models.AdGroup.objects.filter(pk=1)
+        campaign = ad_groups[0].campaign
+        campaign_settings = campaign.get_current_settings()
+
+        with self.assertRaises(exc.ValidationError):
+            helpers.validate_ad_groups_state(ad_groups, campaign, campaign_settings, -1)
+
+    @patch('automation.campaign_stop.can_enable_all_ad_groups')
+    def test_ad_group_state_campaign_stop(self, campaign_stop_mock):
+        campaign_stop_mock.return_value = False
+
+        ad_groups = models.AdGroup.objects.filter(pk=1)
+        campaign = ad_groups[0].campaign
+        campaign_settings = campaign.get_current_settings()
+        state = constants.AdGroupSettingsState.INACTIVE
+
+        with self.assertRaises(exc.ValidationError):
+            helpers.validate_ad_groups_state(ad_groups, campaign, campaign_settings, state)
+
+    @patch('dash.dashapi.data_helper.campaign_has_available_budget')
+    @patch('automation.campaign_stop.can_enable_ad_groups')
+    def test_ad_group_state_has_budget(self, campaign_stop_mock, campaign_has_budget_mock):
+        campaign_stop_mock.return_value = {1: True}
+        campaign_has_budget_mock.return_value = False
+
+        ad_groups = models.AdGroup.objects.filter(pk=1)
+        campaign = ad_groups[0].campaign
+        campaign_settings = campaign.get_current_settings()
+        state = constants.AdGroupSettingsState.ACTIVE
+
+        models.CampaignGoal(campaign=campaign).save()
+
+        with self.assertRaises(exc.ValidationError):
+            helpers.validate_ad_groups_state(ad_groups, campaign, campaign_settings, state)
+
+    @patch('dash.dashapi.data_helper.campaign_has_available_budget')
+    @patch('automation.campaign_stop.can_enable_ad_groups')
+    def test_ad_group_state_no_goal(self, campaign_stop_mock, campaign_has_budget_mock):
+        campaign_stop_mock.return_value = {1: True}
+        campaign_has_budget_mock.return_value = True
+
+        ad_groups = models.AdGroup.objects.filter(pk=1)
+        campaign = ad_groups[0].campaign
+        campaign_settings = campaign.get_current_settings()
+        state = constants.AdGroupSettingsState.ACTIVE
+
+        with self.assertRaises(exc.ValidationError):
+            helpers.validate_ad_groups_state(ad_groups, campaign, campaign_settings, state)

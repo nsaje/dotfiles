@@ -795,14 +795,14 @@ class AdGroupSettingsStateTest(TestCase):
             'success': True
         })
 
-    @patch('automation.campaign_stop.can_enable_ad_group')
+    @patch('automation.campaign_stop.can_enable_all_ad_groups')
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
     @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
-    def test_activate(self, mock_k1_ping, mock_zwei_send, mock_budget_check, mock_can_enable):
+    def test_activate(self, mock_k1_ping, mock_zwei_send, mock_budget_check, mock_campaign_stop):
         ad_group = models.AdGroup.objects.get(pk=2)
         mock_budget_check.return_value = True
-        mock_can_enable.return_value = True
+        mock_campaign_stop.return_value = True
 
         # ensure this campaign has a goal
         models.CampaignGoal.objects.create(campaign_id=ad_group.campaign_id)
@@ -821,12 +821,14 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.ACTIVE)
         mock_k1_ping.assert_called_with(2, msg='AdGroupSettingsState.post')
 
+    @patch('automation.campaign_stop.can_enable_all_ad_groups')
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
     @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
-    def test_activate_already_activated(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
+    def test_activate_already_activated(self, mock_k1_ping, mock_zwei_send, mock_budget_check, mock_campaign_stop):
         ad_group = models.AdGroup.objects.get(pk=1)
         mock_budget_check.return_value = True
+        mock_campaign_stop.return_value = True
 
         # ensure this campaign has a goal
         models.CampaignGoal.objects.create(campaign_id=ad_group.campaign_id)
@@ -915,11 +917,11 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
         mock_k1_ping.assert_called_with(1, msg='AdGroupSettingsState.post')
 
-    @patch('automation.campaign_stop.can_enable_ad_group')
+    @patch('automation.campaign_stop.can_enable_all_ad_groups')
     @patch('actionlog.zwei_actions.send')
-    def test_inactivate_already_inactivated(self, mock_zwei_send, mock_can_enable):
-        mock_can_enable.return_value = True
+    def test_inactivate_already_inactivated(self, mock_zwei_send, mock_campaign_stop):
         ad_group = models.AdGroup.objects.get(pk=2)
+        mock_campaign_stop.return_value = True
 
         add_permissions(self.user, ['can_control_ad_group_state_in_table'])
         response = self.client.post(

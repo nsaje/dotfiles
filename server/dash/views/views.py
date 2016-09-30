@@ -1156,6 +1156,57 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         })
 
 
+class AdGroupSourceState(api_common.BaseApiView):
+    @influx.timer('dash.api')
+    def post(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
+
+        data = json.loads(request.body)
+
+        state = data.get('state')
+        if state is None or state not in constants.AdGroupSourceSettingsState.get_all():
+            raise exc.ValidationError()
+
+        ad_group_sources = helpers.get_selected_adgroup_sources(
+            models.AdGroupSource.objects.all().select_related('source'),
+            data,
+            ad_group_id=ad_group_id,
+        )
+
+        campaign_settings = ad_group.campaign.get_current_settings()
+        ad_group_settings = ad_group.get_current_settings()
+
+        self._check_can_set_state(campaign_settings, ad_group_settings, ad_group, ad_group_sources, state)
+
+        with transaction.atomic():
+            for ad_group_source in ad_group_sources:
+                settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+                settings_writer.set({'state': state}, request)
+
+        if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)
+
+        k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSourceState.post')
+
+        return self.create_api_response()
+
+    def _check_can_set_state(self, campaign_settings, ad_group_settings, ad_group, ad_group_sources, state):
+        if campaign_settings.landing_mode:
+            raise exc.ValidationError('Not allowed')
+        if not campaign_stop.can_enable_all_media_sources(ad_group.campaign, campaign_settings, ad_group_sources):
+            raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
+
+        if state == constants.AdGroupSourceSettingsState.ACTIVE:
+            for ad_group_source in ad_group_sources:
+                if not retargeting_helper.can_add_source_with_retargeting(ad_group_source.source, ad_group_settings):
+                    raise exc.ValidationError(
+                        'Cannot enable media source that does not support'
+                        'retargeting on adgroup with retargeting enabled.'
+                    )
+                if not helpers.check_facebook_source(ad_group_source):
+                    raise exc.ValidationError('Cannot enable Facebook media source that isn\'t connected to a Facebook page.')
+
+
 class AdGroupContentAdArchive(api_common.BaseApiView):
 
     @influx.timer('dash.api')
@@ -1165,21 +1216,10 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        data = json.loads(request.body)
-
-        select_all = data.get('select_all', False)
-        select_batch_id = data.get('select_batch')
-
-        content_ad_ids_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_selected')
-        content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
-
-        content_ads = helpers.get_selected_content_ads(
-            ad_group_id,
-            select_all,
-            select_batch_id,
-            content_ad_ids_selected,
-            content_ad_ids_not_selected,
-            include_archived=False
+        content_ads = helpers.get_selected_entities_post_request(
+            models.ContentAd.objects,
+            json.loads(request.body),
+            ad_group_id=ad_group.id,
         )
 
         active_content_ads = content_ads.filter(state=constants.ContentAdSourceState.ACTIVE)
@@ -1218,21 +1258,11 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        data = json.loads(request.body)
-
-        select_all = data.get('select_all', False)
-        select_batch_id = data.get('select_batch')
-
-        content_ad_ids_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_selected')
-        content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
-
-        content_ads = helpers.get_selected_content_ads(
-            ad_group_id,
-            select_all,
-            select_batch_id,
-            content_ad_ids_selected,
-            content_ad_ids_not_selected,
-            include_archived=True
+        content_ads = helpers.get_selected_entities_post_request(
+            models.ContentAd.objects,
+            json.loads(request.body),
+            include_archived=True,
+            ad_group_id=ad_group.id,
         )
 
         api.update_content_ads_archived_state(request, content_ads, ad_group, archived=False)
@@ -1257,19 +1287,11 @@ class AdGroupContentAdState(api_common.BaseApiView):
         state = data.get('state')
         if state is None or state not in constants.ContentAdSourceState.get_all():
             raise exc.ValidationError()
-        select_all = data.get('select_all', False)
-        select_batch_id = data.get('select_batch')
 
-        content_ad_ids_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_selected')
-        content_ad_ids_not_selected = helpers.parse_post_request_content_ad_ids(data, 'content_ad_ids_not_selected')
-
-        content_ads = helpers.get_selected_content_ads(
-            ad_group_id,
-            select_all,
-            select_batch_id,
-            content_ad_ids_selected,
-            content_ad_ids_not_selected,
-            include_archived=False
+        content_ads = helpers.get_selected_entities_post_request(
+            models.ContentAd.objects,
+            data,
+            ad_group_id=ad_group_id,
         )
 
         if content_ads.exists():
@@ -1305,13 +1327,14 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         content_ad_ids_not_selected = helpers.parse_get_request_content_ad_ids(
             request.GET, 'content_ad_ids_not_selected')
 
-        content_ads = helpers.get_selected_content_ads(
-            ad_group_id,
+        content_ads = helpers.get_selected_entities(
+            models.ContentAd.objects,
             select_all,
-            select_batch_id,
             content_ad_ids_selected,
             content_ad_ids_not_selected,
-            include_archived
+            include_archived=include_archived,
+            select_batch_id=select_batch_id,
+            ad_group_id=ad_group_id,
         )
 
         content_ad_dicts = []
@@ -1369,6 +1392,173 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
             writer.writerow(row)
 
         return string.getvalue()
+
+
+class CampaignAdGroupArchive(api_common.BaseApiView):
+    @influx.timer('dash.api')
+    def post(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.ForbiddenError(message="Not allowed")
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+
+        ad_groups = helpers.get_selected_entities_post_request(
+            models.AdGroup.objects,
+            json.loads(request.body),
+            campaign_id=campaign.id,
+        )
+
+        active_ad_groups = ad_groups.filter_active()
+        if active_ad_groups.exists():
+            raise exc.ValidationError('Can not archive active ad groups')
+
+        with transaction.atomic():
+            for ad_group in ad_groups:
+                ad_group.archive(request)
+
+        return self.create_api_response()
+
+
+class CampaignAdGroupRestore(api_common.BaseApiView):
+    @influx.timer('dash.api')
+    def post(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.ForbiddenError(message="Not allowed")
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+
+        ad_groups = helpers.get_selected_entities_post_request(
+            models.AdGroup.objects,
+            json.loads(request.body),
+            include_archived=True,
+            campaign_id=campaign.id,
+        )
+
+        with transaction.atomic():
+            for ad_group in ad_groups:
+                ad_group.restore(request)
+
+                for ad_group_source in ad_group.adgroupsource_set.all():
+                    api.refresh_publisher_blacklist(ad_group_source, request)
+
+        return self.create_api_response()
+
+
+class CampaignAdGroupState(api_common.BaseApiView):
+    @influx.timer('dash.api')
+    def post(self, request, campaign_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
+
+        data = json.loads(request.body)
+
+        state = data.get('state')
+        if state is None or state not in constants.ContentAdSourceState.get_all():
+            raise exc.ValidationError()
+
+        ad_groups = helpers.get_selected_entities_post_request(
+            models.AdGroup.objects,
+            data,
+            campaign_id=campaign.id,
+        )
+
+        campaign_settings = campaign.get_current_settings()
+        helpers.validate_ad_groups_state(ad_groups, campaign, campaign_settings, state)
+
+        with transaction.atomic():
+            for ad_group in ad_groups:
+                changed = ad_group.set_state(request, state)
+                if changed:
+                    k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettingsState.post')
+
+        return self.create_api_response()
+
+
+class AccountCampaignArchive(api_common.BaseApiView):
+    @influx.timer('dash.api')
+    def post(self, request, account_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.ForbiddenError(message="Not allowed")
+
+        account = helpers.get_account(request.user, account_id)
+
+        campaigns = helpers.get_selected_entities_post_request(
+            models.Campaign.objects,
+            json.loads(request.body),
+            account_id=account.id,
+        )
+
+        active_ad_groups = models.AdGroup.objects.filter(campaign__in=campaigns).filter_active()
+        if active_ad_groups.exists():
+            raise exc.ValidationError('Can not archive active campaigns')
+
+        with transaction.atomic():
+            for campaign in campaigns:
+                campaign.archive(request)
+
+        return self.create_api_response()
+
+
+class AccountCampaignRestore(api_common.BaseApiView):
+    @influx.timer('dash.api')
+    def post(self, request, account_id):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.ForbiddenError(message="Not allowed")
+
+        account = helpers.get_campaign(request.user, account_id)
+
+        campaigns = helpers.get_selected_entities_post_request(
+            models.Campaign.objects,
+            json.loads(request.body),
+            include_archived=True,
+            account_id=account.id,
+        )
+
+        with transaction.atomic():
+            for campaign in campaigns:
+                campaign.restore(request)
+
+        return self.create_api_response()
+
+
+class AllAccountsAccountArchive(api_common.BaseApiView):
+    @influx.timer('dash.api')
+    def post(self, request):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.ForbiddenError(message="Not allowed")
+
+        accounts = helpers.get_selected_entities_post_request(
+            models.Account.objects.all().filter_by_user(request.user),
+            json.loads(request.body),
+        )
+
+        active_ad_groups = models.AdGroup.objects.filter(campaign__account__in=accounts).filter_active()
+        if active_ad_groups.exists():
+            raise exc.ValidationError('Can not archive active accounts')
+
+        with transaction.atomic():
+            for account in accounts:
+                account.archive(request)
+
+        return self.create_api_response()
+
+
+class AllAccountsAccountRestore(api_common.BaseApiView):
+    @influx.timer('dash.api')
+    def post(self, request):
+        if not request.user.has_perm('zemauth.archive_restore_entity'):
+            raise exc.ForbiddenError(message="Not allowed")
+
+        accounts = helpers.get_selected_entities_post_request(
+            models.Account.objects.all().filter_by_user(request.user),
+            json.loads(request.body),
+            include_archived=True,
+        )
+
+        with transaction.atomic():
+            for account in accounts:
+                account.restore(request)
+
+        return self.create_api_response()
 
 
 class PublishersBlacklistStatus(api_common.BaseApiView):

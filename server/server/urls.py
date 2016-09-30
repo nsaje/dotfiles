@@ -200,6 +200,46 @@ urlpatterns += [
         name='ad_group_content_ad_restore'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/state/',
+        login_required(dash.views.views.AdGroupSourceState.as_view()),
+        name='ad_group_source_state'
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/archive/$',
+        login_required(dash.views.views.CampaignAdGroupArchive.as_view()),
+        name='campaign_ad_group_archive'
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/restore/$',
+        login_required(dash.views.views.CampaignAdGroupRestore.as_view()),
+        name='campaign_ad_group_restore'
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/state/$',
+        login_required(dash.views.views.CampaignAdGroupState.as_view()),
+        name='campaign_ad_group_state'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/campaigns/archive/$',
+        login_required(dash.views.views.AccountCampaignArchive.as_view()),
+        name='account_campaign_archive'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/campaigns/restore/$',
+        login_required(dash.views.views.AccountCampaignRestore.as_view()),
+        name='account_campaign_restore'
+    ),
+    url(
+        r'^api/all_accounts/accounts/archive/$',
+        login_required(dash.views.views.AllAccountsAccountArchive.as_view()),
+        name='all_accounts_account_archive'
+    ),
+    url(
+        r'^api/all_accounts/accounts/restore/$',
+        login_required(dash.views.views.AllAccountsAccountRestore.as_view()),
+        name='all_accounts_account_restore'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/overview/',
         login_required(dash.views.views.AdGroupOverview.as_view()),
         name='ad_group_overview'

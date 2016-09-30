@@ -418,9 +418,10 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    @patch('automation.campaign_stop.can_enable_media_source')
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
-    def test_adgroup_on_budget_autopilot_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
+    def test_adgroup_on_budget_autopilot_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap, mock_campaign_stop):
         self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '4', 'source_id': '1'}),
@@ -429,9 +430,10 @@ class AdGroupSourceSettingsTest(TestCase):
         mock_budget_ap.assert_called_with(models.AdGroup.objects.get(id=4), send_mail=False)
         self.assertEqual(response.status_code, 200)
 
+    @patch('automation.campaign_stop.can_enable_media_source')
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
-    def test_adgroup_not_on_budget_autopilot_not_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
+    def test_adgroup_not_on_budget_autopilot_not_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap, mock_campaign_stop):
         self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
@@ -451,6 +453,104 @@ class AdGroupSourceSettingsTest(TestCase):
             data=json.dumps({'state': '1'})
         )
         self.assertEqual(response.status_code, 400)
+
+
+class AdGroupSourceStateTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def setUp(self):
+        self.client = Client()
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def _post_source_state(self, ad_group_id, data):
+        return self.client.post(
+            reverse(
+                'ad_group_source_state',
+                kwargs={'ad_group_id': ad_group_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    @patch('dash.views.views.AdGroupSourceState._check_can_set_state')
+    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter')
+    @patch('utils.k1_helper.update_ad_group')
+    def test_post(self, mock_k1_ping, mock_settings_writer, mock_autopilot_initialize, mock_check):
+        ad_group_id = 1
+        source_id = 1
+
+        data = {
+            'state': constants.AdGroupSourceSettingsState.ACTIVE,
+            'selected_ids': [source_id],
+        }
+
+        response = self._post_source_state(ad_group_id, data)
+
+        self.assertJSONEqual(response.content, {
+            'success': True
+        })
+
+        mock_settings_writer.return_value.set.assert_called_once_with(
+            {'state': constants.AdGroupSourceSettingsState.ACTIVE},
+            response.wsgi_request,
+        )
+
+        mock_autopilot_initialize.assert_called_once_with(models.AdGroup.objects.get(pk=ad_group_id), send_mail=False)
+        self.assertEqual(1, mock_check.call_count)
+
+        mock_k1_ping.assert_called_once_with(1, msg='AdGroupSourceState.post')
+
+    def test_check_can_set_state_landing_mode(self):
+        view = views.AdGroupSourceState()
+        campaign_settings = models.CampaignSettings(landing_mode=True)
+        ad_group_settings = None
+        ad_group = None
+        ad_group_sources = []
+        state = None
+
+        with self.assertRaises(exc.ValidationError):
+            view._check_can_set_state(campaign_settings, ad_group_settings, ad_group, ad_group_sources, state)
+
+    @patch('automation.campaign_stop.can_enable_all_media_sources')
+    def test_check_can_set_state_campaign_stop(self, campaign_stop_mock):
+        campaign_stop_mock.return_value = False
+
+        view = views.AdGroupSourceState()
+        campaign_settings = models.CampaignSettings(automatic_campaign_stop=True)
+        ad_group_settings = None
+        ad_group = models.AdGroup.objects.get(pk=1)
+        ad_group_sources = []
+        state = None
+
+        with self.assertRaises(exc.ValidationError):
+            view._check_can_set_state(campaign_settings, ad_group_settings, ad_group, ad_group_sources, state)
+
+        campaign_stop_mock.assert_called_once_with(
+            ad_group.campaign,
+            campaign_settings,
+            [],
+        )
+
+    @patch('dash.views.helpers.check_facebook_source')
+    @patch('dash.retargeting_helper.can_add_source_with_retargeting')
+    @patch('automation.campaign_stop.can_enable_all_media_sources')
+    def test_check_can_set_state(self, campaign_stop_mock, retargeting_mock, facebook_mock):
+        campaign_stop_mock.return_value = True
+
+        view = views.AdGroupSourceState()
+        campaign_settings = models.CampaignSettings()
+        ad_group = models.AdGroup.objects.get(pk=1)
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_sources = ad_group.adgroupsource_set.all()
+        state = constants.AdGroupSourceSettingsState.ACTIVE
+
+        view._check_can_set_state(campaign_settings, ad_group_settings, ad_group, ad_group_sources, state)
+
+        self.assertEqual(len(ad_group_sources), retargeting_mock.call_count)
+        self.assertEqual(len(ad_group_sources), facebook_mock.call_count)
 
 
 class CampaignAdGroups(TestCase):
@@ -754,7 +854,7 @@ class AdGroupContentAdStateTest(TestCase):
 
         data = {
             'state': constants.ContentAdSourceState.INACTIVE,
-            'content_ad_ids_selected': [content_ad_id],
+            'selected_ids': [content_ad_id],
         }
 
         response = self._post_content_ad_state(ad_group_id, data)
@@ -830,7 +930,7 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertEqual(archived_ad.state, constants.ContentAdSourceState.INACTIVE)
 
         payload = {
-            'content_ad_ids_selected': [archived_ad.id, restored_ad.id],
+            'selected_ids': [archived_ad.id, restored_ad.id],
             'state': constants.ContentAdSourceState.ACTIVE,
         }
 
@@ -862,7 +962,7 @@ class AdGroupContentAdStateTest(TestCase):
     def test_get_content_ad_ids_validation_error(self):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
-        response = self._post_content_ad_state(1, {'content_ad_ids_selected': ['1', 'a']})
+        response = self._post_content_ad_state(1, {'selected_ids': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
     def test_add_to_history(self):
@@ -1066,7 +1166,7 @@ class AdGroupContentAdArchive(TestCase):
         content_ad_id = 2
 
         data = {
-            'content_ad_ids_selected': [content_ad_id],
+            'selected_ids': [content_ad_id],
         }
 
         response = self._post_content_ad_archive(ad_group.id, data)
@@ -1172,7 +1272,7 @@ class AdGroupContentAdArchive(TestCase):
     def test_content_ad_ids_validation_error(self, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        response = self._post_content_ad_archive(ad_group.id, {'content_ad_ids_selected': ['1', 'a']})
+        response = self._post_content_ad_archive(ad_group.id, {'selected_ids': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
         self.assertFalse(mock_send_mail.called)
@@ -1247,7 +1347,7 @@ class AdGroupContentAdRestore(TestCase):
         content_ad.save()
 
         data = {
-            'content_ad_ids_selected': [content_ad_id],
+            'selected_ids': [content_ad_id],
         }
 
         response = self._post_content_ad_restore(ad_group.id, data)
@@ -1350,7 +1450,7 @@ class AdGroupContentAdRestore(TestCase):
     def test_content_ad_ids_validation_error(self, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        response = self._post_content_ad_restore(ad_group.id, {'content_ad_ids_selected': ['1', 'a']})
+        response = self._post_content_ad_restore(ad_group.id, {'selected_ids': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
         self.assertFalse(mock_send_mail.called)
@@ -1393,6 +1493,227 @@ class AdGroupContentAdRestore(TestCase):
             hist.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more Restored.'
         )
+
+
+class CampaignAdgroupArchiveTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def _post_ad_group_archive(self, campaign_id, data):
+        return self.client.post(
+            reverse(
+                'campaign_ad_group_archive',
+                kwargs={'campaign_id': campaign_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def setUp(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_post(self):
+        campaign = models.Campaign.objects.get(pk=1)
+        ad_group_id = 2
+
+        data = {
+            'selected_ids': [ad_group_id],
+        }
+
+        response = self._post_ad_group_archive(campaign.id, data)
+        ad_group = models.AdGroup.objects.get(pk=ad_group_id)
+        self.assertEqual(ad_group.is_archived(), True)
+
+        response_dict = json.loads(response.content)
+
+        self.assertTrue(response_dict['success'])
+
+
+class CampaignAdgroupRestoreTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def _post_ad_group_restore(self, campaign_id, data):
+        return self.client.post(
+            reverse(
+                'campaign_ad_group_restore',
+                kwargs={'campaign_id': campaign_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def setUp(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_post(self):
+        campaign = models.Campaign.objects.get(pk=1)
+        ad_group_id = 2
+
+        ad_group = models.AdGroup.objects.get(pk=ad_group_id)
+        ad_group.archive(None)
+
+        data = {
+            'selected_ids': [ad_group_id],
+        }
+
+        response = self._post_ad_group_restore(campaign.id, data)
+        ad_group = models.AdGroup.objects.get(pk=ad_group_id)
+        self.assertEqual(ad_group.is_archived(), False)
+
+        response_dict = json.loads(response.content)
+
+        self.assertTrue(response_dict['success'])
+
+
+class AccountCampaignArchiveTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def _post_campaign_archive(self, account_id, data):
+        return self.client.post(
+            reverse(
+                'account_campaign_archive',
+                kwargs={'account_id': account_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def setUp(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_post(self):
+        account = models.Account.objects.get(pk=1)
+        campaign_id = 2
+
+        data = {
+            'selected_ids': [campaign_id],
+        }
+
+        response = self._post_campaign_archive(account.id, data)
+        campaign = models.Campaign.objects.get(pk=campaign_id)
+        self.assertEqual(campaign.is_archived(), True)
+
+        response_dict = json.loads(response.content)
+
+        self.assertTrue(response_dict['success'])
+
+
+class AccountCampaignRestoreTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def _post_campaign_restore(self, account_id, data):
+        return self.client.post(
+            reverse(
+                'account_campaign_restore',
+                kwargs={'account_id': account_id}),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def setUp(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_post(self):
+        account = models.Account.objects.get(pk=1)
+        campaign_id = 2
+
+        campaign = models.Campaign.objects.get(pk=campaign_id)
+        campaign.archive(None)
+
+        data = {
+            'selected_ids': [campaign_id],
+        }
+
+        response = self._post_campaign_restore(account.id, data)
+        campaign = models.Campaign.objects.get(pk=campaign_id)
+        self.assertEqual(campaign.is_archived(), False)
+
+        response_dict = json.loads(response.content)
+
+        self.assertTrue(response_dict['success'])
+
+
+class AllAccountsAccountArchiveTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def _post_account_archive(self, data):
+        return self.client.post(
+            reverse(
+                'all_accounts_account_archive',
+            ),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def setUp(self):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+    def test_post(self):
+        account_id = 1
+
+        data = {
+            'selected_ids': [account_id],
+        }
+
+        response = self._post_account_archive(data)
+        account = models.Account.objects.get(pk=account_id)
+        self.assertEqual(account.is_archived(), True)
+
+        response_dict = json.loads(response.content)
+
+        self.assertTrue(response_dict['success'])
+
+
+class AllAccountsAccountRestoreTest(TestCase):
+    fixtures = ['test_api', 'test_views']
+
+    def _post_account_restore(self, data):
+        return self.client.post(
+            reverse(
+                'all_accounts_account_restore',
+            ),
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def setUp(self):
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password='secret')
+        self.factory = RequestFactory()
+
+    def test_post(self):
+        account_id = 1
+
+        request = self.factory.get('/')
+        request.user = self.user
+
+        account = models.Account.objects.get(pk=account_id)
+        account.archive(request)
+
+        data = {
+            'selected_ids': [account_id],
+        }
+
+        response = self._post_account_restore(data)
+        account = models.Account.objects.get(pk=account_id)
+        self.assertEqual(account.is_archived(), False)
+
+        response_dict = json.loads(response.content)
+
+        self.assertTrue(response_dict['success'])
 
 
 class AdGroupSourcesTest(TestCase):

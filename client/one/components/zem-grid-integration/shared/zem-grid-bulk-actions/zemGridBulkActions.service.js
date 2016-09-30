@@ -48,113 +48,98 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
             gridApi.setSelectionOptions(config);
         }
 
+        var ACTIONS = {
+            pause: {
+                name: 'Pause',
+                value: 'pause',
+                hasPermission: true,
+                execute: pause,
+            },
+            enable: {
+                name: 'Enable',
+                value: 'enable',
+                hasPermission: true,
+                execute: enable,
+            },
+            download: {
+                name: 'Download',
+                value: 'download',
+                hasPermission: true,
+                execute: download,
+            },
+            restore: {
+                name: 'Restore',
+                value: 'restore',
+                hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
+                internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
+                execute: restore,
+            },
+        };
+
         function getActions () {
             var metaData = gridApi.getMetaData();
             if (metaData.level === constants.level.AD_GROUPS && metaData.breakdown === constants.breakdown.CONTENT_AD) {
-                return [{
-                    name: 'Pause',
-                    value: 'pause',
-                    hasPermission: true,
-                    execute: pause,
-                }, {
-                    name: 'Enable',
-                    value: 'enable',
-                    hasPermission: true,
-                    execute: enable,
-                }, {
-                    name: 'Download',
-                    value: 'download',
-                    hasPermission: true,
-                    execute: download,
-                }, {
-                    name: 'Archive',
-                    value: 'archive',
-                    hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
-                    internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
-                    notification: 'All selected Content Ads will be paused and archived.',
-                    execute: archive,
-                }, {
-                    name: 'Restore',
-                    value: 'restore',
-                    hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
-                    internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
-                    execute: restore,
-                }];
+                return [
+                    ACTIONS.pause,
+                    ACTIONS.enable,
+                    ACTIONS.download,
+                    {
+                        name: 'Archive',
+                        value: 'archive',
+                        hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
+                        internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
+                        notification: 'All selected Content Ads will be paused and archived.',
+                        execute: archive,
+                    },
+                    ACTIONS.restore
+                ];
             } else if (metaData.level === constants.level.ACCOUNTS && metaData.breakdown === constants.breakdown.CAMPAIGN) {
-                return [{
-                    name: 'Archive',
-                    value: 'archive',
-                    hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
-                    internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
-                    checkDisabled: checkCanArchive,
-                    notificationDisabled: 'You can not archive active campaigns',
-                    execute: nop,
-                }, {
-                    name: 'Restore',
-                    value: 'restore',
-                    hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
-                    internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
-                    execute: nop,
-                }];
+                return [
+                    {
+                        name: 'Archive',
+                        value: 'archive',
+                        hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
+                        internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
+                        checkDisabled: checkCanArchive,
+                        notificationDisabled: 'You can not archive active campaigns',
+                        execute: archive,
+                    },
+                    ACTIONS.restore
+                ];
             } else if (metaData.level === constants.level.ALL_ACCOUNTS && metaData.breakdown == constants.breakdown.ACCOUNT) {
-                return [{
-                    name: 'Archive',
-                    value: 'archive',
-                    hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
-                    internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
-                    checkDisabled: checkCanArchive,
-                    notificationDisabled: 'You can not archive active accounts',
-                    execute: nop,
-                }, {
-                    name: 'Restore',
-                    value: 'restore',
-                    hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
-                    internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
-                    execute: nop,
-                }];
+                return [
+                    {
+                        name: 'Archive',
+                        value: 'archive',
+                        hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
+                        internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
+                        checkDisabled: checkCanArchive,
+                        notificationDisabled: 'You can not archive active accounts',
+                        execute: archive,
+                    },
+                    ACTIONS.restore
+                ];
             } else if (metaData.level === constants.level.CAMPAIGNS && metaData.breakdown == constants.breakdown.AD_GROUP) {
-                return [{
-                    name: 'Pause',
-                    value: 'pause',
-                    hasPermission: true,
-                    execute: nop,
-                }, {
-                    name: 'Enable',
-                    value: 'enable',
-                    hasPermission: true,
-                    execute: nop,
-                }, {
-                    name: 'Archive',
-                    value: 'archive',
-                    hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
-                    internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
-                    checkDisabled: checkCanArchive,
-                    notificationDisabled: 'You can not archive active ad groups',
-                    execute: nop,
-                }, {
-                    name: 'Restore',
-                    value: 'restore',
-                    hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
-                    internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
-                    execute: nop,
-                }];
+                return [
+                    ACTIONS.pause,
+                    ACTIONS.enable,
+                    {
+                        name: 'Archive',
+                        value: 'archive',
+                        hasPermission: gridApi.hasPermission('zemauth.archive_restore_entity'),
+                        internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
+                        checkDisabled: checkCanArchive,
+                        notificationDisabled: 'You can not archive active ad groups',
+                        execute: archive,
+                    },
+                    ACTIONS.restore,
+                ];
             } else if (metaData.level === constants.level.AD_GROUPS && metaData.breakdown == constants.breakdown.MEDIA_SOURCE) {
-                return [{
-                    name: 'Pause',
-                    value: 'pause',
-                    hasPermission: true,
-                    execute: nop,
-                }, {
-                    name: 'Enable',
-                    value: 'enable',
-                    hasPermission: true,
-                    execute: nop,
-                }];
+                return [
+                    ACTIONS.pause,
+                    ACTIONS.enable
+                ];
             }
-        }
-
-        function nop () {
-
         }
 
         function checkCanArchive () {
@@ -176,30 +161,35 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
         }
 
         function archive (selection) {
-            api.adGroupContentAdArchive.archive(
-                selection.id,
-                selection.selectedIds,
-                selection.unselectedIds,
-                selection.filterAll,
-                selection.filterId).then(function (data) {
+            var metaData = gridApi.getMetaData();
+            api.bulkActions.archive(
+                metaData.level,
+                metaData.breakdown,
+                metaData.id,
+                selection
+            ).then(function (data) {
+                if (metaData.level == constants.level.AD_GROUPS) {
                     notifyArchivingSuccess(data.data.archived_count, data.data.active_count);
-                    refreshData();
-                });
+                }
+                refreshData();
+            });
         }
 
         function restore (selection) {
-            api.adGroupContentAdArchive.restore(
-                selection.id,
-                selection.selectedIds,
-                selection.unselectedIds,
-                selection.filterAll,
-                selection.filterId).then(function () {
-                    refreshData();
-                });
+            var metaData = gridApi.getMetaData();
+            api.bulkActions.restore(
+                metaData.level,
+                metaData.breakdown,
+                metaData.id,
+                selection
+            ).then(function () {
+                refreshData();
+            });
         }
 
         function download (selection) {
-            var url = '/api/ad_groups/' + selection.id + '/contentads/csv/?';
+            var metaData = gridApi.getMetaData();
+            var url = '/api/ad_groups/' + metaData.id + '/contentads/csv/?';
             url += 'content_ad_ids_selected=' + selection.selectedIds.join(',');
             url += '&content_ad_ids_not_selected=' + selection.unselectedIds.join(',');
             url += '&archived=' + !!gridApi.getFilter(gridApi.DS_FILTER.SHOW_ARCHIVED_SOURCES);
@@ -211,13 +201,13 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
         }
 
         function bulkUpdatedState (selection, state) {
-            api.adGroupContentAdState.save(
-                selection.id,
-                state,
-                selection.selectedIds,
-                selection.unselectedIds,
-                selection.filterAll,
-                selection.filterId
+            var metaData = gridApi.getMetaData();
+            api.bulkActions.state(
+                metaData.level,
+                metaData.breakdown,
+                metaData.id,
+                selection,
+                state
             ).then(function () {
                 // FIXME: poll updates (editable fields)
                 refreshData();
