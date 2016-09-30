@@ -63,7 +63,7 @@ import analytics.projections
 logger = logging.getLogger(__name__)
 
 YAHOO_DASH_URL = 'https://gemini.yahoo.com/advertiser/{advertiser_id}/campaign/{campaign_id}'
-OUTBRAIN_DASH_URL = 'https://my.outbrain.com/amplify/selfserve/manage-content?ecampaignId={campaign_id}&eadvId={marketer_id}'
+OUTBRAIN_DASH_URL = 'https://my.outbrain.com/amplify/site/marketers/{marketer_id}/reports/content?campaignId={campaign_id}'
 FACEBOOK_DASH_URL = 'https://business.facebook.com/ads/manager/campaign/?ids={campaign_id}&business_id={business_id}'
 
 
