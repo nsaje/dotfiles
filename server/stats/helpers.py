@@ -21,6 +21,11 @@ SOURCE_FIELDS = [
     'min_bid_cpc', 'max_bid_cpc', 'daily_budget'
 ]
 
+OTHER_DASH_FIELDS = [
+    'default_account_manager', 'default_sales_representative', 'campaign_manager', 'account_type', 'agency',
+    'archived', 'maintenance', 'status_per_source'
+]
+
 
 Goals = collections.namedtuple('Goals', 'campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals')
 
@@ -307,6 +312,9 @@ def should_query_dashapi_first(order, target_dimension):
         return True
 
     if order_field in CONTENT_ADS_FIELDS and target_dimension == 'content_ad_id':
+        return True
+
+    if order_field in OTHER_DASH_FIELDS:
         return True
 
     return False

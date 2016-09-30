@@ -250,6 +250,17 @@ class HelpersTest(TestCase):
             self.assertFalse(helpers.should_query_dashapi_first('status', dimension), dimension)
             self.assertFalse(helpers.should_query_dashapi_first('clicks', dimension))
 
+        for field in helpers.CONTENT_ADS_FIELDS:
+            self.assertTrue(helpers.should_query_dashapi_first(field, 'content_ad_id'))
+
+        for field in helpers.SOURCE_FIELDS:
+            self.assertTrue(helpers.should_query_dashapi_first(field, 'source_id'))
+
+        for field in helpers.OTHER_DASH_FIELDS:
+            self.assertTrue(helpers.should_query_dashapi_first(field, 'campaign_id'))
+            self.assertTrue(helpers.should_query_dashapi_first(field, 'account_id'))
+            self.assertTrue(helpers.should_query_dashapi_first(field, 'ad_group_id'))
+
     def test_make_rows(self):
         self.assertItemsEqual(helpers.make_rows('account_id', [1, 2, 3]), [
             {'account_id': 1},
