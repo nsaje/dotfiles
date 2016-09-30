@@ -134,6 +134,11 @@ class AdGroupSettingsTest(TestCase):
                         'name': 'test audience 4',
                         'archived': False,
                     },
+                    {
+                        'id': 6,
+                        'name': 'test audience 6',
+                        'archived': False,
+                    },
                 ],
                 'settings': {
                     'cpc_cc': '',

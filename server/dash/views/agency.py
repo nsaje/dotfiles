@@ -4,6 +4,7 @@ import logging
 
 from django.db import transaction
 from django.db.models import Prefetch
+from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth import models as authmodels
 from django.http import Http404
@@ -51,8 +52,16 @@ class AdGroupSettings(api_common.BaseApiView):
             'settings': self.get_dict(settings, ad_group),
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': False,
-            'retargetable_adgroups': self.get_retargetable_adgroups(request, ad_group_id),
-            'audiences': self.get_audiences(request, ad_group),
+            'retargetable_adgroups': self.get_retargetable_adgroups(
+                request,
+                ad_group,
+                settings.retargeting_ad_groups + settings.exclusion_retargeting_ad_groups
+            ),
+            'audiences': self.get_audiences(
+                request,
+                ad_group,
+                settings.audience_targeting + settings.exclusion_audience_targeting
+            ),
             'warnings': self.get_warnings(request, settings),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),
@@ -231,14 +240,13 @@ class AdGroupSettings(api_common.BaseApiView):
             'target_regions': settings.target_regions
         }
 
-    def get_retargetable_adgroups(self, request, ad_group_id):
+    def get_retargetable_adgroups(self, request, ad_group, existing_targetings):
         '''
         Get adgroups that can retarget this adgroup
         '''
         if not request.user.has_perm('zemauth.can_view_retargeting_settings'):
             return []
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
         account = ad_group.campaign.account
 
         ad_groups = models.AdGroup.objects.filter(
@@ -250,21 +258,31 @@ class AdGroupSettings(api_common.BaseApiView):
         ).group_current_settings().values_list('ad_group__id', 'archived')
         archived_map = {adgs[0]: adgs[1] for adgs in ad_group_settings}
 
-        return [
-            {
+        if request.user.has_perm('zemauth.can_target_custom_audiences'):
+            result = [{
                 'id': adg.id,
                 'name': adg.name,
                 'archived': archived_map.get(adg.id) or False,
                 'campaign_name': adg.campaign.name,
-            }
-            for adg in ad_groups
-        ]
+            } for adg in ad_groups if not archived_map.get(adg.id) or adg.id in existing_targetings]
+        else:
+            result = [{
+                'id': adg.id,
+                'name': adg.name,
+                'archived': archived_map.get(adg.id) or False,
+                'campaign_name': adg.campaign.name,
+            } for adg in ad_groups]
 
-    def get_audiences(self, request, ad_group):
+        return result
+
+    def get_audiences(self, request, ad_group, existing_targetings):
         if not request.user.has_perm('zemauth.can_target_custom_audiences'):
             return []
 
-        audiences = models.Audience.objects.filter(pixel__account_id=ad_group.campaign.account.pk).order_by('name')
+        audiences = models.Audience.objects.\
+            filter(pixel__account_id=ad_group.campaign.account.pk).\
+            filter(Q(archived=False) | Q(pk__in=existing_targetings)).\
+            order_by('name')
 
         return [
             {

@@ -46,20 +46,21 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
 
             for (i = 0; i < vm.availableAudiences.length; i++) {
                 audience = vm.availableAudiences[i];
-                if (vm.audienceTargeting.indexOf(audience.id) >= 0 || vm.exclusionAudienceTargeting.indexOf(audience.id) >= 0) {
-                    continue;
+                if (vm.audienceTargeting.indexOf(audience.id) < 0 &&
+                        vm.exclusionAudienceTargeting.indexOf(audience.id) < 0 &&
+                        !audience.archived) {
+                    result.push(vm.getTargetingEntity(AUDIENCE_ENTITY, audience));
                 }
-
-                result.push(vm.getTargetingEntity(AUDIENCE_ENTITY, audience));
             }
 
             for (i = 0; i < vm.availableAdGroups.length; i++) {
                 adGroup = vm.availableAdGroups[i];
-                if (vm.adGroupTargeting.indexOf(adGroup.id) >= 0 || vm.exclusionAdGroupTargeting.indexOf(adGroup.id) >= 0 || adGroup.id === parseInt(vm.currentAdGroupId, 10)) {
-                    continue;
+                if (vm.adGroupTargeting.indexOf(adGroup.id) < 0 &&
+                        vm.exclusionAdGroupTargeting.indexOf(adGroup.id) < 0 &&
+                        adGroup.id !== parseInt(vm.currentAdGroupId, 10) &&
+                        !adGroup.archived) {
+                    result.push(vm.getTargetingEntity(AD_GROUP_ENTITY, adGroup));
                 }
-
-                result.push(vm.getTargetingEntity(AD_GROUP_ENTITY, adGroup));
             }
 
             return result;
@@ -129,6 +130,8 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
                     break;
                 }
             }
+
+            vm.availableAudiencesAndAdGroups = vm.getAvailableAudiencesAndAdGroups();
         };
 
         vm.getTargetingEntity = function (type, entity) {
@@ -138,7 +141,7 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
                     section: entity.campaignName,
                     id: entity.id,
                     name: entity.name,
-                    suffix: entity.archived ? ' (Archived)' : '',
+                    archived: entity.archived
                 };
             }
 
@@ -147,7 +150,7 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
                 section: 'Custom Audiences',
                 id: entity.id,
                 name: entity.name,
-                suffix: entity.archived ? ' (Archived)' : '',
+                archived: entity.archived
             };
         };
 

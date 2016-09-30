@@ -266,6 +266,28 @@
     model: dash.audience
     pk: 4
 
+-   fields:
+        name: 'test audience 5'
+        pixel: 1
+        archived: true
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 5
+
+-   fields:
+        name: 'test audience 6'
+        pixel: 1
+        archived: false
+        ttl: 90
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-26T09:58:21'
+        created_by: 1
+    model: dash.audience
+    pk: 6
+
 # test audience rule
 
 -   fields:
@@ -295,3 +317,17 @@
         value: "test"
     model: dash.audiencerule
     pk: 4
+
+-   fields:
+        audience: 5
+        type: 1
+        value: "test"
+    model: dash.audiencerule
+    pk: 5
+
+-   fields:
+        audience: 6
+        type: 1
+        value: "test"
+    model: dash.audiencerule
+    pk: 6
