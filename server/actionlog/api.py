@@ -102,6 +102,11 @@ def init_set_ad_group_manual_property(ad_group_source, request, prop, value):
             ad_group_source.ad_group.id))
         return
 
+    if ad_group_source.source.maintenance or ad_group_source.source.deprecated:
+        logger.info('Skipping creation of manual action since source {} is in maintenance mode or deprecated.'.format(
+            ad_group_source.source.name))
+        return
+
     try:
         existing_actions = models.ActionLog.objects.filter(
             ad_group_source=ad_group_source,
@@ -529,6 +534,11 @@ def _get_campaign_settings(campaign):
 
 
 def _create_manual_action(ad_group_source, conf, request, order=None, message=''):
+    if ad_group_source.source.maintenance or ad_group_source.source.deprecated:
+        logger.info('Skipping creation of manual action since source {} is in maintenance mode or deprecated.'.format(
+            ad_group_source.source.name))
+        return
+
     for prop, val in conf.iteritems():
         action = models.ActionLog(
             action=constants.Action.SET_PROPERTY,
