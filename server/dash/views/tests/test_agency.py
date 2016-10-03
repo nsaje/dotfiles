@@ -3172,13 +3172,14 @@ class TestHistoryMixin(TestCase):
 
     def test_snapshot(self):
         mix = TestHistoryMixin.HistoryTest()
-        self.assertEqual({'test_field': ''}, mix.post_init_state)
+        mix.snapshot()
+        self.assertEqual({'test_field': ''}, mix.snapshotted_state)
         self.assertTrue(mix.post_init_newly_created)
 
         mix.id = 5
         mix.snapshot(previous=mix)
 
-        self.assertEqual({'test_field': ''}, mix.post_init_state)
+        self.assertEqual({'test_field': ''}, mix.snapshotted_state)
         self.assertFalse(mix.post_init_newly_created)
 
     def test_get_history_dict(self):

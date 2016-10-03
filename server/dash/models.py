@@ -213,25 +213,39 @@ class FootprintModel(models.Model):
 
 
 class HistoryMixin(object):
+    _snapshot_on_setattr = False
 
     def __init__(self):
-        self.snapshot()
-
-    def snapshot(self, previous=None):
-        if not previous:
-            previous = self
-
-        self.post_init_state = self.get_history_dict()
+        self.snapshotted_state = None
         # signifies whether this particular history object is created anew
         # or does it have a previous object from which it potentially
         # differs in some settings
-        self.post_init_newly_created = previous.id is None
+        self.post_init_newly_created = self.id is None
+        # from this point on, create a snapshot when the first attribute is changed
+        self._snapshot_on_setattr = True
+
+    def __setattr__(self, name, value):
+        if self._snapshot_on_setattr and not self.snapshotted_state:
+            self.snapshot()
+        super(HistoryMixin, self).__setattr__(name, value)
+
+    def snapshot(self, previous=None):
+        # first, turn off the setattr snapshot trigger
+        self.__dict__['_snapshot_on_setattr'] = False
+        if previous:
+            self.post_init_newly_created = previous.id is None
+        else:
+            previous = self
+
+        self.snapshotted_state = self.get_history_dict()
 
     def get_history_dict(self):
         return {settings_key: getattr(self, settings_key) for settings_key in self.history_fields}
 
     def get_model_state_changes(self, new_dict, current_dict=None):
-        current_dict = current_dict or self.post_init_state
+        if not self.snapshotted_state:
+            self.snapshot()
+        current_dict = current_dict or self.snapshotted_state
 
         # we want to display sensible defaults in case a new settings
         # objects was created
@@ -265,7 +279,7 @@ class HistoryMixin(object):
 
     def _extract_value_diff_text(self, key, prop, val):
         previous_value = None
-        previous_value_raw = self.post_init_state.get(key) if self.post_init_state else None
+        previous_value_raw = self.snapshotted_state.get(key) if self.snapshotted_state else None
         if previous_value_raw:
             previous_value = self.get_human_value(key, previous_value_raw)
 
