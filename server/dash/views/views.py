@@ -1288,6 +1288,9 @@ class AdGroupContentAdState(api_common.BaseApiView):
         if state is None or state not in constants.ContentAdSourceState.get_all():
             raise exc.ValidationError()
 
+        # TODO: maticz, 3.10.2016: This if is a hack so that users can start/pause content ads.
+        if not data.get('selected_ids') and data.get('content_ad_ids_selected'):
+            data['selected_ids'] = data.get('content_ad_ids_selected')
         content_ads = helpers.get_selected_entities_post_request(
             models.ContentAd.objects,
             data,
