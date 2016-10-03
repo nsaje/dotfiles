@@ -33,7 +33,6 @@ angular.module('one.widgets').component('zemHeaderNavigation', {
                 // Reset zem-navigation filter input
                 $element.find('zem-navigation input').val('');
                 $element.find('zem-navigation input').triggerHandler('change');
-                $element.find('.scroll-container').scrollTop(0);
             }
         }
     }]

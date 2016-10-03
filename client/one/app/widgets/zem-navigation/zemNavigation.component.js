@@ -123,14 +123,22 @@ angular.module('one.widgets').component('zemNavigation', {
             $ctrl.filteredList = zemNavigationUtils.filterEntityList(list, $ctrl.query, showArchived, $ctrl.showAgency);
 
             $ctrl.selectedEntity = null;
-            scrollToTop();
+
+            // If search in progress always scroll to top,
+            // otherwise scroll to active entity
+            if ($ctrl.query) {
+                scrollToTop();
+            } else {
+                scrollToItem($ctrl.activeEntity, true); // Remove flickering in some cases
+                $timeout(function () { scrollToItem($ctrl.activeEntity, true); }); // Wait for list to be rendered first
+            }
         }
 
         function scrollToTop () {
             $element.find('.scroll-container').scrollTop(0);
         }
 
-        function scrollToItem (item) {
+        function scrollToItem (item, scrollItemToTop) {
             if (!item) return;
 
             // Scroll to item in case that is currently not shown
@@ -148,10 +156,9 @@ angular.module('one.widgets').component('zemNavigation', {
             var viewFrom = $scrollContainer.scrollTop();
             var viewTo = viewFrom + height;
 
-            if (selectedPos < viewFrom) {
+            if (selectedPos < viewFrom || scrollItemToTop) {
                 $scrollContainer.scrollTop(selectedPos);
-            }
-            if (selectedPos >= viewTo) {
+            } else if (selectedPos >= viewTo) {
                 $scrollContainer.scrollTop(selectedPos - height + getItemHeight($ctrl.filteredList[idx]));
             }
         }
