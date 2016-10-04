@@ -1,4 +1,6 @@
 import copy
+import logging
+
 import collections
 
 from django.db.models import QuerySet, Model
@@ -11,6 +13,8 @@ from dash.constants import Level
 
 from stats import constants
 from reports.db_raw_helpers import extract_obj_ids
+
+logger = logging.getLogger(__name__)
 
 CONTENT_ADS_FIELDS = [
     'url', 'title', 'display_url', 'brand_name', 'description', 'call_to_action', 'label', 'batch_name', 'batch_id',
@@ -347,7 +351,7 @@ def merge_rows(breakdown, dash_rows, stats_rows):
         rows.append(row_a)
 
     if group_b:
-        raise Exception("Got stats for unknown objects")
+        logger.warning("Got stats for unknown objects")
 
     return rows
 
