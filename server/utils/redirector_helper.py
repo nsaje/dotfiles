@@ -148,8 +148,7 @@ def upsert_audience(audience):
         }
 
         data = json.dumps(audience_dict)
-        return _call_api_retry(settings.R1_CUSTOM_AUDIENCE_API_URL.format(audience_id=audience.id), data=data,
-                               method='PUT')
+        return _call_api_retry(settings.R1_CUSTOM_AUDIENCE_API_URL.format(audience_id=audience.id), data=data, method='PUT')
     except Exception:
         logger.exception('Exception in insert_audience')
         raise

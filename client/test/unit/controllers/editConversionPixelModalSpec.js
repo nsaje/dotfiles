@@ -28,13 +28,14 @@ describe('EditConversionPixelModalCtrl', function () {
 
         api = {
             conversionPixel: {
-                rename: mockApiFunc
+                edit: mockApiFunc
             }
         };
 
         pixel = {
             id: 1,
-            name: 'Test Name'
+            name: 'Test Name',
+            outbrain_sync: true
         };
 
         $controller(
@@ -47,7 +48,7 @@ describe('EditConversionPixelModalCtrl', function () {
         it('updates error message on failure', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'rename').and.callFake(function () {
+            spyOn(api.conversionPixel, 'edit').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -56,7 +57,7 @@ describe('EditConversionPixelModalCtrl', function () {
             $scope.submit();
             $scope.$digest();
 
-            expect(api.conversionPixel.rename).toHaveBeenCalled();
+            expect(api.conversionPixel.edit).toHaveBeenCalled();
             expect($scope.inProgress).toBe(true);
             expect($scope.$close).not.toHaveBeenCalled();
             expect($scope.error).toEqual(false);
@@ -74,7 +75,7 @@ describe('EditConversionPixelModalCtrl', function () {
         it('closes the modal window on success', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'rename').and.callFake(function () {
+            spyOn(api.conversionPixel, 'edit').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -83,15 +84,15 @@ describe('EditConversionPixelModalCtrl', function () {
             $scope.submit();
             $scope.$digest();
 
-            expect(api.conversionPixel.rename).toHaveBeenCalled();
+            expect(api.conversionPixel.edit).toHaveBeenCalled();
             expect($scope.inProgress).toBe(true);
             expect($scope.$close).not.toHaveBeenCalled();
 
-            deferred.resolve({id: 1, name: 'name', archived: false});
+            deferred.resolve({id: 1, name: 'name', archived: false, outbrain_sync: true});
             $scope.$digest();
 
             expect($scope.inProgress).toBe(false);
-            expect($scope.$close).toHaveBeenCalledWith({id: 1, name: 'name', archived: false});
+            expect($scope.$close).toHaveBeenCalledWith({id: 1, name: 'name', archived: false, outbrain_sync: true});
         });
     });
 });

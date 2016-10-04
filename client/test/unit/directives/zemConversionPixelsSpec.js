@@ -72,9 +72,9 @@ describe('zemConversionPixels', function () {
         });
     });
 
-    describe('renameConversionPixel', function () {
+    describe('editConversionPixel', function () {
         it('opens a modal window', function () {
-            isolate.renameConversionPixel({id: 1, name: 'test'}).result
+            isolate.editConversionPixel({id: 1, name: 'test', outbrainSync: true}).result
                 .catch(function (error) {
                     expect(error).toBeUndefined();
                 });
@@ -87,11 +87,11 @@ describe('zemConversionPixels', function () {
 
             spyOn($uibModal, 'open').and.returnValue(fakeModal);
 
-            var modalInstance = isolate.renameConversionPixel(isolate.conversionPixels[0]);
-            modalInstance.close({id: 3, name: 'New Name'});
+            var modalInstance = isolate.editConversionPixel(isolate.conversionPixels[0]);
+            modalInstance.close({id: 3, name: 'New Name', outbrainSync: true});
 
             expect(isolate.conversionPixels).toEqual([
-                {id: 3, name: 'New Name', archived: true}
+                {id: 3, name: 'New Name', archived: true, outbrainSync: true}
             ]);
         });
     });

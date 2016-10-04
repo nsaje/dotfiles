@@ -2462,7 +2462,8 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 id: conversionPixel.id,
                 name: conversionPixel.name,
                 url: conversionPixel.url,
-                archived: conversionPixel.archived
+                archived: conversionPixel.archived,
+                outbrainSync: conversionPixel.outbrain_sync,
             };
         }
 
@@ -2486,11 +2487,12 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
             return deferred.promise;
         };
 
-        this.post = function (accountId, name) {
+        this.post = function (accountId, name, outbrainSync) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/conversion_pixels/';
             var config = {
-                name: name
+                name: name,
+                outbrain_sync: outbrainSync,
             };
 
             $http.post(url, config).
@@ -2529,9 +2531,10 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
             return deferred.promise;
         };
 
-        this.rename = function (conversionPixel) {
+        this.edit = function (conversionPixel) {
             var data = {
-                name: conversionPixel.name
+                name: conversionPixel.name,
+                outbrain_sync: conversionPixel.outbrainSync,
             };
 
             return this.put(conversionPixel.id, data);

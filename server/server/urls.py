@@ -354,7 +354,7 @@ urlpatterns += [
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/conversion_pixels/',
-        login_required(dash.views.agency.AccountConversionPixels.as_view()),
+        login_required(dash.views.agency.ConversionPixel.as_view()),
         name='account_conversion_pixels',
     ),
     url(

@@ -1,7 +1,7 @@
 /* globals angular */
 angular.module('one.legacy').controller('AddConversionPixelModalCtrl', ['$scope', 'api', function ($scope, api) {
     $scope.inProgress = false;
-    $scope.pixel = {name: ''};
+    $scope.pixel = {name: '', outbrainSync: false};
     $scope.error = false;
     $scope.errorMessage = '';
     $scope.title = 'Add a New Pixel';
@@ -9,7 +9,7 @@ angular.module('one.legacy').controller('AddConversionPixelModalCtrl', ['$scope'
 
     $scope.submit = function () {
         $scope.inProgress = true;
-        api.conversionPixel.post($scope.account.id, $scope.pixel.name).then(
+        api.conversionPixel.post($scope.account.id, $scope.pixel.name, $scope.pixel.outbrainSync).then(
             function (data) {
                 $scope.$close(data);
             },

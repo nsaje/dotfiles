@@ -374,7 +374,6 @@ class AdGroupSettingsTest(TestCase):
                         'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
-                        'tracking_code': '',
                         'autopilot_state': 2,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
@@ -935,7 +934,7 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(mock_zwei_send.called, False)
 
 
-class AccountConversionPixelsTestCase(TestCase):
+class ConversionPixelTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
@@ -944,6 +943,12 @@ class AccountConversionPixelsTestCase(TestCase):
         self.assertFalse(self.user.is_superuser)
 
         self.client.login(username=self.user.email, password='secret')
+
+        self.original_outbrain_source_type_id = settings.OUTBRAIN_SOURCE_TYPE_ID
+        settings.OUTBRAIN_SOURCE_TYPE_ID = 3
+
+    def tearDown(self):
+        settings.OUTBRAIN_SOURCE_TYPE_ID = self.original_outbrain_source_type_id
 
     def test_get(self):
         account = models.Account.objects.get(pk=1)
@@ -961,7 +966,8 @@ class AccountConversionPixelsTestCase(TestCase):
             'id': 1,
             'name': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
-            'archived': False
+            'archived': False,
+            'outbrain_sync': True,
         }], decoded_response['data']['rows'])
 
     def test_get_non_existing_account(self):
@@ -984,11 +990,12 @@ class AccountConversionPixelsTestCase(TestCase):
         decoded_response = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         self.assertTrue(decoded_response['success'])
-        self.assertEqual({
+        self.assertDictEqual({
             'id': 2,
             'name': 'name',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/2/',
             'archived': False,
+            'outbrain_sync': False,
         }, decoded_response['data'])
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
@@ -1001,6 +1008,108 @@ class AccountConversionPixelsTestCase(TestCase):
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
 
         ping_mock.assert_called_once_with(1)
+
+    @patch('utils.k1_helper.update_account')
+    def test_post_outbrain_sync_no_change(self, ping_mock):
+        outbrain_synced_pixels = models.ConversionPixel.objects.\
+            filter(outbrain_sync=True).\
+            filter(account_id=1)
+        self.assertEqual(1, len(outbrain_synced_pixels))
+
+        outbrain_pixels = models.SourceTypePixel.objects.\
+            filter(pixel=outbrain_synced_pixels[0]).\
+            filter(source_type_id=settings.OUTBRAIN_SOURCE_TYPE_ID)
+        self.assertEqual(1, len(outbrain_pixels))
+
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'name': 'name'}),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+
+        pixel = models.ConversionPixel.objects.order_by('-id')[0]
+        self.assertFalse(pixel.outbrain_sync)
+
+        outbrain_synced_pixels_new = models.ConversionPixel.objects.\
+            filter(outbrain_sync=True).\
+            filter(account_id=1)
+        self.assertEqual(1, len(outbrain_synced_pixels_new))
+        self.assertEqual(outbrain_synced_pixels[0].id, outbrain_synced_pixels_new[0].id)
+
+        outbrain_pixels_new = models.SourceTypePixel.objects.\
+            filter(pixel__account_id=1).\
+            filter(source_type_id=settings.OUTBRAIN_SOURCE_TYPE_ID)
+        self.assertEqual(1, len(outbrain_pixels_new))
+        self.assertEqual(outbrain_pixels[0].id, outbrain_pixels_new[0].pixel_id)
+
+        decoded_response = json.loads(response.content)
+        self.assertTrue(decoded_response['success'])
+        expected_url = settings.CONVERSION_PIXEL_PREFIX + '1/{}/'.format(
+            decoded_response['data']['id']
+        )
+        self.assertDictEqual({
+            'id': pixel.pk,
+            'name': 'name',
+            'url': expected_url,
+            'archived': False,
+            'outbrain_sync': False,
+        }, decoded_response['data'])
+
+        ping_mock.assert_called_once_with(1)
+
+    @patch('utils.redirector_helper.upsert_audience')
+    @patch('utils.k1_helper.update_account')
+    def test_post_outbrain_sync_override(self, ping_mock, redirector_mock):
+        outbrain_synced_pixels = models.ConversionPixel.objects.\
+            filter(outbrain_sync=True).\
+            filter(account_id=1)
+        self.assertEqual(1, len(outbrain_synced_pixels))
+
+        outbrain_pixels = models.SourceTypePixel.objects.\
+            filter(pixel=outbrain_synced_pixels[0]).\
+            filter(source_type_id=settings.OUTBRAIN_SOURCE_TYPE_ID)
+        self.assertEqual(1, len(outbrain_pixels))
+
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'name': 'name', 'outbrain_sync': True}),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+
+        pixel = models.ConversionPixel.objects.order_by('-id')[0]
+        self.assertTrue(pixel.outbrain_sync)
+
+        outbrain_synced_pixels_new = models.ConversionPixel.objects.\
+            filter(outbrain_sync=True).\
+            filter(account_id=1)
+        self.assertEqual(1, len(outbrain_synced_pixels_new))
+        self.assertEqual(pixel.id, outbrain_synced_pixels_new[0].id)
+
+        outbrain_pixels_new = models.SourceTypePixel.objects.\
+            filter(pixel__account_id=1).\
+            filter(source_type_id=settings.OUTBRAIN_SOURCE_TYPE_ID)
+        self.assertEqual(1, len(outbrain_pixels_new))
+        self.assertEqual(pixel.id, outbrain_pixels_new[0].pixel_id)
+
+        decoded_response = json.loads(response.content)
+        self.assertTrue(decoded_response['success'])
+        expected_url = settings.CONVERSION_PIXEL_PREFIX + '1/{}/'.format(
+            decoded_response['data']['id']
+        )
+        self.assertDictEqual({
+            'id': pixel.pk,
+            'name': 'name',
+            'url': expected_url,
+            'archived': False,
+            'outbrain_sync': True,
+        }, decoded_response['data'])
+
+        ping_mock.assert_called_once_with(1)
+        self.assertEqual(redirector_mock.call_count, 3)
 
     def test_post_name_empty(self):
         pixels_before = list(models.ConversionPixel.objects.all())
@@ -1028,24 +1137,14 @@ class AccountConversionPixelsTestCase(TestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
 
-
-class ConversionPixelTestCase(TestCase):
-    fixtures = ['test_api.yaml', 'test_views.yaml', 'test_non_superuser.yaml']
-
-    def setUp(self):
-        self.user = User.objects.get(pk=1)
-
-        self.assertFalse(self.user.is_superuser)
-
-        self.client.login(username=self.user.email, password='secret')
-
-    def test_put_archive(self):
+    @patch('utils.redirector_helper.upsert_audience')
+    def test_put_archive(self, redirector_mock):
         add_permissions(self.user, ['archive_restore_entity'])
 
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
-            json.dumps({'archived': True, 'name': conversion_pixel.name}),
+            json.dumps({'archived': True, 'name': conversion_pixel.name, 'outbrain_sync': True}),
             content_type='application/json',
             follow=True,
         )
@@ -1053,26 +1152,29 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual(200, response.status_code)
 
         decoded_response = json.loads(response.content)
-        self.assertEqual({
+        self.assertDictEqual({
             'id': 1,
             'archived': True,
             'name': 'test',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+            'outbrain_sync': True,
         }, decoded_response['data'])
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(
             constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE,
             hist.action_type)
-        self.assertEqual('Archived conversion pixel named test.',
-                         hist.changes_text)
+        self.assertEqual('Archived conversion pixel named test.', hist.changes_text)
 
-    def test_put_name(self):
+        self.assertEqual(redirector_mock.call_count, 3)
+
+    @patch('utils.redirector_helper.upsert_audience')
+    def test_put_name(self, redirector_mock):
         add_permissions(self.user, ['archive_restore_entity'])
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
-            json.dumps({'name': 'New name'}),
+            json.dumps({'name': 'New name', 'outbrain_sync': True}),
             content_type='application/json',
             follow=True,
         )
@@ -1085,16 +1187,19 @@ class ConversionPixelTestCase(TestCase):
             'archived': conversion_pixel.archived,
             'name': 'New name',
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+            'outbrain_sync': True,
         }, decoded_response['data'])
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(
             constants.HistoryActionType.CONVERSION_PIXEL_RENAME,
             hist.action_type)
-        self.assertEqual('Renamed conversion pixel named test to New name.',
-                         hist.changes_text)
+        self.assertEqual('Renamed conversion pixel named test to New name.', hist.changes_text)
 
-    def test_put_archive_no_permissions(self):
+        self.assertEqual(redirector_mock.call_count, 3)
+
+    @patch('utils.redirector_helper.upsert_audience')
+    def test_put_archive_no_permissions(self, redirector_mock):
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         self.assertFalse(conversion_pixel.archived)
 
@@ -1108,12 +1213,15 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual(200, response.status_code)
 
         decoded_response = json.loads(response.content)
-        self.assertEqual({
+        self.assertDictEqual({
             'id': 1,
             'archived': False,
             'name': conversion_pixel.name,
             'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+            'outbrain_sync': False,
         }, decoded_response['data'])
+
+        self.assertEqual(redirector_mock.call_count, 3)
 
     def test_put_invalid_pixel(self):
         conversion_pixel = models.ConversionPixel.objects.latest('id')
@@ -1132,7 +1240,7 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual('Conversion pixel does not exist', decoded_response['data']['message'])
 
     def test_put_invalid_account(self):
-        new_conversion_pixel = models.ConversionPixel.objects.create(account_id=2, name='abcd')
+        new_conversion_pixel = models.ConversionPixel.objects.create(account_id=20, name='abcd')
 
         add_permissions(self.user, ['archive_restore_entity'])
         response = self.client.put(
@@ -1172,6 +1280,21 @@ class ConversionPixelTestCase(TestCase):
         decoded_response = json.loads(response.content)
 
         self.assertEqual(['Name is too long (55/50).'], decoded_response['data']['errors']['name'])
+
+    @patch('utils.redirector_helper.upsert_audience')
+    def test_update_outbrain_sync_pixel(self, redirector_mock):
+        conversion_pixel = models.ConversionPixel.objects.get(pk=1)
+        agency.ConversionPixel()._update_outbrain_sync_pixel(conversion_pixel)
+        self.assertEqual(redirector_mock.call_count, 3)
+
+    @patch('utils.redirector_helper.upsert_audience')
+    def test_update_outbrain_sync_pixel_with_new_pixie(self, redirector_mock):
+        conversion_pixel = models.ConversionPixel.objects.create(account_id=1, name='abcd', outbrain_sync=True)
+        agency.ConversionPixel()._update_outbrain_sync_pixel(conversion_pixel)
+
+        source_type_pixie = models.SourceTypePixel.objects.get(pk=1)
+        self.assertEqual(source_type_pixie.pixel, conversion_pixel)
+        self.assertEqual(redirector_mock.call_count, 3)
 
 
 class UserActivationTest(TestCase):

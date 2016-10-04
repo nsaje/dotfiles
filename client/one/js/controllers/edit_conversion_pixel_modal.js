@@ -9,7 +9,7 @@ angular.module('one.legacy').controller('EditConversionPixelModalCtrl', ['$scope
 
     $scope.submit = function () {
         $scope.inProgress = true;
-        api.conversionPixel.rename(pixel).then(
+        api.conversionPixel.edit(pixel).then(
             function (data) {
                 $scope.$close(data);
             },

@@ -212,3 +212,5 @@ SLACK_INCOMING_HOOK_URL = Secret('').get()
 GA_PRIVATE_KEY = Secret('').get()
 GA_CLIENT_EMAIL = Secret('').get()
 
+# ID of Outbrain source type from DB.
+OUTBRAIN_SOURCE_TYPE_ID = 3

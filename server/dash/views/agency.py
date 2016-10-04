@@ -27,6 +27,7 @@ from utils import api_common
 from utils import exc
 from utils import email_helper
 from utils import k1_helper
+from utils import redirector_helper
 
 from zemauth.models import User as ZemUser
 
@@ -584,7 +585,7 @@ class CampaignSettings(api_common.BaseApiView):
                  'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
-class AccountConversionPixels(api_common.BaseApiView):
+class ConversionPixel(api_common.BaseApiView):
 
     def get(self, request, account_id):
         account_id = int(account_id)
@@ -595,6 +596,7 @@ class AccountConversionPixels(api_common.BaseApiView):
                 'id': conversion_pixel.id,
                 'name': conversion_pixel.name,
                 'url': conversion_pixel.get_url(),
+                'outbrain_sync': conversion_pixel.outbrain_sync,
                 'archived': conversion_pixel.archived
             } for conversion_pixel in models.ConversionPixel.objects.filter(account=account)
         ]
@@ -613,8 +615,9 @@ class AccountConversionPixels(api_common.BaseApiView):
             raise exc.ValidationError()
 
         name = data.get('name')
+        resource = {'name': name, 'outbrain_sync': data.get('outbrain_sync')}
 
-        form = forms.ConversionPixelForm({'name': name})
+        form = forms.ConversionPixelForm(resource)
         if not form.is_valid():
             raise exc.ValidationError(message=' '.join(dict(form.errors)['name']))
 
@@ -625,7 +628,12 @@ class AccountConversionPixels(api_common.BaseApiView):
             pass
 
         with transaction.atomic():
-            conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, name=name)
+            conversion_pixel = models.ConversionPixel.objects.create(
+                account_id=account_id,
+                name=name,
+                outbrain_sync=form.cleaned_data['outbrain_sync'] or False
+            )
+            self._update_outbrain_sync_pixel(conversion_pixel)
 
             changes_text = u'Added conversion pixel named {}.'.format(name)
             account.write_history(
@@ -641,10 +649,8 @@ class AccountConversionPixels(api_common.BaseApiView):
             'name': conversion_pixel.name,
             'url': conversion_pixel.get_url(),
             'archived': conversion_pixel.archived,
+            'outbrain_sync': conversion_pixel.outbrain_sync,
         })
-
-
-class ConversionPixel(api_common.BaseApiView):
 
     def put(self, request, conversion_pixel_id):
         try:
@@ -676,14 +682,51 @@ class ConversionPixel(api_common.BaseApiView):
                 request, account, conversion_pixel, form.cleaned_data)
             conversion_pixel.name = form.cleaned_data['name']
 
+            self._write_outbrain_sync_change_to_history(request, account, conversion_pixel, form.cleaned_data)
+            conversion_pixel.outbrain_sync = form.cleaned_data['outbrain_sync']
+
             conversion_pixel.save()
+
+            self._update_outbrain_sync_pixel(conversion_pixel)
+
+        k1_helper.update_account(conversion_pixel.account.id)
 
         return self.create_api_response({
             'id': conversion_pixel.id,
             'name': conversion_pixel.name,
             'url': conversion_pixel.get_url(),
             'archived': conversion_pixel.archived,
+            'outbrain_sync': conversion_pixel.outbrain_sync,
         })
+
+    def _update_outbrain_sync_pixel(self, conversion_pixel):
+        r1_pixels_to_sync = [conversion_pixel.id]
+
+        # if outbrain sync enabled
+        #   find other pixels with outbrain sync enabled and disabled them
+        #   connect source type pixel to new pixel
+        if conversion_pixel.outbrain_sync:
+            outbrain_sync_pixels = (models.ConversionPixel.objects.filter(account_id=conversion_pixel.account.id,
+                                                                          outbrain_sync=True)
+                                                                  .exclude(id=conversion_pixel.id))
+            for pixel in outbrain_sync_pixels:
+                pixel.outbrain_sync = False
+                pixel.save()
+                r1_pixels_to_sync.append(pixel.id)
+
+            source_type_pixels = models.SourceTypePixel.objects.filter(pixel__in=r1_pixels_to_sync,
+                                                                       source_type_id=settings.OUTBRAIN_SOURCE_TYPE_ID)
+            if len(source_type_pixels) > 1:
+                logger.exception('More than 1 SourceTypePixel for ConversionPixels with ids {}', r1_pixels_to_sync)
+
+            if source_type_pixels:
+                source_type_pixels[0].pixel = conversion_pixel
+                source_type_pixels[0].save()
+
+        # sync all audiences on edited pixels with R1
+        audiences = models.Audience.objects.filter(pixel_id__in=r1_pixels_to_sync, archived=False)
+        for audience in audiences:
+            redirector_helper.upsert_audience(audience)
 
     def _write_archived_change_to_history(self, request, account, conversion_pixel, data):
         if data['archived'] == conversion_pixel.archived:
@@ -712,6 +755,15 @@ class ConversionPixel(api_common.BaseApiView):
             user=request.user,
             action_type=constants.HistoryActionType.CONVERSION_PIXEL_RENAME
         )
+
+    def _write_outbrain_sync_change_to_history(self, request, account, conversion_pixel, data):
+        if data['outbrain_sync'] == conversion_pixel.outbrain_sync:
+            return
+
+        change_text = u'Sync to Outbrain {}'.format('enabled' if data['outbrain_sync'] else 'disabled')
+        account.write_history(change_text,
+                              user=request.user,
+                              action_type=constants.HistoryActionType.CONVERSION_PIXEL_OUTBRAIN_SYNC)
 
 
 class AccountSettings(api_common.BaseApiView):

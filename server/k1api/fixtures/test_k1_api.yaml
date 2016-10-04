@@ -775,6 +775,7 @@
         account: 1
         name: 'Pixel 1'
         slug: 'testslug1'
+        outbrain_sync: False
         created_dt: '2015-02-23T00:00:00'
     model: dash.conversionpixel
     pk: 1
@@ -784,6 +785,7 @@
         account: 1
         name: 'Pixel 2'
         slug: 'testslug2'
+        outbrain_sync: True
         created_dt: '2015-02-23T00:00:00'
     model: dash.conversionpixel
     pk: 2
@@ -792,6 +794,7 @@
         account: 2
         name: 'Pixel 3'
         slug: 'testslug3'
+        outbrain_sync: True
         created_dt: '2015-02-23T00:00:00'
     model: dash.conversionpixel
     pk: 3
@@ -831,9 +834,9 @@
 
 -   fields:
         pixel: 2
-        url: 'http://www.ob.com/pixelendpoint'
-        source_pixel_id: ob_zem2
-        source_type: 3
+        url: 'http://www.xy.com/pixelendpoint'
+        source_pixel_id: xy_zem2
+        source_type: 4
         created_dt: '2015-02-23T00:00:00'
         modified_dt: '2015-02-23T00:00:00'
     model: dash.sourcetypepixel

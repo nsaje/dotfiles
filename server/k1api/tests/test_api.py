@@ -1,10 +1,12 @@
 import itertools
 import time
 import json
+
+import mock
 from mock import patch, ANY
 import urllib
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
@@ -30,6 +32,8 @@ class K1ApiTest(TestCase):
         settings.K1_API_SIGN_KEY = 'test_api_key'
         self.verify_patcher = patch('utils.request_signer.verify_wsgi_request')
         self.mock_verify_wsgi_request = self.verify_patcher.start()
+
+        self.maxDiff = None
 
     def tearDown(self):
         if self.test_signature:
@@ -97,6 +101,7 @@ class K1ApiTest(TestCase):
                  {u'id': 1,
                   u'name': u'Pixel 1',
                   u'slug': u'testslug1',
+                  u'outbrain_sync': False,
                   u'source_pixels': ListMatcher([
                       {u'url': u'http://www.ob.com/pixelendpoint',
                        u'source_pixel_id': u'ob_zem1',
@@ -114,10 +119,11 @@ class K1ApiTest(TestCase):
                  {u'id': 2,
                   u'name': u'Pixel 2',
                   u'slug': u'testslug2',
+                  u'outbrain_sync': True,
                   u'source_pixels': ListMatcher([
-                      {u'url': u'http://www.ob.com/pixelendpoint',
-                       u'source_pixel_id': u'ob_zem2',
-                       u'source_type': u'outbrain',
+                      {u'url': u'http://www.xy.com/pixelendpoint',
+                       u'source_pixel_id': u'xy_zem2',
+                       u'source_type': u'taboola',
                        },
                       {u'url': u'http://www.y.com/pixelendpoint',
                        u'source_pixel_id': u'y_zem2',
@@ -137,6 +143,7 @@ class K1ApiTest(TestCase):
                  {u'id': 3,
                   u'name': u'Pixel 3',
                   u'slug': u'testslug3',
+                  u'outbrain_sync': True,
                   u'source_pixels': []
                   },
              ]},
@@ -172,6 +179,7 @@ class K1ApiTest(TestCase):
                 {u'id': 1,
                  u'name': u'Pixel 1',
                  u'slug': u'testslug1',
+                 u'outbrain_sync': False,
                  u'source_pixels': ListMatcher([
                      {u'url': u'http://www.ob.com/pixelendpoint',
                       u'source_pixel_id': u'ob_zem1',
@@ -189,10 +197,11 @@ class K1ApiTest(TestCase):
                 {u'id': 2,
                  u'name': u'Pixel 2',
                  u'slug': u'testslug2',
+                 u'outbrain_sync': True,
                  u'source_pixels': ListMatcher([
-                     {u'url': u'http://www.ob.com/pixelendpoint',
-                      u'source_pixel_id': u'ob_zem2',
-                      u'source_type': u'outbrain',
+                     {u'url': u'http://www.xy.com/pixelendpoint',
+                      u'source_pixel_id': u'xy_zem2',
+                      u'source_type': u'taboola',
                       },
                      {u'url': u'http://www.y.com/pixelendpoint',
                       u'source_pixel_id': u'y_zem2',
@@ -276,6 +285,7 @@ class K1ApiTest(TestCase):
         )
 
         data = json.loads(response.content)
+        self._assert_response_ok(response, data)
         self.assertDictEqual(body, data['response'])
 
         updated_pixel = dash.models.SourceTypePixel.objects.get(pk=3)
@@ -284,6 +294,31 @@ class K1ApiTest(TestCase):
 
         audience = dash.models.Audience.objects.get(pixel_id=1)
         redirector_mock.assert_called_once_with(audience)
+
+    @patch('utils.redirector_helper.upsert_audience')
+    def test_update_source_pixel_with_existing_for_outbrain(self, redirector_mock):
+        body = {
+            'pixel_id': 2,
+            'source_type': 'outbrain',
+            'url': 'http://www.dummy_ob.com/pixie_endpoint',
+            'source_pixel_id': 'ob_dummy_id',
+        }
+        response = self.client.put(
+            reverse('k1api.source_pixels'), json.dumps(body), 'application/json',
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        self.assertDictEqual(body, data['response'])
+
+        updated_pixel = dash.models.SourceTypePixel.objects.get(pk=1)
+        self.assertEqual(updated_pixel.pixel.id, 2)
+
+        audiences = dash.models.Audience.objects.filter(pixel_id__in=[2, 1])
+        redirector_mock.assert_has_calls([
+            mock.call(audiences[0]),
+            mock.call(audiences[1]),
+        ], any_order=True)
 
     @patch('utils.redirector_helper.upsert_audience')
     def test_update_source_pixel_create_new(self, redirector_mock):
@@ -298,11 +333,34 @@ class K1ApiTest(TestCase):
         )
 
         data = json.loads(response.content)
+        self._assert_response_ok(response, data)
         self.assertDictEqual(body, data['response'])
 
         updated_pixel = dash.models.SourceTypePixel.objects.get(pk=7)
         self.assertEqual(updated_pixel.url, 'http://www.dummy_fb.com/pixie_endpoint')
         self.assertEqual(updated_pixel.source_pixel_id, 'fb_dummy_id')
+
+        self.assertFalse(redirector_mock.called)
+
+    @patch('utils.redirector_helper.upsert_audience')
+    def test_update_source_pixel_create_new_for_outbrain(self, redirector_mock):
+        body = {
+            'pixel_id': 3,
+            'source_type': 'outbrain',
+            'url': 'http://www.dummy_ob.com/pixie_endpoint',
+            'source_pixel_id': 'ob_dummy_id',
+        }
+        response = self.client.put(
+            reverse('k1api.source_pixels'), json.dumps(body), 'application/json',
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        self.assertDictEqual(body, data['response'])
+
+        updated_pixel = dash.models.SourceTypePixel.objects.get(pk=8)
+        self.assertEqual(updated_pixel.url, 'http://www.dummy_ob.com/pixie_endpoint')
+        self.assertEqual(updated_pixel.source_pixel_id, 'ob_dummy_id')
 
         self.assertFalse(redirector_mock.called)
 

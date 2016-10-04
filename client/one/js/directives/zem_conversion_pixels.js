@@ -49,7 +49,7 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
                 return modalInstance;
             };
 
-            $scope.renameConversionPixel = function (pixel) {
+            $scope.editConversionPixel = function (pixel) {
                 var modalInstance = $uibModal.open({
                     templateUrl: '/partials/conversion_pixel_modal.html',
                     controller: 'EditConversionPixelModalCtrl',
@@ -57,7 +57,7 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
                     scope: $scope,
                     resolve: {
                         pixel: function () {
-                            return {id: pixel.id, name: pixel.name};
+                            return {id: pixel.id, name: pixel.name, outbrainSync: pixel.outbrainSync};
                         }
                     }
                 });
@@ -66,6 +66,7 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
                     $scope.conversionPixels.forEach(function (pixel) {
                         if (pixel.id === conversionPixel.id) {
                             pixel.name = conversionPixel.name;
+                            pixel.outbrainSync = conversionPixel.outbrainSync;
                         }
                     });
                 });

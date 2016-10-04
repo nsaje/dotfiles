@@ -60,6 +60,16 @@
     model: dash.account
     pk: 1
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 2'
+        outbrain_marketer_id: 'omid_10'
+        users: [1, 2, 3]
+    model: dash.account
+    pk: 2
+
 # test accountsettings
 
 -   fields:
@@ -110,6 +120,18 @@
     model: dash.adgroup
     pk: 1
 
+# test source types
+
+-   fields:
+        type: 'outbrain'
+    model: dash.sourcetype
+    pk: 3
+
+-   fields:
+        type: 'disqus'
+    model: dash.sourcetype
+    pk: 7
+
 # test conversion pixel
 
 -   fields:
@@ -117,9 +139,32 @@
         slug: 'test'
         name: 'test'
         archived: false
+        outbrain_sync: true
         created_dt: '2015-08-25T09:58:21'
     model: dash.conversionpixel
     pk: 1
+
+# test source type pixel
+
+-   fields:
+        pixel: 1
+        url: 'http://test1.com'
+        source_pixel_id: 100
+        source_type: 3
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-25T09:58:21'
+    model: dash.SourceTypePixel
+    pk: 1
+
+-   fields:
+        pixel: 1
+        url: 'http://test2.com'
+        source_pixel_id: 101
+        source_type: 7
+        created_dt: '2015-08-25T09:58:21'
+        modified_dt: '2015-08-25T09:58:21'
+    model: dash.SourceTypePixel
+    pk: 2
 
 # test conversion goals
 

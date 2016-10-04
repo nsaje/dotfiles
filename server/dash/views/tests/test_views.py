@@ -137,12 +137,12 @@ class AccountsTest(TestCase):
         self.assertDictEqual(
             {
                 'name': 'New account',
-                'id': 2,
+                'id': 3,
             },
             response_blob['data']
         )
 
-        account = models.Account.objects.get(pk=2)
+        account = models.Account.objects.get(pk=3)
         self.assertIsNone(account.agency)
 
         settings = account.get_current_settings()

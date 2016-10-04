@@ -10,6 +10,15 @@
                 <input type="text" zem-focus-select id="name-input" class="form-control" ng-model="pixel.name" ng-focus="clearError()" ng-change="clearError()" />
             </div>
         </div>
+        <div class="form-group" ng-class="{'has-error': !!error && !!errorMessage}">
+            <label for="outbrain-sync-input" class="col-xs-4 control-label">
+                Sync to Outbrain
+                <zem-help-popover content="Sync events from this pixel to Outbrain" placement="bottom"></zem-help-popover>
+            </label>
+            <div class="col-xs-4">
+                <input type="checkbox" id="outbrain-sync-input" class="form-control" ng-model="pixel.outbrainSync" ng-focus="clearError()" ng-change="clearError()" />
+            </div>
+        </div>
 
         <div class="form-group">
             <div class="col-xs-12 notice">
