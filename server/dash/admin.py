@@ -536,6 +536,7 @@ class SourceAdmin(admin.ModelAdmin):
         'bidder_slug',
         'maintenance',
         'deprecated',
+        'impression_trackers_count',
         'created_dt',
         'modified_dt',
     )

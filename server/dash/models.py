@@ -1455,6 +1455,11 @@ class Source(models.Model):
         help_text=_('Designates whether source supports retargeting via manual action.')
     )
 
+    impression_trackers_count = models.PositiveSmallIntegerField(
+        default=0,
+        help_text=_('Number of impression trackers we know this source supports.')
+    )
+
     content_ad_submission_type = models.IntegerField(
         default=constants.SourceSubmissionType.DEFAULT,
         choices=constants.SourceSubmissionType.get_choices()
