@@ -2480,7 +2480,8 @@ class AccountsAccountsTableTest(TestCase):
 
         view_filter = helpers.ViewFilter(request=r)
         response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
-        self.assertEqual('AdPro', response['rows'][0]['agency'])
+        agency_name = response['rows'][0]['agency'] or response['rows'][1]['agency']
+        self.assertEqual('AdPro', agency_name)
 
         view_filter.filtered_agencies = [10]
         response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
