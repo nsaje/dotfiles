@@ -851,7 +851,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.put(url, json.dumps(data), content_type='application/json')
-        print response.content
         self.assertEqual(response.status_code, 200)
 
         insert_id = int(json.loads(response.content)['data'])
@@ -1037,7 +1036,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.post(url, json.dumps(data),
                                         content_type='application/json')
-        print response
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             json.loads(response.content)['data'],

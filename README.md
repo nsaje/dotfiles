@@ -271,7 +271,7 @@ Karma can also auto-watch files and run test on every change:
 karma start test/karma.conf.js
 ```
 
-#### Testing databases
+### Server
 
 In the case you are using staging or other database for running Z1 locally running unit tests can become
 very slow. You can provide additional entries in your DATABASES dictionary with prefix 'testing\_'. When
@@ -300,7 +300,21 @@ DATABASES = {
 }
 ```
 
-#### End-to-end testing
+You can also speed up the test suite by using `--parallel` flag. In order to 
+reap the most benefits, you can also use `--keepdb` flag to avoid setting up 
+test databases on every test run. When using `--keepdb`, the 
+`--skip-transaction-tests` should also be used. It was created as a workaround
+for transaction tests truncating tables after they run. Since a part of app data
+is loaded into the databases using data migrations, it will be missing on the
+next run if the flag is not used. The flag will likely be obsolete when
+https://code.djangoproject.com/ticket/25251 is closed.
+
+The final command would then look like
+```bash
+./manage.py test --keepdb --parallel --skip-transaction-tests
+```
+
+### End-to-end testing
 
 Integration testing is done using <a href="https://github.com/angular/protractor">Protractor</a>.
 
@@ -349,12 +363,6 @@ After you are done, you can run your tests using
 ```bash
 grunt e2e --sauce
 ```
-
-##### Google Analytics Postclick Data Import
-
-Clients send us daily reports by landing pages from their Google Analytics. We import the postclick and conversion metrics into ONE's reports. The general process is described in the sequence diagram below
-
-![Image](docs/ga_import_sequence.png)
 
 ## Alerting
 

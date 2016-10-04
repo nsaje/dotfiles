@@ -137,35 +137,42 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
         if not self.skip_transaction_tests:
             return test_suite
 
-        new_suite = unittest.TestSuite()
-        for test in test_suite._tests:
-            if not issubclass(type(test), django.test.TestCase) and\
-               issubclass(type(test), django.test.TransactionTestCase):
-                # django.test.TestCase inherits from django.test.TransactionTestCase so
-                # every test will be subclass of TransactionTestCase unless it uses
-                # unittest.TestCase
-                continue
-            new_suite.addTest(test)
+        def _filter_non_transaction_tests(test):
+            # django.test.TestCase inherits from django.test.TransactionTestCase so
+            # every test will be subclass of TransactionTestCase unless it uses
+            # unittest.TestCase
+            return issubclass(type(test), django.test.TestCase) or\
+                not issubclass(type(test), django.test.TransactionTestCase)
 
-        return new_suite
+        return self._filter_suite(test_suite, _filter_non_transaction_tests)
 
     def _filter_by_prefix(self, test_suite):
         prefix = self.test_name
         if prefix is None:
             return test_suite
 
-        new_suite = unittest.TestSuite()
-
-        for test in test_suite._tests:
+        def _filter_tests_wo_prefix(test):
             # the next string is <test_name> (<module path>)
-            test_str = str(test).split()
-            name = test_str[0]
-            if name != prefix:
+            return str(test).split()[0] == prefix
+
+        return self._filter_suite(test_suite, _filter_tests_wo_prefix)
+
+    def _filter_suite(self, suite, fn):
+        new_suite = unittest.TestSuite()
+        if type(suite) == unittest.TestSuite:
+            self._add_filtered_tests(suite, new_suite, fn)
+            return new_suite
+
+        assert type(suite) == django.test.runner.ParallelTestSuite
+        for subsuite in suite.subsuites:
+            self._add_filtered_tests(subsuite, new_suite, fn)
+        return self.parallel_test_suite(new_suite, self.parallel, self.failfast)
+
+    def _add_filtered_tests(self, suite, new_suite, fn):
+        for test in suite._tests:
+            if not fn(test):
                 continue
-
             new_suite.addTest(test)
-
-        return new_suite
 
 
 class CustomRunner(XMLTestRunner, SplitTestsRunner):

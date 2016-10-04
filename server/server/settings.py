@@ -8,6 +8,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
+import copy
+
 from secretcrypt import Secret
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -300,13 +302,13 @@ if TESTING:
     IMAGE_THUMBNAIL_URL = ''
 
     TESTING_DB_PREFIX = 'testing_'
-    testing_databases = {db: DATABASES[db] for db in DATABASES.keys() if db.startswith(TESTING_DB_PREFIX)}
     for database_name in DATABASES.keys():
         if database_name.startswith(TESTING_DB_PREFIX):
             continue
         testing_db_replacement = 'testing_{}'.format(database_name)
-        if testing_db_replacement in testing_databases:
-            DATABASES[database_name] = testing_databases[testing_db_replacement]
+        if testing_db_replacement in DATABASES:
+            # make a copy to avoid issues when using --parallel
+            DATABASES[database_name] = copy.copy(DATABASES[testing_db_replacement])
             print('Using {testdbname} instead of {dbname} for testing...'.format(
                 testdbname=testing_db_replacement,
                 dbname=database_name
