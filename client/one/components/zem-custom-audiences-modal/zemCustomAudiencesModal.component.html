@@ -8,7 +8,7 @@
                 Audience Name
             </label>
             <div class="col-xs-8">
-                <input type="text" id="zem-custom-audiences-modal-name" class="form-control" ng-model="ctrl.selectedName" ng-change="ctrl.removeError('name')" placeholder="Audience Name" ng-readonly="ctrl.readonly" />
+                <input type="text" id="zem-custom-audiences-modal-name" class="form-control" ng-model="ctrl.selectedName" ng-change="ctrl.removeError('name')" placeholder="Audience Name" />
                 <label ng-repeat="error in ctrl.errors.name" class="control-label error">{{ error }}</label>
             </div>
         </div>
@@ -98,6 +98,9 @@
 
     <div class="modal-footer">
         <button type="button" class="btn btn-gray" ng-if="ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Close</button>
+        <a class="create-button btn btn-add" ng-if="ctrl.readonly" ng-click="ctrl.updateAudience()">
+            <span class="loader-image" ng-show="ctrl.putRequestInProgress"></span><span ng-show="!ctrl.putRequestInProgress">Update Audience</span>
+        </a>
         <button type="button" class="btn btn-gray" ng-if="!ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Cancel</button>
         <a class="create-button btn btn-add" ng-if="!ctrl.readonly" ng-click="ctrl.createAudience()">
             <span class="loader-image" ng-show="ctrl.putRequestInProgress"></span><span ng-show="!ctrl.putRequestInProgress">Create Audience</span>

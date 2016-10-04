@@ -47,6 +47,9 @@ class AudiencesTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
 
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, 401)
+
         url = reverse('accounts_audiences', kwargs={'account_id': 1})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 401)
@@ -63,6 +66,9 @@ class AudiencesTest(TestCase):
 
         url = reverse('accounts_audience', kwargs={'account_id': 2, 'audience_id': 5})
         response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.put(url)
         self.assertEqual(response.status_code, 404)
 
         url = reverse('accounts_audiences', kwargs={'account_id': 2})
@@ -83,6 +89,10 @@ class AudiencesTest(TestCase):
                 "error_code": "MissingDataError"
             }
         }
+        self.assertEqual(json.loads(response.content), response_dict)
+
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, 404)
         self.assertEqual(json.loads(response.content), response_dict)
 
         url = reverse('accounts_audiences', kwargs={'account_id': 5})
@@ -107,6 +117,10 @@ class AudiencesTest(TestCase):
         }
         self.assertEqual(json.loads(response.content), response_dict)
 
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(json.loads(response.content), response_dict)
+
     def test_get_audience(self):
         url = reverse('accounts_audience', kwargs={'account_id': 1, 'audience_id': 1})
         response = self.client.get(url)
@@ -114,14 +128,14 @@ class AudiencesTest(TestCase):
         response_dict = {
             "success": True,
             "data": {
-                "pixel_id": 1,
+                "pixel_id": "1",
                 "rules": [{
                     "type": 1,
-                    "id": 1,
+                    "id": "1",
                     "value": "test"
                 }],
                 "ttl": 90,
-                "id": 1,
+                "id": "1",
                 "name": "test audience 1"
             }
         }
@@ -142,21 +156,21 @@ class AudiencesTest(TestCase):
             "data": [{
                 "count": 1000,
                 "count_yesterday": 100,
-                "id": 1,
+                "id": "1",
                 "name": "test audience 1",
                 "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
                 "count": 1000,
                 "count_yesterday": 100,
-                "id": 2,
+                "id": "2",
                 "name": "test audience 2",
                 "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
                 "count": 1000,
                 "count_yesterday": 100,
-                "id": 4,
+                "id": "4",
                 "name": "test audience 4",
                 "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
@@ -182,28 +196,28 @@ class AudiencesTest(TestCase):
             "data": [{
                 "count": None,
                 "count_yesterday": None,
-                "id": 1,
+                "id": "1",
                 "name": "test audience 1",
                 "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
                 "count": None,
                 "count_yesterday": None,
-                "id": 2,
+                "id": "2",
                 "name": "test audience 2",
                 "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
                 "count": None,
                 "count_yesterday": None,
-                "id": 3,
+                "id": "3",
                 "name": "test audience 3",
                 "archived": True,
                 "created_dt": '2015-08-25T05:58:21'
             }, {
                 "count": None,
                 "count_yesterday": None,
-                "id": 4,
+                "id": "4",
                 "name": "test audience 4",
                 "archived": False,
                 "created_dt": '2015-08-25T05:58:21'
@@ -236,8 +250,9 @@ class AudiencesTest(TestCase):
         response_dict = {
             "success": True,
             "data": {
-                "pixel_id": 1,
+                "pixel_id": "1",
                 "rules": [{
+                    "id": "6",
                     "type": 2,
                     "value": "test"
                 }],
@@ -275,6 +290,63 @@ class AudiencesTest(TestCase):
         self.assertEqual(history[0].created_by_id, 1)
 
         actionlog_create_audience_mock.assert_called_with(audiences[0], mock.ANY)
+        redirector_upsert_audience_mock.assert_called_with(audiences[0])
+        k1_update_account_mock.assert_called_with(audiences[0].pixel.account_id)
+
+    @mock.patch('utils.k1_helper.update_account')
+    @mock.patch('utils.redirector_helper.upsert_audience')
+    def test_put(self, redirector_upsert_audience_mock, k1_update_account_mock):
+        # ttl should be ignored
+        data = {'name': 'New name', 'ttl': 30}
+        url = reverse('accounts_audience', kwargs={'account_id': 1, 'audience_id': 1})
+
+        response = self.client.put(
+            url,
+            json.dumps(data),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        response_dict = {
+            "success": True,
+            "data": {
+                "pixel_id": "1",
+                "rules": [{
+                    "id": "1",
+                    "type": 1,
+                    "value": "test"
+                }],
+                "ttl": 90,
+                "id": "1",
+                "name": "New name"
+            }
+        }
+        self.assertEqual(json.loads(response.content), response_dict)
+
+        audiences = models.Audience.objects.filter(pk=1)
+        self.assertEqual(audiences[0].name, 'New name')
+        self.assertEqual(audiences[0].pixel_id, 1)
+        self.assertEqual(audiences[0].archived, False)
+        self.assertEqual(audiences[0].ttl, 90)
+        self.assertEqual(audiences[0].created_by_id, 1)
+
+        rules = audiences[0].audiencerule_set.all()
+        self.assertEqual(len(rules), 1)
+        self.assertEqual(rules[0].audience_id, 1)
+        self.assertEqual(rules[0].type, constants.AudienceRuleType.STARTS_WITH)
+        self.assertEqual(rules[0].value, 'test')
+
+        history = models.History.objects.all()
+        self.assertEqual(len(history), 1)
+        self.assertEqual(history[0].agency, None)
+        self.assertEqual(history[0].account_id, 1)
+        self.assertEqual(history[0].campaign, None)
+        self.assertEqual(history[0].ad_group, None)
+        self.assertEqual(history[0].level, constants.HistoryLevel.ACCOUNT)
+        self.assertEqual(history[0].action_type, constants.HistoryActionType.AUDIENCE_UPDATE)
+        self.assertEqual(history[0].changes_text, 'Changed audience name from "test audience 1" to "New name".')
+        self.assertEqual(history[0].changes, None)
+        self.assertEqual(history[0].created_by_id, 1)
+
         redirector_upsert_audience_mock.assert_called_with(audiences[0])
         k1_update_account_mock.assert_called_with(audiences[0].pixel.account_id)
 

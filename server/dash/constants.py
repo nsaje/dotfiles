@@ -1647,6 +1647,7 @@ class HistoryActionType(ConstantBase):
     AUDIENCE_CREATE = 18
     AUDIENCE_ARCHIVE = 19
     AUDIENCE_RESTORE = 20
+    AUDIENCE_UPDATE = 22
     CONVERSION_PIXEL_OUTBRAIN_SYNC = 21
 
     _VALUES = {
@@ -1670,6 +1671,7 @@ class HistoryActionType(ConstantBase):
         AUDIENCE_CREATE: 'Create custom audience',
         AUDIENCE_ARCHIVE: 'Archive custom audience',
         AUDIENCE_RESTORE: 'Restore custom audience',
+        AUDIENCE_UPDATE: 'Update custom audience',
         CONVERSION_PIXEL_OUTBRAIN_SYNC: 'Sync Conversion Pixel to Outbrain',
     }
 

@@ -85,7 +85,7 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['api', 'z
     };
 
     vm.openAudienceModal = function (audienceId) {
-        $uibModal.open({
+        var modal = $uibModal.open({
             component: 'zemCustomAudiencesModal',
             windowClass: 'modal-default modal-wide',
             resolve: {
@@ -99,6 +99,10 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['api', 'z
                     return true;
                 }
             },
+        });
+
+        modal.result.then(function () {
+            vm.api.refreshAudiences();
         });
     };
 

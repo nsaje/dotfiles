@@ -1527,3 +1527,13 @@ class AudienceForm(forms.Form):
             raise forms.ValidationError('Pixel is archived.')
 
         return pixel_id
+
+
+class AudienceUpdateForm(forms.Form):
+    name = forms.CharField(
+        max_length=127,
+        error_messages={
+            'required': 'Please specify audience name.',
+            'max_length': 'Name is too long (max %(limit_value)d characters)',
+        }
+    )

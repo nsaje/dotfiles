@@ -47,6 +47,9 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
                     if (data.rows) {
                         vm.pixels = data.rows.filter(function (pixel) {
                             return !pixel.archived;
+                        }).map(function (pixel) {
+                            pixel.id = pixel.id.toString();
+                            return pixel;
                         });
                     }
                 },
@@ -102,7 +105,6 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
             }
 
             vm.putRequestInProgress = true;
-            var i = 0;
 
             var audience = {
                 name: vm.selectedName,
@@ -134,6 +136,27 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
             audience.rules = [{type: selectedRuleType, value: selectedRuleValue}];
 
             api.customAudiences.post(vm.accountId, audience).then(
+                function (data) {
+                    vm.modalInstance.close();
+                },
+                function (data) {
+                    vm.errors = data;
+                }
+            ).finally(function () {
+                vm.putRequestInProgress = false;
+            });
+        };
+
+        vm.updateAudience = function () {
+            if (vm.putRequestInProgress) {
+                return;
+            }
+
+            vm.putRequestInProgress = true;
+
+            var audience = {name: vm.selectedName};
+
+            api.customAudiences.put(vm.accountId, vm.audienceId, audience).then(
                 function (data) {
                     vm.modalInstance.close();
                 },

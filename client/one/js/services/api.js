@@ -2986,6 +2986,26 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
 
             return deferred.promise;
         };
+
+        this.put = function (accountId, audienceId, audience) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + accountId + '/audiences/' + audienceId + '/';
+
+            $http.put(url, audience).
+                success(function (data, status) {
+                    var resource = convertFromApi(data);
+                    deferred.resolve(resource);
+                }).
+                error(function (data, status) {
+                    var ret = null;
+                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
+                        ret = convertValidationErrorFromApi(data.data.errors);
+                    }
+                    deferred.reject(ret);
+                });
+
+            return deferred.promise;
+        };
     }
 
     function CustomAudiencesArchive () {

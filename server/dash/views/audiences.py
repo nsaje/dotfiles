@@ -44,7 +44,7 @@ class AudiencesView(api_common.BaseApiView):
 
         data = audience_form.cleaned_data
 
-        audience_id = None
+        audience = None
         with transaction.atomic():
             audience = models.Audience(
                 name=data['name'],
@@ -56,7 +56,6 @@ class AudiencesView(api_common.BaseApiView):
                 constants.HistoryActionType.AUDIENCE_CREATE,
                 u'Created audience "{}".'.format(audience.name)
             )
-            audience_id = audience.pk
 
             for rule in audience_form.cleaned_data['rules']:
                 value = rule['value'] or ''
@@ -75,10 +74,48 @@ class AudiencesView(api_common.BaseApiView):
 
         k1_helper.update_account(account_id)
 
-        response = {'id': str(audience_id)}
-        response.update(data)
+        response = self._get_response_dict(audience, [rule])
 
         return self.create_api_response(response)
+
+    def put(self, request, account_id, audience_id):
+        if not request.user.has_perm('zemauth.account_custom_audiences_view'):
+            raise exc.AuthorizationError()
+
+        account_id = int(account_id)
+        audience_id = int(audience_id)
+
+        account = helpers.get_account(request.user, account_id)
+
+        audiences = models.Audience.objects.filter(pk=audience_id).filter(pixel__account=account)
+        if not audiences:
+            raise exc.MissingDataError('Audience does not exist')
+        audience = audiences[0]
+
+        resource = json.loads(request.body)
+        audience_form = forms.AudienceUpdateForm(resource)
+        if not audience_form.is_valid():
+            raise exc.ValidationError(errors=dict(audience_form.errors))
+
+        data = audience_form.cleaned_data
+
+        old_name = audience.name
+        if audience.name != data['name']:
+            audience.name = data['name']
+
+            with transaction.atomic():
+                audience.save(
+                    request,
+                    constants.HistoryActionType.AUDIENCE_UPDATE,
+                    u'Changed audience name from "{}" to "{}".'.format(old_name, audience.name)
+                )
+                redirector_helper.upsert_audience(audience)
+
+            k1_helper.update_account(account_id)
+
+        rules = models.AudienceRule.objects.filter(audience=audience)
+
+        return self.create_api_response(self._get_response_dict(audience, rules))
 
     def _get_audience(self, request, account, audience_id):
         audiences = models.Audience.objects.filter(pk=audience_id).filter(pixel__account=account)
@@ -86,24 +123,9 @@ class AudiencesView(api_common.BaseApiView):
             raise exc.MissingDataError('Audience does not exist')
 
         audience = audiences[0]
-
         rules = models.AudienceRule.objects.filter(audience=audience)
-        rules_dicts = []
-        for rule in rules:
-            rules_dicts.append({
-                'id': rule.pk,
-                'type': rule.type,
-                'value': rule.value,
-            })
 
-        response = {
-            'id': audience.pk,
-            'name': audience.name,
-            'pixel_id': audience.pixel.pk,
-            'ttl': audience.ttl,
-            'rules': rules_dicts,
-        }
-        return self.create_api_response(response)
+        return self.create_api_response(self._get_response_dict(audience, rules))
 
     def _get_audiences(self, request, account):
         audiences = models.Audience.objects.filter(pixel__account=account).order_by('name')
@@ -124,7 +146,7 @@ class AudiencesView(api_common.BaseApiView):
                                                                     audience.audiencerule_set.all()) * 100
 
             rows.append({
-                'id': audience.pk,
+                'id': str(audience.pk),
                 'name': audience.name,
                 'count': count,
                 'count_yesterday': count_yesterday,
@@ -133,6 +155,28 @@ class AudiencesView(api_common.BaseApiView):
             })
 
         return self.create_api_response(rows)
+
+    def _get_response_dict(self, audience, rules):
+        if not audience or not rules:
+            return {}
+
+        rules_dicts = []
+        for rule in rules:
+            rules_dicts.append({
+                'id': str(rule.pk),
+                'type': rule.type,
+                'value': rule.value,
+            })
+
+        response = {
+            'id': str(audience.pk),
+            'name': audience.name,
+            'pixel_id': str(audience.pixel.pk),
+            'ttl': audience.ttl,
+            'rules': rules_dicts,
+        }
+
+        return response
 
 
 class AudienceArchive(api_common.BaseApiView):
