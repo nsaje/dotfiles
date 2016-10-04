@@ -1109,7 +1109,7 @@ class ConversionPixelTestCase(TestCase):
         }, decoded_response['data'])
 
         ping_mock.assert_called_once_with(1)
-        self.assertEqual(redirector_mock.call_count, 3)
+        self.assertEqual(redirector_mock.call_count, 4)
 
     def test_post_name_empty(self):
         pixels_before = list(models.ConversionPixel.objects.all())
@@ -1166,7 +1166,7 @@ class ConversionPixelTestCase(TestCase):
             hist.action_type)
         self.assertEqual('Archived conversion pixel named test.', hist.changes_text)
 
-        self.assertEqual(redirector_mock.call_count, 3)
+        self.assertEqual(redirector_mock.call_count, 4)
 
     @patch('utils.redirector_helper.upsert_audience')
     def test_put_name(self, redirector_mock):
@@ -1196,7 +1196,7 @@ class ConversionPixelTestCase(TestCase):
             hist.action_type)
         self.assertEqual('Renamed conversion pixel named test to New name.', hist.changes_text)
 
-        self.assertEqual(redirector_mock.call_count, 3)
+        self.assertEqual(redirector_mock.call_count, 4)
 
     @patch('utils.redirector_helper.upsert_audience')
     def test_put_archive_no_permissions(self, redirector_mock):
@@ -1221,7 +1221,7 @@ class ConversionPixelTestCase(TestCase):
             'outbrain_sync': False,
         }, decoded_response['data'])
 
-        self.assertEqual(redirector_mock.call_count, 3)
+        self.assertEqual(redirector_mock.call_count, 4)
 
     def test_put_invalid_pixel(self):
         conversion_pixel = models.ConversionPixel.objects.latest('id')
@@ -1285,7 +1285,7 @@ class ConversionPixelTestCase(TestCase):
     def test_update_outbrain_sync_pixel(self, redirector_mock):
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         agency.ConversionPixel()._update_outbrain_sync_pixel(conversion_pixel)
-        self.assertEqual(redirector_mock.call_count, 3)
+        self.assertEqual(redirector_mock.call_count, 4)
 
     @patch('utils.redirector_helper.upsert_audience')
     def test_update_outbrain_sync_pixel_with_new_pixie(self, redirector_mock):
@@ -1294,7 +1294,7 @@ class ConversionPixelTestCase(TestCase):
 
         source_type_pixie = models.SourceTypePixel.objects.get(pk=1)
         self.assertEqual(source_type_pixie.pixel, conversion_pixel)
-        self.assertEqual(redirector_mock.call_count, 3)
+        self.assertEqual(redirector_mock.call_count, 4)
 
 
 class UserActivationTest(TestCase):
