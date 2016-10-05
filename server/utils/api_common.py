@@ -12,6 +12,12 @@ logger = logging.getLogger(__name__)
 
 
 class BaseApiView(View):
+    passthrough = False
+
+    def __init__(self, passthrough=False, *args, **kwargs):
+        self.passthrough = passthrough
+        super(BaseApiView, self).__init__(*args, **kwargs)
+
     def log_error(self, request):
         logger.error('API exception', exc_info=True, extra={
             'data': {
@@ -32,6 +38,9 @@ class BaseApiView(View):
 
         if data:
             body['data'] = data
+
+        if self.passthrough:
+            return body, status_code
 
         response = HttpResponse(
             content=json.dumps(

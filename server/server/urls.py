@@ -1,10 +1,11 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
 import django.views.defaults
+import oauth2_provider.views
 
 from zemauth.forms import AuthenticationForm
 
@@ -61,6 +62,37 @@ urlpatterns = [
 
     url(r'^demo_mode$', dash.views.views.demo_mode)
 ]
+
+# Oauth2 provider
+oauth2_urlpatterns = [
+    url(r'^authorize/$', oauth2_provider.views.AuthorizationView.as_view(), name="authorize"),
+    url(r'^token/$', oauth2_provider.views.TokenView.as_view(), name="token"),
+    url(r'^revoke_token/$', oauth2_provider.views.RevokeTokenView.as_view(), name="revoke-token"),
+]
+
+oauth2_permission_wrap = permission_required('zemauth.can_manage_oauth2_apps', raise_exception=True)
+oauth2_urlpatterns += [
+    url(r'^applications/$', oauth2_permission_wrap(oauth2_provider.views.ApplicationList.as_view()), name="list"),
+    url(r'^applications/register/$', oauth2_permission_wrap(oauth2_provider.views.ApplicationRegistration.as_view()), name="register"),
+    url(r'^applications/(?P<pk>\d+)/$', oauth2_permission_wrap(oauth2_provider.views.ApplicationDetail.as_view()), name="detail"),
+    url(r'^applications/(?P<pk>\d+)/delete/$', oauth2_permission_wrap(oauth2_provider.views.ApplicationDelete.as_view()), name="delete"),
+    url(r'^applications/(?P<pk>\d+)/update/$', oauth2_permission_wrap(oauth2_provider.views.ApplicationUpdate.as_view()), name="update"),
+]
+
+oauth2_urlpatterns += [
+    url(r'^authorized_tokens/$', oauth2_permission_wrap(oauth2_provider.views.AuthorizedTokensListView.as_view()), name="authorized-token-list"),
+    url(r'^authorized_tokens/(?P<pk>\d+)/delete/$', oauth2_permission_wrap(oauth2_provider.views.AuthorizedTokenDeleteView.as_view()),
+        name="authorized-token-delete"),
+]
+urlpatterns += [
+    url(r'^o/', include(oauth2_urlpatterns, namespace='oauth2_provider')),
+]
+
+# IO API
+urlpatterns += [
+    url(r'^rest/v1/', include('restapi.urls')),
+]
+
 
 # Api
 urlpatterns += [

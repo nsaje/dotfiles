@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     'etl',
     'backtosql',
     'timezone_field',
+    'rest_framework',
+    'oauth2_provider',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -63,6 +65,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -122,6 +125,7 @@ AUTH_USER_MODEL = 'zemauth.User'
 
 AUTHENTICATION_BACKENDS = (
     'zemauth.backends.EmailOrUsernameModelBackend',
+    'zemauth.backends.OAuth2ZemauthBackend',
 )
 
 TEST_RUNNER = 'utils.test_runner.CustomRunner'
@@ -343,3 +347,12 @@ CONVERSION_PIXEL_PREFIX = 'https://p1.zemanta.com/p/'
 
 # User agent used when validating uploaded content ads URLs
 URL_VALIDATOR_USER_AGENT = 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)'
+
+OAUTH2_PROVIDER = {
+    # this is the list of available scopes
+    'SCOPES': {'read': 'Read scope', 'write': 'Write scope'}
+}
+
+REST_FRAMEWORK = {
+    'UNICODE_JSON': False,
+}

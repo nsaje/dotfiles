@@ -229,6 +229,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_additional_targeting', 'Can view additional targeting'),
             ('bulk_actions_on_all_levels', 'User can do bulk actions on all levels'),
             ('can_see_landing_mode_alerts', 'User can see landing mode alerts above tables'),
+            ('can_manage_oauth2_apps', 'User can manage OAuth2 applications'),
+            ('can_use_restapi', 'User can use the REST API'),
         )
 
     def get_full_name(self):
