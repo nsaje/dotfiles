@@ -31,7 +31,7 @@ class BlacklistException(Exception):
 
 
 def update(ad_group, constraints, status, domains, everywhere=False,
-           all_sources=False, request=None):
+           all_sources=False, all_b1_sources=False, request=None):
     external_map = dict(domains)
     domain_names = external_map.keys()
     if everywhere:
@@ -43,7 +43,10 @@ def update(ad_group, constraints, status, domains, everywhere=False,
             ', '.join(ALLOWED_LEVEL_CONSTRAINTS)
         ))
     with transaction.atomic():
-        if all_sources:
+        if all_b1_sources:
+            constraints['source'] = None
+            _handle_all(constraints, status, domain_names, external_map, ad_group=ad_group)
+        elif all_sources:
             for source in _get_sources(constraints['ad_group']):
                 source_constraints = {'source': source}
                 source_constraints.update(constraints)
@@ -69,20 +72,8 @@ def _get_sources(ad_group):
     ])
 
 
-def _update_source(constraints, status, domain_names, external_map, request=None, ad_group=None):
-    source = constraints['source']
-
-    if not source.can_modify_publisher_blacklist_automatically():
-        return
-
-    if source.source_type.type == dash.constants.SourceType.OUTBRAIN:
-        try:
-            _handle_outbrain(source, constraints, status, domain_names, external_map,
-                             request, ad_group)
-        except BlacklistException:
-            logger.exception('Blacklist exception when using constraints: %s', str(constraints))
-            return
-
+def _handle_all(constraints, status, domain_names, external_map, request=None,
+                ad_group=None):
     if status == dash.constants.PublisherStatus.ENABLED:
         globally_blacklisted = _get_globally_blacklisted_publishers_list()
         dash.models.PublisherBlacklist.objects.filter(
@@ -105,6 +96,22 @@ def _update_source(constraints, status, domain_names, external_map, request=None
             external_id=external_map.get(domain),
             **constraints
         )
+
+
+def _update_source(constraints, status, domain_names, external_map, request=None, ad_group=None):
+    source = constraints['source']
+
+    if not source.can_modify_publisher_blacklist_automatically():
+        return
+
+    if source.source_type.type == dash.constants.SourceType.OUTBRAIN:
+        try:
+            _handle_outbrain(source, constraints, status, domain_names, external_map,
+                             request, ad_group)
+        except BlacklistException:
+            logger.exception('Blacklist exception when using constraints: %s', str(constraints))
+            return
+    _handle_all(constraints, status, domain_names, external_map, request=request, ad_group=ad_group)
 
 
 def _get_globally_blacklisted_publishers_list(**constraints):

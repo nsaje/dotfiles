@@ -325,6 +325,21 @@ class BlacklistTestCase(TestCase):
         )
         mock_k1_ping.assert_called_with(1, msg='blacklist.update')
 
+    @patch('utils.k1_helper.update_blacklist')
+    def test_ad_group_blacklist_all_b1_sources(self, mock_k1_ping):
+        dash.blacklist.update(self.ad_group, {'ad_group': self.ad_group}, BLACKLISTED, self.domains,
+                              all_b1_sources=True)
+        self.assertEqual(
+            set(dash.models.PublisherBlacklist.objects.all().values_list('source', 'name')),
+            set([
+                (None, u'www.google.com'),
+                (None, u'www.zemanta.com'),
+                (None, u'www.zemanata.com'),
+                (None, u'www.donaldjtrump.com'),
+            ])
+        )
+        mock_k1_ping.assert_called_with(1, msg='blacklist.update')
+
     def test_ad_group_blacklist_wrong_constrains(self):
         with self.assertRaises(Exception) as msg1:
             dash.blacklist.update(self.ad_group,
