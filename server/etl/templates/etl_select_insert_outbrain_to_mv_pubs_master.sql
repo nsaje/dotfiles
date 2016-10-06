@@ -18,7 +18,7 @@ INSERT INTO mv_pubs_master(
       null as gender,
       null as age_gender,
 
-      0 as impressions,
+      null as impressions,
       a.clicks as clicks,
       a.clicks::bigint * ad_cpc.cpc * 1000 as cost_nano,
       0 as data_cost_nano,
