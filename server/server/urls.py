@@ -93,6 +93,10 @@ urlpatterns += [
     url(r'^rest/v1/', include('restapi.urls')),
 ]
 
+# Bizwire API
+urlpatterns += [
+    url(r'^', include('bizwire.urls')),
+]
 
 # Api
 urlpatterns += [

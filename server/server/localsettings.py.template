@@ -220,3 +220,6 @@ GA_CLIENT_EMAIL = Secret('').get()
 
 # ID of Outbrain source type from DB.
 OUTBRAIN_SOURCE_TYPE_ID = 0
+
+# bizwire
+BIZWIRE_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()

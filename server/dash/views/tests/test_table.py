@@ -2513,7 +2513,8 @@ class AccountsAccountsTableTest(TestCase):
 
         view_filter = helpers.ViewFilter(request=r)
         response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
-        self.assertEqual('Sandbox', response['rows'][0]['account_type'])
+        response_account_type = response['rows'][0].get('account_type', response['rows'][1].get('account_type'))
+        self.assertEqual('Sandbox', response_account_type)
 
         view_filter.filtered_account_types = [constants.AccountType.SELF_MANAGED]
         response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
