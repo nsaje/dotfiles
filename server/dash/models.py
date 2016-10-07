@@ -2191,6 +2191,9 @@ class AdGroupSettings(SettingsBase):
         'autopilot_state',
         'autopilot_daily_budget',
         'landing_mode',
+        'b1_sources_group_enabled',
+        'b1_sources_group_daily_budget',
+        'b1_sources_group_state'
     ]
     history_fields = list(_settings_fields)
 
@@ -2260,6 +2263,19 @@ class AdGroupSettings(SettingsBase):
     landing_mode = models.BooleanField(default=False)
 
     changes_text = models.TextField(blank=True, null=True)
+
+    # MVP for all-RTB-sources-as-one
+    b1_sources_group_enabled = models.BooleanField(default=False)
+    b1_sources_group_daily_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        verbose_name='Bidder\'s Daily Budget',
+        default=0
+    )
+    b1_sources_group_state = models.IntegerField(
+        default=constants.AdGroupSourceSettingsState.INACTIVE,
+        choices=constants.AdGroupSourceSettingsState.get_choices()
+    )
 
     class Meta:
         ordering = ('-created_dt',)

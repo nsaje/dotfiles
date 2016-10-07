@@ -68,6 +68,9 @@ class AdGroupSettingsTest(TestCase):
             'autopilot_daily_budget': Decimal('0.0000'),
             'autopilot_state': 2,
             'landing_mode': False,
+            'b1_sources_group_enabled': False,
+            'b1_sources_group_daily_budget': Decimal('0'),
+            'b1_sources_group_state': constants.AdGroupSourceSettingsState.INACTIVE
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
