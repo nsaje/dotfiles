@@ -204,7 +204,7 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
         unselectable: true,
         help: 'A setting for enabling and pausing content ads.',
         onChange: function (contentAdId, state) {
-            api.adGroupContentAdState.save($state.params.id, state, [contentAdId]).then(
+            api.bulkActions.state($scope.grid.level, $scope.grid.breakdown, $state.params.id, {'selectedIds': [contentAdId]}, state).then(
                 function () {
                     $scope.pollTableUpdates();
                 }
@@ -539,13 +539,17 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
     var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {
         updateContentAdStates(state);
 
-        api.adGroupContentAdState.save(
+        api.bulkActions.state(
+            $scope.grid.level,
+            $scope.grid.breakdown,
             $state.params.id,
-            state,
-            contentAdIdsSelected,
-            contentAdIdsNotSelected,
-            $scope.selectedAll,
-            $scope.selectedBatchId
+            {
+                'selectedIds': contentAdIdsSelected,
+                'unselectedIds': contentAdIdsNotSelected,
+                'filterAll': $scope.selectedAll,
+                'filterId': $scope.selectedBatchId,
+            },
+            state
         ).then(function () {
             $scope.pollTableUpdates();
         });
@@ -627,20 +631,30 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
             downloadContentAds(contentAdIdsSelected, contentAdIdsNotSelected);
             break;
         case 'archive':
-            api.adGroupContentAdArchive.archive(
-                    $state.params.id,
-                    contentAdIdsSelected,
-                    contentAdIdsNotSelected,
-                    $scope.selectedAll,
-                    $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
+            api.bulkActions.archive(
+                $scope.grid.level,
+                $scope.grid.breakdown,
+                $state.params.id,
+                {
+                    'selectedIds': contentAdIdsSelected,
+                    'unselectedIds': contentAdIdsNotSelected,
+                    'filterAll': $scope.selectedAll,
+                    'filterId': $scope.selectedBatchId,
+                }
+            ).then($scope.updateTableAfterArchiving);
             break;
         case 'restore':
-            api.adGroupContentAdArchive.restore(
-                    $state.params.id,
-                    contentAdIdsSelected,
-                    contentAdIdsNotSelected,
-                    $scope.selectedAll,
-                    $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
+            api.bulkActions.restore(
+                $scope.grid.level,
+                $scope.grid.breakdown,
+                $state.params.id,
+                {
+                    'selectedIds': contentAdIdsSelected,
+                    'unselectedIds': contentAdIdsNotSelected,
+                    'filterAll': $scope.selectedAll,
+                    'filterId': $scope.selectedBatchId,
+                }
+            ).then($scope.updateTableAfterArchiving);
             break;
         }
     };
