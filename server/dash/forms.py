@@ -79,8 +79,10 @@ class AdGroupAdminForm(forms.ModelForm):
         'redirect_pixel_urls',
         'redirect_javascript'
     ]
-    notes = forms.CharField(required=False, widget=forms.Textarea, help_text='Describe what kind of additional targeting was setup on the backend.')
-    bluekai_targeting = postgres_forms.JSONField(required=False, help_text='Example: ["and", "bluekai:446103", ["not", ["or", "bluekai:510120", "bluekai:510122"]]]')
+    notes = forms.CharField(required=False, widget=forms.Textarea,
+                            help_text='Describe what kind of additional targeting was setup on the backend.')
+    bluekai_targeting = postgres_forms.JSONField(
+        required=False, help_text='Example: ["and", "bluekai:446103", ["not", ["or", "bluekai:510120", "bluekai:510122"]]]')
     interest_targeting = forms.MultipleChoiceField(
         required=False,
         choices=constants.InterestCategory.get_choices(),
@@ -102,11 +104,13 @@ class AdGroupAdminForm(forms.ModelForm):
         widget=forms.Textarea,
         help_text='Put every entry in a separate line. Example: https://www.facebook.com/tr?id=531027177051024&ev=PageView&noscript=1.'
     )
-    redirect_javascript = forms.CharField(required=False, widget=forms.Textarea, help_text='Example: <span style="width:600px; display:block">%s</span>' % strip_tags(REDIRECT_JS_HELP_TEXT))
+    redirect_javascript = forms.CharField(required=False, widget=forms.Textarea,
+                                          help_text='Example: <span style="width:600px; display:block">%s</span>' % strip_tags(REDIRECT_JS_HELP_TEXT))
 
     def __init__(self, *args, **kwargs):
         initial = kwargs.get('initial', {})
-        initial['bluekai_targeting'] = []  # default to empty list instead of null
+        # default to empty list instead of null
+        initial['bluekai_targeting'] = []
         if 'instance' in kwargs:
             settings = kwargs['instance'].get_current_settings()
             for field in self.SETTINGS_FIELDS:
@@ -242,13 +246,16 @@ class AdGroupSettingsForm(forms.Form):
 
         if end_date:
             if start_date and end_date < start_date:
-                raise forms.ValidationError('End date must not occur before start date.')
+                raise forms.ValidationError(
+                    'End date must not occur before start date.')
 
             if end_date < dates_helper.local_today() and state == constants.AdGroupSettingsState.ACTIVE:
-                raise forms.ValidationError('End date cannot be set in the past.')
+                raise forms.ValidationError(
+                    'End date cannot be set in the past.')
 
         if self.current_settings.landing_mode:
-            raise forms.ValidationError('End date cannot be set when campaign is in landing mode.')
+            raise forms.ValidationError(
+                'End date cannot be set when campaign is in landing mode.')
 
         return end_date
 
@@ -259,7 +266,8 @@ class AdGroupSettingsForm(forms.Form):
 
         if tracking_code:
             # This is a bit of a hack we're doing here but if we don't prepend 'http:' to
-            # the provided tracking code, then rfc3987 doesn't know how to parse it.
+            # the provided tracking code, then rfc3987 doesn't know how to
+            # parse it.
             if not tracking_code.startswith('?'):
                 tracking_code = '?' + tracking_code
 
@@ -279,7 +287,8 @@ class AdGroupSettingsForm(forms.Form):
         target_regions = self.cleaned_data.get('target_regions')
 
         if 'US' in target_regions and any([tr in regions.DMA_BY_CODE for tr in target_regions]):
-            raise forms.ValidationError('DMAs are a subset of United States demographic targeting.')
+            raise forms.ValidationError(
+                'DMAs are a subset of United States demographic targeting.')
 
         return target_regions
 
@@ -291,7 +300,8 @@ class AdGroupSettingsForm(forms.Form):
         budget = self.cleaned_data.get('autopilot_daily_budget', 0)
         ap_state = self.cleaned_data.get('autopilot_state')
         budget_ap_is_active = ap_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        budget_insufficient = budget < autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)
+        budget_insufficient = budget < autopilot_budgets.get_adgroup_minimum_daily_budget(
+            self.ad_group)
         if budget_ap_is_active and budget_insufficient:
             raise forms.ValidationError(
                 message='Total Daily Budget must be at least $' +
@@ -315,7 +325,8 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
 
     def clean_cpc_cc(self):
         cpc_cc = self.cleaned_data.get('cpc_cc')
-        validation_helpers.validate_ad_group_source_cpc_cc(cpc_cc, self.ad_group_source)
+        validation_helpers.validate_ad_group_source_cpc_cc(
+            cpc_cc, self.ad_group_source)
 
 
 class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
@@ -328,13 +339,15 @@ class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.ad_group_source = kwargs.pop('ad_group_source')
-        super(AdGroupSourceSettingsDailyBudgetForm, self).__init__(*args, **kwargs)
+        super(AdGroupSourceSettingsDailyBudgetForm,
+              self).__init__(*args, **kwargs)
 
     def clean_daily_budget_cc(self):
         daily_budget_cc = self.cleaned_data.get('daily_budget_cc')
         source_type = self.ad_group_source.source.source_type
 
-        validation_helpers.validate_daily_budget_cc(daily_budget_cc, source_type)
+        validation_helpers.validate_daily_budget_cc(
+            daily_budget_cc, source_type)
 
 
 class AdGroupSourceSettingsStateForm(forms.Form):
@@ -397,7 +410,8 @@ class AccountSettingsForm(forms.Form):
         return account_manager
 
     def clean_default_sales_representative(self):
-        sales_representative_id = self.cleaned_data.get('default_sales_representative')
+        sales_representative_id = self.cleaned_data.get(
+            'default_sales_representative')
 
         if sales_representative_id is None:
             return None
@@ -448,7 +462,8 @@ class AccountSettingsForm(forms.Form):
                 raise err
 
             allowed = v.get('allowed', False)
-            allowed_sources[key] = {'allowed': allowed, 'name': v.get('name', '')}
+            allowed_sources[key] = {
+                'allowed': allowed, 'name': v.get('name', '')}
 
         return allowed_sources
 
@@ -517,14 +532,16 @@ class ConversionGoalForm(forms.Form):
 
         pixel = None
         try:
-            pixel = models.ConversionPixel.objects.get(pk=cleaned_data['goal_id'])
+            pixel = models.ConversionPixel.objects.get(
+                pk=cleaned_data['goal_id'])
         except models.ConversionPixel.DoesNotExist:
             self.add_error('goal_id', 'Pixel does not exist.')
 
         if conversion_window and pixel:
             cleaned_data['name'] = '{} - {}'.format(
                 pixel.name,
-                constants.ConversionWindows.get_text(cleaned_data['conversion_window'])
+                constants.ConversionWindows.get_text(
+                    cleaned_data['conversion_window'])
             )
 
     def _clean_non_pixel_goal(self, cleaned_data):
@@ -554,7 +571,8 @@ class CampaignGoalForm(forms.Form):
         primary = self.cleaned_data.get('primary')
         if not primary:
             return False
-        goals = models.CampaignGoal.objects.filter(campaign_id=self.campaign_id, primary=True)
+        goals = models.CampaignGoal.objects.filter(
+            campaign_id=self.campaign_id, primary=True)
         if self.id:
             goals.exclude(pk=self.id)
         if goals.count():
@@ -564,18 +582,22 @@ class CampaignGoalForm(forms.Form):
     def clean_type(self):
         goal_type = self.cleaned_data['type']
         if goal_type == constants.CampaignGoalKPI.CPA:
-            goals = models.CampaignGoal.objects.filter(campaign_id=self.campaign_id, type=goal_type)
+            goals = models.CampaignGoal.objects.filter(
+                campaign_id=self.campaign_id, type=goal_type)
             if self.id:
                 goals.exclude(pk=self.id)
             if goals.count() > constants.MAX_CONVERSION_GOALS_PER_CAMPAIGN:
-                raise forms.ValidationError('Max conversion goals per campaign exceeded')
+                raise forms.ValidationError(
+                    'Max conversion goals per campaign exceeded')
             return goal_type
 
-        goals = models.CampaignGoal.objects.filter(campaign_id=self.campaign_id, type=goal_type)
+        goals = models.CampaignGoal.objects.filter(
+            campaign_id=self.campaign_id, type=goal_type)
         if self.id:
             goals.exclude(pk=self.id)
         if goals.count():
-            raise forms.ValidationError('Multiple goals of the same type not allowed')
+            raise forms.ValidationError(
+                'Multiple goals of the same type not allowed')
         return goal_type
 
 
@@ -590,7 +612,8 @@ class CampaignAdminForm(forms.ModelForm):
         if 'instance' in kwargs:
             settings = kwargs['instance'].get_current_settings()
             initial['automatic_campaign_stop'] = settings.automatic_campaign_stop
-        super(CampaignAdminForm, self).__init__(initial=initial, *args, **kwargs)
+        super(CampaignAdminForm, self).__init__(
+            initial=initial, *args, **kwargs)
 
     class Meta:
         model = models.Campaign
@@ -708,7 +731,8 @@ EXPRESSIVE_FIELD_NAME_MAPPING = {
     'primary_impression_tracker_url': 'primary_tracker_url',
     'secondary_impression_tracker_url': 'secondary_tracker_url',
 }
-INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING = {v: k for k, v in EXPRESSIVE_FIELD_NAME_MAPPING.iteritems()}
+INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING = {
+    v: k for k, v in EXPRESSIVE_FIELD_NAME_MAPPING.iteritems()}
 
 # Example CSV content - must be ignored if mistakenly uploaded
 # Example File is served by client (Zemanta_Content_Ads_Template.csv)
@@ -761,7 +785,8 @@ class AdGroupAdsUploadBaseForm(forms.Form):
     )
 
 
-EXCEL_MIMETYPES = ('application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+EXCEL_MIMETYPES = ('application/vnd.ms-excel',
+                   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
@@ -772,30 +797,37 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
     def _get_column_names(self, header):
         # this function maps original CSV column names to internal, normalized
         # ones that are then used across the application
-        column_names = [col.strip(" _").lower().replace(' ', '_') for col in header]
+        column_names = [col.strip(" _").lower().replace(' ', '_')
+                        for col in header]
 
         if len(column_names) < 1 or column_names[0] != 'url':
-            raise forms.ValidationError('First column in header should be URL.')
+            raise forms.ValidationError(
+                'First column in header should be URL.')
 
         if len(column_names) < 2 or column_names[1] != 'title':
-            raise forms.ValidationError('Second column in header should be Title.')
+            raise forms.ValidationError(
+                'Second column in header should be Title.')
 
         if len(column_names) < 3 or column_names[2] != 'image_url':
-            raise forms.ValidationError('Third column in header should be Image URL.')
+            raise forms.ValidationError(
+                'Third column in header should be Image URL.')
 
         for n, field in enumerate(column_names):
             # We accept "(optional)" in the names of optional columns.
             # That's how those columns are presented in our csv template (that user can download)
-            # If the user downloads the template, fills it in and uploades, it immediately works.
+            # If the user downloads the template, fills it in and uploades, it
+            # immediately works.
             field = re.sub("_*\(optional\)", "", field)
             field = EXPRESSIVE_FIELD_NAME_MAPPING.get(field, field)
             if n >= 3 and field not in OPTIONAL_CSV_FIELDS and field not in IGNORED_CSV_FIELDS:
-                raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
+                raise forms.ValidationError(
+                    'Unrecognized column name "{0}".'.format(header[n]))
             column_names[n] = field
 
         # Make sure each column_name appears only once
         for column_name, count in Counter(column_names).iteritems():
-            expr_column_name = INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING.get(column_name, column_name)
+            expr_column_name = INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING.get(
+                column_name, column_name)
             formatted_name = expr_column_name.replace('_', ' ').capitalize()
             if count > 1:
                 raise forms.ValidationError(
@@ -837,7 +869,8 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
 
                 break
             except unicodecsv.Error:
-                raise forms.ValidationError('Uploaded file is not a valid CSV file.')
+                raise forms.ValidationError(
+                    'Uploaded file is not a valid CSV file.')
             except UnicodeDecodeError:
                 pass
 
@@ -884,13 +917,15 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
         column_names = self._get_column_names(rows[0])
 
         data = (dict(zip(column_names, row)) for row in rows[1:])
-        data = [self._remove_unnecessary_fields(row) for row in data if not self._is_example_row(row)]
+        data = [self._remove_unnecessary_fields(
+            row) for row in data if not self._is_example_row(row)]
 
         if len(data) < 1:
             raise forms.ValidationError('Uploaded file is empty.')
 
         if len(data) > MAX_ADS_PER_UPLOAD:
-            raise forms.ValidationError('Too many content ads (max. {})'.format(MAX_ADS_PER_UPLOAD))
+            raise forms.ValidationError(
+                'Too many content ads (max. {})'.format(MAX_ADS_PER_UPLOAD))
 
         return data
 
@@ -902,14 +937,16 @@ class CreditLineItemForm(forms.ModelForm):
         if not self.instance.pk or start_date != self.instance.start_date:
             today = dates_helper.local_today()
             if start_date < today:
-                raise forms.ValidationError('Start date has to be in the future.')
+                raise forms.ValidationError(
+                    'Start date has to be in the future.')
         return start_date
 
     def clean_end_date(self):
         end_date = self.cleaned_data['end_date']
         today = dates_helper.local_today()
         if end_date < today:
-            raise forms.ValidationError('End date has to be greater or equal to today.')
+            raise forms.ValidationError(
+                'End date has to be greater or equal to today.')
         return end_date
 
     def save(self, commit=True, request=None, action_type=None):
@@ -926,7 +963,8 @@ class CreditLineItemForm(forms.ModelForm):
 
 
 class BudgetLineItemForm(forms.ModelForm):
-    credit = forms.ModelChoiceField(queryset=models.CreditLineItem.objects.all())
+    credit = forms.ModelChoiceField(
+        queryset=models.CreditLineItem.objects.all())
     margin = forms.DecimalField(
         decimal_places=4,
         max_digits=5,
@@ -938,15 +976,17 @@ class BudgetLineItemForm(forms.ModelForm):
         if not self.instance.pk or start_date != self.instance.start_date:
             today = dates_helper.local_today()
             if start_date < today:
-                raise forms.ValidationError('Start date has to be in the future.')
+                raise forms.ValidationError(
+                    'Start date has to be in the future.')
         return start_date
 
     def clean_end_date(self):
         end_date = self.cleaned_data['end_date']
-        if not self.instance.pk:
+        if self.instance.pk or end_date != self.instance.end_date:
             today = dates_helper.local_today()
             if end_date < today:
-                raise forms.ValidationError('End date has to be in the future.')
+                raise forms.ValidationError(
+                    'End date has to be in the future.')
         return end_date
 
     def save(self, commit=True, request=None, action_type=None):
@@ -1071,25 +1111,30 @@ class PublisherBlacklistForm(forms.ModelForm):
 
     class Meta:
         model = models.PublisherBlacklist
-        exclude = ['everywhere', 'account', 'campaign', 'ad_group', 'source', 'status']
+        exclude = ['everywhere', 'account',
+                   'campaign', 'ad_group', 'source', 'status']
 
 
 class CreditLineItemAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CreditLineItemAdminForm, self).__init__(*args, **kwargs)
-        # archived state is stored in settings, we need to have a more stupid query
+        # archived state is stored in settings, we need to have a more stupid
+        # query
         not_archived = [
             a.pk for a in models.Account.objects.all() if not a.is_archived()
         ]
         # workaround to not change model __unicode__ methods
-        self.fields['account'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
+        self.fields[
+            'account'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
         self.fields['account'].queryset = models.Account.objects.filter(
             pk__in=not_archived
         ).order_by('id')
 
-        self.fields['agency'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
-        self.fields['agency'].queryset = models.Agency.objects.all().order_by('id')
+        self.fields[
+            'agency'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
+        self.fields[
+            'agency'].queryset = models.Agency.objects.all().order_by('id')
 
     class Meta:
         model = models.CreditLineItem
@@ -1102,7 +1147,8 @@ class BudgetLineItemAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BudgetLineItemAdminForm, self).__init__(*args, **kwargs)
-        # archived state is stored in settings, we need to have a more stupid query
+        # archived state is stored in settings, we need to have a more stupid
+        # query
         not_archived = set([
             c.id for c in models.Campaign.objects.all() if not c.is_archived()
         ])
@@ -1111,7 +1157,8 @@ class BudgetLineItemAdminForm(forms.ModelForm):
 
         # workaround to not change model __unicode__ methods
 
-        self.fields['campaign'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
+        self.fields[
+            'campaign'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
         self.fields['campaign'].queryset = models.Campaign.objects.filter(
             pk__in=not_archived
         ).order_by('id')
@@ -1122,7 +1169,8 @@ class BudgetLineItemAdminForm(forms.ModelForm):
 
     class Meta:
         model = models.BudgetLineItem
-        fields = ['campaign', 'credit', 'start_date', 'end_date', 'amount', 'comment']
+        fields = ['campaign', 'credit', 'start_date',
+                  'end_date', 'amount', 'comment']
 
 
 class BreakdownForm(forms.Form):
@@ -1163,7 +1211,8 @@ class BreakdownForm(forms.Form):
 
     filtered_sources = TypedMultipleAnyChoiceField(required=False, coerce=str)
     filtered_agencies = TypedMultipleAnyChoiceField(required=False, coerce=str)
-    filtered_account_types = TypedMultipleAnyChoiceField(required=False, coerce=str)
+    filtered_account_types = TypedMultipleAnyChoiceField(
+        required=False, coerce=str)
 
     order = forms.CharField(required=False)
 
@@ -1347,7 +1396,8 @@ class ContentAdForm(ContentAdCandidateForm):
     def _validate_tracker_url(self, url):
         validate_url = validators.URLValidator(schemes=['https'])
         if url.lower().startswith('http://'):
-            raise forms.ValidationError('Impression tracker URLs have to be HTTPS')
+            raise forms.ValidationError(
+                'Impression tracker URLs have to be HTTPS')
         try:
             # URL is considered invalid if it contains any unicode chars
             url = url.encode('ascii')
@@ -1392,7 +1442,8 @@ class ContentAdForm(ContentAdCandidateForm):
         if image_crop.lower() in constants.ImageCrop.get_all():
             return image_crop.lower()
 
-        raise forms.ValidationError('Image crop {} is not supported'.format(image_crop))
+        raise forms.ValidationError(
+            'Image crop {} is not supported'.format(image_crop))
 
     def _get_image_error_msg(self, cleaned_data):
         image_status = cleaned_data['image_status']
@@ -1468,12 +1519,14 @@ class AudienceRuleForm(forms.Form):
         rule_type = self.cleaned_data.get('type')
 
         if not value and rule_type != str(constants.AudienceRuleType.VISIT):
-            raise forms.ValidationError('Please enter conditions for the audience.')
+            raise forms.ValidationError(
+                'Please enter conditions for the audience.')
 
         return value
 
 
 class AudienceRulesField(forms.Field):
+
     def clean(self, rules):
         if not rules:
             raise forms.ValidationError(self.error_messages['required'])
@@ -1518,7 +1571,8 @@ class AudienceForm(forms.Form):
 
     def clean_pixel_id(self):
         pixel_id = self.cleaned_data.get('pixel_id')
-        pixel = models.ConversionPixel.objects.filter(pk=pixel_id, account=self.account)
+        pixel = models.ConversionPixel.objects.filter(
+            pk=pixel_id, account=self.account)
         if not pixel:
             raise forms.ValidationError('Pixel does not exist.')
 

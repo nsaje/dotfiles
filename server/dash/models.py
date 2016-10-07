@@ -164,7 +164,8 @@ class DemoManager(models.Manager):
         else:
             assert queryset.model is AdGroup
             queryset = queryset.filter(
-                id__in=(d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
+                id__in=(
+                    d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
             )
         return queryset
 
@@ -202,7 +203,8 @@ class FootprintModel(models.Model):
     def _footprint(self):
         self._orig = {}
         for f in self._meta.fields:
-            self._orig[f.name] = getattr(self, self._get_value_fieldname(f.name))
+            self._orig[f.name] = getattr(
+                self, self._get_value_fieldname(f.name))
 
     def save(self, *args, **kwargs):
         super(FootprintModel, self).save(*args, **kwargs)
@@ -221,7 +223,8 @@ class HistoryMixin(object):
         # or does it have a previous object from which it potentially
         # differs in some settings
         self.post_init_newly_created = self.id is None
-        # from this point on, create a snapshot when the first attribute is changed
+        # from this point on, create a snapshot when the first attribute is
+        # changed
         self._snapshot_on_setattr = True
 
     def __setattr__(self, name, value):
@@ -274,12 +277,14 @@ class HistoryMixin(object):
             if not prop:
                 continue
             val = self.get_human_value(key, value)
-            change_strings.append(self._extract_value_diff_text(key, prop, val))
+            change_strings.append(
+                self._extract_value_diff_text(key, prop, val))
         return separator.join(change_strings)
 
     def _extract_value_diff_text(self, key, prop, val):
         previous_value = None
-        previous_value_raw = self.snapshotted_state.get(key) if self.snapshotted_state else None
+        previous_value_raw = self.snapshotted_state.get(
+            key) if self.snapshotted_state else None
         if previous_value_raw:
             previous_value = self.get_human_value(key, previous_value_raw)
 
@@ -294,7 +299,8 @@ class HistoryMixin(object):
         statements = []
         if not changes or self.post_init_newly_created and changes:
             statements.append('Created settings')
-        changes_text = self.get_history_changes_text(changes, separator=separator)
+        changes_text = self.get_history_changes_text(
+            changes, separator=separator)
         if changes_text:
             statements.append(changes_text)
         return '. '.join(statements)
@@ -319,7 +325,8 @@ class HistoryMixin(object):
 
 class HistoryModel(models.Model):
     snapshot = jsonfield.JSONField(blank=False, null=False)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
                                    related_name='+', on_delete=models.PROTECT)
 
@@ -334,8 +341,10 @@ class OutbrainAccount(models.Model):
     marketer_id = models.CharField(blank=False, null=False, max_length=255)
     marketer_name = models.CharField(blank=True, null=True, max_length=255)
     used = models.BooleanField(default=False)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
 
 
 class Agency(models.Model):
@@ -355,9 +364,12 @@ class Agency(models.Model):
         on_delete=models.PROTECT
     )
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     default_account_type = models.IntegerField(
         default=constants.AccountType.UNKNOWN,
         choices=constants.AccountType.get_choices()
@@ -418,11 +430,14 @@ class Account(models.Model):
         blank=False,
         null=False
     )
-    agency = models.ForeignKey(Agency, on_delete=models.PROTECT, null=True, blank=True)
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, null=True, blank=True)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     groups = models.ManyToManyField(auth_models.Group)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
                                     related_name='+', on_delete=models.PROTECT)
 
@@ -430,7 +445,8 @@ class Account(models.Model):
     demo_objects = DemoManager()
     allowed_sources = models.ManyToManyField('Source')
 
-    outbrain_marketer_id = models.CharField(null=True, blank=True, max_length=255)
+    outbrain_marketer_id = models.CharField(
+        null=True, blank=True, max_length=255)
 
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
 
@@ -438,7 +454,8 @@ class Account(models.Model):
         ordering = ('-created_dt',)
 
         permissions = (
-            ('group_account_automatically_add', 'All new accounts are automatically added to group.'),
+            ('group_account_automatically_add',
+             'All new accounts are automatically added to group.'),
         )
 
     def __unicode__(self):
@@ -500,7 +517,8 @@ class Account(models.Model):
 
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
-            new_settings.save(request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
+            new_settings.save(
+                request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     @transaction.atomic
     def restore(self, request):
@@ -513,7 +531,8 @@ class Account(models.Model):
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
-            new_settings.save(request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
+            new_settings.save(
+                request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     def admin_link(self):
         if self.id:
@@ -526,7 +545,8 @@ class Account(models.Model):
         account_settings_url = request.build_absolute_uri(
             reverse('admin:dash_account_change', args=(self.pk,))
         )
-        campaign_settings_url = account_settings_url.replace('http://', 'https://')
+        campaign_settings_url = account_settings_url.replace(
+            'http://', 'https://')
         return campaign_settings_url
 
     def write_history(self, changes_text, changes=None,
@@ -631,9 +651,12 @@ class Campaign(models.Model, PermissionMixin):
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL)
     groups = models.ManyToManyField(auth_models.Group)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True)
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True)
 
     USERS_FIELD = 'users'
 
@@ -653,7 +676,8 @@ class Campaign(models.Model, PermissionMixin):
         campaign_settings_url = request.build_absolute_uri(
             reverse('admin:dash_campaign_change', args=(self.pk,))
         )
-        campaign_settings_url = campaign_settings_url.replace('http://', 'https://')
+        campaign_settings_url = campaign_settings_url.replace(
+            'http://', 'https://')
         return campaign_settings_url
 
     def get_long_name(self):
@@ -674,7 +698,8 @@ class Campaign(models.Model, PermissionMixin):
             filter(campaign_id=self.pk).\
             order_by('-created_dt').first()
         if not settings:
-            settings = CampaignSettings(campaign=self, **CampaignSettings.get_defaults_dict())
+            settings = CampaignSettings(
+                campaign=self, **CampaignSettings.get_defaults_dict())
 
         return settings
 
@@ -915,7 +940,8 @@ class AccountSettings(SettingsBase):
     history_fields = list(_settings_fields)
 
     id = models.AutoField(primary_key=True)
-    account = models.ForeignKey(Account, related_name='settings', on_delete=models.PROTECT)
+    account = models.ForeignKey(
+        Account, related_name='settings', on_delete=models.PROTECT)
     name = models.CharField(
         max_length=127,
         editable=True,
@@ -938,8 +964,10 @@ class AccountSettings(SettingsBase):
         default=constants.AccountType.UNKNOWN,
         choices=constants.AccountType.get_choices()
     )
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
 
@@ -961,9 +989,11 @@ class AccountSettings(SettingsBase):
         if prop_name == 'archived':
             value = str(value)
         elif prop_name == 'default_account_manager':
-            value = views.helpers.get_user_full_name_or_email(value).decode('utf-8')
+            value = views.helpers.get_user_full_name_or_email(
+                value).decode('utf-8')
         elif prop_name == 'default_sales_representative':
-            value = views.helpers.get_user_full_name_or_email(value).decode('utf-8')
+            value = views.helpers.get_user_full_name_or_email(
+                value).decode('utf-8')
         elif prop_name == 'account_type':
             value = constants.AccountType.get_text(value)
         return value
@@ -976,7 +1006,8 @@ class AccountSettings(SettingsBase):
         if self.pk is None:
             self.created_by = request.user
         super(AccountSettings, self).save(*args, **kwargs)
-        self.add_to_history(request and request.user, action_type, changes_text)
+        self.add_to_history(request and request.user,
+                            action_type, changes_text)
 
     def add_to_history(self, user, action_type, history_changes_text):
         changes = self.get_model_state_changes(
@@ -986,7 +1017,8 @@ class AccountSettings(SettingsBase):
         if not changes and not self.post_init_newly_created:
             return
 
-        changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
+        changes_text = history_changes_text or self.get_changes_text_from_dict(
+            changes)
         self.account.write_history(
             changes_text,
             changes=changes,
@@ -1033,8 +1065,10 @@ class CampaignSettings(SettingsBase):
         blank=False,
         null=False
     )
-    campaign = models.ForeignKey(Campaign, related_name='settings', on_delete=models.PROTECT)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    campaign = models.ForeignKey(
+        Campaign, related_name='settings', on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT,
                                    null=True, blank=True)
     system_user = models.PositiveSmallIntegerField(choices=constants.SystemUserType.get_choices(),
@@ -1078,7 +1112,8 @@ class CampaignSettings(SettingsBase):
     )
     ga_property_id = models.CharField(max_length=25, blank=True, default='')
     enable_adobe_tracking = models.BooleanField(default=False)
-    adobe_tracking_param = models.CharField(max_length=10, blank=True, default='')
+    adobe_tracking_param = models.CharField(
+        max_length=10, blank=True, default='')
 
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
@@ -1112,7 +1147,8 @@ class CampaignSettings(SettingsBase):
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, separator=', '):
-        changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
+        changes = old_settings.get_setting_changes(
+            new_settings) if old_settings is not None else None
         return get_changes_text_from_dict(cls, changes, separator=separator)
 
     class Meta:
@@ -1156,7 +1192,8 @@ class CampaignSettings(SettingsBase):
     @classmethod
     def get_human_value(cls, prop_name, value):
         if prop_name == 'campaign_manager':
-            value = views.helpers.get_user_full_name_or_email(value).decode('utf-8')
+            value = views.helpers.get_user_full_name_or_email(
+                value).decode('utf-8')
         elif prop_name == 'iab_category':
             value = constants.IABCategory.get_text(value)
         elif prop_name == 'campaign_goal':
@@ -1164,10 +1201,12 @@ class CampaignSettings(SettingsBase):
         elif prop_name == 'promotion_goal':
             value = constants.PromotionGoal.get_text(value)
         elif prop_name == 'target_devices':
-            value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
+            value = ', '.join(constants.AdTargetDevice.get_text(x)
+                              for x in value)
         elif prop_name == 'target_regions':
             if value:
-                value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
+                value = ', '.join(constants.AdTargetLocation.get_text(x)
+                                  for x in value)
             else:
                 value = 'worldwide'
         elif prop_name == 'automatic_campaign_stop':
@@ -1189,9 +1228,11 @@ class CampaignGoal(models.Model):
         choices=constants.CampaignGoalKPI.get_choices(),
     )
     primary = models.BooleanField(default=False)
-    conversion_goal = models.ForeignKey('ConversionGoal', null=True, blank=True, on_delete=models.PROTECT)
+    conversion_goal = models.ForeignKey(
+        'ConversionGoal', null=True, blank=True, on_delete=models.PROTECT)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
@@ -1218,7 +1259,8 @@ class CampaignGoal(models.Model):
                 'pixel_url': None,
             }
             if self.conversion_goal.pixel:
-                campaign_goal['conversion_goal']['goal_id'] = self.conversion_goal.pixel.id
+                campaign_goal['conversion_goal'][
+                    'goal_id'] = self.conversion_goal.pixel.id
 
         if with_values:
             default_rounding_format = '1.00'
@@ -1244,7 +1286,8 @@ class CampaignGoalValue(models.Model):
     campaign_goal = models.ForeignKey(CampaignGoal, related_name='values')
     value = models.DecimalField(max_digits=15, decimal_places=5)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
@@ -1256,7 +1299,8 @@ class SourceType(models.Model):
         unique=True
     )
 
-    available_actions = ArrayField(models.PositiveSmallIntegerField(), null=True, blank=True)
+    available_actions = ArrayField(
+        models.PositiveSmallIntegerField(), null=True, blank=True)
 
     min_cpc = models.DecimalField(
         max_digits=10,
@@ -1442,22 +1486,27 @@ class Source(models.Model):
     )
     maintenance = models.BooleanField(default=True)
     deprecated = models.BooleanField(default=False, null=False)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
     released = models.BooleanField(default=True)
     supports_retargeting = models.BooleanField(
         default=False,
-        help_text=_('Designates whether source supports retargeting automatically.')
+        help_text=_(
+            'Designates whether source supports retargeting automatically.')
     )
 
     supports_retargeting_manually = models.BooleanField(
         default=False,
-        help_text=_('Designates whether source supports retargeting via manual action.')
+        help_text=_(
+            'Designates whether source supports retargeting via manual action.')
     )
 
     impression_trackers_count = models.PositiveSmallIntegerField(
         default=0,
-        help_text=_('Number of impression trackers we know this source supports.')
+        help_text=_(
+            'Number of impression trackers we know this source supports.')
     )
 
     content_ad_submission_type = models.IntegerField(
@@ -1545,8 +1594,10 @@ class SourceCredentials(models.Model):
     credentials = models.TextField(blank=True, null=False)
     sync_reports = models.BooleanField(default=True)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
 
     class Meta:
         verbose_name_plural = "Source Credentials"
@@ -1581,8 +1632,10 @@ class SourceCredentials(models.Model):
 
 
 class DefaultSourceSettings(models.Model):
-    source = models.OneToOneField(Source, unique=True, on_delete=models.PROTECT)
-    credentials = models.ForeignKey(SourceCredentials, on_delete=models.PROTECT, null=True, blank=True)
+    source = models.OneToOneField(
+        Source, unique=True, on_delete=models.PROTECT)
+    credentials = models.ForeignKey(
+        SourceCredentials, on_delete=models.PROTECT, null=True, blank=True)
     params = jsonfield.JSONField(
         blank=True,
         null=False,
@@ -1644,9 +1697,12 @@ class AdGroup(models.Model):
     )
     campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
     sources = models.ManyToManyField(Source, through='AdGroupSource')
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     is_demo = models.BooleanField(null=False, blank=False, default=False)
 
     objects = QuerySetManager()
@@ -1677,7 +1733,8 @@ class AdGroup(models.Model):
             filter(ad_group_id=self.pk).\
             order_by('created_dt').last()
         if settings is None:
-            settings = AdGroupSettings(ad_group=self, **AdGroupSettings.get_defaults_dict())
+            settings = AdGroupSettings(
+                ad_group=self, **AdGroupSettings.get_defaults_dict())
 
         return settings
 
@@ -1810,7 +1867,8 @@ class AdGroup(models.Model):
         if current_settings.state != new_state:
             new_settings = current_settings.copy_settings()
             new_settings.state = new_state
-            new_settings.save(request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
+            new_settings.save(
+                request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
             return True
 
         return False
@@ -1976,15 +2034,20 @@ class AdGroupSource(models.Model):
     source = models.ForeignKey(Source, on_delete=models.PROTECT)
     ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT)
 
-    source_credentials = models.ForeignKey(SourceCredentials, null=True, on_delete=models.PROTECT)
+    source_credentials = models.ForeignKey(
+        SourceCredentials, null=True, on_delete=models.PROTECT)
     source_campaign_key = jsonfield.JSONField(blank=True, default={})
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
-    last_successful_reports_sync_dt = models.DateTimeField(blank=True, null=True)
-    last_successful_status_sync_dt = models.DateTimeField(blank=True, null=True)
-    can_manage_content_ads = models.BooleanField(null=False, blank=False, default=False)
+    last_successful_reports_sync_dt = models.DateTimeField(
+        blank=True, null=True)
+    last_successful_status_sync_dt = models.DateTimeField(
+        blank=True, null=True)
+    can_manage_content_ads = models.BooleanField(
+        null=False, blank=False, default=False)
 
-    source_content_ad_id = models.CharField(max_length=100, null=True, blank=True)
+    source_content_ad_id = models.CharField(
+        max_length=100, null=True, blank=True)
     submission_status = models.IntegerField(
         default=constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
         choices=constants.ContentAdSubmissionStatus.get_choices()
@@ -2132,8 +2195,10 @@ class AdGroupSettings(SettingsBase):
     history_fields = list(_settings_fields)
 
     id = models.AutoField(primary_key=True)
-    ad_group = models.ForeignKey(AdGroup, related_name='settings', on_delete=models.PROTECT)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    ad_group = models.ForeignKey(
+        AdGroup, related_name='settings', on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    on_delete=models.PROTECT, null=True, blank=True)
     system_user = models.PositiveSmallIntegerField(choices=constants.SystemUserType.get_choices(),
@@ -2161,7 +2226,8 @@ class AdGroupSettings(SettingsBase):
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
     retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
-    exclusion_retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
+    exclusion_retargeting_ad_groups = jsonfield.JSONField(
+        blank=True, default=[])
     bluekai_targeting = jsonfield.JSONField(blank=True, default=[])
     interest_targeting = jsonfield.JSONField(blank=True, default=[])
     exclusion_interest_targeting = jsonfield.JSONField(blank=True, default=[])
@@ -2231,12 +2297,14 @@ class AdGroupSettings(SettingsBase):
         return any(target_region in regions for target_region in self.target_regions or [])
 
     def get_targets_for_region_type(self, region_type):
-        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
+        regions_of_type = region_targeting_helper.get_list_for_region_type(
+            region_type)
 
         return [target_region for target_region in self.target_regions or [] if target_region in regions_of_type]
 
     def get_target_names_for_region_type(self, region_type):
-        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
+        regions_of_type = region_targeting_helper.get_list_for_region_type(
+            region_type)
 
         return [regions_of_type[target_region] for target_region
                 in self.target_regions or [] if target_region in regions_of_type]
@@ -2309,17 +2377,20 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'daily_budget_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'target_devices':
-            value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
+            value = ', '.join(constants.AdTargetDevice.get_text(x)
+                              for x in value)
         elif prop_name == 'target_regions':
             if value:
-                value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
+                value = ', '.join(constants.AdTargetLocation.get_text(x)
+                                  for x in value)
             else:
                 value = 'worldwide'
         elif prop_name in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups'):
             if not value:
                 value = ''
             else:
-                names = AdGroup.objects.filter(pk__in=value).values_list('name', flat=True)
+                names = AdGroup.objects.filter(
+                    pk__in=value).values_list('name', flat=True)
                 value = ', '.join(names)
         elif prop_name == 'bluekai_targeting':
             value = json.dumps(value)
@@ -2332,7 +2403,8 @@ class AdGroupSettings(SettingsBase):
             if not value:
                 value = ''
             else:
-                names = Audience.objects.filter(pk__in=value).values_list('name', flat=True)
+                names = Audience.objects.filter(
+                    pk__in=value).values_list('name', flat=True)
                 value = ', '.join(names)
         elif prop_name == 'redirect_pixel_urls':
             value = ', '.join(value)
@@ -2341,7 +2413,8 @@ class AdGroupSettings(SettingsBase):
 
     @classmethod
     def get_changes_text(cls, old_settings, new_settings, user, separator=', '):
-        changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
+        changes = old_settings.get_setting_changes(
+            new_settings) if old_settings is not None else None
         if changes is None:
             return 'Created settings'
 
@@ -2357,7 +2430,8 @@ class AdGroupSettings(SettingsBase):
     objects = QuerySetManager()
 
     def get_tracking_codes(self):
-        # Strip the first '?' as we don't want to send it as a part of query string
+        # Strip the first '?' as we don't want to send it as a part of query
+        # string
         return self.tracking_code.lstrip('?')
 
     def save(self,
@@ -2371,13 +2445,15 @@ class AdGroupSettings(SettingsBase):
             else:
                 self.created_by = request.user
         super(AdGroupSettings, self).save(*args, **kwargs)
-        self.add_to_history(request and request.user, action_type, changes_text)
+        self.add_to_history(request and request.user,
+                            action_type, changes_text)
 
     def add_to_history(self, user, action_type, history_changes_text):
         changes = self.get_model_state_changes(
             self.get_settings_dict()
         )
-        changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
+        changes_text = history_changes_text or self.get_changes_text_from_dict(
+            changes)
         self.ad_group.write_history(
             self.changes_text or changes_text,
             changes=changes,
@@ -2408,7 +2484,8 @@ class AdGroupSourceState(models.Model, CopySettingsMixin):
         on_delete=models.PROTECT
     )
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
 
     state = models.IntegerField(
         default=constants.AdGroupSourceSettingsState.INACTIVE,
@@ -2468,7 +2545,8 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         on_delete=models.PROTECT
     )
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='+',
@@ -2623,7 +2701,8 @@ class UploadBatch(models.Model):
     _demo_fields = {'name': lambda: 'upload.csv'}
 
     name = models.CharField(max_length=1024)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
     status = models.IntegerField(
         default=constants.UploadBatchStatus.IN_PROGRESS,
         choices=constants.UploadBatchStatus.get_choices()
@@ -2631,11 +2710,13 @@ class UploadBatch(models.Model):
     ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, null=True)
     original_filename = models.CharField(max_length=1024, null=True)
 
-    default_image_crop = models.TextField(null=True, blank=True, default=constants.ImageCrop.CENTER)
+    default_image_crop = models.TextField(
+        null=True, blank=True, default=constants.ImageCrop.CENTER)
     default_display_url = models.TextField(null=True, blank=True, default="")
     default_brand_name = models.TextField(null=True, blank=True, default="")
     default_description = models.TextField(null=True, blank=True, default="")
-    default_call_to_action = models.TextField(null=True, blank=True, default=constants.DEFAULT_CALL_TO_ACTION)
+    default_call_to_action = models.TextField(
+        null=True, blank=True, default=constants.DEFAULT_CALL_TO_ACTION)
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -2666,11 +2747,13 @@ class ContentAd(models.Model):
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
     crop_areas = models.CharField(max_length=128, null=True)
-    image_crop = models.CharField(max_length=25, default=constants.ImageCrop.CENTER)
+    image_crop = models.CharField(
+        max_length=25, default=constants.ImageCrop.CENTER)
 
     redirect_id = models.CharField(max_length=128, null=True)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
 
     state = models.IntegerField(
         null=True,
@@ -2797,8 +2880,10 @@ class ContentAdSource(models.Model):
 
     source_content_ad_id = models.CharField(max_length=50, null=True)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
 
     def get_submission_status(self):
         if self.submission_status != constants.ContentAdSubmissionStatus.APPROVED and\
@@ -2831,6 +2916,7 @@ class ContentAdSource(models.Model):
         return unicode(self).encode('ascii', 'ignore')
 
     class QuerySet(models.QuerySet):
+
         def filter_by_sources(self, sources):
             return self.filter(source__in=sources)
 
@@ -2840,15 +2926,18 @@ class ContentAdCandidate(FootprintModel):
     url = models.TextField(null=True, blank=True, default="")
     title = models.TextField(null=True, blank=True, default="")
     image_url = models.TextField(null=True, blank=True, default=None)
-    image_crop = models.TextField(null=True, blank=True, default=constants.ImageCrop.CENTER)
+    image_crop = models.TextField(
+        null=True, blank=True, default=constants.ImageCrop.CENTER)
 
     display_url = models.TextField(null=True, blank=True, default="")
     brand_name = models.TextField(null=True, blank=True, default="")
     description = models.TextField(null=True, blank=True, default="")
-    call_to_action = models.TextField(null=True, blank=True, default=constants.DEFAULT_CALL_TO_ACTION)
+    call_to_action = models.TextField(
+        null=True, blank=True, default=constants.DEFAULT_CALL_TO_ACTION)
 
     primary_tracker_url = models.TextField(null=True, blank=True, default=None)
-    secondary_tracker_url = models.TextField(null=True, blank=True, default=None)
+    secondary_tracker_url = models.TextField(
+        null=True, blank=True, default=None)
 
     ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
     batch = models.ForeignKey(UploadBatch, on_delete=models.PROTECT)
@@ -2867,7 +2956,8 @@ class ContentAdCandidate(FootprintModel):
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
 
     def to_dict(self):
         return {
@@ -2907,7 +2997,8 @@ class Article(models.Model):
     title = models.CharField(max_length=256, editable=False)
 
     ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -2922,8 +3013,10 @@ class ConversionPixel(models.Model):
     archived = models.BooleanField(default=False)
     outbrain_sync = models.BooleanField(default=False)
 
-    last_sync_dt = models.DateTimeField(default=datetime.datetime.utcnow, blank=True, null=True)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
+    last_sync_dt = models.DateTimeField(
+        default=datetime.datetime.utcnow, blank=True, null=True)
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created on')
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
@@ -2935,7 +3028,8 @@ class ConversionPixel(models.Model):
                 # none of the pixels with actual string slugs are no
                 # longer in use, we can get rid of the slugs altogether
                 # and use ids instead.
-                ConversionPixel.objects.filter(pk=self.id).update(slug=str(self.id))
+                ConversionPixel.objects.filter(
+                    pk=self.id).update(slug=str(self.id))
                 self.refresh_from_db()
 
     def get_url(self):
@@ -2959,18 +3053,22 @@ class ConversionGoal(models.Model):
     )
     name = models.CharField(max_length=100)
 
-    pixel = models.ForeignKey(ConversionPixel, null=True, on_delete=models.PROTECT)
+    pixel = models.ForeignKey(
+        ConversionPixel, null=True, on_delete=models.PROTECT)
     conversion_window = models.PositiveSmallIntegerField(null=True, blank=True)
     goal_id = models.CharField(max_length=100, null=True, blank=True)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created on')
 
     class Meta:
-        unique_together = (('campaign', 'name'), ('campaign', 'type', 'goal_id'))
+        unique_together = (('campaign', 'name'),
+                           ('campaign', 'type', 'goal_id'))
         ordering = ['pk']
 
     def get_stats_key(self):
-        # map conversion goal to the key under which they are stored in stats database
+        # map conversion goal to the key under which they are stored in stats
+        # database
         if self.type == constants.ConversionGoalType.GA:
             prefix = reports.constants.ReportType.GOOGLE_ANALYTICS
         elif self.type == constants.ConversionGoalType.OMNITURE:
@@ -2992,13 +3090,17 @@ class ConversionGoal(models.Model):
 
 
 class DemoAdGroupRealAdGroup(models.Model):
-    demo_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
-    real_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
-    multiplication_factor = models.IntegerField(null=False, blank=False, default=1)
+    demo_ad_group = models.OneToOneField(
+        AdGroup, on_delete=models.PROTECT, related_name='+')
+    real_ad_group = models.OneToOneField(
+        AdGroup, on_delete=models.PROTECT, related_name='+')
+    multiplication_factor = models.IntegerField(
+        null=False, blank=False, default=1)
 
 
 class DemoMapping(models.Model):
-    real_account = models.OneToOneField(Account, on_delete=models.PROTECT, related_name='+')
+    real_account = models.OneToOneField(
+        Account, on_delete=models.PROTECT, related_name='+')
     demo_account_name = models.CharField(
         max_length=127,
         editable=True,
@@ -3029,20 +3131,27 @@ class DemoMapping(models.Model):
 class PublisherBlacklist(models.Model):
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=127, blank=False, null=False, verbose_name='Publisher name')
-    everywhere = models.BooleanField(default=False, verbose_name='globally blacklisted')
-    account = models.ForeignKey(Account, null=True, related_name='account', on_delete=models.PROTECT)
-    campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
-    ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
+    name = models.CharField(max_length=127, blank=False,
+                            null=False, verbose_name='Publisher name')
+    everywhere = models.BooleanField(
+        default=False, verbose_name='globally blacklisted')
+    account = models.ForeignKey(
+        Account, null=True, related_name='account', on_delete=models.PROTECT)
+    campaign = models.ForeignKey(
+        Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
+    ad_group = models.ForeignKey(
+        AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
-    external_id = models.CharField(max_length=127, blank=True, null=True, verbose_name='External ID')
+    external_id = models.CharField(
+        max_length=127, blank=True, null=True, verbose_name='External ID')
 
     status = models.IntegerField(
         default=constants.PublisherStatus.BLACKLISTED,
         choices=constants.PublisherStatus.get_choices()
     )
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
 
     def get_blacklist_level(self):
         level = constants.PublisherBlacklistLevel.ADGROUP
@@ -3070,7 +3179,8 @@ class PublisherBlacklist(models.Model):
             self.ad_group = ad_group
 
     class Meta:
-        unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )
+        unique_together = (('name', 'everywhere', 'account',
+                            'campaign', 'ad_group', 'source'), )
 
     objects = QuerySetManager()
 
@@ -3099,8 +3209,10 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     _demo_fields = {
         'comment': utils.demo_anonymizer.fake_io,
     }
-    account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
-    agency = models.ForeignKey(Agency, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
+    account = models.ForeignKey(
+        Account, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
+    agency = models.ForeignKey(
+        Agency, related_name='credits', on_delete=models.PROTECT, blank=True, null=True)
     start_date = models.DateField()
     end_date = models.DateField()
 
@@ -3121,8 +3233,10 @@ class CreditLineItem(FootprintModel, HistoryMixin):
     )
     comment = models.CharField(max_length=256, blank=True, null=True)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
@@ -3197,7 +3311,8 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         if prop_name == 'amount' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'license_fee' and value is not None:
-            value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value) * 100, 2, 3))
+            value = '{}%'.format(utils.string_helper.format_decimal(
+                Decimal(value) * 100, 2, 3))
         elif prop_name == 'flat_fee_cc':
             value = lc_helper.default_currency(
                 Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
@@ -3356,15 +3471,18 @@ class CreditLineItem(FootprintModel, HistoryMixin):
         if not self.has_changed('status'):
             return
         if self.status == s.PENDING:
-            raise ValidationError('Credit line item status cannot change to PENDING.')
+            raise ValidationError(
+                'Credit line item status cannot change to PENDING.')
 
     def validate_end_date(self):
         if not self.end_date:
             return
         if self.has_changed('end_date') and self.previous_value('end_date') > self.end_date:
-            raise ValidationError('New end date cannot be before than the previous.')
+            raise ValidationError(
+                'New end date cannot be before than the previous.')
         if self.start_date and self.start_date > self.end_date:
-            raise ValidationError('Start date cannot be greater than the end date.')
+            raise ValidationError(
+                'Start date cannot be greater than the end date.')
 
     def validate_license_fee(self):
         if not self.license_fee:
@@ -3406,8 +3524,10 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
     _demo_fields = {
         'comment': lambda: 'Monthly budget',
     }
-    campaign = models.ForeignKey(Campaign, related_name='budgets', on_delete=models.PROTECT)
-    credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
+    campaign = models.ForeignKey(
+        Campaign, related_name='budgets', on_delete=models.PROTECT)
+    credit = models.ForeignKey(
+        CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
     start_date = models.DateField()
     end_date = models.DateField()
     margin = models.DecimalField(
@@ -3421,8 +3541,10 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
 
     comment = models.CharField(max_length=256, blank=True, null=True)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
@@ -3461,7 +3583,8 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             value = lc_helper.default_currency(
                 Decimal(value) * converters.CC_TO_DECIMAL_DOLAR)
         elif prop_name == 'margin' and value is not None:
-            value = '{}%'.format(utils.string_helper.format_decimal(Decimal(value) * 100, 2, 3))
+            value = '{}%'.format(utils.string_helper.format_decimal(
+                Decimal(value) * 100, 2, 3))
         elif prop_name == 'comment':
             value = value or ''
         return value
@@ -3556,11 +3679,13 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         spend_data = self.get_spend_data()
 
         reserve = self.get_reserve_amount_cc()
-        free_date = self.end_date + datetime.timedelta(days=settings.LAST_N_DAY_REPORTS)
+        free_date = self.end_date + \
+            datetime.timedelta(days=settings.LAST_N_DAY_REPORTS)
         is_over_sync_time = dates_helper.local_today() > free_date
 
         if is_over_sync_time:
-            # After we completed all syncs, free all the assets including reserve
+            # After we completed all syncs, free all the assets including
+            # reserve
             self.freed_cc = max(0, amount_cc - spend_data['total_cc'])
         elif self.freed_cc == 0 and reserve is not None:
             self.freed_cc = max(
@@ -3627,7 +3752,8 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
                     'margin': 'Margin can only be set on newly created budgets.',
                 })
             if self.has_changed('start_date') and not db_state == constants.BudgetLineItemState.PENDING:
-                raise ValidationError('Only pending budgets can change start date and amount.')
+                raise ValidationError(
+                    'Only pending budgets can change start date and amount.')
             is_reserve_update = all([
                 not self.has_changed('start_date'),
                 not self.has_changed('end_date'),
@@ -3636,7 +3762,8 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             ])
             if not is_reserve_update and db_state not in (constants.BudgetLineItemState.PENDING,
                                                           constants.BudgetLineItemState.ACTIVE,):
-                raise ValidationError('Only pending and active budgets can change.')
+                raise ValidationError(
+                    'Only pending and active budgets can change.')
         elif self.credit.status == constants.CreditLineItemStatus.CANCELED:
             raise ValidationError({
                 'credit': 'Canceled credits cannot have new budget items.'
@@ -3656,21 +3783,25 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
         if self.has_changed('credit'):
             raise ValidationError('Credit cannot change.')
         if self.credit.status == constants.CreditLineItemStatus.PENDING:
-            raise ValidationError('Cannot allocate budget from an unsigned credit.')
+            raise ValidationError(
+                'Cannot allocate budget from an unsigned credit.')
 
     def validate_start_date(self):
         if not self.start_date:
             return
         if self.start_date < self.credit.start_date:
-            raise ValidationError('Start date cannot be smaller than the credit\'s start date.')
+            raise ValidationError(
+                'Start date cannot be smaller than the credit\'s start date.')
 
     def validate_end_date(self):
         if not self.end_date:
             return
         if self.end_date > self.credit.end_date:
-            raise ValidationError('End date cannot be bigger than the credit\'s end date.')
+            raise ValidationError(
+                'End date cannot be bigger than the credit\'s end date.')
         if self.start_date and self.start_date > self.end_date:
-            raise ValidationError('Start date cannot be bigger than the end date.')
+            raise ValidationError(
+                'Start date cannot be bigger than the end date.')
 
     def validate_margin(self):
         if not self.margin:
@@ -3681,14 +3812,16 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
     def validate_amount(self):
         if self.has_changed('amount') and \
            self.credit.status == constants.CreditLineItemStatus.CANCELED:
-            raise ValidationError('Canceled credit\'s budget amounts cannot change.')
+            raise ValidationError(
+                'Canceled credit\'s budget amounts cannot change.')
         if not self.amount:
             return
         if self.amount < 0:
             raise ValidationError('Amount cannot be negative.')
 
         budgets = self.credit.budgets.exclude(pk=self.pk)
-        delta = self.credit.effective_amount() - sum(b.allocated_amount() for b in budgets) - self.amount
+        delta = self.credit.effective_amount() - sum(b.allocated_amount()
+                                                     for b in budgets) - self.amount
         if delta < 0:
             raise ValidationError(
                 'Budget exceeds the total credit amount by ${}.'.format(
@@ -3738,7 +3871,8 @@ class BudgetHistory(HistoryModel):
 class ExportReport(models.Model):
     id = models.AutoField(primary_key=True)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='+',
@@ -3747,19 +3881,26 @@ class ExportReport(models.Model):
         on_delete=models.PROTECT
     )
 
-    ad_group = models.ForeignKey(AdGroup, blank=True, null=True, on_delete=models.PROTECT)
-    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT)
-    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.PROTECT)
+    ad_group = models.ForeignKey(
+        AdGroup, blank=True, null=True, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(
+        Campaign, blank=True, null=True, on_delete=models.PROTECT)
+    account = models.ForeignKey(
+        Account, blank=True, null=True, on_delete=models.PROTECT)
 
     granularity = models.IntegerField(
         default=constants.ScheduledReportGranularity.CONTENT_AD,
         choices=constants.ScheduledReportGranularity.get_choices()
     )
 
-    breakdown_by_day = models.BooleanField(null=False, blank=False, default=False)
-    breakdown_by_source = models.BooleanField(null=False, blank=False, default=False)
-    include_model_ids = models.BooleanField(null=False, blank=False, default=False)
-    include_totals = models.BooleanField(null=False, blank=False, default=False)
+    breakdown_by_day = models.BooleanField(
+        null=False, blank=False, default=False)
+    breakdown_by_source = models.BooleanField(
+        null=False, blank=False, default=False)
+    include_model_ids = models.BooleanField(
+        null=False, blank=False, default=False)
+    include_totals = models.BooleanField(
+        null=False, blank=False, default=False)
 
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.TextField(null=True, blank=True)
@@ -3824,7 +3965,8 @@ class ScheduledExportReport(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     report = models.ForeignKey(ExportReport, related_name='scheduled_reports')
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='+',
@@ -3859,7 +4001,8 @@ class ScheduledExportReport(models.Model):
             '(',
             self.created_by.email,
             ') - ',
-            constants.ScheduledReportSendingFrequency.get_text(self.sending_frequency),
+            constants.ScheduledReportSendingFrequency.get_text(
+                self.sending_frequency),
             '-',
             str(self.report)
         )))
@@ -3882,7 +4025,8 @@ class ScheduledExportReport(models.Model):
 
 
 class ScheduledExportReportRecipient(models.Model):
-    scheduled_report = models.ForeignKey(ScheduledExportReport, related_name='recipients')
+    scheduled_report = models.ForeignKey(
+        ScheduledExportReport, related_name='recipients')
     email = models.EmailField()
 
     class Meta:
@@ -3892,12 +4036,14 @@ class ScheduledExportReportRecipient(models.Model):
 class ScheduledExportReportLog(models.Model):
     scheduled_report = models.ForeignKey(ScheduledExportReport)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
 
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
     report_filename = models.CharField(max_length=1024, blank=False, null=True)
-    recipient_emails = models.CharField(max_length=1024, blank=False, null=True)
+    recipient_emails = models.CharField(
+        max_length=1024, blank=False, null=True)
 
     state = models.IntegerField(
         default=constants.ScheduledReportSent.FAILED,
@@ -3968,10 +4114,14 @@ class HistoryQuerySet(models.QuerySet):
 
 class History(models.Model):
 
-    agency = models.ForeignKey(Agency, related_name='history', on_delete=models.PROTECT, null=True)
-    account = models.ForeignKey(Account, related_name='history', on_delete=models.PROTECT, null=True)
-    campaign = models.ForeignKey(Campaign, related_name='history', on_delete=models.PROTECT, null=True)
-    ad_group = models.ForeignKey(AdGroup, related_name='history', on_delete=models.PROTECT, null=True)
+    agency = models.ForeignKey(
+        Agency, related_name='history', on_delete=models.PROTECT, null=True)
+    account = models.ForeignKey(
+        Account, related_name='history', on_delete=models.PROTECT, null=True)
+    campaign = models.ForeignKey(
+        Campaign, related_name='history', on_delete=models.PROTECT, null=True)
+    ad_group = models.ForeignKey(
+        AdGroup, related_name='history', on_delete=models.PROTECT, null=True)
 
     level = models.PositiveSmallIntegerField(
         choices=constants.HistoryLevel.get_choices(),
@@ -4041,8 +4191,10 @@ class SourceTypePixel(models.Model):
     url = models.CharField(max_length=255)
     source_pixel_id = models.CharField(max_length=127)
     source_type = models.ForeignKey(SourceType, on_delete=models.PROTECT)
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created on')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
 
 
 class Audience(models.Model):
@@ -4056,9 +4208,12 @@ class Audience(models.Model):
     pixel = models.ForeignKey(ConversionPixel, on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     ttl = models.PositiveSmallIntegerField()
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(
+        auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(
+        auto_now=True, verbose_name='Modified at')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
     def save(self,
              request,
@@ -4068,7 +4223,8 @@ class Audience(models.Model):
         if self.pk is None:
             self.created_by = request.user
         super(Audience, self).save(*args, **kwargs)
-        self.add_to_history(request and request.user, action_type, changes_text)
+        self.add_to_history(request and request.user,
+                            action_type, changes_text)
 
     def add_to_history(self, user, action_type, history_changes_text):
         self.pixel.account.write_history(
