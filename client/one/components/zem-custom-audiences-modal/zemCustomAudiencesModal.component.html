@@ -28,6 +28,9 @@
                 <div class="description small m-t-xs m-b-none" ng-if="ctrl.selectedPixelId && ctrl.outbrainPixel && ctrl.outbrainPixel.id != ctrl.selectedPixelId">
                     This audience will not be synced to Outbrain because only pixel "{{ ctrl.outbrainPixel.name }}" <span ng-if="ctrl.outbrainPixel.archived">(Archived)</span> is synced to Outbrain.
                 </div>
+                <div class="description small m-t-xs m-b-none" ng-if="ctrl.selectedPixelId && !ctrl.outbrainPixel">
+                    This audience will not be synced to Outbrain because no pixel is synced to Outbrain.
+                </div>
                 <label ng-repeat="error in ctrl.errors.pixelId" class="control-label error">{{ error }}</label>
             </div>
         </div>
