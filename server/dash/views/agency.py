@@ -48,7 +48,7 @@ class AdGroupSettings(api_common.BaseApiView):
         settings = ad_group.get_current_settings()
 
         response = {
-            'settings': self.get_dict(settings, ad_group),
+            'settings': self.get_dict(request, settings, ad_group),
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': False,
             'retargetable_adgroups': self.get_retargetable_adgroups(
@@ -106,7 +106,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group=ad_group, send_mail=True)
 
         response = {
-            'settings': self.get_dict(new_settings, ad_group),
+            'settings': self.get_dict(request, new_settings, ad_group),
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': False,
         }
@@ -133,7 +133,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         return warnings
 
-    def get_dict(self, settings, ad_group):
+    def get_dict(self, request, settings, ad_group):
         result = {}
 
         if settings:
