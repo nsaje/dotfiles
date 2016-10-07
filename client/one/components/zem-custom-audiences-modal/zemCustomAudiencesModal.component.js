@@ -18,6 +18,7 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         vm.putRequestInProgress = false;
         vm.getRequestInProgress = false;
         vm.pixels = [];
+        vm.outbrainPixel = null;
         vm.rules = [{id: 'visit', name: 'Anyone who visited your website'}, {id: 'referer', name: 'People who visited specific web pages'}];
         vm.refererRules = [{id: 'startsWith', name: 'URL equals'}, {id: 'contains', name: 'URL contains'}];
         vm.ttlDays = [{value: 7, name: '7'}, {value: 30, name: '30'}, {value: 90, name: '90'}, {value: 365, name: '365'}];
@@ -45,6 +46,14 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
             api.conversionPixel.list(vm.accountId).then(
                 function (data) {
                     if (data.rows) {
+                        var outbrainPixels = data.rows.filter(function (pixel) {
+                            return pixel.outbrainSync;
+                        });
+
+                        if (outbrainPixels.length > 0) {
+                            vm.outbrainPixel = outbrainPixels[0];
+                        }
+
                         vm.pixels = data.rows.filter(function (pixel) {
                             return !pixel.archived;
                         }).map(function (pixel) {

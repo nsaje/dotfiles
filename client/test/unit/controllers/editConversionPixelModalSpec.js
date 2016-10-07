@@ -2,7 +2,7 @@
 'use strict';
 
 describe('EditConversionPixelModalCtrl', function () {
-    var $scope, api, $q, $timeout, openedDeferred, pixel;
+    var $scope, api, $q, $timeout, openedDeferred, pixel, outbrainPixel;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -35,12 +35,18 @@ describe('EditConversionPixelModalCtrl', function () {
         pixel = {
             id: 1,
             name: 'Test Name',
-            outbrain_sync: true
+            outbrainSync: false
+        };
+
+        outbrainPixel = {
+            id: 2,
+            name: 'Test Name Outbrain',
+            outbrainSync: true
         };
 
         $controller(
             'EditConversionPixelModalCtrl',
-            {$scope: $scope, api: api, pixel: pixel}
+            {$scope: $scope, api: api, pixel: pixel, outbrainPixel: outbrainPixel}
         );
     }));
 

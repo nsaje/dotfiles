@@ -40,9 +40,24 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
                     controller: 'AddConversionPixelModalCtrl',
                     windowClass: 'modal-default-legacy',
                     scope: $scope,
+                    resolve: {
+                        outbrainPixel: function () {
+                            var pixies = $scope.conversionPixels.filter(function (pixie) {
+                                return pixie.outbrainSync;
+                            });
+                            return pixies.length > 0 ? pixies[0] : null;
+                        }
+                    }
                 });
 
                 modalInstance.result.then(function (conversionPixel) {
+                    if (conversionPixel.outbrainSync) {
+                        $scope.conversionPixels.map(function (pixie) {
+                            if (pixie.outbrainSync) {
+                                pixie.outbrainSync = false;
+                            }
+                        });
+                    }
                     $scope.conversionPixels.push(conversionPixel);
                 });
 
@@ -58,6 +73,12 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
                     resolve: {
                         pixel: function () {
                             return {id: pixel.id, name: pixel.name, outbrainSync: pixel.outbrainSync};
+                        },
+                        outbrainPixel: function () {
+                            var pixies = $scope.conversionPixels.filter(function (pixie) {
+                                return pixie.outbrainSync;
+                            });
+                            return pixies.length > 0 ? pixies[0] : null;
                         }
                     }
                 });

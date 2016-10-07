@@ -2,7 +2,7 @@
 'use strict';
 
 describe('AddConversionPixelModalCtrl', function () {
-    var $scope, api, $q, $timeout, openedDeferred;
+    var $scope, api, $q, $timeout, openedDeferred, outbrainPixel;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -32,9 +32,15 @@ describe('AddConversionPixelModalCtrl', function () {
             }
         };
 
+        outbrainPixel = {
+            id: 2,
+            name: 'Test Name Outbrain',
+            outbrainSync: true
+        };
+
         $controller(
             'AddConversionPixelModalCtrl',
-            {$scope: $scope, api: api}
+            {$scope: $scope, api: api, outbrainPixel: outbrainPixel}
         );
     }));
 

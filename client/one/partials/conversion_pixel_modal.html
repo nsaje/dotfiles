@@ -15,8 +15,11 @@
                 Sync to Outbrain
                 <zem-help-popover content="Sync events from this pixel to Outbrain" placement="bottom"></zem-help-popover>
             </label>
-            <div class="col-xs-4">
+            <div class="col-xs-8">
                 <input type="checkbox" id="outbrain-sync-input" class="form-control" ng-model="pixel.outbrainSync" ng-focus="clearError()" ng-change="clearError()" />
+                <div class="description small m-t-xs m-b-none" ng-if="outbrainPixel && outbrainPixel.id != pixel.id">
+                    Only one pixel can be synced with Outbrain.<br>Currently this pixel is: {{ outbrainPixel.name }}.
+                </div>
             </div>
         </div>
 

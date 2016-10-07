@@ -1,7 +1,8 @@
 /* globals angular */
-angular.module('one.legacy').controller('AddConversionPixelModalCtrl', ['$scope', 'api', function ($scope, api) {
+angular.module('one.legacy').controller('AddConversionPixelModalCtrl', ['$scope', 'api', 'outbrainPixel',  function ($scope, api, outbrainPixel) {
     $scope.inProgress = false;
     $scope.pixel = {name: '', outbrainSync: false};
+    $scope.outbrainPixel = outbrainPixel;
     $scope.error = false;
     $scope.errorMessage = '';
     $scope.title = 'Add a New Pixel';

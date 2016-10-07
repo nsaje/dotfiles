@@ -1,7 +1,8 @@
 /* globals angular */
-angular.module('one.legacy').controller('EditConversionPixelModalCtrl', ['$scope', 'api', 'pixel', function ($scope, api, pixel) {
+angular.module('one.legacy').controller('EditConversionPixelModalCtrl', ['$scope', 'api', 'pixel', 'outbrainPixel', function ($scope, api, pixel, outbrainPixel) {
     $scope.inProgress = false;
     $scope.pixel = pixel;
+    $scope.outbrainPixel = outbrainPixel;
     $scope.error = false;
     $scope.errorMessage = '';
     $scope.title = 'Edit Pixel';
