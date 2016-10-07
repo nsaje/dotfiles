@@ -2,6 +2,7 @@ import collections
 
 import dash.campaign_goals
 from dash import constants
+from dash.views import helpers
 
 """
 Helper functions that transform breakdown responses into what frontend expects.
@@ -11,7 +12,12 @@ Helper functions that transform breakdown responses into what frontend expects.
 def format_report_rows_state_fields(rows):
     for row in rows:
         if 'status' in row:
-            row['status'] = {'value': row['status']}
+            status = {'value': row['status']}
+            if 'notifications' in row:
+                status['popover_message'] = row['notifications'].get('message')
+                status['important'] = row['notifications'].get('important')
+            row['status'] = status
+
         if 'state' in row:
             row['state'] = {'value': row['state']}
 
@@ -175,6 +181,7 @@ def clean_non_relevant_fields(rows):
         row.pop('campaign_stop_inactive', None)
         row.pop('campaign_has_available_budget', None)
         row.pop('status_per_source', None)
+        row.pop('notifications', None)
 
         for key in row.keys():
             if key.startswith('performance_'):
@@ -184,3 +191,12 @@ def clean_non_relevant_fields(rows):
 def get_upload_batches_response_list(upload_batches):
     upload_batches = upload_batches.order_by('-created_dt')
     return list(upload_batches.values('id', 'name'))
+
+
+def get_ad_group_sources_extras(ad_group):
+    ad_group_settings = ad_group.get_current_settings()
+
+    return {
+        'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings),
+        'ad_group_autopilot_state': ad_group_settings.autopilot_state,
+    }

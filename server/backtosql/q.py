@@ -1,6 +1,10 @@
 from backtosql import helpers
 
 
+def dissect_constraint_key(constraint_key):
+    return constraint_key.split('__')
+
+
 class Q(object):
     '''
     Used for constructing the WHERE filter of the query that supports AND, OR and NOT,
@@ -83,12 +87,13 @@ class Q(object):
     def _prepare_constraint(self, constraint):
         constraint_name, value = constraint
 
-        parts = constraint_name.split("__")
+        parts = dissect_constraint_key(constraint_name)
         alias = helpers.clean_alias(parts[0])
         column = self.model.get_column(alias)
 
-        if not column or not column.column_name:
-            raise helpers.BackToSQLException("Column does not exist or it doesn't have a name")
+        if not column:
+            raise helpers.BackToSQLException(
+                "Column for alias '{}' does not exist".format(alias))
 
         if len(parts) == 2:
             operator = parts[1]

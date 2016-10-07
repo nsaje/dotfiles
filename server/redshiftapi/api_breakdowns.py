@@ -24,14 +24,14 @@ the code less verbose) for proper production code.
 """
 
 
-def query(breakdown, constraints, parents, goals, order, offset, limit):
+def query(breakdown, constraints, parents, goals, order, offset, limit, use_publishers_view=False):
     """
     Returns an array of rows that are represented as dicts.
     """
 
     model = models.MVMaster(goals.conversion_goals, goals.pixels, goals.campaign_goals, goals.campaign_goal_values)
     query, params = queries.prepare_breakdown_query(model, breakdown, constraints, parents,
-                                                    order, offset, limit)
+                                                    order, offset, limit, use_publishers_view=use_publishers_view)
 
     def postprocess_fn(rows, empty_row):
         return postprocess.postprocess_breakdown_query(rows, empty_row, breakdown, constraints, parents,

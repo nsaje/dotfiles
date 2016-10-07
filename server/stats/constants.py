@@ -4,7 +4,7 @@ class StructureDimension:
     AD_GROUP = 'ad_group_id'
     CONTENT_AD = 'content_ad_id'
     SOURCE = 'source_id'
-    PUBLISHER = 'publisher'
+    PUBLISHER = 'publisher_id'
 
     _ALL = [ACCOUNT, CAMPAIGN, AD_GROUP, CONTENT_AD, SOURCE, PUBLISHER]
 
@@ -40,6 +40,7 @@ DimensionIdentifierMapping = {
     'ad_group': 'ad_group_id',
     'content_ad': 'content_ad_id',
     'source': 'source_id',
+    'publisher': 'publisher_id',
 }
 
 

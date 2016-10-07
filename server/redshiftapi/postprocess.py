@@ -8,6 +8,7 @@ import newrelic.agent
 from utils import sort_helper
 
 from dash import constants as dash_constants
+import dash.models
 
 from stats import constants
 
@@ -31,6 +32,7 @@ def postprocess_breakdown_query(rows, empty_row, breakdown, constraints, parents
         postprocess_device_type_dimension(
             target_dimension, rows, empty_row, breakdown, parents, offset, limit)
         return sort_helper.sort_results(rows, [order])
+
     return rows
 
 

@@ -133,7 +133,7 @@ def _convert_breakdown_fields(base_dimension, response):
     name_key = 'title' if base_dimension == 'content_ad_id' else 'name'
     breakdown_id_fields = [id_key]
 
-    if base_dimension == 'publisher':
+    if base_dimension == 'publisher_id':
         id_key = 'domain'
         name_key = 'domain'
         breakdown_id_fields = ['domain', 'source_id']
@@ -182,7 +182,7 @@ def _convert_status_field(level, base_dimension, response):
                         status['important'] = True
             row['status'] = status
 
-        if base_dimension == 'publisher':
+        if base_dimension == 'publisher_id':
             status = {'value': row['status']}
             if 'blacklisted_level_description' in row:
                 status['popover_message'] = row['blacklisted_level_description']

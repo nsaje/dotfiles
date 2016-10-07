@@ -2,7 +2,6 @@ import backtosql
 import copy
 
 from utils import dates_helper
-from utils import queryset_helper
 
 import dash.constants
 from dash import conversions_helper
@@ -10,6 +9,8 @@ from dash import conversions_helper
 from stats import constants as sc
 
 from redshiftapi import model_helpers as mh
+from redshiftapi import helpers
+
 
 DeliveryGeo = set([
     sc.DeliveryDimension.COUNTRY,
@@ -174,6 +175,9 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
     content_ad_id = backtosql.Column('content_ad_id', mh.BREAKDOWN)
     source_id = backtosql.Column('source_id', mh.BREAKDOWN)
     publisher = backtosql.Column('publisher', mh.BREAKDOWN)
+
+    external_id = backtosql.TemplateColumn('part_max.sql', {'column_name': 'external_id'}, mh.PUBLISHER_AGGREGATES)
+    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, mh.PUBLISHER_AGGREGATES)
 
     device_type = backtosql.Column('device_type', mh.BREAKDOWN)
     country = backtosql.Column('country', mh.BREAKDOWN)
@@ -351,26 +355,24 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
                 self.add_column(avg_cost_column)
 
     @classmethod
-    def get_best_view(cls, breakdown, constraints):
+    def get_best_view(cls, breakdown, constraints, use_publishers_view=False):
         """
         Selects the most suitable materialized view for the selected breakdown.
         """
 
-        base = sc.get_base_dimension(breakdown)
-        structure = sc.get_structure_dimension(breakdown)
-        delivery = sc.get_delivery_dimension(breakdown)
+        constraints_dimensions = [backtosql.dissect_constraint_key(x)[0] for x in constraints.keys()]
 
         non_date_dimensions = set(sc.StructureDimension._ALL) | set(sc.DeliveryDimension._ALL)
-        constraints_dimensions = [x for x in constraints.keys() if (x in non_date_dimensions)]
+        needed_dimensions = set(constraints_dimensions + breakdown) & non_date_dimensions
 
-        # find first one that matches
-        breakdown = set(x for x in [base, structure, delivery] + constraints_dimensions if x)
+        if use_publishers_view:
+            needed_dimensions.add('publisher_id')
 
         for available, view in MATERIALIZED_VIEWS:
-            if len(breakdown - available) == 0:
+            if len(needed_dimensions - available) == 0:
                 return view
 
-        if delivery:
+        if sc.get_delivery_dimension(needed_dimensions):
             return {
                 'base': 'mv_master',
             }
@@ -382,15 +384,10 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
         }
 
     def get_default_context(self, breakdown, constraints, parents,
-                            order=None, offset=None, limit=None):
+                            order=None, offset=None, limit=None, use_publishers_view=False):
         """
         Returns the template context that is used by most of templates
         """
-
-        parent_constraints = None
-        if parents:
-            parent_constraints = backtosql.Q(self, *[backtosql.Q(self, **x) for x in parents])
-            parent_constraints.join_operator = parent_constraints.OR
 
         breakdown_supports_conversions = self.breakdown_supports_conversions(breakdown)
 
@@ -419,15 +416,15 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             after_join_calculations.extend(self.select_columns(group=mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS))
 
         context = {
-            'view': self.get_best_view(breakdown, constraints),
+            'view': self.get_best_view(breakdown, constraints, use_publishers_view),
             'breakdown': self.get_breakdown(breakdown),
 
             # partition is 1 less than breakdown long - the last dimension is the targeted one
-            'breakdown_partition': self.get_breakdown(breakdown)[:-1],
+            'breakdown_partition': self.get_breakdown(sc.get_parent_breakdown(breakdown)),
 
-            'constraints': backtosql.Q(self, **constraints),
-            'parent_constraints': parent_constraints,
-            'aggregates': self.get_aggregates(),
+            'constraints': self.get_constraints(constraints),
+            'parent_constraints': self.get_parent_constraints(parents),
+            'aggregates': self.get_aggregates(breakdown),
             'order': order_column,
             'offset': offset,
             'limit': limit,
@@ -444,7 +441,7 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             'is_ordered_by_after_join_calculations': is_ordered_by_after_join_calculations,
         }
 
-        context.update(get_default_yesterday_context(self, constraints, order_column))
+        context.update(self.get_default_yesterday_context(constraints, order_column))
 
         return context
 
@@ -455,55 +452,95 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
         return ((conversion_columns or tpconversion_columns) and
                 sc.get_delivery_dimension(breakdown) is None)
 
+    def get_default_yesterday_context(self, constraints, order_column):
+        date_from, date_to = constraints['date__gte'], constraints['date__lte']
 
-def get_default_yesterday_context(model, constraints, order_column):
-    date_from, date_to = constraints['date__gte'], constraints['date__lte']
+        yesterday = dates_helper.local_yesterday()
 
-    yesterday = dates_helper.local_yesterday()
+        if date_from <= yesterday <= date_to:
+            # columns that fetch yesterday spend from the base table
+            yesterday_cost = backtosql.TemplateColumn(
+                'part_for_date_sum_nano.sql',
+                {
+                    'column_name': 'cost_nano',
+                    'date_column_name': 'date',
+                    'date': yesterday.isoformat(),
+                },
+                alias='yesterday_cost',
+                group=mh.YESTERDAY_COST_AGGREGATES)
+            e_yesterday_cost = backtosql.TemplateColumn(
+                'part_for_date_sum_nano.sql',
+                {
+                    'column_name': 'effective_cost_nano',
+                    'date_column_name': 'date',
+                    'date': yesterday.isoformat(),
+                },
+                alias='e_yesterday_cost',
+                group=mh.YESTERDAY_COST_AGGREGATES)
 
-    if date_from <= yesterday <= date_to:
-        # columns that fetch yesterday spend from the base table
-        yesterday_cost = backtosql.TemplateColumn(
-            'part_for_date_sum_nano.sql',
-            {
-                'column_name': 'cost_nano',
-                'date_column_name': 'date',
-                'date': yesterday.isoformat(),
-            },
-            alias='yesterday_cost',
-            group=mh.YESTERDAY_COST_AGGREGATES)
-        e_yesterday_cost = backtosql.TemplateColumn(
-            'part_for_date_sum_nano.sql',
-            {
-                'column_name': 'effective_cost_nano',
-                'date_column_name': 'date',
-                'date': yesterday.isoformat(),
-            },
-            alias='e_yesterday_cost',
-            group=mh.YESTERDAY_COST_AGGREGATES)
+            context = {
+                'yesterday_aggregates': [yesterday_cost, e_yesterday_cost]
+            }
+        else:
+            # columns that fetch yesterday spend in a special select statement that
+            # is then joined to the base select
 
-        context = {
-            'yesterday_aggregates': [yesterday_cost, e_yesterday_cost]
-        }
-    else:
-        # columns that fetch yesterday spend in a special select statement that
-        # is then joined to the base select
+            constraints = copy.copy(constraints)
 
+            # replace date range with yesterday date
+            constraints.pop('date__gte', None)
+            constraints.pop('date__lte', None)
+            constraints['date'] = dates_helper.local_yesterday()
+
+            context = {
+                'yesterday_constraints': self.get_constraints(constraints),
+                'yesterday_aggregates': self.select_columns(group=mh.YESTERDAY_COST_AGGREGATES),
+            }
+
+        if order_column:
+            context['is_ordered_by_yesterday_aggregates'] = order_column.group == mh.YESTERDAY_COST_AGGREGATES
+        else:
+            context['is_ordered_by_yesterday_aggregates'] = False
+
+        return context
+
+    def get_constraints(self, constraints):
         constraints = copy.copy(constraints)
 
-        # replace date range with yesterday date
-        constraints.pop('date__gte', None)
-        constraints.pop('date__lte', None)
-        constraints['date'] = dates_helper.local_yesterday()
+        publisher = constraints.pop('publisher_id', None)
+        publisher__neq = constraints.pop('publisher_id__neq', None)
 
-        context = {
-            'yesterday_constraints': backtosql.Q(model, **constraints),
-            'yesterday_aggregates': model.select_columns(group=mh.YESTERDAY_COST_AGGREGATES),
-        }
+        constraints = backtosql.Q(self, **constraints)
 
-    if order_column:
-        context['is_ordered_by_yesterday_aggregates'] = order_column.group == mh.YESTERDAY_COST_AGGREGATES
-    else:
-        context['is_ordered_by_yesterday_aggregates'] = False
+        if publisher is not None:
+            constraints = constraints & self.get_parent_constraints([{'publisher_id': x} for x in publisher])
 
-    return context
+        if publisher__neq is not None:
+            constraints = constraints & ~self.get_parent_constraints([{'publisher_id': x} for x in publisher__neq])
+
+        return constraints
+
+    def get_aggregates(self, breakdown):
+        aggregates = super(MVMaster, self).get_aggregates()
+        if 'publisher_id' in breakdown:
+            aggregates = self.select_columns(group=mh.PUBLISHER_AGGREGATES) + aggregates
+        return aggregates
+
+    def get_parent_constraints(self, parents):
+        parent_constraints = None
+
+        if parents:
+            parents = helpers.inflate_parent_constraints(parents)
+            parents = helpers.optimize_parent_constraints(parents)
+
+            parent_constraints = backtosql.Q(self, *[backtosql.Q(self, **x) for x in parents])
+            parent_constraints.join_operator = parent_constraints.OR
+
+        return parent_constraints
+
+    def get_breakdown(self, breakdown):
+        if 'publisher_id' in breakdown:
+            publisher_id_idx = breakdown.index('publisher_id')
+            breakdown = breakdown[:publisher_id_idx] + ['publisher', 'source_id'] + breakdown[publisher_id_idx+1:]
+
+        return super(MVMaster, self).get_breakdown(breakdown)

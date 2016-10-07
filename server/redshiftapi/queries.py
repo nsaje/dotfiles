@@ -7,13 +7,12 @@ import newrelic.agent
 from stats import constants
 from utils import exc
 
-from redshiftapi import models
-
 
 @newrelic.agent.function_trace()
-def prepare_breakdown_query(model, breakdown, constraints, parents, order, offset, limit):
+def prepare_breakdown_query(model, breakdown, constraints, parents, order, offset, limit, use_publishers_view=False):
     target_dimension = constants.get_target_dimension(breakdown)
-    default_context = model.get_default_context(breakdown, constraints, parents, order, offset, limit)
+    default_context = model.get_default_context(breakdown, constraints, parents, order, offset, limit,
+                                                use_publishers_view=use_publishers_view)
 
     if target_dimension in constants.TimeDimension._ALL:
         # should also cover the case for len(breakdown) == 4 because in that case time dimension should be the last one
@@ -126,10 +125,10 @@ def prepare_breakdown_time_top_rows(model, time_dimension, default_context, cons
 
     # prepare yesterday context for the modified constraints
     default_context.pop('yesterday_constraints', None)
-    yesterday_context = models.get_default_yesterday_context(model, constraints, default_context['order'])
+    yesterday_context = model.get_default_yesterday_context(constraints, default_context['order'])
     default_context.update(yesterday_context)
 
-    default_context['constraints'] = backtosql.Q(model, **constraints)
+    default_context['constraints'] = model.get_constraints(constraints)
 
     # limit and offset are handeled via time constraints
     default_context['offset'] = None

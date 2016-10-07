@@ -1,6 +1,7 @@
 from django.test import TestCase
 from decimal import Decimal
 
+from zemauth.models import User
 from utils import test_helper
 
 from dash import models
@@ -28,7 +29,7 @@ class AccountsLoaderTest(TestCase):
         self.loader = loaders.AccountsLoader(accounts, sources)
 
     def test_from_constraints(self):
-        loader = loaders.AccountsLoader.from_constraints(constants.Level.ALL_ACCOUNTS, {
+        loader = loaders.AccountsLoader.from_constraints(constants.Level.ALL_ACCOUNTS, User.objects.get(pk=1), {
             'allowed_accounts': models.Account.objects.all(),
             'filtered_sources': models.Source.objects.all(),
         })
@@ -74,7 +75,7 @@ class CampaignsLoaderTest(TestCase):
         self.loader = loaders.CampaignsLoader(campaigns, sources)
 
     def test_from_constraints(self):
-        loader = loaders.CampaignsLoader.from_constraints(constants.Level.ACCOUNTS, {
+        loader = loaders.CampaignsLoader.from_constraints(constants.Level.ACCOUNTS, User.objects.get(pk=1), {
             'allowed_campaigns': models.Campaign.objects.all(),
             'filtered_sources': models.Source.objects.all(),
         })
@@ -124,7 +125,7 @@ class AdGroupsLoaderTest(TestCase):
         self.loader = loaders.AdGroupsLoader(ad_groups, sources)
 
     def test_from_constraints(self):
-        loader = loaders.AdGroupsLoader.from_constraints(constants.Level.CAMPAIGNS, {
+        loader = loaders.AdGroupsLoader.from_constraints(constants.Level.CAMPAIGNS, User.objects.get(pk=1), {
             'allowed_ad_groups': models.AdGroup.objects.all(),
             'filtered_sources': models.Source.objects.all(),
         })
@@ -175,7 +176,7 @@ class AdGroupsLoaderTest(TestCase):
         self.assertDictEqual(dict(loader.other_settings_map), {
             1: {'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
             2: {'campaign_has_available_budget': False, 'campaign_stop_inactive': False},
-            3: {'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
+            3: {'campaign_has_available_budget': False, 'campaign_stop_inactive': None},
         })
 
 
@@ -190,7 +191,7 @@ class ContentAdLoaderTest(TestCase):
         self.loader = loaders.ContentAdsLoader(content_ads, sources)
 
     def test_from_constraints(self):
-        loader = loaders.ContentAdsLoader.from_constraints(constants.Level.AD_GROUPS, {
+        loader = loaders.ContentAdsLoader.from_constraints(constants.Level.AD_GROUPS, User.objects.get(pk=1), {
             'allowed_content_ads': models.ContentAd.objects.all(),
             'filtered_sources': models.Source.objects.all(),
         })
@@ -322,23 +323,20 @@ class SourcesLoaderTest(TestCase):
         sources = models.Source.objects.all()
         self.loader = loaders.SourcesLoader(sources, models.AdGroup.objects.all())
 
+    def test_from_constraints(self):
+        loader = loaders.SourcesLoader.from_constraints(constants.Level.CAMPAIGNS, User.objects.get(pk=1), {
+            'allowed_ad_groups': models.AdGroup.objects.all(),
+            'filtered_sources': models.Source.objects.all(),
+        })
+
+        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
+
     def test_objs(self):
         self.assertItemsEqual(self.loader.objs_ids, [1, 2])
         self.assertDictEqual(self.loader.objs_map, {
             1: models.Source.objects.get(pk=1),
             2: models.Source.objects.get(pk=2),
-        })
-
-    def test_ad_groups_sources_map(self):
-        self.assertDictEqual(self.loader.ad_groups_sources_map, {
-            1: test_helper.QuerySetMatcher(models.AdGroupSource.objects.filter(pk__in=[1, 3])),
-            2: test_helper.QuerySetMatcher(models.AdGroupSource.objects.filter(pk__in=[2, 4])),
-        })
-
-    def test_ad_groups_sources_settings_map(self):
-        self.assertDictEqual(self.loader.ad_groups_sources_settings_map, {
-            1: test_helper.QuerySetMatcher(models.AdGroupSourceSettings.objects.filter(pk__in=[1, 3])),
-            2: test_helper.QuerySetMatcher(models.AdGroupSourceSettings.objects.filter(pk__in=[2, 4])),
         })
 
     def test_settings_map(self):
@@ -363,9 +361,6 @@ class SourcesLoaderTest(TestCase):
         sources = models.Source.objects.filter(pk=2)
         loader = loaders.SourcesLoader(sources, models.AdGroup.objects.all())
 
-        self.assertItemsEqual([1, 2, 3, 4], list(
-            loader.ad_groups_sources_qs.values_list('pk', flat=True)))
-
         self.assertDictEqual(loader.settings_map, {
             2: {
                 'state': constants.AdGroupSourceSettingsState.INACTIVE,
@@ -374,4 +369,87 @@ class SourcesLoaderTest(TestCase):
                 'max_bid_cpc': None,
                 'min_bid_cpc': None,
             },
+        })
+
+
+class AdGroupSourcesLoaderTest(TestCase):
+
+    fixtures = ['test_api_breakdowns.yaml']
+
+    def setUp(self):
+        sources = models.Source.objects.all()
+        self.loader = loaders.AdGroupSourcesLoader(sources, models.AdGroup.objects.get(pk=1))
+
+    def test_from_constraints_select_loader_class(self):
+        loader = loaders.SourcesLoader.from_constraints(constants.Level.AD_GROUPS, User.objects.get(pk=1), {
+            'ad_group': models.AdGroup.objects.get(pk=1),
+            'filtered_sources': models.Source.objects.all(),
+        })
+
+        self.assertIsInstance(loader, loaders.AdGroupSourcesLoader)
+        self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
+        self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
+
+    def test_objs(self):
+        self.assertItemsEqual(self.loader.objs_ids, [1, 2])
+        self.assertDictEqual(self.loader.objs_map, {
+            1: models.Source.objects.get(pk=1),
+            2: models.Source.objects.get(pk=2),
+        })
+
+    def test_settings_map(self):
+        self.assertDictEqual(self.loader.settings_map, {
+            1: {
+                'state': 1,
+                'status': 1,
+                'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
+                'daily_budget': Decimal('10.0000'),
+                'cpc': Decimal('0.5010'),
+                'editable_fields': {
+                    'state': {
+                        'message': 'This source must be managed manually.',
+                        'enabled': False
+                    },
+                    'bid_cpc': {
+                        'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
+                        'enabled': False
+                    },
+                    'daily_budget': {
+                        'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
+                        'enabled': False
+                    }
+                },
+                'supply_dash_url': None,
+                'notifications': {},
+            },
+            2: {
+                'state': 2,
+                'status': 2,
+                'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
+                'daily_budget': Decimal('20.0000'),
+                'cpc': Decimal('0.5020'),
+                'editable_fields': {
+                    'state': {
+                        'message': 'Please add additional budget to your campaign to make changes.',
+                        'enabled': False
+                    },
+                    'bid_cpc': {
+                        'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
+                        'enabled': False
+                    },
+                    'daily_budget': {
+                        'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
+                        'enabled': False
+                    }
+                },
+                'supply_dash_url': None,
+                'notifications': {},
+            }
+        })
+
+    def test_totals(self):
+        # only use active ad group sources
+        self.assertDictEqual(self.loader.totals, {
+            'daily_budget': Decimal('10.0000'),
+            'current_daily_budget': Decimal('10.0000'),
         })

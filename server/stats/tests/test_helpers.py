@@ -104,12 +104,12 @@ class HelpersTest(TestCase):
     def test_decode_breakdown_id(self):
         self.assertDictEqual(
             helpers.decode_breakdown_id(
-                ['ad_group_id', 'publisher', 'state', 'month'],
+                ['ad_group_id', 'publisher_id', 'state', 'month'],
                 "23||gimme.beer.com||FL"
             ),
             {
                 'ad_group_id': 23,
-                'publisher': 'gimme.beer.com',
+                'publisher_id': 'gimme.beer.com',
                 'state': 'FL',
             }
         )
@@ -150,8 +150,8 @@ class HelpersTest(TestCase):
     def test_encode_breakdown_id(self):
         self.assertEqual(
             helpers.encode_breakdown_id(
-                ['campaign_id', 'publisher', 'gender'],
-                {'campaign_id': 13, 'publisher': 'gimme.beer.com', 'gender': 'M', 'clicks': 666}
+                ['campaign_id', 'publisher_id', 'gender'],
+                {'campaign_id': 13, 'publisher_id': 'gimme.beer.com', 'gender': 'M', 'clicks': 666}
             ),
             "13||gimme.beer.com||M"
         )
@@ -159,14 +159,14 @@ class HelpersTest(TestCase):
         self.assertEqual(
             helpers.encode_breakdown_id(
                 ['gender'],
-                {'campaign_id': 13, 'publisher': 'gimme.beer.com', 'gender': 'M', 'clicks': 666}
+                {'campaign_id': 13, 'publisher_id': 'gimme.beer.com', 'gender': 'M', 'clicks': 666}
             ),
             "M"
         )
         self.assertEqual(
             helpers.encode_breakdown_id(
-                ['campaign_id', 'publisher', 'gender'],
-                {'campaign_id': 13, 'publisher': None, 'gender': 'M', 'clicks': 666}
+                ['campaign_id', 'publisher_id', 'gender'],
+                {'campaign_id': 13, 'publisher_id': None, 'gender': 'M', 'clicks': 666}
             ),
             "13||-None-||M"
         )
@@ -182,13 +182,13 @@ class HelpersTest(TestCase):
         self.assertEqual(helpers.extract_order_field('-media_cost', None), '-media_cost')
         self.assertEqual(helpers.extract_order_field('clicks', 'ad_group_id'), 'clicks')
 
-        self.assertEqual(helpers.extract_order_field('name', 'publisher'), 'name')
+        self.assertEqual(helpers.extract_order_field('name', 'publisher_id'), 'name')
         self.assertEqual(helpers.extract_order_field('name', 'dma'), 'name')
         self.assertEqual(helpers.extract_order_field('name', 'gender'), 'name')
         self.assertEqual(helpers.extract_order_field('name', 'country'), 'name')
         self.assertEqual(helpers.extract_order_field('name', 'state'), 'name')
 
-        self.assertEqual(helpers.extract_order_field('-status', 'publisher'), '-status')
+        self.assertEqual(helpers.extract_order_field('-status', 'publisher_id'), '-status')
 
         self.assertEqual(helpers.extract_order_field('-status', 'dma'), '-status')
         self.assertEqual(helpers.extract_order_field('-status', 'gender'), '-status')
@@ -216,13 +216,13 @@ class HelpersTest(TestCase):
         self.assertEqual(helpers.extract_rs_order_field('name', 'month'), 'month')
         self.assertEqual(helpers.extract_rs_order_field('name', 'age'), 'age')
         self.assertEqual(helpers.extract_rs_order_field('name', 'age_gender'), 'age_gender')
-        self.assertEqual(helpers.extract_rs_order_field('name', 'publisher'), 'publisher')
+        self.assertEqual(helpers.extract_rs_order_field('name', 'publisher_id'), 'publisher')
         self.assertEqual(helpers.extract_rs_order_field('name', 'dma'), 'dma')
         self.assertEqual(helpers.extract_rs_order_field('name', 'gender'), 'gender')
         self.assertEqual(helpers.extract_rs_order_field('name', 'country'), 'country')
         self.assertEqual(helpers.extract_rs_order_field('name', 'state'), 'state')
 
-        self.assertEqual(helpers.extract_rs_order_field('-status', 'publisher'), '-status')
+        self.assertEqual(helpers.extract_rs_order_field('-status', 'publisher_id'), '-status')
 
         self.assertEqual(helpers.extract_rs_order_field('-status', 'dma'), '-clicks')
         self.assertEqual(helpers.extract_rs_order_field('-status', 'gender'), '-clicks')
@@ -232,8 +232,8 @@ class HelpersTest(TestCase):
     def test_get_supported_order(self):
         self.assertEqual('-media_cost', helpers.get_supported_order('-cost', 'ad_group_id'))
         self.assertEqual('-clicks', helpers.get_supported_order('-pacing', 'ad_group_id'))
-        self.assertEqual('clicks', helpers.get_supported_order('state', 'publisher'))
-        self.assertEqual('media_cost', helpers.get_supported_order('media_cost', 'publisher'))
+        self.assertEqual('clicks', helpers.get_supported_order('state', 'publisher_id'))
+        self.assertEqual('media_cost', helpers.get_supported_order('media_cost', 'publisher_id'))
         self.assertEqual('-name', helpers.get_supported_order('-name', 'ad_group_id'))
 
     def test_should_query_dashapi_first(self):
@@ -242,8 +242,8 @@ class HelpersTest(TestCase):
             self.assertTrue(helpers.should_query_dashapi_first('status', dimension))
             self.assertFalse(helpers.should_query_dashapi_first('clicks', dimension))
 
-        self.assertFalse(helpers.should_query_dashapi_first('name', 'publisher'))
-        self.assertTrue(helpers.should_query_dashapi_first('status', 'publisher'))
+        self.assertFalse(helpers.should_query_dashapi_first('name', 'publisher_id'))
+        self.assertFalse(helpers.should_query_dashapi_first('status', 'publisher_id'))
 
         for dimension in constants.DeliveryDimension._ALL + constants.TimeDimension._ALL:
             self.assertFalse(helpers.should_query_dashapi_first('name', dimension), dimension)
@@ -256,23 +256,13 @@ class HelpersTest(TestCase):
         for field in helpers.SOURCE_FIELDS:
             self.assertTrue(helpers.should_query_dashapi_first(field, 'source_id'))
 
+        for field in helpers.PUBLISHER_FIELDS:
+            self.assertFalse(helpers.should_query_dashapi_first(field, 'publisher_id'))
+
         for field in helpers.OTHER_DASH_FIELDS:
             self.assertTrue(helpers.should_query_dashapi_first(field, 'campaign_id'))
             self.assertTrue(helpers.should_query_dashapi_first(field, 'account_id'))
             self.assertTrue(helpers.should_query_dashapi_first(field, 'ad_group_id'))
-
-    def test_make_rows(self):
-        self.assertItemsEqual(helpers.make_rows('account_id', [1, 2, 3]), [
-            {'account_id': 1},
-            {'account_id': 2},
-            {'account_id': 3},
-        ])
-
-        self.assertItemsEqual(helpers.make_rows('account_id', [1, 2, 3], {'source_id': 2}), [
-            {'account_id': 1, 'source_id': 2},
-            {'account_id': 2, 'source_id': 2},
-            {'account_id': 3, 'source_id': 2},
-        ])
 
     def test_merge_rows(self):
         self.assertItemsEqual(helpers.merge_rows(

@@ -3072,6 +3072,16 @@ class PublisherBlacklist(models.Model):
     class Meta:
         unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )
 
+    objects = QuerySetManager()
+
+    class QuerySet(models.QuerySet):
+
+        def filter_by_sources(self, sources):
+            if not should_filter_by_sources(sources):
+                return self
+
+            return self.filter(source__in=sources)
+
 
 class CreditLineItem(FootprintModel, HistoryMixin):
     history_fields = [

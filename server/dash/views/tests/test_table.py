@@ -868,37 +868,34 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
 
         self.assertIsNone(result)
 
-    def test_get_supply_dash_disabled_message(self):
+    def test_get_source_supply_dash_disabled_message(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD
         ]
 
-        view = table.SourcesTable()
-        result = view._get_supply_dash_disabled_message(ad_group_source)
+        result = helpers.get_source_supply_dash_disabled_message(ad_group_source, ad_group_source.source)
 
         self.assertIsNone(result)
 
-    def test_get_supply_dash_disabled_message_no_dash(self):
+    def test_get_source_supply_dash_disabled_message_no_dash(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = []
 
-        view = table.SourcesTable()
-        result = view._get_supply_dash_disabled_message(ad_group_source)
+        result = helpers.get_source_supply_dash_disabled_message(ad_group_source, ad_group_source.source)
 
         self.assertEqual(result,
                          "This media source doesn't have a dashboard of its own. "
                          "All campaign management is done through Zemanta One dashboard.")
 
-    def test_get_supply_dash_disabled_message_pending(self):
+    def test_get_source_supply_dash_disabled_message_pending(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD
         ]
         ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
-        view = table.SourcesTable()
-        result = view._get_supply_dash_disabled_message(ad_group_source)
+        result = helpers.get_source_supply_dash_disabled_message(ad_group_source, ad_group_source.source)
 
         self.assertEqual(result,
                          "Dashboard of this media source is not yet available because the "

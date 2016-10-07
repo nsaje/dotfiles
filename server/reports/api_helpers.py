@@ -64,10 +64,6 @@ FIELD_PERMISSION_MAPPING = {
 
     'performance':      ('zemauth.campaign_goal_performance',),
     'styles':           ('zemauth.campaign_goal_performance',),
-
-    'archived': None,
-    'maintenance': None,
-    'status_per_source': None,
 }
 
 

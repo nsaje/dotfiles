@@ -1,5 +1,8 @@
+import stats.helpers
+
 from dash.views import helpers as view_helpers
 from dash import constants
+from dash import publisher_helpers
 
 """
 Applies dash data to rows. No logics, only write data to proper keys.
@@ -17,6 +20,8 @@ def get_augmenter_for_dimension(target_dimension):
         return augment_content_ads
     elif target_dimension == 'source_id':
         return augment_sources
+    elif target_dimension == 'publisher_id':
+        return augment_publishers
 
 
 def augment_accounts(rows, loader, is_base_level=False):
@@ -88,6 +93,19 @@ def augment_sources(rows, loader, is_base_level=False):
 
 def augment_sources_totals(row, loader):
     augment_row_source(row, settings=loader.totals)
+
+
+def augment_publishers(rows, loader, is_base_level=False):
+    for row in rows:
+        domain, _ = stats.helpers.dissect_publisher_id(row['publisher_id'])
+        source_id = row['source_id']
+        augment_row_publisher(
+            row,
+            domain,
+            loader.source_map[source_id],
+            loader.blacklist_status_map[row['publisher_id']],
+            loader.can_blacklist_source_map[source_id]
+        )
 
 
 def augment_row_account(row, account=None, settings=None, status=None, projections=None):
@@ -212,10 +230,86 @@ def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, is_d
 def augment_row_source(row, source=None, settings=None):
     if source:
         row.update({
+            'id': source.id,
             'name': source.name,
             'archived': source.deprecated,
             'maintenance': source.maintenance,
         })
 
     if settings is not None:
-        row.update(settings)
+        copy_fields_if_exists([
+            'status', 'daily_budget', 'min_bid_cpc', 'max_bid_cpc', 'state',
+            'supply_dash_url', 'supply_dash_disabled_message', 'editable_fields',
+            'notifications',
+        ], settings, row)
+
+        if 'cpc' in settings:
+            row.update({
+                'bid_cpc': settings['cpc'],
+                'current_bid_cpc': settings['cpc'],
+                'current_daily_budget': settings['daily_budget'],
+            })
+
+
+def augment_row_publisher(row, domain, source, blacklist_status, can_blacklist_source):
+    row.update({
+        'name': domain,
+        'source_id': source.id,
+        'source_name': source.name,
+        'exchange': source.name,
+        'domain': domain,
+        'domain_link': publisher_helpers.get_publisher_domain_link(domain),
+        'can_blacklist_publisher': can_blacklist_source,
+        'status': blacklist_status['status'],
+        'blacklisted': constants.PublisherStatus.get_text(blacklist_status['status']),
+    })
+
+    if blacklist_status.get('blacklisted_level'):
+        row.update({
+            'blacklisted_level': blacklist_status['blacklisted_level'],
+            'blacklisted_level_description': constants.PublisherBlacklistLevel.verbose(
+                blacklist_status['blacklisted_level']),
+        })
+
+
+def make_dash_rows(target_dimension, objs_ids, parent):
+    if target_dimension == 'publisher_id':
+        return make_publisher_dash_rows(objs_ids, parent)
+    return [make_row(target_dimension, obj_id, parent) for obj_id in objs_ids]
+
+
+def make_publisher_dash_rows(objs_ids, parent):
+    rows = []
+    for obj_id in objs_ids:
+        publisher, source_id = stats.helpers.dissect_publisher_id(obj_id)
+
+        # dont include rows without source_id
+        if source_id:
+            rows.append({
+                'publisher_id': obj_id,
+                'publisher': publisher,
+                'source_id': source_id,
+            })
+
+    return rows
+
+
+def make_row(target_dimension, target_id, parent):
+    row = {target_dimension: target_id}
+    if parent:
+        row.update(parent)
+
+    if target_dimension == 'publisher_id':
+        publisher, source_id = stats.helpers.dissect_publisher_id(target_id)
+        row.update({
+            'publisher': publisher,
+            'source_id': source_id,
+        })
+
+    return row
+
+
+def copy_fields_if_exists(field_names, source, target):
+    for field_name in field_names:
+        if field_name in source:
+            target[field_name] = source[field_name]

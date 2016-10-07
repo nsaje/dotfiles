@@ -9,10 +9,9 @@ from utils import sort_helper
 from utils import exc
 
 import dash.models
-from dash.constants import Level
+from dash.constants import PublisherBlacklistFilter
 
 from stats import constants
-from reports.db_raw_helpers import extract_obj_ids
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,14 @@ CONTENT_ADS_FIELDS = [
 ]
 
 SOURCE_FIELDS = [
-    'min_bid_cpc', 'max_bid_cpc', 'daily_budget'
+    'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'maintenance', 'cpc', 'bid_cpc', 'current_bid_cpc',
+    'current_daily_budget', 'supply_dash_url', 'supply_dash_disabled_message', 'editable_fields',
+    'status_setting', 'id', 'notifications',
+]
+
+PUBLISHER_FIELDS = [
+    'source_name', 'exchange', 'domain', 'external_id', 'domain_link', 'can_blacklist_publisher', 'blacklisted', 'blacklisted_level',
+    'blacklisted_level_description'
 ]
 
 OTHER_DASH_FIELDS = [
@@ -101,6 +107,15 @@ def extract_stats_constraints(constraints, breakdown):
 
     if 'content_ad_id' in breakdown:
         new_constraints['content_ad_id'] = list(constraints['allowed_content_ads'].values_list('pk', flat=True))
+
+    if 'publisher_id' in breakdown and constraints['publisher_blacklist_filter'] in \
+       (PublisherBlacklistFilter.SHOW_ACTIVE, PublisherBlacklistFilter.SHOW_BLACKLISTED):
+        publisher_constraints = [create_publisher_id(x.name, x.source_id) for x in constraints['publisher_blacklist']]
+
+        if constraints['publisher_blacklist_filter'] == PublisherBlacklistFilter.SHOW_ACTIVE:
+            new_constraints['publisher_id__neq'] = publisher_constraints
+        elif constraints['publisher_blacklist_filter'] == PublisherBlacklistFilter.SHOW_BLACKLISTED:
+            new_constraints['publisher_id'] = publisher_constraints
 
     return new_constraints
 
@@ -185,7 +200,7 @@ def check_constraints_are_supported(constraints):
     """
 
     query_set_keys = ['filtered_sources', 'filtered_agencies', 'allowed_accounts',
-                      'allowed_campaigns', 'allowed_ad_groups', 'allowed_content_ads']
+                      'allowed_campaigns', 'allowed_ad_groups', 'allowed_content_ads', 'publisher_blacklist']
 
     if 'filtered_sources' not in constraints:
         raise exc.UnknownFieldBreakdownError("Missing filtered sources")
@@ -202,7 +217,7 @@ def check_constraints_are_supported(constraints):
         if key in constraints and not isinstance(constraints[key], Model):
             raise exc.UnknownFieldBreakdownError("Value of '{}' should be a django Model".format(key))
 
-    other_keys = ['show_archived', 'filtered_account_types', 'date__gte', 'date__lte']
+    other_keys = ['show_archived', 'filtered_account_types', 'date__gte', 'date__lte', 'publisher_blacklist_filter']
     unknown_keys = set(constraints.keys()) - set(query_set_keys) - set(model_keys) - set(other_keys)
 
     if unknown_keys:
@@ -231,8 +246,11 @@ def get_supported_order(order, target_dimension):
     if order_field in UNSUPPORTED_FIELDS:
         return prefix + "clicks"
 
-    if target_dimension == 'publisher' and order_field in ('state', 'status'):
+    if target_dimension == 'publisher_id' and order_field in ('state', 'status'):
         return prefix + "clicks"
+
+    if target_dimension == 'publisher_id' and order_field == 'exchange':
+        return prefix + "source_id"
 
     return order
 
@@ -277,7 +295,7 @@ def extract_rs_order_field(order, target_dimension):
     if target_dimension in constants.TimeDimension._ALL or target_dimension in ('age', 'age_gender', 'device_type'):
         return prefix + target_dimension
 
-    if target_dimension == 'publisher' and order_field == 'name':
+    if target_dimension == 'publisher_id' and order_field == 'name':
         order_field = 'publisher'
 
     # all delivery dimensions are sorted by targeted dimension ids
@@ -302,14 +320,19 @@ def group_rows_by_breakdown(breakdown, rows):
 
 
 def should_query_dashapi_first(order, target_dimension):
+
+    if target_dimension == 'publisher_id':
+        return False
+
     _, order_field = sort_helper.dissect_order(order)
 
-    if (order_field == 'name' and
-       target_dimension in constants.StructureDimension._ALL and
-       target_dimension != constants.StructureDimension.PUBLISHER):
+    if order_field == 'name' and target_dimension in constants.StructureDimension._ALL:
         return True
 
     if order_field == 'status' and target_dimension in constants.StructureDimension._ALL:
+        return True
+
+    if order_field in CONTENT_ADS_FIELDS and target_dimension == 'content_ad_id':
         return True
 
     if order_field in SOURCE_FIELDS and target_dimension == 'source_id':
@@ -326,16 +349,6 @@ def should_query_dashapi_first(order, target_dimension):
 
 def should_query_dashapi(target_dimension):
     return target_dimension in constants.StructureDimension._ALL
-
-
-def make_rows(target_dimension, obj_ids, parent=None):
-    rows = []
-    for obj_id in obj_ids:
-        row = {target_dimension: obj_id}
-        if parent:
-            row.update(parent)
-        rows.append(row)
-    return rows
 
 
 def merge_rows(breakdown, dash_rows, stats_rows):
@@ -361,3 +374,12 @@ def merge_row(row_a, row_b):
     row.update(row_a)
     row.update(row_b)
     return row
+
+
+def create_publisher_id(domain, source_id):
+    return u'__'.join((domain, unicode(source_id or '')))
+
+
+def dissect_publisher_id(publisher):
+    domain, source_id = publisher.rsplit(u'__', 1)
+    return domain, int(source_id) if source_id else None

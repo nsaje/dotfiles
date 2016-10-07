@@ -60,7 +60,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
         ])
 
         columns = m.get_columns()
-        self.assertEquals(len(columns), 70)
+        self.assertEquals(len(columns), 72)
 
         columns = m.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
@@ -216,7 +216,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
 
     def test_columns(self):
         columns = self.model.get_columns()
-        self.assertEquals(len(columns), 54)
+        self.assertEquals(len(columns), 56)
 
         columns = self.model.select_columns(group=model_helpers.BREAKDOWN)
         self.assertEquals(len(columns), 18)
@@ -240,9 +240,30 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         with self.assertRaises(backtosql.BackToSQLException):
             self.model.get_breakdown(['bla', 'campaign_id'])
 
+    def test_get_publishers_breakdown(self):
+        self.assertItemsEqual(
+            self.model.get_breakdown(['publisher_id']),
+            self.model.select_columns(['source_id', 'publisher'])
+        )
+
     def test_get_aggregates(self):
-        self.assertItemsEqual([x.alias for x in self.model.get_aggregates()],
+        self.assertItemsEqual([x.alias for x in self.model.get_aggregates([])],
                               ['clicks', 'impressions', 'data_cost',
+                               'media_cost', 'e_media_cost', 'e_data_cost',
+                               'license_fee', 'billing_cost', 'total_cost',
+                               'ctr', 'cpc', 'visits', 'click_discrepancy',
+                               'pageviews', 'new_visits', 'percent_new_users',
+                               'new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos',
+                               'avg_cost_for_new_visitor', 'avg_cost_per_minute',
+                               'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview',
+                               'avg_cost_per_visit', 'total_pageviews', 'total_seconds',
+                               'non_bounced_visits', 'margin', 'agency_total',
+                               'cpm', 'returning_users', 'unique_users', 'bounced_visits'])
+
+    def test_get_aggregates_w_publishers(self):
+        self.assertItemsEqual([x.alias for x in self.model.get_aggregates(['publisher_id'])],
+                              ['external_id',  'publisher_id',
+                               'clicks', 'impressions', 'data_cost',
                                'media_cost', 'e_media_cost', 'e_data_cost',
                                'license_fee', 'billing_cost', 'total_cost',
                                'ctr', 'cpc', 'visits', 'click_discrepancy',
@@ -315,8 +336,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             'date__lte': datetime.date(2016, 6, 5),
         }
 
-        context = models.get_default_yesterday_context(
-            m,
+        context = m.get_default_yesterday_context(
             constraints,
             m.yesterday_cost.as_order('-yesterday_cost')
         )
@@ -572,6 +592,18 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             constants.StructureDimension.PUBLISHER,
             constants.TimeDimension.DAY,
         ], {constants.StructureDimension.CAMPAIGN: 1}), {
+            'base': 'mv_pubs_master',
+            'conversions': 'mv_conversions',
+            'touchpointconversions': 'mv_touchpointconversions',
+        })
+
+        self.assertEqual(m.get_best_view([], {constants.StructureDimension.CAMPAIGN: 1}), {
+            'base': 'mv_campaign',
+            'conversions': 'mv_conversions_campaign',
+            'touchpointconversions': 'mv_touch_campaign',
+        })
+
+        self.assertEqual(m.get_best_view([], {constants.StructureDimension.CAMPAIGN: 1}, use_publishers_view=True), {
             'base': 'mv_pubs_master',
             'conversions': 'mv_conversions',
             'touchpointconversions': 'mv_touchpointconversions',

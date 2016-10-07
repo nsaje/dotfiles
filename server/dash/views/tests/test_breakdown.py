@@ -11,6 +11,7 @@ from utils import test_helper
 from stats.helpers import Goals
 
 from dash import models
+from dash import constants
 from dash.views import breakdown
 from dash.views import breakdown_helpers
 from dash import table
@@ -506,6 +507,8 @@ class AdGroupBreakdownTestCase(TestCase):
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
+                'publisher_blacklist_filter': constants.PublisherBlacklistFilter.SHOW_ALL,
+                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherBlacklist.objects.all()),
             },
             ANY,
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -515,7 +518,7 @@ class AdGroupBreakdownTestCase(TestCase):
         )
 
     @patch('stats.api_breakdowns.totals')
-    def test_post_base_level(self, mock_totals, mock_query):
+    def test_post_base_level_content_ads(self, mock_totals, mock_query):
         test_helper.add_permissions(
             self.user, ['can_access_table_breakdowns_feature_on_ad_group_level'])
 
@@ -560,6 +563,8 @@ class AdGroupBreakdownTestCase(TestCase):
                 'date__lte': datetime.date(2016, 2, 3),
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
+                'publisher_blacklist_filter': constants.PublisherBlacklistFilter.SHOW_ALL,
+                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherBlacklist.objects.all()),
             },
             ANY,
             [],
@@ -578,6 +583,182 @@ class AdGroupBreakdownTestCase(TestCase):
                     {"id": 2, "name": "Ich bin eine UploadBatch"},
                     {"id": 1, "name": "batch 1"}
                 ],
+                "conversion_goals": [
+                    {"id": "conversion_goal_2", "name": "test conversion goal 2"},
+                    {"id": "conversion_goal_3", "name": "test conversion goal 3"},
+                    {"id": "conversion_goal_4", "name": "test conversion goal 4"},
+                    {"id": "conversion_goal_5", "name": "test conversion goal 5"}
+                ],
+                "pixels": [{"prefix": "pixel_1", "name": "test"}]}
+            ],
+            "success": True
+        })
+
+    @patch('stats.api_breakdowns.totals')
+    def test_post_base_level_source(self, mock_totals, mock_query):
+        test_helper.add_permissions(
+            self.user, ['can_access_table_breakdowns_feature_on_ad_group_level'])
+
+        mock_query.return_value = {}
+
+        mock_totals.return_value = {
+            'clicks': 123,
+        }
+
+        params = {
+            'limit': 5,
+            'offset': 33,
+            'order': '-clicks',
+            'start_date': '2016-01-01',
+            'end_date': '2016-02-03',
+            'filtered_sources': ['1', '3', '4'],
+            'show_archived': 'true',
+            'parents': [],
+        }
+
+        response = self.client.post(
+            reverse('breakdown_ad_groups', kwargs={
+                'ad_group_id': 1,
+                'breakdown': '/source'
+            }),
+            data=json.dumps({'params': params}),
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        mock_query.assert_called_with(
+            Level.AD_GROUPS,
+            self.user,
+            ['source_id'],
+            {
+                'allowed_content_ads': test_helper.QuerySetMatcher(models.ContentAd.objects.filter(ad_group_id=1)),
+                'ad_group': models.AdGroup.objects.get(pk=1),
+                'campaign': models.Campaign.objects.get(pk=1),
+                'account': models.Account.objects.get(pk=1),
+                'date__gte': datetime.date(2016, 1, 1),
+                'date__lte': datetime.date(2016, 2, 3),
+                'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'show_archived': True,
+                'publisher_blacklist_filter': constants.PublisherBlacklistFilter.SHOW_ALL,
+                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherBlacklist.objects.all()),
+            },
+            ANY,
+            [],
+            '-clicks',
+            33,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW  # [workaround] see implementation
+        )
+
+        self.assertDictEqual(json.loads(response.content), {
+            "data": [{
+                "pagination": {"count": 33, "limit": 0, "offset": 33},
+                "rows": {},
+                "breakdown_id": None,
+                "totals": {"clicks": 123},
+                "conversion_goals": [
+                    {"id": "conversion_goal_2", "name": "test conversion goal 2"},
+                    {"id": "conversion_goal_3", "name": "test conversion goal 3"},
+                    {"id": "conversion_goal_4", "name": "test conversion goal 4"},
+                    {"id": "conversion_goal_5", "name": "test conversion goal 5"}
+                ],
+                "pixels": [{"prefix": "pixel_1", "name": "test"}],
+                'enabling_autopilot_sources_allowed': True,
+                'ad_group_autopilot_state': 1
+            }],
+            "success": True
+        })
+
+    def test_post_base_level_publisher_not_allowed(self, mock_query):
+        test_helper.add_permissions(
+            self.user, ['can_access_table_breakdowns_feature_on_ad_group_level'])
+        mock_query.return_value = {}
+
+        params = {
+            'limit': 5,
+            'offset': 33,
+            'order': '-clicks',
+            'start_date': '2016-01-01',
+            'end_date': '2016-02-03',
+            'filtered_sources': ['1', '3', '4'],
+            'show_archived': 'true',
+            'parents': [],
+        }
+
+        response = self.client.post(
+            reverse('breakdown_ad_groups', kwargs={
+                'ad_group_id': 1,
+                'breakdown': '/publisher'
+            }),
+            data=json.dumps({'params': params}),
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    @patch('stats.api_breakdowns.totals')
+    def test_post_base_level_publisher(self, mock_totals, mock_query):
+        test_helper.add_permissions(
+            self.user, ['can_access_table_breakdowns_feature_on_ad_group_level', 'can_see_publishers'])
+
+        mock_query.return_value = {}
+
+        mock_totals.return_value = {
+            'clicks': 123,
+        }
+
+        params = {
+            'limit': 5,
+            'offset': 33,
+            'order': '-clicks',
+            'start_date': '2016-01-01',
+            'end_date': '2016-02-03',
+            'filtered_sources': ['1', '3', '4'],
+            'show_archived': 'true',
+            'parents': [],
+        }
+
+        response = self.client.post(
+            reverse('breakdown_ad_groups', kwargs={
+                'ad_group_id': 1,
+                'breakdown': '/publisher'
+            }),
+            data=json.dumps({'params': params}),
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        mock_query.assert_called_with(
+            Level.AD_GROUPS,
+            self.user,
+            ['publisher_id'],
+            {
+                'allowed_content_ads': test_helper.QuerySetMatcher(models.ContentAd.objects.filter(ad_group_id=1)),
+                'ad_group': models.AdGroup.objects.get(pk=1),
+                'campaign': models.Campaign.objects.get(pk=1),
+                'account': models.Account.objects.get(pk=1),
+                'date__gte': datetime.date(2016, 1, 1),
+                'date__lte': datetime.date(2016, 2, 3),
+                'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                'show_archived': True,
+                'publisher_blacklist_filter': constants.PublisherBlacklistFilter.SHOW_ALL,
+                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherBlacklist.objects.all()),
+            },
+            ANY,
+            [],
+            '-clicks',
+            33,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW  # [workaround] see implementation
+        )
+
+        self.assertDictEqual(json.loads(response.content), {
+            "data": [{
+                "pagination": {"count": 33, "limit": 0, "offset": 33},
+                "rows": {},
+                "breakdown_id": None,
+                "totals": {"clicks": 123},
+                "ob_blacklisted_count": 0,
                 "conversion_goals": [
                     {"id": "conversion_goal_2", "name": "test conversion goal 2"},
                     {"id": "conversion_goal_3", "name": "test conversion goal 3"},

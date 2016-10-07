@@ -14,20 +14,20 @@ from dash.dashapi import helpers
 from dash import threads
 
 
-def query(level, breakdown, constraints, parents, order, offset, limit):
-    query_threads = query_async_start(level, breakdown, constraints, parents)
+def query(level, user, breakdown, constraints, parents, order, offset, limit):
+    query_threads = query_async_start(level, user, breakdown, constraints, parents)
     return query_async_get_results(query_threads, order, offset, limit)
 
 
-def query_for_rows(rows, level, breakdown, constraints, parents, order, offset, limit, structure_w_stats):
-    query_threads = query_async_start(level, breakdown, constraints, parents)
+def query_for_rows(rows, level, user, breakdown, constraints, parents, order, offset, limit, structure_w_stats):
+    query_threads = query_async_start(level, user, breakdown, constraints, parents)
     return query_async_get_results_for_rows(query_threads, rows, breakdown, parents, order, offset, limit, structure_w_stats)
 
 
-def query_async_start(level, breakdown, constraints, parents):
+def query_async_start(level, user, breakdown, constraints, parents):
     query_threads = []
     for parent in (parents or [None]):
-        fn = partial(query_section, level, breakdown, constraints, parent)
+        fn = partial(query_section, level, user, breakdown, constraints, parent)
         thread = threads.AsyncFunction(fn)
         thread.start()
 
@@ -40,7 +40,7 @@ def query_async_get_results(query_threads, order=None, offset=None, limit=None):
     rows = []
     for thread in query_threads:
         thread.join()
-        thread_rows = thread.result
+        thread_rows = thread.result['rows']
 
         if order:
             thread_rows = sort_helper.sort_rows_by_order_and_archived(thread_rows, order)
@@ -56,24 +56,43 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
     target_dimension = stats.constants.get_target_dimension(breakdown)
 
     rows_by_parent = stats.helpers.group_rows_by_breakdown(parent_breakdown, rows)
-    dash_rows_by_parent = stats.helpers.group_rows_by_breakdown(
-        parent_breakdown,
-        query_async_get_results(query_threads))
     structure_by_parent = stats.helpers.group_rows_by_breakdown(parent_breakdown, structure_w_stats)
+
+    augment_fn = augmenter.get_augmenter_for_dimension(target_dimension)
 
     result = []
 
-    for parent in (parents or [None]):
+    for thread in query_threads:
+        thread.join()
+
+        parent = thread.result['parent']
+        loader = thread.result['loader']
+        dash_rows = thread.result['rows']
+
         parent_id_tuple = stats.helpers.get_breakdown_id_tuple(parent, parent_breakdown)
+        stat_rows = rows_by_parent[parent_id_tuple]
 
-        rows_4p = rows_by_parent[parent_id_tuple]
-        dash_rows_4p = dash_rows_by_parent[parent_id_tuple]
+        rows_target_ids = [x[target_dimension] for x in stat_rows]
+        selected_rows = [x for x in dash_rows if x[target_dimension] in rows_target_ids]
 
-        rows_target_ids = [x[target_dimension] for x in rows_4p]
-        selected_rows = [x for x in dash_rows_4p if x[target_dimension] in rows_target_ids]
+        dash_rows_by_id = {x[target_dimension]: x for x in dash_rows}
 
-        # check if we need to add some additional rows
-        if len(rows_target_ids) < limit:
+        selected_rows = []
+        for row in stat_rows:
+            if row[target_dimension] in dash_rows_by_id:
+                selected_rows.append(dash_rows_by_id[row[target_dimension]])
+
+            elif target_dimension == 'publisher_id':
+                # when dealing with publishers create dash rows from stats rows - not everything can be queried out
+                # out dash database as in other dimensions that are augmented by dash.
+
+                dash_row = augmenter.make_row(target_dimension, row[target_dimension], parent)
+                augment_fn([dash_row], loader, not bool(parent_breakdown))
+                selected_rows.append(dash_row)
+
+        # add dash rows that were not included in stats. publisher dimension is excluded here
+        # as we should not add those rows
+        if len(rows_target_ids) < limit and target_dimension != 'publisher_id':
             # select additional rows from
             structure_4p = structure_by_parent[parent_id_tuple]
             all_used_ids = [x[target_dimension] for x in structure_4p]
@@ -81,7 +100,7 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
             new_offset, new_limit = helpers.get_adjusted_limits_for_additional_rows(
                 rows_target_ids, all_used_ids, offset, limit)
 
-            extra_rows = [x for x in dash_rows_4p if x[target_dimension] not in all_used_ids]
+            extra_rows = [x for x in dash_rows if x[target_dimension] not in all_used_ids]
             extra_rows = sort_helper.sort_rows_by_order_and_archived(extra_rows,
                                                                      get_default_order(target_dimension, order))
             selected_rows.extend(helpers.apply_offset_limit(extra_rows, new_offset, new_limit))
@@ -91,42 +110,50 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
 
 
 @newrelic.agent.function_trace()
-def query_section(level, breakdown, constraints, parent=None):
+def query_section(level, user, breakdown, constraints, parent=None):
     target_dimension = get_target_dimension(breakdown)
 
     constraints = stats.constraints_helper.reduce_to_parent(breakdown, constraints, parent)
     loader_cls = loaders.get_loader_for_dimension(target_dimension)
-    loader = loader_cls.from_constraints(level, constraints)
+    loader = loader_cls.from_constraints(level, user, constraints)
 
-    rows = stats.helpers.make_rows(target_dimension, loader.objs_ids, parent)
+    rows = augmenter.make_dash_rows(target_dimension, loader.objs_ids, parent)
     augmenter_fn = augmenter.get_augmenter_for_dimension(target_dimension)
 
     augmenter_fn(rows, loader, not bool(parent))
 
-    return rows
+    return {
+        'rows': rows,
+        'loader': loader,
+        'parent': parent,
+    }
 
 
 @newrelic.agent.function_trace()
-def get_totals(level, breakdown, constraints):
+def get_totals(level, user, breakdown, constraints):
     target_dimension = get_target_dimension(breakdown)
 
     row = {}
     if breakdown == ['source_id']:
-        loader = loaders.SourcesLoader.from_constraints(level, constraints)
+        loader = loaders.SourcesLoader.from_constraints(level, user, constraints)
         augmenter.augment_sources_totals(row, loader)
 
     elif breakdown == ['account_id']:
-        loader = loaders.AccountsLoader.from_constraints(level, constraints)
+        loader = loaders.AccountsLoader.from_constraints(level, user, constraints)
         augmenter.augment_accounts_totals(row, loader)
 
     elif breakdown == ['campaign_id']:
-        loader = loaders.CampaignsLoader.from_constraints(level, constraints)
+        loader = loaders.CampaignsLoader.from_constraints(level, user, constraints)
         augmenter.augment_campaigns_totals(row, loader)
 
     return row
 
 
 def get_default_order(target_dimension, order):
+    """
+    Order that is applied to rows whose primary order field value is None.
+    """
+
     prefix, order_field = sort_helper.dissect_order(order)
 
     return [prefix + 'name', prefix + target_dimension]

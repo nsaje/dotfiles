@@ -26,6 +26,13 @@
 # | State             | 1  2  1   |
 # |-------------------+-----------|
 # | Source            | 1  2  2   |
+# 
+# | Publisher blacklist | name     | Source | Ad Group | Campaign | Account | Global |
+# |---------------------+----------+--------+----------+----------+---------+--------|
+# |                   1 | pub1.com |      1 |        1 |          |         |        |
+# |                   2 | pub2.com |      2 |          |        1 |         |        |
+# |                   3 | pub3.com |      1 |          |          |       1 |        |
+# |                   4 | pub4.com |      2 |          |          |         | true   |
 
 
 # test user
@@ -525,3 +532,45 @@
         modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource
     pk: 3
+
+# test publisherblacklist
+
+-   fields:
+        name: 'pub1.com'
+        ad_group: 1
+        source: 1
+        external_id: ''
+        status: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 1
+
+-   fields:
+        name: 'pub2.com'
+        campaign: 1
+        source: 2
+        external_id: ''
+        status: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 2
+
+-   fields:
+        name: 'pub3.com'
+        account: 1
+        source: 1
+        external_id: ''
+        status: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 3
+
+-   fields:
+        name: 'pub4.com'
+        everywhere: true
+        source: 2
+        external_id: ''
+        status: 2
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.publisherblacklist
+    pk: 4

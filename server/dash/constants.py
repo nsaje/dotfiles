@@ -122,7 +122,7 @@ class PublisherStatus(ConstantBase):
     PENDING = 3
 
     _VALUES = {
-        ENABLED: 'Enabled',
+        ENABLED: 'Active',
         BLACKLISTED: 'Blacklisted',
         PENDING: 'Pending'
     }

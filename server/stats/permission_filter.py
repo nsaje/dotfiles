@@ -3,18 +3,17 @@ from reports import api_helpers
 import dash.campaign_goals
 import dash.models
 from dash.constants import Level
-from dash.views.helpers import get_account, get_ad_group, get_campaign
 
 from utils import exc
 
 from stats import constants
-from stats.helpers import CONTENT_ADS_FIELDS, SOURCE_FIELDS
+from stats.helpers import CONTENT_ADS_FIELDS, SOURCE_FIELDS, PUBLISHER_FIELDS
 from stats.constants import StructureDimension, DeliveryDimension, TimeDimension
 
 
 DIMENSION_FIELDS = set(StructureDimension._ALL) | set(DeliveryDimension._ALL) | set(TimeDimension._ALL)
 DIMENSION_FIELDS |= set([
-    'name', 'status', 'state',
+    'name', 'status', 'state', 'archived',
     'breakdown_name', 'breakdown_id', 'parent_breakdown_id',
 ])
 
@@ -25,9 +24,9 @@ DEFAULT_STATS = set([
     'ctr', 'cpc', 'clicks', 'impressions', 'billing_cost', 'cpm',
 ])
 
-HELPER_FIELDS = set(['campaign_stop_inactive', 'campaign_has_available_budget'])
+HELPER_FIELDS = set(['campaign_stop_inactive', 'campaign_has_available_budget', 'status_per_source'])
 
-DEFAULT_FIELDS = DIMENSION_FIELDS | DEFAULT_STATS | set(SOURCE_FIELDS) | HELPER_FIELDS
+DEFAULT_FIELDS = DIMENSION_FIELDS | DEFAULT_STATS | set(SOURCE_FIELDS) | HELPER_FIELDS | set(PUBLISHER_FIELDS)
 
 
 def filter_columns_by_permission(user, rows, goals):
@@ -99,6 +98,9 @@ def validate_breakdown_by_structure(breakdown):
     time = constants.get_time_dimension(breakdown)
     if time:
         clean_breakdown.append(time)
+
+    if 'publisher_id' in breakdown and 'source_id' in breakdown:
+        raise exc.InvalidBreakdownError("Unsupported breakdown - publishers are broken down by source by default")
 
     unsupperted_breakdowns = set(breakdown) - set(clean_breakdown)
     if unsupperted_breakdowns:

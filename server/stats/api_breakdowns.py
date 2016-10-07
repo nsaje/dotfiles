@@ -51,7 +51,7 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
 
     should_query_dashapi = helpers.should_query_dashapi(target_dimension)
     if should_query_dashapi:
-        queries = dash.dashapi.api_breakdowns.query_async_start(level, breakdown, constraints, parents)
+        queries = dash.dashapi.api_breakdowns.query_async_start(level, user, breakdown, constraints, parents)
 
     if helpers.should_query_dashapi_first(order, target_dimension):
         dash_rows = dash.dashapi.api_breakdowns.query_async_get_results(queries, order, offset, limit)
@@ -63,7 +63,7 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
         )
         rows = helpers.merge_rows(breakdown, dash_rows, stats_rows)
     else:
-        if should_query_dashapi:
+        if should_query_dashapi and offset > 0:
             query_structure_fn = partial(redshiftapi.api_breakdowns.query_structure_with_stats, breakdown, stats_constraints)
             structure_thread = threads.AsyncFunction(query_structure_fn)
             structure_thread.start()
@@ -79,10 +79,6 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
         if should_query_dashapi:
             if offset == 0:
                 str_w_stats = stats_rows
-                # NOTE: when we make the first request (offset == 0) then we actually don't need this structure as
-                # the collection is the same as rows without stats columns. But we still keep the structure thread
-                # running until it finishes as we get the benefit that that thread will put its results into cache
-                # which we can use in the next request, when the structure is actually needed.
             else:
                 structure_thread.join()
                 str_w_stats = structure_thread.result
@@ -111,9 +107,9 @@ def totals(user, level, breakdown, constraints, goals):
             helpers.extract_stats_constraints(constraints, breakdown),
             None,
             goals,
-            None, None, None)
+            None, None, None, use_publishers_view='publisher_id' in breakdown)
 
-    dash_total_row = dash.dashapi.api_breakdowns.get_totals(level, breakdown, constraints)
+    dash_total_row = dash.dashapi.api_breakdowns.get_totals(level, user, breakdown, constraints)
 
     for k, v in dash_total_row.items():
         stats_rows[0][k] = v

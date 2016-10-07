@@ -94,6 +94,17 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         breakdown_helpers.set_row_goal_performance_meta(stat, performance, conversion_goals)
 
 
+def get_daily_budget_total(states):
+    budgets = [s.daily_budget_cc for s in states if
+               s is not None and s.daily_budget_cc is not None and
+               s.state == constants.AdGroupSourceSettingsState.ACTIVE]
+
+    if not budgets:
+        return None
+
+    return sum(budgets)
+
+
 class AllAccountsSourcesTable(object):
 
     def __init__(self, user, id_, view_filter):
@@ -410,8 +421,8 @@ class AdGroupSourcesTableUpdates(object):
             response['rows'] = rows
 
             response['totals'] = {
-                'daily_budget': data_helper.get_daily_budget_total(states),
-                'current_daily_budget': data_helper.get_daily_budget_total(states)
+                'daily_budget': get_daily_budget_total(states),
+                'current_daily_budget': get_daily_budget_total(states)
             }
 
             response['notifications'] = notifications
@@ -577,22 +588,12 @@ class SourcesTable(object):
             result['yesterday_cost'] = yesterday_cost
 
         if ad_group_level:
-            result['daily_budget'] = data_helper.get_daily_budget_total(sources_states)
-            result['current_daily_budget'] = data_helper.get_daily_budget_total(sources_states)
+            result['daily_budget'] = get_daily_budget_total(sources_states)
+            result['current_daily_budget'] = get_daily_budget_total(sources_states)
         else:
-            result['daily_budget'] = data_helper.get_daily_budget_total(sources_states)
+            result['daily_budget'] = get_daily_budget_total(sources_states)
 
         return result
-
-    def _get_supply_dash_disabled_message(self, ad_group_source):
-        if not ad_group_source.source.has_3rd_party_dashboard():
-            return "This media source doesn't have a dashboard of its own. " \
-                   "All campaign management is done through Zemanta One dashboard."
-        elif ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
-            return "Dashboard of this media source is not yet available because the " \
-                   "media source is still being set up for this ad group."
-
-        return None
 
     def get_rows(
             self,
@@ -644,7 +645,7 @@ class SourcesTable(object):
             if ad_group_level:
                 daily_budget = states[0].daily_budget_cc if len(states) else None
             else:
-                daily_budget = data_helper.get_daily_budget_total(states)
+                daily_budget = [x.daily_budget_cc for x in states if x.daily_budget_cc is not None]
 
             row = {
                 'id': str(source.id),
@@ -673,7 +674,7 @@ class SourcesTable(object):
                         break
 
                 row['supply_dash_url'] = ad_group_source.get_supply_dash_url()
-                row['supply_dash_disabled_message'] = self._get_supply_dash_disabled_message(ad_group_source)
+                row['supply_dash_disabled_message'] = helpers.get_source_supply_dash_disabled_message(ad_group_source, source)
 
                 ad_group_settings = level_sources_table.ad_group_settings
                 campaign_settings = level_sources_table.campaign_settings
@@ -685,7 +686,6 @@ class SourcesTable(object):
                     ad_group_settings,
                     source_settings,
                     campaign_settings,
-                    user,
                     allowed_sources,
                     can_enable_source,
                 )
@@ -713,7 +713,12 @@ class SourcesTable(object):
                 row['current_bid_cpc'] = bid_cpc_value
                 row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
             else:
-                row.update(data_helper.get_source_min_max_cpc(states))
+                cpcs = [x.cpc_cc for x in states if x.cpc_cc is not None]
+                row.update({
+                    'min_bid_cpc': float(min(cpcs)) if cpcs else None,
+                    'max_bid_cpc': float(max(cpcs)) if cpcs else None,
+
+                })
 
             rows.append(row)
 
@@ -1900,15 +1905,10 @@ class PublishersTable(object):
             source_name = map_exchange_to_source_name.get(exchange, exchange)
             domain = publisher_data.get('domain', None)
 
-            if publisher_helpers.is_publisher_domain(domain):
-                domain_link = "http://" + domain
-            else:
-                domain_link = ""
-
             row = {
                 'can_blacklist_publisher': publisher_data['can_blacklist_publisher'],
                 'domain': domain,
-                'domain_link': domain_link,
+                'domain_link': publisher_helpers.get_publisher_domain_link(domain),
                 'status': publisher_data['status'],
                 'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,

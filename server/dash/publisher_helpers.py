@@ -107,3 +107,16 @@ def is_publisher_domain(raw_str):
     if raw_str is None:
         return False
     return re.search("\.[a-z]+$", raw_str.lower()) is not None
+
+
+def get_publisher_domain_link(raw_str):
+    if is_publisher_domain(raw_str):
+        return "http://" + raw_str
+    return ""
+
+
+def get_ob_blacklisted_publishers_count(account_id):
+    return models.PublisherBlacklist.objects.filter(
+        account_id=account_id,
+        source__source_type__type=constants.SourceType.OUTBRAIN
+    ).count()

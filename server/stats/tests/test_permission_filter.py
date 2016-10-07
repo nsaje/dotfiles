@@ -31,7 +31,7 @@ class FilterTestCase(TestCase):
             'pacing': 1, 'allocated_budgets': 1, 'spend_projection': 1, 'license_fee_projection': 1,
             'flat_fee': 1, 'total_fee': 1, 'total_fee_projection': 1,
             'agency': 1, 'default_account_manager': 1, 'default_sales_representative': 1, 'campaign_manager': 1,
-            'status_per_source': {1: {
+            'archived': 1, 'maintenance': 1, 'status_per_source': {1: {
                 'source_id': 1,
                 'source_status': 1,
             }},
@@ -235,7 +235,7 @@ class BreakdownAllowedTest(TestCase):
         self.add_permission_and_test(Level.ACCOUNTS, ['campaign_id'], ['account_campaigns_view'])
         self.add_permission_and_test(Level.ACCOUNTS, ['source_id'], ['account_sources_view'])
 
-        self.add_permission_and_test(Level.AD_GROUPS, ['publisher'], ['can_see_publishers'])
+        self.add_permission_and_test(Level.AD_GROUPS, ['publisher_id'], ['can_see_publishers'])
 
     def test_breakdown_validate_by_delivery_permissions(self):
         user = User.objects.get(pk=1)

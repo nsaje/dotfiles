@@ -1,5 +1,6 @@
 import copy
 
+from django.db.models import Q
 from utils.queryset_helper import simplify_query
 
 import newrelic.agent
@@ -7,6 +8,7 @@ import newrelic.agent
 from dash import models
 
 from stats import constants
+import dash.constants
 
 
 def narrow_filtered_sources(sources, ad_group_sources):
@@ -112,7 +114,8 @@ def prepare_campaign_constraints(user, campaign, breakdown, start_date, end_date
 
 @newrelic.agent.function_trace()
 def prepare_ad_group_constraints(user, ad_group, breakdown, start_date, end_date, filtered_sources,
-                                 show_archived=False, only_used_sources=True):
+                                 show_archived=False, only_used_sources=True,
+                                 show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL):
     constraints = {
         'ad_group': ad_group,
         'campaign': ad_group.campaign,
@@ -124,6 +127,15 @@ def prepare_ad_group_constraints(user, ad_group, breakdown, start_date, end_date
     if only_used_sources:
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group_id=ad_group.id)
         filtered_sources = narrow_filtered_sources(filtered_sources, ad_group_sources)
+
+    blacklisted_publishers = models.PublisherBlacklist.objects.filter(
+        Q(ad_group=ad_group) |
+        Q(campaign=ad_group.campaign) |
+        Q(account=ad_group.campaign.account) |
+        Q(everywhere=True)
+    ).filter_by_sources(filtered_sources)
+    constraints['publisher_blacklist'] = blacklisted_publishers
+    constraints['publisher_blacklist_filter'] = show_blacklisted_publishers
 
     constraints.update(_get_basic_constraints(
         start_date, end_date, show_archived, filtered_sources))
@@ -164,7 +176,7 @@ def narrow_allowed_target_field(constraints, breakdown):
         ad_group_sources = models.AdGroupSource.objects.filter(
             ad_group__in=constraints['allowed_ad_groups'])
     elif parent_dimension == 'source_id':
-        for allowed_field in ('allowed_accounts', 'allowed_campaigns', 'allowed_ad_groups'):
+        for allowed_field in ('allowed_accounts', 'allowed_campaigns', 'allowed_ad_groups', 'publisher_blacklist'):
             if allowed_field in constraints:
                 constraints[allowed_field] = constraints[allowed_field].filter_by_sources(
                     constraints['filtered_sources'])

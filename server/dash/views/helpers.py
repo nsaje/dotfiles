@@ -1004,7 +1004,7 @@ def _is_end_date_past(ad_group_settings):
 
 
 def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_source_settings,
-                        campaign_settings, user, allowed_sources, can_enable_source):
+                        campaign_settings, allowed_sources, can_enable_source):
     editable_fields = {}
     editable_fields['status_setting'] = _get_editable_fields_status_setting(
         ad_group,
@@ -1095,6 +1095,17 @@ def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_sett
         'enabled': message is None,
         'message': message
     }
+
+
+def get_source_supply_dash_disabled_message(ad_group_source, source):
+    if not source.has_3rd_party_dashboard():
+        return "This media source doesn't have a dashboard of its own. " \
+                "All campaign management is done through Zemanta One dashboard."
+    elif ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+        return "Dashboard of this media source is not yet available because the " \
+                "media source is still being set up for this ad group."
+
+    return None
 
 
 def check_facebook_source(ad_group_source):

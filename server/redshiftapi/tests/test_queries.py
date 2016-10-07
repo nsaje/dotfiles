@@ -25,6 +25,7 @@ class SmallMaster(models.MVMaster):
 
         columns = self.select_columns([
             'date', 'week', 'source_id', 'account_id', 'campaign_id', 'device_type',
+            'publisher',
             'clicks', 'total_seconds', 'yesterday_cost',
         ])
 
@@ -32,6 +33,7 @@ class SmallMaster(models.MVMaster):
         columns += self.select_columns(group=model_helpers.TOUCHPOINTCONVERSION_AGGREGATES)
         columns += self.select_columns(group=model_helpers.AFTER_JOIN_CALCULATIONS)
         columns += self.select_columns(group=model_helpers.AFTER_JOIN_CONVERSIONS_CALCULATIONS)
+        columns += self.select_columns(group=model_helpers.PUBLISHER_AGGREGATES)
 
         self.columns = columns
         self.columns_dict = {x.alias: x for x in self.columns}
@@ -224,6 +226,63 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             temp_yesterday.yesterday_cost
         FROM temp_base NATURAL LEFT JOIN temp_yesterday
         ORDER BY total_seconds ASC NULLS LAST;
+        """)
+
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    def test_publisher_breakdown_top_rows(self, mock_local_today):
+        m = SmallMaster()
+
+        constraints = {
+            'date__gte': datetime.date(2016, 4, 1),
+            'date__lte': datetime.date(2016, 5, 1),
+            'publisher_id__neq': ['asd__3', 'bsd__3'],
+        }
+
+        parents = []
+
+        context = m.get_default_context(['publisher_id'], constraints, parents, 'total_seconds', None, None)
+
+        sql, params = queries.prepare_breakdown_top_rows(context)
+
+        self.assertEquals(params, [
+            datetime.date(2016, 7, 1),
+            ['asd', 'bsd'], 3,  # publishers
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+            ['asd', 'bsd'], 3,  # publishers
+        ])
+
+        self.assertSQLEquals(sql, """
+            WITH temp_yesterday AS
+                (SELECT
+                    a.publisher AS publisher,
+                    a.source_id AS source_id,
+                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                FROM mv_pubs_master a
+                WHERE (( a.date =%s)
+                        AND NOT (( a.publisher =ANY(%s) AND a.source_id =%s)))
+                GROUP BY 1, 2),
+                temp_base AS
+                (SELECT a.publisher AS publisher ,
+                    a.source_id AS source_id ,
+                    MAX(a.external_id) AS external_id,
+                    MAX(a.publisher || '__' || a.source_id) publisher_id,
+                    SUM(a.clicks) clicks,
+                    SUM(a.total_time_on_site) total_seconds
+                FROM mv_pubs_master a
+                WHERE (( a.date >=%s AND a.date <=%s)
+                    AND NOT (( a.publisher =ANY(%s) AND a.source_id =%s)))
+                GROUP BY 1, 2)
+            SELECT temp_base.publisher,
+                    temp_base.source_id,
+                    temp_base.external_id,
+                    temp_base.publisher_id,
+                    temp_base.clicks,
+                    temp_base.total_seconds,
+                    temp_yesterday.yesterday_cost
+            FROM temp_base NATURAL
+            LEFT JOIN temp_yesterday
+            ORDER BY total_seconds ASC NULLS LAST ;
         """)
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
