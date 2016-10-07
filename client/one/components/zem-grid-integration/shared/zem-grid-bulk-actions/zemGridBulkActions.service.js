@@ -172,7 +172,7 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
                     notifyArchivingSuccess(data.data.archived_count, data.data.active_count);
                 }
                 refreshData();
-            });
+            }, handleError);
         }
 
         function restore (selection) {
@@ -184,7 +184,7 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
                 selection
             ).then(function () {
                 refreshData();
-            });
+            }, handleError);
         }
 
         function download (selection) {
@@ -211,7 +211,7 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
             ).then(function () {
                 // FIXME: poll updates (editable fields)
                 refreshData();
-            });
+            }, handleError);
         }
 
         function notifyArchivingSuccess (archivedCount, activeCount) {
@@ -238,6 +238,10 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
         function refreshData () {
             gridApi.loadData();
             gridApi.clearSelection();
+        }
+
+        function handleError (data) {
+            zemAlertsService.notify(constants.notificationType.danger, 'Error executing action: ' + data.data.message, true);
         }
     }
 
