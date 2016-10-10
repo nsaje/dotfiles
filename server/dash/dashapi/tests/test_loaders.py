@@ -1,5 +1,6 @@
 from django.test import TestCase
 from decimal import Decimal
+from mock import patch
 
 from zemauth.models import User
 from utils import test_helper
@@ -341,20 +342,8 @@ class SourcesLoaderTest(TestCase):
 
     def test_settings_map(self):
         self.assertDictEqual(self.loader.settings_map, {
-            1: {
-                'state': constants.AdGroupSourceSettingsState.ACTIVE,
-                'status': constants.AdGroupSourceSettingsState.ACTIVE,
-                'daily_budget': Decimal('10.0000'),
-                'max_bid_cpc': 0.501,
-                'min_bid_cpc': 0.501,
-            },
-            2: {
-                'state': constants.AdGroupSourceSettingsState.INACTIVE,
-                'status': constants.AdGroupSourceSettingsState.INACTIVE,
-                'daily_budget': None,
-                'max_bid_cpc': None,
-                'min_bid_cpc': None,
-            },
+            1: {},
+            2: {},
         })
 
     def test_settings_map_filtered_ad_group_sources(self):
@@ -362,13 +351,7 @@ class SourcesLoaderTest(TestCase):
         loader = loaders.SourcesLoader(sources, models.AdGroup.objects.all())
 
         self.assertDictEqual(loader.settings_map, {
-            2: {
-                'state': constants.AdGroupSourceSettingsState.INACTIVE,
-                'status': constants.AdGroupSourceSettingsState.INACTIVE,
-                'daily_budget': None,
-                'max_bid_cpc': None,
-                'min_bid_cpc': None,
-            },
+            2: {},
         })
 
 

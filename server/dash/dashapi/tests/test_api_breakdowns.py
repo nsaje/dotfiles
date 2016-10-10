@@ -79,10 +79,8 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1, 'status': 1, 'state': 1,
-             'daily_budget': Decimal('10.0000'), 'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2, 'status': 2, 'state': 2,
-             'daily_budget': None, 'min_bid_cpc': None, 'max_bid_cpc': None},
+            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_all_accounts_break_account_source(self):
@@ -101,10 +99,8 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1,
-             'status': 1, 'state': 1, 'daily_budget': Decimal('10.0000'), 'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501},
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2,
-             'status': 2, 'state': 2, 'daily_budget': None, 'min_bid_cpc': None, 'max_bid_cpc': None},
+            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_all_accounts_break_source_account(self):
@@ -227,10 +223,8 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1, 'status': 1, 'state': 1,
-             'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501, 'daily_budget': Decimal('10.0000')},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2, 'status': 2, 'state': 2,
-             'min_bid_cpc': None, 'max_bid_cpc': None, 'daily_budget': None},
+            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_accounts_break_campaign_source(self):
@@ -250,15 +244,11 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows,  [{
-            'status': 1, 'archived': False, 'name': 'AdsNative', 'max_bid_cpc': 0.501, 'campaign_id': 1,
-            'state': 1, 'maintenance': False, 'source_id': 1, 'id': 1, 'min_bid_cpc': 0.501,
-            'daily_budget': Decimal('10.0000')
+            'archived': False, 'name': 'AdsNative', 'campaign_id': 1, 'maintenance': False, 'source_id': 1, 'id': 1,
         }, {
-            'status': 2, 'archived': False, 'name': 'Gravity', 'max_bid_cpc': None, 'campaign_id': 1,
-            'state': 2, 'maintenance': False, 'source_id': 2, 'id': 2, 'min_bid_cpc': None, 'daily_budget': None
+            'archived': False, 'name': 'Gravity', 'campaign_id': 1, 'maintenance': False, 'source_id': 2, 'id': 2,
         }, {
-            'status': 2, 'archived': False, 'name': 'AdsNative', 'max_bid_cpc': None, 'campaign_id': 2,
-            'state': 2, 'maintenance': False, 'source_id': 1, 'id': 1, 'min_bid_cpc': None, 'daily_budget': None
+            'archived': False, 'name': 'AdsNative', 'campaign_id': 2, 'maintenance': False, 'source_id': 1, 'id': 1,
         }])
 
     def test_query_accounts_break_source_campaign(self):
@@ -394,10 +384,8 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'status': 1, 'state': 1,
-             'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501, 'daily_budget': Decimal('10.0000'), 'id': 1},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'status': 2, 'state': 2,
-             'min_bid_cpc': None, 'max_bid_cpc': None, 'daily_budget': None, 'id': 2},
+            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_campaigns_break_ad_group_source(self):
@@ -417,14 +405,10 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1,
-             'status': 1, 'state': 1, 'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501, 'daily_budget': Decimal('10.0000')},
-            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2,
-             'status': 2, 'state': 2, 'min_bid_cpc': None, 'max_bid_cpc': None, 'daily_budget': None},
-            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1,
-             'status': 2, 'state': 2, 'min_bid_cpc': None, 'max_bid_cpc': None, 'daily_budget': None},
-            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2,
-             'status': 2, 'state': 2, 'min_bid_cpc': None, 'max_bid_cpc': None, 'daily_budget': None},
+            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
+            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_campaigns_break_source_ad_group(self):
@@ -871,10 +855,8 @@ class QueryOrderTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1, 'status': 1, 'state': 1,
-             'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501, 'daily_budget': Decimal('10.0000')},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2, 'status': 2, 'state': 2,
-             'min_bid_cpc': None, 'max_bid_cpc': None, 'daily_budget': None},
+            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
         rows = api_breakdowns.query(
@@ -892,10 +874,8 @@ class QueryOrderTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2, 'status': 2, 'state': 2,
-             'min_bid_cpc': None, 'max_bid_cpc': None, 'daily_budget': None},
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1, 'status': 1, 'state': 1,
-             'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501, 'daily_budget': Decimal('10.0000')},
+            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
+            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
         ])
 
 
@@ -980,10 +960,8 @@ class QueryForRowsTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1, 'status': 1,
-             'state': 1, 'daily_budget': Decimal('10.0000'), 'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2, 'status': 2,
-             'state': 2, 'daily_budget': None, 'min_bid_cpc': None, 'max_bid_cpc': None},
+            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_for_rows_all_accounts_break_source_missing_row(self):
@@ -1005,10 +983,8 @@ class QueryForRowsTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1, 'status': 1,
-             'state': 1, 'daily_budget': Decimal('10.0000'), 'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2, 'status': 2,
-             'state': 2, 'daily_budget': None, 'min_bid_cpc': None, 'max_bid_cpc': None},
+            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_for_rows_all_accounts_break_source_new_request(self):
@@ -1028,8 +1004,7 @@ class QueryForRowsTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2, 'status': 2,
-             'state': 2, 'daily_budget': None, 'min_bid_cpc': None, 'max_bid_cpc': None},
+            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_for_rows_all_accounts_break_account_source(self):
@@ -1057,10 +1032,8 @@ class QueryForRowsTest(TestCase):
             ])
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1,
-             'status': 1, 'state': 1, 'daily_budget': Decimal('10.0000'), 'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501},
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2,
-             'status': 2, 'state': 2, 'daily_budget': None, 'min_bid_cpc': None, 'max_bid_cpc': None},
+            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_for_rows_all_accounts_break_account_source_missing_row(self):
@@ -1086,10 +1059,8 @@ class QueryForRowsTest(TestCase):
             ])
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1,
-             'status': 1, 'state': 1, 'daily_budget': Decimal('10.0000'), 'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501},
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2,
-             'status': 2, 'state': 2, 'daily_budget': None, 'min_bid_cpc': None, 'max_bid_cpc': None},
+            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_for_rows_all_accounts_break_account_source_new_request(self):
@@ -1113,8 +1084,7 @@ class QueryForRowsTest(TestCase):
             ])
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2,
-             'status': 2, 'state': 2, 'daily_budget': None, 'min_bid_cpc': None, 'max_bid_cpc': None},
+            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_for_rows_all_accounts_break_source_account(self):
@@ -1350,12 +1320,8 @@ class QueryForRowsTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1,
-             'status': 1, 'state': 1, 'daily_budget': Decimal('10.0000'), 'min_bid_cpc': 0.501,
-             'max_bid_cpc': 0.501},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2,
-             'status': 2, 'state': 2, 'daily_budget': None, 'min_bid_cpc': None,
-             'max_bid_cpc': None},
+            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_for_rows_accounts_break_campaign_source(self):
@@ -1391,15 +1357,9 @@ class QueryForRowsTest(TestCase):
 
         # source_id: 2 was not added to campaign
         self.assertEqual(rows,  [
-            {'campaign_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'id': 1,
-             'source_id': 1, 'status': 1, 'state': 1, 'daily_budget': Decimal('10.0000'), 'min_bid_cpc': 0.501,
-             'max_bid_cpc': 0.501},
-            {'campaign_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'id': 2,
-             'source_id': 2, 'status': 2, 'state': 2, 'daily_budget': None, 'min_bid_cpc': None,
-             'max_bid_cpc': None},
-            {'campaign_id': 2, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'id': 1,
-             'source_id': 1, 'status': 2, 'state': 2, 'daily_budget': None, 'min_bid_cpc': None,
-             'max_bid_cpc': None},
+            {'campaign_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'id': 1, 'source_id': 1},
+            {'campaign_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'id': 2, 'source_id': 2},
+            {'campaign_id': 2, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'id': 1, 'source_id': 1},
         ])
 
     def test_query_for_rows_accounts_break_source_campaign(self):
@@ -1495,10 +1455,8 @@ class QueryForRowsTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'status': 1, 'id': 1,
-             'state': 1, 'daily_budget': Decimal('10.0000'), 'min_bid_cpc': 0.501, 'max_bid_cpc': 0.501},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'status': 2, 'id': 2,
-             'state': 2, 'daily_budget': None, 'min_bid_cpc': None, 'max_bid_cpc': None},
+            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_for_rows_campaigns_break_ad_group_source(self):
@@ -1533,18 +1491,10 @@ class QueryForRowsTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1,
-             'status': 1, 'state': 1, 'daily_budget': Decimal('10.0000'), 'min_bid_cpc': 0.501, 'id': 1,
-             'max_bid_cpc': 0.501},
-            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2,
-             'status': 2, 'state': 2, 'daily_budget': None, 'min_bid_cpc': None, 'id': 2,
-             'max_bid_cpc': None},
-            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1,
-             'status': 2, 'state': 2, 'daily_budget': None, 'min_bid_cpc': None, 'id': 1,
-             'max_bid_cpc': None},
-            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2,
-             'status': 2, 'state': 2, 'daily_budget': None, 'min_bid_cpc': None, 'id': 2,
-             'max_bid_cpc': None},
+            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
+            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'id': 1},
+            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'id': 2},
         ])
 
     def test_query_for_rows_campaigns_break_source_ad_group(self):

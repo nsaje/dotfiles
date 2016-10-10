@@ -134,7 +134,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
             name: 'Min Bid',
             field: 'min_bid_cpc',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
-            shown: true,
+            shown: false,
             fractionSize: 3,
             help: 'Minimum bid price (in USD) per click.',
             totalRow: false,
@@ -145,7 +145,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
             name: 'Max Bid',
             field: 'max_bid_cpc',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
-            shown: true,
+            shown: false,
             fractionSize: 3,
             help: 'Maximum bid price (in USD) per click.',
             totalRow: false,
@@ -156,7 +156,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
             name: 'Daily Budget',
             field: 'daily_budget',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
-            shown: true,
+            shown: false,
             help: 'Maximum budget per day.',
             totalRow: true,
             order: true,
@@ -1116,6 +1116,11 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
     COLUMNS.performance.exceptions.levels = [constants.level.ACCOUNTS, constants.level.CAMPAIGNS, constants.level.AD_GROUPS];
     COLUMNS.performance.exceptions.custom.push({level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
 
+    // Exceptions (media source status column - shown only on Ad Group level)
+    COLUMNS.status.exceptions.custom.push({level: constants.level.ALL_ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
+    COLUMNS.status.exceptions.custom.push({level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
+    COLUMNS.status.exceptions.custom.push({level: constants.level.CAMPAIGNS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
+
     // Exceptions (total fee and recognized flat fee - only shown on ALL_ACCOUNTS level)
     COLUMNS.totalFee.exceptions.levels = [constants.level.ALL_ACCOUNTS];
     COLUMNS.flatFee.exceptions.levels = [constants.level.ALL_ACCOUNTS];
@@ -1248,8 +1253,10 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
         nameColumn.help = NAME_COLUMN_BRANDING[breakdown].help;
 
         var statusColumn = findColumn(COLUMNS.status);
-        statusColumn.name = STATUS_COLUMN_BRANDING[breakdown].name;
-        statusColumn.help = STATUS_COLUMN_BRANDING[breakdown].help;
+        if (statusColumn) {
+            statusColumn.name = STATUS_COLUMN_BRANDING[breakdown].name;
+            statusColumn.help = STATUS_COLUMN_BRANDING[breakdown].help;
+        }
 
         var stateColumn = findColumn(COLUMNS.state);
         if (stateColumn) {

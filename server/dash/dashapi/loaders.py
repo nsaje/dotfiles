@@ -475,65 +475,12 @@ class SourcesLoader(Loader):
 
     @cached_property
     def settings_map(self):
-        result = {}
-        for source_id in self.objs_ids:
-            source_settings = data_helper.filter_active_source_settings(
-                self._source_settings_map[source_id], self._ad_group_settings_status_map)
-            result[source_id] = data_helper.get_source_settings_stats(source_settings)
-
-        return result
-
-    @cached_property
-    def _source_settings_map(self):
-        adgss = models.AdGroupSourceSettings\
-                      .objects\
-                      .filter(ad_group_source_id__in=[x['pk'] for x in self._active_ad_groups_sources])\
-                      .group_current_settings().values(
-                          'ad_group_source__source_id', 'ad_group_source__ad_group_id',
-                          'state', 'daily_budget_cc', 'cpc_cc')
-
-        by_source_id = collections.defaultdict(list)
-        for d in adgss:
-            source_id = d['ad_group_source__source_id']
-
-            d.update({
-                'source_id': source_id,
-                'ad_group_id': d['ad_group_source__ad_group_id']
-            })
-            by_source_id[source_id].append(d)
-
-        return by_source_id
-
-    @cached_property
-    def _ad_group_settings_status_map(self):
-        ad_group_settings = models.AdGroupSettings.objects.filter(
-            ad_group_id__in=set([x['ad_group_id'] for x in self._active_ad_groups_sources]))\
-                                                          .group_current_settings()\
-                                                          .values_list('ad_group_id', 'state')
-        return dict(ad_group_settings)
-
-    @cached_property
-    def _active_ad_groups_sources(self):
-        if isinstance(self.base_objects, QuerySet):
-            modelcls = self.base_objects.model
-        else:
-            modelcls = type(self.base_objects[0])
-
-        return view_helpers.get_active_ad_group_sources(modelcls, self.base_objects).values(
-            'pk', 'ad_group_id')
+        # return empty settings - compatibility with AdGroupSourcesLoader
+        return {x: {} for x in self.objs_ids}
 
     @cached_property
     def totals(self):
-        min_cpcs = [v['min_bid_cpc'] for v in self.settings_map.values() if v['min_bid_cpc'] is not None]
-        max_cpcs = [v['max_bid_cpc'] for v in self.settings_map.values() if v['max_bid_cpc'] is not None]
-
-        totals = {
-            'min_bid_cpc': min(min_cpcs) if min_cpcs else None,
-            'max_bid_cpc': max(max_cpcs) if max_cpcs else None,
-            'daily_budget': sum([v['daily_budget'] for v in self.settings_map.values() if v['daily_budget']])
-        }
-
-        return totals
+        return {}
 
 
 class AdGroupSourcesLoader(Loader):
