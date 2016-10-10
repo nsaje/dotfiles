@@ -6,7 +6,7 @@ angular.module('one.widgets').component('zemHeaderFilter', {
         showPublisherSelected: '=',
     },
     templateUrl: '/app/widgets/zem-header/components/zem-header-filter/zemHeaderFilter.component.html',
-    controller: ['zemUserService', function (zemPermissions) {
+    controller: ['zemPermissions', function (zemPermissions) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
