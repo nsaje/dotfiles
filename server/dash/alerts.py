@@ -50,7 +50,7 @@ def get_account_landing_mode_alerts(request, account):
                   u'Please add budget to continue to adjust media sources settings by your needs, if you '\
                   u'don’t want campaign to end in a few days. <a '\
                   u'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
-                  u'target="_blank">Learn more about landing mode ...</a><br /><br />'\
+                  u'target="_blank">Learn more ...</a><br /><br />'\
                   u'<ul>{campaigns}</ul>'
 
         landing_campaign_items = _construct_campaign_items(request, landing_campaigns)
