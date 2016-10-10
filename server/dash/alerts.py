@@ -9,7 +9,7 @@ def _construct_campaign_items(request, campaigns):
         for campaign in sorted(campaigns, key=lambda x: x.name):
             campaign_link = request.build_absolute_uri('/campaigns/{}/ad_groups'.format(campaign.id))
             budget_link = request.build_absolute_uri('/campaigns/{}/budget'.format(campaign.id))
-            campaign_items.append(u'<a href="{}">{}</a> <a href="{}">Add budget ...</a>'.format(
+            campaign_items.append(u'<a href="{}">{}</a> - <a href="{}">Add budget</a>'.format(
                 campaign_link, campaign.name, budget_link))
         return campaign_items
 
@@ -30,8 +30,8 @@ def get_account_landing_mode_alerts(request, account):
     alerts = []
     if depleting_budget_campaigns:
         message = u'<strong>Campaigns will soon run out of budget.</strong><br /><br />'\
-                  u'Please add budget to continue to adjust media sources settings by your needs, if you '\
-                  u'don’t want campaign to end in a few days. If you don’t take any actions, system will '\
+                  u'Please add budget or lower daily caps to continue to adjust media sources settings by your needs, '\
+                  u'if you don’t want campaign to end in a few days. If you don’t take any actions, system will '\
                   u'automatically turn on the landing mode to hit your budget. <a '\
                   u'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
                   u'target="_blank">Learn more ...</a><br /><br />'\
