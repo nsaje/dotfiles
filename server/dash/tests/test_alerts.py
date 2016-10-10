@@ -1,5 +1,6 @@
 import mock
 
+from django.http.request import HttpRequest
 from django.test import TestCase
 
 import dash.alerts
@@ -13,8 +14,18 @@ class AccountLandingModeAlertsTestCase(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
-        self.normal_user = User.objects.get(id=2)
-        self.superuser = User.objects.get(id=1)
+        normal_user = User.objects.get(id=2)
+        self.request = HttpRequest()
+        self.request.META['SERVER_NAME'] = 'testname'
+        self.request.META['SERVER_PORT'] = 1234
+        self.request.user = normal_user
+
+        superuser = User.objects.get(id=1)
+        self.superuser_request = HttpRequest()
+        self.superuser_request.META['SERVER_NAME'] = 'testname'
+        self.superuser_request.META['SERVER_PORT'] = 1234
+        self.superuser_request.user = superuser
+
         self.account = models.Account.objects.get(id=1)
         self.campaign = self.account.campaign_set.get(id=1)
 
@@ -25,10 +36,10 @@ class AccountLandingModeAlertsTestCase(TestCase):
         new_campaign_settings.landing_mode = True
         new_campaign_settings.save(None)
 
-        alerts = dash.alerts.get_account_landing_mode_alerts(self.normal_user, self.account)
+        alerts = dash.alerts.get_account_landing_mode_alerts(self.request, self.account)
         self.assertEqual(0, len(alerts))
 
-        alerts = dash.alerts.get_account_landing_mode_alerts(self.superuser, self.account)
+        alerts = dash.alerts.get_account_landing_mode_alerts(self.superuser_request, self.account)
         self.assertEqual(1, len(alerts))
         self.assertEqual(constants.AlertType.INFO, alerts[0]['type'])
         self.assertTrue(self.campaign.name in alerts[0]['message'])
@@ -42,10 +53,10 @@ class AccountLandingModeAlertsTestCase(TestCase):
 
         mock_out_of_budget.side_effect = _mock_out_of_budget
 
-        alerts = dash.alerts.get_account_landing_mode_alerts(self.normal_user, self.account)
+        alerts = dash.alerts.get_account_landing_mode_alerts(self.request, self.account)
         self.assertEqual(0, len(alerts))
 
-        alerts = dash.alerts.get_account_landing_mode_alerts(self.superuser, self.account)
+        alerts = dash.alerts.get_account_landing_mode_alerts(self.superuser_request, self.account)
         self.assertEqual(1, len(alerts))
         self.assertEqual(constants.AlertType.DANGER, alerts[0]['type'])
         self.assertTrue(self.campaign.name in alerts[0]['message'])
@@ -56,8 +67,18 @@ class CampaignLandingModeAlertsTestCase(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
-        self.normal_user = User.objects.get(id=2)
-        self.superuser = User.objects.get(id=1)
+        normal_user = User.objects.get(id=2)
+        self.request = HttpRequest()
+        self.request.META['SERVER_NAME'] = 'testname'
+        self.request.META['SERVER_PORT'] = 1234
+        self.request.user = normal_user
+
+        superuser = User.objects.get(id=1)
+        self.superuser_request = HttpRequest()
+        self.superuser_request.META['SERVER_NAME'] = 'testname'
+        self.superuser_request.META['SERVER_PORT'] = 1234
+        self.superuser_request.user = superuser
+
         self.campaign = models.Campaign.objects.get(id=1)
 
     @mock.patch('automation.campaign_stop.is_campaign_running_out_of_budget')
@@ -67,10 +88,10 @@ class CampaignLandingModeAlertsTestCase(TestCase):
         new_campaign_settings.landing_mode = True
         new_campaign_settings.save(None)
 
-        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.normal_user, self.campaign)
+        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.request, self.campaign)
         self.assertEqual(0, len(alerts))
 
-        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.superuser, self.campaign)
+        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.superuser_request, self.campaign)
         self.assertEqual(1, len(alerts))
         self.assertEqual(constants.AlertType.INFO, alerts[0]['type'])
 
@@ -83,9 +104,9 @@ class CampaignLandingModeAlertsTestCase(TestCase):
 
         mock_out_of_budget.side_effect = _mock_out_of_budget
 
-        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.normal_user, self.campaign)
+        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.request, self.campaign)
         self.assertEqual(0, len(alerts))
 
-        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.superuser, self.campaign)
+        alerts = dash.alerts.get_campaign_landing_mode_alerts(self.superuser_request, self.campaign)
         self.assertEqual(1, len(alerts))
         self.assertEqual(constants.AlertType.DANGER, alerts[0]['type'])
