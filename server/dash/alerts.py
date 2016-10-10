@@ -7,8 +7,8 @@ from dash import constants
 def _construct_campaign_items(request, campaigns):
         campaign_items = []
         for campaign in sorted(campaigns, key=lambda x: x.name):
-            campaign_link = request.build_absolute_uri('/campaings/{}/ad_groups'.format(campaign.id))
-            budget_link = request.build_absolute_uri('/campaings/{}/budget'.format(campaign.id))
+            campaign_link = request.build_absolute_uri('/campaigns/{}/ad_groups'.format(campaign.id))
+            budget_link = request.build_absolute_uri('/campaigns/{}/budget'.format(campaign.id))
             campaign_items.append(u'<a href="{}">{}</a> <a href="{}">Add budget ...</a>'.format(
                 campaign_link, campaign.name, budget_link))
         return campaign_items
