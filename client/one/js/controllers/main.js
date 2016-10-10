@@ -1,9 +1,9 @@
 /* globals $, angular, constants */
-angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$uibModal', '$uibModalStack', '$timeout', '$window', 'zemMoment', 'zemUserService', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', 'zemHeaderDateRangePickerService', 'zemDataFilterService', 'zemRedesignHelpersService', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, zemUserService, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, zemHeaderDateRangePickerService, zemDataFilterService, zemRedesignHelpersService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$uibModal', '$uibModalStack', '$timeout', '$window', 'zemMoment', 'zemUserService', 'zemPermissions', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', 'zemHeaderDateRangePickerService', 'zemDataFilterService', 'zemRedesignHelpersService', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, zemUserService, zemPermissions, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, zemHeaderDateRangePickerService, zemDataFilterService, zemRedesignHelpersService) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
-    $scope.user = zemUserService.getUser();
+    $scope.user = zemUserService.current();
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
     $scope.enablePublisherFilter = false;
@@ -18,8 +18,8 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
     $scope.graphVisible = true;
     $scope.navigationPaneVisible = false;
 
-    $scope.hasPermission = zemUserService.userHasPermissions;
-    $scope.isPermissionInternal = zemUserService.isPermissionInternal;
+    $scope.hasPermission = zemPermissions.hasPermission;
+    $scope.isPermissionInternal = zemPermissions.isPermissionInternal;
 
     $scope.allowLivestream = zemFullStoryService.allowLivestream;
     $scope.liveStreamOn = zemFullStoryService.isLivestreamAllowed;
@@ -345,9 +345,9 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
 
 
     $scope.init = function () {
-        zemFullStoryService.identifyUser(zemUserService.getUser());
-        zemIntercomService.boot(zemUserService.getUser());
-        zemSupportHeroService.boot(zemUserService.getUser());
+        zemFullStoryService.identifyUser(zemUserService.current());
+        zemIntercomService.boot(zemUserService.current());
+        zemSupportHeroService.boot(zemUserService.current());
         zemNavigationService.reload();
 
         var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);

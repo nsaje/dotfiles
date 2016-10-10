@@ -7,7 +7,7 @@ describe('zemFacebookPage', function () {
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function ($compile, $rootScope, $httpBackend, $q, api) {
+    beforeEach(inject(function ($compile, $rootScope, $httpBackend, $q, zemAccountService) {
         var template = '<zem-facebook-page zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal" zem-config="config" zem-account-id="settings.id" zem-facebook-page-errors="errors.facebookPage" zem-facebook-page-changed="facebookPage.changed" zem-settings="settings">';
         
         $scope = $rootScope.$new();
@@ -30,11 +30,11 @@ describe('zemFacebookPage', function () {
             changed: false
         };
 
-        api.accountSettings.getFacebookAccountStatus = function () {
+        spyOn(zemAccountService, 'getFacebookAccountStatus').and.callFake(function () {
             var deferred = $q.defer();
             deferred.resolve({data: {status: FACEBOOK_STATUS_CONNECTED}});
             return deferred.promise;
-        };
+        });
 
         zemFacebookPageElement = $compile(template)($scope);
         $scope.$digest();

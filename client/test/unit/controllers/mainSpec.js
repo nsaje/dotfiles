@@ -69,7 +69,7 @@ describe('MainCtrl', function () {
             };
 
             spyOn(zemFullStoryService, 'identifyUser');
-            spyOn(zemUserService, 'getUser').and.returnValue(user);
+            spyOn(zemUserService, 'current').and.returnValue(user);
 
             accountsAccess = {
                 hasAccounts: true

@@ -1,5 +1,5 @@
 /* globals angular,constants,options,moment,$ */
-angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$uibModal', 'api', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $uibModal, api, zemNavigationService, $timeout) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$uibModal', 'api', 'zemAccountService', 'zemUserService', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $uibModal, api, zemAccountService, zemUserService, zemNavigationService, $timeout) { // eslint-disable-line max-len
 
     $scope.canEditAccount = false;
     $scope.salesReps = [];
@@ -91,7 +91,7 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
 
     $scope.archiveAccount = function () {
         if ($scope.canArchive) {
-            api.accountArchive.archive($scope.account.id).then(function () {
+            zemAccountService.archive($scope.account.id).then(function () {
                 $scope.refreshPage();
             });
         }
@@ -99,7 +99,7 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
 
     $scope.restoreAccount = function () {
         if ($scope.canRestore) {
-            api.accountArchive.restore($scope.account.id).then(function () {
+            zemAccountService.restore($scope.account.id).then(function () {
                 $scope.refreshPage();
             });
         }
@@ -111,7 +111,7 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
         $scope.requestInProgress = true;
         $scope.errors = {};
         $scope.facebookPageChangedInfo.changed = false;
-        api.accountSettings.get($state.params.id).then(
+        zemAccountService.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
                 $scope.canArchive = data.canArchive;
@@ -163,7 +163,8 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
 
     function executeSaveSettings () {
         $scope.requestInProgress = true;
-        api.accountSettings.save($scope.settings).then(
+        var updateData = {settings: $scope.settings};
+        zemAccountService.update($scope.settings.id, updateData).then(
             function (data) {
                 $scope.errors = {};
                 $scope.settings = data.settings;
@@ -193,7 +194,7 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
         if (facebookPage === null || facebookStatus !== constants.facebookStatus.PENDING) {
             return;
         }
-        api.accountSettings.getFacebookAccountStatus($scope.settings.id).then(
+        zemAccountService.getFacebookAccountStatus($scope.settings.id).then(
             function (data) {
                 var facebookAccountStatus = data.data.status;
                 $scope.settings.facebookStatus = facebookAccountStatus;
@@ -228,7 +229,7 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
     };
 
     $scope.getUsers = function () {
-        api.accountUsers.list($state.params.id).then(
+        zemUserService.list($state.params.id).then(
             function (data) {
                 $scope.users = data.users;
                 $scope.agencyManagers = data.agency_managers;
@@ -243,7 +244,7 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
     $scope.addUser = function () {
         $scope.addUserRequestInProgress = true;
 
-        api.accountUsers.put($state.params.id, $scope.addUserData).then(
+        zemUserService.create($state.params.id, $scope.addUserData).then(
             function (data) {
                 var user = getUser(data.user.id);
 
@@ -274,8 +275,8 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
         var user = getUser(userId);
         user.requestInProgress = true;
 
-        api.accountUsers.remove($state.params.id, userId).then(
-            function (userId) {
+        zemUserService.remove($state.params.id, userId).then(
+            function () {
                 if (user) {
                     user.removed = true;
                     user.saved = false;
@@ -311,7 +312,7 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
         var user = getUser(userId);
         user.requestInProgress = true;
 
-        api.accountUsers.put($state.params.id, {email: user.email}).then(
+        zemUserService.create($state.params.id, {email: user.email}).then(
             function (data) {
                 user.removed = false;
                 $scope.getSettings();

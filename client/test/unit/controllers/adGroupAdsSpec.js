@@ -58,6 +58,10 @@ describe('AdGroupAdsCtrl', function () {
             };
         };
         api = {
+            adGroupContentAdArchive: {
+                archive: mockApiFunc,
+                restore: mockApiFunc,
+            },
             adGroupAdsTable: {
                 get: mockApiFunc,
                 getUpdates: mockApiFunc,
@@ -71,10 +75,8 @@ describe('AdGroupAdsCtrl', function () {
             adGroupAdsExportAllowed: {
                 get: mockApiFunc,
             },
-            bulkActions: {
-                state: mockApiFunc,
-                restore: mockApiFunc,
-                archive: mockApiFunc,
+            adGroupContentAdState: {
+                save: mockApiFunc,
             },
             exportAllowed: {
                 get: mockApiFunc,
@@ -109,7 +111,7 @@ describe('AdGroupAdsCtrl', function () {
         it('does nothing on failure', function () {
             var deferred = $q.defer();
 
-            spyOn(api.bulkActions, 'archive').and.callFake(function () {
+            spyOn(api.adGroupContentAdArchive, 'archive').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -120,13 +122,13 @@ describe('AdGroupAdsCtrl', function () {
             deferred.reject();
             $scope.$digest();
 
-            expect(api.bulkActions.archive).toHaveBeenCalled();
+            expect(api.adGroupContentAdArchive.archive).toHaveBeenCalled();
             expect($scope.updateTableAfterArchiving).not.toHaveBeenCalled();
         });
         it('updates table on success', function () {
             var deferred = $q.defer();
 
-            spyOn(api.bulkActions, 'archive').and.callFake(function () {
+            spyOn(api.adGroupContentAdArchive, 'archive').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -137,7 +139,7 @@ describe('AdGroupAdsCtrl', function () {
             deferred.resolve({data: {}});
             $scope.$digest();
 
-            expect(api.bulkActions.archive).toHaveBeenCalled();
+            expect(api.adGroupContentAdArchive.archive).toHaveBeenCalled();
             expect($scope.updateTableAfterArchiving).toHaveBeenCalled();
         });
     });
@@ -151,7 +153,7 @@ describe('AdGroupAdsCtrl', function () {
         it('does nothing on failure', function () {
             var deferred = $q.defer();
 
-            spyOn(api.bulkActions, 'restore').and.callFake(function () {
+            spyOn(api.adGroupContentAdArchive, 'restore').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -162,13 +164,13 @@ describe('AdGroupAdsCtrl', function () {
             deferred.reject();
             $scope.$digest();
 
-            expect(api.bulkActions.restore).toHaveBeenCalled();
+            expect(api.adGroupContentAdArchive.restore).toHaveBeenCalled();
             expect($scope.updateTableAfterArchiving).not.toHaveBeenCalled();
         });
         it('updates table on success', function () {
             var deferred = $q.defer();
 
-            spyOn(api.bulkActions, 'restore').and.callFake(function () {
+            spyOn(api.adGroupContentAdArchive, 'restore').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -179,7 +181,7 @@ describe('AdGroupAdsCtrl', function () {
             deferred.resolve({data: {}});
             $scope.$digest();
 
-            expect(api.bulkActions.restore).toHaveBeenCalled();
+            expect(api.adGroupContentAdArchive.restore).toHaveBeenCalled();
             expect($scope.updateTableAfterArchiving).toHaveBeenCalled();
         });
     });
@@ -390,9 +392,9 @@ describe('AdGroupAdsCtrl', function () {
         });
         it('pauses all selected content ads if executeBulkAction(\'pause\')', function () {
             $scope.rows = [
-                {id: 1, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.ACTIVE},
-                {id: 2, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.ACTIVE},
-                {id: 3, ad_selected: false, batch_id: 2, status_setting: constants.contentAdSourceState.ACTIVE},
+                {id: 1, ad_selected: true, batch_id: 1, status_setting: constants.settingsState.ACTIVE},
+                {id: 2, ad_selected: true, batch_id: 1, status_setting: constants.settingsState.ACTIVE},
+                {id: 3, ad_selected: false, batch_id: 2, status_setting: constants.settingsState.ACTIVE},
             ];
 
             $state.params.id = 1;
@@ -401,32 +403,28 @@ describe('AdGroupAdsCtrl', function () {
             $scope.selectedContentAdsStatus[2] = true;
             $scope.selectedContentAdsStatus[3] = false;
 
-            spyOn(api.bulkActions, 'state').and.callThrough();
+            spyOn(api.adGroupContentAdState, 'save').and.callThrough();
 
             $scope.executeBulkAction('pause');
 
-            expect($scope.rows[0].status_setting).toBe(constants.contentAdSourceState.INACTIVE);
-            expect($scope.rows[1].status_setting).toBe(constants.contentAdSourceState.INACTIVE);
+            expect($scope.rows[0].status_setting).toBe(constants.settingsState.INACTIVE);
+            expect($scope.rows[1].status_setting).toBe(constants.settingsState.INACTIVE);
 
-            expect(api.bulkActions.state).toHaveBeenCalledWith(
-                'ad_groups',
-                'content_ad',
+            expect(api.adGroupContentAdState.save).toHaveBeenCalledWith(
                 $state.params.id,
-                {
-                    selectedIds: ['1', '2'],
-                    unselectedIds: ['3'],
-                    filterAll: false,
-                    filterId: null,
-                },
-                constants.contentAdSourceState.INACTIVE
+                constants.settingsState.INACTIVE,
+                ['1', '2'],
+                ['3'],
+                false,
+                null
             );
         });
 
         it('enables all selected content ads if executeBulkAction(\'resume\')', function () {
             $scope.rows = [
-                {id: 1, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.INACTIVE},
-                {id: 2, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.INACTIVE},
-                {id: 3, ad_selected: false, batch_id: 2, status_setting: constants.contentAdSourceState.INACTIVE},
+                {id: 1, ad_selected: true, batch_id: 1, status_setting: constants.settingsState.INACTIVE},
+                {id: 2, ad_selected: true, batch_id: 1, status_setting: constants.settingsState.INACTIVE},
+                {id: 3, ad_selected: false, batch_id: 2, status_setting: constants.settingsState.INACTIVE},
             ];
 
             $state.params.id = 1;
@@ -435,24 +433,20 @@ describe('AdGroupAdsCtrl', function () {
             $scope.selectedContentAdsStatus[2] = true;
             $scope.selectedContentAdsStatus[3] = false;
 
-            spyOn(api.bulkActions, 'state').and.callThrough();
+            spyOn(api.adGroupContentAdState, 'save').and.callThrough();
 
             $scope.executeBulkAction('resume');
 
-            expect($scope.rows[0].status_setting).toBe(constants.contentAdSourceState.ACTIVE);
-            expect($scope.rows[1].status_setting).toBe(constants.contentAdSourceState.ACTIVE);
+            expect($scope.rows[0].status_setting).toBe(constants.settingsState.ACTIVE);
+            expect($scope.rows[1].status_setting).toBe(constants.settingsState.ACTIVE);
 
-            expect(api.bulkActions.state).toHaveBeenCalledWith(
-                'ad_groups',
-                'content_ad',
+            expect(api.adGroupContentAdState.save).toHaveBeenCalledWith(
                 $state.params.id,
-                {
-                    selectedIds: ['1', '2'],
-                    unselectedIds: ['3'],
-                    filterAll: false,
-                    filterId: null,
-                },
-                constants.contentAdSourceState.ACTIVE
+                constants.settingsState.ACTIVE,
+                ['1', '2'],
+                ['3'],
+                false,
+                null
             );
         });
 
@@ -490,20 +484,16 @@ describe('AdGroupAdsCtrl', function () {
             $scope.selectedContentAdsStatus[2] = true;
             $scope.selectedContentAdsStatus[3] = false;
 
-            spyOn(api.bulkActions, 'archive').and.callThrough();
+            spyOn(api.adGroupContentAdArchive, 'archive').and.callThrough();
 
             $scope.executeBulkAction('archive');
 
-            expect(api.bulkActions.archive).toHaveBeenCalledWith(
-                'ad_groups',
-                'content_ad',
+            expect(api.adGroupContentAdArchive.archive).toHaveBeenCalledWith(
                 $state.params.id,
-                {
-                    selectedIds: ['1', '2'],
-                    unselectedIds: ['3'],
-                    filterAll: false,
-                    filterId: null,
-                }
+                ['1', '2'],
+                ['3'],
+                false,
+                null
             );
         });
 
@@ -518,20 +508,16 @@ describe('AdGroupAdsCtrl', function () {
             $scope.selectedContentAdsStatus[2] = true;
             $scope.selectedContentAdsStatus[3] = false;
 
-            spyOn(api.bulkActions, 'restore').and.callThrough();
+            spyOn(api.adGroupContentAdArchive, 'restore').and.callThrough();
 
             $scope.executeBulkAction('restore');
 
-            expect(api.bulkActions.restore).toHaveBeenCalledWith(
-                'ad_groups',
-                'content_ad',
+            expect(api.adGroupContentAdArchive.restore).toHaveBeenCalledWith(
                 $state.params.id,
-                {
-                    selectedIds: ['1', '2'],
-                    unselectedIds: ['3'],
-                    filterAll: false,
-                    filterId: null,
-                }
+                ['1', '2'],
+                ['3'],
+                false,
+                null
             );
         });
 
@@ -549,11 +535,11 @@ describe('AdGroupAdsCtrl', function () {
             $scope.selectedAll = false;
             $scope.selectedBatchId = false;
 
-            spyOn(api.bulkActions, 'restore');
+            spyOn(api.adGroupContentAdArchive, 'restore');
 
             $scope.executeBulkAction('restore');
 
-            expect(api.bulkActions.restore).not.toHaveBeenCalled();
+            expect(api.adGroupContentAdArchive.restore).not.toHaveBeenCalled();
         });
     });
 });

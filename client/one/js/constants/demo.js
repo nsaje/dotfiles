@@ -7,7 +7,7 @@ angular.module('one.legacy').constant('demoDefaults', {
             id: id,
             name: 'New demo campaign',
             accountManager: '1',
-            IABCategory: 'IAB1',
+            iabCategory: 'IAB1',
             promotionGoal: 1,
             salesRepresentative: '1',
             serviceFee: '20'
@@ -62,7 +62,7 @@ angular.module('one.legacy').constant('demoDefaults', {
             pageviews: 0,
             percent_new_users: 0,
             pv_per_visit: 0,
-            state: constants.adGroupSettingsState.ACTIVE,
+            state: constants.settingsState.ACTIVE,
             visits: 0,
             campaign: id
         };

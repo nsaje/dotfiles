@@ -7,6 +7,7 @@ globals:
   $: false
   moment: false
   # Zemanta
+  zemSpecsHelper: false
   constants: false
   # Jasmine
   jasmine: false
@@ -17,6 +18,7 @@ globals:
   module: false
   inject: false
   beforeEach: false
+  afterEach: false
   expect: false
   spyOn: false
 

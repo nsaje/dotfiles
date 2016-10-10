@@ -1,5 +1,5 @@
 /*globals angular,constants,options,moment*/
-angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataFilterService', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemCampaignService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataFilterService', function ($window, $location, $scope, $state, $timeout, $q, api, zemCampaignService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService) { // eslint-disable-line max-len
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -461,7 +461,7 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$lo
         var accountId = $state.params.id;
         $scope.addCampaignRequestInProgress = true;
 
-        api.accountCampaigns.create(accountId).then(
+        zemCampaignService.create(accountId).then(
             function (campaignData) {
                 zemNavigationService.addCampaignToCache(accountId, {
                     id: campaignData.id,
@@ -645,7 +645,7 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$lo
 
                     if (x.archived) {
                         x.state = 'Archived';
-                    } else if (x.state === constants.adGroupSettingsState.ACTIVE) {
+                    } else if (x.state === constants.settingsState.ACTIVE) {
                         x.state = 'Active';
                     } else {
                         x.state = 'Paused';

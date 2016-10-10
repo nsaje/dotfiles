@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibModal', 'zemUserService', 'zemFullStoryService', 'zemRedesignHelpersService', function ($window, $uibModal, zemUserService, zemFullStoryService, zemRedesignHelpersService) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibModal', 'zemPermissions', 'zemFullStoryService', 'zemRedesignHelpersService', function ($window, $uibModal, zemPermissions, zemFullStoryService, zemRedesignHelpersService) { // eslint-disable-line max-len
     this.getAvailableActions = getAvailableActions;
 
     var ACTIONS = [
@@ -6,14 +6,14 @@ angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibM
             text: 'Demo mode',
             callback: navigate,
             params: {href: '/demo_mode'},
-            isAvailable: zemUserService.userHasPermissions('zemauth.switch_to_demo_mode'),
-            isInternalFeature: zemUserService.isPermissionInternal('zemauth.switch_to_demo_mode'),
+            isAvailable: zemPermissions.hasPermission('zemauth.switch_to_demo_mode'),
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.switch_to_demo_mode'),
         },
         {
             text: 'Request demo',
             callback: requestDemoAction,
-            isAvailable: zemUserService.userHasPermissions('zemauth.can_request_demo_v3'),
-            isInternalFeature: zemUserService.isPermissionInternal('zemauth.can_request_demo_v3'),
+            isAvailable: zemPermissions.hasPermission('zemauth.can_request_demo_v3'),
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_request_demo_v3'),
         },
         {
             text: 'Allow livestream',
@@ -28,14 +28,14 @@ angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibM
         {
             text: 'Toggle new layout',
             callback: zemRedesignHelpersService.toggleNewLayout,
-            isAvailable: zemUserService.userHasPermissions('zemauth.can_toggle_new_design'),
-            isInternalFeature: zemUserService.isPermissionInternal('zemauth.can_toggle_new_design'),
+            isAvailable: zemPermissions.hasPermission('zemauth.can_toggle_new_design'),
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_toggle_new_design'),
         },
         {
             text: 'Toggle new theme',
             callback: zemRedesignHelpersService.toggleNewTheme,
-            isAvailable: zemUserService.userHasPermissions('zemauth.can_toggle_new_design'),
-            isInternalFeature: zemUserService.isPermissionInternal('zemauth.can_toggle_new_design'),
+            isAvailable: zemPermissions.hasPermission('zemauth.can_toggle_new_design'),
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_toggle_new_design'),
         },
     ];
 

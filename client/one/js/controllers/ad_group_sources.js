@@ -117,8 +117,8 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state
             type: 'state',
             order: true,
             initialOrder: 'asc',
-            enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
-            pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
+            enabledValue: constants.settingsState.ACTIVE,
+            pausedValue: constants.settingsState.INACTIVE,
             internal: false,
             shown: true,
             checked: true,
@@ -233,7 +233,7 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state
             order: true,
             settingsField: true,
             initialOrder: 'desc',
-            statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
+            statusSettingEnabledValue: constants.settingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
                 var data = {cpc_cc: value};
 
@@ -263,7 +263,7 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state
             order: true,
             settingsField: true,
             initialOrder: 'desc',
-            statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
+            statusSettingEnabledValue: constants.settingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
                 var data = {daily_budget_cc: value};
 

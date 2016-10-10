@@ -1,5 +1,5 @@
 /* globals angular, constants, options */
-angular.module('one.legacy').controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemNavigationService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemCampaignService', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemCampaignService, zemNavigationService) { // eslint-disable-line max-len
     var campaignFreshSettings = $q.defer();
     $scope.settings = {};
     $scope.errors = {};
@@ -36,7 +36,7 @@ angular.module('one.legacy').controller('CampaignSettingsCtrl', ['$scope', '$sta
         $scope.discarded = null;
         $scope.requestInProgress = true;
         $scope.errors = {};
-        api.campaignSettings.get($state.params.id).then(
+        zemCampaignService.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
                 $scope.campaignGoals = data.goals;
@@ -70,7 +70,11 @@ angular.module('one.legacy').controller('CampaignSettingsCtrl', ['$scope', '$sta
 
         $scope.requestInProgress = true;
 
-        api.campaignSettings.save($scope.settings, $scope.campaignGoalsDiff).then(
+        var updateData = {
+            settings: $scope.settings,
+            goals: $scope.campaignGoalsDiff
+        };
+        zemCampaignService.update($scope.settings.id, updateData).then(
             function (data) {
                 $scope.errors = {};
                 $scope.settings = data.settings;
@@ -104,7 +108,7 @@ angular.module('one.legacy').controller('CampaignSettingsCtrl', ['$scope', '$sta
     $scope.archiveCampaign = function () {
         if ($scope.canArchive) {
             $scope.requestInProgress = true;
-            api.campaignArchive.archive($scope.campaign.id).then(function () {
+            zemCampaignService.archive($scope.campaign.id).then(function () {
                 $scope.requestInProgress = false;
                 $scope.refreshPage();
             }, function () {
@@ -116,7 +120,7 @@ angular.module('one.legacy').controller('CampaignSettingsCtrl', ['$scope', '$sta
     $scope.restoreCampaign = function () {
         if ($scope.canRestore) {
             $scope.requestInProgress = true;
-            api.campaignArchive.restore($scope.campaign.id).then(function () {
+            zemCampaignService.restore($scope.campaign.id).then(function () {
                 $scope.requestInProgress = false;
                 $scope.refreshPage();
             }, function () {

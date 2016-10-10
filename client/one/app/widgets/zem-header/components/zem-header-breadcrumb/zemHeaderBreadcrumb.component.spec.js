@@ -1,15 +1,15 @@
 describe('component: zemHeaderBreadcrumb', function () {
     var $document;
     var $componentController;
-    var zemUserService;
+    var zemPermissions;
     var ctrl;
     var zemNavigationNewService;
 
     beforeEach(module('one'));
-    beforeEach(inject(function (_$document_, _$componentController_, _zemNavigationNewService_, _zemUserService_) {
+    beforeEach(inject(function (_$document_, _$componentController_, _zemNavigationNewService_, _zemPermissions_) {
         $document = _$document_;
         $componentController = _$componentController_;
-        zemUserService = _zemUserService_;
+        zemPermissions = _zemPermissions_;
         zemNavigationNewService = _zemNavigationNewService_;
 
         var locals = {zemNavigationNewService: zemNavigationNewService};
@@ -36,7 +36,7 @@ describe('component: zemHeaderBreadcrumb', function () {
             callback(null);
             expect($document[0].title).toEqual('My accounts');
 
-            spyOn(zemUserService, 'userHasPermissions').and.returnValue(true);
+            spyOn(zemPermissions, 'hasPermission').and.returnValue(true);
             callback(null);
             expect($document[0].title).toEqual('All accounts');
 

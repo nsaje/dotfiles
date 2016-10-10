@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'api', 'zemGridEndpointColumns', 'zemGridConstants', 'zemAlertsService', function ($window, api, zemGridEndpointColumns, zemGridConstants, zemAlertsService) {
+angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'api', 'zemEntityService', 'zemContentAdService', 'zemGridEndpointColumns', 'zemGridConstants', 'zemAlertsService', function ($window, api, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService) {
 
     function BulkActionsService (gridApi) {
         this.getActions = getActions;
@@ -148,21 +148,22 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
                 if (item.level != 1) {
                     return true;
                 }
-                return item.data.stats.status.value !== constants.adGroupSettingsState.ACTIVE;
+                return item.data.stats.status.value !== constants.settingsState.ACTIVE;
             });
         }
 
         function pause (selection) {
-            bulkUpdatedState(selection, constants.contentAdSourceState.INACTIVE);
+            bulkUpdatedState(selection, constants.settingsState.INACTIVE);
         }
 
         function enable (selection) {
-            bulkUpdatedState(selection, constants.contentAdSourceState.ACTIVE);
+            bulkUpdatedState(selection, constants.settingsState.ACTIVE);
         }
 
         function archive (selection) {
             var metaData = gridApi.getMetaData();
-            api.bulkActions.archive(
+            zemEntityService.executeBulkAction(
+                constants.entityAction.ARCHIVE,
                 metaData.level,
                 metaData.breakdown,
                 metaData.id,
@@ -177,7 +178,8 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
 
         function restore (selection) {
             var metaData = gridApi.getMetaData();
-            api.bulkActions.restore(
+            zemEntityService.executeBulkAction(
+                constants.entityAction.RESTORE,
                 metaData.level,
                 metaData.breakdown,
                 metaData.id,
@@ -202,12 +204,14 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
 
         function bulkUpdatedState (selection, state) {
             var metaData = gridApi.getMetaData();
-            api.bulkActions.state(
+            var action = state === constants.settingsState.ACTIVE ?
+                constants.entityAction.ACTIVATE : constants.entityAction.DEACTIVATE;
+            zemEntityService.executeBulkAction(
+                action,
                 metaData.level,
                 metaData.breakdown,
                 metaData.id,
-                selection,
-                state
+                selection
             ).then(function () {
                 // FIXME: poll updates (editable fields)
                 refreshData();

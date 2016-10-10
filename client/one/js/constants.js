@@ -5,7 +5,7 @@ var constants = {
      * Max. selected media sources in on sources tabs.
      */
     maxSelectedSources: 3,
-    adGroupSettingsState: {
+    settingsState: {
         ACTIVE: 1,
         INACTIVE: 2,
     },
@@ -15,10 +15,6 @@ var constants = {
         ACTIVE_CPC: 3,
     },
     adGroupRunningStatus: {
-        ACTIVE: 1,
-        INACTIVE: 2,
-    },
-    adGroupSourceSettingsState: {
         ACTIVE: 1,
         INACTIVE: 2,
     },
@@ -540,6 +536,16 @@ var constants = {
         720: '30 days',
         2160: '90 days',
     },
+    entityAction: {
+        ACTIVATE: 'activate',
+        DEACTIVATE: 'deactivate',
+        ARCHIVE: 'archive',
+        RESTORE: 'restore',
+    },
+    entityActionType: {
+        SINGLE: 'single',
+        BULK: 'bulk',
+    },
     entityType: {
         CONTENT_AD: 'contentAd',
         AD_GROUP: 'adGroup',
@@ -570,10 +576,6 @@ var constants = {
         FAILED: 2,
         IN_PROGRESS: 3,
         CANCELLED: 4,
-    },
-    contentAdSourceState: {
-        ACTIVE: 1,
-        INACTIVE: 2,
     },
     exportType: {
         ALL_ACCOUNTS: 'allaccounts-csv',
@@ -683,8 +685,8 @@ var options = {
         {name: 'Managed', id: constants.accountTypes.MANAGED},
     ],
     adGroupSettingsStates: [
-        {name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
-        {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE},
+        {name: 'Paused', value: constants.settingsState.INACTIVE},
+        {name: 'Enabled', value: constants.settingsState.ACTIVE},
     ],
     adGroupSettingsAutopilotStates: [{
         name: 'Disabled',

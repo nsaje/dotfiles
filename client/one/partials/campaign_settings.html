@@ -28,17 +28,17 @@
             <label ng-repeat="error in errors.campaignManager" class="control-label error" for="account-manager-select">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.IABCategory}" ng-if="hasPermission('zemauth.can_modify_campaign_iab_category')">
+        <div class="form-group" ng-class="{'has-error': !!errors.iabCategory}" ng-if="hasPermission('zemauth.can_modify_campaign_iab_category')">
             <label for="iab-category-select" class="col-xs-3 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_campaign_iab_category')" popover-placement="right"></zem-internal-feature>IAB Category
                 <zem-help-popover content="IAB category under which content of this campaign belongs." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
-                <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="settings.IABCategory">
+                <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="settings.iabCategory">
                     <option ng-repeat="category in iabCategories" value="{{category.value}}">{{category.name}}</option>
                 </select>
             </div>
-            <label ng-repeat="error in errors.IABCategory" class="control-label error" for="iab-category-select">{{ error }}</label>
+            <label ng-repeat="error in errors.iabCategory" class="control-label error" for="iab-category-select">{{ error }}</label>
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.campaignGoal}" ng-if="!hasPermission('zemauth.can_see_campaign_goals')">>

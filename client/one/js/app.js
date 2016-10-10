@@ -16,7 +16,7 @@ angular.module('one.legacy').config(['$stateProvider', function ($stateProvider)
                     zemDataFilterService.init();
                     zemNavigationNewService.init();
                     return zemUserService.init().then(function () {
-                        zemFilterService.init(zemUserService.getUser());
+                        zemFilterService.init();
                     });
                 }],
                 accountsAccess: ['zemNavigationService', function (zemNavigationService) {

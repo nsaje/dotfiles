@@ -7,7 +7,7 @@ angular.module('one.widgets').component('zemHeaderMenu', {
         $ctrl.execute = execute;
 
         $ctrl.$onInit = function () {
-            $ctrl.userEmail = zemUserService.getUserEmail();
+            $ctrl.userEmail = zemUserService.current().email;
         };
 
         function execute (action) {

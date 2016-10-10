@@ -6,9 +6,9 @@ angular.module('one.widgets').component('zemHeaderFilter', {
         showPublisherSelected: '=',
     },
     templateUrl: '/app/widgets/zem-header/components/zem-header-filter/zemHeaderFilter.component.html',
-    controller: ['zemUserService', function (zemUserService) {
+    controller: ['zemUserService', function (zemPermissions) {
         var $ctrl = this;
-        $ctrl.hasPermission = zemUserService.userHasPermissions;
-        $ctrl.isPermissionInternal = zemUserService.isPermissionInternal;
+        $ctrl.hasPermission = zemPermissions.hasPermission;
+        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
     }],
 });

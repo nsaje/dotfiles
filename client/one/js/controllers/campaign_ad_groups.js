@@ -1,5 +1,5 @@
 /* globals moment,constants,options,angular */
-angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataSourceService', 'zemGridEndpointService', 'zemDataFilterService', function ($location, $scope, $state, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService, zemDataFilterService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemAdGroupService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataSourceService', 'zemGridEndpointService', 'zemDataFilterService', function ($location, $scope, $state, $timeout, api, zemAdGroupService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService, zemDataFilterService) { // eslint-disable-line max-len
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -101,8 +101,8 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
             order: true,
             editable: true,
             initialOrder: 'asc',
-            enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
-            pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
+            enabledValue: constants.settingsState.ACTIVE,
+            pausedValue: constants.settingsState.INACTIVE,
             internal: $scope.isPermissionInternal('zemauth.can_control_ad_group_state_in_table'),
             shown: $scope.hasPermission('zemauth.can_control_ad_group_state_in_table'),
             checked: true,
@@ -117,7 +117,11 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
                 });
                 zemNavigationService.notifyAdGroupReloading(adgroupId, true);
 
-                api.adGroupSettingsState.post(adgroupId, state).then(
+                var updateStateFn = state === constants.settingsState.ACTIVE ?
+                    zemAdGroupService.activate :
+                    zemAdGroupService.deactivate;
+
+                updateStateFn(adgroupId).then(
                     function (data) {
                         // reload ad group to update its status
                         zemNavigationService.reloadAdGroup(adgroupId);
@@ -449,12 +453,12 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
         var campaignId = $state.params.id;
         $scope.addGroupRequestInProgress = true;
 
-        api.campaignAdGroups.create(campaignId).then(
+        zemAdGroupService.create(campaignId).then(
             function (data) {
                 zemNavigationService.addAdGroupToCache(campaignId, {
                     id: data.id,
                     name: data.name,
-                    status: constants.adGroupSettingsState.INACTIVE,
+                    status: constants.settingsState.INACTIVE,
                     state: constants.adGroupRunningStatus.INACTIVE,
                 });
                 $state.go('main.adGroups.settings', {id: data.id});
@@ -653,7 +657,7 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
     };
 
     $scope.getStateText = function (state) {
-        if (state === constants.adGroupSettingsState.ACTIVE) {
+        if (state === constants.settingsState.ACTIVE) {
             return 'Active';
         }
 

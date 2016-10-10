@@ -1,5 +1,5 @@
 /* globals angular, constants, options, moment */
-angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, regions, zemNavigationService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemAdGroupService', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemAdGroupService, regions, zemNavigationService) { // eslint-disable-line max-len
     $scope.adGroupId = $state.params.id;
     $scope.settings = {};
     $scope.loadRequestInProgress = true;
@@ -59,7 +59,7 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
     $scope.getSettings = function (id) {
         $scope.loadRequestInProgress = true;
 
-        api.adGroupSettings.get(id).then(
+        zemAdGroupService.get(id).then(
             function (data) {
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
@@ -104,7 +104,7 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
         $scope.errors = {};
-        api.adGroupSettings.get($state.params.id).then(
+        zemAdGroupService.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
                 $scope.defaultSettings = data.defaultSettings;
@@ -130,7 +130,8 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
 
         zemNavigationService.notifyAdGroupReloading($state.params.id, true);
 
-        api.adGroupSettings.save($scope.settings).then(
+        var updateData = {settings: $scope.settings};
+        zemAdGroupService.update($scope.settings.id, updateData).then(
             function (data) {
                 var currAdGroup = $scope.adGroup.id;
                 $scope.errors = {};
@@ -156,7 +157,7 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
     $scope.archiveAdGroup = function () {
         $scope.saveRequestInProgress = true;
         zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
-        api.adGroupArchive.archive($scope.adGroup.id).then(function () {
+        zemAdGroupService.archive($scope.adGroup.id).then(function () {
             $scope.refreshPage();
             $scope.saveRequestInProgress = false;
         }, function () {
@@ -168,7 +169,7 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
     $scope.restoreAdGroup = function () {
         $scope.saveRequestInProgress = true;
         zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
-        api.adGroupArchive.restore($scope.adGroup.id).then(function () {
+        zemAdGroupService.restore($scope.adGroup.id).then(function () {
             $scope.refreshPage();
             $scope.saveRequestInProgress = false;
         }, function () {

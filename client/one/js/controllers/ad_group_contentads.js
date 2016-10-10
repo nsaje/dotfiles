@@ -1,5 +1,5 @@
 /* globals options, angular, constants, moment */
-angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$location', '$q', 'api', 'zemGridConstants', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemDataFilterService', function ($scope, $window, $state, $location, $q, api, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$location', '$q', 'api', 'zemContentAdService', 'zemGridConstants', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemDataFilterService', function ($scope, $window, $state, $location, $q, api, zemContentAdService, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService) { // eslint-disable-line max-len
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -195,8 +195,8 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
         type: 'state',
         order: true,
         initialOrder: 'asc',
-        enabledValue: constants.contentAdSourceState.ACTIVE,
-        pausedValue: constants.contentAdSourceState.INACTIVE,
+        enabledValue: constants.settingsState.ACTIVE,
+        pausedValue: constants.settingsState.INACTIVE,
         internal: false,
         shown: true,
         checked: true,
@@ -204,7 +204,7 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
         unselectable: true,
         help: 'A setting for enabling and pausing content ads.',
         onChange: function (contentAdId, state) {
-            api.bulkActions.state($scope.grid.level, $scope.grid.breakdown, $state.params.id, {'selectedIds': [contentAdId]}, state).then(
+            api.adGroupContentAdState.save($state.params.id, state, [contentAdId]).then(
                 function () {
                     $scope.pollTableUpdates();
                 }
@@ -539,17 +539,13 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
     var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {
         updateContentAdStates(state);
 
-        api.bulkActions.state(
-            $scope.grid.level,
-            $scope.grid.breakdown,
+        api.adGroupContentAdState.save(
             $state.params.id,
-            {
-                'selectedIds': contentAdIdsSelected,
-                'unselectedIds': contentAdIdsNotSelected,
-                'filterAll': $scope.selectedAll,
-                'filterId': $scope.selectedBatchId,
-            },
-            state
+            state,
+            contentAdIdsSelected,
+            contentAdIdsNotSelected,
+            $scope.selectedAll,
+            $scope.selectedBatchId
         ).then(function () {
             $scope.pollTableUpdates();
         });
@@ -617,44 +613,34 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
             bulkUpdateContentAds(
                     contentAdIdsSelected,
                     contentAdIdsNotSelected,
-                    constants.contentAdSourceState.INACTIVE
+                    constants.settingsState.INACTIVE
                 );
             break;
         case 'resume':
             bulkUpdateContentAds(
                     contentAdIdsSelected,
                     contentAdIdsNotSelected,
-                    constants.contentAdSourceState.ACTIVE
+                    constants.settingsState.ACTIVE
                 );
             break;
         case 'download':
             downloadContentAds(contentAdIdsSelected, contentAdIdsNotSelected);
             break;
         case 'archive':
-            api.bulkActions.archive(
-                $scope.grid.level,
-                $scope.grid.breakdown,
-                $state.params.id,
-                {
-                    'selectedIds': contentAdIdsSelected,
-                    'unselectedIds': contentAdIdsNotSelected,
-                    'filterAll': $scope.selectedAll,
-                    'filterId': $scope.selectedBatchId,
-                }
-            ).then($scope.updateTableAfterArchiving);
+            api.adGroupContentAdArchive.archive(
+                    $state.params.id,
+                    contentAdIdsSelected,
+                    contentAdIdsNotSelected,
+                    $scope.selectedAll,
+                    $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
             break;
         case 'restore':
-            api.bulkActions.restore(
-                $scope.grid.level,
-                $scope.grid.breakdown,
-                $state.params.id,
-                {
-                    'selectedIds': contentAdIdsSelected,
-                    'unselectedIds': contentAdIdsNotSelected,
-                    'filterAll': $scope.selectedAll,
-                    'filterId': $scope.selectedBatchId,
-                }
-            ).then($scope.updateTableAfterArchiving);
+            api.adGroupContentAdArchive.restore(
+                    $state.params.id,
+                    contentAdIdsSelected,
+                    contentAdIdsNotSelected,
+                    $scope.selectedAll,
+                    $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
             break;
         }
     };

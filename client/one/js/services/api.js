@@ -239,9 +239,9 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 } else if (field === 'status') {
                     convertedRow[field] = row[field];
 
-                    if (row[field] === constants.adGroupSettingsState.ACTIVE) {
+                    if (row[field] === constants.settingsState.ACTIVE) {
                         convertedRow.status = 'Active';
-                    } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
+                    } else if (row[field] === constants.settingsState.INACTIVE) {
                         convertedRow.status = 'Paused';
                     } else {
                         convertedRow.status = 'N/A';
@@ -321,9 +321,9 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 } else if (field === 'status') {
                     convertedRow[field] = row[field];
 
-                    if (row[field] === constants.adGroupSettingsState.ACTIVE) {
+                    if (row[field] === constants.settingsState.ACTIVE) {
                         convertedRow.status = 'Active';
-                    } else if (row[field] === constants.adGroupSettingsState.INACTIVE) {
+                    } else if (row[field] === constants.settingsState.INACTIVE) {
                         convertedRow.status = 'Paused';
                     } else {
                         convertedRow.status = 'N/A';
@@ -892,318 +892,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         }
     }
 
-    function AdGroupSettings () {
-        function convertFromApi (settings) {
-            return {
-                id: settings.id,
-                name: settings.name,
-                state: settings.state,
-                startDate: settings.start_date ? moment(settings.start_date).toDate() : null,
-                endDate: settings.end_date ? moment(settings.end_date).toDate() : null,
-                manualStop: !settings.end_date,
-                cpc: settings.cpc_cc,
-                dailyBudget: settings.daily_budget_cc,
-                targetDevices: convertTargetDevicesFromApi(settings.target_devices),
-                targetRegions: settings.target_regions,
-                trackingCode: settings.tracking_code,
-                autopilotState: settings.autopilot_state,
-                autopilotBudget: settings.autopilot_daily_budget,
-                retargetingAdGroups: settings.retargeting_ad_groups,
-                exclusionRetargetingAdGroups: settings.exclusion_retargeting_ad_groups,
-                autopilotMinBudget: settings.autopilot_min_budget,
-                autopilotOptimizationGoal: settings.autopilot_optimization_goal,
-                notes: settings.notes,
-                bluekaiTargeting: settings.bluekai_targeting,
-                interestTargeting: settings.interest_targeting,
-                exclusionInterestTargeting: settings.exclusion_interest_targeting,
-                audienceTargeting: settings.audience_targeting,
-                exclusionAudienceTargeting: settings.exclusion_audience_targeting,
-                redirectPixelUrls: settings.redirect_pixel_urls,
-                redirectJavascript: settings.redirect_javascript,
-            };
-        }
-
-        function convertToApi (settings) {
-            var result = {
-                id: settings.id,
-                name: settings.name,
-                state: parseInt(settings.state, 10),
-                start_date: settings.startDate ? moment(settings.startDate).format('YYYY-MM-DD') : null,
-                end_date: settings.endDate ? moment(settings.endDate).format('YYYY-MM-DD') : null,
-                cpc_cc: settings.cpc,
-                daily_budget_cc: settings.dailyBudget,
-                target_devices: convertTargetDevicesToApi(settings.targetDevices),
-                target_regions: settings.targetRegions,
-                tracking_code: settings.trackingCode,
-                autopilot_state: settings.autopilotState,
-                autopilot_daily_budget: settings.autopilotBudget,
-                retargeting_ad_groups: settings.retargetingAdGroups,
-                exclusion_retargeting_ad_groups: settings.exclusionRetargetingAdGroups,
-                audience_targeting: settings.audienceTargeting,
-                exclusion_audience_targeting: settings.exclusionAudienceTargeting,
-            };
-
-            return result;
-        }
-
-        function convertValidationErrorFromApi (errors) {
-            var result = {
-                name: errors.name,
-                state: errors.state,
-                startDate: errors.start_date,
-                endDate: errors.end_date,
-                cpc: errors.cpc_cc,
-                dailyBudget: errors.daily_budget_cc,
-                targetDevices: errors.target_devices,
-                targetRegions: errors.target_regions,
-                trackingCode: errors.tracking_code,
-                displayUrl: errors.display_url,
-                brandName: errors.brand_name,
-                description: errors.description,
-                callToAction: errors.call_to_action,
-                autopilotState: errors.autopilot_state,
-                autopilotBudget: errors.autopilot_daily_budget,
-                retargetingAdGroups: errors.retargeting_ad_groups,
-                exclusionRetargetingAdGroups: errors.exclusion_retargeting_ad_groups,
-                audienceTargeting: errors.audience_targeting,
-                exclusionAudienceTargeting: errors.exclusion_audience_targeting,
-            };
-
-            return result;
-        }
-
-        function convertDefaultSettingsFromApi (settings) {
-            return {
-                targetRegions: settings.target_regions,
-                targetDevices: convertTargetDevicesFromApi(settings.target_devices),
-            };
-        }
-
-        function convertRetargetingAdgroupsFromApi (rows) {
-            var ret = [];
-            for (var id in rows) {
-                var row = rows[id];
-                ret.push({
-                    id: row.id,
-                    name: row.name,
-                    archived: row.archived,
-                    campaignName: row.campaign_name,
-                });
-            }
-            return ret;
-        }
-
-        function convertAudiencesFromApi (rows) {
-            var ret = [];
-            for (var id in rows) {
-                var row = rows[id];
-                ret.push({
-                    id: row.id,
-                    name: row.name,
-                    archived: row.archived,
-                });
-            }
-            return ret;
-        }
-
-        function convertWarningsFromApi (warnings) {
-            var ret = {};
-            ret.retargeting = warnings.retargeting;
-            if (warnings.end_date !== undefined) {
-                ret.endDate = {
-                    campaignId: warnings.end_date.campaign_id,
-                };
-            }
-            return ret;
-        }
-
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/settings/';
-            var config = {
-                params: {},
-            };
-
-            $http.get(url, config).
-                success(function (data) {
-                    var settings, defaultSettings, warnings, retargetableAdGroups, audiences = [];
-                    if (data && data.data && data.data.settings) {
-                        settings = convertFromApi(data.data.settings);
-                    }
-                    if (data && data.data && data.data.default_settings) {
-                        defaultSettings = convertDefaultSettingsFromApi(data.data.default_settings);
-                    }
-
-                    if (data && data.data && data.data.retargetable_adgroups) {
-                        retargetableAdGroups = convertRetargetingAdgroupsFromApi(data.data.retargetable_adgroups);
-                    }
-
-                    if (data && data.data && data.data.audiences) {
-                        audiences = convertAudiencesFromApi(data.data.audiences);
-                    }
-
-                    if (data && data.data && data.data.warnings) {
-                        warnings = convertWarningsFromApi(data.data.warnings);
-                    }
-
-                    deferred.resolve({
-                        settings: settings,
-                        defaultSettings: defaultSettings,
-                        actionIsWaiting: data.data.action_is_waiting,
-                        retargetableAdGroups: retargetableAdGroups,
-                        audiences: audiences,
-                        warnings: warnings,
-                        canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore,
-                    });
-                }).
-                error(function (data) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.save = function (settings) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + settings.id + '/settings/';
-            var config = {
-                params: {},
-            };
-
-            var data = {
-                'settings': convertToApi(settings),
-            };
-
-            $http.put(url, data, config).
-                success(function (data) {
-                    var settings, defaultSettings;
-                    if (data && data.data && data.data.settings) {
-                        settings = convertFromApi(data.data.settings);
-                    }
-                    if (data && data.data && data.data.default_settings) {
-                        defaultSettings = convertDefaultSettingsFromApi(data.data.default_settings);
-                    }
-                    deferred.resolve({
-                        settings: settings,
-                        defaultSettings: defaultSettings,
-                        actionIsWaiting: data.data.action_is_waiting,
-                    });
-                }).
-                error(function (data, status) {
-                    var resource;
-                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                        resource = convertValidationErrorFromApi(data.data.errors);
-                    }
-                    deferred.reject(resource);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function AdGroupSettingsState () {
-        this.post = function (adgroupId, state) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + adgroupId + '/settings/state/';
-
-            $http.post(url, {state: state}).
-                success(function (data, status) {
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function AdGroupArchive () {
-        this.archive = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/archive/';
-            var config = {
-                params: {}
-            };
-
-            var data = {};
-
-            $http.post(url, data, config).
-                success(function (data, status) {
-                    deferred.resolve();
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.restore = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/restore/';
-
-            var config = {
-                params: {}
-            };
-
-            var data = {};
-
-            $http.post(url, data, config).
-                success(function (data, status) {
-                    deferred.resolve();
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function CampaignArchive () {
-        this.archive = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/archive/';
-            var config = {
-                params: {}
-            };
-
-            var data = {};
-
-            $http.post(url, data, config).
-                success(function (data, status) {
-                    deferred.resolve();
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.restore = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/restore/';
-
-            var config = {
-                params: {}
-            };
-
-            var data = {};
-
-            $http.post(url, data, config).
-                success(function (data, status) {
-                    deferred.resolve();
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
 
     function CampaignOverview () {
 
@@ -1283,49 +971,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         };
     }
 
-    function AccountArchive () {
-        this.archive = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + id + '/archive/';
-            var config = {
-                params: {}
-            };
-
-            var data = {};
-
-            $http.post(url, data, config).
-                success(function (data, status) {
-                    deferred.resolve();
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.restore = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + id + '/restore/';
-
-            var config = {
-                params: {}
-            };
-
-            var data = {};
-
-            $http.post(url, data, config).
-                success(function (data, status) {
-                    deferred.resolve();
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
     function History () {
         function convertHistoryFromApi (history) {
             return history.map(function (item) {
@@ -1371,144 +1016,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 }).
                 error(function (data, status, headers) {
                     deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function AccountSettings () {
-        function convertSettingsFromApi (settings) {
-            return {
-                id: settings.id,
-                name: settings.name,
-                defaultAccountManager: settings.default_account_manager,
-                defaultSalesRepresentative: settings.default_sales_representative,
-                accountType: settings.account_type,
-                allowedSources: settings.allowed_sources,
-                facebookPage: settings.facebook_page,
-                facebookStatus: settings.facebook_status,
-                agency: {id: settings.agency, text: settings.agency},
-            };
-        }
-
-        function convertSettingsToApi (settings) {
-            return {
-                id: settings.id,
-                name: settings.name,
-                default_account_manager: settings.defaultAccountManager,
-                default_sales_representative: settings.defaultSalesRepresentative,
-                account_type: settings.accountType,
-                allowed_sources: settings.allowedSources,
-                facebook_page: settings.facebookPage,
-                facebook_status: settings.facebookStatus,
-                agency: settings.agency.id,
-            };
-        }
-
-        function convertValidationErrorFromApi (data) {
-            return {
-                id: data.errors.id,
-                name: data.errors.name,
-                defaultAccountManager: data.errors.default_account_manager,
-                defaultSalesRepresentative: data.errors.default_sales_representative,
-                accountType: data.errors.account_type,
-                allowedSources: data.errors.allowed_sources,
-                allowedSourcesData: data.errors.allowed_sources,
-                facebookPage: data.errors.facebook_page,
-                agency: data.errors.agency,
-            };
-        }
-
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + id + '/settings/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve({
-                        settings: convertSettingsFromApi(data.data.settings),
-                        accountManagers: data.data.account_managers,
-                        salesReps: data.data.sales_reps,
-                        canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore,
-                        agencies: data.data.agencies,
-                    });
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.save = function (settings) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + settings.id + '/settings/';
-            var config = {
-                params: {}
-            };
-
-            var data = {
-                'settings': convertSettingsToApi(settings)
-            };
-
-            $http.put(url, data, config).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve({
-                        settings: convertSettingsFromApi(data.data.settings),
-                        canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore,
-                        agencies: data.data.agencies,
-                    });
-                }).
-                error(function (data, status, headers, config) {
-                    var resource;
-                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                        resource = convertValidationErrorFromApi(data.data);
-                    }
-                    deferred.reject(resource);
-                });
-
-            return deferred.promise;
-        };
-
-        this.getFacebookAccountStatus = function (accountId) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + accountId + '/facebook_account_status/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    deferred.resolve(data);
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function CampaignAdGroups () {
-        this.create = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/ad_groups/';
-
-            $http.put(url).
-                success(function (data, status) {
-                    deferred.resolve({
-                        name: data.data.name,
-                        id: data.data.id,
-                    });
-                }).
-                error(function (data, status) {
-                    deferred.reject();
                 });
 
             return deferred.promise;
@@ -1656,170 +1163,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         };
     }
 
-    function CampaignSettings () {
-        function convertSettingsFromApi (settings) {
-            return {
-                id: settings.id,
-                name: settings.name,
-                campaignGoal: settings.campaign_goal,
-                goalQuantity: settings.goal_quantity,
-                targetDevices: convertTargetDevicesFromApi(settings.target_devices),
-                targetRegions: settings.target_regions,
-                campaignManager: settings.campaign_manager,
-                IABCategory: settings.iab_category,
-                enableGaTracking: settings.enable_ga_tracking,
-                gaTrackingType: settings.ga_tracking_type,
-                gaPropertyId: settings.ga_property_id,
-                gaPropertyReadable: settings.ga_property_readable,
-                enableAdobeTracking: settings.enable_adobe_tracking,
-                adobeTrackingParam: settings.adobe_tracking_param,
-            };
-        }
-
-        function convertSettingsToApi (settings) {
-            return {
-                id: settings.id,
-                name: settings.name,
-                campaign_goal: settings.campaignGoal,
-                goal_quantity: settings.goalQuantity,
-                target_devices: convertTargetDevicesToApi(settings.targetDevices),
-                target_regions: settings.targetRegions,
-                campaign_manager: settings.campaignManager,
-                iab_category: settings.IABCategory,
-                enable_ga_tracking: settings.enableGaTracking,
-                ga_tracking_type: settings.gaTrackingType,
-                ga_property_id: settings.gaPropertyId,
-                enable_adobe_tracking: settings.enableAdobeTracking,
-                adobe_tracking_param: settings.adobeTrackingParam,
-            };
-        }
-
-        function convertValidationErrorFromApi (errors) {
-            var result = {
-                name: errors.name,
-                campaignGoal: errors.campaign_goal,
-                noGoals: errors.no_goals,
-                goals: errors.goals,
-                goalQuantity: errors.goal_quantity,
-                targetDevices: errors.target_devices,
-                targetRegions: errors.target_regions,
-                campaignManager: errors.campaign_manager,
-                IABCategory: errors.iab_category,
-                enableGaTracking: errors.enable_ga_tracking,
-                enableAdobeTracking: errors.enable_adobe_tracking,
-                gaTrackingType: errors.ga_tracking_type,
-                gaPropertyId: errors.ga_property_id,
-                adobeTrackingParam: errors.adobe_tracking_param,
-            };
-
-            return result;
-        }
-
-        function convertCampaignGoalsFromApi (goals) {
-            return (goals || []).map(function (goal) {
-                var converted = {
-                    primary: goal.primary,
-                    value: goal.values.length ? goal.values[goal.values.length - 1].value : null,
-                    type: goal.type,
-                    id: goal.id,
-                };
-                if (goal.conversion_goal) {
-                    converted.conversionGoal = {
-                        type: goal.conversion_goal.type,
-                        name: goal.conversion_goal.name,
-                        goalId: goal.conversion_goal.goal_id,
-                        conversionWindow: goal.conversion_goal.conversion_window,
-                        pixelUrl: goal.conversion_goal.pixel_url,
-                    };
-                }
-                return converted;
-            });
-        }
-
-        function convertCampaignGoalsToApi (goals) {
-            var data = {};
-            goals = goals || {};
-            data.primary = goals.primary || null;
-            data.modified = goals.modified || {};
-            data.removed = goals.removed || [];
-            data.added = (goals.added || []).map(function (goal) {
-                var converted = {
-                    primary: goal.primary,
-                    value: goal.value,
-                    type: goal.type,
-                };
-                if (goal.conversionGoal) {
-                    converted.conversion_goal =  {
-                        goal_id: goal.conversionGoal.goalId,
-                        name: goal.conversionGoal.name,
-                        type: goal.conversionGoal.type,
-                        conversion_window: goal.conversionGoal.conversionWindow,
-                    };
-                }
-                return converted;
-            });
-            return data;
-        }
-
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/settings/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve({
-                        settings: convertSettingsFromApi(data.data.settings),
-                        goals: convertCampaignGoalsFromApi(data.data.goals),
-                        campaignManagers: data.data.campaign_managers,
-                        canArchive: data.data.can_archive,
-                        canRestore: data.data.can_restore,
-                    });
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.save = function (settings, campaignGoals) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + settings.id + '/settings/';
-            var config = {
-                params: {}
-            };
-
-            var data = {
-                'settings': convertSettingsToApi(settings),
-                'goals': convertCampaignGoalsToApi(campaignGoals)
-            };
-
-            $http.put(url, data, config).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve({
-                        settings: convertSettingsFromApi(data.data.settings),
-                        goals: convertCampaignGoalsFromApi(data.data.goals)
-                    });
-                }).
-                error(function (data, status, headers, config) {
-                    var resource;
-                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                        resource = convertValidationErrorFromApi(data.data.errors);
-                    }
-                    deferred.reject(resource);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-
     function CampaignSync () {
         this.get = function (campaignId, accountId) {
             var deferred = $q.defer();
@@ -1851,51 +1194,11 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         };
     }
 
-    function Account () {
-        this.create = function () {
-            var deferred = $q.defer();
-            var url = '/api/accounts/';
-
-            $http.put(url).
-                success(function (data, status) {
-                    deferred.resolve({
-                        name: data.data.name,
-                        id: data.data.id
-                    });
-                }).
-                error(function (data, status) {
-                    deferred.reject();
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function AccountCampaigns () {
-        this.create = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + id + '/campaigns/';
-
-            $http.put(url).
-                success(function (data, status) {
-                    deferred.resolve({
-                        name: data.data.name,
-                        id: data.data.id
-                    });
-                }).
-                error(function (data, status) {
-                    deferred.reject();
-                });
-
-            return deferred.promise;
-        };
-    }
-
     function AccountAccountsTable () {
         function convertFromApi (row) {
             if (row.archived) {
                 row.status = 'Archived';
-            } else if (row.status === constants.adGroupSettingsState.ACTIVE) {
+            } else if (row.status === constants.settingsState.ACTIVE) {
                 row.status = 'Active';
             } else {
                 row.status = 'Paused';
@@ -1955,7 +1258,7 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
     function AccountCampaignsTable () {
         function convertRowsFromApi (data) {
             var result = data;
-            result.state_text = result.state === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
+            result.state_text = result.state === constants.settingsState.ACTIVE ? 'Active' : 'Paused';
             return result;
         }
 
@@ -1999,7 +1302,7 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
     function CampaignAdGroupsTable () {
         function convertRowsFromApi (data) {
             var result = data;
-            result.state_text = result.state === constants.adGroupSettingsState.ACTIVE ? 'Active' : 'Paused';
+            result.state_text = result.state === constants.settingsState.ACTIVE ? 'Active' : 'Paused';
             return result;
         }
 
@@ -2034,94 +1337,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                     }
                 }).
                 error(function (data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function AccountUsers () {
-        function convertToApi (data) {
-            return {
-                first_name: data.firstName,
-                last_name: data.lastName,
-                email: data.email
-            };
-        }
-
-        function convertValidationErrorFromApi (errors) {
-            return {
-                firstName: errors.first_name,
-                lastName: errors.last_name,
-                email: errors.email
-            };
-        }
-
-        this.list = function (accountId) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + accountId + '/users/';
-
-            $http.get(url).
-                success(function (data) {
-                    var resource;
-
-                    if (data && data.data) {
-                        resource = data.data;
-                    }
-
-                    deferred.resolve(resource);
-                }).
-                error(function (data) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.put = function (accountId, userData) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + accountId + '/users/';
-
-            var data = convertToApi(userData);
-
-            $http.put(url, data).
-                success(function (data, status) {
-                    var resource;
-                    if (data && data.data) {
-                        resource = data.data;
-                    }
-                    deferred.resolve({
-                        user: resource.user,
-                        created: status === 201
-                    });
-                }).
-                error(function (data, status) {
-                    var resource = {};
-                    if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                        resource.errors = convertValidationErrorFromApi(data.data.errors);
-                        resource.message = data.data.message;
-                    }
-
-                    deferred.reject(resource);
-                });
-
-            return deferred.promise;
-        };
-
-        this.remove = function (accountId, userId) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + accountId + '/users/' + userId + '/';
-
-            $http.delete(url).
-                success(function (data) {
-                    var resource;
-                    if (data && data.data) {
-                        resource = data.data.user_id;
-                    }
-                    deferred.resolve(resource);
-                }).
-                error(function (data) {
                     deferred.reject(data);
                 });
 
@@ -2173,9 +1388,9 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                     var row = data.rows[id];
                     var status = row.status;
 
-                    if (status === constants.adGroupSettingsState.ACTIVE) {
+                    if (status === constants.settingsState.ACTIVE) {
                         status = 'Active';
-                    } else if (status === constants.adGroupSettingsState.INACTIVE) {
+                    } else if (status === constants.settingsState.INACTIVE) {
                         status = 'Paused';
                     } else {
                         status = 'N/A';
@@ -2368,49 +1583,58 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         };
     }
 
-    function BulkActions () {
-        function postToApi (url, selection, state) {
+    function AdGroupContentAdState () {
+        this.save = function (adGroupId, state, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
             var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/state/';
 
             $http.post(url, {
                 state: state,
-                selected_ids: selection.selectedIds,
-                not_selected_ids: selection.unselectedIds,
-                select_all: selection.filterAll,
-                select_batch: selection.filterId
-            }).success(function (data) {
-                deferred.resolve(data);
-            }).error(function (data) {
-                deferred.reject(data);
-            });
+                content_ad_ids_selected: contentAdIdsSelected,
+                content_ad_ids_not_selected: contentAdIdsNotSelected,
+                select_all: selectedAll,
+                select_batch: selectedBatch
+            }).
+                success(function (data) {
+                    deferred.resolve(data);
+                }).error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AdGroupContentAdArchive () {
+        function postToApi (url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+            var deferred = $q.defer();
+
+            $http.post(url, {
+                content_ad_ids_selected: contentAdIdsSelected,
+                content_ad_ids_not_selected: contentAdIdsNotSelected,
+                select_all: selectedAll,
+                select_batch: selectedBatch
+            }).
+                success(function (data) {
+                    deferred.resolve(data);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
 
             return deferred.promise;
         }
 
-        var breakdownUrlMap = {};
-        breakdownUrlMap[constants.breakdown.ACCOUNT] = 'accounts';
-        breakdownUrlMap[constants.breakdown.CAMPAIGN] = 'campaigns';
-        breakdownUrlMap[constants.breakdown.AD_GROUP] = 'ad_groups';
-        breakdownUrlMap[constants.breakdown.CONTENT_AD] = 'contentads';
-        breakdownUrlMap[constants.breakdown.MEDIA_SOURCE] = 'sources';
+        this.archive = function (adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/archive/';
 
-        function getUrl (level, breakdown, id, action) {
-            if (id) {
-                return '/api/' + level + '/' + id + '/' + breakdownUrlMap[breakdown] + '/' + action + '/';
-            }
-            return '/api/' + level + '/' + breakdownUrlMap[breakdown] + '/' + action + '/';
-        }
-
-        this.archive = function (level, breakdown, id, selection) {
-            return postToApi(getUrl(level, breakdown, id, 'archive'), selection);
+            return postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch);
         };
 
-        this.restore = function (level, breakdown, id, selection) {
-            return postToApi(getUrl(level, breakdown, id, 'restore'), selection);
-        };
+        this.restore = function (adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch) {
+            var url = '/api/ad_groups/' + adGroupId + '/contentads/restore/';
 
-        this.state = function (level, breakdown, id, selection, state) {
-            return postToApi(getUrl(level, breakdown, id, 'state'), selection, state);
+            return postToApi(url, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll, selectedBatch);
         };
     }
 
@@ -3052,56 +2276,60 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
     }
 
     return {
-        navigation: new Navigation(),
-        adGroupSettings: new AdGroupSettings(),
-        adGroupSettingsState: new AdGroupSettingsState(),
-        adGroupSources: new AdGroupSources(),
-        sourcesTable: new SourcesTable(),
-        adGroupSourcesTable: new AdGroupSourcesTable(),
-        adGroupPublishersTable: new AdGroupPublishersTable(),
-        adGroupPublishersState: new AdGroupPublishersState(),
-        adGroupAdsTable: new AdGroupAdsTable(),
-        adGroupSync: new AdGroupSync(),
-        adGroupArchive: new AdGroupArchive(),
-        adGroupOverview: new AdGroupOverview(),
-        campaignAdGroups: new CampaignAdGroups(),
-        campaignAdGroupsTable: new CampaignAdGroupsTable(),
-        campaignSettings: new CampaignSettings(),
-        campaignSync: new CampaignSync(),
-        campaignArchive: new CampaignArchive(),
-        campaignOverview: new CampaignOverview(),
         campaignContentInsights: new CampaignContentInsights(),
-        accountSettings: new AccountSettings(),
-        history: new History(),
-        account: new Account(),
-        accountAccountsTable: new AccountAccountsTable(),
-        accountCampaigns: new AccountCampaigns(),
-        accountCampaignsTable: new AccountCampaignsTable(),
-        accountOverview: new AccountOverview(),
         scheduledReports: new ScheduledReports(),
-        accountSync: new AccountSync(),
-        accountArchive: new AccountArchive(),
-        checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
-        checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
-        checkSyncProgress: new CheckSyncProgress(),
-        checkPublisherBlacklistSyncProgress: new CheckPublisherBlacklistSyncProgress(),
         accountUserAction: new AccountUserAction(),
-        dailyStats: new DailyStats(),
-        allAccountsOverview: new AllAccountsOverview(),
-        accountUsers: new AccountUsers(),
-        adGroupSourceSettings: new AdGroupSourceSettings(),
-        adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
         exportAllowed: new ExportAllowed(),
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
-        availableSources: new AvailableSources(),
-        agencies: new Agencies(),
         conversionPixel: new ConversionPixel(),
         accountCredit: new AccountCredit(),
         campaignBudget: new CampaignBudget(),
         campaignGoalValidation: new CampaignGoalValidation(),
         customAudiences: new CustomAudiences(),
         customAudiencesArchive: new CustomAudiencesArchive(),
-        bulkActions: new BulkActions(),
+
+        // TODO: refactor - chart component
+        dailyStats: new DailyStats(),
+
+        // TODO: refactor - navigation service endpoint
+        navigation: new Navigation(),
+
+        // TODO: refactor - history service endpoint
+        history: new History(),
+
+        // TODO: refactor - infobox/overview component endpoint
+        allAccountsOverview: new AllAccountsOverview(),
+        accountOverview: new AccountOverview(),
+        adGroupOverview: new AdGroupOverview(),
+        campaignOverview: new CampaignOverview(),
+
+        // TODO: delete sync api
+        adGroupSync: new AdGroupSync(),
+        campaignSync: new CampaignSync(),
+        accountSync: new AccountSync(),
+        checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
+        checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
+        checkSyncProgress: new CheckSyncProgress(),
+        checkPublisherBlacklistSyncProgress: new CheckPublisherBlacklistSyncProgress(),
+
+        // TODO: delete when table completely removed
+        sourcesTable: new SourcesTable(),
+        adGroupSourcesTable: new AdGroupSourcesTable(),
+        adGroupPublishersTable: new AdGroupPublishersTable(),
+        adGroupAdsTable: new AdGroupAdsTable(),
+        campaignAdGroupsTable: new CampaignAdGroupsTable(),
+        accountAccountsTable: new AccountAccountsTable(),
+        accountCampaignsTable: new AccountCampaignsTable(),
+        adGroupSourceSettings: new AdGroupSourceSettings(),
+        adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
+        adGroupSources: new AdGroupSources(),
+        adGroupPublishersState: new AdGroupPublishersState(),
+        adGroupContentAdState: new AdGroupContentAdState(),
+        adGroupContentAdArchive: new AdGroupContentAdArchive(),
+
+        // TODO: refactor - dedicated services
+        agencies: new Agencies(),
+        availableSources: new AvailableSources(),
     };
 }]);

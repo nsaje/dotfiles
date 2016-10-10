@@ -1,6 +1,6 @@
 angular.module('one.widgets').component('zemHeaderBreadcrumb', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-breadcrumb/zemHeaderBreadcrumb.component.html',
-    controller: ['$document', 'config', 'zemUserService', 'zemNavigationNewService', function ($document, config, zemUserService, zemNavigationNewService) { // eslint-disable-line max-len
+    controller: ['$document', 'config', 'zemPermissions', 'zemNavigationNewService', function ($document, config, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
 
         var $ctrl = this;
         $ctrl.config = config;
@@ -8,7 +8,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         $ctrl.navigateToHome = navigateToHome;
 
         $ctrl.$onInit = function () {
-            $ctrl.userCanSeeAllAccounts = zemUserService.userHasPermissions('dash.group_account_automatically_add');
+            $ctrl.userCanSeeAllAccounts = zemPermissions.hasPermission('dash.group_account_automatically_add');
             zemNavigationNewService.onActiveEntityChange(onEntityChange);
         };
 
@@ -23,7 +23,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 title = entity.name + ' | Zemanta';
             } else {
                 title = 'My accounts';
-                if (zemUserService.userHasPermissions('dash.group_account_automatically_add')) {
+                if (zemPermissions.hasPermission('dash.group_account_automatically_add')) {
                     title = 'All accounts';
                 }
             }

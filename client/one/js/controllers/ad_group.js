@@ -63,7 +63,7 @@ angular.module('one.legacy').controller('AdGroupCtrl', ['$scope', '$state', '$wi
     };
 
     $scope.isAdGroupPaused = function () {
-        return $scope.adGroup && $scope.adGroup.state === constants.adGroupSettingsState.INACTIVE;
+        return $scope.adGroup && $scope.adGroup.state === constants.settingsState.INACTIVE;
     };
 
     $scope.isInLanding = function () {

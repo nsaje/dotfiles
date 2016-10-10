@@ -1,6 +1,6 @@
 angular.module('one.widgets').component('zemNavigation', {
     templateUrl: '/app/widgets/zem-navigation/zemNavigation.component.html',
-    controller: ['$scope', '$element', '$timeout', 'hotkeys', 'zemUserService', 'zemNavigationUtils', 'zemNavigationNewService', 'zemFilterService', function ($scope, $element, $timeout, hotkeys, zemUserService, zemNavigationUtils, zemNavigationNewService, zemFilterService) { // eslint-disable-line max-len
+    controller: ['$scope', '$element', '$timeout', 'hotkeys', 'zemPermissions', 'zemNavigationUtils', 'zemNavigationNewService', 'zemFilterService', function ($scope, $element, $timeout, hotkeys, zemPermissions, zemNavigationUtils, zemNavigationNewService, zemFilterService) { // eslint-disable-line max-len
         var KEY_UP_ARROW = 38;
         var KEY_DOWN_ARROW = 40;
         var KEY_ENTER = 13;
@@ -15,7 +15,7 @@ angular.module('one.widgets').component('zemNavigation', {
         $ctrl.activeEntity = null;
         $ctrl.query = '';
         $ctrl.list = null;
-        $ctrl.showAgency = zemUserService.userHasPermissions('zemauth.can_filter_by_agency');
+        $ctrl.showAgency = zemPermissions.hasPermission('zemauth.can_filter_by_agency');
 
         $ctrl.filter = filterList;
         $ctrl.navigateTo = navigateTo;

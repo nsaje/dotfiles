@@ -4,10 +4,10 @@ angular.module('one.widgets').component('zemAlerts', {
         entityId: '<'
     },
     templateUrl: '/app/widgets/zem-alerts/zemAlerts.component.html',
-    controller: ['zemAlertsService', 'zemUserService', function (zemAlertsService, zemUserService) {
+    controller: ['zemAlertsService', 'zemPermissions', function (zemAlertsService, zemPermissions) {
         var $ctrl = this;
-        $ctrl.userHasPermissions = zemUserService.userHasPermissions;
-        $ctrl.isPermissionInternal = zemUserService.isPermissionInternal;
+        $ctrl.hasPermission = zemPermissions.hasPermission;
+        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
         $ctrl.$onInit = function () {
             zemAlertsService.refreshAlerts($ctrl.level, $ctrl.entityId);
