@@ -1091,10 +1091,6 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
     configureBreakdownExceptions(CONTENT_GROUP, [constants.breakdown.CONTENT_AD]);
     configureBreakdownExceptions(SOURCE_GROUP, [constants.breakdown.MEDIA_SOURCE]);
     configureBreakdownExceptions(PUBLISHER_GROUP, [constants.breakdown.PUBLISHER]);
-    configureBreakdownExceptions(
-        [COLUMNS.yesterdayCost, COLUMNS.eYesterdayCost],
-        [constants.breakdown.CAMPAIGN, constants.breakdown.AD_GROUP, constants.breakdown.MEDIA_SOURCE]
-    );
 
     // Exceptions (Projections) - ALL_ACCOUNTS, ACCOUNTS level, MEDIA_SOURCE breakdown are only shown on ALL_ACCOUNTS level
     configureLevelExceptions(PROJECTIONS_GROUP, [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS]);
