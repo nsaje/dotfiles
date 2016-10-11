@@ -69,8 +69,12 @@ angular.module('one.legacy').factory('zemGridDataService', ['$q', 'zemGridParser
                     deferred.resolve();
                 },
                 function (err) {
+                    if (grid.meta.loading && err) {
+                        // Don't hide loader when initial request is aborted by user (e.g. filter updated)
+                        // Workaround - err is in this case null (see zem_grid_endpoint_api.js abortable promise)
+                        grid.meta.loading = false;
+                    }
                     // TODO: Handle errors
-                    grid.meta.loading = false;
                     deferred.reject(err);
                 }
             );
