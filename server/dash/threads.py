@@ -36,7 +36,7 @@ class MockAsyncFunction(object):
         pass
 
 
-class RAsyncFunction(Thread):
+class AsyncFunction(Thread):
     """
     A more general class that takes a function and runs it in a new thread.
     The recepie:
@@ -60,6 +60,3 @@ class RAsyncFunction(Thread):
     def run(self):
         self.result = self.func()
         connection.close()
-
-
-AsyncFunction = MockAsyncFunction
