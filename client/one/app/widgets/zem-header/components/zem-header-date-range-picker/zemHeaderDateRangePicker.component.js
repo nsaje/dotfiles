@@ -12,6 +12,7 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
                 ranges: predefinedRanges,
                 opens: 'left',
                 applyClass: 'btn-primary',
+                linkedCalendars: false,
                 eventHandlers: {
                     'apply.daterangepicker': handleDateRangeUpdateFromPicker,
                     // Add/remove open class from date range picker dropdown menu in order to apply opening animation
