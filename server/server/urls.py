@@ -93,9 +93,9 @@ urlpatterns += [
     url(r'^rest/v1/', include('restapi.urls')),
 ]
 
-# Bizwire API
+# Custom integrations API
 urlpatterns += [
-    url(r'^', include('bizwire.urls')),
+    url(r'^integrations/', include('integrations.urls')),
 ]
 
 # Api

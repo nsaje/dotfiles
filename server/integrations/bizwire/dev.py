@@ -8,7 +8,7 @@ import urllib
 import json
 
 SECRET = 'a'*16
-ZEMANTA_ENDPOINT = 'http://localhost:8000/businesswire_promotion_export/'
+ZEMANTA_ENDPOINT = 'http://localhost:8000/integrations/businesswire/promotion_export/'
 BIZWIRE_URL = 'http://www.businesswire.com/news/home/20160817005626/en/Global-78-kda-Glucose-Regulated-Protein-Pipeline-Review'
 TS_HEADER = 'Zapi-auth-ts'
 SIGNATURE_HEADER = 'Zapi-auth-signature'
