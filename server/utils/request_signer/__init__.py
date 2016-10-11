@@ -86,6 +86,11 @@ def _get_wsgi_header_field_name(header):
     return 'HTTP_{}'.format(header.upper().replace('-', '_'))
 
 
+def _normalize_signature(signature):
+    # convert normal base64 to urlsafe base64
+    return signature.replace('+', '-').replace('/', '_')
+
+
 def verify_wsgi_request(wsgi_request, secret_key):
     '''
     Verfies if header with signature matches calculated signature.
@@ -101,6 +106,7 @@ def verify_wsgi_request(wsgi_request, secret_key):
     if not header_signature:
         raise SignatureError('Missing signature')
 
+    header_signature = _normalize_signature(header_signature)
     calc_signature = _get_signature(
         header_ts,
         wsgi_request.META.get('PATH_INFO'),
