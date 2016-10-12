@@ -674,7 +674,7 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state
 
     $scope.getDailyStats = function () {
         var dateRange = zemDataFilterService.getDateRange();
-        api.dailyStats.list($scope.level, $state.params.id, dateRange.startDate, dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), null).then(
+        api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), null).then(
             function (data) {
                 refreshChartOptions(data.conversionGoals, data.pixels);
                 $scope.conversionGoals = data.conversionGoals;

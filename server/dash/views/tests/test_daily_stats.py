@@ -1,4 +1,4 @@
-from mock import patch, MagicMock
+from mock import patch
 import datetime
 import json
 from decimal import Decimal
@@ -43,7 +43,7 @@ class BaseDailyStatsTest(TestCase):
         }]
         self.mock_query.side_effect = [mock_stats1, mock_stats2]
 
-    def _get_params(self, selected_ids, sources=False, agencies=None, account_types=None):
+    def _get_params(self, selected_ids, agencies=None, account_types=None):
         params = {
             'metrics': ['cpc', 'clicks'],
             'selected_ids': selected_ids,
@@ -52,8 +52,6 @@ class BaseDailyStatsTest(TestCase):
             'end_date': self.date.isoformat(),
         }
 
-        if sources:
-            params['sources'] = True
         if agencies:
             params['filtered_agencies'] = agencies
         if account_types:
@@ -67,17 +65,6 @@ class BaseDailyStatsTest(TestCase):
         expected_response = {
             'data': {
                 'chart_data': [{
-                    'id': selected_id,
-                    'name': selected_name,
-                    'series_data': {
-                        'clicks': [
-                            [self.date.isoformat(), 1500]
-                        ],
-                        'cpc': [
-                            [self.date.isoformat(), '0.0200']
-                        ]
-                    }
-                }, {
                     'id': 'totals',
                     'name': 'Totals',
                     'series_data': {
@@ -86,6 +73,17 @@ class BaseDailyStatsTest(TestCase):
                         ],
                         'cpc': [
                             [self.date.isoformat(), '0.0100']
+                        ]
+                    }
+                }, {
+                    'id': selected_id,
+                    'name': selected_name,
+                    'series_data': {
+                        'clicks': [
+                            [self.date.isoformat(), 1500]
+                        ],
+                        'cpc': [
+                            [self.date.isoformat(), '0.0200']
                         ]
                     }
                 }],
@@ -132,13 +130,15 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
         self._prepare_mock('source', source_id)
 
         response = self.client.get(
-            reverse('accounts_daily_stats'),
-            self._get_params(selected_ids=[source_id], sources=True),
+            reverse('accounts_sources_daily_stats'),
+            self._get_params(selected_ids=[source_id]),
             follow=True
         )
 
-        sources_matcher = QuerySetMatcher(models.Source.objects.all())
+        self.assertEqual(200, response.status_code)
+
         accounts_matcher = QuerySetMatcher(models.Account.objects.all().filter_by_user(self.user))
+        sources_matcher = QuerySetMatcher(models.Source.objects.all())
 
         self.mock_query.assert_any_call(
             self.user,
@@ -151,7 +151,6 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
             constraints={'account': accounts_matcher, 'source': sources_matcher}
         )
 
-        source_matcher = QuerySetMatcher(models.Source.objects.filter(pk=source_id))
         self.mock_query.assert_any_call(
             self.user,
             self.date,
@@ -160,11 +159,96 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
             order=['date'],
             conversion_goals=None,
             pixels=None,
-            constraints={'account': accounts_matcher, 'source': source_matcher}
+            constraints={'account': accounts_matcher, 'source': [source_id]}
         )
 
         source = models.Source.objects.get(pk=source_id)
         self._assert_response(response, source_id, source.name, with_conversion_goals=False, with_pixels=False)
+
+    def test_get_by_source_join_selected(self):
+        perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
+        self.user.user_permissions.add(perm)
+        source_ids = [3, 4, 5, 6]
+
+        self._prepare_mock(None, None)
+
+        response = self.client.get(
+            reverse('accounts_sources_daily_stats'),
+            self._get_params(selected_ids=source_ids),
+            follow=True
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        accounts_matcher = QuerySetMatcher(models.Account.objects.all().filter_by_user(self.user))
+        sources_matcher = QuerySetMatcher(models.Source.objects.all())
+
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date'],
+            order=['date'],
+            conversion_goals=None,
+            pixels=None,
+            constraints={'account': accounts_matcher, 'source': sources_matcher}
+        )
+
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date'],
+            order=['date'],
+            conversion_goals=None,
+            pixels=None,
+            constraints={'account': accounts_matcher, 'source': source_ids}
+        )
+
+        self._assert_response(response, 'selected', 'Selected', with_conversion_goals=False, with_pixels=False)
+
+    def test_get_by_account(self):
+        perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
+        self.user.user_permissions.add(perm)
+        account_id = 3
+
+        self._prepare_mock('account', account_id)
+
+        response = self.client.get(
+            reverse('accounts_accounts_daily_stats'),
+            self._get_params(selected_ids=[account_id]),
+            follow=True
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        accounts_matcher = QuerySetMatcher(models.Account.objects.all().filter_by_user(self.user))
+        sources_matcher = QuerySetMatcher(models.Source.objects.all())
+
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date'],
+            order=['date'],
+            conversion_goals=None,
+            pixels=None,
+            constraints={'account': accounts_matcher, 'source': sources_matcher}
+        )
+
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date', 'account'],
+            order=['date'],
+            conversion_goals=None,
+            pixels=None,
+            constraints={'account': [account_id], 'source': sources_matcher}
+        )
+
+        account = models.Account.objects.get(pk=account_id)
+        self._assert_response(response, account_id, account.name, with_conversion_goals=False, with_pixels=False)
 
     def test_get_by_agency(self):
         agency = models.Agency(name='test')
@@ -173,11 +257,13 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
         perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
         self.user.user_permissions.add(perm)
 
-        self.client.get(
-            reverse('accounts_daily_stats'),
+        response = self.client.get(
+            reverse('accounts_accounts_daily_stats'),
             self._get_params(selected_ids=[], agencies=[agency.id]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         sources_matcher = QuerySetMatcher(models.Source.objects.all())
         accounts_matcher = QuerySetMatcher(models.Account.objects.none())
@@ -197,11 +283,13 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
         acc1.agency = agency
         acc1.save(fake_request(self.user))
 
-        self.client.get(
-            reverse('accounts_daily_stats'),
+        response = self.client.get(
+            reverse('accounts_accounts_daily_stats'),
             self._get_params(selected_ids=[], agencies=[agency.id]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         sources_matcher = QuerySetMatcher(models.Source.objects.all())
         accounts_matcher = QuerySetMatcher(models.Account.objects.filter(pk=1))
@@ -221,11 +309,13 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
         perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
         self.user.user_permissions.add(perm)
 
-        self.client.get(
-            reverse('accounts_daily_stats'),
+        response = self.client.get(
+            reverse('accounts_accounts_daily_stats'),
             self._get_params(selected_ids=[], account_types=[constants.AccountType.TEST]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         sources_matcher = QuerySetMatcher(models.Source.objects.all())
         accounts_matcher = QuerySetMatcher(models.Account.objects.none())
@@ -246,11 +336,13 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
         acs.account_type = constants.AccountType.TEST
         acs.save(fake_request(self.user))
 
-        self.client.get(
-            reverse('accounts_daily_stats'),
+        response = self.client.get(
+            reverse('accounts_accounts_daily_stats'),
             self._get_params(selected_ids=[], account_types=[constants.AccountType.TEST]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         sources_matcher = QuerySetMatcher(models.Source.objects.all())
         accounts_matcher = QuerySetMatcher(models.Account.objects.filter(pk=1))
@@ -274,10 +366,12 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
         self._prepare_mock('source', source_id)
 
         response = self.client.get(
-            reverse('account_daily_stats', kwargs={'account_id': 1}),
-            self._get_params(selected_ids=[source_id], sources=True),
+            reverse('account_sources_daily_stats', kwargs={'account_id': 1}),
+            self._get_params(selected_ids=[source_id]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         account = models.Account.objects.get(id=1)
         pixels = account.conversionpixel_set.all()
@@ -302,7 +396,7 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
             order=['date'],
             conversion_goals=None,
             pixels=ListMatcher(pixels),
-            constraints={'account': 1, 'source_id': [source_id]}
+            constraints={'account': 1, 'source': [source_id]}
         )
 
         source = models.Source.objects.get(pk=source_id)
@@ -314,10 +408,12 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
         self._prepare_mock('campaign', campaign_id)
 
         response = self.client.get(
-            reverse('account_daily_stats', kwargs={'account_id': 1}),
+            reverse('account_campaigns_daily_stats', kwargs={'account_id': 1}),
             self._get_params(selected_ids=[campaign_id]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         matcher = QuerySetMatcher(models.Source.objects.all())
         account = models.Account.objects.get(id=1)
@@ -342,7 +438,7 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
             order=['date'],
             conversion_goals=None,
             pixels=ListMatcher(pixels),
-            constraints={'account': 1, 'ad_group__campaign__id': [campaign_id], 'source': matcher}
+            constraints={'account': 1, 'campaign': [campaign_id], 'source': matcher}
         )
 
         campaign = models.Campaign.objects.get(pk=campaign_id)
@@ -356,10 +452,12 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         self._prepare_mock('source', source_id)
 
         response = self.client.get(
-            reverse('campaign_daily_stats', kwargs={'campaign_id': 1}),
-            self._get_params(selected_ids=[source_id], sources=True),
+            reverse('campaign_sources_daily_stats', kwargs={'campaign_id': 1}),
+            self._get_params(selected_ids=[source_id]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         campaign = models.Campaign.objects.get(id=1)
         matcher = QuerySetMatcher(models.Source.objects.all())
@@ -385,7 +483,7 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
             order=['date'],
             conversion_goals=QuerySetMatcher(conversion_goals),
             pixels=ListMatcher(pixels),
-            constraints={'campaign': 1, 'source_id': [source_id]}
+            constraints={'campaign': 1, 'source': [source_id]}
         )
 
         source = models.Source.objects.get(pk=source_id)
@@ -397,10 +495,12 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         self._prepare_mock('ad_group', ad_group_id)
 
         response = self.client.get(
-            reverse('campaign_daily_stats', kwargs={'campaign_id': 1}),
+            reverse('campaign_ad_groups_daily_stats', kwargs={'campaign_id': 1}),
             self._get_params(selected_ids=[ad_group_id]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         matcher = QuerySetMatcher(models.Source.objects.all())
 
@@ -427,7 +527,7 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
             order=['date'],
             conversion_goals=QuerySetMatcher(conversion_goals),
             pixels=ListMatcher(pixels),
-            constraints={'campaign': 1, 'ad_group_id': [ad_group_id], 'source': matcher}
+            constraints={'campaign': 1, 'ad_group': [ad_group_id], 'source': matcher}
         )
 
         ad_group = models.AdGroup.objects.get(pk=ad_group_id)
@@ -438,10 +538,12 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
 
         self._prepare_mock('ad_group', ad_group_id)
         response = self.client.get(
-            reverse('campaign_daily_stats', kwargs={'campaign_id': 1}),
+            reverse('campaign_ad_groups_daily_stats', kwargs={'campaign_id': 1}),
             self._get_params(selected_ids=[ad_group_id]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         response_blob = json.loads(response.content)
         self.assertFalse('goal_fields' in response_blob['data'])
@@ -452,7 +554,7 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
 
         self._prepare_mock('ad_group', ad_group_id)
         response = self.client.get(
-            reverse('campaign_daily_stats', kwargs={'campaign_id': 1}),
+            reverse('campaign_ad_groups_daily_stats', kwargs={'campaign_id': 1}),
             self._get_params(selected_ids=[ad_group_id]),
             follow=True
         )
@@ -469,10 +571,12 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         self._prepare_mock('source', source_id)
 
         response = self.client.get(
-            reverse('ad_group_daily_stats', kwargs={'ad_group_id': 1}),
-            self._get_params(selected_ids=[source_id], sources=True),
+            reverse('ad_group_sources_daily_stats', kwargs={'ad_group_id': 1}),
+            self._get_params(selected_ids=[source_id]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         matcher = QuerySetMatcher(models.Source.objects.all())
 
@@ -491,7 +595,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
             constraints={'ad_group': 1, 'source': matcher}
         )
 
-        match_source = QuerySetMatcher(models.Source.objects.filter(pk=source_id))
+        sources = [source_id]
         self.mock_query.assert_any_call(
             self.user,
             self.date,
@@ -500,7 +604,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
             order=['date'],
             conversion_goals=QuerySetMatcher(conversion_goals),
             pixels=ListMatcher(pixels),
-            constraints={'ad_group': 1, 'source': match_source}
+            constraints={'ad_group': 1, 'source': sources}
         )
 
         source = models.Source.objects.get(pk=source_id)
@@ -510,10 +614,12 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         source_id = 3
         self._prepare_mock('source', source_id)
         response = self.client.get(
-            reverse('ad_group_daily_stats', kwargs={'ad_group_id': 1}),
-            self._get_params(selected_ids=[source_id], sources=True),
+            reverse('ad_group_sources_daily_stats', kwargs={'ad_group_id': 1}),
+            self._get_params(selected_ids=[source_id]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         response_blob = json.loads(response.content)
         self.assertFalse('goal_fields' in response_blob['data'])
@@ -524,69 +630,61 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
 
         self._prepare_mock('source', source_id)
         response = self.client.get(
-            reverse('ad_group_daily_stats', kwargs={'ad_group_id': 1}),
-            self._get_params(selected_ids=[source_id], sources=True),
+            reverse('ad_group_sources_daily_stats', kwargs={'ad_group_id': 1}),
+            self._get_params(selected_ids=[source_id]),
             follow=True
         )
+
+        self.assertEqual(200, response.status_code)
 
         response_blob = json.loads(response.content)
         self.assertTrue('goal_fields' in response_blob['data'])
         self.assertTrue('campaign_goals' in response_blob['data'])
 
+    def test_get_content_ads(self):
+        content_ad_id = 3
 
-@patch('dash.stats_helper.reports.api_contentads.query')
-@patch('dash.stats_helper.reports.api_touchpointconversions.query')
-class AdGroupAdsDailyStatsTest(TestCase):
-    fixtures = ['test_views']
+        permission = authmodels.Permission.objects.get(codename='campaign_goal_performance')
+        self.user.user_permissions.add(permission)
 
-    def setUp(self):
-        password = 'secret'
-        self.user = User.objects.get(pk=1)
-
-        self.client.login(username=self.user.email, password=password)
-
-    def test_get(self, mock_touchpoint_query, mock_query):
-        mock_touchpoint_query.return_value = MagicMock()
-
-        start_date = datetime.date(2015, 2, 1)
-        end_date = datetime.date(2015, 2, 2)
-
-        mock_stats = [{
-            'date': start_date.isoformat(),
-            'cpc': '0.0100',
-            'clicks': 1000
-        }, {
-            'date': end_date.isoformat(),
-            'cpc': '0.0200',
-            'clicks': 1500
-        }]
-        mock_query.return_value = mock_stats
-
-        params = {
-            'metrics': ['cpc', 'clicks'],
-            'start_date': start_date.isoformat(),
-            'end_date': end_date.isoformat()
-        }
+        self._prepare_mock('content_ad', content_ad_id)
 
         response = self.client.get(
-            reverse('ad_group_ads_daily_stats', kwargs={'ad_group_id': 1}),
-            params,
+            reverse('ad_group_content_ads_daily_stats', kwargs={'ad_group_id': 1}),
+            self._get_params(selected_ids=[content_ad_id]),
             follow=True
         )
 
+        self.assertEqual(200, response.status_code)
+
+        ad_group = models.AdGroup.objects.get(id=1)
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.all()
+
         matcher = QuerySetMatcher(models.Source.objects.all())
-        mock_query.assert_called_with(
-            start_date,
-            end_date,
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
             breakdown=['date'],
-            order=[],
-            ignore_diff_rows=True,
-            conversion_goals=ListMatcher(['ga__2', 'ga__3', 'omniture__4', 'omniture__5']),
-            ad_group=1,
-            source=matcher
+            order=['date'],
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
+            constraints={'ad_group': 1, 'source': matcher}
         )
 
-        self.assertJSONEqual(response.content, {
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date', 'content_ad'],
+            order=['date'],
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
+            constraints={'ad_group': 1, 'content_ad': [content_ad_id], 'source': matcher}
+        )
+
+        self.assertEqual(response.json(), {
             'data': {
                 'goal_fields': {
                     'avg_tos': {
@@ -643,12 +741,21 @@ class AdGroupAdsDailyStatsTest(TestCase):
                     'name': 'Totals',
                     'series_data': {
                         'clicks': [
-                            [start_date.isoformat(), 1000],
-                            [end_date.isoformat(), 1500]
+                            [self.date.isoformat(), 1000]
                         ],
                         'cpc': [
-                            [start_date.isoformat(), '0.0100'],
-                            [end_date.isoformat(), '0.0200']
+                            [self.date.isoformat(), '0.0100']
+                        ]
+                    }
+                }, {
+                    'id': content_ad_id,
+                    'name': models.ContentAd.objects.get(pk=content_ad_id).title,
+                    'series_data': {
+                        'clicks': [
+                            [self.date.isoformat(), 1500]
+                        ],
+                        'cpc': [
+                            [self.date.isoformat(), '0.0200']
                         ]
                     }
                 }],
@@ -666,8 +773,11 @@ class AdGroupAdsDailyStatsTest(TestCase):
             'success': True
         })
 
-    def test_get_with_conversion_goals(self, mock_touchpoint_query, mock_query):
+    def test_get_with_conversion_goals(self):
         created_dt = datetime.datetime.utcnow()
+
+        permission = authmodels.Permission.objects.get(codename='campaign_goal_performance')
+        self.user.user_permissions.add(permission)
 
         models.ConversionGoal.objects.filter(name='test conversion goal 5').delete()
 
@@ -713,48 +823,46 @@ class AdGroupAdsDailyStatsTest(TestCase):
             'date': start_date.isoformat(),
             'cpc': '0.0100',
             'clicks': 1000,
-            'conversions': {
-                'ga__6': 5,
-            }
+            'conversion_goal_5': 5,
         }, {
             'date': end_date.isoformat(),
             'cpc': '0.0200',
             'clicks': 1500,
-            'conversions': {
-                'ga__6': 6,
-            }
+            'conversion_goal_5': 6,
         }]
-        mock_query.return_value = mock_stats
-
-        mock_touchpoint_stats = []
-
-        mock_touchpoint_query.return_value = mock_touchpoint_stats
+        self.mock_query.return_value = mock_stats
 
         params = {
+            'totals': True,
             'metrics': ['cpc', 'clicks', 'conversion_goal_5'],
             'start_date': start_date.isoformat(),
             'end_date': end_date.isoformat()
         }
 
         response = self.client.get(
-            reverse('ad_group_ads_daily_stats', kwargs={'ad_group_id': 1}),
+            reverse('ad_group_content_ads_daily_stats', kwargs={'ad_group_id': 1}),
             params,
             follow=True
         )
 
+        self.assertEqual(200, response.status_code)
+
+        ad_group = models.AdGroup.objects.get(id=1)
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.all()
+
         matcher = QuerySetMatcher(models.Source.objects.all())
-        mock_query.assert_called_with(
+        self.mock_query.assert_called_with(
+            self.user,
             start_date,
             end_date,
             breakdown=['date'],
-            order=[],
-            ignore_diff_rows=True,
-            conversion_goals=ListMatcher(['ga__2', 'ga__3', 'omniture__4', 'ga__6']),
-            ad_group=1,
-            source=matcher
+            order=['date'],
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
+            constraints={'ad_group': 1, 'source': matcher},
         )
 
-        self.maxDiff = None
         self.assertDictEqual(json.loads(response.content), {
             'data': {
                 'goal_fields': {
@@ -912,7 +1020,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             end_date,
             order_fields=['date'],
             breakdown_fields=['date'],
-            constraints={'ad_group': ad_group.id},
+            constraints={'ad_group': ad_group.id, 'exchange': []},
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
             constraints_list=[],
         )
@@ -922,7 +1030,7 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             end_date,
             breakdown=['date'],
             pixels=ListMatcher(pixels),
-            constraints={'ad_group': ad_group.id},
+            constraints={'source': [], 'ad_group': ad_group.id},
             constraints_list=[],
         )
 

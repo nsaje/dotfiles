@@ -1,3 +1,6 @@
+from collections import defaultdict
+import copy
+
 import reports.api
 import reports.api_publishers
 
@@ -10,91 +13,133 @@ from dash import campaign_goals
 
 from utils import api_common
 from utils import exc
-from utils.sort_helper import sort_results
+
+MAX_DAILY_STATS_BREAKDOWNS = 3
 
 
 class BaseDailyStatsView(api_common.BaseApiView):
 
-    def get_stats(self, request, totals_kwargs, selected_kwargs=None,
-                  group_key=None, conversion_goals=None, pixels=None):
+    def get_stats(self, request, group_key, objects, constraints, **data):
+        metrics = request.GET.getlist('metrics')
+        selected_ids = self._get_selected_ids(request)
+        totals = request.GET.get('totals')
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        totals_stats = []
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        constraints['source'] = filtered_sources
 
-        if totals_kwargs:
-            totals_stats = stats_helper.get_stats_with_conversions(
-                request.user,
-                start_date,
-                end_date,
-                breakdown=['date'],
-                order=['date'],
-                conversion_goals=conversion_goals,
-                pixels=pixels,
-                constraints=totals_kwargs
-            )
-
-        breakdown_stats = []
-
-        if selected_kwargs:
-            breakdown_stats = stats_helper.get_stats_with_conversions(
-                request.user,
-                start_date,
-                end_date,
-                breakdown=['date', group_key],
-                order=['date'],
-                conversion_goals=conversion_goals,
-                pixels=pixels,
-                constraints=selected_kwargs,
-            )
-
-        return breakdown_stats + totals_stats
-
-    def _get_series_groups_dict(self, totals, groups_dict):
-        result = {}
-
-        if groups_dict is not None:
-            result = {key: {
-                'id': key,
-                'name': groups_dict[key],
-                'series_data': {}
-            } for key in groups_dict}
+        stats = []
 
         if totals:
-            result['totals'] = {
-                'id': 'totals',
-                'name': 'Totals',
-                'series_data': {}
-            }
+            stats.append(self.get_stats_totals(
+                request.user,
+                start_date,
+                end_date,
+                metrics,
+                constraints,
+                **data
+            ))
 
-        return result
+        if selected_ids:
+            stats += self.get_stats_selected(
+                request.user,
+                start_date,
+                end_date,
+                metrics,
+                selected_ids,
+                group_key,
+                objects,
+                constraints,
+                **data
+            )
 
-    def get_response_dict(
-        self,
-        stats,
-        totals,
-        groups_dict,
-        metrics,
-        group_key=None
-    ):
-        series_groups = self._get_series_groups_dict(totals, groups_dict)
+        return {
+            'chart_data': stats,
+        }
 
+    def get_stats_totals(self, user, start_date, end_date, metrics, constraints, conversion_goals=None, pixels=None, campaign=None):
+        stats = stats_helper.get_stats_with_conversions(
+            user,
+            start_date,
+            end_date,
+            breakdown=['date'],
+            order=['date'],
+            conversion_goals=conversion_goals,
+            pixels=pixels,
+            constraints=constraints,
+        )
+
+        if campaign and user.has_perm('zemauth.campaign_goal_optimization'):
+            stats = campaign_goals.create_goals(campaign, stats)
+
+        return {
+            'id': 'totals',
+            'name': 'Totals',
+            'series_data': self._format_metric(stats, metrics),
+        }
+
+    def _format_metric(self, stats, metrics):
+        data = defaultdict(list)
         for stat in stats:
-            # get id of group it belongs to
-            group_id = stat.get(group_key) or 'totals'
-
-            data = series_groups[group_id]['series_data']
             for metric in metrics:
-                if metric not in data:
-                    data[metric] = []
+                data[metric].append(
+                    (stat['date'], stat.get(metric))
+                )
+        return data
 
-                series_groups[group_id]['series_data'][metric].append(
+    def _get_selected_ids(self, request):
+        if not request.GET.getlist('selected_ids'):
+            return []
+        return [int(id) for id in request.GET.getlist('selected_ids')]
+
+    def get_stats_selected(self, user, start_date, end_date, metrics, selected_ids, group_key, objects, constraints, conversion_goals=None, pixels=None, campaign=None):
+        constraints = copy.copy(constraints)
+        constraints[group_key] = selected_ids
+
+        join_selected = len(selected_ids) > MAX_DAILY_STATS_BREAKDOWNS
+        if join_selected:
+            breakdown = ['date']
+        else:
+            breakdown = ['date', group_key]
+
+        stats = stats_helper.get_stats_with_conversions(
+            user,
+            start_date,
+            end_date,
+            breakdown=breakdown,
+            order=['date'],
+            conversion_goals=conversion_goals,
+            pixels=pixels,
+            constraints=constraints,
+        )
+
+        if campaign and user.has_perm('zemauth.campaign_goal_optimization'):
+            stats = campaign_goals.create_goals(campaign, stats)
+
+        if join_selected:
+            return [{
+                'id': 'selected',
+                'name': 'Selected',
+                'series_data': self._format_metric(stats, metrics),
+            }]
+
+        data = self._get_series_groups_dict(objects, selected_ids)
+        for stat in stats:
+            group_id = stat.get(group_key)
+            for metric in metrics:
+                data[group_id]['series_data'][metric].append(
                     (stat['date'], stat.get(metric))
                 )
 
-        result = {
-            'chart_data': series_groups.values()
-        }
+        return data.values()
+
+    def _get_series_groups_dict(self, objects, selected_ids):
+        result = {obj.id: {
+            'id': obj.id,
+            'name': getattr(obj, 'name', None) or obj.title,
+            'series_data': defaultdict(list),
+        } for obj in objects.filter(pk__in=selected_ids)}
 
         return result
 
@@ -149,64 +194,73 @@ class BaseDailyStatsView(api_common.BaseApiView):
         return ret
 
 
-class AccountDailyStats(BaseDailyStatsView):
+class AllAccountsAccountsDailyStats(BaseDailyStatsView):
+    def get(self, request):
+        # Permission check
+        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
+            raise exc.MissingDataError()
 
-    def get(self, request, account_id):
-        account = helpers.get_account(request.user, account_id)
+        view_filter = helpers.ViewFilter(request=request)
 
-        metrics = request.GET.getlist('metrics')
-        selected_ids = request.GET.getlist('selected_ids')
-        totals = request.GET.get('totals')
-        sources = request.GET.get('sources')
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        totals_kwargs = None
-        selected_kwargs = None
-        group_key = 'campaign'
-        group_names = None
-
-        if sources:
-            group_key = 'source'
-
-        if totals:
-            totals_kwargs = {'account': int(account.id), 'source': filtered_sources}
-
-        if selected_ids:
-            ids = map(int, selected_ids)
-
-            selected_kwargs = {
-                'account': int(account.id),
-            }
-            if request.user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
-                if sources:
-                    selected_kwargs['source'] = ids
-                else:
-                    selected_kwargs['campaign'] = ids
-            else:
-                selected_kwargs['source_id' if sources else 'ad_group__campaign__id'] = ids
-
-            if sources:
-                sources = models.Source.objects.filter(pk__in=ids)
-                group_names = {source.id: source.name for source in sources}
-            else:
-                campaigns = models.Campaign.objects.filter(pk__in=ids)
-                group_names = {campaign.id: campaign.name for campaign in campaigns}
-
-            if filtered_sources and not (set(('source_id', 'source')) & set(selected_kwargs.keys())):
-                selected_kwargs['source'] = filtered_sources
-
-        pixels = account.conversionpixel_set.filter(archived=False)
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key, pixels=pixels)
+        accounts = models.Account.objects.all()\
+            .filter_by_user(request.user)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter_by_account_types(view_filter.filtered_account_types)
+        constraints = {'account': accounts}
 
         return self.create_api_response(
             self.merge(
-                self.get_response_dict(
-                    stats,
-                    totals,
-                    group_names,
-                    metrics,
-                    group_key
+                self.get_stats(
+                    request,
+                    'account',
+                    models.Account.objects,
+                    constraints,
+                ),
+            )
+        )
+
+
+class AllAccountsSourcesDailyStats(BaseDailyStatsView):
+    def get(self, request):
+        # Permission check
+        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
+            raise exc.MissingDataError()
+
+        view_filter = helpers.ViewFilter(request=request)
+
+        accounts = models.Account.objects.all()\
+            .filter_by_user(request.user)\
+            .filter_by_agencies(view_filter.filtered_agencies)\
+            .filter_by_account_types(view_filter.filtered_account_types)
+        constraints = {'account': accounts}
+
+        return self.create_api_response(
+            self.merge(
+                self.get_stats(
+                    request,
+                    'source',
+                    models.Source.objects,
+                    constraints,
+                ),
+            )
+        )
+
+
+class AccountCampaignsDailyStats(BaseDailyStatsView):
+    def get(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        constraints = {'account': account.id}
+
+        pixels = account.conversionpixel_set.filter(archived=False)
+
+        return self.create_api_response(
+            self.merge(
+                self.get_stats(
+                    request,
+                    'campaign',
+                    models.Campaign.objects,
+                    constraints,
+                    pixels=pixels,
                 ),
                 self.get_goals(
                     request,
@@ -216,61 +270,48 @@ class AccountDailyStats(BaseDailyStatsView):
         )
 
 
-class CampaignDailyStats(BaseDailyStatsView):
+class AccountSourcesDailyStats(BaseDailyStatsView):
+    def get(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        constraints = {'account': account.id}
 
-    def get(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-
-        metrics = request.GET.getlist('metrics')
-        selected_ids = request.GET.getlist('selected_ids')
-        totals = request.GET.get('totals')
-        sources = request.GET.get('sources')
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        totals_kwargs = None
-        selected_kwargs = None
-        group_key = 'ad_group'
-        group_names = None
-
-        if sources:
-            group_key = 'source'
-
-        if totals:
-            totals_kwargs = {'campaign': int(campaign.id), 'source': filtered_sources}
-
-        if selected_ids:
-            ids = [int(x) for x in selected_ids]
-
-            if request.user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
-                selected_kwargs = {'campaign': int(campaign.id), '{}'.format(group_key): ids}
-            else:
-                selected_kwargs = {'campaign': int(campaign.id), '{}_id'.format(group_key): ids}
-
-            if sources:
-                sources = models.Source.objects.filter(pk__in=ids)
-                group_names = {source.id: source.name for source in sources}
-            else:
-                ad_groups = models.AdGroup.objects.filter(pk__in=ids)
-                group_names = {ad_group.id: ad_group.name for ad_group in ad_groups}
-
-            if filtered_sources and not (set(('source_id', 'source')) & set(selected_kwargs.keys())):
-                selected_kwargs['source'] = filtered_sources
-
-        conversion_goals = campaign.conversiongoal_set.all()
-        pixels = campaign.account.conversionpixel_set.filter(archived=False)
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key, conversion_goals, pixels=pixels)
-        if request.user.has_perm('zemauth.campaign_goal_optimization'):
-            stats = campaign_goals.create_goals(campaign, stats)
+        pixels = account.conversionpixel_set.filter(archived=False)
 
         return self.create_api_response(
             self.merge(
-                self.get_response_dict(
-                    stats,
-                    totals,
-                    group_names,
-                    metrics,
-                    group_key,
+                self.get_stats(
+                    request,
+                    'source',
+                    models.Source.objects,
+                    constraints,
+                    pixels=pixels,
+                ),
+                self.get_goals(
+                    request,
+                    pixels=pixels,
+                )
+            )
+        )
+
+
+class CampaignAdGroupsDailyStats(BaseDailyStatsView):
+    def get(self, request, campaign_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        constraints = {'campaign': campaign.id}
+
+        conversion_goals = campaign.conversiongoal_set.all()
+        pixels = campaign.account.conversionpixel_set.filter(archived=False)
+
+        return self.create_api_response(
+            self.merge(
+                self.get_stats(
+                    request,
+                    'ad_group',
+                    models.AdGroup.objects,
+                    constraints,
+                    conversion_goals=conversion_goals,
+                    pixels=pixels,
+                    campaign=campaign,
                 ),
                 self.get_goals(
                     request,
@@ -282,49 +323,83 @@ class CampaignDailyStats(BaseDailyStatsView):
         )
 
 
-class AdGroupDailyStats(BaseDailyStatsView):
+class CampaignSourcesDailyStats(BaseDailyStatsView):
+    def get(self, request, campaign_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        constraints = {'campaign': campaign.id}
 
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        metrics = request.GET.getlist('metrics')
-        selected_ids = request.GET.getlist('selected_ids')
-        totals = request.GET.get('totals')
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        totals_kwargs = None
-        selected_kwargs = None
-        sources = []
-
-        if totals:
-            totals_kwargs = {'ad_group': int(ad_group.id), 'source': filtered_sources}
-
-        if selected_ids:
-            ids = map(int, selected_ids)
-            sources = models.Source.objects.filter(id__in=tuple(ids))
-            selected_kwargs = {'ad_group': int(ad_group.id), 'source': sources}
-            if filtered_sources and not (set(('source_id', 'source')) & set(selected_kwargs.keys())):
-                selected_kwargs['source'] = filtered_sources
-
-        conversion_goals = ad_group.campaign.conversiongoal_set.all()
-        pixels = ad_group.campaign.account.conversionpixel_set.filter(archived=False)
-        stats = self.get_stats(
-            request, totals_kwargs, selected_kwargs=selected_kwargs,
-            group_key='source', conversion_goals=conversion_goals,
-            pixels=pixels)
-
-        if request.user.has_perm('zemauth.campaign_goal_optimization'):
-            stats = campaign_goals.create_goals(ad_group.campaign, stats)
+        conversion_goals = campaign.conversiongoal_set.all()
+        pixels = campaign.account.conversionpixel_set.filter(archived=False)
 
         return self.create_api_response(
             self.merge(
-                self.get_response_dict(
-                    stats,
-                    totals,
-                    {source.id: source.name for source in sources},
-                    metrics,
-                    group_key='source',
+                self.get_stats(
+                    request,
+                    'source',
+                    models.Source.objects,
+                    constraints,
+                    conversion_goals=conversion_goals,
+                    pixels=pixels,
+                    campaign=campaign,
+                ),
+                self.get_goals(
+                    request,
+                    conversion_goals=conversion_goals,
+                    campaign=campaign,
+                    pixels=pixels,
+                )
+            )
+        )
+
+
+class AdGroupContentAdsDailyStats(BaseDailyStatsView):
+    def get(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        constraints = {'ad_group': ad_group.id}
+
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.filter(archived=False)
+
+        return self.create_api_response(
+            self.merge(
+                self.get_stats(
+                    request,
+                    'content_ad',
+                    models.ContentAd.objects,
+                    constraints,
+                    conversion_goals=conversion_goals,
+                    pixels=pixels,
+                    campaign=ad_group.campaign,
+                ),
+                self.get_goals(
+                    request,
+                    conversion_goals=conversion_goals,
+                    campaign=ad_group.campaign,
+                    pixels=pixels,
+                )
+            )
+        )
+
+
+class AdGroupSourcesDailyStats(BaseDailyStatsView):
+
+    def get(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        constraints = {'ad_group': ad_group.id}
+
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.filter(archived=False)
+
+        return self.create_api_response(
+            self.merge(
+                self.get_stats(
+                    request,
+                    'source',
+                    models.Source.objects,
+                    constraints,
+                    conversion_goals=conversion_goals,
+                    pixels=pixels,
+                    campaign=ad_group.campaign,
                 ),
                 self.get_goals(
                     request,
@@ -337,201 +412,30 @@ class AdGroupDailyStats(BaseDailyStatsView):
 
 
 class AdGroupPublishersDailyStats(BaseDailyStatsView):
-
     def get(self, request, ad_group_id, ):
         if not request.user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        constraints = {'ad_group': ad_group.id}
 
-        metrics = request.GET.getlist('metrics')
-        totals = request.GET.get('totals')
         show_blacklisted_publishers = request.GET.get(
             'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL)
 
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-        totals_constraints = None
-        map_exchange_to_source_name = {}
-        # bidder_slug is unique, so no issues with taking all of the sources
-        for s in filtered_sources:
-            if s.bidder_slug:
-                exchange_name = s.bidder_slug
-            else:
-                exchange_name = s.name.lower()
-            map_exchange_to_source_name[exchange_name] = s.name
-
-        if totals:
-            totals_constraints = {'ad_group': int(ad_group.id)}
-
-        if set(models.Source.objects.all()) != set(filtered_sources):
-            totals_constraints['exchange'] = map_exchange_to_source_name.keys()
-
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
         pixels = ad_group.campaign.account.conversionpixel_set.filter(archived=False)
-        stats = self.get_stats(
-            request,
-            ad_group,
-            totals_constraints,
-            show_blacklisted_publishers,
-            selected_kwargs=None,
-            group_key='source',
-            conversion_goals=conversion_goals,
-            pixels=pixels)
-
-        if request.user.has_perm('zemauth.campaign_goal_optimization'):
-            stats = campaign_goals.create_goals(ad_group.campaign, stats)
 
         return self.create_api_response(
             self.merge(
-                self.get_response_dict(
-                    stats,
-                    totals,
-                    {},
-                    metrics,
-                    'domain',
-                ),
-                self.get_goals(
+                self.get_stats(
                     request,
+                    None,
+                    None,
+                    constraints,
                     conversion_goals=conversion_goals,
-                    campaign=ad_group.campaign,
                     pixels=pixels,
-                )
-            )
-        )
-
-    def get_stats(
-            self,
-            request,
-            ad_group,
-            totals_constraints,
-            show_blacklisted_publishers,
-            selected_kwargs=None,
-            group_key=None,
-            conversion_goals=None,
-            pixels=None,
-    ):
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        totals_stats = []
-        if totals_constraints:
-
-            if not show_blacklisted_publishers or\
-                    show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
-                totals_stats = stats_helper.get_publishers_data_and_conversion_goals(
-                    request.user,
-                    reports.api_publishers.query,
-                    start_date,
-                    end_date,
-                    totals_constraints,
-                    conversion_goals,
-                    pixels,
-                    publisher_breakdown_fields=['date'],
-                    touchpoint_breakdown_fields=['date'],
-                    order_fields=['date'])
-
-            elif show_blacklisted_publishers in (
-                    constants.PublisherBlacklistFilter.SHOW_ACTIVE,
-                    constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
-
-                adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(
-                    ad_group
-                )
-
-                query_func = None
-                if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
-                    query_func = reports.api_publishers.query_active_publishers
-                else:
-                    query_func = reports.api_publishers.query_blacklisted_publishers
-
-                totals_stats = stats_helper.get_publishers_data_and_conversion_goals(
-                    request.user,
-                    query_func,
-                    start_date,
-                    end_date,
-                    totals_constraints,
-                    conversion_goals,
-                    pixels,
-                    publisher_breakdown_fields=['date'],
-                    touchpoint_breakdown_fields=['date'],
-                    order_fields=['date'],
                     show_blacklisted_publishers=show_blacklisted_publishers,
-                    adg_blacklisted_publishers=adg_blacklisted_publishers,
-                )
-
-        breakdown_stats = []
-
-        return breakdown_stats + totals_stats
-
-
-class AccountsDailyStats(BaseDailyStatsView):
-
-    def get(self, request):
-        # Permission check
-        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
-            raise exc.MissingDataError()
-
-        metrics = request.GET.getlist('metrics')
-        selected_ids = request.GET.getlist('selected_ids')
-        totals = request.GET.get('totals')
-
-        view_filter = helpers.ViewFilter(request=request)
-
-        totals_kwargs = None
-        selected_kwargs = None
-        group_key = None
-        group_names = None
-        accounts = models.Account.objects.all()\
-            .filter_by_user(request.user)\
-            .filter_by_agencies(view_filter.filtered_agencies)\
-            .filter_by_account_types(view_filter.filtered_account_types)
-
-        if totals:
-            totals_kwargs = {'account': accounts, 'source': view_filter.filtered_sources}
-
-        if selected_ids:
-            ids = map(int, selected_ids)
-            sources = models.Source.objects.filter(id__in=tuple(ids))
-            selected_kwargs = {'account': accounts, 'source': sources}
-
-            group_key = 'source'
-
-            sources = models.Source.objects.filter(pk__in=ids)
-            group_names = {source.id: source.name for source in sources}
-
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
-
-        return self.create_api_response(self.get_response_dict(
-            stats,
-            totals,
-            group_names,
-            metrics=metrics,
-            group_key=group_key
-        ))
-
-
-class AdGroupAdsDailyStats(BaseDailyStatsView):
-
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        metrics = request.GET.getlist('metrics')
-        conversion_goals = ad_group.campaign.conversiongoal_set.all()
-        pixels = ad_group.campaign.account.conversionpixel_set.filter(archived=False)
-        stats = self._get_stats(request, ad_group, filtered_sources, conversion_goals, pixels)
-
-        if request.user.has_perm('zemauth.campaign_goal_optimization'):
-            stats = campaign_goals.create_goals(ad_group.campaign, stats)
-
-        return self.create_api_response(
-            self.merge(
-                self.get_response_dict(
-                    stats,
-                    totals=True,
-                    groups_dict=None,
-                    metrics=metrics,
+                    ad_group=ad_group,
                 ),
                 self.get_goals(
                     request,
@@ -542,19 +446,64 @@ class AdGroupAdsDailyStats(BaseDailyStatsView):
             )
         )
 
-    def _get_stats(self, request, ad_group, sources, conversion_goals, pixels):
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+    def get_stats_selected(self, user, start_date, end_date, metrics, selected_ids, group_key, objects, constraints):
+        return []
 
-        stats = stats_helper.get_content_ad_stats_with_conversions(
-            request.user,
-            start_date,
-            end_date,
-            breakdown=['date'],
-            ignore_diff_rows=True,
-            conversion_goals=conversion_goals,
-            pixels=pixels,
-            constraints={'ad_group': ad_group.id, 'source': sources}
-        )
+    def get_stats_totals(self, user, start_date, end_date, metrics, constraints, conversion_goals=None, pixels=None, show_blacklisted_publishers=None, ad_group=None):
+        if 'source' in constraints:
+            constraints['exchange'] = [s.bidder_slug if s.bidder_slug else s.name.lower() for s in constraints['source']]
+            del constraints['source']
 
-        return sort_results(stats, ['date'])
+        stats = []
+
+        if not show_blacklisted_publishers or\
+                show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
+            stats = stats_helper.get_publishers_data_and_conversion_goals(
+                user,
+                reports.api_publishers.query,
+                start_date,
+                end_date,
+                constraints,
+                conversion_goals,
+                pixels,
+                publisher_breakdown_fields=['date'],
+                touchpoint_breakdown_fields=['date'],
+                order_fields=['date'])
+
+        elif show_blacklisted_publishers in (
+                constants.PublisherBlacklistFilter.SHOW_ACTIVE,
+                constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
+
+            adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(
+                ad_group
+            )
+
+            query_func = None
+            if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+                query_func = reports.api_publishers.query_active_publishers
+            else:
+                query_func = reports.api_publishers.query_blacklisted_publishers
+
+            stats = stats_helper.get_publishers_data_and_conversion_goals(
+                user,
+                query_func,
+                start_date,
+                end_date,
+                constraints,
+                conversion_goals,
+                pixels,
+                publisher_breakdown_fields=['date'],
+                touchpoint_breakdown_fields=['date'],
+                order_fields=['date'],
+                show_blacklisted_publishers=show_blacklisted_publishers,
+                adg_blacklisted_publishers=adg_blacklisted_publishers,
+            )
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            stats = campaign_goals.create_goals(ad_group.campaign, stats)
+
+        return {
+            'id': 'totals',
+            'name': 'Totals',
+            'series_data': self._format_metric(stats, metrics),
+        }

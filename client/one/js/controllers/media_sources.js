@@ -566,8 +566,8 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
         }
 
         var dateRange = zemDataFilterService.getDateRange();
-        $scope.dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, dateRange.startDate,
-            dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), true);
+        $scope.dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate,
+            dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics());
 
         $scope.dailyStatsPromise.then(
             function (data) {

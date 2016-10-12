@@ -67,7 +67,7 @@ describe('AdGroupAdsCtrl', function () {
                 getUpdates: mockApiFunc,
             },
             dailyStats: {
-                listContentAdStats: mockApiFunc,
+                list: mockApiFunc,
             },
             adGroupAdsUploadBatches: {
                 list: mockApiFunc,

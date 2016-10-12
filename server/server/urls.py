@@ -311,14 +311,14 @@ urlpatterns += [
         login_required(dash.views.sync.AdGroupCheckSyncProgress.as_view()),
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/daily_stats/',
-        login_required(dash.views.daily_stats.AdGroupDailyStats.as_view()),
-        name='ad_group_daily_stats'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/daily_stats/',
+        login_required(dash.views.daily_stats.AdGroupContentAdsDailyStats.as_view()),
+        name='ad_group_content_ads_daily_stats'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/daily_stats/',
-        login_required(dash.views.daily_stats.AdGroupAdsDailyStats.as_view()),
-        name='ad_group_ads_daily_stats'
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/daily_stats/',
+        login_required(dash.views.daily_stats.AdGroupSourcesDailyStats.as_view()),
+        name='ad_group_sources_daily_stats'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/daily_stats/',
@@ -326,19 +326,34 @@ urlpatterns += [
         name='ad_group_publishers_daily_stats'
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/daily_stats/',
-        login_required(dash.views.daily_stats.CampaignDailyStats.as_view()),
-        name='campaign_daily_stats'
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/daily_stats/',
+        login_required(dash.views.daily_stats.CampaignAdGroupsDailyStats.as_view()),
+        name='campaign_ad_groups_daily_stats'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/daily_stats/',
-        login_required(dash.views.daily_stats.AccountDailyStats.as_view()),
-        name='account_daily_stats'
+        r'^api/campaigns/(?P<campaign_id>\d+)/sources/daily_stats/',
+        login_required(dash.views.daily_stats.CampaignSourcesDailyStats.as_view()),
+        name='campaign_sources_daily_stats'
     ),
     url(
-        r'^api/all_accounts/daily_stats/',
-        login_required(dash.views.daily_stats.AccountsDailyStats.as_view()),
-        name='accounts_daily_stats'
+        r'^api/accounts/(?P<account_id>\d+)/campaigns/daily_stats/',
+        login_required(dash.views.daily_stats.AccountCampaignsDailyStats.as_view()),
+        name='account_campaigns_daily_stats'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/sources/daily_stats/',
+        login_required(dash.views.daily_stats.AccountSourcesDailyStats.as_view()),
+        name='account_sources_daily_stats'
+    ),
+    url(
+        r'^api/all_accounts/accounts/daily_stats/',
+        login_required(dash.views.daily_stats.AllAccountsAccountsDailyStats.as_view()),
+        name='accounts_accounts_daily_stats'
+    ),
+    url(
+        r'^api/all_accounts/sources/daily_stats/',
+        login_required(dash.views.daily_stats.AllAccountsSourcesDailyStats.as_view()),
+        name='accounts_sources_daily_stats'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/table/',

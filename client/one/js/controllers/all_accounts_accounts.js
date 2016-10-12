@@ -554,7 +554,7 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
 
     var getDailyStats = function () {
         var dateRange = zemDataFilterService.getDateRange();
-        api.dailyStats.list($scope.level, null, dateRange.startDate, dateRange.endDate, null, true, getDailyStatsMetrics(), null).then(
+        api.dailyStats.list($scope.level, null, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, null, true, getDailyStatsMetrics()).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;

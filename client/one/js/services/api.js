@@ -805,22 +805,24 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
             };
         }
 
-        this.listContentAdStats = function (id, startDate, endDate, metrics) {
-            var url = '/api/ad_groups/' + id + '/contentads/daily_stats/';
-            return getData(url, startDate, endDate, metrics);
-        };
+        var breakdownUrlMap = {};
+        breakdownUrlMap[constants.breakdown.ACCOUNT] = 'accounts';
+        breakdownUrlMap[constants.breakdown.CAMPAIGN] = 'campaigns';
+        breakdownUrlMap[constants.breakdown.AD_GROUP] = 'ad_groups';
+        breakdownUrlMap[constants.breakdown.CONTENT_AD] = 'contentads';
+        breakdownUrlMap[constants.breakdown.MEDIA_SOURCE] = 'sources';
 
         this.listPublishersStats = function (id, startDate, endDate, selectedIds, totals, metrics) {
             var url = '/api/ad_groups/' + id + '/publishers/daily_stats/';
             return getData(url, startDate, endDate, metrics, selectedIds, totals);
         };
 
-        this.list = function (level, id, startDate, endDate, selectedIds, totals, metrics, groupSources) {
-            var url = '/api/' + level + (id ? ('/' + id) : '') + '/daily_stats/';
-            return getData(url, startDate, endDate, metrics, selectedIds, totals, groupSources);
+        this.list = function (level, id, breakdown, startDate, endDate, selectedIds, totals, metrics) {
+            var url = '/api/' + level + (id ? ('/' + id) : '') + '/' + breakdownUrlMap[breakdown] + '/daily_stats/';
+            return getData(url, startDate, endDate, metrics, selectedIds, totals);
         };
 
-        function getData (url, startDate, endDate, metrics, selectedIds, totals, groupSources) {
+        function getData (url, startDate, endDate, metrics, selectedIds, totals) {
             var deferred = createAbortableDefer();
             var config = {
                 params: {},
@@ -836,8 +838,7 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
             }
 
             if (selectedIds) {
-                // TODO: show combined line for all selected instead of this hack
-                config.params.selected_ids = selectedIds.slice(0, 3);
+                config.params.selected_ids = selectedIds;
             }
 
             if (totals) {
@@ -846,10 +847,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
 
             if (metrics) {
                 config.params.metrics = metrics;
-            }
-
-            if (groupSources) {
-                config.params.sources = groupSources;
             }
 
             addFilteredSources(config.params);
