@@ -65,8 +65,9 @@
                     </div>
                     <div class="row m-b-xs">
                         <div class="col-xs-12 p-r-none p-l-none">
-                            <tags-input ng-show="ctrl.selectedRefererRuleId=='startsWith'" ng-model="ctrl.selectedRefererRuleStartsWithValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
-                            <tags-input ng-show="ctrl.selectedRefererRuleId=='contains'" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
+                            <tags-input ng-show="ctrl.selectedRefererRuleId=='startsWith'" placeholder="Add URLs" ng-model="ctrl.selectedRefererRuleStartsWithValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
+                            <tags-input ng-show="ctrl.selectedRefererRuleId=='contains'" placeholder="Add tags" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
+                            <div class="description small m-t-xs m-b-none" ng-show="ctrl.selectedRefererRuleId=='startsWith'">Confirm URL with ENTER or delete previously added URL with double BACKSPACE or by clicking X.</div>
                             <div class="description small m-t-xs m-b-none" ng-show="ctrl.selectedRefererRuleId=='contains'">Confirm tag with ENTER or delete previously added tag with double BACKSPACE or by clicking X.</div>
                         </div>
                     </div>
