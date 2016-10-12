@@ -758,9 +758,12 @@ class AdGroupAdmin(admin.ModelAdmin):
         if changes:
             new_settings.save(request)
             utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroup admin')
-            self._handle_manual_interest_targeting_action(request, ad_group, constants.SourceType.FACEBOOK, current_settings, new_settings)
-            self._handle_manual_interest_targeting_action(request, ad_group, constants.SourceType.YAHOO, current_settings, new_settings)
-            self._handle_manual_interest_targeting_action(request, ad_group, constants.SourceType.OUTBRAIN, current_settings, new_settings)
+            self._handle_manual_interest_targeting_action(
+                request, ad_group, constants.SourceType.FACEBOOK, current_settings, new_settings)
+            self._handle_manual_interest_targeting_action(
+                request, ad_group, constants.SourceType.YAHOO, current_settings, new_settings)
+            self._handle_manual_interest_targeting_action(
+                request, ad_group, constants.SourceType.OUTBRAIN, current_settings, new_settings)
             if (current_settings.redirect_pixel_urls != new_settings.redirect_pixel_urls or
                     current_settings.redirect_javascript != new_settings.redirect_javascript):
                 self._update_redirector_adgroup(ad_group, new_settings)
@@ -1094,6 +1097,35 @@ class ContentAdGroupSettingsStatusFilter(admin.SimpleListFilter):
             content_ad__ad_group_id__in=[x.ad_group_id for x in ad_group_settingss if x.state == queried_state])
 
 
+def _resubmit_content_ad(queryset, clear=False):
+    for cas in queryset.all():
+        if clear:
+            cas.source_content_ad_id = None
+        cas.submission_status = -1
+        cas.save()
+        utils.k1_helper.update_content_ad(cas.content_ad.ad_group.pk, cas.content_ad.pk, 'content ad resubmit')
+
+
+def resubmit_content_ads(modeladmin, request, queryset):
+    logger.info(
+        'BULK RESUBMIT CONTENT AD: Bulk resubmit content ad started. Content ad sources: {}'.format(
+            [el.id for el in queryset]
+        )
+    )
+    _resubmit_content_ad(queryset, clear=True)
+resubmit_content_ads.short_description = 'Resubmit selected content ads'
+
+
+def mark_content_ads_pending(modeladmin, request, queryset):
+    logger.info(
+        'BULK RESUBMIT CONTENT AD: Bulk mark content ads pending. Content ad sources: {}'.format(
+            [el.id for el in queryset]
+        )
+    )
+    _resubmit_content_ad(queryset, clear=False)
+mark_content_ads_pending.short_description = 'Mark content ads as PENDING'
+
+
 class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
         'content_ad_id_',
@@ -1106,9 +1138,9 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt'
     )
-
+    search_fields = ('content_ad__ad_group__name', 'content_ad__ad_group__campaign__name', 'content_ad__ad_group__campaign__account__name', )
     list_filter = ('source', 'submission_status', ContentAdGroupSettingsStatusFilter)
-    actions = [reject_content_ad_sources]
+    actions = [reject_content_ad_sources, resubmit_content_ads, mark_content_ads_pending]
 
     display_submission_status_colors = {
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
