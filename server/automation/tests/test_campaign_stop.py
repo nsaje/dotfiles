@@ -983,8 +983,8 @@ class GetMaximumDailyBudgetTestCase(TestCase):
             campaign_stop._get_ad_groups_running_on_date(date, c5.adgroup_set.all()), set(c5.adgroup_set.all()))
 
     def test_get_source_max_daily_budget(self):
-        ags1 = dash.models.AdGroupSource.objects.get(id=1)  # highest daily budget set on date
-        ags2 = dash.models.AdGroupSource.objects.get(id=2)  # highest daily budget from day before
+        ags1 = dash.models.AdGroupSource.objects.get(id=1)  # highest daily cap set on date
+        ags2 = dash.models.AdGroupSource.objects.get(id=2)  # highest daily cap from day before
         ags3 = dash.models.AdGroupSource.objects.get(id=3)  # inactive since day before
         ags4 = dash.models.AdGroupSource.objects.get(id=4)  # UTC-9
         ags5 = dash.models.AdGroupSource.objects.get(id=5)  # UTC+9
@@ -1686,7 +1686,7 @@ class MinimumBudgetAmountTestCase(TestCase):
 
         self.assertEqual(
             campaign_stop.get_minimum_budget_amount(budget),
-            Decimal('294.4444444444444444444444444')  # max daily budgets without spend
+            Decimal('294.4444444444444444444444444')  # max daily caps without spend
         )
 
         reports.models.BudgetDailyStatement.objects.create(
@@ -1700,7 +1700,7 @@ class MinimumBudgetAmountTestCase(TestCase):
 
         self.assertEqual(
             campaign_stop.get_minimum_budget_amount(budget),
-            Decimal('541.9444444444444444444444444')  # max daily budgets without spend
+            Decimal('541.9444444444444444444444444')  # max daily caps without spend
         )
 
         reports.models.BudgetDailyStatement.objects.create(
@@ -1714,7 +1714,7 @@ class MinimumBudgetAmountTestCase(TestCase):
 
         self.assertEqual(
             campaign_stop.get_minimum_budget_amount(budget),
-            Decimal('679.4444444444444444444444444')  # max daily budgets without spend
+            Decimal('679.4444444444444444444444444')  # max daily caps without spend
         )
 
 

@@ -56,7 +56,7 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
                 bandit.remove_source(s)
 
     if sum(new_budgets.values()) != daily_budget:
-        logger.warning('Budget Autopilot tried assigning wrong ammount of total daily budgets - Expected: ' +
+        logger.warning('Budget Autopilot tried assigning wrong ammount of total daily spend caps - Expected: ' +
                        str(daily_budget) + ' Proposed: ' + str(sum(new_budgets.values())) + ' on AdGroup: ' +
                        str(ad_group) + ' ( ' + str(ad_group.id) + ' )')
         comments = [DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET]

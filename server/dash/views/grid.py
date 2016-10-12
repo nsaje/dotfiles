@@ -98,7 +98,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         return {
             'type': 'info',
             'msg': 'Following your change to a Media Source\'s state, Autopilot has ' +
-                   'successfully adjusted daily budgets of the following Media Sources: {}.'
+                   'successfully adjusted daily spend caps of the following Media Sources: {}.'
                    .format(sources)
         }
 

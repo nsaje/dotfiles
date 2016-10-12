@@ -304,7 +304,7 @@ class AdGroupSettingsForm(forms.Form):
             self.ad_group)
         if budget_ap_is_active and budget_insufficient:
             raise forms.ValidationError(
-                message='Total Daily Budget must be at least $' +
+                message='Total Daily Spend Cap must be at least $' +
                 str(autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)) + '. ' +
                 'Autopilot requires $' + str(autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC) +
                 ' or more per active media source.')

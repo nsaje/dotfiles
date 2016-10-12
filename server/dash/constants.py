@@ -41,7 +41,7 @@ class AdGroupSettingsAutopilotState(ConstantBase):
 
     _VALUES = {
         ACTIVE_CPC: 'Optimize Bids',
-        ACTIVE_CPC_BUDGET: 'Optimize Bids and Daily Budgets',
+        ACTIVE_CPC_BUDGET: 'Optimize Bids and Daily Spend Caps',
         INACTIVE: 'Disabled'
     }
 

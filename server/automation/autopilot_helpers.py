@@ -224,14 +224,14 @@ def _get_email_adgroup_pausing_suggestions_text(adgroup_changes):
 
 def _get_budget_changes_text(budget_changed, changes):
     if budget_changed:
-        return u'daily budget changed from ${} to ${}'.format(
+        return u'daily spend cap changed from ${} to ${}'.format(
             '{0:.2f}'.format(changes['old_budget']),
             '{0:.2f}'.format(changes['new_budget']))
     elif DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET in changes['budget_comments']:
-        return u'daily budget did not change because ' +\
+        return u'daily spend cap did not change because ' +\
             DailyBudgetChangeComment.get_text(DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET)
     else:
-        return u'daily budget did not change'
+        return u'daily spend cap did not change'
 
 
 def _get_cpc_changes_text(cpc_changed, changes):

@@ -24,10 +24,10 @@ class CpcChangeComment(ConstantBase):
     _VALUES = {
         BUDGET_MANUALLY_CHANGED: 'budget was manually changed recently',
         NO_YESTERDAY_SPEND: 'there was no spend yesterday',
-        HIGH_OVERSPEND: 'media source overspent significantly considering current daily budget',
+        HIGH_OVERSPEND: 'media source overspent significantly considering current daily spend cap',
         OLD_DATA: 'latest data was not available',
         OPTIMAL_SPEND: 'it is running at optimal price for given budget',
-        BUDGET_NOT_SET: 'daily budget was not set',
+        BUDGET_NOT_SET: 'daily spend cap was not set',
         CPC_NOT_SET: 'bid CPC was not set',
         CURRENT_CPC_TOO_HIGH: 'Autopilot can not operate on higher CPC',
         CURRENT_CPC_TOO_LOW: 'Autopilot can not operate on lower CPC',
@@ -52,7 +52,7 @@ class DailyBudgetChangeComment(ConstantBase):
     _VALUES = {
         NO_ACTIVE_SOURCES_WITH_SPEND: 'Ad Group does not have any active sources with enough spend.' +
                                       ' Budget was uniformly redistributed.',
-        NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET: 'Budget Autopilot tried assigning wrong ammount of total daily budgets.',
+        NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET: 'Budget Autopilot tried assigning wrong ammount of total daily spend caps.',
         INITIALIZE_PILOT_PAUSED_SOURCE: 'Budget Autopilot initialization - set paused source to minimum budget.',
         USED_UP_BUDGET_THEN_UNIFORMLY_REDISTRIBUTED: 'Used up all smart budget, then uniformly redistributed remaining.'
     }

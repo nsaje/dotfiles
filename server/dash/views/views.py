@@ -347,9 +347,9 @@ class AdGroupOverview(api_common.BaseApiView):
 
         daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
         daily_cap_setting = infobox_helpers.OverviewSetting(
-            'Daily budget:',
+            'Daily Spend Cap:',
             lc_helper.default_currency(daily_cap) if daily_cap is not None else '',
-            tooltip='Daily media budget'
+            tooltip='Daily media spend cap'
         )
         settings.append(daily_cap_setting.as_dict())
 
@@ -638,9 +638,9 @@ class CampaignOverview(api_common.BaseApiView):
 
         # take the num
         daily_cap = infobox_helpers.OverviewSetting(
-            'Daily budget:',
+            'Daily Spend Cap:',
             lc_helper.default_currency(daily_cap_value) if daily_cap_value > 0 else 'N/A',
-            tooltip="Daily media budget",
+            tooltip="Daily media spend cap",
             section_start=True
         )
         settings.append(daily_cap.as_dict())
@@ -1100,7 +1100,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 if max_daily_budget is not None and new_daily_budget > max_daily_budget:
                     errors.update({
                         'daily_budget_cc': [
-                            'Daily budget is too high. Maximum daily budget can be up to ${max_daily_budget}.'.format(
+                            'Daily Spend Cap is too high. Maximum daily spend cap can be up to ${max_daily_budget}.'.format(
                                 max_daily_budget=max_daily_budget
                             )
                         ]

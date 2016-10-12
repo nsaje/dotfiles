@@ -582,7 +582,7 @@ def _get_budget_update_notification(ags, settings, state):
     if ags.source.can_update_daily_budget_automatic() and\
        settings is not None and settings.daily_budget_cc is not None and\
        (state is None or state.daily_budget_cc != settings.daily_budget_cc):
-        msg = 'Daily budget is being changed from <strong>{old_daily_budget}</strong> ' +\
+        msg = 'Daily spend cap is being changed from <strong>{old_daily_budget}</strong> ' +\
               'to <strong>{new_daily_budget}</strong>.'
 
         if state and state.daily_budget_cc is not None:
@@ -788,7 +788,7 @@ def _get_state_messages(ad_group_source, ad_group_settings, ad_group_source_sett
             ad_group_source.source.can_update_daily_budget_manual()) and\
         ad_group_source_settings.daily_budget_cc is not None and (
             ad_group_source_state is None or ad_group_source_settings.daily_budget_cc != ad_group_source_state.daily_budget_cc):
-        messages.append(message_template.format(name='Daily Budget'))
+        messages.append(message_template.format(name='Daily Spend Cap'))
 
     if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
         expected_state = constants.AdGroupSourceSettingsState.INACTIVE

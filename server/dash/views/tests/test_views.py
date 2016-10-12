@@ -2791,7 +2791,7 @@ class AdGroupOverviewTest(TestCase):
         yesterday_spend = self._get_setting(settings, 'yesterday')
         self.assertIsNone(yesterday_spend, 'no permission')
 
-        budget_setting = self._get_setting(settings, 'daily budget')
+        budget_setting = self._get_setting(settings, 'daily spend cap')
         self.assertEqual('$50.00', budget_setting['value'])
 
         budget_setting = self._get_setting(settings, 'campaign budget')
@@ -3040,7 +3040,7 @@ class CampaignOverviewTest(TestCase):
         location_setting = [s for s in settings if 'location' in s['value'].lower()][0]
         self.assertEqual('Location: US', location_setting['value'])
 
-        budget_setting = self._get_setting(settings, 'daily budget')
+        budget_setting = self._get_setting(settings, 'daily spend cap')
         self.assertEqual('$100.00', budget_setting['value'])
 
         budget_setting = self._get_setting(settings, 'campaign budget')

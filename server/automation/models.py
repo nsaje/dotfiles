@@ -97,7 +97,7 @@ class AutopilotAdGroupSourceBidCpcLog(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Daily budget'
+        verbose_name='Daily spend cap'
     )
     comments = models.CharField(max_length=1024, null=True, blank=True)
 
@@ -171,14 +171,14 @@ class AutopilotLog(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Previous daily budget'
+        verbose_name='Previous daily spend cap'
     )
     new_daily_budget = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='New daily budget'
+        verbose_name='New daily spend cap'
     )
     cpc_comments = models.CharField(max_length=1024, null=True, blank=True)
     budget_comments = models.CharField(max_length=1024, null=True, blank=True)

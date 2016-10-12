@@ -134,7 +134,7 @@ class AdGroupSettingsTest(TestCase):
 
         self.assertEqual(
             models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
-            'Daily budget set to "$50.00", '
+            'Daily spend cap set to "$50.00", '
             'Brand name set to "Example", '
             'Max CPC bid set to "$1.000", '
             'Interest targeting set to "A, B", '
@@ -1036,7 +1036,7 @@ class HistoryTest(TestCase):
             adgs_hist.changes)
         self.assertEqual(
             textwrap.dedent("""
-            Source: AdsNative. Daily Budget set from "$10,000.00" to "$50,000.00"
+            Source: AdsNative. Daily Spend Cap set from "$10,000.00" to "$50,000.00"
             """).replace('\n', ''), adgs_hist.changes_text)
 
     def test_create_campaign_history(self):
@@ -1179,7 +1179,7 @@ class HistoryTest(TestCase):
             , Device targeting set to ""
             , Locations set to "worldwide"
             , Autopilot set to "Disabled"
-            , Autopilot\'s Daily Budget set to "$0.00"
+            , Autopilot\'s Daily Spend Cap set to "$0.00"
             , Landing Mode set to "False"
             ''').replace('\n', ''), history.changes_text)
 
@@ -1320,11 +1320,11 @@ class HistoryTest(TestCase):
         self.assertEqual(textwrap.dedent('''
             Created settings. State set to "Paused"
             , Start date set to "{}"
-            , Daily budget set to "$10.00"
+            , Daily spend cap set to "$10.00"
             , Device targeting set to "Tablet, Mobile, Desktop"
             , Locations set to "United States"
             , Autopilot set to "Disabled"
-            , Autopilot\'s Daily Budget set to "$0.00"
+            , Autopilot\'s Daily Spend Cap set to "$0.00"
             , Landing Mode set to "False"
             ''').format(datetime.date.today().isoformat()).replace('\n', ''), hist.changes_text)
 

@@ -11,12 +11,12 @@ def validate_daily_budget_cc(daily_budget_cc, source_type):
 
     min_daily_budget = source_type.min_daily_budget
     if min_daily_budget is not None and daily_budget_cc < min_daily_budget:
-        raise forms.ValidationError('Please provide budget of at least ${}.'
+        raise forms.ValidationError('Please provide daily spend cap of at least ${}.'
                                     .format(utils.string_helper.format_decimal(min_daily_budget, 0, 0)))
 
     max_daily_budget = source_type.max_daily_budget
     if max_daily_budget is not None and daily_budget_cc > max_daily_budget:
-        raise forms.ValidationError('Maximum allowed budget is ${}. If you want use a higher daily budget, please contact support.'
+        raise forms.ValidationError('Maximum allowed daily spend cap is ${}. If you want use a higher daily spend cap, please contact support.'
                                     .format(utils.string_helper.format_decimal(max_daily_budget, 0, 0)))
 
 

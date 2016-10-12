@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
-    help = "Autopilot rearranges daily budgets and bid CPCs of all active media sources in participating ad groups."
+    help = "Autopilot rearranges daily spend caps and bid CPCs of all active media sources in participating ad groups."
 
     @influx.timer('automation.autopilot_plus.run_autopilot_job')
     def handle(self, *args, **options):

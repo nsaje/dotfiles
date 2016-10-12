@@ -1315,7 +1315,7 @@ class SourceType(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Minimum Daily Budget'
+        verbose_name='Minimum Daily Spend Cap'
     )
 
     max_cpc = models.DecimalField(
@@ -1331,7 +1331,7 @@ class SourceType(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Maximum Daily Budget'
+        verbose_name='Maximum Daily Spend Cap'
     )
 
     cpc_decimal_places = models.PositiveSmallIntegerField(
@@ -1519,7 +1519,7 @@ class Source(models.Model):
     default_mobile_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('0.15'),
                                                 verbose_name='Default CPC (if ad group is targeting mobile only)')
     default_daily_budget_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('10.00'),
-                                                  verbose_name='Default daily budget')
+                                                  verbose_name='Default daily spend cap')
 
     def can_update_state(self):
         return self.source_type.can_update_state() and not self.maintenance and not self.deprecated
@@ -1667,7 +1667,7 @@ class DefaultSourceSettings(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Default daily budget',
+        verbose_name='Default daily spend cap',
         help_text='This setting has moved. See Source model.'
     )
 
@@ -2224,7 +2224,7 @@ class AdGroupSettings(SettingsBase):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Daily budget'
+        verbose_name='Daily spend cap'
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
@@ -2257,7 +2257,7 @@ class AdGroupSettings(SettingsBase):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Autopilot\'s Daily Budget',
+        verbose_name='Autopilot\'s Daily Spend Cap',
         default=0
     )
     landing_mode = models.BooleanField(default=False)
@@ -2269,7 +2269,7 @@ class AdGroupSettings(SettingsBase):
     b1_sources_group_daily_budget = models.DecimalField(
         max_digits=10,
         decimal_places=4,
-        verbose_name='Bidder\'s Daily Budget',
+        verbose_name='Bidder\'s Daily Cap',
         default=0
     )
     b1_sources_group_state = models.IntegerField(
@@ -2350,7 +2350,7 @@ class AdGroupSettings(SettingsBase):
             'start_date': 'Start date',
             'end_date': 'End date',
             'cpc_cc': 'Max CPC bid',
-            'daily_budget_cc': 'Daily budget',
+            'daily_budget_cc': 'Daily spend cap',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
             'retargeting_ad_groups': 'Retargeting ad groups',
@@ -2372,7 +2372,7 @@ class AdGroupSettings(SettingsBase):
             'call_to_action': 'Call to action',
             'ad_group_name': 'Ad group name',
             'autopilot_state': 'Autopilot',
-            'autopilot_daily_budget': 'Autopilot\'s Daily Budget',
+            'autopilot_daily_budget': 'Autopilot\'s Daily Spend Cap',
             'landing_mode': 'Landing Mode',
         }
 
@@ -2519,7 +2519,7 @@ class AdGroupSourceState(models.Model, CopySettingsMixin):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Daily budget'
+        verbose_name='Daily spend cap'
     )
 
     objects = QuerySetManager()
@@ -2592,7 +2592,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='Daily budget'
+        verbose_name='Daily spend cap'
     )
 
     landing_mode = models.BooleanField(default=False)
@@ -2607,7 +2607,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
         NAMES = {
             'state': 'State',
             'cpc_cc': 'CPC',
-            'daily_budget_cc': 'Daily Budget',
+            'daily_budget_cc': 'Daily Spend Cap',
             'landing_mode': 'Landing Mode',
         }
         return NAMES.get(prop_name)

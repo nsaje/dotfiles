@@ -698,8 +698,8 @@ var options = {
               'Ad Group\'s Maximum CPC constraint will be enforced.',
         value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC,
     }, {
-        name: 'Optimize Bids and Daily Budgets',
-        help: 'Both Bids and Daily Budgets will be optimized on active Media Sources in this Ad Group.',
+        name: 'Optimize Bids and Daily Spend Caps',
+        help: 'Both Bids and Daily Spend Caps will be optimized on active Media Sources in this Ad Group.',
         value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
     },
     ],

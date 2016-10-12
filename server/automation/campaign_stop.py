@@ -690,7 +690,7 @@ def _run_autopilot(campaign, daily_caps):
             campaign=campaign,
             notes=u'Applying autopilot recommendations for ad group {}:\n{}'.format(
                 ad_group.id,
-                '\n'.join(['{}: Daily budget: ${:.0f} to ${:.0f}, CPC: ${:.3f} to ${:.3f}'.format(
+                '\n'.join(['{}: Daily spend cap: ${:.0f} to ${:.0f}, CPC: ${:.3f} to ${:.3f}'.format(
                     ags.source.name,
                     budget_changes.get(ags, {}).get('old_budget', -1),
                     budget_changes.get(ags, {}).get('new_budget', -1),
@@ -747,7 +747,7 @@ def _resume_campaign(campaign):
     models.CampaignStopLog.objects.create(
         campaign=campaign,
         notes=u'Campaign returned to normal mode - enough campaign budget '
-              'today and tomorrow to cover daily budgets set before landing mode.'
+              'today and tomorrow to cover daily spend caps set before landing mode.'
     )
     return _turn_off_landing_mode(campaign, pause_ad_groups=False)
 

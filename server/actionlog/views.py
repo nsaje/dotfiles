@@ -67,7 +67,7 @@ class ActionLogApiView(api_common.BaseApiView):
             'start_date': 'Start date',
             'end_date': 'End date',
             'cpc_cc': 'Max CPC bid',
-            'daily_budget_cc': 'Daily budget',
+            'daily_budget_cc': 'Daily spend cap',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
             'tracking_code': 'Tracking code',

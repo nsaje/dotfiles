@@ -182,12 +182,12 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
             initialOrder: 'desc'
         },
         {
-            name: 'Daily Budget',
+            name: 'Daily Spend Cap',
             field: 'daily_budget',
             checked: true,
             type: 'currency',
             shown: true,
-            help: 'Maximum budget per day.',
+            help: 'Maximum media spend cap per day.',
             totalRow: true,
             order: true,
             initialOrder: 'desc'
