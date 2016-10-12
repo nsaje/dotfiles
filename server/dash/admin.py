@@ -1116,16 +1116,6 @@ def resubmit_content_ads(modeladmin, request, queryset):
 resubmit_content_ads.short_description = 'Resubmit selected content ads'
 
 
-def mark_content_ads_pending(modeladmin, request, queryset):
-    logger.info(
-        'BULK RESUBMIT CONTENT AD: Bulk mark content ads pending. Content ad sources: {}'.format(
-            [el.id for el in queryset]
-        )
-    )
-    _resubmit_content_ad(queryset, clear=False)
-mark_content_ads_pending.short_description = 'Mark content ads as PENDING'
-
-
 class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
         'content_ad_id_',
@@ -1138,9 +1128,10 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt'
     )
-    search_fields = ('content_ad__ad_group__name', 'content_ad__ad_group__campaign__name', 'content_ad__ad_group__campaign__account__name', )
+    search_fields = ('content_ad__ad_group__name', 'content_ad__ad_group__campaign__name',
+                     'content_ad__ad_group__campaign__account__name', )
     list_filter = ('source', 'submission_status', ContentAdGroupSettingsStatusFilter)
-    actions = [reject_content_ad_sources, resubmit_content_ads, mark_content_ads_pending]
+    actions = [reject_content_ad_sources, resubmit_content_ads]
 
     display_submission_status_colors = {
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
