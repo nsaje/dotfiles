@@ -65,8 +65,8 @@
                     </div>
                     <div class="row m-b-xs">
                         <div class="col-xs-12 p-r-none p-l-none">
-                            <input type="text" id="zem-custom-audiences-modal-referer-rule-value" class="form-control" ng-show="ctrl.selectedRefererRuleId=='startsWith'" ng-model="ctrl.selectedRefererRuleStartsWithValue" placeholder="Add URL keywords" ng-readonly="ctrl.readonly" ng-change="ctrl.removeError('rules')" />
-                            <tags-input ng-show="ctrl.selectedRefererRuleId=='contains'" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly"></tags-input>
+                            <tags-input ng-show="ctrl.selectedRefererRuleId=='startsWith'" ng-model="ctrl.selectedRefererRuleStartsWithValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
+                            <tags-input ng-show="ctrl.selectedRefererRuleId=='contains'" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
                             <div class="description small m-t-xs m-b-none" ng-show="ctrl.selectedRefererRuleId=='contains'">Confirm tag with ENTER or delete previously added tag with double BACKSPACE or by clicking X.</div>
                         </div>
                     </div>
@@ -85,7 +85,7 @@
                 In the last
                 <zem-help-popover content="<p class='m-b-s'>The number of days people will remain in your audience after they've visited your website. People will be removed from your audience after the set time period, unless they visit your website again.</p><p><strong>Maximum time:</strong> 365 days.</p>" placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
-            <div class="col-xs-8">
+            <div class="col-xs-4">
                 <div class="input-group">
                     <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedTtl" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('ttl')">
                         <ui-select-match placeholder="Select Days">{{ $select.selected.name }}</ui-select-match>
@@ -109,7 +109,7 @@
         </a>
         <button type="button" class="btn btn-gray" ng-if="!ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Cancel</button>
         <a class="create-button btn btn-add" ng-if="!ctrl.readonly" ng-click="ctrl.createAudience()">
-            <span class="loader-image" ng-show="ctrl.putRequestInProgress"></span><span ng-show="!ctrl.putRequestInProgress">Create Audience</span>
+            <span class="loader-image" ng-show="ctrl.postRequestInProgress"></span><span ng-show="!ctrl.postRequestInProgress">Create Audience</span>
         </a>
     </div>
 </div>

@@ -1463,6 +1463,12 @@ class AudienceFormTestCase(TestCase):
         data['rules'] = [{'type': constants.AudienceRuleType.CONTAINS, 'value': None}]
         self._expect_error('rules', 'Please enter conditions for the audience.', data)
 
+        data['rules'] = [{'type': constants.AudienceRuleType.STARTS_WITH, 'value': None}]
+        self._expect_error('rules', 'Please enter conditions for the audience.', data)
+
+        data['rules'] = [{'type': constants.AudienceRuleType.STARTS_WITH, 'value': ['foo.com']}]
+        self._expect_error('rules', 'Please enter valid URLs.', data)
+
     def test_valid_visit_rule(self):
         data = self._get_valid_data()
         data['rules'] = [{'type': constants.AudienceRuleType.VISIT, 'value': None}]

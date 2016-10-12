@@ -1522,6 +1522,14 @@ class AudienceRuleForm(forms.Form):
             raise forms.ValidationError(
                 'Please enter conditions for the audience.')
 
+        if rule_type == str(constants.AudienceRuleType.STARTS_WITH):
+            for url in value.split(','):
+                validate_url = validators.URLValidator(schemes=['http', 'https'])
+                try:
+                    validate_url(url)
+                except forms.ValidationError:
+                    raise forms.ValidationError('Please enter valid URLs.')
+
         return value
 
 

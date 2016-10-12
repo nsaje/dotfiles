@@ -6,18 +6,22 @@
             <thead>
                 <tr>
                     <th class="arrow">
-                        Audience's Name
+                        Audience
                         <zem-help-popover content="Audience's name" placement="top"></zem-help-popover>
+                    </th>
+                    <th class="arrow">
+                        Audience ID
+                        <zem-help-popover content="Audience's ID" placement="top"></zem-help-popover>
                     </th>
                     <th>
                         Size
-                        <zem-help-popover content="Count of all unique users in the audience" placement="top"></zem-help-popover>
+                        <zem-help-popover content="Approximate count of all unique users in the audience" placement="top"></zem-help-popover>
                     </th>
                     <th>
                         Added Yesterday
-                        <zem-help-popover content="Count of unique users added to the audience yesterday" placement="top"></zem-help-popover>
+                        <zem-help-popover content="Approximate count of unique users added to the audience yesterday" placement="top"></zem-help-popover>
                     </th>
-                    <th>Date Created</th>
+                    <th>Created</th>
                     <th></th>
                 </tr>
             </thead>
@@ -35,6 +39,9 @@
                 <tr ng-class="{'archived': audience.archived}" ng-repeat="audience in ctrl.audiences">
                     <td class="audience-name">
                         {{ audience.name }}
+                    </td>
+                    <td class="audience-name">
+                        {{ audience.id }}
                     </td>
                     <td class="audience-size">
                         {{ audience.count }}

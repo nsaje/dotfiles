@@ -45,6 +45,7 @@ class AudiencesView(api_common.BaseApiView):
         data = audience_form.cleaned_data
 
         audience = None
+        refererRules = (constants.AudienceRuleType.CONTAINS, constants.AudienceRuleType.STARTS_WITH)
         with transaction.atomic():
             audience = models.Audience(
                 name=data['name'],
@@ -59,7 +60,7 @@ class AudiencesView(api_common.BaseApiView):
 
             for rule in audience_form.cleaned_data['rules']:
                 value = rule['value'] or ''
-                if rule['type'] == constants.AudienceRuleType.CONTAINS:
+                if rule['type'] in refererRules:
                     value = ','.join([x.strip() for x in value.split(',') if x])
 
                 rule = models.AudienceRule(

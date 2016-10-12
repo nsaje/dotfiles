@@ -15,12 +15,13 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         vm.readonly = vm.resolve.readonly;
 
         vm.listPixelsRequestInProgress = false;
+        vm.postRequestInProgress = false;
         vm.putRequestInProgress = false;
         vm.getRequestInProgress = false;
         vm.pixels = [];
         vm.outbrainPixel = null;
         vm.rules = [{id: 'visit', name: 'Anyone who visited your website'}, {id: 'referer', name: 'People who visited specific web pages'}];
-        vm.refererRules = [{id: 'startsWith', name: 'URL equals'}, {id: 'contains', name: 'URL contains'}];
+        vm.refererRules = [{id: 'contains', name: 'URL contains'}, {id: 'startsWith', name: 'URL equals'}];
         vm.ttlDays = [{value: 7, name: '7'}, {value: 30, name: '30'}, {value: 90, name: '90'}, {value: 365, name: '365'}];
 
         vm.selectedTopRuleId = '';
@@ -32,6 +33,22 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         vm.selectedTtl = null;
 
         vm.errors = {};
+
+        function getTextFromTags (tags) {
+            var result = tags.map(function (elem) {
+                return elem.text;
+            }).join(',');
+
+            return result;
+        }
+
+        function getTagsFromText (text) {
+            var result = text.split(',').map(function (elem) {
+                return {text: elem};
+            });
+
+            return result;
+        }
 
         vm.showRefererRules = function () {
             if (vm.selectedTopRuleId === 'referer') {
@@ -86,14 +103,14 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
                             } else if (rule.type === constants.audienceRuleType.STARTS_WITH) {
                                 vm.selectedTopRuleId = 'referer';
                                 vm.selectedRefererRuleId = 'startsWith';
-                                vm.selectedRefererRuleStartsWithValue = rule.value;
+                                if (rule.value && rule.value.length > 0) {
+                                    vm.selectedRefererRuleStartsWithValue = getTagsFromText(rule.value);
+                                }
                             } else if (rule.type === constants.audienceRuleType.CONTAINS) {
                                 vm.selectedTopRuleId = 'referer';
                                 vm.selectedRefererRuleId = 'contains';
                                 if (rule.value && rule.value.length > 0) {
-                                    vm.selectedRefererRuleContainsValue = rule.value.split(',').map(function (elem) {
-                                        return {text: elem};
-                                    });
+                                    vm.selectedRefererRuleContainsValue = getTagsFromText(rule.value);
                                 }
                             }
                         }
@@ -109,11 +126,11 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         };
 
         vm.createAudience = function () {
-            if (vm.putRequestInProgress) {
+            if (vm.postRequestInProgress) {
                 return;
             }
 
-            vm.putRequestInProgress = true;
+            vm.postRequestInProgress = true;
 
             var audience = {
                 name: vm.selectedName,
@@ -129,14 +146,15 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
                 } else if (vm.selectedTopRuleId === 'referer') {
                     if (vm.selectedRefererRuleId === 'startsWith') {
                         selectedRuleType = constants.audienceRuleType.STARTS_WITH;
-                        selectedRuleValue = vm.selectedRefererRuleStartsWithValue;
+                        if (vm.selectedRefererRuleStartsWithValue && vm.selectedRefererRuleStartsWithValue.length > 0) {
+
+                            selectedRuleValue = getTextFromTags(vm.selectedRefererRuleStartsWithValue);
+                        }
                     } else if (vm.selectedRefererRuleId === 'contains') {
                         selectedRuleType = constants.audienceRuleType.CONTAINS;
                         if (vm.selectedRefererRuleContainsValue && vm.selectedRefererRuleContainsValue.length > 0) {
 
-                            selectedRuleValue = vm.selectedRefererRuleContainsValue.map(function (elem) {
-                                return elem.text;
-                            }).join(',');
+                            selectedRuleValue = getTextFromTags(vm.selectedRefererRuleContainsValue);
                         }
                     }
                 }
@@ -150,10 +168,9 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
                 },
                 function (data) {
                     vm.errors = data;
+                    vm.postRequestInProgress = false;
                 }
-            ).finally(function () {
-                vm.putRequestInProgress = false;
-            });
+            );
         };
 
         vm.updateAudience = function () {
