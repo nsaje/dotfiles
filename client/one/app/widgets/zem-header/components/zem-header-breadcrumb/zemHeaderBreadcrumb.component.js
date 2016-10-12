@@ -4,8 +4,8 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
 
         var $ctrl = this;
         $ctrl.config = config;
-        $ctrl.navigateTo = navigateTo;
-        $ctrl.navigateToHome = navigateToHome;
+        $ctrl.getHomeHref = getHomeHref;
+        $ctrl.getItemHref = getItemHref;
 
         $ctrl.$onInit = function () {
             $ctrl.userCanSeeAllAccounts = zemPermissions.hasPermission('dash.group_account_automatically_add');
@@ -48,11 +48,12 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             if (type === constants.entityType.AD_GROUP) return 'Ad Group';
         }
 
-        function navigateToHome () {
-            zemNavigationNewService.navigateTo();
+        function getHomeHref () {
+            return zemNavigationNewService.getHomeHref();
         }
-        function navigateTo (item) {
-            zemNavigationNewService.navigateTo(item.entity);
+
+        function getItemHref (item) {
+            return zemNavigationNewService.getEntityHref(item.entity);
         }
     }]
 });

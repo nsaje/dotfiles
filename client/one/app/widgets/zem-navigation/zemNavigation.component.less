@@ -58,6 +58,9 @@ zem-navigation {
         list-style: none;
 
         .item {
+            color: @black;
+            display: block;
+
             cursor: pointer;
             position: relative;
 
@@ -83,6 +86,7 @@ zem-navigation {
 
             &:not(.selected):hover {
                 background: #f5f5f5;
+                text-decoration: none;
             }
 
             &.account {

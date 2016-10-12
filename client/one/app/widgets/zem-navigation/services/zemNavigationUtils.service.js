@@ -36,23 +36,35 @@ angular.module('one.widgets').service('zemNavigationUtils', [function () {
 
         filteredList = filteredList.filter(function (item) {
             if (item.type !== constants.entityType.AD_GROUP) return true;
-            return item.name.toLowerCase().indexOf(query) >= 0;
+            if (filterAgency && isFilteredByAgency(item, query)) return true;
+            return isFilteredByName(item, query);
         });
 
         filteredList = filteredList.filter(function (item, idx) {
             if (item.type !== constants.entityType.CAMPAIGN) return true;
             if (filteredList[idx + 1] && filteredList[idx + 1].type === constants.entityType.AD_GROUP) return true;
-            return item.name.toLowerCase().indexOf(query) >= 0;
+            if (filterAgency && isFilteredByAgency(item, query)) return true;
+            return isFilteredByName(item, query);
         });
 
         filteredList = filteredList.filter(function (item, idx) {
             if (item.type !== constants.entityType.ACCOUNT) return true;
             if (filteredList[idx + 1] && filteredList[idx + 1].type === constants.entityType.CAMPAIGN) return true;
-            if (filterAgency && item.data.agency && item.data.agency.toLowerCase().indexOf(query) >= 0) return true;
-            return item.name.toLowerCase().indexOf(query) >= 0;
+            if (filterAgency && isFilteredByAgency(item, query)) return true;
+            return isFilteredByName(item, query);
         });
 
         return filteredList;
     }
 
+    function isFilteredByAgency (item, query) {
+        var account = item;
+        if (item.type === constants.entityType.AD_GROUP) account = item.parent.parent;
+        if (item.type === constants.entityType.CAMPAIGN) account = item.parent;
+        return account.data.agency && account.data.agency.toLowerCase().indexOf(query) >= 0;
+    }
+
+    function isFilteredByName (item, query) {
+        return item.name.toLowerCase().indexOf(query) >= 0;
+    }
 }]);

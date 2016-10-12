@@ -16,9 +16,11 @@ describe('ZemNavigationUtils', function () {
             hierarchy.children.push(account);
             for (var campaignIdx = 0; campaignIdx < size[1]; ++campaignIdx) {
                 var campaign = createCampaign(campaignIdx);
+                campaign.parent = account;
                 account.children.push(campaign);
                 for (var adGroupIdx = 0; adGroupIdx < size[2]; ++adGroupIdx) {
                     var adGroup = createAdGroup(adGroupIdx);
+                    adGroup.parent = campaign;
                     campaign.children.push(adGroup);
                 }
             }
@@ -115,10 +117,10 @@ describe('ZemNavigationUtils', function () {
         expect(filteredList.length).toBe(0);
 
         filteredList = zemNavigationUtils.filterEntityList(list, 'agency', false, true);
-        expect(filteredList.length).toBe(2);
+        expect(filteredList.length).toBe(22);
 
         filteredList = zemNavigationUtils.filterEntityList(list, 'agency 1', false, true);
-        expect(filteredList.length).toBe(1);
+        expect(filteredList.length).toBe(11);
     });
 
 });

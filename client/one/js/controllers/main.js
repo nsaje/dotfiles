@@ -274,7 +274,7 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
         }
 
         if (state) {
-            $state.go(state, {id: id});
+            $state.go(state, {id: id}, {location: 'replace'});
         }
     });
 

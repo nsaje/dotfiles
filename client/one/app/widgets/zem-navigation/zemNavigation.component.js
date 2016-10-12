@@ -19,6 +19,7 @@ angular.module('one.widgets').component('zemNavigation', {
 
         $ctrl.filter = filterList;
         $ctrl.navigateTo = navigateTo;
+        $ctrl.getItemHref = getItemHref;
         $ctrl.getItemHeight = getItemHeight;
         $ctrl.getItemClasses = getItemClasses;
         $ctrl.getItemIconClass = getItemIconClass;
@@ -161,6 +162,10 @@ angular.module('one.widgets').component('zemNavigation', {
             } else if (selectedPos >= viewTo) {
                 $scrollContainer.scrollTop(selectedPos - height + getItemHeight($ctrl.filteredList[idx]));
             }
+        }
+
+        function getItemHref (entity) {
+            return zemNavigationNewService.getEntityHref(entity);
         }
 
         function navigateTo (entity) {

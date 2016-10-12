@@ -1,8 +1,9 @@
 <div class="breadcrumb">
     <div class="item">
         <span class="type-name">Home:</span><br>
-        <a href="#" ng-click="$ctrl.navigateToHome()" ng-if="$ctrl.userCanSeeAllAccounts">All accounts</a>
-        <a href="#" ng-click="$ctrl.navigateToHome()" ng-if="!$ctrl.userCanSeeAllAccounts">My account</a>
+        <a ng-href="{{$ctrl.getHomeHref()}}">
+            {{ $ctrl.userCanSeeAllAccounts ? "All accounts" : "My account" }}
+        </a>
     </div>
 </div>
 
@@ -10,7 +11,7 @@
     <div class="slash">\</div>
     <div class="item">
         <span class="type-name">{{ item.typeName }}:</span><br>
-        <a href="#" ng-click="$ctrl.navigateTo(item)" title="{{ item.name }}">{{ item.name }}</a>
+        <a ng-href="{{$ctrl.getItemHref(item)}}" title="{{ item.name }}">{{ item.name }}</a>
     </div>
 </div>
 

@@ -8,11 +8,15 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
         $ctrl.$onInit = function () {
             var predefinedRanges = zemHeaderDateRangePickerService.getPredefinedRanges();
             $ctrl.dateRangePickerOptions = {
+                minDate: moment('2016-02-01'),
                 maxDate: moment().endOf('month'),
                 ranges: predefinedRanges,
                 opens: 'left',
                 applyClass: 'btn-primary',
                 linkedCalendars: false,
+                locale: {
+                    format: 'MMM D, YYYY'
+                },
                 eventHandlers: {
                     'apply.daterangepicker': handleDateRangeUpdateFromPicker,
                     // Add/remove open class from date range picker dropdown menu in order to apply opening animation
@@ -52,4 +56,44 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
             $ctrl.dateRange = updatedDateRange;
         }
     }],
+});
+
+
+//
+// [PATCH] Bootstrap DateRangePicker
+//         Enable independent date selection - start date on left calendar and end date on the right
+//
+angular.element(document).ready(function () {
+
+    window.daterangepicker.prototype.clickDate = function (e) {
+        if (!$(e.target).hasClass('available')) return;
+
+        var title = $(e.target).attr('data-title');
+        var row = title.substr(1, 1);
+        var col = title.substr(3, 1);
+        var cal = $(e.target).parents('.calendar');
+
+        var isLeftCalendar = cal.hasClass('left');
+        var date = isLeftCalendar ? this.leftCalendar.calendar[row][col] : this.rightCalendar.calendar[row][col];
+
+        if (isLeftCalendar) {
+            this.setStartDate(date);
+            if (date.isAfter(this.endDate, 'day')) {
+                this.setEndDate(date);
+            }
+        } else {
+            this.setEndDate(date);
+            if (date.isBefore(this.startDate, 'day')) {
+                this.setStartDate(date);
+            }
+        }
+
+        this.updateView();
+        e.stopPropagation();
+    };
+
+    window.daterangepicker.prototype.updateMonthsInView = function () {
+        this.leftCalendar.month = this.startDate.clone().date(1);
+        this.rightCalendar.month = this.endDate.clone().date(1);
+    };
 });

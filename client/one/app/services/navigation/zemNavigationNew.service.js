@@ -1,6 +1,8 @@
 angular.module('one.services').service('zemNavigationNewService', ['$rootScope', '$state', 'zemNavigationService', function ($rootScope, $state, zemNavigationService) { // eslint-disable-line max-len
     this.init = init;
     this.navigateTo = navigateTo;
+    this.getEntityHref = getEntityHref;
+    this.getHomeHref = getHomeHref;
     this.getActiveEntity = getActiveEntity;
     this.getActiveAccount = getActiveAccount;
     this.getNavigationHierarchy = getNavigationHierarchy;
@@ -109,10 +111,8 @@ angular.module('one.services').service('zemNavigationNewService', ['$rootScope',
         return entity;
     }
 
-
-    function navigateTo (entity) {
+    function getEntityState (entity) {
         var defaultState = 'main.allAccounts';
-        var params = {};
 
         if (entity) {
             switch (entity.type) {
@@ -126,7 +126,6 @@ angular.module('one.services').service('zemNavigationNewService', ['$rootScope',
                 defaultState = 'main.adGroups';
                 break;
             }
-            params = {id: entity.id};
         }
 
         // keep the same tab if possible
@@ -136,6 +135,22 @@ angular.module('one.services').service('zemNavigationNewService', ['$rootScope',
         if ($state.includes('**.settings')) state += '.settings';
         if (!$state.get(state)) state = defaultState;
 
+        return state;
+    }
+
+    function getHomeHref () {
+        var state = getEntityState();
+        return $state.href(state, {});
+    }
+
+    function getEntityHref (entity) {
+        var state = getEntityState(entity);
+        return $state.href(state, {id: entity.id});
+    }
+
+    function navigateTo (entity) {
+        var state = getEntityState(entity);
+        var params = entity ? {id: entity.id} : {};
         $state.go(state, params);
     }
 
