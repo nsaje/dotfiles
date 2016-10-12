@@ -58,8 +58,8 @@ def get_account_landing_mode_alerts(request, account):
     if depleting_budget_campaigns:
         message = u'<strong>Campaigns will soon run out of budget.</strong><br /><br />'\
                   u'Please add budget or lower daily caps to continue to adjust media sources settings. If you '\
-                  u'don’t take any actions, system will automatically turn on the landing mode to hit your budget. <a '\
-                  u'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
+                  u'don’t take any actions, the system will automatically turn on the landing mode to hit your '\
+                  u'budget. <a href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
                   u'target="_blank">Learn more ...</a><br /><br />'\
                   u'<ul>{campaigns}</ul>'
 
@@ -100,8 +100,8 @@ def get_campaign_landing_mode_alerts(request, campaign):
     if campaign_stop.is_campaign_running_out_of_budget(campaign, campaign_settings):
         message = u'<strong>This campaign will run out of budget soon.</strong><br /><br />'\
                   u'Please <a href="{budget_link}">add budget</a> or <a href="{sources_link}">lower daily caps</a> '\
-                  u'to continue to adjust media sources settings. If you '\
-                  u'don’t take any actions, system will automatically turn on the landing mode to hit your budget. <a '\
+                  u'to continue to adjust media sources settings. If you don’t take any actions, the system '\
+                  u'will automatically turn on the landing mode to hit your budget. <a '\
                   u'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
                   u'target="_blank">Learn more ...</a>'
         alerts.append({
