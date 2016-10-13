@@ -12,8 +12,8 @@ def _get_campaign_budget_link(request, campaign):
         return _get_campaign_link(request, campaign, 'budget')
 
 
-def _get_campaign_sources_link(request, campaign):
-        return _get_campaign_link(request, campaign, 'sources')
+def _get_campaign_ad_groups_link(request, campaign):
+        return _get_campaign_link(request, campaign, 'ad_groups')
 
 
 def _construct_depleting_items(request, campaigns):
@@ -23,7 +23,7 @@ def _construct_depleting_items(request, campaigns):
                     u'{} - <a href="{}">Add budget</a> or <a href="{}">Lower daily caps</a>'.format(
                             campaign.name,
                             _get_campaign_budget_link(request, campaign),
-                            _get_campaign_sources_link(request, campaign),
+                            _get_campaign_ad_groups_link(request, campaign),
                     )
             )
         return campaign_items
@@ -65,7 +65,7 @@ def get_account_landing_mode_alerts(request, account):
 
         depleting_budget_campaign_items = _construct_depleting_items(request, depleting_budget_campaigns)
         alerts.append({
-            'type': constants.AlertType.DANGER,
+            'type': constants.AlertType.WARNING,
             'message': message.format(
                 campaigns=u''.join(u'<li>{}</li>'.format(item) for item in depleting_budget_campaign_items)),
             'permission': 'zemauth.can_see_landing_mode_alerts',
@@ -105,10 +105,10 @@ def get_campaign_landing_mode_alerts(request, campaign):
                   u'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
                   u'target="_blank">Learn more ...</a>'
         alerts.append({
-            'type': constants.AlertType.DANGER,
+            'type': constants.AlertType.WARNING,
             'message': message.format(
                     budget_link=_get_campaign_budget_link(request, campaign),
-                    sources_link=_get_campaign_sources_link(request, campaign),
+                    sources_link=_get_campaign_ad_groups_link(request, campaign),
             ),
             'permission': 'zemauth.can_see_landing_mode_alerts',
         })
