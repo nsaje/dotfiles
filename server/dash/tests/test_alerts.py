@@ -58,7 +58,7 @@ class AccountLandingModeAlertsTestCase(TestCase):
 
         alerts = dash.alerts.get_account_landing_mode_alerts(self.superuser_request, self.account)
         self.assertEqual(1, len(alerts))
-        self.assertEqual(constants.AlertType.DANGER, alerts[0]['type'])
+        self.assertEqual(constants.AlertType.WARNING, alerts[0]['type'])
         self.assertTrue(self.campaign.name in alerts[0]['message'])
 
 
@@ -109,4 +109,4 @@ class CampaignLandingModeAlertsTestCase(TestCase):
 
         alerts = dash.alerts.get_campaign_landing_mode_alerts(self.superuser_request, self.campaign)
         self.assertEqual(1, len(alerts))
-        self.assertEqual(constants.AlertType.DANGER, alerts[0]['type'])
+        self.assertEqual(constants.AlertType.WARNING, alerts[0]['type'])
