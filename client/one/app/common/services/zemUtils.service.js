@@ -18,6 +18,7 @@ angular.module('one.services').service('zemUtils', [function () { // eslint-disa
 
     function convertToUnderscore (obj) {
         if (!(obj instanceof Object)) return obj;
+        if (obj instanceof Date) return obj;
         if (obj instanceof Array) return obj.map(convertToUnderscore);
 
         var convertedObj = {};
