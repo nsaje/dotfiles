@@ -9,6 +9,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import permissions
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 from dash.views import agency, views, helpers
 from dash import regions
@@ -474,3 +475,59 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request, ad_group_id=ad_group.id)
         return self.get(request, ad_group.id)
+
+
+class ContentAdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = dash.models.ContentAd
+        fields = ('id', 'ad_group_id', 'state', 'url', 'title', 'image_url', 'display_url', 'brand_name',
+                  'description', 'call_to_action', 'label', 'image_crop', 'tracker_urls')
+        read_only_fields = tuple(set(fields) - set(('state',)))
+
+    ad_group_id = serializers.PrimaryKeyRelatedField(source='ad_group', read_only=True)
+    state = DashConstantField(constants.ContentAdSourceState)
+    image_url = serializers.URLField(source='get_image_url')
+
+    def create(self, validated_data):
+        request = validated_data['request']
+        content_ad_id = validated_data['content_ad_id']
+        content_ad = dash.models.ContentAd.objects.get(pk=content_ad_id)
+        post_data = {
+            'state': validated_data['state'],
+            'selected_ids': [int(content_ad_id)]
+        }
+        request.body = RESTAPIJSONRenderer().render(post_data)
+        view_internal = views.AdGroupContentAdState(rest_proxy=True)
+        data_internal, status_code = view_internal.post(request, content_ad.ad_group_id)
+        content_ad.refresh_from_db()
+        return content_ad
+
+
+class ContentAdViewList(RESTAPIBaseView):
+    renderer_classes = (CamelCaseJSONRenderer,)
+
+    def get(self, request):
+        ad_group_id = request.query_params.get('adGroupId')
+        if not ad_group_id:
+            raise serializers.ValidationError('Must pass adGroupId parameter')
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        content_ads = dash.models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived()
+        serializer = ContentAdSerializer(content_ads, many=True)
+        return self.response_ok(serializer.data)
+
+
+class ContentAdViewDetails(RESTAPIBaseView):
+
+    def put(self, request, content_ad_id):
+        serializer = ContentAdSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(request=request, content_ad_id=content_ad_id)
+        return self.response_ok(serializer.data)
+
+
+class ContentAdBatchViewList(RESTAPIBaseView):
+    pass
+
+
+class ContentAdBatchViewDetails(RESTAPIBaseView):
+    pass

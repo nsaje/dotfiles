@@ -35,4 +35,20 @@ urlpatterns = [
         r'^adgroups/(?P<ad_group_id>\d+)/publishers/$',
         views.PublishersViewList.as_view()
     ),
+    url(
+        r'^contentads/batch/$',
+        views.ContentAdBatchViewList.as_view()
+    ),
+    url(
+        r'^contentads/batch/(?P<batch_id>\d+)$',
+        views.ContentAdBatchViewDetails.as_view()
+    ),
+    url(
+        r'^contentads/$',
+        views.ContentAdViewList.as_view()
+    ),
+    url(
+        r'^contentads/(?P<content_ad_id>\d+)$',
+        views.ContentAdViewDetails.as_view()
+    ),
 ]
