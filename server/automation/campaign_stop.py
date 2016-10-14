@@ -418,10 +418,11 @@ def get_min_budget_increase(campaign):
         campaign=campaign
     ).filter_active().aggregate(Max('credit__license_fee'))['credit__license_fee__max']
 
-    media_budget_needed = min_needed_today + min_needed_tomorrow
-    budget_with_fee_needed = media_budget_needed / (1 - max_license_fee)
+    budget_needed = min_needed_today + min_needed_tomorrow
+    if budget_needed and max_license_fee:
+        budget_needed = budget_needed / (1 - max_license_fee)
 
-    return budget_with_fee_needed
+    return budget_needed
 
 
 def _combined_active_budget_from_other_items(budget_item):
