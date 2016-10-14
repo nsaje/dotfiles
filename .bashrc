@@ -19,6 +19,9 @@ shopt -s histappend
 # unlimited history size
 export HISTSIZE=
 export HISTFILESIZE=
+# write history in real time
+PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+
 
 # pip should only run if there is a virtualenv currently activated
 export PIP_REQUIRE_VIRTUALENV=true

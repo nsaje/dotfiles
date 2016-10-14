@@ -25,6 +25,9 @@ exec --no-startup-id ssh-add
 # combine BAT0 and BAT1 (thinkpad batteries)
 exec ~/.local/bin/batt.sh
 
+# low battery check
+exec ~/.local/bin/lowbattery.sh
+
 #exec compton -bCG  # too much battery drain
 
 # redshift
