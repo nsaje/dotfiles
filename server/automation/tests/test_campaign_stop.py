@@ -147,14 +147,13 @@ class SwitchToLandingModeTestCase(TestCase):
         self.assertFalse(mock_switch.called)
         self.assertEqual(mock_k1_ping.call_count, 0)
 
-    @patch('actionlog.zwei_actions.send')
     @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop._get_max_daily_budget')
     @patch('automation.campaign_stop._get_current_daily_budget')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     @patch('utils.k1_helper.update_ad_group')
     def test_switch_to_landing_mode(self, mock_k1_ping, mock_get_mrb, mock_current_daily_budget, mock_max_daily_budget,
-                                    mock_send_email, mock_send_actions):
+                                    mock_send_email):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), Decimal('0')
         mock_max_daily_budget.return_value = Decimal('150')
         mock_current_daily_budget.return_value = Decimal('150')
@@ -251,12 +250,10 @@ class SwitchToLandingModeTestCase(TestCase):
         self.assertFalse(mock_send_email.called)
         self.assertFalse(mock_set_end_date.called)
 
-    @patch('actionlog.zwei_actions.send')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     @patch('automation.campaign_stop._get_current_daily_budget')
-    def test_switch_to_landing_mode_inactive_ad_group(self, mock_get_current, mock_get_mrb, mock_send_email,
-                                                      mock_send_action):
+    def test_switch_to_landing_mode_inactive_ad_group(self, mock_get_current, mock_get_mrb, mock_send_email):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), Decimal('0')
         mock_get_current.return_value = Decimal('101')
 
@@ -1082,8 +1079,7 @@ class SetAdGroupEndDateTestCase(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
 
-    @patch('actionlog.zwei_actions.send')
-    def test_set_ad_group_end_date(self, mock_zwei_send):
+    def test_set_ad_group_end_date(self):
         ad_group = dash.models.AdGroup.objects.get(id=1)
 
         current_settings = ad_group.get_current_settings()
@@ -1094,8 +1090,6 @@ class SetAdGroupEndDateTestCase(TestCase):
 
         new_settings = ad_group.get_current_settings()
         self.assertEqual(today, new_settings.end_date)
-
-        self.assertFalse(mock_zwei_send.called)
 
 
 class StopNonSpendingSourcesTestCase(TestCase):
@@ -1490,9 +1484,8 @@ class UpdateCampaignsInLandingTestCase(TestCase):
     @patch('automation.campaign_stop._get_yesterday_source_spends')
     @patch('automation.campaign_stop._get_past_7_days_data')
     @patch('dash.api.order_ad_group_settings_update')
-    @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
-    def test_update_campaigns_in_landing(self, mock_k1_ping, mock_zwei_send,
+    def test_update_campaigns_in_landing(self, mock_k1_ping,
                                          mock_order_ad_group_update, mock_get_past_data,
                                          mock_get_yesterday_spends, mock_run_ap,
                                          mock_can_resume, mock_local_today):
@@ -1561,8 +1554,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
             new_settings.landing_mode = False
             new_settings.save(None)
 
-        actions = campaign_stop._check_ad_groups_end_date(campaign)
-        self.assertEqual(len(actions), 0)
+        campaign_stop._check_ad_groups_end_date(campaign)
         self.assertEqual(2, campaign.adgroup_set.all().filter_active().count())
 
     @patch('utils.dates_helper.local_today')
@@ -1571,8 +1563,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
     @patch('automation.campaign_stop._get_past_7_days_data')
     @patch('automation.campaign_stop._check_ad_groups_end_date')
     @patch('dash.api.order_ad_group_settings_update')
-    @patch('actionlog.zwei_actions.send')
-    def test_wrap_up_landing_mode(self, mock_zwei_send, mock_order_ad_group_update,
+    def test_wrap_up_landing_mode(self, mock_order_ad_group_update,
                                   mock_get_end_date, mock_get_past_data,
                                   mock_get_yesterday_spends, mock_can_resume, mock_local_today):
         today = datetime.date(2016, 4, 5)

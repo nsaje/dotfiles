@@ -10,9 +10,6 @@ from django.db.models import Min, Max, Q
 
 import pytz
 
-import actionlog.api
-from actionlog import zwei_actions
-
 from automation import autopilot_budgets, autopilot_cpc, autopilot_plus, autopilot_settings, models
 
 import dash.constants
@@ -46,10 +43,10 @@ def switch_low_budget_campaigns_to_landing_mode(campaigns, pagerduty_on_fail=Fal
         sett.campaign_id: sett
         for sett in dash.models.CampaignSettings.objects.filter(campaign__in=campaigns).group_current_settings()
     }
-    actions = []
+
     for campaign in campaigns:
         try:
-            changed, new_actions = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings[campaign.id])
+            changed = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings[campaign.id])
         except:
             logger.exception('Campaign stop check for campaign with id %s not successful', campaign.id)
             models.CampaignStopLog.objects.create(
@@ -59,28 +56,24 @@ def switch_low_budget_campaigns_to_landing_mode(campaigns, pagerduty_on_fail=Fal
             if pagerduty_on_fail:
                 _trigger_check_pagerduty(campaign)
             continue
-        actions.extend(new_actions)
         if changed:
             utils.k1_helper.update_ad_groups(
                 (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
                 msg='campaign_stop.switch_low_budget_campaign'
             )
-    zwei_actions.send(actions)
 
 
 def perform_landing_mode_check(campaign, campaign_settings):
-    switched_to_landing, actions = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings)
+    switched_to_landing = _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings)
     if switched_to_landing:
-        zwei_actions.send(actions)
         utils.k1_helper.update_ad_groups(
             (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
             msg='campaign_stop.perform_landing_mode_check_switch'
         )
         return True
 
-    resumed, actions = _check_and_resume_campaign(campaign, campaign_settings)
+    resumed = _check_and_resume_campaign(campaign, campaign_settings)
     if resumed:
-        zwei_actions.send(actions)
         utils.k1_helper.update_ad_groups(
             (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
             msg='campaign_stop.perform_landing_mode_check_resume'
@@ -113,11 +106,10 @@ def _check_campaign_for_landing_mode(campaign, campaign_settings):
 
 
 def _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
-    actions = []
     should_switch, is_near_depleted = _check_campaign_for_landing_mode(campaign, campaign_settings)
     if should_switch:
         with transaction.atomic():
-            actions.extend(_switch_campaign_to_landing_mode(campaign))
+            _switch_campaign_to_landing_mode(campaign)
         utils.k1_helper.update_ad_groups(
             (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
             msg='campaign_stop.check_and_switch_campaign_to_landing_mode'
@@ -126,19 +118,15 @@ def _check_and_switch_campaign_to_landing_mode(campaign, campaign_settings):
     elif is_near_depleted:
         _send_depleting_budget_notification_email(campaign)
 
-    return should_switch, actions
+    return should_switch
 
 
 def _check_and_resume_campaign(campaign, campaign_settings):
     if _can_resume_campaign(campaign, campaign_settings):
         with transaction.atomic():
-            actions = _resume_campaign(campaign)
-            return True, actions
-        utils.k1_helper.update_ad_groups(
-            (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
-            msg='campaign_stop.check_and_resume_campaign'
-        )
-    return False, []
+            _resume_campaign(campaign)
+            return True
+    return False
 
 
 def get_minimum_budget_amount(budget_item):
@@ -189,10 +177,9 @@ def is_current_time_valid_for_amount_editing(campaign):
 def update_campaigns_in_landing(campaigns, pagerduty_on_fail=True):
     for campaign in campaigns:
         logger.info('updating in landing campaign with id %s', campaign.id)
-        actions = []
         try:
             with transaction.atomic():
-                actions.extend(_update_landing_campaign(campaign))
+                _update_landing_campaign(campaign)
         except:
             logger.exception('Updating landing mode campaign with id %s not successful', campaign.id)
             models.CampaignStopLog.objects.create(
@@ -203,7 +190,6 @@ def update_campaigns_in_landing(campaigns, pagerduty_on_fail=True):
                 _trigger_update_pagerduty(campaign)
             continue
 
-        zwei_actions.send(actions)
         utils.k1_helper.update_ad_groups(
             (ad_group.pk for ad_group in campaign.adgroup_set.all().filter_active()),
             msg='update_campaigns_in_landing'
@@ -478,53 +464,50 @@ def _get_minimum_remaining_budget(campaign, max_daily_budget):
 def _update_landing_campaign(campaign):
     """
     Stops ad groups and sources that have no spend yesterday, prepares remaining for autopilot and runs it.
-
-    If at any point the campaign has no running ad groups left, landing mode is turned off. In that case it can happen
-    that multiple actions are sent for same ad group sources and same change (state) but the updates aren't conflicing
-    so it's not an issue.
     """
-    actions = []
     campaign_settings = campaign.get_current_settings()
     if _can_resume_campaign(campaign, campaign_settings):
-        return _resume_campaign(campaign)
+        _resume_campaign(campaign)
+        return
 
     if not campaign.adgroup_set.all().filter_active().count() > 0:
-        return _wrap_up_landing(campaign)
+        _wrap_up_landing(campaign)
+        return
 
-    actions.extend(_stop_non_spending_sources(campaign))
+    _stop_non_spending_sources(campaign)
     if not campaign.adgroup_set.all().filter_active().count() > 0:
-        return actions + _wrap_up_landing(campaign)
+        _wrap_up_landing(campaign)
+        return
 
-    actions.extend(_check_ad_groups_end_date(campaign))
+    _check_ad_groups_end_date(campaign)
     if not campaign.adgroup_set.all().filter_active().count() > 0:
-        return actions + _wrap_up_landing(campaign)
+        _wrap_up_landing(campaign)
+        return
 
     per_date_spend, per_source_spend = _get_past_7_days_data(campaign)
     daily_caps = _calculate_daily_caps(campaign, per_date_spend)
-    ap_stop_actions, any_ad_group_stopped = _prepare_for_autopilot(campaign, daily_caps, per_source_spend)
-    actions.extend(ap_stop_actions)
+    any_ad_group_stopped = _prepare_for_autopilot(campaign, daily_caps, per_source_spend)
     if not campaign.adgroup_set.all().filter_active().count() > 0:
-        return actions + _wrap_up_landing(campaign)
+        _wrap_up_landing(campaign)
+        return
 
     if any_ad_group_stopped:
         daily_caps = _calculate_daily_caps(campaign, per_date_spend)
 
     _persist_new_autopilot_settings(daily_caps)
 
-    actions.extend(_run_autopilot(campaign, daily_caps))
-    actions.extend(_set_end_date_to_today(campaign))
-
-    return actions
+    _run_autopilot(campaign, daily_caps)
+    _set_end_date_to_today(campaign)
 
 
 def _check_ad_groups_end_date(campaign):
     today = dates_helper.local_today()
-    actions, finished = [], []
+    finished = []
     for ad_group in campaign.adgroup_set.all().filter_active():
         user_settings = _get_last_user_ad_group_settings(ad_group)
         if user_settings.end_date and user_settings.end_date < today:
             finished.append(ad_group)
-            actions.extend(_stop_ad_group(ad_group))
+            _stop_ad_group(ad_group)
 
     if finished:
         models.CampaignStopLog.objects.create(
@@ -533,7 +516,6 @@ def _check_ad_groups_end_date(campaign):
                 unicode(ad_group) for ad_group in finished
             ))
         )
-    return actions
 
 
 def _persist_new_autopilot_settings(daily_caps):
@@ -557,7 +539,6 @@ def _stop_non_spending_sources(campaign):
     active_ad_groups = active_sources.keys()
 
     yesterday_spends = _get_yesterday_source_spends(active_ad_groups)
-    actions = []
     for ad_group in active_ad_groups:
         active_ad_group_sources = active_sources[ad_group]
 
@@ -570,7 +551,7 @@ def _stop_non_spending_sources(campaign):
                 to_stop.add(ags)
 
         if len(to_stop) == len(active_ad_group_sources):
-            actions.extend(_stop_ad_group(ad_group))
+            _stop_ad_group(ad_group)
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
                 notes=u'Stopping non spending ad group {}. Yesterday spend per source was:\n{}'.format(
@@ -585,7 +566,7 @@ def _stop_non_spending_sources(campaign):
 
         if to_stop:
             for ags in to_stop:
-                actions.extend(_stop_ad_group_source(ags))
+                _stop_ad_group_source(ags)
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
                 notes=u'Stopping non spending ad group sources on ad group {}. '
@@ -597,7 +578,6 @@ def _stop_non_spending_sources(campaign):
                           ) for ags in sorted(to_stop, key=lambda x: x.source.name)])
                       )
             )
-    return actions
 
 
 def _prepare_for_autopilot(campaign, daily_caps, per_source_spend):
@@ -605,7 +585,6 @@ def _prepare_for_autopilot(campaign, daily_caps, per_source_spend):
     Stops as many sources as needed to lower autopilot's minimum daily budget limit so that it' lower or equal to
     calculated daily cap for each ad group. If no source is left running, the whole ad group will be stopped.
     """
-    actions = []
     active_sources = _get_active_ad_group_sources(campaign)
     any_ad_group_stopped = False
     for ad_group, ad_group_sources in active_sources.iteritems():
@@ -626,7 +605,7 @@ def _prepare_for_autopilot(campaign, daily_caps, per_source_spend):
 
         if len(sorted_ad_group_sources) == 0:
             any_ad_group_stopped = True
-            actions.extend(_stop_ad_group(ad_group))
+            _stop_ad_group(ad_group)
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
                 notes=u'Stopping ad group {} - lowering minimum autopilot budget not possible.\n'
@@ -640,7 +619,7 @@ def _prepare_for_autopilot(campaign, daily_caps, per_source_spend):
 
         if to_stop:
             for ags in to_stop:
-                actions.extend(_stop_ad_group_source(ags))
+                _stop_ad_group_source(ags)
             models.CampaignStopLog.objects.create(
                 campaign=campaign,
                 notes=u'Stopping sources on ad group {}:\n{}\n\nLowering minimum autopilot budget not possible.\n'
@@ -652,12 +631,10 @@ def _prepare_for_autopilot(campaign, daily_caps, per_source_spend):
                       )
             )
 
-    return actions, any_ad_group_stopped
+    return any_ad_group_stopped
 
 
 def _run_autopilot(campaign, daily_caps):
-    actions = []
-
     active_ad_groups = campaign.adgroup_set.all().filter_active()
     per_ad_group_autopilot_data, campaign_goals = autopilot_plus.prefetch_autopilot_data(active_ad_groups)
     for ad_group in active_ad_groups:
@@ -668,7 +645,7 @@ def _run_autopilot(campaign, daily_caps):
                     ad_group.id,
                 )
             )
-            actions.extend(_stop_ad_group(ad_group))
+            _stop_ad_group(ad_group)
             continue
 
         ap_data = per_ad_group_autopilot_data[ad_group]
@@ -699,16 +676,12 @@ def _run_autopilot(campaign, daily_caps):
                 ) for ags in sorted(set(budget_changes.keys() + cpc_changes.keys()), key=lambda x: x.source.name)])
             )
         )
-        actions.extend(
-            autopilot_plus.set_autopilot_changes(
-                budget_changes=budget_changes,
-                cpc_changes=cpc_changes,
-                system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
-                landing_mode=True
-            )
+        autopilot_plus.set_autopilot_changes(
+            budget_changes=budget_changes,
+            cpc_changes=cpc_changes,
+            system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+            landing_mode=True
         )
-
-    return actions
 
 
 def _switch_campaign_to_landing_mode(campaign):
@@ -717,7 +690,6 @@ def _switch_campaign_to_landing_mode(campaign):
     new_campaign_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
     new_campaign_settings.save(None)
 
-    actions = []
     today = dates_helper.local_today()
     for ad_group in campaign.adgroup_set.all().filter_active():
         new_ag_settings = ad_group.get_current_settings().copy_settings()
@@ -727,9 +699,9 @@ def _switch_campaign_to_landing_mode(campaign):
         new_ag_settings.save(None)
 
         if new_ag_settings.end_date and new_ag_settings.end_date < today:
-            actions.extend(_stop_ad_group(ad_group))
+            _stop_ad_group(ad_group)
         else:
-            actions.extend(_set_ad_group_end_date(ad_group, today))
+            _set_ad_group_end_date(ad_group, today)
 
         for ad_group_source in ad_group.adgroupsource_set.all().filter_active():
             new_ags_settings = ad_group_source.get_current_settings().copy_settings()
@@ -740,7 +712,6 @@ def _switch_campaign_to_landing_mode(campaign):
         campaign=campaign,
         notes=u'Switched to landing mode.'
     )
-    return actions
 
 
 def _resume_campaign(campaign):
@@ -768,11 +739,8 @@ def _turn_off_landing_mode(campaign, pause_ad_groups=False):
     if new_campaign_settings.get_setting_changes(current_settings):
         new_campaign_settings.save(None)
 
-    actions = []
     for ad_group in campaign.adgroup_set.all().filter_landing():
-        actions.extend(_restore_user_ad_group_settings(ad_group, pause_ad_group=pause_ad_groups))
-
-    return actions
+        _restore_user_ad_group_settings(ad_group, pause_ad_group=pause_ad_groups)
 
 
 def _get_last_user_ad_group_settings(ad_group):
@@ -798,26 +766,20 @@ def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
     if pause_ad_group:
         new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
 
-    actions = []
     if current_settings.get_setting_changes(new_settings):
         new_settings.save(None)
-        actions.extend(
-            dash.api.order_ad_group_settings_update(
-                ad_group,
-                current_settings,
-                new_settings,
-                request=None,
-                send=False,
-            )
+        dash.api.order_ad_group_settings_update(
+            ad_group,
+            current_settings,
+            new_settings,
+            request=None,
+            send=False,
         )
 
-    actions.extend(_restore_user_sources_settings(ad_group))
-    return actions
+    _restore_user_sources_settings(ad_group)
 
 
 def _restore_user_sources_settings(ad_group):
-    actions = []
-
     ad_group_sources = ad_group.adgroupsource_set.all()
     user_ad_group_sources_settings = {
         ags.ad_group_source_id: ags for ags in dash.models.AdGroupSourceSettings.objects.filter(
@@ -840,15 +802,13 @@ def _restore_user_sources_settings(ad_group):
             if getattr(user_settings, key) == getattr(current_settings, key):
                 continue
 
-            actions.extend(
-                settings_writer.set(
-                    {
-                        key: getattr(user_settings, key),
-                    },
-                    request=None,
-                    send_to_zwei=False,
-                    system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
-                )
+            settings_writer.set(
+                {
+                    key: getattr(user_settings, key),
+                },
+                request=None,
+                send_to_zwei=False,
+                system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
             )
 
         if current_settings.landing_mode:
@@ -856,40 +816,22 @@ def _restore_user_sources_settings(ad_group):
             new_settings.landing_mode = False
             new_settings.save(None)
 
-    return actions
-
 
 def _stop_ad_group(ad_group):
-    actions = []
-
     new_settings = ad_group.get_current_settings().copy_settings()
     new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
     new_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
     new_settings.save(None)
 
-    actions.extend(
-        actionlog.api.init_set_ad_group_state(
-            ad_group,
-            dash.constants.AdGroupSettingsState.INACTIVE,
-            request=None,
-            send=False
-        )
-    )
-    return actions
-
 
 def _set_end_date_to_today(campaign):
-    actions = []
     today = dates_helper.local_today()
     for ad_group in campaign.adgroup_set.all().filter_active():
-        actions.extend(
-            _set_ad_group_end_date(ad_group, today)
-        )
+        _set_ad_group_end_date(ad_group, today)
     models.CampaignStopLog.objects.create(
         campaign=campaign,
         notes=u'End date set to {}'.format(today)
     )
-    return actions
 
 
 def _set_ad_group_end_date(ad_group, end_date):
@@ -910,7 +852,7 @@ def _set_ad_group_end_date(ad_group, end_date):
 
 def _stop_ad_group_source(ad_group_source):
     settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
-    actions = settings_writer.set(
+    settings_writer.set(
         {'state': dash.constants.AdGroupSourceSettingsState.INACTIVE},
         request=None,
         create_action=True,
@@ -918,7 +860,6 @@ def _stop_ad_group_source(ad_group_source):
         system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
         landing_mode=True
     )
-    return actions
 
 
 def _get_yesterday_source_spends(ad_groups):
