@@ -233,8 +233,10 @@ class SwitchToLandingModeTestCase(TestCase):
     @patch('automation.campaign_stop._set_end_date_to_today')
     @patch('automation.campaign_stop._send_campaign_stop_notification_email')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
-    def test_switch_to_landing_mode_already_landing(self, mock_get_mrb, mock_send_email, mock_set_end_date):
+    @patch('utils.dates_helper.local_today')
+    def test_switch_to_landing_mode_already_landing(self, mock_today, mock_get_mrb, mock_send_email, mock_set_end_date):
         mock_get_mrb.return_value = Decimal('200'), Decimal('100'), Decimal('0')
+        mock_today.return_value = datetime.date(2016, 3, 10)
 
         campaign = dash.models.Campaign.objects.get(id=1)
         new_campaign_settings = campaign.get_current_settings().copy_settings()
@@ -801,8 +803,10 @@ class GetMinBudgetIncreaseTestCase(TestCase):
     @patch('automation.campaign_stop._get_user_daily_budget_per_ags')
     @patch('automation.campaign_stop._get_max_daily_budget_per_ags')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
-    def test_min_for_today(self, mock_min_remaining, mock_max_budgets, mock_user_budgets):
+    @patch('utils.dates_helper.local_today')
+    def test_min_for_today(self, mock_today, mock_min_remaining, mock_max_budgets, mock_user_budgets):
         campaign = dash.models.Campaign.objects.get(id=1)
+        mock_today.return_value = datetime.date(2016, 3, 5)
 
         mock_max_budgets.return_value = {
             1: Decimal('20.00'),
@@ -820,13 +824,15 @@ class GetMinBudgetIncreaseTestCase(TestCase):
 
         min_budget_increase = campaign_stop.get_min_budget_increase(campaign)
         mock_min_remaining.assert_called_once_with(campaign, Decimal('90.00'))
-        self.assertEqual(min_budget_increase, Decimal('80'))
+        self.assertEqual(min_budget_increase, Decimal('100'))  # including license fee
 
     @patch('automation.campaign_stop._get_user_daily_budget_per_ags')
     @patch('automation.campaign_stop._get_max_daily_budget_per_ags')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
-    def test_min_for_tomorrow(self, mock_min_remaining, mock_max_budgets, mock_user_budgets):
+    @patch('utils.dates_helper.local_today')
+    def test_min_for_tomorrow(self, mock_today, mock_min_remaining, mock_max_budgets, mock_user_budgets):
         campaign = dash.models.Campaign.objects.get(id=1)
+        mock_today.return_value = datetime.date(2016, 3, 5)
 
         mock_max_budgets.return_value = {
             1: Decimal('20.00'),
@@ -844,7 +850,7 @@ class GetMinBudgetIncreaseTestCase(TestCase):
 
         min_budget_increase = campaign_stop.get_min_budget_increase(campaign)
         mock_min_remaining.assert_called_once_with(campaign, Decimal('90.00'))
-        self.assertEqual(min_budget_increase, Decimal('30'))
+        self.assertEqual(min_budget_increase, Decimal('37.5'))  # including license fee
 
 
 class GetUserDailyBudgetTestCase(TestCase):

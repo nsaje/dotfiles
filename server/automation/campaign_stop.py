@@ -414,7 +414,14 @@ def get_min_budget_increase(campaign):
     user_daily_budget_sum = sum(user_db for user_db in user_daily_budget_per_ags.values() if user_db is not None)
     min_needed_tomorrow = max(user_daily_budget_sum - available_tomorrow, 0)
 
-    return min_needed_today + min_needed_tomorrow
+    max_license_fee = dash.models.BudgetLineItem.objects.filter(
+        campaign=campaign
+    ).filter_active().aggregate(Max('credit__license_fee'))['credit__license_fee__max']
+
+    media_budget_needed = min_needed_today + min_needed_tomorrow
+    budget_with_fee_needed = media_budget_needed / (1 - max_license_fee)
+
+    return budget_with_fee_needed
 
 
 def _combined_active_budget_from_other_items(budget_item):
