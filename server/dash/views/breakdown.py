@@ -134,12 +134,12 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         breakdown = form.cleaned_data.get('breakdown')
         parents = form.cleaned_data.get('parents', None)
         level = constants.Level.ALL_ACCOUNTS
-        base_dim = stats.constants.get_base_dimension(breakdown)
+        target_dim = stats.constants.get_target_dimension(breakdown)
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         constraints = stats.constraints_helper.prepare_all_accounts_constraints(
-            request.user, breakdown, only_used_sources=base_dim == 'source_id',
+            request.user, breakdown, only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
 
         goals = stats.api_breakdowns.get_goals(constraints)
@@ -201,12 +201,12 @@ class AccountBreakdown(api_common.BaseApiView):
         breakdown = form.cleaned_data.get('breakdown')
         parents = form.cleaned_data.get('parents', None)
         level = constants.Level.ACCOUNTS
-        base_dim = stats.constants.get_base_dimension(breakdown)
+        target_dim = stats.constants.get_target_dimension(breakdown)
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         constraints = stats.constraints_helper.prepare_account_constraints(
-            request.user, account, breakdown, only_used_sources=base_dim == 'source_id',
+            request.user, account, breakdown, only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
         goals = stats.api_breakdowns.get_goals(constraints)
 
@@ -269,12 +269,12 @@ class CampaignBreakdown(api_common.BaseApiView):
         breakdown = form.cleaned_data.get('breakdown')
         parents = form.cleaned_data.get('parents', None)
         level = constants.Level.CAMPAIGNS
-        base_dim = stats.constants.get_base_dimension(breakdown)
+        target_dim = stats.constants.get_target_dimension(breakdown)
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         constraints = stats.constraints_helper.prepare_campaign_constraints(
-            request.user, campaign, breakdown, only_used_sources=base_dim == 'source_id',
+            request.user, campaign, breakdown, only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
         goals = stats.api_breakdowns.get_goals(constraints)
 
@@ -301,7 +301,7 @@ class CampaignBreakdown(api_common.BaseApiView):
             limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        if breakdown == ['ad_group_id']:
+        if target_dim == ['ad_group_id']:
             breakdown_helpers.format_report_rows_ad_group_editable_fields(rows)
 
         breakdown_helpers.format_report_rows_state_fields(rows)
@@ -341,20 +341,20 @@ class AdGroupBreakdown(api_common.BaseApiView):
         breakdown = form.cleaned_data.get('breakdown')
         parents = form.cleaned_data.get('parents', None)
         level = constants.Level.AD_GROUPS
-        base_dim = stats.constants.get_base_dimension(breakdown)
+        target_dim = stats.constants.get_target_dimension(breakdown)
 
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         constraints = stats.constraints_helper.prepare_ad_group_constraints(
             request.user, ad_group, breakdown,
-            only_used_sources=base_dim == 'source_id',
+            only_used_sources=target_dim == 'source_id',
             **get_constraints_kwargs(form.cleaned_data))
         goals = stats.api_breakdowns.get_goals(constraints)
 
         totals_thread = None
         if len(breakdown) == 1:
             totals_constraints = stats.constraints_helper.prepare_ad_group_constraints(
-                request.user, ad_group, breakdown, only_used_sources=(base_dim == 'source_id'),
+                request.user, ad_group, breakdown, only_used_sources=(target_dim == 'source_id'),
                 **get_constraints_kwargs(form.cleaned_data, show_archived=True))
             totals_fn = partial(
                 stats.api_breakdowns.totals,
@@ -387,11 +387,11 @@ class AdGroupBreakdown(api_common.BaseApiView):
             totals = totals_thread.result
 
         extras = {}
-        if base_dim == 'content_ad_id':
+        if breakdown == ['content_ad_id']:
             batches = helpers.get_upload_batches_for_ad_group(ad_group)
             extras['batches'] = breakdown_helpers.get_upload_batches_response_list(batches)
 
-        if base_dim == 'source_id':
+        if breakdown == ['source_id']:
             extras.update(breakdown_helpers.get_ad_group_sources_extras(ad_group))
 
         if stats.constants.get_target_dimension(breakdown) == 'publisher_id':
