@@ -21,10 +21,12 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
     def get_stats(self, request, group_key, objects, constraints, **data):
         metrics = request.GET.getlist('metrics')
-        selected_ids = self._get_selected_ids(request)
         totals = request.GET.get('totals')
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        selected_objects = self._get_selected_objects(request, objects)
+        selected_ids = [obj.id for obj in selected_objects]
 
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         constraints['source'] = filtered_sources
@@ -49,7 +51,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 metrics,
                 selected_ids,
                 group_key,
-                objects,
+                selected_objects,
                 constraints,
                 **data
             )
@@ -58,20 +60,8 @@ class BaseDailyStatsView(api_common.BaseApiView):
             'chart_data': stats,
         }
 
-    def get_stats_totals(self, user, start_date, end_date, metrics, constraints, conversion_goals=None, pixels=None, campaign=None):
-        stats = stats_helper.get_stats_with_conversions(
-            user,
-            start_date,
-            end_date,
-            breakdown=['date'],
-            order=['date'],
-            conversion_goals=conversion_goals,
-            pixels=pixels,
-            constraints=constraints,
-        )
-
-        if campaign and user.has_perm('zemauth.campaign_goal_optimization'):
-            stats = campaign_goals.create_goals(campaign, stats)
+    def get_stats_totals(self, user, start_date, end_date, metrics, constraints, **data):
+        stats = self._query_stats(user, start_date, end_date, ['date'], constraints, **data)
 
         return {
             'id': 'totals',
@@ -79,30 +69,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             'series_data': self._format_metric(stats, metrics),
         }
 
-    def _format_metric(self, stats, metrics):
-        data = defaultdict(list)
-        for stat in stats:
-            for metric in metrics:
-                data[metric].append(
-                    (stat['date'], stat.get(metric))
-                )
-        return data
-
-    def _get_selected_ids(self, request):
-        if not request.GET.getlist('selected_ids'):
-            return []
-        return [int(id) for id in request.GET.getlist('selected_ids')]
-
-    def get_stats_selected(self, user, start_date, end_date, metrics, selected_ids, group_key, objects, constraints, conversion_goals=None, pixels=None, campaign=None):
-        constraints = copy.copy(constraints)
-        constraints[group_key] = selected_ids
-
-        join_selected = len(selected_ids) > MAX_DAILY_STATS_BREAKDOWNS
-        if join_selected:
-            breakdown = ['date']
-        else:
-            breakdown = ['date', group_key]
-
+    def _query_stats(self, user, start_date, end_date, breakdown, constraints, conversion_goals=None, pixels=None, campaign=None):
         stats = stats_helper.get_stats_with_conversions(
             user,
             start_date,
@@ -116,6 +83,36 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         if campaign and user.has_perm('zemauth.campaign_goal_optimization'):
             stats = campaign_goals.create_goals(campaign, stats)
+
+        return stats
+
+    def _format_metric(self, stats, metrics):
+        data = defaultdict(list)
+        for stat in stats:
+            for metric in metrics:
+                data[metric].append(
+                    (stat['date'], stat.get(metric))
+                )
+        return data
+
+    def _get_selected_objects(self, request, objects):
+        select_all = request.GET.get('select_all', False)
+        select_batch_id = request.GET.get('select_batch')
+        selected_ids = [int(id) for id in request.GET.getlist('selected_ids')]
+        not_selected_ids = [int(id) for id in request.GET.getlist('not_selected_ids')]
+        return helpers.get_selected_entities(objects, select_all, selected_ids, not_selected_ids, True, select_batch_id)
+
+    def get_stats_selected(self, user, start_date, end_date, metrics, selected_ids, group_key, objects, constraints, **data):
+        constraints = copy.copy(constraints)
+        constraints[group_key] = selected_ids
+
+        join_selected = len(selected_ids) > MAX_DAILY_STATS_BREAKDOWNS
+        if join_selected:
+            breakdown = ['date']
+        else:
+            breakdown = ['date', group_key]
+
+        stats = self._query_stats(user, start_date, end_date, breakdown, constraints, **data)
 
         if join_selected:
             return [{
@@ -213,7 +210,7 @@ class AllAccountsAccountsDailyStats(BaseDailyStatsView):
                 self.get_stats(
                     request,
                     'account',
-                    models.Account.objects,
+                    accounts,
                     constraints,
                 ),
             )
@@ -239,7 +236,7 @@ class AllAccountsSourcesDailyStats(BaseDailyStatsView):
                 self.get_stats(
                     request,
                     'source',
-                    models.Source.objects,
+                    models.Source.objects.all(),
                     constraints,
                 ),
             )
@@ -258,7 +255,7 @@ class AccountCampaignsDailyStats(BaseDailyStatsView):
                 self.get_stats(
                     request,
                     'campaign',
-                    models.Campaign.objects,
+                    account.campaign_set.all(),
                     constraints,
                     pixels=pixels,
                 ),
@@ -282,7 +279,7 @@ class AccountSourcesDailyStats(BaseDailyStatsView):
                 self.get_stats(
                     request,
                     'source',
-                    models.Source.objects,
+                    models.Source.objects.all(),
                     constraints,
                     pixels=pixels,
                 ),
@@ -307,7 +304,7 @@ class CampaignAdGroupsDailyStats(BaseDailyStatsView):
                 self.get_stats(
                     request,
                     'ad_group',
-                    models.AdGroup.objects,
+                    campaign.adgroup_set.all(),
                     constraints,
                     conversion_goals=conversion_goals,
                     pixels=pixels,
@@ -336,7 +333,7 @@ class CampaignSourcesDailyStats(BaseDailyStatsView):
                 self.get_stats(
                     request,
                     'source',
-                    models.Source.objects,
+                    models.Source.objects.all(),
                     constraints,
                     conversion_goals=conversion_goals,
                     pixels=pixels,
@@ -365,7 +362,7 @@ class AdGroupContentAdsDailyStats(BaseDailyStatsView):
                 self.get_stats(
                     request,
                     'content_ad',
-                    models.ContentAd.objects,
+                    ad_group.contentad_set.all(),
                     constraints,
                     conversion_goals=conversion_goals,
                     pixels=pixels,
@@ -395,7 +392,7 @@ class AdGroupSourcesDailyStats(BaseDailyStatsView):
                 self.get_stats(
                     request,
                     'source',
-                    models.Source.objects,
+                    models.Source.objects.all(),
                     constraints,
                     conversion_goals=conversion_goals,
                     pixels=pixels,
@@ -446,10 +443,13 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
             )
         )
 
-    def get_stats_selected(self, user, start_date, end_date, metrics, selected_ids, group_key, objects, constraints):
+    def _get_selected_objects(self, request, objects):
         return []
 
-    def get_stats_totals(self, user, start_date, end_date, metrics, constraints, conversion_goals=None, pixels=None, show_blacklisted_publishers=None, ad_group=None):
+    def _query_stats(self, user, start_date, end_date, breakdown, constraints, conversion_goals=None, pixels=None, show_blacklisted_publishers=None, ad_group=None):
+        publisher_breakdown = breakdown
+        touchpoint_breakdown = breakdown
+
         if 'source' in constraints:
             constraints['exchange'] = [s.bidder_slug if s.bidder_slug else s.name.lower() for s in constraints['source']]
             del constraints['source']
@@ -466,8 +466,8 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                 constraints,
                 conversion_goals,
                 pixels,
-                publisher_breakdown_fields=['date'],
-                touchpoint_breakdown_fields=['date'],
+                publisher_breakdown_fields=publisher_breakdown,
+                touchpoint_breakdown_fields=touchpoint_breakdown,
                 order_fields=['date'])
 
         elif show_blacklisted_publishers in (
@@ -492,8 +492,8 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                 constraints,
                 conversion_goals,
                 pixels,
-                publisher_breakdown_fields=['date'],
-                touchpoint_breakdown_fields=['date'],
+                publisher_breakdown_fields=publisher_breakdown,
+                touchpoint_breakdown_fields=touchpoint_breakdown,
                 order_fields=['date'],
                 show_blacklisted_publishers=show_blacklisted_publishers,
                 adg_blacklisted_publishers=adg_blacklisted_publishers,
@@ -502,8 +502,4 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
         if user.has_perm('zemauth.campaign_goal_optimization'):
             stats = campaign_goals.create_goals(ad_group.campaign, stats)
 
-        return {
-            'id': 'totals',
-            'name': 'Totals',
-            'series_data': self._format_metric(stats, metrics),
-        }
+        return stats

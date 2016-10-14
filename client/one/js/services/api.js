@@ -817,12 +817,12 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
             return getData(url, startDate, endDate, metrics, selectedIds, totals);
         };
 
-        this.list = function (level, id, breakdown, startDate, endDate, selectedIds, totals, metrics) {
+        this.list = function (level, id, breakdown, startDate, endDate, selectedIds, totals, metrics, selectAll, unselectedIds, batchId) {
             var url = '/api/' + level + (id ? ('/' + id) : '') + '/' + breakdownUrlMap[breakdown] + '/daily_stats/';
-            return getData(url, startDate, endDate, metrics, selectedIds, totals);
+            return getData(url, startDate, endDate, metrics, selectedIds, totals, selectAll, unselectedIds, batchId);
         };
 
-        function getData (url, startDate, endDate, metrics, selectedIds, totals) {
+        function getData (url, startDate, endDate, metrics, selectedIds, totals, selectAll, unselectedIds, batchId) {
             var deferred = createAbortableDefer();
             var config = {
                 params: {},
@@ -847,6 +847,18 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
 
             if (metrics) {
                 config.params.metrics = metrics;
+            }
+
+            if (selectAll) {
+                config.params.select_all = selectAll;
+            }
+
+            if (unselectedIds) {
+                config.params.not_selected_ids = unselectedIds;
+            }
+
+            if (batchId) {
+                config.params.select_batch = batchId;
             }
 
             addFilteredSources(config.params);

@@ -43,10 +43,9 @@ class BaseDailyStatsTest(TestCase):
         }]
         self.mock_query.side_effect = [mock_stats1, mock_stats2]
 
-    def _get_params(self, selected_ids, agencies=None, account_types=None):
+    def _get_params(self, selected_ids=None, select_all=False, not_selected_ids=None, select_batch=None, agencies=None, account_types=None):
         params = {
             'metrics': ['cpc', 'clicks'],
-            'selected_ids': selected_ids,
             'totals': True,
             'start_date': self.date.isoformat(),
             'end_date': self.date.isoformat(),
@@ -56,6 +55,14 @@ class BaseDailyStatsTest(TestCase):
             params['filtered_agencies'] = agencies
         if account_types:
             params['filtered_account_types'] = account_types
+        if select_all:
+            params['select_all'] = True
+        if selected_ids:
+            params['selected_ids'] = selected_ids
+        if not_selected_ids:
+            params['not_selected_ids'] = not_selected_ids
+        if select_batch:
+            params['select_batch'] = select_batch
 
         return params
 
@@ -210,7 +217,7 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
     def test_get_by_account(self):
         perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
         self.user.user_permissions.add(perm)
-        account_id = 3
+        account_id = 2
 
         self._prepare_mock('account', account_id)
 
@@ -644,9 +651,6 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
     def test_get_content_ads(self):
         content_ad_id = 3
 
-        permission = authmodels.Permission.objects.get(codename='campaign_goal_performance')
-        self.user.user_permissions.add(permission)
-
         self._prepare_mock('content_ad', content_ad_id)
 
         response = self.client.get(
@@ -684,94 +688,137 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
             constraints={'ad_group': 1, 'content_ad': [content_ad_id], 'source': matcher}
         )
 
-        self.assertEqual(response.json(), {
-            'data': {
-                'goal_fields': {
-                    'avg_tos': {
-                        'id': 'Time on Site - Seconds',
-                        'name': 'Time on Site - Seconds'
-                    },
-                    'avg_cost_per_pixel_1_168': {
-                        'id': 'avg_cost_per_pixel_1_168',
-                        'name': '$CPA - test conversion goal'
-                    },
-                    'avg_cost_per_conversion_goal_2': {
-                        'id': 'avg_cost_per_conversion_goal_2',
-                        'name': '$CPA - test conversion goal 2'
-                    },
-                    'avg_cost_per_conversion_goal_3': {
-                        'id': 'avg_cost_per_conversion_goal_3',
-                        'name': '$CPA - test conversion goal 3'
-                    },
-                    'avg_cost_per_conversion_goal_4': {
-                        'id': 'avg_cost_per_conversion_goal_4',
-                        'name': '$CPA - test conversion goal 4'
-                    },
-                    'avg_cost_per_conversion_goal_5': {
-                        'id': 'avg_cost_per_conversion_goal_5',
-                        'name': '$CPA - test conversion goal 5'
-                    },
-                    'cpc': {
-                        'id': 'CPC',
-                        'name': 'CPC'
-                    },
-                    'pv_per_visit': {
-                        'id': 'Pageviews per Visit',
-                        'name': 'Pageviews per Visit'
-                    },
-                    'bounce_rate': {
-                        'id': 'Max Bounce Rate',
-                        'name': 'Max Bounce Rate'
-                    },
-                    'percent_new_users': {
-                        'id': 'New Unique Visitors',
-                        'name': 'New Unique Visitors'
-                    },
-                    'avg_cost_per_visit': {
-                        'id': 'Cost per Visit',
-                        'name': 'Cost per Visit'
-                    },
-                    'avg_cost_per_non_bounced_visit': {
-                        'id': 'Cost per Non-Bounced Visit',
-                        'name': 'Cost per Non-Bounced Visit'
-                    },
-                },
-                'chart_data': [{
-                    'id': 'totals',
-                    'name': 'Totals',
-                    'series_data': {
-                        'clicks': [
-                            [self.date.isoformat(), 1000]
-                        ],
-                        'cpc': [
-                            [self.date.isoformat(), '0.0100']
-                        ]
-                    }
-                }, {
-                    'id': content_ad_id,
-                    'name': models.ContentAd.objects.get(pk=content_ad_id).title,
-                    'series_data': {
-                        'clicks': [
-                            [self.date.isoformat(), 1500]
-                        ],
-                        'cpc': [
-                            [self.date.isoformat(), '0.0200']
-                        ]
-                    }
-                }],
-                'conversion_goals': ListMatcher([
-                    {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
-                    {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
-                    {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
-                    {'id': 'conversion_goal_5', 'name': 'test conversion goal 5'}
-                ]),
-                'campaign_goals': {},
-                'pixels': [
-                    {'prefix': 'pixel_1', 'name': 'test'},
-                ],
-            },
-            'success': True
-        })
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self._assert_response(response, content_ad_id, content_ad.title)
+
+    def test_get_content_ads_select_all(self):
+        content_ad_id = 2
+
+        self._prepare_mock('content_ad', content_ad_id)
+
+        response = self.client.get(
+            reverse('ad_group_content_ads_daily_stats', kwargs={'ad_group_id': 1}),
+            self._get_params(select_all=True, not_selected_ids=[1, 3]),
+            follow=True
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        ad_group = models.AdGroup.objects.get(id=1)
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.all()
+
+        matcher = QuerySetMatcher(models.Source.objects.all())
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date'],
+            order=['date'],
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
+            constraints={'ad_group': 1, 'source': matcher}
+        )
+
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date', 'content_ad'],
+            order=['date'],
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
+            constraints={'ad_group': 1, 'content_ad': [content_ad_id], 'source': matcher}
+        )
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self._assert_response(response, content_ad_id, content_ad.title)
+
+    def test_get_content_ads_select_batch(self):
+        content_ad_id = 2
+
+        self._prepare_mock('content_ad', content_ad_id)
+
+        response = self.client.get(
+            reverse('ad_group_content_ads_daily_stats', kwargs={'ad_group_id': 1}),
+            self._get_params(select_batch=1, not_selected_ids=[1]),
+            follow=True
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        ad_group = models.AdGroup.objects.get(id=1)
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.all()
+
+        matcher = QuerySetMatcher(models.Source.objects.all())
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date'],
+            order=['date'],
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
+            constraints={'ad_group': 1, 'source': matcher}
+        )
+
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date', 'content_ad'],
+            order=['date'],
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
+            constraints={'ad_group': 1, 'content_ad': [content_ad_id], 'source': matcher}
+        )
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self._assert_response(response, content_ad_id, content_ad.title)
+
+    def test_get_content_ads_select_batch_selected_ids(self):
+        content_ad_id = 3
+
+        self._prepare_mock('content_ad', content_ad_id)
+
+        response = self.client.get(
+            reverse('ad_group_content_ads_daily_stats', kwargs={'ad_group_id': 1}),
+            self._get_params(select_batch=1, not_selected_ids=[1, 2], selected_ids=[3]),
+            follow=True
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        ad_group = models.AdGroup.objects.get(id=1)
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        pixels = ad_group.campaign.account.conversionpixel_set.all()
+
+        matcher = QuerySetMatcher(models.Source.objects.all())
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date'],
+            order=['date'],
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
+            constraints={'ad_group': 1, 'source': matcher}
+        )
+
+        self.mock_query.assert_any_call(
+            self.user,
+            self.date,
+            self.date,
+            breakdown=['date', 'content_ad'],
+            order=['date'],
+            conversion_goals=QuerySetMatcher(conversion_goals),
+            pixels=ListMatcher(pixels),
+            constraints={'ad_group': 1, 'content_ad': [content_ad_id], 'source': matcher}
+        )
+
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        self._assert_response(response, content_ad_id, content_ad.title)
 
     def test_get_with_conversion_goals(self):
         created_dt = datetime.datetime.utcnow()

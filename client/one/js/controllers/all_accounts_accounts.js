@@ -552,9 +552,26 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
         );
     };
 
+    var unbindApiWatch = $scope.$watch('grid.api', function () {
+        if ($scope.grid.api) {
+            $scope.grid.api.onSelectionUpdated($scope, getDailyStats);
+            unbindApiWatch();
+        }
+    });
+
     var getDailyStats = function () {
         var dateRange = zemDataFilterService.getDateRange();
-        api.dailyStats.list($scope.level, null, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, null, true, getDailyStatsMetrics()).then(
+
+        var selectedIds = [];
+        if ($scope.grid.api) {
+            selectedIds = $scope.grid.api.getSelection().selected.filter(function (row) {
+                return row.level == 1;
+            }).map(function (row) {
+                return row.id;
+            });
+        }
+
+        api.dailyStats.list($scope.level, null, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, selectedIds, true, getDailyStatsMetrics()).then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
