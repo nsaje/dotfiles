@@ -757,12 +757,12 @@ div[uib-datepicker] {
         // Left calendar - setting start-date --> fade end-date to show the difference
         // Right calendar - setting end-date --> fade start-date to show the difference
         &.left {
-            td.active.end-date:not(.start-date) {
+            td.active.end-date:not(.start-date):not(.off) {
                 background-color: fade(@default-color, 50%);
             }
         }
         &.right {
-            td.active.start-date:not(.end-date) {
+            td.active.start-date:not(.end-date):not(.off){
                 background-color: fade(@default-color, 50%);
             }
         }
