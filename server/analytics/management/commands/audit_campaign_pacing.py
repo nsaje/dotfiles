@@ -73,13 +73,34 @@ class Command(utils.command_helpers.ExceptionCommand):
             return
 
         self._print('FAIL')
-        email_body = ''
-        for campaign_id, pacing, reason in alarms:
-            text = ' - Campaign {} is {}pacing ({}%): {}'.format(
-                flying_campaigns[campaign_id].name,
-                'over' if reason == 'high' else 'under',
-                pacing,
-                'https://one.zemanta.com/campaigns/{}/ad_groups?page=1'.format(campaign_id)
+        overpaced = [
+            (flying_campaigns[campaign_id], pacing)
+            for campaign_id, pacing, reason in alarms
+            if reason == 'high'
+        ]
+
+        underpaced = [
+            (flying_campaigns[campaign_id], pacing)
+            for campaign_id, pacing, reason in alarms
+            if reason == 'low'
+        ]
+
+        email_body = 'Overpacing campaigns:\n'
+        for campaign, pacing in overpaced:
+            text = ' - {} ({}%): {}'.format(
+                campaign.get_long_name(),
+                int(pacing),
+                'https://one.zemanta.com/campaigns/{}/ad_groups?page=1'.format(campaign.pk)
+            )
+            self._print(text)
+            email_body += text + '\n'
+        email_body += '\n'
+        email_body += 'Underpacing campaigns:\n'
+        for campaign, pacing in underpaced:
+            text = ' - {} ({}%): {}'.format(
+                campaign.get_long_name(),
+                int(pacing),
+                'https://one.zemanta.com/campaigns/{}/ad_groups?page=1'.format(campaign.pk)
             )
             self._print(text)
             email_body += text + '\n'
