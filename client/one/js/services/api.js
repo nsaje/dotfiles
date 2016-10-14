@@ -817,12 +817,12 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
             return getData(url, startDate, endDate, metrics, selectedIds, totals);
         };
 
-        this.list = function (level, id, breakdown, startDate, endDate, selectedIds, totals, metrics, selectAll, unselectedIds, batchId) {
+        this.list = function (level, id, breakdown, startDate, endDate, selection, totals, metrics) {
             var url = '/api/' + level + (id ? ('/' + id) : '') + '/' + breakdownUrlMap[breakdown] + '/daily_stats/';
-            return getData(url, startDate, endDate, metrics, selectedIds, totals, selectAll, unselectedIds, batchId);
+            return getData(url, startDate, endDate, metrics, selection, totals);
         };
 
-        function getData (url, startDate, endDate, metrics, selectedIds, totals, selectAll, unselectedIds, batchId) {
+        function getData (url, startDate, endDate, metrics, selection, totals) {
             var deferred = createAbortableDefer();
             var config = {
                 params: {},
@@ -837,8 +837,8 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 config.params.end_date = endDate.format();
             }
 
-            if (selectedIds) {
-                config.params.selected_ids = selectedIds;
+            if (selection.selectedIds) {
+                config.params.selected_ids = selection.selectedIds;
             }
 
             if (totals) {
@@ -849,16 +849,16 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 config.params.metrics = metrics;
             }
 
-            if (selectAll) {
-                config.params.select_all = selectAll;
+            if (selection.selectAll) {
+                config.params.select_all = selection.selectAll;
             }
 
-            if (unselectedIds) {
-                config.params.not_selected_ids = unselectedIds;
+            if (selection.unselectedIds) {
+                config.params.not_selected_ids = selection.unselectedIds;
             }
 
-            if (batchId) {
-                config.params.select_batch = batchId;
+            if (selection.batchId) {
+                config.params.select_batch = selection.batchId;
             }
 
             addFilteredSources(config.params);

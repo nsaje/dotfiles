@@ -956,29 +956,26 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
     var getDailyStats = function () {
         var dateRange = zemDataFilterService.getDateRange();
 
-        var selectedIds = [];
-        var unselectedIds = [];
-        var selectAll = false;
-        var batchId = null;
+        var convertedSelection = {};
         if ($scope.grid.api) {
             var selection = $scope.grid.api.getSelection();
-            selectedIds = selection.selected.filter(function (row) {
+            convertedSelection.selectedIds = selection.selected.filter(function (row) {
                 return row.level == 1;
             }).map(function (row) {
                 return row.id;
             });
-            unselectedIds = selection.unselected.filter(function (row) {
+            convertedSelection.unselectedIds = selection.unselected.filter(function (row) {
                 return row.level == 1;
             }).map(function (row) {
                 return row.id;
             });
-            selectAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
-            batchId = selection.type === zemGridConstants.gridSelectionFilterType.CUSTOM ?
+            convertedSelection.selectAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
+            convertedSelection.batchId = selection.type === zemGridConstants.gridSelectionFilterType.CUSTOM ?
                 selection.filter.batch.id : null;
         }
 
         api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate,
-            dateRange.endDate, selectedIds, true, getDailyStatsMetrics(), selectAll, unselectedIds, batchId).then(
+            dateRange.endDate, convertedSelection, true, getDailyStatsMetrics()).then(
             function (data) {
                 setChartOptions(data.goals);
                 refreshChartOptions(data.conversionGoals, data.pixels);

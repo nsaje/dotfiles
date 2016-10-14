@@ -1,5 +1,5 @@
 /* globals moment,constants,options,angular */
-angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', '$timeout', 'zemDataFilterService', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, $timeout, zemDataFilterService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', '$timeout', 'zemDataFilterService', 'zemGridConstants', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, $timeout, zemDataFilterService, zemGridConstants) { // eslint-disable-line max-len
     $scope.localStoragePrefix = null;
     $scope.chartMetrics = [];
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -565,9 +565,25 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
             $scope.dailyStatsPromise.abort();
         }
 
+        var convertedSelection = {selectedIds: $scope.selection.entityIds};
+        if ($scope.grid.api) {
+            var selection = $scope.grid.api.getSelection();
+            convertedSelection.selectedIds = selection.selected.filter(function (row) {
+                return row.level == 1;
+            }).map(function (row) {
+                return row.id;
+            });
+            convertedSelection.unselectedIds = selection.unselected.filter(function (row) {
+                return row.level == 1;
+            }).map(function (row) {
+                return row.id;
+            });
+            convertedSelection.selectAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
+        }
+
         var dateRange = zemDataFilterService.getDateRange();
         $scope.dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate,
-            dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics());
+            dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics());
 
         $scope.dailyStatsPromise.then(
             function (data) {

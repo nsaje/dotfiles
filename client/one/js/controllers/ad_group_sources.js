@@ -1,6 +1,6 @@
 /*globals angular,moment,constants,options*/
 
-angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataFilterService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService) {
+angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataFilterService', 'zemGridConstants', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
@@ -674,7 +674,24 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state
 
     $scope.getDailyStats = function () {
         var dateRange = zemDataFilterService.getDateRange();
-        api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, $scope.selection.entityIds, $scope.selection.totals, getDailyStatsMetrics(), null).then(
+
+        var convertedSelection = {selectedIds: $scope.selection.entityIds};
+        if ($scope.grid.api) {
+            var selection = $scope.grid.api.getSelection();
+            convertedSelection.selectedIds = selection.selected.filter(function (row) {
+                return row.level == 1;
+            }).map(function (row) {
+                return row.id;
+            });
+            convertedSelection.unselectedIds = selection.unselected.filter(function (row) {
+                return row.level == 1;
+            }).map(function (row) {
+                return row.id;
+            });
+            convertedSelection.selectAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
+        }
+
+        api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics(), null).then(
             function (data) {
                 refreshChartOptions(data.conversionGoals, data.pixels);
                 $scope.conversionGoals = data.conversionGoals;

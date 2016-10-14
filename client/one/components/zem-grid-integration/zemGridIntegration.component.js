@@ -68,6 +68,7 @@ angular.module('one.legacy').controller('ZemGridIntegrationCtrl', ['$scope', '$t
         var options = {
             selection: {
                 enabled: true,
+                filtersEnabled: true,
                 levels: [0, 1],
             }
         };
