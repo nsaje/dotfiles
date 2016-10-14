@@ -1,6 +1,7 @@
 import collections
 
 from django.db import transaction
+from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -10,8 +11,9 @@ from rest_framework import permissions
 from dash.views import agency, views, helpers
 from dash import regions
 from dash import campaign_goals
+from dash import constants
 import dash.models
-from utils import json_helper
+from utils import json_helper, exc
 from .authentication import OAuth2Authentication
 from utils import exc
 
@@ -35,6 +37,22 @@ class RESTAPIBaseView(APIView):
     authentication_classes = [OAuth2Authentication]
     renderer_classes = [RESTAPIJSONRenderer]
     permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission,)
+
+
+class DashConstantField(serializers.Field):
+
+    def __init__(self, const_cls, **kwargs):
+        self.const_cls = const_cls
+        super(DashConstantField, self).__init__(**kwargs)
+
+    def to_internal_value(self, data):
+        try:
+            return getattr(self.const_cls, data)
+        except AttributeError:
+            self.fail('invalid_choice', data)
+
+    def to_representation(self, value):
+        return self.const_cls.get_name(value)
 
 
 class SettingsSerializer(serializers.BaseSerializer):
@@ -373,3 +391,63 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
             raise serializers.ValidationError('Goal does not exist')
         campaign_goals.delete_campaign_goal(request, goal.id, campaign)
         return Response(status=204)
+
+
+class SourceIdSlugField(serializers.Field):
+
+    def to_internal_value(self, data):
+        try:
+            source = dash.models.Source.objects.get(tracking_slug=data)
+            return source.id
+        except AttributeError:
+            self.fail('invalid_choice', data)
+
+    def to_representation(self, source):
+        return source.tracking_slug
+
+
+class PublisherSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=127)
+    source = SourceIdSlugField()
+    externalId = serializers.CharField(max_length=127, required=False, allow_null=True, source='external_id')
+    status = DashConstantField(constants.PublisherStatus)
+    level = DashConstantField(constants.PublisherBlacklistLevel, source='get_blacklist_level', label='level')
+
+    def save(self, request, ad_group_id):
+        post_data = {
+            'state': self.validated_data['status'],
+            'publishers_selected': [
+                {
+                    'source_id': self.validated_data['source'],
+                    'domain': self.validated_data['name'],
+                    'external_id': self.validated_data.get('external_id')
+                }
+            ],
+            'publishers_not_selected': [],
+            'select_all': False,
+            'level': self.validated_data['get_blacklist_level']
+        }
+        view_internal = views.PublishersBlacklistStatus(passthrough=True)
+        request.body = RESTAPIJSONRenderer().render(post_data)
+        try:
+            data_internal, status_code = view_internal.post(request, ad_group_id)
+        except exc.ValidationError as e:
+            raise serializers.ValidationError(e.errors)
+
+
+class PublishersViewList(RESTAPIBaseView):
+
+    def get(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        publishers = dash.models.PublisherBlacklist.objects.filter(
+            Q(ad_group=ad_group) | Q(campaign=ad_group.campaign) | Q(account=ad_group.campaign.account)
+        )
+        serializer = PublisherSerializer(publishers, many=True)
+        return Response(serializer.data)
+
+    def put(self, request, ad_group_id):
+        serializer = PublisherSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(request, ad_group_id)
+            return Response(serializer.initial_data)
+        return Response(serializer.errors, status=400)
