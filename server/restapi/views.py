@@ -451,3 +451,39 @@ class PublishersViewList(RESTAPIBaseView):
             serializer.save(request, ad_group_id)
             return Response(serializer.initial_data)
         return Response(serializer.errors, status=400)
+
+
+class AdGroupSourceSerializer(serializers.Serializer):
+    source = SourceIdSlugField(source='ad_group_source.source')
+    cpc = serializers.DecimalField(max_digits=10, decimal_places=4, source='cpc_cc')
+    dailyBudget = serializers.DecimalField(max_digits=10, decimal_places=4, source='daily_budget_cc')
+    state = DashConstantField(constants.AdGroupSourceSettingsState)
+
+    def create(self, validated_data):
+        request = validated_data['request']
+        ad_group_id = validated_data['ad_group_id']
+        source_id = validated_data['ad_group_source']['source']
+        put_data = {field: validated_data[field] for field in ['cpc_cc', 'daily_budget_cc', 'state'] if field in validated_data}
+        request.body = RESTAPIJSONRenderer().render(put_data)
+        view_internal = views.AdGroupSourceSettings(passthrough=True)
+        try:
+            data_internal, status_code = view_internal.put(request, ad_group_id, source_id)
+        except exc.ValidationError as e:
+            raise serializers.ValidationError(e.errors)
+
+
+class AdGroupSourcesViewList(RESTAPIBaseView):
+
+    def get(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).group_current_settings()
+        serializer = AdGroupSourceSerializer(settings, many=True)
+        return Response(serializer.data)
+
+    def put(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        serializer = AdGroupSourceSerializer(data=request.data, many=True, partial=True)
+        if serializer.is_valid():
+            serializer.save(request=request, ad_group_id=ad_group.id)
+            return self.get(request, ad_group.id)
+        return Response(serializer.errors, status=400)

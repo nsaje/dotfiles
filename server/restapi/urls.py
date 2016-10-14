@@ -28,6 +28,10 @@ urlpatterns = [
         views.AdGroupViewList.as_view()
     ),
     url(
+        r'^adgroups/(?P<ad_group_id>\d+)/sources/',
+        views.AdGroupSourcesViewList.as_view()
+    ),
+    url(
         r'^adgroups/(?P<ad_group_id>\d+)/publishers/$',
         views.PublishersViewList.as_view()
     ),
