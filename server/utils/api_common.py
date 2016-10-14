@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 
 class BaseApiView(View):
-    passthrough = False
+    rest_proxy = False
 
-    def __init__(self, passthrough=False, *args, **kwargs):
-        self.passthrough = passthrough
+    def __init__(self, rest_proxy=False, *args, **kwargs):
+        self.rest_proxy = rest_proxy
         super(BaseApiView, self).__init__(*args, **kwargs)
 
     def log_error(self, request):
@@ -39,7 +39,7 @@ class BaseApiView(View):
         if data:
             body['data'] = data
 
-        if self.passthrough:
+        if self.rest_proxy:
             return body, status_code
 
         response = HttpResponse(

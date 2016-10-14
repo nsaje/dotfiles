@@ -402,7 +402,10 @@ class CampaignSettings(api_common.BaseApiView):
             'modified': {}
         })
 
-        if len(current) - len(changes['removed']) + len(changes['added']) <= 0:
+        # If the view is used via a REST API proxy, don't require goals to be already defined,
+        # since that produces a chicken-and-egg problem. REST API combines POST and PUT calls into one
+        # on campaign creation and thus can't have campaign goals created yet.
+        if not self.rest_proxy and len(current) - len(changes['removed']) + len(changes['added']) <= 0:
             errors['no_goals'] = 'At least one goal must be defined'
             raise exc.ValidationError(errors=errors)
 

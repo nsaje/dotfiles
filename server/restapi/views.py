@@ -7,11 +7,13 @@ from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import permissions
 
-from dash.views import agency, views
+from dash.views import agency, views, helpers
 from dash import regions
+from dash import campaign_goals
 import dash.models
 from utils import json_helper
 from .authentication import OAuth2Authentication
+from utils import exc
 
 
 class NotProvided(object):
@@ -175,13 +177,13 @@ class AdGroupSerializer(SettingsSerializer):
 class SettingsViewDetails(RESTAPIBaseView):
 
     def get(self, request, entity_id):
-        view_internal = self.internal_view_cls(passthrough=True)
+        view_internal = self.internal_view_cls(rest_proxy=True)
         data_internal, status_code = view_internal.get(request, entity_id)
         serializer = self.serializer_cls(request, view_internal, data_internal)
         return Response(serializer.data, status=status_code)
 
     def put(self, request, entity_id):
-        view_internal = self.internal_view_cls(passthrough=True)
+        view_internal = self.internal_view_cls(rest_proxy=True)
         data_internal, status_code = view_internal.get(request, entity_id)
         serializer = self.serializer_cls(request, view_internal, data_internal, request.data)
         if serializer.is_valid():
@@ -196,7 +198,7 @@ class SettingsViewList(RESTAPIBaseView):
         raise NotImplementedError()
 
     def get(self, request):
-        view_internal = self.internal_view_cls(passthrough=True)
+        view_internal = self.internal_view_cls(rest_proxy=True)
         settings_list = self._get_settings_list(request)
         data_list_internal = [{'data': {'settings': view_internal.get_dict(request, settings, getattr(settings, 'ad_group', None) or getattr(settings, 'campaign'))}}
                               for settings in settings_list]
@@ -205,7 +207,7 @@ class SettingsViewList(RESTAPIBaseView):
 
     def post(self, request):
         with transaction.atomic():
-            create_view_internal = self.internal_create_view_cls(passthrough=True)
+            create_view_internal = self.internal_create_view_cls(rest_proxy=True)
             parent_id = request.data[self.parent_id_field]
             try:
                 data_internal, status_code = create_view_internal.put(request, int(parent_id))
@@ -258,3 +260,116 @@ class AdGroupViewList(SettingsViewList):
         if campaign_id:
             ag_settings = ag_settings.filter(ad_group__campaign_id=int(campaign_id))
         return ag_settings
+
+
+class CampaignGoalsSerializer(serializers.BaseSerializer):
+
+    def to_representation(self, data_internal):
+        return {
+            'id': data_internal['id'],
+            'campaignId': data_internal['campaign_id'],
+            'primary': data_internal['primary'],
+            'type': data_internal['type'],  # TODO: convert
+            'conversionGoal': self._conversion_goal_to_representation(data_internal['conversion_goal']),
+            'value': data_internal['values'][-1]['value']
+        }
+
+    def _conversion_goal_to_representation(self, conversion_goal):
+        if not conversion_goal:
+            return conversion_goal
+        return {
+            'goalId': conversion_goal['goal_id'],
+            'name': conversion_goal['name'],
+            'pixelUrl': conversion_goal['pixel_url'],
+            'conversionWindow': conversion_goal['conversion_window'],
+            'type': conversion_goal['type'],  # TODO: convert
+        }
+
+    def to_internal_value(self, data_external):
+        return {
+            'primary': data_external['primary'],
+            'type': data_external['type'],  # TODO: convert
+            'conversion_goal': self._conversion_goal_to_internal_value(data_external['conversionGoal']),
+            'value': data_external['value']
+        }
+
+    def _conversion_goal_to_internal_value(self, conversion_goal):
+        if not conversion_goal:
+            return conversion_goal
+        return {
+            'goal_id': conversion_goal['goalId'],
+            'name': conversion_goal['name'],
+            'pixel_url': conversion_goal['pixel_url'],
+            'conversion_window': conversion_goal['conversionWindow'],
+            'type': conversion_goal['type'],  # TODO: convert
+        }
+
+
+class CampaignGoalsViewList(RESTAPIBaseView):
+
+    def get(self, request, campaign_id):
+        view_internal = agency.CampaignSettings(rest_proxy=True)
+        data_internal, status_code = view_internal.get(request, campaign_id)
+        serializer = CampaignGoalsSerializer(data_internal['data']['goals'], many=True)
+        return Response(serializer.data)
+
+    def post(self, request, campaign_id):
+        serializer = CampaignGoalsSerializer(data=request.data)
+        if serializer.is_valid():
+            view_internal = agency.CampaignSettings(rest_proxy=True)
+            current_settings, _ = view_internal.get(request, int(campaign_id))
+            put_data = {
+                'settings': current_settings['data']['settings'],
+                'goals': {
+                    'added': [serializer.validated_data],
+                    'removed': [],
+                    'primary': None,
+                    'modified': {}
+                }
+            }
+            self.request.body = RESTAPIJSONRenderer().render(put_data)
+            try:
+                data_internal, status_code = view_internal.put(request, int(campaign_id))
+                return Response(CampaignGoalsSerializer(data_internal['data']['goals'][-1]).data)
+            except exc.ValidationError as e:
+                raise serializers.ValidationError(e.errors)
+        return Response(serializer.errors, status=400)
+
+
+class CampaignGoalPutSerializer(serializers.Serializer):
+    value = serializers.DecimalField(max_digits=15, decimal_places=5)
+    primary = serializers.BooleanField()
+
+
+class CampaignGoalsViewDetails(RESTAPIBaseView):
+
+    def get(self, request, campaign_id, goal_id):
+        goal = dash.models.CampaignGoal.objects.get(pk=goal_id)
+        return Response(CampaignGoalsSerializer(goal.to_dict(with_values=True)).data)
+
+    def put(self, request, campaign_id, goal_id):
+        serializer = CampaignGoalPutSerializer(data=request.data, partial=True)
+        if serializer.is_valid():
+            with transaction.atomic():
+                goal = dash.models.CampaignGoal.objects.get(pk=goal_id)
+                value = serializer.validated_data.get('value', None)
+                if value:
+                    campaign_goals.add_campaign_goal_value(request, goal, value, goal.campaign)
+                primary = serializer.validated_data.get('primary', None)
+                if primary:
+                    try:
+                        campaign_goals.set_campaign_goal_primary(request, goal.campaign, goal_id)
+                    except exc.ValidationError as error:
+                        raise serializers.ValidationError(str(error))
+                goal.refresh_from_db()
+                return Response(CampaignGoalsSerializer(goal.to_dict(with_values=True)).data)
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, campaign_id, goal_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        try:
+            goal = dash.models.CampaignGoal.objects.get(pk=goal_id)
+        except dash.models.CampaignGoal.DoesNotExist:
+            raise serializers.ValidationError('Goal does not exist')
+        campaign_goals.delete_campaign_goal(request, goal.id, campaign)
+        return Response(status=204)
