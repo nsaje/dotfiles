@@ -85,10 +85,10 @@ angular.element(document).ready(function () {
                 this.setEndDate(date);
             }
         } else {
-            this.setEndDate(date);
             if (date.isBefore(this.startDate, 'day')) {
                 this.setStartDate(date);
             }
+            this.setEndDate(date);
         }
 
         this.updateView();
