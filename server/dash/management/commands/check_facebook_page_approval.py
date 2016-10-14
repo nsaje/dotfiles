@@ -27,7 +27,7 @@ class Command(ExceptionCommand):
                                                                     credentials['access_token'])
                 if not added:
                     raise CommandError('Error while adding system user to a connected object for account %s.',
-                                       pending_account.name)
+                                       pending_account.account.name)
 
                 if not pending_account.ad_account_id:
                     ad_account_id = facebook_helper.create_ad_account(pending_account.account.name,
