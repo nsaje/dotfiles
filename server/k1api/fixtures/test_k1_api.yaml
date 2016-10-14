@@ -441,6 +441,9 @@
         bluekai_targeting: '["or", "bluekai:1", "bluekai:2"]'
         interest_targeting: '["tech", "entertainment"]'
         exclusion_interest_targeting: '["politics", "war"]'
+        b1_sources_group_enabled: true
+        b1_sources_group_daily_budget: 10.0
+        b1_sources_group_state: 2
     model: dash.adgroupsettings
     pk: 1
 

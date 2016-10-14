@@ -715,7 +715,7 @@ class ConversionPixel(api_common.BaseApiView):
                 r1_pixels_to_sync.append(pixel.id)
 
             source_type_pixels = models.SourceTypePixel.objects.filter(pixel__in=r1_pixels_to_sync,
-                                                                       source_type_id=settings.OUTBRAIN_SOURCE_TYPE_ID)
+                                                                       source_type__type=constants.SourceType.OUTBRAIN)
             if len(source_type_pixels) > 1:
                 logger.exception('More than 1 SourceTypePixel for ConversionPixels with ids {}', r1_pixels_to_sync)
 

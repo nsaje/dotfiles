@@ -205,7 +205,9 @@ class SourcePixelsView(K1APIView):
         conversion_pixel = outbrain_sync_pixels[0]
         r1_pixels_to_sync = []
 
-        source_type_pixels = dash.models.SourceTypePixel.objects.filter(pixel__account=account, source_type_id=settings.OUTBRAIN_SOURCE_TYPE_ID)
+        source_type_pixels = dash.models.SourceTypePixel.objects.filter(
+            pixel__account=account, source_type__type=constants.SourceType.OUTBRAIN
+        )
         if len(source_type_pixels) > 1:
             return self.response_error('More than 1 outbrain source type pixel for account {}'.format(account.id))
 
@@ -300,7 +302,7 @@ class PublishersBlacklistView(K1APIView):
                                 Q(account=ad_group.campaign.account))
             blacklisted = (dash.models.PublisherBlacklist.objects
                            .filter(blacklist_filter)
-                           .filter(Q(source__isnull=True) | Q(source__source_type__type='b1'))
+                           .filter(Q(source__isnull=True) | Q(source__source_type__type=constants.SourceType.B1))
                            .select_related('source', 'ad_group'))
         else:
             running_ad_groups = dash.models.AdGroup.objects.all().filter_running().select_related('campaign',
@@ -314,7 +316,7 @@ class PublishersBlacklistView(K1APIView):
                                 Q(account__in=running_accounts))
             blacklisted = (dash.models.PublisherBlacklist.objects
                            .filter(blacklist_filter)
-                           .filter(Q(source__isnull=True) | Q(source__source_type__type='b1'))
+                           .filter(Q(source__isnull=True) | Q(source__source_type__type=constants.SourceType.B1))
                            .select_related('source', 'ad_group', 'campaign', 'account', 'account')
                            .prefetch_related('campaign__adgroup_set',
                                              'account__campaign_set',
@@ -432,6 +434,13 @@ class AdGroupsView(K1APIView):
                 'goal_types': campaign_goal_types[ad_group_settings.ad_group.campaign.id],
             }
 
+            if ad_group_settings.b1_sources_group_enabled:
+                ad_group["b1_sources_group"] = {
+                    "enabled": ad_group_settings.b1_sources_group_enabled,
+                    "daily_budget": ad_group_settings.b1_sources_group_daily_budget,
+                    "state": ad_group_settings.b1_sources_group_state,
+                }
+
             if ad_group_settings.ad_group.campaign.account.agency_id:
                 ad_group['agency_id'] = ad_group_settings.ad_group.campaign.account.agency_id
 
@@ -485,7 +494,9 @@ class AdGroupsView(K1APIView):
                 ad_group_sources = ad_group_sources.filter(source__source_type__type__in=source_types)
             if slugs:
                 ad_group_sources = ad_group_sources.filter(source__bidder_slug__in=slugs)
-            current_ad_groups_settings = current_ad_groups_settings.filter(ad_group_id__in=ad_group_sources.values('ad_group_id'))
+            current_ad_groups_settings = current_ad_groups_settings.filter(
+                ad_group_id__in=ad_group_sources.values('ad_group_id')
+            )
 
         ad_groups_settings = (dash.models.AdGroupSettings.objects
                               .filter(pk__in=current_ad_groups_settings)
@@ -551,8 +562,7 @@ class AdGroupSourcesView(K1APIView):
         ad_group_sources = []
         for ad_group_source_settings in ad_group_source_settings:
             ad_group_settings = ad_group_settings_map[ad_group_source_settings.ad_group_source.ad_group_id]
-            if (ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE and
-                    ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE):
+            if self._is_ad_group_source_enabled(ad_group_settings, ad_group_source_settings):
                 source_state = constants.AdGroupSettingsState.ACTIVE
             else:
                 source_state = constants.AdGroupSettingsState.INACTIVE
@@ -573,6 +583,20 @@ class AdGroupSourcesView(K1APIView):
             ad_group_sources.append(source)
 
         return self.response_ok(ad_group_sources)
+
+    def _is_ad_group_source_enabled(self, ad_group_settings, ad_group_source_settings):
+        if ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
+            return False
+
+        if ad_group_source_settings.state != constants.AdGroupSourceSettingsState.ACTIVE:
+            return False
+
+        if (ad_group_source_settings.ad_group_source.source.source_type.type == constants.SourceType.B1 and
+                ad_group_settings.b1_sources_group_enabled and
+                ad_group_settings.b1_sources_group_state != constants.AdGroupSourceSettingsState.ACTIVE):
+            return False
+
+        return True
 
     def put(self, request):
         """

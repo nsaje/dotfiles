@@ -692,13 +692,18 @@ class K1ApiTest(TestCase):
                              {u'event_id': u'200', u'event_type': u'redirect_adgroup', u'exclusion': True},
                              {u'event_id': u'1', u'event_type': u'aud', u'exclusion': False},
                              {u'event_id': u'2', u'event_type': u'aud', u'exclusion': True}],
-            u'demographic_targeting': [u"or", "bluekai:1", "bluekai:2"],
+            u'demographic_targeting': [u"or", u"bluekai:1", u"bluekai:2"],
             u'interest_targeting': [u"tech", u"entertainment"],
             u'exclusion_interest_targeting': [u"politics", u"war"],
             u'campaign_id': 1,
             u'account_id': 1,
             u'agency_id': 20,
             u'goal_types': [2, 5],
+            u'b1_sources_group': {
+                u'daily_budget': u'10.0000',
+                u'enabled': True,
+                u'state': 2,
+            },
         })
 
     def test_get_ad_groups(self):
@@ -735,7 +740,7 @@ class K1ApiTest(TestCase):
         }
 
         for item in data:
-            self.assertEqual(required_fields, set(item.keys()))
+            self.assertEqual(len(required_fields - set(item.keys())), 0)
 
     def test_get_ad_groups_sources(self):
         response = self.client.get(
@@ -752,7 +757,7 @@ class K1ApiTest(TestCase):
         self.assertDictEqual(data[0], {
             u'ad_group_id': 1,
             u'slug': u'b1_adiant',
-            u'state': 1,
+            u'state': 2,
             u'cpc_cc': u'0.1200',
             u'daily_budget_cc': u'1.5000',
             u'source_campaign_key': [u'fake'],
@@ -785,14 +790,14 @@ class K1ApiTest(TestCase):
         self.assertDictEqual(data[0], {
             u'ad_group_id': 1,
             u'slug': u'b1_adiant',
-            u'state': 1,
+            u'state': 2,
             u'cpc_cc': u'0.1200',
             u'daily_budget_cc': u'1.5000',
             u'source_campaign_key': [u'fake'],
             u'tracking_code': u'tracking1&tracking2',
         })
 
-    def test_get_content_ads(self):
+    def test_get_content_ads_by_id(self):
         response = self.client.get(
             reverse('k1api.content_ads'),
             {'content_ad_ids': 1,

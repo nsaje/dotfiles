@@ -944,12 +944,6 @@ class ConversionPixelTestCase(TestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
-        self.original_outbrain_source_type_id = settings.OUTBRAIN_SOURCE_TYPE_ID
-        settings.OUTBRAIN_SOURCE_TYPE_ID = 3
-
-    def tearDown(self):
-        settings.OUTBRAIN_SOURCE_TYPE_ID = self.original_outbrain_source_type_id
-
     def test_get(self):
         account = models.Account.objects.get(pk=1)
         account.users.add(self.user)
@@ -1018,7 +1012,7 @@ class ConversionPixelTestCase(TestCase):
 
         outbrain_pixels = models.SourceTypePixel.objects.\
             filter(pixel=outbrain_synced_pixels[0]).\
-            filter(source_type_id=settings.OUTBRAIN_SOURCE_TYPE_ID)
+            filter(source_type__type=constants.SourceType.OUTBRAIN)
         self.assertEqual(1, len(outbrain_pixels))
 
         response = self.client.post(
@@ -1040,7 +1034,7 @@ class ConversionPixelTestCase(TestCase):
 
         outbrain_pixels_new = models.SourceTypePixel.objects.\
             filter(pixel__account_id=1).\
-            filter(source_type_id=settings.OUTBRAIN_SOURCE_TYPE_ID)
+            filter(source_type__type=constants.SourceType.OUTBRAIN)
         self.assertEqual(1, len(outbrain_pixels_new))
         self.assertEqual(outbrain_pixels[0].id, outbrain_pixels_new[0].pixel_id)
 
@@ -1069,7 +1063,7 @@ class ConversionPixelTestCase(TestCase):
 
         outbrain_pixels = models.SourceTypePixel.objects.\
             filter(pixel=outbrain_synced_pixels[0]).\
-            filter(source_type_id=settings.OUTBRAIN_SOURCE_TYPE_ID)
+            filter(source_type__type=constants.SourceType.OUTBRAIN)
         self.assertEqual(1, len(outbrain_pixels))
 
         response = self.client.post(
@@ -1091,7 +1085,7 @@ class ConversionPixelTestCase(TestCase):
 
         outbrain_pixels_new = models.SourceTypePixel.objects.\
             filter(pixel__account_id=1).\
-            filter(source_type_id=settings.OUTBRAIN_SOURCE_TYPE_ID)
+            filter(source_type__type=constants.SourceType.OUTBRAIN)
         self.assertEqual(1, len(outbrain_pixels_new))
         self.assertEqual(pixel.id, outbrain_pixels_new[0].pixel_id)
 
