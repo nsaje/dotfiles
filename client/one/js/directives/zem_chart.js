@@ -213,6 +213,13 @@ angular.module('one.legacy').directive('zemChart', ['config', '$compile', '$wind
                 clearUsedColors(data);
 
                 data.forEach(function (group) {
+                    if (group.id === 'totals') {
+                        return;
+                    }
+                    updateSeries(group, metricIds);
+                });
+
+                data.forEach(function (group) {
                     if (group.id !== 'totals') {
                         return;
                     }
@@ -220,13 +227,6 @@ angular.module('one.legacy').directive('zemChart', ['config', '$compile', '$wind
                 });
 
                 updateCampaignGoals(newValue.campaignGoals, newValue.goalFields);
-
-                data.forEach(function (group) {
-                    if (group.id === 'totals') {
-                        return;
-                    }
-                    updateSeries(group, metricIds);
-                });
 
                 // HACK: we need this in order to force the chart to display
                 // x axis with value 0 on the bottom of the graph if there is
