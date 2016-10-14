@@ -592,7 +592,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
             constants.StructureDimension.PUBLISHER,
             constants.TimeDimension.DAY,
         ], {constants.StructureDimension.CAMPAIGN: 1}), {
-            'base': 'mv_pubs_master',
+            'base': 'mv_pubs_ad_group',
             'conversions': 'mv_conversions',
             'touchpointconversions': 'mv_touchpointconversions',
         })
@@ -604,7 +604,7 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         })
 
         self.assertEqual(m.get_best_view([], {constants.StructureDimension.CAMPAIGN: 1}, use_publishers_view=True), {
-            'base': 'mv_pubs_master',
+            'base': 'mv_pubs_ad_group',
             'conversions': 'mv_conversions',
             'touchpointconversions': 'mv_touchpointconversions',
         })

@@ -46,6 +46,9 @@ NEW_MATERIALIZED_VIEWS = [
     materialize_views.MVCampaign,
     materialize_views.MVAccount,
 
+    # Derived views from publishers master
+    materialize_views.MVPublishersAdGroup,
+
     materialize_views.MVTouchpointAccount,
     materialize_views.MVTouchpointCampaign,
     materialize_views.MVTouchpointAdGroup,

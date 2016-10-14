@@ -103,7 +103,7 @@ MATERIALIZED_VIEWS = [
         sc.StructureDimension.AD_GROUP,
         sc.StructureDimension.PUBLISHER,
     }, {
-        'base': 'mv_pubs_master',
+        'base': 'mv_pubs_ad_group',
         'conversions': 'mv_conversions',
         'touchpointconversions': 'mv_touchpointconversions',
     }),

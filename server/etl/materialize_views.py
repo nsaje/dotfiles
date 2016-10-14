@@ -962,3 +962,23 @@ class MVConversionsContentAd(DerivedMaterializedView):
             'date_from': self.date_from,
             'date_to': self.date_to,
         }
+
+
+class MVPublishersAdGroup(DerivedMaterializedView):
+
+    TABLE_NAME = 'mv_pubs_ad_group'
+
+    def prepare_insert_query(self):
+        sql = backtosql.generate_sql('etl_select_insert.sql', {
+            'breakdown': models.MVMaster().get_breakdown([
+                'date', 'source_id', 'agency_id', 'account_id', 'campaign_id', 'ad_group_id', 'publisher', 'external_id'
+            ]),
+            'aggregates': models.MVMaster().get_ordered_aggregates(),
+            'destination_table': self.TABLE_NAME,
+            'source_table': MasterPublishersView.TABLE_NAME,
+        })
+
+        return sql, {
+            'date_from': self.date_from,
+            'date_to': self.date_to,
+        }

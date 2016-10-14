@@ -258,7 +258,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
                     a.publisher AS publisher,
                     a.source_id AS source_id,
                     SUM(a.cost_nano)/1000000000.0 yesterday_cost
-                FROM mv_pubs_master a
+                FROM mv_pubs_ad_group a
                 WHERE (( a.date =%s)
                         AND NOT (( a.publisher =ANY(%s) AND a.source_id =%s)))
                 GROUP BY 1, 2),
@@ -269,7 +269,7 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
                     MAX(a.publisher || '__' || a.source_id) publisher_id,
                     SUM(a.clicks) clicks,
                     SUM(a.total_time_on_site) total_seconds
-                FROM mv_pubs_master a
+                FROM mv_pubs_ad_group a
                 WHERE (( a.date >=%s AND a.date <=%s)
                     AND NOT (( a.publisher =ANY(%s) AND a.source_id =%s)))
                 GROUP BY 1, 2)

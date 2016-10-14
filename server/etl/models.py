@@ -36,6 +36,7 @@ class MVMaster(backtosql.Model, RSBreakdownMixin):
     content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
     source_id = backtosql.Column('source_id', BREAKDOWN)
     publisher = backtosql.Column('publisher', BREAKDOWN)
+    external_id = backtosql.Column('external_id', BREAKDOWN)
 
     device_type = backtosql.Column('device_type', BREAKDOWN)
     country = backtosql.Column('country', BREAKDOWN)
