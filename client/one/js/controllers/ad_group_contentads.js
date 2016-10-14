@@ -869,10 +869,11 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
         getDailyStats();
         getInfoboxData();
 
-        zemDataFilterService.onDateRangeUpdate(function () {
+        var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function () {
             getDailyStats();
             getTableData();
         });
+        $scope.$on('$destroy', dateRangeUpdateHandler);
 
         initColumns();
 

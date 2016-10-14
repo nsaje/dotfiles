@@ -953,10 +953,11 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
         $scope.getInfoboxData();
         zemFilterService.setShowBlacklistedPublishers(true);
 
-        zemDataFilterService.onDateRangeUpdate(function () {
+        var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function () {
             getTableData();
             getDailyStats();
         });
+        $scope.$on('$destroy', dateRangeUpdateHandler);
 
         $scope.setActiveTab();
     };

@@ -749,7 +749,7 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
         }
     });
 
-    zemDataFilterService.onDateRangeUpdate(function () {
+    var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function () {
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
             $scope.getInfoboxData();
         }
@@ -761,6 +761,7 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
             $scope.getContentInsights();
         }
     });
+    $scope.$on('$destroy', dateRangeUpdateHandler);
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {

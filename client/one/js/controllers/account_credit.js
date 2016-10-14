@@ -80,6 +80,7 @@ angular.module('one.legacy').controller('AccountCreditCtrl',
             $scope.setActiveTab();
         };
 
-        zemDataFilterService.onDateRangeUpdate(refresh);
+        var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(refresh);
+        $scope.$on('$destroy', dateRangeUpdateHandler);
         $scope.init();
     }]);

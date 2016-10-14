@@ -798,10 +798,11 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state
 
         getSources();
 
-        zemDataFilterService.onDateRangeUpdate(function () {
+        var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function () {
             $scope.getDailyStats();
             getTableData();
         });
+        $scope.$on('$destroy', dateRangeUpdateHandler);
 
         $scope.setActiveTab();
     };

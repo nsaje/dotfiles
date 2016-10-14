@@ -751,11 +751,12 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
         }
     });
 
-    zemDataFilterService.onDateRangeUpdate(function () {
+    var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function () {
         getDailyStats();
         getTableData();
         $scope.getContentInsights();
     });
+    $scope.$on('$destroy', dateRangeUpdateHandler);
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {

@@ -640,11 +640,12 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
         });
     };
 
-    zemDataFilterService.onDateRangeUpdate(function () {
+    var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function () {
         $scope.getInfoboxData();
         getDailyStats();
         getTableData();
     });
+    $scope.$on('$destroy', dateRangeUpdateHandler);
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {

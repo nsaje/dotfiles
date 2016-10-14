@@ -88,11 +88,12 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
         this.onStatsUpdated = onStatsUpdated;
         this.onDataUpdated = onDataUpdated;
 
-        zemDataFilterService.onDateRangeUpdate(function (event, newDateRange) {
+        var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function (event, newDateRange) {
             config.startDate = newDateRange.startDate;
             config.endDate = newDateRange.endDate;
             getData();
         });
+        $scope.$on('$destroy', dateRangeUpdateHandler);
 
         //
         // Definitions

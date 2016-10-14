@@ -744,10 +744,11 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$lo
 
         $scope.setActiveTab();
 
-        zemDataFilterService.onDateRangeUpdate(function () {
+        var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function () {
             getTableData();
             getDailyStats();
         });
+        $scope.$on('$destroy', dateRangeUpdateHandler);
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
