@@ -1,7 +1,9 @@
 import collections
+import logging
 
 from django.db import transaction
 from django.db.models import Q
+import rest_framework.views
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -15,7 +17,9 @@ from dash import constants
 import dash.models
 from utils import json_helper, exc
 from .authentication import OAuth2Authentication
-from utils import exc
+
+
+logger = logging.getLogger(__name__)
 
 
 class NotProvided(object):
@@ -37,6 +41,12 @@ class RESTAPIBaseView(APIView):
     authentication_classes = [OAuth2Authentication]
     renderer_classes = [RESTAPIJSONRenderer]
     permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission,)
+
+    @staticmethod
+    def response_ok(data, **kwargs):
+        if data:
+            data = {'data': data}
+        return Response(data, **kwargs)
 
 
 class DashConstantField(serializers.Field):
@@ -67,10 +77,7 @@ class SettingsSerializer(serializers.BaseSerializer):
         entity_id = int(settings['id'])
         settings.update(validated_data['settings'])
         self.request.body = RESTAPIJSONRenderer().render(({'settings': settings}))
-        try:
-            data_internal_new, _ = self.view_internal.put(self.request, entity_id)
-        except Exception as e:
-            raise serializers.ValidationError(e.errors)
+        data_internal_new, _ = self.view_internal.put(self.request, entity_id)
         return data_internal_new
 
     @classmethod
@@ -198,16 +205,15 @@ class SettingsViewDetails(RESTAPIBaseView):
         view_internal = self.internal_view_cls(rest_proxy=True)
         data_internal, status_code = view_internal.get(request, entity_id)
         serializer = self.serializer_cls(request, view_internal, data_internal)
-        return Response(serializer.data, status=status_code)
+        return self.response_ok(serializer.data, status=status_code)
 
     def put(self, request, entity_id):
         view_internal = self.internal_view_cls(rest_proxy=True)
         data_internal, status_code = view_internal.get(request, entity_id)
         serializer = self.serializer_cls(request, view_internal, data_internal, request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return self.response_ok(serializer.data, status=201)
 
 
 class SettingsViewList(RESTAPIBaseView):
@@ -221,16 +227,13 @@ class SettingsViewList(RESTAPIBaseView):
         data_list_internal = [{'data': {'settings': view_internal.get_dict(request, settings, getattr(settings, 'ad_group', None) or getattr(settings, 'campaign'))}}
                               for settings in settings_list]
         serializer = self.serializer_cls(request, view_internal, data_list_internal, many=True)
-        return Response(serializer.data)
+        return self.response_ok(serializer.data)
 
     def post(self, request):
         with transaction.atomic():
             create_view_internal = self.internal_create_view_cls(rest_proxy=True)
             parent_id = request.data[self.parent_id_field]
-            try:
-                data_internal, status_code = create_view_internal.put(request, int(parent_id))
-            except Exception as e:
-                raise serializers.ValidationError(e.errors)
+            data_internal, status_code = create_view_internal.put(request, int(parent_id))
             entity_id = data_internal['data']['id']
             response = self.details_view_cls().put(request, entity_id)
             if response.status_code != 201:
@@ -329,29 +332,25 @@ class CampaignGoalsViewList(RESTAPIBaseView):
         view_internal = agency.CampaignSettings(rest_proxy=True)
         data_internal, status_code = view_internal.get(request, campaign_id)
         serializer = CampaignGoalsSerializer(data_internal['data']['goals'], many=True)
-        return Response(serializer.data)
+        return self.response_ok(serializer.data)
 
     def post(self, request, campaign_id):
         serializer = CampaignGoalsSerializer(data=request.data)
-        if serializer.is_valid():
-            view_internal = agency.CampaignSettings(rest_proxy=True)
-            current_settings, _ = view_internal.get(request, int(campaign_id))
-            put_data = {
-                'settings': current_settings['data']['settings'],
-                'goals': {
-                    'added': [serializer.validated_data],
-                    'removed': [],
-                    'primary': None,
-                    'modified': {}
-                }
+        serializer.is_valid(raise_exception=True)
+        view_internal = agency.CampaignSettings(rest_proxy=True)
+        current_settings, _ = view_internal.get(request, int(campaign_id))
+        put_data = {
+            'settings': current_settings['data']['settings'],
+            'goals': {
+                'added': [serializer.validated_data],
+                'removed': [],
+                'primary': None,
+                'modified': {}
             }
-            self.request.body = RESTAPIJSONRenderer().render(put_data)
-            try:
-                data_internal, status_code = view_internal.put(request, int(campaign_id))
-                return Response(CampaignGoalsSerializer(data_internal['data']['goals'][-1]).data)
-            except exc.ValidationError as e:
-                raise serializers.ValidationError(e.errors)
-        return Response(serializer.errors, status=400)
+        }
+        self.request.body = RESTAPIJSONRenderer().render(put_data)
+        data_internal, status_code = view_internal.put(request, int(campaign_id))
+        return self.response_ok(CampaignGoalsSerializer(data_internal['data']['goals'][-1]).data)
 
 
 class CampaignGoalPutSerializer(serializers.Serializer):
@@ -363,34 +362,30 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
 
     def get(self, request, campaign_id, goal_id):
         goal = dash.models.CampaignGoal.objects.get(pk=goal_id)
-        return Response(CampaignGoalsSerializer(goal.to_dict(with_values=True)).data)
+        return self.response_ok(CampaignGoalsSerializer(goal.to_dict(with_values=True)).data)
 
     def put(self, request, campaign_id, goal_id):
         serializer = CampaignGoalPutSerializer(data=request.data, partial=True)
-        if serializer.is_valid():
-            with transaction.atomic():
-                goal = dash.models.CampaignGoal.objects.get(pk=goal_id)
-                value = serializer.validated_data.get('value', None)
-                if value:
-                    campaign_goals.add_campaign_goal_value(request, goal, value, goal.campaign)
-                primary = serializer.validated_data.get('primary', None)
-                if primary:
-                    try:
-                        campaign_goals.set_campaign_goal_primary(request, goal.campaign, goal_id)
-                    except exc.ValidationError as error:
-                        raise serializers.ValidationError(str(error))
-                goal.refresh_from_db()
-                return Response(CampaignGoalsSerializer(goal.to_dict(with_values=True)).data)
-        return Response(serializer.errors, status=400)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            goal = dash.models.CampaignGoal.objects.get(pk=goal_id)
+            value = serializer.validated_data.get('value', None)
+            if value:
+                campaign_goals.add_campaign_goal_value(request, goal, value, goal.campaign)
+            primary = serializer.validated_data.get('primary', None)
+            if primary:
+                campaign_goals.set_campaign_goal_primary(request, goal.campaign, goal_id)
+            goal.refresh_from_db()
+            return self.response_ok(CampaignGoalsSerializer(goal.to_dict(with_values=True)).data)
 
     def delete(self, request, campaign_id, goal_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         try:
             goal = dash.models.CampaignGoal.objects.get(pk=goal_id)
         except dash.models.CampaignGoal.DoesNotExist:
-            raise serializers.ValidationError('Goal does not exist')
+            raise exc.MissingDataError('Goal does not exist')
         campaign_goals.delete_campaign_goal(request, goal.id, campaign)
-        return Response(status=204)
+        return self.response_ok(status=204)
 
 
 class SourceIdSlugField(serializers.Field):
@@ -429,10 +424,7 @@ class PublisherSerializer(serializers.Serializer):
         }
         view_internal = views.PublishersBlacklistStatus(passthrough=True)
         request.body = RESTAPIJSONRenderer().render(post_data)
-        try:
-            data_internal, status_code = view_internal.post(request, ad_group_id)
-        except exc.ValidationError as e:
-            raise serializers.ValidationError(e.errors)
+        data_internal, status_code = view_internal.post(request, ad_group_id)
 
 
 class PublishersViewList(RESTAPIBaseView):
@@ -443,14 +435,13 @@ class PublishersViewList(RESTAPIBaseView):
             Q(ad_group=ad_group) | Q(campaign=ad_group.campaign) | Q(account=ad_group.campaign.account)
         )
         serializer = PublisherSerializer(publishers, many=True)
-        return Response(serializer.data)
+        return self.response_ok(serializer.data)
 
     def put(self, request, ad_group_id):
         serializer = PublisherSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(request, ad_group_id)
-            return Response(serializer.initial_data)
-        return Response(serializer.errors, status=400)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(request, ad_group_id)
+        return self.response_ok(serializer.initial_data)
 
 
 class AdGroupSourceSerializer(serializers.Serializer):
@@ -466,10 +457,7 @@ class AdGroupSourceSerializer(serializers.Serializer):
         put_data = {field: validated_data[field] for field in ['cpc_cc', 'daily_budget_cc', 'state'] if field in validated_data}
         request.body = RESTAPIJSONRenderer().render(put_data)
         view_internal = views.AdGroupSourceSettings(passthrough=True)
-        try:
-            data_internal, status_code = view_internal.put(request, ad_group_id, source_id)
-        except exc.ValidationError as e:
-            raise serializers.ValidationError(e.errors)
+        data_internal, status_code = view_internal.put(request, ad_group_id, source_id)
 
 
 class AdGroupSourcesViewList(RESTAPIBaseView):
@@ -478,12 +466,11 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).group_current_settings()
         serializer = AdGroupSourceSerializer(settings, many=True)
-        return Response(serializer.data)
+        return self.response_ok(serializer.data)
 
     def put(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         serializer = AdGroupSourceSerializer(data=request.data, many=True, partial=True)
-        if serializer.is_valid():
-            serializer.save(request=request, ad_group_id=ad_group.id)
-            return self.get(request, ad_group.id)
-        return Response(serializer.errors, status=400)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(request=request, ad_group_id=ad_group.id)
+        return self.get(request, ad_group.id)
