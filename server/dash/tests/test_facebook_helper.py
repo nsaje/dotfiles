@@ -433,7 +433,7 @@ class FacebookAccountTest(TestCase):
         credentials = self.get_credentials()
         account_status = facebook_helper.get_ad_account_status('act_10153378392231753', credentials['access_token'])
         self.assertEqual(account_status, models.constants.FacebookPageRequestType.CONNECTED)
-        get_mock.assert_called_once_with('https://graph.facebook.com/v2.6/act_10153378392231753',
+        get_mock.assert_called_once_with('https://graph.facebook.com/v2.7/act_10153378392231753',
                                          params={'access_token': 'fake_access_token', 'fields': 'account_status'})
 
 
