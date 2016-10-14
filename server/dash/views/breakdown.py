@@ -301,7 +301,7 @@ class CampaignBreakdown(api_common.BaseApiView):
             limit + REQUEST_LIMIT_OVERFLOW,
         )
 
-        if target_dim == ['ad_group_id']:
+        if breakdown == ['ad_group_id']:
             breakdown_helpers.format_report_rows_ad_group_editable_fields(rows)
 
         breakdown_helpers.format_report_rows_state_fields(rows)
