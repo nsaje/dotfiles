@@ -56,9 +56,7 @@ Authorization: Bearer <access_token>
         {
             "data": {
                 "id": "608",
-                "accountId": "186",
                 "name": "My Campaign 1",
-                "campaignManager": "someone@example.com",
                 "tracking": {
                     "ga": {
                         "enabled": true,
@@ -80,7 +78,6 @@ Authorization: Bearer <access_token>
 
         {
             "name": "My Campaign 2",
-            "campaignManager": "someone@example.com",
             "tracking": {
                 "ga": {
                     "enabled": true,
@@ -101,7 +98,6 @@ Authorization: Bearer <access_token>
                 "id": "608",
                 "accountId": "186",
                 "name": "My Campaign 2",
-                "campaignManager": "someone@example.com",
                 "tracking": {
                     "ga": {
                         "enabled": true,
@@ -126,7 +122,6 @@ Authorization: Bearer <access_token>
                     "id": "608",
                     "accountId": "186",
                     "name": "My Campaign 1",
-                    "campaignManager": "someone@example.com",
                     "tracking": {
                         "ga": {
                             "enabled": true,
@@ -151,7 +146,6 @@ Authorization: Bearer <access_token>
         {
             "accountId": "186",
             "name": "My Campaign 3",
-            "campaignManager": "someone@example.com",
             "tracking": {
                 "ga": {
                     "enabled": true,
@@ -172,7 +166,6 @@ Authorization: Bearer <access_token>
                 "id": "609",
                 "accountId": "186",
                 "name": "My Campaign 3",
-                "campaignManager": "someone@example.com",
                 "tracking": {
                     "ga": {
                         "enabled": true,
@@ -589,7 +582,7 @@ Authorization: Bearer <access_token>
 
 ## Manage content ads [/rest/v1/contentads/]
 
-### List content ads [GET /rest/v1/contentads]
+### List content ads [GET /rest/v1/contentads/]
 
 + Attributes
     + adGroupid: 2040 (number) - Ad group ID
@@ -674,6 +667,8 @@ Authorization: Bearer <access_token>
         }
 
 ## Upload content ads [/rest/v1/contentads/batch/]
+
+*Not implemented yet, ETA monday.*
 
 ### Create a new content ad upload batch [POST /rest/v1/contentads/batch/]
 

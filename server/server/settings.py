@@ -354,5 +354,5 @@ OAUTH2_PROVIDER = {
 
 REST_FRAMEWORK = {
     'UNICODE_JSON': False,
-    'EXCEPTION_HANDLER': 'restapi.views.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
 }

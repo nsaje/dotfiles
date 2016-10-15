@@ -1,5 +1,7 @@
+import traceback
 import logging
 
+from django.conf import settings
 import rest_framework.views
 from rest_framework.response import Response
 from rest_framework import serializers
@@ -25,6 +27,7 @@ def custom_exception_handler(exception, context):
     logger.error('REST API exception', exc_info=True)
     error_data['errorCode'] = "ServerError"
     error_data['details'] = "An error occurred."
+    error_data['stackTrace'] = traceback.format_exc()
     status_code = 500
     return Response(error_data, status=status_code)
 

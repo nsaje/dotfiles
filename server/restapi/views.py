@@ -3,7 +3,6 @@ import logging
 
 from django.db import transaction
 from django.db.models import Q
-import rest_framework.views
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -45,8 +44,7 @@ class RESTAPIBaseView(APIView):
 
     @staticmethod
     def response_ok(data, **kwargs):
-        if data:
-            data = {'data': data}
+        data = {'data': data}
         return Response(data, **kwargs)
 
 
@@ -95,7 +93,7 @@ class CampaignSerializer(SettingsSerializer):
             'id': settings['id'],
             # 'accountId': settings['account_id'],
             'name': settings['name'],
-            'campaignManager': settings['campaign_manager'],
+            # 'campaignManager': self._user_to_email(settings['campaign_manager']),  # TODO(nsaje): convert to email
             'tracking': {
                 'ga': {
                     'enabled': settings['enable_ga_tracking'],
@@ -116,7 +114,7 @@ class CampaignSerializer(SettingsSerializer):
             'id': data['id'],
             'account_id': data['accountId'],
             'name': data['name'],
-            'campaign_manager': data['campaignManager'],
+            # 'campaign_manager': data['campaignManager'],  # TODO(nsaje): convert from email
             'enable_ga_tracking': data['tracking']['ga']['enabled'],
             'ga_tracking_type': data['tracking']['ga']['type'],
             'ga_property_id': data['tracking']['ga']['webPropertyId'],
@@ -133,7 +131,7 @@ class AdGroupSerializer(SettingsSerializer):
             'id': settings['id'],
             # 'campaignId': settings['campaign_id'],
             'name': settings['name'],
-            'state': settings['state'],
+            'state': constants.AdGroupSettingsState.get_name(settings['state']),
             'startDate': settings['start_date'],
             'endDate': settings['end_date'],
             'maxCpc': settings['cpc_cc'],
@@ -143,33 +141,42 @@ class AdGroupSerializer(SettingsSerializer):
                 'geo': {
                     'included': self._partition_regions(settings['target_regions']),
                 },
-                'devices': settings['target_devices'],
+                'devices': map(lambda x: constants.AdTargetDevice.get_name(x), settings['target_devices']),
             },
             'autopilot': {
-                'state': settings['autopilot_state'],
+                'state': constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state']),
                 'dailyBudget': settings['autopilot_daily_budget'],
             },
         }
 
     def to_internal_value(self, external_data):
-        data = collections.defaultdict(lambda: NOT_PROVIDED)
-        data.update(external_data)
+        data = self._allow_not_provided(external_data)
+        data['targeting'] = self._allow_not_provided(data['targeting'])
+        data['autopilot'] = self._allow_not_provided(data['autopilot'])
         settings = {
             'id': data['id'],
             'campaign_id': data['campaignId'],
             'name': data['name'],
-            'state': data['state'],
+            'state': getattr(constants.AdGroupSettingsState, data['state']) if data['state'] != NOT_PROVIDED else NOT_PROVIDED,
             'start_date': data['startDate'],
             'end_date': data['endDate'],
             'cpc_cc': data['maxCpc'],
             'daily_budget_cc': data['dailyBudget'],
             'tracking_code': data['trackingCode'],
             'target_regions': self._unpartition_regions(data['targeting']['geo']['included']),
-            'target_devices': data['targeting']['devices'],
-            'autopilot_state': data['autopilot']['state'],
+            'target_devices': map(lambda x: getattr(constants.AdTargetDevice, x), data['targeting']['devices']) if data['targeting']['devices'] != NOT_PROVIDED else NOT_PROVIDED,
+            'autopilot_state': getattr(constants.AdGroupSettingsAutopilotState, data['autopilot']['state']) if data['autopilot']['state'] != NOT_PROVIDED else NOT_PROVIDED,
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
         }
         return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
+
+    @staticmethod
+    def _allow_not_provided(d):
+        if d == NOT_PROVIDED:
+            return NOT_PROVIDED
+        new_dict = collections.defaultdict(lambda: NOT_PROVIDED)
+        new_dict.update(d)
+        return new_dict
 
     @staticmethod
     def _partition_regions(target_regions):
@@ -231,9 +238,12 @@ class SettingsViewList(RESTAPIBaseView):
         return self.response_ok(serializer.data)
 
     def post(self, request):
+        # import pdb; pdb.set_trace()
         with transaction.atomic():
             create_view_internal = self.internal_create_view_cls(rest_proxy=True)
-            parent_id = request.data[self.parent_id_field]
+            parent_id = request.data.get(self.parent_id_field)
+            if not parent_id:
+                raise serializers.ValidationError({self.parent_id_field: 'required'})
             data_internal, status_code = create_view_internal.put(request, int(parent_id))
             entity_id = data_internal['data']['id']
             response = self.details_view_cls().put(request, entity_id)
@@ -291,7 +301,7 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
             'id': data_internal['id'],
             'campaignId': data_internal['campaign_id'],
             'primary': data_internal['primary'],
-            'type': data_internal['type'],  # TODO: convert
+            'type': constants.CampaignGoalKPI.get_name(data_internal['type']),
             'conversionGoal': self._conversion_goal_to_representation(data_internal['conversion_goal']),
             'value': data_internal['values'][-1]['value']
         }
@@ -304,16 +314,19 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
             'name': conversion_goal['name'],
             'pixelUrl': conversion_goal['pixel_url'],
             'conversionWindow': conversion_goal['conversion_window'],
-            'type': conversion_goal['type'],  # TODO: convert
+            'type': constants.ConversionGoalType.get_name(conversion_goal['type']),
         }
 
     def to_internal_value(self, data_external):
-        return {
-            'primary': data_external['primary'],
-            'type': data_external['type'],  # TODO: convert
-            'conversion_goal': self._conversion_goal_to_internal_value(data_external['conversionGoal']),
-            'value': data_external['value']
-        }
+        try:
+            return {
+                'primary': data_external['primary'],
+                'type': getattr(constants.CampaignGoalKPI, data_external['type']) if data_external['type'] != NOT_PROVIDED else NOT_PROVIDED,
+                'conversion_goal': self._conversion_goal_to_internal_value(data_external['conversionGoal']),
+                'value': data_external['value']
+            }
+        except KeyError as e:
+            raise serializers.ValidationError({e.message: 'missing'})
 
     def _conversion_goal_to_internal_value(self, conversion_goal):
         if not conversion_goal:
@@ -323,7 +336,7 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
             'name': conversion_goal['name'],
             'pixel_url': conversion_goal['pixel_url'],
             'conversion_window': conversion_goal['conversionWindow'],
-            'type': conversion_goal['type'],  # TODO: convert
+            'type': getattr(constants.ConversionGoalType, conversion_goal['type']) if conversion_goal['type'] != NOT_PROVIDED else NOT_PROVIDED,
         }
 
 
