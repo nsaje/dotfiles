@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'oauth2_provider',
     'integrations',
+    'analytics',
 ]
 
 MIDDLEWARE_CLASSES = [
