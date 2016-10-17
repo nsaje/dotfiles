@@ -40,6 +40,7 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
     """
 
     helpers.check_constraints_are_supported(constraints)
+    helpers.log_user_query_request(user, breakdown, constraints, order, offset, limit)
 
     target_dimension = constants.get_target_dimension(breakdown)
 

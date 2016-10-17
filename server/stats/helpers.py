@@ -1,4 +1,5 @@
 import copy
+import datetime
 import logging
 
 import collections
@@ -383,3 +384,19 @@ def create_publisher_id(domain, source_id):
 def dissect_publisher_id(publisher):
     domain, source_id = publisher.rsplit(u'__', 1)
     return domain, int(source_id) if source_id else None
+
+
+def log_user_query_request(user, breakdown, constraints, order, offset, limit):
+    logger.info('Stats query request: user_id {}, breakdown {}, order {}, offset {}, limit {}, date range {}/{}, age {}, account_id {}, campaign_id {}, ad_group_id {}'.format(
+        user.id,
+        '__'.join(breakdown),
+        order,
+        offset,
+        limit,
+        constraints['date__gte'].isoformat(),
+        constraints['date__lte'].isoformat(),
+        (datetime.date.today() - constraints['date__gte']).days,
+        constraints['account'].id if 'account' in constraints else 'NULL',
+        constraints['campaign'].id if 'campaign' in constraints else 'NULL',
+        constraints['ad_group'].id if 'ad_group' in constraints else 'NULL',
+    ))
