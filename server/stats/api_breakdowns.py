@@ -30,6 +30,12 @@ def validate_breakdown_allowed(level, user, breakdown):
     permission_filter.validate_breakdown_by_permissions(level, user, breakdown)
 
 
+def should_use_experimental_redshiftapi_calls(user, breakdown):
+    if user.id == 293 and len(breakdown) <= 2:
+        return True
+    return False
+
+
 @newrelic.agent.function_trace()
 def query(level, user, breakdown, constraints, goals, parents, order, offset, limit):
     """
@@ -60,7 +66,8 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
             dash_rows,
             breakdown,
             stats_constraints,
-            goals
+            goals,
+            use_experimental_calls=should_use_experimental_redshiftapi_calls(user, breakdown)
         )
         rows = helpers.merge_rows(breakdown, dash_rows, stats_rows)
     else:
@@ -76,7 +83,8 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
             goals,
             helpers.extract_rs_order_field(order, target_dimension),
             offset,
-            limit)
+            limit,
+            use_experimental_calls=should_use_experimental_redshiftapi_calls(user, breakdown))
         if should_query_dashapi:
             if offset == 0:
                 str_w_stats = stats_rows
@@ -104,11 +112,13 @@ def totals(user, level, breakdown, constraints, goals):
     helpers.check_constraints_are_supported(constraints)
 
     stats_rows = redshiftapi.api_breakdowns.query(
-            [],
-            helpers.extract_stats_constraints(constraints, breakdown),
-            None,
-            goals,
-            None, None, None, use_publishers_view='publisher_id' in breakdown)
+        [],
+        helpers.extract_stats_constraints(constraints, breakdown),
+        None,
+        goals,
+        None, None, None, use_publishers_view='publisher_id' in breakdown,
+        use_experimental_calls=should_use_experimental_redshiftapi_calls(user, breakdown)
+    )
 
     dash_total_row = dash.dashapi.api_breakdowns.get_totals(level, user, breakdown, constraints)
 

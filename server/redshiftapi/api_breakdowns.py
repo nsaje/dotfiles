@@ -29,12 +29,12 @@ the code less verbose) for proper production code.
 """
 
 
-def query(breakdown, constraints, parents, goals, order, offset, limit, use_publishers_view=False):
+def query(breakdown, constraints, parents, goals, order, offset, limit, use_publishers_view=False, use_experimental_calls=False):
     """
     Returns an array of rows that are represented as dicts.
     """
 
-    if len(breakdown) <= 1:
+    if use_experimental_calls:
         return query_all(breakdown, constraints, parents, goals, order, offset, limit, use_publishers_view)
 
     model = models.MVMaster(goals.conversion_goals, goals.pixels, goals.campaign_goals, goals.campaign_goal_values)
@@ -63,12 +63,12 @@ def query_structure_with_stats(breakdown, constraints):
     return rows
 
 
-def query_stats_for_rows(rows, breakdown, constraints, goals):
+def query_stats_for_rows(rows, breakdown, constraints, goals, use_experimental_calls=False):
     model = models.MVMaster(goals.conversion_goals, goals.pixels, goals.campaign_goals, goals.campaign_goal_values)
 
     parents = helpers.create_parents(rows, breakdown)
 
-    if len(breakdown) <= 1:
+    if use_experimental_calls:
         stats_rows = query_all_for_rows(rows, breakdown, constraints, parents, goals)
     else:
         query, params = queries.prepare_augment_query(model, breakdown, constraints, parents)
