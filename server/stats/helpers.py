@@ -311,11 +311,20 @@ def extract_rs_order_field(order, target_dimension):
     return prefix + order_field
 
 
-def group_rows_by_breakdown(breakdown, rows):
+def group_rows_by_breakdown(breakdown, rows, max_1=False):
     groups = collections.defaultdict(list)
 
     for row in rows:
         groups[get_breakdown_id_tuple(row, breakdown)].append(row)
+
+    if max_1:
+        result = {}
+        for breakdown_id, rows in groups.iteritems():
+            result[breakdown_id] = rows[0]
+            if len(rows) > 1:
+                raise Exception('Expected 1 row per breakdown got {}'.format(len(rows)))
+
+        groups = result
 
     return groups
 

@@ -44,7 +44,7 @@ def query_async_get_results(query_threads, order=None, offset=None, limit=None):
 
         if order:
             thread_rows = sort_helper.sort_rows_by_order_and_archived(thread_rows, order)
-            thread_rows = helpers.apply_offset_limit(thread_rows, offset, limit)
+            thread_rows = sort_helper.apply_offset_limit(thread_rows, offset, limit)
 
         rows.extend(thread_rows)
 
@@ -103,7 +103,7 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
             extra_rows = [x for x in dash_rows if x[target_dimension] not in all_used_ids]
             extra_rows = sort_helper.sort_rows_by_order_and_archived(extra_rows,
                                                                      get_default_order(target_dimension, order))
-            selected_rows.extend(helpers.apply_offset_limit(extra_rows, new_offset, new_limit))
+            selected_rows.extend(sort_helper.apply_offset_limit(extra_rows, new_offset, new_limit))
 
         result.extend(selected_rows)
     return result

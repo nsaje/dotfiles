@@ -90,7 +90,7 @@ class ApiBreakdownQueryTest(TestCase):
             'license_fee_projection': None
         }])
 
-    @mock.patch('redshiftapi.api_breakdowns.execute_query')
+    @mock.patch('redshiftapi.api_breakdowns.query_stats_for_rows')
     def test_query_dash_first(self, mock_rs_query):
 
         mock_rs_query.return_value = [

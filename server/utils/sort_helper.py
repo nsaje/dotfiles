@@ -68,3 +68,16 @@ def dissect_order(order):
         field_name = order[1:]
 
     return prefix, field_name
+
+
+def apply_offset_limit(qs_or_collection, offset, limit):
+    if offset and limit:
+        return qs_or_collection[offset:offset + limit]
+
+    if offset:
+        return qs_or_collection[offset:]
+
+    if limit:
+        return qs_or_collection[:limit]
+
+    return qs_or_collection

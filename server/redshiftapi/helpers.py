@@ -113,3 +113,16 @@ def merge_rows(breakdown, rows, stats_rows):
             row.update(stats_row[0])
 
     return rows
+
+
+def get_all_dimensions(breakdown, constraints, parents, use_publishers_view):
+    constraints_dimensions = set(backtosql.dissect_constraint_key(x)[0] for x in constraints.keys())
+    parents_dimensions = set(backtosql.dissect_constraint_key(x)[0] for parent in parents for x in parent.keys()) if parents else set([])
+    breakdown_dimensions = set(breakdown)
+
+    non_date_dimensions = set(constants.StructureDimension._ALL) | set(constants.DeliveryDimension._ALL)
+
+    if use_publishers_view:
+        breakdown_dimensions.add('publisher_id')
+
+    return (constraints_dimensions | parents_dimensions | breakdown_dimensions) & non_date_dimensions
