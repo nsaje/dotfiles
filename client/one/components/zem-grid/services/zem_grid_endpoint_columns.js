@@ -541,7 +541,6 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
             field: 'ctr',
             type: zemGridConstants.gridColumnTypes.PERCENT,
             shown: true,
-            defaultValue: '0.0%',
             totalRow: true,
             help: 'The number of clicks divided by the number of impressions.',
             order: true,
