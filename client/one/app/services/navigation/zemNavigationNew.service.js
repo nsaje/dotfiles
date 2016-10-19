@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemNavigationNewService', ['$rootScope', '$state', 'zemNavigationService', function ($rootScope, $state, zemNavigationService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemNavigationNewService', ['$rootScope', '$location', '$state', 'zemNavigationService', function ($rootScope, $location, $state, zemNavigationService) { // eslint-disable-line max-len
     this.init = init;
     this.navigateTo = navigateTo;
     this.getEntityHref = getEntityHref;
@@ -143,9 +143,14 @@ angular.module('one.services').service('zemNavigationNewService', ['$rootScope',
         return $state.href(state, {});
     }
 
-    function getEntityHref (entity) {
+    function getEntityHref (entity, includeQueryParams) {
         var state = getEntityState(entity);
-        return $state.href(state, {id: entity.id});
+        var href =  $state.href(state, {id: entity.id});
+        if (includeQueryParams) {
+            var query = $location.absUrl().split('?')[1];
+            if (query) href += '?' + query;
+        }
+        return href;
     }
 
     function navigateTo (entity) {

@@ -165,7 +165,7 @@ angular.module('one.widgets').component('zemNavigation', {
         }
 
         function getItemHref (entity) {
-            return zemNavigationNewService.getEntityHref(entity);
+            return zemNavigationNewService.getEntityHref(entity, true);
         }
 
         function navigateTo (entity) {

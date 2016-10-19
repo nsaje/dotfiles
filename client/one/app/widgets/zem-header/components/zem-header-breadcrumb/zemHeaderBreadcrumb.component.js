@@ -53,7 +53,7 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         }
 
         function getItemHref (item) {
-            return zemNavigationNewService.getEntityHref(item.entity);
+            return zemNavigationNewService.getEntityHref(item.entity, true);
         }
     }]
 });
