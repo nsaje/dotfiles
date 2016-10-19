@@ -2734,6 +2734,8 @@ class UploadBatch(models.Model):
     default_call_to_action = models.TextField(
         null=True, blank=True, default=constants.DEFAULT_CALL_TO_ACTION)
 
+    auto_save = models.BooleanField(default=False)
+
     class Meta:
         get_latest_by = 'created_dt'
 

@@ -25,17 +25,18 @@ class CandidateErrorsRemaining(Exception):
 
 
 @transaction.atomic
-def insert_candidates(candidates_data, ad_group, batch_name, filename):
-    batch = create_empty_batch(ad_group.id, batch_name, original_filename=filename)
+def insert_candidates(candidates_data, ad_group, batch_name, filename, auto_save=False):
+    batch = create_empty_batch(ad_group.id, batch_name, original_filename=filename, auto_save=auto_save)
     candidates = _create_candidates(candidates_data, ad_group, batch)
     return batch, candidates
 
 
-def create_empty_batch(ad_group_id, batch_name, original_filename=None):
+def create_empty_batch(ad_group_id, batch_name, original_filename=None, auto_save=False):
     return models.UploadBatch.objects.create(
         name=batch_name,
         ad_group_id=ad_group_id,
         original_filename=original_filename,
+        auto_save=auto_save,
     )
 
 
@@ -311,11 +312,24 @@ def _process_url_update(candidate, url, callback_data):
         logger.exception('Failed to parse callback data %s', str(callback_data))
 
 
+def _handle_auto_save(batch):
+    if not batch.auto_save:
+        return
+
+    try:
+        persist_candidates(batch)
+    except:
+        if all(candidate.image_status == constants.AsyncUploadJobStatus.OK and
+               candidate.url_status == constants.AsyncUploadJobStatus.OK
+               for candidate in batch.contentadcandidate_set.all()):
+            logger.error('Couldn\'t auto save batch for unknown reason')
+
+
 @transaction.atomic
 def process_callback(callback_data):
     try:
         candidate_id = callback_data.get('id')
-        candidate = models.ContentAdCandidate.objects.get(pk=candidate_id)
+        candidate = models.ContentAdCandidate.objects.filter(pk=candidate_id).select_related('batch').get()
     except models.ContentAdCandidate.DoesNotExist:
         logger.exception('No candidate with id %s', callback_data['id'])
         return
@@ -325,6 +339,7 @@ def process_callback(callback_data):
     _process_image_url_update(candidate, cleaned_urls['image_url'], callback_data)
 
     candidate.save()
+    _handle_auto_save(candidate.batch)
 
 
 def _create_candidates(content_ads_data, ad_group, batch):
