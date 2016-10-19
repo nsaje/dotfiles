@@ -43,6 +43,11 @@ def article_upload(request):
             continue
         candidates_data.append(article)
 
+    if len(candidates_data) < 1:
+        return JsonResponse({
+            "status": 'ok'
+        })
+
     ad_group = dash.models.AdGroup.objects.get(id=TEST_AD_GROUP_ID)
     batch, candidates = dash.upload.insert_candidates(
         candidates_data, ad_group, batch_name, filename='', auto_save=True)
