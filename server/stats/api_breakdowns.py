@@ -31,8 +31,6 @@ def validate_breakdown_allowed(level, user, breakdown):
 
 
 def should_use_experimental_redshiftapi_calls(user, breakdown):
-    if user.id == 293 and len(breakdown) <= 2:
-        return True
     return False
 
 
