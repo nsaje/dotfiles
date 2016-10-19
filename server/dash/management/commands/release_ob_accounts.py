@@ -17,6 +17,12 @@ GROUP BY account_id;
 '''
 
 
+class Request:
+
+    class User:
+        pass
+
+
 class Command(ExceptionCommand):
     help = """Release OB accounts on account list"""
 
@@ -58,7 +64,11 @@ class Command(ExceptionCommand):
 
             account.outbrain_marketer_id = None
             count_released += 1
-            account.save()
+
+            request = Request()
+            request.user = Request.User()
+            request.user.is_anonymous = True
+            account.save(request)
 
         self.stdout.write('Done. Released {} OB accounts.'.format(count_released))
         self.stdout.write('Marketers: {}'.format(', '.join([
