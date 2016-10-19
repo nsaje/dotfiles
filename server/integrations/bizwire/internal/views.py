@@ -44,7 +44,7 @@ def article_upload(request):
         candidates_data.append(article)
 
     ad_group = dash.models.AdGroup.objects.get(id=TEST_AD_GROUP_ID)
-    candidates, batch = dash.upload.insert_candidates(
+    batch, candidates = dash.upload.insert_candidates(
         candidates_data, ad_group, batch_name, filename='', auto_save=True)
     for candidate in candidates:
         dash.upload.invoke_external_validation(candidate, batch)

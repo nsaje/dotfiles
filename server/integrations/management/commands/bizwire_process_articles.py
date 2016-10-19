@@ -34,7 +34,7 @@ class Command(ExceptionCommand):
             sys.exit(1)
 
         if key:
-            self.invoke_lambdas([key])
+            self.invoke_lambdas(key)
             return
 
         date = dateutil.parser.parse(date[0]).date()
