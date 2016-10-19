@@ -657,6 +657,8 @@ var constants = {
         ENTROPY: 'entropy',
         LEFT: 'left',
         RIGHT: 'right',
+        TOP: 'top',
+        BOTTOM: 'bottom',
     },
     gaTrackingType: {
         EMAIL: 1,
@@ -1243,6 +1245,8 @@ var options = {
         {name: 'Entropy', value: constants.imageCrop.ENTROPY},
         {name: 'Left', value: constants.imageCrop.LEFT},
         {name: 'Right', value: constants.imageCrop.RIGHT},
+        {name: 'Top', value: constants.imageCrop.TOP},
+        {name: 'Bottom', value: constants.imageCrop.BOTTOM},
     ],
     gaTrackingType: [
         {name: 'Email', value: constants.gaTrackingType.EMAIL},

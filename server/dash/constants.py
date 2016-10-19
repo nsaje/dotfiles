@@ -1596,6 +1596,8 @@ class ImageCrop(ConstantBase):
     ENTROPY = 'entropy'
     LEFT = 'left'
     RIGHT = 'right'
+    TOP = 'top'
+    BOTTOM = 'bottom'
 
     _VALUES = {
         CENTER: 'Center',
@@ -1603,6 +1605,8 @@ class ImageCrop(ConstantBase):
         ENTROPY: 'Entropy',
         LEFT: 'Left',
         RIGHT: 'Right',
+        TOP: 'Top',
+        BOTTOM: 'Bottom',
     }
 
 
