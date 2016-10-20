@@ -26,12 +26,6 @@ angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibM
             params: {href: '/signout'},
         },
         {
-            text: 'Toggle new layout',
-            callback: zemRedesignHelpersService.toggleNewLayout,
-            isAvailable: zemPermissions.hasPermission('zemauth.can_toggle_new_design'),
-            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_toggle_new_design'),
-        },
-        {
             text: 'Toggle new theme',
             callback: zemRedesignHelpersService.toggleNewTheme,
             isAvailable: zemPermissions.hasPermission('zemauth.can_toggle_new_design'),
