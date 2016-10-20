@@ -885,38 +885,26 @@ def get_ad_group_sources_settings(ad_group_sources):
         .select_related('ad_group_source')
 
 
-def get_ad_group_state_by_sources_running_status(ad_groups, ad_groups_settings,
-                                                 ad_groups_sources_settings, group_by_key):
+def get_ad_group_table_running_state_by_obj_id(ad_groups, ad_groups_settings, group_by_key):
+    by_ad_group = {}
+    for settings in ad_groups_settings:
+        by_ad_group[settings.ad_group_id] = settings.state
 
-    running_status_per_ag = map_per_ad_group_source_running_status(ad_groups_settings, ad_groups_sources_settings)
+    by_group_key = collections.defaultdict(list)
+    for ad_group in ad_groups.values('id', group_by_key):
+        ad_group_id = ad_group['id']
+        key = ad_group[group_by_key]
+
+        state = by_ad_group.get(ad_group_id)
+        if state is not None:
+            by_group_key[key].append(state)
 
     status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
-
-    for ag in ad_groups.values('id', group_by_key):
-        ad_group_id = ag['id']
-        key = ag[group_by_key]
-        if running_status_per_ag[ad_group_id] == constants.AdGroupRunningStatus.ACTIVE:
-            status_dict[key] = constants.AdGroupSettingsState.ACTIVE
+    for group_key, states in by_group_key.iteritems():
+        if constants.AdGroupSettingsState.ACTIVE in states:
+            status_dict[group_key] = constants.AdGroupRunningStatus.ACTIVE
 
     return status_dict
-
-
-def map_per_ad_group_source_running_status(ad_groups_settings, ad_groups_sources_settings):
-    """
-    Return a dict with ad group ids as keys and running status of selected ad
-    group sources as values.
-    """
-
-    sources_settings_dict = collections.defaultdict(list)
-    for agss in ad_groups_sources_settings:
-        sources_settings_dict[agss.ad_group_source.ad_group_id].append(agss)
-
-    running_status_dict = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
-    for ags in ad_groups_settings:
-        running_status_dict[ags.ad_group_id] = models.AdGroup.get_running_status_by_sources_setting(
-            ags, sources_settings_dict[ags.ad_group_id])
-
-    return running_status_dict
 
 
 def parse_get_request_content_ad_ids(request_data, param_name):

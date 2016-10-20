@@ -125,7 +125,7 @@ class QueryTest(TestCase):
                        'default_sales_representative': 'supertestuser@test.com',
                        'agency': '', 'account_type': 'Self-managed'},
                       EMPTY_ACCOUNT_PROJECTIONS),
-            dict_join({'source_id': 2, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 2},
+            dict_join({'source_id': 2, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
                        'agency': '', 'account_type': 'Self-managed'},
@@ -153,7 +153,7 @@ class QueryTest(TestCase):
             dict_join({'source_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
                       {'campaign_manager': 'supertestuser@test.com'},
                       EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 2},
+            dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
                       {'campaign_manager': 'supertestuser@test.com'},
                       EMPTY_CAMPAIGN_PROJECTIONS),
         ])
@@ -275,7 +275,7 @@ class QueryTest(TestCase):
             dict_join({'source_id': 1, 'campaign_id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 2},
                       {'campaign_manager': 'mad.max@zemanta.com'},
                       EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 2},
+            dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
                       {'campaign_manager': 'supertestuser@test.com'},
                       EMPTY_CAMPAIGN_PROJECTIONS),
         ])
@@ -299,7 +299,7 @@ class QueryTest(TestCase):
         self.assertEqual(rows,  [
             {'source_id': 1, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1},
             {'source_id': 1, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2},
-            {'source_id': 2, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 2, 'state': 2},
+            {'source_id': 2, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1},
             {'source_id': 2, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2},
         ])
 
@@ -429,7 +429,7 @@ class QueryTest(TestCase):
         self.assertEqual(rows,  [
             {'source_id': 1, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1},
             {'source_id': 1, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2},
-            {'source_id': 2, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 2, 'state': 2},
+            {'source_id': 2, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1},
             {'source_id': 2, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2},
         ])
 
@@ -1122,7 +1122,7 @@ class QueryForRowsTest(TestCase):
                        'agency': '', 'account_type': 'Self-managed'},
                       EMPTY_ACCOUNT_PROJECTIONS),
             dict_join({'source_id': 2, 'account_id': 1, 'archived': False,
-                       'name': 'test account 1', 'status': 2},
+                       'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
                        'agency': '', 'account_type': 'Self-managed'},
@@ -1162,7 +1162,7 @@ class QueryForRowsTest(TestCase):
                        'agency': '', 'account_type': 'Self-managed'},
                       EMPTY_ACCOUNT_PROJECTIONS),
             dict_join({'source_id': 2, 'account_id': 1, 'archived': False,
-                       'name': 'test account 1', 'status': 2},
+                       'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
                        'agency': '', 'account_type': 'Self-managed'},
@@ -1230,7 +1230,7 @@ class QueryForRowsTest(TestCase):
                        'status': 2, 'campaign_manager': 'mad.max@zemanta.com'},
                       EMPTY_CAMPAIGN_PROJECTIONS),
             dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1',
-                       'status': 2, 'campaign_manager': 'supertestuser@test.com'},
+                       'status': 1, 'campaign_manager': 'supertestuser@test.com'},
                       EMPTY_CAMPAIGN_PROJECTIONS),
         ])
 
@@ -1264,7 +1264,7 @@ class QueryForRowsTest(TestCase):
                        'status': 2, 'campaign_manager': 'mad.max@zemanta.com'},
                       EMPTY_CAMPAIGN_PROJECTIONS),
             dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1',
-                       'status': 2, 'campaign_manager': 'supertestuser@test.com'},
+                       'status': 1, 'campaign_manager': 'supertestuser@test.com'},
                       EMPTY_CAMPAIGN_PROJECTIONS),
         ])
 
@@ -1404,7 +1404,7 @@ class QueryForRowsTest(TestCase):
                       {'campaign_manager': 'mad.max@zemanta.com'},
                       EMPTY_CAMPAIGN_PROJECTIONS),
             dict_join({'campaign_id': 1, 'source_id': 2, 'archived': False,
-                       'name': 'test campaign 1', 'status': 2},
+                       'name': 'test campaign 1', 'status': 1},
                       {'campaign_manager': 'supertestuser@test.com'},
                       EMPTY_CAMPAIGN_PROJECTIONS),
         ])
@@ -1534,7 +1534,7 @@ class QueryForRowsTest(TestCase):
             {'source_id': 1, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2',
              'status': 2, 'state': 2},
             {'source_id': 2, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1',
-             'status': 2, 'state': 2},
+             'status': 1, 'state': 1},
             {'source_id': 2, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2',
              'status': 2, 'state': 2},
         ])

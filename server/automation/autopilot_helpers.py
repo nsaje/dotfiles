@@ -42,7 +42,9 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
             if ad_group.campaign_id in campaigns_in_landing:
                 continue
 
-            if ad_group.get_running_status(ags, ad_groups_sources_settings) == constants.AdGroupRunningStatus.ACTIVE:
+            if (ad_group.get_running_status(ags) == constants.AdGroupRunningStatus.ACTIVE and
+               ad_group.get_running_status_by_sources_setting(ags, ad_groups_sources_settings) ==
+               constants.AdGroupRunningStatus.ACTIVE):
                 ad_groups_on_autopilot.append(ad_group)
                 ad_group_settings_on_autopilot.append(ags)
     return ad_groups_on_autopilot, ad_group_settings_on_autopilot

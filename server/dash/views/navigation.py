@@ -39,15 +39,9 @@ class NavigationDataView(api_common.BaseApiView):
                 campaign, campaign.get_current_settings())
 
         if ad_group:
-            ad_group_source_settings = models.AdGroupSourceSettings.objects\
-                                                                   .filter(ad_group_source__ad_group_id=ad_group.id)\
-                                                                   .filter_by_sources(filtered_sources)\
-                                                                   .group_current_settings()
-
             response['ad_group'] = navigation_helpers.get_ad_group_dict(
                 ad_group,
                 ad_group.get_current_settings(),
-                ad_group_source_settings,
                 ad_group.campaign.get_current_settings()
             )
 
@@ -55,6 +49,7 @@ class NavigationDataView(api_common.BaseApiView):
 
 
 class NavigationAllAccountsDataView(api_common.BaseApiView):
+
     def get(self, request):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
@@ -114,21 +109,13 @@ class NavigationTreeView(api_common.BaseApiView):
 
         map_ad_groups_settings = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
-        # takes too long to do a join when constraints are applied
-        ad_groups_sources_settings = models.AdGroupSourceSettings.objects.filter(
-            ad_group_source__in=map_ad_group_source.keys()
-        ).group_current_settings()
-
-        map_ad_groups_sources_settings = navigation_helpers.map_ad_group_sources_settings(
-            ad_groups_sources_settings, map_ad_group_source)
-
         data_ad_groups = {}
         for ad_group in ad_groups:
             ad_group_settings = map_ad_groups_settings.get(ad_group.id)
-            ad_group_source_settings = map_ad_groups_sources_settings.get(ad_group.id)
 
             ad_group_dict = navigation_helpers.get_ad_group_dict(
-                ad_group, ad_group_settings, ad_group_source_settings,
+                ad_group,
+                ad_group_settings,
                 map_campaign_settings.get(ad_group.campaign_id))
 
             data_ad_groups.setdefault(ad_group.campaign_id, []).append(ad_group_dict)

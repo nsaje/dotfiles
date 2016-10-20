@@ -44,15 +44,15 @@ class AccountsLoaderTest(TestCase):
             1: models.Account.objects.get(pk=1)
         })
 
-    def test_settings_qs(self):
-        self.assertDictEqual(self.loader.settings_map, {
-            1: models.AccountSettings.objects.get(pk=1)
-        })
-
-    def test_status_map(self):
-        self.assertDictEqual(self.loader.status_map, {
-            1: constants.AdGroupRunningStatus.ACTIVE,
-        })
+    def test_settings_map(self):
+        self.assertDictEqual(self.loader.settings_map, {1: {
+            'archived': False,
+            'status': constants.AdGroupRunningStatus.ACTIVE,
+            'default_account_manager': 'mad.max@zemanta.com',
+            'default_sales_representative': 'supertestuser@test.com',
+            'account_type': constants.AccountType.get_text(constants.AccountType.SELF_MANAGED),
+            'settings_id': 1,
+        }})
 
     def test_status_map_filtered_sources(self):
         accounts = models.Account.objects.all()
@@ -60,9 +60,14 @@ class AccountsLoaderTest(TestCase):
 
         loader = loaders.AccountsLoader(accounts, sources)
 
-        self.assertDictEqual(dict(loader.status_map), {
-            1: constants.AdGroupRunningStatus.INACTIVE,
-        })
+        self.assertDictEqual(loader.settings_map, {1: {
+            'archived': False,
+            'status': constants.AdGroupRunningStatus.ACTIVE,
+            'default_account_manager': 'mad.max@zemanta.com',
+            'default_sales_representative': 'supertestuser@test.com',
+            'account_type': constants.AccountType.get_text(constants.AccountType.SELF_MANAGED),
+            'settings_id': 1,
+        }})
 
 
 class CampaignsLoaderTest(TestCase):
@@ -91,16 +96,20 @@ class CampaignsLoaderTest(TestCase):
             2: models.Campaign.objects.get(pk=2),
         })
 
-    def test_settings_qs(self):
+    def test_settings_map(self):
         self.assertDictEqual(self.loader.settings_map, {
-            1: models.CampaignSettings.objects.get(pk=1),
-            2: models.CampaignSettings.objects.get(pk=2),
-        })
-
-    def test_status_map(self):
-        self.assertDictEqual(self.loader.status_map, {
-            1: constants.AdGroupRunningStatus.ACTIVE,
-            2: constants.AdGroupRunningStatus.INACTIVE,
+            1: {
+                'status': constants.AdGroupRunningStatus.ACTIVE,
+                'archived': False,
+                'settings_id': 1,
+                'campaign_manager': 'supertestuser@test.com',
+            },
+            2: {
+                'status': constants.AdGroupRunningStatus.INACTIVE,
+                'archived': True,
+                'settings_id': 2,
+                'campaign_manager': 'mad.max@zemanta.com',
+            }
         })
 
     def test_status_map_filtered_sources(self):
@@ -109,9 +118,19 @@ class CampaignsLoaderTest(TestCase):
 
         loader = loaders.CampaignsLoader(campaigns, sources)
 
-        self.assertDictEqual(dict(loader.status_map), {
-            1: constants.AdGroupRunningStatus.INACTIVE,
-            2: constants.AdGroupRunningStatus.INACTIVE,
+        self.assertDictEqual(loader.settings_map, {
+            1: {
+                'status': constants.AdGroupRunningStatus.ACTIVE,
+                'archived': False,
+                'settings_id': 1,
+                'campaign_manager': 'supertestuser@test.com',
+            },
+            2: {
+                'status': constants.AdGroupRunningStatus.INACTIVE,
+                'archived': True,
+                'settings_id': 2,
+                'campaign_manager': 'mad.max@zemanta.com',
+            }
         })
 
 
@@ -134,6 +153,44 @@ class AdGroupsLoaderTest(TestCase):
         self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
         self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
 
+    def test_settings_map(self):
+        self.assertDictEqual(self.loader.settings_map, {
+            1: {
+                'status': constants.AdGroupRunningStatus.ACTIVE,
+                'state': constants.AdGroupRunningStatus.ACTIVE,
+                'archived': False,
+                'settings_id': 4,
+            },
+            2: {
+                'status': constants.AdGroupRunningStatus.INACTIVE,
+                'state': constants.AdGroupRunningStatus.INACTIVE,
+                'archived': False,
+                'settings_id': 2,
+            },
+            3: {
+                'status': constants.AdGroupRunningStatus.INACTIVE,
+                'state': constants.AdGroupRunningStatus.INACTIVE,
+                'archived': True,
+                'settings_id': 3,
+            },
+        })
+
+    def test_base_level_settings_map(self):
+        self.assertDictEqual(self.loader.base_level_settings_map, {
+            1: {
+                'campaign_has_available_budget': False,
+                'campaign_stop_inactive': True,
+            },
+            2: {
+                'campaign_has_available_budget': False,
+                'campaign_stop_inactive': False,
+            },
+            3: {
+                'campaign_has_available_budget': False,
+                'campaign_stop_inactive': None,
+            },
+        })
+
     def test_objs(self):
         self.assertItemsEqual(self.loader.objs_ids, [1, 2, 3])
         self.assertDictEqual(self.loader.objs_map, {
@@ -142,42 +199,31 @@ class AdGroupsLoaderTest(TestCase):
             3: models.AdGroup.objects.get(pk=3),
         })
 
-    def test_settings_qs(self):
-        self.assertDictEqual(self.loader.settings_map, {
-            1: models.AdGroupSettings.objects.get(pk=4),
-            2: models.AdGroupSettings.objects.get(pk=2),
-            3: models.AdGroupSettings.objects.get(pk=3),
-        })
-
-    def test_status_map(self):
-        self.assertDictEqual(self.loader.status_map, {
-            1: constants.AdGroupRunningStatus.ACTIVE,
-            2: constants.AdGroupRunningStatus.INACTIVE,
-            3: constants.AdGroupRunningStatus.INACTIVE,
-        })
-
     def test_status_map_filtered_sources(self):
         ad_groups = models.AdGroup.objects.all()
         sources = models.Source.objects.filter(pk=2)
 
         loader = loaders.AdGroupsLoader(ad_groups, sources)
 
-        self.assertDictEqual(dict(loader.status_map), {
-            1: constants.AdGroupRunningStatus.INACTIVE,
-            2: constants.AdGroupRunningStatus.INACTIVE,
-            3: constants.AdGroupRunningStatus.INACTIVE,
-        })
-
-    def test_other_settings_map(self):
-        ad_groups = models.AdGroup.objects.all()
-        sources = models.Source.objects.filter(pk=2)
-
-        loader = loaders.AdGroupsLoader(ad_groups, sources)
-
-        self.assertDictEqual(dict(loader.other_settings_map), {
-            1: {'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
-            2: {'campaign_has_available_budget': False, 'campaign_stop_inactive': False},
-            3: {'campaign_has_available_budget': False, 'campaign_stop_inactive': None},
+        self.assertDictEqual(loader.settings_map, {
+            1: {
+                'status': constants.AdGroupRunningStatus.ACTIVE,
+                'state': constants.AdGroupRunningStatus.ACTIVE,
+                'archived': False,
+                'settings_id': 4,
+            },
+            2: {
+                'status': constants.AdGroupRunningStatus.INACTIVE,
+                'state': constants.AdGroupRunningStatus.INACTIVE,
+                'archived': False,
+                'settings_id': 2,
+            },
+            3: {
+                'status': constants.AdGroupRunningStatus.INACTIVE,
+                'state': constants.AdGroupRunningStatus.INACTIVE,
+                'archived': True,
+                'settings_id': 3,
+            },
         })
 
 

@@ -349,7 +349,6 @@ class NavigationTreeViewTest(TestCase):
     @patch('datetime.datetime', MockDatetime)
     def test_get_filtered_sources(self):
         response = self._get(1, filtered_sources=[2])
-
         expected_response = [{
             "archived": False,
             "campaigns": [{
@@ -358,9 +357,9 @@ class NavigationTreeViewTest(TestCase):
                     "id": 1,
                     "name": "test adgroup 1",
                     "state": 1,
-                    "status": 2,  # source paused
+                    "status": 1,
                     "autopilot_state": 2,
-                    "active": "inactive",
+                    "active": "active",
                     "landingMode": False,
                 }, {
                     "archived": False,
@@ -376,7 +375,7 @@ class NavigationTreeViewTest(TestCase):
                     "id": 3,
                     "name": "test adgroup 3",
                     "state": 2,
-                    "status": 2,  # source paused
+                    "status": 2,
                     "autopilot_state": 2,
                     "active": "stopped",
                     "landingMode": False,

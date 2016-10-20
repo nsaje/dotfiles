@@ -90,43 +90,57 @@ class AccountsLoader(Loader):
         )
 
     @cached_property
-    def settings_qs(self):
-        return models.AccountSettings.objects\
-                                     .filter(account_id__in=self.objs_ids)\
-                                     .group_current_settings()\
-                                     .select_related(
-                                         'default_account_manager',
-                                         'default_sales_representative')
-
-    @cached_property
     def settings_map(self):
-        settings_map = collections.defaultdict(models.AccountSettings)
-        settings_map.update({x.account_id: x for x in self.settings_qs})
+        settings_qs = models.AccountSettings.objects\
+                                            .filter(account_id__in=self.objs_ids)\
+                                            .group_current_settings()\
+                                            .select_related(
+                                                'default_account_manager',
+                                                'default_sales_representative')
+        settings_obj_map = {x.account_id: x for x in settings_qs}
+        status_map = self._get_status_map()
+
+        settings_map = {}
+        for account_id in self.objs_ids:
+            settings = settings_obj_map.get(account_id)
+
+            settings_dict = {
+                'status': status_map[account_id],
+                'archived': False,
+                'default_account_manager': None,
+                'default_sales_representative': None,
+                'account_type': constants.AccountType.get_text(constants.AccountType.UNKNOWN),
+                'settings_id': None,  # for debugging purposes, gets removed
+            }
+            if settings is not None:
+                settings_dict.update({
+                    'archived': settings.archived,
+                    'default_account_manager': view_helpers.get_user_full_name_or_email(
+                        settings.default_account_manager, default_value=None),
+                    'default_sales_representative': view_helpers.get_user_full_name_or_email(
+                        settings.default_sales_representative, default_value=None),
+                    'account_type': constants.AccountType.get_text(settings.account_type),
+                    'settings_id': settings.id,
+                })
+
+            settings_map[account_id] = settings_dict
 
         return settings_map
 
-    @cached_property
-    def status_map(self):
+    def _get_status_map(self):
         """
         Returns dict with account_id as key and status as value
         """
 
         ad_groups = models.AdGroup.objects.filter(campaign__account_id__in=self.objs_ids)
         ad_groups_settings = models.AdGroupSettings.objects\
-                                                   .filter(ad_group__in=ad_groups)\
-                                                   .group_current_settings()
+                                                   .filter(ad_group__campaign__account_id__in=self.objs_ids)\
+                                                   .group_current_settings()\
+                                                   .only_state_fields()
 
-        ad_groups_sources_settings = models.AdGroupSourceSettings\
-                                           .objects\
-                                           .filter(ad_group_source__ad_group__in=ad_groups)\
-                                           .filter_by_sources(self.filtered_sources_qs)\
-                                           .group_current_settings()\
-                                           .select_related('ad_group_source')
+        status_map = view_helpers.get_ad_group_table_running_state_by_obj_id(
+            ad_groups, ad_groups_settings, 'campaign__account_id')
 
-        status_map = view_helpers.get_ad_group_state_by_sources_running_status(
-            ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign__account_id')
-
-        # the helper function only sets active, does not set inactive
         for account_id in self.objs_ids:
             if account_id not in status_map:
                 status_map[account_id] = constants.AdGroupRunningStatus.INACTIVE
@@ -166,40 +180,48 @@ class CampaignsLoader(Loader):
         )
 
     @cached_property
-    def settings_qs(self):
-        return models.CampaignSettings.objects\
-                                      .filter(campaign_id__in=self.objs_ids)\
-                                      .select_related('campaign_manager')\
-                                      .group_current_settings()
-
-    @cached_property
     def settings_map(self):
-        settings_map = collections.defaultdict(models.CampaignSettings)
-        settings_map.update({x.campaign_id: x for x in self.settings_qs})
+        settings_qs = models.CampaignSettings.objects\
+                                             .filter(campaign_id__in=self.objs_ids)\
+                                             .group_current_settings()\
+                                             .select_related('campaign_manager')
+        settings_obj_map = {x.campaign_id: x for x in settings_qs}
+        status_map = self._get_status_map()
+        settings_map = {}
+
+        for campaign_id in self.objs_ids:
+            settings = settings_obj_map.get(campaign_id)
+
+            settings_dict = {
+                'status': status_map[campaign_id],
+                'archived': False,
+                'campaign_manager': None,
+                'settings_id': None,  # for debugging purposes, get removed
+            }
+            if settings is not None:
+                settings_dict.update({
+                    'archived': settings.archived,
+                    'campaign_manager': view_helpers.get_user_full_name_or_email(
+                        settings.campaign_manager, default_value=None),
+                    'settings_id': settings.id,
+                })
+            settings_map[campaign_id] = settings_dict
 
         return settings_map
 
-    @cached_property
-    def status_map(self):
+    def _get_status_map(self):
         ad_groups = models.AdGroup.objects.filter(campaign_id__in=self.objs_ids)
         ad_groups_settings = models.AdGroupSettings.objects\
                                                    .filter(ad_group__in=ad_groups)\
-                                                   .group_current_settings()
+                                                   .group_current_settings()\
+                                                   .only_state_fields()
 
-        ad_groups_sources_settings = models.AdGroupSourceSettings\
-                                           .objects\
-                                           .filter(ad_group_source__ad_group__in=ad_groups)\
-                                           .filter_by_sources(self.filtered_sources_qs)\
-                                           .group_current_settings()\
-                                           .select_related('ad_group_source')
+        status_map = view_helpers.get_ad_group_table_running_state_by_obj_id(
+            ad_groups, ad_groups_settings, 'campaign_id')
 
-        status_map = view_helpers.get_ad_group_state_by_sources_running_status(
-            ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign_id')
-
-        # the helper function only sets active, does not set inactive
-        for obj_id in self.objs_ids:
-            if obj_id not in status_map:
-                status_map[obj_id] = constants.AdGroupRunningStatus.INACTIVE
+        for campaign_id in self.objs_ids:
+            if campaign_id not in status_map:
+                status_map[campaign_id] = constants.AdGroupRunningStatus.INACTIVE
 
         return status_map
 
@@ -234,74 +256,47 @@ class AdGroupsLoader(Loader):
         )
 
     @cached_property
-    def settings_qs(self):
-        settings_qs = models.AdGroupSettings\
-                            .objects\
-                            .filter(ad_group_id__in=self.objs_ids)\
-                            .group_current_settings()
-        return settings_qs
-
-    @cached_property
     def settings_map(self):
-        settings_map = collections.defaultdict(models.AdGroupSettings)
-        settings_map.update({x.ad_group_id: x for x in self.settings_qs})
+        settings_qs = models.AdGroupSettings.objects\
+                                            .filter(ad_group_id__in=self.objs_ids)\
+                                            .group_current_settings()\
+                                            .only('ad_group_id', 'archived', 'state')
+        settings_obj_map = {x.ad_group_id: x for x in settings_qs}
+
+        settings_map = {}
+        for ad_group_id in self.objs_ids:
+            settings = settings_obj_map[ad_group_id]
+
+            settings_map[ad_group_id] = {
+                'archived': settings.archived,
+                'status': settings.state,
+                'state': settings.state,
+                'settings_id': settings.id,
+            }
 
         return settings_map
 
     @cached_property
-    def other_settings_map(self):
+    def base_level_settings_map(self):
         campaign_ad_groups = collections.defaultdict(list)
         for _, ad_group in self.objs_map.iteritems():
             campaign_ad_groups[ad_group.campaign_id].append(ad_group)
 
         campaigns_map = {x.id: x for x in models.Campaign.objects.filter(pk__in=campaign_ad_groups.keys())}
 
-        other_settings_map = {}
+        settings_map = {}
         for campaign_id, ad_groups in campaign_ad_groups.items():
             campaign = campaigns_map[campaign_id]
             campaign_stop_check_map = campaign_stop.can_enable_ad_groups(campaign, campaign.get_current_settings())
             campaign_has_available_budget = data_helper.campaign_has_available_budget(campaign)
 
             for ad_group in ad_groups:
-                other_settings_map[ad_group.id] = {
+                settings_map[ad_group.id] = {
                     'campaign_stop_inactive': campaign_stop_check_map.get(ad_group.id),
                     'campaign_has_available_budget': campaign_has_available_budget,
                 }
 
-        return other_settings_map
-
-    @cached_property
-    def sources_settings_qs(self):
-        return models.AdGroupSourceSettings\
-                     .objects\
-                     .filter(ad_group_source__ad_group_id__in=self.objs_ids)\
-                     .filter_by_sources(self.filtered_sources_qs)\
-                     .group_current_settings()\
-                     .select_related('ad_group_source')
-
-    @cached_property
-    def sources_settings_map(self):
-        m = collections.defaultdict(dict)
-        for ad_group_id in self.objs_ids:
-            for ad_group_source_settings in self.sources_settings_qs:
-                m[ad_group_id][ad_group_source_settings.ad_group_source.source_id] = ad_group_source_settings
-        return m
-
-    @cached_property
-    def status_map(self):
-        status_map = view_helpers.get_ad_group_state_by_sources_running_status(
-            self.objs_qs,
-            self.settings_qs,
-            self.sources_settings_qs,
-            group_by_key='id'
-        )
-
-        # the helper function only sets active, does not set inactive
-        for obj_id in self.objs_ids:
-            if obj_id not in status_map:
-                status_map[obj_id] = constants.AdGroupRunningStatus.INACTIVE
-
-        return status_map
+        return settings_map
 
 
 class ContentAdsLoader(Loader):
@@ -322,19 +317,17 @@ class ContentAdsLoader(Loader):
         return {x.pk: x.batch for x in self.objs_qs}
 
     @cached_property
-    def ad_groups_qs(self):
-        return models.AdGroup.objects.filter(
+    def ad_group_loader(self):
+        ad_groups_qs = models.AdGroup.objects.filter(
             pk__in=set(x.ad_group_id for x in self.objs_qs))
 
-    @cached_property
-    def ad_group_loader(self):
-        return AdGroupsLoader(self.ad_groups_qs, self.filtered_sources_qs)
+        return AdGroupsLoader(ad_groups_qs, self.filtered_sources_qs)
 
     @cached_property
     def ad_group_map(self):
         ad_group_map = {}
-        for content_ad in self.objs_qs:
-            ad_group_map[content_ad.id] = self.ad_group_loader.objs_map[content_ad.ad_group_id]
+        for content_ad_id, content_ad in self.objs_map.iteritems():
+            ad_group_map[content_ad_id] = self.ad_group_loader.objs_map[content_ad.ad_group_id]
         return ad_group_map
 
     @cached_property
@@ -354,7 +347,8 @@ class ContentAdsLoader(Loader):
         for content_ad_id, content_ad in self.objs_map.iteritems():
             content_ad_sources = self.content_ads_sources_map[content_ad_id]
             if (any([x.state == constants.ContentAdSourceState.ACTIVE for x in content_ad_sources]) and
-               self.ad_group_loader.status_map[content_ad.ad_group_id] == constants.AdGroupRunningStatus.ACTIVE):
+               self.ad_group_loader.settings_map[content_ad.ad_group_id]['status'] ==
+               constants.AdGroupRunningStatus.ACTIVE):
                 status_map[content_ad_id] = constants.ContentAdSourceState.ACTIVE
             else:
                 status_map[content_ad_id] = constants.ContentAdSourceState.INACTIVE
@@ -364,13 +358,15 @@ class ContentAdsLoader(Loader):
     def per_source_status_map(self):
         per_source_map = collections.defaultdict(dict)
         sources = {x.id: x.name for x in self.filtered_sources_qs}
+        source_status_map = self._get_per_ad_group_source_status_map()
 
         for content_ad_id, content_ad in self.objs_map.iteritems():
             for content_ad_source in self.content_ads_sources_map[content_ad_id]:
                 source_id = content_ad_source.source_id
-                ad_group_source_settings = self.ad_group_loader.sources_settings_map[content_ad.ad_group_id].get(source_id)
-                source_status = (ad_group_source_settings.state if ad_group_source_settings else
-                                 constants.AdGroupSourceSettingsState.INACTIVE)
+
+                source_status = source_status_map[content_ad.ad_group_id][source_id]
+                if source_status is None:
+                    source_status = constants.AdGroupSourceSettingsState.INACTIVE
 
                 per_source_map[content_ad_id][content_ad_source.source_id] = {
                     'source_id': source_id,
@@ -382,15 +378,23 @@ class ContentAdsLoader(Loader):
 
         return per_source_map
 
-    @cached_property
-    def content_ads_sources_qs(self):
-        return models.ContentAdSource.objects.filter(
-            content_ad_id__in=self.objs_ids).filter_by_sources(self.filtered_sources_qs)
+    def _get_per_ad_group_source_status_map(self):
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group_id__in=set(x.ad_group_id for x in self.objs_qs)).group_current_settings().values_list(
+                'ad_group_source__ad_group_id', 'ad_group_source__source_id', 'state')
+
+        settings_map = collections.defaultdict(dict)
+        for ad_group_id, source_id, state in ad_group_sources_settings:
+            settings_map[ad_group_id][source_id] = state
+        return settings_map
 
     @cached_property
     def content_ads_sources_map(self):
+        qs = models.ContentAdSource.objects.filter(
+            content_ad_id__in=self.objs_ids).filter_by_sources(self.filtered_sources_qs)
+
         content_ads_sources_map = collections.defaultdict(list)
-        for content_ad_source in self.content_ads_sources_qs:
+        for content_ad_source in qs:
             content_ads_sources_map[content_ad_source.content_ad_id].append(content_ad_source)
 
         return content_ads_sources_map

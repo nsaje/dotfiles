@@ -3131,8 +3131,7 @@ class AccountOverviewTest(TestCase):
         settings = response['data']['basic_settings']
 
         count_setting = self._get_setting(settings, 'active campaigns')
-        # 1 campaign has no adroupsourcesettings
-        self.assertEqual('1', count_setting['value'])
+        self.assertEqual('2', count_setting['value'])
         self.assertTrue(response['success'])
 
     @patch('reports.redshift.get_cursor')
@@ -3181,8 +3180,7 @@ class AccountOverviewTest(TestCase):
         settings = response['data']['basic_settings']
 
         count_setting = self._get_setting(settings, 'active campaigns')
-        # 1 campaign has no adroupsourcesettings
-        self.assertEqual('1', count_setting['value'])
+        self.assertEqual('2', count_setting['value'])
         self.assertTrue(response['success'])
 
 

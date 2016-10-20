@@ -481,13 +481,8 @@ def _prefetch_statuses(entities, level, by_source, sources=None):
     ad_groups_settings = models.AdGroupSettings.objects.filter(
         ad_group__in=ad_groups).group_current_settings()
 
-    ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__ad_group__in=ad_groups).filter_by_sources(sources)\
-                                                .group_current_settings()\
-                                                .select_related('ad_group_source')
-
-    return helpers.get_ad_group_state_by_sources_running_status(
-        ad_groups, ad_groups_settings, ad_group_sources_settings, constraints)
+    return helpers.get_ad_group_table_running_state_by_obj_id(
+        ad_groups, ad_groups_settings, constraints)
 
 
 def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source_names=None,

@@ -15,9 +15,11 @@ class AutopilotHelpersTestCase(test.TestCase):
     def setUp(self):
         refresh.refresh_adgroup_stats()
 
+    @patch('dash.models.AdGroup.get_running_status_by_sources_setting')
     @patch('dash.models.AdGroup.get_running_status')
-    def test_get_active_ad_groups_on_autopilot(self, mock_running_status):
+    def test_get_active_ad_groups_on_autopilot(self, mock_running_status, mock_running_status_by_sources):
         mock_running_status.return_value = AdGroupRunningStatus.ACTIVE
+        mock_running_status_by_sources.return_value = AdGroupRunningStatus.ACTIVE
         all_ap_adgs, all_ap_adgs_settings = autopilot_helpers.get_active_ad_groups_on_autopilot()
         cpc_ap_adgs, cpc_ap_adgs_settings = autopilot_helpers.get_active_ad_groups_on_autopilot(autopilot_state=3)
         budget_ap_adgs, budget_ap_adgs_settings = autopilot_helpers.get_active_ad_groups_on_autopilot(autopilot_state=1)

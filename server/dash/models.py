@@ -1753,7 +1753,7 @@ class AdGroup(models.Model):
         return current_settings.archived
 
     @classmethod
-    def get_running_status(cls, ad_group_settings, ad_group_sources_settings):
+    def get_running_status(cls, ad_group_settings):
         """
         Returns the actual running status of ad group settings with selected sources settings.
         """
@@ -1761,9 +1761,7 @@ class AdGroup(models.Model):
         if not cls.is_ad_group_active(ad_group_settings):
             return constants.AdGroupRunningStatus.INACTIVE
 
-        if (cls.get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE and
-                cls.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings) ==
-                constants.AdGroupRunningStatus.ACTIVE):
+        if cls.get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE:
             return constants.AdGroupRunningStatus.ACTIVE
 
         return constants.AdGroupRunningStatus.INACTIVE
@@ -1802,6 +1800,7 @@ class AdGroup(models.Model):
         Returns "running" when at least one of the ad group sources settings status is
         set to be active.
         """
+
         if not cls.is_ad_group_active(ad_group_settings):
             return constants.AdGroupRunningStatus.INACTIVE
 
@@ -1963,14 +1962,8 @@ class AdGroup(models.Model):
             An adgroup is running if:
                 - it was set as active(adgroupsettings)
                 - current date is between start and stop(flight time)
-                - has at least one running mediasource(adgroupsourcesettings)
             """
             now = dates_helper.local_today()
-            # ad group settings and ad group source settings
-            # are fetched in a separate queryset
-            # because getting current settings and filtering them
-            # in one qs could cause latest settings to be filtered out
-            # but we want to take only latest settings into account
             latest_ad_group_settings = AdGroupSettings.objects.filter(
                 ad_group__in=self
             ).group_current_settings()
@@ -1985,17 +1978,7 @@ class AdGroup(models.Model):
                 end_date__lt=now
             ).values_list('ad_group__id', flat=True)
 
-            latest_ad_group_source_settings = AdGroupSourceSettings.objects.filter(
-                ad_group_source__ad_group__in=self
-            ).group_current_settings()
-
-            ad_group_source_settings = AdGroupSourceSettings.objects.filter(
-                pk__in=latest_ad_group_source_settings
-            ).filter(
-                state=constants.AdGroupSourceSettingsState.ACTIVE
-            ).values_list('ad_group_source__ad_group__id', flat=True)
-
-            ids = set(ad_group_settings) & set(ad_group_source_settings)
+            ids = set(ad_group_settings)
             return self.filter(id__in=ids)
 
         def filter_active(self):
@@ -2482,6 +2465,11 @@ class AdGroupSettings(SettingsBase):
 
         def group_current_settings(self):
             return self.order_by('ad_group_id', '-created_dt').distinct('ad_group')
+
+        def only_state_fields(self):
+            """ Only select fields that are releant to calculating ad group state """
+
+            return self.only('ad_group_id', 'state', 'start_date', 'end_date')
 
 
 class AdGroupSourceState(models.Model, CopySettingsMixin):

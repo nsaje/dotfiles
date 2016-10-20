@@ -134,7 +134,7 @@ class MVHelpersSource(Materialize):
                 c.execute(sql, params)
 
     def generate_rows(self):
-        sources = dash.models.Source.objects.all()
+        sources = dash.models.Source.objects.all().order_by('id')
 
         for source in sources:
             yield (

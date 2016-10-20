@@ -843,15 +843,8 @@ class AccountsAccountsTable(object):
                                                    .filter(ad_group__in=ad_groups)\
                                                    .group_current_settings()
 
-        ad_groups_sources_settings = models.AdGroupSourceSettings\
-                                           .objects\
-                                           .filter(ad_group_source__ad_group__in=ad_groups)\
-                                           .filter_by_sources(filtered_sources)\
-                                           .group_current_settings()\
-                                           .select_related('ad_group_source')
-
-        return helpers.get_ad_group_state_by_sources_running_status(
-            ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign__account_id')
+        return helpers.get_ad_group_table_running_state_by_obj_id(
+            ad_groups, ad_groups_settings, 'campaign__account_id')
 
     def get_data_status(self, user, accounts, last_success_actions, last_pixel_sync):
         return helpers.get_data_status(accounts)
@@ -1290,14 +1283,9 @@ class CampaignAdGroupsTable(object):
         return response
 
     def get_per_ad_group_running_status_dict(self, ad_groups, ad_groups_settings, filtered_sources):
-        ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
-                                           .filter(ad_group_source__ad_group__in=ad_groups)\
-                                           .filter_by_sources(filtered_sources)\
-                                           .group_current_settings()\
-                                           .select_related('ad_group_source')
 
-        return helpers.get_ad_group_state_by_sources_running_status(
-            ad_groups, ad_groups_settings, ad_groups_sources_settings, 'id')
+        return helpers.get_ad_group_table_running_state_by_obj_id(
+            ad_groups, ad_groups_settings, 'id')
 
     def get_yesterday_cost(self, reports_api, campaign, filtered_sources, actual=False):
         constraints = {'campaign': campaign, 'source': filtered_sources}
@@ -1503,15 +1491,8 @@ class AccountCampaignsTable(object):
                                                    .filter(ad_group__in=ad_groups)\
                                                    .group_current_settings()
 
-        ad_groups_sources_settings = models.AdGroupSourceSettings\
-                                           .objects\
-                                           .filter(ad_group_source__ad_group__in=ad_groups)\
-                                           .filter_by_sources(filtered_sources)\
-                                           .group_current_settings()\
-                                           .select_related('ad_group_source')
-
-        return helpers.get_ad_group_state_by_sources_running_status(
-            ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign_id')
+        return helpers.get_ad_group_table_running_state_by_obj_id(
+            ad_groups, ad_groups_settings, 'campaign_id')
 
     def get_data_status(self, user, campaigns, last_success_actions, last_pixel_sync):
         return helpers.get_data_status(campaigns)

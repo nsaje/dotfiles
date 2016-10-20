@@ -31,7 +31,6 @@ def augment_accounts(rows, loader, is_base_level=False):
             row,
             loader.objs_map[account_id],
             loader.settings_map[account_id],
-            loader.status_map[account_id],
             loader.projections_map[account_id]
         )
 
@@ -47,7 +46,6 @@ def augment_campaigns(rows, loader, is_base_level=False):
             row,
             loader.objs_map[campaign_id],
             loader.settings_map[campaign_id],
-            loader.status_map[campaign_id],
             loader.projections_map[campaign_id]
         )
 
@@ -63,8 +61,7 @@ def augment_ad_groups(rows, loader, is_base_level=False):
             row,
             loader.objs_map[ad_group_id],
             loader.settings_map[ad_group_id],
-            loader.status_map[ad_group_id],
-            loader.other_settings_map[ad_group_id] if is_base_level else None
+            loader.base_level_settings_map[ad_group_id] if is_base_level else None
         )
 
 
@@ -108,7 +105,7 @@ def augment_publishers(rows, loader, is_base_level=False):
         )
 
 
-def augment_row_account(row, account=None, settings=None, status=None, projections=None):
+def augment_row_account(row, account=None, settings=None, projections=None):
     if account:
         row.update({
             'name': account.name,
@@ -116,19 +113,9 @@ def augment_row_account(row, account=None, settings=None, status=None, projectio
         })
 
     if settings:
-        row.update({
-            'archived': settings.archived,
-            'default_account_manager': view_helpers.get_user_full_name_or_email(
-                settings.default_account_manager, default_value=None),
-            'default_sales_representative': view_helpers.get_user_full_name_or_email(
-                settings.default_sales_representative, default_value=None),
-            'account_type': constants.AccountType.get_text(settings.account_type),
-        })
-
-    if status is not None:
-        row.update({
-            'status': status,
-        })
+        copy_fields_if_exists(
+            ['status', 'archived', 'default_account_manager', 'default_sales_representative', 'account_type'],
+            settings, row)
 
     if projections is not None:
         row.update({
@@ -142,23 +129,14 @@ def augment_row_account(row, account=None, settings=None, status=None, projectio
         })
 
 
-def augment_row_campaign(row, campaign=None, settings=None, status=None, projections=None):
+def augment_row_campaign(row, campaign=None, settings=None, projections=None):
     if campaign:
         row.update({
             'name': campaign.name
         })
 
     if settings:
-        row.update({
-            'archived': settings.archived,
-            'campaign_manager': view_helpers.get_user_full_name_or_email(
-                settings.campaign_manager, default_value=None),
-        })
-
-    if status is not None:
-        row.update({
-            'status': status,
-        })
+        copy_fields_if_exists(['status', 'archived', 'campaign_manager'], settings, row)
 
     if projections is not None:
         row.update({
@@ -169,25 +147,17 @@ def augment_row_campaign(row, campaign=None, settings=None, status=None, project
         })
 
 
-def augment_row_ad_group(row, ad_group=None, settings=None, status=None, other_settings=None):
+def augment_row_ad_group(row, ad_group=None, settings=None, base_level_settings=None):
     if ad_group:
         row.update({
             'name': ad_group.name,
         })
 
     if settings:
-        row.update({
-            'archived': settings.archived,
-        })
+        copy_fields_if_exists(['archived', 'status', 'state'], settings, row)
 
-    if status is not None:
-        row.update({
-            'status': status,
-            'state': status,
-        })
-
-    if other_settings is not None:
-        row.update(other_settings)
+    if base_level_settings:
+        copy_fields_if_exists(['campaign_stop_inactive', 'campaign_has_available_budget'], base_level_settings, row)
 
 
 def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, is_demo=None, status_per_source=None):
