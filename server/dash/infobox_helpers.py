@@ -473,8 +473,8 @@ def _filter_user_by_account_type(users, filtered_account_types):
         .values_list('account_id', flat=True)
 
     return users.filter(
-        models.Q(account_id__in=filtered_latest_account_settings) |
-        models.Q(groups__account_id__in=filtered_latest_account_settings)
+        models.Q(account__id__in=filtered_latest_account_settings) |
+        models.Q(groups__account__id__in=filtered_latest_account_settings)
     )
 
 
