@@ -174,7 +174,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         totals = None
         if totals_thread is not None:
             totals_thread.join()
-            totals = totals_thread.result
+            totals = totals_thread.get_result()
 
         report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
@@ -242,7 +242,7 @@ class AccountBreakdown(api_common.BaseApiView):
         totals = None
         if totals_thread is not None:
             totals_thread.join()
-            totals = totals_thread.result
+            totals = totals_thread.get_result()
 
         report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
@@ -311,7 +311,7 @@ class CampaignBreakdown(api_common.BaseApiView):
         totals = None
         if totals_thread is not None:
             totals_thread.join()
-            totals = totals_thread.result
+            totals = totals_thread.get_result()
 
         report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
@@ -384,7 +384,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
         totals = None
         if totals_thread is not None:
             totals_thread.join()
-            totals = totals_thread.result
+            totals = totals_thread.get_result()
 
         extras = {}
         if breakdown == ['content_ad_id']:

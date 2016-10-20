@@ -27,10 +27,13 @@ class MockAsyncFunction(object):
 
     def __init__(self, func):
         self.func = func
-        self.result = None
+        self._result = None
+
+    def get_result(self):
+        return self._result
 
     def start(self):
-        self.result = self.func()
+        self._result = self.func()
 
     def join(self):
         pass
@@ -55,8 +58,19 @@ class AsyncFunction(Thread):
     def __init__(self, func):
         super(AsyncFunction, self).__init__()
         self.func = func
-        self.result = None
+        self._result = None
+        self._exception = None
+
+    def get_result(self):
+        if self._exception:
+            raise self._exception
+        return self._result
 
     def run(self):
-        self.result = self.func()
-        connection.close()
+        try:
+            self._result = self.func()
+        except Exception as e:
+            self._exception = e
+            logger.exception(e)
+        finally:
+            connection.close()

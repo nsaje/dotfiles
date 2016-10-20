@@ -103,20 +103,20 @@ def query_all(breakdown, constraints, parents, goals, order, offset, limit, use_
         t_touchpoints.start()
 
     t_base.join()
-    base_rows = t_base.result
+    base_rows = t_base.get_result()
 
     t_yesterday.join()
-    yesterday_rows = t_yesterday.result
+    yesterday_rows = t_yesterday.get_result()
 
     conversions_rows = []
     if t_conversions is not None:
         t_conversions.join()
-        conversions_rows = t_conversions.result
+        conversions_rows = t_conversions.get_result()
 
     touchpoint_rows = []
     if t_touchpoints is not None:
         t_touchpoints.join()
-        touchpoint_rows = t_touchpoints.result
+        touchpoint_rows = t_touchpoints.get_result()
 
     rows = newbase.calculate_stats(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversions_rows, goals)
 
@@ -142,30 +142,33 @@ def query_all_for_rows(rows, breakdown, constraints, parents, goals, use_publish
     t_conversions = None
     if goals.conversion_goals:
         sql, params = newbase.prepare_base_level_conversions_query(breakdown, constraints, parents, use_publishers_view)
-        t_conversions = threads.AsyncFunction(partial(execute_query, sql, params, breakdown, extra_name='__conversions'))
+        t_conversions = threads.AsyncFunction(
+            partial(execute_query, sql, params, breakdown, extra_name='__conversions'))
         t_conversions.start()
 
     t_touchpoints = None
     if goals.pixels:
-        sql, params = newbase.prepare_base_level_touchpoint_conversions_query(breakdown, constraints, parents, use_publishers_view)
-        t_touchpoints = threads.AsyncFunction(partial(execute_query, sql, params, breakdown, extra_name='__touchpoints'))
+        sql, params = newbase.prepare_base_level_touchpoint_conversions_query(
+            breakdown, constraints, parents, use_publishers_view)
+        t_touchpoints = threads.AsyncFunction(
+            partial(execute_query, sql, params, breakdown, extra_name='__touchpoints'))
         t_touchpoints.start()
 
     t_base.join()
-    base_rows = t_base.result
+    base_rows = t_base.get_result()
 
     t_yesterday.join()
-    yesterday_rows = t_yesterday.result
+    yesterday_rows = t_yesterday.get_result()
 
     conversions_rows = []
     if t_conversions is not None:
         t_conversions.join()
-        conversions_rows = t_conversions.result
+        conversions_rows = t_conversions.get_result()
 
     touchpoint_rows = []
     if t_touchpoints is not None:
         t_touchpoints.join()
-        touchpoint_rows = t_touchpoints.result
+        touchpoint_rows = t_touchpoints.get_result()
 
     stats_rows = newbase.calculate_stats(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversions_rows, goals)
 

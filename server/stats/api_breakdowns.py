@@ -88,7 +88,7 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
                 str_w_stats = stats_rows
             else:
                 structure_thread.join()
-                str_w_stats = structure_thread.result
+                str_w_stats = structure_thread.get_result()
 
             dash_rows = dash.dashapi.api_breakdowns.query_async_get_results_for_rows(
                 queries, stats_rows, breakdown, parents, order, offset, limit, str_w_stats)

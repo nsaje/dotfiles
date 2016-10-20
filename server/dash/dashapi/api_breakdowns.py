@@ -40,7 +40,7 @@ def query_async_get_results(query_threads, order=None, offset=None, limit=None):
     rows = []
     for thread in query_threads:
         thread.join()
-        thread_rows = thread.result['rows']
+        thread_rows = thread.get_result()['rows']
 
         if order:
             thread_rows = sort_helper.sort_rows_by_order_and_archived(thread_rows, order)
@@ -65,9 +65,9 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
     for thread in query_threads:
         thread.join()
 
-        parent = thread.result['parent']
-        loader = thread.result['loader']
-        dash_rows = thread.result['rows']
+        parent = thread.get_result()['parent']
+        loader = thread.get_result()['loader']
+        dash_rows = thread.get_result()['rows']
 
         parent_id_tuple = stats.helpers.get_breakdown_id_tuple(parent, parent_breakdown)
         stat_rows = rows_by_parent[parent_id_tuple]
