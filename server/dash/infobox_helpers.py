@@ -513,7 +513,7 @@ def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
         .filter_selfmanaged()
 
     users = zemauth.models.User.objects.all().filter(
-        pk__in=[action.created_by.id for action in actions])\
+        pk__in=actions.values_list('created_by_id', flat=True))\
         .filter_by_agencies(filtered_agencies)
     filtered_users = _filter_user_by_account_type(users, filtered_account_types)
     return actions.filter(created_by__in=filtered_users).count()
