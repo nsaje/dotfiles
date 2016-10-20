@@ -54,12 +54,12 @@
                             {{ audience.createdDt | date:'MMM d, y h:mm:ss a' }}
                         </td>
                         <td class="text-right">
-                            <a tabindex="-1" href="#" class="btn btn-default btn-big" ng-click="ctrl.openAudienceModal(audience.id)">Edit</a>
-                            <a class="archive-button btn btn-default btn-big" ng-if="!audience.archived"  ng-class="{'disabled': ctrl.archiveRequestInProgress[audience.id]}" ng-click="ctrl.archiveAudience(audience.id)">
+                            <a tabindex="-1" href="#" class="btn btn-default btn-small" ng-click="ctrl.openAudienceModal(audience.id)">Edit</a>
+                            <a class="archive-button btn btn-default btn-small" ng-if="!audience.archived"  ng-class="{'disabled': ctrl.archiveRequestInProgress[audience.id]}" ng-click="ctrl.archiveAudience(audience.id)">
                                 <span class="loader-image" ng-show="ctrl.archiveRequestInProgress[audience.id]"></span><span ng-show="!ctrl.archiveRequestInProgress[audience.id]">Archive</span>
                             </a>
     
-                            <a class="restore-button btn btn-default btn-big" ng-if="audience.archived" ng-class="{'disabled': ctrl.restoreRequestInProgress[audience.id]}" ng-click="ctrl.restoreAudience(audience.id)">
+                            <a class="restore-button btn btn-default btn-small" ng-if="audience.archived" ng-class="{'disabled': ctrl.restoreRequestInProgress[audience.id]}" ng-click="ctrl.restoreAudience(audience.id)">
                                 <span class="loader-image" ng-show="ctrl.restoreRequestInProgress[audience.id]"></span><span ng-show="!ctrl.restoreRequestInProgress[audience.id]">Restore</span>
                             </a>
                         </td>

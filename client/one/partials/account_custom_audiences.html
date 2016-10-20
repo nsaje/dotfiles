@@ -1,4 +1,15 @@
 <div class="page page-account-custom-audiences">
     <div><zem-custom-audiences-list account-id="accountId" api="api"></zem-custo-audiences-list></div>
-    <button type="button" class="btn btn-default" ng-click="openAudienceModal()">Add Custom Audience</button>
+    <button type="button" class="btn btn-default" ng-disabled="!audiencePixel" ng-click="openAudienceModal()">Add Custom Audience</button>
+
+    <div ng-if="!audiencePixel">
+        Please first define the pixel to build custom audiences from (in Settings tab). If you already have the pixel created there, click Edit and set it as audience building pixel.
+    </div>
+
+    <div>
+        <zem-conversion-pixels
+            zem-account="account"
+            zem-has-permission="hasPermission"
+            zem-is-permission-internal="isPermissionInternal" />
+    </div>
 </div>

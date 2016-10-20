@@ -12,24 +12,32 @@
                 <input type="text" zem-focus-select id="name-input" class="form-control" ng-model="pixel.name" ng-focus="clearError()" ng-change="clearError()" />
             </div>
         </div>
-        <div class="form-group" ng-class="{'has-error': !!error && !!errorMessage}">
-            <label for="outbrain-sync-input" class="col-xs-4 control-label">
-                Sync to Outbrain
-                <zem-help-popover content="Sync events from this pixel to Outbrain" placement="bottom"></zem-help-popover>
+
+        <div class="form-group" ng-class="{'has-error': !!error && !!errorMessage}" ng-if="hasPermission('zemauth.account_custom_audiences_view')">
+            <label for="audience-enabled-input" class="col-xs-4 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.account_custom_audiences_view')" popover-placement="right"></zem-internal-feature>
+                Build custom audiences from this pixel
             </label>
-            <div class="col-xs-8">
-            	<div class="checkbox-no-text">
-                	<input type="checkbox" id="outbrain-sync-input" ng-model="pixel.outbrainSync" ng-focus="clearError()" ng-change="clearError()" />
-                </div>
-                <div class="description small m-t-xs m-b-none" ng-if="outbrainPixel && outbrainPixel.id != pixel.id">
-                    Only one pixel can be synced with Outbrain.<br>Currently this pixel is: {{ outbrainPixel.name }}.
-                </div>
+            <div class="col-xs-8 checkbox-no-text">
+                <input type="checkbox" id="audience-enabled-input" class="form-control" ng-model="pixel.audienceEnabled" ng-disabled="!!audiencePixel" ng-focus="clearError()" ng-change="clearError()" />
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="hasPermission('zemauth.account_custom_audiences_view')">
+            <div class="col-xs-12 notice" ng-if="!audiencePixel">
+                Only one pixel can be used for building custom audiences. This choice is permanent. If you want to change this, please contact your Account Manager.
+            </div>
+
+            <div class="col-xs-12 notice" ng-if="audiencePixel && audiencePixel.id != pixel.id">
+                Only one pixel can be used for building custom audiences. You have already set pixel {{ audiencePixel.name }} for audience building, if you want to change this, please contact your Account Manager.
             </div>
         </div>
 
         <div class="form-group">
             <div class="col-xs-12 notice">
-                The pixel should be included in the web page at the point of conversion.
+                <h5>Where do I place my pixel on my site?</h5>
+                <p>Pixels need to be properly placed in order to measure goals effectively. We recommend placing your pixel on the confirmation page which is shown to a person after the desired action is performed.
+                </p>
             </div>
         </div>
         <div class="modal-footer">

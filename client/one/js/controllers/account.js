@@ -9,7 +9,7 @@ angular.module('one.legacy').controller('AccountCtrl', ['$scope', '$state', 'zem
             {heading: 'Settings', route: 'main.accounts.settings', active: false, hidden: !$scope.hasPermission('zemauth.account_account_view') || ($scope.account && $scope.account.archived === true), internal: $scope.isPermissionInternal('zemauth.account_account_view')},
             {heading: 'History', route: 'main.accounts.history', active: false, hidden: !$scope.hasPermission('zemauth.account_history_view') || ($scope.account && $scope.account.archived === true), internal: $scope.isPermissionInternal('zemauth.account_history_view')},
             {heading: 'Settings', route: 'main.accounts.archived', active: false, hidden: $scope.hasPermission('zemauth.account_account_view') || !$scope.account || !$scope.account.archived === true, internal: false},
-            {heading: 'Custom Audiences', route: 'main.accounts.customAudiences', active: false, hidden: !$scope.hasPermission('zemauth.account_custom_audiences_view'), internal: $scope.isPermissionInternal('zemauth.account_custom_audiences_view')},
+            {heading: 'Pixels & Audiences', route: 'main.accounts.customAudiences', active: false, hidden: !$scope.hasPermission('zemauth.account_custom_audiences_view'), internal: $scope.isPermissionInternal('zemauth.account_custom_audiences_view')},
             {heading: 'Credit', route: 'main.accounts.credit', active: false, hidden: !$scope.hasPermission('zemauth.account_credit_view') || ($scope.account && $scope.account.archived === true), internal: true},
             {heading: 'Reports', route: 'main.accounts.scheduled_reports', active: false, hidden: ($scope.account && $scope.account.archived === true), internal: false},
         ];

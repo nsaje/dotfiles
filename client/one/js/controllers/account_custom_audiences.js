@@ -1,8 +1,9 @@
 /*globals angular*/
 'use strict';
 
-angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', ['$scope', '$state', '$uibModal', function ($scope, $state, $uibModal) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', ['$scope', '$state', '$uibModal', 'api', function ($scope, $state, $uibModal, api) { // eslint-disable-line max-len
     $scope.accountId = $state.params.id;
+    $scope.audiencePixel = null;
     $scope.api = {
         refreshAudiences: undefined,
     };
@@ -24,6 +25,32 @@ angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', ['$scope',
             }
         });
     };
+
+    $scope.getAudiencePixel = function () {
+        api.conversionPixel.list($scope.accountId, true).then(
+            function (data) {
+                if (data.rows) {
+                    var audiencePixels = data.rows.filter(function (pixel) {
+                        return pixel.audienceEnabled;
+                    });
+
+                    if (audiencePixels.length > 0) {
+                        audiencePixels[0].id = audiencePixels[0].id.toString();
+                        $scope.audiencePixel = audiencePixels[0];
+                    }
+                }
+            },
+            function (data) {
+                return;
+            }
+        );
+    };
+
+    function init () {
+        $scope.getAudiencePixel();
+    }
+
+    init();
 
     $scope.setActiveTab();
 }]);

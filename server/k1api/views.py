@@ -88,7 +88,7 @@ class AccountsView(K1APIView):
                     'id': pixel.id,
                     'name': pixel.name,
                     'slug': pixel.slug,
-                    'outbrain_sync': pixel.outbrain_sync,
+                    'audience_enabled': pixel.audience_enabled,
                     'source_pixels': source_pixels,
                 }
                 pixels.append(pixel_dict)
@@ -170,7 +170,7 @@ class SourcePixelsView(K1APIView):
         conversion_pixel = dash.models.ConversionPixel.objects.get(id=pixel_id)
 
         if source_type == 'outbrain':
-            self._update_outbrain_sync_pixel(conversion_pixel.account, data)
+            self._update_outbrain_pixel(conversion_pixel.account, data)
         else:
             self._create_source_pixel(conversion_pixel, source_type, data)
             self._propagate_pixels_to_r1(pixel_id)
@@ -196,13 +196,18 @@ class SourcePixelsView(K1APIView):
         source_pixel.source_pixel_id = data['source_pixel_id']
         source_pixel.save()
 
-    def _update_outbrain_sync_pixel(self, account, data):
-        outbrain_sync_pixels = dash.models.ConversionPixel.objects.filter(account_id=account.id, outbrain_sync=True)
-        if len(outbrain_sync_pixels) > 1:
-            ids = [p['id'] for p in outbrain_sync_pixels]
-            return self.response_error('More than 1 pixel with set outbrain_sync: {}'.format(ids))
+    def _update_outbrain_pixel(self, account, data):
+        pixels = dash.models.ConversionPixel.objects.\
+            filter(account_id=account.id).\
+            filter(audience_enabled=True)
+        if not pixels:
+            return
 
-        conversion_pixel = outbrain_sync_pixels[0]
+        if len(pixels) > 1:
+            msg = 'More than 1 pixel enabled for audience building for account {}'.format(account.id)
+            return self.response_error(msg)
+
+        conversion_pixel = pixels[0]
         r1_pixels_to_sync = []
 
         source_type_pixels = dash.models.SourceTypePixel.objects.filter(

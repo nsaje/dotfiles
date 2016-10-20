@@ -74,7 +74,7 @@ describe('zemConversionPixels', function () {
 
     describe('editConversionPixel', function () {
         it('opens a modal window', function () {
-            isolate.editConversionPixel({id: 1, name: 'test', outbrainSync: true}).result
+            isolate.editConversionPixel({id: 1, name: 'test', audienceEnabled: true}).result
                 .catch(function (error) {
                     expect(error).toBeUndefined();
                 });
@@ -88,10 +88,10 @@ describe('zemConversionPixels', function () {
             spyOn($uibModal, 'open').and.returnValue(fakeModal);
 
             var modalInstance = isolate.editConversionPixel(isolate.conversionPixels[0]);
-            modalInstance.close({id: 3, name: 'New Name', outbrainSync: true});
+            modalInstance.close({id: 3, name: 'New Name', audienceEnabled: true});
 
             expect(isolate.conversionPixels).toEqual([
-                {id: 3, name: 'New Name', archived: true, outbrainSync: true}
+                {id: 3, name: 'New Name', archived: true, audienceEnabled: true}
             ]);
         });
     });

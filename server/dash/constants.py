@@ -1688,7 +1688,7 @@ class HistoryActionType(ConstantBase):
     AUDIENCE_ARCHIVE = 19
     AUDIENCE_RESTORE = 20
     AUDIENCE_UPDATE = 22
-    CONVERSION_PIXEL_OUTBRAIN_SYNC = 21
+    CONVERSION_PIXEL_AUDIENCE_ENABLED = 21
 
     _VALUES = {
         GOAL_CHANGE: 'Change Campaign Goal',
@@ -1712,7 +1712,7 @@ class HistoryActionType(ConstantBase):
         AUDIENCE_ARCHIVE: 'Archive custom audience',
         AUDIENCE_RESTORE: 'Restore custom audience',
         AUDIENCE_UPDATE: 'Update custom audience',
-        CONVERSION_PIXEL_OUTBRAIN_SYNC: 'Sync Conversion Pixel to Outbrain',
+        CONVERSION_PIXEL_AUDIENCE_ENABLED: 'Enable pixel for building audiences',
     }
 
 

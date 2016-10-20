@@ -3017,7 +3017,7 @@ class ConversionPixel(models.Model):
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
     slug = models.CharField(blank=False, null=False, max_length=32)
     archived = models.BooleanField(default=False)
-    outbrain_sync = models.BooleanField(default=False)
+    audience_enabled = models.BooleanField(default=False)
 
     last_sync_dt = models.DateTimeField(
         default=datetime.datetime.utcnow, blank=True, null=True)

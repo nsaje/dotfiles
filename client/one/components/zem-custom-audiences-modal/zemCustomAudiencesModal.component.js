@@ -14,12 +14,10 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         vm.audienceId = vm.resolve.audienceId;
         vm.readonly = vm.resolve.readonly;
 
-        vm.listPixelsRequestInProgress = false;
         vm.postRequestInProgress = false;
         vm.putRequestInProgress = false;
         vm.getRequestInProgress = false;
-        vm.pixels = [];
-        vm.outbrainPixel = null;
+        vm.pixel = null;
         vm.rules = [{id: 'visit', name: 'Anyone who visited your website'}, {id: 'referer', name: 'People who visited specific web pages'}];
         vm.refererRules = [{id: 'contains', name: 'URL contains'}, {id: 'startsWith', name: 'URL equals'}];
         vm.ttlDays = [{value: 7, name: '7'}, {value: 30, name: '30'}, {value: 90, name: '90'}, {value: 365, name: '365'}];
@@ -29,7 +27,6 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         vm.selectedRefererRuleStartsWithValue = '';
         vm.selectedRefererRuleContainsValue = '';
         vm.selectedName = '';
-        vm.selectedPixelId = null;
         vm.selectedTtl = null;
 
         vm.errors = {};
@@ -57,34 +54,29 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
             return false;
         };
 
-        vm.getPixels = function () {
-            vm.listPixelsRequestInProgress = true;
-
-            api.conversionPixel.list(vm.accountId).then(
+        vm.getPixel = function (pixelId, audienceOnly) {
+            api.conversionPixel.list(vm.accountId, audienceOnly).then(
                 function (data) {
                     if (data.rows) {
-                        var outbrainPixels = data.rows.filter(function (pixel) {
-                            return pixel.outbrainSync;
+                        var audiencePixels = data.rows.filter(function (pixel) {
+                            if (pixelId) {
+                                return pixel.id.toString() === pixelId;
+                            }
+
+                            return pixel.audienceEnabled;
                         });
 
-                        if (outbrainPixels.length > 0) {
-                            vm.outbrainPixel = outbrainPixels[0];
+
+                        if (audiencePixels.length > 0) {
+                            audiencePixels[0].id = audiencePixels[0].id.toString();
+                            vm.pixel = audiencePixels[0];
                         }
-
-                        vm.pixels = data.rows.filter(function (pixel) {
-                            return !pixel.archived;
-                        }).map(function (pixel) {
-                            pixel.id = pixel.id.toString();
-                            return pixel;
-                        });
                     }
                 },
                 function (data) {
                     return;
                 }
-            ).finally(function () {
-                vm.listPixelsRequestInProgress = false;
-            });
+            );
         };
 
         vm.getAudience = function () {
@@ -94,7 +86,6 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
                 function (data) {
                     if (data) {
                         vm.selectedName = data.name;
-                        vm.selectedPixelId = data.pixelId;
                         vm.selectedTtl = data.ttl;
                         if (data.rules) {
                             var rule = data.rules[0];
@@ -114,6 +105,8 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
                                 }
                             }
                         }
+
+                        vm.getPixel(data.pixelId);
                     }
                 },
                 function (data) {
@@ -134,7 +127,7 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
 
             var audience = {
                 name: vm.selectedName,
-                pixel_id: vm.selectedPixelId,
+                pixel_id: vm.pixel.id,
                 ttl: vm.selectedTtl,
             };
             var selectedRuleType = null;
@@ -201,9 +194,10 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         };
 
         function init () {
-            vm.getPixels();
             if (vm.audienceId) {
                 vm.getAudience(vm.audienceId);
+            } else {
+                vm.getPixel();
             }
         }
 

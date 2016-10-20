@@ -15,22 +15,11 @@
 
         <div class="form-group" ng-class="{'has-error': !!ctrl.errors.pixelId}">
              <label for="zem-custom-audience-modal-pixie-select" class="col-xs-4 control-label">
-                Choose pixel
+                Pixel
                 <zem-help-popover content="The pixel that is the source of this traffic." placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
             <div class="col-xs-8">
-                <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-pixie-select" class="form-control" ng-model="ctrl.selectedPixelId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('pixelId')">
-                    <ui-select-match placeholder="Select Pixel">{{ $select.selected.name }}</ui-select-match>
-                    <ui-select-choices repeat="pixel.id as pixel in ctrl.pixels">
-                        {{ pixel.name }}
-                    </ui-select-choices>
-                </ui-select>
-                <div class="description small m-t-xs m-b-none" ng-if="ctrl.selectedPixelId && ctrl.outbrainPixel && ctrl.outbrainPixel.id != ctrl.selectedPixelId">
-                    This audience will not be synced to Outbrain because only pixel "{{ ctrl.outbrainPixel.name }}" <span ng-if="ctrl.outbrainPixel.archived">(Archived)</span> is synced to Outbrain.
-                </div>
-                <div class="description small m-t-xs m-b-none" ng-if="ctrl.selectedPixelId && !ctrl.outbrainPixel">
-                    This audience will not be synced to Outbrain because no pixel is synced to Outbrain.
-                </div>
+                <input type="text" class="form-control" ng-model="ctrl.pixel.name" ng-readonly="true" />
                 <label ng-repeat="error in ctrl.errors.pixelId" class="control-label error">{{ error }}</label>
             </div>
         </div>

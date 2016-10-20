@@ -40,9 +40,9 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
                     controller: 'AddConversionPixelModalCtrl',
                     scope: $scope,
                     resolve: {
-                        outbrainPixel: function () {
+                        audiencePixel: function () {
                             var pixies = $scope.conversionPixels.filter(function (pixie) {
-                                return pixie.outbrainSync;
+                                return pixie.audienceEnabled;
                             });
                             return pixies.length > 0 ? pixies[0] : null;
                         }
@@ -50,10 +50,10 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
                 });
 
                 modalInstance.result.then(function (conversionPixel) {
-                    if (conversionPixel.outbrainSync) {
+                    if (conversionPixel.audienceEnabled) {
                         $scope.conversionPixels.map(function (pixie) {
-                            if (pixie.outbrainSync) {
-                                pixie.outbrainSync = false;
+                            if (pixie.audienceEnabled) {
+                                pixie.audienceEnabled = false;
                             }
                         });
                     }
@@ -70,11 +70,11 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
                     scope: $scope,
                     resolve: {
                         pixel: function () {
-                            return {id: pixel.id, name: pixel.name, outbrainSync: pixel.outbrainSync};
+                            return {id: pixel.id, name: pixel.name, audienceEnabled: pixel.audienceEnabled};
                         },
-                        outbrainPixel: function () {
+                        audiencePixel: function () {
                             var pixies = $scope.conversionPixels.filter(function (pixie) {
-                                return pixie.outbrainSync;
+                                return pixie.audienceEnabled;
                             });
                             return pixies.length > 0 ? pixies[0] : null;
                         }
@@ -85,7 +85,7 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
                     $scope.conversionPixels.forEach(function (pixel) {
                         if (pixel.id === conversionPixel.id) {
                             pixel.name = conversionPixel.name;
-                            pixel.outbrainSync = conversionPixel.outbrainSync;
+                            pixel.audienceEnabled = conversionPixel.audienceEnabled;
                         }
                     });
                 });

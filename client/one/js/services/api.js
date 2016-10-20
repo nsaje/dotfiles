@@ -1696,13 +1696,16 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                 name: conversionPixel.name,
                 url: conversionPixel.url,
                 archived: conversionPixel.archived,
-                outbrainSync: conversionPixel.outbrain_sync,
+                audienceEnabled: conversionPixel.audience_enabled,
             };
         }
 
-        this.list = function (accountId) {
+        this.list = function (accountId, audienceEnabledOnly) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/conversion_pixels/';
+            if (audienceEnabledOnly) {
+                url = url + '?audience_enabled_only=1';
+            }
 
             $http.get(url).
                 success(function (data, status) {
@@ -1720,12 +1723,12 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
             return deferred.promise;
         };
 
-        this.post = function (accountId, name, outbrainSync) {
+        this.post = function (accountId, name, audienceEnabled) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/conversion_pixels/';
             var config = {
                 name: name,
-                outbrain_sync: outbrainSync,
+                audience_enabled: audienceEnabled,
             };
 
             $http.post(url, config).
@@ -1767,7 +1770,7 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         this.edit = function (conversionPixel) {
             var data = {
                 name: conversionPixel.name,
-                outbrain_sync: conversionPixel.outbrainSync,
+                audience_enabled: conversionPixel.audienceEnabled,
             };
 
             return this.put(conversionPixel.id, data);

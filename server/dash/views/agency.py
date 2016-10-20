@@ -602,14 +602,20 @@ class ConversionPixel(api_common.BaseApiView):
         account_id = int(account_id)
         account = helpers.get_account(request.user, account_id)
 
+        audience_enabled_only = request.GET.get('audience_enabled_only', '') == '1'
+
+        pixels = models.ConversionPixel.objects.filter(account=account)
+        if audience_enabled_only:
+            pixels = pixels.filter(audience_enabled=True)
+
         rows = [
             {
-                'id': conversion_pixel.id,
-                'name': conversion_pixel.name,
-                'url': conversion_pixel.get_url(),
-                'outbrain_sync': conversion_pixel.outbrain_sync,
-                'archived': conversion_pixel.archived
-            } for conversion_pixel in models.ConversionPixel.objects.filter(account=account)
+                'id': pixel.id,
+                'name': pixel.name,
+                'url': pixel.get_url(),
+                'audience_enabled': pixel.audience_enabled,
+                'archived': pixel.archived
+            } for pixel in pixels
         ]
 
         return self.create_api_response({
@@ -618,6 +624,8 @@ class ConversionPixel(api_common.BaseApiView):
         })
 
     def post(self, request, account_id):
+        account_id = int(account_id)
+
         account = helpers.get_account(request.user, account_id)  # check access to account
 
         try:
@@ -626,7 +634,7 @@ class ConversionPixel(api_common.BaseApiView):
             raise exc.ValidationError()
 
         name = data.get('name')
-        resource = {'name': name, 'outbrain_sync': data.get('outbrain_sync')}
+        resource = {'name': name, 'audience_enabled': data.get('audience_enabled')}
 
         form = forms.ConversionPixelForm(resource)
         if not form.is_valid():
@@ -642,9 +650,21 @@ class ConversionPixel(api_common.BaseApiView):
             conversion_pixel = models.ConversionPixel.objects.create(
                 account_id=account_id,
                 name=name,
-                outbrain_sync=form.cleaned_data['outbrain_sync'] or False
+                audience_enabled=form.cleaned_data['audience_enabled'] or False
             )
-            self._update_outbrain_sync_pixel(conversion_pixel)
+
+            # This check is done after insertion because we use READ COMMITED
+            # isolation level.
+            if conversion_pixel.audience_enabled:
+                audience_pixels = models.ConversionPixel.objects.\
+                    filter(account_id=account_id).\
+                    filter(audience_enabled=True).\
+                    exclude(pk=conversion_pixel.id)
+                if audience_pixels:
+                    msg = "This pixel cannot be used for building custom audiences because another pixel is already used: {}.".format(audience_pixels[0].name)
+                    raise exc.ValidationError(errors={'audience_enabled': msg})
+
+                k1_helper.update_account(account_id)
 
             changes_text = u'Added conversion pixel named {}.'.format(name)
             account.write_history(
@@ -653,14 +673,13 @@ class ConversionPixel(api_common.BaseApiView):
                 action_type=constants.HistoryActionType.CONVERSION_PIXEL_CREATE)
 
         email_helper.send_account_pixel_notification(account, request)
-        k1_helper.update_account(int(account_id))
 
         return self.create_api_response({
             'id': conversion_pixel.id,
             'name': conversion_pixel.name,
             'url': conversion_pixel.get_url(),
             'archived': conversion_pixel.archived,
-            'outbrain_sync': conversion_pixel.outbrain_sync,
+            'audience_enabled': conversion_pixel.audience_enabled,
         })
 
     def put(self, request, conversion_pixel_id):
@@ -684,58 +703,50 @@ class ConversionPixel(api_common.BaseApiView):
             raise exc.ValidationError(errors=dict(form.errors))
 
         with transaction.atomic():
+            self._write_audience_enabled_change_to_history(
+                request, account, conversion_pixel, form.cleaned_data)
+            conversion_pixel.audience_enabled = form.cleaned_data['audience_enabled']
+
             if 'archived' in form.cleaned_data and request.user.has_perm('zemauth.archive_restore_entity'):
                 self._write_archived_change_to_history(
                     request, account, conversion_pixel, form.cleaned_data)
                 conversion_pixel.archived = form.cleaned_data['archived']
 
+                if conversion_pixel.audience_enabled and conversion_pixel.archived:
+                    raise exc.ValidationError(errors={'audience_enabled': 'Cannot archive pixel used for building custom audiences.'})
+
             self._write_name_change_to_history(
                 request, account, conversion_pixel, form.cleaned_data)
+
             conversion_pixel.name = form.cleaned_data['name']
-
-            self._write_outbrain_sync_change_to_history(request, account, conversion_pixel, form.cleaned_data)
-            conversion_pixel.outbrain_sync = form.cleaned_data['outbrain_sync']
-
             conversion_pixel.save()
 
-            self._update_outbrain_sync_pixel(conversion_pixel)
+            # This check is done after insertion because we use READ COMMITED
+            # isolation level.
+            if conversion_pixel.audience_enabled:
+                audience_pixels = models.ConversionPixel.objects.\
+                    filter(account_id=conversion_pixel.account_id).\
+                    filter(audience_enabled=True).\
+                    exclude(pk=conversion_pixel.id)
+                if audience_pixels:
+                    msg = "This pixel cannot be used for building custom audiences because another pixel is already used: {}.".format(audience_pixels[0].name)
+                    raise exc.ValidationError(errors={'audience_enabled': msg})
 
-        k1_helper.update_account(conversion_pixel.account.id)
+                k1_helper.update_account(conversion_pixel.account.id)
+                self._r1_upsert_audiences(conversion_pixel)
 
         return self.create_api_response({
             'id': conversion_pixel.id,
             'name': conversion_pixel.name,
             'url': conversion_pixel.get_url(),
             'archived': conversion_pixel.archived,
-            'outbrain_sync': conversion_pixel.outbrain_sync,
+            'audience_enabled': conversion_pixel.audience_enabled,
         })
 
-    def _update_outbrain_sync_pixel(self, conversion_pixel):
-        r1_pixels_to_sync = [conversion_pixel.id]
-
-        # if outbrain sync enabled
-        #   find other pixels with outbrain sync enabled and disabled them
-        #   connect source type pixel to new pixel
-        if conversion_pixel.outbrain_sync:
-            outbrain_sync_pixels = (models.ConversionPixel.objects.filter(account_id=conversion_pixel.account.id,
-                                                                          outbrain_sync=True)
-                                                                  .exclude(id=conversion_pixel.id))
-            for pixel in outbrain_sync_pixels:
-                pixel.outbrain_sync = False
-                pixel.save()
-                r1_pixels_to_sync.append(pixel.id)
-
-            source_type_pixels = models.SourceTypePixel.objects.filter(pixel__in=r1_pixels_to_sync,
-                                                                       source_type__type=constants.SourceType.OUTBRAIN)
-            if len(source_type_pixels) > 1:
-                logger.exception('More than 1 SourceTypePixel for ConversionPixels with ids {}', r1_pixels_to_sync)
-
-            if source_type_pixels:
-                source_type_pixels[0].pixel = conversion_pixel
-                source_type_pixels[0].save()
-
-        # sync all audiences on edited pixels with R1
-        audiences = models.Audience.objects.filter(pixel_id__in=r1_pixels_to_sync, archived=False)
+    def _r1_upsert_audiences(self, conversion_pixel):
+        audiences = models.Audience.objects.\
+            filter(pixel_id=conversion_pixel.id).\
+            filter(archived=False)
         for audience in audiences:
             redirector_helper.upsert_audience(audience)
 
@@ -767,14 +778,12 @@ class ConversionPixel(api_common.BaseApiView):
             action_type=constants.HistoryActionType.CONVERSION_PIXEL_RENAME
         )
 
-    def _write_outbrain_sync_change_to_history(self, request, account, conversion_pixel, data):
-        if data['outbrain_sync'] == conversion_pixel.outbrain_sync:
-            return
-
-        change_text = u'Sync to Outbrain {}'.format('enabled' if data['outbrain_sync'] else 'disabled')
-        account.write_history(change_text,
-                              user=request.user,
-                              action_type=constants.HistoryActionType.CONVERSION_PIXEL_OUTBRAIN_SYNC)
+    def _write_audience_enabled_change_to_history(self, request, account, conversion_pixel, data):
+        if data['audience_enabled'] and not conversion_pixel.audience_enabled:
+            change_text = u'Pixel {} enabled for building audiences'.format(data['name'])
+            account.write_history(change_text,
+                                  user=request.user,
+                                  action_type=constants.HistoryActionType.CONVERSION_PIXEL_AUDIENCE_ENABLED)
 
 
 class AccountSettings(api_common.BaseApiView):

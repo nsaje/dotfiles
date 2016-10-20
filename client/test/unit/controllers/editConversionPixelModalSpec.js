@@ -2,7 +2,7 @@
 'use strict';
 
 describe('EditConversionPixelModalCtrl', function () {
-    var $scope, api, $q, $timeout, openedDeferred, pixel, outbrainPixel;
+    var $scope, api, $q, $timeout, openedDeferred, pixel, audiencePixel;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -35,18 +35,18 @@ describe('EditConversionPixelModalCtrl', function () {
         pixel = {
             id: 1,
             name: 'Test Name',
-            outbrainSync: false
+            audienceEnabled: false
         };
 
-        outbrainPixel = {
+        audiencePixel = {
             id: 2,
-            name: 'Test Name Outbrain',
-            outbrainSync: true
+            name: 'Test Name Audience',
+            audienceEnabled: true
         };
 
         $controller(
             'EditConversionPixelModalCtrl',
-            {$scope: $scope, api: api, pixel: pixel, outbrainPixel: outbrainPixel}
+            {$scope: $scope, api: api, pixel: pixel, audiencePixel: audiencePixel}
         );
     }));
 
@@ -94,11 +94,11 @@ describe('EditConversionPixelModalCtrl', function () {
             expect($scope.inProgress).toBe(true);
             expect($scope.$close).not.toHaveBeenCalled();
 
-            deferred.resolve({id: 1, name: 'name', archived: false, outbrain_sync: true});
+            deferred.resolve({id: 1, name: 'name', archived: false, audience_enabled: true});
             $scope.$digest();
 
             expect($scope.inProgress).toBe(false);
-            expect($scope.$close).toHaveBeenCalledWith({id: 1, name: 'name', archived: false, outbrain_sync: true});
+            expect($scope.$close).toHaveBeenCalledWith({id: 1, name: 'name', archived: false, audience_enabled: true});
         });
     });
 });

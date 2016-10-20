@@ -139,7 +139,7 @@
         slug: 'test'
         name: 'test'
         archived: false
-        outbrain_sync: true
+        audience_enabled: true
         created_dt: '2015-08-25T09:58:21'
     model: dash.conversionpixel
     pk: 1

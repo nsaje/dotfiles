@@ -486,7 +486,7 @@ class ConversionPixelForm(forms.Form):
             'max_length': 'Name is too long (%(show_value)d/%(limit_value)d).',
         }
     )
-    outbrain_sync = forms.BooleanField(required=False)
+    audience_enabled = forms.BooleanField(required=False)
 
 
 class ConversionGoalForm(forms.Form):
