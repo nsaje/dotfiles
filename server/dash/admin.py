@@ -705,6 +705,9 @@ class IsArchivedFilter(admin.SimpleListFilter):
 
 
 class AdGroupAdmin(admin.ModelAdmin):
+    class Media:
+        css = {'all': ('css/admin/style.css',)}
+
     search_fields = ['name']
     list_display = (
         'name',

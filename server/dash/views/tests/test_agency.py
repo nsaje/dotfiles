@@ -53,6 +53,14 @@ class AdGroupSettingsTest(TestCase):
             }
         }
 
+        self.original_interest_category = constants.InterestCategory
+        constants.InterestCategory._VALUES = {
+            'a': 'Test1',
+            'b': 'Test2',
+            'c': 'Test3',
+            'd': 'Test4'
+        }
+
         self.user = User.objects.get(pk=1)
 
         self.assertFalse(self.user.is_superuser)
@@ -61,6 +69,9 @@ class AdGroupSettingsTest(TestCase):
             account.users.add(self.user)
 
         self.client.login(username=self.user.email, password='secret')
+
+    def tearDown(self):
+        constants.InterestCategory = self.original_interest_category
 
     def test_permissions(self):
         url = reverse('ad_group_settings', kwargs={'ad_group_id': 0})
@@ -162,8 +173,14 @@ class AdGroupSettingsTest(TestCase):
                     'autopilot_optimization_goal': None,
                     'notes': 'Some note',
                     'bluekai_targeting': ["or", "3", "4"],
-                    'interest_targeting': ["a", "b"],
-                    'exclusion_interest_targeting': ["c", "d"],
+                    'interest_targeting': [
+                        {'id': "a", 'name': 'Test1'},
+                        {'id': "b", 'name': 'Test2'}
+                    ],
+                    'exclusion_interest_targeting': [
+                        {'id': "c", 'name': 'Test3'},
+                        {'id': "d", 'name': 'Test4'}
+                    ],
                     'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
                     'redirect_javascript': "alert('a')",
                 },
@@ -293,8 +310,14 @@ class AdGroupSettingsTest(TestCase):
                         'autopilot_optimization_goal': None,
                         'notes': 'Some note',
                         'bluekai_targeting': ["or", "3", "4"],
-                        'interest_targeting': ["a", "b"],
-                        'exclusion_interest_targeting': ["c", "d"],
+                        'interest_targeting': [
+                            {'id': "a", 'name': 'Test1'},
+                            {'id': "b", 'name': 'Test2'}
+                        ],
+                        'exclusion_interest_targeting': [
+                            {'id': "c", 'name': 'Test3'},
+                            {'id': "d", 'name': 'Test4'}
+                        ],
                         'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
                         'redirect_javascript': "alert('a')",
                     }
@@ -383,8 +406,14 @@ class AdGroupSettingsTest(TestCase):
                         'autopilot_optimization_goal': None,
                         'notes': 'Some note',
                         'bluekai_targeting': ["or", "3", "4"],
-                        'interest_targeting': ["a", "b"],
-                        'exclusion_interest_targeting': ["c", "d"],
+                        'interest_targeting': [
+                            {'id': "a", 'name': 'Test1'},
+                            {'id': "b", 'name': 'Test2'}
+                        ],
+                        'exclusion_interest_targeting': [
+                            {'id': "c", 'name': 'Test3'},
+                            {'id': "d", 'name': 'Test4'}
+                        ],
                         'audience_targeting': [1],
                         'exclusion_audience_targeting': [4],
                         'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],

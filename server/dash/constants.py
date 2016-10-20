@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from utils.constant_base import ConstantBase
 from dash import regions
 
@@ -1057,9 +1058,44 @@ class InterestCategory(ConstantBase):
     FUN = "fun"
     RELIGION = "religion"
 
-    @classmethod
-    def get_text(cls, cons):
-        return cons.capitalize()
+    _VALUES = {
+        COMMUNICATION: "Communication Tools",
+        MEN: "Men’s Lifestyle",
+        DATING: "Dating & Relationships",
+        WEATHER: "Weather & Environment",
+        FASHION: "Beauty & Fashion",
+        TRAVEL: "Travel and Leisure",
+        FUN: "Fun & Entertaining Sites",
+        HEALTH: "Health & Fitness",
+        SCIENCE: "Science",
+        TECHNOLOGY: "Technology",
+        CARS: "Automotive",
+        MEDIA: "News",
+        HOME: "Home & Garden",
+        FAMILY: "Family & Parenting",
+        SHOPPING: "Shopping",
+        COUPONS: "Couponing",
+        ENTERTAINMENT: "Arts & Entertainment",
+        HOBBIES: "Hobbies & Interests",
+        RELIGION: "Religion & Spirituality",
+        MUSIC: "Music",
+        FOOD: "Food & Drink",
+        SPANISH: "Spanish Sites",
+        PETS: "Pets",
+        WOMEN: "Women’s Lifestyle",
+        SPORTS: "Sports",
+        FRENCH: "French Sites",
+        POLITICS: "Gov’t & Politics",
+        LAW: "Law",
+        GAMES: "Games & Gaming",
+        FINANCE: "Business & Finance",
+        EDUCATION: "Education",
+        UTILITY: "Software & Services",
+        QUIZZES: "Quizzes",
+        OTHER: "Other",
+        UNKNOWN: "Unknown",
+        FOREIGN: "International Sites"
+    }
 
 
 class PromotionGoal(ConstantBase):

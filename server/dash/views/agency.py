@@ -161,8 +161,10 @@ class AdGroupSettings(api_common.BaseApiView):
                 'exclusion_retargeting_ad_groups': settings.exclusion_retargeting_ad_groups,
                 'notes': settings.notes,
                 'bluekai_targeting': settings.bluekai_targeting,
-                'interest_targeting': settings.interest_targeting,
-                'exclusion_interest_targeting': settings.exclusion_interest_targeting,
+                'interest_targeting': self._get_interest_targeting_dicts(
+                    settings.interest_targeting),
+                'exclusion_interest_targeting': self._get_interest_targeting_dicts(
+                    settings.exclusion_interest_targeting),
                 'audience_targeting': settings.audience_targeting,
                 'exclusion_audience_targeting': settings.exclusion_audience_targeting,
                 'redirect_pixel_urls': settings.redirect_pixel_urls,
@@ -172,6 +174,12 @@ class AdGroupSettings(api_common.BaseApiView):
             }
 
         return result
+
+    def _get_interest_targeting_dicts(self, targeting):
+        if not targeting:
+            return []
+
+        return [{'id': x, 'name': constants.InterestCategory.get_text(x)} for x in targeting]
 
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
