@@ -104,9 +104,9 @@
                     <div class="col-xs-2 device-icon checkbox" ng-repeat='device in settings.targetDevices'>
                         <label class="icon-holder" for="{{ device.name }}">
                             <ng-switch on="device.name">
-                                <img ng-switch-when="Desktop" class="desktop" ng-src="http://localhost:9999/one/images/device-desktop-gray.svg"/>
-                                <img ng-switch-when="Tablet" class="tablet" ng-src="http://localhost:9999/one/images/device-tablet-gray.svg"/>
-                                <img ng-switch-when="Mobile" class="mobile" ng-src="http://localhost:9999/one/images/device-mobile-gray.svg"/>
+                                <img ng-switch-when="Desktop" class="desktop" ng-src="{{ config.static_url }}/one/images/device-desktop-gray.svg"/>
+                                <img ng-switch-when="Tablet" class="tablet" ng-src="{{ config.static_url }}/one/images/device-tablet-gray.svg"/>
+                                <img ng-switch-when="Mobile" class="mobile" ng-src="{{ config.static_url }}/one/images/device-mobile-gray.svg"/>
                             </ng-switch>
                         </label>
                         <label>
