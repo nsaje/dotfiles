@@ -292,7 +292,7 @@
 
             <div class="form-group indented" ng-if="showAutoPilotDailyBudgetInput()" ng-class="{'has-error': !!errors.autopilotBudget}">
                 <label for="autopilot-budget" class="col-xs-2 control-label">
-                    Daily Spend Cap
+                    Ad Group's Daily Spend Cap
                     <zem-help-popover content="Amount of budget Autopilot can operate with on this Ad Group every day." placement="top"></zem-help-popover>
                 </label>
                 <div class="col-xs-2">
@@ -309,7 +309,8 @@
             <div class="form-group indented" ng-if="showAutoPilotDailyBudgetInput()">
                 <div class="col-xs-10">
                     Autopilot will optimize media sources' daily spend caps for <b>{{budgetAutopilotOptimizationGoalText()}}</b>
-                    <zem-help-popover content="To change optimization objective please change Primary Campaign Goal in Campaign Settings." placement="top"></zem-help-popover><br/>
+                    <zem-help-popover content="To change optimization objective please change Primary Campaign Goal in Campaign Settings." placement="top"></zem-help-popover>
+                    and try to hit the ad group's daily spend cap.<br/>
                     <i>{{budgetAutopilotOptimizationCPAGoalText()}}</i>
                 </div>
             </div>
