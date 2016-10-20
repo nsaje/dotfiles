@@ -3,6 +3,7 @@ from django.utils.functional import cached_property
 from django.db.models.query import QuerySet
 
 from automation import campaign_stop
+from zemauth.models import User as ZemUser
 
 from analytics.projections import BudgetProjections
 import stats.helpers
@@ -93,10 +94,14 @@ class AccountsLoader(Loader):
     def settings_map(self):
         settings_qs = models.AccountSettings.objects\
                                             .filter(account_id__in=self.objs_ids)\
-                                            .group_current_settings()\
-                                            .select_related(
-                                                'default_account_manager',
-                                                'default_sales_representative')
+                                            .group_current_settings()
+
+        # workaround because select_related is currently malfunctioned on models that inherit histroymixin
+        # - it doesn't do what its supposed to do
+        user_ids = set(x.default_account_manager_id for x in settings_qs)
+        user_ids |= set(x.default_sales_representative_id for x in settings_qs)
+        user_map = {x.id: x for x in ZemUser.objects.filter(pk__in=user_ids)}
+
         settings_obj_map = {x.account_id: x for x in settings_qs}
         status_map = self._get_status_map()
 
@@ -107,18 +112,16 @@ class AccountsLoader(Loader):
             settings_dict = {
                 'status': status_map[account_id],
                 'archived': False,
-                'default_account_manager': None,
-                'default_sales_representative': None,
+                'default_account_manager': view_helpers.get_user_full_name_or_email(
+                    user_map.get(settings.default_account_manager_id), default_value=None),
+                'default_sales_representative': view_helpers.get_user_full_name_or_email(
+                    user_map.get(settings.default_sales_representative_id), default_value=None),
                 'account_type': constants.AccountType.get_text(constants.AccountType.UNKNOWN),
                 'settings_id': None,  # for debugging purposes, gets removed
             }
             if settings is not None:
                 settings_dict.update({
                     'archived': settings.archived,
-                    'default_account_manager': view_helpers.get_user_full_name_or_email(
-                        settings.default_account_manager, default_value=None),
-                    'default_sales_representative': view_helpers.get_user_full_name_or_email(
-                        settings.default_sales_representative, default_value=None),
                     'account_type': constants.AccountType.get_text(settings.account_type),
                     'settings_id': settings.id,
                 })
