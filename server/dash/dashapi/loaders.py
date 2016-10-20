@@ -112,10 +112,8 @@ class AccountsLoader(Loader):
             settings_dict = {
                 'status': status_map[account_id],
                 'archived': False,
-                'default_account_manager': view_helpers.get_user_full_name_or_email(
-                    user_map.get(settings.default_account_manager_id), default_value=None),
-                'default_sales_representative': view_helpers.get_user_full_name_or_email(
-                    user_map.get(settings.default_sales_representative_id), default_value=None),
+                'default_account_manager': None,
+                'default_sales_representative': None,
                 'account_type': constants.AccountType.get_text(constants.AccountType.UNKNOWN),
                 'settings_id': None,  # for debugging purposes, gets removed
             }
@@ -124,6 +122,10 @@ class AccountsLoader(Loader):
                     'archived': settings.archived,
                     'account_type': constants.AccountType.get_text(settings.account_type),
                     'settings_id': settings.id,
+                    'default_account_manager': view_helpers.get_user_full_name_or_email(
+                        user_map.get(settings.default_account_manager_id), default_value=None),
+                    'default_sales_representative': view_helpers.get_user_full_name_or_email(
+                        user_map.get(settings.default_sales_representative_id), default_value=None),
                 })
 
             settings_map[account_id] = settings_dict
