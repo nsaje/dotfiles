@@ -329,7 +329,7 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
         }
 
         if (checkAllCandidateErrors()) {
-            return 'You need to fix all errors before you can upload batch.';
+            return 'You need to fix all errors before you can upload this batch.';
         }
 
         if (vm.saveErrors && vm.saveErrors.batchName) {
