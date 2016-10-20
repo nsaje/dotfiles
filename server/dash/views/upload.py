@@ -46,16 +46,12 @@ class UploadCsv(api_common.BaseApiView):
         candidates_data = form.cleaned_data['candidates']
         filename = request.FILES['candidates'].name
 
-        with transaction.atomic():
-            batch, candidates = upload.insert_candidates(
-                candidates_data,
-                ad_group,
-                batch_name,
-                filename,
-            )
-
-        for candidate in candidates:
-            upload.invoke_external_validation(candidate, batch)
+        batch, candidates = upload.insert_candidates(
+            candidates_data,
+            ad_group,
+            batch_name,
+            filename,
+        )
 
         candidates_result = upload.get_candidates_with_errors(candidates)
         return self.create_api_response({
@@ -114,7 +110,6 @@ class UploadSave(api_common.BaseApiView):
             except (upload.InvalidBatchStatus, upload.CandidateErrorsRemaining) as e:
                 raise exc.ValidationError(message=e.message)
 
-            upload.create_redirect_ids(content_ads)
             changes_text = 'Imported batch "{}" with {} content ad{}.'.format(
                 batch.name,
                 len(content_ads),

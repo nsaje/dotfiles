@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import defaultdict
 from mock import patch, Mock
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
@@ -37,6 +38,7 @@ invalid_candidate = {
 class InsertCandidatesTestCase(TestCase):
     fixtures = ['test_upload.yaml']
 
+    @patch('utils.lambda_helper.invoke_lambda', Mock())
     def test_insert_candidates(self):
         data = [valid_candidate]
 
@@ -68,6 +70,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual(valid_candidate['primary_tracker_url'], candidate.primary_tracker_url)
         self.assertEqual(valid_candidate['secondary_tracker_url'], candidate.secondary_tracker_url)
 
+    @patch('utils.lambda_helper.invoke_lambda', Mock())
     def test_empty_candidate(self):
         data = [{}]
 
@@ -99,6 +102,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual('', candidate.primary_tracker_url)
         self.assertEqual('', candidate.secondary_tracker_url)
 
+    @patch('utils.lambda_helper.invoke_lambda', Mock())
     def test_automatic_fields(self):
         test_candidate = {
             'url': 'http://zemanta.com/test-content-ad',
@@ -139,8 +143,20 @@ class InsertCandidatesTestCase(TestCase):
 class PersistCandidatesTestCase(TestCase):
     fixtures = ['test_upload.yaml']
 
+    @patch('utils.redirector_helper.insert_redirects_batch')
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    def test_valid_candidates(self, mock_s3helper_put):
+    def test_valid_candidates(self, mock_s3helper_put, mock_insert_redirects_batch):
+        def redirector_response(content_ads):
+            return {
+                str(content_ad.id): {
+                    'redirect': {
+                        'url': content_ad.url,
+                    },
+                    'redirectid': '123456',
+                } for content_ad in content_ads
+            }
+        mock_insert_redirects_batch.side_effect = redirector_response
+
         batch = models.UploadBatch.objects.get(id=2)
         self.assertEqual(1, batch.contentadcandidate_set.count())
         self.assertEqual(0, batch.contentad_set.count())
@@ -157,6 +173,7 @@ class PersistCandidatesTestCase(TestCase):
 
         self.assertEqual(candidate.label, content_ad.label)
         self.assertEqual(candidate.url, content_ad.url)
+        self.assertEqual('123456', content_ad.redirect_id)
         self.assertEqual(candidate.title, content_ad.title)
         self.assertEqual(candidate.display_url, content_ad.display_url)
         self.assertEqual(candidate.description, content_ad.description)
@@ -170,6 +187,7 @@ class PersistCandidatesTestCase(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
+        self.assertTrue(mock_insert_redirects_batch.called)
 
     @patch.object(utils.s3helpers.S3Helper, 'put')
     def test_invalid_candidates(self, mock_s3helper_put):
@@ -320,6 +338,7 @@ class CreateEmptyBatchTestCase(TestCase):
 class GetCandidatesWithErrorsTestCase(TestCase):
     fixtures = ['test_upload.yaml']
 
+    @patch('utils.lambda_helper.invoke_lambda', Mock())
     def test_valid_candidate(self):
         data = [valid_candidate]
 
@@ -349,11 +368,12 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             'label': 'test',
             'image_id': None,
             'image_height': None,
-            'url_status': 1,
-            'image_status': 1,
+            'url_status': constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+            'image_status': constants.AsyncUploadJobStatus.WAITING_RESPONSE,
             'id': candidates[0].id,
         }], result)
 
+    @patch('utils.lambda_helper.invoke_lambda', Mock())
     def test_invalid_candidate(self):
         data = [invalid_candidate]
 
@@ -392,8 +412,8 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             'image_id': None,
             'image_height': None,
             'image_url': 'file://zemanta.com/test-image.jpg',
-            'url_status': 1,
-            'image_status': 1,
+            'url_status': constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+            'image_status': constants.AsyncUploadJobStatus.WAITING_RESPONSE,
             'secondary_tracker_url': 'http://example.com/px2.png',
             'id': candidates[0].id,
         }], result)
@@ -526,7 +546,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(updated_fields, {'display_url': 'new display url 123'})
         self.assertEqual(errors, {'display_url': ['Enter a valid URL.']})
 
-    @patch('dash.upload.invoke_external_validation', Mock())
+    @patch('dash.upload._invoke_external_validation', Mock())
     @patch('dash.image_helper.upload_image_to_s3')
     def test_image_file(self, mock_upload_to_s3):
         mock_upload_to_s3.return_value = 'http://example.com/path/to/image'
@@ -545,7 +565,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(updated_fields, {'image_url': 'http://example.com/path/to/image'})
         self.assertEqual(errors, {})
 
-    @patch('dash.upload.invoke_external_validation', Mock())
+    @patch('dash.upload._invoke_external_validation', Mock())
     @patch('dash.image_helper.upload_image_to_s3')
     def test_invalid_image_file(self, mock_upload_to_s3):
         mock_upload_to_s3.return_value = 'http://example.com/path/to/image'
@@ -587,7 +607,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(self.candidate.ad_group_id, 4)
         self.assertEqual(self.candidate.batch_id, 5)
 
-    @patch('dash.upload.invoke_external_validation')
+    @patch('dash.upload._invoke_external_validation')
     def test_invoke_external_validation(self, mock_invoke):
         upload.update_candidate(self.new_candidate, [], self.candidate.batch)
         self.assertFalse(mock_invoke.called)
@@ -654,8 +674,6 @@ class UploadTest(TestCase):
             'Test batch',
             'test_upload.csv',
         )
-        for candidate in candidates:
-            upload.invoke_external_validation(candidate, batch)
 
         self.assertEqual(mock_lambda.call_count, 2)
 
@@ -747,7 +765,7 @@ class UploadTest(TestCase):
         })
 
         candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
-        self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.PENDING_START)
+        self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
         self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.OK)
 
     def test_process_callback_image_url_pending_start(self, *mocks):
@@ -780,4 +798,4 @@ class UploadTest(TestCase):
 
         candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
         self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
-        self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.PENDING_START)
+        self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)

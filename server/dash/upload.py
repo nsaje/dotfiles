@@ -24,10 +24,14 @@ class CandidateErrorsRemaining(Exception):
     pass
 
 
-@transaction.atomic
 def insert_candidates(candidates_data, ad_group, batch_name, filename, auto_save=False):
-    batch = create_empty_batch(ad_group.id, batch_name, original_filename=filename, auto_save=auto_save)
-    candidates = _create_candidates(candidates_data, ad_group, batch)
+    with transaction.atomic():
+        batch = create_empty_batch(ad_group.id, batch_name, original_filename=filename, auto_save=auto_save)
+        candidates = _create_candidates(candidates_data, ad_group, batch)
+
+    for candidate in candidates:
+        _invoke_external_validation(candidate, batch)
+
     return batch, candidates
 
 
@@ -55,7 +59,7 @@ def _reset_candidate_async_status(candidate):
 
 
 @transaction.atomic
-def invoke_external_validation(candidate, batch):
+def _invoke_external_validation(candidate, batch):
     _reset_candidate_async_status(candidate)
 
     cleaned_urls = _get_cleaned_urls(candidate)
@@ -91,6 +95,8 @@ def persist_candidates(batch):
 
     with transaction.atomic():
         content_ads = _persist_content_ads(batch, cleaned_candidates)
+        _create_redirect_ids(content_ads)
+
         batch.status = constants.UploadBatchStatus.DONE
         batch.save()
         candidates.delete()
@@ -102,7 +108,7 @@ def persist_candidates(batch):
     return content_ads
 
 
-def create_redirect_ids(content_ads):
+def _create_redirect_ids(content_ads):
     redirector_batch = redirector_helper.insert_redirects_batch(content_ads)
     for content_ad in content_ads:
         content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
@@ -222,7 +228,7 @@ def _update_candidate(data, batch, files):
         updated_fields['image_url'] = None
 
     if candidate.has_changed('url') or candidate.has_changed('image_url'):
-        invoke_external_validation(candidate, batch)
+        _invoke_external_validation(candidate, batch)
 
     candidate.save()
     return updated_fields

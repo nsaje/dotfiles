@@ -51,8 +51,6 @@ def article_upload(request):
     ad_group = dash.models.AdGroup.objects.get(id=TEST_AD_GROUP_ID)
     batch, candidates = dash.upload.insert_candidates(
         candidates_data, ad_group, batch_name, filename='', auto_save=True)
-    for candidate in candidates:
-        dash.upload.invoke_external_validation(candidate, batch)
 
     return JsonResponse({
         "status": 'ok'
