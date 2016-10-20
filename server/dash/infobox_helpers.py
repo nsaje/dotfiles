@@ -468,14 +468,13 @@ def _filter_user_by_account_type(users, filtered_account_types):
         .group_current_settings()
 
     filtered_latest_account_settings = dash.models.AccountSettings.objects\
-        .all()\
         .filter(pk__in=latest_account_settings)\
         .filter(account_type__in=filtered_account_types)\
-        .values_list('account__id', flat=True)
+        .values_list('account_id', flat=True)
 
     return users.filter(
-        models.Q(account__id__in=filtered_latest_account_settings) |
-        models.Q(groups__account__id__in=filtered_latest_account_settings)
+        models.Q(account_id__in=filtered_latest_account_settings) |
+        models.Q(groups__account_id__in=filtered_latest_account_settings)
     )
 
 
@@ -495,12 +494,12 @@ def get_weekly_active_users(filtered_agencies, filtered_account_types):
         .filter(
             created_dt__gte=_one_week_ago(),
             created_dt__lte=_until_today())\
-        .filter_selfmanaged()\
-        .select_related('created_by').distinct('created_by')
+        .filter_selfmanaged().distinct('created_by_id')
 
     users = zemauth.models.User.objects.all().filter(
-        pk__in=[action.created_by.id for action in actions]
+        pk__in=actions.values_list('created_by_id', flat=True)
     ).filter_by_agencies(filtered_agencies)
+
     return _filter_user_by_account_type(
         users,
         filtered_account_types)
