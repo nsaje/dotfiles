@@ -1,7 +1,7 @@
 <div class="breadcrumb">
     <div class="item">
-        <span class="type-name">Home:</span><br>
         <a ng-href="{{$ctrl.getHomeHref()}}">
+        	<span class="type-name">Home:</span>       
             {{ $ctrl.userCanSeeAllAccounts ? "All accounts" : "My account" }}
         </a>
     </div>
@@ -10,8 +10,10 @@
 <div class="breadcrumb" ng-repeat="item in $ctrl.breadcrumb">
     <div class="slash">\</div>
     <div class="item">
-        <span class="type-name">{{ item.typeName }}:</span><br>
-        <a ng-href="{{$ctrl.getItemHref(item)}}" title="{{ item.name }}">{{ item.name }}</a>
+        <a ng-href="{{$ctrl.getItemHref(item)}}" title="{{ item.name }}">
+        	<span class="type-name">{{ item.typeName }}:</span>
+        	{{ item.name }}
+        </a>
     </div>
 </div>
 

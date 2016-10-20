@@ -1,6 +1,8 @@
+<div class="modal-header">
+    <h4 class="modal-title" ng-if="isNew">Add Budget</h4>
+    <h4 class="modal-title" ng-if="!isNew">Edit Budget Item</h4>
+</div>
 <div class="modal-body modal-page">
-    <h3 ng-if="isNew">Add Budget</h3>
-    <h3 ng-if="!isNew">Edit Budget Item</h3>
     <form id="form-campaign-budget-budgetItem" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }">
         <div class="form-group" ng-if="!isNew">
             <label class="col-xs-8">Created by {{ budgetItem.createdBy }} on {{ budgetItem.createdOn }} </label>
@@ -18,7 +20,7 @@
         </div>
         <div class="form-group" ng-class="{'has-error': !!errors.credit}">
             <div class="col-xs-12">
-                <table>
+                <table class="table">
                     <thead>
                         <tr>
                             <th ng-if="isNew"></th>
@@ -113,20 +115,15 @@
             </div>
             <label ng-repeat="error in errors.comment" class="col-xs-5 control-label error" for="comment">{{ error }}</label>
         </div>
-        <div class="form-group">
-            <div class="col-xs-3">
-                <button type="button" class="btn btn-primary" ng-click="upsertBudgetItem()" ng-disabled="saveRequestInProgress">Save</button>
-            </div>
-            <div class="col-xs-3">
-                <button type="button" class="btn btn-default" ng-click="discardBudgetItem()" ng-disabled="saveRequestInProgress">Discard</button>
-            </div>
-            <div class="col-xs-3"  ng-if="canDelete">
-                <button type="button" class="btn btn-danger" ng-click="deleteBudgetItem()" ng-disabled="saveRequestInProgress">Delete</button>
-            </div>
-        </div>
-        <div class="loader" ng-show="saveRequestInProgress"></div>
-        <span ng-show="saved" class="success">Your updates have been saved.</span>
-        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
-        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
     </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-add btn-icon check" ng-click="upsertBudgetItem()" ng-disabled="saveRequestInProgress"><span class="icon"></span><span class="text">Save</span></button>
+    <button type="button" class="btn btn-blue btn-outline" ng-click="discardBudgetItem()" ng-disabled="saveRequestInProgress"><span class="text">Discard</span></button>
+    <button type="button" class="btn btn-blue btn-icon btn-outline remove pull-right" ng-click="deleteBudgetItem()" ng-disabled="saveRequestInProgress"><span class="icon"></span><span class="text">Delete</span></button>
+    
+    <div class="loader" ng-show="saveRequestInProgress"></div>
+    <span ng-show="saved" class="success">Your updates have been saved.</span>
+    <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
+    <span ng-show="discarded" class="success">Your updates have been discarded.</span>
 </div>

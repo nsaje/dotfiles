@@ -1,15 +1,13 @@
 <div>
     <div class="modal-body contentad-picker" ng-class="{editing: !!ctrl.editFormApi.selectedId}">
         <div class="clearfix"></div>
-        <div class="candidate-table custom_scroller">
+        <div class="candidate-table custom-scroller">
             <div class="batch-name form-group" ng-class="{'has-error': ctrl.saveErrors.batchName}">
                 <span>Batch name:</span>
                 <span class="title" ng-show="!ctrl.batchNameEdit">{{ ctrl.formData.batchName }}</span>
                 <input type="text" class="form-control" ng-show="ctrl.batchNameEdit" ng-model="ctrl.formData.batchName" id="batch-name-input" ng-focus="ctrl.clearBatchNameErrors()" />
-                <a href class="btn btn-secondary only-icon" ng-click="ctrl.toggleBatchNameEdit($event)">
-                    <img ng-src="{{ ctrl.config.static_url }}/one/img/button-edit.svg" ng-if="!ctrl.batchNameEdit"/>
-                    <img ng-src="{{ ctrl.config.static_url }}/one/img/button-check_mark.svg" ng-if="ctrl.batchNameEdit"/>
-                </a>
+                <a href class="btn btn-blue btn-icon btn-small edit" ng-click="ctrl.toggleBatchNameEdit($event)" ng-if="!ctrl.batchNameEdit"><span class="icon"></span><span class="text">Edit batch name</span></a>
+                <a href class="btn btn-blue btn-icon btn-small check" ng-click="ctrl.toggleBatchNameEdit($event)" ng-if="ctrl.batchNameEdit"><span class="icon"></span><span class="text">Save</span></a>
             </div>
             <table class="table">
                 <tr ng-repeat="candidate in ctrl.candidates" ng-class="{selected: candidate.id === ctrl.editFormApi.selectedId}" ng-click="ctrl.editFormApi.open(candidate)">
@@ -42,13 +40,11 @@
                     </td>
                     <td class="action">
                         <img class="loader-icon small-icon" ng-if="candidate.removeRequestInProgress" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
-                        <a href ng-click="ctrl.editFormApi.open(candidate)" class="btn btn-secondary" ng-disabled="candidate.removeRequestInProgress">
-                            <img ng-src="{{ ctrl.config.static_url }}/one/img/button-edit.svg"/>
-                            <span class="action-text">Edit</span>
+                        <a href ng-click="ctrl.editFormApi.open(candidate)" class="btn btn-blue btn-icon edit" ng-disabled="candidate.removeRequestInProgress">
+                            <span class="icon"></span><span class="text">Edit</span>
                         </a>
-                        <a href ng-click="ctrl.removeCandidate(candidate, $event)" class="btn btn-secondary" ng-disabled="candidate.removeRequestInProgress">
-                            <img ng-src="{{ ctrl.config.static_url }}/one/img/button-remove.svg"/>
-                            <span class="action-text">Remove</span>
+                        <a href ng-click="ctrl.removeCandidate(candidate, $event)" class="btn btn-blue btn-icon remove" ng-disabled="candidate.removeRequestInProgress">
+                            <span class="icon"></span><span class="text">Remove</span>
                         </a>
                         <div class="error" ng-if="candidate.removeRequestFailed">
                             Something went wrong. Please try again.
@@ -58,14 +54,13 @@
             </table>
 
             <div class="content-actions">
-                <button type="button" class="btn btn-add btn-action" ng-click="ctrl.addCandidate()" ng-if="ctrl.hasPermission('zemauth.can_use_single_ad_upload')" ng-disabled="ctrl.addCandidateRequestInProgress">
+                <button type="button" class="btn btn-add btn-icon add btn-action" ng-click="ctrl.addCandidate()" ng-if="ctrl.hasPermission('zemauth.can_use_single_ad_upload')" ng-disabled="ctrl.addCandidateRequestInProgress">
                     <zem-internal-feature ng-if="ctrl.isPermissionInternal('zemauth.can_use_single_ad_upload')"></zem-internal-feature>
-                    <span class="action-text">+ Add new</span>
+                    <span class="icon"></span><span class="text">Add new</span>
                 </button>
 
-                <button type="button" class="btn btn-secondary btn-action" ng-click="ctrl.download()">
-                    <img ng-src="{{ ctrl.config.static_url }}/one/img/button-download.svg"/>
-                    <span class="action-text">Download Ads Snapshot</span>
+                <button type="button" class="btn btn-blue btn-icon download btn-action" ng-click="ctrl.download()">
+                    <span class="icon"></span><span class="text">Download Ads Snapshot</span>
                 </button>
 
                 <span class="error" ng-if="ctrl.addCandidateRequestFailed">Something went wrong. Please try again.</span>
@@ -77,9 +72,9 @@
         <div class="clear"></div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-gray" ng-click="ctrl.cancel()">Cancel</button>
-        <button type="button" class="btn btn-add pull-right" ng-click="ctrl.save()" ng-disabled="ctrl.isSaveDisabled()">Upload</button>
-        <span class="error pull-right" ng-if="ctrl.getSaveErrorMsg()">{{ ctrl.getSaveErrorMsg() }}</span>
+        <button type="button" class="btn btn-blue btn-outline" ng-click="ctrl.cancel()"><span class="text">Cancel</span></button>
+        <button type="button" class="btn btn-add btn-icon check pull-right" ng-click="ctrl.save()" ng-disabled="ctrl.isSaveDisabled()"><span class="icon"></span><span class="text">Upload</span></button>
+        <span class="error pull-right m-r" ng-if="ctrl.getSaveErrorMsg()">{{ ctrl.getSaveErrorMsg() }}</span>
         <img class="loader-icon small-icon pull-right" ng-if="ctrl.isLoading()" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
     </div>
 </div>

@@ -1,14 +1,4 @@
-// TODO: move to appropriate file (vars)
-@orange: #e35325;
-@blue: #3f547f;
-@very-light-gray: #ebebeb;
-
-@default-spacing: 20px;
-@default-font-size: 13px;
-@border-radius: 3px;
-//////////////////////////////////////////
-
-zem-navigation {
+.zem-navigation {
     display: block;
     position: relative;
     color: @black;
@@ -19,11 +9,11 @@ zem-navigation {
         border-bottom: 1px solid @border-color;
         background-color: fade(@black, 5%);
 
-        input {
+        input[type="text"] {
             width: 100%;
             padding: 0 5px;
             height: 40px;
-            .box-shadow (none);
+			background-color: @white;
 
             &:focus {
                 outline: none;
@@ -36,7 +26,7 @@ zem-navigation {
         overflow-x: hidden;
         width: 100%;
         position: absolute;
-        top: 90px;
+        top: 80px;
         bottom: 0;
         margin-bottom: 10px;
     }
@@ -46,10 +36,8 @@ zem-navigation {
     }
 
     .loader {
-        margin-top: 20px;
-        width: 100%;
-        background: rgba(255, 255, 255, 0.4) url('img/loader.gif') no-repeat center center;
-        background-size: 20px auto;
+        margin: 10px auto 0 auto;
+		display: block !important;
     }
 
     .scroll-container ul {
@@ -58,7 +46,7 @@ zem-navigation {
         list-style: none;
 
         .item {
-            color: @black;
+            color: @text-color;
             display: block;
 
             cursor: pointer;
@@ -68,24 +56,31 @@ zem-navigation {
             overflow: hidden;
             text-overflow: ellipsis;
             font-size: 14px;
-            height: 30px; // NOTE: Change in JavaScript too!
+            height: 30px; /* NOTE: Change in JavaScript too! */
             padding: 5px 0;
 
             &.active {
                 border-right: 3px solid @default-color;
+                background-color: fade(@default-color, 10%);
+                color: @default-color;
+                font-weight: 500 !important;
             }
 
             &.selected {
-                background-color: #50b9d3;
-                color: white;
+                background: @very-light-gray;
+                color: @text-color !important;
+
+				&.active {
+					color: @default-color !important;
+				}
             }
 
             &.archived {
-                color: #d9d9d9;
+                color: #gray;
             }
 
-            &:not(.selected):hover {
-                background: #f5f5f5;
+            &:not(.selected):not(.active):hover {
+                background: @very-light-gray;
                 text-decoration: none;
             }
 
@@ -101,7 +96,7 @@ zem-navigation {
                 }
 
                 .agency {
-                    color: @light-gray;
+                    color: @gray;
                     font-size: 12px;
                     font-weight: 200;
                 }
@@ -110,12 +105,12 @@ zem-navigation {
             &.campaign {
                 padding-left: 10px;
                 font-weight: 500;
-                height: 30px; // NOTE: Change in JavaScript too!
+                height: 30px; /* NOTE: Change in JavaScript too! */
             }
 
             &.group {
                 font-weight: 300;
-                height: 24px; // NOTE: Change in JavaScript too!
+                height: 24px; /* NOTE: Change in JavaScript too! */
                 padding: 2px 0 2px 35px;
             }
         }
@@ -126,7 +121,7 @@ zem-navigation {
             position: absolute;
             left: 16px;
             .border-radius (50%);
-            background-color: @very-light-gray;
+            background-color: @light-gray;
             width: 10px;
             height: 10px;
             top: 50%;

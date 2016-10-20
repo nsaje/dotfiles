@@ -38,7 +38,6 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
                 var modalInstance = $uibModal.open({
                     templateUrl: '/partials/conversion_pixel_modal.html',
                     controller: 'AddConversionPixelModalCtrl',
-                    windowClass: 'modal-default-legacy',
                     scope: $scope,
                     resolve: {
                         outbrainPixel: function () {
@@ -68,7 +67,6 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
                 var modalInstance = $uibModal.open({
                     templateUrl: '/partials/conversion_pixel_modal.html',
                     controller: 'EditConversionPixelModalCtrl',
-                    windowClass: 'modal-default-legacy',
                     scope: $scope,
                     resolve: {
                         pixel: function () {
@@ -132,7 +130,6 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
 
                 var modalInstance = $uibModal.open({
                     templateUrl: '/partials/copy_conversion_pixel_modal.html',
-                    windowClass: 'modal-default-legacy',
                     scope: scope
                 });
 

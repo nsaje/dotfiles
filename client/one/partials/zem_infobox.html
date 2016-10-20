@@ -16,7 +16,7 @@
     </div>
  
     <hr>
-    <div class="infobox-body">
+    <div class="infobox-body custom-scroller">
         <div ng-repeat="setting in basicSettings" 
             class="infobox-setting-base" ng-class="{'infobox-setting-section-start': setting.section_start}">
             <hr ng-if="setting.type === 'hr'"/>
@@ -37,7 +37,7 @@
         </div>
     </div>
     <hr ng-if="performanceSettings">
-    <div ng-if="performanceSettings" class="infobox-footer">
+    <div ng-if="performanceSettings" class="infobox-footer custom-scroller">
         <div ng-repeat="setting in performanceSettings" 
             ng-class="{'infobox-setting-section-start': setting.section_start}">
             <hr ng-if="setting.type === 'hr'"/>

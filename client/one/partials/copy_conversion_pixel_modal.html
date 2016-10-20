@@ -1,9 +1,11 @@
+<div class="modal-header">
+    <h4 class="modal-title">Copy Tag</h4>
+</div>
 <div class="modal-body">
     <div class="conversion-pixel-form modal-form form-horizontal">
-        <div class="title">Copy Tag</div>
         <div class="form-group">
             <div class="col-xs-12">
-                <textarea rows="3" id="copy-tag-input" class="form-control" readonly ng-model="conversionPixelTag" zem-focus-select></textarea>
+                <textarea rows="3" id="copy-tag-input" class="textarea-with-border pre" readonly ng-model="conversionPixelTag" zem-focus-select></textarea>
             </div>
         </div>
 
@@ -14,11 +16,8 @@
                 </p>
             </div>
         </div>
-
-        <div class="form-group">
-            <div class="col-xs-3">
-                <button type="button" class="btn btn-default" ng-click="$dismiss()">Close</button>
-            </div>
-        </div>
     </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-blue btn-outline" ng-click="$dismiss()"><span class="text">Close</span></button>
 </div>

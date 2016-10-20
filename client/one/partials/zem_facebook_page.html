@@ -4,31 +4,17 @@
         Facebook page
         <zem-help-popover content="Facebook Page to which ads will be connected to. This is a requirement for advertising on Facebook and Instagram." placement="top"></zem-help-popover>
     </label>
-    <div class="col-xs-4">
-        <div class="row">
-            <div class="col-xs-10 input-group fb-logo" ng-if="settings.facebookStatus && settings.facebookStatus == constants.facebookStatus.EMPTY">
-                <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg"></i>
-                <input id="fb-page-input" type="text" class="form-control" ng-model="settings.facebookPage" ng-change="onFacebookPageChange()" placeholder="Insert Facebook page URL">
-            </div>
+    <div class="col-xs-3 fb-status">
+        <div class="col-xs-12 input-group fb-logo" ng-if="settings.facebookStatus && settings.facebookStatus == constants.facebookStatus.EMPTY">
+            <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg" class="fb-icon"></i>
+            <input id="fb-page-input" type="text" class="form-control" ng-model="settings.facebookPage" ng-change="onFacebookPageChange()" placeholder="Insert Facebook page URL">
         </div>
-        <div ng-if="settings.facebookStatus && settings.facebookStatus != constants.facebookStatus.EMPTY" class="row">
-            <div class="col-xs-2 fb-page">
-                <img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg">
-            </div>
-            <div class="col-xs-10 fb-page">
-                <div class="row">
-                    <div class="col-xs-11">
-                        <div class="col-xs-12">
-                            <p>{{settings.facebookPage}}</p>
-                        </div>
-                        <div class="col-xs-12">
-                            <p ng-class="settings.facebookStatus | lowercase">{{settings.facebookStatus}}</p>
-                        </div>
-                    </div>
-                    <div class="col-xs-1">
-                        <span class="glyphicon glyphicon-remove" ng-click="clearFacebookPage()"></span>
-                    </div>
-                </div>
+        <div ng-if="settings.facebookStatus && settings.facebookStatus != constants.facebookStatus.EMPTY">
+            <div class="input-with-icon">
+            	<img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg" class="fb-icon">
+                <span class="name">{{settings.facebookPage}}</span>
+                <span ng-class="settings.facebookStatus | lowercase" class="status">{{settings.facebookStatus}}</span>
+                <div class="btn btn-blue btn-icon btn-small remove" ng-click="clearFacebookPage()"><span class="icon"></span></div>
             </div>
             <div ng-if="settings.facebookStatus == constants.facebookStatus.PENDING" class="col-xs-12 alert alert-warning form-alert-box fb-warning">
                 <div class="form-alert-exclamation">

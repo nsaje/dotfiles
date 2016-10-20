@@ -5,6 +5,7 @@
                 <div class="graph-container">
                     <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
                 </div>
+                <div class="spacing"></div>
                 <div class="infobox-container">
                     <zem-infobox class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-infobox>
                 </div>
@@ -17,7 +18,7 @@
 
             <div  ng-if="hasPermission('zemauth.all_accounts_accounts_add_account')" class="button-bar-item add-source-container">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.all_accounts_accounts_add_account')" popover-placement="bottom"></zem-internal-feature>
-                <button type="button" class="btn btn-add" ng-click="addAccount()">+ Account</button>
+                <button type="button" class="btn btn-add btn-icon add" ng-click="addAccount()"><span class="icon"></span><span class="text">Account</span></button>
             </div>
 
             <div class="loader" ng-show="requestInProgress"></div>
@@ -45,11 +46,6 @@
         <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
         <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderRows(order)" zem-table-data-status="dataStatus"></zem-table>
 
-        <div class="table-footnotes">
-            <div>* The reporting data is an estimate, and the final amount will be reflected on your invoice.</div>
-            <div>* All times are in Eastern Standard Time (EST).</div>
-        </div>
-
         <div class="pagination" ng-show="rows.length">
             <span>Go to page</span>
             <form ng-submit="loadPage()">
@@ -65,13 +61,13 @@
             <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.numPages)"><img ng-src="{{ config.static_url }}/one/img/arrow-last.svg"></div>
         </div>
     </div>
-    <div class="section zem-internal-feature-container" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
+    <div class="section zem-internal-feature-container white-background" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature')"></zem-internal-feature>
 
         <div class="button-bar" ng-if="grid.api">
             <div  ng-if="hasPermission('zemauth.all_accounts_accounts_add_account')" class="button-bar-item add-source-container">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.all_accounts_accounts_add_account')" popover-placement="bottom"></zem-internal-feature>
-                <button type="button" class="btn btn-add" ng-click="addAccount()">+ Account</button>
+                <button type="button" class="btn btn-add btn-icon add" ng-click="addAccount()"><span class="icon"></span><span class="text">Account</span></button>
                 <div class="loader" ng-show="requestInProgress"></div>
             </div>
             <div ng-if="hasPermission('zemauth.bulk_actions_on_all_levels')" class="button-bar-item">

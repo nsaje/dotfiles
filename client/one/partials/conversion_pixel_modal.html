@@ -1,6 +1,8 @@
+<div class="modal-header">
+    <h4 class="modal-title">{{title}}</h4>
+</div>
 <div class="modal-body">
     <form id="conversion-pixel-form" ng-submit="submit()" class="modal-form conversion-pixel-form form-horizontal">
-    <div class="title">{{title}}</div>
         <div class="form-group" ng-class="{'has-error': !!error && !!errorMessage}">
             <label for="name-input" class="col-xs-4 control-label">
                 Name
@@ -16,7 +18,9 @@
                 <zem-help-popover content="Sync events from this pixel to Outbrain" placement="bottom"></zem-help-popover>
             </label>
             <div class="col-xs-8">
-                <input type="checkbox" id="outbrain-sync-input" class="form-control" ng-model="pixel.outbrainSync" ng-focus="clearError()" ng-change="clearError()" />
+            	<div class="checkbox-no-text">
+                	<input type="checkbox" id="outbrain-sync-input" ng-model="pixel.outbrainSync" ng-focus="clearError()" ng-change="clearError()" />
+                </div>
                 <div class="description small m-t-xs m-b-none" ng-if="outbrainPixel && outbrainPixel.id != pixel.id">
                     Only one pixel can be synced with Outbrain.<br>Currently this pixel is: {{ outbrainPixel.name }}.
                 </div>
@@ -28,16 +32,11 @@
                 The pixel should be included in the web page at the point of conversion.
             </div>
         </div>
-
-        <div class="form-group">
-            <div class="col-xs-4">
-                <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!inProgress}">{{buttonText}}</button>
-            </div>
-            <div class="col-xs-3">
-                <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
-            </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-add btn-icon check" ng-click="clearError()" ng-class="{'disabled': !!inProgress}"><span class="icon"></span><span class="text">{{buttonText}}</span></button>
+            <button type="button" class="btn btn-blue btn-outline" ng-click="$dismiss()"><span class="text">Cancel</span></button>
             <div class="loader" ng-show="inProgress"></div>
-            <span class="col-xs-4 small error" ng-if="error">
+            <span class="error" ng-if="error">
                 <span ng-if="!!errorMessage">
                     {{ errorMessage }}
                 </span>

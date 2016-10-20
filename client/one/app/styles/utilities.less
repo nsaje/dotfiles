@@ -14,6 +14,13 @@
     white-space: nowrap;
 }
 
+.break-long-words {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -ms-word-break: break-all;
+    word-break: break-all;
+}
+
 .capitalized:first-letter {
     text-transform: capitalize;
 }
@@ -29,6 +36,9 @@
     display: inline-block;
     vertical-align: middle;
 }
+
+.text-left { text-align: left !important; }
+.text-right { text-align: right !important; }
 
 .p-none { padding: 0 !important; }
 .p-t-none { padding-top: 0 !important; }
@@ -53,6 +63,10 @@
 .m-r-xl { margin-right: @default-spacing*2 !important; }
 .m-b-xl { margin-bottom: @default-spacing*2 !important; }
 .m-l-xl { margin-left: @default-spacing*2 !important; }
+.m-t-xxl { margin-top: @default-spacing*3 !important; }
+.m-r-xxl { margin-right: @default-spacing*3 !important; }
+.m-b-xxl { margin-bottom: @default-spacing*3 !important; }
+.m-l-xxl { margin-left: @default-spacing*3 !important; }
 .m-t-s { margin-top: @default-spacing*0.5 !important; }
 .m-r-s { margin-right: @default-spacing*0.5 !important; }
 .m-b-s { margin-bottom: @default-spacing*0.5 !important; }
@@ -74,6 +88,10 @@
 .p-r-xl { padding-right: @default-spacing*2 !important; }
 .p-b-xl { padding-bottom: @default-spacing*2 !important; }
 .p-l-xl { padding-left: @default-spacing*2 !important; }
+.p-t-xxl { padding-top: @default-spacing*3 !important; }
+.p-r-xxl { padding-right: @default-spacing*3 !important; }
+.p-b-xxl { padding-bottom: @default-spacing*3 !important; }
+.p-l-xxl { padding-left: @default-spacing*3 !important; }
 .p-t-s { padding-top: @default-spacing*0.5 !important; }
 .p-r-s { padding-right: @default-spacing*0.5 !important; }
 .p-b-s { padding-bottom: @default-spacing*0.5 !important; }
@@ -83,15 +101,17 @@
 .p-b-xs { padding-bottom: @default-spacing*0.25 !important; }
 .p-l-xs { padding-left: @default-spacing*0.25 !important; }
 
-.custom-scroller {
+.custom-scroller,
+.select2-results,
+.media-source-control-row select,
+.zem-grid-breakdown-selector .dropdown-menu,
+.zem-grid-column-selector .dropdown-menu,
+.sidebar #nav #nav-menu {
     &::-webkit-scrollbar {
         width: 16px;
-        height: 18px;
     }
     
     &::-webkit-scrollbar-thumb {
-        min-height: 20px;
-        height: 8px;
         border: 4px solid rgba(0, 0, 0, 0);
         background-clip: padding-box;
         -webkit-border-radius: 7px;

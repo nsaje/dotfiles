@@ -1,24 +1,29 @@
-zem-header {
+.zem-header {
     display: block;
     height: 60px;
     background-color: @default-color;
 
     .logo-container {
-        margin: 10px 0;
-        height: 40px;
-        padding: 10px 20px 10px @default-spacing;
-        border-right: 1px solid fade(@white, 20%);
+        height: 60px;
+        padding: 19px 20px 19px @default-spacing;
+        background: url(images/zemanta-logo-squares-white.svg) no-repeat top left;
+        background-size: 20px;
+
 
         a {
-            display: inline-block;
-            height: 100%;
+            display: block;
+            height: 22px;
         }
 
         img {
             width: auto;
-            height: 20px;
+            height: 22px;
         }
     }
+
+	.btn-default {
+		background: transparent !important;
+	}
 
     .dropdown-menu {
         margin: 0;
@@ -59,10 +64,11 @@ zem-header {
         }
     }
 
-    zem-header-navigation {
+    .zem-header-navigation {
         display: block;
         margin: 10px 0;
         border-right: 1px solid fade(@white, 20%);
+        border-left: 1px solid fade(@white, 20%);
 
         .dropdown-toggle img {
             width: 20px;
@@ -70,8 +76,8 @@ zem-header {
 
         .dropdown .dropdown-menu {
             margin-top: 10px;
-            width: 300px;
-            height: 500px;
+            width: 650px;
+            height: 85vh;
 
             zem-navigation {
                 height: 100%;
@@ -84,10 +90,10 @@ zem-header {
         }
     }
 
-    zem-header-breadcrumb {
+    .zem-header-breadcrumb {
         display: block;
         height: 40px;
-        margin: 10px 0 10px 20px;
+        margin: 10px 0 10px 12px;
 
         color: @white;
         line-height: 16px;
@@ -96,9 +102,11 @@ zem-header {
         .breadcrumb {
             float: left;
             height: 40px;
+			padding: 0;
+			background-color: transparent;
 
             .slash {
-                padding: 0 10px;
+                padding: 0 2px;
                 color: fade(@white, 20%);
                 font-size: 34px;
                 line-height: 40px;
@@ -110,60 +118,97 @@ zem-header {
             .item {
                 float: left;
 
-                .type-name {
-                    color: fade(@white, 50%);
-                    padding-top: 4px;
-                    display: inline-block;
-                }
-
                 a {
+                    padding: 4px 8px;
+                    line-height: 16px;
                     color: @white;
                     font-size: 14px;
-                    max-width: 90px;
+                    max-width: 115px;
                     display: block;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    .transition(all 250ms ease-in-out);
+
+                    .type-name {
+                        color: fade(@white, 50%);
+                        display: block;
+                        font-size: 12px;
+                    }
 
                     &:hover {
                         color: @white;
+                        background-color: fade(@white, 10%);
+                        text-decoration: none;
+                    }
+                    
+                    &:active, &:focus {
+                        text-decoration: none; 
                     }
                 }
 
+                @media only screen and (min-width: 1250px) {
+                    a { max-width: 120px; }
+                }
+
+                @media only screen and (min-width: 1280px) {
+                    a { max-width: 130px; }
+                }
+
                 @media only screen and (min-width: 1300px) {
-                    a { max-width: 110px; }
+                    a { max-width: 152px; }
+                }
+
+                @media only screen and (min-width: 1350px) {
+                    a { max-width: 168px; }
                 }
 
                 @media only screen and (min-width: 1400px) {
-                    a { max-width: 150px; }
+                    a { max-width: 186px; }
+                }
+
+                @media only screen and (min-width: 1450px) {
+                    a { max-width: 202px; }
                 }
 
                 @media only screen and (min-width: 1500px) {
-                    a { max-width: 190px; }
+                    a { max-width: 218px; }
+                }
+
+                @media only screen and (min-width: 1550px) {
+                    a { max-width: 234px; }
                 }
 
                 @media only screen and (min-width: 1600px) {
-                    a { max-width: 230px; }
+                    a { max-width: 250px; }
+                }
+
+                @media only screen and (min-width: 1650px) {
+                    a { max-width: 266px; }
                 }
 
                 @media only screen and (min-width: 1700px) {
-                    a { max-width: 270px; }
+                    a { max-width: 282px; }
+                }
+
+                @media only screen and (min-width: 1750px) {
+                    a { max-width: 298px; }
                 }
 
                 @media only screen and (min-width: 1800px) {
-                    a { max-width: 310px; }
+                    a { max-width: 314px; }
                 }
             }
         }
     }
 
     // TODO: Refactor
-    zem-header-filter {
+    .zem-header-filter {
         display: block;
 
         zem-filter {
             display: block;
-            margin: 10px 0;
+            margin: 10px 20px 10px 0;
 
             .internal {
                 .header-button-internal();
@@ -183,20 +228,22 @@ zem-header {
                 visibility: visible;
             }
 
-            div.btn {
+            .btn,
+            .btn-default {
                 height: 40px;
                 padding: 0;
-                color: @white;
+                color: @white !important;
                 line-height: 40px;
                 border: none;
-                background-color: fade(@white, 20%);
-                .border-radius(@default-radius);
+                background: fade(@white, 20%) !important;
+                .border-radius(@border-radius);
                 .transition(all 250ms ease-in-out);
 
                 &:hover, &:focus, &:active {
                     background-color: fade(@white, 40%) !important;
                     border: none;
                     color: @white !important;
+					height: 40px;
                 }
 
                 .dropdown-toggle {
@@ -205,6 +252,7 @@ zem-header {
 
                     span {
                         line-height: 42px;
+						color: @white;
                     }
 
                     .filter-icon {
@@ -279,19 +327,12 @@ zem-header {
                         margin-right: 5px;
 
                         &.add-filter .select2-choice {
-                            background-color: @add-filter-color;
-                            border-color: @add-filter-color;
-                            height: 28px;
-                            font-size: 13px;
-                            line-height: 28px;
-                            border-radius: 2px;
-
                             .select2-chosen {
                                 margin-right: 15px;
                             }
 
                             span {
-                                color: #fff;
+                                color: @text-color;
                             }
 
                             span.select2-arrow b {
@@ -366,13 +407,13 @@ zem-header {
         }
     }
 
-    zem-header-date-range-picker {
+    .zem-header-date-range-picker {
         display: block;
 
         .date-range-picker-container {
             position: relative;
             height: 40px;
-            margin: 10px 20px;
+            margin: 10px 20px 10px 0;
 
             .date-range-picker-icon {
                 position: absolute;
@@ -400,7 +441,7 @@ zem-header {
                 width: 250px;
                 border: none;
                 color: @white;
-                .border-radius (@default-radius);
+                .border-radius (@border-radius);
                 .transition(all 250ms ease-in-out);
 
                 &:focus {
@@ -414,7 +455,7 @@ zem-header {
         }
     }
 
-    zem-header-menu {
+    .zem-header-menu {
         display: block;
         margin: 10px 0;
         border-left: 1px solid fade(@white, 20%);
@@ -507,8 +548,10 @@ zem-header {
         content: "";
         display: block;
     }
-}
-
-.legacy-theme zem-header {
-    background-color: @default-color;
+	
+	.calendar {
+		.daterangepicker_input {
+			display: none;
+		}
+	}
 }

@@ -24,9 +24,8 @@
                 </label>
                 <div class="col-xs-10 info">
                     <zem-file-input zem-file-input-change="ctrl.fileUploadCallback(file)" zem-file-input-accept=".csv,.xls,.xlsx">
-                        <button type="button" class="btn btn-secondary" ng-click="ctrl.clearFormErrors('file')" zem-file-input-trigger>
-                            <img ng-src="{{ ctrl.config.static_url }}/one/img/button-folder.svg"/>
-                            <span class="action-text">Choose file</span>
+                        <button type="button" class="btn btn-blue btn-icon folder" ng-click="ctrl.clearFormErrors('file')" zem-file-input-trigger>
+                            <span class="icon"></span><span class="text">Choose file</span>
                         </button>
                     </zem-file-input>
 

@@ -1,9 +1,10 @@
+<div class="modal-header">
+    <h4 class="modal-title" ng-if="!!newCampaignGoal">Add a New Campaign Goal</h4>
+    <h4 class="modal-title" ng-if="!newCampaignGoal">Edit a Campaign Goal</h4>
+</div>
 <div class="modal-body">
     <form id="edit-campaign-goal-form" ng-submit="save()" class="modal-form campaign-goal-form form-horizontal">
-        <div class="title" ng-if="!!newCampaignGoal">Add a New Campaign Goal</div>
-        <div class="title" ng-if="!newCampaignGoal">Edit a Campaign Goal</div>
-
-        <div class="form-part">
+        <div class="form-part m-b-l">
             <div class="form-group">
                 <label for="goal-type-select" class="col-xs-4 control-label">
                     Meet or beat the goal of
@@ -27,7 +28,7 @@
             </div>
         </div>
 
-        <div class="form-part" ng-if="showAddConversionGoalForm()">
+        <div class="form-part m-b" ng-if="showAddConversionGoalForm()">
             <div class="form-group" ng-class="{'has-error': !!errors.conversionGoal.type}">
                 <label for="conversion-type-select" class="col-xs-4 control-label">
                     Type
@@ -130,26 +131,18 @@
             </div>
         </div>
 
-        <div class="form-group">
-            <div class="col-xs-4" ng-if="!showAddConversionGoalForm()">
-                <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}">
-                    <span ng-if="newCampaignGoal">Add goal</span>
-                    <span ng-if="!newCampaignGoal">Update goal</span>
-                </button>
-            </div>
-            <div class="col-xs-6" ng-if="showAddConversionGoalForm()">
-                <button type="submit" class="btn btn-add" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">
-                    <span ng-if="newCampaignGoal">Add goal and conversion tracking</span>
-                    <span ng-if="!newCampaignGoal">Save goal and conversion tracking</span>
-                </button>
-            </div>
-            <div class="col-xs-3">
-                <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
-            </div>
-            <div class="loader" ng-show="addConversionGoalInProgress"></div>
-            <span class="col-xs-3 small error" ng-if="error">
-                An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+        <div class="modal-footer">
+            <span ng-if="!showAddConversionGoalForm()">
+                <button type="submit" class="btn btn-add btn-icon add" ng-if="newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}"><span class="icon"></span><span class="text">Add goal</span></button>
+                <button type="submit" class="btn btn-add btn-icon check" ng-if="!newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}"><span class="icon"></span><span class="text">Update goal</span></button>
             </span>
+            <span ng-if="showAddConversionGoalForm()">
+                <button type="submit" class="btn btn-add btn-icon add" ng-if="newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress"><span class="icon"></span><span class="text">Add goal and conversion tracking</span></button>
+                <button type="submit" class="btn btn-add btn-icon check" ng-if="!newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress"><span class="icon"></span><span class="text">Save goal and conversion tracking</span></button>
+            </span>
+            <button type="button" class="btn btn-blue btn-outline" ng-click="cancel()"><span class="text">Cancel</span></button>
+            <div class="loader" ng-show="addConversionGoalInProgress"></div>
+            <span class="small error" ng-if="error">An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.</span>
         </div>
     </form>
 </div>

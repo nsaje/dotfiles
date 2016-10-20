@@ -1,69 +1,71 @@
-<div class="zem-custom-audiences-list">
-    <div class="loader-container">
-        <span class="loader" ng-if="ctrl.listRequestInProgress && ctrl.audiences.length"></span>
-
-        <table class="table table-hover middle-alignment">
-            <thead>
-                <tr>
-                    <th class="arrow">
-                        Audience
-                        <zem-help-popover content="Audience's name" placement="top"></zem-help-popover>
-                    </th>
-                    <th class="arrow">
-                        Audience ID
-                        <zem-help-popover content="Audience's ID" placement="top"></zem-help-popover>
-                    </th>
-                    <th>
-                        Size
-                        <zem-help-popover content="Approximate count of all unique users in the audience" placement="top"></zem-help-popover>
-                    </th>
-                    <th>
-                        Added Yesterday
-                        <zem-help-popover content="Approximate count of unique users added to the audience yesterday" placement="top"></zem-help-popover>
-                    </th>
-                    <th>Created</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="5" class="loader-container" ng-if="ctrl.listRequestInProgress && !ctrl.audiences.length">
-                        <span class="loader"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="5" class="text-center" ng-if="!ctrl.listRequestInProgress && !ctrl.audiences.length">
-                        No Audiences
-                    </td>
-                </tr>
-                <tr ng-class="{'archived': audience.archived}" ng-repeat="audience in ctrl.audiences">
-                    <td class="audience-name">
-                        {{ audience.name }}
-                    </td>
-                    <td class="audience-name">
-                        {{ audience.id }}
-                    </td>
-                    <td class="audience-size">
-                        {{ audience.count }}
-                    </td>
-                    <td>
-                        {{ audience.countYesterday }}
-                    </td>
-                    <td>
-                        {{ audience.createdDt | date:'MMM d, y h:mm:ss a' }}
-                    </td>
-                    <td class="text-right">
-                        <a tabindex="-1" href="#" class="btn btn-default btn-big" ng-click="ctrl.openAudienceModal(audience.id)">Edit</a>
-                        <a class="archive-button btn btn-default btn-big" ng-if="!audience.archived"  ng-class="{'disabled': ctrl.archiveRequestInProgress[audience.id]}" ng-click="ctrl.archiveAudience(audience.id)">
-                            <span class="loader-image" ng-show="ctrl.archiveRequestInProgress[audience.id]"></span><span ng-show="!ctrl.archiveRequestInProgress[audience.id]">Archive</span>
-                        </a>
-
-                        <a class="restore-button btn btn-default btn-big" ng-if="audience.archived" ng-class="{'disabled': ctrl.restoreRequestInProgress[audience.id]}" ng-click="ctrl.restoreAudience(audience.id)">
-                            <span class="loader-image" ng-show="ctrl.restoreRequestInProgress[audience.id]"></span><span ng-show="!ctrl.restoreRequestInProgress[audience.id]">Restore</span>
-                        </a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+<div class="custom_audiences">
+    <h1>Custom Audiences</h1>
+    <div class="zem-custom-audiences-list white-background">
+        <div class="loader-container">
+            <span class="loader" ng-if="ctrl.listRequestInProgress && ctrl.audiences.length"></span>
+            <table class="table table-hover middle-alignment">
+                <thead>
+                    <tr>
+                        <th class="arrow">
+                            Audience
+                            <zem-help-popover content="Audience's name" placement="top"></zem-help-popover>
+                        </th>
+                        <th class="arrow">
+                            Audience ID
+                            <zem-help-popover content="Audience's ID" placement="top"></zem-help-popover>
+                        </th>
+                        <th>
+                            Size
+                            <zem-help-popover content="Approximate count of all unique users in the audience" placement="top"></zem-help-popover>
+                        </th>
+                        <th>
+                            Added Yesterday
+                            <zem-help-popover content="Approximate count of unique users added to the audience yesterday" placement="top"></zem-help-popover>
+                        </th>
+                        <th>Created</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="6" class="loader-row" ng-if="ctrl.listRequestInProgress && !ctrl.audiences.length">
+                            <span class="loader"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="6" class="text-center" ng-if="!ctrl.listRequestInProgress && !ctrl.audiences.length">
+                            No Audiences
+                        </td>
+                    </tr>
+                    <tr ng-class="{'archived': audience.archived}" ng-repeat="audience in ctrl.audiences">
+                        <td class="audience-name">
+                            {{ audience.name }}
+                        </td>
+                        <td class="audience-name">
+                            {{ audience.id }}
+                        </td>
+                        <td class="audience-size">
+                            {{ audience.count }}
+                        </td>
+                        <td>
+                            {{ audience.countYesterday }}
+                        </td>
+                        <td>
+                            {{ audience.createdDt | date:'MMM d, y h:mm:ss a' }}
+                        </td>
+                        <td class="text-right">
+                            <a tabindex="-1" href="#" class="btn btn-default btn-big" ng-click="ctrl.openAudienceModal(audience.id)">Edit</a>
+                            <a class="archive-button btn btn-default btn-big" ng-if="!audience.archived"  ng-class="{'disabled': ctrl.archiveRequestInProgress[audience.id]}" ng-click="ctrl.archiveAudience(audience.id)">
+                                <span class="loader-image" ng-show="ctrl.archiveRequestInProgress[audience.id]"></span><span ng-show="!ctrl.archiveRequestInProgress[audience.id]">Archive</span>
+                            </a>
+    
+                            <a class="restore-button btn btn-default btn-big" ng-if="audience.archived" ng-class="{'disabled': ctrl.restoreRequestInProgress[audience.id]}" ng-click="ctrl.restoreAudience(audience.id)">
+                                <span class="loader-image" ng-show="ctrl.restoreRequestInProgress[audience.id]"></span><span ng-show="!ctrl.restoreRequestInProgress[audience.id]">Restore</span>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

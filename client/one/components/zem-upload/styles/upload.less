@@ -1,6 +1,6 @@
 .modal-zem-upload .modal-dialog {
     @modal-content-width: 1180px;
-    margin-top: 10vh;
+    margin-top: 10vh !important;
     width: @modal-content-width;
     box-sizing: border-box;
     max-height: 70vh;
@@ -28,30 +28,16 @@
     .modal-body {
         overflow: hidden;
         position: relative;
+		margin-bottom: 0 !important;
         
         .description {
             margin-bottom: 20px;
-            color: @light-gray;
-        }
-        
-        .btn-big {
-            width: 100%;
-            line-height: 60px;
-            font-size: 24px;
-            
-            span {
-                display: block;
-                color: @light-gray;
-                font-size: 13px;
-                line-height: 16px;
-                white-space: normal;
-                margin-bottom: 20px;
-            }
+            color: @gray;
         }
     }
 
     .contentad-picker {
-        padding: 0;
+        padding: 0 !important;
         width: 100%;
         overflow: hidden;
         height: 70vh;
@@ -81,7 +67,7 @@
                 font-weight: 300;
             }
 
-            .btn-secondary {
+            .btn-blue {
                 position: absolute;
                 top: 8px;
                 right: 10px;
@@ -89,7 +75,7 @@
 
             input {
                 display: inline-block;
-                width: 90.7%;
+                width: 88.2%;
                 color: @default-color;
                 font-size: 18px;
                 font-weight: 500;
@@ -99,18 +85,18 @@
             }
             
             .title {
-                color: @default-color;
+                color: @secondary-color;
                 font-weight: 500;
                 line-height: 30px;
             }
 
             &.has-error {
                 span {
-                    color: red;
+                    color: @red;
                 }
 
                 input {
-                    color: red;
+                    color: @red;
                 }
             }
         }
@@ -131,11 +117,11 @@
             }
 
             tr:last-child td {
-                border-bottom: 1px solid #ddd;
+                border-bottom: 1px solid tint(@secondary-color,80%);
             }
 
             tr:hover td {
-                background: #F5F5F5;
+                background: tint(@secondary-color,96%);
             }
 
             td.status {
@@ -211,8 +197,8 @@
         right: -(@modal-content-width - @modal-content-width*0.4 + 20);
         .transition(all 200ms ease-in-out);
         padding: 0 15px 15px 15px;
-        background: #F5F5F5;
-        .box-shadow(0 0 10px 0 rgba(0,0,0,0.25));
+        background: tint(@secondary-color,96%);
+        .box-shadow(0 0 10px 0 fade(@secondary-color,25%));
 
         .btn-close {
             position: absolute;
@@ -234,7 +220,7 @@
         .form-group {
             margin-bottom: 10px;
 
-            .btn-secondary {
+            .btn-blue {
                 height: 36px;
 
                 &:focus {
@@ -263,12 +249,18 @@
             width: @modal-content-width - @modal-content-width*0.6;
             .transition(all 200ms ease-in-out);
 
-            .batch-name input {
-                width: 75%;
+            .batch-name {
+                input {
+                    width: 75%;
+                }
+                
+                .btn .text {
+                    display: none; 
+                }
             }
 
             tr.selected td {
-                background: #F5F5F5;
+                background: tint(@secondary-color,96%);
             }
             td.link {
                 display: none;
@@ -293,15 +285,7 @@
                 white-space: nowrap;
 
                 a {
-                    padding-left: 10px;
-
-                    img {
-                        position: relative;
-                        display: block;
-                        top: auto;
-                        left: auto;
-                    }
-                    span {
+                    .text {
                         display: none;
                     }
                 }
@@ -334,12 +318,12 @@
         font-size: 12px;
         font-weight: 400;
         padding-top: 9px;
-        color: @light-gray;
+        color: @gray;
     }
 
     .form-group {
         .info {
-            color: @light-gray;
+            color: @gray;
 
             .help-block {
                 padding: 10px 0 0 30px;
@@ -354,7 +338,7 @@
                 a {
                     display: block;
                     font-weight: 700;
-                    color: @light-gray;
+                    color: @gray;
                 }
             }
         }
@@ -375,26 +359,5 @@
         h1 {
             color: @green;
         }
-    }
-
-    .modal-footer {
-        .error {
-            color: @red;
-            padding-top: 8px;
-        }
-        
-        .loader-icon {
-            margin: 6px 20px 0 0;
-        }
-
-        border: none;
-        background-color: @background-light-gray;
-        text-align: left;
-        -webkit-border-bottom-right-radius: 4px;
-        -webkit-border-bottom-left-radius: 4px;
-        -moz-border-radius-bottomright: 4px;
-        -moz-border-radius-bottomleft: 4px;
-        border-bottom-right-radius: 4px;
-        border-bottom-left-radius: 4px;
     }
 }

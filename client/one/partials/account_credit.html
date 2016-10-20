@@ -1,23 +1,27 @@
 <div class="page page-account-credit page-section" ng-if="!account.archived">
-    <div class="section description">
-        <p>Account credit is the basis of allocating any budget to any campaign.</p>
-        <p>Valid credit items are used by campaign budget items in the order they are listed.</p>
-
+	<h1>Credit</h1>
+    <div class="section white-background" ng-show="!loadingInProgress">
+        <h2>Overview</h2>
+        <div class="description">Account credit is the basis of allocating any budget to any campaign. Valid credit items are used by campaign budget items in the order they are listed.</div>
         <div class="loader" ng-show="loadingInProgress"></div>
+        <div class="named-data">
+            <div class="name">Total Account Value</div>
+            <div class="value">{{ creditTotals.total | decimalCurrency:"$":2 }}</div>
+            <div class="clear"></div>
+            <div class="name">Allocated To Budget Items</div>
+            <div class="value">{{ creditTotals.allocated | decimalCurrency:"$":2  }}</div>
+            <div class="clear"></div>
+            <div class="name bottomborder">Past Credit</div>
+            <div class="value bottomborder">{{ creditTotals.past | decimalCurrency:"$":2  }}</div>
+            <div class="clear"></div>
+            <div class="name exposed">Available Account Credit</div>
+            <div class="value exposed">{{ creditTotals.available | decimalCurrency:"$":2  }}</div>
+            <div class="clear"></div>
+        </div>
     </div>
-    <div class="section named-data" ng-show="!loadingInProgress">
-        <div class="name">Total Account Value</div>
-        <div class="value">{{ creditTotals.total | decimalCurrency:"$":2 }}</div>
-        <div class="name">Allocated To Budget Items</div>
-        <div class="value">{{ creditTotals.allocated | decimalCurrency:"$":2  }}</div>
-        <div class="name bottomborder">Past Credit</div>
-        <div class="value bottomborder">{{ creditTotals.past | decimalCurrency:"$":2  }}</div>
-        <div class="name">Available Account Credit</div>
-        <div class="value">{{ creditTotals.available | decimalCurrency:"$":2  }}</div>
-    </div>
-    <div class="section active-credits" ng-show="!loadingInProgress">
-        <div class="title">Active Credit Items</div>
-        <table>
+    <div class="section active-credits white-background" ng-show="!loadingInProgress">
+        <h2>Active Credit Items</h2>
+        <table class="table">
             <thead>
                 <tr>
                     <th>Created by</th>
@@ -30,8 +34,8 @@
                     <th>Allocated Budgets</th>
                     <th>Available Credit</th>
                     <th ng-if="account.agency">Agency Credit</th>
-                    <th>Notes</th>
-                    <th>Actions</th>
+                    <th class="notes">Notes</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -44,35 +48,27 @@
                     <td>{{ item.flatFee | decimalCurrency:"$":2 }}</td>
                     <td>{{ item.total | decimalCurrency:"$":2  }}</td>
                     <td>
-                        {{ item.allocated | decimalCurrency:"$":2  }} ({{ item.numOfBudgets }} budget
+                        {{ item.allocated | decimalCurrency:"$":2  }}<br>({{ item.numOfBudgets }} budget
                         <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
                     <td ng-if="account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
-                    <td>
-                        <zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover>
-                    </td>
-                    <td>
-                        <ul class="row-actions">
-                            <li ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled">
-								<i class="glyphicon glyphicon-pencil" title="edit"></i>
-							</li>
-							<li ng-click="cancelCreditItem(item.id)" ng-if="item.isSigned">
-								<i class="glyphicon glyphicon-remove-circle" title="cancel"></i>
-							</li>
-                        </ul>
+                    <td class="notes break-long-words"><span ng-if="item.comment">{{ item.comment }}</span><span ng-if="!item.comment">N/A</span></td>
+                    <td class="action-buttons">
+							          <a class="btn btn-blue btn-icon btn-small remove" ng-click="cancelCreditItem(item.id)" ng-if="item.isSigned"><span class="icon"></span><span class="text">Cancel</span></a>
+                        <a class="btn btn-blue btn-icon btn-small edit" ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled"><span class="icon"></span><span class="text">Edit</span></a>
                     </td>
                 </tr>
                 <tr ng-show="!activeCredit.length" class="message">
-                    <td colspan="9">No active credit items.</td>
+                    <td colspan="12">No active credit items.</td>
                 </tr>
             </tbody>
         </table>
-        <button type="button" class="btn btn-default" ng-click="addCreditItem()">Add Credit Item</button>
+        <button type="button" class="btn btn-blue btn-icon add" ng-click="addCreditItem()"><span class="icon"></span><span class="text">Add Credit Item</span></button>
     </div>
-    <div class="section active-credits" ng-show="!loadingInProgress">
-        <div class="title">Past Credit Items</div>
-        <table>
+    <div class="section active-credits white-background" ng-show="!loadingInProgress">
+        <h2>Past Credit Items</h2>
+        <table class="table">
             <thead>
                 <tr>
                     <th>Created by</th>
@@ -86,11 +82,11 @@
                     <th>Available Credit</th>
                     <th ng-if="account.agency">Agency Credit</th>
                     <th>Notes</th>
-                    <th>Actions</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="item in pastCredit" ng-class="{ 'row-canceled': item.isCanceled, 'row-updated-canceled': canceledIds[item.id], 'row-not-selected': !isSelected(item.startDate, item.endDate) }">
+                <tr ng-repeat="item in pastCredit" ng-class="{ 'row-canceled': item.isCanceled, 'row-updated-canceled': canceledIds[item.id] }">
                     <td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
@@ -99,24 +95,18 @@
                     <td>{{ item.flatFee | decimalCurrency:"$":2 }}</td>
                     <td>{{ item.total | decimalCurrency:"$":2  }}</td>
                     <td>
-                        {{ item.allocated | decimalCurrency:"$":2  }} ({{ item.numOfBudgets }} budget
+                        {{ item.allocated | decimalCurrency:"$":2  }}<br>({{ item.numOfBudgets }} budget
                         <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
                     <td ng-if="account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
-                    <td>
-                        <zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover>
-                    </td>
-                    <td>
-                        <ul class="row-actions">
-                            <li ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled">
-								<i class="glyphicon glyphicon-pencil" title="edit"></i>
-							</li>
-                        </ul>
+                    <td class="break-long-words"><span ng-if="item.comment">{{ item.comment }}</span><span ng-if="!item.comment">N/A</span></td>
+                    <td class="action-buttons">
+                        <a class="btn btn-blue btn-icon btn-small edit" ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled"><span class="icon"></span><span class="text">Edit</span></a>
                     </td>
                 </tr>
                 <tr ng-show="!pastCredit.length" class="message">
-                    <td colspan="9">No past credit items.</td>
+                    <td colspan="12">No past credit items.</td>
                 </tr>
             </tbody>
         </table>

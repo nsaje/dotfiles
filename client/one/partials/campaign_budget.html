@@ -1,33 +1,41 @@
 <div class="page page-campaign-budget page-section" ng-if="!account.archived">
-    <div class="section budgets-overview">
-        <div class="title">Overview</div>
+    <h1>Budget</h1>
+    <div class="section white-background budgets-overview">
+        <h2>Overview</h2>
         <div class="section named-data">
-            <div class="name">Available Budget</div>
-            <div class="value">{{ budgetTotals.currentAvailable | decimalCurrency:"$":2 }}</div>
-            <div class="name bottomborder">Unallocated Credit</div>
-            <div class="value bottomborder">
+            <div class="name exposed">Available Budget</div>
+            <div class="value exposed">{{ budgetTotals.currentAvailable | decimalCurrency:"$":2 }}</div>
+            <div class="clear"></div>
+            <div class="name bottomborder exposed">Unallocated Credit</div>
+            <div class="value bottomborder exposed">
                 {{ budgetTotals.currentUnallocated | decimalCurrency:"$":2 }}
             </div>
+            <div class="clear"></div>
             <div class="name">Campaign Spend</div>
             <div class="value">{{ budgetTotals.lifetimeCampaignSpend | decimalCurrency:"$":2 }}</div>
+            <div class="clear"></div>
             <div class="name">Media Spend</div>
             <div class="value">{{ budgetTotals.lifetimeMediaSpend | decimalCurrency:"$":2 }}</div>
+            <div class="clear"></div>
             <div class="name">Data Spend</div>
             <div class="value">{{ budgetTotals.lifetimeDataSpend | decimalCurrency:"$":2 }}</div>
+            <div class="clear"></div>
             <div class="name">License Fee</div>
             <div class="value">{{ budgetTotals.lifetimeLicenseFee | decimalCurrency:"$":2 }}</div>
+            <div class="clear"></div>
             <div ng-if="hasPermission('zemauth.can_manage_agency_margin')">
                 <div class="name">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_manage_agency_margin')"></zem-internal-feature>
                     Margin
                 </div>
                 <div class="value">{{ budgetTotals.lifetimeMargin | decimalCurrency:"$":2 }}</div>
+                <div class="clear"></div>
             </div>
         </div>
     </div>
-    <div class="section budgets-active-pending">
-        <div class="title">Active Budget items</div>
-        <table>
+    <div class="section white-background budgets-active-pending">
+        <h2>Active Budget items</h2>
+        <table class="table">
             <thead>
                 <tr>
                     <th>Start Date</th>
@@ -40,7 +48,7 @@
                     </th>
                     <th>Total Spend</th>
                     <th>Available Budget</th>
-                    <th>Notes</th>
+                    <th class="notes">Notes</th>
                     <th></th>
                 </tr>
             </thead>
@@ -55,11 +63,9 @@
                     </td>
                     <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
-                    <td><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
-                    <td>
-                        <ul class="row-actions">
-                            <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable"><i class="glyphicon glyphicon-pencil" title="edit"></i></li>
-                        </ul>
+                    <td class="notes break-long-words"><span ng-if="item.comment">{{ item.comment }}</span><span ng-if="!item.comment">N/A</span></td>
+                    <td class="text-right">
+                        <a class="btn btn-blue btn-icon btn-small edit" ng-click="editBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable"><span class="icon"></span><span class="text">Edit</span></a>
                     </td>
                 </tr>
                 <tr ng-show="!activeBudget.length" class="message">
@@ -67,12 +73,12 @@
                 </tr>
             </tbody>
         </table>
+        <button type="button" class="btn btn-blue btn-icon add" ng-click="addBudgetItem()" ng-disabled="!getAvailableCredit().length"><span class="icon"></span><span class="text">Add Budget Item</span></button>
     </div>
 
-    <button type="button" class="btn btn-default" ng-click="addBudgetItem()" ng-disabled="!getAvailableCredit().length">Add Budget Item</button>
-    <div class="section budgets-past-pending">
-        <div class="title">Depleted Budget Items</div>
-        <table>
+    <div class="section white-background budgets-past-pending">
+        <h2>Depleted Budget Items</h2>
+        <table class="table">
             <thead>
                 <tr>
                     <th>Start Date</th>
@@ -85,7 +91,7 @@
                     </th>
                     <th>Total Spend</th>
                     <th>Available Budget</th>
-                    <th>Notes</th>
+                    <th class="notes">Notes</th>
                     <th></th>
                 </tr>
             </thead>
@@ -102,11 +108,9 @@
                     <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
 
-                    <td><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
-                    <td>
-                        <ul class="row-actions">
-                            <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable"><i class="glyphicon glyphicon-pencil" title="edit"></i></li>
-                        </ul>
+                    <td class="notes break-long-words"><span ng-if="item.comment">{{ item.comment }}</span><span ng-if="!item.comment">N/A</span></td>
+                    <td class="text-right">
+                        <a class="btn btn-blue btn-icon btn-small edit" ng-click="editBudgetItem(item.id)" ng-if="item.isEditable"><span class="icon"></span><span class="text">Edit</span></a>
                     </td>
                 </tr>
                 <tr ng-show="!pastBudget.length" class="message">

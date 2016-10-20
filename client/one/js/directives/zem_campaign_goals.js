@@ -109,7 +109,6 @@ angular.module('one.legacy').directive('zemCampaignGoals', ['$filter', function 
                 return $uibModal.open({
                     templateUrl: '/partials/edit_campaign_goal_modal.html',
                     controller: 'EditCampaignGoalModalCtrl',
-                    windowClass: 'modal-default-legacy',
                     scope: scope,
                 });
             }
@@ -165,7 +164,6 @@ angular.module('one.legacy').directive('zemCampaignGoals', ['$filter', function 
 
                 var modalInstance = $uibModal.open({
                     templateUrl: '/partials/copy_conversion_pixel_modal.html',
-                    windowClass: 'modal-default-legacy',
                     scope: scope,
                 });
                 modalInstance.result.then(function () {});

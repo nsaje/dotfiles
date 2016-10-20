@@ -1,7 +1,8 @@
+<div class="modal-header">
+    <h4 class="modal-title">Schedule Report</h4>
+</div>
 <div class="modal-body">
     <form id="add-scheduled-report-form" ng-submit="addScheduledReport()" class="modal-form add-scheduled-report-form form-horizontal">
-        <div class="title">Schedule Report</div>
-
         <div class="form-group" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')">
             <span class="col-xs-12">
                 Note: Exports currently don't support some of the breakdowns available in the table view.
@@ -178,6 +179,8 @@
             <div class="col-xs-8">
                 <label ng-repeat="error in validationErrors.recipient_emails" class="control-label small error" for="recipient-emails-label">{{ error }}</label>
             </div>
+            
+            <div class="col-xs-12">
 
             <textarea
                 ng-model="export.recipientEmails"
@@ -186,21 +189,15 @@
                 type="text"
                 placeholder="Comma-separated list of recipient email addresses">
             </textarea>
+            
+            </div>
         </div>
 
-        <div class="form-group">
-            <div class="col-xs-4">
-                <button type="submit" class="btn btn-default">Schedule</button>
-            </div>
-            <div class="col-xs-3">
-                <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
-            </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-add btn-icon calendar"><span class="icon"></span><span class="text">Schedule</span></button>
+            <button type="button" class="btn btn-blue btn-outline" ng-click="$dismiss()"><span class="text">Cancel</span></button>
             <div class="loader" ng-show="showInProgress"></div>
-            <div class="col-xs-5 small error">
-              <span ng-if="hasError">
-                An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
-              </span>
-            </div>
+            <span class="small error" ng-if="hasError">An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.</span>
         </div>
     </form>
 </div>

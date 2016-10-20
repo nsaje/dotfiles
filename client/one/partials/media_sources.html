@@ -9,9 +9,10 @@
                 <div class="insights-container" ng-show="isContentInsightsVisible">
                     <zem-content-insights summary="contentInsights.summary" metric="contentInsights.metric" best-performer-rows="contentInsights.bestPerformerRows" worst-performer-rows="contentInsights.worstPerformerRows"></zem-content-insights>
                 </div>
-                <div class="graph-container" ng-show="isChartVisible">
+                <div class="graph-container" ng-show="isChartVisible" ng-class="{'all-accounts-sources': $state.current.name.includes('main.allAccounts.sources'), 'account-sources': $state.current.name.includes('main.accounts.sources')}">
                     <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
                 </div>
+                <div class="spacing"></div>
                 <div class="infobox-container">
                     <zem-infobox class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-infobox>
                 </div>
@@ -48,13 +49,8 @@
 
         <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
         <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-data-status="dataStatus"></zem-table>
-
-        <div class="table-footnotes">
-            <div>* The reporting data is an estimate, and the final amount will be reflected on your invoice.</div>
-            <div>* All times are in Eastern Standard Time (EST).</div>
-        </div>
     </div>
-    <div class="section zem-internal-feature-container" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
+    <div class="section zem-internal-feature-container white-background" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature')"></zem-internal-feature>
 
         <div class="button-bar" ng-if="grid.api">

@@ -1,7 +1,8 @@
+<div class="modal-header">
+    <h4 class="modal-title">Export Report</h4>
+</div>
 <div class="modal-body">
     <form id="download-export-report-form" ng-submit="downloadReport()" class="modal-form add-scheduled-report-form form-horizontal">
-        <div class="title">Export Report</div>
-
         <div class="form-group" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')">
             <span class="col-xs-12">
                 Note: Exports currently don't support some of the breakdowns available in the table view.
@@ -67,21 +68,12 @@
                        class="checkbox">
             </div>
         </div>
-
-        <div class="form-group">
-            <div class="col-xs-4">
-                <button type="submit" class="btn btn-default" ng-disabled="!downloadAllowed">Download Now</button>
-            </div>
-            <div class="col-xs-3">
-                <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
-            </div>
-            <div class="loader" ng-show="showInProgress"></div>
-        </div>
-
-        <div class="form-group">
-          <span class="col-xs-12 small error">
-            <span ng-if="!downloadAllowed">{{downloadNotAllowedMessage}}</span>
-          </span>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-add btn-icon download" ng-disabled="!downloadAllowed"><span class="icon"></span><span class="text">Download Now</span></button>
+            <button type="button" class="btn btn-blue btn-outline" ng-click="$dismiss()"><span class="text">Cancel</span></button>
+            
+            <div class="loader" ng-show="addConversionGoalInProgress"></div>
+            <span class="small error" ng-if="error" ng-if="!downloadAllowed">{{downloadNotAllowedMessage}}</span>
         </div>
     </form>
 </div>

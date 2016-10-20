@@ -1,4 +1,4 @@
-<div class="edit-form custom_scroller">
+<div class="edit-form custom-scroller">
     <div ng-if="!!ctrl.selectedCandidate">
         <h4>Edit content ad: {{ ctrl.selectedCandidate.title }}</h4>
         <form class="file-upload-form form-horizontal">
@@ -63,9 +63,8 @@
                 <div class="col-xs-8">
                     <div>
                         <zem-file-input zem-file-input-change="ctrl.imageUploadCallback(file)" zem-file-input-accept="image/*">
-                            <button type="button" class="btn btn-secondary" zem-file-input-trigger>
-                                <img ng-src="{{ ctrl.config.static_url }}/one/img/button-folder.svg"/>
-                                <span class="action-text">Choose file</span>
+                            <button type="button" class="btn btn-blue btn-icon folder" zem-file-input-trigger>
+                                <span class="icon"></span><span class="text">Choose file</span>
                             </button>
                         </zem-file-input>
                     </div>
