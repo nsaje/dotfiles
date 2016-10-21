@@ -7,8 +7,21 @@ from zemauth.models import User
 from django.core.urlresolvers import reverse
 
 import dash.models
+import views as restapi_views
 from dash import constants
 from dash import upload
+
+
+class SerializerTets(TestCase):
+
+    def test_allow_not_provided(self):
+        NOT_PROVIDED = restapi_views.NOT_PROVIDED
+        d = {'name': 'test', 'tracking': {'ga': {'enabled': True}}}
+        new_d = restapi_views.SettingsSerializer._allow_not_provided(d)
+        self.assertEqual(new_d['name'], 'test')
+        self.assertEqual(new_d['tracking']['ga']['enabled'], True)
+        self.assertEqual(new_d['tracking']['ga']['property_id'], NOT_PROVIDED)
+        self.assertEqual(new_d['tracking']['adobe']['enabled'], NOT_PROVIDED)
 
 
 class RESTAPITest(TestCase):
@@ -53,7 +66,6 @@ class RESTAPITest(TestCase):
         r = self.client.post(
             reverse('campaigngoals_list', kwargs={'campaign_id': 1}),
             data={'type': 'TIME_ON_SITE', 'value': '30.0', 'primary': True, 'conversionGoal': None}, format='json')
-        print r
         self.assertEqual(r.status_code, 200)
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], dict)
@@ -78,11 +90,38 @@ class RESTAPITest(TestCase):
         r = self.client.post(
             reverse('adgroups_list'),
             data={'campaignId': 1, 'name': 'test adgroup'}, format='json')
-        print r
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], dict)
         self.assertEqual(resp_json['data']['name'], 'test adgroup')
+
+    @override_settings(R1_DEMO_MODE=True)
+    def test_adgroups_put(self):
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        ad_group.get_current_settings().save(None)
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'entity_id': 1}),
+            data={'name': 'renamed test ad group'}, format='json')
+        self.assertEqual(r.status_code, 201)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json['data'], dict)
+        self.assertEqual(resp_json['data']['name'], 'renamed test ad group')
+        self.assertEqual(ad_group.get_current_settings().ad_group_name, 'renamed test ad group')
+
+    @override_settings(R1_DEMO_MODE=True)
+    def test_adgroups_put_state(self):
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        settings = ad_group.get_current_settings()
+        settings.state = constants.AdGroupSettingsState.ACTIVE
+        settings.save(None)
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'entity_id': 1}),
+            data={'state': 'INACTIVE'}, format='json')
+        self.assertEqual(r.status_code, 201)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json['data'], dict)
+        self.assertEqual(resp_json['data']['state'], 'INACTIVE')
+        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
 
     def test_adgroups_sources_list(self):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
@@ -112,7 +151,12 @@ class RESTAPITest(TestCase):
             self.assertEqual(item.keys(), expected_fields)
 
 
-class TestBatchUpload(RESTAPITest):
+class TestBatchUpload(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        self.client = APIClient()
+        self.client.force_authenticate(user=User.objects.get(pk=1))
 
     @staticmethod
     def _mock_content_ad(title):

@@ -63,7 +63,8 @@ class DashConstantField(serializers.Field):
         try:
             return getattr(self.const_cls, data)
         except AttributeError:
-            self.fail('invalid_choice', data)
+            valid_choices = self.const_cls.get_all_names()
+            raise serializers.ValidationError('Invalid choice %s! Valid choices: %s' % (data, ', '.join(valid_choices)))
 
     def to_representation(self, value):
         return self.const_cls.get_name(value)
@@ -89,6 +90,17 @@ class SettingsSerializer(serializers.BaseSerializer):
         kwargs['child'] = cls(request, view_internal, *args, **kwargs)
         return serializers.ListSerializer(*args, **kwargs)
 
+    @classmethod
+    def _allow_not_provided(cls, d):
+        if d == NOT_PROVIDED:
+            return NOT_PROVIDED
+        new_dict = collections.defaultdict(lambda: NOT_PROVIDED)
+        new_dict.update(d)
+        for key, value in new_dict.items():
+            if isinstance(value, dict):
+                new_dict[key] = cls._allow_not_provided(value)
+        return new_dict
+
 
 class CampaignSerializer(SettingsSerializer):
 
@@ -113,8 +125,7 @@ class CampaignSerializer(SettingsSerializer):
         }
 
     def to_internal_value(self, external_data):
-        data = collections.defaultdict(lambda: NOT_PROVIDED)
-        data.update(external_data)
+        data = self._allow_not_provided(external_data)
         settings = {
             'id': data['id'],
             'account_id': data['accountId'],
@@ -130,6 +141,20 @@ class CampaignSerializer(SettingsSerializer):
 
 
 class AdGroupSerializer(SettingsSerializer):
+
+    def update(self, data_internal, validated_data):
+        """ Handle state update separately, since it's on a separate endpoint """
+        settings = data_internal['data']['settings']
+        validated_settings = validated_data['settings']
+        if validated_settings.get('state') and validated_settings['state'] != settings['state']:
+            entity_id = int(settings['id'])
+            self.request.body = RESTAPIJSONRenderer().render(({'state': validated_settings['state']}))
+            internal_view = agency.AdGroupSettingsState(rest_proxy=True)
+            data_internal_new, _ = internal_view.post(self.request, entity_id)
+
+        data_internal_new = super(AdGroupSerializer, self).update(data_internal, validated_data)
+        return data_internal_new
+
     def to_representation(self, data_internal):
         settings = data_internal['data']['settings']
         return {
@@ -146,7 +171,7 @@ class AdGroupSerializer(SettingsSerializer):
                 'geo': {
                     'included': self._partition_regions(settings['target_regions']),
                 },
-                'devices': map(lambda x: constants.AdTargetDevice.get_name(x), settings['target_devices']),
+                'devices': map(lambda x: DashConstantField(constants.AdTargetDevice).to_representation(x), settings['target_devices']),
             },
             'autopilot': {
                 'state': constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state']),
@@ -156,32 +181,22 @@ class AdGroupSerializer(SettingsSerializer):
 
     def to_internal_value(self, external_data):
         data = self._allow_not_provided(external_data)
-        data['targeting'] = self._allow_not_provided(data['targeting'])
-        data['autopilot'] = self._allow_not_provided(data['autopilot'])
         settings = {
             'id': data['id'],
             'campaign_id': data['campaignId'],
             'name': data['name'],
-            'state': getattr(constants.AdGroupSettingsState, data['state']) if data['state'] != NOT_PROVIDED else NOT_PROVIDED,
+            'state': DashConstantField(constants.AdGroupSettingsState).to_internal_value(data['state']) if data['state'] != NOT_PROVIDED else NOT_PROVIDED,
             'start_date': data['startDate'],
             'end_date': data['endDate'],
             'cpc_cc': data['maxCpc'],
             'daily_budget_cc': data['dailyBudget'],
             'tracking_code': data['trackingCode'],
             'target_regions': self._unpartition_regions(data['targeting']['geo']['included']),
-            'target_devices': map(lambda x: getattr(constants.AdTargetDevice, x), data['targeting']['devices']) if data['targeting']['devices'] != NOT_PROVIDED else NOT_PROVIDED,
-            'autopilot_state': getattr(constants.AdGroupSettingsAutopilotState, data['autopilot']['state']) if data['autopilot']['state'] != NOT_PROVIDED else NOT_PROVIDED,
+            'target_devices': map(lambda x: DashConstantField(constants.AdTargetDevice).to_internal_value(x), data['targeting']['devices']) if data['targeting']['devices'] != NOT_PROVIDED else NOT_PROVIDED,
+            'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']) if data['autopilot']['state'] != NOT_PROVIDED else NOT_PROVIDED,
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
         }
         return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
-
-    @staticmethod
-    def _allow_not_provided(d):
-        if d == NOT_PROVIDED:
-            return NOT_PROVIDED
-        new_dict = collections.defaultdict(lambda: NOT_PROVIDED)
-        new_dict.update(d)
-        return new_dict
 
     @staticmethod
     def _partition_regions(target_regions):
@@ -243,7 +258,6 @@ class SettingsViewList(RESTAPIBaseView):
         return self.response_ok(serializer.data)
 
     def post(self, request):
-        # import pdb; pdb.set_trace()
         with transaction.atomic():
             create_view_internal = self.internal_create_view_cls(rest_proxy=True)
             parent_id = request.data.get(self.parent_id_field)
@@ -441,7 +455,7 @@ class PublisherSerializer(serializers.Serializer):
             'select_all': False,
             'level': self.validated_data['get_blacklist_level']
         }
-        view_internal = views.PublishersBlacklistStatus(passthrough=True)
+        view_internal = views.PublishersBlacklistStatus(rest_proxy=True)
         request.body = RESTAPIJSONRenderer().render(post_data)
         data_internal, status_code = view_internal.post(request, ad_group_id)
 
@@ -475,7 +489,7 @@ class AdGroupSourceSerializer(serializers.Serializer):
         source_id = validated_data['ad_group_source']['source']
         put_data = {field: validated_data[field] for field in ['cpc_cc', 'daily_budget_cc', 'state'] if field in validated_data}
         request.body = RESTAPIJSONRenderer().render(put_data)
-        view_internal = views.AdGroupSourceSettings(passthrough=True)
+        view_internal = views.AdGroupSourceSettings(rest_proxy=True)
         data_internal, status_code = view_internal.put(request, ad_group_id, source_id)
 
 

@@ -40,7 +40,8 @@ def _handle_client_api_exceptions(exception, context):
         error_data["details"] = exception.pretty_message or exception.message
 
         if isinstance(exception, exc.ValidationError):
-            error_data['details'] = exception.errors
+            if exception.errors:
+                error_data['details'] = exception.errors
             if exception.data:
                 error_data['data'] = exception.data
 
