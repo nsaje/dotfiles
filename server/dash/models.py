@@ -2687,6 +2687,9 @@ class UploadBatch(models.Model):
 
     auto_save = models.BooleanField(default=False)
 
+    def get_approved_content_ads(self):
+        return self.contentad_set.all().order_by('pk')
+
     class Meta:
         get_latest_by = 'created_dt'
 

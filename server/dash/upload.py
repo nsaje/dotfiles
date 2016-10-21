@@ -9,6 +9,7 @@ from dash import constants
 from dash import forms
 from dash import models
 from dash import image_helper
+from dash import upload_dev
 from utils import lambda_helper, k1_helper, redirector_helper
 
 logger = logging.getLogger(__name__)
@@ -62,6 +63,10 @@ def _reset_candidate_async_status(candidate):
 def _invoke_external_validation(candidate, batch):
     _reset_candidate_async_status(candidate)
 
+    if settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME == 'mock':
+        upload_dev.MockAsyncValidation(candidate, _handle_auto_save).start()
+        return
+
     cleaned_urls = _get_cleaned_urls(candidate)
     skip_url_validation = has_skip_validation_magic_word(batch.original_filename)
     lambda_helper.invoke_lambda(
@@ -88,7 +93,7 @@ def persist_candidates(batch):
     if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
         raise InvalidBatchStatus('Invalid batch status')
 
-    candidates = models.ContentAdCandidate.objects.filter(batch=batch)
+    candidates = models.ContentAdCandidate.objects.filter(batch=batch).order_by('pk')
     cleaned_candidates, errors = _clean_candidates(candidates)
     if errors:
         raise CandidateErrorsRemaining('Save not permitted - candidate errors exist')
@@ -320,6 +325,23 @@ def _process_url_update(candidate, url, callback_data):
 
 def _handle_auto_save(batch):
     if not batch.auto_save:
+        return
+
+    if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
+        return
+
+    should_fail = False
+    _, errors = _clean_candidates(batch.contentadcandidate_set.all())
+    for error_dict in errors.values():
+        keys = set(error_dict.keys())
+        keys.discard('__all__')
+        if len(keys) > 0:
+            should_fail = True
+            break
+
+    if should_fail:
+        batch.status = constants.UploadBatchStatus.FAILED
+        batch.save()
         return
 
     try:

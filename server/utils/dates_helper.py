@@ -31,6 +31,10 @@ def utc_today():
     return utc_now().date()
 
 
+def local_now():
+    return utc_to_local_datetime(datetime.datetime.utcnow())
+
+
 def local_today():
     return utc_to_local_datetime(datetime.datetime.utcnow()).date()
 

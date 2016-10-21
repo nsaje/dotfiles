@@ -3,19 +3,22 @@ import logging
 
 from django.db import transaction
 from django.db.models import Q
+import django.db.models
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import permissions
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
+from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
 from dash.views import agency, views, helpers
 from dash import regions
 from dash import campaign_goals
 from dash import constants
+from dash import upload
 import dash.models
-from utils import json_helper, exc
+from utils import json_helper, exc, dates_helper
 from .authentication import OAuth2Authentication
 
 
@@ -43,8 +46,10 @@ class RESTAPIBaseView(APIView):
     permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission,)
 
     @staticmethod
-    def response_ok(data, **kwargs):
+    def response_ok(data, errors=None, **kwargs):
         data = {'data': data}
+        if errors:
+            data['errors'] = errors
         return Response(data, **kwargs)
 
 
@@ -490,6 +495,16 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
         return self.get(request, ad_group.id)
 
 
+class IdField(serializers.Field):
+    def to_representation(self, data):
+        if isinstance(data, django.db.models.Model):
+            return str(data.id)
+        return str(data)
+
+    def to_internal_value(self, data):
+        return int(data)
+
+
 class ContentAdSerializer(serializers.ModelSerializer):
     class Meta:
         model = dash.models.ContentAd
@@ -497,7 +512,8 @@ class ContentAdSerializer(serializers.ModelSerializer):
                   'description', 'call_to_action', 'label', 'image_crop', 'tracker_urls')
         read_only_fields = tuple(set(fields) - set(('state',)))
 
-    ad_group_id = serializers.PrimaryKeyRelatedField(source='ad_group', read_only=True)
+    id = IdField()
+    ad_group_id = IdField(source='ad_group')
     state = DashConstantField(constants.ContentAdSourceState)
     image_url = serializers.URLField(source='get_image_url')
 
@@ -538,9 +554,81 @@ class ContentAdViewDetails(RESTAPIBaseView):
         return self.response_ok(serializer.data)
 
 
+class ContentAdCandidateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = dash.models.ContentAdCandidate
+        fields = ('url', 'title', 'image_url', 'display_url', 'brand_name',
+                  'description', 'call_to_action', 'label', 'image_crop')
+        extra_kwargs = {'primary_tracker_url': {'allow_empty': True}, 'secondary_tracker_url': {'allow_empty': True}}
+
+    def to_internal_value(self, external_data):
+        internal_data = super(ContentAdCandidateSerializer, self).to_internal_value(external_data)
+        tracker_urls = external_data.get('tracker_urls')
+        if not tracker_urls:
+            return internal_data
+        if len(tracker_urls) > 0:
+            internal_data['primary_tracker_url'] = tracker_urls[0]
+        if len(tracker_urls) > 1:
+            internal_data['secondary_tracker_url'] = tracker_urls[1]
+        if len(tracker_urls) > 2:
+            raise serializers.ValidationError('A maximum of two tracker URLs are supported.')
+        return internal_data
+
+
+class UploadBatchSerializer(serializers.Serializer):
+    id = IdField()
+    status = DashConstantField(constants.UploadBatchStatus)
+    approvedContentAds = ContentAdSerializer(many=True, source='get_approved_content_ads')
+
+    def to_representation(self, batch):
+        external_data = super(UploadBatchSerializer, self).to_representation(batch)
+        cleaned_candidates = upload.get_candidates_with_errors(batch.contentadcandidate_set.all())
+        external_data['validationStatus'] = [candidate['errors'] for candidate in cleaned_candidates]
+        return external_data
+
+
 class ContentAdBatchViewList(RESTAPIBaseView):
-    pass
+    renderer_classes = (CamelCaseJSONRenderer,)
+    parser_classes = (CamelCaseJSONParser,)
+
+    def post(self, request):
+        ad_group_id = request.query_params.get('adGroupId')
+        if not ad_group_id:
+            raise serializers.ValidationError('Must pass adGroupId parameter')
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        serializer = ContentAdCandidateSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+
+        batch_name = self._generate_batch_name('API Upload')
+        candidates_data = serializer.validated_data
+        filename = None
+
+        batch, candidates = upload.insert_candidates(
+            candidates_data,
+            ad_group,
+            batch_name,
+            filename,
+            auto_save=True,
+        )
+
+        batch_serializer = UploadBatchSerializer(batch)
+        return self.response_ok(batch_serializer.data, status=201)
+
+    @staticmethod
+    def _generate_batch_name(prefix):
+        return '%s %s' % (prefix, dates_helper.local_now().strftime('M/D/YYYY h:mm A'))
 
 
 class ContentAdBatchViewDetails(RESTAPIBaseView):
-    pass
+    renderer_classes = (CamelCaseJSONRenderer,)
+
+    def get(self, request, batch_id):
+        try:
+            batch = dash.models.UploadBatch.objects.get(id=batch_id)
+        except dash.models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError('Upload batch does not exist')
+        helpers.get_ad_group(request.user, batch.ad_group_id)  # permissions check
+
+        batch_serializer = UploadBatchSerializer(batch)
+        return self.response_ok(batch_serializer.data)

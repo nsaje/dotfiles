@@ -799,3 +799,37 @@ class UploadTest(TestCase):
         candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
         self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
         self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
+
+
+class AutoSaveTest(TestCase):
+
+    @patch.object(upload, 'persist_candidates')
+    def test_handle_auto_save_flag(self, mock_persist_candidates):
+        batch = models.UploadBatch(status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=False)
+        upload._handle_auto_save(batch)
+        self.assertEqual(batch.status, constants.UploadBatchStatus.IN_PROGRESS)
+        mock_persist_candidates.assert_not_called()
+
+    @patch.object(upload, 'persist_candidates')
+    def test_not_in_progress(self, mock_persist_candidates):
+        batch = models.UploadBatch(status=constants.UploadBatchStatus.FAILED, auto_save=True)
+        upload._handle_auto_save(batch)
+        self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
+        mock_persist_candidates.assert_not_called()
+
+    @patch.object(upload, '_clean_candidates')
+    @patch.object(upload, 'persist_candidates')
+    def test_batch_should_fail(self, mock_persist_candidates, mock_clean_candidates):
+        mock_clean_candidates.return_value = (None, {1: {'title': 'too long'}})
+        batch = models.UploadBatch(status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True)
+        upload._handle_auto_save(batch)
+        self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
+        mock_persist_candidates.assert_not_called()
+
+    @patch.object(upload, '_clean_candidates')
+    @patch.object(upload, 'persist_candidates')
+    def test_batch_should_succeed(self, mock_persist_candidates, mock_clean_candidates):
+        mock_clean_candidates.return_value = (None, {})
+        batch = models.UploadBatch(status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True)
+        upload._handle_auto_save(batch)
+        mock_persist_candidates.assert_called_with(batch)
