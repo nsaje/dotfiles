@@ -11,6 +11,7 @@ from django.conf import settings
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from django.db.models.query import QuerySet
 
 from . import exceptions
 from . import models
@@ -317,17 +318,17 @@ def get_ad_group_sources_waiting(**kwargs):
 
     if 'ad_group' in kwargs:
         key = 'ad_group_source__ad_group'
-        if isinstance(kwargs['ad_group'], collections.Sequence):
+        if isinstance(kwargs['ad_group'], collections.Sequence) or isinstance(kwargs['ad_group'], QuerySet):
             key += '__in'
         constraints[key] = kwargs['ad_group']
     if 'campaign' in kwargs:
         key = 'ad_group_source__ad_group__campaign'
-        if isinstance(kwargs['campaign'], collections.Sequence):
+        if isinstance(kwargs['campaign'], collections.Sequence) or isinstance(kwargs['campaign'], QuerySet):
             key += '__in'
         constraints[key] = kwargs['campaign']
     if 'account' in kwargs:
         key = 'ad_group_source__ad_group__campaign__account'
-        if isinstance(kwargs['account'], collections.Sequence):
+        if isinstance(kwargs['account'], collections.Sequence) or isinstance(kwargs['account'], QuerySet):
             key += '__in'
         constraints[key] = kwargs['account']
 
