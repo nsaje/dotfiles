@@ -66,10 +66,6 @@ class CrossvalidationViewTest(TestCase):
             mock_contentads_query.call_args[1]['source__eq'],
             [1, 2],
         )
-        self.assertItemsEqual(
-            mock_contentads_query.call_args[1]['ad_group__neq'],
-            [3],
-        )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), {

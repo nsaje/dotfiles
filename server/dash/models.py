@@ -149,27 +149,6 @@ class CopySettingsMixin(object):
         return new_settings
 
 
-class DemoManager(models.Manager):
-
-    def get_queryset(self):
-        queryset = super(DemoManager, self).get_queryset()
-        if queryset.model is Account:
-            queryset = queryset.filter(
-                campaign__adgroup__in=AdGroup.demo_objects.all()
-            ).distinct()
-        elif queryset.model is Campaign:
-            queryset = queryset.filter(
-                adgroup__in=AdGroup.demo_objects.all()
-            ).distinct()
-        else:
-            assert queryset.model is AdGroup
-            queryset = queryset.filter(
-                id__in=(
-                    d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
-            )
-        return queryset
-
-
 class FootprintModel(models.Model):
 
     def __init__(self, *args, **kwargs):
@@ -442,7 +421,6 @@ class Account(models.Model):
                                     related_name='+', on_delete=models.PROTECT)
 
     objects = QuerySetManager()
-    demo_objects = DemoManager()
     allowed_sources = models.ManyToManyField('Source')
 
     outbrain_marketer_id = models.CharField(
@@ -584,10 +562,7 @@ class Account(models.Model):
             if not should_filter_by_sources(sources):
                 return self
 
-            return self.filter(
-                models.Q(id__in=Account.demo_objects.all()) |
-                models.Q(campaign__adgroup__adgroupsource__source__id__in=sources)
-            ).distinct()
+            return self.filter(campaign__adgroup__adgroupsource__source__id__in=sources)
 
         def filter_by_agencies(self, agencies):
             if not agencies:
@@ -661,7 +636,6 @@ class Campaign(models.Model, PermissionMixin):
     USERS_FIELD = 'users'
 
     objects = QuerySetManager()
-    demo_objects = DemoManager()
 
     def __unicode__(self):
         return self.name
@@ -796,10 +770,7 @@ class Campaign(models.Model, PermissionMixin):
             if not should_filter_by_sources(sources):
                 return self
 
-            return self.filter(
-                models.Q(id__in=Campaign.demo_objects.all()) |
-                models.Q(adgroup__adgroupsource__source__in=sources)
-            ).distinct()
+            return self.filter(adgroup__adgroupsource__source__in=sources)
 
         def filter_by_agencies(self, agencies):
             if not agencies:
@@ -1703,10 +1674,8 @@ class AdGroup(models.Model):
         auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
-    is_demo = models.BooleanField(null=False, blank=False, default=False)
 
     objects = QuerySetManager()
-    demo_objects = DemoManager()
 
     def __unicode__(self):
         return self.name
@@ -1934,10 +1903,7 @@ class AdGroup(models.Model):
             if not should_filter_by_sources(sources):
                 return self
 
-            return self.filter(
-                models.Q(id__in=AdGroup.demo_objects.all()) |
-                models.Q(adgroupsource__source__in=sources)
-            ).distinct()
+            return self.filter(adgroupsource__source__in=sources)
 
         def exclude_archived(self, show_archived=False):
             if show_archived:
@@ -2695,10 +2661,7 @@ class AdGroupSourceSettings(models.Model, CopySettingsMixin, HistoryMixin):
             if not should_filter_by_sources(sources):
                 return self
 
-            return self.filter(
-                models.Q(id__in=AdGroup.demo_objects.all()) |
-                models.Q(ad_group_source__source__in=sources)
-            ).distinct()
+            return self.filter(ad_group_source__source__in=sources)
 
 
 class UploadBatch(models.Model):
@@ -2804,15 +2767,10 @@ class ContentAd(models.Model):
 
         return urlparse.urlunparse(parsed)
 
-    def get_url(self, ad_group, is_demo):
-        if is_demo:
-            return 'http://www.example.com/{}/{}'.format(ad_group.name, self.id)
+    def get_url(self, ad_group):
         return self.url
 
-    def get_redirector_url(self, is_demo):
-        if is_demo:
-            return None
-
+    def get_redirector_url(self):
         return settings.R1_BLANK_REDIRECT_URL.format(
             redirect_id=self.redirect_id,
             content_ad_id=self.id
@@ -3093,15 +3051,6 @@ class ConversionGoal(models.Model):
                 return 'conversion_goal_' + str(i + 1)
 
         raise Exception('Conversion goal not found')
-
-
-class DemoAdGroupRealAdGroup(models.Model):
-    demo_ad_group = models.OneToOneField(
-        AdGroup, on_delete=models.PROTECT, related_name='+')
-    real_ad_group = models.OneToOneField(
-        AdGroup, on_delete=models.PROTECT, related_name='+')
-    multiplication_factor = models.IntegerField(
-        null=False, blank=False, default=1)
 
 
 class DemoMapping(models.Model):

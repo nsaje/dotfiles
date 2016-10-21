@@ -468,11 +468,7 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', ['$window', '$lo
                     name: campaignData.name,
                     adGroups: [],
                 });
-                if ($window.isDemo) {
-                    $state.go('main.campaigns.ad_groups', {id: campaignData.id});
-                } else {
-                    $state.go('main.campaigns.settings', {id: campaignData.id});
-                }
+                $state.go('main.campaigns.settings', {id: campaignData.id});
             },
             function (data) {
                 // error

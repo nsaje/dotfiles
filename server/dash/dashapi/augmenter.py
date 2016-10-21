@@ -73,7 +73,6 @@ def augment_content_ads(rows, loader, is_base_level=False):
             loader.objs_map[content_ad_id],
             loader.batch_map[content_ad_id],
             loader.ad_group_map[content_ad_id],
-            loader.is_demo_map[content_ad_id],
             loader.per_source_status_map[content_ad_id]
         )
 
@@ -160,7 +159,7 @@ def augment_row_ad_group(row, ad_group=None, settings=None, base_level_settings=
         copy_fields_if_exists(['campaign_stop_inactive', 'campaign_has_available_budget'], base_level_settings, row)
 
 
-def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, is_demo=None, status_per_source=None):
+def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, status_per_source=None):
     if content_ad:
         row.update({
             'name': content_ad.title,
@@ -178,12 +177,12 @@ def augment_row_content_ad(row, content_ad=None, batch=None, ad_group=None, is_d
             'state': content_ad.state,
             'status': content_ad.state,
             'archived': content_ad.archived,
-            'redirector_url': content_ad.get_redirector_url(is_demo)
+            'redirector_url': content_ad.get_redirector_url()
         })
 
         if ad_group:
             row.update({
-                'url': content_ad.get_url(ad_group, is_demo),
+                'url': content_ad.get_url(ad_group),
             })
 
     if batch:

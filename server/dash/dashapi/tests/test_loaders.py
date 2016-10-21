@@ -273,13 +273,6 @@ class ContentAdLoaderTest(TestCase):
             3: models.AdGroup.objects.get(pk=1),
         })
 
-    def test_is_demo_map(self):
-        self.assertDictEqual(self.loader.is_demo_map, {
-            1: False,
-            2: False,
-            3: False,
-        })
-
     def test_status_map(self):
         self.assertDictEqual(self.loader.status_map, {
             1: constants.ContentAdSourceState.ACTIVE,

@@ -264,21 +264,7 @@ def _get_adgroups_for(modelcls, modelobjects):
 
 
 def get_active_ad_group_sources(modelcls, modelobjects):
-    all_demo_qs = modelcls.demo_objects.all()
-    demo_objects = filter(lambda x: x in all_demo_qs, modelobjects)
-    normal_objects = filter(lambda x: x not in all_demo_qs, modelobjects)
-
-    timer_name = 'get_active_ad_group_sources'
-    if len(demo_objects) > 0:
-        timer_name += '_demo'
-
-    demo_adgroups = _get_adgroups_for(modelcls, demo_objects)
-    real_corresponding_adgroups = [x.real_ad_group
-                                   for x in models.DemoAdGroupRealAdGroup.objects
-                                   .filter(demo_ad_group__in=demo_adgroups)]
-
-    normal_adgroups = _get_adgroups_for(modelcls, normal_objects)
-    adgroups = list(real_corresponding_adgroups) + list(normal_adgroups)
+    adgroups = _get_adgroups_for(modelcls, modelobjects)
 
     adgroup_settings = models.AdGroupSettings.objects.\
         filter(ad_group__in=adgroups).\
@@ -288,11 +274,7 @@ def get_active_ad_group_sources(modelcls, modelobjects):
     inactive_adgroup_source_ids = [adgroup_source.pk for adgroup_source in inactive_adgroup_sources]
 
     active_ad_group_sources = models.AdGroupSource.objects \
-        .filter(
-            # deprecated sources are not shown in the demo at all
-            Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) |
-            Q(ad_group__in=normal_adgroups)
-        ).\
+        .filter(ad_group__in=adgroups).\
         exclude(pk__in=inactive_adgroup_source_ids).\
         exclude(ad_group__in=archived_adgroup_ids).\
         select_related('source__source_type').\

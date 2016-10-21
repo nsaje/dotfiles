@@ -5,10 +5,6 @@ angular.module('one').config(['$urlRouterProvider', function ($urlRouterProvider
         window.location = $location.absUrl();
     }]);
 
-    $urlRouterProvider.when('/demo_mode', ['$location', function ($location) {
-        window.location = $location.absUrl();
-    }]);
-
     $urlRouterProvider.when('/ad_groups/:adGroupId/ads_plus', '/ad_groups/:adGroupId/ads');
 
     $urlRouterProvider.otherwise('/');

@@ -48,26 +48,13 @@ class BaseSync(object):
 
     @newrelic.agent.function_trace()
     def get_latest_success_by_child(self):
-        return self.add_demo_child_syncs(
-            self._construct_last_sync_result(self.get_child_sync_key())
-        )
+        return self._construct_last_sync_result(self.get_child_sync_key())
 
     @newrelic.agent.function_trace()
     def get_latest_source_success(self):
-        return self.add_demo_source_syncs(
-            self._construct_last_sync_result('source_id',
-                                             include_maintenance=True,
-                                             include_deprecated=True)
-        )
-
-    def add_demo_source_syncs(self, sync_data):
-        cls = type(self.obj)
-        if hasattr(cls, 'demo_objects') and self.obj.id in cls.demo_objects.all().values_list('id', flat=True):
-            for source in self.sources:
-                if source.id not in sync_data:
-                    sync_data[source.id] = datetime.utcnow()
-
-        return sync_data
+        return self._construct_last_sync_result('source_id',
+                                                include_maintenance=True,
+                                                include_deprecated=True)
 
     def trigger_all(self, request=None):
         child_syncs = self.get_components()
@@ -132,25 +119,6 @@ class GlobalSync(BaseSync, ISyncComposite):
 
         return ad_group_sources
 
-    def _add_demo_accounts_sync_times(self, result):
-        demo_accounts = dash.models.Account.demo_objects.all()
-        utcnow = datetime.utcnow()
-        for account in demo_accounts:
-            result[account.id] = utcnow
-        return result
-
-    def add_demo_source_syncs(self, sync_data):
-        # doesn't apply, since there is no demo global view
-        return sync_data
-
-    def add_demo_child_syncs(self, sync_data):
-        # a user with all accounts permission can have access to demo account, so last sync time has to be set
-        demo_accounts = dash.models.Account.demo_objects.all()
-        utcnow = datetime.utcnow()
-        for account in demo_accounts:
-            sync_data[account.id] = utcnow
-        return sync_data
-
     def get_child_sync_key(self):
         return 'ad_group__campaign__account_id'
 
@@ -187,14 +155,6 @@ class AccountSync(BaseSync, ISyncComposite):
 
         return ad_group_sources
 
-    def add_demo_child_syncs(self, sync_data):
-        if self.obj.id in dash.models.Account.demo_objects.all().values_list('id', flat=True):
-            for campaign in self.obj.campaign_set.all():
-                if campaign.id not in sync_data:
-                    sync_data[campaign.id] = datetime.utcnow()
-
-        return sync_data
-
     def get_child_sync_key(self):
         return 'ad_group__campaign_id'
 
@@ -228,14 +188,6 @@ class CampaignSync(BaseSync, ISyncComposite):
 
         return ad_group_sources
 
-    def add_demo_child_syncs(self, sync_data):
-        if self.obj.id in dash.models.Campaign.demo_objects.all().values_list('id', flat=True):
-            for ad_group in self.obj.adgroup_set.all():
-                if ad_group.id not in sync_data:
-                    sync_data[ad_group.id] = datetime.utcnow()
-
-        return sync_data
-
     def get_child_sync_key(self):
         return 'ad_group_id'
 
@@ -246,13 +198,6 @@ class AdGroupSync(BaseSync, ISyncComposite):
     def __init__(self, obj, sources=None):
         super(AdGroupSync, self).__init__(obj, sources=sources)
         self.real_ad_group = self.obj
-        if self.obj in dash.models.AdGroup.demo_objects.all():
-            self.real_ad_group = dash.models.DemoAdGroupRealAdGroup\
-                                            .objects\
-                                            .select_related('real_ad_group')\
-                                            .prefetch_related('real_ad_group__adgroupsource_set__source')\
-                                            .get(demo_ad_group=self.obj)\
-                                            .real_ad_group
 
     @newrelic.agent.function_trace()
     def get_components(self, maintenance=False, archived=False, deprecated=False):
@@ -284,14 +229,6 @@ class AdGroupSync(BaseSync, ISyncComposite):
             ad_group_sources = ad_group_sources.exclude(source__deprecated=True)
 
         return ad_group_sources
-
-    def add_demo_child_syncs(self, sync_data):
-        if self.obj.id in dash.models.AdGroup.demo_objects.all().values_list('id', flat=True):
-            for ad_group_source in self.obj.adgroupsource_set.all():
-                if ad_group_source.id not in sync_data:
-                    sync_data[ad_group_source.id] = datetime.utcnow()
-
-        return sync_data
 
     def get_child_sync_key(self):
         return 'id'

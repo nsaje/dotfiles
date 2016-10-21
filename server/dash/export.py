@@ -459,7 +459,7 @@ def _prefetch_statuses(entities, level, by_source, sources=None):
         constraints = 'id'
 
     if by_source:
-        ad_group_sources = helpers.get_active_ad_group_sources(model_class, entities).filter(
+        ad_group_sources = helpers.get_active_ad_group_sources(model_class, entities.values()).filter(
             **{by_source_constraints + '__in': entities.values()}
         ).select_related('ad_group', 'ad_group__campaign', 'ad_group__campaign__account')
         entity_ags_map = {entity.pk: {} for entity in entities.itervalues()}

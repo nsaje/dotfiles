@@ -713,7 +713,6 @@ class AdGroupAdmin(admin.ModelAdmin):
         'name',
         'campaign_',
         'account_',
-        'is_demo',
         'is_archived_',
         'created_dt',
         'modified_dt',
@@ -728,7 +727,7 @@ class AdGroupAdmin(admin.ModelAdmin):
     form = dash_forms.AdGroupAdminForm
     fieldsets = (
         (None, {
-            'fields': ('name', 'campaign', 'is_demo', 'created_dt', 'modified_dt', 'modified_by', 'settings_'),
+            'fields': ('name', 'campaign', 'created_dt', 'modified_dt', 'modified_by', 'settings_'),
         }),
         ('Additional targeting', {
             'classes': ('collapse',),
@@ -976,47 +975,6 @@ class AdGroupModelChoiceField(forms.ModelChoiceField):
         return u'{} | {} | {}'.format(obj.campaign.account.name, obj.campaign.name, obj.name)
 
 
-class DemoAdGroupRealAdGroupAdminForm(forms.ModelForm):
-
-    demo_ad_group = AdGroupModelChoiceField(
-        queryset=models.AdGroup.objects.order_by('campaign__account__name')
-    )
-    real_ad_group = AdGroupModelChoiceField(
-        queryset=models.AdGroup.objects.order_by('campaign__account__name')
-    )
-
-    def clean_demo_ad_group(self):
-        if not self.cleaned_data['demo_ad_group'].is_demo:
-            raise forms.ValidationError('Only adgroups which have is_demo set to True can be chosen as demo ad groups')
-        return self.cleaned_data['demo_ad_group']
-
-    def clean_real_ad_group(self):
-        if self.cleaned_data['real_ad_group'].is_demo:
-            raise forms.ValidationError('Cannot choose an adgroup with is_demo set to True as a real ad group')
-        return self.cleaned_data['real_ad_group']
-
-
-class DemoAdGroupRealAdGroupAdmin(admin.ModelAdmin):
-    list_display = (
-        'demo_ad_group_',
-        'real_ad_group_',
-        'multiplication_factor'
-    )
-    form = DemoAdGroupRealAdGroupAdminForm
-
-    def demo_ad_group_(self, obj):
-        ad_group_name = obj.demo_ad_group.name
-        campaign_name = obj.demo_ad_group.campaign.name
-        account_name = obj.demo_ad_group.campaign.account.name
-        return u'|'.join([account_name, campaign_name, ad_group_name])
-
-    def real_ad_group_(self, obj):
-        ad_group_name = obj.real_ad_group.name
-        campaign_name = obj.real_ad_group.campaign.name
-        account_name = obj.real_ad_group.campaign.account.name
-        return u'|'.join([account_name, campaign_name, ad_group_name])
-
-
 class DemoMappingAdminForm(forms.ModelForm):
     real_account = forms.ModelChoiceField(queryset=models.Account.objects.order_by('name'))
     demo_campaign_name_pool = SimpleArrayField(
@@ -1146,9 +1104,6 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
-
-    def get_queryset(self, request):
-        return models.ContentAdSource.objects.filter(content_ad__ad_group__is_demo=False)
 
     def submission_status_(self, obj):
         return '<span style="color:{color}">{submission_status}</span>'.format(
@@ -1688,7 +1643,6 @@ admin.site.register(models.AdGroupSourceState, AdGroupSourceStateAdmin)
 admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
 admin.site.register(models.SourceType, SourceTypeAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
-admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)
 admin.site.register(models.DemoMapping, DemoMappingAdmin)
 admin.site.register(models.OutbrainAccount, OutbrainAccountAdmin)
 admin.site.register(models.ContentAdSource, ContentAdSourceAdmin)

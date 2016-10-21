@@ -7,7 +7,6 @@ from django.db import transaction
 import dash
 import dash.constants
 import decimal
-import reports.api
 import dash.views.helpers
 import actionlog.api
 import utils.dates_helper
@@ -89,7 +88,6 @@ def _is_ad_group_active(adgroup):
     adgroup_settings = adgroup.get_current_settings()
     return (adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and
             not adgroup_settings.archived and
-            not adgroup.is_demo and
             (adgroup_settings.end_date is None or
                 adgroup_settings.end_date >= today))
 

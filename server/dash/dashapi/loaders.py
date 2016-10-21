@@ -336,17 +336,6 @@ class ContentAdsLoader(Loader):
         return ad_group_map
 
     @cached_property
-    def is_demo_map(self):
-        # TODO this should be deprecated when old demo code is thrown out
-        demo_ad_group_ids = models.AdGroup.demo_objects.all().values_list('pk', flat=True)
-
-        return {
-            content_ad_id: (content_ad.ad_group_id in demo_ad_group_ids)
-            for content_ad_id, content_ad
-            in self.objs_map.iteritems()
-        }
-
-    @cached_property
     def status_map(self):
         status_map = {}
         for content_ad_id, content_ad in self.objs_map.iteritems():

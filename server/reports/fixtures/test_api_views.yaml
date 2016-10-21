@@ -59,7 +59,6 @@
     modified_by: 1
     campaign: 1
     name: 'test adgroup 3'
-    is_demo: true
   model: dash.adgroup
   pk: 3
 

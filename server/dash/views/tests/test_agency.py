@@ -2649,19 +2649,6 @@ class AccountSettingsTest(TestCase):
 
         self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
 
-    def test_get_non_removable_sources_source_demo(self):
-        user = User.objects.get(pk=1)
-        mock_request = Mock()
-        mock_request.user = user
-
-        view = agency.AccountSettings()
-        account = models.Account.objects.get(pk=111)
-        self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
-
-        ad_group = models.AdGroup.objects.get(pk=11122)
-        ad_group.is_demo = True
-        ad_group.save(mock_request)
-
     def test_get_non_removable_sources_archived_campaign(self):
         view = agency.AccountSettings()
         account = models.Account.objects.get(pk=111)

@@ -22,8 +22,6 @@ from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
-from django.contrib.auth import login, authenticate
-from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
 
 import influx
@@ -163,14 +161,6 @@ class User(api_common.BaseApiView):
             'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
                 datetime.datetime.utcnow(), is_dst=True).total_seconds()
         }
-
-
-@login_required
-@require_GET
-def demo_mode(request):
-    demo_user = authenticate(username=settings.DEMO_USER_EMAIL, password=settings.DEMO_USER_PASSWORD)
-    login(request, demo_user)
-    return redirect('index')
 
 
 class AccountArchive(api_common.BaseApiView):
@@ -858,14 +848,8 @@ class AvailableSources(api_common.BaseApiView):
         if not show_archived:
             user_ad_groups = user_ad_groups.exclude_archived()
 
-        demo_to_real_ad_groups = []
-        for d2r in models.DemoAdGroupRealAdGroup.objects.filter(demo_ad_group__in=user_ad_groups):
-            demo_to_real_ad_groups.append(d2r.real_ad_group)
-
-        ad_groups = list(user_ad_groups) + demo_to_real_ad_groups
-
         sources = []
-        for source in models.Source.objects.filter(adgroupsource__ad_group__in=[ag.id for ag in ad_groups]).distinct():
+        for source in models.Source.objects.filter(adgroupsource__ad_group__in=user_ad_groups).distinct():
             sources.append({
                 'id': str(source.id),
                 'name': source.name,
@@ -886,11 +870,6 @@ class AdGroupSources(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group_settings = ad_group.get_current_settings()
-
-        if ad_group.is_demo:
-            real_ad_groups = models.DemoAdGroupRealAdGroup.objects.filter(demo_ad_group=ad_group)
-            if real_ad_groups:
-                ad_group = real_ad_groups[0].real_ad_group
 
         allowed_sources = ad_group.campaign.account.allowed_sources.all()
         ad_group_sources = ad_group.sources.all()
@@ -1311,15 +1290,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
     @influx.timer('dash.api')
     def get(self, request, ad_group_id):
-        try:
-            ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        except exc.MissingDataError, e:
-            email = request.user.email
-            if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
-                content_ad_dicts = [{'url': '', 'title': '', 'image_url': '', 'description': ''}]
-                content = self._create_content_ad_csv(content_ad_dicts)
-                return self.create_csv_response('contentads', content=content)
-            raise e
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         select_all = request.GET.get('select_all', False)
         select_batch_id = request.GET.get('select_batch')

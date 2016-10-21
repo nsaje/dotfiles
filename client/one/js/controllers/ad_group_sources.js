@@ -597,9 +597,6 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state
             $scope.reflowGraph(1);
         });
     };
-    if ($window.isDemo) {
-        $window.demoActions.refreshAdGroupSourcesTable = getTableData;
-    }
 
     var getDailyStatsMetrics = function () {
         // always query for default metrics

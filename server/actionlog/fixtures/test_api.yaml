@@ -473,7 +473,6 @@
         modified_by: 1
         campaign: 6
         name: 'demo ad group'
-        is_demo: True
     model: dash.adgroup
     pk: 8
 
@@ -1121,15 +1120,6 @@
         state: 2
     model: dash.adgroupsourcestate
     pk: 3
-
-# DemoAdGroupRealAdGroup
-
--   fields:
-        demo_ad_group: 8
-        real_ad_group: 1
-        multiplication_factor: 1
-    model: dash.demoadgrouprealadgroup
-    pk: 1
 
 # test export report scheduling
 

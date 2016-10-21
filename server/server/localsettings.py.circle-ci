@@ -114,13 +114,6 @@ FILE_STORAGE_DIR = ''
 # adgroup-level reports aggregations
 QUERY_AGGREGATE_REPORTS=False
 
-# email of the demo user
-DEMO_USER_EMAIL = 'test.account@zemanta.si'
-DEMO_USER_PASSWORD = 'zemantadsp'
-DEMO_USERS = (
-    'demo2@zemanta.si',
-)
-
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'

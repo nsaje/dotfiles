@@ -1,12 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from collections import OrderedDict
 import json
 
 import influx
 
-from django.conf import settings
 from django.db.models import Q
 
 from dash.views import helpers
@@ -24,25 +22,7 @@ class ExportApiView(api_common.BaseApiView):
         try:
             return super(api_common.BaseApiView, self).dispatch(request, *args, **kwargs)
         except Exception as e:
-            email = request.user.email
-            if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
-                return self._demo_export(request)
             return self.get_exception_response(request, e)
-
-    def _demo_export(self, request):
-        data = []
-        filename = 'export'
-        fieldnames = OrderedDict([
-            ('date', 'Date'),
-            ('cost', 'Cost'),
-            ('cpc', 'Avg. CPC'),
-            ('clicks', 'Clicks'),
-            ('impressions', 'Impressions'),
-            ('ctr', 'CTR')
-        ])
-
-        content = export.get_csv_content(fieldnames, data)
-        return self.create_csv_response(filename, content=content)
 
 
 class ExportAllowed(api_common.BaseApiView):

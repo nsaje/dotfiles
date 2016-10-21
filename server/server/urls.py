@@ -59,8 +59,6 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^oauth2callback', zemauth.views.google_callback),
     url(r'^supply_dash/', dash.views.views.supply_dash_redirect),
-
-    url(r'^demo_mode$', dash.views.views.demo_mode)
 ]
 
 # Oauth2 provider

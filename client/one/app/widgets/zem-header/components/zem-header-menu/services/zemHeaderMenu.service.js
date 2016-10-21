@@ -3,13 +3,6 @@ angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibM
 
     var ACTIONS = [
         {
-            text: 'Demo mode',
-            callback: navigate,
-            params: {href: '/demo_mode'},
-            isAvailable: zemPermissions.hasPermission('zemauth.switch_to_demo_mode'),
-            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.switch_to_demo_mode'),
-        },
-        {
             text: 'Request demo',
             callback: requestDemoAction,
             isAvailable: zemPermissions.hasPermission('zemauth.can_request_demo_v3'),

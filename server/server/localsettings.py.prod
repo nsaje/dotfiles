@@ -138,14 +138,6 @@ USE_S3 = True
 # adgroup-level reports aggregations
 QUERY_AGGREGATE_REPORTS=True
 
-# email of the demo user
-DEMO_USER_EMAIL = 'test.account@zemanta.si'
-DEMO_USER_PASSWORD = 'zemantadsp'
-DEMO_USERS = (
-    DEMO_USER_EMAIL,
-    'demo2@zemanta.si',
-)
-
 # cache settings
 MEMCACHED_ADDR = os.environ.get('MEMCACHED_PORT_11211_TCP_ADDR', '127.0.0.1')
 MEMCACHED_PORT = os.environ.get('MEMCACHED_PORT_11211_TCP_PORT', '11211')

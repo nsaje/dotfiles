@@ -1,6 +1,5 @@
 import datetime
 
-from django.conf import settings
 from django.db.models import Q
 
 from automation import campaign_stop
@@ -11,7 +10,6 @@ from dash import constants
 from dash import bcm_helpers
 from dash import stats_helper
 from dash import publisher_helpers
-from dash import validation_helpers
 from dash import campaign_goals
 from dash.dashapi import data_helper
 from dash.views import breakdown_helpers
@@ -1102,8 +1100,6 @@ class AdGroupAdsTable(object):
         stats = {s['content_ad']: s for s in stats}
         rows = []
 
-        is_demo = ad_group in models.AdGroup.demo_objects.all()
-
         for content_ad in content_ads:
             stat = stats.get(content_ad.id, {})
 
@@ -1111,8 +1107,8 @@ class AdGroupAdsTable(object):
             if not show_archived and archived:
                 continue
 
-            url = content_ad.get_url(ad_group, is_demo)
-            redirector_url = content_ad.get_redirector_url(is_demo)
+            url = content_ad.get_url(ad_group)
+            redirector_url = content_ad.get_redirector_url()
 
             row = {
                 'id': str(content_ad.id),

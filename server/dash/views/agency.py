@@ -931,7 +931,7 @@ class AccountSettings(api_common.BaseApiView):
 
         for campaign in models.Campaign.objects.filter(account_id=account.id).exclude_archived():
 
-            for adgroup in campaign.adgroup_set.filter(is_demo=False):
+            for adgroup in campaign.adgroup_set.all():
                 adgroup_settings = adgroup.get_current_settings()
                 if adgroup_settings.state == constants.AdGroupSettingsState.INACTIVE:
                     continue

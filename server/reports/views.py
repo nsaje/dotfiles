@@ -35,14 +35,11 @@ def crossvalidation(request):
     sources = dash.models.Source.objects.filter(source_type__type='b1')
     bidder_slugs = {source.id: source.bidder_slug for source in sources}
 
-    demo_adgroups = dash.models.AdGroup.objects.filter(is_demo=True)
-
     stats = reports.api_contentads.query(
         start_date,
         end_date,
         breakdown=['content_ad', 'source', 'ad_group'],
         source__eq=[source.id for source in sources],
-        ad_group__neq=[adgroup.id for adgroup in demo_adgroups],
     )
 
     # filter stats without impressions, so we don't have to use pointers in b1 for json decoding

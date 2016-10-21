@@ -55,7 +55,6 @@ module.exports = function (grunt) {
                     'one/js/controllers/**/*.js',
                     'one/js/filters/**/*.js',
                     'one/components/**/*.js',
-                    'one/js/demo.js',
                     '!one/**/*.spec.js',
                 ],
                 dest: 'dist/one/zemanta-one.js',
@@ -337,7 +336,6 @@ module.exports = function (grunt) {
                     'one/js/controllers/**/*.js',
                     'one/js/filters/**/*.js',
                     'one/components/**/*.js',
-                    'one/js/demo.js',
                 ],
                 exclude: [],
                 directives: { // example directives

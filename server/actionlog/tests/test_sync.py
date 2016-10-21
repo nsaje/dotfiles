@@ -29,7 +29,6 @@ class GlobalLastSuccessfulChildSyncTestCase(TestCase):
         self.assertEqual({
             1: datetime.datetime(2014, 6, 10, 9, 58, 21),
             2: None,
-            4: utcnow,
         }, last_sync)
 
     def test_get_latest_success_by_child_none(self):
@@ -73,7 +72,6 @@ class GlobalLastSuccessfulChildSyncTestCase(TestCase):
         last_sync = sync.GlobalSync().get_latest_success_by_child()
         self.assertEqual({
             1: datetime.datetime(2014, 6, 10, 9, 58, 21),
-            4: utcnow
         }, last_sync)
 
     def test_get_latest_success_by_child_exclude_archived_campaign(self):
@@ -312,17 +310,6 @@ class AccountLastSuccessfulChildSyncTestCase(TestCase):
             2: datetime.datetime(2014, 6, 10, 9, 58, 21)
         }, last_sync)
 
-    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
-    def test_get_latest_success_by_child_demo_account(self):
-        utcnow = datetime.datetime.utcnow()
-        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
-
-        acc = dash.models.Account.objects.get(id=4)
-        last_sync = sync.AccountSync(acc).get_latest_success_by_child()
-        self.assertEqual({
-            6: utcnow,
-        }, last_sync)
-
 
 class AccountLastSuccessfulSourceSyncTestCase(TestCase):
 
@@ -375,27 +362,6 @@ class AccountLastSuccessfulSourceSyncTestCase(TestCase):
             1: datetime.datetime(2014, 6, 10, 9, 58, 21),
             2: datetime.datetime(2014, 6, 10, 9, 58, 21),
             6: None,
-        }, last_sync)
-
-    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
-    def test_get_latest_source_success_demo_account(self):
-        utcnow = datetime.datetime.utcnow()
-        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
-
-        acc = dash.models.Account.objects.get(id=4)
-
-        last_sync = sync.AccountSync(acc).get_latest_source_success()
-        self.assertEqual({
-            1: utcnow,
-            2: utcnow,
-            3: utcnow,
-            4: utcnow,
-            5: utcnow,
-            6: utcnow,
-            7: utcnow,
-            8: utcnow,
-            9: utcnow,
-            10: utcnow,
         }, last_sync)
 
     def test_get_latest_source_success_archived_campaign(self):
@@ -529,17 +495,6 @@ class CampaignLastSuccessfulChildSyncTestCase(TestCase):
             1: datetime.datetime(2014, 6, 10, 9, 58, 21)
         }, last_sync)
 
-    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
-    def test_get_latest_success_by_child_demo_campaign(self):
-        utcnow = datetime.datetime.utcnow()
-        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
-
-        campaign = dash.models.Campaign.objects.get(id=6)
-        last_sync = sync.CampaignSync(campaign).get_latest_success_by_child()
-        self.assertEqual({
-            8: utcnow,
-        }, last_sync)
-
 
 class CamapaignLastSuccessfulSourceSyncTestCase(TestCase):
 
@@ -593,26 +548,6 @@ class CamapaignLastSuccessfulSourceSyncTestCase(TestCase):
             1: datetime.datetime(2014, 6, 10, 9, 58, 21),
             2: datetime.datetime(2014, 6, 10, 9, 58, 21),
             3: datetime.datetime(2014, 6, 10, 9, 58, 21)
-        }, last_sync)
-
-    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
-    def test_get_latest_source_success_demo_campaign(self):
-        utcnow = datetime.datetime.utcnow()
-        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
-
-        campaign = dash.models.Campaign.objects.get(id=6)
-        last_sync = sync.CampaignSync(campaign).get_latest_source_success()
-        self.assertEqual({
-            1: utcnow,
-            2: utcnow,
-            3: utcnow,
-            4: utcnow,
-            5: utcnow,
-            6: utcnow,
-            7: utcnow,
-            8: utcnow,
-            9: utcnow,
-            10: utcnow,
         }, last_sync)
 
     def test_get_latest_source_success_archived_ad_group(self):
@@ -736,27 +671,6 @@ class AdGroupLastSuccessfulSourceSyncTestCase(TestCase):
             3: datetime.datetime(2014, 6, 10, 9, 58, 21)
         }, last_sync)
 
-    @mock.patch('actionlog.sync.datetime', test_helper.MockDateTime)
-    def test_get_latest_source_success_demo_ad_group(self):
-        utcnow = datetime.datetime.utcnow()
-        sync.datetime.utcnow = classmethod(lambda cls: utcnow)
-
-        ad_group = dash.models.AdGroup.objects.get(id=8)
-
-        last_sync = sync.AdGroupSync(ad_group).get_latest_source_success()
-        self.assertEqual({
-            1: utcnow,
-            2: utcnow,
-            3: utcnow,
-            4: utcnow,
-            5: utcnow,
-            6: utcnow,
-            7: utcnow,
-            8: utcnow,
-            9: utcnow,
-            10: utcnow,
-        }, last_sync)
-
 
 class ActionLogTriggerSyncTestCase(TestCase):
 
@@ -873,7 +787,7 @@ class ActionLogTriggerSyncTestCase(TestCase):
         self.assertEqual(alog.action_type, constants.ActionType.AUTOMATIC)
 
     def test_ad_group_source_get_dates_to_sync_reports(self):
-        ad_group_source =dash.models.AdGroupSource.objects.get(pk=5)
+        ad_group_source = dash.models.AdGroupSource.objects.get(pk=5)
         ags_sync = sync.AdGroupSourceSync(ad_group_source)
 
         dates = ags_sync.get_dates_to_sync_reports()
@@ -897,7 +811,7 @@ class ActionLogSyncGetComponentsTestCase(TestCase):
         global_sync = sync.GlobalSync()
         child_syncs = global_sync.get_components()
 
-        self.assertEqual(len(list(child_syncs)), 3)
+        self.assertEqual(len(list(child_syncs)), 2)
 
     def test_account_sync_get_components(self):
         account = dash.models.Account.objects.get(pk=2)

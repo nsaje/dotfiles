@@ -41,13 +41,6 @@ angular.module('one.legacy').controller('AdGroupCtrl', ['$scope', '$state', '$wi
     };
 
     $scope.setActiveTab = function () {
-        if ($scope.tabs === undefined && $window.isDemo) {
-            // when someone refreshes the page on a demo campaign/adgroup
-            // client breaks before demo can figure it out.
-            // this resets the demo to its defaults
-            $window.onbeforeunload = null;
-            $window.location.href = '';
-        }
         $scope.activeTab = 0;
         $scope.tabs.filter(function (tab) {
             return !tab.hidden;

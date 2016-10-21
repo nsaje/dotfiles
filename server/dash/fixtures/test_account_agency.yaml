@@ -90,7 +90,6 @@
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
         modified_by: 1
-        is_demo: true
     model: dash.adgroup
     pk: 1112
 
@@ -101,7 +100,6 @@
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
         modified_by: 1
-        is_demo: false
     model: dash.adgroup
     pk: 11121
 
@@ -121,7 +119,6 @@
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
         modified_by: 1
-        is_demo: false
     model: dash.adgroup
     pk: 11122
 
