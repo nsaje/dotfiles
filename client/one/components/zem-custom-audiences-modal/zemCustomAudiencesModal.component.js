@@ -20,7 +20,6 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         vm.pixel = null;
         vm.rules = [{id: 'visit', name: 'Anyone who visited your website'}, {id: 'referer', name: 'People who visited specific web pages'}];
         vm.refererRules = [{id: 'contains', name: 'URL contains'}, {id: 'startsWith', name: 'URL equals'}];
-        vm.ttlDays = [{value: 7, name: '7'}, {value: 30, name: '30'}, {value: 90, name: '90'}, {value: 365, name: '365'}];
 
         vm.selectedTopRuleId = '';
         vm.selectedRefererRuleId = '';

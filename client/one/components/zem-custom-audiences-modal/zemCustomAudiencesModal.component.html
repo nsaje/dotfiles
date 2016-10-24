@@ -75,14 +75,9 @@
                 In the last
                 <zem-help-popover content="<p class='m-b-s'>The number of days people will remain in your audience after they've visited your website. People will be removed from your audience after the set time period, unless they visit your website again.</p><p><strong>Maximum time:</strong> 365 days.</p>" placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
-            <div class="col-xs-4">
+            <div class="col-xs-3">
                 <div class="input-group">
-                    <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedTtl" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('ttl')">
-                        <ui-select-match placeholder="Select Days">{{ $select.selected.name }}</ui-select-match>
-                        <ui-select-choices repeat="ttlDay.value as ttlDay in ctrl.ttlDays">
-                            {{ ttlDay.name }}
-                        </ui-select-choices>
-                    </ui-select>
+                    <input type="text" class="form-control" ng-model="ctrl.selectedTtl" placeholder="Enter Days" ng-change="ctrl.removeError('ttl')"/>
                     <span class="input-group-addon" id="basic-addon2">days</span>
                 </div>
                 
