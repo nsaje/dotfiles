@@ -5,6 +5,8 @@ from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
+from . import config
+
 import dash.api
 import dash.constants
 import dash.models
@@ -13,13 +15,6 @@ import dash.upload
 from utils import k1_helper, request_signer
 
 logger = logging.getLogger(__name__)
-
-
-# NOTE: keep in sync with R1 (https://github.com/Zemanta/r1/blob/master/config/config.go#L69)
-TEST_AD_GROUP_IDS = [
-    2539,
-    2591,  # click capping test in product campaign
-]
 
 
 @csrf_exempt
@@ -33,10 +28,10 @@ def click_capping(request):
     content_ad_id = int(request.GET.get('creativeId'))
     content_ad = dash.models.ContentAd.objects.filter(
         id=content_ad_id,
-        ad_group_id__in=TEST_AD_GROUP_IDS,
+        ad_group_id__in=config.TEST_AD_GROUP_IDS,
     ).select_related('ad_group').get()
 
-    dash.api.update_content_ads_state([content_ad], dash.constants.ContentAdSourceState.INACTIVE, request)
+    dash.api.update_content_ads_state([content_ad], dash.constants.ContentAdSourceState.INACTIVE, None)
 
     # TODO: enable if needed
     # content_ad.ad_group.write_history(
@@ -45,11 +40,7 @@ def click_capping(request):
     #     action_type=dash.constants.HistoryActionType.CONTENT_AD_STATE_CHANGE
     # )
 
-    k1_helper.update_content_ads(
-        content_ad.ad_group.id,
-        content_ad.id,
-        msg='AdGroupContentAdState.post'
-    )
+    k1_helper.update_content_ads(content_ad.ad_group.id, content_ad.id)
 
     return JsonResponse({
         "status": 'ok'
@@ -89,7 +80,7 @@ def article_upload(request):
             "status": 'ok'
         })
 
-    ad_group = dash.models.AdGroup.objects.get(id=TEST_AD_GROUP_IDS[0])
+    ad_group = dash.models.AdGroup.objects.get(id=config.TEST_AD_GROUP_IDS[0])
     batch, candidates = dash.upload.insert_candidates(
         candidates_data, ad_group, batch_name, filename='', auto_save=True)
 

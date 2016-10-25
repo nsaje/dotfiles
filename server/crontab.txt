@@ -22,3 +22,4 @@
 15 7 * * *          /home/ubuntu/docker-manage-py.sh audit_spend_patterns
 20 7 * * *          /home/ubuntu/docker-manage-py.sh audit_spend_integrity
 20 7 * * *          /home/ubuntu/docker-manage-py.sh audit_campaign_pacing --send-emails
+0 * * * *           /home/ubuntu/docker-manage-py.sh bizwire_hourly_job
