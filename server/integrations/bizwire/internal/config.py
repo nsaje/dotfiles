@@ -2,4 +2,5 @@
 TEST_AD_GROUP_IDS = [
     2539,
     2591,  # click capping test in product campaign
+    2598,  # click capping test in product campaign
 ]
