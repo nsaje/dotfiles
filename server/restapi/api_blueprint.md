@@ -211,7 +211,8 @@ Authorization: Bearer <access_token>
 
         {
             "campaignId": "608",
-            "type": "TIME_ON_SITE",
+            "type": "CPA",
+            "value": "30.0",
             "primary": true,
             "conversionGoal": {
                 "type": "PIXEL",
@@ -228,7 +229,8 @@ Authorization: Bearer <access_token>
             "data": {
                 "id": "1239",
                 "campaignId": "608",
-                "type": "TIME_ON_SITE",
+                "type": "CPA",
+                "value": "30.0",
                 "primary": true,
                 "conversionGoal": {
                     "type": "PIXEL",
@@ -254,7 +256,7 @@ Authorization: Bearer <access_token>
             "data": {
                 "id": "1238",
                 "campaignId": "608",
-                "type": "TIME_ON_SITE",
+                "type": "CPA",
                 "primary": false,
                 "conversionGoal": {
                     "type": "PIXEL",
@@ -288,8 +290,8 @@ Authorization: Bearer <access_token>
                 "state": "ACTIVE",
                 "startDate": "2016-10-05",
                 "endDate": "2016-11-05",
-                "maxCpc": 0.25,
-                "dailyBudget": 20.0,
+                "maxCpc": "0.25",
+                "dailyBudget": "20.0",
                 "targeting": {
                     "devices": ["desktop", "tablet"],
                     "geo": {
@@ -298,6 +300,10 @@ Authorization: Bearer <access_token>
                             "regions": ["US-NY"],
                             "dma": ["693"]
                         }
+                    },
+                    "interest": {
+                        "included": ["WOMEN", "FASHION"],
+                        "excluded": ["POLITICS"]
                     }
                 },
                 "trackingCode": "this=1&that=2",
@@ -319,8 +325,8 @@ Authorization: Bearer <access_token>
             "state": "ACTIVE",
             "startDate": "2016-10-05",
             "endDate": "2016-11-05",
-            "maxCpc": 0.25,
-            "dailyBudget": 20.0,
+            "maxCpc": "0.25",
+            "dailyBudget": "20.0",
             "targeting": {
                 "devices": ["desktop", "tablet"],
                 "geo": {
@@ -329,12 +335,16 @@ Authorization: Bearer <access_token>
                         "regions": ["US-NY"],
                         "dma": ["693"]
                     }
+                },
+                "interest": {
+                    "included": ["WOMEN", "FASHION"],
+                    "excluded": ["POLITICS"]
                 }
             },
             "trackingCode": "this=1&that=2",
             "autopilot": {
                 "state": "OPTIMIZE_BIDS",
-                "dailyBudget": 100.0001
+                "dailyBudget": "100.0001"
             }
         }
 
@@ -348,8 +358,8 @@ Authorization: Bearer <access_token>
                 "state": "ACTIVE",
                 "startDate": "2016-10-05",
                 "endDate": "2016-11-05",
-                "maxCpc": 0.25,
-                "dailyBudget": 20.0,
+                "maxCpc": "0.25",
+                "dailyBudget": "20.0",
                 "targeting": {
                     "devices": ["desktop", "tablet"],
                     "geo": {
@@ -358,12 +368,16 @@ Authorization: Bearer <access_token>
                             "regions": ["US-NY"],
                             "dma": ["693"]
                         }
+                    },
+                    "interest": {
+                        "included": ["WOMEN", "FASHION"],
+                        "excluded": ["POLITICS"]
                     }
                 },
                 "trackingCode": "this=1&that=2",
                 "autopilot": {
                     "state": "OPTIMIZE_BIDS",
-                    "dailyBudget": 100.0001
+                    "dailyBudget": "100.0001"
                 }
             }
         }
@@ -384,8 +398,8 @@ Authorization: Bearer <access_token>
                     "state": "ACTIVE",
                     "startDate": "2016-10-05",
                     "endDate": "2016-11-05",
-                    "maxCpc": 0.25,
-                    "dailyBudget": 20.0,
+                    "maxCpc": "0.25",
+                    "dailyBudget": "20.0",
                     "targeting": {
                         "devices": ["desktop", "tablet"],
                         "geo": {
@@ -394,12 +408,16 @@ Authorization: Bearer <access_token>
                                 "regions": ["US-NY"],
                                 "dma": ["693"]
                             }
+                        },
+                        "interest": {
+                            "included": ["WOMEN", "FASHION"],
+                            "excluded": ["POLITICS"]
                         }
                     },
                     "trackingCode": "this=1&that=2",
                     "autopilot": {
                         "state": "OPTIMIZE_BIDS",
-                        "dailyBudget": 100.0001
+                        "dailyBudget": "100.0001"
                     }
                 }
             ]
@@ -416,8 +434,8 @@ Authorization: Bearer <access_token>
             "state": "ACTIVE",
             "startDate": "2016-10-05",
             "endDate": "2016-11-05",
-            "maxCpc": 0.25,
-            "dailyBudget": 20.0,
+            "maxCpc": "0.25",
+            "dailyBudget": "20.0",
             "targeting": {
                 "devices": ["desktop", "tablet"],
                 "geo": {
@@ -426,12 +444,17 @@ Authorization: Bearer <access_token>
                         "regions": ["US-NY"],
                         "dma": ["693"]
                     }
+                },
+                "interest": {
+                    "included": ["WOMEN", "FASHION"],
+                    "excluded": ["POLITICS"]
                 }
+
             },
             "trackingCode": "this=1&that=2",
             "autopilot": {
                 "state": "OPTIMIZE_BIDS",
-                "dailyBudget": 100.0001
+                "dailyBudget": "100.0001"
             }
         }
 
@@ -445,8 +468,8 @@ Authorization: Bearer <access_token>
                 "state": "ACTIVE",
                 "startDate": "2016-10-05",
                 "endDate": "2016-11-05",
-                "maxCpc": 0.25,
-                "dailyBudget": 20.0,
+                "maxCpc": "0.25",
+                "dailyBudget": "20.0",
                 "targeting": {
                     "devices": ["desktop", "tablet"],
                     "geo": {
@@ -455,12 +478,16 @@ Authorization: Bearer <access_token>
                             "regions": ["US-NY"],
                             "dma": ["693"]
                         }
+                    },
+                    "interest": {
+                        "included": ["WOMEN", "FASHION"],
+                        "excluded": ["POLITICS"]
                     }
                 },
                 "trackingCode": "this=1&that=2",
                 "autopilot": {
                     "state": "OPTIMIZE_BIDS",
-                    "dailyBudget": 100.0001
+                    "dailyBudget": "100.0001"
                 }
             }
         }
@@ -476,26 +503,26 @@ Authorization: Bearer <access_token>
                 {
                     "source": "outbrain",
                     "state": "ACTIVE",
-                    "cpc": 0.20,
-                    "dailyBudget": 10.0
+                    "cpc": "0.20",
+                    "dailyBudget": "10.0"
                 },
                 {
                     "source": "yahoo",
                     "state": "ACTIVE",
-                    "cpc": 0.20,
-                    "dailyBudget": 10.0
+                    "cpc": "0.20",
+                    "dailyBudget": "10.0"
                 },
                 {
                     "source": "gumgum",
                     "state": "ACTIVE",
-                    "cpc": 0.20,
-                    "dailyBudget": 10.0
+                    "cpc": "0.20",
+                    "dailyBudget": "10.0"
                 },
                 {
                     "source": "triplelift",
                     "state": "ACTIVE",
-                    "cpc": 0.20,
-                    "dailyBudget": 10.0
+                    "cpc": "0.20",
+                    "dailyBudget": "10.0"
                 }
             ]
         }
@@ -507,10 +534,15 @@ Authorization: Bearer <access_token>
         [
             {
                 "source": "gumgum",
-                "state": "PAUSED"
+                "dailyBudget": "15.0",
+                "cpc": "0.25",
             },
             {
                 "source": "triplelift",
+                "state": "PAUSED"
+            }
+            {
+                "source": "outbrain",
                 "state": "PAUSED"
             }
         ]
@@ -522,27 +554,27 @@ Authorization: Bearer <access_token>
             "data": [
                 {
                     "source": "outbrain",
-                    "state": "ACTIVE",
-                    "cpc": 0.20,
-                    "dailyBudget": 10.0
+                    "state": "PAUSED",
+                    "cpc": "0.20",
+                    "dailyBudget": "10.0"
                 },
                 {
                     "source": "yahoo",
                     "state": "ACTIVE",
-                    "cpc": 0.20,
-                    "dailyBudget": 10.0
+                    "cpc": "0.20",
+                    "dailyBudget": "10.0"
                 },
                 {
                     "source": "gumgum",
-                    "state": "PAUSED",
-                    "cpc": 0.20,
-                    "dailyBudget": 10.0
+                    "state": "ACTIVE",
+                    "cpc": "0.25",
+                    "dailyBudget": "15.0"
                 },
                 {
                     "source": "triplelift",
                     "state": "PAUSED",
-                    "cpc": 0.20,
-                    "dailyBudget": 10.0
+                    "cpc": "0.20",
+                    "dailyBudget": "10.0"
                 }
             ]
         }
@@ -669,7 +701,6 @@ Authorization: Bearer <access_token>
 
 ## Upload content ads [/rest/v1/contentads/batch/]
 
-*Not implemented yet, ETA monday.*
 
 ### Create a new content ad upload batch [POST /rest/v1/contentads/batch/]
 
@@ -686,8 +717,7 @@ Authorization: Bearer <access_token>
                 "brandName": "My Company",
                 "description": "My description",
                 "callToAction": "Read more",
-                "primaryTrackerUrl": "https://example.com/t1",
-                "secondaryTrackerUrl": "https://example.com/t2"
+                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
             }
         ]
         
@@ -696,8 +726,9 @@ Authorization: Bearer <access_token>
         {
             "data": {
                 "id": "1302",
-                "status": "PENDING",
-                "results": null
+                "status": "IN_PROGRESS",
+                "validationStatus": [{"__all__": "Content ad still processing."}],
+                "approvedContentAds": []
             }
         }
 
@@ -709,8 +740,9 @@ Authorization: Bearer <access_token>
         {
             "data": {
                 "id": "1302",
-                "status": "COMPLETED",
-                "results": [
+                "status": "DONE",
+                "validationStatus": [],
+                "approvedContentAds": [
                     {
                         "id": "16805",
                         "adGroupId": "2040",
@@ -724,8 +756,7 @@ Authorization: Bearer <access_token>
                         "brandName": "My Company",
                         "description": "My description",
                         "callToAction": "Read more",
-                        "primaryTrackerUrl": "https://example.com/t1",
-                        "secondaryTrackerUrl": "https://example.com/t2"
+                        "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
                     }
                 ]
             }
@@ -735,6 +766,7 @@ Authorization: Bearer <access_token>
 # Group Publishers management
 
 ## Blacklisting and whitelisting [/rest/v1/adgroups/{ad_group_id}/publishers/]
+
 
 ### Get publisher status [GET /rest/v1/adgroups/{ad_group_id}/publishers/]
     
@@ -746,16 +778,19 @@ Authorization: Bearer <access_token>
                     "name": "example.com/publisher1",
                     "status": "ENABLED",
                     "level": "ADGROUP",
+                    "source": "gumgum"
                 }, 
                 {
                     "name": "example.com/publisher2",
                     "status": "ENABLED",
                     "level": "ADGROUP",
+                    "source": "gumgum"
                 },
                 {
                     "name": "example.com/publisher3",
                     "status": "BLACKLISTED",
                     "level": "ADGROUP",
+                    "source": null
                 }
             ]
         }
@@ -768,12 +803,15 @@ Authorization: Bearer <access_token>
             {
                 "name": "example.com/publisher1",
                 "status": "BLACKLISTED",
-                "level": "ADGROUP"
+                "level": "ADGROUP",
+                "source": "gumgum"
             }, 
             {
                 "name": "example.com/publisher2",
                 "status": "BLACKLISTED",
-                "level": "ADGROUP"
+                "level": "ADGROUP",
+                "source": "gumgum"
+            }, 
             }
         ]
     
@@ -784,12 +822,14 @@ Authorization: Bearer <access_token>
                 {
                     "name": "example.com/publisher1",
                     "status": "BLACKLISTED",
-                    "level": "ADGROUP"
+                    "level": "ADGROUP",
+                    "source": "gumgum"
                 }, 
                 {
                     "name": "example.com/publisher2",
                     "status": "BLACKLISTED",
-                    "level": "ADGROUP"
+                    "level": "ADGROUP",
+                    "source": "gumgum"
                 }
             ]
         }
@@ -846,6 +886,45 @@ Authorization: Bearer <access_token>
 - `DESKTOP`
 - `TABLET`
 - `MOBILE`
+
+## Interest targeting
+
+- `COMMUNICATION` - Communication Tools
+- `MEN` - Men’s Lifestyle
+- `DATING` - Dating & Relationships
+- `WEATHER` - Weather & Environment
+- `FASHION` - Beauty & Fashion
+- `TRAVEL` - Travel and Leisure
+- `FUN` - Fun & Entertaining Sites
+- `HEALTH` - Health & Fitness
+- `SCIENCE` - Science
+- `TECHNOLOGY` - Technology
+- `CARS` - Automotive
+- `MEDIA` - News
+- `HOME` - Home & Garden
+- `FAMILY` - Family & Parenting
+- `SHOPPING` - Shopping
+- `COUPONS` - Couponing
+- `ENTERTAINMENT` - Arts & Entertainment
+- `HOBBIES` - Hobbies & Interests
+- `RELIGION` - Religion & Spirituality
+- `MUSIC` - Music
+- `FOOD` - Food & Drink
+- `SPANISH` - Spanish Sites
+- `PETS` - Pets
+- `WOMEN` - Women’s Lifestyle
+- `SPORTS` - Sports
+- `FRENCH` - French Sites
+- `POLITICS` - Gov’t & Politics
+- `LAW` - Law
+- `GAMES` - Games & Gaming
+- `FINANCE` - Business & Finance
+- `EDUCATION` - Education
+- `UTILITY` - Software & Services
+- `QUIZZES` - Quizzes
+- `OTHER` - Other
+- `FOREIGN` - International Sites
+
 
 ## Geo targeting
 
