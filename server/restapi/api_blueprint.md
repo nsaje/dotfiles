@@ -56,6 +56,7 @@ Authorization: Bearer <access_token>
         {
             "data": {
                 "id": "608",
+                "accountId": "186",
                 "name": "My Campaign 1",
                 "tracking": {
                     "ga": {

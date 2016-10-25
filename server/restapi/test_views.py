@@ -38,7 +38,7 @@ class RESTAPITest(TestCase):
         self.assertIsInstance(resp_json['data'], list)
         self.assertGreater(len(resp_json['data']), 0)
         for item in resp_json['data']:
-            self.assertEqual(item.keys(), ['tracking', 'id', 'name'])
+            self.assertEqual(set(item.keys()), {'tracking', 'id', 'accountId', 'name'})
 
     def test_campaigns_post(self):
         r = self.client.post(reverse('campaigns_list'), {'accountId': 1, 'name': 'test campaign'}, format='json')
@@ -79,11 +79,11 @@ class RESTAPITest(TestCase):
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], list)
         self.assertGreater(len(resp_json['data']), 0)
-        expected_fields = [
+        expected_fields = {
             'startDate', 'endDate', 'name', 'maxCpc', 'state', 'trackingCode',
-            'autopilot', 'targeting', 'id', 'dailyBudget']
+            'autopilot', 'targeting', 'id', 'campaignId', 'dailyBudget'}
         for item in resp_json['data']:
-            self.assertEqual(item.keys(), expected_fields)
+            self.assertEqual(set(item.keys()), expected_fields)
 
     @override_settings(R1_DEMO_MODE=True)
     def test_adgroups_post(self):
@@ -198,7 +198,6 @@ class TestBatchUpload(TestCase):
         self._approve_candidates(batch)
 
         r = self.client.get(reverse('contentads_batch_details', kwargs={'batch_id': batch_id}))
-        print r
         self.assertEqual(r.status_code, 200)
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], dict)

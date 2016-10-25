@@ -108,7 +108,7 @@ class CampaignSerializer(SettingsSerializer):
         settings = data_internal['data']['settings']
         return {
             'id': settings['id'],
-            # 'accountId': settings['account_id'],
+            'accountId': settings['account_id'],
             'name': settings['name'],
             # 'campaignManager': self._user_to_email(settings['campaign_manager']),  # TODO(nsaje): convert to email
             'tracking': {
@@ -128,7 +128,6 @@ class CampaignSerializer(SettingsSerializer):
         data = self._allow_not_provided(external_data)
         settings = {
             'id': data['id'],
-            'account_id': data['accountId'],
             'name': data['name'],
             # 'campaign_manager': data['campaignManager'],  # TODO(nsaje): convert from email
             'enable_ga_tracking': data['tracking']['ga']['enabled'],
@@ -159,7 +158,7 @@ class AdGroupSerializer(SettingsSerializer):
         settings = data_internal['data']['settings']
         return {
             'id': settings['id'],
-            # 'campaignId': settings['campaign_id'],
+            'campaignId': settings['campaign_id'],
             'name': settings['name'],
             'state': constants.AdGroupSettingsState.get_name(settings['state']),
             'startDate': settings['start_date'],
@@ -183,7 +182,6 @@ class AdGroupSerializer(SettingsSerializer):
         data = self._allow_not_provided(external_data)
         settings = {
             'id': data['id'],
-            'campaign_id': data['campaignId'],
             'name': data['name'],
             'state': DashConstantField(constants.AdGroupSettingsState).to_internal_value(data['state']) if data['state'] != NOT_PROVIDED else NOT_PROVIDED,
             'start_date': data['startDate'],

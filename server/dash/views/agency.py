@@ -140,6 +140,7 @@ class AdGroupSettings(api_common.BaseApiView):
             primary_campaign_goal = campaign_goals.get_primary_campaign_goal(ad_group.campaign)
             result = {
                 'id': str(ad_group.pk),
+                'campaign_id': str(ad_group.campaign_id),
                 'name': ad_group.name,
                 'state': settings.state,
                 'start_date': settings.start_date,
@@ -540,6 +541,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         result = {
             'id': str(campaign.pk),
+            'account_id': str(campaign.account_id),
             'name': campaign.name,
             'campaign_goal': settings.campaign_goal,
             'goal_quantity': settings.goal_quantity,
