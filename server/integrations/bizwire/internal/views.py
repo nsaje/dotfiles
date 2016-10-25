@@ -4,6 +4,7 @@ import json
 from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.db import transaction
 
 from . import config
 
@@ -34,16 +35,17 @@ def click_capping(request):
     ).select_related('ad_group').get()
 
     logger.info('Click cap reached. Stopping content ad %s', content_ad.id)
-    dash.api.update_content_ads_state([content_ad], dash.constants.ContentAdSourceState.INACTIVE, None)
 
-    # TODO: enable if needed
-    # content_ad.ad_group.write_history(
-    #     'Content ad {} stopped after reaching the click limit.',
-    #     system_user=dash.constants.SystemUserType.K1_USER,
-    #     action_type=dash.constants.HistoryActionType.CONTENT_AD_STATE_CHANGE
-    # )
+    with transaction.atomic():
+        dash.api.update_content_ads_state([content_ad], dash.constants.ContentAdSourceState.INACTIVE, None)
+        k1_helper.update_content_ad(content_ad.ad_group.id, content_ad.id)
 
-    k1_helper.update_content_ad(content_ad.ad_group.id, content_ad.id)
+        # TODO: enable if needed
+        # content_ad.ad_group.write_history(
+        #     'Content ad {} stopped after reaching the click limit.',
+        #     system_user=dash.constants.SystemUserType.K1_USER,
+        #     action_type=dash.constants.HistoryActionType.CONTENT_AD_STATE_CHANGE
+        # )
 
     return JsonResponse({
         "status": 'ok'
