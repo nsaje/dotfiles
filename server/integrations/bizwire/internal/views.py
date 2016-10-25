@@ -31,6 +31,7 @@ def click_capping(request):
         ad_group_id__in=config.TEST_AD_GROUP_IDS,
     ).select_related('ad_group').get()
 
+    logger.info('Click cap reached. Stopping content ad %s', content_ad.id)
     dash.api.update_content_ads_state([content_ad], dash.constants.ContentAdSourceState.INACTIVE, None)
 
     # TODO: enable if needed
