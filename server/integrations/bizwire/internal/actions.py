@@ -23,5 +23,4 @@ def check_midnight_and_stop_ads():
 
     content_ads = dash.models.ContentAd.objects.filter(ad_group_id__in=config.TEST_AD_GROUP_IDS)
     dash.api.update_content_ads_state(content_ads, dash.constants.ContentAdSourceState.INACTIVE, None)
-    for ad_group_id in config.TEST_AD_GROUP_IDS:
-        k1_helper.update_ad_group(ad_group_id)
+    k1_helper.update_ad_groups(config.TEST_AD_GROUP_IDS)

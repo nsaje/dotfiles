@@ -43,7 +43,7 @@ def click_capping(request):
     #     action_type=dash.constants.HistoryActionType.CONTENT_AD_STATE_CHANGE
     # )
 
-    k1_helper.update_content_ads(content_ad.ad_group.id, content_ad.id)
+    k1_helper.update_content_ad(content_ad.ad_group.id, content_ad.id)
 
     return JsonResponse({
         "status": 'ok'
