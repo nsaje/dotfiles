@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def click_capping(request):
+    logger.info('BIZWIRE CAPPING call received')
+
     try:
         request_signer.verify_wsgi_request(request, settings.R1_API_SIGN_KEY)
     except request_signer.SignatureError:
