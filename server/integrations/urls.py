@@ -12,5 +12,9 @@ urlpatterns = [
     url(
         r'^businesswire/internal/articles/',
         integrations.bizwire.internal.views.article_upload,
+    ),
+    url(
+        r'^businesswire/internal/click_capping/',
+        integrations.bizwire.internal.views.click_capping,
     )
 ]
