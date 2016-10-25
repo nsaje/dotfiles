@@ -1,5 +1,6 @@
 import collections
 import logging
+import influx
 
 from django.db import transaction
 from django.db.models import Q
@@ -44,6 +45,10 @@ class RESTAPIBaseView(APIView):
     authentication_classes = [OAuth2Authentication]
     renderer_classes = [RESTAPIJSONRenderer]
     permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission,)
+
+    def dispatch(self, request, *args, **kwargs):
+        with influx.block_timer('restapi.request', endpoint=self.__class__.__name__, method=request.method):
+            return super(RESTAPIBaseView, self).dispatch(request, *args, **kwargs)
 
     @staticmethod
     def response_ok(data, errors=None, **kwargs):
