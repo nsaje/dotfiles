@@ -12,7 +12,8 @@ angular.module('one.legacy').directive('zemChart', ['config', '$compile', '$wind
             minDate: '=zemMinDate',
             maxDate: '=zemMaxDate',
             onRemove: '&zemOnRemove',
-            localStoragePrefix: '=localStoragePrefix'
+            localStoragePrefix: '=localStoragePrefix',
+            isLoading: '=zemIsLoading'
         },
         templateUrl: '/partials/zem_chart.html',
         controller: ['$scope', '$element', '$attrs', '$http', 'zemUserSettings', function ($scope, $element, $attrs, $http, zemUserSettings) {

@@ -894,6 +894,9 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
                     });
                 }).
                 error(function (data, status, headers, config) {
+                    if (status === -1) { // request was aborted, do nothing
+                        return;
+                    }
                     deferred.reject(data);
                 });
 

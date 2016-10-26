@@ -11,6 +11,7 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
     $scope.chartData = undefined;
     $scope.chartHidden = false;
     $scope.chartBtnTitle = 'Hide chart';
+    $scope.chartIsLoading = false;
     $scope.order = '-media_cost';
     $scope.page = {
         sizeRange: [5, 10, 20, 50],
@@ -559,7 +560,13 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
         }
     });
 
+    var dailyStatsPromise = undefined;
     var getDailyStats = function () {
+        if (dailyStatsPromise) {
+            dailyStatsPromise.abort();
+        }
+
+        $scope.chartIsLoading = true;
         var dateRange = zemDataFilterService.getDateRange();
 
         var convertedSelection = {};
@@ -578,7 +585,8 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
             convertedSelection.selectAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
         }
 
-        api.dailyStats.list($scope.level, null, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, true, getDailyStatsMetrics()).then(
+        dailyStatsPromise = api.dailyStats.list($scope.level, null, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, true, getDailyStatsMetrics());
+        dailyStatsPromise.then(
             function (data) {
                 setChartOptions();
                 $scope.chartData = data.chartData;
@@ -587,7 +595,9 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
                 // error
                 return;
             }
-        );
+        ).finally(function () {
+            $scope.chartIsLoading = false;
+        });
     };
 
     $scope.getInfoboxData = function () {

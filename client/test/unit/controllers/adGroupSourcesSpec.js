@@ -55,7 +55,9 @@ describe('AdGroupSourcesCtrlSpec', function () {
             }},
             dailyStats: {list: function () {
                 return {
-                    then: function () {}
+                    then: function () { return this; },
+                    finally: function () { return this; },
+                    abort: function () {},
                 };
             }},
             adGroupSources: {get: function () {
@@ -166,7 +168,9 @@ describe('AdGroupSourcesCtrlSpec', function () {
                     return {
                         then: function (handler) {
                             handler(data);
-                        }
+                            return this;
+                        },
+                        finally: function () {},
                     };
                 }
             };
@@ -194,7 +198,9 @@ describe('AdGroupSourcesCtrlSpec', function () {
                 return {
                     then: function (handler) {
                         handler(data);
-                    }
+                        return this;
+                    },
+                    finally: function () {},
                 };
             }
         };

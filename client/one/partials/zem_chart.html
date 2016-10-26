@@ -1,4 +1,5 @@
-<div class="chart-container">
+<div class="chart-container loader-container">
+    <div class="loader" ng-show="isLoading"></div>
     <div class="chart-selector">
         <ui-select theme="select2" search-enabled="false" class="metric1" ng-model="metrics.metric1" ng-change="chartMetric1Update()">
             <ui-select-match>{{getSelectedName($select.selected)}}</ui-select-match>

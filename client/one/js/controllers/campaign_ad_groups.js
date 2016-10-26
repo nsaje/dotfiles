@@ -9,6 +9,7 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
     $scope.chartMetricOptions = options.campaignChartMetrics;
+    $scope.chartIsLoading = false;
     $scope.rows = null;
     $scope.totalRow = null;
     $scope.order = '-media_cost';
@@ -581,7 +582,13 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
         );
     };
 
+    var dailyStatsPromise = undefined;
     var getDailyStats = function () {
+        if (dailyStatsPromise) {
+            dailyStatsPromise.abort();
+        }
+
+        $scope.chartIsLoading = true;
         var dateRange = zemDataFilterService.getDateRange();
 
         var convertedSelection = {selectedIds: $scope.selection.entityIds};
@@ -600,7 +607,8 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
             convertedSelection.selectAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
         }
 
-        api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics()).then(
+        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics());
+        dailyStatsPromise.then(
             function (data) {
                 refreshChartOptions(data.conversionGoals, data.pixels);
                 $scope.chartData = data.chartData;
@@ -609,7 +617,9 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
                 // error
                 return;
             }
-        );
+        ).finally(function () {
+            $scope.chartIsLoading = false;
+        });
     };
 
     $scope.selectedAdGroupRemoved = function (id) {

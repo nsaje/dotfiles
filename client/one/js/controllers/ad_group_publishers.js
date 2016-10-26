@@ -11,6 +11,7 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
     $scope.chartMetricOptions = [];
     $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
+    $scope.chartIsLoading = false;
     $scope.order = '-media_cost';
     $scope.localStoragePrefix = 'adGroupPublishers';
     $scope.page = {
@@ -823,12 +824,20 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
         );
     };
 
+    var dailyStatsPromise = undefined;
     var getDailyStats = function () {
+        if (dailyStatsPromise) {
+            dailyStatsPromise.abort();
+        }
+
+        $scope.chartIsLoading = true;
+
         $scope.selectedPublisherIds = [];
         $scope.selectedTotals = true;
 
         var dateRange = zemDataFilterService.getDateRange();
-        api.dailyStats.listPublishersStats($state.params.id, dateRange.startDate, dateRange.endDate, $scope.selectedPublisherIds,  $scope.selectedTotals, getDailyStatsMetrics()).then(
+        dailyStatsPromise = api.dailyStats.listPublishersStats($state.params.id, dateRange.startDate, dateRange.endDate, $scope.selectedPublisherIds,  $scope.selectedTotals, getDailyStatsMetrics());
+        dailyStatsPromise.then(
             function (data) {
                 refreshChartOptions(data.conversionGoals, data.pixels);
 
@@ -839,7 +848,9 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', ['$scope', '$st
                 // error
                 return;
             }
-        );
+        ).finally(function () {
+            $scope.chartIsLoading = false;
+        });
     };
 
     $scope.getInfoboxData = function () {

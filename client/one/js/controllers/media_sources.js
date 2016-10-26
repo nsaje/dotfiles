@@ -8,6 +8,7 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
     $scope.chartHidden = false;
     $scope.chartMetricOptions = [];
     $scope.chartBtnTitle = 'Hide chart';
+    $scope.chartIsLoading = false;
 
     $scope.order = '-media_cost';
     $scope.isSyncRecent = true;
@@ -560,10 +561,13 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
         });
     };
 
+    var dailyStatsPromise = undefined;
     var getDailyStats = function () {
-        if ($scope.dailyStatsPromise !== undefined) {
-            $scope.dailyStatsPromise.abort();
+        if (dailyStatsPromise) {
+            dailyStatsPromise.abort();
         }
+
+        $scope.chartIsLoading = true;
 
         var convertedSelection = {selectedIds: $scope.selection.entityIds};
         if ($scope.grid.api) {
@@ -582,10 +586,10 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
         }
 
         var dateRange = zemDataFilterService.getDateRange();
-        $scope.dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate,
+        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate,
             dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics());
 
-        $scope.dailyStatsPromise.then(
+        dailyStatsPromise.then(
             function (data) {
                 refreshChartOptions(data.conversionGoals, data.pixels);
                 $scope.chartData = data.chartData;
@@ -595,7 +599,7 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
                 return;
             }
         ).finally(function () {
-            $scope.dailyStatsPromise = undefined;
+            $scope.chartIsLoading = false;
         });
     };
 
