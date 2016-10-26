@@ -437,6 +437,7 @@ class AdGroupsView(K1APIView):
                 'account_id': ad_group_settings.ad_group.campaign.account.id,
                 'agency_id': None,
                 'goal_types': campaign_goal_types[ad_group_settings.ad_group.campaign.id],
+                'dayparting': ad_group_settings.dayparting,
             }
 
             if ad_group_settings.b1_sources_group_enabled:

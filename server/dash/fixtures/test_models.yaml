@@ -235,6 +235,7 @@
         exclusion_audience_targeting: [3, 4]
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
         redirect_javascript: "alert('a')"
+        dayparting: {"monday": [1,2,5], "tuesday": [10, 12], "timezone": "CET"}
     model: dash.adgroupsettings
     pk: 1
 

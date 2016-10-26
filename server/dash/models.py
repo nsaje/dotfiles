@@ -2142,7 +2142,8 @@ class AdGroupSettings(SettingsBase):
         'landing_mode',
         'b1_sources_group_enabled',
         'b1_sources_group_daily_budget',
-        'b1_sources_group_state'
+        'b1_sources_group_state',
+        'dayparting',
     ]
     history_fields = list(_settings_fields)
 
@@ -2225,6 +2226,8 @@ class AdGroupSettings(SettingsBase):
         default=constants.AdGroupSourceSettingsState.INACTIVE,
         choices=constants.AdGroupSourceSettingsState.get_choices()
     )
+
+    dayparting = jsonfield.JSONField(blank=True, default=dict)
 
     class Meta:
         ordering = ('-created_dt',)
@@ -2323,6 +2326,7 @@ class AdGroupSettings(SettingsBase):
             'autopilot_state': 'Autopilot',
             'autopilot_daily_budget': 'Autopilot\'s Daily Spend Cap',
             'landing_mode': 'Landing Mode',
+            'dayparting': 'Dayparting'
         }
 
         return NAMES[prop_name]
@@ -2373,6 +2377,15 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(names)
         elif prop_name == 'redirect_pixel_urls':
             value = ', '.join(value)
+        elif prop_name == 'dayparting':
+            joined = []
+            for k in value:
+                if isinstance(value[k], list):
+                    val = ', '.join(str(v) for v in value[k])
+                else:
+                    val = str(value[k])
+                joined.append(k.capitalize() + ': ' + val)
+            value = '; '.join(joined)
 
         return value
 

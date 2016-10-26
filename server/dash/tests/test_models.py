@@ -70,7 +70,8 @@ class AdGroupSettingsTest(TestCase):
             'landing_mode': False,
             'b1_sources_group_enabled': False,
             'b1_sources_group_daily_budget': Decimal('0'),
-            'b1_sources_group_state': constants.AdGroupSourceSettingsState.INACTIVE
+            'b1_sources_group_state': constants.AdGroupSourceSettingsState.INACTIVE,
+            'dayparting': {"monday": [1, 2, 5], "tuesday": [10, 12], "timezone": "CET"},
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -146,6 +147,7 @@ class AdGroupSettingsTest(TestCase):
             'End date set to "2014-06-05", '
             'Custom audience targeting set to "test audience 1, test audience 2", '
             'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot", '
+            'Dayparting set to "Timezone: CET; Tuesday: 10, 12; Monday: 1, 2, 5", '
             'Exclusion custom audience targeting set to "test audience 3, test audience 4", '
             'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
             'Locations set to "United States", '
