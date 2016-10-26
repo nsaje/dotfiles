@@ -97,13 +97,6 @@ class NavigationTreeView(api_common.BaseApiView):
             .filter_by_account_types(view_filter.filtered_account_types)\
             .order_by('name')
 
-        map_ad_group_source = dict(
-            models.AdGroupSource.objects
-            .filter(ad_group__in=ad_groups)
-            .filter_by_sources(view_filter.filtered_sources)
-            .values_list('id', 'ad_group_id')
-        )
-
         ad_groups_settings = models.AdGroupSettings.objects.filter(
             ad_group__in=ad_groups).group_current_settings()
 
