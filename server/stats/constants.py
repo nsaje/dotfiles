@@ -29,6 +29,29 @@ class TimeDimension:
     _ALL = [DAY, WEEK, MONTH]
 
 
+# shortcuts
+ACCOUNT = StructureDimension.ACCOUNT
+CAMPAIGN = StructureDimension.CAMPAIGN
+AD_GROUP = StructureDimension.AD_GROUP
+CONTENT_AD = StructureDimension.CONTENT_AD
+SOURCE = StructureDimension.SOURCE
+PUBLISHER = StructureDimension.PUBLISHER
+
+
+DEVICE = DeliveryDimension.DEVICE
+COUNTRY = DeliveryDimension.COUNTRY
+STATE = DeliveryDimension.STATE
+DMA = DeliveryDimension.DMA
+AGE = DeliveryDimension.AGE
+GENDER = DeliveryDimension.GENDER
+AGE_GENDER = DeliveryDimension.AGE_GENDER
+
+
+DAY = TimeDimension.DAY
+WEEK = TimeDimension.WEEK
+MONTH = TimeDimension.MONTH
+
+
 class TimeLimits:
     DAY = 30
     WEEK = 30

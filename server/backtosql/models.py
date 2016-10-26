@@ -49,6 +49,9 @@ class Model(object):
     def get_column(self, alias):
         return self.columns_dict[helpers.clean_alias(alias)]
 
+    def has_column(self, alias):
+        return helpers.clean_alias(alias) in self.columns_dict
+
     def select_columns(self, subset=None, group=None):
         if subset is not None:
             columns = []

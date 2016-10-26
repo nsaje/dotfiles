@@ -41,6 +41,9 @@ class Q(object):
         self.negate = not self.negate
         return self
 
+    def was_generated(self):
+        return bool(self.params)
+
     def generate(self, prefix=None):
         if self.prefix is not None and self.prefix != prefix:
             raise helpers.BackToSQLException("Only 1 prefix per Q")
@@ -51,7 +54,7 @@ class Q(object):
         return self.query
 
     def get_params(self):
-        if not self.params:
+        if not self.was_generated():
             raise helpers.BackToSQLException("Query not yet generated")
         return self.params
 

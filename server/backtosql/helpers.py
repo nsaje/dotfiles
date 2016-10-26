@@ -16,6 +16,7 @@ def generate_sql(template_name, context, clean=False):
     # clean affects performance so you might not want to use it if not needed
     if clean:
         return clean_sql(sql)
+
     return sql
 
 

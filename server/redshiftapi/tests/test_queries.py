@@ -6,205 +6,220 @@ import mock
 from django.test import TestCase
 
 from stats import constants
+from stats.helpers import Goals
 from utils import exc
 
 import dash.models
 
 from redshiftapi import queries
 from redshiftapi import models
-from redshiftapi import model_helpers
 
 
-class SmallMaster(models.MVMaster):
-    """
-    A subset of MVMaster so that its easier to test
-    """
+class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
 
-    def __init__(self, *args, **kwargs):
-        super(SmallMaster, self).__init__(*args, **kwargs)
-
-        columns = self.select_columns([
-            'date', 'week', 'source_id', 'account_id', 'campaign_id', 'device_type',
-            'publisher',
-            'clicks', 'total_seconds', 'yesterday_cost',
-        ])
-
-        columns += self.select_columns(group=model_helpers.CONVERSION_AGGREGATES)
-        columns += self.select_columns(group=model_helpers.TOUCHPOINTCONVERSION_AGGREGATES)
-        columns += self.select_columns(group=model_helpers.AFTER_JOIN_CALCULATIONS)
-        columns += self.select_columns(group=model_helpers.AFTER_JOIN_CONVERSIONS_CALCULATIONS)
-        columns += self.select_columns(group=model_helpers.PUBLISHER_AGGREGATES)
-
-        self.columns = columns
-        self.columns_dict = {x.alias: x for x in self.columns}
-
-
-class PrepareTimeConstraintsTest(TestCase):
-
-    def test_dimension_day(self):
-        base_constraints = {
-            'date__gte': datetime.date(2016, 2, 1),
-            'date__lte': datetime.date(2016, 2, 16),
-        }
-
-        # fits into time span
-        constraints = copy.copy(base_constraints)
-        queries._prepare_time_constraints(constants.TimeDimension.DAY, constraints, 0, 5)
-
-        self.assertEquals(constraints, {
-            'date__gte': datetime.date(2016, 2, 1),
-            'date__lte': datetime.date(2016, 2, 5),
-        })
-
-        constraints = copy.copy(base_constraints)
-        queries._prepare_time_constraints(constants.TimeDimension.DAY, constraints, 10, 3)
-
-        self.assertEquals(constraints, {
-            'date__gte': datetime.date(2016, 2, 11),
-            'date__lte': datetime.date(2016, 2, 13),
-        })
-
-        constraints = copy.copy(base_constraints)
-        queries._prepare_time_constraints(constants.TimeDimension.DAY, constraints, 10, 10)
-
-        self.assertEquals(constraints, {
-            'date__gte': datetime.date(2016, 2, 11),
-            'date__lte': datetime.date(2016, 2, 16),  # should use the end date
-        })
-
-        constraints = copy.copy(base_constraints)
-        queries._prepare_time_constraints(constants.TimeDimension.DAY, constraints, 20, 10)
-
-        self.assertEquals(constraints, {
-            # offset is above date range - constraints should not select any row
-            'date__gte': datetime.date(2016, 2, 21),
-            'date__lte': datetime.date(2016, 2, 16),
-        })
-
-    def test_dimension_week(self):
-        base_constraints = {
-            'date__gte': datetime.date(2016, 2, 1),
-            'date__lte': datetime.date(2016, 2, 16),
-        }
-
-        constraints = copy.copy(base_constraints)
-        queries._prepare_time_constraints(constants.TimeDimension.WEEK, constraints, 0, 2)
-
-        self.assertEquals(constraints, {
-            'date__gte': datetime.date(2016, 2, 1),
-            'date__lte': datetime.date(2016, 2, 14),
-        })
-
-        constraints = copy.copy(base_constraints)
-        queries._prepare_time_constraints(constants.TimeDimension.WEEK, constraints, 1, 1)
-
-        self.assertEquals(constraints, {
-            'date__gte': datetime.date(2016, 2, 8),
-            'date__lte': datetime.date(2016, 2, 14),
-        })
-
-        constraints = copy.copy(base_constraints)
-        queries._prepare_time_constraints(constants.TimeDimension.WEEK, constraints, 1, 2)
-
-        self.assertEquals(constraints, {
-            'date__gte': datetime.date(2016, 2, 8),
-            'date__lte': datetime.date(2016, 2, 16),  # should use end date
-        })
-
-    def test_dimension_month(self):
-        base_constraints = {
-            'date__gte': datetime.date(2016, 2, 5),
-            'date__lte': datetime.date(2016, 4, 16),
-        }
-
-        constraints = copy.copy(base_constraints)
-        queries._prepare_time_constraints(constants.TimeDimension.MONTH, constraints, 0, 2)
-
-        self.assertEquals(constraints, {
-            'date__gte': datetime.date(2016, 2, 5),
-            'date__lte': datetime.date(2016, 3, 31),
-        })
-
-        constraints = copy.copy(base_constraints)
-        queries._prepare_time_constraints(constants.TimeDimension.MONTH, constraints, 2, 3)
-
-        self.assertEquals(constraints, {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 4, 16),
-        })
-
-
-class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
-
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    def test_breakdown_top_rows_totals(self, mock_local_today):
-        m = SmallMaster()
-
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
-
-        parents = []
-
-        context = m.get_default_context([], constraints, parents, 'total_seconds', None, None)
-
-        sql, params = queries.prepare_breakdown_top_rows(context)
-
-        self.assertEquals(params, [
-            datetime.date(2016, 7, 1),
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-        ])
+    @mock.patch.object(models.MVMaster, 'get_aggregates', return_value=[models.MVMaster.clicks])
+    def test_query_all_base(self, _):
+        sql, params = queries.prepare_query_all_base(
+            ['account_id', 'source_id', 'dma'],
+            {
+                'date__gte': datetime.date(2016, 1, 5),
+                'date__lte': datetime.date(2016, 1, 8),
+            },
+            [{'account_id': 1, 'source_id': 2}],
+            False
+        )
 
         self.assertSQLEquals(sql, """
-        WITH
-            temp_yesterday AS (
-                SELECT
-                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
-                FROM mv_account a
-                WHERE (a.date=%s)
-            ),
-            temp_base AS (
-                SELECT
-                    SUM(a.clicks) clicks,
-                    SUM(a.total_time_on_site) total_seconds
-                FROM mv_account a
-                WHERE (a.date>=%s AND a.date<=%s)
-            )
         SELECT
-            temp_base.clicks,
-            temp_base.total_seconds,
-            temp_yesterday.yesterday_cost
-        FROM temp_base NATURAL LEFT JOIN temp_yesterday;
+            base_table.account_id AS account_id,
+            base_table.source_id AS source_id,
+            base_table.dma AS dma,
+            SUM(base_table.clicks) clicks
+        FROM mv_account_delivery_geo base_table
+        WHERE (( base_table.date >=%s AND base_table.date <=%s)
+            AND (( base_table.account_id =%s AND base_table.source_id =%s)))
+        GROUP BY 1, 2, 3
+        ORDER BY clicks DESC
         """)
 
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    def test_single_breakdown_top_rows(self, mock_local_today):
-        m = SmallMaster()
+        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
+    @mock.patch.object(models.MVMaster, 'get_aggregates', return_value=[models.MVMaster.clicks])
+    def test_query_all_base_totals(self, _):
+        sql, params = queries.prepare_query_all_base(
+            [],
+            {
+                'date__gte': datetime.date(2016, 1, 5),
+                'date__lte': datetime.date(2016, 1, 8),
+            },
+            None,
+            False
+        )
+
+        self.assertSQLEquals(sql, """
+        SELECT
+            SUM(base_table.clicks) clicks
+        FROM mv_account base_table
+        WHERE ( base_table.date >=%s AND base_table.date <=%s)
+        ORDER BY clicks DESC
+        """)
+
+        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
+
+    @mock.patch.object(models.MVMaster, 'get_aggregates', return_value=[
+        models.MVMasterPublishers.clicks, models.MVMasterPublishers.external_id, models.MVMasterPublishers.publisher_id])
+    def test_query_all_base_publishers(self, _):
+        sql, params = queries.prepare_query_all_base(
+            ['publisher_id', 'dma'],
+            {
+                'date__gte': datetime.date(2016, 1, 5),
+                'date__lte': datetime.date(2016, 1, 8),
+            },
+            None,
+            True
+        )
+
+        self.assertSQLEquals(sql, """
+        SELECT
+            base_table.publisher AS publisher,
+            base_table.source_id AS source_id,
+            base_table.dma AS dma,
+            SUM(base_table.clicks) clicks,
+            MAX(base_table.external_id) AS external_id,
+            MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
+        FROM mv_pubs_master base_table
+        WHERE ( base_table.date >=%s AND base_table.date <=%s)
+        GROUP BY 1, 2, 3
+        ORDER BY clicks DESC
+        """)
+
+        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
+
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 10, 3))
+    def test_query_all_yesterday(self, _):
+        sql, params = queries.prepare_query_all_yesterday(
+            ['account_id', 'source_id', 'dma'],
+            {
+                'date__gte': datetime.date(2016, 1, 5),
+                'date__lte': datetime.date(2016, 1, 8),
+            },
+            [{'account_id': 1, 'source_id': 2}],
+            False
+        )
+
+        self.assertSQLEquals(sql, """
+        SELECT
+            base_table.account_id AS account_id,
+            base_table.source_id AS source_id,
+            base_table.dma AS dma,
+            SUM(base_table.cost_nano)/1000000000.0 yesterday_cost,
+            SUM(base_table.effective_cost_nano)/1000000000.0 e_yesterday_cost
+        FROM mv_account_delivery_geo base_table
+        WHERE (( base_table.date = %s)
+               AND (( base_table.account_id =%s AND base_table.source_id =%s)))
+        GROUP BY 1, 2, 3
+        ORDER BY yesterday_cost DESC
+        """)
+
+        self.assertEquals(params, [datetime.date(2016, 10, 2), 1, 2])
+
+    def test_query_all_conversions(self):
+        sql, params = queries.prepare_query_all_conversions(
+            ['account_id', 'source_id', 'slug'],
+            {
+                'date__gte': datetime.date(2016, 1, 5),
+                'date__lte': datetime.date(2016, 1, 8),
+            },
+            [{'account_id': 1, 'source_id': 2}],
+            False
+        )
+
+        self.assertSQLEquals(sql, """
+        SELECT
+            base_table.account_id AS account_id,
+            base_table.source_id AS source_id,
+            base_table.slug AS slug,
+            SUM(base_table.conversion_count) count
+        FROM mv_conversions_account base_table
+        WHERE (( base_table.date >=%s AND base_table.date <=%s)
+               AND (( base_table.account_id =%s AND base_table.source_id =%s)))
+        GROUP BY 1, 2, 3
+        ORDER BY count DESC
+        """)
+
+        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
+
+    def test_query_all_touchpoints(self):
+        sql, params = queries.prepare_query_all_touchpoints(
+            ['account_id', 'source_id', 'slug', 'window'],
+            {
+                'date__gte': datetime.date(2016, 1, 5),
+                'date__lte': datetime.date(2016, 1, 8),
+            },
+            [{'account_id': 1, 'source_id': 2}],
+            False
+        )
+
+        self.assertSQLEquals(sql, """
+        SELECT
+            base_table.account_id AS account_id,
+            base_table.source_id AS source_id,
+            base_table.slug AS slug,
+            base_table.conversion_window AS window,
+            SUM(base_table.conversion_count) count
+        FROM mv_touch_account base_table
+        WHERE (( base_table.date >=%s AND base_table.date <=%s)
+               AND (( base_table.account_id =%s AND base_table.source_id =%s)))
+        GROUP BY 1, 2, 3, 4
+        ORDER BY count DESC
+        """)
+
+        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
+
+    def test_query_structure_with_stats(self):
+        sql, params = queries.prepare_query_structure_with_stats(
+            ['account_id', 'source_id', 'dma'],
+            {
+                'date__gte': datetime.date(2016, 1, 5),
+                'date__lte': datetime.date(2016, 1, 8),
+            },
+            False
+        )
+
+        self.assertSQLEquals(sql, """
+        SELECT
+            base_table.account_id AS account_id,
+            base_table.source_id AS source_id,
+            base_table.dma AS dma
+        FROM mv_account_delivery_geo base_table
+        WHERE ( base_table.date >=%s AND base_table.date <=%s)
+        GROUP BY 1, 2, 3;
+        """)
+
+        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
+
+
+class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
+
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
+                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
+    def test_query_joint_base(self, _a, _b):
         constraints = {
             'date__gte': datetime.date(2016, 4, 1),
             'date__lte': datetime.date(2016, 5, 1),
         }
 
-        parents = []
+        goals = Goals(None, None, None, None, None)
 
-        context = m.get_default_context(['account_id'], constraints, parents, 'total_seconds', None, None)
-
-        sql, params = queries.prepare_breakdown_top_rows(context)
-
-        self.assertEquals(params, [
-            datetime.date(2016, 7, 1),
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-        ])
+        sql, params = queries.prepare_query_joint_base(['account_id'], constraints, None, 'total_seconds', 5, 10, goals, False)
 
         self.assertSQLEquals(sql, """
         WITH
             temp_yesterday AS (
                 SELECT
                     a.account_id AS account_id,
+                    SUM(a.effective_cost_nano)/1000000000.0 e_yesterday_cost,
                     SUM(a.cost_nano)/1000000000.0 yesterday_cost
                 FROM mv_account a
                 WHERE (a.date=%s)
@@ -221,491 +236,100 @@ class TestPrepareQuery(TestCase, backtosql.TestSQLMixin):
             )
         SELECT
             temp_base.account_id,
-            temp_base.clicks,
-            temp_base.total_seconds,
-            temp_yesterday.yesterday_cost
-        FROM temp_base NATURAL LEFT JOIN temp_yesterday
-        ORDER BY total_seconds ASC NULLS LAST;
-        """)
-
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    def test_publisher_breakdown_top_rows(self, mock_local_today):
-        m = SmallMaster()
-
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-            'publisher_id__neq': ['asd__3', 'bsd__3'],
-        }
-
-        parents = []
-
-        context = m.get_default_context(['publisher_id'], constraints, parents, 'total_seconds', None, None)
-
-        sql, params = queries.prepare_breakdown_top_rows(context)
-
-        self.assertEquals(params, [
-            datetime.date(2016, 7, 1),
-            ['asd', 'bsd'], 3,  # publishers
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            ['asd', 'bsd'], 3,  # publishers
-        ])
-
-        self.assertSQLEquals(sql, """
-            WITH temp_yesterday AS
-                (SELECT
-                    a.publisher AS publisher,
-                    a.source_id AS source_id,
-                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
-                FROM mv_pubs_ad_group a
-                WHERE (( a.date =%s)
-                        AND NOT (( a.publisher =ANY(%s) AND a.source_id =%s)))
-                GROUP BY 1, 2),
-                temp_base AS
-                (SELECT a.publisher AS publisher ,
-                    a.source_id AS source_id ,
-                    MAX(a.external_id) AS external_id,
-                    MAX(a.publisher || '__' || a.source_id) publisher_id,
-                    SUM(a.clicks) clicks,
-                    SUM(a.total_time_on_site) total_seconds
-                FROM mv_pubs_ad_group a
-                WHERE (( a.date >=%s AND a.date <=%s)
-                    AND NOT (( a.publisher =ANY(%s) AND a.source_id =%s)))
-                GROUP BY 1, 2)
-            SELECT temp_base.publisher,
-                    temp_base.source_id,
-                    temp_base.external_id,
-                    temp_base.publisher_id,
-                    temp_base.clicks,
-                    temp_base.total_seconds,
-                    temp_yesterday.yesterday_cost
-            FROM temp_base NATURAL
-            LEFT JOIN temp_yesterday
-            ORDER BY total_seconds ASC NULLS LAST ;
-        """)
-
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    def test_breakdown_struct_delivery_top_rows(self, mock_local_today):
-        m = SmallMaster()
-
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
-
-        parents = [
-            {'source_id': 132},
-        ]
-
-        context = m.get_default_context(['account_id', 'source_id'], constraints,
-                                        parents, 'total_seconds', 0, 10)
-
-        sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
-
-        # extracts params correctly
-        self.assertEquals(params, [
-            datetime.date(2016, 7, 1),
-            132,
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            132,
-        ])
-
-        self.assertSQLEquals(sql, """
-        WITH
-            temp_yesterday AS (
-                SELECT
-                    a.account_id AS account_id,
-                    a.source_id AS source_id,
-                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
-                FROM mv_account a
-                WHERE (a.date=%s) AND ((a.source_id=%s))
-                GROUP BY 1, 2
-            ),
-            temp_base AS (
-                SELECT
-                    a.account_id AS account_id,
-                    a.source_id AS source_id,
-                    SUM(a.clicks) clicks,
-                    SUM(a.total_time_on_site) total_seconds
-                FROM mv_account a
-                WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY 1, 2
-            )
-        SELECT
-            b.account_id,
-            b.source_id,
-            b.clicks,
-            b.total_seconds,
-            b.yesterday_cost
-        FROM (
-            SELECT
-                temp_base.account_id,
-                temp_base.source_id,
-                temp_base.clicks,
-                temp_base.total_seconds,
-                temp_yesterday.yesterday_cost,
-                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id
-                    ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
-            FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday
-        ) b
-        WHERE r <= 10
-        """)
-
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    def test_breakdown_struct_delivery_top_rows_no_yesterday_join(self, mock_local_today):
-        m = SmallMaster()
-
-        constraints = {
-            'date__gte': datetime.date(2016, 6, 1),
-            'date__lte': datetime.date(2016, 8, 1),
-        }
-
-        parents = [
-            {'source_id': 132},
-        ]
-
-        context = m.get_default_context(['account_id'], constraints, parents, 'total_seconds', 0, 10)
-
-        sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
-
-        # extracts params correctly
-        self.assertEquals(params, [
-            datetime.date(2016, 6, 1),
-            datetime.date(2016, 8, 1),
-            132,
-        ])
-
-        self.assertSQLEquals(sql, """
-        WITH
-            temp_base AS (
-                SELECT
-                    a.account_id AS account_id,
-                    SUM(a.clicks) clicks,
-                    SUM(a.total_time_on_site) total_seconds,
-                    SUM(CASE WHEN a.date='2016-07-01' THEN a.cost_nano ELSE 0 END)/1000000000.0 yesterday_cost,
-                    SUM(CASE WHEN a.date='2016-07-01' THEN a.effective_cost_nano ELSE 0 END)/1000000000.0 e_yesterday_cost
-                FROM mv_account a
-                WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY 1
-            )
-        SELECT
-            b.account_id,
-            b.clicks,
-            b.total_seconds,
-            b.yesterday_cost,
-            b.e_yesterday_cost
-        FROM (
-            SELECT
-                temp_base.account_id,
-                temp_base.clicks,
-                temp_base.total_seconds,
-                temp_base.yesterday_cost,
-                temp_base.e_yesterday_cost,
-                ROW_NUMBER() OVER (PARTITION BY ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
-            FROM temp_base
-        ) b
-        WHERE r <= 10
-        """)
-
-    def test_breakdown_struct_delivery_required_parents(self):
-        m = models.MVMaster()
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
-
-        context = {
-            'constraints': backtosql.Q(m, **constraints),
-            'yesterday_constraints': backtosql.Q(m, date=datetime.date(2016, 7, 7)),
-        }
-
-        with self.assertRaises(exc.MissingBreakdownConstraintsError):
-            queries.prepare_breakdown_struct_delivery_top_rows(context)
-
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    def test_top_time_rows_prepares_time(self, mock_local_today):
-        m = SmallMaster()
-        constraints = {
-            'date__gte': datetime.date(2016, 2, 1),
-            'date__lte': datetime.date(2016, 2, 16),
-        }
-
-        parents = [
-            {'source_id': 132},
-        ]
-
-        context = m.get_default_context(
-            ['account_id', 'week'],
-            constraints,
-            parents,
-            '-clicks',
-            1,
-            2
-        )
-
-        sql, params = queries.prepare_breakdown_time_top_rows(
-            models.MVMaster(),
-            constants.TimeDimension.DAY, context, constraints
-        )
-
-        self.assertEqual(params, [
-            datetime.date(2016, 7, 1),
-            132,
-            datetime.date(2016, 2, 2),
-            datetime.date(2016, 2, 3),
-            132
-        ])
-
-        self.assertSQLEquals(sql, """
-        WITH
-        temp_yesterday AS (
-            SELECT
-                a.account_id AS account_id,
-                TRUNC(DATE_TRUNC('week', a.date)) AS week,
-                SUM(a.effective_cost_nano)/1000000000.0 e_yesterday_cost,
-                SUM(a.cost_nano)/1000000000.0 yesterday_cost
-            FROM mv_account a
-            WHERE (a.date=%s) AND ((a.source_id=%s))
-            GROUP BY 1, 2
-        ),
-        temp_base AS (
-            SELECT
-                a.account_id AS account_id,
-                TRUNC(DATE_TRUNC('week', a.date)) AS week,
-                SUM(a.clicks) clicks,
-                SUM(a.total_time_on_site) total_seconds
-            FROM mv_account a
-            WHERE (a.date>=%s AND a.date<=%s)
-                  AND ((a.source_id=%s))
-            GROUP BY 1, 2
-        )
-        SELECT
-            temp_base.account_id,
-            temp_base.week,
             temp_base.clicks,
             temp_base.total_seconds,
             temp_yesterday.e_yesterday_cost,
             temp_yesterday.yesterday_cost
         FROM temp_base NATURAL LEFT JOIN temp_yesterday
-        ORDER BY clicks DESC NULLS LAST;
+        ORDER BY total_seconds ASC NULLS LAST
+        LIMIT 10
+        OFFSET 5
         """)
 
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 10))
-    def test_top_time_rows_prepares_time_no_yesterday_join(self, mock_local_today):
-        m = SmallMaster()
+        self.assertEquals(params, [
+            datetime.date(2016, 7, 1),
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+        ])
+
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(models.MVJointMasterPublishers, 'get_aggregates',
+                       return_value=[models.MVJointMasterPublishers.clicks, models.MVJointMasterPublishers.total_seconds])
+    def test_query_joint_base_publishers(self, _a, _b):
         constraints = {
-            'date__gte': datetime.date(2016, 7, 1),
-            'date__lte': datetime.date(2016, 8, 1),
+            'date__gte': datetime.date(2016, 4, 1),
+            'date__lte': datetime.date(2016, 5, 1),
         }
 
-        parents = [
-            {'source_id': 132},
-        ]
+        goals = Goals(None, None, None, None, None)
 
-        context = m.get_default_context(
-            ['account_id', 'week'],
-            constraints,
-            parents,
-            '-clicks',
-            1,
-            2
-        )
-
-        sql, params = queries.prepare_breakdown_time_top_rows(
-            models.MVMaster(),
-            constants.TimeDimension.WEEK, context, constraints
-        )
-
-        self.assertEqual(params, [
-            datetime.date(2016, 7, 8),
-            datetime.date(2016, 7, 21),
-            132
-        ])
+        sql, params = queries.prepare_query_joint_base(['publisher_id'], constraints, None, 'total_seconds', 5, 10, goals, True)
 
         self.assertSQLEquals(sql, """
         WITH
-        temp_base AS (
-            SELECT
-                a.account_id AS account_id,
-                TRUNC(DATE_TRUNC('week', a.date)) AS week,
-                SUM(a.clicks) clicks,
-                SUM(a.total_time_on_site) total_seconds,
-                SUM(CASE WHEN a.date='2016-07-09' THEN a.cost_nano ELSE 0 END)/1000000000.0 yesterday_cost,
-                SUM(CASE WHEN a.date='2016-07-09' THEN a.effective_cost_nano ELSE 0 END)/1000000000.0 e_yesterday_cost
-            FROM mv_account a
-            WHERE (a.date>=%s AND a.date<=%s)
-                  AND ((a.source_id=%s))
-            GROUP BY 1, 2
-        )
+            temp_yesterday AS (
+                SELECT
+                    a.publisher AS publisher,
+                    a.source_id AS source_id,
+                    SUM(a.effective_cost_nano)/1000000000.0 e_yesterday_cost,
+                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                FROM mv_pubs_ad_group a
+                WHERE (a.date=%s)
+                GROUP BY 1, 2
+            ),
+            temp_base AS (
+                SELECT
+                    a.publisher AS publisher,
+                    a.source_id AS source_id,
+                    SUM(a.clicks) clicks,
+                    SUM(a.total_time_on_site) total_seconds
+                FROM mv_pubs_ad_group a
+                WHERE (a.date>=%s AND a.date<=%s)
+                GROUP BY 1, 2
+            )
         SELECT
-            temp_base.account_id,
-            temp_base.week,
+            temp_base.publisher,
+            temp_base.source_id,
             temp_base.clicks,
             temp_base.total_seconds,
-            temp_base.yesterday_cost,
-            temp_base.e_yesterday_cost
-        FROM temp_base
-        ORDER BY clicks DESC NULLS LAST;
+            temp_yesterday.e_yesterday_cost,
+            temp_yesterday.yesterday_cost
+        FROM temp_base NATURAL LEFT JOIN temp_yesterday
+        ORDER BY total_seconds ASC NULLS LAST
+        LIMIT 10
+        OFFSET 5
         """)
 
+        self.assertEquals(params, [
+            datetime.date(2016, 7, 1),
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+        ])
 
-class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
+                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
+    def test_query_joint_levels(self, _a, _b):
+        constraints = {
+            'date__gte': datetime.date(2016, 4, 1),
+            'date__lte': datetime.date(2016, 5, 1),
+        }
 
-    fixtures = ['test_views.yaml']
+        goals = Goals(None, None, None, None, None)
 
-    breakdown_time_sql = """
-        WITH temp_conversions AS (
-                SELECT
-                    a.account_id AS account_id,
-                    a.campaign_id AS campaign_id,
-                    TRUNC(DATE_TRUNC('week', a.date)) AS week,
-                    SUM(CASE WHEN a.slug='ga__2' THEN conversion_count ELSE 0 END) conversion_goal_2,
-                    SUM(CASE WHEN a.slug='ga__3' THEN conversion_count ELSE 0 END) conversion_goal_3,
-                    SUM(CASE WHEN a.slug='omniture__4' THEN conversion_count ELSE 0 END) conversion_goal_4,
-                    SUM(CASE WHEN a.slug='omniture__5' THEN conversion_count ELSE 0 END) conversion_goal_5
-                FROM mv_conversions_campaign a
-                WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY 1, 2, 3
-            ),
-            temp_touchpointconversions AS (
-                SELECT
-                    a.account_id AS account_id,
-                    a.campaign_id AS campaign_id,
-                    TRUNC(DATE_TRUNC('week', a.date)) AS week,
-                    SUM(CASE WHEN a.slug='test'
-                        AND a.account_id=1
-                        AND a.conversion_window<=24 THEN conversion_count ELSE 0 END) pixel_1_24,
-                    SUM(CASE WHEN a.slug='test'
-                        AND a.account_id=1
-                        AND a.conversion_window<=168 THEN conversion_count ELSE 0 END) pixel_1_168,
-                    SUM(CASE WHEN a.slug='test'
-                        AND a.account_id=1
-                        AND a.conversion_window<=720 THEN conversion_count ELSE 0 END) pixel_1_720,
-                    SUM(CASE WHEN a.slug='test'
-                        AND a.account_id=1
-                        AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160
-                FROM mv_touch_campaign a
-                WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY 1, 2, 3
-            ),
+        sql, params = queries.prepare_query_joint_levels(
+            ['account_id', 'campaign_id'], constraints, None, 'total_seconds', 5, 10, goals, False)
+
+        self.assertSQLEquals(sql, """
+        WITH
             temp_yesterday AS (
                 SELECT
                     a.account_id AS account_id,
                     a.campaign_id AS campaign_id,
-                    TRUNC(DATE_TRUNC('week', a.date)) AS week,
+                    SUM(a.effective_cost_nano)/1000000000.0 e_yesterday_cost,
                     SUM(a.cost_nano)/1000000000.0 yesterday_cost
                 FROM mv_campaign a
-                WHERE (a.date=%s) AND ((a.source_id=%s))
-                GROUP BY 1, 2, 3
-            ),
-            temp_base AS (
-                SELECT
-                    a.account_id AS account_id,
-                    a.campaign_id AS campaign_id,
-                    TRUNC(DATE_TRUNC('week', a.date)) AS week,
-                    SUM(a.clicks) clicks,
-                    SUM(a.total_time_on_site) total_seconds
-                FROM mv_campaign a
-                WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY 1, 2, 3
-            )
-        SELECT b.account_id,
-            b.campaign_id,
-            b.week,
-            b.clicks,
-            b.total_seconds,
-            b.yesterday_cost,
-            b.conversion_goal_2,
-            b.conversion_goal_3,
-            b.conversion_goal_4,
-            b.conversion_goal_5,
-            b.pixel_1_24,
-            b.pixel_1_168,
-            b.pixel_1_720,
-            b.pixel_1_2160,
-            b.avg_cost_per_conversion_goal_2,
-            b.avg_cost_per_conversion_goal_3,
-            b.avg_cost_per_conversion_goal_4,
-            b.avg_cost_per_conversion_goal_5,
-            b.avg_cost_per_pixel_1_24,
-            b.avg_cost_per_pixel_1_168,
-            b.avg_cost_per_pixel_1_720,
-            b.avg_cost_per_pixel_1_2160
-        FROM
-        (SELECT temp_base.account_id,
-                temp_base.campaign_id,
-                temp_base.week,
-                temp_base.clicks,
-                temp_base.total_seconds,
-                temp_yesterday.yesterday_cost,
-                temp_conversions.conversion_goal_2,
-                temp_conversions.conversion_goal_3,
-                temp_conversions.conversion_goal_4,
-                temp_conversions.conversion_goal_5,
-                temp_touchpointconversions.pixel_1_24,
-                temp_touchpointconversions.pixel_1_168,
-                temp_touchpointconversions.pixel_1_720,
-                temp_touchpointconversions.pixel_1_2160,
-                e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
-                e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
-                e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
-                e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
-                e_media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24,
-                e_media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168,
-                e_media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720,
-                e_media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160,
-                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id, temp_base.campaign_id
-                                    ORDER BY temp_base.clicks DESC NULLS LAST) AS r
-        FROM temp_base NATURAL
-        LEFT OUTER JOIN temp_yesterday NATURAL
-        LEFT OUTER JOIN temp_conversions NATURAL
-        LEFT OUTER JOIN temp_touchpointconversions) b
-        WHERE r <= 10
-    """
-
-    breakdown_struct_sql = """
-        WITH temp_conversions AS (
-                SELECT
-                    a.account_id AS account_id,
-                    a.campaign_id AS campaign_id,
-                    SUM(CASE WHEN a.slug='ga__2' THEN conversion_count ELSE 0 END) conversion_goal_2,
-                    SUM(CASE WHEN a.slug='ga__3' THEN conversion_count ELSE 0 END) conversion_goal_3,
-                    SUM(CASE WHEN a.slug='omniture__4' THEN conversion_count ELSE 0 END) conversion_goal_4,
-                    SUM(CASE WHEN a.slug='omniture__5' THEN conversion_count ELSE 0 END) conversion_goal_5
-                FROM mv_conversions_campaign a
-                WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY 1, 2
-            ),
-
-            temp_touchpointconversions AS (
-                SELECT
-                    a.account_id AS account_id,
-                    a.campaign_id AS campaign_id,
-                    SUM(CASE WHEN a.slug='test'
-                        AND a.account_id=1
-                        AND a.conversion_window<=24 THEN conversion_count ELSE 0 END) pixel_1_24,
-                    SUM(CASE WHEN a.slug='test'
-                        AND a.account_id=1
-                        AND a.conversion_window<=168 THEN conversion_count ELSE 0 END) pixel_1_168,
-                    SUM(CASE WHEN a.slug='test'
-                        AND a.account_id=1
-                        AND a.conversion_window<=720 THEN conversion_count ELSE 0 END) pixel_1_720,
-                    SUM(CASE WHEN a.slug='test'
-                        AND a.account_id=1
-                        AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160
-                FROM mv_touch_campaign a
-                WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
-                GROUP BY 1, 2
-            ),
-            temp_yesterday AS (
-                SELECT
-                    a.account_id AS account_id,
-                    a.campaign_id AS campaign_id,
-                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
-                FROM mv_campaign a
-                WHERE (a.date=%s) AND ((a.source_id=%s))
+                WHERE (a.date=%s)
                 GROUP BY 1, 2
             ),
             temp_base AS (
@@ -715,7 +339,7 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(a.clicks) clicks,
                     SUM(a.total_time_on_site) total_seconds
                 FROM mv_campaign a
-                WHERE (a.date>=%s AND a.date<=%s) AND ((a.source_id=%s))
+                WHERE (a.date>=%s AND a.date<=%s)
                 GROUP BY 1, 2
             )
         SELECT
@@ -723,410 +347,353 @@ class PrepareQueryWConversionsTest(TestCase, backtosql.TestSQLMixin):
             b.campaign_id,
             b.clicks,
             b.total_seconds,
-            b.yesterday_cost,
-            b.conversion_goal_2,
-            b.conversion_goal_3,
-            b.conversion_goal_4,
-            b.conversion_goal_5,
-            b.pixel_1_24,
-            b.pixel_1_168,
-            b.pixel_1_720,
-            b.pixel_1_2160,
-            b.avg_cost_per_conversion_goal_2,
-            b.avg_cost_per_conversion_goal_3,
-            b.avg_cost_per_conversion_goal_4,
-            b.avg_cost_per_conversion_goal_5,
-            b.avg_cost_per_pixel_1_24,
-            b.avg_cost_per_pixel_1_168,
-            b.avg_cost_per_pixel_1_720,
-            b.avg_cost_per_pixel_1_2160
+            b.e_yesterday_cost,
+            b.yesterday_cost
         FROM (
             SELECT
                 temp_base.account_id,
                 temp_base.campaign_id,
                 temp_base.clicks,
                 temp_base.total_seconds,
+                temp_yesterday.e_yesterday_cost,
                 temp_yesterday.yesterday_cost,
+                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
+            FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday) b
+        WHERE r >= 5+1 AND r <= 10
+        """)
+
+        self.assertEquals(params, [
+            datetime.date(2016, 7, 1),
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+        ])
+
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(models.MVJointMasterPublishers, 'get_aggregates',
+                       return_value=[models.MVJointMasterPublishers.clicks, models.MVJointMasterPublishers.total_seconds])
+    def test_query_joint_levels_publishers(self, _a, _b):
+        constraints = {
+            'date__gte': datetime.date(2016, 4, 1),
+            'date__lte': datetime.date(2016, 5, 1),
+        }
+
+        goals = Goals(None, None, None, None, None)
+
+        sql, params = queries.prepare_query_joint_levels(
+            ['publisher_id', 'dma'], constraints, None, 'total_seconds', 5, 10, goals, True)
+
+        self.assertSQLEquals(sql, """
+        WITH
+            temp_yesterday AS (
+                SELECT
+                    a.publisher AS publisher,
+                    a.source_id AS source_id,
+                    a.dma AS dma,
+                    SUM(a.effective_cost_nano)/1000000000.0 e_yesterday_cost,
+                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
+                FROM mv_pubs_master a
+                WHERE (a.date=%s)
+                GROUP BY 1, 2, 3
+            ),
+            temp_base AS (
+                SELECT
+                    a.publisher AS publisher,
+                    a.source_id AS source_id,
+                    a.dma AS dma,
+                    SUM(a.clicks) clicks,
+                    SUM(a.total_time_on_site) total_seconds
+                FROM mv_pubs_master a
+                WHERE (a.date>=%s AND a.date<=%s)
+                GROUP BY 1, 2, 3
+            )
+        SELECT
+            b.publisher,
+            b.source_id,
+            b.dma,
+            b.clicks,
+            b.total_seconds,
+            b.e_yesterday_cost,
+            b.yesterday_cost
+        FROM (
+            SELECT
+                temp_base.publisher,
+                temp_base.source_id,
+                temp_base.dma,
+                temp_base.clicks,
+                temp_base.total_seconds,
+                temp_yesterday.e_yesterday_cost,
+                temp_yesterday.yesterday_cost,
+                ROW_NUMBER() OVER (PARTITION BY temp_base.publisher, temp_base.source_id ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
+            FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday) b
+        WHERE r >= 5+1 AND r <= 10
+        """)
+
+        self.assertEquals(params, [
+            datetime.date(2016, 7, 1),
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+        ])
+
+
+class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
+
+    fixtures = ['test_augmenter.yaml']
+
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
+                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
+    def test_query_joint_base(self, _a, _b):
+        constraints = {
+            'date__gte': datetime.date(2016, 4, 1),
+            'date__lte': datetime.date(2016, 5, 1),
+        }
+
+        campaign = dash.models.Campaign.objects.get(id=1)
+        campaign_goals = dash.models.CampaignGoal.objects.filter(campaign_id=campaign.id)
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
+        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
+        campaign_goal_values = dash.models.CampaignGoalValue.objects.all()
+
+        goals = Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, None)
+
+        sql, params = queries.prepare_query_joint_base(['account_id'], constraints, None, 'total_seconds', 5, 10, goals, False)
+
+        self.assertSQLEquals(sql, """
+        WITH temp_conversions AS (
+         SELECT   a.account_id AS account_id ,
+                  SUM (CASE WHEN a.slug='ga__2' THEN conversion_count ELSE 0 END) conversion_goal_2,
+                  SUM (CASE WHEN a.slug='ga__3' THEN conversion_count ELSE 0 END) conversion_goal_3,
+                  SUM (CASE WHEN a.slug='omniture__4' THEN conversion_count ELSE 0 END) conversion_goal_4,
+                  SUM (CASE WHEN a.slug='omniture__5' THEN conversion_count ELSE 0 END) conversion_goal_5
+         FROM     mv_conversions_account a
+         WHERE    (a.DATE >=%s AND a.DATE <=%s)
+         GROUP BY 1 ),
+        temp_touchpoints AS (
+         SELECT   a.account_id AS account_id ,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 THEN conversion_count ELSE 0 END) pixel_1_24,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 THEN conversion_count ELSE 0 END) pixel_1_168,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 THEN conversion_count ELSE 0 END) pixel_1_720,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160
+         FROM     mv_touch_account a
+         WHERE    (a.DATE >=%s AND a.DATE <=%s)
+         GROUP BY 1 ),
+        temp_yesterday AS (
+         SELECT   a.account_id AS account_id ,
+                  SUM(a.effective_cost_nano)/1000000000.0    e_yesterday_cost,
+                  SUM(a.cost_nano)          /1000000000.0    yesterday_cost
+         FROM     mv_account a
+         WHERE    (a.DATE =%s)
+         GROUP BY 1 ),
+        temp_base AS (
+         SELECT   a.account_id AS account_id ,
+                  SUM(a.clicks) clicks,
+                  SUM(a.total_time_on_site) total_seconds
+         FROM     mv_account a
+         WHERE    (a.DATE >=%s AND a.DATE <=%s)
+         GROUP BY 1 )
+        SELECT  temp_base.account_id,
+                temp_base.clicks,
+                temp_base.total_seconds,
+                temp_yesterday.e_yesterday_cost,
+                temp_yesterday.yesterday_cost ,
                 temp_conversions.conversion_goal_2,
                 temp_conversions.conversion_goal_3,
                 temp_conversions.conversion_goal_4,
-                temp_conversions.conversion_goal_5,
-                temp_touchpointconversions.pixel_1_24,
-                temp_touchpointconversions.pixel_1_168,
-                temp_touchpointconversions.pixel_1_720,
-                temp_touchpointconversions.pixel_1_2160,
-                e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2,
-                e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3,
-                e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4,
-                e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5,
-                e_media_cost / NULLIF(pixel_1_24, 0) avg_cost_per_pixel_1_24,
-                e_media_cost / NULLIF(pixel_1_168, 0) avg_cost_per_pixel_1_168,
-                e_media_cost / NULLIF(pixel_1_720, 0) avg_cost_per_pixel_1_720,
-                e_media_cost / NULLIF(pixel_1_2160, 0) avg_cost_per_pixel_1_2160,
-                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id ORDER BY temp_base.clicks DESC NULLS LAST) AS r
-        FROM temp_base NATURAL
-        LEFT OUTER JOIN temp_yesterday NATURAL
-        LEFT OUTER JOIN temp_conversions NATURAL
-        LEFT OUTER JOIN temp_touchpointconversions) b
-        WHERE r <= 10
-    """
-
-    breakdown_device_type_sql = """
-        WITH temp_yesterday AS
-                (SELECT a.account_id AS account_id,
-                        a.device_type AS device_type,
-                            SUM(a.cost_nano)/1000000000.0 yesterday_cost
-                FROM mv_account_delivery_demo a
-                WHERE (a.date=%s)
-                    AND ((a.source_id=%s))
-                GROUP BY 1, 2),
-            temp_base AS
-                (SELECT a.account_id AS account_id,
-                        a.device_type AS device_type,
-                            SUM(a.clicks) clicks,
-                            SUM(a.total_time_on_site) total_seconds
-                FROM mv_account_delivery_demo a
-                WHERE (a.date>=%s
-                        AND a.date<=%s)
-                    AND ((a.source_id=%s))
-                GROUP BY 1, 2)
-        SELECT b.account_id,
-            b.device_type,
-            b.clicks,
-            b.total_seconds,
-            b.yesterday_cost
-        FROM
-        (SELECT temp_base.account_id,
-                temp_base.device_type,
-                temp_base.clicks,
-                temp_base.total_seconds,
-                temp_yesterday.yesterday_cost,
-                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id
-                                    ORDER BY temp_base.clicks DESC NULLS LAST) AS r
-        FROM temp_base NATURAL
-        LEFT OUTER JOIN temp_yesterday) b
-        WHERE r <= 10
-    """
-
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    def test_breakdown_time_top_rows(self, mock_local_today):
-        campaign = dash.models.Campaign.objects.get(id=1)
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
-        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
-
-        m = SmallMaster(conversion_goals, pixels)
-
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
-
-        parents = [
-            {'source_id': 132},
-        ]
-
-        context = m.get_default_context(
-            ['account_id', 'campaign_id', 'week'],
-            constraints,
-            parents,
-            '-clicks',
-            0,
-            10
-        )
-
-        self.assertDictContainsSubset({
-            'is_ordered_by_conversions':  False,
-            'is_ordered_by_touchpointconversions': False,
-            'is_ordered_by_after_join_calculations': False,
-            'is_ordered_by_yesterday_aggregates': False,
-        }, context)
-
-        sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
-
-        # extracts params correctly, check order
-        self.assertEquals(params, [
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            132,
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            132,
-            datetime.date(2016, 7, 1),
-            132,
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            132,
-        ])
-        self.assertSQLEquals(sql, self.breakdown_time_sql)
-
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    def test_breakdown_struct_delivery_top_rows(self, mock_local_today):
-        campaign = dash.models.Campaign.objects.get(id=1)
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
-        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
-
-        m = SmallMaster(conversion_goals, pixels)
-
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
-
-        parents = [
-            {'source_id': 132},
-        ]
-
-        context = m.get_default_context(
-            ['account_id', 'campaign_id'],
-            constraints,
-            parents,
-            '-clicks',
-            0,
-            10
-        )
-
-        sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
-
-        # extracts params correctly, check order
-        self.assertEqual(params, [
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            132,
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            132,
-            datetime.date(2016, 7, 1),
-            132,
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            132,
-        ])
-
-        self.assertSQLEquals(sql, self.breakdown_struct_sql)
-
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    def test_breakdown_device_type_top_rows(self, mock_local_today):
-        campaign = dash.models.Campaign.objects.get(id=1)
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
-        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
-
-        m = SmallMaster(conversion_goals, pixels)
-
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
-
-        parents = [
-            {'source_id': 132},
-        ]
-
-        context = m.get_default_context(
-            ['account_id', 'device_type'],
-            constraints,
-            parents,
-            '-clicks',
-            0,
-            10
-        )
-
-        sql, params = queries.prepare_breakdown_struct_delivery_top_rows(context)
-
-        # extracts params correctly, check order, goals are not added as delivery does not support them
-        self.assertEqual(params, [
-            datetime.date(2016, 7, 1),
-            132,
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            132,
-        ])
-
-        self.assertSQLEquals(sql, self.breakdown_device_type_sql)
-
-    def test_breakdown_struct_delivery_top_rows_order(self):
-        campaign = dash.models.Campaign.objects.get(id=1)
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
-        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
-        m = SmallMaster(conversion_goals, pixels)
-
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
-
-        parents = [
-            {'source_id': 132},
-        ]
-
-        orders = {
-            '-avg_cost_per_pixel_1_24': 'ORDER BY e_media_cost / NULLIF(pixel_1_24, 0) DESC',
-            '-avg_cost_per_conversion_goal_2': 'ORDER BY e_media_cost / NULLIF(conversion_goal_2, 0) DESC',
-            'pixel_1_24': 'ORDER BY temp_touchpointconversions.pixel_1_24 ASC',
-            'conversion_goal_2': 'ORDER BY temp_conversions.conversion_goal_2 ASC',
-            'clicks': 'ORDER BY temp_base.clicks ASC',
-            '-yesterday_cost': 'ORDER BY temp_yesterday.yesterday_cost DESC'
-        }
-
-        for order, order_sql in orders.items():
-
-            context = m.get_default_context(
-                ['account_id', 'campaign_id'],
-                constraints,
-                parents,
-                order,
-                0,
-                10
-            )
-
-            sql, _ = queries.prepare_breakdown_struct_delivery_top_rows(context)
-            sql = backtosql.clean_sql(sql)
-
-            self.assertTrue(order_sql in sql, "Order {}:\n{}\nNOT IN\n{}".format(order, order_sql, sql))
-
-
-@mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-class PrepareAugmentQuery(TestCase, backtosql.TestSQLMixin):
-    def test_prepare_augment_query(self, mock_local_today):
-        m = SmallMaster()
-
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
-
-        parents = [
-            {'source_id': 1, 'campaign_id': [1, 2, 3]},
-            {'source_id': 2, 'campaign_id': [1, 2, 3, 4]},
-        ]
-
-        sql, params = queries.prepare_augment_query(m, ['source_id', 'campaign_id'], constraints, parents)
-
-        # extracts params correctly
-        self.assertEquals(params, [
-            datetime.date(2016, 7, 1),
-            [1, 2, 3], 1,
-            [1, 2, 3, 4], 2,
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            [1, 2, 3], 1,
-            [1, 2, 3, 4], 2,
-        ])
-
-        self.assertSQLEquals(sql, """
-        WITH temp_yesterday AS
-            (SELECT a.source_id AS source_id,
-                    a.campaign_id AS campaign_id,
-                    SUM(a.cost_nano)/1000000000.0 yesterday_cost
-            FROM mv_campaign a
-            WHERE (a.date=%s)
-                AND ((a.campaign_id=ANY(%s)
-                    AND a.source_id=%s)
-                    OR (a.campaign_id=ANY(%s)
-                        AND a.source_id=%s))
-            GROUP BY 1, 2),
-        temp_base AS
-            (SELECT a.source_id AS source_id,
-                    a.campaign_id AS campaign_id,
-                    SUM(a.clicks) clicks,
-                    SUM(a.total_time_on_site) total_seconds
-            FROM mv_campaign a
-            WHERE (a.date>=%s
-                    AND a.date<=%s)
-                AND ((a.campaign_id=ANY(%s)
-                    AND a.source_id=%s)
-                    OR (a.campaign_id=ANY(%s)
-                        AND a.source_id=%s))
-            GROUP BY 1, 2)
-        SELECT
-            temp_base.source_id,
-            temp_base.campaign_id,
-            temp_base.clicks,
-            temp_base.total_seconds,
-            temp_yesterday.yesterday_cost
-        FROM temp_base NATURAL LEFT JOIN temp_yesterday;
+                temp_conversions.conversion_goal_5 ,
+                temp_touchpoints.pixel_1_24,
+                temp_touchpoints.pixel_1_168,
+                temp_touchpoints.pixel_1_720,
+                temp_touchpoints.pixel_1_2160 ,
+                e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2 ,
+                e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3 ,
+                e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4 ,
+                e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5 ,
+                e_media_cost / NULLIF(pixel_1_24, 0)        avg_cost_per_pixel_1_24 ,
+                e_media_cost / NULLIF(pixel_1_168, 0)       avg_cost_per_pixel_1_168 ,
+                e_media_cost / NULLIF(pixel_1_720, 0)       avg_cost_per_pixel_1_720 ,
+                e_media_cost / NULLIF(pixel_1_2160, 0)      avg_cost_per_pixel_1_2160 ,
+                CASE
+                    WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
+                            AND NVL(TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2), 0) = 0
+                         THEN 0
+                    WHEN (CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END) IS NULL
+                            OR 0.50000 IS NULL
+                         THEN NULL
+                    WHEN TRUE THEN
+                         (2 * 0.50000 - TRUNC((CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END), 2)) / NULLIF(0.50000, 0)
+                    ELSE TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2) / NULLIF(0.50000, 0)
+                    END performance_campaign_goal_1,
+                CASE
+                        WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
+                                AND NVL(TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2), 0) = 0
+                             THEN 0
+                        WHEN (CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END) IS NULL
+                                OR 3.80000 IS NULL
+                             THEN NULL
+                        WHEN TRUE THEN
+                             (2 * 3.80000 - TRUNC((CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END), 2)) / NULLIF(3.80000, 0)
+                        ELSE TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2) / NULLIF(3.80000, 0)
+                        END performance_campaign_goal_2
+        FROM temp_base NATURAL LEFT JOIN temp_yesterday NATURAL LEFT OUTER JOIN temp_conversions NATURAL LEFT OUTER JOIN temp_touchpoints
+        ORDER BY total_seconds ASC NULLS LAST
+        LIMIT 10
+        OFFSET 5
         """)
 
+        self.assertEquals(params, [
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+            datetime.date(2016, 7, 1),
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+        ])
 
-class PrepareBreakdownQueryTest(TestCase):
-    def test_prepare_query_top_rows(self):
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
+                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
+    def test_query_joint_levels(self, _a, _b):
         constraints = {
-            'date__gte': datetime.date(2016, 7, 1),
-            'date__lte': datetime.date(2016, 7, 10),
+            'date__gte': datetime.date(2016, 4, 1),
+            'date__lte': datetime.date(2016, 5, 1),
         }
 
-        # should be called when breakdown len == 0, totals
-        with mock.patch('redshiftapi.queries.prepare_breakdown_top_rows') as mock_prepare:
-            m = models.MVMaster()
-            queries.prepare_breakdown_query(
-                m, [], copy.copy(constraints), None, 'clicks', None, None
-            )
+        campaign = dash.models.Campaign.objects.get(id=1)
+        campaign_goals = dash.models.CampaignGoal.objects.filter(campaign_id=campaign.id)
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
+        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
+        campaign_goal_values = dash.models.CampaignGoalValue.objects.all()
 
-            self.assertTrue(mock_prepare.called)
+        goals = Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, None)
 
-        # should be called when breakdown len == 1
-        with mock.patch('redshiftapi.queries.prepare_breakdown_top_rows') as mock_prepare:
-            m = models.MVMaster()
-            queries.prepare_breakdown_query(
-                m, ['account_id'], copy.copy(constraints), None, 'clicks', None, None
-            )
+        sql, params = queries.prepare_query_joint_levels(['account_id', 'campaign_id'],
+                                                         constraints, None, 'total_seconds', 5, 10, goals, False)
 
-            self.assertTrue(mock_prepare.called)
+        self.assertSQLEquals(sql, """
+        WITH temp_conversions AS (
+         SELECT   a.account_id AS account_id ,
+                  a.campaign_id AS campaign_id,
+                  SUM (CASE WHEN a.slug='ga__2' THEN conversion_count ELSE 0 END) conversion_goal_2,
+                  SUM (CASE WHEN a.slug='ga__3' THEN conversion_count ELSE 0 END) conversion_goal_3,
+                  SUM (CASE WHEN a.slug='omniture__4' THEN conversion_count ELSE 0 END) conversion_goal_4,
+                  SUM (CASE WHEN a.slug='omniture__5' THEN conversion_count ELSE 0 END) conversion_goal_5
+         FROM     mv_conversions_campaign a
+         WHERE    (a.DATE >=%s AND a.DATE <=%s)
+         GROUP BY 1, 2 ),
+        temp_touchpoints AS (
+         SELECT   a.account_id AS account_id ,
+                  a.campaign_id AS campaign_id,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 THEN conversion_count ELSE 0 END) pixel_1_24,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 THEN conversion_count ELSE 0 END) pixel_1_168,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 THEN conversion_count ELSE 0 END) pixel_1_720,
+                  SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 THEN conversion_count ELSE 0 END) pixel_1_2160
+         FROM     mv_touch_campaign a
+         WHERE    (a.DATE >=%s AND a.DATE <=%s)
+         GROUP BY 1, 2 ),
+        temp_yesterday AS (
+         SELECT   a.account_id AS account_id ,
+                  a.campaign_id AS campaign_id,
+                  SUM(a.effective_cost_nano)/1000000000.0    e_yesterday_cost,
+                  SUM(a.cost_nano)          /1000000000.0    yesterday_cost
+         FROM     mv_campaign a
+         WHERE    (a.DATE =%s)
+         GROUP BY 1, 2 ),
+        temp_base AS (
+         SELECT   a.account_id AS account_id ,
+                  a.campaign_id AS campaign_id,
+                  SUM(a.clicks) clicks,
+                  SUM(a.total_time_on_site) total_seconds
+         FROM     mv_campaign a
+         WHERE    (a.DATE >=%s AND a.DATE <=%s)
+         GROUP BY 1, 2 )
+        SELECT
+             b.account_id,
+             b.campaign_id,
+             b.clicks,
+             b.total_seconds,
+             b.e_yesterday_cost,
+             b.yesterday_cost ,
+             b.conversion_goal_2,
+             b.conversion_goal_3,
+             b.conversion_goal_4,
+             b.conversion_goal_5 ,
+             b.pixel_1_24,
+             b.pixel_1_168,
+             b.pixel_1_720,
+             b.pixel_1_2160 ,
+             b.avg_cost_per_conversion_goal_2,
+             b.avg_cost_per_conversion_goal_3,
+             b.avg_cost_per_conversion_goal_4,
+             b.avg_cost_per_conversion_goal_5,
+             b.avg_cost_per_pixel_1_24,
+             b.avg_cost_per_pixel_1_168,
+             b.avg_cost_per_pixel_1_720,
+             b.avg_cost_per_pixel_1_2160,
+             b.performance_campaign_goal_1,
+             b.performance_campaign_goal_2
+        FROM (SELECT
+                temp_base.account_id,
+                temp_base.campaign_id,
+                temp_base.clicks,
+                temp_base.total_seconds,
+                temp_yesterday.e_yesterday_cost,
+                temp_yesterday.yesterday_cost ,
+                temp_conversions.conversion_goal_2,
+                temp_conversions.conversion_goal_3,
+                temp_conversions.conversion_goal_4,
+                temp_conversions.conversion_goal_5 ,
+                temp_touchpoints.pixel_1_24,
+                temp_touchpoints.pixel_1_168,
+                temp_touchpoints.pixel_1_720,
+                temp_touchpoints.pixel_1_2160 ,
+                e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2 ,
+                e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3 ,
+                e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4 ,
+                e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5 ,
+                e_media_cost / NULLIF(pixel_1_24, 0)        avg_cost_per_pixel_1_24 ,
+                e_media_cost / NULLIF(pixel_1_168, 0)       avg_cost_per_pixel_1_168 ,
+                e_media_cost / NULLIF(pixel_1_720, 0)       avg_cost_per_pixel_1_720 ,
+                e_media_cost / NULLIF(pixel_1_2160, 0)      avg_cost_per_pixel_1_2160 ,
+                CASE
+                    WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
+                            AND NVL(TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2), 0) = 0
+                         THEN 0
+                    WHEN (CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END) IS NULL
+                            OR 0.50000 IS NULL
+                         THEN NULL
+                    WHEN TRUE THEN
+                         (2 * 0.50000 - TRUNC((CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END), 2)) / NULLIF(0.50000, 0)
+                    ELSE TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2) / NULLIF(0.50000, 0)
+                    END performance_campaign_goal_1,
+                CASE
+                        WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
+                                AND NVL(TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2), 0) = 0
+                             THEN 0
+                        WHEN (CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END) IS NULL
+                                OR 3.80000 IS NULL
+                             THEN NULL
+                        WHEN TRUE THEN
+                             (2 * 3.80000 - TRUNC((CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END), 2)) / NULLIF(3.80000, 0)
+                        ELSE TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2) / NULLIF(3.80000, 0)
+                    END performance_campaign_goal_2,
+                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
+        FROM temp_base NATURAL
+   LEFT OUTER JOIN temp_yesterday NATURAL
+   LEFT OUTER JOIN temp_conversions NATURAL
+   LEFT OUTER JOIN temp_touchpoints
+             )
+             b
+        WHERE r >= 5 + 1
+  AND r <= 10
+        """)
 
-    def test_prepare_query_select_time(self):
-        constraints = {
-            'date__gte': datetime.date(2016, 7, 1),
-            'date__lte': datetime.date(2016, 7, 10),
-        }
-
-        with mock.patch('redshiftapi.queries.prepare_breakdown_time_top_rows') as mock_prepare:
-            m = models.MVMaster()
-            queries.prepare_breakdown_query(
-                m, ['account_id', 'week'], copy.copy(constraints), None, 'clicks', None, None
-            )
-
-            mock_prepare.assert_called_with(m, 'week', mock.ANY, constraints)
-
-        with mock.patch('redshiftapi.queries.prepare_breakdown_time_top_rows') as mock_prepare:
-            m = models.MVMaster()
-            queries.prepare_breakdown_query(
-                m, ['account_id', 'day'], copy.copy(constraints), None, 'impressions', None, None
-            )
-
-            mock_prepare.assert_called_with(m, 'day', mock.ANY, constraints)
-
-    def test_prepare_query_structure_and_delivery(self):
-
-        with mock.patch('redshiftapi.queries.prepare_breakdown_struct_delivery_top_rows') as mock_prepare:
-            m = models.MVMaster()
-            queries.prepare_breakdown_query(
-                m, ['account_id', 'campaign_id'], {
-                    'date__gte': datetime.date(2016, 7, 1),
-                    'date__lte': datetime.date(2016, 7, 10),
-                }, None, 'clicks', None, None
-            )
-
-            self.assertTrue(mock_prepare.called)
-
-        with mock.patch('redshiftapi.queries.prepare_breakdown_struct_delivery_top_rows') as mock_prepare:
-            m = models.MVMaster()
-            queries.prepare_breakdown_query(
-                m, ['account_id', 'campaign_id', 'dma'], {
-                    'date__gte': datetime.date(2016, 7, 1),
-                    'date__lte': datetime.date(2016, 7, 10),
-                }, None, 'clicks', None, None
-            )
-
-            self.assertTrue(mock_prepare.called)
-
-    def test_prepare_query_invalid_breakdown(self):
-
-        with self.assertRaises(exc.InvalidBreakdownError):
-            m = models.MVMaster()
-            queries.prepare_breakdown_query(
-                m, [
-                    'account_id', 'campaign_id', 'content_ad_id', 'source_id'
-                ], {
-                    'date__gte': datetime.date(2016, 7, 1),
-                    'date__lte': datetime.date(2016, 7, 10),
-                }, None, 'clicks', None, None
-            )
+        self.assertEquals(params, [
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+            datetime.date(2016, 7, 1),
+            datetime.date(2016, 4, 1),
+            datetime.date(2016, 5, 1),
+        ])

@@ -30,8 +30,8 @@ def validate_breakdown_allowed(level, user, breakdown):
     permission_filter.validate_breakdown_by_permissions(level, user, breakdown)
 
 
-def should_use_experimental_redshiftapi_calls(user, breakdown):
-    return False
+def should_use_publishers_view(breakdown):
+    return 'publisher_id' in breakdown
 
 
 @newrelic.agent.function_trace()
@@ -65,12 +65,13 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
             breakdown,
             stats_constraints,
             goals,
-            use_experimental_calls=should_use_experimental_redshiftapi_calls(user, breakdown)
-        )
+            use_publishers_view=should_use_publishers_view(breakdown))
         rows = helpers.merge_rows(breakdown, dash_rows, stats_rows)
     else:
         if should_query_dashapi and offset > 0:
-            query_structure_fn = partial(redshiftapi.api_breakdowns.query_structure_with_stats, breakdown, stats_constraints)
+            query_structure_fn = partial(
+                redshiftapi.api_breakdowns.query_structure_with_stats, breakdown, stats_constraints,
+                use_publishers_view=should_use_publishers_view(breakdown))
             structure_thread = threads.AsyncFunction(query_structure_fn)
             structure_thread.start()
 
@@ -82,7 +83,7 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
             helpers.extract_rs_order_field(order, target_dimension),
             offset,
             limit,
-            use_experimental_calls=should_use_experimental_redshiftapi_calls(user, breakdown))
+            use_publishers_view=should_use_publishers_view(breakdown))
         if should_query_dashapi:
             if offset == 0:
                 str_w_stats = stats_rows
@@ -109,14 +110,9 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
 def totals(user, level, breakdown, constraints, goals):
     helpers.check_constraints_are_supported(constraints)
 
-    stats_rows = redshiftapi.api_breakdowns.query(
-        [],
-        helpers.extract_stats_constraints(constraints, breakdown),
-        None,
-        goals,
-        None, None, None, use_publishers_view='publisher_id' in breakdown,
-        use_experimental_calls=should_use_experimental_redshiftapi_calls(user, breakdown)
-    )
+    stats_rows = redshiftapi.api_breakdowns.query_totals(
+        breakdown, helpers.extract_stats_constraints(constraints, breakdown),
+        goals, use_publishers_view=should_use_publishers_view(breakdown))
 
     dash_total_row = dash.dashapi.api_breakdowns.get_totals(level, user, breakdown, constraints)
 

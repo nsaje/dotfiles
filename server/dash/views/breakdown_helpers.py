@@ -46,7 +46,6 @@ def format_report_rows_performance_fields(rows, goals):
     for campaign_id, campaign_goals in campaign_goals_by_campaign_id.items():
         primary_goal = next((x for x in goals.primary_goals if x.campaign_id == campaign_id), None)
         primary_goal_key = 'performance_' + primary_goal.get_view_key() if primary_goal else None
-        conversion_goals = conversion_goals_by_campaign_id[campaign_id]
 
         for row in rows_by_campaign_id[campaign_id] if rows_by_campaign_id else rows:
 
@@ -62,16 +61,16 @@ def format_report_rows_performance_fields(rows, goals):
                 })
 
                 if primary_goal_key and primary_goal_key in row:
-                    row['performance']['overall'] = _get_campaign_goal_emoticon(row[primary_goal_key])
+                    row['performance']['overall'] = dash.campaign_goals.STATUS_TO_EMOTICON_MAP[row[primary_goal_key]]
 
                 goals_performances = []
                 for goal in campaign_goals:
-                    performance = row.get('performance_' + goal.get_view_key())
-                    metric = dash.campaign_goals.get_goal_performance_metric(goal, conversion_goals_by_campaign_id[campaign_id])
+                    metric = dash.campaign_goals.get_goal_performance_metric(
+                        goal, conversion_goals_by_campaign_id[campaign_id])
                     metric_value = row.get(metric)
 
                     goals_performances.append((
-                        dash.campaign_goals.get_goal_performance_category(performance),
+                        row.get('performance_' + goal.get_view_key()),
                         metric_value,
                         map_values.get(goal.id) and map_values[goal.id].value,
                         goal
@@ -127,7 +126,7 @@ def format_report_rows_content_ad_editable_fields(rows):
 def set_row_goal_performance_meta(row, goals_performances, conversion_goals):
     for goal_status, goal_metric, goal_value, goal in goals_performances:
         performance_item = {
-            'emoticon': dash.campaign_goals.STATUS_TO_EMOTICON_MAP[goal_status],
+            'emoticon': dash.campaign_goals.STATUS_TO_EMOTICON_MAP.get(goal_status, constants.Emoticon.NEUTRAL),
             'text': dash.campaign_goals.format_campaign_goal(
                 goal.type,
                 goal_metric,
@@ -168,12 +167,6 @@ def get_ad_group_editable_fields(row, can_enable_ad_group, has_available_budget)
         state['message'] = 'Cannot enable ad group without available budget.'
 
     return {'state': state}
-
-
-def _get_campaign_goal_emoticon(performance):
-    return dash.campaign_goals.STATUS_TO_EMOTICON_MAP[
-        dash.campaign_goals.get_goal_performance_category(performance)
-    ]
 
 
 def clean_non_relevant_fields(rows):

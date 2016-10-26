@@ -38,6 +38,10 @@ class MockAsyncFunction(object):
     def join(self):
         pass
 
+    def join_and_get_result(self):
+        self.join()
+        return self._result
+
 
 class AsyncFunction(Thread):
     """
@@ -74,3 +78,7 @@ class AsyncFunction(Thread):
             logger.exception(e)
         finally:
             connection.close()
+
+    def join_and_get_result(self):
+        self.join()
+        return self.get_result()

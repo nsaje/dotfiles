@@ -59,7 +59,7 @@ class ApiBreakdownQueryTest(TestCase):
             'clicks',
             1,
             2,
-            use_experimental_calls=False
+            use_publishers_view=False
         )
 
         self.assertEqual(result, [{

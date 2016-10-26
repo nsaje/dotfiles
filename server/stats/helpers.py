@@ -83,31 +83,38 @@ def get_goals(constraints):
 def extract_stats_constraints(constraints, breakdown):
     """
     Copy constraints and remove all that are not part of the stats query.
+
+    # NOTE: try to keep constraints in order - eg. account_id always sorted the same way
+    so that we get the same collection when the same parameters are use. This way we don't
+    miss cache when we request the same data but order of parameters differs.
     """
 
     new_constraints = {
         'date__gte': constraints['date__gte'],
         'date__lte': constraints['date__lte'],
-        'source_id': list(constraints['filtered_sources'].values_list('pk', flat=True)),
+        'source_id': list(constraints['filtered_sources'].values_list('pk', flat=True).order_by('pk')),
         'account_id': (constraints['account'].id if 'account' in constraints else
-                       list(constraints['allowed_accounts'].values_list('pk', flat=True))),
+                       list(constraints['allowed_accounts'].values_list('pk', flat=True).order_by('pk'))),
     }
 
     if 'ad_group' in constraints:
         new_constraints['ad_group_id'] = constraints['ad_group'].id
     elif 'ad_group_id' in breakdown:
-        new_constraints['ad_group_id'] = list(constraints['allowed_ad_groups'].values_list('pk', flat=True))
+        new_constraints['ad_group_id'] = list(
+            constraints['allowed_ad_groups'].values_list('pk', flat=True).order_by('pk'))
 
     if 'campaign' in constraints:
         new_constraints['campaign_id'] = constraints['campaign'].id
     elif 'campaign_id' in breakdown:
-        new_constraints['campaign_id'] = list(constraints['allowed_campaigns'].values_list('pk', flat=True))
+        new_constraints['campaign_id'] = list(
+            constraints['allowed_campaigns'].values_list('pk', flat=True).order_by('pk'))
 
     if 'account' in constraints:
         new_constraints['account_id'] = constraints['account'].id
 
     if 'content_ad_id' in breakdown:
-        new_constraints['content_ad_id'] = list(constraints['allowed_content_ads'].values_list('pk', flat=True))
+        new_constraints['content_ad_id'] = list(
+            constraints['allowed_content_ads'].values_list('pk', flat=True).order_by('pk'))
 
     if 'publisher_id' in breakdown and constraints['publisher_blacklist_filter'] in \
        (PublisherBlacklistFilter.SHOW_ACTIVE, PublisherBlacklistFilter.SHOW_BLACKLISTED):

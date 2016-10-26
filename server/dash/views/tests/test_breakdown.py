@@ -885,25 +885,54 @@ class BreakdownHelperTest(TestCase):
 
     def test_add_performance_indicators(self):
         rows = [
-            {'performance_campaign_goal_1': 1, 'ad_group_id': 1, 'cpc': 0.2},
-            {'performance_campaign_goal_2': 1, 'ad_group_id': 2},
+            {
+                'performance_campaign_goal_1': constants.CampaignGoalPerformance.AVERAGE,
+                'performance_campaign_goal_2': constants.CampaignGoalPerformance.AVERAGE,
+                'ad_group_id': 1,
+                'cpc': 0.2,
+            },
+            {
+                'performance_campaign_goal_1': constants.CampaignGoalPerformance.SUPERPERFORMING,
+                'performance_campaign_goal_2': constants.CampaignGoalPerformance.UNDERPERFORMING,
+                'ad_group_id': 2,
+                'cpc': 0.2,
+                'avg_cost_per_pixel_1_168': 5.0,
+            },
         ]
 
-        campaign_goals = models.CampaignGoal.objects.filter(pk__in=[1])
-        breakdown_helpers.format_report_rows_performance_fields(rows, Goals(campaign_goals, [], [], [], []))
+        campaign_goals = models.CampaignGoal.objects.filter(pk__in=[1, 2])
+        breakdown_helpers.format_report_rows_performance_fields(
+            rows, Goals(campaign_goals, [], [], [], [campaign_goals[0]]))
 
-        self.assertEquals(rows, [
-            {'performance_campaign_goal_1': 1, 'ad_group_id': 1, 'cpc': 0.2,
-             'styles': {'cpc': 1}, 'performance': {
-                 'list': [
-                     {'emoticon': 1, 'text': '$0.200 CPC'}
-                 ],
-                 'overall': None
-             }},
-            {'performance_campaign_goal_2': 1, 'ad_group_id': 2,
-             'performance': {'list': [{'emoticon': 2, 'text': 'N/A CPC'}],
-                             'overall': None}, 'styles': {}},
-        ])
+        self.maxDiff = None
+        self.assertEquals(rows, [{
+            'ad_group_id': 1,
+            'cpc': 0.2,
+            'performance': {
+                'list': [
+                    {'emoticon': constants.Emoticon.NEUTRAL, 'text': '$0.200 CPC'},
+                    {'emoticon': constants.Emoticon.NEUTRAL, 'text': 'N/A CPA - test conversion goal'},
+                ],
+                'overall': constants.Emoticon.NEUTRAL,
+            },
+            'performance_campaign_goal_1': constants.CampaignGoalPerformance.AVERAGE,
+            'performance_campaign_goal_2': constants.CampaignGoalPerformance.AVERAGE,
+            'styles': {}
+        }, {
+            'ad_group_id': 2,
+            'cpc': 0.2,
+            'performance': {
+                'list': [
+                    {'emoticon': constants.Emoticon.HAPPY, 'text': '$0.200 CPC'},
+                    {'emoticon': constants.Emoticon.SAD, 'text': '$5.00 CPA - test conversion goal'},
+                ],
+                'overall': constants.Emoticon.HAPPY,
+            },
+            'avg_cost_per_pixel_1_168': 5.0,
+            'performance_campaign_goal_1': constants.CampaignGoalPerformance.SUPERPERFORMING,
+            'performance_campaign_goal_2': constants.CampaignGoalPerformance.UNDERPERFORMING,
+            'styles': {'avg_cost_per_pixel_1_168': 3, 'cpc': 1}
+        }])
 
     def test_dont_add_performance_indicators(self):
         rows = [

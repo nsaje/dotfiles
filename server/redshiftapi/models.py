@@ -1,259 +1,230 @@
 import backtosql
 import copy
 
+import dash.constants
+import stats.constants
+from dash import conversions_helper
 from utils import dates_helper
 
-import dash.constants
-from dash import conversions_helper
-
-from stats import constants as sc
-
-from redshiftapi import model_helpers as mh
 from redshiftapi import helpers
+from redshiftapi import view_selector
+
+BREAKDOWN = 1
+AGGREGATE = 2
+YESTERDAY_AGGREGATES = 3
+CONVERSION_AGGREGATES = 4
+TOUCHPOINTS_AGGREGATES = 5
+AFTER_JOIN_AGGREGATES = 6
 
 
-DeliveryGeo = set([
-    sc.DeliveryDimension.COUNTRY,
-    sc.DeliveryDimension.STATE,
-    sc.DeliveryDimension.DMA,
-])
+class BreakdownsBase(backtosql.Model):
+    DEFAULT_ORDER = None
+
+    date = backtosql.Column('date', BREAKDOWN)
+
+    day = backtosql.Column('date', BREAKDOWN)
+    week = backtosql.TemplateColumn('part_trunc_week.sql', {'column_name': 'date'}, BREAKDOWN)
+    month = backtosql.TemplateColumn('part_trunc_month.sql', {'column_name': 'date'}, BREAKDOWN)
+
+    agency_id = backtosql.Column('agency_id', BREAKDOWN)
+    account_id = backtosql.Column('account_id', BREAKDOWN)
+    campaign_id = backtosql.Column('campaign_id', BREAKDOWN)
+    ad_group_id = backtosql.Column('ad_group_id', BREAKDOWN)
+    content_ad_id = backtosql.Column('content_ad_id', BREAKDOWN)
+    source_id = backtosql.Column('source_id', BREAKDOWN)
+    publisher = backtosql.Column('publisher', BREAKDOWN)
+
+    @classmethod
+    def get_best_view(cls, needed_dimensions, use_publishers_view=False):
+        """ Returns the SQL view that best fits the breakdown """
+        raise NotImplementedError()
+
+    def get_breakdown(self, breakdown):
+        """ Selects breakdown subset of columns """
+
+        if 'publisher_id' in breakdown:
+            publisher_id_idx = breakdown.index('publisher_id')
+            breakdown = breakdown[:publisher_id_idx] + ['publisher', 'source_id'] + breakdown[publisher_id_idx+1:]
+
+        return self.select_columns(subset=breakdown)
+
+    def get_aggregates(self):
+        """ Returns all the aggregate columns """
+        return self.select_columns(group=AGGREGATE)
+
+    def get_constraints(self, constraints, parents):
+        constraints = copy.copy(constraints)
+
+        publisher = constraints.pop('publisher_id', None)
+        publisher__neq = constraints.pop('publisher_id__neq', None)
+
+        constraints = backtosql.Q(self, **constraints)
+
+        if publisher is not None:
+            constraints = constraints & self.get_parent_constraints([{'publisher_id': x} for x in publisher])
+
+        if publisher__neq is not None:
+            constraints = constraints & ~self.get_parent_constraints([{'publisher_id': x} for x in publisher__neq])
+
+        parent_constraints = self.get_parent_constraints(parents)
+        if parent_constraints is not None:
+            constraints = constraints & parent_constraints
+
+        return constraints
+
+    def get_parent_constraints(self, parents):
+        parent_constraints = None
+
+        if parents:
+            parents = helpers.inflate_parent_constraints(parents)
+            parents = helpers.optimize_parent_constraints(parents)
+
+            parent_constraints = backtosql.Q(self, *[backtosql.Q(self, **x) for x in parents])
+            parent_constraints.join_operator = parent_constraints.OR
+
+        return parent_constraints
+
+    def get_query_all_context(self, breakdown, constraints, parents, use_publishers_view):
+        return {
+            'breakdown': self.get_breakdown(breakdown),
+            'aggregates': self.get_aggregates(),
+            'constraints': self.get_constraints(constraints, parents),
+            'view': self.get_best_view(helpers.get_all_dimensions(
+                breakdown, constraints, parents), use_publishers_view),
+            'order': self.get_column(self.DEFAULT_ORDER).as_order(self.DEFAULT_ORDER),
+        }
+
+    def get_query_all_yesterday_context(self, breakdown, constraints, parents, use_publishers_view):
+        constraints = helpers.get_yesterday_constraints(constraints)
+
+        yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'},
+                                                  alias='yesterday_cost')
+        e_yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_cost_nano'},
+                                                    alias='e_yesterday_cost')
+
+        self.add_column(yesterday_cost)
+        self.add_column(e_yesterday_cost)
+
+        return {
+            'breakdown': self.get_breakdown(breakdown),
+            'aggregates': self.select_columns(['yesterday_cost', 'e_yesterday_cost']),
+            'constraints': self.get_constraints(constraints, parents),
+            'view': self.get_best_view(helpers.get_all_dimensions(
+                breakdown, constraints, parents), use_publishers_view),
+            'order': yesterday_cost.as_order('-yesterday_cost'),
+        }
 
 
-DeliveryDemo = set([
-    sc.DeliveryDimension.DEVICE,
-    sc.DeliveryDimension.AGE,
-    sc.DeliveryDimension.GENDER,
-    sc.DeliveryDimension.AGE_GENDER,
-])
+class MVMaster(BreakdownsBase):
+    DEFAULT_ORDER = '-clicks'
 
-MATERIALIZED_VIEWS = [
-    ({
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.SOURCE
-    }, {
-        'base': 'mv_account',
-        'conversions': 'mv_conversions_account',
-        'touchpointconversions': 'mv_touch_account',
-    }),
-    ({
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.SOURCE
-    } | DeliveryGeo, {
-        'base': 'mv_account_delivery_geo',
-    }),
-    ({
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.SOURCE
-    } | DeliveryDemo, {
-        'base': 'mv_account_delivery_demo',
-    }),
-    ({
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.SOURCE,
-        sc.StructureDimension.CAMPAIGN
-    }, {
-        'base': 'mv_campaign',
-        'conversions': 'mv_conversions_campaign',
-        'touchpointconversions': 'mv_touch_campaign',
-    }),
-    ({
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.SOURCE,
-        sc.StructureDimension.CAMPAIGN
-    } | DeliveryGeo, {
-        'base': 'mv_campaign_delivery_geo',
-    }),
-    ({
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.SOURCE,
-        sc.StructureDimension.CAMPAIGN
-    } | DeliveryDemo, {
-        'base': 'mv_campaign_delivery_demo',
-    }),
-    ({
-        sc.StructureDimension.SOURCE,
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.CAMPAIGN,
-        sc.StructureDimension.AD_GROUP
-    }, {
-        'base': 'mv_ad_group',
-        'conversions': 'mv_conversions_ad_group',
-        'touchpointconversions': 'mv_touch_ad_group',
-    }),
-    ({
-        sc.StructureDimension.SOURCE,
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.CAMPAIGN,
-        sc.StructureDimension.AD_GROUP
-    } | DeliveryGeo, {
-        'base': 'mv_ad_group_delivery_geo',
-    }),
-    ({
-        sc.StructureDimension.SOURCE,
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.CAMPAIGN,
-        sc.StructureDimension.AD_GROUP
-    } | DeliveryDemo, {
-        'base': 'mv_ad_group_delivery_demo',
-    }),
-    ({
-        sc.StructureDimension.SOURCE,
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.CAMPAIGN,
-        sc.StructureDimension.AD_GROUP,
-        sc.StructureDimension.PUBLISHER,
-    }, {
-        'base': 'mv_pubs_ad_group',
-        'conversions': 'mv_conversions',
-        'touchpointconversions': 'mv_touchpointconversions',
-    }),
-    ({
-        sc.StructureDimension.SOURCE,
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.CAMPAIGN,
-        sc.StructureDimension.AD_GROUP,
-        sc.StructureDimension.PUBLISHER,
-    } | DeliveryGeo | DeliveryDemo, {
-        'base': 'mv_pubs_master',
-    }),
-    ({
-        sc.StructureDimension.SOURCE,
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.CAMPAIGN,
-        sc.StructureDimension.AD_GROUP,
-        sc.StructureDimension.CONTENT_AD
-    }, {
-        'base': 'mv_content_ad',
-        'conversions': 'mv_conversions_content_ad',
-        'touchpointconversions': 'mv_touch_content_ad',
-    }),
-    ({
-        sc.StructureDimension.SOURCE,
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.CAMPAIGN,
-        sc.StructureDimension.AD_GROUP,
-        sc.StructureDimension.CONTENT_AD
-    } | DeliveryGeo, {
-        'base': 'mv_content_ad_delivery_geo',
-    }),
-    ({
-        sc.StructureDimension.SOURCE,
-        sc.StructureDimension.ACCOUNT,
-        sc.StructureDimension.CAMPAIGN,
-        sc.StructureDimension.AD_GROUP,
-        sc.StructureDimension.CONTENT_AD
-    } | DeliveryDemo, {
-        'base': 'mv_content_ad_delivery_demo',
-    }),
-]
+    device_type = backtosql.Column('device_type', BREAKDOWN)
+    country = backtosql.Column('country', BREAKDOWN)
+    state = backtosql.Column('state', BREAKDOWN)
+    dma = backtosql.Column('dma', BREAKDOWN)
+    age = backtosql.Column('age', BREAKDOWN)
+    gender = backtosql.Column('gender', BREAKDOWN)
+    age_gender = backtosql.Column('age_gender', BREAKDOWN)
 
-
-class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
-    """
-    Defines all the fields that are provided by this breakdown model.
-    Materialized sub-views are a part of it.
-    """
-
-    def __init__(self, conversion_goals=None, pixels=None, campaign_goals=None, campaign_goal_values=None):
-        super(MVMaster, self).__init__()
-
-        self.init_conversion_columns(conversion_goals)
-        self.init_campaign_goal_performance_columns(
-            campaign_goals, campaign_goal_values, conversion_goals, pixels)
-        self.init_pixels(pixels)
-
-    date = backtosql.Column('date', mh.BREAKDOWN)
-
-    day = backtosql.Column('date', mh.BREAKDOWN)
-    week = backtosql.TemplateColumn('part_trunc_week.sql', {'column_name': 'date'}, mh.BREAKDOWN)
-    month = backtosql.TemplateColumn('part_trunc_month.sql', {'column_name': 'date'}, mh.BREAKDOWN)
-
-    agency_id = backtosql.Column('agency_id', mh.BREAKDOWN)
-    account_id = backtosql.Column('account_id', mh.BREAKDOWN)
-    campaign_id = backtosql.Column('campaign_id', mh.BREAKDOWN)
-    ad_group_id = backtosql.Column('ad_group_id', mh.BREAKDOWN)
-    content_ad_id = backtosql.Column('content_ad_id', mh.BREAKDOWN)
-    source_id = backtosql.Column('source_id', mh.BREAKDOWN)
-    publisher = backtosql.Column('publisher', mh.BREAKDOWN)
-
-    external_id = backtosql.TemplateColumn('part_max.sql', {'column_name': 'external_id'}, mh.PUBLISHER_AGGREGATES)
-    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, mh.PUBLISHER_AGGREGATES)
-
-    device_type = backtosql.Column('device_type', mh.BREAKDOWN)
-    country = backtosql.Column('country', mh.BREAKDOWN)
-    state = backtosql.Column('state', mh.BREAKDOWN)
-    dma = backtosql.Column('dma', mh.BREAKDOWN)
-    age = backtosql.Column('age', mh.BREAKDOWN)
-    gender = backtosql.Column('gender', mh.BREAKDOWN)
-    age_gender = backtosql.Column('age_gender', mh.BREAKDOWN)
-
-    clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, mh.AGGREGATES)
-    impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, mh.AGGREGATES)
-    media_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'}, mh.AGGREGATES)
-    data_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'data_cost_nano'}, mh.AGGREGATES)
+    clicks = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'clicks'}, AGGREGATE)
+    impressions = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'impressions'}, AGGREGATE)
+    media_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'}, AGGREGATE)
+    data_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'data_cost_nano'}, AGGREGATE)
 
     # BCM
-    e_media_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_cost_nano'}, mh.AGGREGATES)
+    e_media_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_cost_nano'}, AGGREGATE)
     e_data_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_data_cost_nano'},
-                                           mh.AGGREGATES)
-    license_fee = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'license_fee_nano'}, mh.AGGREGATES)
-    billing_cost = backtosql.TemplateColumn('part_billing_cost.sql', None, mh.AGGREGATES)
-    total_cost = backtosql.TemplateColumn('part_total_cost.sql', None, mh.AGGREGATES)
-    margin = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'margin_nano'}, mh.AGGREGATES)
-    agency_total = backtosql.TemplateColumn('part_agency_total.sql', None, mh.AGGREGATES)
+                                           AGGREGATE)
+    license_fee = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'license_fee_nano'}, AGGREGATE)
+    billing_cost = backtosql.TemplateColumn('part_billing_cost.sql', None, AGGREGATE)
+    total_cost = backtosql.TemplateColumn('part_total_cost.sql', None, AGGREGATE)
+    margin = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'margin_nano'}, AGGREGATE)
+    agency_total = backtosql.TemplateColumn('part_agency_total.sql', None, AGGREGATE)
 
     # Derivates
-    ctr = backtosql.TemplateColumn('part_sumdiv_perc.sql', {'expr': 'clicks', 'divisor': 'impressions'}, mh.AGGREGATES)
-    cpc = backtosql.TemplateColumn('part_sumdiv_nano.sql', {'expr': 'cost_nano', 'divisor': 'clicks'}, mh.AGGREGATES)
-    cpm = backtosql.TemplateColumn('part_cpm.sql', group=mh.AGGREGATES)
+    ctr = backtosql.TemplateColumn('part_sumdiv_perc.sql', {'expr': 'clicks', 'divisor': 'impressions'}, AGGREGATE)
+    cpc = backtosql.TemplateColumn('part_sumdiv_nano.sql', {'expr': 'cost_nano', 'divisor': 'clicks'}, AGGREGATE)
+    cpm = backtosql.TemplateColumn('part_cpm.sql', group=AGGREGATE)
 
     # Postclick acquisition fields
-    visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'visits'}, mh.AGGREGATES)
-    click_discrepancy = backtosql.TemplateColumn('part_click_discrepancy.sql', None, mh.AGGREGATES)
-    pageviews = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'pageviews'}, mh.AGGREGATES)
+    visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'visits'}, AGGREGATE)
+    click_discrepancy = backtosql.TemplateColumn('part_click_discrepancy.sql', None, AGGREGATE)
+    pageviews = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'pageviews'}, AGGREGATE)
 
     # Postclick engagement fields
-    new_visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'new_visits'}, mh.AGGREGATES)
+    new_visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'new_visits'}, AGGREGATE)
     percent_new_users = backtosql.TemplateColumn('part_sumdiv_perc.sql',
-                                                 {'expr': 'new_visits', 'divisor': 'visits'}, mh.AGGREGATES)
+                                                 {'expr': 'new_visits', 'divisor': 'visits'}, AGGREGATE)
     bounce_rate = backtosql.TemplateColumn('part_sumdiv_perc.sql',
-                                           {'expr': 'bounced_visits', 'divisor': 'visits'}, mh.AGGREGATES)
+                                           {'expr': 'bounced_visits', 'divisor': 'visits'}, AGGREGATE)
     pv_per_visit = backtosql.TemplateColumn('part_sumdiv.sql', {'expr': 'pageviews', 'divisor': 'visits'},
-                                            mh.AGGREGATES)
+                                            AGGREGATE)
     avg_tos = backtosql.TemplateColumn('part_sumdiv.sql',
-                                       {'expr': 'total_time_on_site', 'divisor': 'visits'}, mh.AGGREGATES)
-    returning_users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'returning_users'}, mh.AGGREGATES)
-    unique_users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'users'}, mh.AGGREGATES)
-    new_users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'new_visits'}, mh.AGGREGATES)
-    bounced_visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'bounced_visits'}, mh.AGGREGATES)
+                                       {'expr': 'total_time_on_site', 'divisor': 'visits'}, AGGREGATE)
+    returning_users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'returning_users'}, AGGREGATE)
+    unique_users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'users'}, AGGREGATE)
+    new_users = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'new_visits'}, AGGREGATE)
+    bounced_visits = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'bounced_visits'}, AGGREGATE)
 
-    total_seconds = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'total_time_on_site'}, mh.AGGREGATES)
-    avg_cost_per_minute = backtosql.TemplateColumn('part_avg_cost_per_minute.sql', group=mh.AGGREGATES)
-    non_bounced_visits = backtosql.TemplateColumn('part_non_bounced_visits.sql', group=mh.AGGREGATES)
+    total_seconds = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'total_time_on_site'}, AGGREGATE)
+    avg_cost_per_minute = backtosql.TemplateColumn('part_avg_cost_per_minute.sql', group=AGGREGATE)
+    non_bounced_visits = backtosql.TemplateColumn('part_non_bounced_visits.sql', group=AGGREGATE)
     avg_cost_per_non_bounced_visit = backtosql.TemplateColumn('part_avg_cost_per_non_bounced_visit.sql',
-                                                              group=mh.AGGREGATES)
-    total_pageviews = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'pageviews'}, group=mh.AGGREGATES)
+                                                              group=AGGREGATE)
+    total_pageviews = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'pageviews'}, group=AGGREGATE)
     avg_cost_per_pageview = backtosql.TemplateColumn('part_sumdiv_nano.sql', {
         'expr': 'cost_nano', 'divisor': 'pageviews',
-    }, mh.AGGREGATES)
+    }, AGGREGATE)
     avg_cost_for_new_visitor = backtosql.TemplateColumn('part_sumdiv_nano.sql', {
         'expr': 'cost_nano', 'divisor': 'new_visits',
-    }, mh.AGGREGATES)
+    }, AGGREGATE)
     avg_cost_per_visit = backtosql.TemplateColumn('part_sumdiv_nano.sql', {
         'expr': 'cost_nano', 'divisor': 'visits',
-    }, mh.AGGREGATES)
+    }, AGGREGATE)
+
+    @classmethod
+    def get_best_view(cls, needed_dimensions, use_publishers_view):
+        return view_selector.get_best_view_base(needed_dimensions, use_publishers_view)
+
+
+class MVMasterPublishers(MVMaster):
+
+    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
+    external_id = backtosql.TemplateColumn('part_max.sql', {'column_name': 'external_id'}, AGGREGATE)
+
+
+class MVTouchpointConversions(BreakdownsBase):
+    DEFAULT_ORDER = '-count'
+
+    slug = backtosql.Column('slug', BREAKDOWN)
+    window = backtosql.Column('conversion_window', BREAKDOWN)
+
+    count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_count'}, AGGREGATE)
+
+    @classmethod
+    def get_best_view(cls, needed_dimensions, use_publishers_view=False):
+        return view_selector.get_best_view_touchpoints(needed_dimensions)
+
+
+class MVConversions(BreakdownsBase):
+    DEFAULT_ORDER = '-count'
+
+    slug = backtosql.Column('slug', BREAKDOWN)
+    count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_count'}, AGGREGATE)
+
+    @classmethod
+    def get_best_view(cls, needed_dimensions, use_publishers_view=False):
+        return view_selector.get_best_view_conversions(needed_dimensions)
+
+
+class MVJointMaster(MVMaster):
 
     yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'},
-                                              group=mh.YESTERDAY_COST_AGGREGATES)
+                                              group=YESTERDAY_AGGREGATES)
     e_yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'effective_cost_nano'},
-                                                group=mh.YESTERDAY_COST_AGGREGATES)
+                                                group=YESTERDAY_AGGREGATES)
 
     def init_conversion_columns(self, conversion_goals):
-        """
-        Conversion columns are added dynamically, because the number and their definition
-        depends on the conversion_goals collection.
-        """
-
         if not conversion_goals:
             return
 
@@ -265,31 +236,54 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             conversion_key = conversion_goal.get_view_key(conversion_goals)
             column = backtosql.TemplateColumn(
                 'part_conversion_goal.sql', {'goal_id': conversion_goal.get_stats_key()},
-                alias=conversion_key, group=mh.CONVERSION_AGGREGATES
-            )
-
+                alias=conversion_key, group=CONVERSION_AGGREGATES)
             self.add_column(column)
 
             avg_cost_column = backtosql.TemplateColumn(
                 'part_avg_cost_per_conversion_goal.sql', {'conversion_key': conversion_key},
-                alias='avg_cost_per_' + conversion_key, group=mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS
-            )
-
+                alias='avg_cost_per_' + conversion_key, group=AFTER_JOIN_AGGREGATES)
             self.add_column(avg_cost_column)
 
-    def init_campaign_goal_performance_columns(self, campaign_goals, campaign_goal_values, conversion_goals, pixels):
+    def init_pixel_columns(self, pixels):
+        if not pixels:
+            return
+
+        conversion_windows = sorted(dash.constants.ConversionWindows.get_all())
+        for pixel in pixels:
+            for conversion_window in conversion_windows:
+                pixel_key = pixel.get_view_key(conversion_window)
+                column = backtosql.TemplateColumn(
+                    'part_touchpointconversion_goal.sql', {
+                        'account_id': pixel.account_id,
+                        'slug': pixel.slug,
+                        'window': conversion_window,
+                    },
+                    alias=pixel_key, group=TOUCHPOINTS_AGGREGATES)
+                self.add_column(column)
+
+                avg_cost_column = backtosql.TemplateColumn(
+                    'part_avg_cost_per_conversion_goal.sql', {'conversion_key': pixel_key},
+                    alias='avg_cost_per_' + pixel_key, group=AFTER_JOIN_AGGREGATES)
+
+                self.add_column(avg_cost_column)
+
+    def init_performance_columns(self, campaign_goals, campaign_goal_values, conversion_goals, pixels,
+                                 supports_conversions=True):
+        if not campaign_goals:
+            return
+
         map_camp_goal_vals = {x.campaign_goal_id: x for x in campaign_goal_values or []}
         map_conversion_goals = {x.id: x for x in conversion_goals or []}
         pixel_ids = [x.id for x in pixels] if pixels else []
-
-        if not campaign_goals:
-            return
 
         for campaign_goal in campaign_goals:
             conversion_key = None
             metric_column = None
 
             if campaign_goal.type == dash.constants.CampaignGoalKPI.CPA:
+                if not supports_conversions:
+                    continue
+
                 if campaign_goal.conversion_goal_id not in map_conversion_goals:
                     # if conversion goal is not amongst campaign goals do not calculate performance
                     continue
@@ -301,10 +295,10 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
                     continue
 
                 conversion_key = conversion_goal.get_view_key(conversion_goals)
-                column_group = mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS
+                column_group = AFTER_JOIN_AGGREGATES
             else:
                 metric_column = dash.campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type]
-                column_group = mh.AFTER_JOIN_CALCULATIONS
+                column_group = AFTER_JOIN_AGGREGATES
 
             is_cost_dependent = campaign_goal.type in dash.campaign_goals.COST_DEPENDANT_GOALS
             is_inverse_performance = campaign_goal.type in dash.campaign_goals.INVERSE_PERFORMANCE_CAMPAIGN_GOALS
@@ -325,222 +319,63 @@ class MVMaster(backtosql.Model, mh.RSBreakdownMixin):
             }, alias='performance_' + campaign_goal.get_view_key(), group=column_group)
             self.add_column(column)
 
-    def init_pixels(self, pixels):
-        """
-        Pixel columns are added dynamically like conversions, because the number and their definition
-        depends on the pixels collection.
-        """
-        if not pixels:
-            return
+    def get_query_joint_context(self, breakdown, constraints, parents, order, offset, limit, goals, use_publishers_view):
 
-        conversion_windows = sorted(dash.constants.ConversionWindows.get_all())
-        for pixel in pixels:
-            for conversion_window in conversion_windows:
-                pixel_key = pixel.get_view_key(conversion_window)
-                column = backtosql.TemplateColumn(
-                    'part_touchpointconversion_goal.sql', {
-                        'account_id': pixel.account_id,
-                        'slug': pixel.slug,
-                        'window': conversion_window,
-                    },
-                    alias=pixel_key, group=mh.TOUCHPOINTCONVERSION_AGGREGATES
-                )
-                self.add_column(column)
+        needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
+        supports_conversions = view_selector.supports_conversions(needed_dimensions)
 
-                avg_cost_column = backtosql.TemplateColumn(
-                    'part_avg_cost_per_conversion_goal.sql', {'conversion_key': pixel_key},
-                    alias='avg_cost_per_' + pixel_key, group=mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS
-                )
+        if supports_conversions:
+            self.init_conversion_columns(goals.conversion_goals)
+            self.init_pixel_columns(goals.pixels)
 
-                self.add_column(avg_cost_column)
+        self.init_performance_columns(
+            goals.campaign_goals, goals.campaign_goal_values, goals.conversion_goals, goals.pixels,
+            supports_conversions=supports_conversions)
 
-    @classmethod
-    def get_best_view(cls, breakdown, constraints, use_publishers_view=False):
-        """
-        Selects the most suitable materialized view for the selected breakdown.
-        """
-
-        constraints_dimensions = [backtosql.dissect_constraint_key(x)[0] for x in constraints.keys()]
-
-        non_date_dimensions = set(sc.StructureDimension._ALL) | set(sc.DeliveryDimension._ALL)
-        needed_dimensions = set(constraints_dimensions + breakdown) & non_date_dimensions
-
-        if use_publishers_view:
-            needed_dimensions.add('publisher_id')
-
-        for available, view in MATERIALIZED_VIEWS:
-            if len(needed_dimensions - available) == 0:
-                return view
-
-        if sc.get_delivery_dimension(needed_dimensions):
-            return {
-                'base': 'mv_master',
-            }
-
-        return {
-            'base': 'mv_master',
-            'conversions': 'mv_conversions',
-            'touchpointconversions': 'mv_touchpointconversions',
-        }
-
-    def get_default_context(self, breakdown, constraints, parents,
-                            order=None, offset=None, limit=None, use_publishers_view=False):
-        """
-        Returns the template context that is used by most of templates
-        """
-
-        breakdown_supports_conversions = self.breakdown_supports_conversions(breakdown)
-
-        if order:
-            order_column = self.get_column(order).as_order(order, nulls='last')
-
-            is_ordered_by_conversions = order_column.group == mh.CONVERSION_AGGREGATES
-            is_ordered_by_touchpointconversions = order_column.group == mh.TOUCHPOINTCONVERSION_AGGREGATES
-
-            # dont order by conversions if breakdown does not support them
-            if (not breakdown_supports_conversions and
-                (is_ordered_by_touchpointconversions or
-                 is_ordered_by_conversions)):
-                order_column = self.get_column('clicks').as_order(order, nulls='last')
-
-            is_ordered_by_after_join_calculations = order_column.group in (
-                mh.AFTER_JOIN_CALCULATIONS, mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS)
-        else:
-            order_column = None
-            is_ordered_by_conversions = False
-            is_ordered_by_touchpointconversions = False
-            is_ordered_by_after_join_calculations = False
-
-        after_join_calculations = self.select_columns(group=mh.AFTER_JOIN_CALCULATIONS)
-        if breakdown_supports_conversions:
-            after_join_calculations.extend(self.select_columns(group=mh.AFTER_JOIN_CONVERSIONS_CALCULATIONS))
+        order_col = self.get_column(order if self.has_column(order) else self.DEFAULT_ORDER)
+        order_col = order_col.as_order(order, nulls='last')
 
         context = {
-            'view': self.get_best_view(breakdown, constraints, use_publishers_view),
             'breakdown': self.get_breakdown(breakdown),
+            'partition': self.get_breakdown(stats.constants.get_parent_breakdown(breakdown)),
 
-            # partition is 1 less than breakdown long - the last dimension is the targeted one
-            'breakdown_partition': self.get_breakdown(sc.get_parent_breakdown(breakdown)),
+            'constraints': self.get_constraints(constraints, parents),
+            'yesterday_constraints': self.get_constraints(helpers.get_yesterday_constraints(constraints), parents),
 
-            'constraints': self.get_constraints(constraints),
-            'parent_constraints': self.get_parent_constraints(parents),
-            'aggregates': self.get_aggregates(breakdown),
-            'order': order_column,
+            'aggregates': self.get_aggregates(),
+            'yesterday_aggregates': self.select_columns(group=YESTERDAY_AGGREGATES),
+            'after_join_aggregates': self.select_columns(group=AFTER_JOIN_AGGREGATES),
+
             'offset': offset,
             'limit': limit,
 
-            'is_ordered_by_conversions': (breakdown_supports_conversions and is_ordered_by_conversions),
-            'is_ordered_by_touchpointconversions': (breakdown_supports_conversions and
-                                                    is_ordered_by_touchpointconversions),
-            'conversions_aggregates': (self.select_columns(group=mh.CONVERSION_AGGREGATES)
-                                       if breakdown_supports_conversions else []),
-            'touchpointconversions_aggregates': (self.select_columns(group=mh.TOUCHPOINTCONVERSION_AGGREGATES)
-                                                 if breakdown_supports_conversions else []),
+            'order': order_col,
+            'is_order_by_yesterday': order_col.group == YESTERDAY_AGGREGATES,
+            'is_order_by_after_join_aggregates': order_col.group == AFTER_JOIN_AGGREGATES,
 
-            'after_join_calculations': after_join_calculations,
-            'is_ordered_by_after_join_calculations': is_ordered_by_after_join_calculations,
+            'base_view': view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
+            'yesterday_view': view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
         }
 
-        context.update(self.get_default_yesterday_context(constraints, order_column))
+        if supports_conversions:
+            context.update({
+                'conversions_constraints': self.get_constraints(constraints, parents),
+                'touchpoints_constraints': self.get_constraints(constraints, parents),
+
+                'conversions_aggregates': self.select_columns(group=CONVERSION_AGGREGATES),
+                'touchpoints_aggregates': self.select_columns(group=TOUCHPOINTS_AGGREGATES),
+
+                'is_order_by_conversions': order_col.group == CONVERSION_AGGREGATES,
+                'is_order_by_touchpoints': order_col.group == TOUCHPOINTS_AGGREGATES,
+
+                'conversions_view': view_selector.get_best_view_conversions(needed_dimensions),
+                'touchpoints_view': view_selector.get_best_view_touchpoints(needed_dimensions),
+            })
 
         return context
 
-    def breakdown_supports_conversions(self, breakdown):
-        conversion_columns = self.select_columns(group=mh.CONVERSION_AGGREGATES)
-        tpconversion_columns = self.select_columns(group=mh.TOUCHPOINTCONVERSION_AGGREGATES)
 
-        return ((conversion_columns or tpconversion_columns) and
-                sc.get_delivery_dimension(breakdown) is None)
+class MVJointMasterPublishers(MVJointMaster):
 
-    def get_default_yesterday_context(self, constraints, order_column):
-        date_from, date_to = constraints['date__gte'], constraints['date__lte']
-
-        yesterday = dates_helper.local_yesterday()
-
-        if date_from <= yesterday <= date_to:
-            # columns that fetch yesterday spend from the base table
-            yesterday_cost = backtosql.TemplateColumn(
-                'part_for_date_sum_nano.sql',
-                {
-                    'column_name': 'cost_nano',
-                    'date_column_name': 'date',
-                    'date': yesterday.isoformat(),
-                },
-                alias='yesterday_cost',
-                group=mh.YESTERDAY_COST_AGGREGATES)
-            e_yesterday_cost = backtosql.TemplateColumn(
-                'part_for_date_sum_nano.sql',
-                {
-                    'column_name': 'effective_cost_nano',
-                    'date_column_name': 'date',
-                    'date': yesterday.isoformat(),
-                },
-                alias='e_yesterday_cost',
-                group=mh.YESTERDAY_COST_AGGREGATES)
-
-            context = {
-                'yesterday_aggregates': [yesterday_cost, e_yesterday_cost]
-            }
-        else:
-            # columns that fetch yesterday spend in a special select statement that
-            # is then joined to the base select
-
-            constraints = copy.copy(constraints)
-
-            # replace date range with yesterday date
-            constraints.pop('date__gte', None)
-            constraints.pop('date__lte', None)
-            constraints['date'] = dates_helper.local_yesterday()
-
-            context = {
-                'yesterday_constraints': self.get_constraints(constraints),
-                'yesterday_aggregates': self.select_columns(group=mh.YESTERDAY_COST_AGGREGATES),
-            }
-
-        if order_column:
-            context['is_ordered_by_yesterday_aggregates'] = order_column.group == mh.YESTERDAY_COST_AGGREGATES
-        else:
-            context['is_ordered_by_yesterday_aggregates'] = False
-
-        return context
-
-    def get_constraints(self, constraints):
-        constraints = copy.copy(constraints)
-
-        publisher = constraints.pop('publisher_id', None)
-        publisher__neq = constraints.pop('publisher_id__neq', None)
-
-        constraints = backtosql.Q(self, **constraints)
-
-        if publisher is not None:
-            constraints = constraints & self.get_parent_constraints([{'publisher_id': x} for x in publisher])
-
-        if publisher__neq is not None:
-            constraints = constraints & ~self.get_parent_constraints([{'publisher_id': x} for x in publisher__neq])
-
-        return constraints
-
-    def get_aggregates(self, breakdown):
-        aggregates = super(MVMaster, self).get_aggregates()
-        if 'publisher_id' in breakdown:
-            aggregates = self.select_columns(group=mh.PUBLISHER_AGGREGATES) + aggregates
-        return aggregates
-
-    def get_parent_constraints(self, parents):
-        parent_constraints = None
-
-        if parents:
-            parents = helpers.inflate_parent_constraints(parents)
-            parents = helpers.optimize_parent_constraints(parents)
-
-            parent_constraints = backtosql.Q(self, *[backtosql.Q(self, **x) for x in parents])
-            parent_constraints.join_operator = parent_constraints.OR
-
-        return parent_constraints
-
-    def get_breakdown(self, breakdown):
-        if 'publisher_id' in breakdown:
-            publisher_id_idx = breakdown.index('publisher_id')
-            breakdown = breakdown[:publisher_id_idx] + ['publisher', 'source_id'] + breakdown[publisher_id_idx+1:]
-
-        return super(MVMaster, self).get_breakdown(breakdown)
+    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
+    external_id = backtosql.TemplateColumn('part_max.sql', {'column_name': 'external_id'}, AGGREGATE)

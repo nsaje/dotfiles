@@ -1,25 +1,13 @@
 import backtosql
 import collections
 import copy
+import datetime
+import dateutil
+
+from utils import dates_helper
 
 import stats.helpers
 from stats import constants
-
-
-POSTCLICK_FIELDS = [
-    'visits', 'click_discrepancy', 'pageviews', 'new_visits', 'percent_new_users', 'bounce_rate',
-    'pv_per_visit', 'avg_tos', 'returning_users', 'unique_users', 'new_users', 'bounced_visits',
-    'total_seconds', 'avg_cost_per_minute', 'non_bounced_visits', 'avg_cost_per_non_bounced_visit',
-    'total_pageviews', 'avg_cost_per_pageview', 'avg_cost_for_new_visitor', 'avg_cost_per_visit',
-]
-
-
-def remove_postclick_values(breakdown, rows):
-    # HACK: Temporary hack that removes postclick data when we breakdown by delivery
-    if constants.get_delivery_dimension(breakdown) is not None:
-        for row in rows:
-            for key in POSTCLICK_FIELDS:
-                row[key] = None
 
 
 def create_parents(rows, breakdown):
@@ -115,14 +103,68 @@ def merge_rows(breakdown, rows, stats_rows):
     return rows
 
 
-def get_all_dimensions(breakdown, constraints, parents, use_publishers_view):
+def select_relevant_rows(breakdown, rows, stats_rows):
+    group_stats_rows = stats.helpers.group_rows_by_breakdown(breakdown, stats_rows, max_1=True)
+    group_rows = stats.helpers.group_rows_by_breakdown(breakdown, rows, max_1=True)
+    return [stat_row for breakdown_id, stat_row in group_stats_rows.iteritems() if breakdown_id in group_rows]
+
+
+def get_all_dimensions(breakdown, constraints, parents):
     constraints_dimensions = set(backtosql.dissect_constraint_key(x)[0] for x in constraints.keys())
     parents_dimensions = set(backtosql.dissect_constraint_key(x)[0] for parent in parents for x in parent.keys()) if parents else set([])
     breakdown_dimensions = set(breakdown)
 
     non_date_dimensions = set(constants.StructureDimension._ALL) | set(constants.DeliveryDimension._ALL)
 
-    if use_publishers_view:
-        breakdown_dimensions.add('publisher_id')
-
     return (constraints_dimensions | parents_dimensions | breakdown_dimensions) & non_date_dimensions
+
+
+def get_yesterday_constraints(constraints):
+    constraints = copy.copy(constraints)
+    constraints.pop('date__gte', None)
+    constraints.pop('date__lte', None)
+    constraints['date'] = dates_helper.local_yesterday()
+
+    return constraints
+
+
+def get_time_dimension_constraints(time_dimension, constraints, offset, limit):
+    """
+    Sets time constraints so that they fit offset and limit. Instead of
+    using SQL offset and limit just adjust the date range so the scan space
+    is smaller.
+    """
+
+    constraints = copy.copy(constraints)
+
+    start_date = constraints['date__gte']
+
+    if time_dimension == constants.TimeDimension.DAY:
+        start_date = start_date + datetime.timedelta(days=offset)
+        end_date = start_date + datetime.timedelta(days=limit)
+
+    elif time_dimension == constants.TimeDimension.WEEK:
+        start_date = start_date + datetime.timedelta(days=7 * offset)
+        end_date = start_date + datetime.timedelta(days=7 * limit)
+
+    else:
+        start_date = start_date.replace(day=1)
+        start_date = start_date + dateutil.relativedelta.relativedelta(months=offset)
+        end_date = start_date + dateutil.relativedelta.relativedelta(months=limit)
+
+    constraints['date__gte'] = max(start_date, constraints['date__gte'])
+    if min(end_date, constraints['date__lte']) == constraints['date__lte']:
+        # end of date range - fetch until the end
+        constraints['date__lte'] = constraints['date__lte']
+    else:
+        # else later ranges are possible
+        del constraints['date__lte']
+        constraints['date__lte'] = end_date - datetime.timedelta(days=1)
+    return constraints
+
+
+def get_query_name(breakdown, extra_name=''):
+    if extra_name:
+        extra_name = '__' + extra_name
+
+    return '__'.join(breakdown) + extra_name
