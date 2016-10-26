@@ -155,6 +155,14 @@ CACHES = {
         'OPTIONS': {
             'MAX_ENTRIES': 1000,
         }
+    },
+    'dash_db_cache': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'dash_db_cache',
+        'TIMEOUT': 60 * 60 * 6,  # 6 hours
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
     }
 }
 

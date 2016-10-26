@@ -147,6 +147,9 @@ CACHES = {
     'breakdowns_rs': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     },
+    'dash_db_cache': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    },
 }
 
 try:
@@ -286,12 +289,16 @@ if TESTING:
     GOOGLE_OAUTH_ENABLED = False
     PAGER_DUTY_ENABLED = False
     USE_HASH_CACHE = False
+
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
         },
         'breakdowns_rs': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+        },
+        'dash_db_cache': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
         }
     }
 

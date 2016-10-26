@@ -1,10 +1,12 @@
 import copy
 import datetime
+import influx
 import utils.lc_helper
 
 import reports.api_helpers
 from django.db import models
 from django.db.models import Sum, F, ExpressionWrapper
+from django.core.cache import caches
 
 import dash.constants
 import dash.models
@@ -14,6 +16,7 @@ import reports.api_contentads
 import reports.models
 import utils.dates_helper
 import utils.lc_helper
+import utils.cache_helper
 
 from utils import converters
 
@@ -490,6 +493,19 @@ def count_weekly_logged_in_users(filtered_agencies, filtered_account_types):
 
 
 def get_weekly_active_users(filtered_agencies, filtered_account_types):
+    # NOTE: data returned by this function might be a bit old, because cache is invalidated after
+    # a certain time and not when data actually changes. This behaviour is by design - currently
+    # it is ok if this data is a bit dated - confirmed by product
+
+    cache = caches['dash_db_cache']
+    cache_key = _filtered_agencies_account_types_cache_key(
+        'active_users_ids', filtered_agencies, filtered_account_types)
+    active_users_ids = cache.get(cache_key, None)
+    if active_users_ids is not None:
+        influx.incr('infobox.cache', 1, method='get_weekly_active_users', outcome='hit')
+        return zemauth.models.User.objects.filter(pk__in=active_users_ids)
+
+    influx.incr('infobox.cache', 1, method='get_weekly_active_users', outcome='miss')
     actions = dash.models.History.objects\
         .filter(
             created_dt__gte=_one_week_ago(),
@@ -500,12 +516,28 @@ def get_weekly_active_users(filtered_agencies, filtered_account_types):
         pk__in=actions.values_list('created_by_id', flat=True)
     ).filter_by_agencies(filtered_agencies)
 
-    return _filter_user_by_account_type(
+    users = _filter_user_by_account_type(
         users,
         filtered_account_types)
+    cache.set(cache_key, [x.pk for x in users])
+    return users
 
 
 def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
+    # NOTE: data returned by this function might be a bit old, because cache is invalidated after
+    # a certain time and not when data actually changes. This behaviour is by design - currently
+    # it is ok if this data is a bit dated - confirmed by product
+
+    cache = caches['dash_db_cache']
+    cache_key = _filtered_agencies_account_types_cache_key(
+        'selfmanaged_actions', filtered_agencies, filtered_account_types)
+    count = cache.get(cache_key, None)
+
+    if count is not None:
+        influx.incr('infobox.cache', 1, method='count_weekly_selfmanaged_actions', outcome='hit')
+        return count
+
+    influx.incr('infobox.cache', 1, method='count_weekly_selfmanaged_actions', outcome='miss')
     actions = dash.models.History.objects\
         .filter(
             created_dt__gte=_one_week_ago(),
@@ -516,7 +548,19 @@ def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
         pk__in=actions.values_list('created_by_id', flat=True))\
         .filter_by_agencies(filtered_agencies)
     filtered_users = _filter_user_by_account_type(users, filtered_account_types)
-    return actions.filter(created_by__in=filtered_users).count()
+
+    count = actions.filter(created_by__in=filtered_users).count()
+    cache.set(cache_key, count)
+
+    return count
+
+
+def _filtered_agencies_account_types_cache_key(name, filtered_agencies, filtered_account_types):
+    key = "{}__{}".format(
+        sorted(filtered_agencies.values_list('pk', flat=True)) if filtered_agencies is not None else '',
+        sorted(filtered_account_types) if filtered_account_types is not None else ''
+    )
+    return utils.cache_helper.get_cache_key(name, key)
 
 
 def _one_week_ago():
