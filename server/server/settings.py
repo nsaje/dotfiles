@@ -169,6 +169,9 @@ try:
 except ImportError:
     pass
 
+# HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 from localsettings import *
 
 if ENABLE_DJANGO_EXTENSIONS:
