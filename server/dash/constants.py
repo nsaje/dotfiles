@@ -1634,6 +1634,7 @@ class ImageCrop(ConstantBase):
     RIGHT = 'right'
     TOP = 'top'
     BOTTOM = 'bottom'
+    EDGES = 'edges'
 
     _VALUES = {
         CENTER: 'Center',
@@ -1643,6 +1644,7 @@ class ImageCrop(ConstantBase):
         RIGHT: 'Right',
         TOP: 'Top',
         BOTTOM: 'Bottom',
+        EDGES: 'Edges',
     }
 
 
