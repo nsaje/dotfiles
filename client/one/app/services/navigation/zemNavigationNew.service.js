@@ -111,6 +111,37 @@ angular.module('one.services').service('zemNavigationNewService', ['$rootScope',
         return entity;
     }
 
+    function getAccountEntityState (newState, $state) {
+        if ($state.includes('**.credit')) newState += '.credit';
+        // TODO: support permission checks here
+        // if ($state.includes('**.budget')) state += '.credit';
+        if ($state.includes('**.audiences')) newState += '.audiences';
+        if ($state.includes('**.reports')) newState += '.reports';
+        return newState;
+    }
+
+    function getCampaignEntityState (newState, $state) {
+        if ($state.includes('**.credit')) newState += '.budget';
+        if ($state.includes('**.budget')) newState += '.budget';
+        return newState;
+    }
+
+    function getAdGroupEntityState (newState, $state) {
+        if ($state.includes('**.publishers')) newState += '.publishers';
+        return newState;
+    }
+
+    function getSpecialEntityState (entity, newState, $state) {
+        if (entity.type === constants.entityType.ACCOUNT) {
+            return getAccountEntityState(newState, $state);
+        } else if (entity.type === constants.entityType.CAMPAIGN) {
+            return getCampaignEntityState(newState, $state);
+        } else if (entity.type === constants.entityType.AD_GROUP) {
+            return getAdGroupEntityState(newState, $state);
+        }
+        return newState;
+    }
+
     function getEntityState (entity) {
         var defaultState = 'main.allAccounts';
 
@@ -130,9 +161,13 @@ angular.module('one.services').service('zemNavigationNewService', ['$rootScope',
 
         // keep the same tab if possible
         var state = defaultState;
+        // - standard
         if ($state.includes('**.sources')) state += '.sources';
         if ($state.includes('**.history')) state += '.history';
         if ($state.includes('**.settings')) state += '.settings';
+        // - special
+        if (entity) state = getSpecialEntityState(entity, state, $state);
+
         if (!$state.get(state)) state = defaultState;
 
         return state;

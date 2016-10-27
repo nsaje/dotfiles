@@ -81,6 +81,9 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
         if ($state.includes('**.settings') && $scope.hasPermission('zemauth.account_account_view')) {
             return 'main.accounts.settings';
         }
+        if ($scope.hasPermission('zemauth.account_credit_view') && ($state.includes('**.budget') || $state.includes('**.credit'))) {
+            return 'main.accounts.credit';
+        }
 
         // otherwise get default state
         if ($scope.hasPermission('zemauth.account_campaigns_view')) {
@@ -111,6 +114,9 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
         }
         if ($state.includes('**.settings')) {
             return 'main.campaigns.settings';
+        }
+        if ($state.includes('**.budget') || $state.includes('**.credit')) {
+            return 'main.campaigns.budget';
         }
 
         // otherwise get default state
