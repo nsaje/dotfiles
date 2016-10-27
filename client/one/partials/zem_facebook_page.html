@@ -11,18 +11,14 @@
         </div>
         <div ng-if="settings.facebookStatus && settings.facebookStatus != constants.facebookStatus.EMPTY">
             <div class="input-with-icon">
-            	<img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg" class="fb-icon">
+                <img ng-src="{{ config.static_url }}/one/img/facebook_logo.svg" class="fb-icon">
                 <span class="name">{{settings.facebookPage}}</span>
                 <span ng-class="settings.facebookStatus | lowercase" class="status">{{settings.facebookStatus}}</span>
                 <div class="btn btn-blue btn-icon btn-small remove" ng-click="clearFacebookPage()"><span class="icon"></span></div>
             </div>
-            <div ng-if="settings.facebookStatus == constants.facebookStatus.PENDING" class="col-xs-12 alert alert-warning form-alert-box fb-warning">
-                <div class="form-alert-exclamation">
-                    <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg">
-                </div>
-                <div class="form-alert-body">
-                    Please contact your Facebook page manager to approve access.
-                </div>
+            <div ng-if="settings.facebookStatus == constants.facebookStatus.PENDING" class="alert alert-icon alert-warning m-t">
+                <span class="icon"></span>
+                Please contact your Facebook page manager to approve access.
             </div>
         </div>
     </div>

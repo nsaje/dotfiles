@@ -17,198 +17,213 @@ a:visited {
 }
 
 body:not(.legacy-theme) {
-	
-	////////////////////////////
-	// List elements //
-	////////////////////////////
-	
-	ul.with-icons {
-		padding-left: 20px;
-		list-style: none;
-	
-		&.ul-checkmarks li {
-			background: url('img/checkmark-green.svg') no-repeat left 5px;
-			background-size: 14px;
-			padding-left: 20px;
-		}
-		&.ul-remove li {
-			background: url('img/remove-red.svg') no-repeat left 4px;
-			background-size: 10px;
-			padding-left: 20px;
-		}
-	}
-	
-	////////////////////////////
-	// Form elements //
-	////////////////////////////
-	
-	input[type="text"], input[type="password"], input[type="search"] {
-		background: none;
-		border: 1px solid @border-gray-color;
-		height: 36px;
-		line-height: 22px;
-		padding: 5px 10px;
-		box-sizing: border-box;
-		.border-radius (@border-radius);
-		.box-shadow (inset 3px 3px 3px 0px rgba(0,0,0,0.03));
-		
-		&:focus {
-			border: 1px solid @default-color;
-		}
-	}
-	
-	label, label.control-label {
-		font-weight: 500;
-		text-align: left;
-	}
-	
-	.select2-container {
-		margin: 0;
-		padding: 0;
-				
-		.select2-choice {
-			border: 1px solid @border-gray-color !important;
-			height: 36px;
-			line-height: 36px;
-			.border-radius(@border-radius);
-			color: @text-color;
-			.box-shadow(none);
-			.gradient-vertical (#FFFFFF, #f9f9f9);
-			padding: 0 30px 0 10px;
-			cursor: pointer;
-			
-			&:not(.disabled):not([disabled]):not(.select2-container-disabled) {
-				&:hover {
-					.gradient-vertical (#f1f1f1, #FFFFFF);
-				}
-			}
-	
-			.select2-chosen {
-				font-family: @default-font-family;
-				padding-top: 0;
-				padding-right: 0;
-				margin-right: 0;
-				color: @text-color;
-			}
-	
-			.select2-arrow {
-				background: none;
-				border: none;
-				
-				b {
-					display: block;
-					background: url(images/arrow-gray.svg) no-repeat;
-					background-size: 6px;
-					.rotate(90deg);
-					width: 6px;
-					height: 11px;
-					position: absolute;
-					top: 12px;
-					right: 10px;
-				}
-			}
-		}
-		
-		&.select2-dropdown-open {
-			border-color: @border-gray-color;
-		}
-		
-		&.form-control {
-			border: none;	
-		}
-	}
-	
-	.select2-with-searchbox {
-		.select2-search {
-			margin: 5px 0;	
-			
-			input {
-				width: 100% !important;
-				background: url(images/magnifier-gray.svg) no-repeat 7px center;
-				background-size: 16px;
-				box-sizing: border-box;
-				padding-left: 30px;
-			}
-		}
-	}
-	
-	.multiselect {
-		border: 1px solid #d2d2d2;
-		border-radius: 2px;
-		box-shadow: none;
-		padding: 6px 12px 11px 12px;
-		margin-top: 7px;
-		margin-bottom: 7px;
-	
-		.multiselect-tag {
-			cursor: pointer;
-			margin-right: 5px;
-			margin-top: 5px;
-			height: 28px;
-			line-height: 28px;
-			display: inline-block;
-			position: relative;
-			border-radius: 2px;
-			font-size: 13px;
-			border: 1px solid #d2d2d2;
-	
-			.multiselect-tag-label {
-				padding: 6px 6px 5px 6px;
-				border-right: 1px solid #d2d2d2;
-				margin: 0;
-			}
-	
-			.multiselect-tag-name {
-				padding: 6px 27px 6px 6px;
-				margin: 0;
-				img.remove {
-					width: 7px;
-					position: absolute;
-					right: 8px;
-					top: 10px;
-					display: inline-block;
-				}
-			}
-		}
-	}
-	
-	.sidenote {
-		font-weight: 400;
-		font-size: 12px;
-		color: @gray;
-		font-style: italic;
-		
-		&.width-limit {
-			width: 500px;
-			display: inline-block;
-		}
-	}
-	
-	////////////////////////////
-	// Help icon //
-	////////////////////////////
-	
-	.help-popover,
-	.help-popover:hover,
-	.help-popover:active,
-	.help-popover:visited {
-		display: inline-block;
-		background-color: #dddddd;
-		.border-radius(50%);
-		padding: 1px 3px 0 3px;
-		margin-left: 5px;
-		font-size: 12px;
-		line-height: 13px;
-		text-align: center;
-		text-decoration: none;
-		vertical-align: middle;
-		margin-bottom: 2px;
-		width: 13px;
-		height: 13px;
-		&:after {
-			color: #888;
-			font-weight: 500;
-			content: "?";
-		}
-	}
+    
+    ////////////////////////////
+    // List elements //
+    ////////////////////////////
+    
+    ul.with-icons {
+        padding-left: 20px;
+        list-style: none;
+    
+        &.ul-checkmarks li {
+            background: url('img/checkmark-green.svg') no-repeat left 5px;
+            background-size: 14px;
+            padding-left: 20px;
+        }
+        &.ul-remove li {
+            background: url('img/remove-red.svg') no-repeat left 4px;
+            background-size: 10px;
+            padding-left: 20px;
+        }
+    }
+    
+    ////////////////////////////
+    // Form elements //
+    ////////////////////////////
+    
+    input[type="text"], input[type="password"], input[type="search"] {
+        background: none;
+        border: 1px solid @border-gray-color;
+        height: @default-button-input-height;
+        line-height: 18px;
+        padding: 5px 10px;
+        box-sizing: border-box;
+        .border-radius (@border-radius);
+        .box-shadow (inset 3px 3px 3px 0px rgba(0,0,0,0.03));
+        
+        &:focus {
+            border: 1px solid darken(@border-gray-color, 20%);
+        }
+    }
+    
+    label, label.control-label {
+        font-weight: 500;
+        text-align: left;
+    }
+    
+    .select2-container {
+        margin: 0;
+        padding: 0;
+        
+        &.select2-container-disabled {
+            opacity: 0.4;
+        }
+        
+        &:not(.disabled):not([disabled]):not(.select2-container-disabled) {
+            &:hover {
+                .gradient-vertical (#f1f1f1, #FFFFFF);
+            }
+        }
+                
+        .select2-choice {
+            border: 1px solid @border-gray-color !important;
+            height: @default-button-input-height;
+            line-height: @default-button-input-height;
+            .border-radius(@border-radius);
+            color: @text-color;
+            .box-shadow(none);
+            .gradient-vertical (#FFFFFF, #f9f9f9);
+            padding: 0 30px 0 10px;
+            cursor: pointer;
+            
+            &:not(.disabled):not([disabled]):not(.select2-container-disabled) {
+                &:hover {
+                    .gradient-vertical (#f1f1f1, #FFFFFF);
+                }
+            }
+            
+            &.disabled,
+            &[disabled] {
+                opacity: 0.4;
+            }
+    
+            .select2-chosen {
+                font-family: @default-font-family;
+                padding-top: 0;
+                padding-right: 0;
+                margin-right: 0;
+                color: @text-color;
+            }
+    
+            .select2-arrow {
+                background: none;
+                border: none;
+                
+                b {
+                    display: block;
+                    background: url(images/arrow-gray.svg) no-repeat;
+                    background-size: 6px;
+                    .rotate(90deg);
+                    width: 6px;
+                    height: 11px;
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                }
+            }
+        }
+        
+        &.select2-dropdown-open {
+            border-color: @border-gray-color;
+        }
+        
+        &.form-control {
+            border: none;    
+        }
+    }
+    
+    .select2-with-searchbox {
+        .select2-search {
+            margin: 5px 0;    
+            
+            input {
+                width: 100% !important;
+                background: url(images/magnifier-gray.svg) no-repeat 7px center;
+                background-size: 16px;
+                box-sizing: border-box;
+                padding-left: 30px;
+            }
+        }
+    }
+    
+    .multiselect {
+        border: 1px solid #d2d2d2;
+        border-radius: 2px;
+        box-shadow: none;
+        padding: 6px 12px 11px 12px;
+        margin-top: 7px;
+        margin-bottom: 7px;
+    
+        .multiselect-tag {
+            cursor: pointer;
+            margin-right: 5px;
+            margin-top: 5px;
+            height: 28px;
+            line-height: 28px;
+            display: inline-block;
+            position: relative;
+            border-radius: 2px;
+            font-size: 13px;
+            border: 1px solid #d2d2d2;
+    
+            .multiselect-tag-label {
+                padding: 6px 6px 5px 6px;
+                border-right: 1px solid #d2d2d2;
+                margin: 0;
+            }
+    
+            .multiselect-tag-name {
+                padding: 6px 27px 6px 6px;
+                margin: 0;
+                img.remove {
+                    width: 7px;
+                    position: absolute;
+                    right: 8px;
+                    top: 10px;
+                    display: inline-block;
+                }
+            }
+        }
+    }
+    
+    .sidenote {
+        font-weight: 400;
+        font-size: 12px;
+        color: @gray;
+        font-style: italic;
+        
+        &.width-limit {
+            width: 500px;
+            display: inline-block;
+        }
+    }
+    
+    ////////////////////////////
+    // Help icon //
+    ////////////////////////////
+    
+    .help-popover,
+    .help-popover:hover,
+    .help-popover:active,
+    .help-popover:visited {
+        display: inline-block;
+        background-color: #dddddd;
+        .border-radius(50%);
+        padding: 1px 3px 0 3px;
+        margin-left: 5px;
+        font-size: 12px;
+        line-height: 13px;
+        text-align: center;
+        text-decoration: none;
+        vertical-align: middle;
+        margin-bottom: 2px;
+        width: 13px;
+        height: 13px;
+        &:after {
+            color: #888;
+            font-weight: 500;
+            content: "?";
+        }
+    }
 }

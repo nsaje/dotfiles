@@ -3,14 +3,6 @@
     <div class="section white-background budgets-overview">
         <h2>Overview</h2>
         <div class="section named-data">
-            <div class="name exposed">Available Budget</div>
-            <div class="value exposed">{{ budgetTotals.currentAvailable | decimalCurrency:"$":2 }}</div>
-            <div class="clear"></div>
-            <div class="name bottomborder exposed">Unallocated Credit</div>
-            <div class="value bottomborder exposed">
-                {{ budgetTotals.currentUnallocated | decimalCurrency:"$":2 }}
-            </div>
-            <div class="clear"></div>
             <div class="name">Campaign Spend</div>
             <div class="value">{{ budgetTotals.lifetimeCampaignSpend | decimalCurrency:"$":2 }}</div>
             <div class="clear"></div>
@@ -31,6 +23,14 @@
                 <div class="value">{{ budgetTotals.lifetimeMargin | decimalCurrency:"$":2 }}</div>
                 <div class="clear"></div>
             </div>
+            <div class="name exposed topborder">Available Budget</div>
+            <div class="value exposed topborder">{{ budgetTotals.currentAvailable | decimalCurrency:"$":2 }}</div>
+            <div class="clear"></div>
+            <div class="name exposed">Unallocated Credit</div>
+            <div class="value exposed">
+                {{ budgetTotals.currentUnallocated | decimalCurrency:"$":2 }}
+            </div>
+            <div class="clear"></div>
         </div>
     </div>
     <div class="section white-background budgets-active-pending">

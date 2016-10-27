@@ -39,7 +39,7 @@
         .border-radius (0);
         .border-bottom-radius (@border-radius);
         .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.1));
-        .transition(all 200ms ease-in-out);
+        .transition(background-color 200ms ease-in-out);
 
         // bug fix for mac os scroll bars
         transform: translateZ(0);
@@ -57,7 +57,7 @@
         display: block;
         height: 40px;
         padding: 10px 20px;
-        .transition(all 250ms ease-in-out);
+        .transition(background-color 250ms ease-in-out);
 
         &:hover {
             background-color: fade(@white, 10%);
@@ -128,7 +128,7 @@
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
-                    .transition(all 250ms ease-in-out);
+                    .transition(background-color 250ms ease-in-out);
 
                     .type-name {
                         color: fade(@white, 50%);
@@ -237,7 +237,7 @@
                 border: none;
                 background: fade(@white, 20%) !important;
                 .border-radius(@border-radius);
-                .transition(all 250ms ease-in-out);
+                .transition(background-color 250ms ease-in-out);
 
                 &:hover, &:focus, &:active {
                     background-color: fade(@white, 40%) !important;
@@ -442,7 +442,8 @@
                 border: none;
                 color: @white;
                 .border-radius (@border-radius);
-                .transition(all 250ms ease-in-out);
+                .box-shadow(none);
+                .transition(background-color 250ms ease-in-out);
 
                 &:focus {
                     outline: none;

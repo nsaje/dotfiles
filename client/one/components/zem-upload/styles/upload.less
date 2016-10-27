@@ -221,8 +221,6 @@
             margin-bottom: 10px;
 
             .btn-blue {
-                height: 36px;
-
                 &:focus {
                     border: 1px solid @default-color;
                 }
@@ -298,18 +296,21 @@
             bottom: 0;
             
             .input-indicator {
-              position: absolute;
-              right: 15px;
-              
-              &.input-success {
-                 animation: fadeOut 0.5s 1;
-                -webkit-animation: fadeOut 0.5s 1;
-                animation-fill-mode: forwards;
-            
-                animation-delay:2s;
-                -webkit-animation-delay:2s; /* Safari and Chrome */
-                -webkit-animation-fill-mode: forwards;
-              }
+                position: absolute;
+                left: -10px;
+                top: 2px;
+                width: (@default-button-input-height)-4;
+                height: (@default-button-input-height)-4;
+                
+                &.input-success {
+                    
+                    .animation(fadeOut 0.5s 1);
+                    animation-fill-mode: forwards;
+                    
+                    animation-delay:2s;
+                    -webkit-animation-delay:2s;
+                    -webkit-animation-fill-mode: forwards;
+                }
             }
         }
     }

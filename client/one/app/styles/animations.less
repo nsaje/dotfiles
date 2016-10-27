@@ -19,7 +19,17 @@
     to { opacity :0; display: none; }
 }
 
-@-webkit-keyframes fadeOut {
-    from { opacity :1; }
-    to { opacity :0; display: none; }
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes headerSlideIn {
+    from { top: -30px; }
+    to { top: 0px; }
+}
+
+@keyframes headerSlideOut {
+    from { top: 0px; }
+    to { top: -30px; }
 }
