@@ -294,6 +294,7 @@ class AdGroupSourcesTable(object):
             self.ad_group,
             self.ad_group.campaign,
             self.campaign_settings,
+            self.ad_group_settings,
         )
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [self.ad_group])
         self.ad_group_sources_settings = helpers.get_ad_group_sources_settings(self.active_ad_group_sources)

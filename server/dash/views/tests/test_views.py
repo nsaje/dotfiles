@@ -520,8 +520,8 @@ class AdGroupSourceStateTest(TestCase):
 
         view = views.AdGroupSourceState()
         campaign_settings = models.CampaignSettings(automatic_campaign_stop=True)
-        ad_group_settings = None
         ad_group = models.AdGroup.objects.get(pk=1)
+        ad_group_settings = ad_group.get_current_settings()
         ad_group_sources = []
         state = None
 
@@ -532,6 +532,7 @@ class AdGroupSourceStateTest(TestCase):
             ad_group.campaign,
             campaign_settings,
             [],
+            ad_group_settings,
         )
 
     @patch('dash.views.helpers.check_facebook_source')

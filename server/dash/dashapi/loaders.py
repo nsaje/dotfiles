@@ -545,7 +545,8 @@ class AdGroupSourcesLoader(Loader):
         return campaign_stop.can_enable_media_sources(
             self.ad_group,
             self.ad_group.campaign,
-            self.ad_group.campaign.get_current_settings())
+            self.campaign_settings,
+            self.ad_group_settings)
 
     @cached_property
     def _active_ad_groups_sources_qs(self):

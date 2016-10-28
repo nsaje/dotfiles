@@ -1087,7 +1087,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
             if 'state' in resource:
                 can_enable_media_source = campaign_stop.can_enable_media_source(
-                    ad_group_source, ad_group.campaign, campaign_settings)
+                    ad_group_source, ad_group.campaign, campaign_settings, ad_group_settings)
                 if not can_enable_media_source:
                     errors.update({
                         'state': ['Please add additional budget to your campaign to make changes.']
@@ -1127,7 +1127,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group_source.get_current_settings_or_none(),
                 campaign_settings,
                 allowed_sources,
-                campaign_stop.can_enable_media_source(ad_group_source, ad_group.campaign, campaign_settings)
+                campaign_stop.can_enable_media_source(ad_group_source, ad_group.campaign, campaign_settings, ad_group_settings)
             ),
             'autopilot_changed_sources': autopilot_changed_sources_text,
             'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings)
@@ -1171,7 +1171,7 @@ class AdGroupSourceState(api_common.BaseApiView):
     def _check_can_set_state(self, campaign_settings, ad_group_settings, ad_group, ad_group_sources, state):
         if campaign_settings.landing_mode:
             raise exc.ValidationError('Not allowed')
-        if not campaign_stop.can_enable_all_media_sources(ad_group.campaign, campaign_settings, ad_group_sources):
+        if not campaign_stop.can_enable_all_media_sources(ad_group.campaign, campaign_settings, ad_group_sources, ad_group_settings):
             raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
         if state == constants.AdGroupSourceSettingsState.ACTIVE:
