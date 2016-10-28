@@ -2131,10 +2131,8 @@ select.media-source-select {
         
         .zem-grid-header,
         .zem-grid-footer {
-            background-color: transparent;
-            
             .zem-grid-cell {
-                border: none;
+                border-color: fade(@secondary-color, 20%);
                 background-color: tint(@secondary-color, 90%);
                 
                 &.zem-grid-header-cell-checkbox {
@@ -2161,11 +2159,6 @@ select.media-source-select {
             }
         }
         
-        .zem-grid-header {
-            background-color: tint(@secondary-color, 90%);
-            border-bottom: 1px solid fade(@secondary-color, 20%);
-        }
-        
         .zem-grid-body {
             .zem-grid-row {
                 &.level-last:hover {
@@ -2184,6 +2177,7 @@ select.media-source-select {
             background-color: tint(@secondary-color, 90%);
             
             .zem-grid-cell {
+                border: none;
                 border-top: 1px solid fade(@secondary-color, 20%);
             }
         }
