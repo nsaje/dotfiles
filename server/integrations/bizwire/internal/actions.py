@@ -5,7 +5,7 @@ import dash.api
 import dash.constants
 import dash.models
 
-from . import config
+from integrations.bizwire import config
 
 from utils import dates_helper
 from utils import k1_helper

@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.db import transaction
 
-from . import config
+from integrations.bizwire import config
 
 import dash.api
 import dash.constants
