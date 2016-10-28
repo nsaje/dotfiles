@@ -9,6 +9,7 @@ globals:
   # Zemanta
   zemSpecsHelper: false
   constants: false
+  options: false
   # Jasmine
   jasmine: false
   describe: false

@@ -1,4 +1,7 @@
-<div class="page page-account-account" ng-if="!account.archived">
+
+<zem-account-settings entity-id="account.id" ng-if="hasPermission('zemauth.can_see_new_settings')" class="page page-account-account" />
+
+<div class="page page-account-account" ng-if="!account.archived && !hasPermission('zemauth.can_see_new_settings')">
     <h1>Account settings</h1>
     <form ng-if="isAnySettingSettable()" id="form-account-agency" class="form-horizontal white-background">
         <h2>General settings</h2>
@@ -160,12 +163,10 @@
             </div>
         </div>
     </div>
-    
     <div class="form-horizontal table-access-permissions white-background" ng-if="hasPermission('zemauth.account_agency_access_permissions')">
     	<zem-internal-feature ng-if="isPermissionInternal('zemauth.account_agency_access_permissions')" popover-placement="bottom"></zem-internal-feature>
         <h2>Users</h2>
         <div class="description">Users who have access to the account you're currently on.</div>
-        
         <div class="table-container">
             <table class="table table-hover">
                 <thead>
@@ -203,7 +204,6 @@
                                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_promote_agency_managers')" popover-placement="bottom"></zem-internal-feature>
                                     <a tabindex="-1" ng-click="downgradeUser(user)" href="#" class="btn btn-blue btn-icon btn-small check"><span class="text">Downgrade to Normal User</span></a>
                                 </span>
-                                
                                 <a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#" class="btn btn-blue btn-icon btn-small send"><span class="icon"></span><span class="text">Resend Activation Mail</span></a>
                                 <a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#" class="btn btn-blue btn-icon btn-small remove"><span class="icon"></span><span class="text">Remove</span></a>
                             </div>
@@ -253,10 +253,10 @@
     <zem-conversion-pixels
         zem-account="account"
         zem-has-permission="hasPermission"
-        zem-is-permission-internal="isPermissionInternal" />
+        zem-is-permission-internal="isPermissionInternal" /   </div>
 </div>
 
-<div class="page page-account-account" ng-if="!!account.archived">
+<div class="page page-account-account" ng-if="!!account.archived && !hasPermission('zemauth.can_see_new_settings')">
     <p>
         <strong>This account is archived.</strong>
     </p>

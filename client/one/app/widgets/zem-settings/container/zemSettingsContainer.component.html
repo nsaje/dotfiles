@@ -1,0 +1,49 @@
+<div class="zem-internal-feature-container">
+    <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_see_new_settings')"></zem-internal-feature>
+
+    <div ng-if="!$ctrl.entity">
+        <div class="loader"></div>
+    </div>
+
+    <div ng-if="$ctrl.entity && $ctrl.entity.settings.archived">
+        <p>
+            <strong>This {{ $ctrl.entityType }} is archived.</strong>
+        </p>
+
+        <div class="settings-restore-container" ng-if="$ctrl.hasPermission('zemauth.archive_restore_entity')">
+            <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.archive_restore_entity')"
+                                  popover-placement="bottom"></zem-internal-feature>
+            <button type="button" class="btn btn-default" ng-click="$ctrl.restore()"
+                    title="{{ $ctrl.getRestoreTooltip() }}">Restore {{ $ctrl.entityType }}
+            </button>
+            <div class="loader" ng-show="$ctrl.status.code === 1"></div>
+        </div>
+    </div>
+
+    <div ng-if="$ctrl.entity && !$ctrl.entity.settings.archived">
+        <h1>{{$ctrl.title}}</h1>
+
+        <div zem-settings-transclude="settings" class="form-horizontal"></div>
+
+        <div>
+            <button type="button" class="btn btn-add btn-icon check" ng-click="$ctrl.save()"><span
+                    class="icon"></span><span class="text">Save</span></button>
+            <button type="button" class="btn btn-blue btn-outline" ng-click="$ctrl.discard()"><span
+                    class="text">Discard</span></button>
+            <div class="settings-archive-container inline-block"
+                 ng-if="$ctrl.hasPermission('zemauth.archive_restore_entity')">
+                <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.archive_restore_entity')"
+                                      popover-placement="bottom"></zem-internal-feature>
+                <button type="button" class="btn btn-blue btn-outline" ng-class="{'disabled': !$ctrl.entity.canArchive}"
+                        title="{{ $ctrl.getArchiveTooltip() }}" ng-click="$ctrl.archive()">
+                    <span class="text">Archive {{ $ctrl.entityType }}</span>
+                </button>
+            </div>
+            <div class="loader" ng-show="$ctrl.status.code === 1"></div>
+            <span ng-show="$ctrl.status.code === 2" class="success feedback-text">{{ $ctrl.status.text }}</span>
+            <span ng-show="$ctrl.status.code === 3" class="error feedback-text">{{ $ctrl.status.text }}</span>
+        </div>
+
+        <div zem-settings-transclude="custom" ng-if="$ctrl.entity" class="form-horizontal"></div>
+    </div>
+</div>

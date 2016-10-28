@@ -1,0 +1,32 @@
+<zem-settings-container title="'Account settings'" entity-type="$ctrl.constants.entityType.ACCOUNT" entity-id="$ctrl.entityId">
+    <settings>
+        <zem-account-settings-general
+                account="$container.entity"
+                errors="$container.errors"
+                api="$container.api"
+        ></zem-account-settings-general>
+
+        <zem-settings-media-sources
+                account="$container.entity"
+                errors="$container.errors"
+                api="$container.api"
+        ></zem-settings-media-sources>
+
+        <zem-settings-facebook-page
+                account="$container.entity"
+                errors="$container.errors"
+                api="$container.api"
+        ></zem-settings-facebook-page>
+    </settings>
+
+    <custom>
+        <zem-settings-access-permissions
+                account="$container.entity"
+        ></zem-settings-access-permissions>
+
+        <zem-conversion-pixels
+                zem-account="$container.entity.settings"
+                zem-has-permission="$ctrl.hasPermission"
+                zem-is-permission-internal="$ctrl.isPermissionInternal" />
+    </custom>
+</zem-settings-container>

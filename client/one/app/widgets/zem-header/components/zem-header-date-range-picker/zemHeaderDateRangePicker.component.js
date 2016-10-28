@@ -7,6 +7,7 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
 
         $ctrl.$onInit = function () {
             var predefinedRanges = zemHeaderDateRangePickerService.getPredefinedRanges();
+
             $ctrl.dateRangePickerOptions = {
                 alwaysShowCalendars: true,
                 minDate: moment('2016-02-01'),

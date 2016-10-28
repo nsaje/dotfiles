@@ -13,15 +13,15 @@ angular.module('one.services').service('zemEntityService', ['$http', '$q', 'zemA
     this.executeBulkAction = executeBulkAction;
 
     function getEntity (entityType, id) {
-        getEntityService(entityType).get(id);
+        return getEntityService(entityType).get(id);
     }
 
     function updateEntity (entityType, id, data) {
-        getEntityService(entityType).update(id, data);
+        return getEntityService(entityType).update(id, data);
     }
 
     function createEntity (entityType, parentId) {
-        getEntityService(entityType).create(parentId);
+        return getEntityService(entityType).create(parentId);
     }
 
     function executeAction (action, entityType, id) {

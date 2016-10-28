@@ -1,0 +1,30 @@
+<div ng-if="$ctrl.hasPermission('zemauth.can_modify_facebook_page')" class="form-group" ng-class="{'has-error': !!$ctrl.errors.facebookPage}">
+    <label for="fb-page-input" class="col-xs-2 control-label">
+        <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_modify_facebook_page')" popover-placement="bottom"></zem-internal-feature>
+        Facebook page
+        <zem-help-popover content="Facebook Page to which ads will be connected to. This is a requirement for advertising on Facebook and Instagram." placement="top"></zem-help-popover>
+    </label>
+    <div class="col-xs-3 fb-status">
+        <div class="col-xs-12 input-group fb-logo" ng-if="$ctrl.account.settings.facebookStatus && $ctrl.account.settings.facebookStatus == $ctrl.constants.facebookStatus.EMPTY">
+            <i class="input-group-addon"><img ng-src="{{ $ctrl.config.static_url }}/one/img/facebook_logo.svg" class="fb-icon"></i>
+            <input id="fb-page-input" type="text" class="form-control" ng-model="$ctrl.account.settings.facebookPage" placeholder="Insert Facebook page URL">
+        </div>
+        <div ng-if="$ctrl.account.settings.facebookStatus && $ctrl.account.settings.facebookStatus != $ctrl.constants.facebookStatus.EMPTY">
+            <div class="input-with-icon">
+                <img ng-src="{{ $ctrl.config.static_url }}/one/img/facebook_logo.svg" class="fb-icon">
+                <span class="name">{{$ctrl.account.settings.facebookPage}}</span>
+                <span ng-class="$ctrl.account.settings.facebookStatus | lowercase" class="status">{{$ctrl.account.settings.facebookStatus}}</span>
+                <div class="btn btn-blue btn-icon btn-small remove" ng-click="$ctrl.clearFacebookPage()"><span class="icon"></span></div>
+            </div>
+            <div ng-if="$ctrl.account.settings.facebookStatus == $ctrl.constants.facebookStatus.PENDING" class="col-xs-12 alert alert-warning form-alert-box fb-warning">
+                <div class="form-alert-exclamation">
+                    <img class="warning-icon" ng-src="{{ $ctrl.config.static_url }}/one/img/notification-warning.svg">
+                </div>
+                <div class="form-alert-body">
+                    Please contact your Facebook page manager to approve access.
+                </div>
+            </div>
+        </div>
+    </div>
+    <label ng-repeat="error in $ctrl.errors.facebookPage" class="control-label error" for="fb-page-input">{{ error }}</label>
+</div>

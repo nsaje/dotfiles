@@ -230,6 +230,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_landing_mode_alerts', 'User can see landing mode alerts above tables'),
             ('can_manage_oauth2_apps', 'User can manage OAuth2 applications'),
             ('can_use_restapi', 'User can use the REST API'),
+            ('can_see_new_settings', 'User can see new settings'),
         )
 
     def get_full_name(self):
