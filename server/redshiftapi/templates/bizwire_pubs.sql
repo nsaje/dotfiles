@@ -4,7 +4,7 @@
 SELECT
     publisher
 FROM
-    mv_pubs_master
+    mv_master
 WHERE
     content_ad_id = %s
 GROUP BY
