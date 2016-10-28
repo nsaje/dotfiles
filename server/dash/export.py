@@ -134,7 +134,7 @@ ACCOUNT_CAMPAIGN_ONLY_ONCE_FIELDS = ACCOUNT_ONLY_ONCE_FIELDS + ('allocated_budge
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
                    conversion_goals, pixels=None, include_settings=False, include_account_settings=False, include_budgets=False,
-                   include_flat_fees=False, include_projections=False, include_totals=False, **constraints):
+                   include_flat_fees=False, include_projections=False, include_totals=False, include_missing=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
         start_date,
@@ -162,7 +162,8 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     if not dimensions:
         stats = [stats]
 
-    _add_missing_stats(stats, dimensions, prefetched_data, sources, start_date, end_date)
+    if include_missing:
+        _add_missing_stats(stats, dimensions, prefetched_data, sources, start_date, end_date)
 
     source_names = None
     if 'source' in dimensions:
@@ -1068,7 +1069,7 @@ class AllAccountsExport(object):
 
     def get_data(self, user, filtered_sources, start_date, end_date, order,
                  additional_fields, view_filter=None, breakdown=None, by_source=False, by_day=False,
-                 include_model_ids=False, include_totals=False):
+                 include_model_ids=False, include_totals=False, include_missing=False):
         accounts = models.Account.objects.all()\
             .filter_by_user(user)\
             .filter_by_sources(filtered_sources)
@@ -1142,6 +1143,7 @@ class AllAccountsExport(object):
             include_flat_fees=include_flat_fees,
             include_projections=include_projections,
             include_totals=include_totals,
+            include_missing=include_missing,
             account=accounts,
             source=filtered_sources)
 
@@ -1152,7 +1154,7 @@ class AccountExport(object):
 
     def get_data(self, user, account_id, filtered_sources, start_date, end_date,
                  order, additional_fields, breakdown=None, by_source=False, by_day=False,
-                 include_model_ids=False, include_totals=False):
+                 include_model_ids=False, include_totals=False, include_missing=False):
         account = helpers.get_account(user, account_id)
         pixels = account.conversionpixel_set.filter(archived=False)
 
@@ -1202,6 +1204,7 @@ class AccountExport(object):
             include_settings=True,
             include_projections=include_projections,
             include_totals=include_totals,
+            include_missing=include_missing,
             account=account,
             source=filtered_sources)
 
@@ -1212,7 +1215,7 @@ class CampaignExport(object):
 
     def get_data(self, user, campaign_id, filtered_sources, start_date, end_date,
                  order, additional_fields, breakdown=None, by_source=False, by_day=False,
-                 include_model_ids=False, include_totals=False):
+                 include_model_ids=False, include_totals=False, include_missing=False):
         campaign = helpers.get_campaign(user, campaign_id)
 
         dimensions = ['campaign']
@@ -1249,6 +1252,7 @@ class CampaignExport(object):
             pixels=pixels,
             include_settings=True,
             include_totals=include_totals,
+            include_missing=include_missing,
             campaign=campaign,
             source=filtered_sources)
 
@@ -1259,7 +1263,7 @@ class AdGroupAdsExport(object):
 
     def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date,
                  order, additional_fields, breakdown=None, by_source=False, by_day=False,
-                 include_model_ids=False, include_totals=False):
+                 include_model_ids=False, include_totals=False, include_missing=False):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
@@ -1294,6 +1298,7 @@ class AdGroupAdsExport(object):
             conversion_goals,
             pixels=pixels,
             include_totals=include_totals,
+            include_missing=include_missing,
             ad_group=ad_group,
             source=filtered_sources)
 
@@ -1351,6 +1356,7 @@ def get_report_from_export_report(export_report, start_date, end_date):
         ad_group=export_report.ad_group,
         include_model_ids=export_report.include_model_ids,
         include_totals=export_report.include_totals,
+        include_missing=export_report.include_missing,
         campaign=export_report.campaign,
         account=export_report.account
     )
@@ -1379,6 +1385,7 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
         by_day=request.GET.get('by_day') == 'true',
         include_model_ids=request.GET.get('include_model_ids') == 'true',
         include_totals=request.GET.get('include_totals') == 'true',
+        include_missing=request.GET.get('include_missing') == 'true',
         ad_group=ad_group,
         campaign=campaign,
         account=account
@@ -1399,6 +1406,7 @@ def _get_report(
         by_source=False,
         include_model_ids=False,
         include_totals=False,
+        include_missing=False,
         ad_group=None,
         campaign=None,
         account=None):
@@ -1443,6 +1451,7 @@ def _get_report(
         by_day=by_day,
         include_model_ids=include_model_ids,
         include_totals=include_totals,
+        include_missing=include_missing,
         account_id=account_id,
         campaign_id=campaign_id,
         ad_group_id=ad_group_id)
@@ -1462,7 +1471,8 @@ def _get_report(
 
 
 def _get_report_contents(user, filtered_sources, view_filter, start_date, end_date, order, additional_fields,
-                         breakdown, by_source, by_day, include_model_ids=False, include_totals=False,
+                         breakdown, by_source, by_day,
+                         include_model_ids=False, include_totals=False, include_missing=False,
                          account_id=None, campaign_id=None, ad_group_id=None):
     arguments = {
         'user': user,
@@ -1476,6 +1486,7 @@ def _get_report_contents(user, filtered_sources, view_filter, start_date, end_da
         'by_day': by_day,
         'include_model_ids': include_model_ids,
         'include_totals': include_totals,
+        'include_missing': include_missing,
     }
 
     if account_id:

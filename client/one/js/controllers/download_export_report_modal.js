@@ -59,6 +59,7 @@ angular.module('one.legacy').controller('DownloadExportReportModalCtrl', ['$scop
             '&order=' + $scope.order +
             '&by_day=' + $scope.export.byDay;
 
+        url += '&include_missing=' + $scope.export.includeMissing;
         if ($scope.hasPermission('zemauth.can_include_model_ids_in_reports')) {
             url += '&include_model_ids=' + $scope.export.includeIds;
         }

@@ -68,6 +68,17 @@
                        class="checkbox">
             </div>
         </div>
+        <div class="form-group">
+            <div class="col-xs-4">
+                <label for="add-missing-checkbox" class="control-label">Include items with no spend</label>
+            </div>
+            <div class="col-xs-4">
+                <input id="add-missing-checkbox"
+                       type="checkbox"
+                       ng-model="export.includeMissing"
+                       class="checkbox">
+            </div>
+        </div>
         <div class="modal-footer">
             <button type="submit" class="btn btn-add btn-icon download" ng-disabled="!downloadAllowed"><span class="icon"></span><span class="text">Download Now</span></button>
             <button type="button" class="btn btn-blue btn-outline" ng-click="$dismiss()"><span class="text">Cancel</span></button>

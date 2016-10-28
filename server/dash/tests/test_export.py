@@ -180,6 +180,7 @@ class ExportTestCase(test.TestCase):
             'impressions',
             True,
             [],
+            include_missing=True,
             source=sources,
             ad_group=ad_group
         )
@@ -198,6 +199,132 @@ class ExportTestCase(test.TestCase):
         )
 
         self.assertEqual(1, mock_missing_stats.call_count)
+
+        expectedRows = [{
+            'account_id': 1,
+            'campaign_id': 1,
+            'ad_group_id': 1,
+            'content_ad_id': 1,
+            'uploaded': datetime.date(2015, 2, 21),
+            'end_date': datetime.date(2014, 7, 2),
+            'account': u'test account 1 \u010c\u017e\u0161',
+            'content_ad': 1,
+            'media_cost': 1000.12,
+            'data_cost': 10.1,
+            'ctr': 1.03,
+            'campaign': u'test campaign 1 \u010c\u017e\u0161',
+            'title': u'Test Article unicode \u010c\u017e\u0161',
+            'url': u'http://testurl.com',
+            'label': '',
+            'cpc': 10.23,
+            'start_date': datetime.date(2014, 6, 30),
+            'source': u'Taboola',
+            'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
+            'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
+            'image_hash': u'987654321',
+            'date': datetime.date(2014, 7, 1),
+            'impressions': 100000,
+            'clicks': 103,
+            'status': 1,
+            'archived': False
+        }, {
+            'account_id': 1,
+            'campaign_id': 1,
+            'ad_group_id': 1,
+            'content_ad_id': 2,
+            'uploaded': datetime.date(2015, 2, 21),
+            'end_date': datetime.date(2014, 7, 2),
+            'account': u'test account 1 \u010c\u017e\u0161',
+            'content_ad': 2,
+            'media_cost': 2000.12,
+            'data_cost': 23.1,
+            'ctr': 2.03,
+            'campaign': u'test campaign 1 \u010c\u017e\u0161',
+            'title': u'Test Article with no content_ad_sources 1',
+            'url': u'http://testurl.com',
+            'label': '',
+            'cpc': 20.23,
+            'start_date': datetime.date(2014, 6, 30),
+            'source': u'Outbrain',
+            'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
+            'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
+            'image_hash': u'987654321',
+            'date': datetime.date(2014, 7, 1),
+            'impressions': 200000,
+            'clicks': 203,
+            'status': 2,
+            'archived': False
+        }, {
+            'account_id': 1,
+            'campaign_id': 1,
+            'ad_group_id': 1,
+            'content_ad_id': 3,
+            'uploaded': datetime.date(2015, 2, 23),
+            'end_date': datetime.date(2014, 7, 2),
+            'account': u'test account 1 \u010c\u017e\u0161',
+            'content_ad': 3,
+            'media_cost': 3000.12,
+            'data_cost': 33.1,
+            'ctr': 3.03,
+            'campaign': u'test campaign 1 \u010c\u017e\u0161',
+            'title': u'Test Article with no content_ad_sources 2',
+            'url': u'http://testurl.com',
+            'label': '',
+            'cpc': 30.23,
+            'start_date': datetime.date(2014, 6, 30),
+            'source': u'Outbrain',
+            'ad_group': u'test adgroup 1 \u010c\u017e\u0161',
+            'image_url': u'/123456789.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg',
+            'image_hash': u'987654321',
+            'date': datetime.date(2014, 7, 1),
+            'impressions': 300000,
+            'clicks': 303,
+            'status': 2,
+            'archived': True
+        }]
+        self.assertEqual(rows, expectedRows)
+
+    @patch('dash.export._add_missing_stats')
+    @patch('reports.api_contentads.query')
+    def test_generate_rows_without_missing(self, mock_query, mock_missing_stats):
+        mock_query.return_value = self.mock_generate_rows_stats
+
+        dimensions = ['ad_group', 'content_ad', 'source']
+        start_date = datetime.date(2014, 6, 30)
+        end_date = datetime.date(2014, 7, 2)
+        user = User.objects.get(id=1)
+
+        sources = models.Source.objects.all()
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        rows = export._generate_rows(
+            dimensions,
+            start_date,
+            end_date,
+            user,
+            'impressions',
+            True,
+            [],
+            include_missing=False,
+            source=sources,
+            ad_group=ad_group
+        )
+
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            breakdown=dimensions,
+            order=[],
+            conversion_goals=[],
+            ignore_diff_rows=True,
+            **{
+                'source': sources,
+                'ad_group': ad_group
+            }
+        )
+
+        self.assertEqual(0, mock_missing_stats.call_count)
 
         expectedRows = [{
             'account_id': 1,
@@ -354,6 +481,7 @@ class ExportTestCase(test.TestCase):
             [],
             include_budgets=True,
             include_flat_fees=True,
+            include_missing=True,
             account=accounts
         )
         mock_query.assert_called_with(
@@ -475,6 +603,7 @@ class ExportTestCase(test.TestCase):
             [],
             include_projections=True,
             include_budgets=True,
+            include_missing=True,
         )
         mock_query.assert_called_with(
             start_date,
@@ -633,6 +762,7 @@ class ExportTestCase(test.TestCase):
             [],
             include_projections=True,
             include_budgets=True,
+            include_missing=True,
         )
         mock_query.assert_called_with(
             start_date,
@@ -746,6 +876,7 @@ class ExportTestCase(test.TestCase):
             '-status',
             True,
             [],
+            include_missing=True,
             source=sources,
             ad_group=ad_group
         )
@@ -796,6 +927,7 @@ class ExportTestCase(test.TestCase):
             'impressions',
             True,
             [],
+            include_missing=True,
             source=sources,
             ad_group=ad_group,
             include_totals=True,
@@ -880,6 +1012,7 @@ class ExportTestCase(test.TestCase):
             by_source=False,
             include_model_ids=False,
             include_totals=False,
+            include_missing=False,
             user=User.objects.get(pk=1),
             order='name'
         )
@@ -909,6 +1042,7 @@ class ExportTestCase(test.TestCase):
             by_source=True, user=User.objects.get(pk=1),
             include_model_ids=False,
             include_totals=False,
+            include_missing=False,
             order='media_cost'
         )
 
@@ -926,6 +1060,7 @@ class ExportTestCase(test.TestCase):
             by_source=True,
             by_day=False,
             include_totals=True,
+            include_missing=False,
             campaign_id=1)
 
         get_data_mock.assert_called_with(
@@ -938,6 +1073,7 @@ class ExportTestCase(test.TestCase):
             by_source=True, user=User.objects.get(pk=1),
             include_model_ids=False,
             include_totals=True,
+            include_missing=False,
             order='media_cost'
         )
 
@@ -962,6 +1098,7 @@ class ExportTestCase(test.TestCase):
             by_source=False,
             include_model_ids=False,
             include_totals=False,
+            include_missing=False,
             ad_group=None,
             granularity=2,
             order=None)

@@ -3872,6 +3872,8 @@ class ExportReport(models.Model):
         null=False, blank=False, default=False)
     include_totals = models.BooleanField(
         null=False, blank=False, default=False)
+    include_missing = models.BooleanField(
+        null=False, blank=False, default=False)
 
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.TextField(null=True, blank=True)
