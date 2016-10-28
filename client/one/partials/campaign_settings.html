@@ -31,17 +31,17 @@
                 <label ng-repeat="error in errors.campaignManager" class="control-label error" for="account-manager-select">{{ error }}</label>
             </div>
 
-            <div class="form-group" ng-class="{'has-error': !!errors.IABCategory}" ng-if="hasPermission('zemauth.can_modify_campaign_iab_category')">
+            <div class="form-group" ng-class="{'has-error': !!errors.iabCategory}" ng-if="hasPermission('zemauth.can_modify_campaign_iab_category')">
                 <label for="iab-category-select" class="col-xs-2 control-label">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_campaign_iab_category')" popover-placement="right"></zem-internal-feature>IAB Category
                     <zem-help-popover content="IAB category under which content of this campaign belongs." placement="top"></zem-help-popover>
                 </label>
                 <div class="col-xs-3">
-                    <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="settings.IABCategory">
+                    <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="settings.iabCategory">
                         <option ng-repeat="category in iabCategories" value="{{category.value}}">{{category.name}}</option>
                     </select>
                 </div>
-                <label ng-repeat="error in errors.IABCategory" class="control-label error" for="iab-category-select">{{ error }}</label>
+                <label ng-repeat="error in errors.iabCategory" class="control-label error" for="iab-category-select">{{ error }}</label>
             </div>
         </div>
 
@@ -197,7 +197,7 @@
                 <div class="checkbox col-xs-10">
                     <label>
                         <input type="checkbox" id="enable-adobe-tracking" ng-model="settings.enableAdobeTracking"> Enable Adobe Analytics performance tracking
-                        <zem-help-popover content="This adds performance tracking codes to all URLs." placement="top"></zem-help-popover>                        
+                        <zem-help-popover content="This adds performance tracking codes to all URLs." placement="top"></zem-help-popover>
                     </label>
                 </div>
             </div>
@@ -221,10 +221,10 @@
             <button type="button" class="btn btn-add btn-icon check" ng-click="saveSettings()"><span class="icon"></span><span class="text">Save</span></button>
             <button type="button" class="btn btn-blue btn-outline" ng-click="getSettings(true)"><span class="text">Discard</span></button>
 
-            <div class="archive-container pull-right" ng-if="hasPermission('zemauth.archive_restore_entity')">
+            <span class="archive-container" ng-if="hasPermission('zemauth.archive_restore_entity')">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="bottom"></zem-internal-feature>
                 <button type="button" class="btn btn-blue btn-outline" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the campaign\'s ad groups have to be paused in order to archive the campaign.') || ''}}" ng-click="archiveCampaign()"><span class="text">Archive campaign</span></button>
-            </div>
+            </span>
 
             <div class="loader" ng-show="requestInProgress"></div>
             <span ng-show="saved" class="success">Your updates have been saved.</span>

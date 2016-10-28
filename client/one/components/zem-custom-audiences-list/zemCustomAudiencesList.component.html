@@ -51,15 +51,10 @@
                     <td>
                         {{ audience.createdDt | date:'MMM d, y h:mm:ss a' }}
                     </td>
-                    <td class="text-right">
-                        <a tabindex="-1" href="#" class="btn btn-default btn-small" ng-click="ctrl.openAudienceModal(audience.id)">Edit</a>
-                        <a class="archive-button btn btn-default btn-small" ng-if="!audience.archived"  ng-class="{'disabled': ctrl.archiveRequestInProgress[audience.id]}" ng-click="ctrl.archiveAudience(audience.id)">
-                            <span class="loader-image" ng-show="ctrl.archiveRequestInProgress[audience.id]"></span><span ng-show="!ctrl.archiveRequestInProgress[audience.id]">Archive</span>
-                        </a>
-
-                        <a class="restore-button btn btn-default btn-small" ng-if="audience.archived" ng-class="{'disabled': ctrl.restoreRequestInProgress[audience.id]}" ng-click="ctrl.restoreAudience(audience.id)">
-                            <span class="loader-image" ng-show="ctrl.restoreRequestInProgress[audience.id]"></span><span ng-show="!ctrl.restoreRequestInProgress[audience.id]">Restore</span>
-                        </a>
+                    <td class="action-buttons">
+                        <a tabindex="-1" ng-click="ctrl.openAudienceModal(audience.id)" href="#" class="btn btn-blue btn-icon btn-small edit"><span class="icon"></span><span class="text">Edit</span></a>
+                        <a tabindex="-1" ng-click="ctrl.archiveAudience(audience.id)" ng-if="!audience.archived" href="#" class="btn btn-blue btn-icon btn-small archive" ng-class="{'disabled': ctrl.archiveRequestInProgress[audience.id]}"><span class="icon"></span><span class="text">Archive</span></a>
+                        <a tabindex="-1" ng-click="ctrl.restoreAudience(audience.id)" ng-if="audience.archived" href="#" class="btn btn-blue btn-icon btn-small archive" ng-class="{'disabled': ctrl.restoreRequestInProgress[audience.id]}"><span class="icon"></span><span class="text">Restore</span></a>
                     </td>
                 </tr>
             </tbody>

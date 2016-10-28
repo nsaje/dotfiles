@@ -23,7 +23,7 @@
                 <label ng-repeat="error in ctrl.errors.pixelId" class="control-label error">{{ error }}</label>
             </div>
         </div>
-        
+
         <div class="form-group" ng-class="{'has-error': !!ctrl.errors.rules}">
             <label for="zem-custom-audience-modal-rule-select" class="col-xs-4 control-label">
                 Website traffic
@@ -41,9 +41,9 @@
             <div ng-if="ctrl.showRefererRules()">
                 <label class="col-xs-4 control-label"></label>
                 <div class="col-xs-8">
-                    <div class="row m-b-s">
+                    <div class="m-b-s">
                         <label class="control-label m-t-s m-b-xs">Include people who visit any web page that meets the following rules:</label>
-                        <div class="col-xs-4 p-l-none p-r-none">
+                        <div class="p-l-none p-r-none">
                             <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
                                 <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
                                 <ui-select-choices repeat="rule.id as rule in ctrl.refererRules">
@@ -52,13 +52,11 @@
                             </ui-select>
                         </div>
                     </div>
-                    <div class="row m-b-xs">
-                        <div class="col-xs-12 p-r-none p-l-none">
-                            <tags-input ng-show="ctrl.selectedRefererRuleId=='startsWith'" placeholder="Add URLs" ng-model="ctrl.selectedRefererRuleStartsWithValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
-                            <tags-input ng-show="ctrl.selectedRefererRuleId=='contains'" placeholder="Add tags" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
-                            <div class="description small m-t-xs m-b-none" ng-show="ctrl.selectedRefererRuleId=='startsWith'">Confirm URL with ENTER or delete previously added URL with double BACKSPACE or by clicking X.</div>
-                            <div class="description small m-t-xs m-b-none" ng-show="ctrl.selectedRefererRuleId=='contains'">Confirm tag with ENTER or delete previously added tag with double BACKSPACE or by clicking X.</div>
-                        </div>
+                    <div class="m-b-xs">
+                        <tags-input ng-show="ctrl.selectedRefererRuleId=='startsWith'" placeholder="Add URLs" ng-model="ctrl.selectedRefererRuleStartsWithValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
+                        <tags-input ng-show="ctrl.selectedRefererRuleId=='contains'" placeholder="Add tags" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
+                        <div class="description small m-t-xs m-b-none" ng-show="ctrl.selectedRefererRuleId=='startsWith'">Confirm URL with ENTER or delete previously added URL with double BACKSPACE or by clicking X.</div>
+                        <div class="description small m-t-xs m-b-none" ng-show="ctrl.selectedRefererRuleId=='contains'">Confirm tag with ENTER or delete previously added tag with double BACKSPACE or by clicking X.</div>
                     </div>
                 </div>
             </div>
@@ -77,24 +75,20 @@
             </label>
             <div class="col-xs-3">
                 <div class="input-group">
-                    <input type="text" class="form-control" ng-model="ctrl.selectedTtl" placeholder="Enter Days" ng-change="ctrl.removeError('ttl')"/>
+                    <input type="text" class="days-input form-control" ng-model="ctrl.selectedTtl" placeholder="Enter Days" ng-change="ctrl.removeError('ttl')"/>
                     <span class="input-group-addon" id="basic-addon2">days</span>
                 </div>
-                
+
                 <label ng-repeat="error in ctrl.errors.ttl" class="control-label error">{{ error }}</label>
             </div>
         </div>
 
-    </div>
-
-    <div class="modal-footer">
-        <button type="button" class="btn btn-gray" ng-if="ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Close</button>
-        <a class="create-button btn btn-add" ng-if="ctrl.readonly" ng-click="ctrl.updateAudience()">
-            <span class="loader-image" ng-show="ctrl.putRequestInProgress"></span><span ng-show="!ctrl.putRequestInProgress">Update Audience</span>
-        </a>
-        <button type="button" class="btn btn-gray" ng-if="!ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Cancel</button>
-        <a class="create-button btn btn-add" ng-if="!ctrl.readonly" ng-click="ctrl.createAudience()">
-            <span class="loader-image" ng-show="ctrl.postRequestInProgress"></span><span ng-show="!ctrl.postRequestInProgress">Create Audience</span>
-        </a>
+        <div class="modal-footer">
+            <button class="btn btn-add btn-icon check" ng-if="ctrl.readonly" ng-click="ctrl.updateAudience()"><span class="icon"></span><span class="text">Update Audience</span></button>
+            <button class="btn btn-add btn-icon check" ng-if="!ctrl.readonly" ng-click="ctrl.createAudience()"><span class="icon"></span><span class="text">Create Audience</span></button>
+            <button type="button" class="btn btn-blue btn-outline" ng-if="ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()"><span class="text">Close</span></button>
+            <button type="button" class="btn btn-blue btn-outline" ng-if="!ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()"><span class="text">Cancel</span></button>
+            <div class="loader" ng-show="ctrl.putRequestInProgress"></div>
+        </div>
     </div>
 </div>

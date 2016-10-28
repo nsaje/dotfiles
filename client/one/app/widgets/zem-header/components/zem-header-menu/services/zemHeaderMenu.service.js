@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibModal', 'zemPermissions', 'zemFullStoryService', 'zemRedesignHelpersService', function ($window, $uibModal, zemPermissions, zemFullStoryService, zemRedesignHelpersService) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibModal', 'zemPermissions', 'zemFullStoryService', function ($window, $uibModal, zemPermissions, zemFullStoryService) { // eslint-disable-line max-len
     this.getAvailableActions = getAvailableActions;
 
     var ACTIONS = [
@@ -17,12 +17,6 @@ angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibM
             text: 'Sign out',
             callback: navigate,
             params: {href: '/signout'},
-        },
-        {
-            text: 'Toggle new theme',
-            callback: zemRedesignHelpersService.toggleNewTheme,
-            isAvailable: zemPermissions.hasPermission('zemauth.can_toggle_new_design'),
-            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_toggle_new_design'),
         },
     ];
 

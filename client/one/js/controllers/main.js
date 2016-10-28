@@ -370,7 +370,5 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
 
 
     // TODO: Remove once redesign is finished
-    $scope.userCanSeeNewLayout = zemRedesignHelpersService.userCanSeeNewLayout;
-    $scope.toggleNewLayout = zemRedesignHelpersService.toggleNewLayout;
     zemRedesignHelpersService.setBodyThemeClass();
 }]);

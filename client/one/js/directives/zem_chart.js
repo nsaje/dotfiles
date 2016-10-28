@@ -16,17 +16,28 @@ angular.module('one.legacy').directive('zemChart', ['config', '$compile', '$wind
             isLoading: '=zemIsLoading'
         },
         templateUrl: '/partials/zem_chart.html',
-        controller: ['$scope', '$element', '$attrs', '$http', 'zemUserSettings', function ($scope, $element, $attrs, $http, zemUserSettings) {
-            var totalsColor = ['#009db2', '#c9eaef'],
-                goalsColor = ['#f39c12', '#fdebd0'],
+        controller: ['$scope', '$element', '$attrs', '$http', 'zemUserSettings', 'zemPermissions', function ($scope, $element, $attrs, $http, zemUserSettings, zemPermissions) {
+            var totalsColor, goalsColor, colors;
+            var commonYAxisMetricIds = ['clicks', 'visits', 'pageviews'];
+            var usedColors = {};
+
+            if (zemPermissions.hasPermission('zemauth.can_see_new_theme')) {
+                totalsColor = ['#3f547f', '#b2bbcc'];
+                goalsColor = ['#f15f74', '#f9bfc7'];
+                colors = [
+                    ['#9a6db0', '#d7c5df'],
+                    ['#f7d842', '#fcefb3'],
+                    ['#5481e6', '#bbcdf5'],
+                ];
+            } else {
+                totalsColor = ['#009db2', '#c9eaef'];
+                goalsColor = ['#f39c12', '#fdebd0'];
                 colors = [
                     ['#d35400', '#eebe9e'],
                     ['#1abc9c', '#d6f3ed'],
                     ['#34495e', '#d6dbdf'],
                 ];
-            var commonYAxisMetricIds = ['clicks', 'visits', 'pageviews'];
-
-            var usedColors = {};
+            }
 
             function getMetric2Options (metricOptions) {
                 // add (default) option to disable second metric

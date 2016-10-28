@@ -29,7 +29,7 @@
         overflow: hidden;
         position: relative;
 		margin-bottom: 0 !important;
-        
+
         .description {
             margin-bottom: 20px;
             color: @gray;
@@ -60,7 +60,7 @@
             white-space: nowrap;
             overflow:hidden;
             text-overflow: ellipsis;
-            
+
             span {
                 color: @text-color;
                 font-size: 18px;
@@ -83,7 +83,7 @@
                 line-height: 28px;
                 height: auto;
             }
-            
+
             .title {
                 color: @secondary-color;
                 font-weight: 500;
@@ -251,9 +251,9 @@
                 input {
                     width: 75%;
                 }
-                
+
                 .btn .text {
-                    display: none; 
+                    display: none;
                 }
             }
 
@@ -294,19 +294,19 @@
             top: 0;
             right: 0;
             bottom: 0;
-            
+
             .input-indicator {
                 position: absolute;
                 left: -10px;
                 top: 2px;
                 width: (@default-button-input-height)-4;
                 height: (@default-button-input-height)-4;
-                
+
                 &.input-success {
-                    
+
                     .animation(fadeOut 0.5s 1);
                     animation-fill-mode: forwards;
-                    
+
                     animation-delay:2s;
                     -webkit-animation-delay:2s;
                     -webkit-animation-fill-mode: forwards;
@@ -320,11 +320,20 @@
         font-weight: 400;
         padding-top: 9px;
         color: @gray;
+
+        &.error {
+            color: @red;
+        }
     }
 
     .form-group {
         .info {
             color: @gray;
+
+            .file-choosen {
+                display: inline-block;
+                width: 50%;
+            }
 
             .help-block {
                 padding: 10px 0 0 30px;
@@ -335,6 +344,8 @@
                     position: absolute;
                     top: 7px;
                     left: 0;
+                    width: 20px;
+                    height: 20px;
                 }
                 a {
                     display: block;

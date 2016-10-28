@@ -155,27 +155,31 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
     };
 
     $scope.archiveAdGroup = function () {
-        $scope.saveRequestInProgress = true;
-        zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
-        zemAdGroupService.archive($scope.adGroup.id).then(function () {
-            $scope.refreshPage();
-            $scope.saveRequestInProgress = false;
-        }, function () {
-            zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, false);
-            $scope.saveRequestInProgress = false;
-        });
+        if ($scope.canArchive) {
+            $scope.saveRequestInProgress = true;
+            zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
+            zemAdGroupService.archive($scope.adGroup.id).then(function () {
+                $scope.refreshPage();
+                $scope.saveRequestInProgress = false;
+            }, function () {
+                zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, false);
+                $scope.saveRequestInProgress = false;
+            });
+        }
     };
 
     $scope.restoreAdGroup = function () {
-        $scope.saveRequestInProgress = true;
-        zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
-        zemAdGroupService.restore($scope.adGroup.id).then(function () {
-            $scope.refreshPage();
-            $scope.saveRequestInProgress = false;
-        }, function () {
-            zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, false);
-            $scope.saveRequestInProgress = false;
-        });
+        if ($scope.canRestore) {
+            $scope.saveRequestInProgress = true;
+            zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, true);
+            zemAdGroupService.restore($scope.adGroup.id).then(function () {
+                $scope.refreshPage();
+                $scope.saveRequestInProgress = false;
+            }, function () {
+                zemNavigationService.notifyAdGroupReloading($scope.adGroup.id, false);
+                $scope.saveRequestInProgress = false;
+            });
+        }
     };
 
     function getDeviceItemByValue (devices, value) {

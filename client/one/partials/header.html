@@ -28,7 +28,6 @@
                 <li ng-if="hasPermission('zemauth.can_request_demo_v3')"><zem-internal-feature ng-if="isPermissionInternal('zemauth.can_request_demo_v3')" popover-placement="bottom"></zem-internal-feature><a href="#" ng-click="requestDemo()">Request demo v3</a></li>
                 <li ng-show="!liveStreamOn()"><a href="#" ng-click="allowLivestream()">Allow Livestream</a></li>
                 <li><a ng-href="/signout">Sign out</a></li>
-                <li ng-if="hasPermission('zemauth.can_toggle_new_design')"><zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_new_design')" popover-placement="bottom"></zem-internal-feature><a href="#" ng-click="toggleNewLayout()">Toggle new layout</a></li>
             </ul>
         </div>
     </div>

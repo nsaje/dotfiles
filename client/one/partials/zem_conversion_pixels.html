@@ -19,7 +19,7 @@
                 <tr ng-class="{'archived': item.archived}" ng-repeat="item in conversionPixels | orderBy:orderField:orderReverse | filter: filterConversionPixels">
                     <td class="pixel-name">
                         {{ item.name }}
-                        
+
                     </td>
                     <td>
                     	<span class="loader" ng-if="item.requestInProgress"></span>
@@ -43,7 +43,6 @@
                         	<a tabindex="-1" ng-click="editConversionPixel(item)" href="#" class="btn btn-blue btn-icon btn-small edit"><span class="icon"></span><span class="text">Edit pixel</span></a>
                         </span>
                     </td>
-
                 </tr>
             </tbody>
         </table>
