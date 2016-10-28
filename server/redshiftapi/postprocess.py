@@ -262,7 +262,7 @@ def apply_performance_columns(breakdown, row_by_breakdown, campaign_goals, campa
             conversion_key = conversion_goal.get_view_key(conversion_goals)
 
             def metric_value_fn(row):
-                return (float(row['e_media_cost']) / row[conversion_key]) if row.get(conversion_key) else None
+                return (float(row['e_media_cost'] or 0) / row[conversion_key]) if row.get(conversion_key) else None
         else:
             def metric_value_fn(row):
                 return row.get(dash.campaign_goals.CAMPAIGN_GOAL_PRIMARY_METRIC_MAP[campaign_goal.type])
@@ -276,7 +276,7 @@ def apply_performance_columns(breakdown, row_by_breakdown, campaign_goals, campa
 
         goal_key = campaign_goal.get_view_key()
 
-        for breakdown_id, row in row_by_breakdown.iteritems():
+        for _, row in row_by_breakdown.iteritems():
             cost = row['e_media_cost']
             metric_value = metric_value_fn(row)
             goal_category = dash.campaign_goals.get_goal_performance_status(
