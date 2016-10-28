@@ -4,7 +4,7 @@
       <span class="icon"></span>
   </a>
   <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
-      <div ng-repeat="group in ctrl.breakdownGroups" ng-click="$event.stopPropagation()">
+      <div ng-repeat="group in $ctrl.breakdownGroups" ng-click="$event.stopPropagation()">
           <div class="category-name" ng-if="group.breakdowns.length > 0">
               <zem-internal-feature ng-if="group.internal"></zem-internal-feature>
               {{ group.name }}
@@ -13,7 +13,7 @@
               <div class="checkbox">
                   <label>
                       <zem-internal-feature ng-if="breakdown.internal"></zem-internal-feature>
-                      <input type="checkbox" ng-model="breakdown.checked" ng-change="ctrl.onChecked(breakdown, group)">
+                      <input type="checkbox" ng-model="breakdown.checked" ng-change="$ctrl.onChecked(breakdown, group)">
                       {{ breakdown.name }}
                   </label>
               </div>

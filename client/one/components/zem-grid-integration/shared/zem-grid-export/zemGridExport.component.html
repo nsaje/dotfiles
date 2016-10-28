@@ -4,7 +4,7 @@
         ng-model="export"
         class="export-select">
     <ui-select-match placeholder="Export">Export</ui-select-match>
-    <ui-select-choices repeat="modalType in ctrl.exportModalTypes">
-        <div ng-click="ctrl.showScheduledReportModal(modalType.value)">{{modalType.name}}</div>
+    <ui-select-choices repeat="modalType in $ctrl.exportModalTypes">
+        <div ng-click="$ctrl.showScheduledReportModal(modalType.value)">{{modalType.name}}</div>
     </ui-select-choices>
 </ui-select>
