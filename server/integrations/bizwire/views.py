@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import logging
 from functools import partial
 
@@ -81,7 +82,7 @@ class PromotionExport(BizwireView):
             'bizwire_geo'
         )
 
-        geo_impressions = {}
+        geo_impressions = OrderedDict()
         for row in rows:
             key = (row['country'] + '-' + row['state']) if row['state'] else 'Unknown'
             geo_impressions.setdefault(key, 0)
