@@ -42,12 +42,6 @@ describe('zemGridEndpointColumnsSpec', function () {
         expect (cpcColumn.exceptions.breakdowns).toBeFalsy();
         expect (cpcColumn.goal).toBeFalsy();
 
-        var minBidCpcColumn = findColumn(zemGridEndpointColumns.COLUMNS.minBidCpc, columns);
-        expect (minBidCpcColumn.permanent).toBeFalsy();
-        expect (minBidCpcColumn.default).toBeFalsy();
-        expect (minBidCpcColumn.exceptions.breakdowns).toEqual(['source']);
-        expect (minBidCpcColumn.goal).toBeFalsy();
-
         var avgCostPerMinuteColumn = findColumn(zemGridEndpointColumns.COLUMNS.avgCostPerMinute, columns);
         expect (avgCostPerMinuteColumn.permanent).toBeFalsy();
         expect (avgCostPerMinuteColumn.default).toBeFalsy();
@@ -79,9 +73,6 @@ describe('zemGridEndpointColumnsSpec', function () {
 
         var stateColumn = findColumn(zemGridEndpointColumns.COLUMNS.state, columns);
         expect(stateColumn).toBe(undefined);
-
-        var minBidCpcColumn = findColumn(zemGridEndpointColumns.COLUMNS.minBidCpc, columns);
-        expect(minBidCpcColumn).toEqual(jasmine.any(Object));
 
         var imageUrlsColumn = findColumn(zemGridEndpointColumns.COLUMNS.imageUrls, columns);
         expect(imageUrlsColumn).toBe(undefined);
