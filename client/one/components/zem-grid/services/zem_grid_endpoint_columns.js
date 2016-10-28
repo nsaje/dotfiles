@@ -130,38 +130,6 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
         },
 
         // Media source
-        minBidCpc: {
-            name: 'Min Bid',
-            field: 'min_bid_cpc',
-            type: zemGridConstants.gridColumnTypes.CURRENCY,
-            shown: false,
-            fractionSize: 3,
-            help: 'Minimum bid price (in USD) per click.',
-            totalRow: false,
-            order: true,
-            initialOrder: zemGridConstants.gridColumnOrder.DESC,
-        },
-        maxBidCpc: {
-            name: 'Max Bid',
-            field: 'max_bid_cpc',
-            type: zemGridConstants.gridColumnTypes.CURRENCY,
-            shown: false,
-            fractionSize: 3,
-            help: 'Maximum bid price (in USD) per click.',
-            totalRow: false,
-            order: true,
-            initialOrder: zemGridConstants.gridColumnOrder.DESC,
-        },
-        dailyBudget: {
-            name: 'Daily Spend Cap',
-            field: 'daily_budget',
-            type: zemGridConstants.gridColumnTypes.CURRENCY,
-            shown: false,
-            help: 'Maximum media spend cap per day.',
-            totalRow: true,
-            order: true,
-            initialOrder: zemGridConstants.gridColumnOrder.DESC,
-        },
         supplyDashUrl: {
             name: 'Link',
             field: 'supply_dash_url',
@@ -936,7 +904,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
     // Default columns - columns present by default (non permanent can be hidden)
     var DEFAULT_COLUMNS_GROUP = PERMANENT_COLUMNS_GROUP.concat([
         COLUMNS.imageUrls,
-        COLUMNS.dailyBudget,
+        COLUMNS.dailyBudgetSetting,
         COLUMNS.yesterdayCost,
         COLUMNS.eYesterdayCost,
         COLUMNS.billingCost,
@@ -956,9 +924,6 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
     ];
 
     var SOURCE_GROUP = [
-        COLUMNS.minBidCpc,
-        COLUMNS.maxBidCpc,
-        COLUMNS.dailyBudget,
         COLUMNS.supplyDashUrl,
         COLUMNS.bidCpcSetting,
         COLUMNS.dailyBudgetSetting,
@@ -1128,9 +1093,6 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
     COLUMNS.supplyDashUrl.exceptions.breakdownBaseLevelOnly = true;
 
     // Exceptions (source editable fields)
-    COLUMNS.minBidCpc.exceptions.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
-    COLUMNS.maxBidCpc.exceptions.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
-    COLUMNS.dailyBudget.exceptions.levels = [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS, constants.level.CAMPAIGNS];
     COLUMNS.bidCpcSetting.exceptions.levels = [constants.level.AD_GROUPS];
     COLUMNS.dailyBudgetSetting.exceptions.levels = [constants.level.AD_GROUPS];
     COLUMNS.bidCpcSetting.exceptions.breakdownBaseLevelOnly = true;
