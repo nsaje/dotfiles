@@ -20,8 +20,6 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def click_capping(request):
-    logger.info('BIZWIRE CAPPING call received')
-
     try:
         request_signer.verify_wsgi_request(request, settings.R1_API_SIGN_KEY)
     except request_signer.SignatureError:
@@ -33,8 +31,6 @@ def click_capping(request):
         id=content_ad_id,
         ad_group_id__in=config.TEST_AD_GROUP_IDS,
     ).select_related('ad_group').get()
-
-    logger.info('Click cap reached. Stopping content ad %s', content_ad.id)
 
     with transaction.atomic():
         dash.api.update_content_ads_state([content_ad], dash.constants.ContentAdSourceState.INACTIVE, None)
