@@ -83,7 +83,7 @@ class PromotionExport(BizwireView):
 
         geo_impressions = {}
         for row in rows:
-            key = (row['country'] + '-' + row['state']) if row['state'] else 'Undefined'
+            key = (row['country'] + '-' + row['state']) if row['state'] else 'Unknown'
             geo_impressions.setdefault(key, 0)
             geo_impressions[key] += row['impressions']
         return geo_impressions
