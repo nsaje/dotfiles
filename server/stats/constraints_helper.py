@@ -129,12 +129,29 @@ def prepare_ad_group_constraints(user, ad_group, breakdown, start_date, end_date
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group_id=ad_group.id)
         filtered_sources = narrow_filtered_sources(filtered_sources, ad_group_sources)
 
-    blacklisted_publishers = models.PublisherBlacklist.objects.filter(
-        Q(ad_group=ad_group) |
-        Q(campaign=ad_group.campaign) |
-        Q(account=ad_group.campaign.account) |
-        Q(everywhere=True)
-    ).filter_by_sources(filtered_sources)
+    if models.should_filter_by_sources(filtered_sources):
+        blacklisted_publishers = models.PublisherBlacklist.objects.filter(
+            Q(ad_group=ad_group) |
+            Q(campaign=ad_group.campaign) |
+            Q(account=ad_group.campaign.account) |
+            Q(everywhere=True)
+        ).filter_by_sources(filtered_sources)
+
+        # include those that do not have source_id specified as they blacklist also filtered sources
+        blacklisted_publishers |= models.PublisherBlacklist.objects.filter(
+            Q(ad_group=ad_group, source_id__isnull=True) |
+            Q(campaign=ad_group.campaign, source_id__isnull=True) |
+            Q(account=ad_group.campaign.account, source_id__isnull=True) |
+            Q(everywhere=True, source_id__isnull=True)
+        )
+    else:
+        blacklisted_publishers = models.PublisherBlacklist.objects.filter(
+            Q(ad_group=ad_group) |
+            Q(campaign=ad_group.campaign) |
+            Q(account=ad_group.campaign.account) |
+            Q(everywhere=True)
+        )
+
     constraints['publisher_blacklist'] = blacklisted_publishers
     constraints['publisher_blacklist_filter'] = show_blacklisted_publishers
 

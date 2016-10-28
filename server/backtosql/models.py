@@ -47,6 +47,11 @@ class Model(object):
         return self.columns
 
     def get_column(self, alias):
+        alias = helpers.clean_alias(alias)
+        if alias not in self.columns_dict:
+            raise helpers.BackToSQLException(
+                "Column for alias '{}' does not exist".format(alias))
+
         return self.columns_dict[helpers.clean_alias(alias)]
 
     def has_column(self, alias):

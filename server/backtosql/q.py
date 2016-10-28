@@ -53,6 +53,11 @@ class Q(object):
 
         return self.query
 
+    @classmethod
+    def none(cls, model):
+        # similar as to how django queryset none() works
+        return cls(model, __none=None)
+
     def get_params(self):
         if not self.was_generated():
             raise helpers.BackToSQLException("Query not yet generated")
@@ -92,17 +97,16 @@ class Q(object):
 
         parts = dissect_constraint_key(constraint_name)
         alias = helpers.clean_alias(parts[0])
-        column = self.model.get_column(alias)
-
-        if not column:
-            raise helpers.BackToSQLException(
-                "Column for alias '{}' does not exist".format(alias))
 
         if len(parts) == 2:
             operator = parts[1]
         else:
             operator = "eq"
 
+        if alias == '':
+            return None, operator, value
+
+        column = self.model.get_column(alias)
         return column, operator, value
 
     def _generate_sql(self, constraint, prefix):
@@ -114,6 +118,9 @@ class Q(object):
             "gte": '{}>=%s',
             "gt": '{}>%s',
         }
+
+        if operator == 'none':
+            return "1=%s", [2]
 
         if operator in operator_dict:
             return operator_dict[operator].format(column.only_column(prefix)), [value]

@@ -420,10 +420,18 @@ class PublisherBlacklistLoader(Loader):
 
         d = collections.defaultdict(lambda: default)
         for pb in self.objs_qs:
-            d[self._get_obj_id(pb)] = {
-                'status': pb.status,
-                'blacklist_level': pb.get_blacklist_level(),
-            }
+            if pb.source_id:
+                d[self._get_obj_id(pb)] = {
+                    'status': pb.status,
+                    'blacklist_level': pb.get_blacklist_level(),
+                }
+            else:
+                for source_id in self.source_map.keys():
+                    d[stats.helpers.create_publisher_id(pb.name, source_id)] = {
+                        'status': pb.status,
+                        'blacklist_level': pb.get_blacklist_level(),
+                    }
+
         return d
 
     @cached_property

@@ -60,15 +60,20 @@ class BreakdownsBase(backtosql.Model):
 
         constraints = backtosql.Q(self, **constraints)
 
-        if publisher is not None:
-            constraints = constraints & self.get_parent_constraints([{'publisher_id': x} for x in publisher])
-
-        if publisher__neq is not None:
-            constraints = constraints & ~self.get_parent_constraints([{'publisher_id': x} for x in publisher__neq])
-
         parent_constraints = self.get_parent_constraints(parents)
         if parent_constraints is not None:
             constraints = constraints & parent_constraints
+
+        if publisher is not None:
+            if not publisher:
+                # this is the case when we want to query blacklisted publishers but there are no blacklisted publishers
+                # modify constraints to not return anything
+                constraints = backtosql.Q.none(self)
+            else:
+                constraints = constraints & self.get_parent_constraints([{'publisher_id': x} for x in publisher])
+
+        if publisher__neq:
+            constraints = constraints & ~self.get_parent_constraints([{'publisher_id': x} for x in publisher__neq])
 
         return constraints
 
