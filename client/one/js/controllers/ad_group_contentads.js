@@ -516,7 +516,7 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
     $scope.columnCategories = [{
         'name': 'Costs',
         'fields': ['data_cost', 'media_cost', 'e_media_cost', 'e_data_cost',
-                   'billing_cost', 'license_fee', 'margin', 'agency_total'],
+            'billing_cost', 'license_fee', 'margin', 'agency_total'],
     }, {
         'name': 'Content Sync',
         'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action', 'label'],
@@ -526,15 +526,15 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
     }, {
         'name': 'Audience Metrics',
         'fields': ['percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'visits', 'pageviews', 'click_discrepancy',
-                   'unique_users', 'new_users', 'returning_users', 'bounced_visits', 'non_bounced_visits', 'total_seconds']
+            'unique_users', 'new_users', 'returning_users', 'bounced_visits', 'non_bounced_visits', 'total_seconds']
     }, {
         name: 'Conversions',
         fields: ['conversion_goals_placeholder', 'pixels_placeholder']
     }, {
         'name': 'Goals',
         'fields': ['avg_cost_per_visit', 'avg_cost_for_new_visitor', 'avg_cost_per_pageview',
-                   'avg_cost_per_non_bounced_visit', 'avg_cost_per_minute', 'conversion_goals_avg_cost_placeholder',
-                   'pixels_avg_cost_placeholder'],
+            'avg_cost_per_non_bounced_visit', 'avg_cost_per_minute', 'conversion_goals_avg_cost_placeholder',
+            'pixels_avg_cost_placeholder'],
     }];
 
     var bulkUpdateContentAds = function (contentAdIdsSelected, contentAdIdsNotSelected, state) {

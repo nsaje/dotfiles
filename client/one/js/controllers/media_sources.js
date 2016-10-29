@@ -430,8 +430,8 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
         {
             'name': 'Goals',
             'fields': ['avg_cost_per_visit', 'avg_cost_for_new_visitor', 'avg_cost_per_pageview',
-                       'avg_cost_per_non_bounced_visit', 'avg_cost_per_minute', 'conversion_goals_avg_cost_placeholder',
-                       'pixels_avg_cost_placeholder'],
+                'avg_cost_per_non_bounced_visit', 'avg_cost_per_minute', 'conversion_goals_avg_cost_placeholder',
+                'pixels_avg_cost_placeholder'],
         },
         {
             'name': 'Data Sync',

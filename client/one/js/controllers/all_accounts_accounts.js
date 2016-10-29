@@ -432,7 +432,7 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
         {
             'name': 'Goals',
             'fields': ['avg_cost_per_visit', 'avg_cost_for_new_visitor', 'avg_cost_per_pageview',
-                       'avg_cost_per_non_bounced_visit', 'avg_cost_per_minute'],
+                'avg_cost_per_non_bounced_visit', 'avg_cost_per_minute'],
         },
         {
             'name': 'Data Sync',
