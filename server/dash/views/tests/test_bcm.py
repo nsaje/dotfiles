@@ -911,7 +911,9 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
                     "name": "1 - test account 1 - $100000 - from 2015-10-01 to 2015-11-30",
                 },
                 "start_date": "2015-10-01",
-                "created_by": "ziga.stopinsek@zemanta.com"
+                "created_by": "ziga.stopinsek@zemanta.com",
+                "spend": "0.0000",
+                "available": "100000.0000"
             }
         )
 
@@ -944,7 +946,9 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
                     "name": "1 - test account 1 - $100000 - from 2015-10-01 to 2015-11-30",
                 },
                 "start_date": "2015-10-01",
-                "created_by": "ziga.stopinsek@zemanta.com"
+                "created_by": "ziga.stopinsek@zemanta.com",
+                "spend": "0.0000",
+                "available": "100000.0000"
             }
         )
 

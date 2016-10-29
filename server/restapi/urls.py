@@ -4,6 +4,11 @@ import views
 
 urlpatterns = [
     url(
+        r'^accounts/(?P<account_id>\d+)/credits/$',
+        views.AccountCreditViewList.as_view(),
+        name='accounts_credits_list'
+    ),
+    url(
         r'^campaigns/(?P<entity_id>\d+)$',
         views.CampaignViewDetails.as_view(),
         name='campaigns_details'
@@ -22,6 +27,16 @@ urlpatterns = [
         r'^campaigns/(?P<campaign_id>\d+)/goals/$',
         views.CampaignGoalsViewList.as_view(),
         name='campaigngoals_list'
+    ),
+    url(
+        r'^campaigns/(?P<campaign_id>\d+)/budgets/$',
+        views.CampaignBudgetViewList.as_view(),
+        name='campaigns_budget_list'
+    ),
+    url(
+        r'^campaigns/(?P<campaign_id>\d+)/budgets/(?P<budget_id>\d+)$',
+        views.CampaignBudgetViewDetails.as_view(),
+        name='campaigns_budget_details'
     ),
     url(
         r'^adgroups/(?P<entity_id>\d+)$',

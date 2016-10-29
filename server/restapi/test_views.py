@@ -1,3 +1,4 @@
+import datetime
 import json
 import mock
 
@@ -12,6 +13,9 @@ import views as restapi_views
 from dash import constants
 from dash import upload
 import restapi.models
+
+
+TODAY = datetime.datetime(2016, 1, 15).date()
 
 
 class SerializerTets(TestCase):
@@ -32,6 +36,19 @@ class RESTAPITest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.client.force_authenticate(user=User.objects.get(pk=1))
+
+    def test_account_credits_list(self):
+        credit_item = dash.models.CreditLineItem.objects.get(pk=1)
+        credit_item.end_date = datetime.date.today() + datetime.timedelta(days=7)
+        credit_item.signed = True
+        credit_item.save()
+        r = self.client.get(reverse('accounts_credits_list', kwargs={'account_id': 1}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json['data'], list)
+        self.assertGreater(len(resp_json['data']), 0)
+        for item in resp_json['data']:
+            self.assertEqual(set(item.keys()), {'id', 'startDate', 'endDate', 'available', 'createdOn', 'total', 'allocated'})
 
     def test_campaigns_list(self):
         r = self.client.get(reverse('campaigns_list'))
@@ -72,6 +89,50 @@ class RESTAPITest(TestCase):
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], dict)
         self.assertEqual(resp_json['data']['value'], '30.00')
+
+    @mock.patch('dash.forms.dates_helper.local_today', lambda: TODAY)
+    def test_campaigns_budgets_list(self):
+        r = self.client.get(reverse('campaigns_budget_list', kwargs={'campaign_id': 1}))
+        print r
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json['data'], list)
+        self.assertGreater(len(resp_json['data']), 0)
+        expected_fields = ['available', 'startDate', 'endDate', 'state', 'id', 'amount', 'spend']
+        for item in resp_json['data']:
+            self.assertEqual(item.keys(), expected_fields)
+
+    def test_campaigns_budgets_post(self):
+        credit_item = dash.models.CreditLineItem.objects.get(pk=1)
+        credit_item.start_date = datetime.date.today() + datetime.timedelta(days=1)
+        credit_item.end_date = datetime.date.today() + datetime.timedelta(days=8)
+        credit_item.amount = 2000
+        credit_item.save()
+        credit_item.status = constants.CreditLineItemStatus.SIGNED
+        credit_item.save()
+
+        r = self.client.post(
+            reverse('campaigns_budget_list', kwargs={'campaign_id': 1}),
+            data={'creditId': '1', 'amount': '500', 'startDate': datetime.date.today() + datetime.timedelta(days=1), 'endDate': datetime.date.today() + datetime.timedelta(days=7)}, format='json')
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json['data'], dict)
+        self.assertEqual(resp_json['data']['amount'], "500")
+
+        # test PUT as well
+        r = self.client.put(
+            reverse('campaigns_budget_details', kwargs={'campaign_id': 1, 'budget_id': 2}),
+            data={'amount': '900'}, format='json'
+        )
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertEqual(resp_json['data']['amount'], '900')
+
+    def test_campaigns_budgets_get(self):
+        r = self.client.get(reverse('campaigns_budget_details', kwargs={'campaign_id': 1, 'budget_id': 1}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertEqual(resp_json['data']['amount'], '1000')
 
     def test_adgroups_list(self):
         ad_group = dash.models.AdGroup.objects.get(pk=1)

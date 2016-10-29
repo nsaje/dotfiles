@@ -45,7 +45,113 @@ Authorization: Bearer <access_token>
             "scope": "read write"
         }
 
+# Group Account Credit Management
+
+### Get active credit items for account [GET /rest/v1/account/{id}/credits/]
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "id":"861",
+                    "startDate": "2016-01-01",
+                    "endDate": "2016-11-05",
+                    "createdOn": "2014-06-04",
+                    "total": "1000.0000",
+                    "allocated": "400.0000",
+                    "available": "600.0000",
+                }
+            ]
+        }
+
+
 # Group Campaign Management
+
+## Campaign Budgets [/rest/v1/campaigns/{campaign_id}/budgets/]
+
+### List campaign budgets [GET /rest/v1/campaigns/{campaign_id}/budgets/]
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "id": "1910",
+                    "amount": "400",
+                    "startDate": "2016-01-01",
+                    "endDate": "2016-01-31",
+                    "state": "ACTIVE",
+                    "spend": "0.0000",
+                    "available": "400.0000"
+                }
+            ]
+        }
+
+### Create a new campaign budget [POST /rest/v1/campaigns/{campaign_id}/budgets/]
+
++ Request (application/json)
+
+        {
+            "creditId": "861",
+            "amount": "600",
+            "startDate": "2016-01-01",
+            "endDate": "2016-01-31"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "1911",
+                "amount": "600",
+                "startDate": "2016-01-01",
+                "endDate": "2016-01-31",
+                "state": "ACTIVE",
+                "spend": "0.0000",
+                "available": "600.0000"
+            }
+        }
+
+
+### Get a campaign budget [GET /rest/v1/campaigns/{campaign_id}/budgets/{budget_id}]
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "1910",
+                "amount": "400",
+                "startDate": "2016-01-01",
+                "endDate": "2016-01-31",
+                "state": "ACTIVE",
+                "spend": "0.0000",
+                "available": "400.0000"
+            }
+        }
+
+
+### Edit a campaign budget [PUT /rest/v1/campaigns/{campaign_id}/budgets/{budget_id}]
+
++ Request (application/json)
+
+        {
+            "amount": "800"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "1911",
+                "amount": "800",
+                "startDate": "2016-01-01",
+                "endDate": "2016-01-31",
+                "state": "ACTIVE",
+                "spend": "0.0000",
+                "available": "800.0000"
+            }
+        }
 
 ## Campaigns [/rest/v1/campaigns/]
 
@@ -1405,6 +1511,7 @@ Authorization: Bearer <access_token>
 - `US-PR` - Puerto Rico
 - `US-UM` - United States Minor Outlying Islands
 - `US-VI` - Virgin Islands
+
 
 
 

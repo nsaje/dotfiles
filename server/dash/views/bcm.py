@@ -456,8 +456,12 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             )
 
     def _get_response(self, user, item):
+        spend = item.get_spend_data(use_decimal=True)['total']
+        allocated = item.allocated_amount()
         response = {
             'amount': item.amount,
+            'spend': spend,
+            'available': allocated - spend,
             'created_by': str(item.created_by or 'Zemanta One'),
             'created_at': item.created_dt,
             'start_date': item.start_date,

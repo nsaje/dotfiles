@@ -13,7 +13,7 @@ from rest_framework import permissions
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
-from dash.views import agency, views, helpers
+from dash.views import agency, views, bcm, helpers
 from dash import regions
 from dash import campaign_goals
 from dash import constants
@@ -59,6 +59,16 @@ class RESTAPIBaseView(APIView):
         if errors:
             data['errors'] = errors
         return Response(data, **kwargs)
+
+
+class IdField(serializers.Field):
+    def to_representation(self, data):
+        if isinstance(data, django.db.models.Model):
+            return str(data.id)
+        return str(data)
+
+    def to_internal_value(self, data):
+        return int(data)
 
 
 class DashConstantField(serializers.Field):
@@ -118,6 +128,29 @@ class SettingsSerializer(serializers.BaseSerializer):
             if isinstance(value, dict):
                 new_dict[key] = cls._allow_not_provided(value)
         return new_dict
+
+
+class AccountCreditSerializer(serializers.Serializer):
+
+    def to_representation(self, internal_data):
+        return {
+            'id': str(internal_data['id']),
+            'createdOn': internal_data['created_on'],
+            'startDate': internal_data['start_date'],
+            'endDate': internal_data['end_date'],
+            'total': internal_data['total'],
+            'allocated': internal_data['allocated'],
+            'available': internal_data['available'],
+        }
+
+
+class AccountCreditViewList(RESTAPIBaseView):
+
+    def get(self, request, account_id):
+        internal_view = bcm.AccountCreditView(rest_proxy=True)
+        data_internal, _ = internal_view.get(self.request, account_id)
+        serializer = AccountCreditSerializer(data_internal['data']['active'], many=True)
+        return self.response_ok(serializer.data)
 
 
 class CampaignSerializer(SettingsSerializer):
@@ -443,6 +476,67 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
         return self.response_ok(status=204)
 
 
+class CampaignBudgetSerializer(serializers.Serializer):
+    id = IdField(read_only=True)
+    creditId = IdField(source='credit', write_only=True)
+    amount = serializers.DecimalField(max_digits=20, decimal_places=0)
+    startDate = serializers.DateField(source='start_date')
+    endDate = serializers.DateField(source='end_date')
+    state = DashConstantField(constants.BudgetLineItemState, read_only=True)
+    spend = serializers.DecimalField(max_digits=20, decimal_places=4, read_only=True)
+    available = serializers.DecimalField(max_digits=20, decimal_places=4, read_only=True)
+
+
+class CampaignBudgetViewList(RESTAPIBaseView):
+
+    def get(self, request, campaign_id):
+        internal_view = bcm.CampaignBudgetView(rest_proxy=True)
+        data_internal, _ = internal_view.get(self.request, campaign_id)
+
+        # different field name for post and get
+        for d in data_internal['data']['active']:
+            d['amount'] = d['total']
+            del d['total']
+
+        serializer = CampaignBudgetSerializer(data_internal['data']['active'], many=True)
+        return self.response_ok(serializer.data)
+
+    def post(self, request, campaign_id):
+        serializer = CampaignBudgetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        internal_view = bcm.CampaignBudgetView(rest_proxy=True)
+        post_data = serializer.validated_data
+
+        self.request.body = RESTAPIJSONRenderer().render(post_data)
+        data_internal, _ = internal_view.put(self.request, campaign_id)
+        budget_id = int(data_internal['data'])
+        return CampaignBudgetViewDetails().get(self.request, campaign_id, budget_id)
+
+
+class CampaignBudgetViewDetails(RESTAPIBaseView):
+
+    def get(self, request, campaign_id, budget_id):
+        internal_view = bcm.CampaignBudgetItemView(rest_proxy=True)
+        data_internal, _ = internal_view.get(request, campaign_id, budget_id)
+        serializer = CampaignBudgetSerializer(data_internal['data'])
+        return self.response_ok(serializer.data)
+
+    def put(self, request, campaign_id, budget_id):
+        internal_view = bcm.CampaignBudgetItemView(rest_proxy=True)
+
+        data_internal_get, _ = internal_view.get(request, campaign_id, budget_id)
+        serializer = CampaignBudgetSerializer(instance=data_internal_get['data'], data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        put_data = {k: data_internal_get['data'][k] for k in ['credit', 'amount', 'start_date', 'end_date', 'comment']}
+        put_data['credit'] = put_data['credit']['id']
+        put_data.update(serializer.validated_data)
+        self.request.body = RESTAPIJSONRenderer().render(put_data)
+        internal_view.post(self.request, campaign_id, budget_id)
+        return CampaignBudgetViewDetails().get(self.request, campaign_id, budget_id)
+
+
 class SourceIdSlugField(serializers.Field):
 
     def to_internal_value(self, data):
@@ -529,16 +623,6 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request, ad_group_id=ad_group.id)
         return self.get(request, ad_group.id)
-
-
-class IdField(serializers.Field):
-    def to_representation(self, data):
-        if isinstance(data, django.db.models.Model):
-            return str(data.id)
-        return str(data)
-
-    def to_internal_value(self, data):
-        return int(data)
 
 
 class ContentAdSerializer(serializers.ModelSerializer):
