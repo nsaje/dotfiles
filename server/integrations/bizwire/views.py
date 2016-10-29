@@ -151,6 +151,9 @@ class PromotionExport(BizwireView):
         }
 
     def get(self, request):
+        if not request.GET.get('real_response'):
+            return self.response_ok(MOCK_RESPONSE)
+
         article_id = request.GET.get('article_id')
         try:
             content_ad = dash.models.ContentAd.objects.get(
