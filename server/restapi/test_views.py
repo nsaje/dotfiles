@@ -7,9 +7,11 @@ from zemauth.models import User
 from django.core.urlresolvers import reverse
 
 import dash.models
+import dash.threads
 import views as restapi_views
 from dash import constants
 from dash import upload
+import restapi.models
 
 
 class SerializerTets(TestCase):
@@ -276,3 +278,38 @@ class TestBatchUpload(TestCase):
             candidate.url_status = constants.AsyncUploadJobStatus.FAILED
             candidate.save()
         upload._handle_auto_save(batch)
+
+
+class ReportsTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        self.client = APIClient()
+        self.client.force_authenticate(user=User.objects.get(pk=1))
+
+    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('restapi.reports.ReportJobExecutor', restapi.reports.MockJobExecutor)
+    def test_new_job(self):
+        query = {
+            'fields': [{'field': 'Content Ad Id'}],
+            'filters': [{'field': 'Ad Group Id', 'operator': '=', 'value': '123'},
+                        {'field': 'Date', 'operator': '=', 'value': '2016-10-10'}]
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json['data'], dict)
+        self.assertEqual(resp_json['data']['status'], 'IN_PROGRESS')
+        self.assertIn('id', resp_json['data'])
+
+        job_id = int(resp_json['data']['id'])
+        job = restapi.models.ReportJob.objects.get(pk=job_id)
+        job.status = constants.ReportJobStatus.DONE
+        job.save()
+
+        r = self.client.get(reverse('reports_details', kwargs={'job_id': job_id}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json['data'], dict)
+        self.assertEqual(resp_json['data']['status'], 'DONE')
+        self.assertEqual(job_id, int(resp_json['data']['id']))

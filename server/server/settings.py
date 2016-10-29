@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'import_export',
     'dash',
+    'restapi',
     'zemauth',
     'actionlog',
     'reports',
@@ -365,3 +366,6 @@ REST_FRAMEWORK = {
     'UNICODE_JSON': False,
     'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
 }
+
+RESTAPI_REPORTS_BUCKET = 'z1-rest-reports'
+RESTAPI_REPORTS_URL = 'https://%s.s3.amazonaws.com' % RESTAPI_REPORTS_BUCKET

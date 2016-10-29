@@ -63,4 +63,14 @@ urlpatterns = [
         views.ContentAdViewDetails.as_view(),
         name='contentads_details'
     ),
+    url(
+        r'^reports/$',
+        views.ReportsViewList.as_view(),
+        name='reports_list'
+    ),
+    url(
+        r'^reports/(?P<job_id>\d+)$',
+        views.ReportsViewDetails.as_view(),
+        name='reports_details'
+    ),
 ]

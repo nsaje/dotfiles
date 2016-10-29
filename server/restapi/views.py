@@ -19,8 +19,11 @@ from dash import campaign_goals
 from dash import constants
 from dash import upload
 import dash.models
+import dash.threads
 from utils import json_helper, exc, dates_helper
 from .authentication import OAuth2Authentication
+import restapi.models
+import restapi.reports
 
 
 logger = logging.getLogger(__name__)
@@ -665,3 +668,35 @@ class ContentAdBatchViewDetails(RESTAPIBaseView):
 
         batch_serializer = UploadBatchSerializer(batch)
         return self.response_ok(batch_serializer.data)
+
+
+class ReportJobSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = restapi.models.ReportJob
+        fields = ('id', 'status', 'result')
+    id = IdField()
+    status = DashConstantField(constants.ReportJobStatus)
+    result = serializers.JSONField()
+
+
+class ReportsViewList(RESTAPIBaseView):
+
+    def post(self, request):
+        query = restapi.reports.ReportQuerySerializer(data=request.data)
+        query.is_valid(raise_exception=True)
+
+        job = restapi.models.ReportJob(user=request.user, query=query.data)
+        job.save()
+
+        executor = restapi.reports.ReportJobExecutor(job)
+        thread = dash.threads.AsyncFunction(executor.execute)
+        thread.start()
+
+        return self.response_ok(ReportJobSerializer(job).data, status=201)
+
+
+class ReportsViewDetails(RESTAPIBaseView):
+
+    def get(self, request, job_id):
+        job = restapi.models.ReportJob.objects.get(pk=job_id)
+        return self.response_ok(ReportJobSerializer(job).data)
