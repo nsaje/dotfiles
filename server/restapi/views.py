@@ -65,14 +65,24 @@ class DashConstantField(serializers.Field):
         super(DashConstantField, self).__init__(**kwargs)
 
     def to_internal_value(self, data):
+        if data == NOT_PROVIDED:
+            return NOT_PROVIDED
         try:
             return getattr(self.const_cls, data)
         except AttributeError:
             valid_choices = self.const_cls.get_all_names()
             raise serializers.ValidationError('Invalid choice %s! Valid choices: %s' % (data, ', '.join(valid_choices)))
 
+    def to_internal_value_many(self, data):
+        if data == NOT_PROVIDED:
+            return NOT_PROVIDED
+        return map(lambda x: self.to_internal_value(x), data)
+
     def to_representation(self, value):
         return self.const_cls.get_name(value)
+
+    def to_representation_many(self, data):
+        return map(lambda x: self.to_representation(x), data)
 
 
 class SettingsSerializer(serializers.BaseSerializer):
@@ -176,6 +186,10 @@ class AdGroupSerializer(SettingsSerializer):
                     'included': self._partition_regions(settings['target_regions']),
                 },
                 'devices': map(lambda x: DashConstantField(constants.AdTargetDevice).to_representation(x), settings['target_devices']),
+                'interest': {
+                    'included': map(lambda x: DashConstantField(constants.InterestCategory).to_representation(x), settings['interest_targeting']),
+                    'excluded': map(lambda x: DashConstantField(constants.InterestCategory).to_representation(x), settings['exclusion_interest_targeting']),
+                }
             },
             'autopilot': {
                 'state': constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state']),
@@ -188,15 +202,17 @@ class AdGroupSerializer(SettingsSerializer):
         settings = {
             'id': data['id'],
             'name': data['name'],
-            'state': DashConstantField(constants.AdGroupSettingsState).to_internal_value(data['state']) if data['state'] != NOT_PROVIDED else NOT_PROVIDED,
+            'state': DashConstantField(constants.AdGroupSettingsState).to_internal_value(data['state']),
             'start_date': data['startDate'],
             'end_date': data['endDate'],
             'cpc_cc': data['maxCpc'],
             'daily_budget_cc': data['dailyBudget'],
             'tracking_code': data['trackingCode'],
             'target_regions': self._unpartition_regions(data['targeting']['geo']['included']),
-            'target_devices': map(lambda x: DashConstantField(constants.AdTargetDevice).to_internal_value(x), data['targeting']['devices']) if data['targeting']['devices'] != NOT_PROVIDED else NOT_PROVIDED,
-            'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']) if data['autopilot']['state'] != NOT_PROVIDED else NOT_PROVIDED,
+            'target_devices': DashConstantField(constants.AdTargetDevice).to_internal_value_many(data['targeting']['devices']),
+            'interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['included']),
+            'exclusion_interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
+            'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value_many(data['autopilot']['state']),
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
         }
         return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
@@ -343,7 +359,7 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
         try:
             return {
                 'primary': data_external['primary'],
-                'type': getattr(constants.CampaignGoalKPI, data_external['type']) if data_external['type'] != NOT_PROVIDED else NOT_PROVIDED,
+                'type': DashConstantField(constants.CampaignGoalKPI).to_internal_value(data_external['type']),
                 'conversion_goal': self._conversion_goal_to_internal_value(data_external['conversionGoal']),
                 'value': data_external['value']
             }
@@ -358,7 +374,7 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
             'name': conversion_goal['name'],
             'pixel_url': conversion_goal['pixel_url'],
             'conversion_window': conversion_goal['conversionWindow'],
-            'type': getattr(constants.ConversionGoalType, conversion_goal['type']) if conversion_goal['type'] != NOT_PROVIDED else NOT_PROVIDED,
+            'type': DashConstantField(constants.ConversionGoalType).to_internal_value(conversion_goal['type']),
         }
 
 

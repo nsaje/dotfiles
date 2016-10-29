@@ -47,19 +47,13 @@ class AdGroupSettingsTest(TestCase):
                 'autopilot_daily_budget': '150.0000',
                 'retargeting_ad_groups': [2],
                 'exclusion_retargeting_ad_groups': [9],
+                'interest_targeting': ['fun', 'games'],
+                'exclusion_interest_targeting': ['religion', 'weather'],
                 'audience_targeting': [1],
                 'exclusion_audience_targeting': [4],
                 'tracking_code': 'def=123',
                 'autopilot_min_budget': '0'
             }
-        }
-
-        self.original_interest_category = constants.InterestCategory
-        constants.InterestCategory._VALUES = {
-            'a': 'Test1',
-            'b': 'Test2',
-            'c': 'Test3',
-            'd': 'Test4'
         }
 
         self.user = User.objects.get(pk=1)
@@ -70,9 +64,6 @@ class AdGroupSettingsTest(TestCase):
             account.users.add(self.user)
 
         self.client.login(username=self.user.email, password='secret')
-
-    def tearDown(self):
-        constants.InterestCategory = self.original_interest_category
 
     def test_permissions(self):
         url = reverse('ad_group_settings', kwargs={'ad_group_id': 0})
@@ -175,14 +166,8 @@ class AdGroupSettingsTest(TestCase):
                     'autopilot_optimization_goal': None,
                     'notes': 'Some note',
                     'bluekai_targeting': ["or", "3", "4"],
-                    'interest_targeting': [
-                        {'id': "a", 'name': 'Test1'},
-                        {'id': "b", 'name': 'Test2'}
-                    ],
-                    'exclusion_interest_targeting': [
-                        {'id': "c", 'name': 'Test3'},
-                        {'id': "d", 'name': 'Test4'}
-                    ],
+                    'interest_targeting': ['fun', 'games'],
+                    'exclusion_interest_targeting': ['religion', 'weather'],
                     'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
                     'redirect_javascript': "alert('a')",
                 },
@@ -313,14 +298,8 @@ class AdGroupSettingsTest(TestCase):
                         'autopilot_optimization_goal': None,
                         'notes': 'Some note',
                         'bluekai_targeting': ["or", "3", "4"],
-                        'interest_targeting': [
-                            {'id': "a", 'name': 'Test1'},
-                            {'id': "b", 'name': 'Test2'}
-                        ],
-                        'exclusion_interest_targeting': [
-                            {'id': "c", 'name': 'Test3'},
-                            {'id': "d", 'name': 'Test4'}
-                        ],
+                        'interest_targeting': ['fun', 'games'],
+                        'exclusion_interest_targeting': ['religion', 'weather'],
                         'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
                         'redirect_javascript': "alert('a')",
                     }
@@ -410,14 +389,8 @@ class AdGroupSettingsTest(TestCase):
                         'autopilot_optimization_goal': None,
                         'notes': 'Some note',
                         'bluekai_targeting': ["or", "3", "4"],
-                        'interest_targeting': [
-                            {'id': "a", 'name': 'Test1'},
-                            {'id': "b", 'name': 'Test2'}
-                        ],
-                        'exclusion_interest_targeting': [
-                            {'id': "c", 'name': 'Test3'},
-                            {'id': "d", 'name': 'Test4'}
-                        ],
+                        'interest_targeting': ['fun', 'games'],
+                        'exclusion_interest_targeting': ['religion', 'weather'],
                         'audience_targeting': [1],
                         'exclusion_audience_targeting': [4],
                         'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
@@ -587,8 +560,8 @@ class AdGroupSettingsTest(TestCase):
                         'autopilot_optimization_goal': None,
                         'notes': '',
                         'bluekai_targeting': [],
-                        'interest_targeting': [],
-                        'exclusion_interest_targeting': [],
+                        'interest_targeting': ['fun', 'games'],
+                        'exclusion_interest_targeting': ['religion', 'weather'],
                         'audience_targeting': [1],
                         'exclusion_audience_targeting': [4],
                         'redirect_pixel_urls': [],

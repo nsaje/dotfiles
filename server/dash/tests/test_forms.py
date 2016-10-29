@@ -342,6 +342,8 @@ class AdGroupSettingsFormTest(TestCase):
             'retargeting_ad_groups': [3],
             'exclusion_retargeting_ad_groups': [5],
             'audience_targeting': [1, 2],
+            'interest_targeting': ['fun', 'games'],
+            'exclusion_interest_targeting': ['science', 'religion'],
             'exclusion_audience_targeting': [3, 4],
             'autopilot_state': 2,
             'autopilot_daily_budget': '100.00'
@@ -366,6 +368,8 @@ class AdGroupSettingsFormTest(TestCase):
             'tracking_code': 'code=test',
             'retargeting_ad_groups': [3],
             'exclusion_retargeting_ad_groups': [5],
+            'interest_targeting': ['fun', 'games'],
+            'exclusion_interest_targeting': ['science', 'religion'],
             'audience_targeting': [1, 2],
             'exclusion_audience_targeting': [3, 4],
             'autopilot_state': 2,

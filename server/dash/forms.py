@@ -163,6 +163,14 @@ class AdGroupSettingsForm(forms.Form):
         required=False,
         choices=constants.AdTargetLocation.get_choices()
     )
+    interest_targeting = forms.MultipleChoiceField(
+        required=False,
+        choices=constants.InterestCategory.get_choices()
+    )
+    exclusion_interest_targeting = forms.MultipleChoiceField(
+        required=False,
+        choices=constants.InterestCategory.get_choices()
+    )
     tracking_code = forms.CharField(required=False)
 
     autopilot_state = forms.TypedChoiceField(

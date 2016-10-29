@@ -205,13 +205,13 @@
                         <div class="col-xs-3 m-t-xs" ng-if="settings.interestTargeting.length">
                             <div class="text-success">Included</div>
                             <ul class="with-icons ul-checkmarks">
-                                <li ng-repeat="category in settings.interestTargeting">{{category.name}}</li>
+                                <li ng-repeat="category in settings.interestTargeting">{{constants.interestCategoryText[category]}}</li>
                             </ul>
                         </div>
                         <div class="col-xs-3 m-t-xs" ng-if="settings.exclusionInterestTargeting.length">
                             <div class="text-danger">Excluded</div>
                             <ul class="with-icons ul-remove">
-                                <li ng-repeat="category in settings.exclusionInterestTargeting">{{category.name}}</li>
+                                <li ng-repeat="category in settings.exclusionInterestTargeting">{{constants.interestCategoryText[category]}}</li>
                             </ul>
                         </div>
                     </div>

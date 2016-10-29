@@ -99,14 +99,29 @@ class RESTAPITest(TestCase):
     def test_adgroups_put(self):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         ad_group.get_current_settings().save(None)
+        data = {
+            'name': 'renamed test ad group',
+            'targeting': {
+                'interest': {
+                    'included': ['HOME', 'FAMILY'],
+                    'excluded': ['FINANCE', 'SHOPPING']
+                }
+            }
+        }
         r = self.client.put(
             reverse('adgroups_details', kwargs={'entity_id': 1}),
-            data={'name': 'renamed test ad group'}, format='json')
+            data=data, format='json')
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], dict)
         self.assertEqual(resp_json['data']['name'], 'renamed test ad group')
-        self.assertEqual(ad_group.get_current_settings().ad_group_name, 'renamed test ad group')
+        self.assertEqual(resp_json['data']['targeting']['interest']['included'], ['HOME', 'FAMILY'])
+        self.assertEqual(resp_json['data']['targeting']['interest']['excluded'], ['FINANCE', 'SHOPPING'])
+
+        new_settings = ad_group.get_current_settings()
+        self.assertEqual(new_settings.ad_group_name, 'renamed test ad group')
+        self.assertEqual(new_settings.interest_targeting, ['home', 'family'])
+        self.assertEqual(new_settings.exclusion_interest_targeting, ['finance', 'shopping'])
 
     @override_settings(R1_DEMO_MODE=True)
     def test_adgroups_put_state(self):

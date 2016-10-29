@@ -674,6 +674,47 @@ var constants = {
         CURRENCY: 2,
         PERCENT: 2,
         SECONDS: 1,
+    },
+    interestCategory: {
+        FASHION: 'fashion',
+        FAMILY: 'family',
+        COMMUNICATION: 'communication',
+        HOBBIES: 'hobbies',
+        WEATHER: 'weather',
+        SPANISH: 'spanish',
+        HOME: 'home',
+        EDUCATION: 'education',
+        TECHNOLOGY: 'technology',
+        UTILITY: 'utility',
+        ENTERTAINMENT: 'entertainment',
+        MENT: 'ment',
+        MEDIA: 'media',
+        TRAVEL: 'travel',
+        SPORTS: 'sports',
+        QUIZZES: 'quizzes',
+        OTHER: 'other',
+        HEALTH: 'health',
+        PETS: 'pets',
+        MUSIC: 'music',
+        DATING: 'dating',
+        UNKNOWN: '?',
+        SHOPPING: 'shopping',
+        FINANCE: 'finance',
+        FOOD: 'food',
+        CARS: 'cars',
+        MEN: 'men',
+        FRENCH: 'french',
+        HOBBY: 'hobby',
+        LAW: 'law',
+        COUPONS: 'coupons',
+        WOMEN: 'women',
+        SCIENCE: 'science',
+        FOREIGN: 'foreign',
+        POLITICS: 'politics',
+        DSASA: 'dsasa',
+        GAMES: 'games',
+        FUN: 'fun',
+        RELIGION: 'religion',
     }
 };
 
@@ -1287,6 +1328,44 @@ constants.campaignGoalValueText[constants.campaignGoalKPI.TIME_ON_SITE] = 'secon
 constants.campaignGoalValueText[constants.campaignGoalKPI.PAGES_PER_SESSION] = 'Pageviews per Visit';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPV] = 'Cost per Visit';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT] = 'Cost per Non-Bounced Visit';
+
+constants.interestCategoryText = {};
+constants.interestCategoryText[constants.interestCategory.COMMUNICATION] = 'Communication Tools';
+constants.interestCategoryText[constants.interestCategory.MEN] = 'Men’s Lifestyle';
+constants.interestCategoryText[constants.interestCategory.DATING] = 'Dating & Relationships';
+constants.interestCategoryText[constants.interestCategory.WEATHER] = 'Weather & Environment';
+constants.interestCategoryText[constants.interestCategory.FASHION] = 'Beauty & Fashion';
+constants.interestCategoryText[constants.interestCategory.TRAVEL] = 'Travel and Leisure';
+constants.interestCategoryText[constants.interestCategory.FUN] = 'Fun & Entertaining Sites';
+constants.interestCategoryText[constants.interestCategory.HEALTH] = 'Health & Fitness';
+constants.interestCategoryText[constants.interestCategory.SCIENCE] = 'Science';
+constants.interestCategoryText[constants.interestCategory.TECHNOLOGY] = 'Technology';
+constants.interestCategoryText[constants.interestCategory.CARS] = 'Automotive';
+constants.interestCategoryText[constants.interestCategory.MEDIA] = 'News';
+constants.interestCategoryText[constants.interestCategory.HOME] = 'Home & Garden';
+constants.interestCategoryText[constants.interestCategory.FAMILY] = 'Family & Parenting';
+constants.interestCategoryText[constants.interestCategory.SHOPPING] = 'Shopping';
+constants.interestCategoryText[constants.interestCategory.COUPONS] = 'Couponing';
+constants.interestCategoryText[constants.interestCategory.ENTERTAINMENT] = 'Arts & Entertainment';
+constants.interestCategoryText[constants.interestCategory.HOBBIES] = 'Hobbies & Interests';
+constants.interestCategoryText[constants.interestCategory.RELIGION] = 'Religion & Spirituality';
+constants.interestCategoryText[constants.interestCategory.MUSIC] = 'Music';
+constants.interestCategoryText[constants.interestCategory.FOOD] = 'Food & Drink';
+constants.interestCategoryText[constants.interestCategory.SPANISH] = 'Spanish Sites';
+constants.interestCategoryText[constants.interestCategory.PETS] = 'Pets';
+constants.interestCategoryText[constants.interestCategory.WOMEN] = 'Women’s Lifestyle';
+constants.interestCategoryText[constants.interestCategory.SPORTS] = 'Sports';
+constants.interestCategoryText[constants.interestCategory.FRENCH] = 'French Sites';
+constants.interestCategoryText[constants.interestCategory.POLITICS] = 'Gov’t & Politics';
+constants.interestCategoryText[constants.interestCategory.LAW] = 'Law';
+constants.interestCategoryText[constants.interestCategory.GAMES] = 'Games & Gaming';
+constants.interestCategoryText[constants.interestCategory.FINANCE] = 'Business & Finance';
+constants.interestCategoryText[constants.interestCategory.EDUCATION] = 'Education';
+constants.interestCategoryText[constants.interestCategory.UTILITY] = 'Software & Services';
+constants.interestCategoryText[constants.interestCategory.QUIZZES] = 'Quizzes';
+constants.interestCategoryText[constants.interestCategory.OTHER] = 'Other';
+constants.interestCategoryText[constants.interestCategory.UNKNOWN] = 'Unknown';
+constants.interestCategoryText[constants.interestCategory.FOREIGN] = 'International Sites';
 
 constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.MAX_BOUNCE_RATE,
