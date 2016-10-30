@@ -940,6 +940,63 @@ Authorization: Bearer <access_token>
             ]
         }
 
+
+# Group Reporting
+
+Getting a report is performed asynchronously. First, you create a report job, then you poll
+its status and finally, when its status is DONE, you receive a link to a CSV file in the result field.
+
+For now, only the following lists of fields are supported:
+
+- [Content Ad Id, Content Ad, Label, Total Spend, Impressions, Clicks, Avg. CPC]
+- [Domain Id, Domain, Media Source, Total Spend, Impressions, Clicks, Avg. CPC]
+- [Media Source Id, Media Source, Total Spend, Impressions, Clicks, Avg. CPC]
+
+## Report jobs [/rest/v1/reports/]
+
+### Create a new report job [POST /rest/v1/reports/]
+
++ Request (application/json)
+
+        {
+            "fields": [
+                {"field": "Content Ad Id"},
+                {"field": "Content Ad"},
+                {"field": "Label"},
+                {"field": "Total Spend"},
+                {"field": "Impressions"},
+                {"field": "Clicks"},
+                {"field": "Avg. CPC"}
+            ],
+            "filters": [
+                {"field": "Date", "operator": "between", "from": "2016-10-01", "to": "2016-10-31"},
+                {"field": "Ad Group Id", "operator": "=", "value": "2036"}
+            ]
+        }
+    
++ Response 201 (application/json)
+
+        {
+            "data": {
+                "id": "27",
+                "status": "IN_PROGRESS",
+                "result": null,
+            }
+        }
+        
+
+### Get report job status [GET /rest/v1/reports/{job_id}]
+
++ Response 201 (application/json)
+
+        {
+            "data": {
+                "id": "27",
+                "status": "DONE",
+                "result": "https://z1-rest-reports.s3.amazonaws.com/KgrK55qCMO85v9JhHwCIv8kso2quYwEGV2MLpiVUgDVRDJm3HiGk1lWrOGfxJ7k2.csv"
+            }
+        }
+
 # Group Constants reference
 
 ## Ad group / Content ad State
