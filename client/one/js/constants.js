@@ -715,6 +715,7 @@ var constants = {
         GAMES: 'games',
         FUN: 'fun',
         RELIGION: 'religion',
+        OUTBRAIN: 'outbrain',
     }
 };
 
@@ -1366,6 +1367,7 @@ constants.interestCategoryText[constants.interestCategory.QUIZZES] = 'Quizzes';
 constants.interestCategoryText[constants.interestCategory.OTHER] = 'Other';
 constants.interestCategoryText[constants.interestCategory.UNKNOWN] = 'Unknown';
 constants.interestCategoryText[constants.interestCategory.FOREIGN] = 'International Sites';
+constants.interestCategoryText[constants.interestCategory.OUTBRAIN] = 'Outbrain';
 
 constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.MAX_BOUNCE_RATE,

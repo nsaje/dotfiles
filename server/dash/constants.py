@@ -1057,6 +1057,7 @@ class InterestCategory(ConstantBase):
     GAMES = "games"
     FUN = "fun"
     RELIGION = "religion"
+    OUTBRAIN = "outbrain"
 
     _VALUES = {
         COMMUNICATION: "Communication Tools",
@@ -1094,7 +1095,8 @@ class InterestCategory(ConstantBase):
         QUIZZES: "Quizzes",
         OTHER: "Other",
         UNKNOWN: "Unknown",
-        FOREIGN: "International Sites"
+        FOREIGN: "International Sites",
+        OUTBRAIN: "Outbrain"
     }
 
 
