@@ -1953,7 +1953,7 @@ tags-input .host .tags {
 
     .zem-header {
         position: fixed;
-        z-index: 10000;
+        z-index: 9999;
         width: 100%;
         .animation(headerSlideIn 50ms ease-in-out);
         height: 30px;
@@ -2034,7 +2034,31 @@ tags-input .host .tags {
             }
         }
 
-        .zem-header-filter {
+        .zem-header-filter-selector-toggle {
+            height: 30px;
+            margin: 0;
+
+            .zem-filter-toggle {
+                display: inline-block;
+                height: 30px;
+                line-height: 30px;
+                padding: 0 10px;
+                background-color: transparent;
+                border-left: 1px solid fade(@white, 20%);
+                .border-radius(0);
+
+                &:hover, &:focus, &:active {
+                    background-color: fade(@white, 10%);
+                }
+
+                .filter-icon {
+                    width: 16px;
+                    height: 16px;
+                }
+            }
+        }
+
+        .zem-header-filter-legacy {
             .zem-filter {
                 margin: 0;
 
@@ -2044,7 +2068,6 @@ tags-input .host .tags {
                     line-height: 32px;
                     .transition(none);
                     background-color: transparent !important;
-                    border-right: 1px solid fade(@white, 20%);
                     border-left: 1px solid fade(@white, 20%);
                     .border-radius(0);
 
@@ -2067,6 +2090,12 @@ tags-input .host .tags {
                             right: 21px;
                         }
                     }
+
+                    &.filter-enabled {
+                       .btn-remove {
+                           padding: 0 5px;
+                       }
+                   }
                 }
 
                 .dropdown .dropdown-menu {
@@ -2114,7 +2143,7 @@ tags-input .host .tags {
     .zem-tabset {
         position: fixed;
         width: 100%;
-        z-index: 9999;
+        z-index: 9998;
         top: 30px;
         .animation(fadeIn 200ms ease-in-out);
         .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.2));

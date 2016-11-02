@@ -35,6 +35,13 @@ angular.module('one.widgets').component('zemFilterSelector', {
         function refresh () {
             $ctrl.appliedConditions = zemFilterSelectorService.getAppliedConditions();
             $ctrl.visibleSections = zemFilterSelectorService.getVisibleSections();
+
+            // Add or remove data-filter-enabled class to body to enable global desing changes if data filter is enabled
+            if ($ctrl.appliedConditions.length) {
+                $('body').addClass('data-filter-enabled');
+            } else {
+                $('body').removeClass('data-filter-enabled');
+            }
         }
     }],
 });
