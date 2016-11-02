@@ -9,4 +9,5 @@
 <zem-header-breadcrumb class="zem-header-breadcrumb pull-left"></zem-header-breadcrumb>
 <zem-header-menu class="zem-header-menu pull-right"></zem-header-menu>
 <zem-header-date-range-picker class="zem-header-date-range-picker pull-right"></zem-header-date-range-picker>
-<zem-header-filter class="zem-header-filter pull-right" level="$ctrl.level" enable-publisher-filter="$ctrl.enablePublisherFilter" show-publisher-selected="$ctrl.showPublisherSelected"></zem-header-filter>
+<zem-header-filter-legacy class="zem-header-filter-legacy pull-right" level="$ctrl.level" enable-publisher-filter="$ctrl.enablePublisherFilter" show-publisher-selected="$ctrl.showPublisherSelected"></zem-header-filter-legacy>
+<zem-header-filter-selector-toggle ng-if="$ctrl.hasPermission('zemauth.can_see_new_filter_selector')" class="zem-header-filter-selector-toggle pull-right"></zem-header-filter-selector-toggle>

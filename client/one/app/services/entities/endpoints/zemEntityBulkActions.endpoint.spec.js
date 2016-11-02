@@ -10,6 +10,7 @@ describe('zemEntityBulkActionsEndpoint', function () {
 
         zemSpecsHelper.mockUserInitialization($injector);
         $httpBackend.whenPOST(/.*/).respond(200, {});
+        $httpBackend.flush();
     }));
 
     afterEach(function () {

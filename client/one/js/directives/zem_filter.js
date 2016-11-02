@@ -16,7 +16,7 @@ angular.module('one.legacy').directive('zemFilter', ['config', function (config)
                 e.stopPropagation();
             });
         },
-        controller: ['$scope', '$state', '$rootScope', 'zemFilterService', 'zemUserSettings', 'api', function ($scope, $state, $rootScope, zemFilterService, zemUserSettings, api) {
+        controller: ['$scope', '$state', '$rootScope', 'zemFilterService', 'zemUserSettings', 'zemMediaSourcesService', 'zemAgenciesService', function ($scope, $state, $rootScope, zemFilterService, zemUserSettings, zemMediaSourcesService, zemAgenciesService) {
             $scope.availableSources = [];
             $scope.agencies = [];
             $scope.config = config;
@@ -25,15 +25,16 @@ angular.module('one.legacy').directive('zemFilter', ['config', function (config)
             $scope.accountTypes = [];
             $scope.agencyFilterVisible = false;
             $scope.accountTypeFilterVisible = false;
+
             $scope.refreshAvailableSources = function () {
-                api.availableSources.list().then(function (data) {
-                    $scope.availableSources = data.data.sources;
+                zemMediaSourcesService.getAvailableSources().then(function (sources) {
+                    $scope.availableSources = sources;
                 });
             };
 
             $scope.refreshAgencies = function () {
-                api.agencies.list().then(function (data) {
-                    $scope.agencies = data.data.agencies;
+                zemAgenciesService.getAgencies().then(function (agencies) {
+                    $scope.agencies = agencies;
                 });
             };
 

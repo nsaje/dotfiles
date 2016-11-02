@@ -1,0 +1,32 @@
+<div class="col-xs-12" ng-if="$ctrl.appliedConditions.length || $ctrl.isExpanded()">
+    <div class="applied-conditions-banner">
+        <span class="filter-title">Filter</span>
+        <div class="applied-conditions clerfix">
+            <span class="condition" ng-repeat="condition in $ctrl.appliedConditions">
+                <span class="condition-name">{{condition.name}}</span>
+                <span class="condition-text" title="{{condition.text}}">{{condition.text}}</span>
+                <a class="remove-condition" ng-click="$ctrl.removeCondition(condition.condition, condition.value)" href>X</a>
+            </span>
+        </div>
+        <button class="clear-filter" ng-click="$ctrl.clearFilter()">Clear filter</button>
+    </div>
+</div>
+<div class="col-xs-12" ng-if="$ctrl.isExpanded()">
+    <div class="filter-sections m-b clerfix" ng-class="$ctrl.getVisibleSectionsClasses()">
+        <div class="section {{section.cssClass}}" ng-repeat="section in $ctrl.visibleSections">
+            <div class="section-title">{{section.title}}</div>
+            <div class="section-options-container">
+                <ul class="section-options">
+                    <li ng-repeat="option in section.options">
+                        <label ng-switch="section.condition.type">
+                            <input ng-switch-when="list" type="checkbox" name="section.condition.name" ng-model="option.enabled">
+                            <input ng-switch-when="value" type="radio" name="section.condition.name" ng-model="section.value" ng-value="option.value">
+                            <span class="label-text">{{option.text}}</span>
+                        </label>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <button class="apply-filter" ng-click="$ctrl.applyFilter()">Apply filter</button>
+    </div>
+</div>

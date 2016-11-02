@@ -1650,48 +1650,6 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         };
     }
 
-    function AvailableSources () {
-        this.list = function () {
-            var deferred = $q.defer();
-            var url = '/api/sources/';
-            var config = {
-                params: {}
-            };
-
-            addShowArchived(config.params);
-
-            $http.get(url, config).
-                success(function (data, status) {
-                    deferred.resolve(data);
-                }).
-                error(function (data, status) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function Agencies () {
-        this.list = function () {
-            var deferred = $q.defer();
-            var url = '/api/agencies/';
-            var config = {
-                params: {},
-            };
-
-            $http.get(url, config).
-                success(function (data, status) {
-                    deferred.resolve(data);
-                }).
-                error(function (data, status) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
     function ConversionPixel () {
         function convertFromApi (conversionPixel) {
             return {
@@ -2342,9 +2300,5 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         adGroupPublishersState: new AdGroupPublishersState(),
         adGroupContentAdState: new AdGroupContentAdState(),
         adGroupContentAdArchive: new AdGroupContentAdArchive(),
-
-        // TODO: refactor - dedicated services
-        agencies: new Agencies(),
-        availableSources: new AvailableSources(),
     };
 }]);

@@ -1,15 +1,17 @@
 describe('zemEntityInstance', function () {
     var zemEntityInstanceService, zemEntityInstanceEndpoint;
-    var $rootScope, $q;
+    var $rootScope, $q, $httpBackend;
 
     beforeEach(module('one'));
     beforeEach(inject(function ($injector) {
         $q = $injector.get('$q');
         $rootScope = $injector.get('$rootScope');
+        $httpBackend = $injector.get('$httpBackend');
         zemEntityInstanceService = $injector.get('zemEntityInstanceService');
         zemEntityInstanceEndpoint = $injector.get('zemEntityInstanceEndpoint');
 
         zemSpecsHelper.mockUserInitialization($injector);
+        $httpBackend.flush();
     }));
 
     it('should use zemEntityActions endpoint for CRUD operations', function () {

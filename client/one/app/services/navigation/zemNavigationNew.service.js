@@ -56,17 +56,17 @@ angular.module('one.services').service('zemNavigationNewService', ['$rootScope',
 
         function convertData (data) {
             var entity;
-            if (data.hasOwnProperty('account')) {
+            if (data && data.hasOwnProperty('account')) {
                 entity = createEntity(constants.entityType.ACCOUNT, null, data.account);
             }
 
-            if (data.hasOwnProperty('campaign')) {
+            if (data && data.hasOwnProperty('campaign')) {
                 var campaign = createEntity(constants.entityType.CAMPAIGN, entity, data.campaign);
                 if (entity) entity.children = [campaign];
                 entity = campaign;
             }
 
-            if (data.hasOwnProperty('adGroup')) {
+            if (data && data.hasOwnProperty('adGroup')) {
                 var adGroup = createEntity(constants.entityType.AD_GROUP, entity, data.adGroup);
                 if (entity) entity.children = [adGroup];
                 entity = adGroup;

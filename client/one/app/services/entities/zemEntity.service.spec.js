@@ -19,6 +19,7 @@ describe('zemEntityService', function () {
         $httpBackend.whenGET(/.*/).respond(200, {});
         $httpBackend.whenPUT(/.*/).respond(200, {data: {settings: {}, defaultSettings: {}}});
         $httpBackend.whenPOST(/.*/).respond(200, {});
+        $httpBackend.flush();
     }));
 
     afterEach(function () {

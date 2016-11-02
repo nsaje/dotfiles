@@ -221,6 +221,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_use_single_ad_upload', 'User can use single content ad upload'),
             ('can_toggle_new_design', 'User can toggle between old and new design'),
             ('can_see_new_header', 'User can see new header'),
+            ('can_see_new_filter_selector', 'User can see new filter selector'),
             ('can_see_new_theme', 'User can see new theme'),
             ('can_use_partial_updates_in_upload', 'Partially update upload candidate fields'),
             ('can_use_own_images_in_upload', 'User can use their own images in upload'),

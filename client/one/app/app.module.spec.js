@@ -8,6 +8,7 @@ function zemSpecsHelperProvider () {
     //
     this.provideMockedPermissionsService = provideMockedPermissionsService;
     this.mockUserInitialization = mockUserInitialization;
+    this.getMockedAsyncFunction = getMockedAsyncFunction;
 
     //
     // Internal
@@ -16,7 +17,7 @@ function zemSpecsHelperProvider () {
         id: 1,
         name: 'Mock User',
         email: 'mock@user.com',
-        permissions: [] // zemPermissions mocked
+        permissions: [], // zemPermissions mocked
     };
 
     function provideMockedPermissionsService ($provide) {
@@ -33,7 +34,15 @@ function zemSpecsHelperProvider () {
                 user: testUser
             }
         });
-        $httpBackend.whenGET('/api/all_accounts/nav/').respond(200, {data: {}});
-        $httpBackend.flush();
+        $httpBackend.whenGET(/^\/api\/.*\/nav\//).respond(200, {data: {}});
+    }
+
+    function getMockedAsyncFunction ($injector, data) {
+        return function () {
+            var $q = $injector.get('$q');
+            var deferred = $q.defer();
+            deferred.resolve(data);
+            return deferred.promise;
+        };
     }
 }
