@@ -3,6 +3,7 @@ import magic
 import decimal
 import mimetypes
 import re
+
 import unicodecsv
 import dateutil.parser
 import rfc3987
@@ -21,8 +22,8 @@ from django.utils.html import strip_tags
 from automation import autopilot_budgets, autopilot_settings
 from dash import api
 from dash import constants
+from dash import fields
 from dash import models
-from dash import image_helper
 from dash import regions
 from dash import validation_helpers
 from dash.views import helpers
@@ -35,18 +36,15 @@ import actionlog.zwei_actions
 
 import stats.constants
 
-
 MAX_ADS_PER_UPLOAD = 100
 
 
 class BaseApiForm(forms.Form):
-
     def get_errors():
         pass
 
 
 class AdvancedDateTimeField(forms.fields.DateTimeField):
-
     def strptime(self, value, format):
         return dateutil.parser.parse(value)
 
@@ -217,6 +215,9 @@ class AdGroupSettingsForm(forms.Form):
         }
     )
 
+    dayparting = fields.DaypartingField(required=False,
+                                        help_text='Example: {"monday": [0,1,2,3], "tuesday": [20, 21, 22, 23], "timezone": "America/New_York"}')
+
     b1_sources_group_enabled = forms.BooleanField(required=False)
 
     b1_sources_group_daily_budget = forms.DecimalField(
@@ -331,6 +332,12 @@ class AdGroupSettingsForm(forms.Form):
                 'Autopilot requires $' + str(autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC) +
                 ' or more per active media source.')
         return self.cleaned_data.get('autopilot_daily_budget')
+
+    def clean_dayparting(self):
+        dayparting = self.cleaned_data.get('dayparting')
+        if not dayparting:
+            dayparting = {}
+        return dayparting
 
 
 class AdGroupSourceSettingsCpcForm(forms.Form):
@@ -782,7 +789,6 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
 
 
 class DisplayURLField(forms.URLField):
-
     def clean(self, value):
         display_url = super(forms.URLField, self).clean(value)
         display_url = display_url.strip()
@@ -953,7 +959,6 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
 
 
 class CreditLineItemForm(forms.ModelForm):
-
     def clean_start_date(self):
         start_date = self.cleaned_data['start_date']
         if not self.instance.pk or start_date != self.instance.start_date:
@@ -1026,7 +1031,6 @@ class BudgetLineItemForm(forms.ModelForm):
 
 
 class MultiEmailField(forms.Field):
-
     def to_python(self, value):
         if not value:
             return []
@@ -1088,7 +1092,6 @@ class ScheduleReportForm(forms.Form):
 
 
 class PublisherBlacklistForm(forms.ModelForm):
-
     def save(self, commit=True):
         instance = super(PublisherBlacklistForm, self).save(commit=False)
 
@@ -1138,7 +1141,6 @@ class PublisherBlacklistForm(forms.ModelForm):
 
 
 class CreditLineItemAdminForm(forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         super(CreditLineItemAdminForm, self).__init__(*args, **kwargs)
         # archived state is stored in settings, we need to have a more stupid
@@ -1166,14 +1168,11 @@ class CreditLineItemAdminForm(forms.ModelForm):
 
 
 class BudgetLineItemAdminForm(forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         super(BudgetLineItemAdminForm, self).__init__(*args, **kwargs)
         # archived state is stored in settings, we need to have a more stupid
         # query
-        not_archived = set([
-            c.id for c in models.Campaign.objects.all() if not c.is_archived()
-        ])
+        not_archived = set([c.id for c in models.Campaign.objects.all() if not c.is_archived()])
         if self.instance and self.instance.campaign_id:
             not_archived.add(self.instance.campaign_id)
 
@@ -1196,7 +1195,6 @@ class BudgetLineItemAdminForm(forms.ModelForm):
 
 
 class BreakdownForm(forms.Form):
-
     def __init__(self, user, breakdown, request_body, *args, **kwargs):
         request_body['breakdown'] = breakdown
         self.user = user
@@ -1469,21 +1467,17 @@ class ContentAdForm(ContentAdCandidateForm):
 
     def _get_image_error_msg(self, cleaned_data):
         image_status = cleaned_data['image_status']
-        if image_status not in [
-                constants.AsyncUploadJobStatus.FAILED,
-                constants.AsyncUploadJobStatus.OK,
-        ]:
+        if image_status not in [constants.AsyncUploadJobStatus.FAILED, constants.AsyncUploadJobStatus.OK]:
             return
 
         if image_status == constants.AsyncUploadJobStatus.FAILED:
             return 'Image could not be processed'
 
         if image_status == constants.AsyncUploadJobStatus.OK and not (
-            cleaned_data['image_id'] and
-            cleaned_data['image_hash'] and
-            cleaned_data['image_width'] and
-            cleaned_data['image_height']
-        ):
+                cleaned_data['image_id'] and
+                cleaned_data['image_hash'] and
+                cleaned_data['image_width'] and
+                cleaned_data['image_height']):
             return 'Image could not be processed'
 
         if cleaned_data['image_width'] < self.MIN_IMAGE_SIZE or cleaned_data['image_height'] < self.MIN_IMAGE_SIZE:
@@ -1556,7 +1550,6 @@ class AudienceRuleForm(forms.Form):
 
 
 class AudienceRulesField(forms.Field):
-
     def clean(self, rules):
         if not rules:
             raise forms.ValidationError(self.error_messages['required'])

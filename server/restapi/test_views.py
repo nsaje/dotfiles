@@ -144,7 +144,7 @@ class RESTAPITest(TestCase):
         self.assertGreater(len(resp_json['data']), 0)
         expected_fields = {
             'startDate', 'endDate', 'name', 'maxCpc', 'state', 'trackingCode',
-            'autopilot', 'targeting', 'id', 'campaignId', 'dailyBudget'}
+            'autopilot', 'targeting', 'id', 'campaignId', 'dailyBudget', 'dayparting'}
         for item in resp_json['data']:
             self.assertEqual(set(item.keys()), expected_fields)
 

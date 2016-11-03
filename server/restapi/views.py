@@ -231,6 +231,7 @@ class AdGroupSerializer(SettingsSerializer):
                 'state': constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state']),
                 'dailyBudget': settings['autopilot_daily_budget'],
             },
+            'dayparting': settings['dayparting'],
         }
 
     def to_internal_value(self, external_data):
@@ -250,6 +251,7 @@ class AdGroupSerializer(SettingsSerializer):
             'exclusion_interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
             'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value_many(data['autopilot']['state']),
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
+            'dayparting': data['dayparting'],
         }
         return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
 

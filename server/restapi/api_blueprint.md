@@ -416,6 +416,11 @@ Authorization: Bearer <access_token>
                 "autopilot": {
                     "state": "OPTIMIZE_BIDS",
                     "dailyBudget": 100.0001
+                },
+                "dayparting": {
+                    "monday": [0, 1, 2, 3],
+                    "tuesday": [20, 21, 22, 23],
+                    "timezone": "America/New_York"
                 }
             }
         }
@@ -451,6 +456,10 @@ Authorization: Bearer <access_token>
             "autopilot": {
                 "state": "OPTIMIZE_BIDS",
                 "dailyBudget": "100.0001"
+            },
+            "dayparting": {
+                "monday": [4, 5, 6, 7],
+                "friday": [2, 3, 7, 8, 9, 10]
             }
         }
 
@@ -484,6 +493,10 @@ Authorization: Bearer <access_token>
                 "autopilot": {
                     "state": "OPTIMIZE_BIDS",
                     "dailyBudget": "100.0001"
+                },
+                "dayparting": {
+                    "monday": [4, 5, 6, 7],
+                    "friday": [2, 3, 7, 8, 9, 10]
                 }
             }
         }
@@ -524,6 +537,11 @@ Authorization: Bearer <access_token>
                     "autopilot": {
                         "state": "OPTIMIZE_BIDS",
                         "dailyBudget": "100.0001"
+                    },
+                    "dayparting": {
+                        "monday": [4, 5, 6, 7],
+                        "friday": [2, 3, 7, 8, 9, 10],
+                        "timezone": "Europe/Ljubljana"
                     }
                 }
             ]
@@ -561,6 +579,11 @@ Authorization: Bearer <access_token>
             "autopilot": {
                 "state": "OPTIMIZE_BIDS",
                 "dailyBudget": "100.0001"
+            },
+            "dayparting": {
+                "monday": [4, 5, 6, 7],
+                "friday": [2, 3, 7, 8, 9, 10],
+                "timezone": "America/Los_Angeles"
             }
         }
 
@@ -594,6 +617,11 @@ Authorization: Bearer <access_token>
                 "autopilot": {
                     "state": "OPTIMIZE_BIDS",
                     "dailyBudget": "100.0001"
+                },
+                "dayparting": {
+                    "monday": [4, 5, 6, 7],
+                    "friday": [2, 3, 7, 8, 9, 10],
+                    "timezone": "America/Los_Angeles"
                 }
             }
         }
@@ -996,6 +1024,16 @@ For now, only the following lists of fields are supported:
                 "result": "https://z1-rest-reports.s3.amazonaws.com/KgrK55qCMO85v9JhHwCIv8kso2quYwEGV2MLpiVUgDVRDJm3HiGk1lWrOGfxJ7k2.csv"
             }
         }
+
+# Types
+
+## Dayparting
+
+Dayparting structure is defined as a dictionary of days which point to a list of hours that are enabled in that day, eg. "monday" -> [0, 1, 2, 5]. 
+This means that on monday bidding is enabled from 00:00 to 02:59 and from 5:00 to 5:59. 
+The other value is "timezone" that defines in which timezone the hours are evaluated, eg. "timezone" -> "America/New_York". 
+This value must be formatted according to the tz database (see https://en.wikipedia.org/wiki/Tz_database). If timezone isn't specified then user's timezone is used to resolve the hours.
+
 
 # Group Constants reference
 

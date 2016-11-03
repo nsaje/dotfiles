@@ -170,6 +170,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 'redirect_javascript': settings.redirect_javascript,
                 'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
                 'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None,
+                'dayparting': settings.dayparting,
                 'b1_sources_group_enabled': settings.b1_sources_group_enabled,
                 'b1_sources_group_daily_budget': settings.b1_sources_group_daily_budget,
                 'b1_sources_group_state': settings.b1_sources_group_state,
@@ -190,6 +191,7 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.exclusion_interest_targeting = resource['exclusion_interest_targeting']
         settings.ad_group_name = resource['name']
         settings.tracking_code = resource['tracking_code']
+        settings.dayparting = resource['dayparting']
 
         if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
