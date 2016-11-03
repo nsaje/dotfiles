@@ -10,9 +10,13 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         $ctrl.$onInit = function () {
             $ctrl.userCanSeeAllAccounts = zemPermissions.hasPermission('dash.group_account_automatically_add');
             zemNavigationNewService.onActiveEntityChange(onEntityChange);
+
+            // FIXME: Use Entity services for name changes
+            zemNavigationNewService.onHierarchyUpdate(onEntityChange);
         };
 
-        function onEntityChange (event, activeEntity) {
+        function onEntityChange () {
+            var activeEntity = zemNavigationNewService.getActiveEntity();
             updateTitle(activeEntity);
             updateBreadcrumb(activeEntity);
         }
