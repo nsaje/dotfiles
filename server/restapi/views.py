@@ -625,6 +625,39 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
         return self.get(request, ad_group.id)
 
 
+class AdGroupSourcesRTBSerializer(serializers.Serializer):
+    groupEnabled = serializers.BooleanField(source='b1_sources_group_enabled')
+    dailyBudget = serializers.DecimalField(max_digits=10, decimal_places=4, source='b1_sources_group_daily_budget')
+    state = DashConstantField(constants.AdGroupSourceSettingsState, source='b1_sources_group_state')
+
+    def update(self, data_internal, validated_data):
+        request = validated_data['request']
+        del validated_data['request']
+        settings = data_internal
+        entity_id = int(settings['id'])
+        settings.update(validated_data)
+        request.body = RESTAPIJSONRenderer().render(({'settings': settings}))
+        data_internal_new, _ = agency.AdGroupSettings(rest_proxy=True).put(request, entity_id)
+        return data_internal_new['data']['settings']
+
+
+class AdGroupSourcesRTBViewDetails(RESTAPIBaseView):
+
+    def get(self, request, ad_group_id):
+        view_internal = agency.AdGroupSettings(rest_proxy=True)
+        data_internal, status_code = view_internal.get(request, ad_group_id)
+        serializer = AdGroupSourcesRTBSerializer(data_internal['data']['settings'])
+        return self.response_ok(serializer.data, status=status_code)
+
+    def put(self, request, ad_group_id):
+        view_internal = agency.AdGroupSettings(rest_proxy=True)
+        data_internal, status_code = view_internal.get(request, ad_group_id)
+        serializer = AdGroupSourcesRTBSerializer(data_internal['data']['settings'], request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(request=request)
+        return self.response_ok(serializer.data, status=201)
+
+
 class ContentAdSerializer(serializers.ModelSerializer):
     class Meta:
         model = dash.models.ContentAd

@@ -217,6 +217,20 @@ class AdGroupSettingsForm(forms.Form):
         }
     )
 
+    b1_sources_group_enabled = forms.BooleanField(required=False)
+
+    b1_sources_group_daily_budget = forms.DecimalField(
+        decimal_places=4,
+        required=False,
+    )
+
+    b1_sources_group_state = forms.TypedChoiceField(
+        required=False,
+        choices=constants.AdGroupSourceSettingsState.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+
     def __init__(self, ad_group, user, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 

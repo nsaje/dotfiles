@@ -49,9 +49,14 @@ urlpatterns = [
         name='adgroups_list'
     ),
     url(
-        r'^adgroups/(?P<ad_group_id>\d+)/sources/',
+        r'^adgroups/(?P<ad_group_id>\d+)/sources/$',
         views.AdGroupSourcesViewList.as_view(),
         name='adgroups_sources_list'
+    ),
+    url(
+        r'^adgroups/(?P<ad_group_id>\d+)/sources/rtb/$',
+        views.AdGroupSourcesRTBViewDetails.as_view(),
+        name='adgroups_sources_rtb_details'
     ),
     url(
         r'^adgroups/(?P<ad_group_id>\d+)/publishers/$',

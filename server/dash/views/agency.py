@@ -169,7 +169,10 @@ class AdGroupSettings(api_common.BaseApiView):
                 'redirect_pixel_urls': settings.redirect_pixel_urls,
                 'redirect_javascript': settings.redirect_javascript,
                 'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
-                'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None
+                'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None,
+                'b1_sources_group_enabled': settings.b1_sources_group_enabled,
+                'b1_sources_group_daily_budget': settings.b1_sources_group_daily_budget,
+                'b1_sources_group_state': settings.b1_sources_group_state,
             }
 
         return result
@@ -205,6 +208,11 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.exclusion_retargeting_ad_groups = resource['exclusion_retargeting_ad_groups']
             settings.audience_targeting = resource['audience_targeting']
             settings.exclusion_audience_targeting = resource['exclusion_audience_targeting']
+
+        # TODO(nsaje): protect with permission?
+        settings.b1_sources_group_enabled = resource['b1_sources_group_enabled']
+        settings.b1_sources_group_daily_budget = resource['b1_sources_group_daily_budget']
+        settings.b1_sources_group_state = resource['b1_sources_group_state']
 
     def _send_update_actions(self, ad_group, current_settings, new_settings, request):
         actionlogs_to_send = []

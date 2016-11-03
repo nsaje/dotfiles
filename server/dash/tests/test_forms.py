@@ -346,7 +346,10 @@ class AdGroupSettingsFormTest(TestCase):
             'exclusion_interest_targeting': ['science', 'religion'],
             'exclusion_audience_targeting': [3, 4],
             'autopilot_state': 2,
-            'autopilot_daily_budget': '100.00'
+            'autopilot_daily_budget': '100.00',
+            'b1_sources_group_enabled': False,
+            'b1_sources_group_daily_budget': '5.00',
+            'b1_sources_group_state': 2,
         }
 
     @patch('utils.dates_helper.local_today')
@@ -356,6 +359,7 @@ class AdGroupSettingsFormTest(TestCase):
 
         self.assertTrue(form.is_valid())
 
+        self.maxDiff = None
         self.assertEqual(form.cleaned_data, {
             'cpc_cc': Decimal('1.00'),
             'daily_budget_cc': Decimal('10.00'),
@@ -373,7 +377,10 @@ class AdGroupSettingsFormTest(TestCase):
             'audience_targeting': [1, 2],
             'exclusion_audience_targeting': [3, 4],
             'autopilot_state': 2,
-            'autopilot_daily_budget': Decimal('100.00')
+            'autopilot_daily_budget': Decimal('100.00'),
+            'b1_sources_group_enabled': False,
+            'b1_sources_group_daily_budget': Decimal('5.00'),
+            'b1_sources_group_state': 2,
         })
 
     @patch('utils.dates_helper.local_today')

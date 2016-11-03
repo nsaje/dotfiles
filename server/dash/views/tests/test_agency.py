@@ -52,7 +52,10 @@ class AdGroupSettingsTest(TestCase):
                 'audience_targeting': [1],
                 'exclusion_audience_targeting': [4],
                 'tracking_code': 'def=123',
-                'autopilot_min_budget': '0'
+                'autopilot_min_budget': '0',
+                'b1_sources_group_enabled': True,
+                'b1_sources_group_daily_budget': '5.0000',
+                'b1_sources_group_state': 1,
             }
         }
 
@@ -170,6 +173,9 @@ class AdGroupSettingsTest(TestCase):
                     'exclusion_interest_targeting': ['religion', 'weather'],
                     'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
                     'redirect_javascript': "alert('a')",
+                    'b1_sources_group_enabled': False,
+                    'b1_sources_group_daily_budget': '0.0000',
+                    'b1_sources_group_state': 2,
                 },
                 'warnings': {}
             },
@@ -302,6 +308,9 @@ class AdGroupSettingsTest(TestCase):
                         'exclusion_interest_targeting': ['religion', 'weather'],
                         'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
                         'redirect_javascript': "alert('a')",
+                        'b1_sources_group_enabled': True,
+                        'b1_sources_group_daily_budget': '5.0000',
+                        'b1_sources_group_state': 1,
                     }
                 },
                 'success': True
@@ -395,6 +404,9 @@ class AdGroupSettingsTest(TestCase):
                         'exclusion_audience_targeting': [4],
                         'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
                         'redirect_javascript': "alert('a')",
+                        'b1_sources_group_enabled': True,
+                        'b1_sources_group_daily_budget': '5.0000',
+                        'b1_sources_group_state': 1,
                     }
                 },
                 'success': True
@@ -566,6 +578,9 @@ class AdGroupSettingsTest(TestCase):
                         'exclusion_audience_targeting': [4],
                         'redirect_pixel_urls': [],
                         'redirect_javascript': '',
+                        'b1_sources_group_enabled': True,
+                        'b1_sources_group_daily_budget': '5.0000',
+                        'b1_sources_group_state': 1,
                     }
                 },
                 'success': True
