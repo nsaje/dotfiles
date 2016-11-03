@@ -23,11 +23,11 @@ angular.module('one.legacy').directive('zemChart', ['config', '$compile', '$wind
 
             if (zemPermissions.hasPermission('zemauth.can_see_new_theme')) {
                 totalsColor = ['#3f547f', '#b2bbcc'];
-                goalsColor = ['#f15f74', '#f9bfc7'];
+                goalsColor = ['#99cc00', '#d6eb99'];
                 colors = [
-                    ['#9a6db0', '#d7c5df'],
-                    ['#f7d842', '#fcefb3'],
-                    ['#5481e6', '#bbcdf5'],
+                    ['#29aae3', '#a9ddf4'],
+                    ['#0aaf9f', '#9ddfd9'],
+                    ['#f15f74', '#f9bfc7'],
                 ];
             } else {
                 totalsColor = ['#009db2', '#c9eaef'];

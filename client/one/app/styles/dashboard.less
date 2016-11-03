@@ -262,13 +262,15 @@ tags-input .host .tags {
             position: relative;
 
             .chart-container {
+                vertical-align: top;
+                
                 .chart {
                     height: 290px;
                 }
 
                 .chart-selector {
                     display: inline-block;
-                    margin-bottom: @default-spacing;
+                    margin: 0 @default-spacing @default-spacing 0;
 
                     .select2-container {
                         width: 280px;
@@ -277,37 +279,42 @@ tags-input .host .tags {
                     .middle-text {
                         font-size: @default-font-size;
                         color: @gray;
-                        line-height: 32px;
-                        padding: 0 5px;
+                        padding: 7px 5px 0 5px;
+                        display: inline-block;
+                        vertical-align: top;
                     }
                 }
 
                 .chart-legend {
                     display: inline-block;
-                    padding: 0;
-                    margin: 0;
+                    padding: 4px 0 0 0;
+                    margin: 0 0 @default-spacing 0;
+                    vertical-align: top;
 
                     li {
                         display: inline-block;
-                        margin-left: 20px;
+                        margin-right: @default-spacing;
                         cursor: default;
-                        margin-bottom: 10px;
+                        margin-bottom: 5px;
 
                         div {
                             display: inline-block;
                         }
 
                         .legend-item {
-                            .border-radius(2px);
-
                             .btn-remove {
+                                position: relative;
                                 cursor: pointer;
-                                width: 15px;
-                                margin-left: 3px;
+                                width: 22px;
+                                height: 22px;
                                 text-align: center;
+                                float: left;
 
                                 img {
-                                    width: 9px;
+                                    width: 10px;
+                                    position: absolute;
+                                    left: 6px;
+                                    top: 6px;
                                 }
 
                                 &.disabled {
@@ -320,11 +327,11 @@ tags-input .host .tags {
                             }
 
                             .text {
-                                .border-right-radius(1px);
                                 background-color: orange;
-                                padding: 2px 5px;
+                                padding: 0 5px;
+                                line-height:  22px;
+                                font-size: @default-font-size;
                                 text-transform: uppercase;
-                                font-size: 12px;
                                 font-weight: 500;
                             }
                         }
@@ -1466,6 +1473,12 @@ tags-input .host .tags {
     font-size: 14px;
     font-style: normal;
 }
+    
+.textarea-with-border {
+    border: 1px dashed @border-input-color;
+    width: 100%;
+    padding: 5px 10px;
+}
 
 .form-group {
     &.indented  {
@@ -1667,6 +1680,7 @@ tags-input .host .tags {
     line-height: 16px;
     .border-radius(0px);
     margin: 0;
+    width: auto;
 
     &.alert-icon {
         padding-left: 40px;
@@ -1687,6 +1701,19 @@ tags-input .host .tags {
                 background-image: url('images/alert-warning.svg');
             }
         }
+    }
+    
+    .form-alert-exclamation {
+        width: 20px;
+        height: 20px;
+        float: left;
+        display: inline-block;
+        margin-right: 10px;
+    }
+    
+    .form-alert-body {
+        display: inline-block;
+        line-height: 20px;
     }
 }
 
@@ -1955,7 +1982,7 @@ tags-input .host .tags {
         position: fixed;
         z-index: 9999;
         width: 100%;
-        .animation(headerSlideIn 50ms ease-in-out);
+        .animation(headerSlideIn 200ms ease-in-out);
         height: 30px;
 
         .logo-container {
@@ -2183,7 +2210,7 @@ tags-input .host .tags {
     .zem-header {
         top: -30px;
 
-        .animation(headerSlideOut 50ms ease-in-out);
+        .animation(headerSlideOut 200ms ease-in-out);
     }
     .zem-tabset {
         opacity: 0;
