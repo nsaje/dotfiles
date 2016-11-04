@@ -25,6 +25,16 @@ module.exports = function (grunt) {
                 dest: 'dist/one/zemanta-one.templates.js'
             }
         },
+        postcss: {
+            options: {
+                processors: [
+                    require('autoprefixer')({browsers: ['> 1%', 'last 2 versions', 'ie >= 10', 'Firefox ESR']})
+                ]
+            },
+            one: {
+                src: 'dist/one/zemanta-one.css'
+            }
+        },
         concat: {
             one_js: {
                 options: {
@@ -234,7 +244,7 @@ module.exports = function (grunt) {
                 files: [
                     'one/**/*.less',
                 ],
-                tasks: ['concat:one_styles', 'less:one', 'clean:tmp']
+                tasks: ['concat:one_styles', 'less:one', 'postcss:one', 'clean:tmp']
             },
             one_templates: {
                 files: [
@@ -358,7 +368,7 @@ module.exports = function (grunt) {
             tmp: ['dist/tmp'],
         },
         build: {
-            one: ['html2js:one', 'concat:one_js', 'concat:one_styles', 'less:one', 'copy:one', 'clean:tmp'],
+            one: ['html2js:one', 'concat:one_js', 'concat:one_styles', 'less:one', 'postcss:one', 'copy:one', 'clean:tmp'],
             one_lib: ['bower_concat:one_lib', 'cssmin:one_lib', 'copy:one_lib'],
             actionlog: ['concat:actionlog', 'less:actionlog', 'copy:actionlog'],
             actionlog_lib: ['bower_concat:actionlog_lib', 'cssmin:actionlog_lib'],

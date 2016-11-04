@@ -27,7 +27,7 @@ angular.module('one.widgets').component('zemFilterSelector', {
         function getVisibleSectionsClasses () {
             var classes = '';
             $ctrl.visibleSections.forEach(function (section) {
-                classes += 'visible-' + section.cssClass + ' ';
+                classes += 'filter-sections--visible-' + section.cssClass + ' ';
             });
             return classes;
         }

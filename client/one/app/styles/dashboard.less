@@ -56,7 +56,7 @@ zem-internal-feature {
     .modal-content {
         padding: @default-spacing;
         border-radius: 3px;
-        border-top: 3px solid @default-color;
+        border-top: 3px solid @primary-color;
     }
 }
 
@@ -68,12 +68,12 @@ zem-internal-feature {
             border: none;
 
             .modal-header {
-                border-bottom: 4px solid @default-color;
+                border-bottom: 4px solid @primary-color;
                 padding: 15px 15px 10px 15px;
                 margin-bottom: 5px;
 
                 h4 {
-                    color: @default-color;
+                    color: @primary-color;
                 }
 
                 p {
@@ -104,10 +104,6 @@ zem-internal-feature {
                 border: none;
                 background-color: tint(@secondary-color,90%);
                 text-align: left;
-                -webkit-border-bottom-right-radius: @border-radius;
-                -webkit-border-bottom-left-radius: @border-radius;
-                -moz-border-radius-bottomright: @border-radius;
-                -moz-border-radius-bottomleft: @border-radius;
                 border-bottom-right-radius: @border-radius;
                 border-bottom-left-radius: @border-radius;
 
@@ -130,8 +126,8 @@ zem-internal-feature {
 
 select.media-source-select {
     border: 1px solid @border-input-color;
-    .border-radius (@border-radius);
-    .box-shadow (inset 3px 3px 3px 0px rgba(0,0,0,0.03));
+    border-radius: @border-radius;
+    box-shadow: inset 3px 3px 3px 0px rgba(0,0,0,0.03);
     padding: 5px 10px;
 }
 
@@ -153,7 +149,7 @@ select.media-source-select {
         .alert {
             margin: -@default-spacing -@default-spacing @default-spacing -@default-spacing;
             border: none;
-            .border-radius(0px);
+            border-radius: 0;
         }
 
         .button-bar {
@@ -185,7 +181,7 @@ select.media-source-select {
 
 .white-background {
     background-color: @white;
-    .box-shadow (0px 0px 3px 0px rgba(0,0,0,0.1));
+    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);
     padding: @default-spacing;
     margin-top: @default-spacing*1.5;
     position: relative;
@@ -202,10 +198,6 @@ tags-input .host .tags {
     border-color: #d2d2d2;
     min-height: 36px;
     border-radius: 2px;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
     box-shadow: none;
     -webkit-appearance: none;
 
@@ -215,8 +207,6 @@ tags-input .host .tags {
         margin: 2px;
         padding: 0 0 0 5px;
         height: 26px;
-        -webkit-box-shadow: 0;
-        -moz-box-shadow: 0;
         box-shadow: 0;
     }
 
@@ -263,7 +253,7 @@ tags-input .host .tags {
 
             .chart-container {
                 vertical-align: top;
-                
+
                 .chart {
                     height: 290px;
                 }
@@ -346,7 +336,7 @@ tags-input .host .tags {
                     margin-left: -50px;
                     z-index: 2;
                     text-align: center;
-                    color: @default-color;
+                    color: @primary-color;
                     font-size: 24px;
                     font-weight: 300;
                     padding: 5px 20px;
@@ -514,15 +504,15 @@ tags-input .host .tags {
 
                                 &.infobox-active-icon {
                                     background-color: @green;
-                                    .border-radius(50%);
+                                    border-radius: 50%;
                                 }
                                 &.infobox-inactive-icon {
                                     background-color: @red;
-                                    .border-radius(50%);
+                                    border-radius: 50%;
                                 }
                                 &.infobox-stopped-icon {
                                     background-color: @light-gray;
-                                    .border-radius(50%);
+                                    border-radius: 50%;
                                 }
                                 &.infobox-autopilot-icon {
                                     background: url("images/autopilot.svg") no-repeat;
@@ -735,7 +725,7 @@ tags-input .host .tags {
                                     background-position: center center;
                                     background-repeat: no-repeat;
                                     background-size: 30px 30px;
-                                    .transition(background-color 200ms ease-in-out);
+                                    transition: background-color 200ms ease-in-out;
 
                                     &:hover {
                                         background-color: @very-light-gray;
@@ -788,7 +778,7 @@ tags-input .host .tags {
 .insights-container,
 .infobox-container {
     background-color: @white;
-    .box-shadow (0px 0px 3px 0px rgba(0,0,0,0.1));
+    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);
     padding: 15px;
 }
 
@@ -827,14 +817,14 @@ tags-input .host .tags {
         height: 8px;
         display: inline-block;
         margin-right: 2px;
-        .border-radius(2px);
+        border-radius: 2px;
     }
 }
 
 // POPOVER //
 
 .popover:before {
-    background-color: @default-color;
+    background-color: @primary-color;
 }
 
 ///////////////////////////
@@ -846,7 +836,7 @@ tags-input .host .tags {
     border: none;
     padding: 0 @default-spacing;
     margin: 0 -@default-spacing;
-    .box-shadow (0px 0px 3px 0px rgba(0,0,0,0.1));
+    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);
 
     > li {
         margin-bottom: 0;
@@ -859,8 +849,8 @@ tags-input .host .tags {
             padding: 0;
             margin: 0;
             border: none;
-            .border-radius (0);
-            .transition(background-color 200ms ease-in-out);
+            border-radius: 0;
+            transition: background-color 200ms ease-in-out;
 
             > uib-tab-heading {
                 > a,
@@ -879,7 +869,7 @@ tags-input .host .tags {
         }
 
         > a:hover {
-            background-color: fade(@default-color, 10%);
+            background-color: fade(@primary-color, 10%);
         }
 
         &.active > a {
@@ -889,10 +879,10 @@ tags-input .host .tags {
                 > a:active,
                 > a:visited {
                     font-weight: 500;
-                    color: @default-color;
+                    color: @primary-color;
                     box-sizing: border-box;
                     padding-bottom: 6px;
-                    border-bottom: 3px solid @default-color;
+                    border-bottom: 3px solid @primary-color;
                     margin-bottom: 0;
                 }
             }
@@ -916,7 +906,7 @@ tags-input .host .tags {
             width: 15px;
             height: 15px;
             background-color: @light-gray;
-            .border-radius(50%);
+            border-radius: 50%;
             left: 0;
             top: 11px;
         }
@@ -942,7 +932,7 @@ tags-input .host .tags {
             position: relative;
             width: 16px;
             height: @default-button-input-height;
-            .transition(all 250ms ease-in-out);
+            transition: all 250ms ease-in-out;
             margin: 0 0 0 10px;
             display: inline-block;
             overflow: hidden;
@@ -960,7 +950,7 @@ tags-input .host .tags {
 
     .text {
         margin-left: 10px;
-        .transition(all 250ms ease-in-out);
+        transition: all 250ms ease-in-out;
         display: inline-block;
         height: @default-button-input-height;
         padding-top: floor(@default-button-input-height/4-2);
@@ -1034,7 +1024,7 @@ tags-input .host .tags {
             display: block;
             background: url(images/arrow-gray.svg) no-repeat;
             background-size: 6px;
-            .rotate(90deg);
+            transform: rotate(90deg);
             width: 6px;
             height: 11px;
             position: absolute;
@@ -1062,19 +1052,19 @@ tags-input .host .tags {
 .btn-default:active,
 .btn-default.active,
 .open .dropdown-toggle.btn-default {
-    .gradient-vertical (#FFFFFF, #f9f9f9);
+    background: linear-gradient(to bottom, #FFFFFF, #f9f9f9);
     border: 1px solid @border-gray-color;
     line-height: @default-button-input-height;
-    .border-radius(@border-radius);
+    border-radius: @border-radius;
     color: @text-color !important;
-    .box-shadow(none);
+    box-shadow: none;
     font-weight: 400 !important;
 
     &:not(.disabled):not([disabled]) {
         &:hover {
             border-color: @border-gray-color;
             color: @text-color;
-            .gradient-vertical (#f1f1f1, #FFFFFF);
+            background: linear-gradient(to bottom, #f1f1f1, #FFFFFF);
         }
     }
 
@@ -1101,23 +1091,23 @@ tags-input .host .tags {
 .btn-primary:hover,
 .btn-primary:active,
 .btn-primary.active {
-    background-color: @default-color;
+    background-color: @primary-color;
     border: none;
     color: @white;
-    .box-shadow(none);
-    .transition(all 250ms ease-in-out);
+    box-shadow: none;
+    transition: all 250ms ease-in-out;
 
     &:not(.disabled):not([disabled]) {
         &:hover {
-            background-color: tint(@default-color,40%);
+            background-color: tint(@primary-color,40%);
         }
     }
 
     &[disabled],
     &[disabled]:hover {
         color: @white;
-        border-color: @default-color;
-        background-color: @default-color;
+        border-color: @primary-color;
+        background-color: @primary-color;
     }
 
     &.btn-icon {
@@ -1147,9 +1137,9 @@ tags-input .host .tags {
 .btn-blue {
     background-color: tint(@secondary-color, 90%);
     border-color: tint(@secondary-color, 90%);
-    .border-radius(@border-radius);
-    .box-shadow(none);
-    .transition(all 250ms ease-in-out);
+    border-radius: @border-radius;
+    box-shadow: none;
+    transition: all 250ms ease-in-out;
 
     .text {
         color: @secondary-color !important;
@@ -1234,7 +1224,7 @@ tags-input .host .tags {
 .select2-drop,
 .select2-drop.select2-drop-above {
     border: 1px solid @border-color;
-    .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.1));
+    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
 
     .select2-results {
         // bug fix for mac os scroll bars
@@ -1242,17 +1232,17 @@ tags-input .host .tags {
 
         li {
             &.ui-select-choices-row:hover {
-                background-color: fade(@default-color,20%);
-                .border-radius(@border-radius);
+                background-color: fade(@primary-color,20%);
+                border-radius: @border-radius;
             }
 
             &.select2-highlighted {
-                background-color: @default-color;
-                .border-radius(@border-radius);
+                background-color: @primary-color;
+                border-radius: @border-radius;
                 color: @white;
 
                 &.ui-select-choices-row:hover {
-                    background-color: @default-color;
+                    background-color: @primary-color;
                 }
             }
         }
@@ -1262,7 +1252,7 @@ tags-input .host .tags {
 .zem-grid-column-selector .dropdown-menu,
 .zem-grid-breakdown-selector .dropdown-menu {
     border: 1px solid @border-color;
-    .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.1));
+    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
     margin-top: 8px;
 }
 
@@ -1270,7 +1260,7 @@ tags-input .host .tags {
     .dropdown-menu {
         margin-top: 7px;
         border: 1px solid @border-gray-color;
-        .box-shadow (0 0 8px 0 rgba(0,0,0,.1));
+        box-shadow: 0 0 8px 0 rgba(0,0,0,.1);
         color: @text-color;
 
         width: 18em;
@@ -1312,23 +1302,23 @@ tags-input .host .tags {
 }
 
 .on-off-switch {
-    .border-radius(20px);
+    border-radius: 20px;
     width: 40px;
     height: 20px;
     padding: 2px;
     background-color: @background-light-gray;
     cursor: pointer;
-    .transition(all 250ms ease-in-out);
+    transition: all 250ms ease-in-out;
     position: relative;
 
     .circle {
         position: absolute;
-        .border-radius(50%);
+        border-radius: 50%;
         left: 2px;
         width: 16px;
         height: 16px;
         background-color: @white;
-        .transition(all 250ms ease-in-out);
+        transition: all 250ms ease-in-out;
     }
 
     &:hover,
@@ -1392,7 +1382,7 @@ tags-input .host .tags {
                 position: relative;
                 padding: 8px 0;
                 background-color: transparent;
-                .box-shadow (none);
+                box-shadow: none;
                 bottom: auto;
                 left: auto;
                 right: auto;
@@ -1473,7 +1463,7 @@ tags-input .host .tags {
     font-size: 14px;
     font-style: normal;
 }
-    
+
 .textarea-with-border {
     border: 1px dashed @border-input-color;
     width: 100%;
@@ -1559,7 +1549,7 @@ tags-input .host .tags {
     .action-buttons {
         padding: @default-spacing;
         background-color: tint(@secondary-color,90%);
-        .box-shadow (0px 0px 3px 0px fade(@secondary-color,40%));
+        box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
         position: fixed;
         bottom: 0;
         left: 0;
@@ -1591,8 +1581,8 @@ tags-input .host .tags {
         height: @default-button-input-height;
         line-height: (@default-button-input-height)-10;
         padding: 5px 45px 5px 40px;
-        .border-radius (@border-radius);
-        .box-shadow (inset 3px 3px 3px 0px rgba(0,0,0,0.03));
+        border-radius: @border-radius;
+        box-shadow: inset 3px 3px 3px 0px rgba(0,0,0,0.03);
 
         .status {
             float: right;
@@ -1649,7 +1639,7 @@ tags-input .host .tags {
 
     .exposed {
         font-size: 18px;
-        color: @default-color;
+        color: @primary-color;
 
         &.value {
             font-weight: 500;
@@ -1678,7 +1668,7 @@ tags-input .host .tags {
     position: relative;
     padding: 10px 15px;
     line-height: 16px;
-    .border-radius(0px);
+    border-radius: 0;
     margin: 0;
     width: auto;
 
@@ -1702,7 +1692,7 @@ tags-input .host .tags {
             }
         }
     }
-    
+
     .form-alert-exclamation {
         width: 20px;
         height: 20px;
@@ -1710,7 +1700,7 @@ tags-input .host .tags {
         display: inline-block;
         margin-right: 10px;
     }
-    
+
     .form-alert-body {
         display: inline-block;
         line-height: 20px;
@@ -1793,17 +1783,17 @@ tags-input .host .tags {
             border: 1px solid @line-color;
             border-left: none;
             min-height: 50px;
-            .border-radius(0);
+            border-radius: 0;
             cursor: pointer;
 
             &:first-child {
-                .border-radius(@border-radius 0 0 @border-radius);
+                border-radius: @border-radius 0 0 @border-radius;
                 border-left-width: 1px;
                 border-left: 1px solid @line-color;
             }
 
             &:last-child {
-                .border-radius(0 @border-radius @border-radius 0);
+                border-radius: 0 @border-radius @border-radius 0;
             }
 
             &.campaign-goal-index {
@@ -1836,7 +1826,7 @@ tags-input .host .tags {
             &.campaign-goal-edit {
                 background: url(images/edit-blue.svg) no-repeat center center;
                 background-size: 20px;
-                .transition(all 200ms ease-in-out);
+                transition: all 200ms ease-in-out;
 
                 &:hover {
                     background-color: @very-light-gray;
@@ -1846,8 +1836,8 @@ tags-input .host .tags {
             &.campaign-goal-delete {
                 background: url(images/remove-blue.svg) no-repeat center center;
                 background-size: 20px;
-                .transition(all 200ms ease-in-out);
-                .border-radius(0 @border-radius @border-radius 0);
+                transition: all 200ms ease-in-out;
+                border-radius: 0 @border-radius @border-radius 0;
 
                 &:hover {
                     background: @red url(images/remove-white.svg) no-repeat center center;
@@ -1982,7 +1972,7 @@ tags-input .host .tags {
         position: fixed;
         z-index: 9999;
         width: 100%;
-        .animation(headerSlideIn 200ms ease-in-out);
+        animation: headerSlideIn 200ms ease-in-out;
         height: 30px;
 
         .logo-container {
@@ -2072,7 +2062,7 @@ tags-input .host .tags {
                 padding: 0 10px;
                 background-color: transparent;
                 border-left: 1px solid fade(@white, 20%);
-                .border-radius(0);
+                border-radius: 0;
 
                 &:hover, &:focus, &:active {
                     background-color: fade(@white, 10%);
@@ -2093,10 +2083,10 @@ tags-input .host .tags {
                 .btn-default {
                     height: 30px;
                     line-height: 32px;
-                    .transition(none);
+                    transition: none;
                     background-color: transparent !important;
                     border-left: 1px solid fade(@white, 20%);
-                    .border-radius(0);
+                    border-radius: 0;
 
                     .dropdown-toggle {
                         height: 30px;
@@ -2141,7 +2131,7 @@ tags-input .host .tags {
                 padding-right: 41px;
                 width: 262px;
                 background-color: transparent;
-                .border-radius(0);
+                border-radius: 0;
 
                 &:hover {
                     background-color: fade(@white, 10%);
@@ -2173,8 +2163,8 @@ tags-input .host .tags {
         width: 100%;
         z-index: 9998;
         top: 30px;
-        .animation(fadeIn 200ms ease-in-out);
-        .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.2));
+        animation: fadeIn 200ms ease-in-out;
+        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.2);
 
         .nav-tabs {
             width: 100%;
@@ -2210,12 +2200,12 @@ tags-input .host .tags {
     .zem-header {
         top: -30px;
 
-        .animation(headerSlideOut 200ms ease-in-out);
+        animation: headerSlideOut 200ms ease-in-out;
     }
     .zem-tabset {
         opacity: 0;
 
-        .animation(fadeOut 200ms ease-in-out);
+        animation: fadeOut 200ms ease-in-out;
     }
 }
 
@@ -2437,8 +2427,8 @@ tags-input .host .tags {
 .popover {
     font-family: 'Roboto', sans-serif;
     border: none;
-    .border-radius(@border-radius);
-    .box-shadow(0px 2px 10px 0px rgba(0,0,0,0.2));
+    border-radius: @border-radius;
+    box-shadow: 0px 2px 10px 0px rgba(0,0,0,0.2);
 
     .popover-content {
         padding: 10px;
@@ -2521,7 +2511,7 @@ select.media-source-select {
 
 .uib-datepicker-popup.dropdown-menu {
     border: 1px solid @border-color;
-    .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.1));
+    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
 
     .uib-datepicker {
         padding: 0 5px;

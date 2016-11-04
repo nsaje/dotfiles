@@ -2,76 +2,49 @@
 // Mixins //
 ////////////
 
-.box-shadow (@shadow) {
-    -webkit-box-shadow: @shadow;
-    -moz-box-shadow: @shadow;
-    box-shadow: @shadow;
+.position-properties (@position) {
+    top: @position;
+    right: @position;
+    bottom: @position;
+    left: @position;
 }
 
-.border-radius (@radius) {
-    border-radius: @radius;
-    -moz-border-radius: @radius;
-    -webkit-border-radius: @radius;
+.position-properties (@vertical, @horizontal) {
+    top: @vertical;
+    right: @horizontal;
+    bottom: @vertical;
+    left: @horizontal;
+}
+
+.position-properties (@top, @right, @bottom, @left) {
+    top: @top;
+    right: @right;
+    bottom: @bottom;
+    left: @left;
 }
 
 .border-right-radius (@radius) {
     border-top-right-radius: @radius;
-    -moz-border-top-right-radius: @radius;
-    -webkit-border-top-right-radius: @radius;
     border-bottom-right-radius: @radius;
-    -moz-border-bottom-right-radius: @radius;
-    -webkit-border-bottom-right-radius: @radius;
 }
 
 .border-left-radius (@radius) {
     border-top-left-radius: @radius;
-    -moz-border-top-left-radius: @radius;
-    -webkit-border-top-left-radius: @radius;
     border-bottom-left-radius: @radius;
-    -moz-border-bottom-left-radius: @radius;
-    -webkit-border-bottom-left-radius: @radius;
+}
+
+.border-top-radius (@radius) {
+    border-top-left-radius: @radius;
+    border-top-right-radius: @radius;
 }
 
 .border-bottom-radius (@radius) {
     border-bottom-left-radius: @radius;
-    -moz-border-bottom-left-radius: @radius;
-    -webkit-border-bottom-left-radius: @radius;
     border-bottom-right-radius: @radius;
-    -moz-border-bottom-right-radius: @radius;
-    -webkit-border-bottom-right-radius: @radius;
 }
 
-.transition (@transition) {
-    -webkit-transition: @transition;
-    -moz-transition: @transition;
-    -ms-transition: @transition;
-    -o-transition: @transition;
-}
 
-.animation (@animation) {
-	-webkit-animation: @animation;
-	-moz-animation: @animation;
-	-o-animation: @animation;
-	animation: @animation;
-}
-
-.gradient-vertical (@startColor, @endColor) {
-    background-color: @startColor;
-    background: -webkit-gradient(linear, left top, left bottom, from(@startColor), to(@endColor));
-    background: -webkit-linear-gradient(top, @startColor, @endColor);
-    background: -moz-linear-gradient(top, @startColor, @endColor);
-    background: -ms-linear-gradient(top, @startColor, @endColor);
-    background: -o-linear-gradient(top, @startColor, @endColor);
-    background: linear-gradient(to bottom, @startColor, @endColor);
-}
-
-.position-properties (@x) {
-    top: @x;
-    bottom: @x;
-    right: @x;
-    left: @x;
-}
-
+// TODO: Clean up mixins below
 .arrow-placeholder () {
     content: "";
     position: relative;
@@ -89,10 +62,6 @@
 
 .arrow-down () {
     .arrow-up();
-    -webkit-transform: rotate(180deg);
-    -moz-transform: rotate(180deg);
-    -ms-transform: rotate(180deg);
-    -o-transform: rotate(180deg);
     transform: rotate(180deg);
 }
 
@@ -126,8 +95,3 @@
     margin: 0 5px 0 0;
 }
 
-.rotate (@deg) {
-    -ms-transform: rotate(@deg);
-    -webkit-transform: rotate(@deg);
-    transform: rotate(@deg); 
-}
