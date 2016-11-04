@@ -73,6 +73,7 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
         this.getData = getData;
         this.getMetaData = getMetaData;
         this.saveData = saveData;
+        this.updateData = updateData;
 
         this.isSaveRequestInProgress = isSaveRequestInProgress;
 
@@ -188,22 +189,7 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
             config.level = row.row ? row.row.level : 1;
             config.breakdown = getBreakdown();
             endpoint.saveData(value, row, column, config).then(function (breakdown) {
-                // For each row in breakdown patch find cached row by id and apply values
-                var updatedStats = [];
-                breakdown.rows.forEach (function (updatedRow) {
-                    var row = findRow(updatedRow.breakdownId);
-                    if (row) {
-                        updateStats(row.stats, updatedRow.stats);
-                        updatedStats.push(row.stats);
-                    }
-                });
-
-                if (breakdown.totals) {
-                    updateStats(data.stats, breakdown.totals);
-                    updatedStats.push(data.stats);
-                }
-
-                notifyListeners(EVENTS.ON_STATS_UPDATED, updatedStats);
+                updateData(breakdown);
                 saveRequestInProgress = false;
                 deferred.resolve(breakdown);
             }, function (err) {
@@ -213,10 +199,34 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
             return deferred.promise;
         }
 
+        function updateData (breakdown) {
+            // For each row in breakdown patch find cached row by id and apply values
+            var updatedStats = [];
+            breakdown.rows.forEach (function (updatedRow) {
+                var row = findRow(updatedRow.breakdownId);
+                if (row) {
+                    if (updatedRow.archived !== undefined) {
+                        row.archived = updatedRow.archived;
+                    }
+                    if (updatedRow.stats) {
+                        updateStats(row.stats, updatedRow.stats);
+                        updatedStats.push(row.stats);
+                    }
+                }
+            });
+
+            if (breakdown.totals) {
+                updateStats(data.stats, breakdown.totals);
+                updatedStats.push(data.stats);
+            }
+
+            notifyListeners(EVENTS.ON_STATS_UPDATED, updatedStats);
+        }
+
         function updateStats (stats, updatedStats) {
             Object.keys(updatedStats).forEach(function (field) {
                 var updatedField = updatedStats[field];
-                if (updatedField !== undefined && updatedField.value !== undefined) {
+                if (updatedField !== undefined && updatedField.value !== undefined && stats[field] !== undefined) {
                     angular.extend(stats[field], updatedField);
                 }
             });

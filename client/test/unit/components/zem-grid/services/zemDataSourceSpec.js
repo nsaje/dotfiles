@@ -281,6 +281,58 @@ describe('zemDataSource', function () {
         expect(endpoint.saveData).toHaveBeenCalledWith(value, row, column, jasmine.any(Object));
         expect(onStatsUpdated).toHaveBeenCalledWith(jasmine.any(Object), updatedStats);
     });
+
+    it('should apply diff on data', function () {
+        var baseData = {
+            breakdownId: 1,
+            level: 1,
+            pagination: {
+                offset: 0,
+                limit: 2,
+            },
+            rows: [{
+                breakdownId: 11,
+                stats: {field1: {value: 11}, field2: {value: 12}}
+            }, {
+                breakdownId: 12,
+                stats: {field1: {value: 21}, field2: {value: 22}}
+            }],
+            totals: {field1: {value: 1}, field2: {value: 2}}
+        };
+
+        var updatedData = {
+            rows: [{
+                breakdownId: 11,
+                stats: {field1: {value: 110}, field2: {value: 120}}
+            }, {
+                breakdownId: 12,
+                stats: {field1: {value: 210}}
+            }],
+            totals: {field1: {value: 10}, field2: {value: 20}}
+        };
+
+        var updatedStats = [
+            {field1: {value: 110}, field2: {value: 120}},
+            {field1: {value: 210}, field2: {value: 22}},
+            {field1: {value: 10}, field2: {value: 20}},
+        ];
+
+        spyOn(endpoint, 'getData').and.returnValue($q.resolve([baseData]));
+
+        dataSource.getMetaData();
+        $scope.$apply();
+        dataSource.getData();
+        $scope.$apply();
+
+        var onStatsUpdated = jasmine.createSpy();
+        dataSource.onStatsUpdated($scope, onStatsUpdated);
+
+        dataSource.updateData(updatedData);
+        $scope.$apply();
+
+        expect(onStatsUpdated).toHaveBeenCalledWith(jasmine.any(Object), updatedStats);
+    });
+
     it('should abort active requests when requesting data that changes structure', function () {
         var deferred = $q.defer();
         deferred.promise.abort = jasmine.createSpy();

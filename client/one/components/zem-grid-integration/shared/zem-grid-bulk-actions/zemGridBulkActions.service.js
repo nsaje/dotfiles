@@ -170,9 +170,9 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
                 selection
             ).then(function (data) {
                 if (metaData.level == constants.level.AD_GROUPS) {
-                    notifyArchivingSuccess(data.data.archived_count, data.data.active_count);
+                    notifyArchivingSuccess(data.data.archivedCount, data.data.activeCount);
                 }
-                refreshData();
+                refreshData(data);
             }, handleError);
         }
 
@@ -184,8 +184,8 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
                 metaData.breakdown,
                 metaData.id,
                 selection
-            ).then(function () {
-                refreshData();
+            ).then(function (data) {
+                refreshData(data);
             }, handleError);
         }
 
@@ -212,9 +212,8 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
                 metaData.breakdown,
                 metaData.id,
                 selection
-            ).then(function () {
-                // FIXME: poll updates (editable fields)
-                refreshData();
+            ).then(function (data) {
+                refreshData(data);
             }, handleError);
         }
 
@@ -239,8 +238,12 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
             zemAlertsService.notify(constants.notificationType.warning, msg, true);
         }
 
-        function refreshData () {
-            gridApi.loadData();
+        function refreshData (data) {
+            if (data.data && angular.isArray(data.data.rows)) {
+                gridApi.updateData(data.data);
+            } else {
+                gridApi.loadData();
+            }
             gridApi.clearSelection();
         }
 

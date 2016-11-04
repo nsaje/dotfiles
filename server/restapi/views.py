@@ -13,7 +13,7 @@ from rest_framework import permissions
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
-from dash.views import agency, views, bcm, helpers
+from dash.views import agency, bulk_actions, views, bcm, helpers
 from dash import regions
 from dash import campaign_goals
 from dash import constants
@@ -681,7 +681,7 @@ class ContentAdSerializer(serializers.ModelSerializer):
             'selected_ids': [int(content_ad_id)]
         }
         request.body = RESTAPIJSONRenderer().render(post_data)
-        view_internal = views.AdGroupContentAdState(rest_proxy=True)
+        view_internal = bulk_actions.AdGroupContentAdState(rest_proxy=True)
         data_internal, status_code = view_internal.post(request, content_ad.ad_group_id)
         content_ad.refresh_from_db()
         return content_ad

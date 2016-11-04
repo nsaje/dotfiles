@@ -29,6 +29,7 @@ import dash.views.upload
 import dash.views.grid
 import dash.views.audiences
 import dash.views.alerts
+import dash.views.bulk_actions
 
 
 admin.site.login = login_required(admin.site.login)
@@ -215,62 +216,62 @@ urlpatterns += [
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/state/',
-        login_required(dash.views.views.AdGroupContentAdState.as_view()),
+        login_required(dash.views.bulk_actions.AdGroupContentAdState.as_view()),
         name='ad_group_content_ad_state'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/csv/',
-        login_required(dash.views.views.AdGroupContentAdCSV.as_view()),
+        login_required(dash.views.bulk_actions.AdGroupContentAdCSV.as_view()),
         name='ad_group_content_ad_csv'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/archive/$',
-        login_required(dash.views.views.AdGroupContentAdArchive.as_view()),
+        login_required(dash.views.bulk_actions.AdGroupContentAdArchive.as_view()),
         name='ad_group_content_ad_archive'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/restore/$',
-        login_required(dash.views.views.AdGroupContentAdRestore.as_view()),
+        login_required(dash.views.bulk_actions.AdGroupContentAdRestore.as_view()),
         name='ad_group_content_ad_restore'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/state/',
-        login_required(dash.views.views.AdGroupSourceState.as_view()),
+        login_required(dash.views.bulk_actions.AdGroupSourceState.as_view()),
         name='ad_group_source_state'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/archive/$',
-        login_required(dash.views.views.CampaignAdGroupArchive.as_view()),
+        login_required(dash.views.bulk_actions.CampaignAdGroupArchive.as_view()),
         name='campaign_ad_group_archive'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/restore/$',
-        login_required(dash.views.views.CampaignAdGroupRestore.as_view()),
+        login_required(dash.views.bulk_actions.CampaignAdGroupRestore.as_view()),
         name='campaign_ad_group_restore'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/state/$',
-        login_required(dash.views.views.CampaignAdGroupState.as_view()),
+        login_required(dash.views.bulk_actions.CampaignAdGroupState.as_view()),
         name='campaign_ad_group_state'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/archive/$',
-        login_required(dash.views.views.AccountCampaignArchive.as_view()),
+        login_required(dash.views.bulk_actions.AccountCampaignArchive.as_view()),
         name='account_campaign_archive'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/restore/$',
-        login_required(dash.views.views.AccountCampaignRestore.as_view()),
+        login_required(dash.views.bulk_actions.AccountCampaignRestore.as_view()),
         name='account_campaign_restore'
     ),
     url(
         r'^api/all_accounts/accounts/archive/$',
-        login_required(dash.views.views.AllAccountsAccountArchive.as_view()),
+        login_required(dash.views.bulk_actions.AllAccountsAccountArchive.as_view()),
         name='all_accounts_account_archive'
     ),
     url(
         r'^api/all_accounts/accounts/restore/$',
-        login_required(dash.views.views.AllAccountsAccountRestore.as_view()),
+        login_required(dash.views.bulk_actions.AllAccountsAccountRestore.as_view()),
         name='all_accounts_account_restore'
     ),
     url(

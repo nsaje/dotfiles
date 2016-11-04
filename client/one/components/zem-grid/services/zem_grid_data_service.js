@@ -28,6 +28,7 @@ angular.module('one.legacy').factory('zemGridDataService', ['$q', 'zemGridParser
         this.getOrder = dataSource.getOrder;
         this.setFilter = dataSource.setFilter;
         this.getFilter = dataSource.getFilter;
+        this.updateData = dataSource.updateData;
 
 
         function initialize () {
