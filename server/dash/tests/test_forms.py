@@ -347,7 +347,7 @@ class AdGroupSettingsFormTest(TestCase):
             'exclusion_audience_targeting': [3, 4],
             'autopilot_state': 2,
             'autopilot_daily_budget': '100.00',
-            'dayparting': '{"monday": [0, 1, 2, 3], "tuesday": [10, 11, 23], "timezone": "America/New_York"}',
+            'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 23], "timezone": "America/New_York"},
             'b1_sources_group_enabled': False,
             'b1_sources_group_daily_budget': '5.00',
             'b1_sources_group_state': 2,

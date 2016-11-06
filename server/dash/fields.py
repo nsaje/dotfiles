@@ -31,7 +31,7 @@ class TimeZoneField(forms.Field):
             raise forms.ValidationError('Invalid timezone: ', value)
 
 
-class DaypartingField(postgres_forms.JSONField):
+class DaypartingField(forms.Field):
     sunday = DayField(required=False)
     monday = DayField(required=False)
     tuesday = DayField(required=False)

@@ -53,7 +53,7 @@ class AdGroupSettingsTest(TestCase):
                 'exclusion_audience_targeting': [4],
                 'tracking_code': 'def=123',
                 'autopilot_min_budget': '0',
-                'dayparting': '{"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]}',
+                'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                 'b1_sources_group_enabled': True,
                 'b1_sources_group_daily_budget': '5.0000',
                 'b1_sources_group_state': 1,

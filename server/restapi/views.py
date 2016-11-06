@@ -92,6 +92,8 @@ class DashConstantField(serializers.Field):
         return map(lambda x: self.to_internal_value(x), data)
 
     def to_representation(self, value):
+        if not value:
+            return None
         return self.const_cls.get_name(value)
 
     def to_representation_many(self, data):
@@ -165,7 +167,7 @@ class CampaignSerializer(SettingsSerializer):
             'tracking': {
                 'ga': {
                     'enabled': settings['enable_ga_tracking'],
-                    'type': settings['ga_tracking_type'],
+                    'type': DashConstantField(constants.GATrackingType).to_representation(settings['ga_tracking_type']),
                     'webPropertyId': settings['ga_property_id'],
                 },
                 'adobe': {
@@ -182,7 +184,7 @@ class CampaignSerializer(SettingsSerializer):
             'name': data['name'],
             # 'campaign_manager': data['campaignManager'],  # TODO(nsaje): convert from email
             'enable_ga_tracking': data['tracking']['ga']['enabled'],
-            'ga_tracking_type': data['tracking']['ga']['type'],
+            'ga_tracking_type': DashConstantField(constants.GATrackingType).to_internal_value(data['tracking']['ga']['type']),
             'ga_property_id': data['tracking']['ga']['webPropertyId'],
             'enable_adobe_tracking': data['tracking']['adobe']['enabled'],
             'adobe_tracking_param': data['tracking']['adobe']['trackingParameter'],
@@ -249,7 +251,7 @@ class AdGroupSerializer(SettingsSerializer):
             'target_devices': DashConstantField(constants.AdTargetDevice).to_internal_value_many(data['targeting']['devices']),
             'interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['included']),
             'exclusion_interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
-            'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value_many(data['autopilot']['state']),
+            'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']),
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
             'dayparting': data['dayparting'],
         }
@@ -389,7 +391,7 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
             'goalId': conversion_goal['goal_id'],
             'name': conversion_goal['name'],
             'pixelUrl': conversion_goal['pixel_url'],
-            'conversionWindow': conversion_goal['conversion_window'],
+            'conversionWindow': DashConstantField(constants.ConversionWindows).to_representation(conversion_goal['conversion_window']),
             'type': constants.ConversionGoalType.get_name(conversion_goal['type']),
         }
 
@@ -410,8 +412,8 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
         return {
             'goal_id': conversion_goal['goalId'],
             'name': conversion_goal['name'],
-            'pixel_url': conversion_goal['pixel_url'],
-            'conversion_window': conversion_goal['conversionWindow'],
+            'pixel_url': conversion_goal['pixelUrl'],
+            'conversion_window': DashConstantField(constants.ConversionWindows).to_internal_value(conversion_goal['conversionWindow']),
             'type': DashConstantField(constants.ConversionGoalType).to_internal_value(conversion_goal['type']),
         }
 
@@ -475,7 +477,7 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
         except dash.models.CampaignGoal.DoesNotExist:
             raise exc.MissingDataError('Goal does not exist')
         campaign_goals.delete_campaign_goal(request, goal.id, campaign)
-        return self.response_ok(status=204)
+        return Response(None, status=204)
 
 
 class CampaignBudgetSerializer(serializers.Serializer):
@@ -589,7 +591,7 @@ class PublishersViewList(RESTAPIBaseView):
         return self.response_ok(serializer.data)
 
     def put(self, request, ad_group_id):
-        serializer = PublisherSerializer(data=request.data)
+        serializer = PublisherSerializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(request, ad_group_id)
         return self.response_ok(serializer.initial_data)
@@ -701,6 +703,12 @@ class ContentAdViewList(RESTAPIBaseView):
 
 
 class ContentAdViewDetails(RESTAPIBaseView):
+    renderer_classes = (CamelCaseJSONRenderer,)
+
+    def get(self, request, content_ad_id):
+        content_ad = helpers.get_content_ad(request.user, content_ad_id)
+        serializer = ContentAdSerializer(content_ad)
+        return self.response_ok(serializer.data)
 
     def put(self, request, content_ad_id):
         serializer = ContentAdSerializer(data=request.data, partial=True)
