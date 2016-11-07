@@ -1,7 +1,7 @@
 .zem-header {
     display: block;
     height: 60px;
-    background-color: @default-color;
+    background-color: @primary-color;
 
     .logo-container {
         height: 60px;
@@ -36,16 +36,16 @@
         background-color: @white;
         display: block;
         z-index: 9999;
-        .border-radius (0);
+        border-radius: 0;
         .border-bottom-radius (@border-radius);
-        .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.1));
-        .transition(all 200ms ease-in-out);
+        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+        transition: all 200ms ease-in-out;
 
         // bug fix for mac os scroll bars
         transform: translateZ(0);
 
         .shadow {
-            .gradient-vertical (fade(@black,20%), fade(@black,0%));
+            background: linear-gradient(to bottom, fade(@black,20%), fade(@black,0%));
             position: absolute;
             top: 0;
             width: 100%;
@@ -57,7 +57,7 @@
         display: block;
         height: 40px;
         padding: 10px 20px;
-        .transition(background-color 250ms ease-in-out);
+        transition: background-color 250ms ease-in-out;
 
         &:hover {
             background-color: fade(@white, 10%);
@@ -128,7 +128,7 @@
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
-                    .transition(background-color 250ms ease-in-out);
+                    transition: background-color 250ms ease-in-out;
 
                     .type-name {
                         color: fade(@white, 50%);
@@ -212,8 +212,8 @@
             height: 40px;
             padding: 9px 10px;
             background-color: fade(@white, 20%);
-            .border-radius(@border-radius);
-            .transition(background-color 250ms ease-in-out);
+            border-radius: @border-radius;
+            transition: background-color 250ms ease-in-out;
 
             &:hover, &:focus, &:active {
                 background-color: fade(@white, 40%);
@@ -260,8 +260,8 @@
                 line-height: 40px;
                 border: none;
                 background: fade(@white, 20%) !important;
-                .border-radius(@border-radius);
-                .transition(background-color 250ms ease-in-out);
+                border-radius: @border-radius;
+                transition: background-color 250ms ease-in-out;
 
                 &:hover, &:focus, &:active {
                     background-color: fade(@white, 40%) !important;
@@ -277,6 +277,7 @@
                     span {
                         line-height: 42px;
 						color: @white;
+                        font-size: (@default-font-size)+1;
                     }
 
                     .filter-icon {
@@ -291,7 +292,7 @@
                         height: 12px;
                         right: 15px;
                         top: 14px;
-                        .rotate(90deg);
+                        transform: rotate(90deg);
                     }
                 }
 
@@ -330,7 +331,7 @@
                 right: 0;
                 top: 100%;
                 margin-left: -125px;
-                border: 1px solid @default-color;
+                border: 1px solid @primary-color;
                 padding: 15px 15px 5px 15px;
 
                 li {
@@ -452,7 +453,7 @@
                 height: 12px;
                 right: 15px;
                 top: 14px;
-                .rotate(90deg);
+                transform: rotate(90deg);
                 pointer-events: none;
             }
 
@@ -465,9 +466,10 @@
                 width: 250px;
                 border: none;
                 color: @white;
-                .border-radius (@border-radius);
-                .box-shadow(none);
-                .transition(background-color 250ms ease-in-out);
+                border-radius: @border-radius;
+                box-shadow: none;
+                transition: background-color 250ms ease-in-out;
+                font-size: (@default-font-size)+1;
 
                 &:focus {
                     outline: none;
@@ -494,7 +496,7 @@
             height: auto;
             min-width: 100px;
             max-width: 300px;
-            background-color: @default-color;
+            background-color: @primary-color;
 
             zem-navigation {
                 height: 100%;
@@ -507,7 +509,7 @@
                 a {
                     color: @white;
                     padding: 8px 20px;
-                    .transition(background-color 200ms ease-in-out);
+                    transition: background-color 200ms ease-in-out;
                     display: block;
 
                     &.internal {
@@ -553,10 +555,10 @@
     opacity: 0;
     visibility: hidden;
     display: block !important;
-    .border-radius (0);
+    border-radius: 0;
     .border-bottom-radius (@border-radius);
-    .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.1));
-    .transition(opacity 200ms ease-in-out);
+    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+    transition: opacity 200ms ease-in-out;
 
     &.open {
         opacity: 1;
@@ -564,7 +566,7 @@
     }
 
     .ranges:before {
-        .gradient-vertical (fade(@black,20%), fade(@black,0%));
+        background: linear-gradient(to bottom, fade(@black,20%), fade(@black,0%));
         position: absolute;
         top: 0;
         left: 0;

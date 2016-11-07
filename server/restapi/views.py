@@ -13,7 +13,7 @@ from rest_framework import permissions
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
-from dash.views import agency, views, bcm, helpers
+from dash.views import agency, bulk_actions, views, bcm, helpers
 from dash import regions
 from dash import campaign_goals
 from dash import constants
@@ -92,6 +92,8 @@ class DashConstantField(serializers.Field):
         return map(lambda x: self.to_internal_value(x), data)
 
     def to_representation(self, value):
+        if not value:
+            return None
         return self.const_cls.get_name(value)
 
     def to_representation_many(self, data):
@@ -165,7 +167,7 @@ class CampaignSerializer(SettingsSerializer):
             'tracking': {
                 'ga': {
                     'enabled': settings['enable_ga_tracking'],
-                    'type': settings['ga_tracking_type'],
+                    'type': DashConstantField(constants.GATrackingType).to_representation(settings['ga_tracking_type']),
                     'webPropertyId': settings['ga_property_id'],
                 },
                 'adobe': {
@@ -182,7 +184,7 @@ class CampaignSerializer(SettingsSerializer):
             'name': data['name'],
             # 'campaign_manager': data['campaignManager'],  # TODO(nsaje): convert from email
             'enable_ga_tracking': data['tracking']['ga']['enabled'],
-            'ga_tracking_type': data['tracking']['ga']['type'],
+            'ga_tracking_type': DashConstantField(constants.GATrackingType).to_internal_value(data['tracking']['ga']['type']),
             'ga_property_id': data['tracking']['ga']['webPropertyId'],
             'enable_adobe_tracking': data['tracking']['adobe']['enabled'],
             'adobe_tracking_param': data['tracking']['adobe']['trackingParameter'],
@@ -231,6 +233,7 @@ class AdGroupSerializer(SettingsSerializer):
                 'state': constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state']),
                 'dailyBudget': settings['autopilot_daily_budget'],
             },
+            'dayparting': settings['dayparting'],
         }
 
     def to_internal_value(self, external_data):
@@ -248,8 +251,9 @@ class AdGroupSerializer(SettingsSerializer):
             'target_devices': DashConstantField(constants.AdTargetDevice).to_internal_value_many(data['targeting']['devices']),
             'interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['included']),
             'exclusion_interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
-            'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value_many(data['autopilot']['state']),
+            'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']),
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
+            'dayparting': data['dayparting'],
         }
         return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
 
@@ -387,7 +391,7 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
             'goalId': conversion_goal['goal_id'],
             'name': conversion_goal['name'],
             'pixelUrl': conversion_goal['pixel_url'],
-            'conversionWindow': conversion_goal['conversion_window'],
+            'conversionWindow': DashConstantField(constants.ConversionWindows).to_representation(conversion_goal['conversion_window']),
             'type': constants.ConversionGoalType.get_name(conversion_goal['type']),
         }
 
@@ -408,8 +412,8 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
         return {
             'goal_id': conversion_goal['goalId'],
             'name': conversion_goal['name'],
-            'pixel_url': conversion_goal['pixel_url'],
-            'conversion_window': conversion_goal['conversionWindow'],
+            'pixel_url': conversion_goal['pixelUrl'],
+            'conversion_window': DashConstantField(constants.ConversionWindows).to_internal_value(conversion_goal['conversionWindow']),
             'type': DashConstantField(constants.ConversionGoalType).to_internal_value(conversion_goal['type']),
         }
 
@@ -473,7 +477,7 @@ class CampaignGoalsViewDetails(RESTAPIBaseView):
         except dash.models.CampaignGoal.DoesNotExist:
             raise exc.MissingDataError('Goal does not exist')
         campaign_goals.delete_campaign_goal(request, goal.id, campaign)
-        return self.response_ok(status=204)
+        return Response(None, status=204)
 
 
 class CampaignBudgetSerializer(serializers.Serializer):
@@ -587,7 +591,7 @@ class PublishersViewList(RESTAPIBaseView):
         return self.response_ok(serializer.data)
 
     def put(self, request, ad_group_id):
-        serializer = PublisherSerializer(data=request.data)
+        serializer = PublisherSerializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(request, ad_group_id)
         return self.response_ok(serializer.initial_data)
@@ -625,6 +629,39 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
         return self.get(request, ad_group.id)
 
 
+class AdGroupSourcesRTBSerializer(serializers.Serializer):
+    groupEnabled = serializers.BooleanField(source='b1_sources_group_enabled')
+    dailyBudget = serializers.DecimalField(max_digits=10, decimal_places=4, source='b1_sources_group_daily_budget')
+    state = DashConstantField(constants.AdGroupSourceSettingsState, source='b1_sources_group_state')
+
+    def update(self, data_internal, validated_data):
+        request = validated_data['request']
+        del validated_data['request']
+        settings = data_internal
+        entity_id = int(settings['id'])
+        settings.update(validated_data)
+        request.body = RESTAPIJSONRenderer().render(({'settings': settings}))
+        data_internal_new, _ = agency.AdGroupSettings(rest_proxy=True).put(request, entity_id)
+        return data_internal_new['data']['settings']
+
+
+class AdGroupSourcesRTBViewDetails(RESTAPIBaseView):
+
+    def get(self, request, ad_group_id):
+        view_internal = agency.AdGroupSettings(rest_proxy=True)
+        data_internal, status_code = view_internal.get(request, ad_group_id)
+        serializer = AdGroupSourcesRTBSerializer(data_internal['data']['settings'])
+        return self.response_ok(serializer.data, status=status_code)
+
+    def put(self, request, ad_group_id):
+        view_internal = agency.AdGroupSettings(rest_proxy=True)
+        data_internal, status_code = view_internal.get(request, ad_group_id)
+        serializer = AdGroupSourcesRTBSerializer(data_internal['data']['settings'], request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(request=request)
+        return self.response_ok(serializer.data, status=201)
+
+
 class ContentAdSerializer(serializers.ModelSerializer):
     class Meta:
         model = dash.models.ContentAd
@@ -646,7 +683,7 @@ class ContentAdSerializer(serializers.ModelSerializer):
             'selected_ids': [int(content_ad_id)]
         }
         request.body = RESTAPIJSONRenderer().render(post_data)
-        view_internal = views.AdGroupContentAdState(rest_proxy=True)
+        view_internal = bulk_actions.AdGroupContentAdState(rest_proxy=True)
         data_internal, status_code = view_internal.post(request, content_ad.ad_group_id)
         content_ad.refresh_from_db()
         return content_ad
@@ -666,6 +703,12 @@ class ContentAdViewList(RESTAPIBaseView):
 
 
 class ContentAdViewDetails(RESTAPIBaseView):
+    renderer_classes = (CamelCaseJSONRenderer,)
+
+    def get(self, request, content_ad_id):
+        content_ad = helpers.get_content_ad(request.user, content_ad_id)
+        serializer = ContentAdSerializer(content_ad)
+        return self.response_ok(serializer.data)
 
     def put(self, request, content_ad_id):
         serializer = ContentAdSerializer(data=request.data, partial=True)

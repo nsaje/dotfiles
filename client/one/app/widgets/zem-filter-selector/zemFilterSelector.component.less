@@ -1,190 +1,196 @@
+@applied-conditions__title_width: 35px;
+@applied-conditions__clear-filter_width: 110px;
+@filter-sections_border-top-width: 1px;
+@filter-sections_padding-top: 10px;
+@filter-sections__section-title_margin-bottom: 10px;
+@filter-sections__section-title_font-size: 18px;
+@filter-sections__section_vertical-padding: 10px;
+@filter-sections__section-options-container_max-height: 250px;
+
 .zem-filter-selector {
     display: block;
 
-    .applied-conditions-banner {
+    .applied-conditions {
         position: relative;
         height: 42px;
         margin-bottom: 10px;
+    }
 
-        .filter-title {
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 35px;
+    .applied-conditions__title {
+        position: absolute;
+        left: @default-spacing;
+        top: 50%;
+        transform: translateY(-50%);
+        width: @applied-conditions__title_width;
+    }
+
+    .applied-conditions__list-container {
+        margin-left: @default-spacing*2 + @applied-conditions__title_width;
+        margin-right: @default-spacing*2 + @applied-conditions__clear-filter_width;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+    }
+
+    .applied-conditions__condition {
+        position: relative;
+        display: inline-block;
+        margin-right: 5px;
+        max-width: 200px;
+        padding: 2px 20px 2px 5px;
+        border: 1px solid #ddd;
+        border-radius: @border-radius;
+
+        &:last-child {
+            margin-right: 0;
         }
+    }
 
-        .applied-conditions {
-            margin-left: 55px;
-            margin-right: 100px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            white-space: nowrap;
+    .applied-conditions__condition-name,
+    .applied-conditions__condition-text {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
-            .condition {
-                position: relative;
-                display: inline-block;
-                margin-right: 5px;
-                max-width: 200px;
-                padding: 2px 20px 2px 5px;
-                border: 1px solid #ddd;
-                border-radius: @border-radius;
+    .applied-conditions__condition-name {
+        font-size: 11px;
+        color: #aaa;
+    }
 
-                &:last-child {
-                    margin-right: 0;
-                }
+    .applied-conditions__remove-condition {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+    }
 
-                .condition-name,
-                .condition-text {
-                    display: block;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-
-                .condition-name {
-                    font-size: 11px;
-                    color: #aaa;
-                }
-
-                .remove-condition {
-                    position: absolute;
-                    right: 5px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 10px;
-                }
-            }
-        }
-
-        .clear-filter {
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 80px;
-        }
+    .applied-conditions__clear-filter {
+        position: absolute;
+        right: @default-spacing;
+        top: 50%;
+        transform: translateY(-50%);
+        width: @applied-conditions__clear-filter_width;
     }
 
     .filter-sections {
         position: relative;
-        height: 308px; // 10px padding-top + 2*10px .section (padding) + 28px .section-title + 250px .section-options-container
-        padding-top: 10px;
-        border-top: 1px solid #ddd;
+        height: @filter-sections_border-top-width +
+                @filter-sections_padding-top +
+                @filter-sections__section_vertical-padding*2 +
+                @filter-sections__section-title_margin-bottom +
+                @filter-sections__section-title_font-size +
+                @filter-sections__section-options-container_max-height;
+        margin-bottom: @default-spacing;
+        padding-top: @filter-sections_padding-top;
+        padding-left: @default-spacing;
+        padding-right: @default-spacing;
+        border-top: @filter-sections_border-top-width solid #ddd;
+    }
 
-        .section {
-            float: left;
-            width: 25%;
-            height: 100%;
-            padding-top: @default-spacing/2;
-            padding-right: 2*@default-spacing;
-            padding-bottom: @default-spacing/2;
-            padding-left: 2*@default-spacing;
-            border-right: 1px solid #ddd;
+    .filter-sections__section {
+        float: left;
+        width: 25%;
+        height: 100%;
+        padding: @filter-sections__section_vertical-padding @default-spacing*2;
+        border-right: 1px solid #ddd;
+    }
 
-            .section-title {
-                margin-bottom: @default-spacing/2;
-                line-height: 18px;
-                font-size: 18px;
-            }
+    .filter-sections__section--sources {
+        padding-left: 0;
+    }
 
-            .section-options-container {
-                max-height: 250px;
-                overflow-y: auto;
-                overflow-x: hidden;
-            }
+    .filter-sections__section--statuses {
+        max-height: 68px;
+        padding-right: 0;
+        border-right: 0;
 
-            .section-options {
-                list-style: none;
-                margin: 0;
-                padding: 0;
+        .filter-sections__options-container {
+            max-height: 20px;
+        }
+    }
 
-                label {
-                    position: relative;
-                    margin-bottom: 2px;
-                    font-weight: normal;
+    .filter-sections__section--publisher-statuses {
+        max-height: 108px;
+        padding-right: 0;
+        border-right: 0;
 
-                    .label-text {
-                        padding-left: 25px;
-                    }
+        .filter-sections__options-container {
+            max-height: 60px;
+        }
+    }
 
-                    input {
-                        position: absolute;
-                        left: 0;
-                        width: 25px;
-                        margin: 0;
+    .filter-sections__section-title {
+        margin-bottom: @filter-sections__section-title_margin-bottom;
+        line-height: @filter-sections__section-title_font-size;
+        font-size: @filter-sections__section-title_font-size;
+    }
 
-                        &[type='checkbox'] {
-                            top: 4px;
-                        }
+    .filter-sections__options-container {
+        max-height: @filter-sections__section-options-container_max-height;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
 
-                        &[type='radio'] {
-                            top: 2px;
-                        }
-                    }
-                }
+    .filter-sections__options-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
 
-            }
+    .filter-sections__option-label {
+        position: relative;
+        margin-bottom: 2px;
+        font-weight: normal
+    }
 
-            &.sources {
-                padding-left: 0;
-            }
+    .filter-sections__option-input {
+        position: absolute;
+        left: 0;
+        width: 25px;
+        margin: 0;
+    }
 
-            &.statuses {
-                max-height: 68px;
-                padding-right: 0;
-                border-right: 0;
+    .filter-sections__option-input--checkbox {
+        top: 4px;
+    }
 
-                .section-options-container {
-                    max-height: 20px;
-                }
-            }
+    .filter-sections__option-input--radio {
+        top: 2px;
+    }
 
-            &.publisher-statuses {
-                max-height: 108px;
-                padding-right: 0;
-                border-right: 0;
+    .filter-sections__option-text {
+        padding-left: 25px;
+    }
 
-                .section-options-container {
-                    max-height: 60px;
-                }
+    .filter-sections__apply-filter {
+        position: absolute;
+        right: @default-spacing;
+        bottom: 0;
+    }
+
+    // Transform visible sources list into multiple columns when other sections are hidden
+    .filter-sections--visible-sources:not(.filter-sections--visible-agencies),
+    .filter-sections--visible-sources:not(.filter-sections--visible-account-types) {
+        .filter-sections__section--sources {
+            width: 50%;
+
+            .filter-sections__options-list {
+                column-count: 2;
+                column-gap: @default-spacing;
             }
         }
+    }
 
-        .apply-filter {
-            position: absolute;
-            right: 0;
-            bottom: 0;
-        }
+    .filter-sections--visible-sources:not(.filter-sections--visible-agencies):not(.filter-sections--visible-account-types) {
+        .filter-sections__section--sources {
+            width: 75%;
 
-        // Transform visible sources list into multiple columns when other sections are hidden
-        &.visible-sources:not(.visible-agencies),
-        &.visible-sources:not(.visible-account-types) {
-            .sources {
-                width: 50%;
-
-                .section-options {
-                    -moz-column-count: 2;
-                    -moz-column-gap: @default-spacing;
-                    -webkit-column-count: 2;
-                    -webkit-column-gap: @default-spacing;
-                    column-count: 2;
-                    column-gap: @default-spacing;
-                }
-            }
-        }
-        &.visible-sources:not(.visible-agencies):not(.visible-account-types) {
-            .sources {
-                width: 75%;
-
-                .section-options {
-                    -moz-column-count: 3;
-                    -moz-column-gap: 2*@default-spacing;
-                    -webkit-column-count: 3;
-                    -webkit-column-gap: 2*@default-spacing;
-                    column-count: 3;
-                    column-gap: 2*@default-spacing;
-                }
+            .filter-sections__options-list {
+                column-count: 3;
+                column-gap: 2*@default-spacing;
             }
         }
     }

@@ -29,14 +29,19 @@ The acquired access token must then be passed to all REST API calls as the heade
 Authorization: Bearer <access_token>
 ```
 
-+ Request
++ Request (application/x-www-form-urlencoded)
     + Attributes
         + `grant_type`: `client_credentials` (string, required)
+
     + Headers
 
-            Authorization: Basic ABCDEF
-    
-+ Response 201 (application/json)
+            Authorization: Basic WkNTeDJXanhIeHhWNnJLWkMzaGRiNmVqTzhHTHdjZFV0bHRtcHQ5Sjp1N3BsRWQwNG1IYzExQ2NrUzlkb2poWWl3YVd6TnFlQjF3OUtnTXh3ZTVya1c2U3M3bVRSSXg2UGQ4dDdZdmRZYzdiQzEwMjVINzRzOThFMmVxaEljQmx2QmxIc2M1dkFwOVRKTVAyZTh5Nmt5SktRVVdrcFVpckZSbDNPczJmQw==
+
+    + Body
+
+            grant_type=client_credentials
+
++ Response 200 (application/json)
 
         {
             "access_token": "UUjXNkJDyLVjDzswOjdVm0ySIBYfp7",
@@ -47,7 +52,10 @@ Authorization: Bearer <access_token>
 
 # Group Account Credit Management
 
-### Get active credit items for account [GET /rest/v1/account/{id}/credits/]
+### Get active credit items for account [GET /rest/v1/accounts/{accountId}/credits/]
+
++ Parameters
+    + accountId: 186 (required)
 
 + Response 200 (application/json)
 
@@ -60,7 +68,7 @@ Authorization: Bearer <access_token>
                     "createdOn": "2014-06-04",
                     "total": "1000.0000",
                     "allocated": "400.0000",
-                    "available": "600.0000",
+                    "available": "600.0000"
                 }
             ]
         }
@@ -68,9 +76,12 @@ Authorization: Bearer <access_token>
 
 # Group Campaign Management
 
-## Campaign Budgets [/rest/v1/campaigns/{campaign_id}/budgets/]
+## Campaign Budgets [/rest/v1/campaigns/{campaignId}/budgets/]
 
-### List campaign budgets [GET /rest/v1/campaigns/{campaign_id}/budgets/]
+### List campaign budgets [GET /rest/v1/campaigns/{campaignId}/budgets/]
+
++ Parameters
+    + campaignId: 608 (required)
 
 + Response 200 (application/json)
 
@@ -88,7 +99,10 @@ Authorization: Bearer <access_token>
             ]
         }
 
-### Create a new campaign budget [POST /rest/v1/campaigns/{campaign_id}/budgets/]
+### Create a new campaign budget [POST /rest/v1/campaigns/{campaignId}/budgets/]
+
++ Parameters
+    + campaignId: 608 (required)
 
 + Request (application/json)
 
@@ -114,7 +128,11 @@ Authorization: Bearer <access_token>
         }
 
 
-### Get a campaign budget [GET /rest/v1/campaigns/{campaign_id}/budgets/{budget_id}]
+### Get a campaign budget [GET /rest/v1/campaigns/{campaignId}/budgets/{budgetId}]
+
++ Parameters
+    + campaignId: 608 (required)
+    + budgetId: 1910 (required)
 
 + Response 200 (application/json)
 
@@ -131,7 +149,11 @@ Authorization: Bearer <access_token>
         }
 
 
-### Edit a campaign budget [PUT /rest/v1/campaigns/{campaign_id}/budgets/{budget_id}]
+### Edit a campaign budget [PUT /rest/v1/campaigns/{campaignId}/budgets/{budgetId}]
+
++ Parameters
+    + campaignId: 608 (required)
+    + budgetId: 1910 (required)
 
 + Request (application/json)
 
@@ -155,7 +177,10 @@ Authorization: Bearer <access_token>
 
 ## Campaigns [/rest/v1/campaigns/]
 
-### Get campaign details [GET /rest/v1/campaigns/{id}]
+### Get campaign details [GET /rest/v1/campaigns/{campaignId}]
+
++ Parameters
+    + campaignId: 608 (required)
 
 + Response 200 (application/json)
 
@@ -172,14 +197,17 @@ Authorization: Bearer <access_token>
                     },
                     "adobe": {
                         "enabled": true,
-                        "trackingParam": "cid"
+                        "trackingParameter": "cid"
                     }
                 }
             }
         }
 
 
-### Update campaign details [PUT /rest/v1/campaigns/{id}]
+### Update campaign details [PUT /rest/v1/campaigns/{campaignId}]
+
++ Parameters
+    + campaignId: 608 (required)
 
 + Request (application/json)
 
@@ -193,7 +221,7 @@ Authorization: Bearer <access_token>
                 },
                 "adobe": {
                     "enabled": true,
-                    "trackingParam": "cid"
+                    "trackingParameter": "cid"
                 }
             }
         }
@@ -213,7 +241,7 @@ Authorization: Bearer <access_token>
                     },
                     "adobe": {
                         "enabled": true,
-                        "trackingParam": "cid"
+                        "trackingParameter": "cid"
                     }
                 }
             }
@@ -237,7 +265,7 @@ Authorization: Bearer <access_token>
                         },
                         "adobe": {
                             "enabled": true,
-                            "trackingParam": "cid"
+                            "trackingParameter": "cid"
                         }
                     }
                 }
@@ -261,7 +289,7 @@ Authorization: Bearer <access_token>
                 },
                 "adobe": {
                     "enabled": true,
-                    "trackingParam": "cid"
+                    "trackingParameter": "cid"
                 }
             }
         }
@@ -281,15 +309,18 @@ Authorization: Bearer <access_token>
                     },
                     "adobe": {
                         "enabled": true,
-                        "trackingParam": "cid"
+                        "trackingParameter": "cid"
                     }
                 }
             }
         }
 
-## Campaign goals [/rest/v1/campaigns/{campaign_id}/goals/]
+## Campaign goals [/rest/v1/campaigns/{campaignId}/goals/]
 
-### List campaign goals [GET /rest/v1/campaigns/{campaign_id}/goals/]
+### List campaign goals [GET /rest/v1/campaigns/{campaignId}/goals/]
+
++ Parameters
+    + campaignId: 608 (required)
 
 + Response 200 (application/json)
 
@@ -303,7 +334,7 @@ Authorization: Bearer <access_token>
                     "conversionGoal": {
                         "type": "PIXEL",
                         "name": "My conversion goal",
-                        "conversionWindow": 7,
+                        "conversionWindow": "LEQ_7_DAYS",
                         "goalId": "mygoal",
                         "pixelUrl": "http://example.com/mypixel1"
                     }
@@ -311,7 +342,10 @@ Authorization: Bearer <access_token>
             ]
         }
         
-### Add a campaign goal [POST /rest/v1/campaigns/{campaign_id}/goals/]
+### Add a campaign goal [POST /rest/v1/campaigns/{campaignId}/goals/]
+
++ Parameters
+    + campaignId: 608 (required)
 
 + Request (application/json)
 
@@ -321,9 +355,9 @@ Authorization: Bearer <access_token>
             "value": "30.0",
             "primary": true,
             "conversionGoal": {
-                "type": "PIXEL",
+                "type": "GA",
                 "name": "My conversion goal 2",
-                "conversionWindow": 7,
+                "conversionWindow": "LEQ_7_DAYS",
                 "goalId": "mygoal",
                 "pixelUrl": "http://example.com/mypixel1"
             }
@@ -339,21 +373,25 @@ Authorization: Bearer <access_token>
                 "value": "30.0",
                 "primary": true,
                 "conversionGoal": {
-                    "type": "PIXEL",
+                    "type": "GA",
                     "name": "My conversion goal 2",
-                    "conversionWindow": 7,
+                    "conversionWindow": "LEQ_7_DAYS",
                     "goalId": "mygoal",
                     "pixelUrl": "http://example.com/mypixel1"
                 }
             }
         }
 
-### Modify a campaign goal [PUT /rest/v1/campaigns/{campaign_id}/goals/{goal_id}]
+### Modify a campaign goal [PUT /rest/v1/campaigns/{campaignId}/goals/{goalId}]
+
++ Parameters
+    + campaignId: 608 (required)
+    + goalId: 1238 (required)
 
 + Request (application/json)
 
         {
-            "primary": false,
+            "primary": true
         }
         
 + Response 200 (application/json)
@@ -367,14 +405,18 @@ Authorization: Bearer <access_token>
                 "conversionGoal": {
                     "type": "PIXEL",
                     "name": "My conversion goal",
-                    "conversionWindow": 7,
+                    "conversionWindow": "LEQ_7_DAYS",
                     "goalId": "mygoal",
                     "pixelUrl": "http://example.com/mypixel1"
                 }
             }
         }
 
-### Remove campaign goal [DELETE /rest/v1/campaigngoals/{goal_id}]
+### Remove campaign goal [DELETE /rest/v1/campaigns/{campaignId}/goals/{goalId}]
+
++ Parameters
+    + campaignId: 608 (required)
+    + goalId: 1238 (required)
 
 + Response 204
 
@@ -383,8 +425,10 @@ Authorization: Bearer <access_token>
 
 ## Ad Groups [/rest/v1/adgroups/]
 
-### Get ad group details [GET /rest/v1/adgroups/{id}]
+### Get ad group details [GET /rest/v1/adgroups/{adGroupId}]
 
++ Parameters
+    + adGroupId: 2040 (required)
     
 + Response 200 (application/json)
 
@@ -399,7 +443,7 @@ Authorization: Bearer <access_token>
                 "maxCpc": "0.25",
                 "dailyBudget": "20.0",
                 "targeting": {
-                    "devices": ["desktop", "tablet"],
+                    "devices": ["DESKTOP", "TABLET"],
                     "geo": {
                         "included": {
                             "countries": ["CA"],
@@ -414,27 +458,34 @@ Authorization: Bearer <access_token>
                 },
                 "trackingCode": "this=1&that=2",
                 "autopilot": {
-                    "state": "OPTIMIZE_BIDS",
+                    "state": "ACTIVE_CPC",
                     "dailyBudget": 100.0001
+                },
+                "dayparting": {
+                    "monday": [0, 1, 2, 3],
+                    "tuesday": [20, 21, 22, 23],
+                    "timezone": "America/New_York"
                 }
             }
         }
 
 
-### Update ad group details [PUT /rest/v1/adgroups/{id}]
+### Update ad group details [PUT /rest/v1/adgroups/{adGroupId}]
 
++ Parameters
+    + adGroupId: 2040 (required)
 
 + Request (application/json)
 
         {
             "name": "My ad group 2",
-            "state": "ACTIVE",
+            "state": "INACTIVE",
             "startDate": "2016-10-05",
             "endDate": "2016-11-05",
             "maxCpc": "0.25",
             "dailyBudget": "20.0",
             "targeting": {
-                "devices": ["desktop", "tablet"],
+                "devices": ["DESKTOP", "TABLET"],
                 "geo": {
                     "included": {
                         "countries": ["CA"],
@@ -449,8 +500,12 @@ Authorization: Bearer <access_token>
             },
             "trackingCode": "this=1&that=2",
             "autopilot": {
-                "state": "OPTIMIZE_BIDS",
+                "state": "ACTIVE_CPC",
                 "dailyBudget": "100.0001"
+            },
+            "dayparting": {
+                "monday": [4, 5, 6, 7],
+                "friday": [2, 3, 7, 8, 9, 10]
             }
         }
 
@@ -482,16 +537,20 @@ Authorization: Bearer <access_token>
                 },
                 "trackingCode": "this=1&that=2",
                 "autopilot": {
-                    "state": "OPTIMIZE_BIDS",
+                    "state": "ACTIVE_CPC",
                     "dailyBudget": "100.0001"
+                },
+                "dayparting": {
+                    "monday": [4, 5, 6, 7],
+                    "friday": [2, 3, 7, 8, 9, 10]
                 }
             }
         }
 
-### List ad groups [GET /rest/v1/adgroups/]
+### List ad groups [GET /rest/v1/adgroups/{?campaignId}]
 
-+ Attributes
-    + campaign_id: 608 (number) - Optional campaign ID
++ Parameters
+    + campaignId: 608 (number) - Optional campaign ID
 
 + Response 200 (application/json)
 
@@ -507,7 +566,7 @@ Authorization: Bearer <access_token>
                     "maxCpc": "0.25",
                     "dailyBudget": "20.0",
                     "targeting": {
-                        "devices": ["desktop", "tablet"],
+                        "devices": ["DESKTOP", "TABLET"],
                         "geo": {
                             "included": {
                                 "countries": ["CA"],
@@ -522,8 +581,13 @@ Authorization: Bearer <access_token>
                     },
                     "trackingCode": "this=1&that=2",
                     "autopilot": {
-                        "state": "OPTIMIZE_BIDS",
+                        "state": "ACTIVE_CPC",
                         "dailyBudget": "100.0001"
+                    },
+                    "dayparting": {
+                        "monday": [4, 5, 6, 7],
+                        "tuesday": [2, 3, 7, 8, 9, 10],
+                        "timezone": "Europe/Ljubljana"
                     }
                 }
             ]
@@ -537,13 +601,13 @@ Authorization: Bearer <access_token>
         {
             "campaignId": "608",
             "name": "My ad group 3",
-            "state": "ACTIVE",
+            "state": "INACTIVE",
             "startDate": "2016-10-05",
             "endDate": "2016-11-05",
             "maxCpc": "0.25",
             "dailyBudget": "20.0",
             "targeting": {
-                "devices": ["desktop", "tablet"],
+                "devices": ["DESKTOP", "TABLET"],
                 "geo": {
                     "included": {
                         "countries": ["CA"],
@@ -559,8 +623,13 @@ Authorization: Bearer <access_token>
             },
             "trackingCode": "this=1&that=2",
             "autopilot": {
-                "state": "OPTIMIZE_BIDS",
+                "state": "ACTIVE_CPC",
                 "dailyBudget": "100.0001"
+            },
+            "dayparting": {
+                "monday": [4, 5, 6, 7],
+                "friday": [2, 3, 7, 8, 9, 10],
+                "timezone": "America/Los_Angeles"
             }
         }
 
@@ -571,13 +640,13 @@ Authorization: Bearer <access_token>
                 "id": "2040",
                 "campaignId": "608",
                 "name": "My ad group 1",
-                "state": "ACTIVE",
+                "state": "INACTIVE",
                 "startDate": "2016-10-05",
                 "endDate": "2016-11-05",
                 "maxCpc": "0.25",
                 "dailyBudget": "20.0",
                 "targeting": {
-                    "devices": ["desktop", "tablet"],
+                    "devices": ["DESKTOP", "TABLET"],
                     "geo": {
                         "included": {
                             "countries": ["CA"],
@@ -592,26 +661,28 @@ Authorization: Bearer <access_token>
                 },
                 "trackingCode": "this=1&that=2",
                 "autopilot": {
-                    "state": "OPTIMIZE_BIDS",
+                    "state": "ACTIVE_CPC",
                     "dailyBudget": "100.0001"
+                },
+                "dayparting": {
+                    "monday": [4, 5, 6, 7],
+                    "friday": [2, 3, 7, 8, 9, 10],
+                    "timezone": "America/Los_Angeles"
                 }
             }
         }
 
-## Ad Group Sources [/rest/v1/adgroupsources/]
+## Ad Group Sources [/rest/v1/adgroups/{adGroupId}/sources/]
 
-### Get ad group source settings [GET /rest/v1/adgroups/{id}/sources]
+### Get ad group source settings [GET /rest/v1/adgroups/{adGroupId}/sources/]
 
-+ Response 201 (application/json)
++ Parameters
+    + adGroupId: 2040 (required)
+
++ Response 200 (application/json)
 
         {
             "data": [
-                {
-                    "source": "outbrain",
-                    "state": "ACTIVE",
-                    "cpc": "0.20",
-                    "dailyBudget": "10.0"
-                },
                 {
                     "source": "yahoo",
                     "state": "ACTIVE",
@@ -633,7 +704,10 @@ Authorization: Bearer <access_token>
             ]
         }
 
-### Update ad group source settings [PUT /rest/v1/adgroups/{id}/sources/]
+### Update ad group source settings [PUT /rest/v1/adgroups/{adGroupId}/sources/]
+
++ Parameters
+    + adGroupId: 2040 (required)
 
 + Request (application/json)
 
@@ -641,14 +715,10 @@ Authorization: Bearer <access_token>
             {
                 "source": "gumgum",
                 "dailyBudget": "15.0",
-                "cpc": "0.25",
+                "cpc": "0.25"
             },
             {
                 "source": "triplelift",
-                "state": "PAUSED"
-            }
-            {
-                "source": "outbrain",
                 "state": "PAUSED"
             }
         ]
@@ -658,12 +728,6 @@ Authorization: Bearer <access_token>
 
         {
             "data": [
-                {
-                    "source": "outbrain",
-                    "state": "PAUSED",
-                    "cpc": "0.20",
-                    "dailyBudget": "10.0"
-                },
                 {
                     "source": "yahoo",
                     "state": "ACTIVE",
@@ -685,7 +749,10 @@ Authorization: Bearer <access_token>
             ]
         }
         
-### Get ad group source settings for all RTB sources [GET /rest/v1/adgroups/{id}/sources/rtb]
+### Get ad group source settings for all RTB sources [GET /rest/v1/adgroups/{adGroupId}/sources/rtb/]
+
++ Parameters
+    + adGroupId: 2040 (required)
 
 + Response 200 (application/json)
 
@@ -697,7 +764,10 @@ Authorization: Bearer <access_token>
             }
         }
         
-### Update ad group source settings for all RTB sources [PUT /rest/v1/adgroups/{id}/sources/rtb]
+### Update ad group source settings for all RTB sources [PUT /rest/v1/adgroups/{adGroupId}/sources/rtb/]
+
++ Parameters
+    + adGroupId: 2040 (required)
 
 + Request (application/json)
 
@@ -721,10 +791,10 @@ Authorization: Bearer <access_token>
 
 ## Manage content ads [/rest/v1/contentads/]
 
-### List content ads [GET /rest/v1/contentads/]
+### List content ads [GET /rest/v1/contentads/{?adGroupId}]
 
-+ Attributes
-    + adGroupid: 2040 (number) - Ad group ID
++ Parameters
+    + adGroupId: 2040 (number, required) - Ad group ID
 
 + Response 200 (application/json)
 
@@ -743,14 +813,16 @@ Authorization: Bearer <access_token>
                     "brandName": "My Company",
                     "description": "My description",
                     "callToAction": "Read more",
-                    "primaryTrackerUrl": "https://example.com/t1",
-                    "secondaryTrackerUrl": "https://example.com/t2"
+                    "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
                 }
             ]
         }
         
 
-### Get content ad details [GET /rest/v1/contentads/{id}]
+### Get content ad details [GET /rest/v1/contentads/{contentAdId}]
+
++ Parameters
+    + contentAdId: 16805 (required)
 
 + Response 200 (application/json)
 
@@ -768,29 +840,31 @@ Authorization: Bearer <access_token>
                 "brandName": "My Company",
                 "description": "My description",
                 "callToAction": "Read more",
-                "primaryTrackerUrl": "https://example.com/t1",
-                "secondaryTrackerUrl": "https://example.com/t2"
+                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
             }
         }
         
 
-### Edit a content ad [PUT /rest/v1/contentads/{id}]
+### Edit a content ad [PUT /rest/v1/contentads/{contentAdId}]
+
++ Parameters
+    + contentAdId: 16805 (required)
 
 + Request (application/json)
 
         {
             "label": "My label 2",
-            "state": "PAUSED"
+            "state": "INACTIVE"
         }
         
 
-+ Response 201 (application/json)
++ Response 200 (application/json)
 
         {
             "data": {
                 "id": "16805",
                 "adGroupId": "2040",
-                "state": "PAUSED",
+                "state": "INACTIVE",
                 "label": "My label 2",
                 "url": "http://example.com/myblog",
                 "title": "My title",
@@ -800,15 +874,17 @@ Authorization: Bearer <access_token>
                 "brandName": "My Company",
                 "description": "My description",
                 "callToAction": "Read more",
-                "primaryTrackerUrl": "https://example.com/t1",
-                "secondaryTrackerUrl": "https://example.com/t2"
+                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
             }
         }
 
 ## Upload content ads [/rest/v1/contentads/batch/]
 
 
-### Create a new content ad upload batch [POST /rest/v1/contentads/batch/]
+### Create a new content ad upload batch [POST /rest/v1/contentads/batch/{?adGroupId}]
+
++ Parameters
+    + adGroupId: 2040 (required)
 
 + Request (application/json)
 
@@ -839,9 +915,12 @@ Authorization: Bearer <access_token>
         }
 
 
-### Check content ad upload batch status [GET /rest/v1/contentads/batch/{batch_id}]
+### Check content ad upload batch status [GET /rest/v1/contentads/batch/{batchId}]
 
-+ Response 201 (application/json)
++ Parameters
+    + batchId: 1302 (required)
+
++ Response 200 (application/json)
 
         {
             "data": {
@@ -871,12 +950,15 @@ Authorization: Bearer <access_token>
 
 # Group Publishers management
 
-## Blacklisting and whitelisting [/rest/v1/adgroups/{ad_group_id}/publishers/]
+## Blacklisting and whitelisting [/rest/v1/adgroups/{adGroupId}/publishers/]
 
 
-### Get publisher status [GET /rest/v1/adgroups/{ad_group_id}/publishers/]
+### Get publisher status [GET /rest/v1/adgroups/{adGroupId}/publishers/]
+
++ Parameters
+    + adGroupId: 2040 (required)
     
-+ Response 201 (application/json)
++ Response 200 (application/json)
 
         {
             "data": [
@@ -901,7 +983,10 @@ Authorization: Bearer <access_token>
             ]
         }
 
-### Set publisher status [PUT /rest/v1/adgroups/{ad_group_id}/publishers/]
+### Set publisher status [PUT /rest/v1/adgroups/{adGroupId}/publishers/]
+
++ Parameters
+    + adGroupId: 2040 (required)
 
 + Request (application/json)
 
@@ -917,7 +1002,6 @@ Authorization: Bearer <access_token>
                 "status": "BLACKLISTED",
                 "level": "ADGROUP",
                 "source": "gumgum"
-            }, 
             }
         ]
     
@@ -980,14 +1064,17 @@ For now, only the following lists of fields are supported:
             "data": {
                 "id": "27",
                 "status": "IN_PROGRESS",
-                "result": null,
+                "result": null
             }
         }
         
 
-### Get report job status [GET /rest/v1/reports/{job_id}]
+### Get report job status [GET /rest/v1/reports/{jobId}]
 
-+ Response 201 (application/json)
++ Parameters
+    + jobId: 27 (required)
+
++ Response 200 (application/json)
 
         {
             "data": {
@@ -996,6 +1083,16 @@ For now, only the following lists of fields are supported:
                 "result": "https://z1-rest-reports.s3.amazonaws.com/KgrK55qCMO85v9JhHwCIv8kso2quYwEGV2MLpiVUgDVRDJm3HiGk1lWrOGfxJ7k2.csv"
             }
         }
+
+# Group Types
+
+## Dayparting
+
+Dayparting structure is defined as a dictionary of days which point to a list of hours that are enabled in that day, eg. "monday" -> [0, 1, 2, 5]. 
+This means that on monday bidding is enabled from 00:00 to 02:59 and from 5:00 to 5:59. 
+The other value is "timezone" that defines in which timezone the hours are evaluated, eg. "timezone" -> "America/New_York". 
+This value must be formatted according to the tz database (see https://en.wikipedia.org/wiki/Tz_database). If timezone isn't specified then user's timezone is used to resolve the hours.
+
 
 # Group Constants reference
 

@@ -2326,7 +2326,10 @@ class AdGroupSettings(SettingsBase):
             'autopilot_state': 'Autopilot',
             'autopilot_daily_budget': 'Autopilot\'s Daily Spend Cap',
             'landing_mode': 'Landing Mode',
-            'dayparting': 'Dayparting'
+            'dayparting': 'Dayparting',
+            'b1_sources_group_enabled': 'Group all RTB sources',
+            'b1_sources_group_daily_budget': 'Daily budget for all RTB sources',
+            'b1_sources_group_state': 'State of all RTB sources',
         }
 
         return NAMES[prop_name]
@@ -2378,15 +2381,24 @@ class AdGroupSettings(SettingsBase):
         elif prop_name == 'redirect_pixel_urls':
             value = ', '.join(value)
         elif prop_name == 'dayparting':
-            joined = []
-            for k in value:
-                if isinstance(value[k], list):
-                    val = ', '.join(str(v) for v in value[k])
-                else:
-                    val = str(value[k])
-                joined.append(k.capitalize() + ': ' + val)
-            value = '; '.join(joined)
+            value = cls._get_dayparting_human_value(value)
+        elif prop_name == 'b1_sources_group_state':
+            value = constants.AdGroupSourceSettingsState.get_text(value)
+        elif prop_name == 'b1_sources_group_daily_budget' and value is not None:
+            value = lc_helper.default_currency(Decimal(value))
 
+        return value
+
+    @staticmethod
+    def _get_dayparting_human_value(value):
+        joined = []
+        for k in value:
+            if isinstance(value[k], list):
+                val = ', '.join(str(v) for v in value[k])
+            else:
+                val = str(value[k])
+            joined.append(k.capitalize() + ': ' + val)
+        value = '; '.join(joined)
         return value
 
     @classmethod

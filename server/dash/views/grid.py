@@ -57,7 +57,7 @@ class ContentAdSettings(api_common.BaseApiView):
             'content_ad_ids_selected': [content_ad_id]
         }
         request._body = json.dumps(request_settings)
-        views.views.AdGroupContentAdState().post(request, ad_group.id)
+        views.bulk_actions.AdGroupContentAdState().post(request, ad_group.id)
 
         response = {'rows': [{'id': content_ad_id, 'status_setting': state}]}
         convert_resource_response(constants.Level.AD_GROUPS, 'content_ad_id', response)

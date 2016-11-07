@@ -144,7 +144,7 @@ class RESTAPITest(TestCase):
         self.assertGreater(len(resp_json['data']), 0)
         expected_fields = {
             'startDate', 'endDate', 'name', 'maxCpc', 'state', 'trackingCode',
-            'autopilot', 'targeting', 'id', 'campaignId', 'dailyBudget'}
+            'autopilot', 'targeting', 'id', 'campaignId', 'dailyBudget', 'dayparting'}
         for item in resp_json['data']:
             self.assertEqual(set(item.keys()), expected_fields)
 
@@ -215,6 +215,33 @@ class RESTAPITest(TestCase):
         expected_fields = ['source', 'state', 'cpc', 'dailyBudget']
         for item in resp_json['data']:
             self.assertEqual(item.keys(), expected_fields)
+
+    def test_adgroups_sources_rtb_get(self):
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        ad_group.get_current_settings().save(None)
+        r = self.client.get(reverse('adgroups_sources_rtb_details', kwargs={'ad_group_id': 1}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertEqual(resp_json['data'], {
+            'groupEnabled': False,
+            'dailyBudget': '0.0000',
+            'state': 'INACTIVE'
+        })
+
+    @override_settings(R1_DEMO_MODE=True)
+    def test_adgroups_sources_rtb_put(self):
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        ad_group.get_current_settings().save(None)
+        r = self.client.put(
+            reverse('adgroups_sources_rtb_details', kwargs={'ad_group_id': 1}),
+            data={'groupEnabled': True, 'dailyBudget': '10.0', 'state': 'ACTIVE'}, format='json')
+        self.assertEqual(r.status_code, 201)
+        resp_json = json.loads(r.content)
+        self.assertEqual(resp_json['data'], {
+            'groupEnabled': True,
+            'dailyBudget': '10.0000',
+            'state': 'ACTIVE'
+        })
 
     def test_adgroups_publishers_list(self):
         ad_group = dash.models.AdGroup.objects.get(pk=1)

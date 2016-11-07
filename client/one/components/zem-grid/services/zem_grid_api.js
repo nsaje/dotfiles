@@ -29,6 +29,7 @@ angular.module('one.legacy').factory('zemGridApi', ['$rootScope', 'zemGridStorag
         this.getOrder = grid.meta.dataService.getOrder;
         this.setFilter = grid.meta.dataService.setFilter;
         this.getFilter = grid.meta.dataService.getFilter;
+        this.updateData = grid.meta.dataService.updateData;
 
         // Selection service API
         this.getSelection = grid.meta.selectionService.getSelection;

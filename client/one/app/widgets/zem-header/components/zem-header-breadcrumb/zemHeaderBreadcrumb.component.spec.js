@@ -40,10 +40,12 @@ describe('component: zemHeaderBreadcrumb', function () {
             callback(null);
             expect($document[0].title).toEqual('All accounts');
 
-            callback({}, {
+            var activeEntity = {
                 name: 'Account XY',
                 type: constants.entityType.ACCOUNT,
-            });
+            };
+            zemNavigationNewService.getActiveEntity.and.returnValue(activeEntity);
+            callback({}, activeEntity);
             expect($document[0].title).toEqual('Account XY | Zemanta');
         });
 
@@ -62,6 +64,7 @@ describe('component: zemHeaderBreadcrumb', function () {
                 parent: account,
             };
 
+            zemNavigationNewService.getActiveEntity.and.returnValue(account);
             callback({}, account);
             expect(ctrl.breadcrumb).toEqual([{
                 name: 'Account XY',
@@ -69,6 +72,7 @@ describe('component: zemHeaderBreadcrumb', function () {
                 entity: jasmine.any(Object),
             }]);
 
+            zemNavigationNewService.getActiveEntity.and.returnValue(campaign);
             callback({}, campaign);
             expect(ctrl.breadcrumb).toEqual([{
                 name: 'Account XY',

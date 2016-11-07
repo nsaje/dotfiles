@@ -68,10 +68,10 @@ class AdGroupSettingsTest(TestCase):
             'autopilot_daily_budget': Decimal('0.0000'),
             'autopilot_state': 2,
             'landing_mode': False,
-            'b1_sources_group_enabled': False,
-            'b1_sources_group_daily_budget': Decimal('0'),
-            'b1_sources_group_state': constants.AdGroupSourceSettingsState.INACTIVE,
             'dayparting': {"monday": [1, 2, 5], "tuesday": [10, 12], "timezone": "CET"},
+            'b1_sources_group_enabled': True,
+            'b1_sources_group_daily_budget': Decimal('5.0000'),
+            'b1_sources_group_state': constants.AdGroupSourceSettingsState.ACTIVE,
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -133,16 +133,19 @@ class AdGroupSettingsTest(TestCase):
 
         user = User.objects.get(pk=1)
 
-        self.assertEqual(
+        self.maxDiff = None
+        self.assertHTMLEqual(
             models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
             'Daily spend cap set to "$50.00", '
             'Brand name set to "Example", '
+            'Daily budget for all RTB sources set to "$5.00", '
             'Max CPC bid set to "$1.000", '
             'Interest targeting set to "A, B", '
             'Exclusion interest targeting set to "C, D", '
             'State set to "Enabled", '
             'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg", '
             'Start date set to "2014-06-04", '
+            'State of all RTB sources set to "Enabled", '
             'Description set to "Example description", '
             'End date set to "2014-06-05", '
             'Custom audience targeting set to "test audience 1, test audience 2", '
@@ -156,6 +159,7 @@ class AdGroupSettingsTest(TestCase):
             'Notes set to "Some note", '
             'Call to action set to "Call to action", '
             'Pixel retargeting JavaScript set to "alert(\'a\')", '
+            'Group all RTB sources set to "True", '
             'Ad group name set to "AdGroup name", BlueKai targeting set to "["or", 3, 4]"'
         )
 

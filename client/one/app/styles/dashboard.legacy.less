@@ -32,7 +32,7 @@ background-color: #FFFFFF;
 
 .form-horizontal {
     input[type="file"] { margin-top: 5px; }
-    
+
     .form-group .radio {
         margin-left: 15px;
     }
@@ -88,7 +88,7 @@ background-color: #FFFFFF;
         .form-control,
         .form-control:focus {
             border-color: #c70000;
-            .box-shadow(none);
+            box-shadow: none;
         }
 
         label.control-label {
@@ -163,7 +163,6 @@ background-color: #FFFFFF;
     .pre {
         white-space: pre-wrap;
         white-space: -moz-pre-wrap;
-        white-space: -pre-wrap;
         white-space: -o-pre-wrap;
         word-wrap: break-word;
     }
@@ -175,18 +174,18 @@ background-color: #FFFFFF;
     color: #414141;
     border-color: @border-input-color;
     height: 36px;
-    .border-radius(2px);
-    .box-shadow(none);
+    border-radius: 2px;
+    box-shadow: none;
 
     &:focus {
-        border: 1px solid @default-color-legacy;
-        .box-shadow(none);
+        border: 1px solid @primary-color-legacy;
+        box-shadow: none;
     }
 
     &.has-error,
     &:focus.has-error {
         border-color: @red;
-        .box-shadow(none);
+        box-shadow: none;
     }
 }
 
@@ -196,7 +195,7 @@ background-color: #FFFFFF;
 
 .error {
     color: @red !important;
-    
+
     a {
         color: @red !important;
     }
@@ -248,7 +247,7 @@ background-color: #FFFFFF;
 }
 
 .inline-link {
-    color: @default-color-legacy;
+    color: @primary-color-legacy;
     padding-left: 20px;
     position: relative;
 
@@ -267,8 +266,8 @@ background-color: #FFFFFF;
 }
 
 .btn {
-    .border-radius(2px);
-    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    border-radius: 2px;
+    box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
 }
 
 .btn-primary,
@@ -276,10 +275,10 @@ background-color: #FFFFFF;
 .btn-primary:hover,
 .btn-primary:active,
 .btn-primary.active {
-    background-color: @default-color-legacy;
-    border-color: @default-color-legacy;
+    background-color: @primary-color-legacy;
+    border-color: @primary-color-legacy;
     color: #fff;
-    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
 
     &:hover {
         background-color: #2b9cb9;
@@ -299,14 +298,14 @@ background-color: #FFFFFF;
 .modal-zem-upload .btn-blue.active {
     position: relative;
     padding-left: 36px;
-    .gradient-vertical(rgba(255,255,255,1), rgba(249,249,249,1));
+    background: linear-gradient(to bottom, rgba(255,255,255,1), rgba(249,249,249,1));
     border-color: @border-color;
     color: @text-color;
-    .box-shadow(none);
+    box-shadow: none;
 
     &:hover {
-        border-color: @default-color-legacy;
-        color: @default-color-legacy;
+        border-color: @primary-color-legacy;
+        color: @primary-color-legacy;
     }
 
     img {
@@ -318,7 +317,7 @@ background-color: #FFFFFF;
     }
 
     span.action-text {
-        color: @default-color-legacy;
+        color: @primary-color-legacy;
     }
 
     &.only-icon {
@@ -350,7 +349,7 @@ background-color: #FFFFFF;
         .text {
             font-size: 12px !important;
             line-height: 28px !important;
-            color: @default-color-legacy;
+            color: @primary-color-legacy;
         }
 
         &.check {
@@ -366,8 +365,8 @@ background-color: #FFFFFF;
         margin-left: 10px;
         margin-top: 1px;
         display: inline-block;
-        .transition(all 250ms ease-in-out);
-        color: @default-color-legacy;
+        transition: all 250ms ease-in-out;
+        color: @primary-color-legacy;
     }
 
     &.btn-icon {
@@ -379,7 +378,7 @@ background-color: #FFFFFF;
             width: 20px;
             height: 20px;
             float: left;
-            .transition(all 250ms ease-in-out);
+            transition: all 250ms ease-in-out;
             margin: 7px 0 7px 10px;
         }
 
@@ -424,9 +423,9 @@ background-color: #FFFFFF;
 .btn-blue:active,
 .btn-blue.active {
     background-color: #fff;
-    border-color: @default-color-legacy;
-    color: @default-color-legacy;
-    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    border-color: @primary-color-legacy;
+    color: @primary-color-legacy;
+    box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
 
     &:not(.disabled):not([disabled]) {
         &:hover {
@@ -454,7 +453,7 @@ background-color: #FFFFFF;
     background-color: #fff;
     border-color: #ff0000;
     color: #ff0000;
-    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
 
     &:hover {
         border-color: #aa0000;
@@ -470,7 +469,7 @@ background-color: #FFFFFF;
     background-color: @add-color;
     border-color: @add-color;
     color: #fff;
-    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
 
     &:hover {
         background-color: @add-color-hover;
@@ -486,7 +485,7 @@ background-color: #FFFFFF;
      border-color: #dadada;
      background-color: #e6e6e6;
      color: @dark-gray;
-     .box-shadow(none);
+     box-shadow: none;
 
      &:hover {
         background-color: #dadada;
@@ -533,8 +532,8 @@ background-color: #FFFFFF;
 .dropdown-menu {
     margin-top: 1px;
     border: 1px solid #d2d2d2;
-    .border-radius(2px);
-    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    border-radius: 2px;
+    box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
 
     // bug fix for mac os scroll bars
     transform: translateZ(0);
@@ -546,17 +545,17 @@ background-color: #FFFFFF;
 }
 
 .dropdown-menu-activation{
-    border: 1px solid @default-color-legacy;
-    color: @default-color-legacy;
+    border: 1px solid @primary-color-legacy;
+    color: @primary-color-legacy;
     padding-left: 5px;
     padding-right: 6px;
 
     &.enabled > li > a {
-        color: @default-color-legacy;
+        color: @primary-color-legacy;
     }
 
     > li > a {
-        color: @default-color-legacy;
+        color: @primary-color-legacy;
         padding-left: 7px;
         padding-right: 6px
     }
@@ -582,7 +581,7 @@ background-color: #FFFFFF;
         }
 
         &.active > a {
-            border-top: 2px solid @default-color-legacy;
+            border-top: 2px solid @primary-color-legacy;
 
             > uib-tab-heading {
                 > a,
@@ -599,8 +598,8 @@ background-color: #FFFFFF;
                 > .tab-top {
                     width: 100%;
                     height: 2px;
-                    background-color: @default-color-legacy;
-                    .border-radius(2px 2px 0 0);
+                    background-color: @primary-color-legacy;
+                    border-radius: 2px 2px 0 0;
                     margin-top: -1px;
                     margin-left: -1px;
                     padding-right: 2px;
@@ -612,7 +611,7 @@ background-color: #FFFFFF;
         > a {
             padding: 0;
 
-            .border-radius(2px 2px 0 0);
+            border-radius: 2px 2px 0 0;
 
             > uib-tab-heading {
                 > a,
@@ -646,7 +645,7 @@ background-color: #FFFFFF;
 
 .info-landing-mode {
     .tabset-label;
-    color: @default-color-legacy;
+    color: @primary-color-legacy;
     a {
         text-decoration: underline;
     }
@@ -675,7 +674,7 @@ background-color: #FFFFFF;
 
 .input-group {
     .input-group-addon {
-        .border-radius(2px 0 0 2px);
+        border-radius: 2px 0 0 2px;
         font-weight: lighter;
         font-size: 14px;
         color: #414141;
@@ -690,7 +689,7 @@ background-color: #FFFFFF;
 .alert {
     margin-bottom: 10px;
     font-size: 12px;
-    .border-radius(0);
+    border-radius: 0;
 
     &.alert-info {
         background-color: #e5f1f9;
@@ -715,14 +714,14 @@ background-color: #FFFFFF;
         border: 1px solid #c0e68f;
         font-size: 12px;
     }
-    
+
     &.alert-icon {
         padding-left: 40px;
         width: auto;
         height: auto;
         background-image: none;
         position: relative;
-        
+
         .icon {
             position: absolute;
             top: 50%;
@@ -733,7 +732,7 @@ background-color: #FFFFFF;
             display: block;
             background-size: 20px;
         }
-        
+
         &.alert-warning {
             .icon {
                 background-image: url('images/alert-warning.svg');
@@ -743,8 +742,8 @@ background-color: #FFFFFF;
 }
 
 .popover {
-    .border-radius(0);
-    .box-shadow(none);
+    border-radius: 0;
+    box-shadow: none;
     border: none;
     padding: 0;
     z-index: 100000;
@@ -753,8 +752,8 @@ background-color: #FFFFFF;
         content: "";
         display: block;
         height: 2px;
-        background-color: @default-color-legacy;
-        .border-radius(2px 2px 0 0);
+        background-color: @primary-color-legacy;
+        border-radius: 2px 2px 0 0;
     }
 
     .popover-inner {
@@ -763,8 +762,8 @@ background-color: #FFFFFF;
         font-weight: 300;
         border: 1px solid #d2d2d2;
         border-top: 0;
-        .border-radius(0 0 2px 2px);
-        .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+        border-radius: 0 0 2px 2px;
+        box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
     }
 
     &.top > .arrow {
@@ -786,12 +785,12 @@ div[uib-datepicker] {
     .btn:hover {
         border: 1px solid #fff;
         color: #414141;
-        .border-radius(0);
-        .box-shadow(none);
+        border-radius: 0;
+        box-shadow: none;
 
         &.active {
-            border: 1px solid @default-color-legacy;
-            background-color: @default-color-legacy;
+            border: 1px solid @primary-color-legacy;
+            background-color: @primary-color-legacy;
             color: #fff;
         }
 
@@ -804,7 +803,7 @@ div[uib-datepicker] {
 
 .calendar.input-group {
     width: 14em;
-    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
 
     i {
         padding: 0;
@@ -815,13 +814,13 @@ div[uib-datepicker] {
     }
 
     .input-group-addon {
-        border: 1px solid @default-color-legacy;
+        border: 1px solid @primary-color-legacy;
         border-right: 0;
         background-color: transparent;
     }
 
     input {
-        border: 1px solid @default-color-legacy;
+        border: 1px solid @primary-color-legacy;
         border-left: 0;
         padding-left: 0;
     }
@@ -829,7 +828,7 @@ div[uib-datepicker] {
 
 .daterangepicker {
     &.dropdown-menu {
-        border: 1px solid @default-color-legacy;
+        border: 1px solid @primary-color-legacy;
     }
 
     &.opensleft:before {
@@ -845,7 +844,7 @@ div[uib-datepicker] {
             padding: 2px 12px;
             background-color: transparent;
             border: 1px solid transparent;
-            color: @default-color-legacy;
+            color: @primary-color-legacy;
 
             &:last-child {
                 margin-bottom: 12px;
@@ -853,13 +852,13 @@ div[uib-datepicker] {
 
             &:hover {
                 border: 1px solid transparent;
-                background-color: @default-color-legacy;
+                background-color: @primary-color-legacy;
                 color: @white;
             }
 
             &.active {
                 border: 1px solid transparent;
-                background-color: @default-color-legacy;
+                background-color: @primary-color-legacy;
                 color: @white;
             }
         }
@@ -893,7 +892,7 @@ div[uib-datepicker] {
 
             &.active {
                 border: 1px solid transparent;
-                background-color: @default-color-legacy;
+                background-color: @primary-color-legacy;
 
                 &.off.end-date, &.off.start-date {
                     background-color: #ddd;
@@ -905,12 +904,12 @@ div[uib-datepicker] {
         // Right calendar - setting end-date --> fade start-date to show the difference
         &.left {
             td.active.end-date:not(.start-date):not(.off) {
-                background-color: fade(@default-color-legacy, 50%);
+                background-color: fade(@primary-color-legacy, 50%);
             }
         }
         &.right {
             td.active.start-date:not(.end-date):not(.off){
-                background-color: fade(@default-color-legacy, 50%);
+                background-color: fade(@primary-color-legacy, 50%);
             }
         }
     }
@@ -946,7 +945,7 @@ div[uib-datepicker] {
 .select2-choice,
 .select2-container-active .select2-choice,
 .select2-container-active .select2-choices {
-    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
 }
 
 .select2-chosen {
@@ -1422,7 +1421,7 @@ img.zem-icon {
         top: 138px;
         z-index: 2;
         text-align: center;
-        color: @default-color-legacy;
+        color: @primary-color-legacy;
         font-size: 20px;
         vertical-align: middle;
 
@@ -1456,7 +1455,7 @@ img.zem-icon {
                 margin-left: 0.5em;
 
                 .select2-choice {
-                    border: 1px solid @default-color-legacy;
+                    border: 1px solid @primary-color-legacy;
                 }
             }
         }
@@ -1485,7 +1484,7 @@ img.zem-icon {
             }
 
             .legend-item {
-                .border-radius(2px);
+                border-radius: 2px;
 
                 .btn-remove {
                     cursor: pointer;
@@ -1533,17 +1532,17 @@ img.zem-icon {
         height: 8px;
         display: inline-block;
         margin-right: 2px;
-        .border-radius(2px);
+        border-radius: 2px;
     }
 }
 
 .select2-container {
     &.select2-dropdown-open .select2-choice {
-        .border-radius(2px 2px 0 0);
+        border-radius: 2px 2px 0 0;
     }
 
     &.select2-drop-above.select2-dropdown-open .select2-choice {
-        .border-radius(0 0 2px 2px);
+        border-radius: 0 0 2px 2px;
     }
 
     &.select2-container-disabled {
@@ -1576,8 +1575,8 @@ img.zem-icon {
         height: 34px;
         line-height: 34px;
         background-image: none;
-        border: 1px solid @default-color-legacy;
-        .border-radius(2px);
+        border: 1px solid @primary-color-legacy;
+        border-radius: 2px;
         color: #454545;
 
         .select2-chosen {
@@ -1592,8 +1591,6 @@ img.zem-icon {
             padding-right: 0;
             padding-top: 3px;
             box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            -webkit-box-sizing: border-box;
 
             background-image: none;
             background-color: transparent;
@@ -1615,7 +1612,7 @@ img.zem-icon {
 
 .select2-drop,
 .select2-drop.select2-drop-above {
-    border: 1px solid @default-color-legacy;
+    border: 1px solid @primary-color-legacy;
     .select2-results {
         // bug fix for mac os scroll bars
         transform: translateZ(0);
@@ -1629,12 +1626,12 @@ img.zem-icon {
 }
 
 .select2-drop:not(.select2-drop-above):not(.select2-drop-auto-width) {
-    .border-radius(0 0 2px 2px);
+    border-radius: 0 0 2px 2px;
     border-top: 0;
 }
 
 .select2-drop.select2-drop-above:not(.select2-drop-auto-width) {
-    .border-radius(2px 2px 0 0);
+    border-radius: 2px 2px 0 0;
     border-bottom: 0;
 }
 
@@ -1658,9 +1655,7 @@ img.zem-icon {
             font-size: 14px;
             border: 1px solid #d2d2d2;
             border-radius: 2px;
-            -webkit-border-radius: 2px;
             box-shadow: none;
-            -webkit-box-shadow: none;
         }
 
         .select2-chosen {
@@ -1687,7 +1682,7 @@ img.zem-icon {
 
         &.select2-dropdown-open {
             .select2-choice {
-                border: 1px solid @default-color-legacy;
+                border: 1px solid @primary-color-legacy;
                 border-bottom: none;
             }
         }
@@ -1747,7 +1742,7 @@ img.zem-icon {
 // form dropdowns
 .form-control.select2-container {
     &.select2-dropdown-open {
-        border-color: @default-color-legacy;
+        border-color: @primary-color-legacy;
     }
 
     .select2-choice {
@@ -1859,7 +1854,7 @@ ul.with-icons {
 .help-popover:visited {
     display: inline-block;
     background-color: #dddddd;
-    .border-radius(50%);
+    border-radius: 50%;
     padding: 1px 3px 0 3px;
     margin-left: 5px;
     font-size: 12px;
@@ -1884,7 +1879,7 @@ ul.with-icons {
     .help-popover:hover,
     .help-popover:active,
     .help-popover:visited {
-        .border-radius(0);
+        border-radius: 0;
         &:after {
             color: #888;
             font-weight: 500;
@@ -2000,7 +1995,7 @@ ul.with-icons {
 .header {
     height: 60px;
     line-height: 51px;
-    background-color: @default-color-legacy;
+    background-color: @primary-color-legacy;
     margin-bottom: 10px;
 
     .logo-container {
@@ -2083,12 +2078,12 @@ ul.with-icons {
                 display: inline-block;
 
                 .btn {
-                    background: @default-color-legacy;
+                    background: @primary-color-legacy;
                 }
 
                 .glyphicon {
                     color: @white;
-                    background: @default-color-legacy;
+                    background: @primary-color-legacy;
                     line-height: 19px;
                     font-size: 19px;
                     top: 3px;
@@ -2128,7 +2123,7 @@ ul.with-icons {
         padding-left: 0;
         padding-bottom: 5px;
         border-bottom: 1px solid #d2d2d2;
-    
+
         > .loader {
             display: block;
             position: absolute;
@@ -2221,7 +2216,7 @@ ul.with-icons {
                 padding: 0;
 
                 &:hover {
-                    border-color: @default-color-legacy;
+                    border-color: @primary-color-legacy;
                 }
 
                 &.filter-enabled {
@@ -2287,7 +2282,7 @@ ul.with-icons {
                 right: 0;
                 top: 100%;
                 margin-left: -125px;
-                border: 1px solid @default-color-legacy;
+                border: 1px solid @primary-color-legacy;
                 padding: 15px 15px 5px 15px;
 
                 li {
@@ -2416,7 +2411,7 @@ ul.with-icons {
     border-right: 1px solid #d2d2d2;
     border-bottom: 1px solid #d2d2d2;
     margin-bottom: 15px;
-    .border-radius(0 0 2px 2px);
+    border-radius: 0 0 2px 2px;
 
     > form:first-child > .form-group:first-child > div:first-child > .btn-group:first-child {
         padding-top: 0;
@@ -2576,7 +2571,7 @@ ul.with-icons {
                 font-weight: 500;
             }
             th {
-                border-top: 2px solid @default-color-legacy;
+                border-top: 2px solid @primary-color-legacy;
                 zem-internal-feature .internal {
                     position: absolute;
 
@@ -2607,7 +2602,7 @@ ul.with-icons {
                     display: inline-block;
                     padding: 0;
                     margin: 0;
-                    color: @default-color-legacy;
+                    color: @primary-color-legacy;
                     cursor: pointer;
                     text-decoration: underline;
                 }
@@ -2675,8 +2670,8 @@ ul.with-icons {
             color: #d2d2d2;
             font-weight: 500;
             font-size: 13px;
-            .box-shadow(none);
-            .border-radius(0 2px 2px 0);
+            box-shadow: none;
+            border-radius: 0 2px 2px 0;
             width: 120px;
 
             &:hover {
@@ -2692,7 +2687,7 @@ ul.with-icons {
         }
 
         > label:first-child {
-            .border-radius(2px 0 0 2px);
+            border-radius: 2px 0 0 2px;
             &:hover {
                 border-color: #c70000;
                 color: #c70000;
@@ -2727,7 +2722,7 @@ ul.with-icons {
             }
 
             &.open .dropdown-toggle {
-                .box-shadow(none);
+                box-shadow: none;
             }
         }
 
@@ -2797,7 +2792,7 @@ ul.with-icons {
                     a:hover,
                     a:active,
                     a:visited {
-                        color: @default-color-legacy;
+                        color: @primary-color-legacy;
                     }
                 }
 
@@ -2806,12 +2801,12 @@ ul.with-icons {
                     a.dropdown-toggle:not(.disabled):hover,
                     a.dropdown-toggle:not(.disabled):active,
                     a.dropdown-toggle:not(.disabled):visited {
-                        color: @default-color-legacy;
+                        color: @primary-color-legacy;
                     }
 
                     .dropdown-menu li {
                         a {
-                            color: @default-color-legacy;
+                            color: @primary-color-legacy;
                         }
 
                         a:hover {
@@ -2879,7 +2874,7 @@ ul.with-icons {
             top: 0;
 
             &:after {
-                border-bottom-color: @default-color-legacy;
+                border-bottom-color: @primary-color-legacy;
             }
         }
     }
@@ -3106,13 +3101,13 @@ ul.with-icons {
         &.action-buttons {
             padding: 8px 0;
             text-align: right !important;
-            
+
             zem-internal-feature .internal {
                 position: relative;
                 left: auto;
                 top: auto;
                 margin-right: -8px;
-                
+
                 &:before {
                     border: none;
                 }
@@ -3272,7 +3267,7 @@ ul.with-icons {
         .btn {
             border-color: transparent;
             background-color: transparent;
-            .box-shadow(none);
+            box-shadow: none;
         }
     }
 
@@ -3282,7 +3277,7 @@ ul.with-icons {
     }
 
     .dropdown-menu {
-        border-color: @default-color-legacy;
+        border-color: @primary-color-legacy;
 
         > li > a {
             padding: 2px 6px;
@@ -3322,21 +3317,21 @@ ul.with-icons {
             padding-right: 24px !important;
             height: 24px;
             position: relative;
-            
+
             input.allFilterCheckbox {
                 vertical-align: top;
             }
-            
+
             .icon {
                 display: block;
                 background: url(img/arrow-up.svg) no-repeat;
                 background-size: 12px;
-                .rotate(180deg);
+                transform: rotate(180deg);
                 width: 12px;
                 height: 12px;
                 position: absolute;
                 top: 2px;
-                right: 6px;  
+                right: 6px;
             }
         }
     }
@@ -3353,7 +3348,7 @@ ul.with-icons {
         margin-right: 20px;
 
         .page-num {
-            border-color: @default-color-legacy;
+            border-color: @primary-color-legacy;
             display: inline-block;
         }
     }
@@ -3364,13 +3359,13 @@ ul.with-icons {
         font-weight: 300;
 
         .select2-choice {
-            border: 1px solid @default-color-legacy;
+            border: 1px solid @primary-color-legacy;
         }
     }
 
     .btn {
         display: inline-block;
-        border: 1px solid @default-color-legacy;
+        border: 1px solid @primary-color-legacy;
         line-height: 32px;
         padding: 0 10px;
         cursor: pointer;
@@ -3455,8 +3450,8 @@ ul.with-icons {
 
     .dropdown-menu {
         margin-top: 11px;
-        border: 1px solid @default-color-legacy;
-        color: @default-color-legacy;
+        border: 1px solid @primary-color-legacy;
+        color: @primary-color-legacy;
 
         width: 18em;
 
@@ -3549,8 +3544,8 @@ ul.with-icons {
 
     .conversion-goal-entry {
         background-color: #F7F7F7;
-        border: 1px solid @default-color-legacy;
-        .border-radius(2px);
+        border: 1px solid @primary-color-legacy;
+        border-radius: 2px;
         margin-bottom: 15px;
 
         padding-top: 10px;
@@ -3606,7 +3601,7 @@ zem-editable-currency-field {
     .edit-field.hover-enabled {
         white-space: nowrap;
         padding: 3px;
-        .border-radius(2px);
+        border-radius: 2px;
         border: 1px dashed transparent;
 
         &:hover {
@@ -3627,11 +3622,11 @@ zem-editable-currency-field {
         width: 252px;
         background-color: #fff;
         padding: 7px;
-        border: 1px solid @default-color-legacy;
-        .border-radius(2px);
+        border: 1px solid @primary-color-legacy;
+        border-radius: 2px;
         z-index: 100;
         text-align: left;
-        .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+        box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
         font-family: @default-font-family;
 
         .form-control {
@@ -3659,8 +3654,6 @@ zem-editable-currency-field {
 .modal {
     // prevent animation
     &.fade .modal-dialog {
-      -webkit-transform: translate(0, 0);
-      -ms-transform: translate(0, 0);
       transform: translate(0, 0);
     }
 }
@@ -3671,7 +3664,7 @@ zem-editable-currency-field {
         width: 610px;
 
         .modal-content {
-            border-top: 3px solid @default-color-legacy;
+            border-top: 3px solid @primary-color-legacy;
             border-radius: 3px;
 
             [class^='col-xs-'] {
@@ -3970,7 +3963,7 @@ zem-submission-status {
 // Apply the following class conditionally to parent container only in case it has contents.
 .ui-select-bigdrop {
     .select2-search {
-        border-top: 1px solid @default-color-legacy;
+        border-top: 1px solid @primary-color-legacy;
     }
 
     .ui-select-dropdown {
@@ -4014,7 +4007,7 @@ zem-submission-status {
         font-weight: 300;
         border: 2px solid #f68620;
         border-radius: 6px;
-        .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+        box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
     }
     > .arrow {
         border-width: 11px;
@@ -4050,7 +4043,7 @@ zem-submission-status {
 
     .dropdown-toggle,
     &.open:hover .dropdown-toggle {
-        border-color: @default-color-legacy;
+        border-color: @primary-color-legacy;
     }
 
     &:not(.open):not(:hover) .dropdown-toggle {
@@ -4099,7 +4092,7 @@ zem-submission-status {
 .sidenote.different-than-default {
     float: right;
     color: @orange;
-    background: url('images/exclamation-orange.svg') no-repeat left 0px; 
+    background: url('images/exclamation-orange.svg') no-repeat left 0px;
     background-size: 22px;
     line-height: 22px;
     padding-left: 30px;
@@ -4135,7 +4128,7 @@ select.media-source-select {
                 height: 10px;
                 width: 10px;
                 display: inline-block;
-                background-color: @default-color-legacy;
+                background-color: @primary-color-legacy;
                 right: 5px;
                 position: relative;
             }
@@ -4202,7 +4195,7 @@ select.media-source-select {
     }
 
     .optimization-label {
-      color: @default-color-legacy;
+      color: @primary-color-legacy;
       font-size: 13px;
       margin-bottom: 10px;
     }
@@ -4210,7 +4203,7 @@ select.media-source-select {
     .btn {
         .plus-sign {
             padding-right: 10px;
-            border-right: 1px solid @default-color-legacy;
+            border-right: 1px solid @primary-color-legacy;
         }
 
         .plus-label {
@@ -4233,14 +4226,14 @@ select.media-source-select {
 
         &.primary {
             .campaign-goal-index {
-                background-color: @default-color-legacy;
-                border-color: @default-color-legacy;
+                background-color: @primary-color-legacy;
+                border-color: @primary-color-legacy;
                 color: white;
             }
 
             .campaign-goal-desc {
                 .camp-goal-text {
-                    color: @default-color-legacy;
+                    color: @primary-color-legacy;
                 }
             }
         }
@@ -4254,16 +4247,16 @@ select.media-source-select {
             border-color: #aaaaaa;
             border-width: 1px 1px 1px 0;
             min-height: 50px;
-            .border-radius(0);
+            border-radius: 0;
             cursor: pointer;
 
             &:first-child {
-                .border-radius(2px 0 0 2px);
+                border-radius: 2px 0 0 2px;
                 border-left-width: 1px;
             }
 
             &:last-child {
-                .border-radius(0 2px 2px 0);
+                border-radius: 0 2px 2px 0;
             }
 
             &.campaign-goal-index {
@@ -4275,7 +4268,7 @@ select.media-source-select {
 
             &.campaign-goal-desc {
                 &:hover .camp-goal-text {
-                    color: @default-color-legacy;
+                    color: @primary-color-legacy;
                 }
 
                 .conv-goal-text {
@@ -4345,7 +4338,7 @@ select.media-source-select {
     padding-right: 0 !important;
 
     .progress-step-box {
-        background-color: @default-color-legacy;
+        background-color: @primary-color-legacy;
         color: #fff;
         font-weight: 500;
         font-size: 18px;
@@ -4383,7 +4376,7 @@ select.media-source-select {
     position: relative;
 
     .progress-bar {
-        background-color: @default-color-legacy;
+        background-color: @primary-color-legacy;
         transition: width 0.1s ease;
     }
 
@@ -4397,7 +4390,7 @@ select.media-source-select {
         overflow: hidden;
         padding-left: 44%;
 
-        color: @default-color-legacy;
+        color: @primary-color-legacy;
         width: 100%;
 
         &.inverted {
@@ -4563,13 +4556,13 @@ select.media-source-select {
 // GENERAL MODAL STYLES
 .modal {
     .modal-header {
-        border-bottom: 4px solid @default-color-legacy;
+        border-bottom: 4px solid @primary-color-legacy;
         padding: 15px 15px 10px 15px;
         margin-bottom: 5px;
 
 
         h4 {
-            color: @default-color-legacy;
+            color: @primary-color-legacy;
         }
 
         p {
@@ -4584,7 +4577,7 @@ select.media-source-select {
 
 // FACEBOOK INTEGRATION
 .fb-logo.input-group {
-    .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+    box-shadow: 0 1px 2px rgba(50, 50, 50, 0.1);
 
     i {
         padding: 0;
@@ -4692,7 +4685,7 @@ tags-input[disabled] {
             display: none;
         }
     }
- 
+
     .input {
         display: none;
     }
@@ -4708,8 +4701,8 @@ tags-input {
             color: #414141;
             border-color: @border-input-color;
             min-height: 36px;
-            .border-radius(2px);
-            .box-shadow(none);
+            border-radius: 2px;
+            box-shadow: none;
             // maticz, 30.9.2016: I had to add this in order for border and radius to
             // work. By default, it is set to -webkit-appearance: textfield;.
             -webkit-appearance: none;
@@ -4742,11 +4735,11 @@ tags-input {
 // LEGACY FIX //
 
 .zem-header {
-    background-color: @default-color-legacy;
+    background-color: @primary-color-legacy;
     margin-bottom: 10px;
 
     zem-header-menu .dropdown .dropdown-menu {
-        background-color: @default-color-legacy;
+        background-color: @primary-color-legacy;
     }
 
     .zem-header-filter .zem-filter ul.filter-menu li .filtered {
@@ -4754,18 +4747,18 @@ tags-input {
     }
 
     .dropdown-menu {
-        .border-radius (0);
+        border-radius: 0;
         .border-bottom-radius (@border-radius);
-        .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.1));
-        .transition(all 200ms ease-in-out);
+        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+        transition: all 200ms ease-in-out;
     }
 }
 
 .daterangepicker.dropdown-menu {
-    .border-radius (0);
+    border-radius: 0;
     .border-bottom-radius (@border-radius);
-    .box-shadow(0px 0px 8px 0px rgba(0,0,0,0.1));
-    .transition(opacity 200ms ease-in-out);
+    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+    transition: opacity 200ms ease-in-out;
     margin-top: 10px;
 }
 
@@ -4777,32 +4770,32 @@ tags-input {
 
     .scroll-container ul {
         .item.account {
-            color: @default-color-legacy;
-            border-color: @default-color-legacy;
+            color: @primary-color-legacy;
+            border-color: @primary-color-legacy;
         }
         .item.active {
-            background-color: fade(@default-color-legacy, 10%);
-            border-color: @default-color-legacy;
-            color: @default-color-legacy;
+            background-color: fade(@primary-color-legacy, 10%);
+            border-color: @primary-color-legacy;
+            color: @primary-color-legacy;
         }
         .item.selected.active {
-            color: @default-color-legacy;
+            color: @primary-color-legacy;
         }
     }
 }
 
 .zem-grid-column-selector .dropdown-menu, .zem-grid-breakdown-selector .dropdown-menu {
-    color: @default-color-legacy;
+    color: @primary-color-legacy;
 }
 
 a {
-    color: @default-color-legacy;
+    color: @primary-color-legacy;
 }
 
 .page {
     h1 {
         font-size: 26px;
-        color: @default-color-legacy;
+        color: @primary-color-legacy;
         margin-top: 0;
     }
     h2 {
@@ -4887,10 +4880,10 @@ a {
         }
 
         .candidate-table .batch-name {
-            border-bottom: 4px solid @default-color-legacy;
+            border-bottom: 4px solid @primary-color-legacy;
 
             .title {
-                color: @default-color-legacy;
+                color: @primary-color-legacy;
             }
         }
     }
@@ -4920,8 +4913,6 @@ a {
             background: none;
             border-color: #dadada;
             background-color: #e6e6e6;
-            -webkit-box-shadow: none;
-            -moz-box-shadow: none;
             box-shadow: none;
             float: left;
             padding-left: 0;
@@ -4955,8 +4946,8 @@ a {
         height: 36px;
         line-height: 26px;
         padding: 5px 30px 5px 40px;
-        .border-radius (2px);
-        .box-shadow (none);
+        border-radius: 2px;
+        box-shadow: none;
 
         .status {
             float: right;
@@ -4965,13 +4956,13 @@ a {
             &.connected {
                 color: @green;
             }
-            
+
             &.pending {
-                color: @orange;   
+                color: @orange;
             }
-            
+
             &.error {
-                color: @red;   
+                color: @red;
             }
         }
 
@@ -4987,7 +4978,7 @@ a {
             right: 3px;
             top: 3px;
             border: none;
-            .box-shadow (none);
+            box-shadow: none;
             padding: 0;
             height: 28px;
             width: 20px;
@@ -5014,7 +5005,7 @@ a {
         height: 20px;
         margin-top: 4px;
     }
-       
+
     .small-text {
         text-align: left;
         color: @gray;
@@ -5024,9 +5015,9 @@ a {
         padding-left: 20px;
         margin-left: 20px;
         border-left: 1px solid @line-dark-color;
-        
+
         a {
-            color: @gray; 
+            color: @gray;
         }
     }
 }
@@ -5036,7 +5027,7 @@ a {
 }
 
 .daily-spend-caps {
-    margin-left: 5px !important;    
+    margin-left: 5px !important;
 }
 
 }

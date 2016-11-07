@@ -147,16 +147,12 @@
                 <div class="col-xs-12 m-b-s">
                     <input type="checkbox" id="enable-retargeting" ng-model="retargetingEnabled"> Enable retargeting
                 </div>
-                <div ng-if="retargetingEnabled && warnings.retargeting !== undefined" class="col-xs-6 alert alert-warning form-alert-box">
-                    <div class="form-alert-exclamation">
-                        <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
-                    </div>
-                    <div class="form-alert-body">
-                        {{ warnings.retargeting.text }} {{ warnings.retargeting.sourcesText }}.
-                    </div>
+                <div ng-if="retargetingEnabled && warnings.retargeting !== undefined" class="col-xs-6 alert alert-icon alert-warning m-b">
+                    <div class="icon"></div>
+                    {{ warnings.retargeting.text }} {{ warnings.retargeting.sourcesText }}.
                 </div>
 
-                <div ng-if="retargetingEnabled && warnings.retargeting === undefined" class="col-xs-6 col-md-4 after-form-alert-box">
+                <div ng-if="retargetingEnabled && warnings.retargeting === undefined" class="col-xs-12">
                     <zem-retargeting zem-selected-adgroup-ids="settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop"></zem-retargeting>
                 </div>
             </div>
@@ -201,16 +197,17 @@
                     <label class="col-xs-2 control-label">
                         <span class="sidenote width-limit">Define your audience by including or excluding interests and demographics. This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change interest targeting.</span>
                     </label>
-                    <div class="col-xs-12" ng-if="settings.interestTargeting.length || settings.exclusionInterestTargeting.length">
+                    <div class="clear"></div>
+                    <div class="m-t-s" ng-if="settings.interestTargeting.length || settings.exclusionInterestTargeting.length">
                         <div class="col-xs-3 m-t-xs" ng-if="settings.interestTargeting.length">
                             <div class="text-success">Included</div>
-                            <ul class="with-icons ul-checkmarks">
+                            <ul class="with-icons ul-checkmarks m-b-none">
                                 <li ng-repeat="category in settings.interestTargeting">{{constants.interestCategoryText[category]}}</li>
                             </ul>
                         </div>
                         <div class="col-xs-3 m-t-xs" ng-if="settings.exclusionInterestTargeting.length">
                             <div class="text-danger">Excluded</div>
-                            <ul class="with-icons ul-remove">
+                            <ul class="with-icons ul-remove m-b-none">
                                 <li ng-repeat="category in settings.exclusionInterestTargeting">{{constants.interestCategoryText[category]}}</li>
                             </ul>
                         </div>
@@ -223,8 +220,11 @@
                     <label class="col-xs-2 control-label">
                         <span class="sidenote width-limit">This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change BlueKai and LiveRamp audience targeting.</span>
                     </label>
-                    <div class="col-xs-5" ng-if="settings.bluekaiTargeting.length">
-                        <div>Targeting set up.</div>
+                    <div class="clear"></div>
+                    <div class="col-xs-5 m-t-s" ng-if="settings.bluekaiTargeting.length">
+                        <ul class="with-icons ul-checkmarks m-b-none p-l-none">
+                           <li>Targeting set up.</li>
+                        </ul>
                     </div>
                 </div>
                 <div class="form-group">
@@ -234,7 +234,8 @@
                     <label class="col-xs-2 control-label">
                         <span class="sidenote width-limit">Any additional targeting set on the backend will be described here. This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change it.</span>
                     </label>
-                    <div class="col-xs-5 m-t-xs" ng-if="settings.notes">
+                    <div class="clear"></div>
+                    <div class="col-xs-5 m-t-s" ng-if="settings.notes">
                         <div class="textarea-with-border pre" readonly>{{settings.notes}}</div>
                     </div>
                 </div>
@@ -291,12 +292,13 @@
             <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_adgroup_to_auto_pilot')" popover-placement="right"></zem-internal-feature>
             <h2>Autopilot</h2>
             <div class="description">Bids and Daily Spend Caps Automation Settings.</div>
-            <div class="col-xs-12 alert alert-warning form-alert-box" ng-if="isInLanding()" >
+            <div class="col-xs-12 alert alert-warning form-alert-box m-b" ng-if="isInLanding()" >
                 <div class="form-alert-exclamation">
                     <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                 </div>
                 <div class="form-alert-body">Autopilot is automatically enabled because the campaign is in landing mode. </div>
             </div>
+            <div class="clear"></div>
             <div class="form-group" ng-class="{'has-error': !!errors.autopilotState}">
                 <div class="radio" ng-repeat='autopilotState in options.adGroupSettingsAutopilotStates'>
                     <label>

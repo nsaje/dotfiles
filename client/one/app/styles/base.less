@@ -12,21 +12,145 @@ a,
 a:hover,
 a:active,
 a:visited {
-    color: @default-color;
+    color: @primary-color;
     cursor: pointer !important;
+}
+
+.button {
+    height: @default-button-input-height;
+    line-height: @default-button-input-height;
+    padding: 0 10px;
+    background: tint(@secondary-color, 90%);
+    border: 1px solid tint(@secondary-color, 90%);
+    color: @secondary-color;
+    font-size: 14px;
+    border-radius: @border-radius;
+    box-shadow: none;
+    transition: all 250ms ease-in-out;
+
+    &:not(.button--disabled):not([disabled]) {
+        &:hover {
+            background: tint(@secondary-color, 80%);
+            border-color: tint(@secondary-color, 80%);
+            color: @secondary-color;
+        }
+    }
+}
+
+.button--disabled,
+.button[disabled] {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.button--highlight {
+    background: @primary-color;
+    border-color: @primary-color;
+    color: @white;
+
+    &:not(.button--disabled):not([disabled]) {
+        &:hover {
+            background: tint(@primary-color, 40%);
+            border-color: tint(@primary-color, 40%);
+            color: @white;
+        }
+    }
+}
+
+.button--outline {
+    background: linear-gradient(to bottom, #ffffff, #f9f9f9);
+    border-color: @border-gray-color;
+    color: @text-color;
+
+    &:not(.button--disabled):not([disabled]) {
+        &:hover {
+            background: linear-gradient(to bottom, #f1f1f1, #ffffff);
+            color: @text-color;
+            text-decoration: none;
+        }
+    }
+}
+
+.button--dropdown-toggle {
+    position: relative;
+    padding-right: 30px;
+
+    &:after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%) rotate(90deg);
+        right: 10px;
+        width: 6px;
+        height: 10px;
+        background-image: url('images/arrow-gray.svg'); // TODO: Create blue icon
+        background-repeat: no-repeat;
+    }
+
+    &.button--highlight:after {
+        background-image: url('images/arrow-white.svg');
+    }
+
+    &.button--outline:after {
+        background-image: url('images/arrow-gray.svg');
+    }
+}
+
+.button--with-icon {
+    position: relative;
+    padding-left: 33px;
+
+    &:before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 10px;
+        width: 13px;
+        height: 13px;
+        background-repeat: no-repeat;
+    }
+}
+
+.button--check-icon {
+    &:before {
+        background-image: url('images/check-blue.svg');
+    }
+
+    &.button--highlight:before {
+        background-image: url('images/check-white.svg');
+    }
+
+    &.button--outline:before {
+        background-image: url('images/check-blue.svg'); // TODO: Create gray icon
+    }
+}
+
+.button--remove-icon {
+    &:before {
+        background-image: url('images/remove-blue.svg');
+    }
+
+    &.button--highlight:before {
+        background-image: url('images/remove-white.svg');
+    }
+
+    &.button--outline:before {
+        background-image: url('images/remove-blue.svg'); // TODO: Create gray icon
+    }
 }
 
 body:not(.legacy-theme) {
     font-size: @default-font-size;
-    
+
     ////////////////////////////
     // List elements //
     ////////////////////////////
-    
+
     ul.with-icons {
         padding-left: 20px;
         list-style: none;
-    
+
         &.ul-checkmarks li {
             background: url('img/checkmark-green.svg') no-repeat left 5px;
             background-size: 14px;
@@ -38,11 +162,11 @@ body:not(.legacy-theme) {
             padding-left: 20px;
         }
     }
-    
+
     ////////////////////////////
     // Form elements //
     ////////////////////////////
-    
+
     input[type="text"], input[type="password"], input[type="search"] {
         background: none;
         border: 1px solid @border-gray-color;
@@ -50,55 +174,59 @@ body:not(.legacy-theme) {
         line-height: 18px;
         padding: 5px 10px;
         box-sizing: border-box;
-        .border-radius (@border-radius);
-        .box-shadow (inset 3px 3px 3px 0px rgba(0,0,0,0.03));
-        
+        border-radius: @border-radius;
+        box-shadow: inset 3px 3px 3px 0px rgba(0,0,0,0.03);
+
         &:focus {
             border: 1px solid darken(@border-gray-color, 20%);
         }
     }
-    
+
+    input[type=checkbox], input[type=radio] {
+        margin-top: 2px;
+    }
+
     label, label.control-label {
         font-weight: 500;
         text-align: left;
     }
-    
+
     .select2-container {
         margin: 0;
         padding: 0;
-        
+
         &.select2-container-disabled {
             opacity: 0.4;
         }
-        
+
         &:not(.disabled):not([disabled]):not(.select2-container-disabled) {
             &:hover {
-                .gradient-vertical (#f1f1f1, #FFFFFF);
+                background: linear-gradient(to bottom, #f1f1f1, #FFFFFF);
             }
         }
-                
+
         .select2-choice {
             border: 1px solid @border-gray-color !important;
             height: @default-button-input-height;
             line-height: @default-button-input-height;
-            .border-radius(@border-radius);
+            border-radius: @border-radius;
             color: @text-color;
-            .box-shadow(none);
-            .gradient-vertical (#FFFFFF, #f9f9f9);
+            box-shadow: none;
+            background: linear-gradient(to bottom, #FFFFFF, #f9f9f9);
             padding: 0 30px 0 10px;
             cursor: pointer;
-            
+
             &:not(.disabled):not([disabled]):not(.select2-container-disabled) {
                 &:hover {
-                    .gradient-vertical (#f1f1f1, #FFFFFF);
+                    background: linear-gradient(to bottom, #f1f1f1, #FFFFFF);
                 }
             }
-            
+
             &.disabled,
             &[disabled] {
                 opacity: 0.4;
             }
-    
+
             .select2-chosen {
                 font-family: @default-font-family;
                 padding-top: 0;
@@ -106,16 +234,16 @@ body:not(.legacy-theme) {
                 margin-right: 0;
                 color: @text-color;
             }
-    
+
             .select2-arrow {
                 background: none;
                 border: none;
-                
+
                 b {
                     display: block;
-                    background: url(images/arrow-gray.svg) no-repeat;
+                    background: url(images/arrow-gray.svg) no-repeat !important;
                     background-size: 6px;
-                    .rotate(90deg);
+                    transform: rotate(90deg);
                     width: 6px;
                     height: 11px;
                     position: absolute;
@@ -124,20 +252,24 @@ body:not(.legacy-theme) {
                 }
             }
         }
-        
+
+        .ui-select-no-choice {
+            margin: 0 10px 10px 10px;
+        }
+
         &.select2-dropdown-open {
             border-color: @border-gray-color;
         }
-        
+
         &.form-control {
-            border: none;    
+            border: none;
         }
     }
-    
+
     .select2-with-searchbox {
         .select2-search {
-            margin: 5px 0;    
-            
+            margin: 5px 0;
+
             input {
                 width: 100% !important;
                 background: url(images/magnifier-gray.svg) no-repeat 7px center;
@@ -147,7 +279,7 @@ body:not(.legacy-theme) {
             }
         }
     }
-    
+
     .multiselect {
         border: 1px solid #d2d2d2;
         border-radius: 2px;
@@ -155,7 +287,7 @@ body:not(.legacy-theme) {
         padding: 6px 12px 11px 12px;
         margin-top: 7px;
         margin-bottom: 7px;
-    
+
         .multiselect-tag {
             cursor: pointer;
             margin-right: 5px;
@@ -167,13 +299,13 @@ body:not(.legacy-theme) {
             border-radius: 2px;
             font-size: 13px;
             border: 1px solid #d2d2d2;
-    
+
             .multiselect-tag-label {
                 padding: 6px 6px 5px 6px;
                 border-right: 1px solid #d2d2d2;
                 margin: 0;
             }
-    
+
             .multiselect-tag-name {
                 padding: 6px 27px 6px 6px;
                 margin: 0;
@@ -187,30 +319,30 @@ body:not(.legacy-theme) {
             }
         }
     }
-    
+
     .sidenote {
         font-weight: 400;
         font-size: 12px;
         color: @gray;
         font-style: italic;
-        
+
         &.width-limit {
             width: 500px;
             display: inline-block;
         }
     }
-    
+
     ////////////////////////////
     // Help icon //
     ////////////////////////////
-    
+
     .help-popover,
     .help-popover:hover,
     .help-popover:active,
     .help-popover:visited {
         display: inline-block;
         background-color: #dddddd;
-        .border-radius(50%);
+        border-radius: 50%;
         padding: 1px 3px 0 3px;
         margin-left: 5px;
         font-size: 12px;

@@ -1,32 +1,28 @@
-<div class="col-xs-12" ng-if="$ctrl.appliedConditions.length || $ctrl.isExpanded()">
-    <div class="applied-conditions-banner">
-        <span class="filter-title">Filter</span>
-        <div class="applied-conditions clerfix">
-            <span class="condition" ng-repeat="condition in $ctrl.appliedConditions">
-                <span class="condition-name">{{condition.name}}</span>
-                <span class="condition-text" title="{{condition.text}}">{{condition.text}}</span>
-                <a class="remove-condition" ng-click="$ctrl.removeCondition(condition.condition, condition.value)" href>X</a>
-            </span>
-        </div>
-        <button class="clear-filter" ng-click="$ctrl.clearFilter()">Clear filter</button>
+<div ng-if="$ctrl.appliedConditions.length || $ctrl.isExpanded()" class="applied-conditions">
+    <span class="applied-conditions__title">Filter</span>
+    <div class="applied-conditions__list-container">
+        <span ng-repeat="condition in $ctrl.appliedConditions" class="applied-conditions__condition">
+            <span class="applied-conditions__condition-name">{{condition.name}}</span>
+            <span class="applied-conditions__condition-text" title="{{condition.text}}">{{condition.text}}</span>
+            <a ng-click="$ctrl.removeCondition(condition.condition, condition.value)" class="applied-conditions__remove-condition" href>X</a>
+        </span>
     </div>
+    <button ng-click="$ctrl.clearFilter()" class="applied-conditions__clear-filter button button--with-icon button--remove-icon">Clear filter</button>
 </div>
-<div class="col-xs-12" ng-if="$ctrl.isExpanded()">
-    <div class="filter-sections m-b clerfix" ng-class="$ctrl.getVisibleSectionsClasses()">
-        <div class="section {{section.cssClass}}" ng-repeat="section in $ctrl.visibleSections">
-            <div class="section-title">{{section.title}}</div>
-            <div class="section-options-container">
-                <ul class="section-options">
-                    <li ng-repeat="option in section.options">
-                        <label ng-switch="section.condition.type">
-                            <input ng-switch-when="list" type="checkbox" name="section.condition.name" ng-model="option.enabled">
-                            <input ng-switch-when="value" type="radio" name="section.condition.name" ng-model="section.value" ng-value="option.value">
-                            <span class="label-text">{{option.text}}</span>
-                        </label>
-                    </li>
-                </ul>
-            </div>
+<div ng-if="$ctrl.isExpanded()" class="filter-sections clearfix" ng-class="$ctrl.getVisibleSectionsClasses()">
+    <div ng-repeat="section in $ctrl.visibleSections" class="filter-sections__section filter-sections__section--{{section.cssClass}}">
+        <div class="filter-sections__section-title">{{section.title}}</div>
+        <div class="filter-sections__options-container">
+            <ul class="filter-sections__options-list">
+                <li ng-repeat="option in section.options" class="filter-sections__option">
+                    <label ng-switch="section.condition.type" class="filter-sections__option-label">
+                        <input ng-switch-when="list" type="checkbox" name="section.condition.name" ng-model="option.enabled" class="filter-sections__option-input filter-sections__option-input--checkbox">
+                        <input ng-switch-when="value" type="radio" name="section.condition.name" ng-model="section.value" ng-value="option.value" class="filter-sections__option-input filter-sections__option-input--radio">
+                        <span class="filter-sections__option-text">{{option.text}}</span>
+                    </label>
+                </li>
+            </ul>
         </div>
-        <button class="apply-filter" ng-click="$ctrl.applyFilter()">Apply filter</button>
     </div>
+    <button ng-click="$ctrl.applyFilter()" class="filter-sections__apply-filter button button--highlight button--with-icon button--check-icon">Apply filter</button>
 </div>

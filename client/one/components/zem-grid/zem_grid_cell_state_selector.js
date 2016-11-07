@@ -23,7 +23,8 @@ angular.module('one.legacy').directive('zemGridCellStateSelector', [function () 
             vm.setState = setState;
 
             $scope.$watch('ctrl.row', update);
-            $scope.$watch('ctrl.data', update);
+            $scope.$watch('ctrl.data', update, true);
+            $scope.$watch('ctrl.row.data.archived', update);
 
             function update () {
                 // TODO: Save loader visibility to row object so that it is not reset for this row when DOM element is
