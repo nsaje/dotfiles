@@ -85,7 +85,7 @@ class RESTAPITest(TestCase):
         r = self.client.post(
             reverse('campaigngoals_list', kwargs={'campaign_id': 1}),
             data={'type': 'TIME_ON_SITE', 'value': '30.0', 'primary': True, 'conversionGoal': None}, format='json')
-        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], dict)
         self.assertEqual(resp_json['data']['value'], '30.00')
@@ -114,7 +114,7 @@ class RESTAPITest(TestCase):
         r = self.client.post(
             reverse('campaigns_budget_list', kwargs={'campaign_id': 1}),
             data={'creditId': '1', 'amount': '500', 'startDate': datetime.date.today() + datetime.timedelta(days=1), 'endDate': datetime.date.today() + datetime.timedelta(days=7)}, format='json')
-        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], dict)
         self.assertEqual(resp_json['data']['amount'], "500")
@@ -174,7 +174,7 @@ class RESTAPITest(TestCase):
         r = self.client.put(
             reverse('adgroups_details', kwargs={'entity_id': 1}),
             data=data, format='json')
-        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.status_code, 200)
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], dict)
         self.assertEqual(resp_json['data']['name'], 'renamed test ad group')
@@ -195,7 +195,7 @@ class RESTAPITest(TestCase):
         r = self.client.put(
             reverse('adgroups_details', kwargs={'entity_id': 1}),
             data={'state': 'INACTIVE'}, format='json')
-        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.status_code, 200)
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], dict)
         self.assertEqual(resp_json['data']['state'], 'INACTIVE')
@@ -235,7 +235,7 @@ class RESTAPITest(TestCase):
         r = self.client.put(
             reverse('adgroups_sources_rtb_details', kwargs={'ad_group_id': 1}),
             data={'groupEnabled': True, 'dailyBudget': '10.0', 'state': 'ACTIVE'}, format='json')
-        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.status_code, 200)
         resp_json = json.loads(r.content)
         self.assertEqual(resp_json['data'], {
             'groupEnabled': True,

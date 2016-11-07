@@ -300,7 +300,7 @@ class SettingsViewDetails(RESTAPIBaseView):
         serializer = self.serializer_cls(request, view_internal, data_internal, request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return self.response_ok(serializer.data, status=201)
+        return self.response_ok(serializer.data)
 
 
 class SettingsViewList(RESTAPIBaseView):
@@ -325,8 +325,9 @@ class SettingsViewList(RESTAPIBaseView):
             data_internal, status_code = create_view_internal.put(request, int(parent_id))
             entity_id = data_internal['data']['id']
             response = self.details_view_cls().put(request, entity_id)
-            if response.status_code != 201:
+            if response.status_code != 200:
                 transaction.set_rollback(True)
+            response.status_code = 201
             return response
 
 
@@ -442,7 +443,7 @@ class CampaignGoalsViewList(RESTAPIBaseView):
         }
         self.request.body = RESTAPIJSONRenderer().render(put_data)
         data_internal, status_code = view_internal.put(request, int(campaign_id))
-        return self.response_ok(CampaignGoalsSerializer(data_internal['data']['goals'][-1]).data)
+        return self.response_ok(CampaignGoalsSerializer(data_internal['data']['goals'][-1]).data, status=201)
 
 
 class CampaignGoalPutSerializer(serializers.Serializer):
@@ -515,7 +516,10 @@ class CampaignBudgetViewList(RESTAPIBaseView):
         self.request.body = RESTAPIJSONRenderer().render(post_data)
         data_internal, _ = internal_view.put(self.request, campaign_id)
         budget_id = int(data_internal['data'])
-        return CampaignBudgetViewDetails().get(self.request, campaign_id, budget_id)
+        response = CampaignBudgetViewDetails().get(self.request, campaign_id, budget_id)
+        if response.status_code == 200:
+            response.status_code = 201
+        return response
 
 
 class CampaignBudgetViewDetails(RESTAPIBaseView):
@@ -561,19 +565,23 @@ class PublisherSerializer(serializers.Serializer):
     status = DashConstantField(constants.PublisherStatus)
     level = DashConstantField(constants.PublisherBlacklistLevel, source='get_blacklist_level', label='level')
 
-    def save(self, request, ad_group_id):
+    def create(self, validated_data):
+        request = validated_data['request'],
+        ad_group_id = validated_data['ad_group_id']
+        del validated_data['request']
+        del validated_data['ad_group_id']
         post_data = {
-            'state': self.validated_data['status'],
+            'state': validated_data['status'],
             'publishers_selected': [
                 {
-                    'source_id': self.validated_data['source'],
-                    'domain': self.validated_data['name'],
-                    'external_id': self.validated_data.get('external_id')
+                    'source_id': validated_data['source'],
+                    'domain': validated_data['name'],
+                    'external_id': validated_data.get('external_id')
                 }
             ],
             'publishers_not_selected': [],
             'select_all': False,
-            'level': self.validated_data['get_blacklist_level']
+            'level': validated_data['get_blacklist_level']
         }
         view_internal = views.PublishersBlacklistStatus(rest_proxy=True)
         request.body = RESTAPIJSONRenderer().render(post_data)
@@ -593,7 +601,7 @@ class PublishersViewList(RESTAPIBaseView):
     def put(self, request, ad_group_id):
         serializer = PublisherSerializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save(request, ad_group_id)
+        serializer.save(request=request, ad_group_id=ad_group_id)
         return self.response_ok(serializer.initial_data)
 
 
@@ -659,7 +667,7 @@ class AdGroupSourcesRTBViewDetails(RESTAPIBaseView):
         serializer = AdGroupSourcesRTBSerializer(data_internal['data']['settings'], request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request)
-        return self.response_ok(serializer.data, status=201)
+        return self.response_ok(serializer.data)
 
 
 class ContentAdSerializer(serializers.ModelSerializer):
