@@ -26,7 +26,7 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         vm.selectedRefererRuleStartsWithValue = '';
         vm.selectedRefererRuleContainsValue = '';
         vm.selectedName = '';
-        vm.selectedTtl = null;
+        vm.selectedTtl = 90;
 
         vm.errors = {};
 
