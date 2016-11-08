@@ -3549,7 +3549,7 @@ class BudgetLineItem(FootprintModel, HistoryMixin):
             'start_date': 'Start Date',
             'end_date': 'End Date',
             'amount': 'Amount',
-            'freed_cc': 'Freed',
+            'freed_cc': 'Released amount',
             'margin': 'Margin',
             'comment': 'Comment',
         }
