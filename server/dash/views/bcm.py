@@ -459,6 +459,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         spend = item.get_spend_data(use_decimal=True)['total']
         allocated = item.allocated_amount()
         response = {
+            'id': item.id,
             'amount': item.amount,
             'spend': spend,
             'available': allocated - spend,

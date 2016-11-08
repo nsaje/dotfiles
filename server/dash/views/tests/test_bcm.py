@@ -898,6 +898,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertEqual(
             json.loads(response.content)['data'],
             {
+                "id": 1,
                 "comment": "Test case",
                 "is_editable": False,
                 "is_updatable": True,
@@ -932,6 +933,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertEqual(
             json.loads(response.content)['data'],
             {
+                "id": 1,
                 "comment": "Test case",
                 "is_editable": False,
                 "is_updatable": True,
