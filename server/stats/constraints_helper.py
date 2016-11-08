@@ -35,18 +35,16 @@ def prepare_all_accounts_constraints(user, breakdown, start_date, end_date, filt
                                              .filter_by_sources(filtered_sources)\
                                              .filter_by_agencies(filtered_agencies)\
                                              .filter_by_account_types(filtered_account_types)
-    allowed_accounts = simplify_query(allowed_accounts)
 
     allowed_campaigns = models.Campaign.objects.filter(account__in=allowed_accounts)\
                                                .filter_by_user(user)\
                                                .filter_by_sources(filtered_sources)
-    allowed_campaigns = simplify_query(allowed_campaigns)
 
     # accounts tab
     if constants.get_base_dimension(breakdown) == 'account_id':
         # exclude archived accounts/campaigns only when on accounts tab
-        allowed_accounts = simplify_query(allowed_accounts.exclude_archived(show_archived))
-        allowed_campaigns = simplify_query(allowed_campaigns.exclude_archived(show_archived))
+        allowed_accounts = allowed_accounts.exclude_archived(show_archived)
+        allowed_campaigns = allowed_campaigns.exclude_archived(show_archived)
 
     constraints = {
         'allowed_accounts': allowed_accounts,
@@ -78,8 +76,8 @@ def prepare_account_constraints(user, account, breakdown, start_date, end_date, 
 
     constraints = {
         'account': account,
-        'allowed_campaigns': simplify_query(allowed_campaigns),
-        'allowed_ad_groups': simplify_query(allowed_ad_groups),
+        'allowed_campaigns': allowed_campaigns,
+        'allowed_ad_groups': allowed_ad_groups,
     }
 
     if only_used_sources:

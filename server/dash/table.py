@@ -837,13 +837,14 @@ class AccountsAccountsTable(object):
         settings and ad group settings state.
         """
 
-        ad_groups = models.AdGroup.objects.filter(campaign__account_id__in=accounts)
+        ad_groups = models.AdGroup.objects.filter(campaign__account_id__in=accounts)\
+                                          .values_list('id', 'campaign__account_id')
         ad_groups_settings = models.AdGroupSettings.objects\
-                                                   .filter(ad_group__in=ad_groups)\
+                                                   .filter(ad_group__in=[x[0] for x in ad_groups])\
                                                    .group_current_settings()
 
         return helpers.get_ad_group_table_running_state_by_obj_id(
-            ad_groups, ad_groups_settings, 'campaign__account_id')
+            ad_groups, ad_groups_settings)
 
     def get_data_status(self, user, accounts, last_success_actions, last_pixel_sync):
         return helpers.get_data_status(accounts)
@@ -1282,7 +1283,7 @@ class CampaignAdGroupsTable(object):
     def get_per_ad_group_running_status_dict(self, ad_groups, ad_groups_settings, filtered_sources):
 
         return helpers.get_ad_group_table_running_state_by_obj_id(
-            ad_groups, ad_groups_settings, 'id')
+            ad_groups.values_list('id', 'id'), ad_groups_settings)
 
     def get_yesterday_cost(self, reports_api, campaign, filtered_sources, actual=False):
         constraints = {'campaign': campaign, 'source': filtered_sources}
@@ -1483,13 +1484,14 @@ class AccountCampaignsTable(object):
         """
         Returns per campaign status, based on ad group sources settings and ad group settings.
         """
-        ad_groups = models.AdGroup.objects.filter(campaign__in=campaigns)
+        ad_groups = models.AdGroup.objects.filter(campaign__in=campaigns)\
+                                          .values_list('id', 'campaign_id')
         ad_groups_settings = models.AdGroupSettings.objects\
-                                                   .filter(ad_group__in=ad_groups)\
+                                                   .filter(ad_group__in=[x[0] for x in ad_groups])\
                                                    .group_current_settings()
 
         return helpers.get_ad_group_table_running_state_by_obj_id(
-            ad_groups, ad_groups_settings, 'campaign_id')
+            ad_groups, ad_groups_settings)
 
     def get_data_status(self, user, campaigns, last_success_actions, last_pixel_sync):
         return helpers.get_data_status(campaigns)

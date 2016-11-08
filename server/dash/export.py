@@ -478,12 +478,13 @@ def _prefetch_statuses(entities, level, by_source, sources=None):
             for entity_id, source_ags_set in entity_ags_map.iteritems()
         }
 
-    ad_groups = models.AdGroup.objects.filter(**{constraints + '__in': entities})
+    ad_groups = models.AdGroup.objects.filter(**{constraints + '__in': entities})\
+                                      .values_list('id', constraints)
     ad_groups_settings = models.AdGroupSettings.objects.filter(
-        ad_group__in=ad_groups).group_current_settings()
+        ad_group__in=[x[0] for x in ad_groups]).group_current_settings()
 
     return helpers.get_ad_group_table_running_state_by_obj_id(
-        ad_groups, ad_groups_settings, constraints)
+        ad_groups, ad_groups_settings)
 
 
 def _populate_stat(stat, start_date=None, end_date=None, dimensions=None, source_names=None,

@@ -310,7 +310,7 @@ class RunningStateHelpersTestCase(TestCase):
     def test_get_ad_group_table_running_state_by_campaign_id(self):
 
         status_dict = helpers.get_ad_group_table_running_state_by_obj_id(
-            self.ad_groups, self.ad_groups_settings, 'campaign_id')
+            self.ad_groups.values_list('id', 'campaign_id'), self.ad_groups_settings)
 
         self.assertDictEqual(status_dict, {
             1: constants.AdGroupSettingsState.ACTIVE,
@@ -323,7 +323,7 @@ class RunningStateHelpersTestCase(TestCase):
     def test_get_ad_group_table_running_state_by_account_id(self):
 
         status_dict = helpers.get_ad_group_table_running_state_by_obj_id(
-            self.ad_groups, self.ad_groups_settings, 'campaign__account_id')
+            self.ad_groups.values_list('id', 'campaign__account_id'), self.ad_groups_settings)
 
         self.assertDictEqual(status_dict, {
             1: constants.AdGroupSettingsState.ACTIVE,
@@ -337,7 +337,7 @@ class RunningStateHelpersTestCase(TestCase):
     def test_get_ad_group_table_running_state_by_ad_group_id(self):
 
         status_dict = helpers.get_ad_group_table_running_state_by_obj_id(
-            self.ad_groups, self.ad_groups_settings, 'id')
+            self.ad_groups.values_list('id', 'id'), self.ad_groups_settings)
 
         self.assertDictEqual(status_dict, {
             1: constants.AdGroupSettingsState.ACTIVE,

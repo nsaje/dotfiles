@@ -34,7 +34,6 @@ def should_use_publishers_view(breakdown):
     return 'publisher_id' in breakdown
 
 
-@newrelic.agent.function_trace()
 def query(level, user, breakdown, constraints, goals, parents, order, offset, limit):
     """
     Get a breakdown report. Data is sourced from dash models and redshift.
@@ -106,7 +105,6 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
     return rows
 
 
-@newrelic.agent.function_trace()
 def totals(user, level, breakdown, constraints, goals):
     helpers.check_constraints_are_supported(constraints)
 

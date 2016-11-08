@@ -115,7 +115,7 @@ class AccountsLoader(Loader):
                 'default_account_manager': None,
                 'default_sales_representative': None,
                 'account_type': constants.AccountType.get_text(constants.AccountType.UNKNOWN),
-                'settings_id': None,  # for debugging purposes, gets removed
+                'settings_id': None,  # for debugging purposes, isn't used in production code
             }
             if settings is not None:
                 settings_dict.update({
@@ -137,14 +137,16 @@ class AccountsLoader(Loader):
         Returns dict with account_id as key and status as value
         """
 
-        ad_groups = models.AdGroup.objects.filter(campaign__account_id__in=self.objs_ids)
+        ad_group_w_account = models.AdGroup.objects.filter(campaign__account_id__in=self.objs_ids)\
+                                                   .values_list('id', 'campaign__account_id')
+
         ad_groups_settings = models.AdGroupSettings.objects\
-                                                   .filter(ad_group__campaign__account_id__in=self.objs_ids)\
+                                                   .filter(ad_group_id__in=[x[0] for x in ad_group_w_account])\
                                                    .group_current_settings()\
                                                    .only_state_fields()
 
         status_map = view_helpers.get_ad_group_table_running_state_by_obj_id(
-            ad_groups, ad_groups_settings, 'campaign__account_id')
+            ad_group_w_account, ad_groups_settings)
 
         for account_id in self.objs_ids:
             if account_id not in status_map:
@@ -215,14 +217,15 @@ class CampaignsLoader(Loader):
         return settings_map
 
     def _get_status_map(self):
-        ad_groups = models.AdGroup.objects.filter(campaign_id__in=self.objs_ids)
+        ad_group_w_campaing = models.AdGroup.objects.filter(campaign_id__in=self.objs_ids)\
+                                                    .values_list('id', 'campaign_id')
         ad_groups_settings = models.AdGroupSettings.objects\
-                                                   .filter(ad_group__in=ad_groups)\
+                                                   .filter(ad_group_id__in=[x[0] for x in ad_group_w_campaing])\
                                                    .group_current_settings()\
                                                    .only_state_fields()
 
         status_map = view_helpers.get_ad_group_table_running_state_by_obj_id(
-            ad_groups, ad_groups_settings, 'campaign_id')
+            ad_group_w_campaing, ad_groups_settings)
 
         for campaign_id in self.objs_ids:
             if campaign_id not in status_map:

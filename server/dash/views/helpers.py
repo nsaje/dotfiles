@@ -867,16 +867,13 @@ def get_ad_group_sources_settings(ad_group_sources):
         .select_related('ad_group_source')
 
 
-def get_ad_group_table_running_state_by_obj_id(ad_groups, ad_groups_settings, group_by_key):
+def get_ad_group_table_running_state_by_obj_id(ad_group_id_with_group, ad_groups_settings):
     by_ad_group = {}
     for settings in ad_groups_settings:
         by_ad_group[settings.ad_group_id] = settings.state
 
     by_group_key = collections.defaultdict(list)
-    for ad_group in ad_groups.values('id', group_by_key):
-        ad_group_id = ad_group['id']
-        key = ad_group[group_by_key]
-
+    for ad_group_id, key in ad_group_id_with_group:
         state = by_ad_group.get(ad_group_id)
         if state is not None:
             by_group_key[key].append(state)

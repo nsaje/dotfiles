@@ -228,31 +228,26 @@ def check_constraints_are_supported(constraints):
 
 def get_supported_order(order, target_dimension):
     """
-    This is hack that converts order field to something we already know
-    how to sort. Order conversion in this function should be eventually supported.
-
-    FIXME: Remove this hack
+    Converts order field to a column our system knows how to order.
     """
 
     prefix, order_field = sort_helper.dissect_order(order)
 
     if order_field == 'cost':
-        # cost is not supported anymore, this case needs to be handled in case this sort was cached in browser
+        # cost is not supported anymore, this case needs to be handled
+        # in case sort selection was cached in browser
+
+        # NOTE: Delete this 'if' statement in case this warning doesn't get fired until 2016-12-01
+        logger.warning('Order field "cost" was deprecated long ago')
+
         return prefix + 'media_cost'
 
-    UNSUPPORTED_FIELDS = [
-        "pacing", "allocated_budgets", "spend_projection",
-        "license_fee_projection",
-    ]
+    if target_dimension == 'publisher_id':
+        if order_field in ('state', 'status'):
+            return prefix + "clicks"
 
-    if order_field in UNSUPPORTED_FIELDS:
-        return prefix + "clicks"
-
-    if target_dimension == 'publisher_id' and order_field in ('state', 'status'):
-        return prefix + "clicks"
-
-    if target_dimension == 'publisher_id' and order_field == 'exchange':
-        return prefix + "source_id"
+        if order_field == 'exchange':
+            return prefix + "source_id"
 
     return order
 
