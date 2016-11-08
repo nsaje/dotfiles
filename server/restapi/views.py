@@ -32,6 +32,13 @@ logger = logging.getLogger(__name__)
 class NotProvided(object):
     def __getitem__(self, key):
         return self
+
+    def __iter__(self):
+        # empty iterator pattern: yield keyword turns the function into a generator,
+        # a preceding return makes sure the generator is empty
+        return
+        yield
+
 NOT_PROVIDED = NotProvided()
 
 

@@ -10,7 +10,7 @@ from automation import campaign_stop
 class AccountCreditView(api_common.BaseApiView):
 
     def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.account_credit_view'):
+        if not self.rest_proxy and not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
         account = helpers.get_account(request.user, account_id)
         return self._get_response(account.id, account.agency)
