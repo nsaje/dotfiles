@@ -75,6 +75,21 @@ class HelperTest(TestCase):
             ['account_id', 'content_ad_id', 'source_id']
         )
 
+    def test_select_relevant_stats_rows(self):
+        self.assertItemsEqual(
+            helpers.select_relevant_stats_rows(
+                ['account_id'], [{'account_id': 1}, {'account_id': 2}, {'account_id': 4}],
+                [
+                    {'account_id': 1, 'clicks': 1},
+                    {'account_id': 2, 'clicks': 2},
+                    {'account_id': 3, 'clicks': 3},
+                ]),
+            [
+                {'account_id': 1, 'clicks': 1},
+                {'account_id': 2, 'clicks': 2},
+            ]
+        )
+
 
 class PrepareTimeConstraintsTest(TestCase):
 

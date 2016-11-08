@@ -187,14 +187,8 @@ def encode_breakdown_id(breakdown, row):
     return u"||".join(values)
 
 
-def get_breakdown_id_tuple(row, breakdown):
-    d = []
-    for dim in breakdown:
-        d.append(row[dim])
-    return tuple(d)
-
-
 def get_breakdown_id(row, breakdown):
+    # returns a dict where breakdown dimensions are keys and values are dimension values
     d = {}
     for dim in breakdown:
         d[dim] = row[dim]
@@ -318,24 +312,6 @@ def extract_rs_order_field(order, target_dimension):
     return prefix + order_field
 
 
-def group_rows_by_breakdown(breakdown, rows, max_1=False):
-    groups = collections.defaultdict(list)
-
-    for row in rows:
-        groups[get_breakdown_id_tuple(row, breakdown)].append(row)
-
-    if max_1:
-        result = {}
-        for breakdown_id, rows in groups.iteritems():
-            result[breakdown_id] = rows[0]
-            if len(rows) > 1:
-                raise Exception('Expected 1 row per breakdown got {}'.format(len(rows)))
-
-        groups = result
-
-    return groups
-
-
 def should_query_dashapi_first(order, target_dimension):
 
     if target_dimension == 'publisher_id':
@@ -369,8 +345,8 @@ def should_query_dashapi(target_dimension):
 
 
 def merge_rows(breakdown, dash_rows, stats_rows):
-    group_a = group_rows_by_breakdown(breakdown, dash_rows)
-    group_b = group_rows_by_breakdown(breakdown, stats_rows)
+    group_a = sort_helper.group_rows_by_breakdown_key(breakdown, dash_rows)
+    group_b = sort_helper.group_rows_by_breakdown_key(breakdown, stats_rows)
 
     rows = []
     for key, group_rows in group_a.iteritems():

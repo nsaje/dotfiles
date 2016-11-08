@@ -55,8 +55,8 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
     parent_breakdown = stats.constants.get_parent_breakdown(breakdown)
     target_dimension = stats.constants.get_target_dimension(breakdown)
 
-    rows_by_parent = stats.helpers.group_rows_by_breakdown(parent_breakdown, rows)
-    structure_by_parent = stats.helpers.group_rows_by_breakdown(parent_breakdown, structure_w_stats)
+    rows_by_parent = sort_helper.group_rows_by_breakdown_key(parent_breakdown, rows)
+    structure_by_parent = sort_helper.group_rows_by_breakdown_key(parent_breakdown, structure_w_stats)
 
     augment_fn = augmenter.get_augmenter_for_dimension(target_dimension)
 
@@ -69,8 +69,8 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
         loader = thread.get_result()['loader']
         dash_rows = thread.get_result()['rows']
 
-        parent_id_tuple = stats.helpers.get_breakdown_id_tuple(parent, parent_breakdown)
-        stat_rows = rows_by_parent[parent_id_tuple]
+        parent_key = sort_helper.get_breakdown_key(parent, parent_breakdown)
+        stat_rows = rows_by_parent[parent_key]
 
         rows_target_ids = [x[target_dimension] for x in stat_rows]
         selected_rows = [x for x in dash_rows if x[target_dimension] in rows_target_ids]
@@ -94,7 +94,7 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
         # as we should not add those rows
         if len(rows_target_ids) < limit and target_dimension != 'publisher_id':
             # select additional rows from
-            structure_4p = structure_by_parent[parent_id_tuple]
+            structure_4p = structure_by_parent[parent_key]
             all_used_ids = [x[target_dimension] for x in structure_4p]
 
             new_offset, new_limit = helpers.get_adjusted_limits_for_additional_rows(

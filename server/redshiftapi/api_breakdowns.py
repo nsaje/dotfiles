@@ -26,7 +26,7 @@ def should_query_all(breakdown):
         return True
 
     if len(breakdown) == 2:
-        if not {stats.constants.CAMPAIGN, stats.constants.AD_GROUP, stats.constants.SOURCE} - set(breakdown):
+        if not set(breakdown) - {stats.constants.CAMPAIGN, stats.constants.AD_GROUP, stats.constants.SOURCE}:
             # these combinations should not produce too big results
             return True
 
@@ -42,8 +42,9 @@ def query(breakdown, constraints, parents, goals, order, offset, limit, use_publ
     if should_query_all(breakdown):
         all_rows = _query_all(breakdown, constraints, parents, goals, use_publishers_view,
                               breakdown_for_name=breakdown, extra_name='all')
-        rows = sort_helper.sort_results(all_rows, order)
-        rows = sort_helper.apply_offset_limit(rows, offset, limit)
+        rows = sort_helper.sort_results(all_rows, [order])
+        rows = sort_helper.apply_offset_limit_to_breakdown(
+            stats.constants.get_parent_breakdown(breakdown), rows, offset, limit)
     elif len(breakdown) == 1:
         sql, params = queries.prepare_query_joint_base(
             breakdown, constraints, parents, order, offset, limit, goals, use_publishers_view)
@@ -55,8 +56,8 @@ def query(breakdown, constraints, parents, goals, order, offset, limit, use_publ
         rows = db.execute_query(sql, params, helpers.get_query_name(breakdown))
         postprocess.postprocess_joint_query(rows)
 
-    rows = postprocess.postprocess_breakdown_query(rows, breakdown, constraints, parents, order, offset, limit)
-    postprocess.remove_postclick_values(breakdown, rows)
+    rows = postprocess.add_rows_without_stats(rows, breakdown, constraints, parents, order, offset, limit)
+    postprocess.set_default_values(breakdown, rows)
     return rows
 
 
@@ -64,13 +65,13 @@ def query_stats_for_rows(rows, breakdown, constraints, goals, use_publishers_vie
     if should_query_all(breakdown):
         stats_rows = _query_all(breakdown, constraints, None, goals, use_publishers_view,
                                 breakdown_for_name=breakdown, extra_name='rows')
-        rows = helpers.select_relevant_rows(breakdown, rows, stats_rows)
+        rows = helpers.select_relevant_stats_rows(breakdown, rows, stats_rows)
     else:
         parents = helpers.create_parents(rows, breakdown)  # this limits the query to rows we are looking for
         rows = _query_all(breakdown, constraints, parents, goals, use_publishers_view,
                           breakdown_for_name=breakdown, extra_name='rows')
 
-    postprocess.remove_postclick_values(breakdown, rows)
+    postprocess.set_default_values(breakdown, rows)
     return rows
 
 
@@ -80,8 +81,10 @@ def query_structure_with_stats(breakdown, constraints, use_publishers_view=False
 
 
 def query_totals(breakdown, constraints, goals, use_publishers_view=False):
-    return _query_all([], constraints, None, goals, use_publishers_view,
+    rows = _query_all([], constraints, None, goals, use_publishers_view,
                       breakdown_for_name=breakdown, extra_name='totals')
+    postprocess.set_default_values([], rows)
+    return rows
 
 
 def _query_all(breakdown, constraints, parents, goals, use_publishers_view,

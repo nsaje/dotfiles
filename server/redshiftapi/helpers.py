@@ -5,6 +5,7 @@ import datetime
 import dateutil
 
 from utils import dates_helper
+from utils import sort_helper
 
 import stats.helpers
 from stats import constants
@@ -14,7 +15,7 @@ def create_parents(rows, breakdown):
     parent_breakdown = constants.get_parent_breakdown(breakdown)
     target_dimension = constants.get_target_dimension(breakdown)
 
-    groups = stats.helpers.group_rows_by_breakdown(parent_breakdown, rows)
+    groups = sort_helper.group_rows_by_breakdown_key(parent_breakdown, rows)
 
     parents = []
     for group_key, child_rows in groups.iteritems():
@@ -91,11 +92,11 @@ def optimize_parent_constraints(parents):
 
 
 def merge_rows(breakdown, rows, stats_rows):
-    group_stats_rows = stats.helpers.group_rows_by_breakdown(breakdown, stats_rows)
+    group_stats_rows = sort_helper.group_rows_by_breakdown_key(breakdown, stats_rows)
 
     for row in rows:
-        breakdown_id = stats.helpers.get_breakdown_id_tuple(row, breakdown)
-        stats_row = group_stats_rows.get(breakdown_id, None)
+        breakdown_key = sort_helper.get_breakdown_key(row, breakdown)
+        stats_row = group_stats_rows.get(breakdown_key, None)
 
         if stats_row:
             row.update(stats_row[0])
@@ -103,10 +104,12 @@ def merge_rows(breakdown, rows, stats_rows):
     return rows
 
 
-def select_relevant_rows(breakdown, rows, stats_rows):
-    group_stats_rows = stats.helpers.group_rows_by_breakdown(breakdown, stats_rows, max_1=True)
-    group_rows = stats.helpers.group_rows_by_breakdown(breakdown, rows, max_1=True)
-    return [stat_row for breakdown_id, stat_row in group_stats_rows.iteritems() if breakdown_id in group_rows]
+def select_relevant_stats_rows(breakdown, rows, stats_rows):
+    # returns stats_rows that match rows
+
+    group_stats_rows = sort_helper.group_rows_by_breakdown_key(breakdown, stats_rows, max_1=True)
+    group_rows = sort_helper.group_rows_by_breakdown_key(breakdown, rows, max_1=True)
+    return [stat_row for breakdown_key, stat_row in group_stats_rows.iteritems() if breakdown_key in group_rows]
 
 
 def get_all_dimensions(breakdown, constraints, parents):

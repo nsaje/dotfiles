@@ -70,14 +70,52 @@ def dissect_order(order):
     return prefix, field_name
 
 
-def apply_offset_limit(qs_or_collection, offset, limit):
+def get_breakdown_key(row, breakdown):
+    # returns a pickable breakdown identifier
+
+    d = []
+    for dim in breakdown:
+        d.append(row[dim])
+    return tuple(d)
+
+
+def group_rows_by_breakdown_key(breakdown, rows, max_1=False):
+    groups = collections.defaultdict(list)
+
+    for row in rows:
+        groups[get_breakdown_key(row, breakdown)].append(row)
+
+    if max_1:
+        result = {}
+        for breakdown_id, rows in groups.iteritems():
+            result[breakdown_id] = rows[0]
+            if len(rows) > 1:
+                raise Exception('Expected 1 row per breakdown got {}'.format(len(rows)))
+
+        groups = result
+
+    return groups
+
+
+def apply_offset_limit(rows, offset, limit):
     if offset and limit:
-        return qs_or_collection[offset:offset + limit]
+        return rows[offset:offset + limit]
 
     if offset:
-        return qs_or_collection[offset:]
+        return rows[offset:]
 
     if limit:
-        return qs_or_collection[:limit]
+        return rows[:limit]
 
-    return qs_or_collection
+    return rows
+
+
+def apply_offset_limit_to_breakdown(breakdown, rows, offset, limit):
+    # NOTE breakdown groups are not kept in order but rows within a group are
+
+    groups = group_rows_by_breakdown_key(breakdown, rows)
+    rows = []
+    for breakdown_key, group_rows in groups.iteritems():
+        rows.extend(apply_offset_limit(group_rows, offset, limit))
+
+    return rows

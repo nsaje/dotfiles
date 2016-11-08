@@ -28,22 +28,34 @@ POSTCLICK_FIELDS = [
 ]
 
 
-@newrelic.agent.function_trace()
-def postprocess_breakdown_query(rows, breakdown, constraints, parents, order, offset, limit):
+def add_rows_without_stats(rows, breakdown, constraints, parents, order, offset, limit):
     target_dimension = constants.get_target_dimension(breakdown)
 
     if target_dimension in constants.TimeDimension._ALL:
         postprocess_time_dimension(target_dimension, rows, breakdown, constraints, parents)
-        return sort_helper.sort_results(rows, [order])
+        rows = sort_helper.sort_results(rows, [order])
 
     if target_dimension == 'device_type':
         postprocess_device_type_dimension(target_dimension, rows, breakdown, parents, offset, limit)
-        return sort_helper.sort_results(rows, [order])
-
-    for row in rows:
-        postprocess_yesterday_columns(row)
+        rows = sort_helper.sort_results(rows, [order])
 
     return rows
+
+
+def set_default_values(breakdown, rows):
+    remove_postclicks = constants.get_delivery_dimension(breakdown) is not None
+
+    for row in rows:
+        row.update({
+            'yesterday_cost': row.get('yesterday_cost') or 0,  # default to 0
+            'e_yesterday_cost': row.get('e_yesterday_cost') or 0,
+        })
+
+        if remove_postclicks:
+            # HACK: Temporary hack that removes postclick data when we breakdown by delivery
+            for key in POSTCLICK_FIELDS:
+                if key in row:
+                    row[key] = None
 
 
 def postprocess_time_dimension(target_dimension, rows, breakdown, constraints, parent):
@@ -70,11 +82,11 @@ def fill_in_missing_rows(target_dimension, rows, breakdown, parent, all_values):
 
     rows_per_parent_breakdown = collections.defaultdict(list)
     for row in rows:
-        parent_br_key = stats.helpers.get_breakdown_id_tuple(row, parent_breakdown)
+        parent_br_key = sort_helper.get_breakdown_key(row, parent_breakdown)
         rows_per_parent_breakdown[parent_br_key].append(row)
 
     for bc in parent:
-        parent_br_key = stats.helpers.get_breakdown_id_tuple(bc, parent_breakdown)
+        parent_br_key = sort_helper.get_breakdown_key(bc, parent_breakdown)
 
         # collect used constants for rows returned
         used = set(row[target_dimension] for row in rows_per_parent_breakdown[parent_br_key])
@@ -129,22 +141,8 @@ def _get_representative_dates(time_dimension, constraints):
 def postprocess_joint_query(rows):
     for row in rows:
         for column in [x for x in row.keys() if x.startswith('performance_')]:
+            # this is specific to joint queries - performance returned needs to be converted to category
             row[column] = dash.campaign_goals.get_goal_performance_category(row[column])
-
-
-def postprocess_yesterday_columns(row):
-    row.update({
-        'yesterday_cost': row.get('yesterday_cost') or 0,
-        'e_yesterday_cost': row.get('e_yesterday_cost') or 0,
-    })
-
-
-def remove_postclick_values(breakdown, rows):
-    # HACK: Temporary hack that removes postclick data when we breakdown by delivery
-    if constants.get_delivery_dimension(breakdown) is not None:
-        for row in rows:
-            for key in POSTCLICK_FIELDS:
-                row[key] = None
 
 
 def postprocess_join_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion_rows, goals):
@@ -163,7 +161,7 @@ def postprocess_join_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows,
         if row.get('e_yesterday_cost') is None:
             row['e_yesterday_cost'] = 0
 
-    row_by_breakdown = stats.helpers.group_rows_by_breakdown(breakdown, rows, max_1=True)
+    row_by_breakdown = sort_helper.group_rows_by_breakdown_key(breakdown, rows, max_1=True)
 
     if goals.conversion_goals:
         apply_conversion_goal_columns(breakdown, row_by_breakdown, goals.conversion_goals, conversion_rows)
@@ -180,17 +178,17 @@ def apply_conversion_goal_columns(breakdown, row_by_breakdown, conversion_goals,
         return
 
     conversion_breakdown = breakdown + ['slug']
-    conversion_rows_map = stats.helpers.group_rows_by_breakdown(
+    conversion_rows_map = sort_helper.group_rows_by_breakdown_key(
         conversion_breakdown, conversion_rows, max_1=True)
 
-    for breakdown_id, row in row_by_breakdown.iteritems():
+    for breakdown_key, row in row_by_breakdown.iteritems():
         for conversion_goal in conversion_goals:
             if conversion_goal.type not in conversions_helper.REPORT_GOAL_TYPES:
                 continue
 
             stats_key = conversion_goal.get_stats_key()
 
-            conversion_breakdown_id = breakdown_id + (stats_key,)
+            conversion_breakdown_id = breakdown_key + (stats_key,)
             conversion_row = conversion_rows_map.get(conversion_breakdown_id)
 
             if conversion_row:
@@ -214,14 +212,14 @@ def apply_pixel_columns(breakdown, row_by_breakdown, pixels, touchpoint_rows):
         return
 
     pixel_breakdown = breakdown + ['slug']
-    pixel_rows_map = stats.helpers.group_rows_by_breakdown(pixel_breakdown, touchpoint_rows, max_1=False)
+    pixel_rows_map = sort_helper.group_rows_by_breakdown_key(pixel_breakdown, touchpoint_rows, max_1=False)
 
     conversion_windows = sorted(dash.constants.ConversionWindows.get_all())
 
-    for breakdown_id, row in row_by_breakdown.iteritems():
+    for breakdown_key, row in row_by_breakdown.iteritems():
         for pixel in pixels:
-            pixel_breakdown_id = breakdown_id + (pixel.slug,)
-            pixel_rows = pixel_rows_map.get(pixel_breakdown_id)
+            pixel_breakdown_key = breakdown_key + (pixel.slug,)
+            pixel_rows = pixel_rows_map.get(pixel_breakdown_key)
 
             for conversion_window in conversion_windows:
 
