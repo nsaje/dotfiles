@@ -49,7 +49,20 @@ class AdGroupSourceStateTest(TestCase):
             'selected_ids': [source_id],
         }
 
+        mock_table_update.return_value.get.return_value = {
+            'rows': {
+                '1': {
+                    'cpc': 3,
+                },
+                '2': {
+                    'cpc': 4,
+                }
+            }
+        }
+
         response = self._post_source_state(ad_group_id, data)
+
+        self.maxDiff = None
 
         self.assertJSONEqual(response.content, {
             'success': True,
@@ -63,7 +76,13 @@ class AdGroupSourceStateTest(TestCase):
                             'value': 1,
                         },
                         'status': {'value': 1},
+                        'cpc': {'value': 3},
                     },
+                }, {
+                    'breakdownId': '2',
+                    'stats': {
+                        'cpc': {'value': 4},
+                    }
                 }],
             },
         })
@@ -75,6 +94,7 @@ class AdGroupSourceStateTest(TestCase):
 
         mock_autopilot_initialize.assert_called_once_with(models.AdGroup.objects.get(pk=ad_group_id), send_mail=False)
         self.assertEqual(1, mock_check.call_count)
+        self.assertEqual(1, mock_table_update.return_value.get.call_count)
 
         mock_k1_ping.assert_called_once_with(1, msg='AdGroupSourceState.post')
 
