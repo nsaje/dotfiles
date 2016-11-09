@@ -5,18 +5,18 @@
         <zem-help-popover content="Facebook Page to which ads will be connected to. This is a requirement for advertising on Facebook and Instagram." placement="top"></zem-help-popover>
     </label>
     <div class="col-xs-3 fb-status">
-        <div class="col-xs-12 input-group fb-logo" ng-if="$ctrl.account.settings.facebookStatus && $ctrl.account.settings.facebookStatus == $ctrl.constants.facebookStatus.EMPTY">
+        <div class="col-xs-12 input-group fb-logo" ng-if="$ctrl.entity.settings.facebookStatus && $ctrl.entity.settings.facebookStatus == $ctrl.constants.facebookStatus.EMPTY">
             <i class="input-group-addon"><img ng-src="{{ $ctrl.config.static_url }}/one/img/facebook_logo.svg" class="fb-icon"></i>
-            <input id="fb-page-input" type="text" class="form-control" ng-model="$ctrl.account.settings.facebookPage" placeholder="Insert Facebook page URL">
+            <input id="fb-page-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.facebookPage" placeholder="Insert Facebook page URL">
         </div>
-        <div ng-if="$ctrl.account.settings.facebookStatus && $ctrl.account.settings.facebookStatus != $ctrl.constants.facebookStatus.EMPTY">
+        <div ng-if="$ctrl.entity.settings.facebookStatus && $ctrl.entity.settings.facebookStatus != $ctrl.constants.facebookStatus.EMPTY">
             <div class="input-with-icon">
                 <img ng-src="{{ $ctrl.config.static_url }}/one/img/facebook_logo.svg" class="fb-icon">
-                <span class="name">{{$ctrl.account.settings.facebookPage}}</span>
-                <span ng-class="$ctrl.account.settings.facebookStatus | lowercase" class="status">{{$ctrl.account.settings.facebookStatus}}</span>
+                <span class="name">{{$ctrl.entity.settings.facebookPage}}</span>
+                <span ng-class="$ctrl.entity.settings.facebookStatus | lowercase" class="status">{{$ctrl.entity.settings.facebookStatus}}</span>
                 <div class="btn btn-blue btn-icon btn-small remove" ng-click="$ctrl.clearFacebookPage()"><span class="icon"></span></div>
             </div>
-            <div ng-if="$ctrl.account.settings.facebookStatus == $ctrl.constants.facebookStatus.PENDING" class="col-xs-12 alert alert-warning form-alert-box fb-warning">
+            <div ng-if="$ctrl.entity.settings.facebookStatus == $ctrl.constants.facebookStatus.PENDING" class="col-xs-12 alert alert-warning form-alert-box fb-warning">
                 <div class="form-alert-exclamation">
                     <img class="warning-icon" ng-src="{{ $ctrl.config.static_url }}/one/img/notification-warning.svg">
                 </div>

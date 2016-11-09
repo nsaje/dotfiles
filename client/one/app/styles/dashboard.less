@@ -5,14 +5,15 @@ body:not(.legacy-theme) {
 
 .zem-internal-feature-container {
     margin: 0px;
+    position: relative;
 
     > zem-internal-feature {
-        border: none;
+        border: 1px solid @internal-color;
         z-index: 1;
-        top: 0px;
-        left: 0px;
-        bottom: auto;
-        right: auto;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
     }
 }
 
@@ -1564,6 +1565,11 @@ tags-input .host .tags {
             margin-right: 0px;
             margin-left: 10px;
         }
+    }
+
+    .action-buttons-account {
+        &:extend(body:not(.legacy-theme) .white-background);
+        margin-top: 0;
     }
 }
 

@@ -1,0 +1,83 @@
+<div class="form-horizontal white-background">
+    <h2>General settings</h2>
+    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.state}" ng-if="!$ctrl.hasPermission('zemauth.can_control_ad_group_state_in_table')">
+        <label for="campaign-state-switch" class="col-xs-2 control-label">
+            Ad Group Status
+            <zem-help-popover content="This is the current state of the Ad Group. If you enable the Ad Group you must then go enable preferred Media Sources too.
+                                                                                          If you pause it, all Media Sources get paused." placement="bottom"></zem-help-popover>
+        </label>
+        <div id="campaign-state-switch" class="col-xs-4">
+            <div class="btn-group campaign-state-switch">
+                <label class="btn btn-success" ng-model="$ctrl.entity.settings.state" ng-repeat="state in $ctrl.options.adGroupSettingsStates" btn-radio="state.value">{{ state.name }}</label>
+            </div>
+        </div>
+
+        <label ng-repeat="error in $ctrl.errors.state" class="control-label error" for="name-input">{{ error }}</label>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.name}">
+        <label for="name-input" class="col-xs-2 control-label">
+            Name
+            <zem-help-popover content="The name of the ad group." placement="top"></zem-help-popover>
+        </label>
+        <div class="col-xs-3">
+            <input id="name-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.name">
+        </div>
+
+        <label ng-repeat="error in $ctrl.errors.name" class="control-label error" for="name-input">{{ error }}</label>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.startDate}">
+        <label for="start-date-input" class="col-xs-2 control-label">
+            Start date
+            <zem-help-popover content="The date when content promotion commenced." placement="top"></zem-help-popover>
+        </label>
+        <div class="col-xs-2">
+            <input id="start-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-model="$ctrl.entity.settings.startDate" is-open="$ctrl.startDatePicker.isOpen" ng-click="$ctrl.openDatePicker('startDate')">
+        </div>
+
+        <label ng-repeat="error in $ctrl.errors.startDate" class="control-label error" for="start-date-input">{{ error }}</label>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.endDate}">
+        <label for="end-date-input" class="col-xs-2 control-label">
+            End date
+            <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>
+        </label>
+
+        <div class="col-xs-2">
+            <input ng-disabled="$ctrl.entity.warnings.endDate !== undefined" id="end-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" datepicker-options="$ctrl.endDatePickerOptions" ng-model="$ctrl.entity.settings.endDate" is-open="$ctrl.endDatePicker.isOpen" ng-click="$ctrl.openDatePicker('endDate')">
+        </div>
+
+        <div class="checkbox col-xs-2">
+            <label>
+                <input ng-disabled="$ctrl.entity.warnings.endDate !== undefined" type="checkbox" id="manual-stop-cb" ng-model="$ctrl.entity.settings.manualStop"> I'll stop it myself
+            </label>
+        </div>
+
+        <label ng-if="$ctrl.entity.warnings.endDate === undefined" ng-repeat="error in $ctrl.errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
+
+        <div class="col-xs-6 alert alert-warning form-alert-box" ng-if="$ctrl.entity.warnings.endDate !== undefined" >
+            <div class="form-alert-exclamation">
+                <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
+            </div>
+            <div class="form-alert-body">{{ $ctrl.MESSAGES.WARNING_END_DATE }}<a zem-in-link="main.campaigns.budget({id: {{ $ctrl.entity.warnings.endDate.campaignId }} })">Add budget</a></div>
+        </div>
+
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.cpc}" ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_max_cpc')">
+        <label for="cpc-input" class="col-xs-2 control-label">
+            <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_set_ad_group_max_cpc')" popover-placement="right"></zem-internal-feature>
+            Maximum CPC
+            <zem-help-popover content="Maximum allowed CPC in this ad group." placement="top"></zem-help-popover>
+        </label>
+        <div class="col-xs-2">
+            <div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input id="cpc-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.cpc" zem-currency-input fraction-size="3" empty-text="No limit">
+            </div>
+        </div>
+        <label ng-repeat="error in $ctrl.errors.cpc" class="control-label error" for="cpc-input">{{ error }}</label>
+    </div>
+</div>

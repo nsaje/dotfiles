@@ -1,5 +1,5 @@
-describe('component: zemSettingsFacebookPage', function () {
-    var ctrl; // eslint-disable-line
+describe('component: zemMediaSourcesSettings', function () {
+    var $ctrl; // eslint-disable-line
 
     beforeEach(module('one'));
     beforeEach(module('one'), function ($provide) {
@@ -8,13 +8,14 @@ describe('component: zemSettingsFacebookPage', function () {
 
     beforeEach(inject(function ($rootScope, $componentController) {
         var bindings = {
-            account: {settings: {}},
+            entity: {settings: {}},
             errors: {},
             api: {register: angular.noop},
         };
-        ctrl = $componentController('zemSettingsFacebookPage', {}, bindings);
+        $ctrl = $componentController('zemMediaSourcesSettings', {}, bindings);
     }));
 
     it('should initialize without errors', function () {
+        $ctrl.$onInit();
     });
 });

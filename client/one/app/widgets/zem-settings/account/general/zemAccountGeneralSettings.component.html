@@ -1,4 +1,4 @@
-<form class="form-horizontal">
+<form class="form-horizontal white-background" >
     <h2>General settings</h2>
     <div ng-if="$ctrl.hasPermission('zemauth.can_modify_account_name')" class="form-group" ng-class="{'has-error': !!errors.name}">
         <label for="name-input" class="col-xs-2 control-label">
@@ -7,7 +7,7 @@
             <zem-help-popover content="Name of the account." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-3">
-            <input id="name-input" type="text" class="form-control" ng-model="$ctrl.account.settings.name">
+            <input id="name-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.name">
         </div>
 
         <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
@@ -20,9 +20,9 @@
             <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-3">
-            <ui-select theme="select2" id="account-manager-select" class="form-control" ng-model="$ctrl.account.settings.defaultAccountManager">
+            <ui-select theme="select2" id="account-manager-select" class="form-control" ng-model="$ctrl.entity.settings.defaultAccountManager">
                 <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="manager.id as manager in $ctrl.account.accountManagers | orderBy:'name' | filter:$select.search">
+                <ui-select-choices repeat="manager.id as manager in $ctrl.entity.accountManagers | orderBy:'name' | filter:$select.search">
                     <div ng-bind-html="manager.name | highlight: $select.search"></div>
                 </ui-select-choices>
             </ui-select>
@@ -37,9 +37,9 @@
             <zem-help-popover content="Sales representative responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-3">
-            <ui-select theme="select2" id="sales-representative-select" class="form-control" ng-model="$ctrl.account.settings.defaultSalesRepresentative">
+            <ui-select theme="select2" id="sales-representative-select" class="form-control" ng-model="$ctrl.entity.settings.defaultSalesRepresentative">
                 <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="rep.id as rep in $ctrl.account.salesReps | orderBy:getName | filter:$select.search">
+                <ui-select-choices repeat="rep.id as rep in $ctrl.entity.salesReps | orderBy:getName | filter:$select.search">
                     <div ng-bind-html="rep.name | highlight: $select.search"></div>
                 </ui-select-choices>
             </ui-select>
@@ -54,7 +54,7 @@
             <zem-help-popover content="Type of account." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-3">
-            <ui-select theme="select2" id="account-type-select" class="form-control" ng-model="$ctrl.account.settings.accountType" search-enabled="false">
+            <ui-select theme="select2" id="account-type-select" class="form-control" ng-model="$ctrl.entity.settings.accountType" search-enabled="false">
                 <ui-select-match>{{$select.selected.name}}</ui-select-match>
                 <ui-select-choices repeat="type.id as type in $ctrl.options.accountTypes">
                     <div ng-bind-html="type.name"></div>
@@ -71,8 +71,21 @@
             <zem-help-popover content="Agency that this account is part of." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-3">
-            <div ui-select2="$ctrl.agencySelect2Config" id="agency-select" class="form-control" ng-model="$ctrl.account.settings.agency" ng-change="$ctrl.updateAgencyDefaults()"></div>
+            <div ui-select2="$ctrl.agencySelect2Config" id="agency-select" class="form-control" ng-model="$ctrl.entity.settings.agency" ng-change="$ctrl.updateAgencyDefaults()"></div>
         </div>
         <label ng-repeat="error in errors.agency" class="control-label error" for="agency-select">{{ error }}</label>
     </div>
+
+
+    <zem-media-sources-settings
+            entity="$ctrl.entity"
+            errors="$ctrl.errors"
+            api="$ctrl.api"
+    ></zem-media-sources-settings>
+
+    <zem-facebook-page-settings
+            entity="$ctrl.entity"
+            errors="$ctrl.errors"
+            api="$ctrl.api"
+    ></zem-facebook-page-settings>
 </form>

@@ -1,5 +1,5 @@
-describe('component: zemAccessPermissionsSettings', function () {
-    var $ctrl;
+describe('component: zemAccountGeneralSettings', function () {
+    var $ctrl; // eslint-disable-line no-unused-vars
 
     beforeEach(module('one'));
     beforeEach(module('one'), function ($provide) {
@@ -10,9 +10,9 @@ describe('component: zemAccessPermissionsSettings', function () {
         var bindings = {
             entity: {settings: {}},
             errors: {},
-            register: angular.noop,
+            api: {register: angular.noop},
         };
-        $ctrl = $componentController('zemAccessPermissionsSettings', {}, bindings);
+        $ctrl = $componentController('zemAccountGeneralSettings', {}, bindings);
     }));
 
     it('should initialize without errors', function () {

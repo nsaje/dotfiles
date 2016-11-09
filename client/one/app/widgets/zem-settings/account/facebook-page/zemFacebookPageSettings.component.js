@@ -1,10 +1,10 @@
-angular.module('one.widgets').component('zemSettingsFacebookPage', {
+angular.module('one.widgets').component('zemFacebookPageSettings', {
     bindings: {
-        account: '<',
+        entity: '<',
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/account/facebook-page/zemSettingsFacebookPage.component.html',
+    templateUrl: '/app/widgets/zem-settings/account/facebook-page/zemFacebookPageSettings.component.html',
     controller: ['$q', '$uibModal', 'config', 'zemPermissions', function ($q, $uibModal, config, zemPermissions) {
         var $ctrl = this;
 
@@ -17,21 +17,21 @@ angular.module('one.widgets').component('zemSettingsFacebookPage', {
 
         $ctrl.$onInit = function () {
             $ctrl.api.register({
-                canSave: canSave,
+                validate: validate,
             });
         };
 
         $ctrl.$onChanges = function () {
-            $ctrl.origFacebookPage = $ctrl.account.settings.facebookPage;
+            $ctrl.origFacebookPage = $ctrl.entity.settings.facebookPage;
         };
 
         function clearFacebookPage () {
-            $ctrl.account.settings.facebookPage = null;
-            $ctrl.account.settings.facebookStatus = constants.facebookStatus.EMPTY;
+            $ctrl.entity.settings.facebookPage = null;
+            $ctrl.entity.settings.facebookStatus = constants.facebookStatus.EMPTY;
         }
 
-        function canSave () {
-            if ($ctrl.origFacebookPage !== $ctrl.account.settings.facebookPage) {
+        function validate () {
+            if ($ctrl.origFacebookPage !== $ctrl.entity.settings.facebookPage) {
                 return askIfSave();
             }
 

@@ -1,0 +1,16 @@
+<div class="form-horizontal white-background">
+    <h2 ng-if="$ctrl.isDefault()">Default locations</h2>
+    <h2 ng-if="!$ctrl.isDefault()">Locations<div class="sidenote different-than-default" ng-if="!$ctrl.isEqualToDefault()">Different than campaign default</div></h2>
+
+    <div class="description">The countries, states and DMA regions where your content ads will be shown. <span ng-if="$ctrl.isDefault()">Used for all newly created ad groups.</span></div>
+    <div class="form-vertical">
+        <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.targetRegions}">
+            <div class="col-xs-6">
+                <zem-locations zem-selected-location-codes="$ctrl.entity.settings.targetRegions" zem-has-permission="$ctrl.hasPermission"></zem-locations>
+            </div>
+
+            <label ng-repeat="error in $ctrl.errors.targetRegions" class="control-label error">{{ error }}</label>
+        </div>
+    </div>
+</div>
+

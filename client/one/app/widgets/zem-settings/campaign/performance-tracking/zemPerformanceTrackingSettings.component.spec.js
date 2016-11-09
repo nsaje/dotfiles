@@ -1,5 +1,5 @@
-describe('component: zemAccountSettingsGeneral', function () {
-    var ctrl; // eslint-disable-line no-unused-vars
+describe('component: zemPerformanceTrackingSettings', function () {
+    var $ctrl;
 
     beforeEach(module('one'));
     beforeEach(module('one'), function ($provide) {
@@ -8,13 +8,14 @@ describe('component: zemAccountSettingsGeneral', function () {
 
     beforeEach(inject(function ($rootScope, $componentController) {
         var bindings = {
-            account: {settings: {}},
+            entity: {settings: {}},
             errors: {},
             api: {register: angular.noop},
         };
-        ctrl = $componentController('zemAccountSettingsGeneral', {}, bindings);
+        $ctrl = $componentController('zemPerformanceTrackingSettings', {}, bindings);
     }));
 
     it('should initialize without errors', function () {
+        $ctrl.$onInit();
     });
 });

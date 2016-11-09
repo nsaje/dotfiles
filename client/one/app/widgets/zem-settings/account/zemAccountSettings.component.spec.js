@@ -1,5 +1,5 @@
-describe('component: zemSettingsPixels', function () {
-    var ctrl;
+describe('component: zemCampaignSettings', function () {
+    var $ctrl;
 
     beforeEach(module('one'));
     beforeEach(module('one'), function ($provide) {
@@ -7,10 +7,10 @@ describe('component: zemSettingsPixels', function () {
     });
 
     beforeEach(inject(function ($rootScope, $componentController) {
-        ctrl = $componentController('zemAccountSettings', {}, {});
+        $ctrl = $componentController('zemAccountSettings', {}, {});
     }));
 
     it('should initialize without errors', function () {
-        ctrl.$onInit();
+        $ctrl.$onInit();
     });
 });

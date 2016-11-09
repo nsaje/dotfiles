@@ -1,5 +1,5 @@
-describe('component: zemAccessPermissionsSettings', function () {
-    var $ctrl;
+describe('component: zemFacebookPageSettings', function () {
+    var $ctrl; // eslint-disable-line
 
     beforeEach(module('one'));
     beforeEach(module('one'), function ($provide) {
@@ -10,9 +10,9 @@ describe('component: zemAccessPermissionsSettings', function () {
         var bindings = {
             entity: {settings: {}},
             errors: {},
-            register: angular.noop,
+            api: {register: angular.noop},
         };
-        $ctrl = $componentController('zemAccessPermissionsSettings', {}, bindings);
+        $ctrl = $componentController('zemFacebookPageSettings', {}, bindings);
     }));
 
     it('should initialize without errors', function () {

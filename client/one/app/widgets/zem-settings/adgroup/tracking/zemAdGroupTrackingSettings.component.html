@@ -1,0 +1,44 @@
+<div class="form-horizontal white-background">
+    <h2>Tracking</h2>
+    <div class="form-group m-b-xs">
+        <label class="col-xs-12 control-label">
+            3rd party pixel tracking
+        </label>
+        <label class="col-xs-2 control-label">
+            <span class="sidenote width-limit">3rd party pixels help you retarget people who clicked on Zemanta ads. This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change 3rd party pixel tracking.</span>
+        </label>
+    </div>
+    <div class="form-group m-l-s" ng-if="$ctrl.entity.settings.redirectPixelUrls.length || $ctrl.entity.settings.redirectJavascript">
+        <div ng-if="$ctrl.entity.settings.redirectPixelUrls.length">
+            <label class="col-xs-12">Tags</label>
+            <div class="col-xs-12">
+                <ul>
+                    <li ng-repeat="pixelUrl in $ctrl.entity.settings.redirectPixelUrls">{{pixelUrl}}</li>
+                </ul>
+            </div>
+        </div>
+        <div ng-if="$ctrl.entity.settings.redirectJavascript">
+            <label class="col-xs-12 m-b-xs">Javascript</label>
+            <div class="col-xs-5">
+                <div class="textarea-with-border pre scroll">{{$ctrl.entity.settings.redirectJavascript}}</div>
+            </div>
+        </div>
+    </div>
+    <!-- end additional targeting -->
+
+    <div class="form-group m-b-none m-t" ng-class="{'has-error': !!$ctrl.errors.trackingCode}">
+        <label for="tracking-input" class="col-xs-12 control-label">
+            Tracking codes
+        </label>
+        <label class="col-xs-12 control-label">
+            <div class="sidenote width-limit">The tracking code / UTM to be appended to all URLs being promoted.</div>
+        </label>
+    </div>
+    <div class="form-group">
+        <div class="col-xs-4">
+            <textarea id="tracking-input" type="text" class="form-control" rows="4" ng-model="$ctrl.entity.settings.trackingCode"></textarea>
+        </div>
+
+        <label ng-repeat="error in $ctrl.errors.trackingCode" class="control-label error" for="tracking-input">{{ error }}</label>
+    </div>
+</div>

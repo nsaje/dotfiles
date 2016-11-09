@@ -1,4 +1,6 @@
-<div class="page page-campaign-agency" ng-if="!campaign.archived">
+<zem-campaign-settings entity-id="campaign.id" ng-if="hasPermission('zemauth.can_see_new_settings')" class="page page-campaign-agency" />
+
+<div class="page page-campaign-agency" ng-if="!campaign.archived && !hasPermission('zemauth.can_see_new_settings')">
     <h1>Campaign settings</h1>
     <form id="form-campaign-agency">
         <div class="form-horizontal white-background">
@@ -234,7 +236,7 @@
     </form>
 </div>
 
-<div class="page page-campaign-settings" ng-if="!!campaign.archived">
+<div class="page page-campaign-settings" ng-if="!!campaign.archived && !hasPermission('zemauth.can_see_new_settings')">
     <p>
         <strong>This campaign is archived.</strong>
     </p>

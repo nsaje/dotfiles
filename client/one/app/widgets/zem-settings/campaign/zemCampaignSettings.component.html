@@ -1,0 +1,32 @@
+<zem-settings-container title="'Campaign settings'" entity-type="$ctrl.constants.entityType.CAMPAIGN" entity-id="$ctrl.entityId">
+    <settings>
+        <zem-campaign-general-settings
+                entity="$container.entity"
+                errors="$container.errors"
+                api="$container.api"
+        ></zem-campaign-general-settings>
+        <zem-campaign-goals-settings
+                entity="$container.entity"
+                errors="$container.errors"
+                api="$container.api"
+        ></zem-campaign-goals-settings>
+        <zem-device-targeting-settings
+                entity="$container.entity"
+                errors="$container.errors"
+                api="$container.api"
+        ></zem-device-targeting-settings>
+        <zem-region-targeting-settings
+                entity="$container.entity"
+                errors="$container.errors"
+                api="$container.api"
+        ></zem-region-targeting-settings>
+        <zem-performance-tracking-settings
+                entity="$container.entity"
+                errors="$container.errors"
+                api="$container.api"
+        ></zem-performance-tracking-settings>
+    </settings>
+
+    <custom>
+    </custom>
+</zem-settings-container>

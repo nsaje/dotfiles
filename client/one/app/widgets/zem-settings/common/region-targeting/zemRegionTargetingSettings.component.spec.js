@@ -1,5 +1,5 @@
-describe('component: zemSettingsMediaSources', function () {
-    var ctrl; // eslint-disable-line
+describe('component: zemRegionTargetingSettings', function () {
+    var $ctrl; // eslint-disable-line no-unused-vars
 
     beforeEach(module('one'));
     beforeEach(module('one'), function ($provide) {
@@ -8,13 +8,14 @@ describe('component: zemSettingsMediaSources', function () {
 
     beforeEach(inject(function ($rootScope, $componentController) {
         var bindings = {
-            account: {settings: {}},
+            entity: {settings: {}},
             errors: {},
             api: {register: angular.noop},
         };
-        ctrl = $componentController('zemSettingsMediaSources', {}, bindings);
+        $ctrl = $componentController('zemRegionTargetingSettings', {}, bindings);
     }));
 
     it('should initialize without errors', function () {
+        $ctrl.$onInit();
     });
 });

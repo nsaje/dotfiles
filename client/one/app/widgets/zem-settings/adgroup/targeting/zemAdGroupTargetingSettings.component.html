@@ -1,0 +1,107 @@
+<div class="form-horizontal white-background">
+    <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_target_custom_audiences')" popover-placement="right"></zem-internal-feature>
+    <h2>Targeting</h2>
+    <div class="form-group" ng-if="$ctrl.hasPermission('zemauth.can_view_retargeting_settings') && !$ctrl.hasPermission('zemauth.can_target_custom_audiences')" ng-class="{'has-error': !!$ctrl.errors.retargetingIds}">
+        <label class="col-xs-12 control-label">
+            <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_view_retargeting_settings')" popover-placement="right"></zem-internal-feature>
+            Retargeting
+        </label>
+        <label class="col-xs-12 control-label m-b-s">
+            <span class="sidenote width-limit">Content ads will only be shown to people who have already seen an ad from selected ad groups.</span>
+        </label>
+        <div class="col-xs-12 m-b-s">
+            <input type="checkbox" id="enable-retargeting" ng-model="$ctrl.retargetingEnabled"> Enable retargeting
+        </div>
+        <div ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting !== undefined" class="col-xs-6 alert alert-warning form-alert-box">
+            <div class="form-alert-exclamation">
+                <img class="warning-icon" ng-src="{{ $ctrl.config.static_url }}/one/img/notification-warning.svg"></img>
+            </div>
+            <div class="form-alert-body">
+                {{ $ctrl.entity.warnings.retargeting.text }} {{ $ctrl.entity.warnings.retargeting.sourcesText }}.
+            </div>
+        </div>
+
+        <div ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting === undefined" class="col-xs-6 col-md-4 after-form-alert-box">
+            <zem-retargeting zem-selected-adgroup-ids="$ctrl.entity.settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop"></zem-retargeting>
+        </div>
+    </div>
+    <div class="form-group" ng-if="$ctrl.hasPermission('zemauth.can_target_custom_audiences')" ng-class="{'has-error': !!$ctrl.errors.audienceTargeting || !!$ctrl.errors.exclusionAudienceTargeting || !!$ctrl.errors.retargetingAdGroups || !!$ctrl.errors.exclusionRetargetingAdGroups}">
+        <label class="col-xs-12 control-label">
+            <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_target_custom_audiences')" popover-placement="right"></zem-internal-feature>
+            Audience targeting
+        </label>
+        <label class="col-xs-12 control-label">
+            <span class="sidenote width-limit">Target people you have seen previously. Audience targeting can be based on pixels you placed or on clicks to other ad groups.</span>
+        </label>
+        <div class="col-xs-12 checkbox m-t-none">
+            <label>
+                <input type="checkbox" id="enable-audience-targeting" ng-model="$ctrl.retargetingEnabled"> Enable audience targeting
+            </label>
+        </div>
+        <div ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting !== undefined" class="col-xs-6 alert alert-warning form-alert-box m-t">
+            <div class="form-alert-exclamation">
+                <img class="warning-icon" ng-src="{{ $ctrl.config.static_url }}/one/img/notification-warning.svg"></img>
+            </div>
+            <div class="form-alert-body">
+                {{ $ctrl.getTargetingWarningMessage() }}
+            </div>
+        </div>
+
+        <div ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting === undefined" class="col-xs-12 after-form-alert-box m-t">
+            <zem-custom-audiences-targeting available-ad-groups="retargetableAdGroups" available-audiences="audiences" current-ad-group-id="adGroupId" ad-group-targeting="$ctrl.entity.settings.retargetingAdGroups" exclusion-ad-group-targeting="$ctrl.entity.settings.exclusionRetargetingAdGroups" audience-targeting="$ctrl.entity.settings.audienceTargeting" exclusion-audience-targeting="$ctrl.entity.settings.exclusionAudienceTargeting" add-targeting="addTargeting(type, id)" remove-targeting="removeTargeting(type, id)"></zem-custom-audiences-targeting>
+        </div>
+
+        <label ng-repeat="error in $ctrl.errors.retargetingAdGroups" class="control-label error">{{ error }}</label>
+        <label ng-repeat="error in $ctrl.errors.exclusionRetargetingAdGroups" class="control-label error">{{ error }}</label>
+        <label ng-repeat="error in $ctrl.errors.audienceTargeting" class="control-label error">{{ error }}</label>
+        <label ng-repeat="error in $ctrl.errors.exclusionAudienceTargeting" class="control-label error">{{ error }}</label>
+    </div>
+
+    <!-- additional targeting -->
+    <div ng-if="$ctrl.hasPermission('zemauth.can_view_additional_targeting')">
+        <div class="form-group">
+            <label class="col-xs-12 control-label">
+                Interest targeting
+            </label>
+            <label class="col-xs-2 control-label">
+                <span class="sidenote width-limit">Define your audience by including or excluding interests and demographics. This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change interest targeting.</span>
+            </label>
+            <div class="col-xs-12" ng-if="$ctrl.entity.settings.interestTargeting.length || $ctrl.entity.settings.exclusionInterestTargeting.length">
+                <div class="col-xs-3 m-t-xs" ng-if="$ctrl.entity.settings.interestTargeting.length">
+                    <div class="text-success">Included</div>
+                    <ul class="with-icons ul-checkmarks">
+                        <li ng-repeat="category in $ctrl.entity.settings.interestTargeting">{{category.name}}</li>
+                    </ul>
+                </div>
+                <div class="col-xs-3 m-t-xs" ng-if="$ctrl.entity.settings.exclusionInterestTargeting.length">
+                    <div class="text-danger">Excluded</div>
+                    <ul class="with-icons ul-remove">
+                        <li ng-repeat="category in $ctrl.entity.settings.exclusionInterestTargeting">{{category.name}}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-xs-12 control-label">
+                BlueKai & LiveRamp audience targeting
+            </label>
+            <label class="col-xs-2 control-label">
+                <span class="sidenote width-limit">This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change BlueKai and LiveRamp audience targeting.</span>
+            </label>
+            <div class="col-xs-5" ng-if="$ctrl.entity.settings.bluekaiTargeting.length">
+                <div>Targeting set up.</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-xs-12 control-label">
+                Special notes
+            </label>
+            <label class="col-xs-2 control-label">
+                <span class="sidenote width-limit">Any additional targeting set on the backend will be described here. This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change it.</span>
+            </label>
+            <div class="col-xs-5 m-t-xs" ng-if="$ctrl.entity.settings.notes">
+                <div class="textarea-with-border pre" readonly>{{$ctrl.entity.settings.notes}}</div>
+            </div>
+        </div>
+    </div>
+</div>

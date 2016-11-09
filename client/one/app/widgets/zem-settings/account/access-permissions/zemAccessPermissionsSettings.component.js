@@ -1,8 +1,8 @@
-angular.module('one.widgets').component('zemSettingsAccessPermissions', {
+angular.module('one.widgets').component('zemAccessPermissionsSettings', {
     bindings: {
-        account: '<',
+        entity: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/account/access-permissions/zemSettingsAccessPermissions.component.html',
+    templateUrl: '/app/widgets/zem-settings/account/access-permissions/zemAccessPermissionsSettings.component.html',
     controller: ['api', '$state', 'zemPermissions', 'zemUserService', function (api, $state, zemPermissions, zemUserService) { // eslint-disable-line max-len
 
         // TODO: update settings after user added/removed
@@ -24,7 +24,7 @@ angular.module('one.widgets').component('zemSettingsAccessPermissions', {
         };
 
         function loadUsers () {
-            zemUserService.list($ctrl.account.settings.id).then(
+            zemUserService.list($ctrl.entity.settings.id).then(
                 function (data) {
                     $ctrl.users = data.users;
                     $ctrl.agencyManagers = data.agency_managers;
@@ -65,7 +65,7 @@ angular.module('one.widgets').component('zemSettingsAccessPermissions', {
         function addUser () {
             $ctrl.addUserRequestInProgress = true;
 
-            zemUserService.create($ctrl.account.settings.id, $ctrl.addUserData).then(
+            zemUserService.create($ctrl.entity.settings.id, $ctrl.addUserData).then(
                 function (data) {
                     var user = getUser(data.user.id);
 
@@ -95,7 +95,7 @@ angular.module('one.widgets').component('zemSettingsAccessPermissions', {
             var user = getUser(userId);
             user.requestInProgress = true;
 
-            zemUserService.remove($ctrl.account.settings.id, userId).then(
+            zemUserService.remove($ctrl.entity.settings.id, userId).then(
                 function () {
                     if (user) {
                         user.removed = true;
@@ -111,7 +111,7 @@ angular.module('one.widgets').component('zemSettingsAccessPermissions', {
             var user = getUser(userId);
             user.requestInProgress = true;
 
-            api.accountUserAction.post($ctrl.account.settings.id, userId, 'activate').then(
+            api.accountUserAction.post($ctrl.entity.settings.id, userId, 'activate').then(
                 function () {
                     user.saved = true;
                     user.emailResent = true;
@@ -129,7 +129,7 @@ angular.module('one.widgets').component('zemSettingsAccessPermissions', {
             var user = getUser(userId);
             user.requestInProgress = true;
 
-            zemUserService.create($ctrl.account.settings.id, {email: user.email}).then(
+            zemUserService.create($ctrl.entity.settings.id, {email: user.email}).then(
                 function () {
                     user.removed = false;
                 }
@@ -141,7 +141,7 @@ angular.module('one.widgets').component('zemSettingsAccessPermissions', {
         function promoteUser (user) {
             user.requestInProgress = true;
 
-            api.accountUserAction.post($ctrl.account.settings.id, user.id, 'promote').then(
+            api.accountUserAction.post($ctrl.entity.settings.id, user.id, 'promote').then(
                 function () {
                     user.is_agency_manager = true;
                 }
@@ -153,7 +153,7 @@ angular.module('one.widgets').component('zemSettingsAccessPermissions', {
         function downgradeUser (user) {
             user.requestInProgress = true;
 
-            api.accountUserAction.post($ctrl.account.settings.id, user.id, 'downgrade').then(
+            api.accountUserAction.post($ctrl.entity.settings.id, user.id, 'downgrade').then(
                 function () {
                     user.is_agency_manager = false;
                 }

@@ -1,0 +1,44 @@
+<div class="form-horizontal white-background">
+    <h2>General settings</h2>
+    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.name}">
+        <label for="name-input" class="col-xs-2 control-label">
+            Name
+            <zem-help-popover content="Name of the campaign." placement="top"></zem-help-popover>
+        </label>
+        <div class="col-xs-3">
+            <input id="name-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.name">
+        </div>
+
+        <label ng-repeat="error in $ctrl.errors.name" class="control-label error" for="name-input">{{ error }}</label>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.campaignManager}" ng-if="$ctrl.hasPermission('zemauth.can_modify_campaign_manager')">
+        <label for="account-manager-select" class="col-xs-2 control-label">
+            <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_modify_campaign_manager')" popover-placement="right"></zem-internal-feature>Campaign Manager
+            <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
+        </label>
+        <div class="col-xs-3">
+            <ui-select theme="select2" id="account-manager-select" class="form-control" ng-model="$ctrl.entity.settings.campaignManager">
+                <ui-select-match>{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="manager.id as manager in $ctrl.entity.campaignManagers | orderBy:getName | filter:$select.search">
+                    <div ng-bind-html="manager.name | highlight: $select.search"></div>
+                </ui-select-choices>
+            </ui-select>
+        </div>
+        <label ng-repeat="error in $ctrl.errors.campaignManager" class="control-label error" for="account-manager-select">{{ error }}</label>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.iabCategory}" ng-if="$ctrl.hasPermission('zemauth.can_modify_campaign_iab_category')">
+        <label for="iab-category-select" class="col-xs-2 control-label">
+            <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_modify_campaign_iab_category')" popover-placement="right"></zem-internal-feature>IAB Category
+            <zem-help-popover content="IAB category under which content of this campaign belongs." placement="top"></zem-help-popover>
+        </label>
+        <div class="col-xs-3">
+            <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="$ctrl.entity.settings.iabCategory">
+                <option ng-repeat="category in $ctrl.options.iabCategories" value="{{category.value}}">{{category.name}}</option>
+            </select>
+        </div>
+        <label ng-repeat="error in $ctrl.errors.iabCategory" class="control-label error" for="iab-category-select">{{ error }}</label>
+    </div>
+</div>
+

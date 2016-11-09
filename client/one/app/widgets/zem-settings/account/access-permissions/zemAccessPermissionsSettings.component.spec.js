@@ -1,5 +1,5 @@
-describe('component: zemSettingsAccessPermissions', function () {
-    var ctrl;
+describe('component: zemAccessPermissionsSettings', function () {
+    var $ctrl;
 
     beforeEach(module('one'));
     beforeEach(module('one'), function ($provide) {
@@ -8,16 +8,16 @@ describe('component: zemSettingsAccessPermissions', function () {
 
     beforeEach(inject(function ($rootScope, $componentController) {
         var bindings = {
-            account: {
+            entity: {
                 settings: {
                     id: -1
                 }
             }
         };
-        ctrl = $componentController('zemSettingsAccessPermissions', {}, bindings);
+        $ctrl = $componentController('zemAccessPermissionsSettings', {}, bindings);
     }));
 
     it('should initialize without errors', function () {
-        ctrl.$onInit();
+        $ctrl.$onInit();
     });
 });

@@ -1,10 +1,10 @@
-angular.module('one.widgets').component('zemSettingsMediaSources', {
+angular.module('one.widgets').component('zemMediaSourcesSettings', {
     bindings: {
-        account: '<',
+        entity: '<',
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/account/media-sources/zemSettingsMediaSources.component.html',
+    templateUrl: '/app/widgets/zem-settings/account/media-sources/zemMediaSourcesSettings.component.html',
     controller: ['zemPermissions', function (zemPermissions) {
         var $ctrl = this;
         $ctrl.options = options;
@@ -21,10 +21,16 @@ angular.module('one.widgets').component('zemSettingsMediaSources', {
         $ctrl.addToAllowedMediaSources = addToAllowedMediaSources;
         $ctrl.removeFromAllowedMediaSources = removeFromAllowedMediaSources;
 
+        $ctrl.$onInit = function () {
+            $ctrl.api.register({
+                // Not needed (placeholder)
+            });
+        };
+
         function getAllowedMediaSources () {
-            if (!$ctrl.account) return;
+            if (!$ctrl.entity) return;
             var list = [];
-            angular.forEach($ctrl.account.settings.allowedSources, function (value, key) {
+            angular.forEach($ctrl.entity.settings.allowedSources, function (value, key) {
                 if (value.allowed) {
                     value.value = key;
                     this.push(value);
@@ -34,9 +40,9 @@ angular.module('one.widgets').component('zemSettingsMediaSources', {
         }
 
         function getAvailableMediaSources () {
-            if (!$ctrl.account) return;
+            if (!$ctrl.entity) return;
             var list = [];
-            angular.forEach($ctrl.account.settings.allowedSources, function (value, key) {
+            angular.forEach($ctrl.entity.settings.allowedSources, function (value, key) {
                 if (!value.allowed) {
                     value.value = key;
                     this.push(value);
@@ -47,7 +53,7 @@ angular.module('one.widgets').component('zemSettingsMediaSources', {
 
         function addToAllowedMediaSources () {
             angular.forEach($ctrl.selectedMediaSources.available, function (value) {
-                $ctrl.account.settings.allowedSources[value].allowed = true;
+                $ctrl.entity.settings.allowedSources[value].allowed = true;
             });
             $ctrl.selectedMediaSources.allowed.length = 0;
             $ctrl.selectedMediaSources.available.length = 0;
@@ -55,7 +61,7 @@ angular.module('one.widgets').component('zemSettingsMediaSources', {
 
         function removeFromAllowedMediaSources () {
             angular.forEach($ctrl.selectedMediaSources.allowed, function (value) {
-                $ctrl.account.settings.allowedSources[value].allowed = false;
+                $ctrl.entity.settings.allowedSources[value].allowed = false;
             });
             $ctrl.selectedMediaSources.available.length = 0;
             $ctrl.selectedMediaSources.allowed.length = 0;

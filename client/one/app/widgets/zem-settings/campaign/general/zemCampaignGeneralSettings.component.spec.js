@@ -1,4 +1,4 @@
-describe('component: zemAccessPermissionsSettings', function () {
+describe('component: zemCampaignGeneralSettings', function () {
     var $ctrl;
 
     beforeEach(module('one'));
@@ -10,9 +10,9 @@ describe('component: zemAccessPermissionsSettings', function () {
         var bindings = {
             entity: {settings: {}},
             errors: {},
-            register: angular.noop,
+            api: {register: angular.noop},
         };
-        $ctrl = $componentController('zemAccessPermissionsSettings', {}, bindings);
+        $ctrl = $componentController('zemCampaignGeneralSettings', {}, bindings);
     }));
 
     it('should initialize without errors', function () {

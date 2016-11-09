@@ -1,8 +1,8 @@
-angular.module('one.widgets').component('zemAccountSettings', {
+angular.module('one.widgets').component('zemAdGroupSettings', {
     bindings: {
         entityId: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/account/zemAccountSettings.component.html',
+    templateUrl: '/app/widgets/zem-settings/adgroup/zemAdGroupSettings.component.html',
     controller: ['zemPermissions', function (zemPermissions) {
         var $ctrl = this;
         $ctrl.constants = constants;

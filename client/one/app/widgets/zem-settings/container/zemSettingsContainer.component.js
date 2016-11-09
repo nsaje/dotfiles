@@ -20,10 +20,12 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         var STATUS_TEST_DISCARD_SUCCESS = 'Your updates have been discarded.';
 
         var $ctrl = this;
+        $ctrl.constants = constants;
         $ctrl.$container = this;
         var settingsComponents = [];
 
         $ctrl.entity = null;
+        $ctrl.errors = {};
         $ctrl.status = {
             code: STATUS_CODE_NONE,
             text: ''
@@ -33,6 +35,8 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         $ctrl.discard = discard;
         $ctrl.archive = archive;
         $ctrl.restore = restore;
+        $ctrl.getButtonsBarClass = getButtonsBarClass;
+        $ctrl.getEntityTypeName = getEntityTypeName;
         $ctrl.getArchiveTooltip = getArchiveTooltip;
         $ctrl.getRestoreTooltip = getRestoreTooltip;
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -58,6 +62,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
 
         function registerSettingsComponent (settingsComponent) {
             // Called by settings components
+            //   -> validate, onSuccess, onError
             settingsComponents.push(settingsComponent);
         }
 
@@ -67,17 +72,18 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         }
 
         function save () {
-            var canSavePromises = [];
-            for (var i = 0; i < settingsComponents.length; ++i) {
-                var child = settingsComponents[i];
-                if (child.canSave) canSavePromises.push(child.canSave());
-            }
-            $q.all(canSavePromises).then(executeSave);
+            var validationPromises = [];
+            var updateData = {settings: $ctrl.entity.settings};
+            settingsComponents.forEach(function (component) {
+                if (component.validate) validationPromises.push(component.validate(updateData));
+            });
+            $q.all(validationPromises).then(function () {
+                executeSave(updateData);
+            });
         }
 
-        function executeSave () {
+        function executeSave (updateData) {
             $ctrl.status.code = STATUS_CODE_IN_PROGRESS;
-            var updateData = {settings: $ctrl.entity.settings};
             zemEntityService.updateEntity($ctrl.entityType, $ctrl.entityId, updateData).then(function (entity) {
                 angular.merge($ctrl.entity, entity);
                 $ctrl.origEntity = angular.copy($ctrl.entity);
@@ -87,22 +93,37 @@ angular.module('one.widgets').component('zemSettingsContainer', {
 
                 $ctrl.status.code = STATUS_CODE_SUCCESS;
                 $ctrl.status.text = STATUS_TEST_SAVE_SUCCESS;
+
+                settingsComponents.forEach(function (component) {
+                    if (component.onSuccess) component.onSuccess($ctrl.entity);
+                });
             },
             function (data) {
-                $ctrl.errors = data.errors;
+                $ctrl.errors = data;
                 $ctrl.status.code = STATUS_CODE_ERROR;
                 $ctrl.status.text = STATUS_TEST_SAVE_ERROR;
-            });
 
+                settingsComponents.forEach(function (component) {
+                    if (component.onError) component.onError($ctrl.errors);
+                });
+            });
         }
 
         function updateNavigationCache () {
-            // TODO - refactor
+            // TODO - delete (this will not be needed after removing zemNavigationService)
             if ($ctrl.entityType === constants.entityType.ACCOUNT) {
                 zemNavigationService.updateAccountCache($ctrl.entityId, {
                     name: $ctrl.entity.settings.name,
                     agency: $ctrl.entity.settings.agency.id || null,
                 });
+            }
+            if ($ctrl.entityType === constants.entityType.CAMPAIGN) {
+                zemNavigationService.updateCampaignCache($ctrl.entityId, {
+                    name: $ctrl.entity.settings.name,
+                });
+            }
+            if ($ctrl.entityType === constants.entityType.AD_GROUP) {
+                zemNavigationService.reloadAdGroup($ctrl.entityId);
             }
         }
 
@@ -130,7 +151,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         }
 
         //
-        // Tooltips
+        // Names & Tooltips & Styles
         //
         var TOOLTIP_ARCHIVE_ACCOUNT = 'All of the account\'s campaigns have to be paused in order to archive the account.'; // eslint-disable-line max-len
         var TOOLTIP_ARCHIVE_CAMPAIGN = 'All of the campaign\'s ad groups have to be paused in order to archive the campaign.'; // eslint-disable-line max-len
@@ -139,6 +160,17 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         var TOOLTIP_RESTORE_ACCOUNT = '';
         var TOOLTIP_RESTORE_CAMPAIGN = 'In order to restore a campaign, it\'s account must be restored first.';
         var TOOLTIP_RESTORE_ADGROUP = 'An ad group has to be paused in order to archive it.';
+
+        function getButtonsBarClass () {
+            if ($ctrl.entityType === constants.entityType.ACCOUNT) return 'action-buttons-account';
+            return 'action-buttons';
+        }
+
+        function getEntityTypeName () {
+            if ($ctrl.entityType === constants.entityType.ACCOUNT) return 'account';
+            if ($ctrl.entityType === constants.entityType.CAMPAIGN) return 'campaign';
+            if ($ctrl.entityType === constants.entityType.AD_GROUP) return 'ad group';
+        }
 
         function getArchiveTooltip () {
             if (!$ctrl.entity.canArchive) return '';
