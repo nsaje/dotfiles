@@ -364,73 +364,23 @@ class CampaignGoalsTestCase(TestCase):
         }
 
         self.maxDiff = None
-        goals_infobox = infobox_helpers.get_campaign_goal_list(self.user, {'campaign': self.campaign},
-                                                               start_date, end_date)
+        goals_infobox = infobox_helpers.get_primary_campaign_goal(
+            self.user,
+            {'campaign': self.campaign},
+            start_date,
+            end_date
+        )
+
         self.assertEqual(goals_infobox, [
             {
                 'section_start': True,
                 'internal': True,
                 'type': 'setting',
-                'name': 'Goals:',
+                'name': 'Primary Goal:',
                 'value': '10.00 Time on Site - Seconds',
-                'value_class': 'primary',
                 'icon': constants.Emoticon.SAD,
                 'description': 'planned 60.00'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'name': '',
-                'icon': constants.Emoticon.HAPPY,
-                'value': u'$0.25 CPA - test conversion goal',
-                'description': 'planned $10.00'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'name': '',
-                'icon': constants.Emoticon.NEUTRAL,
-                'value': '$0.100 CPC'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'icon': constants.Emoticon.HAPPY,
-                'name': '', 'value':
-                '10.00 Pageviews per Visit',
-                'description': 'planned 5.00'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'icon': constants.Emoticon.SAD,
-                'name': '', 'value':
-                '$8.00 Cost Per Non-Bounced Visit',
-                'description': 'planned $2.00'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'name': '',
-                'icon': constants.Emoticon.HAPPY,
-                'value': '10.00 % Max Bounce Rate',
-                'description': 'planned 75.00 %'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'icon': constants.Emoticon.NEUTRAL,
-                'type': 'setting',
-                'name': '',
-                'value': '1.20 % New Unique Visitors'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'icon': constants.Emoticon.SAD,
-                'name': '', 'value':
-                '$35.00 Cost Per Visit',
-                'description': 'planned $15.00'
-            },
+            }
         ])
 
     @patch('reports.api_contentads.query')
@@ -461,72 +411,21 @@ class CampaignGoalsTestCase(TestCase):
             'avg_cost_per_non_bounced_visit': 8,
         }
 
-        goals_infobox = infobox_helpers.get_campaign_goal_list(self.user, {'ad_group': ad_group},
-                                                               start_date, end_date)
+        goals_infobox = infobox_helpers.get_primary_campaign_goal(
+            self.user,
+            {'ad_group': ad_group},
+            start_date,
+            end_date
+        )
         self.assertEqual(goals_infobox, [
             {
                 'section_start': True,
                 'internal': True,
                 'type': 'setting',
-                'name': 'Goals:',
+                'name': 'Primary Goal:',
                 'value': '10.00 Time on Site - Seconds',
-                'value_class': 'primary',
                 'icon': constants.Emoticon.SAD,
                 'description': 'planned 60.00'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'name': '',
-                'icon': constants.Emoticon.HAPPY,
-                'value': u'$0.25 CPA - test conversion goal',
-                'description': 'planned $10.00'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'name': '',
-                'icon': constants.Emoticon.NEUTRAL,
-                'value': '$0.100 CPC'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'icon': constants.Emoticon.HAPPY,
-                'name': '', 'value':
-                '10.00 Pageviews per Visit',
-                'description': 'planned 5.00'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'name': '',
-                'icon': constants.Emoticon.SAD,
-                'value': '$8.00 Cost Per Non-Bounced Visit',
-                'description': 'planned $2.00'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'name': '',
-                'icon': constants.Emoticon.HAPPY,
-                'value': '10.00 % Max Bounce Rate',
-                'description': 'planned 75.00 %'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'icon': constants.Emoticon.NEUTRAL,
-                'type': 'setting',
-                'name': '',
-                'value': '1.20 % New Unique Visitors'
-            }, {
-                'section_start': False,
-                'internal': False,
-                'type': 'setting',
-                'icon': constants.Emoticon.HAPPY,
-                'name': '', 'value':
-                '$10.00 Cost Per Visit',
-                'description': 'planned $15.00'
             }
         ])
 

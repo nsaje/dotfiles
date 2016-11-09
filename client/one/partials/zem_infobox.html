@@ -5,7 +5,7 @@
             <div class="infobox-header-title-cell">
                 <div class="infobox-title"><span class="infobox-title-level" ng-show="header">{{header.levelVerbose}}</span>{{header.title}}</div>
             </div>
-        
+
             <div class="infobox-header-button-cell">
                 <a class="btn btn-default" ng-if="stateId !== undefined" ng-click="tabClick($event)" zem-in-link="{{ linkTo }}({ id: {{ stateId }} })">
                     <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
@@ -14,21 +14,19 @@
             </div>
         </div>
     </div>
- 
+
     <hr>
     <div class="infobox-body custom-scroller">
-        <div ng-repeat="setting in basicSettings" 
+        <div ng-repeat="setting in basicSettings"
             class="infobox-setting-base" ng-class="{'infobox-setting-section-start': setting.section_start}">
             <hr ng-if="setting.type === 'hr'"/>
-            <zem-infobox-setting 
+            <zem-infobox-setting
                 ng-if="setting.type == 'setting'"
                 label="setting.name || '&nbsp;'"
                 value="setting.value"
                 internal="setting.internal"
                 value-description="setting.description"
                 value-class="setting.valueClass"
-                details-label="setting.detailsLabel"
-                details-hide-label="setting.detailsHideLabel"
                 details-content="setting.detailsContent"
                 warning="setting.warning"
                 icon="setting.icon || ''"
@@ -38,18 +36,16 @@
     </div>
     <hr ng-if="performanceSettings">
     <div ng-if="performanceSettings" class="infobox-footer custom-scroller">
-        <div ng-repeat="setting in performanceSettings" 
+        <div ng-repeat="setting in performanceSettings"
             ng-class="{'infobox-setting-section-start': setting.section_start}">
             <hr ng-if="setting.type === 'hr'"/>
-            <zem-infobox-setting 
+            <zem-infobox-setting
                 ng-if="setting.type == 'setting'"
                 label="setting.name || '&nbsp;'"
                 value="setting.value"
-                internal="setting.internal" 
+                internal="setting.internal"
                 value-description="setting.description"
                 value-class="setting.valueClass"
-                details-label="setting.detailsLabel"
-                details-hide-label="setting.detailsHideLabel"
                 details-content="setting.detailsContent"
                 warning="setting.warning"
                 icon="setting.icon || ''"

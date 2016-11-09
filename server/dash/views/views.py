@@ -247,7 +247,7 @@ class AdGroupOverview(api_common.BaseApiView):
         }
 
         basic_settings, daily_cap = self._basic_settings(request.user, ad_group, ad_group_settings)
-        performance_settings, is_delivering = self._performance_settings(
+        performance_settings = self._performance_settings(
             ad_group, request.user, ad_group_settings, start_date, end_date,
             daily_cap, async_perf_query
         )
@@ -326,8 +326,6 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         if ad_group_settings.tracking_code:
             tracking_code_settings = tracking_code_settings.comment(
-                'Show codes',
-                'Hide codes',
                 ad_group_settings.tracking_code
             )
         settings.append(tracking_code_settings.as_dict())
@@ -355,8 +353,6 @@ class AdGroupOverview(api_common.BaseApiView):
             )
             if retargeted_adgroup_names != []:
                 retargetings_setting = retargetings_setting.comment(
-                    'Show Ad Groups',
-                    'Hide Ad Groups',
                     ', '.join(retargeted_adgroup_names)
                 )
             settings.append(retargetings_setting.as_dict())
@@ -374,7 +370,6 @@ class AdGroupOverview(api_common.BaseApiView):
             campaign=ad_group.campaign
         )
         pacing = monthly_proj.total('pacing') or decimal.Decimal('0')
-        is_delivering = pacing and pacing >= decimal.Decimal('100')
 
         if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
             settings.append(infobox_helpers.create_yesterday_spend_setting(
@@ -387,13 +382,17 @@ class AdGroupOverview(api_common.BaseApiView):
                 lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
                 description='{:.2f}% on plan'.format(pacing),
                 tooltip='Campaign pacing for the current month'
-            ).performance(is_delivering).as_dict())
+            ).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
-            settings.extend(infobox_helpers.get_campaign_goal_list(user, {'ad_group': ad_group},
-                                                                   start_date, end_date))
+            settings.extend(infobox_helpers.get_primary_campaign_goal(
+                user,
+                {'ad_group': ad_group},
+                start_date,
+                end_date
+            ))
 
-        return settings, is_delivering
+        return settings
 
 
 class AdGroupArchive(api_common.BaseApiView):
@@ -532,7 +531,7 @@ class CampaignOverview(api_common.BaseApiView):
         basic_settings, daily_cap =\
             self._basic_settings(request.user, campaign, campaign_settings)
 
-        performance_settings, is_delivering = self._performance_settings(
+        performance_settings = self._performance_settings(
             campaign,
             request.user,
             campaign_settings,
@@ -592,22 +591,6 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(flight_time_setting.as_dict())
 
-        targeting_device = infobox_helpers.OverviewSetting(
-            'Targeting defaults:',
-            'Device: {devices}'.format(
-                devices=', '.join(
-                    [w[0].upper() + w[1:] for w in campaign_settings.target_devices]
-                )
-            ),
-            section_start=True
-        )
-        settings.append(targeting_device.as_dict())
-
-        targeting_region_setting = infobox_helpers.create_region_setting(
-            campaign_settings.target_regions
-        )
-        settings.append(targeting_region_setting.as_dict())
-
         post_click_tracking = []
         if campaign_settings.enable_ga_tracking:
             post_click_tracking.append('Google Analytics')
@@ -649,7 +632,6 @@ class CampaignOverview(api_common.BaseApiView):
         )
 
         pacing = monthly_proj.total('pacing') or decimal.Decimal('0')
-        is_delivering = pacing and pacing >= decimal.Decimal('100')
 
         if user.has_perm('zemauth.can_view_platform_cost_breakdown'):
             yesterday_cost = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
@@ -663,13 +645,17 @@ class CampaignOverview(api_common.BaseApiView):
                 lc_helper.default_currency(monthly_proj.total('attributed_media_spend')),
                 description='{:.2f}% on plan'.format(pacing),
                 tooltip='Campaign pacing for the current month'
-            ).performance(is_delivering).as_dict())
+            ).as_dict())
 
         if user.has_perm('zemauth.campaign_goal_performance'):
-            settings.extend(infobox_helpers.get_campaign_goal_list(user, {'campaign': campaign},
-                                                                   start_date, end_date))
+            settings.extend(infobox_helpers.get_primary_campaign_goal(
+                user,
+                {'campaign': campaign},
+                start_date,
+                end_date
+            ))
 
-        return settings, is_delivering
+        return settings
 
     def _calculate_flight_dates(self, campaign):
         start_date = None
@@ -773,8 +759,6 @@ class AccountOverview(api_common.BaseApiView):
                 section_start=True,
                 tooltip='Users assigned to this account'
             ).comment(
-                'Show more',
-                'Show less',
                 user_blob
             )
             settings.append(users_setting.as_dict())
@@ -787,8 +771,6 @@ class AccountOverview(api_common.BaseApiView):
         if pixels.count() > 0:
             slugs = [pixel.slug for pixel in pixels]
             conversion_pixel_setting = conversion_pixel_setting.comment(
-                'Show more',
-                'Show less',
                 ', '.join(slugs),
             )
         settings.append(conversion_pixel_setting.as_dict())
@@ -1402,8 +1384,6 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         if weekly_active_user_emails != []:
             email_list_setting = email_list_setting.comment(
-                'Show more',
-                'Show less',
                 '<br />'.join(weekly_active_user_emails),
             )
         settings.append(email_list_setting)

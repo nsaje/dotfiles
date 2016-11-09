@@ -11,8 +11,6 @@ angular.module('one.legacy').directive('zemInfoboxSetting', function (config, $w
             internal: '=',
             valueDescription: '=',
             valueClass: '=',
-            detailsLabel: '=',
-            detailsHideLabel: '=',
             detailsContent: '=',
             warning: '=',
             icon: '=',
@@ -22,7 +20,6 @@ angular.module('one.legacy').directive('zemInfoboxSetting', function (config, $w
         controller: function ($scope, $element, $attrs) {
             $scope.config = config;
             $scope.constants = constants;
-            $scope.detailsVisible = false;
             $scope.statusActive = false;
 
             $scope.isSet = function (val) {
@@ -31,14 +28,6 @@ angular.module('one.legacy').directive('zemInfoboxSetting', function (config, $w
                 }
 
                 return val !== null && val !== undefined;
-            };
-
-            $scope.showDetails = function () {
-                $scope.detailsVisible = true;
-            };
-
-            $scope.hideDetails = function () {
-                $scope.detailsVisible = false;
             };
 
         }

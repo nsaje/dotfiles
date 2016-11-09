@@ -51,19 +51,9 @@ class OverviewSetting(object):
         self.section_start = section_start
         self.value_class = None
 
-    def comment(self, details_label, details_hide_label, details_description):
+    def comment(self, details_description):
         ret = copy.deepcopy(self)
-        ret.details_label = details_label
-        ret.details_hide_label = details_hide_label
         ret.details_content = details_description
-        return ret
-
-    def performance(self, ok):
-        ret = copy.deepcopy(self)
-        if ok is None:
-            ret.icon = dash.constants.Emoticon.NEUTRAL
-        else:
-            ret.icon = dash.constants.Emoticon.HAPPY if ok else dash.constants.Emoticon.SAD
         return ret
 
     def as_dict(self):
@@ -113,8 +103,6 @@ def create_region_setting(regions):
     )
     if len(full_regions) > 1:
         targeting_region_setting = targeting_region_setting.comment(
-            'Show more',
-            'Show less',
             ', '.join(full_regions)
         )
     return targeting_region_setting
@@ -679,32 +667,36 @@ def _compute_daily_cap(ad_groups):
     return ret
 
 
-def get_campaign_goal_list(user, constraints, start_date, end_date):
-    performance = dash.campaign_goals.get_goals_performance(user, constraints, start_date, end_date)
-
+def get_primary_campaign_goal(user, constraints, start_date, end_date):
     settings = []
-    first = True
+
+    campaign = constraints.get('campaign') or constraints['ad_group'].campaign
+    primary_goal = dash.campaign_goals.fetch_goals([campaign.pk], end_date).first()
+    if not primary_goal.primary:
+        return settings
+
     permissions = user.get_all_permissions_with_access_levels()
-    for status, metric_value, planned_value, campaign_goal in performance:
-        goal_description = dash.campaign_goals.format_campaign_goal(
-            campaign_goal.type,
-            metric_value,
-            campaign_goal.conversion_goal
-        )
 
-        entry = OverviewSetting(
-            '' if not first else 'Goals:',
-            goal_description,
-            planned_value and 'planned {}'.format(
-                dash.campaign_goals.format_value(campaign_goal.type, planned_value),
-            ) or None,
-            section_start=first,
-            internal=first and not permissions.get('zemauth.campaign_goal_performance'),
-        )
-        if campaign_goal.primary:
-            entry.value_class = 'primary'
+    performance = dash.campaign_goals.get_goals_performance(user, constraints, start_date, end_date, goals=[primary_goal])
+    status, metric_value, planned_value, campaign_goal = performance[0]
 
-        entry.icon = dash.campaign_goals.STATUS_TO_EMOTICON_MAP[status]
-        settings.append(entry.as_dict())
-        first = False
+    goal_description = dash.campaign_goals.format_campaign_goal(
+        campaign_goal.type,
+        metric_value,
+        campaign_goal.conversion_goal
+    )
+
+    primary_campaign_goal_setting = OverviewSetting(
+        'Primary Goal:',
+        goal_description,
+        planned_value and 'planned {}'.format(
+            dash.campaign_goals.format_value(campaign_goal.type, planned_value),
+        ) or None,
+        section_start=True,
+        internal=not permissions.get('zemauth.campaign_goal_performance'),
+    )
+
+    primary_campaign_goal_setting.icon = dash.campaign_goals.STATUS_TO_EMOTICON_MAP[status]
+    settings.append(primary_campaign_goal_setting.as_dict())
+
     return settings

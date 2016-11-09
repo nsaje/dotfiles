@@ -12,33 +12,22 @@
         <div ng-if="isSet(icon) && icon === constants.emoticon.NEUTRAL" class="infobox-setting-icon">
             <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/neutral_face.svg"></img>
         </div>
-        
-        <div class="infobox-setting-value">{{value}}</div>
 
-        <zem-help-popover 
+        <div class="infobox-setting-value" zem-lazy-popover-html-unsafe="{{detailsContent}}" zem-lazy-popover-placement="top" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade" zem-lazy-popover-stay-open-on-hover="true">{{value}}</div>
+
+        <zem-help-popover
             class="exclamation-popover"
-            ng-if="isSet(warning)" 
+            ng-if="isSet(warning)"
             content="{{ warning }}"
             placement="top">
         </zem-help-popover>
 
         <div class="infobox-setting-value-comment" ng-if="isSet(valueDescription)">({{valueDescription}})</div>
 
-        <zem-help-popover 
-            ng-if="isSet(tooltipText)" 
-            content="{{ tooltipText }}" 
+        <zem-help-popover
+            ng-if="isSet(tooltipText)"
+            content="{{ tooltipText }}"
             placement="top">
         </zem-help-popover>
-
-        <div class="infobox-setting-info" ng-show="isSet(detailsLabel) && isSet(detailsContent) && !detailsVisible">
-            <a ng-click="showDetails()" class="infobox-details-link">({{detailsLabel}})</a> 
-        </div>
-
-        <div class="infobox-setting-info-dropped" ng-show="isSet(detailsLabel) && isSet(detailsContent) && detailsVisible">
-            <div class="infobox-setting-info-dropped-content" ng-show="detailsVisible"><div ng-bind-html="detailsContent"></div></div>
-            <div ng-show="detailsVisible">
-                <a ng-click="hideDetails()" class="infobox-details-link">{{ detailsHideLabel }}</a>
-            </div>
-        </div>
     </div>
 </div>

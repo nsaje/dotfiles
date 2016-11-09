@@ -1866,7 +1866,6 @@ class AdGroupOverviewTest(TestCase):
         pacing_setting = self._get_setting(settings, 'pacing')
         self.assertEqual('$0.00', pacing_setting['value'])
         self.assertEqual('0.00% on plan', pacing_setting['description'])
-        self.assertEqual(constants.Emoticon.SAD, pacing_setting['icon'])
 
         yesterday_spend = self._get_setting(settings, 'yesterday')
         self.assertEqual('$0.00', yesterday_spend['value'])
@@ -2067,12 +2066,6 @@ class CampaignOverviewTest(TestCase):
 
         ), flight_setting['value'])
 
-        device_setting = self._get_setting(settings, 'targeting')
-        self.assertEqual('Device: Tablet, Mobile, Desktop', device_setting['value'])
-
-        location_setting = [s for s in settings if 'location' in s['value'].lower()][0]
-        self.assertEqual('Location: US', location_setting['value'])
-
         budget_setting = self._get_setting(settings, 'daily spend cap')
         self.assertEqual('$100.00', budget_setting['value'])
 
@@ -2100,7 +2093,6 @@ class CampaignOverviewTest(TestCase):
         pacing_setting = self._get_setting(settings, 'pacing')
         self.assertEqual('$0.00', pacing_setting['value'])
         self.assertEqual('0.00% on plan', pacing_setting['description'])
-        self.assertEqual(constants.Emoticon.SAD, pacing_setting['icon'])
 
 
 class AccountOverviewTest(TestCase):
