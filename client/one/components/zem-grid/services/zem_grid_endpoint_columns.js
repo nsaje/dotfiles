@@ -294,7 +294,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
             type: zemGridConstants.gridColumnTypes.TEXT,
         },
         domain: {
-            name: 'Domain',
+            name: 'Publisher',
             field: 'domain',
             type: zemGridConstants.gridColumnTypes.TEXT,
             shown: false,
@@ -840,7 +840,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
         help: 'A media source where your content is being promoted.',
     };
     NAME_COLUMN_BRANDING[constants.breakdown.PUBLISHER] = {
-        name: 'Domain',
+        name: 'Publisher',
         help: 'A publisher where your content is being promoted.',
     };
 
