@@ -47,6 +47,8 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
     function requestDemoAction () {
         $uibModal.open({
             component: 'zemDemoRequest',
+            backdrop: 'static',
+            keyboard: false,
             windowClass: 'modal-default',
         });
     }

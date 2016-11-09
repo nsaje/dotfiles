@@ -17,6 +17,7 @@ angular.module('one.legacy').controller('AccountCreditCtrl',
                 controller: 'AccountCreditItemModalCtrl',
                 scope: $scope,
                 backdrop: 'static',
+                keyboard: false,
                 size: 'wide',
             });
             modalInstance.result.then(refresh);

@@ -39,6 +39,8 @@ angular.module('one.legacy').directive('zemConversionPixels', function (config, 
                     templateUrl: '/partials/conversion_pixel_modal.html',
                     controller: 'AddConversionPixelModalCtrl',
                     scope: $scope,
+                    backdrop: 'static',
+                    keyboard: false,
                     resolve: {
                         audiencePixel: function () {
                             var pixies = $scope.conversionPixels.filter(function (pixie) {
@@ -68,6 +70,8 @@ angular.module('one.legacy').directive('zemConversionPixels', function (config, 
                     templateUrl: '/partials/conversion_pixel_modal.html',
                     controller: 'EditConversionPixelModalCtrl',
                     scope: $scope,
+                    backdrop: 'static',
+                    keyboard: false,
                     resolve: {
                         pixel: function () {
                             return {id: pixel.id, name: pixel.name, audienceEnabled: pixel.audienceEnabled};
@@ -130,7 +134,9 @@ angular.module('one.legacy').directive('zemConversionPixels', function (config, 
 
                 var modalInstance = $uibModal.open({
                     templateUrl: '/partials/copy_conversion_pixel_modal.html',
-                    scope: scope
+                    scope: scope,
+                    backdrop: 'static',
+                    keyboard: false,
                 });
 
                 return modalInstance;

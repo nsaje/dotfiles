@@ -41,6 +41,8 @@ angular.module('one.widgets').component('zemFacebookPageSettings', {
         function askIfSave () {
             var modal = $uibModal.open({
                 templateUrl: '/partials/facebook_page_changed_modal.html',
+                backdrop: 'static',
+                keyboard: false,
                 controller: function ($scope) {
                     $scope.ok = function () {
                         $scope.$close();

@@ -17,6 +17,7 @@ angular.module('one.legacy').controller('CampaignBudgetCtrl', function ($scope, 
             templateUrl: '/partials/campaign_budget_item_modal.html',
             controller: 'CampaignBudgetItemModalCtrl',
             backdrop: 'static',
+            keyboard: false,
             scope: $scope,
             size: 'wide',
         });

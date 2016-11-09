@@ -53,12 +53,16 @@ angular.module('one.legacy').component('zemGridExport', {
                 modalInstance = $uibModal.open({
                     templateUrl: '/partials/add_scheduled_report_modal.html',
                     controller: 'AddScheduledReportModalCtrl',
+                    backdrop: 'static',
+                    keyboard: false,
                     scope: $scope,
                 });
             } else {
                 modalInstance = $uibModal.open({
                     templateUrl: '/partials/download_export_report_modal.html',
                     controller: 'DownloadExportReportModalCtrl',
+                    backdrop: 'static',
+                    keyboard: false,
                     scope: $scope,
                 });
                 return modalInstance;

@@ -28,6 +28,8 @@ angular.module('one.legacy').directive('zemUploadTrigger', function ($uibModal, 
                     controller: function ($scope) {
                         $scope.closeModal = $scope.$close;
                     },
+                    backdrop: 'static',
+                    keyboard: false,
                     windowClass: 'modal-zem-upload',
                     scope: modalScope,
                 });

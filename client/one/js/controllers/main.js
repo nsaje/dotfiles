@@ -252,6 +252,8 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
         $uibModal.open({
             component: 'zemDemoRequest',
             windowClass: 'modal-default-legacy',
+            backdrop: 'static',
+            keyboard: false,
         });
     };
 

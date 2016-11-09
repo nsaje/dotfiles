@@ -140,6 +140,8 @@ angular.module('one.legacy').controller('AccountAccountCtrl', function ($scope, 
         if ($scope.facebookPageChangedInfo.changed) {
             var facebookPageChangedModalInstance = $uibModal.open({
                 templateUrl: '/partials/facebook_page_changed_modal.html',
+                backdrop: 'static',
+                keyboard: false,
                 controller: function ($scope) {
                     $scope.ok = function () {
                         $scope.$close();

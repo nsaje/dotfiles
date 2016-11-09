@@ -110,6 +110,8 @@ angular.module('one.legacy').directive('zemCampaignGoals', function ($filter) {
                     templateUrl: '/partials/edit_campaign_goal_modal.html',
                     controller: 'EditCampaignGoalModalCtrl',
                     scope: scope,
+                    backdrop: 'static',
+                    keyboard: false,
                 });
             }
 
