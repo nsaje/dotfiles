@@ -129,13 +129,12 @@ angular.module('one.legacy').controller('CampaignBudgetItemModalCtrl', ['$scope'
 
         $scope.minDate = creditStartDate;
         $scope.maxDate = creditEndDate;
-        $scope.initEndDate = creditEndDate;
+        $scope.initEndDate = null;
         $scope.initStartDate = creditStartDate > today ? creditStartDate : today;
 
         $scope.budgetItem.startDate = $scope.initStartDate;
         $scope.budgetItem.endDate = $scope.initEndDate;
-
-        $scope.budgetItem.amount = parseInt(credit.available);
+        $scope.budgetItem.amount = null;
     }
 
     $scope.init();
