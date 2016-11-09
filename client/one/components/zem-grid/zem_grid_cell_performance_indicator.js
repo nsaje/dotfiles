@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCellPerformanceIndicator', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').directive('zemGridCellPerformanceIndicator', function (zemGridConstants) {
 
     var statusIcons = {},
         statusClasses = {};
@@ -51,7 +51,7 @@ angular.module('one.legacy').directive('zemGridCellPerformanceIndicator', ['zemG
             row: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_performance_indicator.html',
-        controller: ['$scope', 'config', function ($scope, config) {
+        controller: function ($scope, config) {
             var vm = this;
 
             vm.config = config;
@@ -76,6 +76,6 @@ angular.module('one.legacy').directive('zemGridCellPerformanceIndicator', ['zemG
                     vm.statusList = getStatusList(vm.data.list);
                 }
             }
-        }],
+        },
     };
-}]);
+});

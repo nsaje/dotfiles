@@ -1,5 +1,5 @@
 /* globals angular,defaults,moment,constants */
-angular.module('one.legacy').controller('CampaignBudgetItemModalCtrl', ['$scope', '$filter', '$timeout', 'api', 'zemNavigationService', function ($scope, $filter, $timeout, api, zemNavigationService) {
+angular.module('one.legacy').controller('CampaignBudgetItemModalCtrl', function ($scope, $filter, $timeout, api, zemNavigationService) {
     $scope.today = moment().format('MM/DD/YYYY');
     $scope.isNew = true;
     $scope.startDatePicker = {isOpen: false};
@@ -138,4 +138,4 @@ angular.module('one.legacy').controller('CampaignBudgetItemModalCtrl', ['$scope'
     }
 
     $scope.init();
-}]);
+});

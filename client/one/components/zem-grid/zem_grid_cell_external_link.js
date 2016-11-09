@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCellExternalLink', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
+angular.module('one.legacy').directive('zemGridCellExternalLink', function (zemGridEndpointColumns) {
 
     return {
         restrict: 'E',
@@ -15,7 +15,7 @@ angular.module('one.legacy').directive('zemGridCellExternalLink', ['zemGridEndpo
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_external_link.html',
-        controller: ['$scope', '$window', 'config', 'zemGridConstants', function ($scope, $window, config, zemGridConstants) { // eslint-disable-line max-len
+        controller: function ($scope, $window, config, zemGridConstants) { // eslint-disable-line max-len
             var vm = this;
             vm.config = config;
             vm.openUrl = openUrl;
@@ -60,6 +60,6 @@ angular.module('one.legacy').directive('zemGridCellExternalLink', ['zemGridEndpo
                 $event.preventDefault();
                 $window.open(vm.redirectorUrl || vm.url, '_blank');
             }
-        }],
+        },
     };
-}]);
+});

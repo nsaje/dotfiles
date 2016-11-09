@@ -1,6 +1,6 @@
 /* globals angular, constants */
 
-angular.module('one.legacy').controller('AccountCtrl', ['$scope', '$state', 'zemNavigationService', 'accountData', function ($scope, $state, zemNavigationService, accountData) {
+angular.module('one.legacy').controller('AccountCtrl', function ($scope, $state, zemNavigationService, accountData) {
     $scope.level = constants.level.ACCOUNTS;
     $scope.getTabs = function () {
         return [
@@ -69,4 +69,4 @@ angular.module('one.legacy').controller('AccountCtrl', ['$scope', '$state', 'zem
     $scope.$on('$stateChangeSuccess', function () {
         $scope.updateBreadcrumbAndTitle();
     });
-}]);
+});

@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridApi', ['$rootScope', 'zemGridStorageService', function ($rootScope, zemGridStorageService) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridApi', function ($rootScope, zemGridStorageService) { // eslint-disable-line max-len
 
     //
     // GridApi provides interface for interaction with zem-grid
@@ -94,4 +94,4 @@ angular.module('one.legacy').factory('zemGridApi', ['$rootScope', 'zemGridStorag
             return new GridApi(grid);
         },
     };
-}]);
+});

@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemAgenciesEndpoint', ['$http', '$q', function ($http, $q) {
+angular.module('one.services').service('zemAgenciesEndpoint', function ($http, $q) {
     this.getAgencies = getAgencies;
 
     function getAgencies () {
@@ -18,4 +18,4 @@ angular.module('one.services').service('zemAgenciesEndpoint', ['$http', '$q', fu
 
         return deferred.promise;
     }
-}]);
+});

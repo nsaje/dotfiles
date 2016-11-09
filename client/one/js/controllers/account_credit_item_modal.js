@@ -1,5 +1,5 @@
 /* globals angular,defaults,moment */
-angular.module('one.legacy').controller('AccountCreditItemModalCtrl', ['$scope', '$timeout', '$window', '$filter', 'api', function ($scope, $timeout, $window, $filter, api) {
+angular.module('one.legacy').controller('AccountCreditItemModalCtrl', function ($scope, $timeout, $window, $filter, api) {
     var currentMoment = moment();
     $scope.today = currentMoment.format('M/D/YYYY');
     $scope.isNew = true;
@@ -110,4 +110,4 @@ angular.module('one.legacy').controller('AccountCreditItemModalCtrl', ['$scope',
     }
 
     $scope.init();
-}]);
+});

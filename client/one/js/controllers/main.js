@@ -1,5 +1,5 @@
 /* globals $, angular, constants */
-angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$uibModal', '$uibModalStack', '$timeout', '$window', 'zemMoment', 'zemUserService', 'zemPermissions', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemSupportHeroService', 'zemNavigationService', 'accountsAccess', 'zemHeaderDateRangePickerService', 'zemDataFilterService', 'zemRedesignHelpersService', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, zemUserService, zemPermissions, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, zemHeaderDateRangePickerService, zemDataFilterService, zemRedesignHelpersService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, zemUserService, zemPermissions, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, zemHeaderDateRangePickerService, zemDataFilterService, zemRedesignHelpersService) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
@@ -371,4 +371,4 @@ angular.module('one.legacy').controller('MainCtrl', ['$scope', '$state', '$locat
 
     // TODO: Remove once redesign is finished
     zemRedesignHelpersService.setBodyThemeClass();
-}]);
+});

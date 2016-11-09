@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemIcon', ['config', function (config) {
+angular.module('one.legacy').directive('zemIcon', function (config) {
     return {
         restrict: 'E',
         scope: true,
@@ -17,4 +17,4 @@ angular.module('one.legacy').directive('zemIcon', ['config', function (config) {
         },
     };
 
-}]);
+});

@@ -1,7 +1,7 @@
 /* global angular,constants */
 'use strict';
 
-angular.module('one.legacy').directive('zemIconList', [function () {
+angular.module('one.legacy').directive('zemIconList', function () {
     var statusIcons = {},
         statusClasses = {};
     statusIcons[constants.emoticon.HAPPY] = 'happy_face.svg';
@@ -34,4 +34,4 @@ angular.module('one.legacy').directive('zemIconList', [function () {
             });
         },
     };
-}]);
+});

@@ -1,5 +1,5 @@
 /*globals angular,moment,constants,options*/
-angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemAccountService', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', 'zemNavigationService', 'zemDataFilterService', 'zemGridConstants', function ($scope, $state, $location, $timeout, api, zemAccountService, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($scope, $state, $location, $timeout, api, zemAccountService, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants) { // eslint-disable-line max-len
     $scope.requestInProgress = false;
     $scope.constants = constants;
     $scope.options = options;
@@ -250,4 +250,4 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', ['$scope', '$
     };
 
     $scope.init();
-}]);
+});

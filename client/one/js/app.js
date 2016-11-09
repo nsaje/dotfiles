@@ -2,7 +2,7 @@
 
 angular.module('one.legacy', []);
 
-angular.module('one.legacy').config(['$stateProvider', function ($stateProvider) {
+angular.module('one.legacy').config(function ($stateProvider) {
     var basicTemplate = '<ng-include src="\'/partials/tabset.html\'"></ng-include><div ui-view></div>';
 
     $stateProvider
@@ -11,7 +11,7 @@ angular.module('one.legacy').config(['$stateProvider', function ($stateProvider)
             templateUrl: '/partials/main.html',
             controller: 'MainCtrl',
             resolve: {
-                initServices: ['zemUserService', 'zemFilterService', 'zemDataFilterService', 'zemNavigationNewService', 'zemMediaSourcesService', function (zemUserService, zemFilterService, zemDataFilterService, zemNavigationNewService, zemMediaSourcesService) {
+                initServices: function (zemUserService, zemFilterService, zemDataFilterService, zemNavigationNewService, zemMediaSourcesService) {
                     // Service initialization - TODO: find cleaner solution
                     zemNavigationNewService.init();
                     zemMediaSourcesService.init();
@@ -19,10 +19,10 @@ angular.module('one.legacy').config(['$stateProvider', function ($stateProvider)
                         zemDataFilterService.init();
                         zemFilterService.init();
                     });
-                }],
-                accountsAccess: ['zemNavigationService', function (zemNavigationService) {
+                },
+                accountsAccess: function (zemNavigationService) {
                     return zemNavigationService.getAccountsAccess();
-                }],
+                },
             },
         });
 
@@ -54,9 +54,9 @@ angular.module('one.legacy').config(['$stateProvider', function ($stateProvider)
             template: basicTemplate,
             controller: 'AccountCtrl',
             resolve: {
-                accountData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
+                accountData: function ($stateParams, zemNavigationService) {
                     return zemNavigationService.getAccount($stateParams.id);
-                }],
+                },
             },
         })
         .state('main.accounts.campaigns', {
@@ -103,9 +103,9 @@ angular.module('one.legacy').config(['$stateProvider', function ($stateProvider)
             template: basicTemplate,
             controller: 'CampaignCtrl',
             resolve: {
-                campaignData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
+                campaignData: function ($stateParams, zemNavigationService) {
                     return zemNavigationService.getCampaign($stateParams.id);
-                }],
+                },
             },
         })
         .state('main.campaigns.ad_groups', {
@@ -146,9 +146,9 @@ angular.module('one.legacy').config(['$stateProvider', function ($stateProvider)
             template: basicTemplate,
             controller: 'AdGroupCtrl',
             resolve: {
-                adGroupData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
+                adGroupData: function ($stateParams, zemNavigationService) {
                     return zemNavigationService.getAdGroup($stateParams.id);
-                }],
+                },
             },
         })
         .state('main.adGroups.adsplus', {
@@ -180,4 +180,4 @@ angular.module('one.legacy').config(['$stateProvider', function ($stateProvider)
             templateUrl: '/partials/ad_group_publishers.html',
             controller: 'AdGroupPublishersCtrl',
         });
-}]);
+});

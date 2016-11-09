@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemNavigationUtils', [function () {
+angular.module('one.widgets').service('zemNavigationUtils', function () {
     this.convertToEntityList = convertToEntityList;
     this.filterEntityList = filterEntityList;
 
@@ -67,4 +67,4 @@ angular.module('one.widgets').service('zemNavigationUtils', [function () {
     function isFilteredByName (item, query) {
         return item.name.toLowerCase().indexOf(query) >= 0;
     }
-}]);
+});

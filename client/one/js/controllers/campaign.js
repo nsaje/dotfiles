@@ -1,5 +1,5 @@
 /* globals angular, constants */
-angular.module('one.legacy').controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', 'api', 'zemDataFilterService', function ($scope, $state, $location, zemNavigationService, campaignData, api, zemDataFilterService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state, $location, zemNavigationService, campaignData, api, zemDataFilterService) { // eslint-disable-line max-len
     $scope.level = constants.level.CAMPAIGNS;
     $scope.contentInsights = {
         summary: null,
@@ -148,4 +148,4 @@ angular.module('one.legacy').controller('CampaignCtrl', ['$scope', '$state', '$l
             $scope.setActiveTab();
         }
     });
-}]);
+});

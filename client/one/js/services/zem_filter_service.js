@@ -1,7 +1,7 @@
 /* globals JSON, angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemFilterService', ['$location', 'zemPermissions', function ($location, zemPermissions) {
+angular.module('one.legacy').factory('zemFilterService', function ($location, zemPermissions) {
     var filteredSources = [];
     var filteredAgencies = [];
     var filteredAccountTypes = [];
@@ -259,4 +259,4 @@ angular.module('one.legacy').factory('zemFilterService', ['$location', 'zemPermi
         getShowBlacklistedPublishers: getShowBlacklistedPublishers,
         setShowBlacklistedPublishers: setShowBlacklistedPublishers
     };
-}]);
+});

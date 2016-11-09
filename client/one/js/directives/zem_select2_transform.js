@@ -1,7 +1,7 @@
 /*global $,angular*/
 'use strict';
 
-angular.module('one.legacy').directive('zemSelect2ModelTransform', ['$compile', function ($compile) {
+angular.module('one.legacy').directive('zemSelect2ModelTransform', function ($compile) {
     return {
         restrict: 'A',
         require: 'ngModel',
@@ -23,4 +23,4 @@ angular.module('one.legacy').directive('zemSelect2ModelTransform', ['$compile', 
             });
         }
     };
-}]);
+});

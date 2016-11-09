@@ -1,6 +1,6 @@
 /* globals angular */
 
-angular.module('one.legacy').config(['$stateProvider', function ($stateProvider) {
+angular.module('one.legacy').config(function ($stateProvider) {
     $stateProvider
         .state('main.development', {
             url: 'development',
@@ -14,5 +14,5 @@ angular.module('one.legacy').config(['$stateProvider', function ($stateProvider)
                 '<zem-grid data-data-source="grid.dataSource" api="grid.api" options="grid.options"></zem-grid>',
             controller: 'DevelopmentGridCtrl',
         });
-}]);
+});
 

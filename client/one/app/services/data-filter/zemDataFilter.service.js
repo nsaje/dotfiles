@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemDataFilterService', ['$location', 'zemPermissions', 'zemPubSubService', function ($location, zemPermissions, zemPubSubService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemDataFilterService', function ($location, zemPermissions, zemPubSubService) { // eslint-disable-line max-len
     this.init = init;
     this.getDateRange = getDateRange;
     this.setDateRange = setDateRange;
@@ -284,4 +284,4 @@ angular.module('one.services').service('zemDataFilterService', ['$location', 'ze
             pubSub.notify(condition.event, getAppliedCondition(condition));
         }
     }
-}]);
+});

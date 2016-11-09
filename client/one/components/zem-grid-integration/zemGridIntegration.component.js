@@ -16,7 +16,7 @@ angular.module('one.legacy').component('zemGridIntegration', {
         isPermissionInternal: '=zemIsPermissionInternal',
     },
     templateUrl: '/components/zem-grid-integration/zemGridIntegration.component.html',
-    controller: ['$scope', '$timeout', '$state', 'zemGridEndpointService', 'zemDataSourceService', 'zemFilterService', function ($scope, $timeout, $state, zemGridEndpointService, zemDataSourceService, zemFilterService) {
+    controller: function ($scope, $timeout, $state, zemGridEndpointService, zemDataSourceService, zemFilterService) {
         var $ctrl = this;
         $scope.hasPermission = this.hasPermission;
         $scope.isPermissionInternal = this.isPermissionInternal;
@@ -164,6 +164,6 @@ angular.module('one.legacy').component('zemGridIntegration', {
                 $ctrl.selectionCallback();
             }
         }
-    }]
+    }
 });
 

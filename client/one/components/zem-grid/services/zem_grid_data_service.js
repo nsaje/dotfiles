@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridDataService', ['$q', 'zemGridParser', 'zemAlertsService', function ($q, zemGridParser, zemAlertsService) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridDataService', function ($q, zemGridParser, zemAlertsService) { // eslint-disable-line max-len
 
     // GridDataService is responsible to request data from DataSource and listen to any DataSource changes
     // It prepares data suitable for Grid component along with data states (initializing, loading, etc.) used
@@ -116,4 +116,4 @@ angular.module('one.legacy').factory('zemGridDataService', ['$q', 'zemGridParser
             return new GridDataService(grid, dataSource);
         },
     };
-}]);
+});

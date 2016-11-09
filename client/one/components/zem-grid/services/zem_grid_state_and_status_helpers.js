@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridStateAndStatusHelpers', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
+angular.module('one.legacy').factory('zemGridStateAndStatusHelpers', function (zemGridEndpointColumns) {
     return {
         getStatusValuesAndTexts: getStatusValuesAndTexts,
         getStateValues: getStateValues,
@@ -135,4 +135,4 @@ angular.module('one.legacy').factory('zemGridStateAndStatusHelpers', ['zemGridEn
         }
         return {enabled: undefined, paused: undefined};
     }
-}]);
+});

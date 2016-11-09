@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCellEditableBaseField', [function () {
+angular.module('one.legacy').directive('zemGridCellEditableBaseField', function () {
 
     return {
         restrict: 'E',
@@ -15,7 +15,7 @@ angular.module('one.legacy').directive('zemGridCellEditableBaseField', [function
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_editable_base_field.html',
-        controller: ['$scope', 'zemGridConstants', 'zemGridDataFormatter', 'zemGridDataValidator', 'zemGridStateAndStatusHelpers', function ($scope, zemGridConstants, zemGridDataFormatter, zemGridDataValidator, zemGridStateAndStatusHelpers) { // eslint-disable-line max-len
+        controller: function ($scope, zemGridConstants, zemGridDataFormatter, zemGridDataValidator, zemGridStateAndStatusHelpers) { // eslint-disable-line max-len
             var vm = this;
             var initialValue;
             var prevValidInputValue;
@@ -142,6 +142,6 @@ angular.module('one.legacy').directive('zemGridCellEditableBaseField', [function
                     vm.modal.close();
                 }
             }
-        }],
+        },
     };
-}]);
+});

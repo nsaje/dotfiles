@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridRow', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').directive('zemGridRow', function (zemGridConstants) {
 
     return {
         restrict: 'E',
@@ -51,20 +51,19 @@ angular.module('one.legacy').directive('zemGridRow', ['zemGridConstants', functi
                 return false;
             }
         },
-        controller: ['$scope', 'zemGridConstants', 'zemGridUIService',
-            function ($scope, zemGridConstants, zemGridUIService) {
-                $scope.constants = zemGridConstants;
-                var vm = this;
-                vm.getRowClass = getRowClass;
+        controller: function ($scope, zemGridConstants, zemGridUIService) {
+            $scope.constants = zemGridConstants;
+            var vm = this;
+            vm.getRowClass = getRowClass;
 
-                function getRowClass () {
-                    var classes = [];
-                    classes.push('level-' + vm.row.level);
-                    if (vm.row.level === vm.grid.meta.dataService.getBreakdownLevel()) classes.push('level-last');
-                    if (vm.row.type === zemGridConstants.gridRowType.BREAKDOWN) classes.push('breakdown');
-                    if (vm.row.data.archived) classes.push('archived');
-                    return classes;
-                }
-            }],
+            function getRowClass () {
+                var classes = [];
+                classes.push('level-' + vm.row.level);
+                if (vm.row.level === vm.grid.meta.dataService.getBreakdownLevel()) classes.push('level-last');
+                if (vm.row.type === zemGridConstants.gridRowType.BREAKDOWN) classes.push('breakdown');
+                if (vm.row.data.archived) classes.push('archived');
+                return classes;
+            }
+        },
     };
-}]);
+});

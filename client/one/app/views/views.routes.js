@@ -1,1 +1,1 @@
-angular.module('one.views').config([function () {}]);
+angular.module('one.views').config(function () {});

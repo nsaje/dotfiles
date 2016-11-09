@@ -1,5 +1,5 @@
 /* globals angular, options, constants */
-angular.module('one.legacy').controller('AddScheduledReportModalCtrl', ['$scope', 'api', 'zemFilterService', 'zemDataFilterService', function ($scope, api, zemFilterService, zemDataFilterService) {  // eslint-disable-line max-len
+angular.module('one.legacy').controller('AddScheduledReportModalCtrl', function ($scope, api, zemFilterService, zemDataFilterService) {  // eslint-disable-line max-len
     $scope.exportSchedulingFrequencies = options.exportFrequency;
     $scope.exportSchedulingTimePeriods = options.exportTimePeriod;
     $scope.exportSchedulingDayOfWeek = options.exportDayOfWeek;
@@ -100,4 +100,4 @@ angular.module('one.legacy').controller('AddScheduledReportModalCtrl', ['$scope'
         $scope.frequencyChanged();
     };
     $scope.init();
-}]);
+});

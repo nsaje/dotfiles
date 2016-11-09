@@ -5,7 +5,7 @@ angular.module('one.legacy').component('zemGridBulkActions', {
         api: '=',
     },
     templateUrl: '/components/zem-grid-integration/shared/zem-grid-bulk-actions/zemGridBulkActions.component.html',
-    controller: ['zemGridConstants', 'zemGridBulkActionsService', function (zemGridConstants, zemGridBulkActionsService) { // eslint-disable-line max-len
+    controller: function (zemGridConstants, zemGridBulkActionsService) { // eslint-disable-line max-len
         // TODO: alert, update daily stats
 
         var $ctrl = this;
@@ -60,5 +60,5 @@ angular.module('one.legacy').component('zemGridBulkActions', {
                 return action.value === value;
             })[0];
         }
-    }]
+    }
 });

@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGrid', [function () {
+angular.module('one.legacy').directive('zemGrid', function () {
     return {
         restrict: 'E',
         replace: true,
@@ -15,7 +15,7 @@ angular.module('one.legacy').directive('zemGrid', [function () {
             isPermissionInternal: '=zemIsPermissionInternal',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid.html',
-        controller: ['$scope', '$element', 'zemGridObject', 'zemGridPubSub', 'zemGridDataService', 'zemGridColumnsService', 'zemGridOrderService', 'zemGridSelectionService', 'zemGridCollapseService', 'zemGridApi', function ($scope, $element, zemGridObject, zemGridPubSub, zemGridDataService, zemGridColumnsService, zemGridOrderService, zemGridSelectionService, zemGridCollapseService, zemGridApi) { // eslint-disable-line max-len
+        controller: function ($scope, $element, zemGridObject, zemGridPubSub, zemGridDataService, zemGridColumnsService, zemGridOrderService, zemGridSelectionService, zemGridCollapseService, zemGridApi) { // eslint-disable-line max-len
             this.grid = new zemGridObject.createGrid();
             this.grid.ui.element = $element;
             this.grid.meta.scope = $scope;
@@ -37,6 +37,6 @@ angular.module('one.legacy').directive('zemGrid', [function () {
 
             // Initialize data service; starts loading data
             this.grid.meta.dataService.initialize();
-        }],
+        },
     };
-}]);
+});

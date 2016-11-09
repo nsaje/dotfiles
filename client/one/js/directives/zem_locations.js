@@ -1,7 +1,7 @@
 /*globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemLocations', ['config', '$state', 'regions', function (config, $state, regions) {
+angular.module('one.legacy').directive('zemLocations', function (config, $state, regions) {
     return {
         restrict: 'E',
         scope: {
@@ -9,7 +9,7 @@ angular.module('one.legacy').directive('zemLocations', ['config', '$state', 'reg
             hasPermission: '=zemHasPermission'
         },
         templateUrl: '/partials/zem_locations.html',
-        controller: ['$scope', '$compile', '$element', '$attrs', '$http', 'api', function ($scope, $compile, $element, $attrs, $http, api) {
+        controller: function ($scope, $compile, $element, $attrs, $http, api) {
             $scope.regions = regions;
             $scope.config = config;
             $scope.selectedLocationCode = undefined;
@@ -184,6 +184,6 @@ angular.module('one.legacy').directive('zemLocations', ['config', '$state', 'reg
                 $scope.someReplacedNames = undoProperties.someReplacedNames;
                 $scope.name = regions.getByCode($scope.selectedLocationCode).name;
             }
-        }]
+        }
     };
-}]);
+});

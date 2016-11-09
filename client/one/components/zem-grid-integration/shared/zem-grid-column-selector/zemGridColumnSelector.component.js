@@ -4,7 +4,7 @@ angular.module('one.legacy').component('zemGridColumnSelector', {
         api: '=',
     },
     templateUrl: '/components/zem-grid-integration/shared/zem-grid-column-selector/zemGridColumnSelector.component.html',
-    controller: [function () {
+    controller: function () {
         var MSG_DISABLED_COLUMN = 'Column is available when coresponding breakdown is visible.';
 
         var $ctrl = this;
@@ -74,5 +74,5 @@ angular.module('one.legacy').component('zemGridColumnSelector', {
                 }
             });
         }
-    }]
+    }
 });

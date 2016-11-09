@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 'use strict';
 
-angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, zemFilterService) {
+angular.module('one.legacy').factory('api', function ($http, $q, zemFilterService) {
 
     function createAbortableDefer () {
         var deferred = $q.defer();
@@ -1404,4 +1404,4 @@ angular.module('one.legacy').factory('api', ['$http', '$q', 'zemFilterService', 
         adGroupSources: new AdGroupSources(),
         adGroupPublishersState: new AdGroupPublishersState(),
     };
-}]);
+});

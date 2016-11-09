@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCellStatusField', ['zemGridEndpointColumns', function (zemGridEndpointColumns) {
+angular.module('one.legacy').directive('zemGridCellStatusField', function (zemGridEndpointColumns) {
 
     function getStatusText (value, row, statusValuesAndTexts) {
         if (row.archived) {
@@ -26,7 +26,7 @@ angular.module('one.legacy').directive('zemGridCellStatusField', ['zemGridEndpoi
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_status_field.html',
-        controller: ['$scope', 'zemGridStateAndStatusHelpers', function ($scope, zemGridStateAndStatusHelpers) {
+        controller: function ($scope, zemGridStateAndStatusHelpers) {
             var vm = this;
             var pubsub = vm.grid.meta.pubsub;
 
@@ -45,6 +45,6 @@ angular.module('one.legacy').directive('zemGridCellStatusField', ['zemGridEndpoi
                     vm.statusText = getStatusText(vm.data.value, vm.row, statusValuesAndTexts);
                 }
             }
-        }],
+        },
     };
-}]);
+});

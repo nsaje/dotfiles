@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridDataFormatter', ['$filter', 'zemGridConstants', function ($filter, zemGridConstants) {
+angular.module('one.legacy').factory('zemGridDataFormatter', function ($filter, zemGridConstants) {
     return {
         formatValue: formatValue,
         parseInputValue: parseInputValue,
@@ -101,4 +101,4 @@ angular.module('one.legacy').factory('zemGridDataFormatter', ['$filter', 'zemGri
             return number.toFixed(fractionSize);
         }
     }
-}]);
+});

@@ -1,7 +1,7 @@
 /* globals angular, constants, options */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGridConstants) {
     var AVG_COST_PREFIX = 'avg_cost_per_';
 
     var CONVERSION_GOALS_PLACEHOLDER = 'conversion_goals_placeholder';
@@ -1419,4 +1419,4 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', ['zemGridConstant
         createCategories: createCategories,
         setDynamicColumns: setDynamicColumns,
     };
-}]);
+});

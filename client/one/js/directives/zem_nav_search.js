@@ -1,7 +1,7 @@
 /* globals angular, constants,$ */
 'use strict';
 
-angular.module('one.legacy').directive('zemNavSearch', ['config', '$state', function (config, $state) {
+angular.module('one.legacy').directive('zemNavSearch', function (config, $state) {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_nav_search.html',
@@ -15,7 +15,7 @@ angular.module('one.legacy').directive('zemNavSearch', ['config', '$state', func
             defaultCampaignState: '@zemDefaultCampaignState',
             defaultAdGroupState: '@zemDefaultAdGroupState',
         },
-        controller: ['$scope', function ($scope) {
+        controller: function ($scope) {
             $scope.accounts = null;
             $scope.campaigns = null;
             $scope.adGroups = null;
@@ -130,6 +130,6 @@ angular.module('one.legacy').directive('zemNavSearch', ['config', '$state', func
 
                 $scope.navSelector = $scope.account && constants.entityType.ACCOUNT + ':' + $scope.account.id || null;
             };
-        }],
+        },
     };
-}]);
+});

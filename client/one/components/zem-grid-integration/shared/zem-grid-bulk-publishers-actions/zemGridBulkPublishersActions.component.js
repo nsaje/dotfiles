@@ -5,7 +5,7 @@ angular.module('one.legacy').component('zemGridBulkPublishersActions', {
         api: '=',
     },
     templateUrl: '/components/zem-grid-integration/shared/zem-grid-bulk-publishers-actions/zemGridBulkPublishersActions.component.html',
-    controller: ['$window', 'api', 'zemGridConstants', 'zemGridEndpointColumns', 'zemDataFilterService', function ($window, api, zemGridConstants, zemGridEndpointColumns, zemDataFilterService) { // eslint-disable-line max-len
+    controller: function ($window, api, zemGridConstants, zemGridEndpointColumns, zemDataFilterService) { // eslint-disable-line max-len
         var COLUMNS = zemGridEndpointColumns.COLUMNS;
         var MAX_BLACKLISTED_PUBLISHERS_YAHOO = 0;
 
@@ -238,5 +238,5 @@ angular.module('one.legacy').component('zemGridBulkPublishersActions', {
                 refreshData();
             });
         }
-    }]
+    }
 });

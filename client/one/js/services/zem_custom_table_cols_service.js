@@ -1,7 +1,7 @@
 /*globals angular,options,moment,JSON*/
 'use strict';
 
-angular.module('one.legacy').factory('zemCustomTableColsService', ['zemLocalStorageService', function (zemLocalStorageService) {
+angular.module('one.legacy').factory('zemCustomTableColsService', function (zemLocalStorageService) {
     var key = 'columns';
 
     function load (namespace, columns) {
@@ -28,4 +28,4 @@ angular.module('one.legacy').factory('zemCustomTableColsService', ['zemLocalStor
         load: load,
         save: save
     };
-}]);
+});

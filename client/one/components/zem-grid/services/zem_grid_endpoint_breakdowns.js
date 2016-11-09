@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridEndpointBreakdowns', [function () {
+angular.module('one.legacy').factory('zemGridEndpointBreakdowns', function () {
     var BASE_LEVEL_GROUP_NAME = 'Base level';
     var STRUCTURE_GROUP_NAME = 'By structure';
     var DELIVERY_GROUP_NAME = 'By delivery';
@@ -130,4 +130,4 @@ angular.module('one.legacy').factory('zemGridEndpointBreakdowns', [function () {
         BREAKDOWNS: BREAKDOWNS,
         createBreakdownGroups: createBreakdownGroups,
     };
-}]);
+});

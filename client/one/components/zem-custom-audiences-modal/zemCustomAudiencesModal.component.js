@@ -8,7 +8,7 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         modalInstance: '<',
     },
     controllerAs: 'ctrl',
-    controller: ['api', function (api) {
+    controller: function (api) {
         var vm = this;
         vm.accountId = vm.resolve.accountId;
         vm.audienceId = vm.resolve.audienceId;
@@ -201,5 +201,5 @@ angular.module('one.legacy').component('zemCustomAudiencesModal', {
         }
 
         init();
-    }],
+    },
 });

@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemMediaSourcesEndpoint', ['$http', '$q', 'zemDataFilterService', function ($http, $q, zemDataFilterService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemMediaSourcesEndpoint', function ($http, $q, zemDataFilterService) { // eslint-disable-line max-len
     this.getSources = getSources;
 
     function getSources () {
@@ -22,4 +22,4 @@ angular.module('one.services').service('zemMediaSourcesEndpoint', ['$http', '$q'
 
         return deferred.promise;
     }
-}]);
+});

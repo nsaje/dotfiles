@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemEntityInstanceService', ['$http', '$q', 'zemEntityInstanceEndpoint', 'zemPubSubService', function ($http, $q, zemEntityEndpoint, zemPubSubService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemEntityInstanceService', function ($http, $q, zemEntityInstanceEndpoint, zemPubSubService) { // eslint-disable-line max-len
 
     function EntityInstanceService (entityType) {
 
@@ -23,7 +23,7 @@ angular.module('one.services').service('zemEntityInstanceService', ['$http', '$q
         // Internal
         //
         function create (parentId) {
-            return zemEntityEndpoint.create(entityType, parentId).then(function (data) {
+            return zemEntityInstanceEndpoint.create(entityType, parentId).then(function (data) {
                 pubsub.notify(EVENTS.ON_ENTITY_CREATED, {
                     entityType: entityType,
                     parentId: parentId,
@@ -34,11 +34,11 @@ angular.module('one.services').service('zemEntityInstanceService', ['$http', '$q
         }
 
         function get (id) {
-            return zemEntityEndpoint.get(entityType, id);
+            return zemEntityInstanceEndpoint.get(entityType, id);
         }
 
         function update (id, data) {
-            return zemEntityEndpoint.update(entityType, id, data).then(function (data) {
+            return zemEntityInstanceEndpoint.update(entityType, id, data).then(function (data) {
                 pubsub.notify(EVENTS.ON_ENTITY_UPDATED, {
                     entityType: entityType,
                     id: id,
@@ -65,4 +65,4 @@ angular.module('one.services').service('zemEntityInstanceService', ['$http', '$q
             return new EntityInstanceService(entityType);
         }
     };
-}]);
+});

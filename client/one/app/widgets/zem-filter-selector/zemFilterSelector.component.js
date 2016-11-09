@@ -1,6 +1,6 @@
 angular.module('one.widgets').component('zemFilterSelector', {
     templateUrl: '/app/widgets/zem-filter-selector/zemFilterSelector.component.html',
-    controller: ['zemDataFilterService', 'zemFilterSelectorService', 'zemFilterSelectorSharedService', function (zemDataFilterService, zemFilterSelectorService, zemFilterSelectorSharedService) { // eslint-disable-line max-len
+    controller: function (zemDataFilterService, zemFilterSelectorService, zemFilterSelectorSharedService) { // eslint-disable-line max-len
         var $ctrl = this;
 
         $ctrl.isExpanded = zemFilterSelectorSharedService.isSelectorExpanded;
@@ -43,5 +43,5 @@ angular.module('one.widgets').component('zemFilterSelector', {
                 $('body').removeClass('data-filter-enabled');
             }
         }
-    }],
+    },
 });

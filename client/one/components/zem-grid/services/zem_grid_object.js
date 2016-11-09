@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridObject', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').factory('zemGridObject', function (zemGridConstants) {
 
     //
     // This service defines Grid object. It is the main
@@ -96,4 +96,4 @@ angular.module('one.legacy').factory('zemGridObject', ['zemGridConstants', funct
         createRow: createRow,
         createColumn: createColumn,
     };
-}]);
+});

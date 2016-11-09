@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridParser', ['$filter', 'zemGridConstants', 'zemGridObject', function ($filter, zemGridConstants, zemGridObject) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridParser', function ($filter, zemGridConstants, zemGridObject) { // eslint-disable-line max-len
 
     //
     // Service responsible for parsing Breakdown data (tree) to Grid rows
@@ -100,4 +100,4 @@ angular.module('one.legacy').factory('zemGridParser', ['$filter', 'zemGridConsta
         parse: parse,
         parseMetaData: parseMetaData,
     };
-}]);
+});

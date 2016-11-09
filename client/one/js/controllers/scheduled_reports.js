@@ -1,5 +1,5 @@
 /*globals angular,constants,options,moment*/
-angular.module('one.legacy').controller('ScheduledReportsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
+angular.module('one.legacy').controller('ScheduledReportsCtrl', function ($scope, $state, api) {
     $scope.reports = [];
     $scope.requestInProgress = false;
     $scope.errorMessage = '';
@@ -42,4 +42,4 @@ angular.module('one.legacy').controller('ScheduledReportsCtrl', ['$scope', '$sta
     $scope.getReports();
     $scope.setActiveTab();
 
-}]);
+});

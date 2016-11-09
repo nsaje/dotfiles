@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemAdGroupService', ['$http', '$q', 'zemEntityInstanceService', 'zemEntityActionsService', function ($http, $q, zemEntityInstanceService, zemEntityActionsService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemAdGroupService', function ($http, $q, zemEntityInstanceService, zemEntityActionsService) { // eslint-disable-line max-len
 
     var entityInstanceService = zemEntityInstanceService.createInstance(constants.entityType.AD_GROUP);
     var entityActionsService = zemEntityActionsService.createInstance(constants.entityType.AD_GROUP);
@@ -25,4 +25,4 @@ angular.module('one.services').service('zemAdGroupService', ['$http', '$q', 'zem
     this.onAdGroupCreated = entityInstanceService.onEntityCreated;
     this.onAdGroupUpdated = entityInstanceService.onEntityUpdated;
     this.onActionExecuted = entityActionsService.onActionExecuted;
-}]);
+});

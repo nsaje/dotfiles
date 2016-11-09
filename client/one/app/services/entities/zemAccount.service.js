@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemAccountService', ['$http', '$q', 'zemEntityInstanceService', 'zemEntityActionsService', function ($http, $q, zemEntityInstanceService, zemEntityActionsService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemAccountService', function ($http, $q, zemEntityInstanceService, zemEntityActionsService) { // eslint-disable-line max-len
 
     var entityInstanceService = zemEntityInstanceService.createInstance(constants.entityType.ACCOUNT);
     var entityActionsService = zemEntityActionsService.createInstance(constants.entityType.ACCOUNT);
@@ -37,4 +37,4 @@ angular.module('one.services').service('zemAccountService', ['$http', '$q', 'zem
 
         return deferred.promise;
     }
-}]);
+});

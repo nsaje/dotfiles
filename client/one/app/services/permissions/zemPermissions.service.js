@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemPermissions', ['zemUserService', function (zemUserService) {
+angular.module('one.services').service('zemPermissions', function (zemUserService) {
     this.hasPermission = hasPermission;
     this.isPermissionInternal = isPermissionInternal;
 
@@ -27,4 +27,4 @@ angular.module('one.services').service('zemPermissions', ['zemUserService', func
 
         return !user.permissions[permission];
     }
-}]);
+});

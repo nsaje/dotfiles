@@ -1,15 +1,15 @@
 /* globals angular */
 
-angular.module('one.legacy').controller('DevelopmentCtrl', ['$scope', '$state', function ($scope, $state) {
+angular.module('one.legacy').controller('DevelopmentCtrl', function ($scope, $state) {
     $scope.$on('$stateChangeSuccess', function () {
         if ($state.is('main.development.grid')
             && !$scope.hasPermission('zemauth.can_access_table_breakdowns_feature')) {
             $state.go('main');
         }
     });
-}]);
+});
 
-angular.module('one.legacy').controller('DevelopmentGridCtrl', ['$scope', '$timeout', 'zemGridConstants', 'zemDataSourceService', 'zemGridDebugEndpoint', function ($scope, $timeout, zemGridConstants, zemDataSourceService, zemGridDebugEndpoint) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('DevelopmentGridCtrl', function ($scope, $timeout, zemGridConstants, zemDataSourceService, zemGridDebugEndpoint) { // eslint-disable-line max-len
     var dataSource = zemDataSourceService.createInstance(zemGridDebugEndpoint.createEndpoint());
 
     var options = {
@@ -74,5 +74,5 @@ angular.module('one.legacy').controller('DevelopmentGridCtrl', ['$scope', '$time
             console.log($scope.grid.api.getSelection()); // eslint-disable-line
         });
     }
-}]);
+});
 

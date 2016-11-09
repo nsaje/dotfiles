@@ -1,7 +1,7 @@
 /*global $,angular,moment,constants*/
 'use strict';
 
-angular.module('one.legacy').directive('zemFocusSelect', ['$window', function ($window) {
+angular.module('one.legacy').directive('zemFocusSelect', function ($window) {
     return {
         restrict: 'A',
         link: function (scope, element, attrs) {
@@ -11,4 +11,4 @@ angular.module('one.legacy').directive('zemFocusSelect', ['$window', function ($
             }, 100);
         }
     };
-}]);
+});

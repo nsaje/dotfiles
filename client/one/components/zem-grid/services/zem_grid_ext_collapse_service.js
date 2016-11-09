@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridCollapseService', ['zemGridConstants', function (zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridCollapseService', function (zemGridConstants) { // eslint-disable-line max-len
 
     function CollapseService (grid) {
         var pubsub = grid.meta.pubsub;
@@ -62,4 +62,4 @@ angular.module('one.legacy').factory('zemGridCollapseService', ['zemGridConstant
             return new CollapseService(grid);
         }
     };
-}]);
+});

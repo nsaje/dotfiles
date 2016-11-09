@@ -1,7 +1,7 @@
 /* globals constants, defaults, options, angular, $ */
 'use strict';
 
-angular.module('one.legacy').directive('zemUploadStep2', ['$window', function ($window) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemUploadStep2', function ($window) { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -37,9 +37,9 @@ angular.module('one.legacy').directive('zemUploadStep2', ['$window', function ($
         },
         controller: 'ZemUploadStep2Ctrl',
     };
-}]);
+});
 
-angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config', '$interval', '$window', '$timeout', function ($scope, config, $interval, $window, $timeout) {
+angular.module('one.legacy').controller('ZemUploadStep2Ctrl', function ($scope, config, $interval, $window, $timeout) {
     var vm = this;
     vm.config = config;
 
@@ -398,4 +398,4 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', ['$scope', 'config
     }
 
     vm.startPolling();
-}]);
+});

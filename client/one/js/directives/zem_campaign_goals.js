@@ -1,7 +1,7 @@
 /* global angular,constants*/
 'use strict';
 
-angular.module('one.legacy').directive('zemCampaignGoals', ['$filter', function ($filter) {
+angular.module('one.legacy').directive('zemCampaignGoals', function ($filter) {
     return {
         restrict: 'E',
         scope: {
@@ -13,7 +13,7 @@ angular.module('one.legacy').directive('zemCampaignGoals', ['$filter', function 
             campaignGoals: '=goals',
         },
         templateUrl: '/partials/zem_campaign_goals.html',
-        controller: ['$uibModal', '$scope', function ($uibModal, $scope) {
+        controller: function ($uibModal, $scope) {
             $scope.campaignGoals = $scope.campaignGoals || [];
             $scope.i = 0;
 
@@ -172,6 +172,6 @@ angular.module('one.legacy').directive('zemCampaignGoals', ['$filter', function 
                 return false;
             };
 
-        }],
+        },
     };
-}]);
+});

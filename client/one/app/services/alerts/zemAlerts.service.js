@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemAlertsService', ['zemAlertsEndpoint', 'zemPubSubService', function (zemAlertsEndpoint, zemPubSubService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemAlertsService', function (zemAlertsEndpoint, zemPubSubService) { // eslint-disable-line max-len
     this.notify = notify;
     this.getAlerts = getAlerts;
     this.refreshAlerts = refreshAlerts;
@@ -51,4 +51,4 @@ angular.module('one.services').service('zemAlertsService', ['zemAlertsEndpoint',
     function onAlertsChange (callback) {
         return pubSub.register(EVENTS.ON_ALERTS_CHANGE, callback);
     }
-}]);
+});

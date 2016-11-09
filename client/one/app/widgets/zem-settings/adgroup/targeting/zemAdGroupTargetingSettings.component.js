@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemAdGroupTargetingSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/adgroup/targeting/zemAdGroupTargetingSettings.component.html',
-    controller: ['$q', 'config', 'zemPermissions', function ($q, config, zemPermissions) {
+    controller: function ($q, config, zemPermissions) {
         var $ctrl = this;
         $ctrl.options = options;
         $ctrl.config = config;
@@ -54,5 +54,5 @@ angular.module('one.widgets').component('zemAdGroupTargetingSettings', {
 
             return false;
         }
-    }],
+    },
 });

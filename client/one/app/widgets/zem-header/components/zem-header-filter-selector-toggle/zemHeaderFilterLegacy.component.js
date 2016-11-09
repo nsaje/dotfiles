@@ -5,9 +5,9 @@ angular.module('one.widgets').component('zemHeaderFilterLegacy', {
         showPublisherSelected: '=',
     },
     templateUrl: '/app/widgets/zem-header/components/zem-header-filter-selector-toggle/zemHeaderFilterLegacy.component.html', // eslint-disable-line max-len
-    controller: ['zemPermissions', function (zemPermissions) {
+    controller: function (zemPermissions) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
-    }],
+    },
 });

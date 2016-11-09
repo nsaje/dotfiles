@@ -4,9 +4,9 @@ angular.module('one.widgets').component('zemHeader', {
         showPublisherSelected: '=',
     },
     templateUrl: '/app/widgets/zem-header/zemHeader.component.html',
-    controller: ['config', 'zemPermissions', function (config, zemPermissions) {
+    controller: function (config, zemPermissions) {
         var $ctrl = this;
         $ctrl.config = config;
         $ctrl.hasPermission = zemPermissions.hasPermission;
-    }],
+    },
 });

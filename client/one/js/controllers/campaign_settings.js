@@ -1,5 +1,5 @@
 /* globals angular, constants, options */
-angular.module('one.legacy').controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemCampaignService', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemCampaignService, zemNavigationService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('CampaignSettingsCtrl', function ($scope, $state, $q, $timeout, api, zemCampaignService, zemNavigationService) { // eslint-disable-line max-len
     var campaignFreshSettings = $q.defer();
     $scope.settings = {};
     $scope.errors = {};
@@ -148,4 +148,4 @@ angular.module('one.legacy').controller('CampaignSettingsCtrl', ['$scope', '$sta
 
     $scope.getSettings();
     $scope.setActiveTab();
-}]);
+});

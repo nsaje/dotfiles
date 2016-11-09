@@ -1,6 +1,6 @@
 angular.module('one.widgets').component('zemHeaderBreadcrumb', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-breadcrumb/zemHeaderBreadcrumb.component.html',
-    controller: ['$document', 'config', 'zemPermissions', 'zemNavigationNewService', function ($document, config, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
+    controller: function ($document, config, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
 
         var $ctrl = this;
         $ctrl.config = config;
@@ -59,5 +59,5 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         function getItemHref (item) {
             return zemNavigationNewService.getEntityHref(item.entity, true);
         }
-    }]
+    }
 });

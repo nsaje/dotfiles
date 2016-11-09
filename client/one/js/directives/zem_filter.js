@@ -1,7 +1,7 @@
 /*global $,angular,constants*/
 'use strict';
 
-angular.module('one.legacy').directive('zemFilter', ['config', function (config) {
+angular.module('one.legacy').directive('zemFilter', function (config) {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_filter.html',
@@ -16,7 +16,7 @@ angular.module('one.legacy').directive('zemFilter', ['config', function (config)
                 e.stopPropagation();
             });
         },
-        controller: ['$scope', '$state', '$rootScope', 'zemFilterService', 'zemUserSettings', 'zemMediaSourcesService', 'zemAgenciesService', function ($scope, $state, $rootScope, zemFilterService, zemUserSettings, zemMediaSourcesService, zemAgenciesService) {
+        controller: function ($scope, $state, $rootScope, zemFilterService, zemUserSettings, zemMediaSourcesService, zemAgenciesService) {
             $scope.availableSources = [];
             $scope.agencies = [];
             $scope.config = config;
@@ -208,6 +208,6 @@ angular.module('one.legacy').directive('zemFilter', ['config', function (config)
             };
 
             $scope.init();
-        }]
+        }
     };
-}]);
+});

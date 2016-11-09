@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 'use strict';
 
-angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q', function ($http, $q) {
+angular.module('one.legacy').factory('zemUploadEndpointService', function ($http, $q) {
     function UploadEndpoint (baseUrl) {
 
         this.upload = function (data) {
@@ -427,4 +427,4 @@ angular.module('one.legacy').factory('zemUploadEndpointService', ['$http', '$q',
     return {
         createEndpoint: createEndpoint,
     };
-}]);
+});

@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemUserService', ['zemPubSubService', 'zemUserEndpoint', function (zemPubSubService, zemUserEndpoint) { // eslint-disable-line max-len
+angular.module('one.services').service('zemUserService', function (zemPubSubService, zemUserEndpoint) { // eslint-disable-line max-len
 
     var currentUser = null;
     var pubsub = zemPubSubService.createInstance();
@@ -78,4 +78,4 @@ angular.module('one.services').service('zemUserService', ['zemPubSubService', 'z
     function onCurrentUserUpdated (callback) {
         return pubsub.register(EVENTS.ON_CURRENT_USER_UPDATED, callback);
     }
-}]);
+});

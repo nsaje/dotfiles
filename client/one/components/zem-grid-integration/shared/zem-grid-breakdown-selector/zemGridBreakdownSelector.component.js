@@ -6,7 +6,7 @@ angular.module('one.legacy').component('zemGridBreakdownSelector', {
         api: '=',
     },
     templateUrl: '/components/zem-grid-integration/shared/zem-grid-breakdown-selector/zemGridBreakdownSelector.component.html',
-    controller: [function () {
+    controller: function () {
         var $ctrl = this;
 
         $ctrl.onChecked = onChecked;
@@ -60,6 +60,6 @@ angular.module('one.legacy').component('zemGridBreakdownSelector', {
             });
             $ctrl.api.setBreakdown(breakdown, true);
         }
-    }],
+    },
 });
 

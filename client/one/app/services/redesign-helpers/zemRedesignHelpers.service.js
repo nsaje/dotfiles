@@ -1,5 +1,5 @@
 // TODO: Temporary service used to handle redesing related permission. Remove once redesign is finished.
-angular.module('one.services').service('zemRedesignHelpersService', ['$window', 'zemPermissions', function ($window, zemPermissions) { // eslint-disable-line max-len
+angular.module('one.services').service('zemRedesignHelpersService', function ($window, zemPermissions) { // eslint-disable-line max-len
     this.setBodyThemeClass = setBodyThemeClass;
 
     function setBodyThemeClass () {
@@ -26,4 +26,4 @@ angular.module('one.services').service('zemRedesignHelpersService', ['$window', 
         }
         lastScrollTop = st;
     });
-}]);
+});

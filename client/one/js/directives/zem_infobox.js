@@ -1,7 +1,7 @@
 /*global $,angular,constants*/
 'use strict';
 
-angular.module('one.legacy').directive('zemInfobox', ['config', '$window', function (config, $window) {
+angular.module('one.legacy').directive('zemInfobox', function (config, $window) {
 
     return {
         restrict: 'E',
@@ -13,10 +13,10 @@ angular.module('one.legacy').directive('zemInfobox', ['config', '$window', funct
             stateId: '='
         },
         templateUrl: '/partials/zem_infobox.html',
-        controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
+        controller: function ($scope, $element, $attrs) {
             $scope.config = config;
             $scope.constants = constants;
-        }]
+        }
     };
 
-}]);
+});

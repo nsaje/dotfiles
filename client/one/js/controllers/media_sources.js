@@ -1,5 +1,5 @@
 /* globals moment,constants,options,angular */
-angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', '$timeout', 'zemDataFilterService', 'zemGridConstants', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, $timeout, zemDataFilterService, zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, $timeout, zemDataFilterService, zemGridConstants) { // eslint-disable-line max-len
     $scope.localStoragePrefix = null;
     $scope.chartMetrics = [];
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -332,4 +332,4 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', ['$scope', '$state',
     });
 
     init();
-}]);
+});

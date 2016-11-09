@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridHeader', ['$timeout', 'zemGridUIService', function ($timeout, zemGridUIService) {
+angular.module('one.legacy').directive('zemGridHeader', function ($timeout, zemGridUIService) {
 
     return {
         restrict: 'E',
@@ -105,7 +105,7 @@ angular.module('one.legacy').directive('zemGridHeader', ['$timeout', 'zemGridUIS
 
             resizeColumns();
         },
-        controller: ['$scope', function ($scope) {
+        controller: function ($scope) {
             var vm = this;
             var pubsub = this.grid.meta.pubsub;
             var columnsService = this.grid.meta.columnsService;
@@ -125,6 +125,6 @@ angular.module('one.legacy').directive('zemGridHeader', ['$timeout', 'zemGridUIS
                 // visibleColumns is shared with body to optimize virtual scroll performance
                 vm.grid.header.visibleColumns = vm.model.visibleColumns;
             }
-        }],
+        },
     };
-}]);
+});

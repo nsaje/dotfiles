@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/adgroup/autopilot/zemAdGroupAutopilotSettings.component.html',
-    controller: ['$q', 'config', 'zemPermissions', function ($q, config, zemPermissions) {
+    controller: function ($q, config, zemPermissions) {
         var $ctrl = this;
         $ctrl.config = config;
         $ctrl.options = options;
@@ -48,5 +48,5 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
             return 'Note: CPA optimization works best when at least ' +
                 '20 conversions have occurred in the past two weeks.';
         }
-    }],
+    },
 });

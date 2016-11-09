@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridEndpointApi', ['$q', '$http', 'zemGridEndpointApiConverter', function ($q, $http, zemGridEndpointApiConverter) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridEndpointApi', function ($q, $http, zemGridEndpointApiConverter) { // eslint-disable-line max-len
     //
     // EndpointApi - data retrieval (get) and settings persistence (save)
     //
@@ -111,4 +111,4 @@ angular.module('one.legacy').factory('zemGridEndpointApi', ['$q', '$http', 'zemG
             return new EndpointApi(metaData);
         }
     };
-}]);
+});

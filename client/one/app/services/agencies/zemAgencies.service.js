@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemAgenciesService', ['$http', '$q', 'zemAgenciesEndpoint', 'zemPubSubService', function ($http, $q, zemAgenciesEndpoint, zemPubSubService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemAgenciesService', function ($http, $q, zemAgenciesEndpoint, zemPubSubService) { // eslint-disable-line max-len
     this.getAgencies = getAgencies;
 
     this.onAgenciesUpdate = onAgenciesUpdate;
@@ -36,4 +36,4 @@ angular.module('one.services').service('zemAgenciesService', ['$http', '$q', 'ze
             pubSub.notify(EVENTS.ON_AGENCIES_UPDATE, agencies);
         });
     }
-}]);
+});

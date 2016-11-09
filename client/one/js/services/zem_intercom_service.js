@@ -1,7 +1,7 @@
 /*globals Intercom, angular*/
 'use strict';
 
-angular.module('one.legacy').factory('zemIntercomService', ['$window', function ($window) {
+angular.module('one.legacy').factory('zemIntercomService', function ($window) {
     var INTERCOM_APP_ID = 'anyekw96';
 
     function boot (user) {
@@ -46,4 +46,4 @@ angular.module('one.legacy').factory('zemIntercomService', ['$window', function 
         boot: boot,
         update: update
     };
-}]);
+});

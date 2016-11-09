@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemNavigationNewService', ['$rootScope', '$location', '$state', 'zemNavigationService', function ($rootScope, $location, $state, zemNavigationService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemNavigationNewService', function ($rootScope, $location, $state, zemNavigationService) { // eslint-disable-line max-len
     this.init = init;
     this.navigateTo = navigateTo;
     this.getEntityHref = getEntityHref;
@@ -246,4 +246,4 @@ angular.module('one.services').service('zemNavigationNewService', ['$rootScope',
     function notifyListeners (event, data) {
         $scope.$emit(event, data);
     }
-}]);
+});

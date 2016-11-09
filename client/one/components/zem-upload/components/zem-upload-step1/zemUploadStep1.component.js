@@ -1,7 +1,7 @@
 /* globals angular, moment */
 'use strict';
 
-angular.module('one.legacy').directive('zemUploadStep1', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemUploadStep1', function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -17,9 +17,9 @@ angular.module('one.legacy').directive('zemUploadStep1', [function () { // eslin
         templateUrl: '/components/zem-upload/components/zem-upload-step1/zemUploadStep1.component.html',
         controller: 'ZemUploadStep1Ctrl',
     };
-}]);
+});
 
-angular.module('one.legacy').controller('ZemUploadStep1Ctrl', ['config', '$scope', function (config, $scope) {
+angular.module('one.legacy').controller('ZemUploadStep1Ctrl', function (config, $scope) {
     var vm = this;
     vm.config = config;
 
@@ -61,4 +61,4 @@ angular.module('one.legacy').controller('ZemUploadStep1Ctrl', ['config', '$scope
             vm.requestInProgress = false;
         });
     };
-}]);
+});

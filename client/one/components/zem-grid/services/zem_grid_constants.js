@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridConstants', [function () {
+angular.module('one.legacy').factory('zemGridConstants', function () {
 
     var constants = {
         gridBodyRendering: {
@@ -89,4 +89,4 @@ angular.module('one.legacy').factory('zemGridConstants', [function () {
     );
 
     return constants;
-}]);
+});

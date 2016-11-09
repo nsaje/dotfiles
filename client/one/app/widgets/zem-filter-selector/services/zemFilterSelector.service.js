@@ -1,5 +1,5 @@
 /* globals options */
-angular.module('one.widgets').service('zemFilterSelectorService', ['$rootScope', '$state', '$filter', 'api', 'zemPermissions', 'zemDataFilterService', 'zemFilterSelectorSharedService', 'zemMediaSourcesService', 'zemAgenciesService', 'zemPubSubService', function ($rootScope, $state, $filter, api, zemPermissions, zemDataFilterService, zemFilterSelectorSharedService, zemMediaSourcesService, zemAgenciesService, zemPubSubService) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemFilterSelectorService', function ($rootScope, $state, $filter, api, zemPermissions, zemDataFilterService, zemFilterSelectorSharedService, zemMediaSourcesService, zemAgenciesService, zemPubSubService) { // eslint-disable-line max-len
     this.init = init;
     this.getVisibleSections = getVisibleSections;
     this.getAppliedConditions = getAppliedConditions;
@@ -306,4 +306,4 @@ angular.module('one.widgets').service('zemFilterSelectorService', ['$rootScope',
             pubSub.notify(EVENTS.ON_SECTIONS_UPDATE, getVisibleSections());
         });
     }
-}]);
+});

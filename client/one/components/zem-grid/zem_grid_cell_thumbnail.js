@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCellThumbnail', [function () {
+angular.module('one.legacy').directive('zemGridCellThumbnail', function () {
 
     return {
         restrict: 'E',
@@ -15,6 +15,6 @@ angular.module('one.legacy').directive('zemGridCellThumbnail', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_thumbnail.html',
-        controller: [function () {}],
+        controller: function () {},
     };
-}]);
+});

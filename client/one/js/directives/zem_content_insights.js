@@ -11,7 +11,7 @@ angular.module('one.legacy').directive('zemContentInsights', function () {
             worstPerformerRows: '=',
         },
         templateUrl: '/partials/zem_content_insights.html',
-        controller: ['$scope', '$element', '$window', '$timeout', function ($scope, $element, $window, $timeout) {
+        controller: function ($scope, $element, $window, $timeout) {
             $scope.expanded = true;
             $scope.updateTableState = function () {
                 // table can be either expanded(best and worst performers displayed side-by-side)
@@ -66,6 +66,6 @@ angular.module('one.legacy').directive('zemContentInsights', function () {
 
             $timeout($scope.updateTableState, 0);
             $timeout($scope.showBestPerformersCollapsed, 0);
-        }],
+        },
     };
 });

@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemEntityInstanceEndpoint', ['$http', '$q', 'zemEntityConverter', function ($http, $q, zemEntityConverter) { // eslint-disable-line max-len
+angular.module('one.services').service('zemEntityInstanceEndpoint', function ($http, $q, zemEntityConverter) { // eslint-disable-line max-len
 
     //
     // Public API
@@ -89,4 +89,4 @@ angular.module('one.services').service('zemEntityInstanceEndpoint', ['$http', '$
     function getSettingsUrl (entityType, id) {
         return mapSettingsUrls[entityType].replace('$(id)', id);
     }
-}]);
+});

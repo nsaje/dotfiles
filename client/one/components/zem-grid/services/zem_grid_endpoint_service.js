@@ -3,7 +3,7 @@
 
 'use strict';
 
-angular.module('one.legacy').factory('zemGridEndpointService', ['$http', '$q', 'zemGridEndpointApi', 'zemGridEndpointBreakdowns', 'zemGridEndpointColumns', 'zemNavigationService', 'zemGridEndpointApiConverter', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemNavigationService, zemGridEndpointApiConverter) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridEndpointService', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemNavigationService, zemGridEndpointApiConverter) { // eslint-disable-line max-len
 
     function EndpointService (metaData) {
 
@@ -150,4 +150,4 @@ angular.module('one.legacy').factory('zemGridEndpointService', ['$http', '$q', '
         createEndpoint: createEndpoint,
         createMetaData: createMetaData,
     };
-}]);
+});

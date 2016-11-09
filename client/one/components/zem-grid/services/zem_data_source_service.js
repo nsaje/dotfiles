@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$http', '$q', 'zemDataFilterService', function ($rootScope, $http, $q, zemDataFilterService) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemDataSourceService', function ($rootScope, $http, $q, zemDataFilterService) { // eslint-disable-line max-len
 
     //
     // DataSource is responsible for fetching data with help of passed Endpoint and
@@ -531,4 +531,4 @@ angular.module('one.legacy').factory('zemDataSourceService', ['$rootScope', '$ht
             return new DataSource(endpoint, $scope);
         },
     };
-}]);
+});

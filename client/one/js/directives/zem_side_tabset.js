@@ -10,7 +10,7 @@ angular.module('one.legacy').directive('zemSideTabset', function () {
             isPermissionInternal: '=zemIsPermissionInternal',
         },
         templateUrl: '/partials/zem_side_tabset.html',
-        controller: ['$scope', function ($scope) {
+        controller: function ($scope) {
             $scope.getSideTabs = function () {
                 return [
                     {
@@ -46,6 +46,6 @@ angular.module('one.legacy').directive('zemSideTabset', function () {
             $scope.tabs = $scope.getSideTabs();
             $scope.visibleTabCount = $scope.countVisibleTabs($scope.tabs);
             $scope.selected = $scope.tabs[0];
-        }],
+        },
     };
 });

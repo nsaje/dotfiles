@@ -15,7 +15,7 @@ angular.module('one.legacy').directive('zemDropdown', function () {
             noMatchesPlaceholder: '@zemNoMatchesPlaceholder'
         },
         templateUrl: '/partials/zem_dropdown.html',
-        controller: ['$scope', '$compile', '$element', '$attrs', function ($scope, $compile, $element, $attrs) {
+        controller: function ($scope, $compile, $element, $attrs) {
             var formatSelection = function (object) {
                 var option;
                 $scope.dropdownOptions.forEach(function (item) {
@@ -71,6 +71,6 @@ angular.module('one.legacy').directive('zemDropdown', function () {
             $scope.$watch('checkDisabled()', function (newValue, oldValue) {
                 $scope.disabledTitleOrUndefined = $scope.checkDisabled() ? $scope.disabledTitle : undefined;
             });
-        }]
+        }
     };
 });

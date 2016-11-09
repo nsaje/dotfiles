@@ -1,7 +1,7 @@
 /*globals angular*/
 'use strict';
 
-angular.module('one.legacy').directive('zemCustomAudiencesList', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemCustomAudiencesList', function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -14,9 +14,9 @@ angular.module('one.legacy').directive('zemCustomAudiencesList', [function () { 
         controllerAs: 'ctrl',
         controller: 'ZemCustomAudiencesListCtrl',
     };
-}]);
+});
 
-angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['api', 'zemFilterService', '$scope', '$uibModal', function (api, zemFilterService, $scope, $uibModal) {
+angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', function (api, zemFilterService, $scope, $uibModal) {
     var vm = this;
     vm.audiences = [];
     vm.listRequestInProgress = false;
@@ -118,4 +118,4 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', ['api', 'z
     }
 
     init();
-}]);
+});

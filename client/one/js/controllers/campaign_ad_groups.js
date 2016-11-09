@@ -1,5 +1,5 @@
 /* globals moment,constants,options,angular */
-angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemAdGroupService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataSourceService', 'zemGridEndpointService', 'zemDataFilterService', 'zemGridConstants', function ($location, $scope, $state, $timeout, api, zemAdGroupService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService, zemDataFilterService, zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($location, $scope, $state, $timeout, api, zemAdGroupService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService, zemDataFilterService, zemGridConstants) { // eslint-disable-line max-len
     $scope.addGroupRequestInProgress = false;
     $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -289,4 +289,4 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', ['$location', '$
     }, true);
 
     $scope.init();
-}]);
+});

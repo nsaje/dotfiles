@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemEntityBulkActionsEndpoint', ['$http', '$q', function ($http, $q) { // eslint-disable-line max-len
+angular.module('one.services').service('zemEntityBulkActionsEndpoint', function ($http, $q) { // eslint-disable-line max-len
 
     //
     // Public API
@@ -64,4 +64,4 @@ angular.module('one.services').service('zemEntityBulkActionsEndpoint', ['$http',
 
         return '/api/' + level + '/' + id + '/' + breakdownUrlMap[breakdown] + '/' + action + '/';
     }
-}]);
+});

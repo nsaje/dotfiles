@@ -1,9 +1,9 @@
 /* global angular */
 
-angular.module('one').config(['$urlRouterProvider', function ($urlRouterProvider) {
-    $urlRouterProvider.when('/signout', ['$location', function ($location) {
+angular.module('one').config(function ($urlRouterProvider) {
+    $urlRouterProvider.when('/signout', function ($location) {
         window.location = $location.absUrl();
-    }]);
+    });
 
     $urlRouterProvider.when('/ad_groups/:adGroupId/ads_plus', '/ad_groups/:adGroupId/ads');
 
@@ -23,4 +23,4 @@ angular.module('one').config(['$urlRouterProvider', function ($urlRouterProvider
 
         return false;
     });
-}]);
+});

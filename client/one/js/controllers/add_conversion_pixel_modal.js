@@ -1,5 +1,5 @@
 /* globals angular */
-angular.module('one.legacy').controller('AddConversionPixelModalCtrl', ['$scope', 'api', 'audiencePixel',  function ($scope, api, audiencePixel) {
+angular.module('one.legacy').controller('AddConversionPixelModalCtrl', function ($scope, api, audiencePixel) {
     $scope.inProgress = false;
     $scope.pixel = {name: '', audienceEnabled: false};
     $scope.audiencePixel = audiencePixel;
@@ -29,4 +29,4 @@ angular.module('one.legacy').controller('AddConversionPixelModalCtrl', ['$scope'
         $scope.error = false;
         $scope.errorMessage = '';
     };
-}]);
+});

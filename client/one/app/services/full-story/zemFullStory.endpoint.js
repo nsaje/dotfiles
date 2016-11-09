@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemFullStoryEndpoint', ['$http', function ($http) {
+angular.module('one.services').service('zemFullStoryEndpoint', function ($http) {
     this.allowLivestream = allowLivestream;
 
     function allowLivestream (sessionUrl) {
@@ -7,4 +7,4 @@ angular.module('one.services').service('zemFullStoryEndpoint', ['$http', functio
             session_url: sessionUrl,
         });
     }
-}]);
+});

@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCellSubmissionStatus', [function () {
+angular.module('one.legacy').directive('zemGridCellSubmissionStatus', function () {
 
     return {
         restrict: 'E',
@@ -15,7 +15,7 @@ angular.module('one.legacy').directive('zemGridCellSubmissionStatus', [function 
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_submission_status.html',
-        controller: ['$scope', function ($scope) {
+        controller: function ($scope) {
             var vm = this;
 
             $scope.$watch('ctrl.row', update);
@@ -45,6 +45,6 @@ angular.module('one.legacy').directive('zemGridCellSubmissionStatus', [function 
                     vm.noSubmissions = submissions.length === 0;
                 }
             }
-        }],
+        },
     };
-}]);
+});

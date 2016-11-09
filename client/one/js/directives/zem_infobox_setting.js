@@ -1,7 +1,7 @@
 /*global $,angular,constants*/
 'use strict';
 
-angular.module('one.legacy').directive('zemInfoboxSetting', ['config', '$window', function (config, $window) {
+angular.module('one.legacy').directive('zemInfoboxSetting', function (config, $window) {
 
     return {
         restrict: 'E',
@@ -19,7 +19,7 @@ angular.module('one.legacy').directive('zemInfoboxSetting', ['config', '$window'
             tooltipText: '=',
         },
         templateUrl: '/partials/zem_infobox_setting.html',
-        controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
+        controller: function ($scope, $element, $attrs) {
             $scope.config = config;
             $scope.constants = constants;
             $scope.detailsVisible = false;
@@ -41,6 +41,6 @@ angular.module('one.legacy').directive('zemInfoboxSetting', ['config', '$window'
                 $scope.detailsVisible = false;
             };
 
-        }]
+        }
     };
-}]);
+});

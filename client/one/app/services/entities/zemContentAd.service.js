@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemContentAdService', ['$http', '$q', 'zemEntityActionsService', function ($http, $q, zemEntityActionsService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemContentAdService', function ($http, $q, zemEntityActionsService) { // eslint-disable-line max-len
 
     var entityActionsService = zemEntityActionsService.createInstance(constants.entityType.CONTENT_AD);
 
@@ -9,4 +9,4 @@ angular.module('one.services').service('zemContentAdService', ['$http', '$q', 'z
 
     this.getAction = entityActionsService.getAction;
     this.onActionExecuted = entityActionsService.onActionExecuted;
-}]);
+});

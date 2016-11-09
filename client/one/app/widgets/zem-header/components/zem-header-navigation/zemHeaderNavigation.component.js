@@ -1,6 +1,6 @@
 angular.module('one.widgets').component('zemHeaderNavigation', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-navigation/zemHeaderNavigation.component.html',
-    controller: ['$scope', '$element', '$timeout', 'config', 'hotkeys', function ($scope, $element, $timeout, config, hotkeys) { // eslint-disable-line max-len
+    controller: function ($scope, $element, $timeout, config, hotkeys) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.config = config;
         $ctrl.open = false;
@@ -35,5 +35,5 @@ angular.module('one.widgets').component('zemHeaderNavigation', {
                 $element.find('zem-navigation input').triggerHandler('change');
             }
         }
-    }]
+    }
 });

@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCellInternalLink', [function () {
+angular.module('one.legacy').directive('zemGridCellInternalLink', function () {
 
     return {
         restrict: 'E',
@@ -15,7 +15,7 @@ angular.module('one.legacy').directive('zemGridCellInternalLink', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_internal_link.html',
-        controller: ['$scope', 'zemGridConstants', function ($scope, zemGridConstants) {
+        controller: function ($scope, zemGridConstants) {
             var vm = this;
 
             // Set some dummy values to initialize zem-in-link
@@ -42,6 +42,6 @@ angular.module('one.legacy').directive('zemGridCellInternalLink', [function () {
                 default: return 'unknown';
                 }
             }
-        }],
+        },
     };
-}]);
+});

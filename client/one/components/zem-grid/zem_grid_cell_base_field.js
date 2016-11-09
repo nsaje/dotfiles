@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCellBaseField', [function () {
+angular.module('one.legacy').directive('zemGridCellBaseField', function () {
 
     return {
         restrict: 'E',
@@ -15,7 +15,7 @@ angular.module('one.legacy').directive('zemGridCellBaseField', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_base_field.html',
-        controller: ['$scope', 'zemGridConstants', 'zemGridDataFormatter', 'zemGridUIService', function ($scope, zemGridConstants, zemGridDataFormatter, zemGridUIService) { // eslint-disable-line max-len
+        controller: function ($scope, zemGridConstants, zemGridDataFormatter, zemGridUIService) { // eslint-disable-line max-len
             var vm = this;
 
             $scope.$watch('ctrl.row', update);
@@ -43,6 +43,6 @@ angular.module('one.legacy').directive('zemGridCellBaseField', [function () {
                 }
                 return !(vm.row.level === zemGridConstants.gridRowLevel.FOOTER && vm.column.data.totalRow === false);
             }
-        }],
+        },
     };
-}]);
+});

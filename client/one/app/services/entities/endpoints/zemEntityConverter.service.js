@@ -1,6 +1,6 @@
 /* globals options */
 
-angular.module('one.services').service('zemEntityConverter', ['$http', '$q', 'zemUtils', function ($http, $q, zemUtils) { // eslint-disable-line max-len
+angular.module('one.services').service('zemEntityConverter', function ($http, $q, zemUtils) { // eslint-disable-line max-len
     //
     // API Converter - converting local entity data to api format and vice-versa (variable format, etc.)
     // TODO: Refactor - Current solution hides mismatch between API and local data, however the best solution
@@ -141,4 +141,4 @@ angular.module('one.services').service('zemEntityConverter', ['$http', '$q', 'ze
         delete errors.dailyBudgetCc;
         delete errors.autopilotDailyBudget;
     }
-}]);
+});

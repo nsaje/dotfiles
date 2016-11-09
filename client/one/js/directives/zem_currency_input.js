@@ -1,7 +1,7 @@
 /*globals angular,$*/
 'use strict';
 
-angular.module('one.legacy').directive('zemCurrencyInput', ['$filter', function ($filter) {
+angular.module('one.legacy').directive('zemCurrencyInput', function ($filter) {
     return {
         require: 'ngModel',
         restrict: 'A',
@@ -155,4 +155,4 @@ angular.module('one.legacy').directive('zemCurrencyInput', ['$filter', function 
             };
         }
     };
-}]);
+});

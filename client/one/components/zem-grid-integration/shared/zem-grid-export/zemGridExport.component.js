@@ -5,7 +5,7 @@ angular.module('one.legacy').component('zemGridExport', {
         api: '=',
     },
     templateUrl: '/components/zem-grid-integration/shared/zem-grid-export/zemGridExport.component.html',
-    controller: ['$scope', '$uibModal', 'zemGridExportOptions', function ($scope, $uibModal, zemGridExportOptions) {
+    controller: function ($scope, $uibModal, zemGridExportOptions) {
         var $ctrl = this;
 
         $ctrl.showScheduledReportModal = showScheduledReportModal;
@@ -64,5 +64,5 @@ angular.module('one.legacy').component('zemGridExport', {
                 return modalInstance;
             }
         }
-    }]
+    }
 });

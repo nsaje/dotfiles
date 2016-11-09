@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemDemoRequest', {
         modalInstance: '<',
     },
     templateUrl: '/app/widgets/zem-demo-request/zemDemoRequest.component.html',
-    controller: ['zemDemoRequestService', function (zemDemoRequestService) {
+    controller: function (zemDemoRequestService) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
@@ -26,5 +26,5 @@ angular.module('one.widgets').component('zemDemoRequest', {
                 $ctrl.closeModal = $ctrl.modalInstance.close;
             }
         };
-    }],
+    },
 });

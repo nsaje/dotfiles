@@ -1,7 +1,7 @@
 /* globals angular,constants */
 'use strict';
 
-angular.module('one.legacy').directive('zemFacebookPage', ['$parse', function ($parse) {
+angular.module('one.legacy').directive('zemFacebookPage', function ($parse) {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_facebook_page.html',
@@ -14,7 +14,7 @@ angular.module('one.legacy').directive('zemFacebookPage', ['$parse', function ($
             facebookPageChanged: '=zemFacebookPageChanged',
             settings: '=zemSettings',
         },
-        controller: ['$scope', function ($scope) {
+        controller: function ($scope) {
             $scope.constants = constants;
 
             $scope.onFacebookPageChange = function () {
@@ -26,6 +26,6 @@ angular.module('one.legacy').directive('zemFacebookPage', ['$parse', function ($
                 $scope.settings.facebookStatus = constants.facebookStatus.EMPTY;
                 $scope.facebookPageChanged = true;
             };
-        }]
+        }
     };
-}]);
+});

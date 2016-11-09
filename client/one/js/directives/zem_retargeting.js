@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemRetargeting', ['config', 'zemFilterService', '$state', function (config, zemFilterService, $state) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemRetargeting', function (config, zemFilterService, $state) { // eslint-disable-line max-len
     return {
         restrict: 'E',
         scope: {
@@ -10,7 +10,7 @@ angular.module('one.legacy').directive('zemRetargeting', ['config', 'zemFilterSe
             retargetableAdgroups: '=zemRetargetableAdgroups',
         },
         templateUrl: '/partials/zem_retargeting.html',
-        controller: ['$scope', function ($scope) {
+        controller: function ($scope) {
             $scope.config = config;
             $scope.selected = {adgroup: undefined};
 
@@ -60,6 +60,6 @@ angular.module('one.legacy').directive('zemRetargeting', ['config', 'zemFilterSe
                 $scope.selectedAdgroupIds.push(adgroup.id);
                 $scope.selected.adgroup = undefined;
             };
-        }],
+        },
     };
-}]);
+});

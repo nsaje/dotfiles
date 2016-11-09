@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemEntityService', ['$http', '$q', 'zemAccountService', 'zemCampaignService', 'zemAdGroupService', 'zemContentAdService', function ($http, $q, zemAccountService, zemCampaignService, zemAdGroupService, zemContentAdService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemEntityService', function ($http, $q, zemAccountService, zemCampaignService, zemAdGroupService, zemContentAdService) { // eslint-disable-line max-len
     // zemEntityService - Helper for manipulating entities and executing actions
     // It provides standard methods (get/update/create) and actions (bulk) that are bridged to specific entity service
 
@@ -64,4 +64,4 @@ angular.module('one.services').service('zemEntityService', ['$http', '$q', 'zemA
         if (breakdown === constants.breakdown.AD_GROUP) return constants.entityType.AD_GROUP;
         if (breakdown === constants.breakdown.CONTENT_AD) return constants.entityType.CONTENT_AD;
     }
-}]);
+});

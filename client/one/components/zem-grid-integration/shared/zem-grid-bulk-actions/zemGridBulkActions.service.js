@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'api', 'zemEntityService', 'zemContentAdService', 'zemGridEndpointColumns', 'zemGridConstants', 'zemAlertsService', function ($window, api, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService) {
+angular.module('one.legacy').factory('zemGridBulkActionsService', function ($window, api, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService) {
 
     function BulkActionsService (gridApi) {
         this.getActions = getActions;
@@ -257,4 +257,4 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', ['$window', 'a
             return new BulkActionsService(gridApi);
         }
     };
-}]);
+});

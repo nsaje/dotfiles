@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridRowBreakdown', [function () {
+angular.module('one.legacy').directive('zemGridRowBreakdown', function () {
 
     return {
         restrict: 'E',
@@ -13,7 +13,7 @@ angular.module('one.legacy').directive('zemGridRowBreakdown', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_row_breakdown.html',
-        controller: ['config', 'zemGridConstants', 'zemGridUIService', function (config, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
+        controller: function (config, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
             var vm = this;
             vm.config = config;
             vm.loadMore = loadMore;
@@ -39,6 +39,6 @@ angular.module('one.legacy').directive('zemGridRowBreakdown', [function () {
                 if (pagination.count > 0) return 'All data loaded';
                 if (pagination.count <= 0) return 'No data available';
             }
-        }],
+        },
     };
-}]);
+});

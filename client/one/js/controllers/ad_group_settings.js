@@ -1,5 +1,5 @@
 /* globals angular, constants, options, moment */
-angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemAdGroupService', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemAdGroupService, regions, zemNavigationService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AdGroupSettingsCtrl', function ($scope, $state, $q, $timeout, api, zemAdGroupService, regions, zemNavigationService) { // eslint-disable-line max-len
     $scope.adGroupId = $state.params.id;
     $scope.settings = {};
     $scope.loadRequestInProgress = true;
@@ -321,4 +321,4 @@ angular.module('one.legacy').controller('AdGroupSettingsCtrl', ['$scope', '$stat
     };
 
     init();
-}]);
+});

@@ -1,7 +1,7 @@
 /*global $,moment,constants,angular*/
 'use strict';
 
-angular.module('one.legacy').directive('zemChart', ['config', '$compile', '$window', function (config, $compile, $window) {
+angular.module('one.legacy').directive('zemChart', function (config, $compile, $window) {
     return {
         restrict: 'E',
         scope: {
@@ -16,7 +16,7 @@ angular.module('one.legacy').directive('zemChart', ['config', '$compile', '$wind
             isLoading: '=zemIsLoading'
         },
         templateUrl: '/partials/zem_chart.html',
-        controller: ['$scope', '$element', '$attrs', '$http', 'zemUserSettings', 'zemPermissions', function ($scope, $element, $attrs, $http, zemUserSettings, zemPermissions) {
+        controller: function ($scope, $element, $attrs, $http, zemUserSettings, zemPermissions) {
             var totalsColor, goalsColor, colors;
             var commonYAxisMetricIds = ['clicks', 'visits', 'pageviews'];
             var usedColors = {};
@@ -570,6 +570,6 @@ angular.module('one.legacy').directive('zemChart', ['config', '$compile', '$wind
                     }
                 }
             };
-        }]
+        }
     };
-}]);
+});

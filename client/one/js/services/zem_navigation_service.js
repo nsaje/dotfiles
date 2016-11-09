@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', function ($rootScope, $q, $location, api) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemNavigationService', function ($rootScope, $q, $location, api) { // eslint-disable-line max-len
 
     var accounts = [];
 
@@ -270,5 +270,5 @@ angular.module('one.legacy').factory('zemNavigationService', ['$rootScope', '$q'
             return accounts;
         },
     };
-}]);
+});
 

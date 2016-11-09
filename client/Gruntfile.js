@@ -187,6 +187,16 @@ module.exports = function (grunt) {
                 ]
             }
         },
+        ngAnnotate: {
+            options: {
+                singleQuotes: true
+            },
+            one: {
+                files: {
+                    'dist/one/zemanta-one.js': ['dist/one/zemanta-one.js']
+                }
+            }
+        },
         uglify: {
             options: {
                 sourceMap: true
@@ -238,7 +248,7 @@ module.exports = function (grunt) {
                     'one/**/*.js',
                     '!one/**/*.spec.js',
                 ],
-                tasks: ['concat:one_js', 'clean:tmp']
+                tasks: ['concat:one_js', 'ngAnnotate:one', 'clean:tmp']
             },
             one_styles: {
                 files: [
@@ -368,7 +378,7 @@ module.exports = function (grunt) {
             tmp: ['dist/tmp'],
         },
         build: {
-            one: ['html2js:one', 'concat:one_js', 'concat:one_styles', 'less:one', 'postcss:one', 'copy:one', 'clean:tmp'],
+            one: ['html2js:one', 'concat:one_js', 'ngAnnotate:one', 'concat:one_styles', 'less:one', 'postcss:one', 'copy:one', 'clean:tmp'],
             one_lib: ['bower_concat:one_lib', 'cssmin:one_lib', 'copy:one_lib'],
             actionlog: ['concat:actionlog', 'less:actionlog', 'copy:actionlog'],
             actionlog_lib: ['bower_concat:actionlog_lib', 'cssmin:actionlog_lib'],

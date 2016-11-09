@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCellStateSelector', [function () {
+angular.module('one.legacy').directive('zemGridCellStateSelector', function () {
 
     return {
         restrict: 'E',
@@ -15,7 +15,7 @@ angular.module('one.legacy').directive('zemGridCellStateSelector', [function () 
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_state_selector.html',
-        controller: ['$scope', 'zemGridConstants', 'zemGridStateAndStatusHelpers', function ($scope, zemGridConstants, zemGridStateAndStatusHelpers) { // eslint-disable-line max-len
+        controller: function ($scope, zemGridConstants, zemGridStateAndStatusHelpers) { // eslint-disable-line max-len
             var vm = this;
 
             vm.isSaveRequestInProgress = vm.grid.meta.dataService.isSaveRequestInProgress;
@@ -84,6 +84,6 @@ angular.module('one.legacy').directive('zemGridCellStateSelector', [function () 
             function isFieldVisible (rowLevel) {
                 return rowLevel === zemGridConstants.gridRowLevel.BASE;
             }
-        }],
+        },
     };
-}]);
+});

@@ -7,7 +7,7 @@ angular.module('one.widgets').component('zemAccountGeneralSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/account/general/zemAccountGeneralSettings.component.html',
-    controller: ['zemPermissions', function (zemPermissions) {
+    controller: function (zemPermissions) {
         var $ctrl = this;
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -54,5 +54,5 @@ angular.module('one.widgets').component('zemAccountGeneralSettings', {
                 obj: obj,
             };
         };
-    }],
+    },
 });

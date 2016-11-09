@@ -1,6 +1,6 @@
 angular.module('one.widgets').component('zemNavigation', {
     templateUrl: '/app/widgets/zem-navigation/zemNavigation.component.html',
-    controller: ['$scope', '$element', '$timeout', 'hotkeys', 'zemPermissions', 'zemNavigationUtils', 'zemNavigationNewService', 'zemFilterService', function ($scope, $element, $timeout, hotkeys, zemPermissions, zemNavigationUtils, zemNavigationNewService, zemFilterService) { // eslint-disable-line max-len
+    controller: function ($scope, $element, $timeout, hotkeys, zemPermissions, zemNavigationUtils, zemNavigationNewService, zemFilterService) { // eslint-disable-line max-len
         var KEY_UP_ARROW = 38;
         var KEY_DOWN_ARROW = 40;
         var KEY_ENTER = 13;
@@ -171,5 +171,5 @@ angular.module('one.widgets').component('zemNavigation', {
         function navigateTo (entity) {
             zemNavigationNewService.navigateTo(entity);
         }
-    }]
+    }
 });

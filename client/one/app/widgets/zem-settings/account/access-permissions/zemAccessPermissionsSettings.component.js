@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemAccessPermissionsSettings', {
         entity: '<',
     },
     templateUrl: '/app/widgets/zem-settings/account/access-permissions/zemAccessPermissionsSettings.component.html',
-    controller: ['api', '$state', 'zemPermissions', 'zemUserService', function (api, $state, zemPermissions, zemUserService) { // eslint-disable-line max-len
+    controller: function (api, $state, zemPermissions, zemUserService) { // eslint-disable-line max-len
 
         // TODO: update settings after user added/removed
 
@@ -161,5 +161,5 @@ angular.module('one.widgets').component('zemAccessPermissionsSettings', {
                 user.requestInProgress = false;
             });
         }
-    }],
+    },
 });

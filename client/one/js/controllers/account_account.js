@@ -1,5 +1,5 @@
 /* globals angular,constants,options,moment,$ */
-angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state', '$q', '$uibModal', 'api', 'zemAccountService', 'zemUserService', 'zemNavigationService', '$timeout', function ($scope, $state, $q, $uibModal, api, zemAccountService, zemUserService, zemNavigationService, $timeout) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AccountAccountCtrl', function ($scope, $state, $q, $uibModal, api, zemAccountService, zemUserService, zemNavigationService, $timeout) { // eslint-disable-line max-len
 
     $scope.canEditAccount = false;
     $scope.salesReps = [];
@@ -140,7 +140,7 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
         if ($scope.facebookPageChangedInfo.changed) {
             var facebookPageChangedModalInstance = $uibModal.open({
                 templateUrl: '/partials/facebook_page_changed_modal.html',
-                controller: ['$scope', function ($scope) {
+                controller: function ($scope) {
                     $scope.ok = function () {
                         $scope.$close();
                     };
@@ -148,7 +148,7 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
                     $scope.cancel = function () {
                         $scope.$dismiss('cancel');
                     };
-                }],
+                },
                 size: 'lg',
             });
             facebookPageChangedModalInstance.result.then(function () {
@@ -394,4 +394,4 @@ angular.module('one.legacy').controller('AccountAccountCtrl', ['$scope', '$state
     };
 
     $scope.init();
-}]);
+});

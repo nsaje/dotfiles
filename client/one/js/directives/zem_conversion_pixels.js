@@ -1,7 +1,7 @@
 /*global $,angular,constants*/
 'use strict';
 
-angular.module('one.legacy').directive('zemConversionPixels', ['config', '$window', function (config, $window) {
+angular.module('one.legacy').directive('zemConversionPixels', function (config, $window) {
 
     return {
         restrict: 'E',
@@ -11,7 +11,7 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
             account: '=zemAccount'
         },
         templateUrl: '/partials/zem_conversion_pixels.html',
-        controller: ['$scope', '$element', '$uibModal', 'api', 'zemFilterService', function ($scope, $element, $uibModal, api, zemFilterService) {
+        controller: function ($scope, $element, $uibModal, api, zemFilterService) {
             $scope.conversionPixels = [];
             $scope.listInProgress = false;
             $scope.listError = false;
@@ -149,6 +149,6 @@ angular.module('one.legacy').directive('zemConversionPixels', ['config', '$windo
             };
 
             $scope.getConversionPixels();
-        }]
+        }
     };
-}]);
+});

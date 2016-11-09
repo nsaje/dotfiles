@@ -1,6 +1,5 @@
 /* globals options, angular, constants, moment */
-angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', '$state', '$location', '$q', 'api', 'zemContentAdService', 'zemGridConstants', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemDataFilterService', function ($scope, $window, $state, $location, $q, api, zemContentAdService, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService) { // eslint-disable-line max-len
-
+angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $window, $state, $location, $q, api, zemContentAdService, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService) { // eslint-disable-line max-len
     $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -222,4 +221,4 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', ['$scope', '$window', 
     };
 
     init();
-}]);
+});

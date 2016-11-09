@@ -9,7 +9,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         entityId: '<',
     },
     templateUrl: '/app/widgets/zem-settings/container/zemSettingsContainer.component.html',
-    controller: ['$transclude', '$element', '$q', 'zemPermissions', 'zemEntityService', 'zemNavigationService', function ($transclude, $element, $q, zemPermissions, zemEntityService, zemNavigationService) { // eslint-disable-line max-len
+    controller: function ($transclude, $element, $q, zemPermissions, zemEntityService, zemNavigationService) { // eslint-disable-line max-len
         var STATUS_CODE_NONE = 0;
         var STATUS_CODE_IN_PROGRESS = 1;
         var STATUS_CODE_SUCCESS = 2;
@@ -185,5 +185,5 @@ angular.module('one.widgets').component('zemSettingsContainer', {
             if ($ctrl.entityType === constants.entityType.CAMPAIGN) return TOOLTIP_RESTORE_CAMPAIGN;
             if ($ctrl.entityType === constants.entityType.AD_GROUP) return TOOLTIP_RESTORE_ADGROUP;
         }
-    }],
+    },
 });

@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemEntityActionsService', ['$http', '$q', 'zemEntityActionsEndpoint', 'zemEntityBulkActionsEndpoint', 'zemPubSubService', function ($http, $q, zemEntityActionsEndpoint, zemEntityBulkActionsEndpoint, zemPubSubService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemEntityActionsService', function ($http, $q, zemEntityActionsEndpoint, zemEntityBulkActionsEndpoint, zemPubSubService) { // eslint-disable-line max-len
 
     function EntityActionsService (entityType) {
         var pubsub = zemPubSubService.createInstance();
@@ -168,4 +168,4 @@ angular.module('one.services').service('zemEntityActionsService', ['$http', '$q'
             return new EntityActionsService(entityType);
         }
     };
-}]);
+});

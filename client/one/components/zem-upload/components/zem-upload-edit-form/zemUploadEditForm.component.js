@@ -1,7 +1,7 @@
 /* globals options, defaults, constants, angular, $ */
 'use strict';
 
-angular.module('one.legacy').directive('zemUploadEditForm', [function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemUploadEditForm', function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -30,9 +30,9 @@ angular.module('one.legacy').directive('zemUploadEditForm', [function () { // es
         },
         controller: 'ZemUploadEditFormCtrl',
     };
-}]);
+});
 
-angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q', '$timeout', '$scope', function (config, $q, $timeout, $scope) {
+angular.module('one.legacy').controller('ZemUploadEditFormCtrl', function (config, $q, $timeout, $scope) {
     var vm = this;
     vm.config = config;
 
@@ -201,4 +201,4 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', ['config', '$q'
         },
         data: defaults.callToAction,
     };
-}]);
+});

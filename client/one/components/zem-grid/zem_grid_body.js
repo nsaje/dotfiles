@@ -4,7 +4,7 @@
 // TODO:
 // - refactor grid object
 
-angular.module('one.legacy').directive('zemGridBody', ['$timeout', 'zemGridConstants', 'zemGridUIService', function ($timeout, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemGridBody', function ($timeout, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
 
     return {
         restrict: 'E',
@@ -116,6 +116,6 @@ angular.module('one.legacy').directive('zemGridBody', ['$timeout', 'zemGridConst
 
             element.on('scroll', scrollListener);
         },
-        controller: [function () {}],
+        controller: function () {},
     };
-}]);
+});

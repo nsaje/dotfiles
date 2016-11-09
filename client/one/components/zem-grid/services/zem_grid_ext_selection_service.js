@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridSelectionService', ['zemGridConstants', function (zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridSelectionService', function (zemGridConstants) { // eslint-disable-line max-len
 
     //
     // Service providing selection functionality used by checkbox directives (header and cell)
@@ -169,4 +169,4 @@ angular.module('one.legacy').factory('zemGridSelectionService', ['zemGridConstan
             return new SelectionService(grid);
         }
     };
-}]);
+});

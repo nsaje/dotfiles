@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/adgroup/general/zemAdGroupGeneralSettings.component.html',
-    controller: ['$scope', 'zemPermissions', function ($scope, zemPermissions) {
+    controller: function ($scope, zemPermissions) {
         var $ctrl = this;
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -52,5 +52,5 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
                 $ctrl.endDatePicker.isOpen = true;
             }
         }
-    }],
+    },
 });

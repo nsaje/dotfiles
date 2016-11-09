@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibModal', 'zemPermissions', 'zemFullStoryService', function ($window, $uibModal, zemPermissions, zemFullStoryService) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemHeaderMenuService', function ($window, $uibModal, zemPermissions, zemFullStoryService) { // eslint-disable-line max-len
     this.getAvailableActions = getAvailableActions;
 
     var ACTIONS = [
@@ -50,4 +50,4 @@ angular.module('one.widgets').service('zemHeaderMenuService', ['$window', '$uibM
             windowClass: 'modal-default',
         });
     }
-}]);
+});

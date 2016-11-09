@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridOrderService', ['zemGridConstants', 'zemGridUIService', 'zemGridStorageService', function (zemGridConstants, zemGridUIService, zemGridStorageService) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridOrderService', function (zemGridConstants, zemGridUIService, zemGridStorageService) { // eslint-disable-line max-len
 
     function OrderService (grid) {
         var pubsub = grid.meta.pubsub;
@@ -86,4 +86,4 @@ angular.module('one.legacy').factory('zemGridOrderService', ['zemGridConstants',
             return new OrderService(grid);
         }
     };
-}]);
+});

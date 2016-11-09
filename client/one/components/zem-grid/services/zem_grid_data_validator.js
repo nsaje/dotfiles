@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridDataValidator', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').factory('zemGridDataValidator', function (zemGridConstants) {
     return {
         validate: validate,
     };
@@ -36,4 +36,4 @@ angular.module('one.legacy').factory('zemGridDataValidator', ['zemGridConstants'
         }
         return false;
     }
-}]);
+});

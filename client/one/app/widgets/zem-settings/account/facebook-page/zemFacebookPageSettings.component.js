@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemFacebookPageSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/account/facebook-page/zemFacebookPageSettings.component.html',
-    controller: ['$q', '$uibModal', 'config', 'zemPermissions', function ($q, $uibModal, config, zemPermissions) {
+    controller: function ($q, $uibModal, config, zemPermissions) {
         var $ctrl = this;
 
         $ctrl.config = config;
@@ -41,7 +41,7 @@ angular.module('one.widgets').component('zemFacebookPageSettings', {
         function askIfSave () {
             var modal = $uibModal.open({
                 templateUrl: '/partials/facebook_page_changed_modal.html',
-                controller: ['$scope', function ($scope) {
+                controller: function ($scope) {
                     $scope.ok = function () {
                         $scope.$close();
                     };
@@ -49,12 +49,12 @@ angular.module('one.widgets').component('zemFacebookPageSettings', {
                     $scope.cancel = function () {
                         $scope.$dismiss('cancel');
                     };
-                }],
+                },
                 size: 'lg',
             });
 
             return modal.result;
         }
 
-    }],
+    },
 });

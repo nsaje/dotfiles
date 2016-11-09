@@ -1,7 +1,7 @@
 /* globals JSON, angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemUserSettings', ['zemLocalStorageService', '$location', function (zemLocalStorageService, $location) {
+angular.module('one.legacy').factory('zemUserSettings', function (zemLocalStorageService, $location) {
     function toUnderscore (string) {
         return string.replace(/([A-Z])/g, function ($1) {
             return '_' + $1.toLowerCase();
@@ -102,4 +102,4 @@ angular.module('one.legacy').factory('zemUserSettings', ['zemLocalStorageService
         getValue: getValue,
         setValue: setValue
     };
-}]);
+});

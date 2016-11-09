@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemUploadTrigger', ['$uibModal', '$rootScope', function ($uibModal, $rootScope) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemUploadTrigger', function ($uibModal, $rootScope) { // eslint-disable-line max-len
     return {
         restrict: 'A',
         replace: true,
@@ -25,14 +25,14 @@ angular.module('one.legacy').directive('zemUploadTrigger', ['$uibModal', '$rootS
 
                 $uibModal.open({
                     template: '<zem-upload data-ad-group="adGroup" data-on-save="onSave" data-close-modal="closeModal" data-user="user" data-has-permission="hasPermission" data-is-permission-internal="isPermissionInternal"></zem-upload>',
-                    controller: ['$scope', function ($scope) {
+                    controller: function ($scope) {
                         $scope.closeModal = $scope.$close;
-                    }],
+                    },
                     windowClass: 'modal-zem-upload',
                     scope: modalScope,
                 });
             });
         },
-        controller: [function () {}],
+        controller: function () {},
     };
-}]);
+});

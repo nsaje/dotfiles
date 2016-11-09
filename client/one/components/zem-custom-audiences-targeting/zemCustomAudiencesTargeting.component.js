@@ -15,7 +15,7 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
         removeTargeting: '&',
     },
     controllerAs: 'ctrl',
-    controller: ['config', function (config) {
+    controller: function (config) {
         var AD_GROUP_ENTITY = 'adGroup';
         var AUDIENCE_ENTITY = 'audience';
         var AD_GROUP_TARGETING = 'adGroupTargeting';
@@ -186,5 +186,5 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
         };
 
         vm.init();
-    }],
+    },
 });

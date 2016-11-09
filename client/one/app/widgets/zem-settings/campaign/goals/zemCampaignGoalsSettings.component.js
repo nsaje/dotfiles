@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemCampaignGoalsSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/campaign/goals/zemCampaignGoalsSettings.component.html',
-    controller: ['$q', 'zemPermissions', 'zemNavigationNewService', function ($q, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
+    controller: function ($q, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -55,5 +55,5 @@ angular.module('one.widgets').component('zemCampaignGoalsSettings', {
             }
             return primary;
         }
-    }],
+    },
 });

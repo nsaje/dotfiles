@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemHeaderDateRangePickerService', [function () {
+angular.module('one.widgets').service('zemHeaderDateRangePickerService', function () {
     this.getPredefinedRanges = getPredefinedRanges;
 
     function getPredefinedRanges () {
@@ -13,4 +13,4 @@ angular.module('one.widgets').service('zemHeaderDateRangePickerService', [functi
 
         return ranges;
     }
-}]);
+});

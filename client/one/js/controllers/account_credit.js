@@ -1,6 +1,6 @@
 /* globals angular, moment */
 angular.module('one.legacy').controller('AccountCreditCtrl',
-    ['$scope', '$state', '$uibModal', '$location', '$window', 'api', 'zemDataFilterService', function ($scope, $state, $uibModal, $location, $window, api, zemDataFilterService) {
+    function ($scope, $state, $uibModal, $location, $window, api, zemDataFilterService) {
         function error () {}
         function refresh (updatedId) {
             $scope.updatedId = updatedId;
@@ -81,4 +81,4 @@ angular.module('one.legacy').controller('AccountCreditCtrl',
         var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(refresh);
         $scope.$on('$destroy', dateRangeUpdateHandler);
         $scope.init();
-    }]);
+    });

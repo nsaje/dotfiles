@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemFilterSelectorSharedService', [function () {
+angular.module('one.widgets').service('zemFilterSelectorSharedService', function () {
     this.isSelectorExpanded = isSelectorExpanded;
     this.setSelectorExpanded = setSelectorExpanded;
     this.toggleSelector = toggleSelector;
@@ -19,4 +19,4 @@ angular.module('one.widgets').service('zemFilterSelectorSharedService', [functio
     function toggleSelector () {
         selectorExpanded = !selectorExpanded;
     }
-}]);
+});

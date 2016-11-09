@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemEntityActionsEndpoint', ['$http', '$q', function ($http, $q) { // eslint-disable-line max-len
+angular.module('one.services').service('zemEntityActionsEndpoint', function ($http, $q) { // eslint-disable-line max-len
 
     //
     // Public API
@@ -72,4 +72,4 @@ angular.module('one.services').service('zemEntityActionsEndpoint', ['$http', '$q
         }
         return mapActionsUrls[entityType].replace('$(id)', id).replace('$(action)', action);
     }
-}]);
+});

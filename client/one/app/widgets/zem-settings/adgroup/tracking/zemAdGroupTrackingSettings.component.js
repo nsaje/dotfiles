@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemAdGroupTrackingSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/adgroup/tracking/zemAdGroupTrackingSettings.component.html',
-    controller: ['$q', 'config', 'zemPermissions', function ($q, config, zemPermissions) {
+    controller: function ($q, config, zemPermissions) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
@@ -15,5 +15,5 @@ angular.module('one.widgets').component('zemAdGroupTrackingSettings', {
                 // Not needed (placeholder)
             });
         };
-    }],
+    },
 });

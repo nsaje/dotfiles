@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemUserEndpoint', ['$q', '$http', 'zemUtils', function ($q, $http, zemUtils) {
+angular.module('one.services').service('zemUserEndpoint', function ($q, $http, zemUtils) {
     //
     // Public API
     //
@@ -87,4 +87,4 @@ angular.module('one.services').service('zemUserEndpoint', ['$q', '$http', 'zemUt
 
         return deferred.promise;
     }
-}]);
+});

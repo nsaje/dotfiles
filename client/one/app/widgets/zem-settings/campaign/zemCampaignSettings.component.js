@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemCampaignSettings', {
         entityId: '<',
     },
     templateUrl: '/app/widgets/zem-settings/campaign/zemCampaignSettings.component.html',
-    controller: ['zemPermissions', function (zemPermissions) {
+    controller: function (zemPermissions) {
         var $ctrl = this;
         $ctrl.constants = constants;
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -11,5 +11,5 @@ angular.module('one.widgets').component('zemCampaignSettings', {
 
 
         $ctrl.$onInit = function () { };
-    }],
+    },
 });

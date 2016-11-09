@@ -1,4 +1,4 @@
-angular.module('one.common').service('zemPubSubService', ['$rootScope', function ($rootScope) {
+angular.module('one.common').service('zemPubSubService', function ($rootScope) {
     this.createInstance = createInstance;
 
     function PubSub () {
@@ -25,4 +25,4 @@ angular.module('one.common').service('zemPubSubService', ['$rootScope', function
     function createInstance () {
         return new PubSub();
     }
-}]);
+});

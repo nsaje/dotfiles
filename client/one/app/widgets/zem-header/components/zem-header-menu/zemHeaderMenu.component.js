@@ -1,6 +1,6 @@
 angular.module('one.widgets').component('zemHeaderMenu', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-menu/zemHeaderMenu.component.html',
-    controller: ['config', 'zemHeaderMenuService', 'zemUserService', function (config, zemHeaderMenuService, zemUserService) { // eslint-disable-line max-len
+    controller: function (config, zemHeaderMenuService, zemUserService) { // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.config = config;
         $ctrl.getActions = zemHeaderMenuService.getAvailableActions;
@@ -13,5 +13,5 @@ angular.module('one.widgets').component('zemHeaderMenu', {
         function execute (action) {
             action.callback(action.params);
         }
-    }],
+    },
 });

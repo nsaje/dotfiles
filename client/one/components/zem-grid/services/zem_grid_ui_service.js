@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridUIService', ['$timeout', 'zemGridConstants', 'zemGridDataFormatter', function ($timeout, zemGridConstants, zemGridDataFormatter) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridUIService', function ($timeout, zemGridConstants, zemGridDataFormatter) { // eslint-disable-line max-len
     var requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
@@ -332,4 +332,4 @@ angular.module('one.legacy').factory('zemGridUIService', ['$timeout', 'zemGridCo
         getBreakdownColumnStyle: getBreakdownColumnStyle,
         getFieldGoalStatusClass: getFieldGoalStatusClass,
     };
-}]);
+});

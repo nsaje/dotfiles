@@ -1,4 +1,4 @@
-angular.module('one.widgets').directive('zemSettingsTransclude', [function () {
+angular.module('one.widgets').directive('zemSettingsTransclude', function () {
     return {
         restrict: 'EAC',
         terminal: true,
@@ -13,4 +13,4 @@ angular.module('one.widgets').directive('zemSettingsTransclude', [function () {
             };
         }
     };
-}]);
+});

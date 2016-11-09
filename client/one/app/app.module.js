@@ -11,49 +11,49 @@ angular.module(
     ]
 );
 
-angular.module('one').config(['$compileProvider', 'config', function ($compileProvider, config) {
+angular.module('one').config(function ($compileProvider, config) {
     $compileProvider.debugInfoEnabled(config.debug);
-}]);
+});
 
-angular.module('one').config(['$sceDelegateProvider', 'config', function ($sceDelegateProvider, config) {
+angular.module('one').config(function ($sceDelegateProvider, config) {
     $sceDelegateProvider.resourceUrlWhitelist(['self', config.static_url + '/**']);
-}]);
+});
 
-angular.module('one').config(['$httpProvider', function ($httpProvider) {
+angular.module('one').config(function ($httpProvider) {
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
-}]);
+});
 
-angular.module('one').config(['$locationProvider', function ($locationProvider) {
+angular.module('one').config(function ($locationProvider) {
     $locationProvider.html5Mode(true);
     $locationProvider.hashPrefix('!');
-}]);
+});
 
-angular.module('one').config(['uibDatepickerConfig', 'uibDatepickerPopupConfig', function (datepickerConfig, datepickerPopupConfig) { // eslint-disable-line max-len
-    datepickerConfig.showWeeks = false;
-    datepickerConfig.formatDayHeader = 'EEE';
-    datepickerPopupConfig.showButtonBar = false;
-}]);
+angular.module('one').config(function (uibDatepickerConfig, uibDatepickerPopupConfig) { // eslint-disable-line max-len
+    uibDatepickerConfig.showWeeks = false;
+    uibDatepickerConfig.formatDayHeader = 'EEE';
+    uibDatepickerPopupConfig.showButtonBar = false;
+});
 
-angular.module('one').config(['$uibTooltipProvider', function ($tooltipProvider) {
-    $tooltipProvider.setTriggers({'openTutorial': 'closeTutorial'});
-}]);
+angular.module('one').config(function ($uibTooltipProvider) {
+    $uibTooltipProvider.setTriggers({'openTutorial': 'closeTutorial'});
+});
 
 // HACK: Update ui-select2 directive priority after initialization. There's a bug in deprecated angular-ui-select2
 // library caused by library's incompatibility with Angular >= 1.5 that prevents ng-model changes to be reflected in
 // ui-select2 directive.
-angular.module('one').config(['$provide', function ($provide) {
-    $provide.decorator('uiSelect2Directive', ['$delegate', function ($delegate) {
+angular.module('one').config(function ($provide) {
+    $provide.decorator('uiSelect2Directive', function ($delegate) {
         var directive;
         directive = $delegate[0];
         directive.priority = 10;
         return $delegate;
-    }]);
-}]);
+    });
+});
 
 var locationSearch;
 // Fixes https://github.com/angular-ui/ui-router/issues/679
-angular.module('one').run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService', function ($state, $rootScope, $location, config, zemIntercomService) {  // eslint-disable-line max-len
+angular.module('one').run(function ($state, $rootScope, $location, config, zemIntercomService) {  // eslint-disable-line max-len
     $rootScope.config = config;
     $rootScope.$state = $state;
 
@@ -81,4 +81,4 @@ angular.module('one').run(['$state', '$rootScope', '$location', 'config', 'zemIn
             event.stopPropagation();
         }
     };
-}]);
+});

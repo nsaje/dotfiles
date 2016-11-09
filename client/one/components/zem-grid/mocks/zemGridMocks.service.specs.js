@@ -1,7 +1,7 @@
 /**
  * Created by jure on 10/11/16.
  */
-angular.module('one.legacy').service('zemGridMocks', ['$q', 'zemGridEndpointService', function ($q, zemGridEndpointService) { // eslint-disable-line max-len
+angular.module('one.legacy').service('zemGridMocks', function ($q, zemGridEndpointService) { // eslint-disable-line max-len
 
     this.createMetaData = createMetaData;
     this.createApi = createApi;
@@ -75,4 +75,4 @@ angular.module('one.legacy').service('zemGridMocks', ['$q', 'zemGridEndpointServ
     function fnWithPromise () {
         return $q.resolve();
     }
-}]);
+});

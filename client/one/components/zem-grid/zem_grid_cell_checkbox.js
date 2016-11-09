@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCellCheckbox', [function () {
+angular.module('one.legacy').directive('zemGridCellCheckbox', function () {
 
     return {
         restrict: 'E',
@@ -14,7 +14,7 @@ angular.module('one.legacy').directive('zemGridCellCheckbox', [function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_checkbox.html',
-        controller: ['$scope', function ($scope) {
+        controller: function ($scope) {
             var vm = this;
             var selectionService = this.grid.meta.selectionService;
 
@@ -42,6 +42,6 @@ angular.module('one.legacy').directive('zemGridCellCheckbox', [function () {
             function toggleSelection () {
                 selectionService.setRowSelection(vm.row, !selectionService.isRowSelected(vm.row));
             }
-        }],
+        },
     };
-}]);
+});

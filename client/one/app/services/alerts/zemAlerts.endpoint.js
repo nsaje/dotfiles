@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemAlertsEndpoint', ['$http', function ($http) {
+angular.module('one.services').service('zemAlertsEndpoint', function ($http) {
     this.getAlerts = getAlerts;
 
     function getAlerts (level, entityId) {
@@ -10,4 +10,4 @@ angular.module('one.services').service('zemAlertsEndpoint', ['$http', function (
         }
         return $http.get(url);
     }
-}]);
+});

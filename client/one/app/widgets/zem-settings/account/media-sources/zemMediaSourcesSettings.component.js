@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemMediaSourcesSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/account/media-sources/zemMediaSourcesSettings.component.html',
-    controller: ['zemPermissions', function (zemPermissions) {
+    controller: function (zemPermissions) {
         var $ctrl = this;
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -66,5 +66,5 @@ angular.module('one.widgets').component('zemMediaSourcesSettings', {
             $ctrl.selectedMediaSources.available.length = 0;
             $ctrl.selectedMediaSources.allowed.length = 0;
         }
-    }],
+    },
 });

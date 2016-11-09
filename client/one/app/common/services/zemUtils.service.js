@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemUtils', [function () { // eslint-disable-line max-len
+angular.module('one.services').service('zemUtils', function () { // eslint-disable-line max-len
 
     this.convertToCamelCase = convertToCamelCase;
     this.convertToUnderscore = convertToUnderscore;
@@ -30,4 +30,4 @@ angular.module('one.services').service('zemUtils', [function () { // eslint-disa
         return convertedObj;
     }
 
-}]);
+});

@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridModal', ['$rootScope', '$timeout', '$http', '$templateCache', '$compile', '$document', function ($rootScope, $timeout, $http, $templateCache, $compile, $document) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemGridModal', function ($rootScope, $timeout, $http, $templateCache, $compile, $document) { // eslint-disable-line max-len
     var body;
     var pubsub;
     var deregisterLocationChangeStart;
@@ -106,6 +106,6 @@ angular.module('one.legacy').directive('zemGridModal', ['$rootScope', '$timeout'
                 close: closeModal,
             };
         },
-        controller: [function () {}],
+        controller: function () {},
     };
-}]);
+});

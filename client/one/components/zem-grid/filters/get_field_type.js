@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').filter('getFieldType', ['zemGridConstants', function (zemGridConstants) {
+angular.module('one.legacy').filter('getFieldType', function (zemGridConstants) {
 
     return function (column) {
         if (!column) {
@@ -23,4 +23,4 @@ angular.module('one.legacy').filter('getFieldType', ['zemGridConstants', functio
 
         return columnType;
     };
-}]);
+});

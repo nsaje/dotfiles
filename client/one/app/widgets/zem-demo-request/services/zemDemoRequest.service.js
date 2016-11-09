@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemDemoRequestService', ['$q', 'zemDemoRequestEndpoint', function ($q, zemDemoRequestEndpoint) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemDemoRequestService', function ($q, zemDemoRequestEndpoint) { // eslint-disable-line max-len
     this.requestDemo = requestDemo;
 
     function requestDemo () {
@@ -17,4 +17,4 @@ angular.module('one.widgets').service('zemDemoRequestService', ['$q', 'zemDemoRe
             });
         return deferred.promise;
     }
-}]);
+});

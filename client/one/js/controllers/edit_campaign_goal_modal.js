@@ -1,5 +1,5 @@
 /* globals options,constants,defaults,angular */
-angular.module('one.legacy').controller('EditCampaignGoalModalCtrl', ['$scope', 'api', function ($scope, api) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('EditCampaignGoalModalCtrl', function ($scope, api) { // eslint-disable-line max-len
     $scope.conversionGoalTypes = options.conversionGoalTypes;
     $scope.conversionWindows = options.conversionWindows;
     $scope.addConversionGoalInProgress = false;
@@ -291,5 +291,5 @@ angular.module('one.legacy').controller('EditCampaignGoalModalCtrl', ['$scope', 
         $scope.availablePixels = $scope.filterPixels(data.rows);
         $scope.loadingPixels = false;
     });
-}]);
+});
 

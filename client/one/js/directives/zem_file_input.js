@@ -8,7 +8,7 @@ angular.module('one.legacy').component('zemFileInput', {
         accept: '@zemFileInputAccept',
     },
     transclude: true,
-    controller: ['$element', function ($element) {
+    controller: function ($element) {
         var $ctrl = this;
         $ctrl.$postLink = function () {
             var inputElement = $element.find('input[type=file]'),
@@ -22,5 +22,5 @@ angular.module('one.legacy').component('zemFileInput', {
                 $ctrl.callback({file: inputElement[0].files[0]});
             });
         };
-    }],
+    },
 });

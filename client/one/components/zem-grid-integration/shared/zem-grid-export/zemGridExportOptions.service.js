@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridExportOptions', [function () {
+angular.module('one.legacy').factory('zemGridExportOptions', function () {
 
     // //////////////////////////////////////////////////////////////////////////////////////////////////
     // EXPORT OPTIONS DEFINITIONS
@@ -95,4 +95,4 @@ angular.module('one.legacy').factory('zemGridExportOptions', [function () {
         getOptions: getOptions,
         getDefaultOption: getDefaultOption,
     };
-}]);
+});

@@ -1,5 +1,5 @@
 /* globals angular, constants */
-angular.module('one.legacy').controller('DownloadExportReportModalCtrl', ['$scope', 'api', 'zemFilterService', '$window', '$state', 'zemDataFilterService', function ($scope, api, zemFilterService, $window, $state, zemDataFilterService) {  // eslint-disable-line max-len
+angular.module('one.legacy').controller('DownloadExportReportModalCtrl', function ($scope, api, zemFilterService, $window, $state, zemDataFilterService) {  // eslint-disable-line max-len
     $scope.showInProgress = false;
     $scope.export = {};
 
@@ -96,4 +96,4 @@ angular.module('one.legacy').controller('DownloadExportReportModalCtrl', ['$scop
         });
         return option;
     }
-}]);
+});

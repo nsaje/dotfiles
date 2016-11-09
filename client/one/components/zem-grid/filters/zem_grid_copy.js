@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCopy', ['$timeout', 'zemGridConstants', 'zemGridDataFormatter', function ($timeout, zemGridConstants, zemGridDataFormatter) {
+angular.module('one.legacy').directive('zemGridCopy', function ($timeout, zemGridConstants, zemGridDataFormatter) {
     return {
         restrict: 'A',
         link: function (scope, element) {
@@ -125,4 +125,4 @@ angular.module('one.legacy').directive('zemGridCopy', ['$timeout', 'zemGridConst
             }
         }
     };
-}]);
+});

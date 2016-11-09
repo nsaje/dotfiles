@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridDebugEndpoint', ['$rootScope', '$controller', '$http', '$q', '$timeout', 'zemGridConstants', function ($rootScope, $controller, $http, $q, $timeout, zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridDebugEndpoint', function ($rootScope, $controller, $http, $q, $timeout, zemGridConstants) { // eslint-disable-line max-len
 
     function MockEndpoint (metaData) {
         this.getMetaData = function () {
@@ -558,4 +558,4 @@ angular.module('one.legacy').factory('zemGridDebugEndpoint', ['$rootScope', '$co
         createMetaData: createMetaData,
         createEndpoint: createEndpoint,
     };
-}]);
+});

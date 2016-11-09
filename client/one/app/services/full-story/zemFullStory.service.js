@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemFullStoryService', ['$window', 'zemFullStoryEndpoint', function ($window, zemFullStoryEndpoint) { // eslint-disable-line max-len
+angular.module('one.services').service('zemFullStoryService', function ($window, zemFullStoryEndpoint) { // eslint-disable-line max-len
     this.identifyUser = identifyUser;
     this.allowLivestream = allowLivestream;
     this.isLivestreamAllowed = isLivestreamAllowed;
@@ -26,4 +26,4 @@ angular.module('one.services').service('zemFullStoryService', ['$window', 'zemFu
     function isLivestreamAllowed () {
         return livestreamAllowed;
     }
-}]);
+});

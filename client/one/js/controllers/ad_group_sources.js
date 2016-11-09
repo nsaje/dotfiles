@@ -1,6 +1,6 @@
 /*globals angular,moment,constants,options*/
 
-angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemDataFilterService', 'zemGridConstants', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants) {
+angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants) {
     $scope.constants = constants;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -356,4 +356,4 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', ['$scope', '$state
     });
 
     $scope.init();
-}]);
+});

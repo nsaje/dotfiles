@@ -1,7 +1,7 @@
 /*globals angular*/
 'use strict';
 
-angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', ['$scope', '$state', '$uibModal', 'api', function ($scope, $state, $uibModal, api) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', function ($scope, $state, $uibModal, api) { // eslint-disable-line max-len
     $scope.accountId = $state.params.id;
     $scope.audiencePixel = null;
     $scope.api = {
@@ -52,4 +52,4 @@ angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', ['$scope',
     init();
 
     $scope.setActiveTab();
-}]);
+});

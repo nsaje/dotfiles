@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridCellBreakdownField', [function () {
+angular.module('one.legacy').directive('zemGridCellBreakdownField', function () {
     var ENTITIES_WITH_INTERNAL_LINKS = [
         constants.entityType.ACCOUNT,
         constants.entityType.CAMPAIGN,
@@ -24,7 +24,7 @@ angular.module('one.legacy').directive('zemGridCellBreakdownField', [function ()
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell_breakdown_field.html',
-        controller: ['$scope', 'config', 'zemGridConstants', 'zemGridUIService', function ($scope, config, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
+        controller: function ($scope, config, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
             var vm = this;
             var collapseService = vm.grid.meta.collapseService;
 
@@ -79,6 +79,6 @@ angular.module('one.legacy').directive('zemGridCellBreakdownField', [function ()
 
                 return zemGridConstants.gridColumnTypes.BASE_FIELD;
             }
-        }],
+        },
     };
-}]);
+});

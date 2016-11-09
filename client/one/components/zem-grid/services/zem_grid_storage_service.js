@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridStorageService', ['zemLocalStorageService', function (zemLocalStorageService) {
+angular.module('one.legacy').factory('zemGridStorageService', function (zemLocalStorageService) {
     var LOCAL_STORAGE_NAMESPACE = 'zem-grid-local-storage';
     var KEY_COLUMNS = 'columns';
     var KEY_COLUMN_PRIMARY_GOAL = 'primary-goal';
@@ -102,4 +102,4 @@ angular.module('one.legacy').factory('zemGridStorageService', ['zemLocalStorageS
         saveOrder: saveOrder,
         loadOrder: loadOrder,
     };
-}]);
+});

@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridFooter', [function () {
+angular.module('one.legacy').directive('zemGridFooter', function () {
 
     return {
         restrict: 'E',
@@ -32,6 +32,6 @@ angular.module('one.legacy').directive('zemGridFooter', [function () {
                 handleHorizontalScroll(leftOffset);
             });
         },
-        controller: [function () {}],
+        controller: function () {},
     };
-}]);
+});

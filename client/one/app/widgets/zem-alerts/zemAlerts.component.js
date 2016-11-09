@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemAlerts', {
         entityId: '<'
     },
     templateUrl: '/app/widgets/zem-alerts/zemAlerts.component.html',
-    controller: ['zemAlertsService', 'zemPermissions', function (zemAlertsService, zemPermissions) {
+    controller: function (zemAlertsService, zemPermissions) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
@@ -18,5 +18,5 @@ angular.module('one.widgets').component('zemAlerts', {
         function initializeAlerts () {
             $ctrl.alerts = zemAlertsService.getAlerts($ctrl.level, $ctrl.entityId);
         }
-    }],
+    },
 });

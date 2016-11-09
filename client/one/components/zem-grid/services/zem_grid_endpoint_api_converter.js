@@ -2,7 +2,7 @@
 /* eslint-disable camelcase*/
 'use strict';
 
-angular.module('one.legacy').factory('zemGridEndpointApiConverter', ['zemGridConstants', 'zemGridEndpointColumns', function (zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridEndpointApiConverter', function (zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
 
     return {
         convertBreakdownFromApi: convertBreakdownFromApi,
@@ -232,4 +232,4 @@ angular.module('one.legacy').factory('zemGridEndpointApiConverter', ['zemGridCon
             id: parseInt(id),
         };
     }
-}]);
+});

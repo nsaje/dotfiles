@@ -1,14 +1,14 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemHistory', [function () {
+angular.module('one.legacy').directive('zemHistory', function () {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_history.html',
         scope: {
             params: '=zemParams',
         },
-        controller: ['$scope', 'api', function ($scope, api) {
+        controller: function ($scope, api) {
             $scope.alerts = [];
             $scope.history = [];
             $scope.requestInProgress = false;
@@ -47,6 +47,6 @@ angular.module('one.legacy').directive('zemHistory', [function () {
             $scope.$watch('params', function () {
                 $scope.getHistory();
             });
-        }],
+        },
     };
-}]);
+});

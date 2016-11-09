@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridPubSub', [function () {
+angular.module('one.legacy').factory('zemGridPubSub', function () {
 
     //
     // Grid PubSub is an internal message chanel through which child directives and
@@ -46,4 +46,4 @@ angular.module('one.legacy').factory('zemGridPubSub', [function () {
             return new PubSub(scope);
         },
     };
-}]);
+});

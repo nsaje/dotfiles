@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridHeaderCellData', ['$timeout', 'zemGridUIService', function ($timeout, zemGridUIService) {
+angular.module('one.legacy').directive('zemGridHeaderCellData', function ($timeout, zemGridUIService) {
 
     return {
         restrict: 'E',
@@ -13,7 +13,7 @@ angular.module('one.legacy').directive('zemGridHeaderCellData', ['$timeout', 'ze
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_header_cell_data.html',
-        controller: ['$scope', 'zemGridConstants', function ($scope, zemGridConstants) {
+        controller: function ($scope, zemGridConstants) {
             var vm = this;
             var pubsub = this.grid.meta.pubsub;
             var orderService = this.grid.meta.orderService;
@@ -82,6 +82,6 @@ angular.module('one.legacy').directive('zemGridHeaderCellData', ['$timeout', 'ze
                     return vm.column.data.initialOrder || zemGridConstants.gridColumnOrder.DESC;
                 }
             }
-        }],
+        },
     };
-}]);
+});
