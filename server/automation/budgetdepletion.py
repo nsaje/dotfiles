@@ -73,7 +73,7 @@ def _send_depleting_budget_notification_email(
         available_budget,
         yesterdays_spend,
         total_daily_budget
-        ):
+):
     args = {
         'campaign': campaign,
         'account': campaign.account,
@@ -103,7 +103,8 @@ def _send_depleting_budget_notification_email(
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
             incident_key='automation_budget_depletion_notification_email',
-            description='Budget depletion e-mail for campaign was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
+            description='Budget depletion e-mail for campaign was not sent because an exception was raised: {}'.format(
+                traceback.format_exc(e)),
             details=desc
         )
 
@@ -118,7 +119,7 @@ def _send_campaign_stopped_notification_email(
         campaign,
         campaign_url,
         emails
-        ):
+):
     args = {
         'campaign': campaign,
         'account': campaign.account,
@@ -144,9 +145,14 @@ def _send_campaign_stopped_notification_email(
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
             incident_key='automation_budget_stop_notification_email',
-            description='Campaign stop because of budget depletion e-mail was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
+            description='Campaign stop because of budget depletion e-mail was not sent because an exception was raised: {}'.format(
+                traceback.format_exc(e)),
             details=desc
         )
+
+
+def _is_automatic_campaign_stop_disabled(camp):
+    return not camp.get_current_settings().automatic_campaign_stop
 
 
 @influx.timer('automation.budgetdepletion.budget_campaigns', operation='notify_depleting')
@@ -156,8 +162,9 @@ def notify_depleting_budget_campaigns():
     yesterdays_spends = automation.helpers.get_yesterdays_spends(campaigns)
 
     for camp in campaigns:
-        if budget_is_depleting(available_budgets.get(camp.id), yesterdays_spends.get(camp.id)) and \
-                not manager_has_been_notified(camp):
+        budgets = available_budgets.get(camp.id)
+        spends = yesterdays_spends.get(camp.id)
+        if _is_automatic_campaign_stop_disabled(camp) and budget_is_depleting(budgets, spends) and not manager_has_been_notified(camp):
             notify_campaign_with_depleting_budget(
                 camp,
                 available_budgets.get(camp.id),
