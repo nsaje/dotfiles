@@ -104,6 +104,6 @@ angular.module('one.widgets').component('zemAdGroupTargetingSettings', {
                     $ctrl.entity.settings.exclusionAudienceTargeting.splice(index, 1);
                 }
             }
-        };
+        }
     },
 });
