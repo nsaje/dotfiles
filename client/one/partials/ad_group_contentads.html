@@ -12,80 +12,6 @@
             </div>
         </div>
     </div>
-    <div class="section table-ad-group-ads-plus" ng-if="!(hasPermission('zemauth.can_access_table_breakdowns_feature_on_ad_group_level') && hasPermission('zemauth.hide_old_table_on_ad_group_level'))">
-        <div class="button-bar">
-
-            <div class="button-bar-item">
-                <button
-                    type="button"
-                    class="btn btn-add btn-icon add"
-                    zem-upload-trigger
-                    zem-upload-ad-group="adGroup"
-                    zem-upload-on-save="refreshGridAndTable"
-                    zem-upload-user="user"
-                    zem-has-permission="hasPermission"
-                    zem-is-permission-internal="isPermissionInternal"
-                >
-                    <span class="icon"></span><span class="text">Content Ads</span>
-                </button>
-            </div>
-
-            <div class="button-bar-item">
-              <zem-dropdown
-                   zem-placeholder="Bulk Actions"
-                   zem-on-select="executeBulkAction(selected)"
-                   zem-disabled-title="At least one Content Ad has to be selected before using Bulk Actions."
-                   zem-check-disabled="!isAnythingSelected()"
-                   zem-dropdown-options="bulkActions"
-                   zem-css-class="show-rows"></zem-dropdown>
-            </div>
-
-            <div class="button-bar-item pull-right">
-                <zem-export
-                    base-url="'api/ad_groups/' + $state.params.id + '/'"
-                    options="exportOptions"
-                    columns="columns"
-                    order="order"
-                    level="level"
-                    export-sources="false"
-                    zem-has-permission="hasPermission"
-                    zem-is-permission-internal="isPermissionInternal">
-                </zem-export>
-            </div>
-            <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
-        </div>
-
-        <div uib-alert class="alert-info alert-sync" ng-show="!isSyncRecent">
-            We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span>
-            If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
-        </div>
-
-        <div uib-alert class="alert-info alert-sync" ng-show="archivingResults" close="closeArchivingResults()">
-                {{ archivingResults.archived_count }} {{ archivingResults.archived_count === 1 ? 'Content Ad was' : 'Content Ads were' }} archived and
-                <ng-pluralize count="archivingResults.archived_count" when="{'1': 'it {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;wasn\'t&quot; }} ',
-                                                                            'other': '{{ archivingResults.active_count === 0 ? &quot;none&quot; : archivingResults.active_count }} of them {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;were&quot; }}'}"></ng-pluralize>
-                active at the time.
-        </div>
-
-        <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
-        <zem-table class="ads-plus-table" zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-notifications="notifications" zem-table-data-status="dataStatus"></zem-table>
-
-        <div class="pagination" ng-show="rows.length">
-            <span>Go to page</span>
-            <form ng-submit="loadPage()">
-                <input class="page-num form-control" type="number" min="1" max="{{ pagination.numPages }}" ng-model="pagination.currentPage">
-            </form>
-
-            <span>Show rows</span>
-            <zem-paging-dropdown class="show-rows" page="page"></zem-paging-dropdown>
-            <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/one/img/arrow-first.svg"></div>
-            <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(pagination.currentPage - 1)"><img ng-src="{{ config.static_url }}/one/img/arrow-prev.svg"></div>
-            <span class="current-rows">{{ pagination.startIndex}} - {{ pagination.endIndex }} of {{ pagination.count }}</span>
-            <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.currentPage + 1)"><img ng-src="{{ config.static_url }}/one/img/arrow-next.svg"></div>
-            <div ng-disabled="pagination.currentPage == pagination.numPages" class="btn btn-default" ng-click="loadPage(pagination.numPages)"><img ng-src="{{ config.static_url }}/one/img/arrow-last.svg"></div>
-        </div>
-    </div>
-
     <div class="section zem-internal-feature-container white-background" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature_on_ad_group_level')">
         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature_on_ad_group_level')"></zem-internal-feature>
         
@@ -125,28 +51,3 @@
 
     </div>
 </div>
-
-<!-- We have the popup defined here, so it's not repeated for each row -->
-<script id="submissionStatusPopover.html" type="text/ng-template">
-    <div class="submission-status-popover">
-        <div class="submission-status-popover-table">
-            <div class="submission-status-popover-row" ng-class="{'submission-status-emphasis': item.source_state !== ''}" ng-repeat="item in nonApproved">
-                <span class="submission-status-popover-cell left-cell">{{item.name}}<span ng-if="item.source_state === ''">:&nbsp;</span><span ng-if="item.source_state != ''">&nbsp;{{item.source_state}}:&nbsp;</span></span>
-                <span class="submission-status-popover-cell bold">{{item.text}}</span>
-            </div>
-            <div ng-if="approved.length && nonApproved.length" class="submission-status-popover-row">
-                <span class="submission-status-popover-cell divider"><hr></span>
-                <span class="submission-status-popover-cell divider"><hr></span>
-            </div>
-            <div class="submission-status-popover-row" ng-class="{'submission-status-emphasis': item.source_state !== ''}" ng-repeat="item in approved">
-                <span class="submission-status-popover-cell left-cell submission-status-label">{{item.name}}<span ng-if="item.source_state === ''">:&nbsp;</span>&nbsp;{{item.source_state}}<span ng-if="item.source_state != ''">:&nbsp;</span></span>
-                <span class="submission-status-popover-cell" >{{item.text}}</span>
-            </div>
-
-            <div ng-if="zeroStatusItems" class="submission-status-popover-row">
-                No Media Sources added yet.
-            </div>
-
-        </div>
-    </div>
-</script>

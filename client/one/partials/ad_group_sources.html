@@ -12,49 +12,6 @@
             </div>
         </div>
     </div>
-    <div class="section table-ad-group-sources" ng-if="!(hasPermission('zemauth.can_access_table_breakdowns_feature_on_ad_group_level') && hasPermission('zemauth.hide_old_table_on_ad_group_level'))">
-        <div class="button-bar">
-            <div ng-if="hasPermission('zemauth.ad_group_sources_add_source')" class="button-bar-item add-source-container">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.ad_group_sources_add_source')" popover-placement="bottom"></zem-internal-feature>
-                <zem-dropdown
-                        zem-placeholder="+ Media Sources"
-                        zem-no-matches-placeholder="All sources added"
-                        zem-dropdown-options="sources"
-                        zem-css-class="add-source"
-                        zem-on-select="addSource(selected)"
-                        zem-dropdown-css-class="add-source-dropdown">
-                </zem-dropdown>
-            </div>
-            <div class="button-bar-item pull-right">
-                <zem-export
-                    base-url="'api/ad_groups/' + $state.params.id + '/sources/'"
-                    options="exportOptions"
-                    columns="columns"
-                    order="order"
-                    level="level"
-                    export-sources="true"
-                    zem-has-permission="hasPermission"
-                    zem-is-permission-internal="isPermissionInternal">
-                </zem-export>
-            </div>
-
-            <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
-        </div>
-
-        <div uib-alert class="alert-warning alert-sync" ng-show="sourcesWaiting.length">
-            We are adding the following media source(s): {{sourcesWaiting.join(', ')}}. This may take some time.
-        </div>
-        <div uib-alert class="alert-warning alert-sync" ng-show="!isSyncRecent">
-            We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span>
-            If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
-        </div>
-        <div uib-alert class="alert-success alert-auto-pilot-changes" ng-show="autopilotChanges">
-            Following Your change to a Media Source's state, Autopilot has successfully adjusted daily spend caps of the following Media Sources: {{autopilotChanges}}.
-        </div>
-
-        <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
-        <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-notifications="notifications" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-data-status="dataStatus"></zem-table>
-    </div>
 
     <div class="section zem-internal-feature-container white-background" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature_on_ad_group_level')">
         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature_on_ad_group_level')"></zem-internal-feature>

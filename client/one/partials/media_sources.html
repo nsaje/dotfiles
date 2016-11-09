@@ -19,38 +19,6 @@
             </div>
         </div>
     </div>
-    <div class="section table-sources" ng-if="!(hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level'))">
-        <div uib-alert class="alert-warning alert-sync" ng-show="sourcesWaiting.length">
-            We are adding the following media source(s): {{sourcesWaiting.join(', ')}}. This may take some time.
-        </div>
-        <div uib-alert class="alert-warning alert-sync" ng-show="!isSyncRecent">
-            We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span>
-            If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
-        </div>
-        <div class="button-bar">
-            <div class="button-bar-item pull-right">
-                <zem-export
-                    base-url="exportBaseUrl"
-                    options="exportOptions"
-                    columns="columns"
-                    order="order"
-                    level="level"
-                    export-sources="true"
-                    zem-has-permission="hasPermission"
-                    zem-is-permission-internal="isPermissionInternal">
-                </zem-export>
-            </div>
-
-            <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
-
-            <div class="clearfix"></div>
-        </div>
-
-
-
-        <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
-        <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-data-status="dataStatus"></zem-table>
-    </div>
     <div class="section zem-internal-feature-container white-background" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature')"></zem-internal-feature>
         
