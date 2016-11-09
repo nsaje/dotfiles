@@ -15,6 +15,8 @@ angular.module('one.widgets').component('zemAdGroupTargetingSettings', {
 
         $ctrl.retargetingEnabled = false;
         $ctrl.getTargetingWarningMessage = getTargetingWarningMessage;
+        $ctrl.addTargeting = addTargeting;
+        $ctrl.removeTargeting = removeTargeting;
 
         $ctrl.$onInit = function () {
             $ctrl.api.register({
@@ -54,5 +56,54 @@ angular.module('one.widgets').component('zemAdGroupTargetingSettings', {
 
             return false;
         }
+
+        function addTargeting (type, id) {
+            if (type === 'adGroupTargeting') {
+                if (!$ctrl.entity.settings.retargetingAdGroups) {
+                    $ctrl.entity.settings.retargetingAdGroups = [];
+                }
+                $ctrl.entity.settings.retargetingAdGroups.push(id);
+            } else if (type === 'exclusionAdGroupTargeting') {
+                if (!$ctrl.entity.settings.exclusionRetargetingAdGroups) {
+                    $ctrl.entity.settings.exclusionRetargetingAdGroups = [];
+                }
+                $ctrl.entity.settings.exclusionRetargetingAdGroups.push(id);
+            } else if (type === 'audienceTargeting') {
+                if (!$ctrl.entity.settings.audienceTargeting) {
+                    $ctrl.entity.settings.audienceTargeting = [];
+                }
+                $ctrl.entity.settings.audienceTargeting.push(id);
+            } else if (type === 'exclusionAudienceTargeting') {
+                if (!$ctrl.entity.settings.exclusionAudienceTargeting) {
+                    $ctrl.entity.settings.exclusionAudienceTargeting = [];
+                }
+                $ctrl.entity.settings.exclusionAudienceTargeting.push(id);
+            }
+        }
+
+        function removeTargeting (type, id) {
+            var index = -1;
+            if (type === 'adGroupTargeting' && $ctrl.entity.settings.retargetingAdGroups) {
+                index = $ctrl.entity.settings.retargetingAdGroups.indexOf(id);
+                if (index >= 0) {
+                    $ctrl.entity.settings.retargetingAdGroups.splice(index, 1);
+                }
+            } else if (type === 'exclusionAdGroupTargeting' && $ctrl.entity.settings.exclusionRetargetingAdGroups) {
+                index = $ctrl.entity.settings.exclusionRetargetingAdGroups.indexOf(id);
+                if (index >= 0) {
+                    $ctrl.entity.settings.exclusionRetargetingAdGroups.splice(index, 1);
+                }
+            } else if (type === 'audienceTargeting' && $ctrl.entity.settings.audienceTargeting) {
+                index = $ctrl.entity.settings.audienceTargeting.indexOf(id);
+                if (index >= 0) {
+                    $ctrl.entity.settings.audienceTargeting.splice(index, 1);
+                }
+            } else if (type === 'exclusionAudienceTargeting' && $ctrl.entity.settings.exclusionAudienceTargeting) {
+                index = $ctrl.entity.settings.exclusionAudienceTargeting.indexOf(id);
+                if (index >= 0) {
+                    $ctrl.entity.settings.exclusionAudienceTargeting.splice(index, 1);
+                }
+            }
+        };
     },
 });
