@@ -187,7 +187,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             ).toBe(
                 startDate.format('MM/DD/YYYY')
             );
-            expect($scope.budgetItem.amount).toBe(300);
+            expect($scope.budgetItem.amount).toBe(null);
         });
 
         it ('sets defaults for active budgets correctly', function () {
@@ -218,7 +218,7 @@ describe('CampaignBudgetItemModalCtrl', function () {
             ).toBe(
                 today.format('MM/DD/YYYY')
             );
-            expect($scope.budgetItem.amount).toBe(300);
+            expect($scope.budgetItem.amount).toBe(null);
         });
 
         it ('sets variables correctly for existing items', function () {
