@@ -682,6 +682,11 @@ class Campaign(models.Model, PermissionMixin):
             if not ad_group.can_archive():
                 return False
 
+        for budget in self.budgets.all():
+            if budget.state() in (constants.BudgetLineItemState.ACTIVE,
+                                  constants.BudgetLineItemState.PENDING):
+                return False
+
         return True
 
     def can_restore(self):

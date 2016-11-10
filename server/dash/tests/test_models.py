@@ -508,15 +508,36 @@ class ArchiveRestoreTestCase(TestCase):
     def test_archive_campaign(self):
         c1 = models.Campaign.objects.get(id=1)
         c2 = models.Campaign.objects.get(id=2)
+        c3 = models.Campaign.objects.get(id=3)
+
+        credit = models.CreditLineItem.objects.create(
+            amount=10,
+            account=c3.account,
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today(),
+            status=1,
+        )
+        models.BudgetLineItem.objects.create(
+            amount=credit.amount,
+            start_date=credit.start_date,
+            end_date=credit.end_date,
+            credit=credit,
+            campaign=c3,
+        )
 
         self.assertFalse(c1.get_current_settings().archived)
         self.assertFalse(c2.get_current_settings().archived)
+        self.assertFalse(c3.get_current_settings().archived)
 
         self.assertFalse(c1.can_archive())
         self.assertTrue(c2.can_archive())
+        self.assertFalse(c3.can_archive())
 
         with self.assertRaises(exc.ForbiddenError):
             c1.archive(self.request)
+
+        with self.assertRaises(exc.ForbiddenError):
+            c3.archive(self.request)
 
         c2.archive(self.request)
         self.assertTrue(c2.get_current_settings().archived)

@@ -470,6 +470,10 @@ class AccountCampaignArchive(BaseBulkActionView):
 
         with transaction.atomic():
             for campaign in campaigns:
+                for budget in campaign.budgets.all():
+                    if budget.state() in (constants.BudgetLineItemState.ACTIVE,
+                                          constants.BudgetLineItemState.PENDING):
+                        raise exc.ValidationError('Can not archive campaigns with active budget')
                 campaign.archive(request)
 
         return self.create_api_response(self.create_rows(campaigns, archived=True))
