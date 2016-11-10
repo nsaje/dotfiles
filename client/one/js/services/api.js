@@ -967,7 +967,8 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemFilterServic
                     endDate: resp.data.data.errors.end_date,
                     amount: resp.data.data.errors.amount,
                     licenseFee: resp.data.data.errors.license_fee,
-                    comment: resp.data.data.errors.comment
+                    comment: resp.data.data.errors.comment,
+                    status: resp.data.data.errors.__all__,
                 };
             }
         };
