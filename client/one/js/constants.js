@@ -822,6 +822,7 @@ var options = {
         {name: 'Actual Data Cost', value: constants.chartMetric.DATA_COST},
     ],
     iabCategories: [
+        {name: 'IAB24 - Uncategorized', value: constants.iabCategory.IAB24},
         {name: 'IAB1 - Arts & Entertainment', value: constants.iabCategory.IAB1},
         {name: 'IAB1-1 - Books & Literature', value: constants.iabCategory.IAB1_1},
         {name: 'IAB1-2 - Celebrity Fan/Gossip', value: constants.iabCategory.IAB1_2},
@@ -1200,7 +1201,6 @@ var options = {
         {name: 'IAB23-8 - Judaism', value: constants.iabCategory.IAB23_8},
         {name: 'IAB23-9 - Latter-Day Saints', value: constants.iabCategory.IAB23_9},
         {name: 'IAB23-10 - Pagan/Wiccan', value: constants.iabCategory.IAB23_10},
-        {name: 'IAB24 - Uncategorized', value: constants.iabCategory.IAB24},
         {name: 'IAB25 - Non-Standard Content', value: constants.iabCategory.IAB25},
         {name: 'IAB25-1 - Unmoderated UGC', value: constants.iabCategory.IAB25_1},
         {name: 'IAB25-2 - Extreme Graphic/Explicit Violence', value: constants.iabCategory.IAB25_2},
