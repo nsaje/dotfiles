@@ -12,7 +12,7 @@ from utils.url_helper import get_full_z1_url
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_EMAIL_RECIPIENTS = ['operations@zemanta.com', 'gregor.ratajc@zemanta.com', 'jure.polutnik@zemanta.com']
+DEFAULT_EMAIL_RECIPIENTS = ['operations@zemanta.com', 'prodops@zemanta.com']
 
 
 class Command(ExceptionCommand):
@@ -69,6 +69,7 @@ def get_content_submission_content():
 def get_ad_group_sources_with_content_submission_pending():
     ad_group_ids = models.ContentAdSource.objects.filter(
         source__id=OUTBRAIN_SOURCE_ID,
+        content_ad__archived=False,
         submission_status=constants.ContentAdSubmissionStatus.PENDING
     ).values_list('content_ad__ad_group_id', flat=True).distinct()
 
