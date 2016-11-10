@@ -45,7 +45,12 @@ ACCOUNT_DUMP_SETTINGS = {
             'primary': 'campaign_set.all',
             'dependents': [
                 'get_current_settings',
-                'budgets.all',
+                {
+                    'primary': 'budgets.all',
+                    'dependents': [
+                        'statements.all',
+                    ],
+                },
                 {
                     'primary': 'campaigngoal_set.all',
                     'dependents': [
