@@ -8,8 +8,8 @@ angular.module('one.legacy').factory('zemGridConstants', function () {
             ROW_HEIGHT: 45,
             NUM_OF_ROWS_PER_PAGE: 41,
             NUM_OF_PRERENDERED_ROWS: 2,
-            NUM_OF_DUMMY_ROWS: 5,
-            GRADUAL_POPULATE_STEP: 5,
+            NUM_OF_DUMMY_ROWS: 7,
+            GRADUAL_POPULATE_STEP: 7,
         },
         gridColumnOrder: {
             NONE: 'none',

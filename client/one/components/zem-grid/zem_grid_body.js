@@ -90,20 +90,26 @@ angular.module('one.legacy').directive('zemGridBody', function ($timeout, $inter
                 renderedRows.forEach(function (row) { row.dummy = true; });
                 var step = zemGridConstants.gridBodyRendering.GRADUAL_POPULATE_STEP;
 
-                scope.state.renderedRows = renderedRows.slice(0, Math.max(scope.state.renderedRows.length, step));
+                scope.state.renderedRows = renderedRows.slice(0, scope.state.renderedRows.length);
                 scope.state.renderedRows.forEach(function (row) { row.dummy = false; });
+
+                doLoadingStep();
 
                 var promise = $interval(function () {
                     if (renderedRows.length <= scope.state.renderedRows.length) {
                         $interval.cancel(promise);
                         return;
                     }
+                    doLoadingStep ();
+                }, 50);
+
+                function doLoadingStep () {
                     scope.state.renderedRows = renderedRows.slice(0, scope.state.renderedRows.length + step);
                     $timeout(function () {
                         scope.state.renderedRows.forEach(function (row) { row.dummy = false; });
                         zemGridUIService.resizeGridColumns(scope.ctrl.grid);
                     });
-                }, 50);
+                }
             }
 
             function getTranslateYStyle (top) {
