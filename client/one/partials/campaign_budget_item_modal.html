@@ -120,7 +120,7 @@
 <div class="modal-footer">
     <button type="button" class="btn btn-add btn-icon check" ng-click="upsertBudgetItem()" ng-disabled="saveRequestInProgress"><span class="icon"></span><span class="text">Save</span></button>
     <button type="button" class="btn btn-blue btn-outline" ng-click="discardBudgetItem()" ng-disabled="saveRequestInProgress"><span class="text">Discard</span></button>
-    <button type="button" class="btn btn-blue btn-icon btn-outline remove pull-right" ng-click="deleteBudgetItem()" ng-disabled="saveRequestInProgress"><span class="icon"></span><span class="text">Delete</span></button>
+    <button type="button" class="btn btn-blue btn-icon btn-outline remove pull-right" ng-click="deleteBudgetItem()" ng-disabled="isNew || saveRequestInProgress"><span class="icon"></span><span class="text">Delete</span></button>
     
     <div class="loader" ng-show="saveRequestInProgress"></div>
     <span ng-show="saved" class="success">Your updates have been saved.</span>
