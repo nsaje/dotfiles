@@ -113,7 +113,7 @@ Authorization: Bearer <access_token>
             "endDate": "2016-01-31"
         }
 
-+ Response 200 (application/json)
++ Response 201 (application/json)
 
         {
             "data": {
@@ -226,7 +226,7 @@ Authorization: Bearer <access_token>
             }
         }
 
-+ Response 201 (application/json)
++ Response 200 (application/json)
 
         {
             "data": {
@@ -363,7 +363,7 @@ Authorization: Bearer <access_token>
             }
         }
 
-+ Response 200 (application/json)
++ Response 201 (application/json)
 
         {
             "data": {
@@ -463,7 +463,7 @@ Authorization: Bearer <access_token>
                 },
                 "dayparting": {
                     "monday": [0, 1, 2, 3],
-                    "tuesday": [20, 21, 22, 23],
+                    "friday": [20, 21, 22, 23],
                     "timezone": "America/New_York"
                 }
             }
@@ -505,11 +505,12 @@ Authorization: Bearer <access_token>
             },
             "dayparting": {
                 "monday": [4, 5, 6, 7],
-                "friday": [2, 3, 7, 8, 9, 10]
+                "friday": [2, 3, 7, 8, 9, 10],
+                "timezone": "Europe/Ljubljana"
             }
         }
 
-+ Response 201 (application/json)
++ Response 200 (application/json)
 
         {
             "data": {
@@ -542,7 +543,8 @@ Authorization: Bearer <access_token>
                 },
                 "dayparting": {
                     "monday": [4, 5, 6, 7],
-                    "friday": [2, 3, 7, 8, 9, 10]
+                    "friday": [2, 3, 7, 8, 9, 10],
+                    "timezone": "Europe/Ljubljana"
                 }
             }
         }
@@ -586,7 +588,7 @@ Authorization: Bearer <access_token>
                     },
                     "dayparting": {
                         "monday": [4, 5, 6, 7],
-                        "tuesday": [2, 3, 7, 8, 9, 10],
+                        "friday": [2, 3, 7, 8, 9, 10],
                         "timezone": "Europe/Ljubljana"
                     }
                 }
@@ -719,12 +721,12 @@ Authorization: Bearer <access_token>
             },
             {
                 "source": "triplelift",
-                "state": "PAUSED"
+                "state": "INACTIVE"
             }
         ]
         
 
-+ Response 201 (application/json)
++ Response 200 (application/json)
 
         {
             "data": [
@@ -742,7 +744,7 @@ Authorization: Bearer <access_token>
                 },
                 {
                     "source": "triplelift",
-                    "state": "PAUSED",
+                    "state": "INACTIVE",
                     "cpc": "0.20",
                     "dailyBudget": "10.0"
                 }
@@ -1005,7 +1007,7 @@ Authorization: Bearer <access_token>
             }
         ]
     
-+ Response 201 (application/json)
++ Response 200 (application/json)
 
         {
             "data": [

@@ -573,7 +573,7 @@ class PublisherSerializer(serializers.Serializer):
     level = DashConstantField(constants.PublisherBlacklistLevel, source='get_blacklist_level', label='level')
 
     def create(self, validated_data):
-        request = validated_data['request'],
+        request = validated_data['request']
         ad_group_id = validated_data['ad_group_id']
         del validated_data['request']
         del validated_data['ad_group_id']

@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+"""
+Run a test server for REST API acceptance testing.
+
+Creates a separate acceptance_test_$NAME database and loads
+acceptance tests fixtures. Then it runs a server against that database.
+"""
+
+import argparse
+import os
+import signal
+import sys
+
+import django
+import django.db.backends.base.creation
+from django.db import connection
+from django.core.management import call_command
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'server.settings'
+django.db.backends.base.creation.TEST_DATABASE_PREFIX = 'acceptance_test_'
+
+parser = argparse.ArgumentParser(
+    description='Run a test server for acceptance testing the REST API.')
+parser.add_argument('addrport', nargs='?', default='8123')
+parser.add_argument('--keepdb', dest='keepdb', action='store_true')
+parser.add_argument('--autoreload', dest='autoreload', action='store_true')
+args = parser.parse_args()
+
+print "Setting up django"
+django.setup()
+
+print "Creating a test database..."
+db = connection.creation.create_test_db(autoclobber=True, keepdb=args.keepdb)
+print "Using test database: %s" % db
+
+
+def sigterm_handler(signum, frame):
+    print "Cleaning up the test database %s" % db
+    connection.creation.destroy_test_db(db, keepdb=args.keepdb)
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, sigterm_handler)
+signal.signal(signal.SIGINT, sigterm_handler)
+
+print "Loading fixtures"
+call_command('loaddata', *['test_acceptance'])
+print "Running the server"
+call_command('runserver', addrport=args.addrport,
+             use_reloader=args.autoreload, use_threading=False)

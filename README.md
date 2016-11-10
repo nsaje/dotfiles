@@ -314,6 +314,16 @@ The final command would then look like
 ./manage.py test --keepdb --parallel --skip-transaction-tests
 ```
 
+### REST API Acceptance testing
+
+REST API is using [dredd](https://github.com/apiaryio/dredd) for acceptance testing.
+Dredd parses the api_blueprint.md file and executes the payloads against a test server.
+
+It checks the returned JSON for conformity. **ATTENTION**: It doesn't check the content
+of the JSON, just the schema! E.g. the JSON must contain all fields etc -
+[more on what it checks](http://www.relishapp.com/apiary/gavel/docs/expectations/body-json-example)).
+This means that the documentation and the fixtures don't have to match 100%.
+
 ### End-to-end testing
 
 Integration testing is done using <a href="https://github.com/angular/protractor">Protractor</a>.

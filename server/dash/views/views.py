@@ -1083,7 +1083,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'cpc_cc' in resource or 'daily_budget_cc' in resource:
             end_datetime = ad_group_settings.get_utc_end_datetime()
             if end_datetime is not None and end_datetime <= datetime.datetime.utcnow():
-                raise exc.ValidationError()
+                raise exc.ValidationError("Ad group end date in the past!")
 
         allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
 
