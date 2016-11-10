@@ -84,15 +84,25 @@ angular.module('one.legacy').directive('zemGridBody', function ($timeout, $inter
             }
 
             function graduallyPopulateRenderedRows (renderedRows) {
+                // Add rows gradually (step by step in 50ms interval) to avoid browser freeze
+                // All rows will be hidden when added to scope.renderedRows collection
+                // After first draw, grid columns will be resized and newly added rows will become visible
+                renderedRows.forEach(function (row) { row.dummy = true; });
                 var step = zemGridConstants.gridBodyRendering.GRADUAL_POPULATE_STEP;
+
                 scope.state.renderedRows = renderedRows.slice(0, Math.max(scope.state.renderedRows.length, step));
+                scope.state.renderedRows.forEach(function (row) { row.dummy = false; });
+
                 var promise = $interval(function () {
                     if (renderedRows.length <= scope.state.renderedRows.length) {
                         $interval.cancel(promise);
                         return;
                     }
                     scope.state.renderedRows = renderedRows.slice(0, scope.state.renderedRows.length + step);
-                    $timeout(function () { zemGridUIService.resizeGridColumns(scope.ctrl.grid); });
+                    $timeout(function () {
+                        scope.state.renderedRows.forEach(function (row) { row.dummy = false; });
+                        zemGridUIService.resizeGridColumns(scope.ctrl.grid);
+                    });
                 }, 50);
             }
 
