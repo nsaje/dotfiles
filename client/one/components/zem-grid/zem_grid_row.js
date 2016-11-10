@@ -2,6 +2,13 @@
 'use strict';
 
 angular.module('one.legacy').directive('zemGridRow', function (zemGridConstants) {
+    var DUMMY_ROW = {
+        entity: constants.entityType.ACCOUNT,
+        level: zemGridConstants.gridRowLevel.BASE,
+        type: zemGridConstants.gridRowType.STATS,
+        data: {},
+        dummy: true,
+    };
 
     return {
         restrict: 'E',
@@ -25,6 +32,11 @@ angular.module('one.legacy').directive('zemGridRow', function (zemGridConstants)
             });
 
             function updateRow () {
+                if (grid.meta.loading) {
+                    // [rendering optimization] Use dummy row if grid is loading
+                    scope.ctrl.row = DUMMY_ROW;
+                    return;
+                }
                 var visibleRows = grid.body.visibleRows.length;
                 if (!visibleRows) {
                     // Ignore when there is no visibleRows (data updated -> this row will be destroyed)

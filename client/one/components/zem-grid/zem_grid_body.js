@@ -1,10 +1,7 @@
 /* globals angular */
 'use strict';
 
-// TODO:
-// - refactor grid object
-
-angular.module('one.legacy').directive('zemGridBody', function ($timeout, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemGridBody', function ($timeout, $interval, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
 
     return {
         restrict: 'E',
@@ -26,9 +23,14 @@ angular.module('one.legacy').directive('zemGridBody', function ($timeout, zemGri
                 renderedRows: [],
             };
 
+            // Initialize dummy rows to optimize initial data rendering
+            for (var idx = 0; idx < zemGridConstants.gridBodyRendering.NUM_OF_DUMMY_ROWS; ++idx) {
+                scope.state.renderedRows.push({index: scope.state.renderedRows.length});
+            }
+
             var visibleRows;
             var numberOfRenderedRows = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE
-                                     + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
+                + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
 
             function scrollListener (event) {
                 if (grid.body.ui.scrollLeft !== event.target.scrollLeft) {
@@ -49,6 +51,7 @@ angular.module('one.legacy').directive('zemGridBody', function ($timeout, zemGri
             }
 
             var visibleRowsCount;
+
             function updateVisibleRows () {
                 visibleRows = [];
                 visibleRowsCount = 0;
@@ -76,7 +79,21 @@ angular.module('one.legacy').directive('zemGridBody', function ($timeout, zemGri
                 }
 
                 scope.ctrl.grid.body.visibleRows = visibleRows;
-                scope.state.renderedRows = visibleRows.slice(0, numberOfRenderedRows);
+                var renderedRows = visibleRows.slice(0, numberOfRenderedRows);
+                graduallyPopulateRenderedRows(renderedRows);
+            }
+
+            function graduallyPopulateRenderedRows (renderedRows) {
+                var step = zemGridConstants.gridBodyRendering.GRADUAL_POPULATE_STEP;
+                scope.state.renderedRows = renderedRows.slice(0, Math.max(scope.state.renderedRows.length, step));
+                var promise = $interval(function () {
+                    if (renderedRows.length <= scope.state.renderedRows.length) {
+                        $interval.cancel(promise);
+                        return;
+                    }
+                    scope.state.renderedRows = renderedRows.slice(0, scope.state.renderedRows.length + step);
+                    $timeout(function () { zemGridUIService.resizeGridColumns(scope.ctrl.grid); });
+                }, 50);
             }
 
             function getTranslateYStyle (top) {
