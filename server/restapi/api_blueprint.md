@@ -8,10 +8,14 @@ HOST: https://one.zemanta.com/
 Zemanta REST API uses two-legged OAuth2 authentication using client credentials.
 
 To acquire client credentials, first make sure you are logged in to Zemanta One. Then go to https://one.zemanta.com/o/applications/
-and click the **New Application** button. Enter a name for your application and *Client type* as *Confidential*
-and *Authorization type* as *Client credentials*, as shown in the image:
+and click the **New Application** button. Enter a name for your application, as shown in the image, and click the "Save" button.
 
-![New registration form](https://s3.amazonaws.com/z1-static/rest-docs/Z1registerNewApplicationScaled.png)
+![New application registration form](https://s3.amazonaws.com/z1-static/rest-docs/oauth2-1-scaled.png)
+
+After you click the "Save" button, you will see the details of your newly created application credentials. The provided
+Client ID and Client Secret are used for API authentication.
+
+![Application credentials details](https://s3.amazonaws.com/z1-static/rest-docs/oauth2-2-scaled.png)
 
 ### Acquire a new authentication token [POST /o/token/]
 

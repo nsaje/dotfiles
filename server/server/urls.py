@@ -5,6 +5,8 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
 import django.views.defaults
+from django.shortcuts import render
+from django.template import RequestContext
 import oauth2_provider.views
 
 from zemauth.forms import AuthenticationForm
@@ -42,6 +44,14 @@ class AdminRedirectView(RedirectView):
     permanent = True
 
 
+def oauth2_permission_wrap(view):
+    def check(request, *args, **kwargs):
+        if not request.user.has_perm('zemauth.can_manage_oauth2_apps'):
+            return render(request, 'oauth2_provider/contact_for_access.html')
+        return view(request, *args, **kwargs)
+    return login_required(check)
+
+
 urlpatterns = [
     url(r'^signin$',
         zemauth.views.login,
@@ -69,7 +79,6 @@ oauth2_urlpatterns = [
     url(r'^revoke_token/$', oauth2_provider.views.RevokeTokenView.as_view(), name="revoke-token"),
 ]
 
-oauth2_permission_wrap = permission_required('zemauth.can_manage_oauth2_apps', raise_exception=True)
 oauth2_urlpatterns += [
     url(r'^applications/$', oauth2_permission_wrap(oauth2_provider.views.ApplicationList.as_view()), name="list"),
     url(r'^applications/register/$', oauth2_permission_wrap(oauth2_provider.views.ApplicationRegistration.as_view()), name="register"),
