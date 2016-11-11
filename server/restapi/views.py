@@ -21,7 +21,8 @@ from dash import upload
 import dash.models
 import dash.threads
 from utils import json_helper, exc, dates_helper
-from .authentication import OAuth2Authentication
+
+import restapi.authentication
 import restapi.models
 import restapi.reports
 
@@ -52,7 +53,11 @@ class CanUseRESTAPIPermission(permissions.BasePermission):
 
 
 class RESTAPIBaseView(APIView):
-    authentication_classes = [OAuth2Authentication]
+    authentication_classes = [
+        restapi.authentication.OAuth2Authentication,
+        restapi.authentication.SessionAuthentication,
+    ]
+
     renderer_classes = [RESTAPIJSONRenderer]
     permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission,)
 
@@ -822,6 +827,7 @@ class ReportJobSerializer(serializers.ModelSerializer):
 
 
 class ReportsViewList(RESTAPIBaseView):
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         query = restapi.reports.ReportQuerySerializer(data=request.data)
@@ -838,6 +844,7 @@ class ReportsViewList(RESTAPIBaseView):
 
 
 class ReportsViewDetails(RESTAPIBaseView):
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, job_id):
         job = restapi.models.ReportJob.objects.get(pk=job_id)
