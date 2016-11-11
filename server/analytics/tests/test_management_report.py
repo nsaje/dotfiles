@@ -210,22 +210,32 @@ class ManagementReportTestCase(test.TestCase):
         row1 = TableRow(analytics.management_report._populate_agency(self.context, 1))
         self.assertEqual(
             row1.as_html(),
-            '<tr><td>1 (<span>0</span>, <span>0</span>, <b>+1</b>)</td><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td></tr>'
+            '<tr><td>1 (<span>0</span>, <span>0</span>, <b>+1</b>)</td><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0 *</td><td>$0 *</td></tr>'
         )
         row2 = TableRow(analytics.management_report._populate_agency(self.context, 2))
         self.assertEqual(
             row2.as_html(),
-            '<tr><td>1 (<b>+1</b>, <span>0</span>, <span>0</span>)</td><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td></tr>'
+            '<tr><td>1 (<b>+1</b>, <span>0</span>, <span>0</span>)</td><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0 *</td><td>$0 *</td></tr>'
+        )
+        row3 = TableRow(analytics.management_report._populate_agency(self.context, 6))
+        self.assertEqual(
+            row3.as_html(),
+            '<tr><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td></tr>'
         )
 
     def test_populate_clientdirect(self):
         row1 = TableRow(analytics.management_report._populate_clientdirect(self.context, 3))
         self.assertEqual(
             row1.as_html(),
-            '<tr><td>2 (<span>0</span>, <b>+2</b>, <b>+1</b>)</td><td>1 (<b>+1</b>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td></tr>'
+            '<tr><td>2 (<span>0</span>, <b>+2</b>, <b>+1</b>)</td><td>1 (<b>+1</b>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0 *</td><td>$0 *</td></tr>'
         )
         row2 = TableRow(analytics.management_report._populate_clientdirect(self.context, 4))
         self.assertEqual(
             row2.as_html(),
-            '<tr><td>1 (<span>0</span>, <span>0</span>, <b>+1</b>)</td><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td></tr>'
+            '<tr><td>1 (<span>0</span>, <span>0</span>, <b>+1</b>)</td><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0 *</td><td>$0 *</td></tr>'
+        )
+        row3 = TableRow(analytics.management_report._populate_clientdirect(self.context, 6))
+        self.assertEqual(
+            row3.as_html(),
+            '<tr><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>0 (<span>0</span>, <span>0</span>, <span>0</span>)</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td></tr>'
         )

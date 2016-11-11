@@ -8,6 +8,9 @@
 	<body>
 		<div class="section">{% autoescape off %}{{ table }}{% endautoescape %}</div>
 		<div class="section">
+			* self-managed and pilot accounts are counted into projection only after they start spending
+		</div>
+		<div class="section">
 			{% for list in lists %}
 			<h4>{{ list.title }}</h4>
 			{% if list.elements %}

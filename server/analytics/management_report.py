@@ -218,13 +218,16 @@ def _populate_agency(context, type_filter):
         'account',
         campaign_id__in=monthly_campaigns
     )
+    postfix = ""
+    if type_filter not in analytics.projections.BudgetProjections.MANAGED_ACCOUNT_TYPES:
+        postfix = " *"
     return [
         _get_counts(context.accounts, valid_accounts),
         _get_counts(context.campaigns, valid_campaigns),
         TableCell(projections.total('attributed_media_spend')),
         TableCell(projections.total('allocated_media_budget')),
-        TableCell(projections.total('media_spend_projection')),
-        TableCell(projections.total('total_fee_projection')),
+        TableCell(projections.total('media_spend_projection'), postfix=postfix),
+        TableCell(projections.total('total_fee_projection'), postfix=postfix),
     ]
 
 
@@ -245,13 +248,16 @@ def _populate_clientdirect(context, type_filter):
         'account',
         campaign_id__in=monthly_campaigns
     )
+    postfix = ""
+    if type_filter not in analytics.projections.BudgetProjections.MANAGED_ACCOUNT_TYPES:
+        postfix = " *"
     return [
         _get_counts(context.accounts, valid_accounts),
         _get_counts(context.campaigns, valid_campaigns),
         TableCell(projections.total('attributed_media_spend')),
         TableCell(projections.total('allocated_media_budget')),
-        TableCell(projections.total('media_spend_projection')),
-        TableCell(projections.total('total_fee_projection')),
+        TableCell(projections.total('media_spend_projection'), postfix=postfix),
+        TableCell(projections.total('total_fee_projection'), postfix=postfix),
     ]
 
 

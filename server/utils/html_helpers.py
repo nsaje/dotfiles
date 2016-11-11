@@ -15,10 +15,12 @@ class Url():
 
 class TableCell():
 
-    def __init__(self, value, info=[], **kwargs):
+    def __init__(self, value, info=[], prefix="", postfix="", **kwargs):
         self.value = value
         self.info = info
         self.attributes = kwargs
+        self.prefix = prefix
+        self.postfix = postfix
 
     def _format_value(self):
         if isinstance(self.value, Decimal):
@@ -40,6 +42,7 @@ class TableCell():
                     val=(additional and '{:+}'.format(additional) or '0')
                 ) for additional in self.info)
             )
+        html = self.prefix + html + self.postfix
         if row_type == 'totals':
             html = '<b>{}</b>'.format(html)
         return html

@@ -24,6 +24,10 @@ class HtmlHelpersTest(TestCase):
             TableCell(10).as_html(),
             '<td>10</td>'
         )
+        self.assertEqual(
+            TableCell(10, prefix="*--", postfix="--*").as_html(),
+            '<td>*--10--*</td>'
+        )
 
     def test_tablerow(self):
         self.assertEqual(

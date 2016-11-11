@@ -7,6 +7,7 @@ import newrelic.agent
 from django.db.models import Prefetch
 
 import dash.models
+import dash.constants
 import reports.models
 import utils.dates_helper
 
@@ -31,6 +32,9 @@ class BudgetProjections(object):
             'allocated_media_budget',
         ),
     }
+    MANAGED_ACCOUNT_TYPES = (
+        dash.constants.AccountType.MANAGED,
+    )
 
     @newrelic.agent.function_trace()
     def __init__(self, start_date, end_date, breakdown, projection_date=None, accounts=[], **constraints):
@@ -60,6 +64,8 @@ class BudgetProjections(object):
         self.calculation_groups = {}
         self.projections = {}
         self.accounts = {acc.id: acc for acc in accounts}
+
+        self._prepare_account_types()
 
         self._prepare_data_by_breakdown()
         self._calculate_rows()
@@ -93,6 +99,22 @@ class BudgetProjections(object):
                 ).order_by('date')
             )
         )
+
+    def _prepare_account_types(self):
+        self.account_types = {
+            sett.account_id: sett.account_type
+            for sett in dash.models.AccountSettings.objects.all().group_current_settings()
+        }
+        self.campaign_types = {
+            c.pk: self.account_types.get(c.account_id, dash.constants.AccountType.UNKNOWN)
+            for c in dash.models.Campaign.objects.all()
+        }
+
+    def _is_managed(self, key):
+        types_map = self.account_types
+        if self.breakdown in 'campaign':
+            types_map = self.campaign_types
+        return types_map.get(key) in BudgetProjections.MANAGED_ACCOUNT_TYPES
 
     def _breakdown_field(self, budget):
         if self.breakdown == 'account':
@@ -176,9 +198,9 @@ class BudgetProjections(object):
             self._calculate_allocated_budgets(row, budgets)
             self._calculate_pacing(row, budgets)
             self._calculate_recognized_fees(row, budgets, key, credit_line_items_map, accounts_with_spend_map)
-            self._calculate_media_spend_projection(row, budgets, statements_on_date,
+            self._calculate_media_spend_projection(key, row, budgets, statements_on_date,
                                                    num_of_positive_statements)
-            self._calculate_license_fee_projection(row, budgets, statements_on_date,
+            self._calculate_license_fee_projection(key, row, budgets, statements_on_date,
                                                    num_of_positive_statements)
             self._calculate_total_license_fee_projection(row, budgets)
 
@@ -232,12 +254,12 @@ class BudgetProjections(object):
         if row['ideal_media_spend']:
             row['pacing'] = row['attributed_media_spend'] / row['ideal_media_spend'] * Decimal(100)
 
-    def _calculate_media_spend_projection(self, row, budgets, statements_on_date,
+    def _calculate_media_spend_projection(self, key, row, budgets, statements_on_date,
                                           num_of_positive_statements):
         assert 'allocated_media_budget' in row
         # IMPORTANT: media here includes data
 
-        if self.first_of_month or num_of_positive_statements <= BudgetProjections.CONFIDENCE_OFFSET_DAYS:
+        if self._is_managed(key) and (self.first_of_month or num_of_positive_statements <= BudgetProjections.CONFIDENCE_OFFSET_DAYS):
             # skip projection if it's less than the OFFSET, assume allocated budget
             row['media_spend_projection'] = row['allocated_media_budget']
             return
@@ -248,6 +270,7 @@ class BudgetProjections(object):
             media_nano += sum(
                 s.media_spend_nano + s.data_spend_nano for s in statements_on_date.get(date, [])
             )
+
         row['media_spend_projection'] = min(
             converters.nano_to_decimal(float(media_nano) / self.past_days) * Decimal(self.forecast_days),
             row['allocated_media_budget']
@@ -285,14 +308,15 @@ class BudgetProjections(object):
         )) / Decimal(agency_account_count)
         return agency_flat_fee_share
 
-    def _calculate_license_fee_projection(self, row, budgets, statements_on_date,
+    def _calculate_license_fee_projection(self, key, row, budgets, statements_on_date,
                                           num_of_positive_statements):
         assert 'allocated_total_budget' in row and 'allocated_media_budget' in row
         # always skip first OFFSET days for calculation
         # unless it's less than the OFFSET, then assume
         # allocated budget
         maximum_fee = row['allocated_total_budget'] - row['allocated_media_budget']
-        if self.first_of_month or num_of_positive_statements <= BudgetProjections.CONFIDENCE_OFFSET_DAYS:
+
+        if self._is_managed(key) and (self.first_of_month or num_of_positive_statements <= BudgetProjections.CONFIDENCE_OFFSET_DAYS):
             # skip projection if it's less than the OFFSET, assume allocated budget
             row['license_fee_projection'] = maximum_fee
             return
@@ -303,6 +327,7 @@ class BudgetProjections(object):
             fee_nano += sum(
                 s.license_fee_nano for s in statements_on_date.get(date, [])
             )
+
         row['license_fee_projection'] = min(
             converters.nano_to_decimal(float(fee_nano) / self.past_days) * Decimal(self.forecast_days),
             maximum_fee
