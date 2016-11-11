@@ -1,0 +1,49 @@
+<div class="modal-header">
+    <h4 class="modal-title">Export Report</h4>
+</div>
+<div class="modal-body">
+    <form class="form-horizontal" ng-submit="$ctrl.startReport()">
+
+        <div class="form-group" ng-if="$ctrl.hasPermission('zemauth.can_include_totals_in_reports')">
+            <div class="col-xs-4">
+                <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_include_totals_in_reports')" popover-placement="right">
+                </zem-internal-feature>
+                <label for="include-totals-checkbox" class="control-label">Include totals</label>
+            </div>
+            <div class="col-xs-4">
+                <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.includeTotals" class="checkbox">
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="$ctrl.hasPermission('zemauth.can_include_model_ids_in_reports')">
+            <div class="col-xs-4">
+                <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_include_model_ids_in_reports')" popover-placement="right">
+                </zem-internal-feature>
+                <label for="add-ids-checkbox" class="control-label">Add IDs to report</label>
+            </div>
+            <div class="col-xs-4">
+                <input id="add-ids-checkbox" type="checkbox" ng-model="$ctrl.includeIds" class="checkbox">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-xs-4">
+                <label for="add-missing-checkbox" class="control-label">Include items with no spend</label>
+            </div>
+            <div class="col-xs-4">
+                <input id="add-missing-checkbox" type="checkbox" ng-model="$ctrl.includeMissing" class="checkbox">
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-add btn-icon download">
+                <span class="icon"></span>
+                <span class="text">Send to {{ $ctrl.user.email }}</span>
+            </button>
+            <button type="button" class="btn btn-blue btn-outline" ng-click="$ctrl.close()">
+                <span class="text">Cancel</span>
+            </button>
+        </div>
+
+    </form>
+</div>
