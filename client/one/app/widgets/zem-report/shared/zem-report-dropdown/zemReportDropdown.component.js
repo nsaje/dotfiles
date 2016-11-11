@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemReportDropdown', {
         api: '=',
     },
     templateUrl: '/app/widgets/zem-report/shared/zem-report-dropdown/zemReportDropdown.component.html',
-    controller: ['$uibModal', 'zemPermissions', function ($uibModal, zemPermissions) {
+    controller: function ($uibModal, zemPermissions) {
         var $ctrl = this;
 
         //
@@ -38,5 +38,5 @@ angular.module('one.widgets').component('zemReportDropdown', {
                 }
             });
         }
-    }],
+    },
 });

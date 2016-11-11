@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemReportService', ['$q', 'zemReportEndpoint', 'zemDataFilterService', function ($q, zemReportEndpoint, zemDataFilterService) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemReportService', function ($q, zemReportEndpoint, zemDataFilterService) {
 
     // Public API
     this.startReport = startReport;
@@ -46,4 +46,4 @@ angular.module('one.widgets').service('zemReportService', ['$q', 'zemReportEndpo
 
         return deferred.promise;
     }
-}]);
+});

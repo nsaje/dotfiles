@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemReportDownload', {
         resolve: '=',  // TODO is ok 2 way binding?
     },
     templateUrl: '/app/widgets/zem-report/zemReportDownload.component.html',
-    controller: ['zemReportService', 'zemPermissions', 'zemUserService', function (zemReportService, zemPermissions, zemUserService) { // eslint-disable-line max-len
+    controller: function (zemReportService, zemPermissions, zemUserService) {
         var $ctrl = this;
 
         // Public API
@@ -36,5 +36,5 @@ angular.module('one.widgets').component('zemReportDownload', {
                     console.log('Start report failed');  // eslint-disable-line no-console
                 });
         }
-    }]
+    }
 });
