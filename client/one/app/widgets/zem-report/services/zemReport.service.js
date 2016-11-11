@@ -28,7 +28,10 @@ angular.module('one.widgets').service('zemReportService', ['$q', 'zemReportEndpo
                     operator: '=',
                     value: gridApi.getMetaData().id,
                 }
-            ]
+            ],
+            options: {
+                emailReport: true,
+            },
 
         };
 

@@ -16,6 +16,7 @@ import dash.models
 import stats.constants
 import stats.api_breakdowns
 import utils.s3helpers
+import utils.email_helper
 
 
 logger = logging.getLogger(__name__)
@@ -109,9 +110,14 @@ ReportFiltersSerializer._declared_fields['from'] = ReportFiltersSerializer._decl
 del ReportFiltersSerializer._declared_fields['frm']
 
 
+class ReportOptionsSerializer(serializers.Serializer):
+    email_report = serializers.BooleanField(default=False)
+
+
 class ReportQuerySerializer(serializers.Serializer):
     fields = ReportFieldsSerializer(many=True)
     filters = ReportFiltersSerializer(many=True)
+    options = ReportOptionsSerializer(required=False)
 
     def validate_fields(self, fields):
         breakdown = get_breakdown_from_fields(fields)
@@ -156,6 +162,8 @@ class ReportJobExecutor(JobExecutor):
             raw_report = self.get_raw_report(self.job)
             csv_report = self.convert_to_csv(self.job, raw_report)
             report_path = self.save_to_s3(csv_report)
+            self.send_by_email(self.job, report_path)
+
             self.job.result = report_path
             self.job.status = constants.ReportJobStatus.DONE
         except Exception as e:
@@ -224,6 +232,13 @@ class ReportJobExecutor(JobExecutor):
         filename = cls._generate_random_filename()
         utils.s3helpers.S3Helper(settings.RESTAPI_REPORTS_BUCKET).put(filename, csv)
         return os.path.join(settings.RESTAPI_REPORTS_URL, filename)
+
+    @classmethod
+    def send_by_email(cls, job, report_path):
+        if not job.query.get('options', {}).get('email_report'):
+            return
+
+        utils.email_helper.send_async_report(job.user, report_path)
 
     @staticmethod
     def _generate_random_filename():

@@ -384,6 +384,17 @@ def send_ga_setup_instructions(user):
     email.send(fail_silently=True)
 
 
+def send_async_report(user, report_path):
+    subject, body, _ = format_email(
+        EmailTemplateType.ASYNC_REPORT_RESULTS,
+        user=user,
+        link_url=report_path)
+    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL
+    ), [user.email])
+    email.send(fail_silently=False)
+
+
 def _format_changes_text(changes_text):
     lines = changes_text.split('\n')
     for i in range(len(lines)):

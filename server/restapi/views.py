@@ -827,6 +827,8 @@ class ReportJobSerializer(serializers.ModelSerializer):
 
 
 class ReportsViewList(RESTAPIBaseView):
+    renderer_classes = (CamelCaseJSONRenderer,)
+    parser_classes = (CamelCaseJSONParser,)
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
@@ -844,6 +846,8 @@ class ReportsViewList(RESTAPIBaseView):
 
 
 class ReportsViewDetails(RESTAPIBaseView):
+    renderer_classes = (CamelCaseJSONRenderer,)
+    parser_classes = (CamelCaseJSONParser,)
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, job_id):
