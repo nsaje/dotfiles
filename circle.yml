@@ -19,6 +19,7 @@ dependencies:
         - pip install -r server/requirements.txt
         - pip install -r server/requirements_dev.txt
         - pip install awscli
+        - if [ $CIRCLE_NODE_INDEX == 1 ]; sudo chown -R $USER /usr/local/share/man/ ; fi
         - if [ $CIRCLE_NODE_INDEX == 1 ]; then pip install pep8 ; fi 
         - if [ $CIRCLE_NODE_INDEX == 1 ]; then pip install xenon; fi
         - if [ $CIRCLE_NODE_INDEX == 1 ]; then npm install -g eslint; fi
