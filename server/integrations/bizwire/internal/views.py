@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 import json
 
@@ -49,6 +50,36 @@ def click_capping(request):
     })
 
 
+def _get_ad_group_id(article):
+    if article.get('meta', {}).get('is_test_feed', False):
+        return config.TEST_FEED_AD_GROUP
+
+    return config.TEST_AD_GROUP_IDS[0]
+
+
+def _distribute_articles(articles_data):
+    existing_candidate_labels = dash.models.ContentAdCandidate.objects.filter(
+        label__in=[article['label'] for article in articles_data]
+    ).values_list('label', flat=True)
+
+    existing_contentad_labels = dash.models.ContentAd.objects.filter(
+        label__in=[article['label'] for article in articles_data]
+    ).values_list('label', flat=True)
+
+    candidates_per_ad_group = defaultdict(list)
+    for article in articles_data:
+        if article['label'] in existing_candidate_labels or article['label'] in existing_contentad_labels:
+            # prevent inserting multiple times if calls are repeated
+            continue
+
+        ad_group_id = _get_ad_group_id(article)
+        del article['meta']
+
+        candidates_per_ad_group[ad_group_id].append(article)
+
+    return candidates_per_ad_group
+
+
 @csrf_exempt
 def article_upload(request):
     try:
@@ -58,33 +89,15 @@ def article_upload(request):
         raise Http404
 
     articles_data = json.loads(request.body)
-    batch_name = 'Article ' + articles_data[0]['label']
-    if len(articles_data) > 1:
-        batch_name = 'Multiple articles upload'
 
-    # prevent inserting multiple times if calls are repeated
-    existing_candidate_labels = dash.models.ContentAdCandidate.objects.filter(
-        label__in=[article['label'] for article in articles_data]
-    ).values_list('label', flat=True)
+    candidates_per_ad_group = _distribute_articles(articles_data)
+    for ad_group_id, candidates_data in candidates_per_ad_group.iteritems():
+        batch_name = 'Article ' + candidates_data[0]['label']
+        if len(candidates_data) > 1:
+            batch_name = 'Multiple articles upload'
 
-    existing_contentad_labels = dash.models.ContentAd.objects.filter(
-        label__in=[article['label'] for article in articles_data]
-    ).values_list('label', flat=True)
-
-    candidates_data = []
-    for article in articles_data:
-        if article['label'] in existing_candidate_labels or article['label'] in existing_contentad_labels:
-            continue
-        candidates_data.append(article)
-
-    if len(candidates_data) < 1:
-        return JsonResponse({
-            "status": 'ok'
-        })
-
-    ad_group = dash.models.AdGroup.objects.get(id=config.TEST_AD_GROUP_IDS[0])
-    batch, candidates = dash.upload.insert_candidates(
-        candidates_data, ad_group, batch_name, filename='', auto_save=True)
+        ad_group = dash.models.AdGroup.objects.get(id=ad_group_id)
+        dash.upload.insert_candidates(candidates_data, ad_group, batch_name, filename='', auto_save=True)
 
     return JsonResponse({
         "status": 'ok'
