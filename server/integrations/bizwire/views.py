@@ -142,10 +142,10 @@ class PromotionExport(BizwireView):
         geo_impressions = geo_impressions_thread.join_and_get_result()
 
         return {
-            'headline_impressions': ad_stats['impressions'],
-            'release_views': ad_stats['clicks'],
-            'ctr': ad_stats['ctr'],
-            'industry_ctr': ag_stats['industry_ctr'],
+            'headline_impressions': ad_stats['impressions'] or 0,
+            'release_views': ad_stats['clicks'] or 0,
+            'ctr': ad_stats['ctr'] or None,
+            'industry_ctr': ag_stats['industry_ctr'] or None,
             'publishers': pubs,
             'geo_headline_impressions': geo_impressions,
         }
