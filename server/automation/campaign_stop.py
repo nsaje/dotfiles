@@ -387,7 +387,7 @@ def _can_enable_media_sources(ad_group_sources, campaign):
     today = dates_helper.local_today()
     max_daily_budget_per_ags, max_group_daily_budget_per_ag = _get_max_daily_budget_per_ags(today, campaign)
     remaining_today, available_tomorrow, _ = _get_minimum_remaining_budget(
-        campaign, _sum_daily_budget(max_group_daily_budget_per_ag, max_group_daily_budget_per_ag))
+        campaign, _sum_daily_budget(max_daily_budget_per_ags, max_group_daily_budget_per_ag))
 
     ret = {}
     for ad_group_source, ags_settings in current_ags_settings.iteritems():
