@@ -13,7 +13,9 @@ INSERT INTO mvh_clean_stats (
       stats.media_source as source_slug,
       ad_group_id,
       content_ad_id,
-      publisher,
+
+      -- no outbrain publishers here
+      LOWER(publisher),
 
       -- check dash/constants.py DeviceType for correct setting.
       -- OpenRTB values:

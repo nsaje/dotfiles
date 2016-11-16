@@ -91,6 +91,12 @@
     model: dash.sourcetype
     pk: 2
 
+-   fields:
+        type: 'outbrain'
+        available_actions: [19, 20]
+    model: dash.sourcetype
+    pk: 3
+
 # sources
 
 -   fields:

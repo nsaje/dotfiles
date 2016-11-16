@@ -10,7 +10,9 @@ INSERT INTO mv_touchpointconversions (
         s.campaign_id as campaign_id,
         a.ad_group_id as ad_group_id,
         a.content_ad_id as content_ad_id,
-        a.publisher as publisher,
+        CASE WHEN a.source_id = {{ outbrain_id }} THEN a.publisher
+             ELSE LOWER(a.publisher)
+        END as publisher,
 
         a.slug as slug,
         -- shorter conversion lags are not counted towards longer ones

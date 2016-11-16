@@ -214,7 +214,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                     stats.media_source as source_slug,
                     ad_group_id,
                     content_ad_id,
-                    publisher,
+                    LOWER(publisher),
                     CASE
                         WHEN device_type = 4 THEN 3
                         WHEN device_type = 2 THEN 1
@@ -431,11 +431,11 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         date = datetime.date(2016, 5, 1)
 
         mock_get_postclickstats_query_results.return_value = [
-            PostclickstatsResults(1, 'gaapi', 1, 'outbrain', 'bla.com', 12, '{einpix: 2}', 22, 100, 20, 2, 24),
+            PostclickstatsResults(1, 'gaapi', 1, 'outbrain', 'Bla.com', 12, '{einpix: 2}', 22, 100, 20, 2, 24),
             # this one should be left out as its from lower priority postclick source
             PostclickstatsResults(1, 'ga_mail', 2, 'outbrain', 'beer.com', 12, '{einpix: 2}', 22, 100, 20, 2, 24),
-            PostclickstatsResults(3, 'gaapi', 3, 'adblade', 'nesto.com', 12, '{einpix: 2}', 22, 100, 20, 2, 24),
-            PostclickstatsResults(2, 'omniture', 4, 'outbrain', 'trol', 12, '{einpix: 2}', 22, 100, 20, 2, 24),
+            PostclickstatsResults(3, 'gaapi', 3, 'adblade', 'Nesto.com', 12, '{einpix: 2}', 22, 100, 20, 2, 24),
+            PostclickstatsResults(2, 'omniture', 4, 'outbrain', 'Trol', 12, '{einpix: 2}', 22, 100, 20, 2, 24),
         ]
 
         mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
@@ -443,10 +443,10 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
         self.maxDiff = None
         self.assertItemsEqual(list(mv.get_postclickstats(None, date)), [
-            ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'bla.com', constants.DeviceType.UNDEFINED, None, None, None,
+            ((3, 1), (date, 3, 1, 1, 1, 1, 1, 'Bla.com', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2), ('{einpix: 2}', 'gaapi')),
-            ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'trol', constants.DeviceType.UNDEFINED, None, None, None,
+            ((3, 4), (date, 3, 1, 2, 2, 2, 4, 'Trol', constants.DeviceType.UNDEFINED, None, None, None,
                       constants.AgeGroup.UNDEFINED, constants.Gender.UNDEFINED, constants.AgeGenderGroup.UNDEFINED,
                       0, 0, 0, 0, 2, 22, 12, 100, 20, 0, 0, 0, 0, 24, 2), ('{einpix: 2}', 'omniture')),
             ((1, 3), (date, 1, 1, 1, 3, 3, 3, 'nesto.com', constants.DeviceType.UNDEFINED, None, None, None,
@@ -600,6 +600,8 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
 
 class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
+    fixtures = ['test_materialize_views']
+
     @mock.patch('redshiftapi.db.get_write_stats_cursor')
     @mock.patch('redshiftapi.db.get_write_stats_transaction')
     def test_generate(self, mock_transaction, mock_cursor):
@@ -626,12 +628,14 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                     s.campaign_id as campaign_id,
                     a.ad_group_id as ad_group_id,
                     a.content_ad_id as content_ad_id,
-                    a.publisher as publisher,
+                    CASE WHEN a.source_id = 3 THEN a.publisher
+                         ELSE LOWER(a.publisher)
+                    END as publisher,
                     a.slug as slug,
                     CASE
-                    WHEN a.conversion_lag <= 24 THEN 24
-                    WHEN a.conversion_lag <= 168 THEN 168
-                    WHEN a.conversion_lag <= 720 THEN 720
+                        WHEN a.conversion_lag <= 24 THEN 24
+                        WHEN a.conversion_lag <= 168 THEN 168
+                        WHEN a.conversion_lag <= 720 THEN 720
                     ELSE 2160
                     END AS conversion_window,
                     COUNT(a.touchpoint_id) as touchpoint_count,

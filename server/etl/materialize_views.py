@@ -97,6 +97,10 @@ def prepare_date_range_delete_query(table_name, date_from, date_to):
     }
 
 
+def get_outbrain():
+    return dash.models.Source.objects.get(name__iexact='outbrain')
+
+
 class Materialize(object):
 
     TABLE_NAME = 'missing'
@@ -314,6 +318,7 @@ class MasterView(Materialize):
         self.sources_slug_map = {
             helpers.extract_source_slug(x.bidder_slug): x for x in dash.models.Source.objects.all()}
         self.sources_map = {x.id: x for x in dash.models.Source.objects.all()}
+        self.outbrain = get_outbrain()
 
     def get_postclickstats(self, cursor, date):
 
@@ -359,7 +364,7 @@ class MasterView(Materialize):
                         campaign.id,
                         ad_group.id,
                         row.content_ad_id,
-                        row.publisher,
+                        row.publisher.lower() if (row.publisher and source.id != self.outbrain.id) else row.publisher,
 
                         dash.constants.DeviceType.UNDEFINED,
                         None,
@@ -422,7 +427,7 @@ class MasterPublishersView(Materialize):
     TABLE_NAME = 'mv_pubs_master'
 
     def __init__(self, *args, **kwargs):
-        self.outbrain = dash.models.Source.objects.get(name__iexact='outbrain')
+        self.outbrain = get_outbrain()
         super(MasterPublishersView, self).__init__(*args, **kwargs)
 
     def generate(self, **kwargs):
@@ -507,7 +512,7 @@ class MVConversions(Materialize):
                     c.execute(sql, params)
 
     def generate_rows(self, cursor, date):
-        for breakdown_key, row, conversions_tuple in self.master_view.get_postclickstats(cursor, date):
+        for _, row, conversions_tuple in self.master_view.get_postclickstats(cursor, date):
             conversions = conversions_tuple[0]
             postclick_source = conversions_tuple[1]
 
@@ -536,7 +541,10 @@ class MVTouchpointConversions(Materialize):
                 c.execute(sql, params)
 
     def prepare_insert_query(self):
-        sql = backtosql.generate_sql('etl_insert_mv_touchpointconversions.sql', {})
+        outbrain = get_outbrain()
+        sql = backtosql.generate_sql('etl_insert_mv_touchpointconversions.sql', {
+            'outbrain_id': outbrain.id,
+        })
 
         return sql, {
             'date_from': self.date_from,
