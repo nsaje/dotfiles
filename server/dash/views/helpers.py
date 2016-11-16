@@ -1054,7 +1054,10 @@ def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_sett
 
     # there are cases where a condition is entered(region targeting) but no
     # error message is output - this is why this is a separate loop
-    if message is None and ad_group_settings.retargeting_ad_groups != [] and\
+    if message is None and (ad_group_settings.retargeting_ad_groups or
+                            ad_group_settings.exclusion_retargeting_ad_groups or
+                            ad_group_settings.audience_targeting or
+                            ad_group_settings.exclusion_audience_targeting) and \
             not (ad_group_source.source.can_modify_retargeting_automatically() or
                  ad_group_source.source.can_modify_retargeting_manually()):
         message = 'This source can not be enabled because it does not support retargeting.'
