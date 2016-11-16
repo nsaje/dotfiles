@@ -2,6 +2,7 @@ from collections import OrderedDict
 import logging
 from functools import partial
 import re
+import urllib2
 
 from django.conf import settings
 from django.http import JsonResponse, Http404
@@ -155,7 +156,7 @@ class PromotionExport(BizwireView):
         article_id = request.GET.get('article_id')
         article_url = request.GET.get('article_url')
         if article_url:
-            m = re.search('news/home/(\d*)/', article_url)
+            m = re.search('news/home/(\d*)/', urllib2.unquote(article_url))
             if m:
                 article_id = m.groups()[0]
 
