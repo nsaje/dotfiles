@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import logging
 from functools import partial
+import re
 
 from django.conf import settings
 from django.http import JsonResponse, Http404
@@ -152,6 +153,12 @@ class PromotionExport(BizwireView):
 
     def get(self, request):
         article_id = request.GET.get('article_id')
+        article_url = request.GET.get('article_url')
+        if article_url:
+            m = re.search('home/(\d*)/en', article_url)
+            if m and m.groups():
+                article_id = m.groups()[0]
+
         try:
             content_ad = dash.models.ContentAd.objects.get(
                 label=article_id,
