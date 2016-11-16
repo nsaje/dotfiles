@@ -440,11 +440,12 @@ def _can_enable_all_ad_group_sources(
         daily_budget_added += max(0, current_daily_budget - max_daily_budget)
 
     for ad_group_settings in ad_groups_settings:
+        if not ad_group_settings.b1_sources_group_enabled or \
+                not ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
+            continue
+
         max_daily_budget = max_group_daily_budget.get(ad_group_settings.ad_group_id, 0)
-        current_daily_budget = 0
-        if ad_group_settings.b1_sources_group_enabled and \
-                ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
-            current_daily_budget = ad_group_settings.b1_sources_group_daily_budget
+        current_daily_budget = ad_group_settings.b1_sources_group_daily_budget
 
         daily_budget_total += current_daily_budget
         daily_budget_added += max(0, current_daily_budget - max_daily_budget)
@@ -1319,6 +1320,9 @@ def _get_effective_daily_budget(date, ad_group_source, ag_settings, ags_settings
     if ag_settings.state != dash.constants.AdGroupSettingsState.ACTIVE or\
        ags_settings.state != dash.constants.AdGroupSourceSettingsState.ACTIVE or\
        (ag_settings.end_date and ag_settings.end_date < date):
+        return 0
+
+    if ag_settings.b1_sources_group_enabled:
         return 0
 
     daily_budget_cc = ags_settings.daily_budget_cc
