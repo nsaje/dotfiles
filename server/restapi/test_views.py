@@ -76,9 +76,9 @@ class RESTAPITest(TestCase):
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], list)
         self.assertGreater(len(resp_json['data']), 0)
-        expected_fields = ['campaignId', 'conversionGoal', 'primary', 'value', 'type', 'id']
+        expected_fields = {'conversionGoal', 'primary', 'value', 'type', 'id'}
         for item in resp_json['data']:
-            self.assertEqual(item.keys(), expected_fields)
+            self.assertEqual(set(item.keys()), expected_fields)
 
     @override_settings(R1_DEMO_MODE=True)
     def test_campaigngoals_post(self):

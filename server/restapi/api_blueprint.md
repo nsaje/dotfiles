@@ -1,13 +1,181 @@
 FORMAT: 1A
-HOST: https://one.zemanta.com/
+HOST: https://one.zemanta.com
 
 # Zemanta REST API
 
+This document describes the Zemanta REST Campaign Management API.
+
+The API enables [Zemanta](https://www.zemanta.com) clients to programatically create and manage campaigns, ad groups and content ads using RESTful objects.
+Custom performance reports are also available as part of the API.
+
+In order to use Zemanta REST API, please contact your sales representative.
+
+## Who should read this document?
+
+This document is inteded for programmers who are developing an integration with the Zemanta One system.
+A prerequisite for working with Zemanta REST API is an understanding of HTTP and JSON.
+
+# Group Overview
+
+## Entities
+
+The diagram and the table below describe the objects this API deals with and the relationships between them.
+
+![Entity Relation Diagram](https://s3.amazonaws.com/z1-static/rest-docs/ZemantaRESTAPIDiagram.png)
+
+[//]: # (diagram source: https://drive.google.com/a/zemanta.com/file/d/0B6lNA2cM_sh8V3E3dmpoV1UzakU/view?usp=sharing)
+
+Entity        | Description                                           | Functionality
+--------------|-------------------------------------------------------|------------------------------|
+Account       | Zemanta One client account                            | /
+Credit Item   | Signed credit available for spending                  | Read
+Budget Item   | Part of a credit assigned to a campaign as its budget | Read, Create, Update
+Campaign      | A collection of Ad Groups                             | Read, Create, Update
+Campaign Goal | Campaign optimization goal                            | Read, Create, Update, Delete
+Ad Group      | A collection of Content Ads                           | Read, Create, Update
+Content Ad    | A single piece of promoted content                    | Read, Create, Update
+
+## HTTP Requests
+
+As per the REST convention, the type of action performed is determined by the HTTP method of the request.
+
+HTTP Method | Action
+------------|------------------------------------------|
+GET         | Retrieve an entity or a list of entities
+POST        | Create a new entity
+PUT         | Update an entity
+
+Requests that include a JSON formatted body must include the following header in the request:
+
+`Content-type: application/json`
+
+
+## HTTP Response Status Codes
+
+Status Code | Meaning      | Description
+------------|--------------|------------------------------------------------|
+200         | OK           | The request was successful
+201         | Created      | Entity successfuly created
+400         | Bad Request  | Invalid or missing required parameters
+401         | Unauthorized | Authentication failed, check your access token
+403         | Forbidden    | Not enough permissions for desired action
+500         | Server Error | Server error, please contact us
+
+## JSON Payload Format
+
+Entities are represented by JSON objects. Multiple entities are represented as a JSON array of objects.
+
+### Request
+
+For `POST` or `PUT` requests, the payload is a JSON object or a JSON array of objects, as applicable to the endpoint:
+
+```
+{
+    "id": "123",
+    "name": "My Campaign"
+}
+```
+
+or in the case of a list of entities:
+
+```
+[
+    {
+        "id": "123",
+        "name": "My Campaign"
+    },
+    {
+        "id": "124",
+        "name": "My Campaign 2"
+    }
+]
+```
+
+
+### Response
+
+The server will return an entity or a list of entities in the response payload's `data` field:
+
+```
+{
+    "data": {
+        "id": "123",
+        "name": "My Campaign"
+    }
+}
+```
+
+or in the case of a list of entities:
+
+```
+{
+    "data": [
+        {
+            "id": "123",
+            "name": "My Campaign"
+        },
+        {
+            "id": "124",
+            "name": "My Campaign 2"
+        }
+    ]
+}
+```
+
+### Partial Updates
+
+The API supports partial updates, which means that for all `PUT` actions, if you're updating a hypothetical entity
+
+```
+{
+    "name": "MyEntity",
+    "value": "123"
+}
+```
+
+you can send only updated fields as the payload:
+
+```
+{
+    "value": "789"
+}
+```
+
+which will result in the following entity:
+
+```
+{
+    "name": "MyEntity",
+    "value": "789"
+}
+```
+
+
+### Errors
+
+In case of an error, the server will return a response with the appropriate status code and the payload describing the error:
+
+```
+{
+    "errorCode": "ValidationError",
+    "details": "Name is required"
+}
+```
+
 ## Authentication
-
+ 
 Zemanta REST API uses two-legged OAuth2 authentication using client credentials.
+The client credentials are used to acquire an access token, which must
+then be passed to all REST API calls as the header
+ 
+```
+Authorization: Bearer <access_token>
+```
+ 
 
-To acquire client credentials, first make sure you are logged in to Zemanta One. Then go to https://one.zemanta.com/o/applications/
+### Create client credentials
+
+To create client credentials, first make sure you are logged in to Zemanta One. Then go to https://one.zemanta.com/o/applications/
 and click the **New Application** button. Enter a name for your application, as shown in the image, and click the "Save" button.
 
 ![New application registration form](https://s3.amazonaws.com/z1-static/rest-docs/oauth2-1-scaled.png)
@@ -24,13 +192,6 @@ as Basic HTTP Authentication. Manually, the header can be constructed as
 
 ```
 Authorization: Basic base64(<client_id>:<client_secret>)
-```
-
-
-The acquired access token must then be passed to all REST API calls as the header
-
-```
-Authorization: Bearer <access_token>
 ```
 
 + Request (application/x-www-form-urlencoded)
@@ -55,6 +216,21 @@ Authorization: Bearer <access_token>
         }
 
 # Group Account Credit Management
+<a name="credit"></a>
+
+After your Insertion Order for media spend has been executed Zemanta's Customer Success team
+will assign a credit line to your account. With credit added to your account you have the
+ability to create budget items and associate them with the campaigns you're planning. 
+
+Property  | Type            | Description
+----------|-----------------|----------------------------------------------|
+id        | string          | the credit item's id
+startDate | date            | start date of the credit
+endDate   | date            | end date of the credit
+total     | [money](#money) | total credit amount
+allocated | [money](#money) | amount already allocated to campaign budgets
+available | [money](#money) | amount still available for allocation
+
 
 ### Get active credit items for account [GET /rest/v1/accounts/{accountId}/credits/]
 
@@ -80,106 +256,34 @@ Authorization: Bearer <access_token>
 
 # Group Campaign Management
 
-## Campaign Budgets [/rest/v1/campaigns/{campaignId}/budgets/]
-
-### List campaign budgets [GET /rest/v1/campaigns/{campaignId}/budgets/]
-
-+ Parameters
-    + campaignId: 608 (required)
-
-+ Response 200 (application/json)
-
-        {
-            "data": [
-                {
-                    "id": "1910",
-                    "amount": "400",
-                    "startDate": "2016-01-01",
-                    "endDate": "2016-01-31",
-                    "state": "ACTIVE",
-                    "spend": "0.0000",
-                    "available": "400.0000"
-                }
-            ]
-        }
-
-### Create a new campaign budget [POST /rest/v1/campaigns/{campaignId}/budgets/]
-
-+ Parameters
-    + campaignId: 608 (required)
-
-+ Request (application/json)
-
-        {
-            "creditId": "861",
-            "amount": "600",
-            "startDate": "2016-01-01",
-            "endDate": "2016-01-31"
-        }
-
-+ Response 201 (application/json)
-
-        {
-            "data": {
-                "id": "1911",
-                "amount": "600",
-                "startDate": "2016-01-01",
-                "endDate": "2016-01-31",
-                "state": "ACTIVE",
-                "spend": "0.0000",
-                "available": "600.0000"
-            }
-        }
-
-
-### Get a campaign budget [GET /rest/v1/campaigns/{campaignId}/budgets/{budgetId}]
-
-+ Parameters
-    + campaignId: 608 (required)
-    + budgetId: 1910 (required)
-
-+ Response 200 (application/json)
-
-        {
-            "data": {
-                "id": "1910",
-                "amount": "400",
-                "startDate": "2016-01-01",
-                "endDate": "2016-01-31",
-                "state": "ACTIVE",
-                "spend": "0.0000",
-                "available": "400.0000"
-            }
-        }
-
-
-### Edit a campaign budget [PUT /rest/v1/campaigns/{campaignId}/budgets/{budgetId}]
-
-+ Parameters
-    + campaignId: 608 (required)
-    + budgetId: 1910 (required)
-
-+ Request (application/json)
-
-        {
-            "amount": "800"
-        }
-
-+ Response 200 (application/json)
-
-        {
-            "data": {
-                "id": "1911",
-                "amount": "800",
-                "startDate": "2016-01-01",
-                "endDate": "2016-01-31",
-                "state": "ACTIVE",
-                "spend": "0.0000",
-                "available": "800.0000"
-            }
-        }
-
 ## Campaigns [/rest/v1/campaigns/]
+
+A Campaign is a collection of Ad Groups. It holds common settings for
+all Ad Groups and also has budgets and goals associated.
+
+Property  | Type                  | Description                                | Create   | Update
+----------|-----------------------|--------------------------------------------|----------|-----------|
+id        | string                | the campaign's id                          | N/A      | read only
+accountId | string                | id of the account this campaign belongs to | required | read only
+name      | string                | the name of the campaign                   | required | optional
+tracking  | [tracking](#tracking) | tracking settings                          | optional | optional
+
+
+<a name="tracking"></a>
+#### Tracking Settings
+
+Postclick tracking integration can be set up for Google Analytics and Adobe Analytics.
+
+Tracking | Property          | Type                                  | Description
+---------|-------------------|---------------------------------------|--------------------------------------|
+ga       |                   |                                       |
+&nbsp;   | enabled           | boolean                               | Google Analytics integration enabled
+&nbsp;   | type              | [GA Tracking Type](#ga-tracking-type) | Google Analytics tracking type
+&nbsp;   | webProperyId      | string                                | Google Analytics Web Property ID
+adobe    |                   |                                       |
+&nbsp;   | enabled           | boolean                               | Adobe Analytics integration enabled
+&nbsp;   | trackingParameter | string                                | Adobe Analytics tracking parameter
+
 
 ### Get campaign details [GET /rest/v1/campaigns/{campaignId}]
 
@@ -319,7 +423,155 @@ Authorization: Bearer <access_token>
             }
         }
 
+
+
+## Campaign Budgets [/rest/v1/campaigns/{campaignId}/budgets/]
+<a name="budget"></a>
+
+Each budget item is part of a [Credit Item](#credit) and allows a campaign
+to spend a portion of the credit.
+
+A campaign needs at least one active budget associated with it before its
+Ad Groups can be started.
+
+Property  | Type            | Description                                      | Create   | Update
+----------|-----------------|--------------------------------------------------|----------|-----------|
+id        | string          | the budget'id                                    | N/A      | read only
+creditId  | string          | id of the credit this budget is part of          | required | read only
+amount    | [money](#money) | total amount allocated by the budget             | required | optional
+startDate | date            | budget start date, must be in the future         | required | optional
+endDate   | date            | budget end date, must end before the credit ends | required | optional
+state     | string          | budget state, ACTIVE/PENDING/INACTIVE/DEPLETED   | N/A      | read only
+spend     | [money](#money) | the amount of the budget already spent           | N/A      | read only
+available | [money](#money) | the amount of the budget still available         | N/A      | read only
+
+### List campaign budgets [GET /rest/v1/campaigns/{campaignId}/budgets/]
+
++ Parameters
+    + campaignId: 608 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "id": "1910",
+                    "amount": "400",
+                    "startDate": "2016-01-01",
+                    "endDate": "2016-01-31",
+                    "state": "ACTIVE",
+                    "spend": "0.0000",
+                    "available": "400.0000"
+                }
+            ]
+        }
+
+### Create a new campaign budget [POST /rest/v1/campaigns/{campaignId}/budgets/]
+
++ Parameters
+    + campaignId: 608 (required)
+
++ Request (application/json)
+
+        {
+            "creditId": "861",
+            "amount": "600",
+            "startDate": "2016-01-01",
+            "endDate": "2016-01-31"
+        }
+
++ Response 201 (application/json)
+
+        {
+            "data": {
+                "id": "1911",
+                "amount": "600",
+                "startDate": "2016-01-01",
+                "endDate": "2016-01-31",
+                "state": "ACTIVE",
+                "spend": "0.0000",
+                "available": "600.0000"
+            }
+        }
+
+
+### Get a campaign budget [GET /rest/v1/campaigns/{campaignId}/budgets/{budgetId}]
+
++ Parameters
+    + campaignId: 608 (required)
+    + budgetId: 1910 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "1910",
+                "amount": "400",
+                "startDate": "2016-01-01",
+                "endDate": "2016-01-31",
+                "state": "ACTIVE",
+                "spend": "0.0000",
+                "available": "400.0000"
+            }
+        }
+
+
+### Edit a campaign budget [PUT /rest/v1/campaigns/{campaignId}/budgets/{budgetId}]
+
++ Parameters
+    + campaignId: 608 (required)
+    + budgetId: 1910 (required)
+
++ Request (application/json)
+
+        {
+            "amount": "800"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "1911",
+                "amount": "800",
+                "startDate": "2016-01-01",
+                "endDate": "2016-01-31",
+                "state": "ACTIVE",
+                "spend": "0.0000",
+                "available": "800.0000"
+            }
+        }
+
 ## Campaign goals [/rest/v1/campaigns/{campaignId}/goals/]
+<a name="goal"></a>
+
+Campaign goals give Zemanta's intelligent campaign automation feature Autopilot
+data to help optimize your campaign for optimal results.
+
+A campaign needs at least one goal associated with it before any of its
+Ad Groups can be started.
+
+Property        | Type                  | Description                   | Create | Update |
+----------------|-----------------------|-------------------------------|--------|--------|
+id              | string                | the campaign goal's id        | N/A | read only
+type            | [enum](#goal-type)    | type of the goal | required | read only
+value           | string (decimal)      | value to optimize for         | required | optional
+primary         | boolean | Is this goal primary? There can only be one primary goal per campaign. If a primary goal already exists and you create a new primary goal, the old goal will no longer be primary.                                     | required | optional
+conversionGoal  | [conversion goal](#conversion-goal) | conversion goal | optional | optional
+
+<a name="conversion-goal"></a>
+#### Conversion Goals
+
+<!-- TODO: explain conversion goals -->
+
+Property         | Type                          | Description                 | Create   | Update
+-----------------|-------------------------------|-----------------------------|----------|-----------|
+type             | [enum](#conversion-goal-type) | conversion goal type        | required | read only
+name             | string                        | name of the conversion goal | required | read only
+conversionWindow | [enum](#conversion-window)    | conversion goal type        | required | read only
+goalId           | string                        | goal id                     | required | optional
+pixelUrl         | url                           | pixel url, if applicable    | optional | optional
+
 
 ### List campaign goals [GET /rest/v1/campaigns/{campaignId}/goals/]
 
@@ -332,7 +584,6 @@ Authorization: Bearer <access_token>
             "data": [
                 {
                     "id": "1238",
-                    "campaignId": "608",
                     "type": "TIME_ON_SITE",
                     "primary": true,
                     "conversionGoal": {
@@ -354,7 +605,6 @@ Authorization: Bearer <access_token>
 + Request (application/json)
 
         {
-            "campaignId": "608",
             "type": "CPA",
             "value": "30.0",
             "primary": true,
@@ -372,7 +622,6 @@ Authorization: Bearer <access_token>
         {
             "data": {
                 "id": "1239",
-                "campaignId": "608",
                 "type": "CPA",
                 "value": "30.0",
                 "primary": true,
@@ -403,7 +652,6 @@ Authorization: Bearer <access_token>
         {
             "data": {
                 "id": "1238",
-                "campaignId": "608",
                 "type": "CPA",
                 "primary": false,
                 "conversionGoal": {
@@ -428,6 +676,72 @@ Authorization: Bearer <access_token>
 # Group Ad Group Management
 
 ## Ad Groups [/rest/v1/adgroups/]
+
+An Ad Group is a collection of Content Ads that has specific targeting settings.
+
+Before any Ad Groups in the campaign can be activated, a campaign must
+have at least one active [Budget](#budget) and at least one [Goal](#goal) associated.
+
+Property     | Type                      | Description                                                                                                                      | Create   | Update
+-------------|---------------------------|----------------------------------------------------------------------------------------------------------------------------------|----------|-----------|
+id           | string                    | the ad group's id                                                                                                                | N/A      | read only
+campaignId   | string                    | id of the campaign this ad group belongs to                                                                                      | required | read only
+name         | string                    | the name of the ad group                                                                                                         | required | optional
+state        | `ACTIVE` / `INACTIVE`     | Ad group state. Set to `ACTIVE` to activate the Ad Group and to `INACTIVE` to deactivate it.                                     | optional | optional
+startDate    | string                    | start date of the ad group                                                                                                       | optional | optional
+endDate      | string                    | End date of the ad group. Omit to leave it running until state is manually set to `INACTIVE`.                                    | optional | optional
+startDate    | string                    | start date of the ad group                                                                                                       | optional | optional
+maxCpc       | [money](#money)           | maximum CPC for this ad group                                                                                                    | optional | optional
+targeting    | [targeting](#targeting)   | targeting settings                                                                                                               | optional | optional
+dayparting   | [dayparting](#dayparting) | dayparting settings                                                                                                              | optional | optional
+trackingCode | string                    | tracking codes appended to all content ads URLs ([more](http://help.zemanta.com/article/show/12985-tracking-parameters--macros)) | optional | optional
+autopilot    | [autopilot](#autopilot)   | Zemanta Autopilot settings                                                                                                       | optional | optional
+
+<a name="targeting"></a>
+#### Targeting Settings
+
+Targeting | Property | Property  | Type                                          | Description
+----------|----------|-----------|-----------------------------------------------|---------------------------------------------------------------------------------------------|
+devices   |          |           | array[[device](#device)]                      | A list of device types to target. If none specified, content is served to all device types.
+geo       |          |           |
+&nbsp;    | included |           |                                               |
+&nbsp;    |          | countries | array[[country](#country)]                    | countries to target
+&nbsp;    |          | regions   | array[[region](#region)]                      | regions to target
+&nbsp;    |          | dma       | array[[DMA](#dma)]                            | DMA IDs to target
+interest  |          |           |
+&nbsp;    | included |           | array[[interestCategory](#interest-category)] | interest categories to target
+&nbsp;    | excluded |           | array[[interestCategory](#interest-category)] | interest categories to avoid
+
+
+<a name="dayparting"></a>
+#### Dayparting
+
+Dayparting structure is defined as a dictionary of days which point to a list of hours that are enabled in that day, eg. "monday" -> [0, 1, 2, 5]. 
+This means that on monday bidding is enabled from 00:00 to 02:59 and from 5:00 to 5:59. 
+The other value is "timezone" that defines in which timezone the hours are evaluated, eg. "timezone" -> "America/New_York". 
+This value must be formatted according to the tz database (see https://en.wikipedia.org/wiki/Tz_database). If timezone isn't specified then user's timezone is used to resolve the hours.
+
+Property  | Type                                                     | Description
+----------|----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+sunday    | array[integer]                                           | active hours
+monday    | array[integer]                                           | active hours
+tuesday   | array[integer]                                           | active hours
+wednesday | array[integer]                                           | active hours
+thursday  | array[integer]                                           | active hours
+friday    | array[integer]                                           | active hours
+saturday  | array[integer]                                           | active hours
+timezone  | [TZ timezone](https://en.wikipedia.org/wiki/Tz_database) | Timezone in which the hours are evaluated. If not specified, the timezone of the user being shown the ad is used.
+
+<a name="autopilot"></a>
+#### Zemanta Autopilot Settings
+
+Get more information about Zemanta Autopilot in our [knowledge base](http://help.zemanta.com/article/show/12921-autopilot).
+
+Property    | Type                                | Description
+------------|-------------------------------------|------------------------|
+state       | [autopilot state](#autopilot-state) | autopilot state
+dailyBudget | dailyBudget                         | autopilot daily budget
+
 
 ### Get ad group details [GET /rest/v1/adgroups/{adGroupId}]
 
@@ -680,6 +994,18 @@ Authorization: Bearer <access_token>
 
 ## Ad Group Sources [/rest/v1/adgroups/{adGroupId}/sources/]
 
+Each Ad Group has specific configurable settings for each media source.
+You can control whether the ad group is promoted on a given source, the
+CPC you are willing to pay on that source and the daily budget you wish
+to spend on that source.
+
+Property    | Type                | Description
+------------|---------------------|------------------------------------------------|
+source      | string              | source identifier
+state       | `ACTIVE`/`INACTIVE` | is ad group being promoted on the given source
+cpc         | [money](#money)     | CPC for the given source
+dailyBudget | [money](#money)     | daily budget for the given source
+
 ### Get ad group source settings [GET /rest/v1/adgroups/{adGroupId}/sources/]
 
 + Parameters
@@ -754,8 +1080,26 @@ Authorization: Bearer <access_token>
                 }
             ]
         }
+
+## All Real-time bidding sources as one [/rest/v1/adgroups/{adGroupId}/sources/rtb/]
+
+The sources you can promote your content on come in two flavours: real-time
+bidding (RTB) and non-real-time bidding (Non-RTB) sources. RTB sources are all
+sources except `yahoo`, `outbrain`, `instagram` and `facebook`.
+
+In order to simplify manual source management (when not using Zemanta Autopilot),
+you can use this special RTB settings endpoint, which allows you to group
+all RTB sources together and treat them as a single source. This allows you to set
+the state and daily budget of all RTB sources at once. The daily budget set by
+this endpoint will be shared among all RTB sources.
+
+Property     | Type                | Description
+-------------|---------------------|---------------------------------------------------------------|
+groupEnabled | boolean             | enable or disable treating all RTB sources as a single source
+state        | `ACTIVE`/`INACTIVE` | the state of all RTB sources
+dailyBudget  | [money](#money)     | daily budget shared among all RTB sources
         
-### Get ad group source settings for all RTB sources [GET /rest/v1/adgroups/{adGroupId}/sources/rtb/]
+### Get ad group source settings for All RTB sources as one [GET /rest/v1/adgroups/{adGroupId}/sources/rtb/]
 
 + Parameters
     + adGroupId: 2040 (required)
@@ -770,7 +1114,7 @@ Authorization: Bearer <access_token>
             }
         }
         
-### Update ad group source settings for all RTB sources [PUT /rest/v1/adgroups/{adGroupId}/sources/rtb/]
+### Update ad group source settings for All RTB sources as one [PUT /rest/v1/adgroups/{adGroupId}/sources/rtb/]
 
 + Parameters
     + adGroupId: 2040 (required)
@@ -793,98 +1137,46 @@ Authorization: Bearer <access_token>
             }
         }
 
-# Group Content ad management
+# Group Content Ad management
 
-## Manage content ads [/rest/v1/contentads/]
+## Upload Content Ads [/rest/v1/contentads/batch/]
 
-### List content ads [GET /rest/v1/contentads/{?adGroupId}]
+Content Ads are uploaded in batches. First, you create an upload batch with
+the Content Ads you want to upload. Then, you poll the status of the batch
+and the validation status of the individual Content Ads. If any of the Content
+Ads in the batch fail the validation process, none of the Content Ads in the
+batch will be accepted into the system.
 
-+ Parameters
-    + adGroupId: 2040 (number, required) - Ad group ID
+If and when all the Content Ads in the batch pass the validation process, they
+are accepted into the system.
 
-+ Response 200 (application/json)
+<a name="content-ad"></a>
+#### Content Ad
 
-        {
-            "data": [
-                {
-                    "id": "16805",
-                    "adGroupId": "2040",
-                    "state": "ACTIVE",
-                    "label": "My label",
-                    "url": "http://example.com/myblog",
-                    "title": "My title",
-                    "imageUrl": "http://example.com/myimage",
-                    "imageCrop": "faces",
-                    "displayUrl": "http://example.com/mycompany",
-                    "brandName": "My Company",
-                    "description": "My description",
-                    "callToAction": "Read more",
-                    "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
-                }
-            ]
-        }
-        
+Property     | Type                      | Description                                                                                                                   | Create   | Update
+-------------|---------------------------|-------------------------------------------------------------------------------------------------------------------------------|----------|-----------|
+id           | string                    | the content ad's id                                                                                                           | N/A      | read only
+adGroupId    | string                    | the id of the ad group this Content Ad belongs to                                                                             | N/A      | read only
+state        | `ACTIVE`/`INACTIVE`       | the state of the Content Ad                                                                                                   | N/A      | optional
+label        | string                    | free-form text label                                                                                                          | optional | read only
+url          | string                    | landing url                                                                                                                   | required | read only
+title        | string                    | title of the Content Ad                                                                                                       | required | read only
+imageUrl     | string                    | URL of the Content Ad's image                                                                                                 | required | read only
+imageCrop    | [image crop](#image-crop) | what strategy to use when cropping (most commonly `center` or `faces`, [more info](http://docs.imgix.com/apis/url/size/crop)) | required | read only
+displayUrl   | string                    | the URL displayed with the Ad                                                                                                 | required | read only
+brandName    | string                    | the brand name of the Content Ad                                                                                              | required | read only
+description  | string                    | the description of the Content Ad                                                                                             | required | read only
+callToAction | string                    | call to action, most commonly `Read more`                                                                                     | required | read only
+trackerUrls  | array[string]             | tracker URLs                                                                                                                  | optional | read only
 
-### Get content ad details [GET /rest/v1/contentads/{contentAdId}]
+#### Upload Batch
 
-+ Parameters
-    + contentAdId: 16805 (required)
-
-+ Response 200 (application/json)
-
-        {
-            "data": {
-                "id": "16805",
-                "adGroupId": "2040",
-                "state": "ACTIVE",
-                "label": "My label",
-                "url": "http://example.com/myblog",
-                "title": "My title",
-                "imageUrl": "http://example.com/myimage",
-                "imageCrop": "faces",
-                "displayUrl": "http://example.com/mycompany",
-                "brandName": "My Company",
-                "description": "My description",
-                "callToAction": "Read more",
-                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
-            }
-        }
-        
-
-### Edit a content ad [PUT /rest/v1/contentads/{contentAdId}]
-
-+ Parameters
-    + contentAdId: 16805 (required)
-
-+ Request (application/json)
-
-        {
-            "label": "My label 2",
-            "state": "INACTIVE"
-        }
-        
-
-+ Response 200 (application/json)
-
-        {
-            "data": {
-                "id": "16805",
-                "adGroupId": "2040",
-                "state": "INACTIVE",
-                "label": "My label 2",
-                "url": "http://example.com/myblog",
-                "title": "My title",
-                "imageUrl": "http://example.com/myimage",
-                "imageCrop": "faces",
-                "displayUrl": "http://example.com/mycompany",
-                "brandName": "My Company",
-                "description": "My description",
-                "callToAction": "Read more",
-                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
-            }
-        }
-
-## Upload content ads [/rest/v1/contentads/batch/]
+Property           | Type                             | Description
+-------------------|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+id                 | string                           | id of the upload batch
+status             | [batch status](#batch-status)    | status of the upload batch
+validationStatus   | array[validation status]         | An array of validation statuses for each Content Ad uploaded in this batch. The statuses are in the same order as the ads were uploaded.
+approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains the uploaded Content Ads if/when all the ads pass the validation process. The Content Ads are in the same order as they were uploaded, but with added Zemanta IDs.
 
 
 ### Create a new content ad upload batch [POST /rest/v1/contentads/batch/{?adGroupId}]
@@ -953,11 +1245,99 @@ Authorization: Bearer <access_token>
             }
         }
 
+## Manage content ads [/rest/v1/contentads/]
+
+### List content ads [GET /rest/v1/contentads/{?adGroupId}]
+
++ Parameters
+    + adGroupId: 2040 (number, required) - Ad group ID
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "id": "16805",
+                    "adGroupId": "2040",
+                    "state": "ACTIVE",
+                    "label": "My label",
+                    "url": "http://example.com/myblog",
+                    "title": "My title",
+                    "imageUrl": "http://example.com/myimage",
+                    "imageCrop": "faces",
+                    "displayUrl": "http://example.com/mycompany",
+                    "brandName": "My Company",
+                    "description": "My description",
+                    "callToAction": "Read more",
+                    "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
+                }
+            ]
+        }
+        
+
+### Get content ad details [GET /rest/v1/contentads/{contentAdId}]
+
++ Parameters
+    + contentAdId: 16805 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "16805",
+                "adGroupId": "2040",
+                "state": "ACTIVE",
+                "label": "My label",
+                "url": "http://example.com/myblog",
+                "title": "My title",
+                "imageUrl": "http://example.com/myimage",
+                "imageCrop": "faces",
+                "displayUrl": "http://example.com/mycompany",
+                "brandName": "My Company",
+                "description": "My description",
+                "callToAction": "Read more",
+                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
+            }
+        }
+        
+
+### Edit a content ad [PUT /rest/v1/contentads/{contentAdId}]
+
++ Parameters
+    + contentAdId: 16805 (required)
+
++ Request (application/json)
+
+        {
+            "state": "INACTIVE"
+        }
+        
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "16805",
+                "adGroupId": "2040",
+                "state": "INACTIVE",
+                "label": "My label",
+                "url": "http://example.com/myblog",
+                "title": "My title",
+                "imageUrl": "http://example.com/myimage",
+                "imageCrop": "faces",
+                "displayUrl": "http://example.com/mycompany",
+                "brandName": "My Company",
+                "description": "My description",
+                "callToAction": "Read more",
+                "trackerUrls": ["https://example.com/t1", "https://example.com/t2"]
+            }
+        }
+
+
 
 # Group Publishers management
 
-## Blacklisting and whitelisting [/rest/v1/adgroups/{adGroupId}/publishers/]
-
+## Blacklisting [/rest/v1/adgroups/{adGroupId}/publishers/]
 
 ### Get publisher status [GET /rest/v1/adgroups/{adGroupId}/publishers/]
 
@@ -1090,14 +1470,12 @@ For now, only the following lists of fields are supported:
             }
         }
 
-# Group Types
+# Group Additional Types
 
-## Dayparting
+<a name="money"></a>
+## Money
 
-Dayparting structure is defined as a dictionary of days which point to a list of hours that are enabled in that day, eg. "monday" -> [0, 1, 2, 5]. 
-This means that on monday bidding is enabled from 00:00 to 02:59 and from 5:00 to 5:59. 
-The other value is "timezone" that defines in which timezone the hours are evaluated, eg. "timezone" -> "America/New_York". 
-This value must be formatted according to the tz database (see https://en.wikipedia.org/wiki/Tz_database). If timezone isn't specified then user's timezone is used to resolve the hours.
+A string representing a decimal number. Example: `"15.48"`
 
 
 # Group Constants reference
@@ -1107,6 +1485,7 @@ This value must be formatted according to the tz database (see https://en.wikipe
 - `ACTIVE`
 - `INACTIVE`
 
+<a name="autopilot-state"></a>
 ## Autopilot State
 
 - `ACTIVE_CPC` - Optimize Bids
@@ -1116,16 +1495,18 @@ This value must be formatted according to the tz database (see https://en.wikipe
 
 ## Publishers
 
+<a name="publishers-status"></a>
 ### Status
 - `ENABLED`
 - `BLACKLISTED`
-- `WHITELISTED`
 
+<a name="publishers-level"></a>
 ### Level
 - `ADGROUP`
 - `CAMPAIGN`
 - `ACCOUNT`
 
+<a name="goal-type"></a>
 ## Campaign Goal KPIs
 - `TIME_ON_SITE` -  Time on Site - Seconds
 - `MAX_BOUNCE_RATE` -  Max Bounce Rate
@@ -1136,23 +1517,34 @@ This value must be formatted according to the tz database (see https://en.wikipe
 - `CPV` -  Cost per Visit
 - `CP_NON_BOUNCED_VISIT` -  Cost per Non-Bounced Visit
 
+<a name="conversion-goal-type"></a>
 ### Conversion goal type
 - `PIXEL` - Conversion Pixel
 - `GA` - Google Analytics
 - `OMNITURE` - Adobe Analytics
 
+<a name="conversion-window"></a>
+### Conversion window
+- `LEQ_1_DAY` - 1 day
+- `LEQ_7_DAYS` - 7 days
+- `LEQ_30_DAYS` - 30 days
+- `LEQ_90_DAYS` - 90 days
+
+<a name="batch-status"></a>
 ## Content ad upload batch status
 - `DONE`
 - `FAILED`
 - `IN_PROGRESS`
 - `CANCELLED`
 
+<a name="device"></a>
 ## Device targeting
 
 - `DESKTOP`
 - `TABLET`
 - `MOBILE`
 
+<a name="interest-category"></a>
 ## Interest targeting
 
 - `COMMUNICATION` - Communication Tools
@@ -1194,6 +1586,7 @@ This value must be formatted according to the tz database (see https://en.wikipe
 
 ## Geo targeting
 
+<a name="dma"></a>
 ### DMA
 - `669` - 669 Madison, WI 
 - `762` - 762 Missoula, MT 
@@ -1406,6 +1799,7 @@ This value must be formatted according to the tz database (see https://en.wikipe
 - `682` - 682 Davenport,IA-Rock Island-Moline,IL
 - `531` - 531 Tri-Cities-Tn-Va
  
+<a name="country"></a>
 ### Country
 - `BD` - Bangladesh 
 - `BE` - Belgium 
@@ -1601,7 +1995,7 @@ This value must be formatted according to the tz database (see https://en.wikipe
 - `VN` - Viet Nam 
 - `AQ` - Antarctica 
 - `AS` - American Samoa 
-- `AR` - Argentina 
+- `AR` - Argentina 〃
 - `AU` - Australia 
 - `IL` - Israel 
 - `IN` - India 
@@ -1613,6 +2007,7 @@ This value must be formatted according to the tz database (see https://en.wikipe
 - `QA` - Qatar 
 - `MZ` - Mozambique
  
+<a name="region"></a>
 ### Region
 - `US-AL` - Alabama
 - `US-AK` - Alaska

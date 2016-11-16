@@ -390,7 +390,6 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
     def to_representation(self, data_internal):
         return {
             'id': data_internal['id'],
-            'campaignId': data_internal['campaign_id'],
             'primary': data_internal['primary'],
             'type': constants.CampaignGoalKPI.get_name(data_internal['type']),
             'conversionGoal': self._conversion_goal_to_representation(data_internal['conversion_goal']),
