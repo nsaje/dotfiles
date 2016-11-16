@@ -348,8 +348,9 @@ def get_max_settable_source_budget(ad_group_source, new_daily_budget, campaign,
     if campaign_settings.landing_mode:
         return 0
 
-    if _is_ags_always_in_budget_group(ad_group_source, [ad_group_settings]):
-        return 0
+    # TODO hamax: allow setting budget during the transition period
+    # if _is_ags_always_in_budget_group(ad_group_source, [ad_group_settings]):
+    #     return 0
 
     today = dates_helper.local_today()
     max_daily_budget_per_ags, max_group_daily_budget_per_ag = _get_max_daily_budget_per_ags(today, campaign)
