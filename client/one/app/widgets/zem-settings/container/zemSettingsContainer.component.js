@@ -155,7 +155,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         //
         var TOOLTIP_ARCHIVE_ACCOUNT = 'All of the account\'s campaigns have to be paused in order to archive the account.'; // eslint-disable-line max-len
         var TOOLTIP_ARCHIVE_CAMPAIGN = 'All of the campaign\'s ad groups have to be paused in order to archive the campaign.'; // eslint-disable-line max-len
-        var TOOLTIP_ARCHIVE_ADGROUP = 'An ad group has to be paused in order to archive it.';
+        var TOOLTIP_ARCHIVE_ADGROUP = 'An ad group has to be paused for 3 days in order to archive it.';
 
         var TOOLTIP_RESTORE_ACCOUNT = '';
         var TOOLTIP_RESTORE_CAMPAIGN = 'In order to restore a campaign, it\'s account must be restored first.';
@@ -173,7 +173,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         }
 
         function getArchiveTooltip () {
-            if (!$ctrl.entity.canArchive) return '';
+            if ($ctrl.entity.canArchive) return '';
             if ($ctrl.entityType === constants.entityType.ACCOUNT) return TOOLTIP_ARCHIVE_ACCOUNT;
             if ($ctrl.entityType === constants.entityType.CAMPAIGN) return TOOLTIP_ARCHIVE_CAMPAIGN;
             if ($ctrl.entityType === constants.entityType.AD_GROUP) return TOOLTIP_ARCHIVE_ADGROUP;

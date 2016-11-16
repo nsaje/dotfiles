@@ -647,6 +647,70 @@ class ArchiveRestoreTestCase(TestCase):
         ag.restore(self.request)
         self.assertFalse(ag.get_current_settings().archived)
 
+    def test_cannot_archive_ad_group_dates(self):
+        ag = models.AdGroup.objects.get(id=2)
+
+        cs = ag.get_current_settings()
+        self.assertFalse(cs.archived)
+        self.assertTrue(ag.can_archive())
+
+        with test_helper.disable_auto_now_add(models.AdGroupSettings, 'created_dt'):
+            # enable it before
+            cs = cs.copy_settings()
+            cs.state = constants.AdGroupSettingsState.ACTIVE
+            cs.created_dt = datetime.date.today() - datetime.timedelta(
+                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 1)
+            cs.save(self.request)
+
+            cs = cs.copy_settings()
+            cs.state = constants.AdGroupSettingsState.INACTIVE
+            cs.created_dt = datetime.date.today() - datetime.timedelta(
+                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL)
+            cs.save(self.request)
+
+        self.assertFalse(ag.can_archive())
+
+    def test_can_archive_ad_group_dates(self):
+        ag = models.AdGroup.objects.get(id=2)
+
+        cs = ag.get_current_settings()
+        self.assertFalse(cs.archived)
+        self.assertTrue(ag.can_archive())
+
+        with test_helper.disable_auto_now_add(models.AdGroupSettings, 'created_dt'):
+            # enable it before
+            cs = cs.copy_settings()
+            cs.state = constants.AdGroupSettingsState.ACTIVE
+            cs.created_dt = datetime.date.today() - datetime.timedelta(
+                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 2)
+            cs.save(self.request)
+
+            # then pause
+            cs = cs.copy_settings()
+            cs.state = constants.AdGroupSettingsState.INACTIVE
+            cs.created_dt = datetime.date.today() - datetime.timedelta(
+                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 1)
+            cs.save(self.request)
+
+        self.assertTrue(ag.can_archive())
+
+    def test_can_archive_ad_group_dates_if_never_enabled(self):
+        ag = models.AdGroup.objects.get(id=2)
+
+        cs = ag.get_current_settings()
+        self.assertFalse(cs.archived)
+        self.assertTrue(ag.can_archive())
+        self.assertEqual([x for x in ag.settings.all() if x.state == constants.AdGroupSettingsState.ACTIVE], [])
+
+        with test_helper.disable_auto_now_add(models.AdGroupSettings, 'created_dt'):
+            cs = cs.copy_settings()
+            cs.state = constants.AdGroupSettingsState.INACTIVE
+            cs.created_dt = datetime.date.today() - datetime.timedelta(
+                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL - 1)
+            cs.save(self.request)
+
+        self.assertTrue(ag.can_archive())
+
 
 class AdGroupTestCase(TestCase):
     fixtures = ['test_api.yaml', 'test_agency.yaml']

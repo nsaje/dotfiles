@@ -1,3 +1,4 @@
+import backtosql
 from collections import defaultdict
 from decimal import Decimal
 import datetime
@@ -14,6 +15,8 @@ import reports.models
 
 from utils import dates_helper
 from utils import converters
+
+from redshiftapi import db
 
 from etl import helpers
 
@@ -198,6 +201,34 @@ def _get_campaign_spend(date, all_campaigns):
     return campaign_spend
 
 
+def get_campaigns_with_spend(date_since):
+
+    today = dates_helper.local_today()
+    past_date = today - datetime.timedelta(days=dash.models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL)
+    past_date = max(past_date, date_since)
+
+    params = helpers.get_local_multiday_date_context(past_date, today)
+    del params['date_ranges']  # unnecessary in this case
+
+    ad_group_ids = _query_ad_groups_with_spend(params)
+
+    campaign_ids = dash.models.AdGroup.objects.filter(pk__in=ad_group_ids)\
+                                              .values_list('campaign_id', flat=True)\
+                                              .distinct('campaign_id')\
+                                              .order_by('campaign_id')
+    return dash.models.Campaign.objects.filter(pk__in=campaign_ids)
+
+
+def _query_ad_groups_with_spend(params):
+    sql = backtosql.generate_sql('etl_ad_groups_with_spend.sql', None)
+
+    with db.get_stats_cursor() as cursor:
+        cursor.execute(sql, params)
+        ad_group_ids = [x for x, in cursor]  # row is a tuple
+
+    return ad_group_ids
+
+
 @transaction.atomic
 def _reprocess_campaign_statements(campaign, dates, total_spend):
     for date in dates:
@@ -212,11 +243,25 @@ def reprocess_daily_statements(date_since):
     all_dates = set()
 
     campaigns = dash.models.Campaign.objects.prefetch_related('adgroup_set').all().exclude_archived()
+
+    # get campaigns that have spend in the last 3 days and might be archived
+    campaigns_w_spend = get_campaigns_with_spend(date_since)
+
+    logger.info(
+        "Additional campaigns with spend %s",
+        set(campaigns_w_spend.values_list('pk', flat=True)) - set(campaigns.values_list('pk', flat=True)))
+
+    campaigns |= campaigns_w_spend
+
     for campaign in campaigns:
+        # extracts dates where we have budgets but are not linked to daily statements
+
+        # get dates for a single campaign
         dates = _get_dates(date_since, campaign)
         for date in dates:
             all_dates.add(date)
             if date not in total_spend:
+                # do it for all campaigns at once for a single date
                 total_spend[date] = _get_campaign_spend(date, campaigns)
 
         _reprocess_campaign_statements(campaign, dates, total_spend)

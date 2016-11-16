@@ -40,6 +40,7 @@ from utils import lc_helper
 
 
 SHORT_NAME_MAX_LENGTH = 22
+NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL = 3  # number of days an ad group is paused before it can be archived
 
 
 class Round(Func):
@@ -1714,7 +1715,23 @@ class AdGroup(models.Model):
 
     def can_archive(self):
         current_settings = self.get_current_settings()
-        return not self.is_ad_group_active(current_settings)
+
+        # can not archive when ad group is active
+        if self.is_ad_group_active(current_settings):
+            return False
+
+        if not AdGroupSettings.objects.filter(ad_group_id=self.id, state=constants.AdGroupSettingsState.ACTIVE).exists():
+            # if it was never turned on than it can be archived
+            return True
+
+        # can not archive if ad group was turned off in the last 3 days
+        today = dates_helper.local_today()
+        activated_settings = AdGroupSettings.objects.filter(
+            ad_group_id=self.id,
+            created_dt__gte=today - datetime.timedelta(days=NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL),
+            state=constants.AdGroupSettingsState.INACTIVE
+        )
+        return not activated_settings.exists()
 
     def can_restore(self):
         if self.campaign.is_archived():

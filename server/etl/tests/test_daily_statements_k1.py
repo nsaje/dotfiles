@@ -1,6 +1,6 @@
 import datetime
 from decimal import Decimal
-from mock import patch
+from mock import patch, MagicMock
 
 from django.db.models import Sum
 from django.test import TestCase
@@ -9,10 +9,12 @@ import dash.models
 from etl import daily_statements_k1 as daily_statements
 import reports.models
 from utils import converters
+from utils import test_helper
 
 
 @patch('utils.dates_helper.datetime')
 @patch('etl.daily_statements_k1._get_campaign_spend')
+@patch('etl.daily_statements_k1.get_campaigns_with_spend', return_value=dash.models.Campaign.objects.none())
 class DailyStatementsK1TestCase(TestCase):
 
     fixtures = ['test_daily_statements.yaml']
@@ -36,7 +38,7 @@ class DailyStatementsK1TestCase(TestCase):
         mock_datetime.datetime = DatetimeMock
         mock_datetime.timedelta = datetime.timedelta
 
-    def test_first_day_single_daily_statemnt(self, mock_ad_group_stats, mock_datetime):
+    def test_first_day_single_daily_statemnt(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
                 self.campaign1.id: {
@@ -59,7 +61,7 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(500000000000, statements[0].data_spend_nano)
         self.assertEqual(500000000000, statements[0].license_fee_nano)
 
-    def test_budget_margin(self, mock_ad_group_stats, mock_datetime):
+    def test_budget_margin(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2016, 7, 15): {
                 self.campaign3.id: {
@@ -83,7 +85,7 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(500000000000, statements[0].license_fee_nano)
         self.assertEqual(250000000000, statements[0].margin_nano)
 
-    def test_first_day_cost_none(self, mock_ad_group_stats, mock_datetime):
+    def test_first_day_cost_none(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {}
         self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
@@ -99,7 +101,7 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(Decimal('0'), statements[0].data_spend_nano)
         self.assertEqual(Decimal('0'), statements[0].license_fee_nano)
 
-    def test_multiple_budgets_attribution_order(self, mock_ad_group_stats, mock_datetime):
+    def test_multiple_budgets_attribution_order(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 20): {
                 self.campaign1.id: {
@@ -142,7 +144,7 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(0, statements[31].data_spend_nano)
         self.assertEqual(0, statements[31].license_fee_nano)
 
-    def test_overspend(self, mock_ad_group_stats, mock_datetime):
+    def test_overspend(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
                 self.campaign1.id: {
@@ -169,7 +171,7 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(0, statements[0].data_spend_nano)
         self.assertEqual(600000000000, statements[0].license_fee_nano)
 
-    def test_different_fees(self, mock_ad_group_stats, mock_datetime):
+    def test_different_fees(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
                 self.campaign2.id: {
@@ -201,7 +203,7 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(500000000000, statements[1].data_spend_nano)
         self.assertEqual(500000000000, statements[1].license_fee_nano)
 
-    def test_different_days(self, mock_ad_group_stats, mock_datetime):
+    def test_different_days(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 10): {
                 self.campaign1.id: {
@@ -254,7 +256,7 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(0, statements[12].data_spend_nano)
         self.assertEqual(250000000000, statements[12].license_fee_nano)
 
-    def test_max_dates_till_today(self, mock_ad_group_stats, mock_datetime):
+    def test_max_dates_till_today(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         # check that there's no endless loop when update_from is less than all budget start dates
         return_values = {}
         self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
@@ -268,7 +270,8 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertItemsEqual([update_from], dates)
 
     @patch('reports.daily_statements._generate_statements')
-    def test_daily_statements_already_exist(self, mock_generate_statements, mock_ad_group_stats, mock_datetime):
+    def test_daily_statements_already_exist(self, mock_generate_statements, mock_campaign_with_spend,
+                                            mock_ad_group_stats, mock_datetime):
         return_values = {}
         self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 30, 12))
@@ -430,3 +433,37 @@ class EffectiveSpendPctsK1TestCase(TestCase):
             date, campaign, campaign_spend)
         self.assertEqual(Decimal('0'), pct_actual_spend)
         self.assertEqual(Decimal('0'), pct_license_fee)
+
+
+@patch('etl.daily_statements_k1._query_ad_groups_with_spend', return_value=[2, 3])
+@patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 11, 15))
+class GetCampaignsWithSpendTest(TestCase):
+    fixtures = ['test_api_breakdowns.yaml']
+
+    def test_get_campaigns_with_spend(self, mock_local_today, mock_ad_groups):
+        since = datetime.date(2016, 11, 1)
+        campaigns = daily_statements.get_campaigns_with_spend(since)
+
+        self.assertEqual(campaigns, test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1, 2])))
+        mock_ad_groups.assert_called_with({
+            'tzhour_from': 5,
+            'tzhour_to': 5,
+            'tzdate_from': '2016-11-12',
+            'tzdate_to': '2016-11-16',
+            'date_from': '2016-11-12',
+            'date_to': '2016-11-15',
+        })
+
+    def test_get_campaigns_with_spend_close(self, mock_local_today, mock_ad_groups):
+        since = datetime.date(2016, 11, 13)
+        campaigns = daily_statements.get_campaigns_with_spend(since)
+
+        self.assertEqual(campaigns, test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1, 2])))
+        mock_ad_groups.assert_called_with({
+            'tzhour_from': 5,
+            'tzhour_to': 5,
+            'tzdate_from': '2016-11-13',  # use date_since as its later
+            'tzdate_to': '2016-11-16',
+            'date_from': '2016-11-13',
+            'date_to': '2016-11-15',
+        })
