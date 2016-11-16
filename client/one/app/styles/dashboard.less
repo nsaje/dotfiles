@@ -207,14 +207,27 @@ tags-input .host .tags {
         outline: 0;
         margin: 2px;
         padding: 0 0 0 5px;
-        height: 26px;
-        box-shadow: 0;
+        height: 28px;
+        line-height: 26px;
+        box-shadow: none !important;
     }
 
     .tag-item {
         background: none;
         background-color: @light-gray;
         border: 1px solid @light-gray;
+        color: @text-color;
+        height: 28px;
+        line-height: 26px;
+        
+        .remove-button {
+            color: @text-color;
+            
+            &:hover {
+                color: @red;
+                text-decoration: none;
+            }
+        }
 
         &.selected {
             background-color: @red;
@@ -227,7 +240,7 @@ tags-input .host .tags {
         }
     }
 }
-
+    
 ///////////////////////////
 // Graph & Infobox
 ///////////////////////////
@@ -2585,6 +2598,14 @@ select.media-source-select {
 .zem-tabset zem-internal-feature {
     left: 0px !important;
     top: 0px !important;
+}
+    
+.has-error .checkbox, .has-error .checkbox-inline, .has-error .control-label, .has-error .help-block, .has-error .radio, .has-error .radio-inline, .has-error.checkbox label, .has-error.checkbox-inline label, .has-error.radio label, .has-error.radio-inline label {
+    color: @red !important;
+}
+
+div, input, select, ul, li, ol, a, strong {
+    outline: none !important;
 }
 
 .zem-grid-column-selector,
