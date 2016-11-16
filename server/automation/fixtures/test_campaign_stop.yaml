@@ -269,6 +269,9 @@
     created_by: 1
     state: 1
     cpc_cc: 100.00
+    b1_sources_group_enabled: true
+    b1_sources_group_daily_budget: 50
+    b1_sources_group_state: 1
   model: dash.adgroupsettings
   pk: 3
 
@@ -415,7 +418,7 @@
 
 # Source Types
 -   fields:
-        type: 'adblade'
+        type: 'b1'
         available_actions: [7] # set end date
         min_daily_budget: 5.00
     model: dash.sourcetype
