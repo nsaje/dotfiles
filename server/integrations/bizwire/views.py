@@ -156,7 +156,7 @@ class PromotionExport(BizwireView):
         article_url = request.GET.get('article_url')
         if article_url:
             m = re.search('news/home/(\d*)/', article_url)
-            if m and m.groups():
+            if m:
                 article_id = m.groups()[0]
 
         try:
