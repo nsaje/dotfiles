@@ -245,13 +245,13 @@ def reprocess_daily_statements(date_since):
     campaigns = dash.models.Campaign.objects.prefetch_related('adgroup_set').all().exclude_archived()
 
     # get campaigns that have spend in the last 3 days and might be archived
-    campaigns_w_spend = get_campaigns_with_spend(date_since)
+    # campaigns_w_spend = get_campaigns_with_spend(date_since)
 
-    logger.info(
-        "Additional campaigns with spend %s",
-        set(campaigns_w_spend.values_list('pk', flat=True)) - set(campaigns.values_list('pk', flat=True)))
+    # logger.info(
+    #     "Additional campaigns with spend %s",
+    #     set(campaigns_w_spend.values_list('pk', flat=True)) - set(campaigns.values_list('pk', flat=True)))
 
-    campaigns |= campaigns_w_spend
+    # campaigns |= campaigns_w_spend
 
     for campaign in campaigns:
         # extracts dates where we have budgets but are not linked to daily statements
