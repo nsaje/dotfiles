@@ -30,20 +30,13 @@ def click_capping(request):
     content_ad_id = int(request.GET.get('creativeId'))
     content_ad = dash.models.ContentAd.objects.filter(
         id=content_ad_id,
-        ad_group_id__in=config.TEST_AD_GROUP_IDS,
+        ad_group_id__in=config.BIZWIRE_AD_GROUP_IDS,
     ).select_related('ad_group').get()
 
     logger.info('[bizwire] click capping - content ad id: %s', content_ad_id)
     with transaction.atomic():
         dash.api.update_content_ads_state([content_ad], dash.constants.ContentAdSourceState.INACTIVE, None)
         k1_helper.update_content_ad(content_ad.ad_group.id, content_ad.id)
-
-        # TODO: enable if needed
-        # content_ad.ad_group.write_history(
-        #     'Content ad {} stopped after reaching the click limit.',
-        #     system_user=dash.constants.SystemUserType.K1_USER,
-        #     action_type=dash.constants.HistoryActionType.CONTENT_AD_STATE_CHANGE
-        # )
 
     return JsonResponse({
         "status": 'ok'
@@ -52,9 +45,9 @@ def click_capping(request):
 
 def _get_ad_group_id(article):
     if article.get('meta', {}).get('is_test_feed', False):
-        return config.TEST_FEED_AD_GROUP
+        return config.BIZWIRE_TEST_FEED_AD_GROUP
 
-    return config.TEST_AD_GROUP_IDS[0]
+    return config.BIZWIRE_AD_GROUP_IDS[0]
 
 
 def _distribute_articles(articles_data):
@@ -90,7 +83,6 @@ def article_upload(request):
         raise Http404
 
     articles_data = json.loads(request.body)
-
     candidates_per_ad_group = _distribute_articles(articles_data)
     for ad_group_id, candidates_data in candidates_per_ad_group.iteritems():
         batch_name = 'Article ' + candidates_data[0]['label']

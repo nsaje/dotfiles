@@ -1,0 +1,116 @@
+# Users
+- fields:
+    date_joined: '2014-06-16T12:21:29'
+    email: superuser@test.com
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: true
+    is_superuser: true
+    last_login: '2014-06-16T12:21:29'
+    last_name: ''
+    password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
+    user_permissions: []
+    username: ''
+  model: zemauth.user
+  pk: 1
+
+- fields:
+    date_joined: '2014-06-16T12:21:29'
+    email: user@test.com
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    last_login: '2014-06-16T12:21:29'
+    last_name: ''
+    password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
+    user_permissions: []
+    username: ''
+  model: zemauth.user
+  pk: 2
+
+# Accounts
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    name: 'Test Account 1'
+    users: [1, 2]
+  model: dash.account
+  pk: 1
+
+# Campaigns
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 1
+    name: 'Test Campaign 1'
+  model: dash.campaign
+  pk: 1
+
+# Ad Groups
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Test AdGroup 1'
+  model: dash.adgroup
+  pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Test AdGroup 2'
+  model: dash.adgroup
+  pk: 2
+
+# Ad Group Settings
+- fields:
+    ad_group_id: 1
+    created_dt: '2016-02-29T09:58:21'
+    created_by: 1
+    state: 2
+    display_url: 'example.com'
+    brand_name: 'Example'
+    description: 'Example description'
+    call_to_action: 'Click here!'
+  model: dash.adgroupsettings
+  pk: 1
+
+# Upload batches
+- fields:
+    created_dt: '2016-05-31T09:00:00'
+    name: 'batch 1'
+    status: 1  # done
+    ad_group: 1
+  model: dash.uploadbatch
+  pk: 1
+
+# Content ads
+- fields:
+      image_id: '100'
+      image_hash: '100'
+      image_width: 200
+      image_height: 300
+      batch: 1
+      archived: False
+      url: 'http://testurl1.com'
+      tracker_urls: null
+      title: 'Title 1'
+      ad_group: 1
+      redirect_id: 'r1'
+      created_dt: '2016-11-15T09:00:00'
+      state: 1
+      display_url: 'example.com'
+      brand_name: 'Example'
+      description: 'Example description'
+      call_to_action: 'Call to action'
+      label: 'bizwire_article_1'
+  model: dash.contentad
+  pk: 1

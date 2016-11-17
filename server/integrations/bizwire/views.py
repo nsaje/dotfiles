@@ -77,28 +77,18 @@ class BizwireView(View):
 
 
 class PromotionExport(BizwireView):
-    def _get_geo_impressions(self, content_ad_id):
-        rows = db.execute_query(
+    def _get_geo_stats(self, content_ad_id):
+        return db.execute_query(
             backtosql.generate_sql('bizwire_geo.sql', {}),
             [content_ad_id],
             'bizwire_geo'
         )
 
-        geo_impressions = OrderedDict()
-        for row in rows:
-            key = (row['country'] + '-' + row['state']) if row['state'] else 'Unknown'
-            geo_impressions.setdefault(key, 0)
-            geo_impressions[key] += row['impressions']
-        return geo_impressions
-
-    def _get_pubs(self, content_ad_id):
-        return map(
-            lambda x: x['publisher'],
-            db.execute_query(
-                backtosql.generate_sql('bizwire_pubs.sql', {}),
-                [content_ad_id],
-                'bizwire_pubs'
-            ),
+    def _get_pubs_stats(self, content_ad_id):
+        return db.execute_query(
+            backtosql.generate_sql('bizwire_pubs.sql', {}),
+            [content_ad_id],
+            'bizwire_pubs'
         )
 
     def _get_ad_stats(self, content_ad_id):
@@ -132,16 +122,24 @@ class PromotionExport(BizwireView):
         ag_stats_thread = threads.AsyncFunction(partial(self._get_ag_stats, content_ad.ad_group_id))
         ag_stats_thread.start()
 
-        pubs_thread = threads.AsyncFunction(partial(self._get_pubs, content_ad.id))
+        pubs_thread = threads.AsyncFunction(partial(self._get_pubs_stats, content_ad.id))
         pubs_thread.start()
 
-        geo_impressions_thread = threads.AsyncFunction(partial(self._get_geo_impressions, content_ad.id))
+        geo_impressions_thread = threads.AsyncFunction(partial(self._get_geo_stats, content_ad.id))
         geo_impressions_thread.start()
 
         ad_stats = ad_stats_thread.join_and_get_result()
         ag_stats = ag_stats_thread.join_and_get_result()
-        pubs = pubs_thread.join_and_get_result()
-        geo_impressions = geo_impressions_thread.join_and_get_result()
+        pubs_stats = pubs_thread.join_and_get_result()
+        geo_stats = geo_impressions_thread.join_and_get_result()
+
+        geo_impressions = OrderedDict()
+        for row in geo_stats:
+            key = (row['country'] + '-' + row['state']) if row['state'] else 'Unknown'
+            geo_impressions.setdefault(key, 0)
+            geo_impressions[key] += row['impressions']
+
+        pubs = [row['publisher'] for row in pubs_stats]
 
         return {
             'headline_impressions': ad_stats['impressions'] or 0,
@@ -156,14 +154,14 @@ class PromotionExport(BizwireView):
         article_id = request.GET.get('article_id')
         article_url = request.GET.get('article_url')
         if article_url:
-            m = re.search('news/home/(\d*)/', urllib2.unquote(article_url))
+            m = re.search('news/home/([^/]+)/', urllib2.unquote(article_url))
             if m:
                 article_id = m.groups()[0]
 
         try:
             content_ad = dash.models.ContentAd.objects.get(
                 label=article_id,
-                ad_group_id__in=config.TEST_AD_GROUP_IDS,
+                ad_group_id__in=config.BIZWIRE_AD_GROUP_IDS,
             )
         except dash.models.ContentAd.DoesNotExist:
             return self.response_ok(MOCK_RESPONSE)
