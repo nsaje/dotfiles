@@ -644,7 +644,8 @@ class AdGroupSourcesViewList(RESTAPIBaseView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         serializer = AdGroupSourceSerializer(data=request.data, many=True, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save(request=request, ad_group_id=ad_group.id)
+        with transaction.atomic():
+            serializer.save(request=request, ad_group_id=ad_group.id)
         return self.get(request, ad_group.id)
 
 
