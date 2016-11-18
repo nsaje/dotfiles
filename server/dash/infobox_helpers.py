@@ -51,8 +51,9 @@ class OverviewSetting(object):
         self.section_start = section_start
         self.value_class = None
 
-    def comment(self, details_description):
+    def comment(self, details_label, details_description):
         ret = copy.deepcopy(self)
+        ret.details_label = details_label
         ret.details_content = details_description
         return ret
 
@@ -103,6 +104,7 @@ def create_region_setting(regions):
     )
     if len(full_regions) > 1:
         targeting_region_setting = targeting_region_setting.comment(
+            'Show more',
             ', '.join(full_regions)
         )
     return targeting_region_setting

@@ -11,6 +11,7 @@ angular.module('one.legacy').directive('zemInfoboxSetting', function (config, $w
             internal: '=',
             valueDescription: '=',
             valueClass: '=',
+            detailsLabel: '=',
             detailsContent: '=',
             warning: '=',
             icon: '=',

@@ -326,6 +326,7 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         if ad_group_settings.tracking_code:
             tracking_code_settings = tracking_code_settings.comment(
+                'Show codes',
                 ad_group_settings.tracking_code
             )
         settings.append(tracking_code_settings.as_dict())
@@ -353,6 +354,7 @@ class AdGroupOverview(api_common.BaseApiView):
             )
             if retargeted_adgroup_names != []:
                 retargetings_setting = retargetings_setting.comment(
+                    'Show Ad Groups',
                     ', '.join(retargeted_adgroup_names)
                 )
             settings.append(retargetings_setting.as_dict())
@@ -759,6 +761,7 @@ class AccountOverview(api_common.BaseApiView):
                 section_start=True,
                 tooltip='Users assigned to this account'
             ).comment(
+                'Show more',
                 user_blob
             )
             settings.append(users_setting.as_dict())
@@ -771,6 +774,7 @@ class AccountOverview(api_common.BaseApiView):
         if pixels.count() > 0:
             slugs = [pixel.slug for pixel in pixels]
             conversion_pixel_setting = conversion_pixel_setting.comment(
+                'Show more',
                 ', '.join(slugs),
             )
         settings.append(conversion_pixel_setting.as_dict())
@@ -1384,6 +1388,7 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         if weekly_active_user_emails != []:
             email_list_setting = email_list_setting.comment(
+                'Show more',
                 '<br />'.join(weekly_active_user_emails),
             )
         settings.append(email_list_setting)

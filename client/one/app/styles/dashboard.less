@@ -219,10 +219,10 @@ tags-input .host .tags {
         color: @text-color;
         height: 28px;
         line-height: 26px;
-        
+
         .remove-button {
             color: @text-color;
-            
+
             &:hover {
                 color: @red;
                 text-decoration: none;
@@ -240,7 +240,7 @@ tags-input .host .tags {
         }
     }
 }
-    
+
 ///////////////////////////
 // Graph & Infobox
 ///////////////////////////
@@ -636,6 +636,11 @@ tags-input .host .tags {
                         }
 
                         .infobox-setting-value-comment {
+                            display: inline;
+                            color: @gray;
+                        }
+
+                        .infobox-details-label {
                             display: inline;
                             color: @gray;
                         }
@@ -2451,7 +2456,8 @@ tags-input .host .tags {
 
     .popover-content {
         padding: 10px;
-        overflow: hidden;
+        overflow: auto;
+        max-height: 200px;
 
         ul.icon-list {
             margin: 0px;
@@ -2599,7 +2605,7 @@ select.media-source-select {
     left: 0px !important;
     top: 0px !important;
 }
-    
+
 .has-error .checkbox, .has-error .checkbox-inline, .has-error .control-label, .has-error .help-block, .has-error .radio, .has-error .radio-inline, .has-error.checkbox label, .has-error.checkbox-inline label, .has-error.radio label, .has-error.radio-inline label {
     color: @red !important;
 }
