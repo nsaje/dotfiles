@@ -8,8 +8,6 @@ from dash.constants import EmailTemplateType
 def load_data(apps, schema_editor):
     EmailTemplate = apps.get_model('dash', 'EmailTemplate')
 
-    print [t.template_type for t in EmailTemplate.objects.all()]
-
     try:
         template = EmailTemplate.objects.get(template_type=EmailTemplateType.DEMO_RUNNING)
     except EmailTemplate.DoesNotExist:
