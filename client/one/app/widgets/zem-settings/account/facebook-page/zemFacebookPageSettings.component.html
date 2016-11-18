@@ -1,10 +1,10 @@
 <div ng-if="$ctrl.hasPermission('zemauth.can_modify_facebook_page')" class="form-group" ng-class="{'has-error': !!$ctrl.errors.facebookPage}">
-    <label for="fb-page-input" class="col-xs-2 control-label">
+    <label for="fb-page-input" class="col-xs-4 control-label">
         <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_modify_facebook_page')" popover-placement="bottom"></zem-internal-feature>
         Facebook page
         <zem-help-popover content="Facebook Page to which ads will be connected to. This is a requirement for advertising on Facebook and Instagram." placement="top"></zem-help-popover>
     </label>
-    <div class="col-xs-3 fb-status">
+    <div class="col-xs-8 fb-status">
         <div class="col-xs-12 input-group fb-logo" ng-if="$ctrl.entity.settings.facebookStatus && $ctrl.entity.settings.facebookStatus == $ctrl.constants.facebookStatus.EMPTY">
             <i class="input-group-addon"><img ng-src="{{ $ctrl.config.static_url }}/one/img/facebook_logo.svg" class="fb-icon"></i>
             <input id="fb-page-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.facebookPage" placeholder="Insert Facebook page URL">

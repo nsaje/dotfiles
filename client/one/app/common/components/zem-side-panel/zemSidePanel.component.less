@@ -1,0 +1,49 @@
+@drawer-width: 800px;
+
+.zem-side-panel {
+  display:  block;
+
+  &__drawer {
+    position: fixed;
+    z-index: 1000;
+    background: #f2f2f2;
+
+    top: 60px;
+    bottom: 0;
+    width: @drawer-width;
+    left: 100%;
+
+    transform: translateX(0);
+    transition: all .3s ease-in-out;
+    will-change: transform;
+
+    &--visible {
+      transform: translateX(-@drawer-width);
+    }
+  }
+
+  &__overlay {
+    position: fixed;
+    z-index: 999;
+    .position-properties(0);
+
+    padding-top: 60px;
+    background: black;
+    background-clip: content-box;
+
+    visibility: hidden;
+    opacity: 0;
+
+    transition: all .3s ease-out;
+    will-change: opacity;
+
+    &--visible {
+      visibility: visible;
+      opacity: .5;
+      transition-property: opacity;
+    }
+  }
+
+  &__container {
+  }
+}

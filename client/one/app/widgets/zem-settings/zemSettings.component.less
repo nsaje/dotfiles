@@ -1,35 +1,175 @@
+@drawer-width: 800px;
+
+.zem-settings {
+  display:  block;
+
+  &__header {
+    position: absolute;
+    padding: 0 20px;
+    top: 0;
+    left: 0;
+    height: 65px;
+    width: 100%;
+
+    z-index: 1000;
+    background: #f2f2f2;
+  }
+
+  &__header-title {
+    color: @secondary-color;
+    font-weight: 400;
+    font-size: 24px;
+  }
+
+  &__body {
+    padding: 0 20px;
+    position: absolute;
+    top: 65px;
+    left: 0;
+    right: 0;
+    bottom: 70px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  &__footer {
+    position: absolute;
+    width: 100%;
+    padding: 20px 20px;
+    bottom: 0px;
+    left: 0;
+    height: 70px;
+  }
+}
+
+.zem-settings-component {
+  &:extend(.form-horizontal);
+
+  &__container {
+    background-color: @white;
+    box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.1);
+    padding: @default-spacing;
+    margin-top: 0;
+    margin-bottom: @default-spacing*1.5;
+    position: relative;
+  }
+
+  // TODO: create elements - see end of file
+}
+
+//
+// TODO: component styles
+//
 zem-settings-general-account {
-    display: block;
+  display: block;
 }
 
 zem-settings-media-sources {
-    display: block;
+  display: block;
 }
 
 zem-settings-facebook-page {
-    display: block;
+  display: block;
 }
 
 zem-settings-pixels {
-    display: block;
+  display: block;
 }
 
 zem-settings-access-permissions {
-    display: block;
+  display: block;
 }
 
 zem-account-settings {
-    display: block;
+  display: block;
 }
 
 zem-campaign-settings {
-    display: block;
+  display: block;
 }
 
 zem-ad-group-settings {
-    display: block;
+  display: block;
 }
 
 zem-settings-container {
-    display: block;
+  display: block;
+}
+
+//
+// TODO: refactor - create elements for zem-settings-component
+//
+.zem-settings-component {
+  .section {
+    .alert {
+      margin: -@default-spacing -@default-spacing @default-spacing -@default-spacing;
+      border: none;
+      border-radius: 0;
+    }
+  }
+
+  h1 {
+    //margin: -10px 0 -10px 0;
+    color: @secondary-color;
+    font-weight: 400;
+    font-size: 24px;
+  }
+
+  h2 {
+    margin: -@default-spacing -@default-spacing 20px -@default-spacing;
+    padding: (@default-spacing/2)+6 @default-spacing (@default-spacing/2)+4 @default-spacing;
+    color: @secondary-color;
+    font-size: 18px;
+    font-weight: 500;
+    border-bottom: 1px solid @border-color;
+  }
+
+  h3 {
+    color: @secondary-color;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .description {
+    margin-bottom: @default-spacing;
+    color: @gray;
+  }
+
+  .device-icon {
+    text-align: center;
+    margin-bottom: 20px;
+
+    label.icon-holder {
+      padding: 0 20px 0 0;
+      height: 100px;
+      margin-bottom: 10px;
+      position: relative;
+
+      img {
+        position: absolute;
+        bottom: 0px;
+        left: 50%;
+      }
+
+      .desktop {
+        height: 100px;
+        margin-left: -69.5px;
+      }
+      .tablet {
+        height: 60px;
+        margin-left: -32px;
+      }
+      .mobile {
+        height: 40px;
+        margin-left: -22px;
+      }
+    }
+
+    label {
+      display: block;
+      padding: 0;
+      text-align: center;
+    }
+  }
+
 }

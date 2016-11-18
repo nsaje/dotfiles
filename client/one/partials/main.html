@@ -1,5 +1,6 @@
 <div class="container-fluid">
     <zem-header class="zem-header row" ng-if="hasPermission('zemauth.can_see_new_header')" level="$parent.level" enable-publisher-filter="$parent.enablePublisherFilter" show-publisher-selected="$parent.showPublisherSelected"></zem-header>
+    <zem-settings class="zem-settings"></zem-settings>
     <div class="row header" ng-include src="'/partials/header.html'" ng-if="!hasPermission('zemauth.can_see_new_header')"></div>
     <zem-filter-selector ng-if="hasPermission('zemauth.can_see_new_filter_selector')" class="zem-filter-selector row"></zem-filter-selector>
 

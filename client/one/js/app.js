@@ -11,10 +11,11 @@ angular.module('one.legacy').config(function ($stateProvider) {
             templateUrl: '/partials/main.html',
             controller: 'MainCtrl',
             resolve: {
-                initServices: function (zemUserService, zemFilterService, zemDataFilterService, zemNavigationNewService, zemMediaSourcesService) {
+                initServices: function (zemUserService, zemSettingsService, zemFilterService, zemDataFilterService, zemNavigationNewService, zemMediaSourcesService) {
                     // Service initialization - TODO: find cleaner solution
                     zemNavigationNewService.init();
                     zemMediaSourcesService.init();
+                    zemSettingsService.init();
                     return zemUserService.init().then(function () {
                         zemDataFilterService.init();
                         zemFilterService.init();

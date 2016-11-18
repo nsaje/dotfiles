@@ -1,6 +1,7 @@
 <zem-settings-container title="'Account settings'" entity-type="$ctrl.constants.entityType.ACCOUNT" entity-id="$ctrl.entityId">
     <settings>
         <zem-account-general-settings
+                class="zem-settings-component"
                 entity="$container.entity"
                 errors="$container.errors"
                 api="$container.api"
@@ -9,6 +10,7 @@
 
     <custom>
         <zem-access-permissions-settings
+                class="zem-settings-component"
                 entity="$container.entity"
         ></zem-access-permissions-settings>
     </custom>

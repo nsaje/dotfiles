@@ -1,0 +1,7 @@
+<zem-side-panel on-close="$ctrl.onClose()" api="$ctrl.sidePanel">
+    <div ng-if="$ctrl.entity" class="zem-settings">
+        <zem-account-settings ng-if="$ctrl.entity.type === $ctrl.constants.entityType.ACCOUNT" entity-id="$ctrl.entity.id" />
+        <zem-campaign-settings ng-if="$ctrl.entity.type === $ctrl.constants.entityType.CAMPAIGN" entity-id="$ctrl.entity.id" />
+        <zem-ad-group-settings ng-if="$ctrl.entity.type === $ctrl.constants.entityType.AD_GROUP" entity-id="$ctrl.entity.id" />
+    </div>
+</zem-side-panel>

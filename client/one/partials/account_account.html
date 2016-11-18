@@ -1,7 +1,4 @@
-
-<zem-account-settings entity-id="account.id" ng-if="hasPermission('zemauth.can_see_new_settings')" class="page page-account-account" />
-
-<div class="page page-account-account" ng-if="!account.archived && !hasPermission('zemauth.can_see_new_settings')">
+<div class="page page-account-account" ng-if="!account.archived">
     <h1>Account settings</h1>
     <form ng-if="isAnySettingSettable()" id="form-account-agency" class="form-horizontal white-background">
         <h2>General settings</h2>
@@ -251,7 +248,7 @@
     </div>
 </div>
 
-<div class="page page-account-account" ng-if="!!account.archived && !hasPermission('zemauth.can_see_new_settings')">
+<div class="page page-account-account" ng-if="!!account.archived">
     <p>
         <strong>This account is archived.</strong>
     </p>

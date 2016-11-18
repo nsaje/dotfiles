@@ -1,4 +1,4 @@
-<div class="form-horizontal table-access-permissions white-background" ng-if="$ctrl.hasPermission('zemauth.account_agency_access_permissions') && $ctrl.agencyManagers !== null && $ctrl.agencyManagers !== undefined && !$ctrl.hasPermission('zemauth.can_see_agency_managers_under_access_permissions')">
+<div class="zem-settings-component__container table-access-permissions" ng-if="$ctrl.hasPermission('zemauth.account_agency_access_permissions') && $ctrl.agencyManagers !== null && $ctrl.agencyManagers !== undefined && !$ctrl.hasPermission('zemauth.can_see_agency_managers_under_access_permissions')">
     <h2>Agency managers</h2>
     <div class="form-group">
         <label for="first-name-input" class="col-xs-2 control-label">
@@ -21,7 +21,7 @@
         </div>
     </div>
 </div>
-<div class="form-horizontal table-access-permissions white-background" ng-if="$ctrl.hasPermission('zemauth.account_agency_access_permissions')">
+<div class="zem-settings-component__container table-access-permissions" ng-if="$ctrl.hasPermission('zemauth.account_agency_access_permissions')">
     <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.account_agency_access_permissions')" popover-placement="bottom"></zem-internal-feature>
     <h2>Users</h2>
     <div class="description">Users who have access to the account you're currently on.</div>
@@ -73,25 +73,25 @@
                 <td colspan="4">
                     <h3>Add new user</h3>
                     <div class="form-group">
-                        <label for="first-name-input" class="col-xs-1 control-label">Name:</label>
-                        <div class="col-xs-3">
+                        <label for="first-name-input" class="col-xs-2 control-label">Name:</label>
+                        <div class="col-xs-6">
                             <input id="first-name-input" type="text" ng-class="{'has-error': !!$ctrl.addUserErrors.errors.firstName}" class="form-control" placeholder="Name" ng-model="$ctrl.addUserData.firstName">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="last-name-input" class="col-xs-1 control-label">Lastname:</label>
-                        <div class="col-xs-3">
+                        <label for="last-name-input" class="col-xs-2 control-label">Lastname:</label>
+                        <div class="col-xs-6">
                             <input id="last-name-input" type="text" ng-class="{'has-error': !!$ctrl.addUserErrors.errors.lastName}" class="form-control last" placeholder="Last name" ng-model="$ctrl.addUserData.lastName">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="email-input" class="col-xs-1 control-label">Email:</label>
-                        <div class="col-xs-3">
+                        <label for="email-input" class="col-xs-2 control-label">Email:</label>
+                        <div class="col-xs-6">
                             <input id="email-input" type="text" ng-class="{'has-error': !!$ctrl.addUserErrors.errors.email}" class="form-control" placeholder="Email" ng-model="$ctrl.addUserData.email">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-xs-1 control-label"></label>
+                        <label class="col-xs-2 control-label"></label>
                         <div class="col-xs-3">
                             <button type="button" class="btn btn-blue btn-icon add" ng-click="$ctrl.addUser()"><span class="icon"></span><span class="text">Add new user</span></button>
                             <div class="loader" ng-show="$ctrl.addUserRequestInProgress"></div>

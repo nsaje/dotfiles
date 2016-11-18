@@ -20,10 +20,12 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
         };
 
         function isDefault () {
+            if (!$ctrl.entity) return false;
             return !$ctrl.entity.defaultSettings;
         }
 
         function isEqualToDefault () {
+            if (!$ctrl.entity) return false;
             var isEqualToDefault = true;
             var item, defaultItem;
 

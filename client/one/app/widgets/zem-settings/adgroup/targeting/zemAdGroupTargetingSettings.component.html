@@ -1,4 +1,4 @@
-<div class="form-horizontal white-background">
+<div class="zem-settings-component__container">
     <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_target_custom_audiences')" popover-placement="right"></zem-internal-feature>
     <h2>Targeting</h2>
     <div class="form-group" ng-if="$ctrl.hasPermission('zemauth.can_view_retargeting_settings') && !$ctrl.hasPermission('zemauth.can_target_custom_audiences')" ng-class="{'has-error': !!$ctrl.errors.retargetingIds}">

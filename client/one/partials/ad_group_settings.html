@@ -1,12 +1,10 @@
-<zem-ad-group-settings entity-id="adGroup.id" ng-if="hasPermission('zemauth.can_see_new_settings')" class="page page-ad-group-settings" />
-
-<div class="page" ng-if="!hasPermission('zemauth.can_see_new_settings') && loadRequestInProgress">
+<div class="page" ng-if="loadRequestInProgress">
     <div class=loader-main-area>
         <div class="loader-image"></div>
     </div>
 </div>
 
-<div class="page page-ad-group-settings" ng-if="!hasPermission('zemauth.can_see_new_settings') && hasPermission('dash.settings_view') && !(adGroup && adGroup.archived) && !loadRequestInProgress">
+<div class="page page-ad-group-settings" ng-if="hasPermission('dash.settings_view') && !(adGroup && adGroup.archived) && !loadRequestInProgress">
     <h1>Ad Group settings</h1>
     <div uib-alert ng-repeat="alert in alerts" class="alert-{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></div>
     <div uib-alert class="alert-warning" ng-show="actionIsWaiting">
@@ -349,7 +347,7 @@
         </div>
     </form>
 </div>
-<div class="page page-ad-group-settings" ng-if="!hasPermission('zemauth.can_see_new_settings') && adGroup && adGroup.archived">
+<div class="page page-ad-group-settings" ng-if="adGroup && adGroup.archived">
     <p>
         <strong>This ad group is archived.</strong>
     </p>

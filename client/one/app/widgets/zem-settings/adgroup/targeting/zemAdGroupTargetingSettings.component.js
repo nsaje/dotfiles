@@ -41,6 +41,7 @@ angular.module('one.widgets').component('zemAdGroupTargetingSettings', {
         }
 
         function isRetargetingEnabled () {
+            if (!$ctrl.entity) return false;
             var settings = $ctrl.entity.settings;
             if (!$ctrl.hasPermission('zemauth.can_target_custom_audiences')
                 && settings.retargetingAdGroups && !!settings.retargetingAdGroups.length) {

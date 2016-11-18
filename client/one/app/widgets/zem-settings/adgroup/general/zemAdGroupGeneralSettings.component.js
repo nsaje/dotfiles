@@ -31,12 +31,14 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
         function initializeWatches () {
             // TODO: Refactor - remove the need for watches
             $scope.$watch('$ctrl.entity.settings.manualStop', function (newValue) {
+                if (!$ctrl.entity) return;
                 if (newValue) {
                     $ctrl.entity.settings.endDate = null;
                 }
             });
 
             $scope.$watch('$ctrl.entity.settings.endDate', function (newValue) {
+                if (!$ctrl.entity) return;
                 if (newValue) {
                     $ctrl.entity.settings.manualStop = false;
                 } else {

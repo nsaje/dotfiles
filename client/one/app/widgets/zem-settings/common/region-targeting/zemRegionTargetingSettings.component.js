@@ -24,10 +24,12 @@ angular.module('one.widgets').component('zemRegionTargetingSettings', {
         };
 
         function isDefault () {
+            if (!$ctrl.entity) return false;
             return !$ctrl.entity.defaultSettings;
         }
 
         function isEqualToDefault () {
+            if (!$ctrl.entity) return false;
             var result = true;
 
             if ($ctrl.entity.settings.targetRegions.length !== $ctrl.entity.defaultSettings.targetRegions.length) {

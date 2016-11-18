@@ -173,7 +173,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         }
 
         function getArchiveTooltip () {
-            if ($ctrl.entity.canArchive) return '';
+            if (!$ctrl.entity || $ctrl.entity.canArchive) return '';
             if ($ctrl.entityType === constants.entityType.ACCOUNT) return TOOLTIP_ARCHIVE_ACCOUNT;
             if ($ctrl.entityType === constants.entityType.CAMPAIGN) return TOOLTIP_ARCHIVE_CAMPAIGN;
             if ($ctrl.entityType === constants.entityType.AD_GROUP) return TOOLTIP_ARCHIVE_ADGROUP;

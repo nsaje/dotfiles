@@ -22,6 +22,7 @@ angular.module('one.widgets').component('zemFacebookPageSettings', {
         };
 
         $ctrl.$onChanges = function () {
+            if (!$ctrl.entity) return;
             $ctrl.origFacebookPage = $ctrl.entity.settings.facebookPage;
         };
 

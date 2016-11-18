@@ -13,9 +13,15 @@ angular.module('one.legacy').directive('zemInfobox', function (config, $window) 
             stateId: '='
         },
         templateUrl: '/partials/zem_infobox.html',
-        controller: function ($scope, $element, $attrs) {
+        controller: function ($scope, zemSettingsService, zemPermissions) {
             $scope.config = config;
             $scope.constants = constants;
+            $scope.hasPermission = zemPermissions.hasPermission;
+            $scope.isPermissionInternal = zemPermissions.isPermissionInternal;
+
+            $scope.showNewSettings = function () {
+                zemSettingsService.open();
+            };
         }
     };
 

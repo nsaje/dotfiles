@@ -24,14 +24,17 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         };
 
         function isInLanding () {
+            if (!$ctrl.entity) return false;
             return $ctrl.entity.settings.landingMode;
         }
 
         function showAutoPilotDailyBudgetInput () {
+            if (!$ctrl.entity) return false;
             return $ctrl.entity.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
         }
 
         function getBudgetAutopilotOptimizationGoalText () {
+            if (!$ctrl.entity) return '';
             var goalName = 'maximum volume';
             options.budgetAutomationGoals.forEach(function (goal) {
                 if (goal.value === $ctrl.entity.settings.autopilotOptimizationGoal) {
@@ -42,6 +45,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         }
 
         function getBudgetAutopilotOptimizationCPAGoalText () {
+            if (!$ctrl.entity) return '';
             if ($ctrl.entity.settings.autopilotOptimizationGoal !== constants.campaignGoalKPI.CPA) {
                 return '';
             }

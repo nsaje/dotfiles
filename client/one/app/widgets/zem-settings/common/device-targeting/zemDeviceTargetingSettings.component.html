@@ -1,11 +1,11 @@
-<div class="form-horizontal white-background">
+<div class="zem-settings-component__container">
     <h2 ng-if="$ctrl.isDefault()">Default device targeting</h2>
     <h2 ng-if="!$ctrl.isDefault()">Device targeting<div class="sidenote different-than-default" ng-if="!$ctrl.isEqualToDefault()">Different than campaign default</div></h2>
 
     <div class="description">The devices on which your content ads will be shown. <span ng-if="$ctrl.isDefault()">Used for all newly created ad groups.</span></div>
     <div class="form-vertical">
         <div class="form-group m-b-none" ng-class="{'has-error': !!$ctrl.errors.targetDevices}">
-            <div class="col-xs-2 device-icon checkbox" ng-repeat='device in $ctrl.entity.settings.targetDevices'>
+            <div class="col-xs-4 device-icon checkbox" ng-repeat='device in $ctrl.entity.settings.targetDevices'>
                 <label class="icon-holder" for="{{ device.name }}">
                     <ng-switch on="device.name">
                         <img ng-switch-when="Desktop" class="desktop" ng-src="{{ $ctrl.config.static_url }}/one/images/device-desktop-gray.svg"/>

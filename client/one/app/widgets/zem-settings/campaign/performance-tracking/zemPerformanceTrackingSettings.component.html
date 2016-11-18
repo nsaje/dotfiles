@@ -1,4 +1,4 @@
-<div class="form-horizontal white-background">
+<div class="zem-settings-component__container">
     <h2>Performance tracking</h2>
     <div class="description">Connect your Google/Adobe Analytics account to better track your campaign performance.</div>
 
@@ -12,12 +12,12 @@
     </div>
 
     <div class="form-group indented" ng-if="$ctrl.hasPermission('zemauth.can_set_ga_api_tracking') && $ctrl.entity.settings.enableGaTracking">
-        <label for="ga-tracking-type-select" class="col-xs-2 control-label">
+        <label for="ga-tracking-type-select" class="col-xs-4 control-label">
             <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_set_ga_api_tracking')" popover-placement="right"></zem-internal-feature>
             Reporting type
             <zem-help-popover content="Google Analytics reporting type." placement="top"></zem-help-popover>
         </label>
-        <div class="col-xs-2">
+        <div class="col-xs-8">
             <ui-select
                     id="ga-tracking-type-select"
                     class="ga-tracking-type-select"
@@ -47,12 +47,12 @@
     </div>
 
     <div class="form-group indented" ng-class="{'has-error': !!$ctrl.errors.gaPropertyId}" ng-if="$ctrl.hasPermission('zemauth.can_set_ga_api_tracking') && $ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.API && $ctrl.entity.settings.enableGaTracking">
-        <label for="ga-property-id-input" class="col-xs-2 control-label">
+        <label for="ga-property-id-input" class="col-xs-4 control-label">
             <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_set_ga_api_tracking')" popover-placement="right"></zem-internal-feature>
             Web property ID
             <zem-help-popover content="Google Analytics web property ID." placement="top"></zem-help-popover>
         </label>
-        <div class="col-xs-2">
+        <div class="col-xs-8">
             <input id="ga-property-id-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.gaPropertyId" placeholder="UA-xxxxxxx-yy">
             <div ng-if="!$ctrl.errors.gaPropertyId.length && $ctrl.entity.settings.gaPropertyReadable !== undefined" ng-class="$ctrl.entity.settings.gaPropertyReadable ? 'ga-connected' : 'ga-pending'">
                 {{ $ctrl.entity.settings.gaPropertyReadable ? 'Connected' : 'Pending' }}
@@ -72,11 +72,11 @@
     </div>
 
     <div class="form-group indented" ng-class="{'has-error': !!$ctrl.errors.adobeTrackingParam}" ng-if="$ctrl.entity.settings.enableAdobeTracking">
-        <label for="adobe-tracking-param-input" class="col-xs-2 control-label">
+        <label for="adobe-tracking-param-input" class="col-xs-4 control-label">
             Adobe tracking parameter
             <zem-help-popover content="Name of the tracking parameter used for Adobe Analytics." placement="top"></zem-help-popover>
         </label>
-        <div class="col-xs-2">
+        <div class="col-xs-8">
             <input id="adobe-tracking-param-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.adobeTrackingParam">
         </div>
         <div class="checkbox col-xs-12">
