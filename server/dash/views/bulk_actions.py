@@ -127,11 +127,12 @@ class AdGroupSourceState(BaseBulkActionView):
     def _apply_updates(self, request, response, last_change_dt, ad_group_id):
         response_update = table.AdGroupSourcesTableUpdates().get(
             request.user, last_change_dt, [], ad_group_id_=ad_group_id)
-        for row_id, row_update in response_update['rows'].iteritems():
-            row = self._get_row(response, row_id)
-            if 'stats' not in row:
-                row['stats'] = {}
-            row['stats'].update(self._convert_stats(row_update))
+        if 'rows' in response_update:
+            for row_id, row_update in response_update['rows'].iteritems():
+                row = self._get_row(response, row_id)
+                if 'stats' not in row:
+                    row['stats'] = {}
+                row['stats'].update(self._convert_stats(row_update))
         if 'totals' in response_update:
             response['totals'] = self._convert_stats(response_update['totals'])
 
