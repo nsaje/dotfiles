@@ -28,12 +28,13 @@ def click_capping(request):
         raise Http404
 
     content_ad_id = int(request.GET.get('creativeId'))
+    logger.info('[bizwire] click capping - content ad id: %s', content_ad_id)
+
     content_ad = dash.models.ContentAd.objects.filter(
         id=content_ad_id,
         ad_group_id__in=config.BIZWIRE_AD_GROUP_IDS,
     ).select_related('ad_group').get()
 
-    logger.info('[bizwire] click capping - content ad id: %s', content_ad_id)
     with transaction.atomic():
         dash.api.update_content_ads_state([content_ad], dash.constants.ContentAdSourceState.INACTIVE, None)
         k1_helper.update_content_ad(content_ad.ad_group.id, content_ad.id)
