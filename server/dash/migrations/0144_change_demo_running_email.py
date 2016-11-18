@@ -8,10 +8,8 @@ from dash.constants import EmailTemplateType
 def load_data(apps, schema_editor):
     EmailTemplate = apps.get_model('dash', 'EmailTemplate')
 
-    EmailTemplate(
-        template_type=EmailTemplateType.DEMO_RUNNING,
-        subject=u'Demo is running',
-        body=u'''Hi,
+    template = EmailTemplate.objects.get(template_type=EmailTemplateType.DEMO_RUNNING)
+    template.body = u'''Hi,
 
 Demo is running.
 Log in to {url}
@@ -22,7 +20,8 @@ Note: This instance will selfdestroy in 7 days
 Yours truly,
 Zemanta
     '''
-    ).save()
+    )
+    template.save()
 
 
 class Migration(migrations.Migration):
