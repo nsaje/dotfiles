@@ -9,6 +9,9 @@ angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', function (
     };
 
     $scope.openAudienceModal = function () {
+        if (!$scope.audiencePixel) {
+            return;
+        }
         var modal = $uibModal.open({
             component: 'zemCustomAudiencesModal',
             backdrop: 'static',
