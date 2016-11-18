@@ -1,9 +1,9 @@
 FORMAT: 1A
 HOST: https://one.zemanta.com
 
-# Zemanta REST API
+# Zemanta One API
 
-This document describes the Zemanta REST Campaign Management API.
+This document describes the Zemanta One REST Campaign Management API.
 
 The API enables [Zemanta](https://www.zemanta.com) clients to programatically create and manage campaigns, ad groups and content ads using RESTful objects.
 Custom performance reports are also available as part of the API.
@@ -15,7 +15,7 @@ In order to use Zemanta REST API, please contact your sales representative.
 This document is inteded for programmers who are developing an integration with the Zemanta One system.
 A prerequisite for working with Zemanta REST API is an understanding of HTTP and JSON.
 
-# Group Overview
+# Group Technical Overview
 
 ## Entities
 
@@ -441,7 +441,7 @@ creditId  | string          | id of the credit this budget is part of          |
 amount    | [money](#money) | total amount allocated by the budget             | required | optional
 startDate | date            | budget start date, must be in the future         | required | optional
 endDate   | date            | budget end date, must end before the credit ends | required | optional
-state     | string          | budget state, ACTIVE/PENDING/INACTIVE/DEPLETED   | N/A      | read only
+state     | string          | budget state, ACTIVE / PENDING / INACTIVE / DEPLETED | N/A  | read only
 spend     | [money](#money) | the amount of the budget already spent           | N/A      | read only
 available | [money](#money) | the amount of the budget still available         | N/A      | read only
 
