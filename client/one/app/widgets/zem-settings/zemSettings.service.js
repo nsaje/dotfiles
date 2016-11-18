@@ -22,11 +22,13 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
 
     function handleStateChange () {
         var value = $location.search()[QUERY_PARAM];
-        $timeout(function () {
-            var entity = undefined;
-            if (typeof value === 'string') entity = JSON.stringify(value);
-            open(entity);
-        }, 3000);
+        if (value) {
+            $timeout(function () {
+                var entity = undefined;
+                if (typeof value === 'string') entity = JSON.stringify(value);
+                open(entity);
+            }, 3000);
+        }
     }
 
     function open (entity) {
