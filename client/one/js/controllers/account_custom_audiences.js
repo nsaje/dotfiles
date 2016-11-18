@@ -47,6 +47,10 @@ angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', function (
         );
     };
 
+    $scope.tooltipText = function() {
+        return !$scope.audiencePixel ? 'Please first define the pixel to build custom audiences from. If you already have the pixel created there, click Edit and set it as audience building pixel.' : '';
+    };
+
     function init () {
         $scope.getAudiencePixel();
     }
