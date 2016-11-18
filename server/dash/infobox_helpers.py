@@ -674,7 +674,7 @@ def get_primary_campaign_goal(user, constraints, start_date, end_date):
 
     campaign = constraints.get('campaign') or constraints['ad_group'].campaign
     primary_goal = dash.campaign_goals.fetch_goals([campaign.pk], end_date).first()
-    if not primary_goal.primary:
+    if primary_goal is None or not primary_goal.primary:
         return settings
 
     permissions = user.get_all_permissions_with_access_levels()
