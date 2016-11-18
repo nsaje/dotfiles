@@ -1148,10 +1148,11 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_gro
     return 'This media source doesn\'t support setting this value through the dashboard.'
 
 
-def enabling_autopilot_sources_allowed(ad_group_settings):
+def enabling_autopilot_sources_allowed(ad_group_settings, number_of_sources_to_enable=1):
     if ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         return True
-    return ad_group_settings.autopilot_daily_budget - automation.autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC >=\
+    required_budget = number_of_sources_to_enable*automation.autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
+    return ad_group_settings.autopilot_daily_budget - required_budget >=\
         automation.autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group_settings.ad_group)
 
 

@@ -130,10 +130,11 @@ class AdGroupSourceStateTest(TestCase):
             ad_group_settings,
         )
 
+    @patch('dash.views.helpers.enabling_autopilot_sources_allowed')
     @patch('dash.views.helpers.check_facebook_source')
     @patch('dash.retargeting_helper.can_add_source_with_retargeting')
     @patch('automation.campaign_stop.can_enable_all_media_sources')
-    def test_check_can_set_state(self, campaign_stop_mock, retargeting_mock, facebook_mock):
+    def test_check_can_set_state(self, campaign_stop_mock, retargeting_mock, facebook_mock, autopilot_check_mock):
         campaign_stop_mock.return_value = True
 
         view = bulk_actions.AdGroupSourceState()
@@ -147,6 +148,10 @@ class AdGroupSourceStateTest(TestCase):
 
         self.assertEqual(len(ad_group_sources), retargeting_mock.call_count)
         self.assertEqual(len(ad_group_sources), facebook_mock.call_count)
+        autopilot_check_mock.assert_called_once_with(
+            ad_group_settings,
+            number_of_sources_to_enable=len(ad_group_sources)
+        )
 
 
 class AdGroupContentAdArchiveTest(TestCase):

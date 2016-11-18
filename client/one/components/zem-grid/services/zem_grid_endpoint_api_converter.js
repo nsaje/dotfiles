@@ -27,7 +27,7 @@ angular.module('one.legacy').factory('zemGridEndpointApiConverter', function (ze
         if (breakdown.pixels) {
             convertedBreakdown.pixels = breakdown.pixels;
         }
-        if (breakdown.enabling_autopilot_sources_allowed) {
+        if (breakdown.enabling_autopilot_sources_allowed !== undefined) {
             convertedBreakdown.enablingAutopilotSourcesAllowed = breakdown.enabling_autopilot_sources_allowed;
         }
         if (breakdown.ad_group_autopilot_state) {

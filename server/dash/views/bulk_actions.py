@@ -161,6 +161,12 @@ class AdGroupSourceState(BaseBulkActionView):
             raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
 
         if state == constants.AdGroupSourceSettingsState.ACTIVE:
+            enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
+                ad_group_settings,
+                number_of_sources_to_enable=len(ad_group_sources)
+            )
+            if not enabling_autopilot_sources_allowed:
+                raise exc.ValidationError('Please increase Autopilot Daily Spend Cap to enable these sources.')
             for ad_group_source in ad_group_sources:
                 if not retargeting_helper.can_add_source_with_retargeting(ad_group_source.source, ad_group_settings):
                     raise exc.ValidationError(

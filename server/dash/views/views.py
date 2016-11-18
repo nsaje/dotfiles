@@ -1076,6 +1076,13 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                         'state': ['Please add additional budget to your campaign to make changes.']
                     })
 
+                if resource['state'] == constants.AdGroupSourceSettingsState.ACTIVE:
+                    enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(ad_group_settings)
+                    if not enabling_autopilot_sources_allowed:
+                        errors.update({
+                            'state': ['Please increase Autopilot Daily Spend Cap to enable this source.']
+                        })
+
         if errors:
             raise exc.ValidationError(errors=errors)
 
