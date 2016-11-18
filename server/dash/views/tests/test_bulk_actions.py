@@ -43,10 +43,11 @@ class AdGroupSourceStateTest(TestCase):
     def test_post(self, mock_k1_ping, mock_settings_writer, mock_autopilot_initialize, mock_check, mock_table_update):
         ad_group_id = 1
         source_id = 1
+        maintenance_source_id = 6
 
         data = {
             'state': constants.AdGroupSourceSettingsState.ACTIVE,
-            'selected_ids': [source_id],
+            'selected_ids': [source_id, maintenance_source_id],
         }
 
         mock_table_update.return_value.get.return_value = {

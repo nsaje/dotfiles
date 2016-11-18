@@ -62,7 +62,10 @@ class AdGroupSourceState(BaseBulkActionView):
             raise exc.ValidationError()
 
         ad_group_sources = helpers.get_selected_adgroup_sources(
-            models.AdGroupSource.objects.all().select_related('source'),
+            models.AdGroupSource.objects.all().select_related('source').filter(
+                source__deprecated=False,
+                source__maintenance=False,
+            ),
             data,
             ad_group_id=ad_group_id,
         )
