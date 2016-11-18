@@ -575,6 +575,8 @@ class CampaignBudgetViewTest(BCMViewTestCase):
 
         data = json.loads(response.content)['data']
 
+        self.maxDiff = None
+
         self.assertEqual(data, {
             "active": [
                 {
@@ -605,7 +607,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_agency": False,
                 }
             ],
-            u"min_amount": 0,
+            "min_amount": "0",
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -656,7 +658,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_agency": False,
                 }
             ],
-            "min_amount": 0,
+            "min_amount": "0",
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -712,7 +714,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_agency": False,
                 }
             ],
-            "min_amount": 0,
+            "min_amount": "0",
             "totals": {
                 "current": {
                     "available": "100000.0000",
@@ -1279,7 +1281,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     u"start_date": u"2015-10-01",
                 }
             ],
-            u"min_amount": 0,
+            u"min_amount": "0",
             u"past": [],
             u"credits": [
                 {
