@@ -20,7 +20,6 @@ Note: This instance will selfdestroy in 7 days
 Yours truly,
 Zemanta
     '''
-    )
     template.save()
 
 
