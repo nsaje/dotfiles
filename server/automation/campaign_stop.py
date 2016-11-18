@@ -525,8 +525,8 @@ def _get_minimum_remaining_budget(campaign, max_daily_budget):
         per_budget_remaining_today[bli.id] = max(0, spend_available - unattributed_budget)
         unattributed_budget = max(0, unattributed_budget - spend_available)
 
-    remaining_today = sum(per_budget_remaining_today.itervalues())
-    available_tomorrow = 0
+    remaining_today = decimal.Decimal(sum(per_budget_remaining_today.itervalues()))
+    available_tomorrow = decimal.Decimal(0)
     for bli in budgets_active_tomorrow.order_by('created_dt'):
         spend_without_fee_pct = 1 - bli.credit.license_fee
         available_tomorrow += per_budget_remaining_today.get(bli.id, bli.amount * spend_without_fee_pct)
@@ -745,6 +745,7 @@ def _calculate_daily_source_caps(
 
         daily_budget = ad_group_sources_settings[ags.id].daily_budget_cc
         cap = daily_budget * min(decimal.Decimal(1), available_daily_cap / current_daily_cap)
+        cap = cap.to_integral_exact(rounding=decimal.ROUND_FLOOR)
 
         if cap < min_source_cap:
             sources_to_stop.add(ags)
@@ -759,6 +760,7 @@ def _calculate_daily_source_caps(
     if _is_b1_group_enabled(ad_group_settings) and not b1_group_stop:
         min_group_cap = autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET
         cap = ad_group_settings.b1_sources_group_daily_budget * min(decimal.Decimal(1), available_daily_cap / current_daily_cap)
+        cap = cap.to_integral_exact(rounding=decimal.ROUND_FLOOR)
 
         if cap < min_group_cap:
             b1_group_stop = True
@@ -1046,8 +1048,13 @@ def _calculate_daily_caps(campaign, per_date_spend):
     remaining_today, _, _ = _get_minimum_remaining_budget(campaign, max_daily_budget)
 
     daily_caps = {}
+    overflow = decimal.Decimal(0)
     for ad_group in active_ad_groups:
-        daily_caps[ad_group.id] = int(int(remaining_today) * float(daily_cap_ratios.get(ad_group.id, 0)))
+        cap_dec = remaining_today * daily_cap_ratios.get(ad_group.id, decimal.Decimal(0)) + overflow
+        cap_rounded = cap_dec.to_integral_exact(rounding=decimal.ROUND_FLOOR)
+        overflow = cap_dec - cap_rounded
+
+        daily_caps[ad_group.id] = cap_rounded
 
     _persist_new_daily_caps_to_log(campaign, daily_caps, active_ad_groups,
                                    remaining_today, per_date_spend, daily_cap_ratios)

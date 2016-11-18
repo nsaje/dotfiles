@@ -1254,7 +1254,7 @@ class CalculateDailySpendsTestCase(TestCase):
         daily_caps = campaign_stop._calculate_daily_caps(campaign, per_date_spend)
 
         self.assertEqual(332, daily_caps[1])
-        self.assertEqual(332, daily_caps[2])
+        self.assertEqual(333, daily_caps[2])
 
     @patch('utils.dates_helper.local_today')
     def test_calculate_daily_caps_ad_group_inactive(self, mock_local_today):
