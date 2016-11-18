@@ -26,6 +26,8 @@ Plugin 'scrooloose/nerdcommenter'
 Plugin 'junegunn/goyo.vim'
 Plugin 'reedes/vim-pencil'
 Plugin 'tpope/vim-sleuth' " automatic indentation settings
+"Plugin 'godlygeek/tabular' " aligning things
+"Plugin 'plasticboy/vim-markdown' " markdown (mostly for tables: :TableFormat)
 
 
 " allow changing buffer without saving
@@ -102,3 +104,5 @@ augroup pencil
   autocmd FileType markdown,mkd call pencil#init()
   autocmd FileType text         call pencil#init()
 augroup END
+
+let g:vim_markdown_folding_disabled = 1
