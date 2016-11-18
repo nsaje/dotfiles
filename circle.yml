@@ -25,6 +25,7 @@ dependencies:
         - if [ $CIRCLE_NODE_INDEX == 1 ]; then npm install -g eslint; fi
         - npm install -g bower
         - npm install -g grunt
+        - if [ $CIRCLE_NODE_INDEX == 0 ] && [ $(node -p "try{require('aglio/package.json').version}catch(e){}") != "2.3.0" ]; then npm install aglio@2.3.0; fi  # for REST API documentation
         - 'npm prune && npm install':
             pwd:
                 client
@@ -32,6 +33,7 @@ dependencies:
             pwd:
                 client
     cache_directories:
+        - "node_modules" # for aglio (REST docs)
         - "client/node_modules"
 
 #database:
@@ -52,6 +54,8 @@ test:
         - 'if [[ "$CIRCLE_NODE_INDEX" == "0" ]]; then tar -pc * -zf $CIRCLE_ARTIFACTS/server.tar.gz; ../scripts/push_artifact_to_s3.sh $CIRCLE_ARTIFACTS/server.tar.gz; fi':
             parallel: true
             pwd: server
+        - 'if [[ "$CIRCLE_NODE_INDEX" == "0" ]]; then PATH=$PATH:$(npm bin) ./server/restapi/docs/build.sh; ./scripts/push_docs_to_s3.sh; fi':
+            parallel: true
         - 'if [[ "$CIRCLE_NODE_INDEX" == "1" ]]; then tar -pc dist/ ../server/static -zf $CIRCLE_ARTIFACTS/client.tar.gz; else export; fi':
             parallel: true
             pwd: client

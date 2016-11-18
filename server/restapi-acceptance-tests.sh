@@ -12,7 +12,7 @@ SERVER_ENDPOINT="localhost:8123"
 SERVER_LOG="$DIR/acceptance_test_server.log"
 DREDD_CMD="dredd"
 
-BLUEPRINT="$DIR/restapi/api_blueprint.md"
+BLUEPRINT="$DIR/restapi/docs/api_blueprint.md"
 HOOKFILES="$DIR/restapi/acceptance_tests/hooks.py"
 
 function kill_server {
