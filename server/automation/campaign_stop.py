@@ -1051,7 +1051,7 @@ def _calculate_daily_caps(campaign, per_date_spend):
     daily_caps = {}
     overflow = DECIMAL_ZERO
     for ad_group in active_ad_groups:
-        cap_dec = remaining_today * daily_cap_ratios.get(ad_group.id, DECIMAL_ZERO) + overflow
+        cap_dec = remaining_today * decimal.Decimal(daily_cap_ratios.get(ad_group.id, DECIMAL_ZERO)) + overflow
         cap_rounded = cap_dec.to_integral_exact(rounding=decimal.ROUND_FLOOR)
         overflow = cap_dec - cap_rounded
 
