@@ -1,4 +1,5 @@
 import datetime
+import logging
 import unicodecsv
 import StringIO
 import slugify
@@ -15,6 +16,9 @@ from dash.views import helpers
 from analytics.projections import BudgetProjections
 
 from utils.sort_helper import sort_results
+
+logger = logging.getLogger(__name__)
+
 
 FIELDNAMES = {
     'account_id': 'Account Id',
@@ -170,13 +174,21 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         source_names = {source.id: source.name for source in models.Source.objects.all()}
 
     account_appeared = defaultdict(bool)
-    for stat in stats:
-        _populate_stat(stat, start_date=start_date, end_date=end_date, dimensions=dimensions,
-                       source_names=source_names, user=user, prefetched_data=prefetched_data,
-                       budgets=budgets, projections=projections, account_projections=account_projections,
-                       include_projections=include_projections, include_flat_fees=include_flat_fees,
-                       statuses=statuses, settings=settings, account_settings=account_settings)
 
+    broken_stats = []
+    for i, stat in enumerate(stats):
+        try:
+            _populate_stat(stat, start_date=start_date, end_date=end_date, dimensions=dimensions,
+                           source_names=source_names, user=user, prefetched_data=prefetched_data,
+                           budgets=budgets, projections=projections, account_projections=account_projections,
+                           include_projections=include_projections, include_flat_fees=include_flat_fees,
+                           statuses=statuses, settings=settings, account_settings=account_settings)
+        except KeyError:
+            broken_stats.append(stat)
+            logger.exception('Broken stat. Can\'t populate stats because of unknown source.')
+    for broken in broken_stats:
+        stats.remove(broken)
+    
     campaign = _get_campaign(constraints)
     if user.has_perm('zemauth.campaign_goal_optimization') and campaign:
         stats = campaign_goals.create_goals(campaign, stats)
