@@ -77,20 +77,21 @@ def update_redirect(url, redirect_id):
         raise
 
 
-def insert_adgroup(ad_group_id, tracking_codes, enable_ga_tracking, enable_adobe_tracking, adobe_tracking_param,
-                   redirect_pixel_urls=None, redirect_javascript=None):
+def insert_adgroup(ad_group, ad_group_settings, campaign_settings):
     try:
-        url = settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id)
+        url = settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group.id)
         data = {
-            'trackingcode': tracking_codes,
-            'enablegatracking': enable_ga_tracking,
-            'enableadobetracking': enable_adobe_tracking,
-            'adobetrackingparam': adobe_tracking_param,
+            'campaignid': ad_group.campaign_id,
+            'accountid': ad_group.campaign.account_id,
+            'trackingcode': ad_group_settings.get_tracking_codes(),
+            'enablegatracking': campaign_settings.enable_ga_tracking,
+            'enableadobetracking': campaign_settings.enable_adobe_tracking,
+            'adobetrackingparam': campaign_settings.adobe_tracking_param,
         }
-        if redirect_pixel_urls:
-            data['specialredirecttrackers'] = redirect_pixel_urls
-        if redirect_javascript:
-            data['specialredirectjavascript'] = redirect_javascript
+        if ad_group_settings.redirect_pixel_urls:
+            data['specialredirecttrackers'] = ad_group_settings.redirect_pixel_urls
+        if ad_group_settings.redirect_javascript:
+            data['specialredirectjavascript'] = ad_group_settings.redirect_javascript
         return _call_api_retry(url, json.dumps(data), method='PUT')
     except Exception:
         logger.exception('Exception in insert_adgroup')

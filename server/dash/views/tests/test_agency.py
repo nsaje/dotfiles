@@ -1490,6 +1490,9 @@ class CampaignSettingsTest(TestCase):
         ])
         campaign = models.Campaign.objects.get(pk=1)
 
+        for ag in campaign.adgroup_set.all():
+            ag.get_current_settings().save(None)  # create initial settings
+
         settings = campaign.get_current_settings()
         self.assertEqual(campaign.name, 'test campaign 1')
         self.assertNotEqual(settings.goal_quantity, 10)
@@ -1550,7 +1553,7 @@ class CampaignSettingsTest(TestCase):
         mock_send_ga_email.assert_called_with(self.user)
         mock_ga_readable.assert_called_with('UA-123456789-3')
         mock_r1_insert_adgroup.assert_has_calls(
-            [call(ag.id, ag.get_current_settings().get_tracking_codes(), True, True, 'cid')
+            [call(ag, ag.get_current_settings(), settings)
              for ag in campaign.adgroup_set.all()])
 
         hist = history_helpers.get_campaign_history(models.Campaign.objects.get(pk=1)).first()

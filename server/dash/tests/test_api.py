@@ -379,30 +379,38 @@ class UpdateAdGroupSourceSettings(TestCase):
     def test_tracking_code_manual_action(self, mock_api):
         ad_group_source = models.AdGroupSource.objects.get(id=16)
 
-        adgs1 = models.AdGroupSettings()
-        adgs2 = models.AdGroupSettings()
+        adgs1 = ad_group_source.ad_group.get_current_settings()
+        adgs2 = adgs1.copy_settings()
         adgs2.tracking_code = "test={amazing}&blob={sourceDomain}&x={sourceDomainUnderscore}"
+        adgs2.save(None)
 
         ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
         self.assertEqual([], ret)
 
         self.assertFalse(mock_api.init_set_ad_group_manual_property.called)
-
-        self.assertTrue(self.mock_insert_adgroup.called)
-        self.assertEqual(self.mock_insert_adgroup.call_args[0][0], ad_group_source.ad_group_id)
-        self.assertEqual(self.mock_insert_adgroup.call_args[0][1], adgs2.tracking_code)
+        self.mock_insert_adgroup.assert_called_with(
+            ad_group_source.ad_group,
+            ad_group_source.ad_group.get_current_settings(),
+            ad_group_source.ad_group.campaign.get_current_settings(),
+        )
 
     def test_tracking_codes_automatic(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
 
-        adgs1 = models.AdGroupSettings()
-        adgs2 = models.AdGroupSettings()
+        adgs1 = ad_group_source.ad_group.get_current_settings()
+        adgs2 = adgs1.copy_settings()
         adgs2.tracking_code = "a=b"
+        adgs2.save(None)
+
+        cs = ad_group_source.ad_group.campaign.get_current_settings()
+        cs.save(None)  # initial settings
 
         api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
-        self.assertTrue(self.mock_insert_adgroup.called)
-        self.assertEqual(self.mock_insert_adgroup.call_args[0][0], ad_group_source.ad_group_id)
-        self.assertEqual(self.mock_insert_adgroup.call_args[0][1], adgs2.tracking_code)
+        self.mock_insert_adgroup.assert_called_with(
+            ad_group_source.ad_group,
+            ad_group_source.ad_group.get_current_settings(),
+            ad_group_source.ad_group.campaign.get_current_settings(),
+        )
 
     def test_tracking_codes_automatic_per_content_ad(self):
         ad_group_source1 = models.AdGroupSource.objects.get(id=1)
@@ -414,17 +422,23 @@ class UpdateAdGroupSourceSettings(TestCase):
         )
         ad_group_source1.source.source_type.save()
 
-        adgs1 = models.AdGroupSettings()
-        adgs2 = models.AdGroupSettings()
+        adgs1 = ad_group_source1.ad_group.get_current_settings()
+        adgs2 = adgs1.copy_settings()
         adgs2.tracking_code = "a=b"
+        adgs2.save(None)
+
+        cs = ad_group_source1.ad_group.campaign.get_current_settings()
+        cs.save(None)  # initial settings
 
         ret = api.order_ad_group_settings_update(ad_group_source1.ad_group, adgs1, adgs2, None)
         self.assertEqual(1, len(ret))
         self.assertEqual(ret[0].action, actionlog.constants.Action.UPDATE_CONTENT_AD)
 
-        self.assertTrue(self.mock_insert_adgroup.called)
-        self.assertEqual(self.mock_insert_adgroup.call_args[0][0], ad_group_source1.ad_group_id)
-        self.assertEqual(self.mock_insert_adgroup.call_args[0][1], adgs2.tracking_code)
+        self.mock_insert_adgroup.assert_called_with(
+            ad_group_source1.ad_group,
+            ad_group_source1.ad_group.get_current_settings(),
+            ad_group_source1.ad_group.campaign.get_current_settings(),
+        )
 
     def test_target_regions_automatic_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
@@ -969,7 +983,10 @@ class UpdateAdGroupSourceSettings(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.save()
 
-        adgs = models.AdGroupSettings()
+        adgs = ad_group_source.ad_group.get_current_settings().copy_settings()
+        adgs.tracking_code = ''
+        adgs.save(None)
+
         cs = ad_group_source.ad_group.campaign.get_current_settings().copy_settings()
         cs.enable_ga_tracking = False
         cs.enable_adobe_tracking = False
@@ -978,7 +995,11 @@ class UpdateAdGroupSourceSettings(TestCase):
 
         api.order_ad_group_settings_update(ad_group_source.ad_group, adgs, adgs, None, campaign_tracking_changes=True)
 
-        self.mock_insert_adgroup.assert_called_with(1, '', False, False, '')
+        self.mock_insert_adgroup.assert_called_with(
+            ad_group_source.ad_group,
+            ad_group_source.ad_group.get_current_settings(),
+            ad_group_source.ad_group.campaign.get_current_settings(),
+        )
 
         manual_actions = self._get_manual_set_property_actions(ad_group_source)
         auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
@@ -998,7 +1019,10 @@ class UpdateAdGroupSourceSettings(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.save()
 
-        adgs = models.AdGroupSettings()
+        adgs = ad_group_source.ad_group.get_current_settings().copy_settings()
+        adgs.tracking_code = ''
+        adgs.save(None)
+
         cs = ad_group_source.ad_group.campaign.get_current_settings().copy_settings()
         cs.enable_ga_tracking = True
         cs.enable_adobe_tracking = True
@@ -1006,7 +1030,11 @@ class UpdateAdGroupSourceSettings(TestCase):
         cs.save(None)
 
         api.order_ad_group_settings_update(ad_group_source.ad_group, adgs, adgs, None, campaign_tracking_changes=True)
-        self.mock_insert_adgroup.assert_called_with(1, '', True, True, 'cid')
+        self.mock_insert_adgroup.assert_called_with(
+            ad_group_source.ad_group,
+            ad_group_source.ad_group.get_current_settings(),
+            ad_group_source.ad_group.campaign.get_current_settings(),
+        )
 
         manual_actions = self._get_manual_set_property_actions(ad_group_source)
         auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
@@ -1023,13 +1051,25 @@ class UpdateAdGroupSourceSettings(TestCase):
         )
 
     def test_propagate_redirects(self):
-        adgs1 = models.AdGroupSettings()
-        adgs2 = models.AdGroupSettings()
+        r = HttpRequest()
+        r.user = User.objects.get(id=1)
+        ad_group = models.AdGroup(campaign_id=1)
+        ad_group.save(r)
 
-        api.order_ad_group_settings_update(models.AdGroup.objects.get(pk=1), adgs1, adgs2, None)
+        adgs1 = ad_group.get_current_settings()
+        adgs2 = adgs1.copy_settings()
+        adgs2.save(None)
+
+        ad_group.campaign.get_current_settings().save(None)  # create initial settings
+
+        api.order_ad_group_settings_update(ad_group, adgs1, adgs2, None)
 
         # should insert ad group into redirector as settings are fresh
-        self.mock_insert_adgroup.assert_called_with(1, '', True, False, '')
+        self.mock_insert_adgroup.assert_called_with(
+            ad_group,
+            ad_group.get_current_settings(),
+            ad_group.campaign.get_current_settings(),
+        )
 
     def test_no_need_to_propagate_redirects(self):
         adgs1 = models.AdGroupSettings(ad_group_id=1)
@@ -1044,11 +1084,21 @@ class UpdateAdGroupSourceSettings(TestCase):
     def test_changes_propagate_redirects(self):
         adgs1 = models.AdGroupSettings(ad_group_id=1)
         adgs1.save(None)  # id is not null - settings are not fresh
-        adgs2 = models.AdGroupSettings(tracking_code='asd')
+        adgs2 = adgs1.copy_settings()
+        adgs2.tracking_code = 'asd'
+        adgs2.save(None)
 
-        api.order_ad_group_settings_update(models.AdGroup.objects.get(pk=1), adgs1, adgs2, None)
+        campaign_settings = adgs1.ad_group.campaign.get_current_settings()  # initial settings
+        campaign_settings.save(None)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        api.order_ad_group_settings_update(ad_group, adgs1, adgs2, None)
         # should insert ad group into redirector as relevant settings were changed
-        self.mock_insert_adgroup.assert_called_with(1, 'asd', True, False, '')
+        self.mock_insert_adgroup.assert_called_with(
+            ad_group,
+            adgs2,
+            campaign_settings,
+        )
 
 
 class UpdateAdGroupSourceState(TestCase):

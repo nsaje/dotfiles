@@ -79,13 +79,9 @@ class AdGroupAdmin(TestCase):
         self.assertEqual(new_settings.redirect_javascript, javascript)
         self.assertEqual(new_settings.interest_targeting, interest_targeting)
         mock_r1_insert_adgroup.assert_called_with(
-            ad_group.id,
-            old_settings.get_tracking_codes(),
-            campaign_settings.enable_ga_tracking,
-            campaign_settings.enable_adobe_tracking,
-            campaign_settings.adobe_tracking_param,
-            trackers,
-            javascript
+            ad_group,
+            new_settings,
+            campaign_settings,
         )
         self.assertEqual(mock_handle_manual.call_count, 6)
 

@@ -217,14 +217,23 @@ class InsertRedirectsBatchTest(TestCase):
 )
 @patch('utils.request_signer._secure_opener.open')
 class InsertAdGroupTest(TestCase):
+
+    fixtures = ['test_api.yaml']
+
     def test_insert_adgroup(self, mock_urlopen):
-        ad_group_id = 345
-        tracking_codes = "lala=1"
-        enable_ga_tracking = True
-        enable_adobe_tracking = False
-        adobe_tracking_param = 'cid'
-        redirect_pixel_urls = ['http://a.com', 'http://b.com']
-        redirect_javascript = 'alert("a");'
+        ad_group = dash.models.AdGroup.objects.get(id=1)
+
+        new_ad_group_settings = ad_group.get_current_settings().copy_settings()
+        new_ad_group_settings.tracking_code = 'lala=1'
+        new_ad_group_settings.redirect_pixel_urls = []
+        new_ad_group_settings.redirect_javascript = ''
+        new_ad_group_settings.save(None)
+
+        new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
+        new_campaign_settings.enable_ga_tracking = True
+        new_campaign_settings.enable_adobe_tracking = False
+        new_campaign_settings.adobe_tracking_param = 'cid'
+        new_campaign_settings.save(None)
 
         response = Mock()
         response.read.return_value = '{"status": "ok"}'
@@ -232,68 +241,78 @@ class InsertAdGroupTest(TestCase):
         mock_urlopen.return_value = response
 
         redirector_helper.insert_adgroup(
-            ad_group_id,
-            tracking_codes,
-            enable_ga_tracking,
-            enable_adobe_tracking,
-            adobe_tracking_param
+            ad_group,
+            ad_group.get_current_settings(),
+            ad_group.campaign.get_current_settings(),
         )
 
         call = mock_urlopen.call_args[0][0]
 
-        self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id))
+        self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group.id))
         self.assertEqual(call.get_method(), 'PUT')
-        self.assertEqual(call.data, json.dumps({
-            "trackingcode": tracking_codes,
+
+        self.assertEqual(json.loads(call.data), {
+            "campaignid": ad_group.campaign_id,
+            "accountid": ad_group.campaign.account_id,
+            "trackingcode": ad_group.get_current_settings().get_tracking_codes(),
             "enablegatracking": True,
             "enableadobetracking": False,
             "adobetrackingparam": 'cid'
-        }))
+        })
+
+        new_ad_group_settings = ad_group.get_current_settings().copy_settings()
+        new_ad_group_settings.redirect_pixel_urls = ['http://a.com', 'http://b.com']
+        new_ad_group_settings.redirect_javascript = 'alert("a");'
+        new_ad_group_settings.save(None)
 
         redirector_helper.insert_adgroup(
-            ad_group_id,
-            tracking_codes,
-            enable_ga_tracking,
-            enable_adobe_tracking,
-            adobe_tracking_param,
-            redirect_pixel_urls,
-            redirect_javascript
+            ad_group,
+            ad_group.get_current_settings(),
+            ad_group.campaign.get_current_settings(),
         )
 
         call = mock_urlopen.call_args[0][0]
 
-        self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id))
+        self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group.id))
         self.assertEqual(call.get_method(), 'PUT')
-        self.assertEqual(call.data, json.dumps({
-            "trackingcode": tracking_codes,
+        self.assertEqual(json.loads(call.data), {
+            "campaignid": ad_group.campaign_id,
+            "accountid": ad_group.campaign.account_id,
+            "trackingcode": ad_group.get_current_settings().get_tracking_codes(),
             "enablegatracking": True,
             "enableadobetracking": False,
             "adobetrackingparam": 'cid',
             "specialredirecttrackers": ['http://a.com', 'http://b.com'],
             "specialredirectjavascript": 'alert("a");'
-        }))
+        })
 
     def test_code_error(self, mock_urlopen):
-        url = 'https://example.com/image'
-
         response = Mock()
         response.getcode = lambda: 500
         mock_urlopen.return_value = response
 
+        ad_group = dash.models.AdGroup.objects.get(id=1)
         with self.assertRaises(Exception):
-            redirector_helper.insert_adgroup(url, '', True, False, '')
+            redirector_helper.insert_adgroup(
+                ad_group,
+                ad_group.get_current_settings(),
+                ad_group.campaign.get_current_settings()
+            )
         self.assertEqual(len(mock_urlopen.call_args_list), 3)
 
     def test_status_not_success(self, mock_urlopen):
-        url = 'https://example.com/image'
-
         response = Mock()
         response.read.return_value = '{"status": "error"}'
         response.getcode = lambda: 200
         mock_urlopen.return_value = response
 
+        ad_group = dash.models.AdGroup.objects.get(id=1)
         with self.assertRaises(Exception):
-            redirector_helper.insert_adgroup(url, '', True, False, '')
+            redirector_helper.insert_adgroup(
+                ad_group,
+                ad_group.get_current_settings(),
+                ad_group.campaign.get_current_settings()
+            )
         self.assertEqual(len(mock_urlopen.call_args_list), 3)
 
 

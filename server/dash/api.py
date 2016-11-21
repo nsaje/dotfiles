@@ -703,11 +703,11 @@ def update_content_ad_source_state(content_ad_source, data):
 
 def update_ad_group_redirector_settings(ad_group, ad_group_settings):
     campaign_settings = ad_group.campaign.get_current_settings()
-    redirector_helper.insert_adgroup(ad_group.id,
-                                     ad_group_settings.get_tracking_codes(),
-                                     campaign_settings.enable_ga_tracking,
-                                     campaign_settings.enable_adobe_tracking,
-                                     campaign_settings.adobe_tracking_param)
+    redirector_helper.insert_adgroup(
+        ad_group,
+        ad_group_settings,
+        campaign_settings,
+    )
 
 
 def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True, iab_update=False,
