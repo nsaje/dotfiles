@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemSidePanel', {
         onClose: '&'
     },
     templateUrl: '/app/common/components/zem-side-panel/zemSidePanel.component.html',
-    controller: function (hotkeys) {
+    controller: function ($window, hotkeys) {
         var $ctrl = this;
 
         $ctrl.close = close;
@@ -23,6 +23,7 @@ angular.module('one.widgets').component('zemSidePanel', {
 
         function open () {
             $ctrl.visible = true;
+            $window.scrollTo(0, 0);
             $('body').addClass('no-scroll');
         }
 

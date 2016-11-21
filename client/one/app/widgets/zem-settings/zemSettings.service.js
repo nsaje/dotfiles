@@ -38,7 +38,7 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
         }
 
         currentEntity = entity || zemNavigationNewService.getActiveEntity();
-        pubsub.notify(EVENTS.ON_OPEN, currentEntity);
+        if (currentEntity !== null) pubsub.notify(EVENTS.ON_OPEN, currentEntity);
     }
 
     function close () {
