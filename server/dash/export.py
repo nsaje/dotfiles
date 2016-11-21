@@ -188,7 +188,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
             logger.exception('Broken stat. Can\'t populate stats because of unknown source.')
     for broken in broken_stats:
         stats.remove(broken)
-    
+
     campaign = _get_campaign(constraints)
     if user.has_perm('zemauth.campaign_goal_optimization') and campaign:
         stats = campaign_goals.create_goals(campaign, stats)
