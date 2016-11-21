@@ -26,6 +26,7 @@ from dash.dashapi import data_helper
 from utils import exc
 from utils import email_helper
 from utils import k1_helper
+from utils import columns
 
 import zemauth.models
 
@@ -927,10 +928,8 @@ def get_conversion_goals_wo_pixels(conversion_goals):
     Returns conversions goals not of pixel type to be used by in client. Pixels
     are to be returned separately.
     """
-    return [
-        {'id': cg.get_view_key(conversion_goals), 'name': cg.name}
-        for cg in conversion_goals if cg.type != constants.ConversionGoalType.PIXEL
-    ]
+    return [{'id': k, 'name': v} for k, v in
+            columns.get_conversion_goals_column_names_mapping(conversion_goals).items()]
 
 
 def get_pixels_list(pixels):

@@ -13,45 +13,18 @@ from rest_framework import serializers
 from dash import constants
 from dash.views import helpers
 import dash.models
+
 import stats.constants
 import stats.api_breakdowns
+
 import utils.s3helpers
 import utils.email_helper
+import utils.columns
 
 
 logger = logging.getLogger(__name__)
 
 MAX_ROWS = 999999
-
-DATE = 'Date'
-AD_GROUP_ID = 'Ad Group Id'
-CONTENT_AD_ID = 'Content Ad Id'
-CONTENT_AD_TITLE = 'Content Ad'
-DOMAIN_ID = 'Domain Id'
-DOMAIN = 'Domain'
-MEDIA_SOURCE_NAME = 'Media Source'
-MEDIA_SOURCE_ID = 'Media Source Id'
-CONTENT_AD_LABEL = 'Label'
-TOTAL_SPEND = 'Total Spend'
-IMPRESSIONS = 'Impressions'
-CLICKS = 'Clicks'
-AVG_CPC = 'Avg. CPC'
-
-FIELDS = {
-    DATE: 'date',
-    AD_GROUP_ID: 'ad_group_id',
-    CONTENT_AD_ID: 'content_ad_id',
-    CONTENT_AD_TITLE: 'title',
-    CONTENT_AD_LABEL: 'label',
-    DOMAIN_ID: 'publisher_id',
-    DOMAIN: 'domain',
-    MEDIA_SOURCE_NAME: 'name',
-    MEDIA_SOURCE_ID: 'source_id',
-    TOTAL_SPEND: 'billing_cost',
-    IMPRESSIONS: 'impressions',
-    CLICKS: 'clicks',
-    AVG_CPC: 'cpc',
-}
 
 EQUALS = '='
 IN = 'IN'
@@ -59,28 +32,29 @@ BETWEEN = 'between'
 OPERATORS = [EQUALS, IN, BETWEEN]
 
 SUPPORTED_BREAKDOWNS = {
-    ('content_ad_id',),
-    ('source_id',),
-    ('publisher_id',),
+    (utils.columns.Names.content_ad_id,),
+    (utils.columns.Names.source_id,),
+    (utils.columns.Names.publisher,),
 }
 
 
 def get_breakdown_from_fields(fields):
     if not fields:
         raise serializers.ValidationError("Must define fields!")
-    breakdown = (FIELDS[fields[0]['field']],)
-    return breakdown
+
+    # take the first one
+    return (fields[0]['field'],)
 
 
 def get_filter_constraints(filters):
     filter_constraints = {}
     for f in filters:
-        if f['field'] == AD_GROUP_ID and f['operator'] == EQUALS:
+        if f['field'] == utils.columns.Names.ad_group_id and f['operator'] == EQUALS:
             filter_constraints['ad_group_id'] = int(f['value'])
-        if f['field'] == DATE and f['operator'] == BETWEEN:
+        if f['field'] == utils.columns.Names.date and f['operator'] == BETWEEN:
             filter_constraints['start_date'] = _parse_date(f['from'])
             filter_constraints['end_date'] = _parse_date(f['to'])
-        if f['field'] == DATE and f['operator'] == EQUALS:
+        if f['field'] == utils.columns.Names.date and f['operator'] == EQUALS:
             date = _parse_date(f['value'])
             filter_constraints['start_date'] = date
             filter_constraints['end_date'] = date
@@ -94,12 +68,12 @@ def _parse_date(string):
         raise serializers.ValidationError("Invalid date format")
 
 
-class ReportFieldsSerializer(serializers.Serializer):
-    field = serializers.ChoiceField(FIELDS)
+class ReportNamesSerializer(serializers.Serializer):
+    field = serializers.CharField(allow_blank=False, trim_whitespace=True)
 
 
 class ReportFiltersSerializer(serializers.Serializer):
-    field = serializers.ChoiceField(FIELDS)
+    field = serializers.CharField(allow_blank=False, trim_whitespace=True)
     operator = serializers.ChoiceField(OPERATORS)
     value = serializers.CharField(required=False)
     values = serializers.ListField(child=serializers.CharField(), required=False)
@@ -115,7 +89,7 @@ class ReportOptionsSerializer(serializers.Serializer):
 
 
 class ReportQuerySerializer(serializers.Serializer):
-    fields = ReportFieldsSerializer(many=True)
+    fields = ReportNamesSerializer(many=True)
     filters = ReportFiltersSerializer(many=True)
     options = ReportOptionsSerializer(required=False)
 
@@ -159,8 +133,8 @@ class ReportJobExecutor(JobExecutor):
             return
 
         try:
-            raw_report = self.get_raw_report(self.job)
-            csv_report = self.convert_to_csv(self.job, raw_report)
+            raw_report, goals = self.get_raw_report(self.job)
+            csv_report = self.convert_to_csv(self.job, raw_report, goals)
             report_path = self.save_to_s3(csv_report)
             self.send_by_email(self.job, report_path)
 
@@ -176,6 +150,9 @@ class ReportJobExecutor(JobExecutor):
     @classmethod
     def get_raw_report(cls, job):
         breakdown = list(get_breakdown_from_fields(job.query['fields']))
+        breakdown = utils.columns.Names.get_keys(breakdown)
+        breakdown = [stats.constants.get_dimension_identifier(x) for x in breakdown]
+
         filter_constraints = get_filter_constraints(job.query['filters'])
         ad_group_id = filter_constraints['ad_group_id']
         start_date = filter_constraints['start_date']
@@ -207,19 +184,21 @@ class ReportJobExecutor(JobExecutor):
             offset,
             limit,
         )
-        return rows
+        return rows, goals
 
     @classmethod
-    def convert_to_csv(cls, job, data):
+    def convert_to_csv(cls, job, data, goals):
         fieldnames = cls._extract_fieldnames(job.query['fields'])
+        mapping = utils.columns.get_column_names_mapping(goals.pixels, goals.conversion_goals)
+
         output = StringIO.StringIO()
         writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
         writer.writeheader()
         for row in data:
             csv_row = {}
-            for field in fieldnames:
-                formatted_value = row.get(FIELDS[field])
-                csv_row[field] = formatted_value
+            for column, value in row.items():
+                if column in mapping and mapping[column] in fieldnames:
+                    csv_row[mapping[column]] = value
             writer.writerow(csv_row)
         return output.getvalue()
 

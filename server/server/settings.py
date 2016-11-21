@@ -173,6 +173,8 @@ except ImportError:
 # HTTPS
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+RESTAPI_REPORTS_BUCKET = 'z1-rest-reports'
+
 from localsettings import *
 
 if ENABLE_DJANGO_EXTENSIONS:
@@ -367,5 +369,5 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'restapi.exceptions.custom_exception_handler',
 }
 
-RESTAPI_REPORTS_BUCKET = 'z1-rest-reports'
+
 RESTAPI_REPORTS_URL = 'https://%s.s3.amazonaws.com' % RESTAPI_REPORTS_BUCKET

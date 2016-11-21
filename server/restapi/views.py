@@ -833,7 +833,11 @@ class ReportsViewList(RESTAPIBaseView):
 
     def post(self, request):
         query = restapi.reports.ReportQuerySerializer(data=request.data)
-        query.is_valid(raise_exception=True)
+        try:
+            query.is_valid(raise_exception=True)
+        except serializers.ValidationError as e:
+            logger.debug(e)
+            raise e
 
         job = restapi.models.ReportJob(user=request.user, query=query.data)
         job.save()

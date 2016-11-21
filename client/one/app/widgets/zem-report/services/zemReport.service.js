@@ -9,13 +9,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
         var dateRange = zemDataFilterService.getDateRange();
 
         var config = {
-            fields: [
-                {field: 'Domain Id'},
-                {field: 'Domain'},
-                {field: 'Media Source'},
-                {field: 'Clicks'},
-                {field: 'Impressions'},
-            ],
+            fields: getSelectedFields(gridApi),
             filters: [
                 {
                     field: 'Date',
@@ -45,5 +39,19 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
             });
 
         return deferred.promise;
+    }
+
+    function getSelectedFields (gridApi) {
+        var fields = [], columns = gridApi.getColumns();
+
+        for (var i = 0; i < columns.length; i++) {
+            if (columns[i].visible && columns[i].data.name) {
+                fields.push({
+                    field: columns[i].data.name,
+                });
+            }
+        }
+
+        return fields;
     }
 });
