@@ -184,6 +184,8 @@ class ReportJobExecutor(JobExecutor):
             offset,
             limit,
         )
+
+        cls.remap_columns(rows, breakdown)
         return rows, goals
 
     @classmethod
@@ -201,6 +203,19 @@ class ReportJobExecutor(JobExecutor):
                     csv_row[mapping[column]] = value
             writer.writerow(csv_row)
         return output.getvalue()
+
+    @classmethod
+    def remap_columns(cls, rows, breakdown):
+        # temporary fix for naming discrepancies between reports and breakdowns
+        for row in rows:
+            if 'exchange' in row:
+                row['source'] = row['exchange']
+            if breakdown == ['source_id']:
+                row['source'] = row['breakdown_name']
+            if breakdown == ['content_ad_id']:
+                row['content_ad'] = row['breakdown_name']
+            if breakdown == ['publisher_id']:
+                row['publisher'] = row['breakdown_name']
 
     @staticmethod
     def _extract_fieldnames(fields_list):
