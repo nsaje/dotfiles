@@ -92,7 +92,7 @@ class PostprocessTest(TestCase):
 
     def test_postprocess_time_dimension(self):
         rows = []
-        postprocess.postprocess_time_dimension(
+        postprocess._fill_in_missing_rows_time_dimension(
             stats.constants.TimeDimension.DAY,
             rows,
             ['ad_group_id', 'day'],
@@ -110,7 +110,7 @@ class PostprocessTest(TestCase):
 
     def test_postprocess_device_type(self):
         rows = []
-        postprocess.postprocess_device_type_dimension(
+        postprocess._fill_in_missing_rows_device_type_dimension(
             'device_type',
             rows,
             ['ad_group_id', 'device_type'],
@@ -131,7 +131,7 @@ class PostprocessTest(TestCase):
             {'device_type': 1, 'clicks': None, 'ad_group_id': 1},
         ]
 
-        postprocess.postprocess_device_type_dimension(
+        postprocess._fill_in_missing_rows_device_type_dimension(
             'device_type',
             rows,
             ['ad_group_id', 'device_type'],
@@ -149,7 +149,7 @@ class PostprocessTest(TestCase):
             {'device_type': 2, 'clicks': 2, 'ad_group_id': 1},
         ]
 
-        postprocess.postprocess_device_type_dimension(
+        postprocess._fill_in_missing_rows_device_type_dimension(
             'device_type',
             rows,
             ['ad_group_id', 'device_type'],

@@ -19,6 +19,9 @@ def should_query_all(breakdown):
     if stats.constants.get_target_dimension(breakdown) in stats.constants.TimeDimension._ALL:
         return True
 
+    if stats.constants.get_target_dimension(breakdown) == stats.constants.DEVICE:
+        return True
+
     if len(breakdown) == 1:
         if stats.constants.PUBLISHER in breakdown:
             return False
@@ -34,29 +37,35 @@ def should_query_all(breakdown):
 
 
 def query(breakdown, constraints, parents, goals, order, offset, limit, use_publishers_view=False):
-
     target_dimension = stats.constants.get_target_dimension(breakdown)
     if target_dimension in stats.constants.TimeDimension._ALL:
         constraints = helpers.get_time_dimension_constraints(target_dimension, constraints, offset, limit)
+        # offset is not needed anymore because constraints were set accordingly
+        offset = 0
 
     if should_query_all(breakdown):
         all_rows = _query_all(breakdown, constraints, parents, goals, use_publishers_view,
                               breakdown_for_name=breakdown, extra_name='all')
+
         rows = sort_helper.sort_results(all_rows, [order])
+        rows = postprocess.fill_in_missing_rows(rows, breakdown, constraints, parents, order, offset, limit)
+
+        # cut the resultset to size
         rows = sort_helper.apply_offset_limit_to_breakdown(
             stats.constants.get_parent_breakdown(breakdown), rows, offset, limit)
-    elif len(breakdown) == 1:
-        sql, params = queries.prepare_query_joint_base(
-            breakdown, constraints, parents, order, offset, limit, goals, use_publishers_view)
-        rows = db.execute_query(sql, params, helpers.get_query_name(breakdown))
-        postprocess.postprocess_joint_query(rows)
     else:
-        sql, params = queries.prepare_query_joint_levels(
-            breakdown, constraints, parents, order, offset, limit, goals, use_publishers_view)
-        rows = db.execute_query(sql, params, helpers.get_query_name(breakdown))
-        postprocess.postprocess_joint_query(rows)
+        if len(breakdown) == 1:
+            sql, params = queries.prepare_query_joint_base(
+                breakdown, constraints, parents, order, offset, limit, goals, use_publishers_view)
+        else:
+            sql, params = queries.prepare_query_joint_levels(
+                breakdown, constraints, parents, order, offset, limit, goals, use_publishers_view)
 
-    rows = postprocess.add_rows_without_stats(rows, breakdown, constraints, parents, order, offset, limit)
+        rows = db.execute_query(sql, params, helpers.get_query_name(breakdown))
+
+        postprocess.postprocess_joint_query_rows(rows)
+        rows = postprocess.fill_in_missing_rows(rows, breakdown, constraints, parents, order, offset, limit)
+
     postprocess.set_default_values(breakdown, rows)
     return rows
 
@@ -135,7 +144,7 @@ def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
     if t_touchpoints is not None:
         touchpoint_rows = t_touchpoints.join_and_get_result()
 
-    rows = postprocess.postprocess_join_rows(
+    rows = postprocess.merge_rows(
         breakdown, base_rows, yesterday_rows, touchpoint_rows, conversions_rows, goals)
 
     return rows

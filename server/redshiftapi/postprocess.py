@@ -28,56 +28,40 @@ POSTCLICK_FIELDS = [
 ]
 
 
-def add_rows_without_stats(rows, breakdown, constraints, parents, order, offset, limit):
+def fill_in_missing_rows(rows, breakdown, constraints, parents, order, offset, limit):
     target_dimension = constants.get_target_dimension(breakdown)
 
     if target_dimension in constants.TimeDimension._ALL:
-        postprocess_time_dimension(target_dimension, rows, breakdown, constraints, parents)
+        _fill_in_missing_rows_time_dimension(target_dimension, rows, breakdown, constraints, parents)
         rows = sort_helper.sort_results(rows, [order])
 
     if target_dimension == 'device_type':
-        postprocess_device_type_dimension(target_dimension, rows, breakdown, parents, offset, limit)
+        _fill_in_missing_rows_device_type_dimension(target_dimension, rows, breakdown, parents, offset, limit)
         rows = sort_helper.sort_results(rows, [order])
 
     return rows
 
 
-def set_default_values(breakdown, rows):
-    remove_postclicks = constants.get_delivery_dimension(breakdown) is not None
-
-    for row in rows:
-        row.update({
-            'yesterday_cost': row.get('yesterday_cost') or 0,  # default to 0
-            'e_yesterday_cost': row.get('e_yesterday_cost') or 0,
-        })
-
-        if remove_postclicks:
-            # HACK: Temporary hack that removes postclick data when we breakdown by delivery
-            for key in POSTCLICK_FIELDS:
-                if key in row:
-                    row[key] = None
-
-
-def postprocess_time_dimension(target_dimension, rows, breakdown, constraints, parent):
+def _fill_in_missing_rows_time_dimension(target_dimension, rows, breakdown, constraints, parent):
     """
     When querying time dimensions add rows that are missing from a query
     so that result is a nice constant time series.
     """
 
     all_dates = _get_representative_dates(target_dimension, constraints)
-    fill_in_missing_rows(target_dimension, rows, breakdown, parent, all_dates)
+    _fill_in_missing_rows(target_dimension, rows, breakdown, parent, all_dates)
 
 
-def postprocess_device_type_dimension(target_dimension, rows, breakdown, parent, offset, limit):
+def _fill_in_missing_rows_device_type_dimension(target_dimension, rows, breakdown, parent, offset, limit):
     all_values = sorted(dash_constants.DeviceType._VALUES.keys())
 
-    fill_in_missing_rows(
+    _fill_in_missing_rows(
         target_dimension, rows, breakdown, parent,
         all_values[offset:offset + limit]
     )
 
 
-def fill_in_missing_rows(target_dimension, rows, breakdown, parent, all_values):
+def _fill_in_missing_rows(target_dimension, rows, breakdown, parent, all_values):
     parent_breakdown = constants.get_parent_breakdown(breakdown)
 
     rows_per_parent_breakdown = collections.defaultdict(list)
@@ -138,14 +122,30 @@ def _get_representative_dates(time_dimension, constraints):
     return list(x.date() for x in dates)
 
 
-def postprocess_joint_query(rows):
+def set_default_values(breakdown, rows):
+    remove_postclicks = constants.get_delivery_dimension(breakdown) is not None
+
+    for row in rows:
+        row.update({
+            'yesterday_cost': row.get('yesterday_cost') or 0,  # default to 0
+            'e_yesterday_cost': row.get('e_yesterday_cost') or 0,
+        })
+
+        if remove_postclicks:
+            # HACK: Temporary hack that removes postclick data when we breakdown by delivery
+            for key in POSTCLICK_FIELDS:
+                if key in row:
+                    row[key] = None
+
+
+def postprocess_joint_query_rows(rows):
     for row in rows:
         for column in [x for x in row.keys() if x.startswith('performance_')]:
             # this is specific to joint queries - performance returned needs to be converted to category
             row[column] = dash.campaign_goals.get_goal_performance_category(row[column])
 
 
-def postprocess_join_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion_rows, goals):
+def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion_rows, goals):
     """
     Applys conversions, pixels and goals columns to rows. Equivalent to what redshiftapi joint model
     does, the only difference is that joint model calculates this in SQL directly.
