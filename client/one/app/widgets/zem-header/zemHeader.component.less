@@ -206,22 +206,32 @@
         display: block;
         height: 40px;
         margin: 10px 20px 10px 0;
-
-        .zem-filter-toggle {
-            display: inline-block;
+        
+        .button {
             height: 40px;
-            padding: 9px 10px;
-            background-color: fade(@white, 20%);
-            border-radius: @border-radius;
-            transition: background-color 250ms ease-in-out;
-
-            &:hover, &:focus, &:active {
-                background-color: fade(@white, 40%);
+            background-color: fade(@white,20%);
+            border: none;
+            color: @white;
+            
+            &:hover {
+                background-color: fade(@white, 50%);
+                color: @white;
             }
+        }
+        
+        .button--with-icon {
+            padding-left: 38px;
 
-            .filter-icon {
+            &:before {
+                left: 10px;
                 width: 22px;
                 height: 22px;
+            }
+        }
+        
+        .button--filter-icon {
+            &:before {
+                background-image: url('images/filter-white.svg');
             }
         }
     }
@@ -233,10 +243,6 @@
         .zem-filter {
             display: block;
             margin: 10px 20px 10px 0;
-
-            .internal {
-                .header-button-internal();
-            }
 
             .dropdown .dropdown-menu {
                 margin-top: 10px;
