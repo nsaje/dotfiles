@@ -84,10 +84,10 @@ class PromotionExport(BizwireView):
             'bizwire_geo'
         )
 
-    def _get_pubs_stats(self, content_ad_id):
+    def _get_pubs_stats(self, ad_group_id):
         return db.execute_query(
             backtosql.generate_sql('bizwire_pubs.sql', {}),
-            [content_ad_id],
+            [ad_group_id],
             'bizwire_pubs'
         )
 
@@ -122,7 +122,7 @@ class PromotionExport(BizwireView):
         ag_stats_thread = threads.AsyncFunction(partial(self._get_ag_stats, content_ad.ad_group_id))
         ag_stats_thread.start()
 
-        pubs_thread = threads.AsyncFunction(partial(self._get_pubs_stats, content_ad.id))
+        pubs_thread = threads.AsyncFunction(partial(self._get_pubs_stats, content_ad.ad_group_id))
         pubs_thread.start()
 
         geo_impressions_thread = threads.AsyncFunction(partial(self._get_geo_stats, content_ad.id))

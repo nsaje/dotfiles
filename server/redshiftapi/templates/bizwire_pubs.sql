@@ -4,12 +4,15 @@
 SELECT
     publisher
 FROM
-    mv_master
+    mv_pubs_ad_group
 WHERE
-    content_ad_id = %s
+    ad_group_id = %s
 GROUP BY
     publisher
 HAVING
     sum(clicks) > 0
+ORDER BY
+    sum(clicks) DESC
+LIMIT 15
 
 {% endautoescape %}
