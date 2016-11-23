@@ -30,6 +30,6 @@ angular.module('one.legacy').directive('zemNotePopover', function ($window) {
                 return '<a target="_blank" href="' + match + '">' + link(a.hostname) + '</a>';
             });
         },
-        template: '<i ng-if="!!content" class="glyphicon glyphicon-align-justify" zem-lazy-popover-html-unsafe="{{ parsedContent }}" zem-lazy-popover-event="click" zem-lazy-popover-placement="{{ placement }}" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></i><span ng-if="!content">N/A</span>'
+        template: '<i ng-if="!!content" class="glyphicon glyphicon-align-justify" zem-lazy-popover-html-unsafe="{{ parsedContent }}" zem-lazy-popover-stay-open-on-hover="true" zem-lazy-popover-placement="{{ placement }}" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></i><span ng-if="!content">N/A</span>'
     };
 });

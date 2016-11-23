@@ -369,8 +369,4 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
     };
 
     $scope.init();
-
-
-    // TODO: Remove once redesign is finished
-    zemRedesignHelpersService.setBodyThemeClass();
 });

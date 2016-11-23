@@ -32,6 +32,13 @@ angular.module('one.legacy').directive('zemGridHeaderCellCheckbox', function () 
                     var indeterminate =
                         selection.type === zemGridConstants.gridSelectionFilterType.CUSTOM ||
                         selection.selected.length > 0 || selection.unselected.length > 0;
+
+                    // Don't set indeterminate property if only totals row is selected
+                    if (selection.selected.length === 1 &&
+                        selection.selected[0].level === zemGridConstants.gridRowLevel.FOOTER) {
+                        indeterminate = false;
+                    }
+
                     $element.find('.allFilterCheckbox').prop ('indeterminate', indeterminate);
                 });
             }

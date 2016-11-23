@@ -39,6 +39,18 @@ angular.module('one.legacy').controller('CampaignBudgetCtrl', function ($scope, 
         $scope.selectedBudgetId = id;
         return openModal();
     };
+    $scope.deleteBudgetItem = function (selectedBudgetId) {
+        if ($scope.deleteRequestInProgress) return;
+        if (!confirm('Are you sure you want to delete the budget line item?')) return;
+
+        $scope.deleteRequestInProgress = true;
+        api.campaignBudget.delete($scope.campaign.id, selectedBudgetId).then(function () {
+            $scope.deleteRequestInProgress = false;
+            refresh();
+        }, function () {
+            $scope.deleteRequestInProgress = false;
+        });
+    };
 
     $scope.init = function () {
         if (!$scope.campaign) {

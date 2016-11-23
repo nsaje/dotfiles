@@ -53,7 +53,7 @@
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
                     <td ng-if="account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
-                    <td class="notes break-long-words"><span ng-if="item.comment">{{ item.comment }}</span><span ng-if="!item.comment">N/A</span></td>
+                    <td class="notes"><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
                     <td class="action-buttons">
                         <a class="btn btn-blue btn-icon btn-small remove" ng-click="cancelCreditItem(item.id)" ng-if="item.isSigned"><span class="icon"></span><span class="text">Cancel</span></a>
                         <a class="btn btn-blue btn-icon btn-small edit" ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled"><span class="icon"></span><span class="text">Edit</span></a>
@@ -100,7 +100,7 @@
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
                     <td ng-if="account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
-                    <td class="notes break-long-words"><span ng-if="item.comment">{{ item.comment }}</span><span ng-if="!item.comment">N/A</span></td>
+                    <td class="notes"><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
                     <td class="action-buttons">
                         <a class="btn btn-blue btn-icon btn-small edit" ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled"><span class="icon"></span><span class="text">Edit</span></a>
                     </td>

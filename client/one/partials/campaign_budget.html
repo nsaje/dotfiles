@@ -63,9 +63,10 @@
                     </td>
                     <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
-                    <td class="notes break-long-words"><span ng-if="item.comment">{{ item.comment }}</span><span ng-if="!item.comment">N/A</span></td>
-                    <td class="text-right">
+                    <td class="notes"><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
+                    <td class="action-buttons">
                         <a class="btn btn-blue btn-icon btn-small edit" ng-click="editBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable"><span class="icon"></span><span class="text">Edit</span></a>
+                        <a class="btn btn-blue btn-icon btn-small remove" ng-click="deleteBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable" ng-disabled="deleteRequestInProgress"><span class="icon"></span><span class="text">Delete</span></a>
                     </td>
                 </tr>
                 <tr ng-show="!activeBudget.length" class="message">
@@ -108,7 +109,7 @@
                     <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
 
-                    <td class="notes break-long-words"><span ng-if="item.comment">{{ item.comment }}</span><span ng-if="!item.comment">N/A</span></td>
+                    <td class="notes"><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
                     <td class="text-right">
                         <a class="btn btn-blue btn-icon btn-small edit" ng-click="editBudgetItem(item.id)" ng-if="item.isEditable"><span class="icon"></span><span class="text">Edit</span></a>
                     </td>
