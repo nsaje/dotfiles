@@ -31,7 +31,7 @@ class PromotionExportTestCase(TestCase):
         mock_get_ad_stats.return_value = {'impressions': 123, 'clicks': 12, 'ctr': 0.1}
         mock_get_ag_stats.return_value = {'industry_ctr': 0.2}
         mock_get_geo_stats.return_value = [{'country': 'US', 'state': 'NY', 'impressions': 100},
-                                           {'coutnry': 'US', 'state': None, 'impressions': 23}]
+                                           {'country': 'US', 'state': None, 'impressions': 23}]
         mock_get_pubs_stats.return_value = [{'publisher': 'cnn.com'}]
 
         expected_response = {
