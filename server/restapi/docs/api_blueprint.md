@@ -424,27 +424,27 @@ adobe    |                   |                                       |
         }
 
 
-### Get campaign performance [GET /rest/v1/campaigns/{campaignId}/stats/{?from}{&to}]
-
-+ Parameters
-    + campaignId: 608 (required)
-    + from: `2016-11-18` (required)
-    + to: `2016-11-18` (required)
+### Get campaign performance [GET /rest/v1/campaigns/{campaignId}/stats/{?from,to}]
 
 This endpoint allows you to quickly view the performance of the campaign in a time span.
 
 For more detailed reports, please use the [Reporting endpoints](#reporting).
 
++ Parameters
+    + campaignId: 608 (required)
+    + from: `2016-11-18` (required)
+    + to: `2016-11-18` (required)
+    
 + Response 200 (application/json)
 
         {
-	    "data": {
-		"totalCost": "2240.56",
-		"impressions": 4146083,
-		"clicks": 14621,
-		"cpc": "0.130"
-	    }
-	}
+            "data": {
+                "totalCost": "2240.56",
+                "impressions": 4146083,
+                "clicks": 14621,
+                "cpc": "0.130"
+            }
+        }
 
 
 ## Campaign Budgets [/rest/v1/campaigns/{campaignId}/budgets/]
@@ -2089,6 +2089,7 @@ A string representing a decimal number. Example: `"15.48"`
 - `US-PR` - Puerto Rico
 - `US-UM` - United States Minor Outlying Islands
 - `US-VI` - Virgin Islands
+
 
 
 

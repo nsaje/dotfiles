@@ -241,6 +241,12 @@ We have [pep8](https://pypi.python.org/pypi/pep8) and [eslint](http://eslint.org
 We suggest using a pep8 + eslint in your code editor alongside running `./lint_check.sh` on your code before commiting to this repository. Git pre-commit hooks are great too on your local machine dev setup. 
 
 
+## Documentation
+
+Documentation for the REST API is built on CI and deployed to dev.zemanta.com by deploykitty whenever Z1 is deployed.
+When modifying or changing its theme, you can run a preview server with `./server/restapi/docs/build.sh --server`.
+
+
 ## Testing
 
 ### Client

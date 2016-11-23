@@ -275,11 +275,14 @@ mixin ContentTriple()
                                     each response in example.responses
                                         .tab
                                             +RequestResponseBody(response, false, true)
-                .middle
-                    .action(class=action.methodLower, id=action.elementId)
+                .middle(id=action.elementId)
+                    .action(class=action.methodLower)
                         h4.action-heading
-                            .name!= action.name
-                            a.method(class=action.methodLower, href=action.elementLink)
+                            .name
+                                = action.name
+                                = " "
+                                a.permalink(href=action.elementLink) &para;
+                            a.method(class=action.methodLower)
                                 = action.method
                             code.uri= self.urldec(action.uriTemplate)
                         if action.description
