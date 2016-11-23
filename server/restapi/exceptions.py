@@ -2,6 +2,7 @@ import traceback
 import logging
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 import rest_framework.views
 from rest_framework.response import Response
 from rest_framework import serializers
@@ -22,6 +23,13 @@ def custom_exception_handler(exception, context):
     response = _handle_django_rest_framework_exceptions(exception, context)
     if response:
         return response
+
+    # Django DoesNotExist
+    if isinstance(exception, ObjectDoesNotExist):
+        error_data['errorCode'] = "DoesNotExist"
+        error_data['details'] = exception.message
+        status_code = 400
+        return Response(error_data, status=status_code)
 
     # Server Error
     logger.error('REST API exception', exc_info=True)

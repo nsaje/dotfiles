@@ -234,8 +234,7 @@
         daily_budget_cc: 100
         ad_group_name: 'AdGroup name'
         start_date: '2015-03-02'
-        end_date: '2015-04-02'
-        autopilot_state: 1
+        autopilot_state: 2
         autopilot_daily_budget: '50.0000'
         interest_targeting: ["fun", "games"]
         exclusion_interest_targeting: ["religion", "weather"]
@@ -273,6 +272,35 @@
         source_credentials: 3
         last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
+    pk: 3
+
+# test adgroupsourcesettings
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 1
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 1
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 2
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
     pk: 3
 
 # test uploadbatch
@@ -316,4 +344,14 @@
         status: 1
         query: '{}'
     model: restapi.reportjob
+    pk: 27
+
+# test publisher blacklists
+
+-   fields:
+        created_dt: '2015-02-21T00:00:00'
+        name: 'www.example.com'
+        status: 2
+        ad_group: 2040
+    model: dash.publisherblacklist
     pk: 27
