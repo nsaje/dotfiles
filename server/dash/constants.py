@@ -1027,6 +1027,8 @@ class InterestCategory(ConstantBase):
     HOME = "home"
     EDUCATION = "education"
     TECHNOLOGY = "technology"
+    # this is a cisco specific thing and is set on the bidder based on page url keywords
+    TECHNOLOGY_CONTEXTUAL = "technology-contextual"
     UTILITY = "utility"
     ENTERTAINMENT = "entertainment"
     MENT = "ment"
@@ -1070,6 +1072,8 @@ class InterestCategory(ConstantBase):
         HEALTH: "Health & Fitness",
         SCIENCE: "Science",
         TECHNOLOGY: "Technology",
+        # this is a cisco specific thing and is set on the bidder based on page url keywords
+        TECHNOLOGY_CONTEXTUAL: "Technology - Contextual",
         CARS: "Automotive",
         MEDIA: "News",
         HOME: "Home & Garden",

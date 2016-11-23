@@ -685,6 +685,8 @@ var constants = {
         HOME: 'home',
         EDUCATION: 'education',
         TECHNOLOGY: 'technology',
+        // this is a cisco specific thing and is set on the bidder based on page url keywords
+        TECHNOLOGY_CONTEXTUAL: 'technology-contextual',
         UTILITY: 'utility',
         ENTERTAINMENT: 'entertainment',
         MENT: 'ment',
@@ -1341,6 +1343,8 @@ constants.interestCategoryText[constants.interestCategory.FUN] = 'Fun & Entertai
 constants.interestCategoryText[constants.interestCategory.HEALTH] = 'Health & Fitness';
 constants.interestCategoryText[constants.interestCategory.SCIENCE] = 'Science';
 constants.interestCategoryText[constants.interestCategory.TECHNOLOGY] = 'Technology';
+// this is a cisco specific thing and is set on the bidder based on page url keywords
+constants.interestCategoryText[constants.interestCategory.TECHNOLOGY_CONTEXTUAL] = 'Technology - Contextual';
 constants.interestCategoryText[constants.interestCategory.CARS] = 'Automotive';
 constants.interestCategoryText[constants.interestCategory.MEDIA] = 'News';
 constants.interestCategoryText[constants.interestCategory.HOME] = 'Home & Garden';
