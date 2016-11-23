@@ -424,6 +424,28 @@ adobe    |                   |                                       |
         }
 
 
+### Get campaign performance [GET /rest/v1/campaigns/{campaignId}/stats/{?from}{&to}]
+
++ Parameters
+    + campaignId: 608 (required)
+    + from: `2016-11-18` (required)
+    + to: `2016-11-18` (required)
+
+This endpoint allows you to quickly view the performance of the campaign in a time span.
+
+For more detailed reports, please use the [Reporting endpoints](#reporting).
+
++ Response 200 (application/json)
+
+        {
+	    "data": {
+		"totalCost": "2240.56",
+		"impressions": 4146083,
+		"clicks": 14621,
+		"cpc": "0.130"
+	    }
+	}
+
 
 ## Campaign Budgets [/rest/v1/campaigns/{campaignId}/budgets/]
 <a name="budget"></a>
@@ -1412,6 +1434,7 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
 
 
 # Group Reporting
+<a name='reporting'></a>
 
 Getting a report is performed asynchronously. First, you create a report job, then you poll
 its status and finally, when its status is DONE, you receive a link to a CSV file in the result field.

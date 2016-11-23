@@ -1,3 +1,4 @@
+import datetime
 import collections
 import logging
 import influx
@@ -21,6 +22,7 @@ from dash import upload
 import dash.models
 import dash.threads
 from utils import json_helper, exc, dates_helper
+from redshiftapi import quickstats
 
 import restapi.authentication
 import restapi.models
@@ -554,6 +556,26 @@ class CampaignBudgetViewDetails(RESTAPIBaseView):
         self.request.body = RESTAPIJSONRenderer().render(put_data)
         internal_view.post(self.request, campaign_id, budget_id)
         return CampaignBudgetViewDetails().get(self.request, campaign_id, budget_id)
+
+
+class StatsSerializer(serializers.Serializer):
+    total_cost = serializers.DecimalField(20, 2)
+    impressions = serializers.IntegerField()
+    clicks = serializers.IntegerField()
+    cpc = serializers.DecimalField(5, 3)
+
+
+class CampaignStatsView(RESTAPIBaseView):
+    renderer_classes = (CamelCaseJSONRenderer,)
+
+    def get(self, request, campaign_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        from_date = self.request.query_params.get('from', None)
+        to_date = self.request.query_params.get('to', None)
+        if not from_date or not to_date:
+            raise serializers.ValidationError('Missing from or to parameter')
+        stats = quickstats.query_campaign(campaign.id, from_date, to_date)
+        return self.response_ok(StatsSerializer(stats).data)
 
 
 class SourceIdSlugField(serializers.Field):

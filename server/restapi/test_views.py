@@ -15,6 +15,7 @@ from dash import constants
 from dash import upload
 import restapi.models
 from utils import json_helper
+import redshiftapi.quickstats
 
 
 TODAY = datetime.datetime(2016, 1, 15).date()
@@ -169,6 +170,30 @@ class CampaignsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_campaign(resp_json['data'])
         self.assertEqual(resp_json['data'], test_campaign)
+
+
+class CampaignStatsTest(RESTAPITest):
+
+    @mock.patch.object(redshiftapi.quickstats, 'query_campaign', autospec=True)
+    def test_get(self, mock_query_campaign):
+        mock_query_campaign.return_value = {
+            'total_cost': 123.456,
+            'cpc': 0.123,
+            'impressions': 1234567,
+            'clicks': 1234,
+            'unneeded': 1,
+            'fields': 2
+        }
+        today = datetime.date.today()
+        r = self.client.get(reverse('campaignstats', kwargs={'campaign_id': 608}),
+                            {'from': today, 'to': today})
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(resp_json['data'], {
+            'totalCost': '123.46',
+            'cpc': '0.123',
+            'impressions': 1234567,
+            'clicks': 1234,
+        })
 
 
 class CampaignGoalsTest(RESTAPITest):

@@ -19,6 +19,11 @@ urlpatterns = [
         name='campaigns_list'
     ),
     url(
+        r'^campaigns/(?P<campaign_id>\d+)/stats/$',
+        views.CampaignStatsView.as_view(),
+        name='campaignstats'
+    ),
+    url(
         r'^campaigns/(?P<campaign_id>\d+)/goals/(?P<goal_id>\d+)$',
         views.CampaignGoalsViewDetails.as_view(),
         name='campaigngoals_details'
