@@ -135,7 +135,7 @@ class PromotionExport(BizwireView):
 
         geo_impressions = OrderedDict()
         for row in geo_stats:
-            key = (row['country'] + '-' + row['state']) if row['state'] else 'Unknown'
+            key = (row['country'] + '-' + row['state']) if row['country'] and row['state'] else 'Unknown'
             geo_impressions.setdefault(key, 0)
             geo_impressions[key] += row['impressions']
 
