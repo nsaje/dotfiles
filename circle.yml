@@ -54,7 +54,7 @@ test:
         - 'if [[ "$CIRCLE_NODE_INDEX" == "0" ]]; then tar -pc * -zf $CIRCLE_ARTIFACTS/server.tar.gz; ../scripts/push_artifact_to_s3.sh $CIRCLE_ARTIFACTS/server.tar.gz; fi':
             parallel: true
             pwd: server
-        - 'if [[ "$CIRCLE_NODE_INDEX" == "0" ]]; then PATH=$PATH:$(npm bin) ./server/restapi/docs/build.sh -o build-${CIRCLE_BUILD_NUM}.html; ./scripts/push_docs_to_s3.sh build-${CIRCLE_BUILD_NUM}; fi':
+        - 'if [[ "$CIRCLE_NODE_INDEX" == "0" ]]; then PATH=$PATH:$(npm bin) ./server/restapi/docs/build.sh -o build-${CIRCLE_BUILD_NUM}.html; ./scripts/push_docs_to_s3.sh build-${CIRCLE_BUILD_NUM}.html; fi':
             parallel: true
         - 'if [[ "$CIRCLE_NODE_INDEX" == "1" ]]; then tar -pc dist/ ../server/static -zf $CIRCLE_ARTIFACTS/client.tar.gz; else export; fi':
             parallel: true
