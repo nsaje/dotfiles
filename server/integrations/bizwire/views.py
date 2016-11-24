@@ -161,7 +161,7 @@ class PromotionExport(BizwireView):
         try:
             content_ad = dash.models.ContentAd.objects.get(
                 label=article_id,
-                ad_group_id__in=config.BIZWIRE_AD_GROUP_IDS,
+                ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
             )
         except dash.models.ContentAd.DoesNotExist:
             return self.response_ok(MOCK_RESPONSE)

@@ -1,4 +1,5 @@
 from collections import defaultdict
+import datetime
 import logging
 import json
 
@@ -7,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.db import transaction
 
-from integrations.bizwire import config
+from integrations.bizwire import config, models
 
 import dash.api
 import dash.constants
@@ -32,7 +33,7 @@ def click_capping(request):
 
     content_ad = dash.models.ContentAd.objects.filter(
         id=content_ad_id,
-        ad_group_id__in=config.BIZWIRE_AD_GROUP_IDS,
+        ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
     ).select_related('ad_group').get()
 
     with transaction.atomic():
@@ -46,9 +47,12 @@ def click_capping(request):
 
 def _get_ad_group_id(article):
     if article.get('meta', {}).get('is_test_feed', False):
-        return config.BIZWIRE_TEST_FEED_AD_GROUP
+        return config.TEST_FEED_AD_GROUP
 
-    return config.BIZWIRE_AD_GROUP_IDS[0]
+    today = datetime.date.today()
+    return models.AdGroupTargeting.objects.filter(
+        start_date__lte=today, interest_targeting=[]
+    ).latest('start_date').ad_group_id
 
 
 def _distribute_articles(articles_data):

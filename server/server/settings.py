@@ -58,8 +58,8 @@ INSTALLED_APPS = [
     'timezone_field',
     'rest_framework',
     'oauth2_provider',
-    'integrations',
     'analytics',
+    'integrations.bizwire',
 ]
 
 MIDDLEWARE_CLASSES = [

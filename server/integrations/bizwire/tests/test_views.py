@@ -2,20 +2,18 @@ import json
 from mock import patch, ANY
 
 from django.core.urlresolvers import reverse
-from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
-from integrations.bizwire import config, views
+from integrations.bizwire import views
 
 
+@override_settings(BIZWIRE_API_SIGN_KEY='test_api_key')
+@patch('integrations.bizwire.config.AUTOMATION_CAMPAIGN', 1)
 class PromotionExportTestCase(TestCase):
 
     fixtures = ['test_bizwire.yaml']
 
     def setUp(self):
-        config.BIZWIRE_AD_GROUP_IDS = [1]
-
-        settings.BIZWIRE_API_SIGN_KEY = 'test_api_key'
         self.verify_patcher = patch('utils.request_signer.verify_wsgi_request')
         self.mock_verify_wsgi_request = self.verify_patcher.start()
 

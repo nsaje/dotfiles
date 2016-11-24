@@ -1,25 +1,22 @@
 import json
 from mock import patch, ANY, MagicMock
 
-from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 import dash.constants
 import dash.models
-from integrations.bizwire import config
 
 
 @patch('dash.upload._invoke_external_validation', MagicMock())
+@patch('integrations.bizwire.config.AUTOMATION_CAMPAIGN', 1)
+@patch('integrations.bizwire.config.TEST_FEED_AD_GROUP', 2)
+@override_settings(LAMBDA_CONTENT_UPLOAD_SIGN_KEY='test_api_key')
 class ArticleUploadTest(TestCase):
 
     fixtures = ['test_bizwire.yaml']
 
     def setUp(self):
-        config.BIZWIRE_AD_GROUP_IDS = [1, 2]
-        config.BIZWIRE_TEST_FEED_AD_GROUP = 2
-
-        settings.LAMBDA_CONTENT_UPLOAD_SIGN_KEY = 'test_api_key'
         self.verify_patcher = patch('utils.request_signer.verify_wsgi_request')
         self.mock_verify_wsgi_request = self.verify_patcher.start()
 
@@ -159,14 +156,13 @@ class ArticleUploadTest(TestCase):
         )
 
 
+@patch('integrations.bizwire.config.AUTOMATION_CAMPAIGN', 1)
+@override_settings(R1_API_SIGN_KEY='test_api_key')
 class ClickCappingTest(TestCase):
 
     fixtures = ['test_bizwire.yaml']
 
     def setUp(self):
-        config.BIZWIRE_AD_GROUP_IDS = [1]
-
-        settings.R1_API_SIGN_KEY = 'test_api_key'
         self.verify_patcher = patch('utils.request_signer.verify_wsgi_request')
         self.mock_verify_wsgi_request = self.verify_patcher.start()
 

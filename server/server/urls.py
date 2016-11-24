@@ -103,7 +103,7 @@ urlpatterns += [
 
 # Custom integrations API
 urlpatterns += [
-    url(r'^integrations/', include('integrations.urls')),
+    url(r'^integrations/businesswire/', include('integrations.bizwire.urls')),
 ]
 
 # Api

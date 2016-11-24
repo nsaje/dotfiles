@@ -38,6 +38,7 @@
     modified_by: 1
     name: 'Test Account 1'
     users: [1, 2]
+    allowed_sources: [1, 3]
   model: dash.account
   pk: 1
 
@@ -70,6 +71,17 @@
   model: dash.adgroup
   pk: 2
 
+# Campaign Settings
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    created_by_id: 1
+    name: 'Campaign Settings 1'
+    campaign_manager: 1
+    campaign: 1
+    automatic_campaign_stop: False
+  model: dash.campaignsettings
+  pk: 1
+
 # Ad Group Settings
 - fields:
     ad_group_id: 1
@@ -82,6 +94,102 @@
     call_to_action: 'Click here!'
   model: dash.adgroupsettings
   pk: 1
+
+# Source Types
+-   fields:
+        type: 'b1'
+        available_actions: []
+        min_daily_budget: 5.00
+    model: dash.sourcetype
+    pk: 1
+
+-   fields:
+        type: 'adblade3'
+        available_actions: []
+    model: dash.sourcetype
+    pk: 2
+
+# Sources
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: AdBlade
+        source_type: 1
+        maintenance: false
+    model: dash.source
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: AdBanana
+        source_type: 2
+        tracking_slug: '["fake"]'
+        maintenance: false
+    model: dash.source
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: AdOrange
+        source_type: 1
+        tracking_slug: '["fake2"]'
+        maintenance: false
+    model: dash.source
+    pk: 3
+
+# Default source settings
+
+-   fields:
+        source: 1
+        params: '{}'
+        credentials: 1
+    model: dash.defaultsourcesettings
+    pk: 1
+
+-   fields:
+        source: 2
+        params: '{}'
+        credentials: 2
+    model: dash.defaultsourcesettings
+    pk: 2
+
+-   fields:
+        source: 3
+        params: '{}'
+        credentials: 3
+    model: dash.defaultsourcesettings
+    pk: 3
+
+# Source credentials
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        source: 1
+        name: 'Test credentials 1'
+        credentials: '111111'
+    model: dash.sourcecredentials
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        source: 2
+        name: 'Test credentials 2'
+        credentials: '111111'
+    model: dash.sourcecredentials
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        source: 3
+        name: 'Test credentials 3'
+        credentials: '111111'
+    model: dash.sourcecredentials
+    pk: 3
 
 # Upload batches
 - fields:
@@ -113,4 +221,12 @@
       call_to_action: 'Call to action'
       label: 'bizwire_article_1'
   model: dash.contentad
+  pk: 1
+
+# Ad group targeting
+- fields:
+    ad_group_id: 1
+    interest_targeting: []
+    start_date: '2016-11-01'
+  model: bizwire.adgrouptargeting
   pk: 1
