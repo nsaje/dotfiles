@@ -40,8 +40,16 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                     return;
                 }
                 var ttPosition = $position.positionElements(element, tooltip, ttScope.placement, ttScope.appendToBody);
+
+                if (ttPosition.left < 0) {
+                    var arrow = tooltip.find('.arrow');
+                    arrow.css('transform', 'translateX(' + ttPosition.left + 'px)');
+                    ttPosition.left = 0;
+                }
+
                 ttPosition.top += 'px';
                 ttPosition.left += 'px';
+
                 // Now set the calculated positioning.
                 tooltip.css(ttPosition);
             };
