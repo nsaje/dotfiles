@@ -171,6 +171,9 @@ then be passed to all REST API calls as the header
 ```
 Authorization: Bearer <access_token>
 ```
+
+Access tokens are valid for 10 hours, after which a new access token must be obtained using the client credentials.
+Please cache and reuse access tokens for the duration of their validity.
  
 
 ### Create client credentials
