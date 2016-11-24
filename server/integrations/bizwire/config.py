@@ -37,6 +37,7 @@ INTEREST_TARGETING_OPTIONS = [
     constants.InterestCategory.HEALTH,
     constants.InterestCategory.LAW,
     constants.InterestCategory.UTILITY,
+    constants.InterestCategory.PREMIUM,
 ]
 
 INTEREST_TARGETING_GROUPS = [  # every category in here also has to be in INTEREST_TARGETING_OPTIONS
