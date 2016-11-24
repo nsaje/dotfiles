@@ -124,7 +124,7 @@ describe('zemGridCellBaseField', function () {
     it('should correctly display dateTime values', function () {
         var tests = [
             {value: undefined, expectedResult: 'N/A'},
-            {value: 1457086451517, expectedResult: '3/4/2016 5:14 AM'},
+            {value: 1457086451517, expectedResult: '3/4/2016 10:14 AM'},
         ];
 
         scope.ctrl.col.data = {

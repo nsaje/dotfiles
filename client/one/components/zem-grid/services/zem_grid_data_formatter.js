@@ -57,7 +57,7 @@ angular.module('one.legacy').factory('zemGridDataFormatter', function ($filter, 
         if (!value) {
             return options.defaultValue || 'N/A';
         }
-        return $filter('date')(value, 'M/d/yyyy h:mm a');
+        return $filter('date')(value, 'M/d/yyyy h:mm a', 'UTC');
     }
 
     function formatNumber (value, options) {
