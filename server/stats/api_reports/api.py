@@ -7,6 +7,7 @@ import dash.export
 
 from stats import api_breakdowns
 from stats import constants
+from stats import permission_filter
 
 from utils import sort_helper
 
@@ -20,6 +21,8 @@ def query(user, breakdown, constraints, goals, order):
     annotate(rows, breakdown)
 
     rows = sort_helper.sort_results(rows, [order])
+
+    permission_filter.filter_columns_by_permission(user, rows, goals)
 
     return rows
 

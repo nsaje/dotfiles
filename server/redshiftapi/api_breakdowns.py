@@ -112,7 +112,7 @@ def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
     t_yesterday.start()
 
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
-    support_conversions = view_selector.supports_conversions(needed_dimensions)
+    support_conversions = view_selector.supports_conversions(needed_dimensions, use_publishers_view)
 
     t_conversions = None
     t_touchpoints = None

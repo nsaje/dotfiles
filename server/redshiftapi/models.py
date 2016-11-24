@@ -35,7 +35,7 @@ class BreakdownsBase(backtosql.Model):
     publisher = backtosql.Column('publisher', BREAKDOWN)
 
     @classmethod
-    def get_best_view(cls, needed_dimensions, use_publishers_view=False):
+    def get_best_view(cls, needed_dimensions, use_publishers_view):
         """ Returns the SQL view that best fits the breakdown """
         raise NotImplementedError()
 
@@ -213,8 +213,8 @@ class MVTouchpointConversions(BreakdownsBase):
     count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_count'}, AGGREGATE)
 
     @classmethod
-    def get_best_view(cls, needed_dimensions, use_publishers_view=False):
-        return view_selector.get_best_view_touchpoints(needed_dimensions)
+    def get_best_view(cls, needed_dimensions, use_publishers_view):
+        return view_selector.get_best_view_touchpoints(needed_dimensions, use_publishers_view)
 
 
 class MVTouchpointConversionsPublishers(MVTouchpointConversions):
@@ -228,8 +228,8 @@ class MVConversions(BreakdownsBase):
     count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_count'}, AGGREGATE)
 
     @classmethod
-    def get_best_view(cls, needed_dimensions, use_publishers_view=False):
-        return view_selector.get_best_view_conversions(needed_dimensions)
+    def get_best_view(cls, needed_dimensions, use_publishers_view):
+        return view_selector.get_best_view_conversions(needed_dimensions, use_publishers_view)
 
 
 class MVConversionsPublishers(MVConversions):
@@ -341,7 +341,7 @@ class MVJointMaster(MVMaster):
     def get_query_joint_context(self, breakdown, constraints, parents, order, offset, limit, goals, use_publishers_view):
 
         needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
-        supports_conversions = view_selector.supports_conversions(needed_dimensions)
+        supports_conversions = view_selector.supports_conversions(needed_dimensions, use_publishers_view)
 
         if supports_conversions:
             self.init_conversion_columns(goals.conversion_goals)
@@ -387,8 +387,8 @@ class MVJointMaster(MVMaster):
                 'is_order_by_conversions': order_col.group == CONVERSION_AGGREGATES,
                 'is_order_by_touchpoints': order_col.group == TOUCHPOINTS_AGGREGATES,
 
-                'conversions_view': view_selector.get_best_view_conversions(needed_dimensions),
-                'touchpoints_view': view_selector.get_best_view_touchpoints(needed_dimensions),
+                'conversions_view': view_selector.get_best_view_conversions(needed_dimensions, use_publishers_view),
+                'touchpoints_view': view_selector.get_best_view_touchpoints(needed_dimensions, use_publishers_view),
             })
 
         return context

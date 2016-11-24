@@ -219,7 +219,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
         self.assertItemsEqual([x.alias for x in self.model.get_aggregates()], ['count'])
 
     def test_get_best_view(self):
-        self.assertEqual(self.model.get_best_view(['account_id']), 'mv_conversions_account')
+        self.assertEqual(self.model.get_best_view(['account_id'], False), 'mv_conversions_account')
 
 
 class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):

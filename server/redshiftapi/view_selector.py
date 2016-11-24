@@ -44,12 +44,20 @@ CONVERSION_VIEWS = [
     ['mv_conversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER}],
 ]
 
+CONVERSIONS_PUBLISHERS_VIEWS = [
+    ['mv_conversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER}],
+]
+
 
 TOUCHPOINT_VIEWS = [
     ['mv_touch_account', ACCOUNT],
     ['mv_touch_campaign', CAMPAIGN_N_ABOVE],
     ['mv_touch_ad_group', AD_GROUP_N_ABOVE],
     ['mv_touch_content_ad', CONTENT_AD_N_ABOVE],
+    ['mv_touchpointconversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER}],
+]
+
+TOUCHPOINTS_PUBLISHERS_VIEWS = [
     ['mv_touchpointconversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER}],
 ]
 
@@ -63,19 +71,22 @@ def get_fitting_view_dict(needed_dimensions, views):
     return None
 
 
-def get_best_view_base(needed_dimensions, use_publishers_view=False):
+def get_best_view_base(needed_dimensions, use_publishers_view):
     return get_fitting_view_dict(
         needed_dimensions, PUBLISHER_VIEWS if use_publishers_view else BASE_VIEWS)
 
 
-def get_best_view_conversions(needed_dimensions):
-    return get_fitting_view_dict(needed_dimensions, CONVERSION_VIEWS)
+def get_best_view_conversions(needed_dimensions, use_publishers_view):
+    return get_fitting_view_dict(
+        needed_dimensions, CONVERSIONS_PUBLISHERS_VIEWS if use_publishers_view else CONVERSION_VIEWS)
 
 
-def get_best_view_touchpoints(needed_dimensions):
-    return get_fitting_view_dict(needed_dimensions, TOUCHPOINT_VIEWS)
+def get_best_view_touchpoints(needed_dimensions, use_publishers_view):
+    return get_fitting_view_dict(
+        needed_dimensions, TOUCHPOINTS_PUBLISHERS_VIEWS if use_publishers_view else TOUCHPOINT_VIEWS)
 
 
-def supports_conversions(needed_dimensions):
+def supports_conversions(needed_dimensions, use_publishers_view):
     return bool(
-        get_best_view_conversions(needed_dimensions) and get_best_view_touchpoints(needed_dimensions))
+        get_best_view_conversions(needed_dimensions, use_publishers_view) and get_best_view_touchpoints(
+            needed_dimensions, use_publishers_view))

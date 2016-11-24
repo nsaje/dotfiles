@@ -5,108 +5,108 @@ from redshiftapi import view_selector
 
 class ViewSelectorTest(TestCase):
     def test_get_best_view_base(self):
-        self.assertEqual(view_selector.get_best_view_base(['account_id', 'month']), 'mv_account')
-        self.assertEqual(view_selector.get_best_view_base(['account_id', 'source_id']), 'mv_account')
-        self.assertEqual(view_selector.get_best_view_base(['account_id', 'source_id', 'age']), 'mv_account_delivery_demo')  # noqa
-        self.assertEqual(view_selector.get_best_view_base(['account_id', 'source_id', 'dma']), 'mv_account_delivery_geo')  # noqa
-        self.assertEqual(view_selector.get_best_view_base(['account_id', 'campaign_id']), 'mv_campaign')
-        self.assertEqual(view_selector.get_best_view_base(['account_id', 'ad_group_id']), 'mv_ad_group')
+        self.assertEqual(view_selector.get_best_view_base(['account_id', 'month'], False), 'mv_account')
+        self.assertEqual(view_selector.get_best_view_base(['account_id', 'source_id'], False), 'mv_account')
+        self.assertEqual(view_selector.get_best_view_base(['account_id', 'source_id', 'age'], False), 'mv_account_delivery_demo')  # noqa
+        self.assertEqual(view_selector.get_best_view_base(['account_id', 'source_id', 'dma'], False), 'mv_account_delivery_geo')  # noqa
+        self.assertEqual(view_selector.get_best_view_base(['account_id', 'campaign_id'], False), 'mv_campaign')
+        self.assertEqual(view_selector.get_best_view_base(['account_id', 'ad_group_id'], False), 'mv_ad_group')
 
-        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'month']), 'mv_campaign')
-        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'source_id']), 'mv_campaign')
-        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'source_id', 'age']), 'mv_campaign_delivery_demo')  # noqa
-        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'source_id', 'dma']), 'mv_campaign_delivery_geo')  # noqa
-        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'ad_group_id']), 'mv_ad_group')
-        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'content_ad_id']), 'mv_content_ad')
+        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'month'], False), 'mv_campaign')
+        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'source_id'], False), 'mv_campaign')
+        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'source_id', 'age'], False), 'mv_campaign_delivery_demo')  # noqa
+        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'source_id', 'dma'], False), 'mv_campaign_delivery_geo')  # noqa
+        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'ad_group_id'], False), 'mv_ad_group')
+        self.assertEqual(view_selector.get_best_view_base(['campaign_id', 'content_ad_id'], False), 'mv_content_ad')
 
-        self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'month']), 'mv_ad_group')
-        self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'source_id']), 'mv_ad_group')
-        self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'source_id', 'age']), 'mv_ad_group_delivery_demo')  # noqa
-        self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'source_id', 'dma']), 'mv_ad_group_delivery_geo')  # noqa
-        self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'content_ad_id']), 'mv_content_ad')
+        self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'month'], False), 'mv_ad_group')
+        self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'source_id'], False), 'mv_ad_group')
+        self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'source_id', 'age'], False), 'mv_ad_group_delivery_demo')  # noqa
+        self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'source_id', 'dma'], False), 'mv_ad_group_delivery_geo')  # noqa
+        self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'content_ad_id'], False), 'mv_content_ad')
 
         self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'publisher_id'], True), 'mv_pubs_ad_group')
         self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'publisher_id', 'dma'], True), 'mv_pubs_master')  # noqa
         self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'publisher_id'], False), 'mv_master')
         self.assertEqual(view_selector.get_best_view_base(['ad_group_id', 'publisher_id', 'dma'], False), 'mv_master')  # noqa
 
-        self.assertEqual(view_selector.get_best_view_base(['content_ad_id', 'month']), 'mv_content_ad')
-        self.assertEqual(view_selector.get_best_view_base(['content_ad_id', 'source_id']), 'mv_content_ad')
-        self.assertEqual(view_selector.get_best_view_base(['content_ad_id', 'source_id', 'age']), 'mv_content_ad_delivery_demo')  # noqa
-        self.assertEqual(view_selector.get_best_view_base(['content_ad_id', 'source_id', 'dma']), 'mv_content_ad_delivery_geo')  # noqa
+        self.assertEqual(view_selector.get_best_view_base(['content_ad_id', 'month'], False), 'mv_content_ad')
+        self.assertEqual(view_selector.get_best_view_base(['content_ad_id', 'source_id'], False), 'mv_content_ad')
+        self.assertEqual(view_selector.get_best_view_base(['content_ad_id', 'source_id', 'age'], False), 'mv_content_ad_delivery_demo')  # noqa
+        self.assertEqual(view_selector.get_best_view_base(['content_ad_id', 'source_id', 'dma'], False), 'mv_content_ad_delivery_geo')  # noqa
         self.assertEqual(view_selector.get_best_view_base(['content_ad_id', 'publisher_id'], False), 'mv_master')
 
     def test_get_best_view_conversions(self):
-        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'month']), 'mv_conversions_account')
-        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'source_id']), 'mv_conversions_account')
-        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'source_id', 'dma']), None)
-        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'campaign_id']), 'mv_conversions_campaign')  # noqa
-        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'ad_group_id']), 'mv_conversions_ad_group')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'month'], False), 'mv_conversions_account')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'source_id'], False), 'mv_conversions_account')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'source_id', 'age'], False), None)
+        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'source_id', 'dma'], False), None)
+        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'campaign_id'], False), 'mv_conversions_campaign')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['account_id', 'ad_group_id'], False), 'mv_conversions_ad_group')  # noqa
 
-        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'month']), 'mv_conversions_campaign')
-        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'source_id']), 'mv_conversions_campaign')  # noqa
-        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'source_id', 'dma']), None)
-        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'ad_group_id']), 'mv_conversions_ad_group')  # noqa
-        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'content_ad_id']), 'mv_conversions_content_ad')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'month'], False), 'mv_conversions_campaign')
+        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'source_id'], False), 'mv_conversions_campaign')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'source_id', 'age'], False), None)
+        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'source_id', 'dma'], False), None)
+        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'ad_group_id'], False), 'mv_conversions_ad_group')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['campaign_id', 'content_ad_id'], False), 'mv_conversions_content_ad')  # noqa
 
-        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'month']), 'mv_conversions_ad_group')
-        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'source_id']), 'mv_conversions_ad_group')  # noqa
-        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'source_id', 'dma']), None)
-        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'content_ad_id']), 'mv_conversions_content_ad')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'month'], False), 'mv_conversions_ad_group')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'source_id'], False), 'mv_conversions_ad_group')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'source_id', 'age'], False), None)
+        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'source_id', 'dma'], False), None)
+        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'content_ad_id'], False), 'mv_conversions_content_ad')  # noqa
 
-        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'publisher_id']), 'mv_conversions')
-        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'publisher_id', 'dma']), None)
+        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'publisher_id'], True), 'mv_conversions')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['ad_group_id', 'publisher_id', 'dma'], True), None)
 
-        self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'month']), 'mv_conversions_content_ad')  # noqa
-        self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'source_id']), 'mv_conversions_content_ad')  # noqa
-        self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'source_id', 'dma']), None)
-        self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'publisher_id']), 'mv_conversions')
+        self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'month'], False), 'mv_conversions_content_ad')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'source_id'], False), 'mv_conversions_content_ad')  # noqa
+        self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'source_id', 'age'], False), None)
+        self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'source_id', 'dma'], False), None)
+        self.assertEqual(view_selector.get_best_view_conversions(['content_ad_id', 'publisher_id'], False), 'mv_conversions')  # noqa
 
     def test_get_best_view_touchpoints(self):
         prefix = 'mv_touch'
-        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'month']), prefix + '_account')
-        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'source_id']), prefix + '_account')
-        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'source_id', 'dma']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'campaign_id']), prefix + '_campaign')  # noqa
-        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'ad_group_id']), prefix + '_ad_group')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'month'], False), prefix + '_account')
+        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'source_id'], False), prefix + '_account')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'source_id', 'age'], False), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'source_id', 'dma'], False), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'campaign_id'], False), prefix + '_campaign')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['account_id', 'ad_group_id'], False), prefix + '_ad_group')  # noqa
 
-        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'month']), prefix + '_campaign')
-        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'source_id']), prefix + '_campaign')  # noqa
-        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'source_id', 'dma']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'ad_group_id']), prefix + '_ad_group')  # noqa
-        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'content_ad_id']), prefix + '_content_ad')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'month'], False), prefix + '_campaign')
+        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'source_id'], False), prefix + '_campaign')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'source_id', 'age'], False), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'source_id', 'dma'], False), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'ad_group_id'], False), prefix + '_ad_group')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['campaign_id', 'content_ad_id'], False), prefix + '_content_ad')  # noqa
 
-        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'month']), prefix + '_ad_group')
-        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'source_id']), prefix + '_ad_group')  # noqa
-        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'source_id', 'dma']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'content_ad_id']), prefix + '_content_ad')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'month'], False), prefix + '_ad_group')
+        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'source_id'], False), prefix + '_ad_group')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'source_id', 'age'], False), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'source_id', 'dma'], False), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'content_ad_id'], False), prefix + '_content_ad')  # noqa
 
-        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'publisher_id']), 'mv_touchpointconversions')  # noqa
-        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'publisher_id', 'dma']), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'publisher_id'], True), 'mv_touchpointconversions')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['ad_group_id', 'publisher_id', 'dma'], True), None)
 
-        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'month']), prefix + '_content_ad')  # noqa
-        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'source_id']), prefix + '_content_ad')  # noqa
-        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'source_id', 'age']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'source_id', 'dma']), None)
-        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'publisher_id']), 'mv_touchpointconversions')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'month'], False), prefix + '_content_ad')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'source_id'], False), prefix + '_content_ad')  # noqa
+        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'source_id', 'age'], False), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'source_id', 'dma'], False), None)
+        self.assertEqual(view_selector.get_best_view_touchpoints(['content_ad_id', 'publisher_id'], True), 'mv_touchpointconversions')  # noqa
 
     def test_supports_conversions(self):
-        self.assertFalse(view_selector.supports_conversions(['dma']))
-        self.assertFalse(view_selector.supports_conversions(['device_type']))
-        self.assertFalse(view_selector.supports_conversions(['state']))
+        self.assertFalse(view_selector.supports_conversions(['dma'], False))
+        self.assertFalse(view_selector.supports_conversions(['device_type'], False))
+        self.assertFalse(view_selector.supports_conversions(['state'], False))
 
-        self.assertTrue(view_selector.supports_conversions(['content_ad_id']))
-        self.assertTrue(view_selector.supports_conversions(['publisher_id']))
-        self.assertTrue(view_selector.supports_conversions(['source_id']))
-        self.assertTrue(view_selector.supports_conversions(['account_id']))
-        self.assertTrue(view_selector.supports_conversions(['week']))
-        self.assertTrue(view_selector.supports_conversions(['account_id', 'month']))
+        self.assertTrue(view_selector.supports_conversions(['content_ad_id'], False))
+        self.assertTrue(view_selector.supports_conversions(['publisher_id'], False))
+        self.assertTrue(view_selector.supports_conversions(['source_id'], False))
+        self.assertTrue(view_selector.supports_conversions(['account_id'], False))
+        self.assertTrue(view_selector.supports_conversions(['week'], False))
+        self.assertTrue(view_selector.supports_conversions(['account_id', 'month'], False))
 
-        self.assertFalse(view_selector.supports_conversions(['account_id', 'month', 'country']))
+        self.assertFalse(view_selector.supports_conversions(['account_id', 'month', 'country'], False))
