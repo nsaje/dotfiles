@@ -718,6 +718,7 @@ var constants = {
         FUN: 'fun',
         RELIGION: 'religion',
         OUTBRAIN: 'outbrain',
+        PREMIUM: 'premium',
     }
 };
 
@@ -1372,6 +1373,7 @@ constants.interestCategoryText[constants.interestCategory.OTHER] = 'Other';
 constants.interestCategoryText[constants.interestCategory.UNKNOWN] = 'Unknown';
 constants.interestCategoryText[constants.interestCategory.FOREIGN] = 'International Sites';
 constants.interestCategoryText[constants.interestCategory.OUTBRAIN] = 'Outbrain';
+constants.interestCategoryText[constants.interestCategory.PREMIUM] = 'Premium';
 
 constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.MAX_BOUNCE_RATE,
