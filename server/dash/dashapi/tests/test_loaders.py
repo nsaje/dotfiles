@@ -12,11 +12,14 @@ from dash.dashapi import loaders
 
 class GetLoaderTest(TestCase):
     def test_get_loader(self):
-        self.assertEqual(loaders.get_loader_for_dimension('content_ad_id'), loaders.ContentAdsLoader)
-        self.assertEqual(loaders.get_loader_for_dimension('ad_group_id'), loaders.AdGroupsLoader)
-        self.assertEqual(loaders.get_loader_for_dimension('campaign_id'), loaders.CampaignsLoader)
-        self.assertEqual(loaders.get_loader_for_dimension('account_id'), loaders.AccountsLoader)
-        self.assertEqual(loaders.get_loader_for_dimension('source_id'), loaders.SourcesLoader)
+        self.assertEqual(loaders.get_loader_for_dimension('content_ad_id', None), loaders.ContentAdsLoader)
+        self.assertEqual(loaders.get_loader_for_dimension('ad_group_id', None), loaders.AdGroupsLoader)
+        self.assertEqual(loaders.get_loader_for_dimension('campaign_id', None), loaders.CampaignsLoader)
+        self.assertEqual(loaders.get_loader_for_dimension('account_id', None), loaders.AccountsLoader)
+        self.assertEqual(loaders.get_loader_for_dimension(
+            'source_id', constants.Level.ACCOUNTS), loaders.SourcesLoader)
+        self.assertEqual(loaders.get_loader_for_dimension(
+            'source_id', constants.Level.AD_GROUPS), loaders.AdGroupSourcesLoader)
 
 
 class AccountsLoaderTest(TestCase):
@@ -30,7 +33,7 @@ class AccountsLoaderTest(TestCase):
         self.loader = loaders.AccountsLoader(accounts, sources)
 
     def test_from_constraints(self):
-        loader = loaders.AccountsLoader.from_constraints(constants.Level.ALL_ACCOUNTS, User.objects.get(pk=1), {
+        loader = loaders.AccountsLoader.from_constraints(User.objects.get(pk=1), {
             'allowed_accounts': models.Account.objects.all(),
             'filtered_sources': models.Source.objects.all(),
         })
@@ -81,7 +84,7 @@ class CampaignsLoaderTest(TestCase):
         self.loader = loaders.CampaignsLoader(campaigns, sources)
 
     def test_from_constraints(self):
-        loader = loaders.CampaignsLoader.from_constraints(constants.Level.ACCOUNTS, User.objects.get(pk=1), {
+        loader = loaders.CampaignsLoader.from_constraints(User.objects.get(pk=1), {
             'allowed_campaigns': models.Campaign.objects.all(),
             'filtered_sources': models.Source.objects.all(),
         })
@@ -145,7 +148,7 @@ class AdGroupsLoaderTest(TestCase):
         self.loader = loaders.AdGroupsLoader(ad_groups, sources)
 
     def test_from_constraints(self):
-        loader = loaders.AdGroupsLoader.from_constraints(constants.Level.CAMPAIGNS, User.objects.get(pk=1), {
+        loader = loaders.AdGroupsLoader.from_constraints(User.objects.get(pk=1), {
             'allowed_ad_groups': models.AdGroup.objects.all(),
             'filtered_sources': models.Source.objects.all(),
         })
@@ -238,7 +241,7 @@ class ContentAdLoaderTest(TestCase):
         self.loader = loaders.ContentAdsLoader(content_ads, sources)
 
     def test_from_constraints(self):
-        loader = loaders.ContentAdsLoader.from_constraints(constants.Level.AD_GROUPS, User.objects.get(pk=1), {
+        loader = loaders.ContentAdsLoader.from_constraints(User.objects.get(pk=1), {
             'allowed_content_ads': models.ContentAd.objects.all(),
             'filtered_sources': models.Source.objects.all(),
         })
@@ -364,7 +367,7 @@ class SourcesLoaderTest(TestCase):
         self.loader = loaders.SourcesLoader(sources, models.AdGroup.objects.all())
 
     def test_from_constraints(self):
-        loader = loaders.SourcesLoader.from_constraints(constants.Level.CAMPAIGNS, User.objects.get(pk=1), {
+        loader = loaders.SourcesLoader.from_constraints(User.objects.get(pk=1), {
             'allowed_ad_groups': models.AdGroup.objects.all(),
             'filtered_sources': models.Source.objects.all(),
         })
@@ -403,12 +406,11 @@ class AdGroupSourcesLoaderTest(TestCase):
         self.loader = loaders.AdGroupSourcesLoader(sources, models.AdGroup.objects.get(pk=1))
 
     def test_from_constraints_select_loader_class(self):
-        loader = loaders.SourcesLoader.from_constraints(constants.Level.AD_GROUPS, User.objects.get(pk=1), {
+        loader = loaders.AdGroupSourcesLoader.from_constraints(User.objects.get(pk=1), {
             'ad_group': models.AdGroup.objects.get(pk=1),
             'filtered_sources': models.Source.objects.all(),
         })
 
-        self.assertIsInstance(loader, loaders.AdGroupSourcesLoader)
         self.assertItemsEqual(loader.objs_ids, self.loader.objs_ids)
         self.assertItemsEqual(loader.settings_map, self.loader.settings_map)
 

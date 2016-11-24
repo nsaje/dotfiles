@@ -8,24 +8,24 @@ angular.module('one.legacy').factory('zemGridEndpointBreakdowns', function () {
     var TIME_GROUP_NAME = 'By time';
 
     var BREAKDOWNS = {
-        account: {name: 'By Account', query: constants.breakdown.ACCOUNT},
-        campaign: {name: 'By Campaign', query: constants.breakdown.CAMPAIGN},
-        adGroup: {name: 'By Ad Group', query: constants.breakdown.AD_GROUP},
-        contentAd: {name: 'By Content Ad', query: constants.breakdown.CONTENT_AD},
-        source: {name: 'By Source', query: constants.breakdown.MEDIA_SOURCE},
-        publisher: {name: 'By Publisher', query: constants.breakdown.PUBLISHER},
+        account: {name: 'By Account', query: constants.breakdown.ACCOUNT, report_query: 'Account'},
+        campaign: {name: 'By Campaign', query: constants.breakdown.CAMPAIGN, report_query: 'Campaign'},
+        adGroup: {name: 'By Ad Group', query: constants.breakdown.AD_GROUP, report_query: 'Ad Group'},
+        contentAd: {name: 'By Content Ad', query: constants.breakdown.CONTENT_AD, report_query: 'Content Ad'},
+        source: {name: 'By Source', query: constants.breakdown.MEDIA_SOURCE, report_query: 'Media Source'},
+        publisher: {name: 'By Publisher', query: constants.breakdown.PUBLISHER, report_query: 'Publisher'},
 
-        age: {name: 'Age', query: 'age'},
-        gender: {name: 'Gender', query: 'gender'},
-        ageGender: {name: 'Age and Gender', query: 'age_gender'},
-        country: {name: 'Country', query: 'country'},
-        state: {name: 'State', query: 'state'},
-        dma: {name: 'DMA', query: 'dma'},
-        device: {name: 'Device', query: 'device_type'},
+        age: {name: 'Age', query: 'age', report_query: 'Age'},
+        gender: {name: 'Gender', query: 'gender', report_query: 'Gender'},
+        ageGender: {name: 'Age and Gender', query: 'age_gender', report_query: 'Age and Gender'},
+        country: {name: 'Country', query: 'country', report_query: 'Country'},
+        state: {name: 'State', query: 'state', report_query: 'State'},
+        dma: {name: 'DMA', query: 'dma', report_query: 'DMA'},
+        device: {name: 'Device', query: 'device_type', report_query: 'Device'},
 
-        day: {name: 'By day', query: 'day'},
-        week: {name: 'By week', query: 'week'},
-        month: {name: 'By month', query: 'month'},
+        day: {name: 'By day', query: 'day', report_query: 'Day'},
+        week: {name: 'By week', query: 'week', report_query: 'Week'},
+        month: {name: 'By month', query: 'month', report_query: 'Month'},
     };
 
     var ENTITY_BREAKDOWNS = [

@@ -44,7 +44,14 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
     function getSelectedFields (gridApi) {
         var fields = [], columns = gridApi.getColumns();
 
-        for (var i = 0; i < columns.length; i++) {
+        var breakdown = gridApi.getBreakdown();
+        for (var i = 0; i < breakdown.length; i++) {
+            fields.push({
+                field: breakdown[i].report_query,
+            });
+        }
+
+        for (i = 0; i < columns.length; i++) {
             if (columns[i].visible && columns[i].data.name) {
                 fields.push({
                     field: columns[i].data.name,

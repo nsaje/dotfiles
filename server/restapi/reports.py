@@ -16,10 +16,12 @@ import dash.models
 
 import stats.constants
 import stats.api_breakdowns
+import stats.api_reports
 
 import utils.s3helpers
 import utils.email_helper
 import utils.columns
+import utils.sort_helper
 
 
 logger = logging.getLogger(__name__)
@@ -35,6 +37,9 @@ SUPPORTED_BREAKDOWNS = {
     (utils.columns.Names.content_ad_id,),
     (utils.columns.Names.source_id,),
     (utils.columns.Names.publisher,),
+    (utils.columns.Names.publisher, utils.columns.Names.day),
+    (utils.columns.Names.publisher, utils.columns.Names.week),
+    (utils.columns.Names.publisher, utils.columns.Names.month),
 }
 
 
@@ -42,8 +47,12 @@ def get_breakdown_from_fields(fields):
     if not fields:
         raise serializers.ValidationError("Must define fields!")
 
-    # take the first one
-    return (fields[0]['field'],)
+    breakdown = [fields[0]['field']]
+    if len(fields) > 1 and fields[1]['field'] in (
+            utils.columns.Names.day, utils.columns.Names.week, utils.columns.Names.month):
+        breakdown.append(fields[1]['field'])
+
+    return tuple(breakdown)
 
 
 def get_filter_constraints(filters):
@@ -133,7 +142,11 @@ class ReportJobExecutor(JobExecutor):
             return
 
         try:
-            raw_report, goals = self.get_raw_report(self.job)
+            # temporary switch while new reports are developed
+            if self.job.query['fields'][0]['field'] == 'Publisher':
+                raw_report, goals = self.get_raw_new_report(self.job)
+            else:
+                raw_report, goals = self.get_raw_report(self.job)
             csv_report = self.convert_to_csv(self.job, raw_report, goals)
             report_path = self.save_to_s3(csv_report)
             self.send_by_email(self.job, report_path)
@@ -146,6 +159,32 @@ class ReportJobExecutor(JobExecutor):
             logger.exception('Exception when processing API report job %s' % self.job.id)
         finally:
             self.job.save()
+
+    @classmethod
+    def get_raw_new_report(cls, job):
+        breakdown = list(get_breakdown_from_fields(job.query['fields']))
+        breakdown = utils.columns.Names.get_keys(breakdown)
+        breakdown = [stats.constants.get_dimension_identifier(x) for x in breakdown]
+
+        filter_constraints = get_filter_constraints(job.query['filters'])
+        ad_group_id = filter_constraints['ad_group_id']
+        start_date = filter_constraints['start_date']
+        end_date = filter_constraints['end_date']
+
+        user = job.user
+        ad_group = helpers.get_ad_group(user, ad_group_id)
+        filtered_sources = dash.models.Source.objects.all()
+        constraints = stats.api_reports.prepare_constraints(
+            user, breakdown, start_date, end_date, filtered_sources, show_archived=False, ad_group_ids=[ad_group.id])
+        goals = stats.api_reports.get_goals(constraints)
+
+        rows = stats.api_reports.query(user, breakdown, constraints, goals, '-clicks')
+
+        cls.remap_columns(rows, breakdown)
+
+        rows = utils.sort_helper.sort_results(rows, breakdown)
+
+        return rows, goals
 
     @classmethod
     def get_raw_report(cls, job):
@@ -215,11 +254,19 @@ class ReportJobExecutor(JobExecutor):
             if breakdown == ['content_ad_id']:
                 row['content_ad'] = row['breakdown_name']
             if breakdown == ['publisher_id']:
-                row['publisher'] = row['breakdown_name']
+                row['publisher'] = row.get('breakdown_name', row['domain'])
 
     @staticmethod
     def _extract_fieldnames(fields_list):
-        return [field_item['field'] for field_item in fields_list]
+        fieldnames = []
+
+        # extract unique field names
+        for field in fields_list:
+            field = field['field']
+            if field not in fieldnames:
+                fieldnames.append(field)
+
+        return fieldnames
 
     @classmethod
     def save_to_s3(cls, csv):

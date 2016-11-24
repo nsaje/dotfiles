@@ -24,6 +24,21 @@ def get_augmenter_for_dimension(target_dimension):
         return augment_publishers
 
 
+def get_report_augmenter_for_dimension(target_dimension):
+    if target_dimension == 'account_id':
+        return augment_accounts
+    elif target_dimension == 'campaign_id':
+        return augment_campaigns
+    elif target_dimension == 'ad_group_id':
+        return augment_ad_groups
+    elif target_dimension == 'content_ad_id':
+        return augment_content_ads
+    elif target_dimension == 'source_id':
+        return augment_sources
+    elif target_dimension == 'publisher_id':
+        return augment_publishers_for_report
+
+
 def augment_accounts(rows, loader, is_base_level=False):
     for row in rows:
         account_id = row['account_id']
@@ -96,6 +111,19 @@ def augment_publishers(rows, loader, is_base_level=False):
         domain, _ = stats.helpers.dissect_publisher_id(row['publisher_id'])
         source_id = row['source_id']
         augment_row_publisher(
+            row,
+            domain,
+            loader.source_map[source_id],
+            loader.blacklist_status_map[row['publisher_id']],
+            loader.can_blacklist_source_map[source_id]
+        )
+
+
+def augment_publishers_for_report(rows, loader, is_base_level=False):
+    for row in rows:
+        domain, _ = stats.helpers.dissect_publisher_id(row['publisher_id'])
+        source_id = row['source_id']
+        augment_row_report_publisher(
             row,
             domain,
             loader.source_map[source_id],
@@ -239,6 +267,18 @@ def augment_row_publisher(row, domain, source, blacklist_status, can_blacklist_s
             'blacklisted_level_description': constants.PublisherBlacklistLevel.verbose(
                 blacklist_status['blacklisted_level']),
         })
+
+
+def augment_row_report_publisher(row, domain, source, blacklist_status, can_blacklist_source):
+    augment_row_publisher(row, domain, source, blacklist_status, can_blacklist_source)
+    row['publisher'] = domain
+    row.update({
+        'publisher': domain,
+        'source': source.name,
+        'status': constants.PublisherStatus.get_text(blacklist_status['status']).upper(),
+        'blacklisted_level': (constants.PublisherBlacklistLevel.get_text(
+            blacklist_status.get('blacklisted_level', '')) or '').upper()
+    })
 
 
 def make_dash_rows(target_dimension, objs_ids, parent):

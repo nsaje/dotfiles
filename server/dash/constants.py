@@ -30,8 +30,8 @@ class AdGroupRunningStatus(ConstantBase):
     INACTIVE = 2
 
     _VALUES = {
-        ACTIVE: 'Running',
-        INACTIVE: 'Stopped'
+        ACTIVE: 'Active',
+        INACTIVE: 'Paused'
     }
 
 

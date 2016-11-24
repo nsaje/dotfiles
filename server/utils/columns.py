@@ -26,6 +26,11 @@ class Names:
             cls.__FIELDS_KEY_NAME_DICT__[k] = v
 
     date = 'Date'
+
+    day = 'Day'
+    week = 'Week'
+    month = 'Month'
+
     ad_group_id = 'Ad Group Id'
     ad_group = 'Ad Group'
 
@@ -45,6 +50,7 @@ class Names:
     publisher = 'Publisher'
     external_id = 'External Id'
     domain_link = 'Link'
+    blacklisted_level = 'Blacklisted Level'
 
     source = 'Media Source'
     source_id = 'Media Source Id'

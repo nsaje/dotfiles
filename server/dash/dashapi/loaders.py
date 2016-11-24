@@ -28,7 +28,7 @@ Notes on implementation:
 """
 
 
-def get_loader_for_dimension(target_dimension):
+def get_loader_for_dimension(target_dimension, level):
     if target_dimension == 'account_id':
         return AccountsLoader
     elif target_dimension == 'campaign_id':
@@ -38,9 +38,12 @@ def get_loader_for_dimension(target_dimension):
     elif target_dimension == 'content_ad_id':
         return ContentAdsLoader
     elif target_dimension == 'source_id':
+        if level == constants.Level.AD_GROUPS:
+            return AdGroupSourcesLoader
         return SourcesLoader
     elif target_dimension == 'publisher_id':
         return PublisherBlacklistLoader
+    return None
 
 
 class Loader(object):
@@ -83,7 +86,7 @@ class AccountsLoader(Loader):
         self.filtered_sources_qs = filtered_sources_qs
 
     @classmethod
-    def from_constraints(cls, level, user, constraints):
+    def from_constraints(cls, user, constraints):
         return cls(
             constraints['allowed_accounts'], constraints['filtered_sources'],
             start_date=constraints.get('date__gte'),
@@ -179,7 +182,7 @@ class CampaignsLoader(Loader):
         self.filtered_sources_qs = filtered_sources_qs
 
     @classmethod
-    def from_constraints(cls, level, user, constraints):
+    def from_constraints(cls, user, constraints):
         return cls(
             constraints['allowed_campaigns'], constraints['filtered_sources'],
             start_date=constraints.get('date__gte'),
@@ -256,7 +259,7 @@ class AdGroupsLoader(Loader):
         self.filtered_sources_qs = filtered_sources_qs
 
     @classmethod
-    def from_constraints(cls, level, user, constraints):
+    def from_constraints(cls, user, constraints):
         return cls(
             constraints['allowed_ad_groups'], constraints['filtered_sources'],
             start_date=constraints.get('date__gte'),
@@ -313,7 +316,7 @@ class ContentAdsLoader(Loader):
         self.filtered_sources_qs = filtered_sources_qs
 
     @classmethod
-    def from_constraints(cls, level, user, constraints):
+    def from_constraints(cls, user, constraints):
         return cls(
             constraints['allowed_content_ads'], constraints['filtered_sources'],
             start_date=constraints.get('date__gte'),
@@ -408,7 +411,7 @@ class PublisherBlacklistLoader(Loader):
         return stats.helpers.create_publisher_id(obj.name, obj.source_id)
 
     @classmethod
-    def from_constraints(cls, level, user, constraints):
+    def from_constraints(cls, user, constraints):
         return cls(
             constraints['publisher_blacklist'], constraints['filtered_sources'], user,
             start_date=constraints.get('date__gte'),
@@ -457,27 +460,10 @@ class PublisherBlacklistLoader(Loader):
 
 
 class SourcesLoader(Loader):
-
-    def __init__(self, sources_qs, base_objects, **kwargs):
-        super(SourcesLoader, self).__init__(sources_qs, **kwargs)
-
-        self.base_objects = base_objects
-
     @classmethod
-    def from_constraints(cls, level, user, constraints):
-        loader_cls = cls
-        if level == constants.Level.ALL_ACCOUNTS:
-            objs = constraints['allowed_accounts']
-        elif level == constants.Level.ACCOUNTS:
-            objs = constraints['allowed_campaigns']
-        elif level == constants.Level.CAMPAIGNS:
-            objs = constraints['allowed_ad_groups']
-        elif level == constants.Level.AD_GROUPS:
-            objs = constraints['ad_group']
-            loader_cls = AdGroupSourcesLoader
-
-        return loader_cls(
-            constraints['filtered_sources'], objs,
+    def from_constraints(cls, user, constraints):
+        return cls(
+            constraints['filtered_sources'],
             start_date=constraints.get('date__gte'),
             end_date=constraints.get('date__lte')
         )
@@ -501,6 +487,12 @@ class AdGroupSourcesLoader(Loader):
         self.ad_group = ad_group
         self.ad_group_settings = ad_group.get_current_settings()
         self.campaign_settings = ad_group.campaign.get_current_settings()
+
+    @classmethod
+    def from_constraints(cls, user, constraints):
+        return cls(constraints['filtered_sources'], constraints['ad_group'],
+                   start_date=constraints.get('date__gte'),
+                   end_date=constraints.get('date__lte'))
 
     @cached_property
     def settings_map(self):

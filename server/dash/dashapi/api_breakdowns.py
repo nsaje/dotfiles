@@ -114,8 +114,8 @@ def query_section(level, user, breakdown, constraints, parent=None):
     target_dimension = get_target_dimension(breakdown)
 
     constraints = stats.constraints_helper.reduce_to_parent(breakdown, constraints, parent)
-    loader_cls = loaders.get_loader_for_dimension(target_dimension)
-    loader = loader_cls.from_constraints(level, user, constraints)
+    loader_cls = loaders.get_loader_for_dimension(target_dimension, level)
+    loader = loader_cls.from_constraints(user, constraints)
 
     rows = augmenter.make_dash_rows(target_dimension, loader.objs_ids, parent)
     augmenter_fn = augmenter.get_augmenter_for_dimension(target_dimension)
@@ -131,19 +131,17 @@ def query_section(level, user, breakdown, constraints, parent=None):
 
 @newrelic.agent.function_trace()
 def get_totals(level, user, breakdown, constraints):
-    target_dimension = get_target_dimension(breakdown)
-
     row = {}
     if breakdown == ['source_id']:
-        loader = loaders.SourcesLoader.from_constraints(level, user, constraints)
+        loader = loaders.SourcesLoader.from_constraints(user, constraints)
         augmenter.augment_sources_totals(row, loader)
 
     elif breakdown == ['account_id']:
-        loader = loaders.AccountsLoader.from_constraints(level, user, constraints)
+        loader = loaders.AccountsLoader.from_constraints(user, constraints)
         augmenter.augment_accounts_totals(row, loader)
 
     elif breakdown == ['campaign_id']:
-        loader = loaders.CampaignsLoader.from_constraints(level, user, constraints)
+        loader = loaders.CampaignsLoader.from_constraints(user, constraints)
         augmenter.augment_campaigns_totals(row, loader)
 
     return row

@@ -1,0 +1,168 @@
+import copy
+
+from django.db.models import Q
+
+import dash.constants
+import dash.models
+import stats.constraints_helper
+import stats.constants
+
+
+def _intersection(base_collection, qs_ids):
+    if not base_collection:
+        return set(qs_ids)
+
+    return set(base_collection) & set(qs_ids)
+
+
+def _distinct_key(base_qs, key):
+    return base_qs.order_by(key).distinct(key).values_list(key, flat=True)
+
+
+# at this point permissions are checked
+def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources, show_archived,
+                        account_ids=None, campaign_ids=None, ad_group_ids=None, content_ad_ids=None,
+                        filtered_agencies=None, filtered_account_types=None, only_used_sources=False,
+                        show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL):
+
+    # determine the basic structure that is allowed
+    allowed_accounts = dash.models.Account.objects.all()\
+                                                  .filter_by_user(user)\
+                                                  .filter_by_sources(filtered_sources)\
+                                                  .filter_by_agencies(filtered_agencies)\
+                                                  .filter_by_account_types(filtered_account_types)\
+                                                  .exclude_archived(show_archived)
+
+    allowed_campaigns = dash.models.Campaign.objects.filter(account__in=allowed_accounts)\
+                                                    .filter_by_user(user)\
+                                                    .filter_by_sources(filtered_sources)\
+                                                    .exclude_archived(show_archived)
+
+    allowed_ad_groups = dash.models.AdGroup.objects.filter(campaign__in=allowed_campaigns)\
+                                                   .exclude_archived(show_archived)
+
+    allowed_content_ads = dash.models.ContentAd.objects.filter(ad_group__in=allowed_ad_groups)\
+                                                       .exclude_archived(show_archived)
+
+    constrain_content_ads = stats.constants.CONTENT_AD in breakdown
+    constrain_ad_group = constrain_content_ads or stats.constants.AD_GROUP in breakdown
+    constrain_campaigns = constrain_ad_group or stats.constants.CAMPAIGN in breakdown
+
+    # limit by ids
+    ad_group_sources = None
+    if content_ad_ids:
+        allowed_content_ads = allowed_content_ads.filter(pk__in=content_ad_ids)
+        ad_group_ids = _intersection(ad_group_ids, _distinct_key(allowed_content_ads, 'ad_group_id'))
+
+        constrain_content_ads = True
+        constrain_ad_group = True
+        constrain_campaigns = True
+
+    if ad_group_ids:
+        allowed_ad_groups = allowed_ad_groups.filter(pk__in=ad_group_ids)
+        campaign_ids = _intersection(campaign_ids, _distinct_key(allowed_ad_groups, 'campaign_id'))
+        ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__in=allowed_ad_groups)
+
+        constrain_ad_group = True
+        constrain_campaigns = True
+
+    if campaign_ids:
+        allowed_campaigns = allowed_campaigns.filter(pk__in=campaign_ids)
+        account_ids = _intersection(account_ids, _distinct_key(allowed_campaigns, 'account_id'))
+        if ad_group_sources is None:
+            ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__campaign__in=allowed_campaigns)
+
+        constrain_campaigns = True
+
+    if account_ids:
+        allowed_accounts = allowed_accounts.filter(pk__in=account_ids)
+        if ad_group_sources is None:
+            ad_group_sources = dash.models.AdGroupSource.objects.filter(
+                ad_group__campaign__account__in=allowed_accounts)
+
+    if only_used_sources:
+        filtered_sources = stats.constraints_helper.narrow_filtered_sources(filtered_sources, ad_group_sources)
+
+    if dash.models.should_filter_by_sources(filtered_sources):
+        publisher_blacklist = dash.models.PublisherBlacklist.objects.filter(
+            Q(ad_group__in=allowed_ad_groups) |
+            Q(campaign__in=allowed_campaigns) |
+            Q(account__in=allowed_accounts) |
+            Q(everywhere=True)
+        ).filter_by_sources(filtered_sources)
+
+        # include those that do not have source_id specified as they blacklist also filtered sources
+        publisher_blacklist |= dash.models.PublisherBlacklist.objects.filter(
+            Q(ad_group__in=allowed_ad_groups, source_id__isnull=True) |
+            Q(campaign__in=allowed_campaigns, source_id__isnull=True) |
+            Q(account__in=allowed_accounts, source_id__isnull=True) |
+            Q(everywhere=True, source_id__isnull=True)
+        )
+    else:
+        publisher_blacklist = dash.models.PublisherBlacklist.objects.filter(
+            Q(ad_group=allowed_ad_groups) |
+            Q(campaign=allowed_campaigns) |
+            Q(account=allowed_accounts) |
+            Q(everywhere=True)
+        )
+
+    constraints = {
+        'show_archived': show_archived,
+        'allowed_content_ads': allowed_content_ads if constrain_content_ads else None,
+        'allowed_ad_groups': allowed_ad_groups if constrain_ad_group else None,
+        'allowed_campaigns': allowed_campaigns if constrain_campaigns else None,
+        'allowed_accounts': allowed_accounts,
+        'publisher_blacklist': publisher_blacklist if stats.constants.PUBLISHER in breakdown else None,
+        'publisher_blacklist_filter': show_blacklisted_publishers if stats.constants.PUBLISHER in breakdown else None,
+        'filtered_sources': filtered_sources,
+        'date__gte': start_date,
+        'date__lte': end_date,
+    }
+    return constraints
+
+
+class Goals(object):
+    def __init__(self, campaign_goals=None, conversion_goals=None,
+                 campaign_goal_values=None, pixels=None, primary_goals=None):
+        self.campaign_goals = campaign_goals or []
+        self.conversion_goals = conversion_goals or []
+        self.campaign_goal_values = campaign_goal_values or []
+        self.pixels = pixels or []
+        self.primary_goals = primary_goals or []
+
+
+def get_goals(constraints):
+    campaign_goals, conversion_goals, campaign_goal_values, pixels = [], [], [], []
+    primary_goals = []
+
+    if constraints['allowed_campaigns'].count() == 1:
+        campaign = constraints['allowed_campaigns'][0]
+        conversion_goals = campaign.conversiongoal_set.all().select_related('pixel')
+        campaign_goals = campaign.campaigngoal_set.all().order_by('-primary', 'created_dt').select_related(
+            'conversion_goal', 'conversion_goal__pixel')
+        primary_goals = [campaign_goals.first()]
+        campaign_goal_values = dash.campaign_goals.get_campaign_goal_values(campaign)
+
+    elif constraints['allowed_accounts'].count() == 1:
+        account = constraints['allowed_accounts'][0]
+        # only take for campaigns when constraints for 1 account, otherwise its too much
+        allowed_campaigns = constraints['allowed_campaigns']
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign__in=allowed_campaigns)\
+                                                             .select_related('pixel')
+
+        campaign_goals = dash.models.CampaignGoal.objects.filter(campaign__in=allowed_campaigns)\
+                                                         .order_by('-primary', 'created_dt')\
+                                                         .select_related('conversion_goal', 'conversion_goal__pixel')
+
+        primary_goals_by_campaign = {}
+        for cg in campaign_goals:
+            if cg.campaign_id not in primary_goals_by_campaign:
+                primary_goals_by_campaign[cg.campaign_id] = cg
+        primary_goals = primary_goals_by_campaign.values()
+
+        for campaign in allowed_campaigns:
+            campaign_goal_values.extend(dash.campaign_goals.get_campaign_goal_values(campaign))
+
+        pixels = account.conversionpixel_set.filter(archived=False)
+
+    return Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals)
