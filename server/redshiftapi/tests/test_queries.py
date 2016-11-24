@@ -123,6 +123,35 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertEquals(params, [datetime.date(2016, 10, 2), 1, 2])
 
+    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 10, 3))
+    def test_query_all_yesterday_publishers(self, _):
+        sql, params = queries.prepare_query_all_yesterday(
+            ['publisher_id', 'day'],
+            {
+                'date__gte': datetime.date(2016, 1, 5),
+                'date__lte': datetime.date(2016, 1, 8),
+            },
+            [{'account_id': 1, 'source_id': 2}],
+            True
+        )
+
+        self.assertSQLEquals(sql, """
+        SELECT
+            base_table.publisher AS publisher,
+            base_table.source_id AS source_id,
+            base_table.date AS day,
+            SUM(base_table.cost_nano)/1000000000.0 yesterday_cost,
+            SUM(base_table.effective_cost_nano)/1000000000.0 e_yesterday_cost,
+            MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
+        FROM mv_pubs_ad_group base_table
+        WHERE (( base_table.date = %s)
+               AND (( base_table.account_id =%s AND base_table.source_id =%s)))
+        GROUP BY 1, 2, 3
+        ORDER BY yesterday_cost DESC
+        """)
+
+        self.assertEquals(params, [datetime.date(2016, 10, 2), 1, 2])
+
     def test_query_all_conversions(self):
         sql, params = queries.prepare_query_all_conversions(
             ['account_id', 'source_id', 'slug'],
@@ -141,6 +170,33 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.slug AS slug,
             SUM(base_table.conversion_count) count
         FROM mv_conversions_account base_table
+        WHERE (( base_table.date >=%s AND base_table.date <=%s)
+               AND (( base_table.account_id =%s AND base_table.source_id =%s)))
+        GROUP BY 1, 2, 3
+        ORDER BY count DESC
+        """)
+
+        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
+
+    def test_query_all_conversions_publishers(self):
+        sql, params = queries.prepare_query_all_conversions(
+            ['publisher_id', 'day'],
+            {
+                'date__gte': datetime.date(2016, 1, 5),
+                'date__lte': datetime.date(2016, 1, 8),
+            },
+            [{'account_id': 1, 'source_id': 2}],
+            True
+        )
+
+        self.assertSQLEquals(sql, """
+        SELECT
+            base_table.publisher AS publisher,
+            base_table.source_id AS source_id,
+            base_table.date AS day,
+            SUM(base_table.conversion_count) count,
+            MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
+        FROM mv_conversions base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
@@ -171,6 +227,35 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4
+        ORDER BY count DESC
+        """)
+
+        self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
+
+    def test_query_all_touchpoints_publishers(self):
+        sql, params = queries.prepare_query_all_touchpoints(
+            ['publisher_id', 'day', 'slug', 'window'],
+            {
+                'date__gte': datetime.date(2016, 1, 5),
+                'date__lte': datetime.date(2016, 1, 8),
+            },
+            [{'account_id': 1, 'source_id': 2}],
+            True
+        )
+
+        self.assertSQLEquals(sql, """
+        SELECT
+            base_table.publisher AS publisher,
+            base_table.source_id AS source_id,
+            base_table.date AS day,
+            base_table.slug AS slug,
+            base_table.conversion_window AS window,
+            SUM(base_table.conversion_count) count,
+            MAX(base_table.publisher || '__' || base_table.source_id) publisher_id
+        FROM mv_touchpointconversions base_table
+        WHERE (( base_table.date >=%s AND base_table.date <=%s)
+               AND (( base_table.account_id =%s AND base_table.source_id =%s)))
+        GROUP BY 1, 2, 3, 4, 5
         ORDER BY count DESC
         """)
 

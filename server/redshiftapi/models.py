@@ -197,6 +197,12 @@ class MVMasterPublishers(MVMaster):
     publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
     external_id = backtosql.TemplateColumn('part_max.sql', {'column_name': 'external_id'}, AGGREGATE)
 
+    def get_query_all_yesterday_context(self, breakdown, constraints, parents, use_publishers_view):
+        context = super(MVMasterPublishers, self).get_query_all_yesterday_context(
+            breakdown, constraints, parents, use_publishers_view)
+        context['aggregates'] += [self.publisher_id]
+        return context
+
 
 class MVTouchpointConversions(BreakdownsBase):
     DEFAULT_ORDER = '-count'
@@ -211,6 +217,10 @@ class MVTouchpointConversions(BreakdownsBase):
         return view_selector.get_best_view_touchpoints(needed_dimensions)
 
 
+class MVTouchpointConversionsPublishers(MVTouchpointConversions):
+    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
+
+
 class MVConversions(BreakdownsBase):
     DEFAULT_ORDER = '-count'
 
@@ -220,6 +230,10 @@ class MVConversions(BreakdownsBase):
     @classmethod
     def get_best_view(cls, needed_dimensions, use_publishers_view=False):
         return view_selector.get_best_view_conversions(needed_dimensions)
+
+
+class MVConversionsPublishers(MVConversions):
+    publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
 
 
 class MVJointMaster(MVMaster):

@@ -17,13 +17,13 @@ def prepare_query_all_yesterday(breakdown, constraints, parents, use_publishers_
 
 
 def prepare_query_all_conversions(breakdown, constraints, parents, use_publishers_view):
-    model = models.MVConversions()
+    model = models.MVConversionsPublishers() if use_publishers_view else models.MVConversions()
     context = model.get_query_all_context(breakdown, constraints, parents, use_publishers_view)
     return _prepare_query_all_for_model(model, context)
 
 
 def prepare_query_all_touchpoints(breakdown, constraints, parents, use_publishers_view):
-    model = models.MVTouchpointConversions()
+    model = models.MVTouchpointConversionsPublishers() if use_publishers_view else models.MVTouchpointConversions()
     context = model.get_query_all_context(breakdown, constraints, parents, use_publishers_view)
     return _prepare_query_all_for_model(model, context)
 
