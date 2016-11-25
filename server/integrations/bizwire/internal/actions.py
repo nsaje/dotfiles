@@ -63,7 +63,7 @@ def check_date_and_stop_old_ad_groups():
     if not _is_pacific_midnight():
         return
 
-    pacific_today = helpers.get_pacific_now().date
+    pacific_today = helpers.get_pacific_now().date()
     previous_start_date = models.AdGroupTargeting.objects.filter(
         start_date__lte=pacific_today,
     ).values_list('start_date', flat=True).order_by('-start_date').distinct()[1]
