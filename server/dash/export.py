@@ -410,7 +410,8 @@ def _prefetch_rows_data(user, dimensions, constraints, start_date, end_date, inc
         budgets = None if not include_budgets \
             else _prefetch_budgets(data, level)
 
-    projections, account_projections = _prefetch_projections(start_date, end_date, account_ids, level, user, campaign_ids)
+    projections, account_projections = _prefetch_projections(
+        start_date, end_date, account_ids, level, user, campaign_ids)
     return data, sources, budgets, projections, account_projections, statuses, settings, account_settings
 
 

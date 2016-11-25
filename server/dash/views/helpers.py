@@ -697,7 +697,8 @@ def get_selected_entities(objects, select_all, selected_ids, not_selected_ids, i
         else:
             entities = objects.exclude(id__in=not_selected_ids)
     elif select_batch_id is not None:
-        entities = objects.filter(Q(batch__id=select_batch_id) | Q(id__in=selected_ids)).exclude(id__in=not_selected_ids)
+        entities = objects.filter(Q(batch__id=select_batch_id) | Q(
+            id__in=selected_ids)).exclude(id__in=not_selected_ids)
     else:
         entities = objects.filter(id__in=selected_ids)
 
@@ -1072,10 +1073,10 @@ def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_sett
 def get_source_supply_dash_disabled_message(ad_group_source, source):
     if not source.has_3rd_party_dashboard():
         return "This media source doesn't have a dashboard of its own. " \
-                "All campaign management is done through Zemanta One dashboard."
+            "All campaign management is done through Zemanta One dashboard."
     elif ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
         return "Dashboard of this media source is not yet available because the " \
-                "media source is still being set up for this ad group."
+            "media source is still being set up for this ad group."
 
     return None
 
@@ -1150,7 +1151,7 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_gro
 def enabling_autopilot_sources_allowed(ad_group_settings, number_of_sources_to_enable=1):
     if ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         return True
-    required_budget = number_of_sources_to_enable*automation.autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
+    required_budget = number_of_sources_to_enable * automation.autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
     return ad_group_settings.autopilot_daily_budget - required_budget >=\
         automation.autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group_settings.ad_group)
 
@@ -1251,8 +1252,13 @@ def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings
             history_changes_text,
             user=request.user,
             action_type=constants.HistoryActionType.SETTINGS_CHANGE)
-        changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator='\n')
-        email_helper.send_campaign_notification_email(campaign, request, changes_text)
+
+        if len(changes) > 1 or 'iab_category' not in changes:
+            changes_text = models.CampaignSettings.get_changes_text(
+                old_settings,
+                new_settings,
+                separator='\n')
+            email_helper.send_campaign_notification_email(campaign, request, changes_text)
 
 
 def get_users_for_manager(user, account, current_manager=None):
