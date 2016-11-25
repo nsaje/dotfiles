@@ -72,7 +72,7 @@ def monitor_yesterday_spend():
 
     pacific_midnight_yesterday = pacific_midnight_today - datetime.timedelta(days=1)
     content_ad_ids = dash.models.ContentAd.objects.filter(
-        ad_group__campaing=config.AUTOMATION_CAMPAIGN,
+        ad_group__campaign=config.AUTOMATION_CAMPAIGN,
         created_dt__lte=pacific_midnight_today,
         created_dt__gte=pacific_midnight_yesterday,
     ).values_list('id', flat=True)
@@ -82,16 +82,16 @@ def monitor_yesterday_spend():
             'cost': backtosql.TemplateColumn(
                 'part_sum_nano.sql',
                 {'column_name': 'cost_nano'}
-            )
+            ),
+            'content_ad_ids': content_ad_ids,
         }),
-        content_ad_ids,
         'bizwire_ads_stats_monitoring',
     )[0]
 
     expected_spend = len(content_ad_ids) * 4
 
-    influx.gauge('integrations.bizwire.yesterday_spend', actual=actual_spend)
-    influx.gauge('integrations.bizwire.yesterday_spend', expected=expected_spend)
+    influx.gauge('integrations.bizwire.yesterday_spend', actual_spend, type='actual')
+    influx.gauge('integrations.bizwire.yesterday_spend', expected_spend, type='expected')
 
 
 def monitor_duplicate_articles():
