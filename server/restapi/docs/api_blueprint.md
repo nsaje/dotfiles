@@ -1,5 +1,5 @@
 FORMAT: 1A
-HOST: https://one.zemanta.com
+HOST: https://oneapi.zemanta.com
 
 # Zemanta One API
 
