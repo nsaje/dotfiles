@@ -1445,7 +1445,7 @@ its status and finally, when its status is DONE, you receive a link to a CSV fil
 For now, only the following lists of fields are supported:
 
 - [Content Ad Id, Content Ad, Label, Total Spend, Impressions, Clicks, Avg. CPC]
-- [Domain Id, Domain, Media Source, Total Spend, Impressions, Clicks, Avg. CPC]
+- [Publisher Id, Publisher, Media Source, Total Spend, Impressions, Clicks, Avg. CPC]
 - [Media Source Id, Media Source, Total Spend, Impressions, Clicks, Avg. CPC]
 
 ## Report jobs [/rest/v1/reports/]
