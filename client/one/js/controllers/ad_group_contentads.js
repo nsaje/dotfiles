@@ -1,5 +1,5 @@
 /* globals options, angular, constants, moment */
-angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $window, $state, $location, $q, api, zemContentAdService, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $window, $state, $location, $q, api, zemContentAdService, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService, zemPermissions) { // eslint-disable-line max-len
     $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -46,19 +46,29 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
         }, 0);
     };
 
-    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
-        getDailyStats();
-    }, true);
+    if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+        var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(getDailyStats);
+        var filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(getDailyStats);
 
-    $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
-        getDailyStats();
-    }, true);
+        $scope.$on('$destroy', function () {
+            filteredSourcesUpdateHandler();
+            filteredStatusesUpdateHandler();
+        });
+    } else {
+        $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) {
+                return;
+            }
+            getDailyStats();
+        }, true);
+
+        $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) {
+                return;
+            }
+            getDailyStats();
+        }, true);
+    }
 
     $scope.refreshGridAndTable = function () {
         if ($scope.grid && $scope.grid.api) {

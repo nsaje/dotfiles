@@ -16,7 +16,8 @@ angular.module('one.legacy').component('zemGridIntegration', {
         isPermissionInternal: '=zemIsPermissionInternal',
     },
     templateUrl: '/components/zem-grid-integration/zemGridIntegration.component.html',
-    controller: function ($scope, $timeout, $state, zemGridEndpointService, zemDataSourceService, zemFilterService) {
+    controller: function ($scope, $timeout, $state, zemGridEndpointService, zemDataSourceService, zemFilterService, zemDataFilterService, zemPermissions) {
+        var dataFilterUpdateHandler;
         var $ctrl = this;
         $scope.hasPermission = this.hasPermission;
         $scope.isPermissionInternal = this.isPermissionInternal;
@@ -35,6 +36,10 @@ angular.module('one.legacy').component('zemGridIntegration', {
                 $ctrl.api = $ctrl.grid.api;
                 if ($ctrl.selection) initializeSelectionBind();
             });
+        };
+
+        $ctrl.$onDestroy = function () {
+            if (dataFilterUpdateHandler) dataFilterUpdateHandler();
         };
 
         function initializeGrid () {
@@ -78,16 +83,30 @@ angular.module('one.legacy').component('zemGridIntegration', {
         function loadFilters () {
             var FILTER = $ctrl.grid.dataSource.FILTER;
 
-            $ctrl.grid.dataSource.setFilter(FILTER.FILTERED_MEDIA_SOURCES, zemFilterService.getFilteredSources());
-            $ctrl.grid.dataSource.setFilter(FILTER.SHOW_ARCHIVED_SOURCES, zemFilterService.getShowArchived());
+            var showArchived = zemFilterService.getShowArchived();
+            var filteredSources = zemFilterService.getFilteredSources();
+            var filteredAgencies = zemFilterService.getFilteredAgencies();
+            var filteredAccountTypes = zemFilterService.getFilteredAccountTypes();
+            var filteredPublisherStatus = zemFilterService.getBlacklistedPublishers();
+
+            if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+                showArchived = zemDataFilterService.getShowArchived();
+                filteredSources = zemDataFilterService.getFilteredSources();
+                filteredAgencies = zemDataFilterService.getFilteredAgencies();
+                filteredAccountTypes = zemDataFilterService.getFilteredAccountTypes();
+                filteredPublisherStatus = zemDataFilterService.getFilteredPublisherStatus();
+            }
+
+            $ctrl.grid.dataSource.setFilter(FILTER.FILTERED_MEDIA_SOURCES, filteredSources);
+            $ctrl.grid.dataSource.setFilter(FILTER.SHOW_ARCHIVED_SOURCES, showArchived);
 
             if ($ctrl.level === constants.level.ALL_ACCOUNTS) {
-                $ctrl.grid.dataSource.setFilter(FILTER.FILTERED_AGENCIES, zemFilterService.getFilteredAgencies());
-                $ctrl.grid.dataSource.setFilter(FILTER.FILTERED_ACCOUNT_TYPES, zemFilterService.getFilteredAccountTypes());
+                $ctrl.grid.dataSource.setFilter(FILTER.FILTERED_AGENCIES, filteredAgencies);
+                $ctrl.grid.dataSource.setFilter(FILTER.FILTERED_ACCOUNT_TYPES, filteredAccountTypes);
             }
 
             if ($ctrl.breakdown === constants.breakdown.PUBLISHER) {
-                $ctrl.grid.dataSource.setFilter(FILTER.SHOW_BLACKLISTED_PUBLISHERS, zemFilterService.getBlacklistedPublishers());
+                $ctrl.grid.dataSource.setFilter(FILTER.SHOW_BLACKLISTED_PUBLISHERS, filteredPublisherStatus);
             }
         }
 
@@ -98,11 +117,15 @@ angular.module('one.legacy').component('zemGridIntegration', {
                 $ctrl.grid.dataSource.getData();
             }
 
-            $scope.$watchCollection(zemFilterService.getFilteredAgencies, filterWatch);
-            $scope.$watchCollection(zemFilterService.getFilteredAccountTypes, filterWatch);
-            $scope.$watchCollection(zemFilterService.getFilteredSources, filterWatch);
-            $scope.$watch(zemFilterService.getShowArchived, filterWatch);
-            $scope.$watch(zemFilterService.getBlacklistedPublishers, filterWatch);
+            if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+                dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(filterWatch);
+            } else {
+                $scope.$watchCollection(zemFilterService.getFilteredAgencies, filterWatch);
+                $scope.$watchCollection(zemFilterService.getFilteredAccountTypes, filterWatch);
+                $scope.$watchCollection(zemFilterService.getFilteredSources, filterWatch);
+                $scope.$watch(zemFilterService.getShowArchived, filterWatch);
+                $scope.$watch(zemFilterService.getBlacklistedPublishers, filterWatch);
+            }
         }
 
         function initializeSelectionBind () {

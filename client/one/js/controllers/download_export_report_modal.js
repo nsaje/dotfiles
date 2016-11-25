@@ -1,5 +1,5 @@
 /* globals angular, constants */
-angular.module('one.legacy').controller('DownloadExportReportModalCtrl', function ($scope, api, zemFilterService, $window, $state, zemDataFilterService) {  // eslint-disable-line max-len
+angular.module('one.legacy').controller('DownloadExportReportModalCtrl', function ($scope, api, zemFilterService, $window, $state, zemDataFilterService, zemPermissions) {  // eslint-disable-line max-len
     $scope.showInProgress = false;
     $scope.export = {};
 
@@ -66,14 +66,30 @@ angular.module('one.legacy').controller('DownloadExportReportModalCtrl', functio
         if ($scope.hasPermission('zemauth.can_include_totals_in_reports')) {
             url += '&include_totals=' + $scope.export.includeTotals;
         }
-        if (zemFilterService.isSourceFilterOn()) {
-            url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');
-        }
-        if (zemFilterService.isAgencyFilterOn()) {
-            url += '&filtered_agencies=' + zemFilterService.getFilteredAgencies().join(',');
-        }
-        if (zemFilterService.isAccountTypeFilterOn()) {
-            url += '&filtered_account_types=' + zemFilterService.getFilteredAccountTypes().join(',');
+
+        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+            var filteredSources = zemDataFilterService.getFilteredSources();
+            var filteredAgencies = zemDataFilterService.getFilteredAgencies();
+            var filteredAccountTypes = zemDataFilterService.getFilteredAccountTypes();
+            if (filteredSources.length > 0) {
+                url += '&filtered_sources=' + filteredSources.join(',');
+            }
+            if (filteredAgencies.length > 0) {
+                url += '&filtered_agencies=' + filteredAgencies.join(',');
+            }
+            if (filteredAccountTypes.length > 0) {
+                url += '&filtered_account_types=' + filteredAccountTypes.join(',');
+            }
+        } else {
+            if (zemFilterService.isSourceFilterOn()) {
+                url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');
+            }
+            if (zemFilterService.isAgencyFilterOn()) {
+                url += '&filtered_agencies=' + zemFilterService.getFilteredAgencies().join(',');
+            }
+            if (zemFilterService.isAccountTypeFilterOn()) {
+                url += '&filtered_account_types=' + zemFilterService.getFilteredAccountTypes().join(',');
+            }
         }
 
         url += '&additional_fields=' + $scope.getAdditionalColumns().join(',');

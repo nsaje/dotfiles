@@ -1,7 +1,6 @@
 <div class="logo-container pull-left">
     <a ui-sref="{{'main'}}">
-        <img ng-src="{{$ctrl.config.static_url}}/one/images/zemanta-logo-new-white.svg" class="show-new-logo">
-        <img ng-src="{{$ctrl.config.static_url}}/one/images/zemanta-logo-white.svg" class="show-old-logo">
+        <img ng-src="{{$ctrl.config.static_url}}/one/images/zemanta-logo-new-white.svg">
     </a>
 </div>
 
@@ -9,5 +8,5 @@
 <zem-header-breadcrumb class="zem-header-breadcrumb pull-left"></zem-header-breadcrumb>
 <zem-header-menu class="zem-header-menu pull-right"></zem-header-menu>
 <zem-header-date-range-picker class="zem-header-date-range-picker pull-right"></zem-header-date-range-picker>
-<zem-header-filter-legacy class="zem-header-filter-legacy pull-right" level="$ctrl.level" enable-publisher-filter="$ctrl.enablePublisherFilter" show-publisher-selected="$ctrl.showPublisherSelected"></zem-header-filter-legacy>
+<zem-header-filter-legacy ng-if="!$ctrl.hasPermission('zemauth.can_see_new_filter_selector')" class="zem-header-filter-legacy pull-right" level="$ctrl.level" enable-publisher-filter="$ctrl.enablePublisherFilter" show-publisher-selected="$ctrl.showPublisherSelected"></zem-header-filter-legacy>
 <zem-header-filter-selector-toggle ng-if="$ctrl.hasPermission('zemauth.can_see_new_filter_selector')" class="zem-header-filter-selector-toggle pull-right"></zem-header-filter-selector-toggle>

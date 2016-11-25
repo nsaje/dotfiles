@@ -1,21 +1,25 @@
 angular.module('one.services').service('zemAgenciesEndpoint', function ($http, $q) {
     this.getAgencies = getAgencies;
 
+    var getAgenciesDeferred;
     function getAgencies () {
-        var deferred = $q.defer();
-        var url = '/api/agencies/';
-        var config = {
-            params: {},
-        };
+        if (!getAgenciesDeferred) {
+            getAgenciesDeferred = $q.defer();
+            var url = '/api/agencies/';
+            var config = {
+                params: {},
+            };
+            $http.get(url, config).
+                success(function (data) {
+                    getAgenciesDeferred.resolve(data);
+                    getAgenciesDeferred = null;
+                }).
+                error(function (data) {
+                    getAgenciesDeferred.reject(data);
+                    getAgenciesDeferred = null;
+                });
+        }
 
-        $http.get(url, config).
-            success(function (data) {
-                deferred.resolve(data);
-            }).
-            error(function (data) {
-                deferred.reject(data);
-            });
-
-        return deferred.promise;
+        return getAgenciesDeferred.promise;
     }
 });

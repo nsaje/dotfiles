@@ -8,10 +8,15 @@ angular.module('one.services').service('zemDataFilterService', function ($locati
     this.resetCondition = resetCondition;
     this.resetAllConditions = resetAllConditions;
     this.removeValueFromConditionList = removeValueFromConditionList;
+    this.getFilteredSources = getFilteredSources;
+    this.getFilteredAgencies = getFilteredAgencies;
+    this.getFilteredAccountTypes = getFilteredAccountTypes;
+    this.getFilteredStatuses = getFilteredStatuses;
+    this.getFilteredPublisherStatus = getFilteredPublisherStatus;
     this.getShowArchived = getShowArchived;
 
     this.onDateRangeUpdate = onDateRangeUpdate;
-    this.onAppliedConditionsUpdate = onAppliedConditionsUpdate;
+    this.onDataFilterUpdate = onDataFilterUpdate;
     this.onFilteredSourcesUpdate = onFilteredSourcesUpdate;
     this.onFilteredAgenciesUpdate = onFilteredAgenciesUpdate;
     this.onFilteredAccountTypesUpdate = onFilteredAccountTypesUpdate;
@@ -22,7 +27,7 @@ angular.module('one.services').service('zemDataFilterService', function ($locati
     var pubSub = zemPubSubService.createInstance();
     var EVENTS = {
         ON_DATE_RANGE_UPDATE: 'zem-data-filter-service-on-date-range-update',
-        ON_APPLIED_CONDITIONS_UPDATE: 'zem-data-filter-service-on-applied-conditions-update',
+        ON_DATA_FILTER_UPDATE: 'zem-data-filter-service-on-data-filter-update',
         ON_FILTERED_SOURCES_UPDATE: 'zem-data-filter-service-on-filtered-sources-update',
         ON_FILTERED_AGENCIES_UPDATE: 'zem-data-filter-service-on-filtered-agencies-update',
         ON_FILTERED_ACCOUNT_TYPES_UPDATE: 'zem-data-filter-service-on-filtered-account-types-update',
@@ -133,8 +138,18 @@ angular.module('one.services').service('zemDataFilterService', function ($locati
         }
     }
 
-    function getAppliedConditions () {
-        return angular.copy(appliedConditions);
+    function getAppliedConditions (excludeDefaults) {
+        if (!excludeDefaults) {
+            return angular.copy(appliedConditions);
+        }
+
+        var conditionsExcludedDefaults = {};
+        angular.forEach(appliedConditions, function (conditionValue, conditionName) {
+            if (!angular.equals(CONDITIONS[conditionName].default, conditionValue)) {
+                conditionsExcludedDefaults[conditionName] = conditionValue;
+            }
+        });
+        return conditionsExcludedDefaults;
     }
 
     function getAppliedCondition (condition) {
@@ -149,43 +164,80 @@ angular.module('one.services').service('zemDataFilterService', function ($locati
     }
 
     function applyConditions (conditions) {
+        var updated = false;
         angular.forEach(conditions, function (condition) {
-            setCondition(condition.condition, condition.value);
+            updated = setCondition(condition.condition, condition.value) || updated;
         });
-        pubSub.notify(EVENTS.ON_APPLIED_CONDITIONS_UPDATE, getAppliedConditions());
+        if (updated) {
+            pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE, getAppliedConditions());
+        }
     }
 
-    function resetCondition (condition) {
+    function resetCondition (condition, ignoreNotify) {
         if (!condition) return;
+
+        var updated = false;
 
         switch (condition.type) {
         case CONDITION_TYPES.value:
-            setCondition(condition, condition.default || null);
+            updated = setCondition(condition, condition.default || null);
             break;
         case CONDITION_TYPES.list:
-            setCondition(condition, condition.default || []);
+            updated = setCondition(condition, condition.default || []);
             break;
         }
-        pubSub.notify(EVENTS.ON_APPLIED_CONDITIONS_UPDATE, getAppliedConditions());
+
+        if (updated && !ignoreNotify) {
+            pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE, getAppliedConditions());
+        }
+
+        return updated;
     }
 
     function resetAllConditions () {
+        var updated = false;
         angular.forEach(CONDITIONS, function (condition) {
-            resetCondition(condition);
+            updated = resetCondition(condition, true) || updated;
         });
-        pubSub.notify(EVENTS.ON_APPLIED_CONDITIONS_UPDATE, getAppliedConditions());
+        if (updated) {
+            pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE, getAppliedConditions());
+        }
     }
 
     function removeValueFromConditionList (condition, value) {
         var values = getAppliedCondition(condition);
         if (!values) return;
 
+        var updated = false;
         var index = values.indexOf(value);
         if (index !== -1) {
             values.splice(index, 1);
-            setCondition(condition, values);
+            updated = setCondition(condition, values);
         }
-        pubSub.notify(EVENTS.ON_APPLIED_CONDITIONS_UPDATE, getAppliedConditions());
+
+        if (updated) {
+            pubSub.notify(EVENTS.ON_DATA_FILTER_UPDATE, getAppliedConditions());
+        }
+    }
+
+    function getFilteredSources () {
+        return getAppliedCondition(CONDITIONS.sources);
+    }
+
+    function getFilteredAgencies () {
+        return getAppliedCondition(CONDITIONS.agencies);
+    }
+
+    function getFilteredAccountTypes () {
+        return getAppliedCondition(CONDITIONS.accountTypes);
+    }
+
+    function getFilteredStatuses () {
+        return getAppliedCondition(CONDITIONS.statuses);
+    }
+
+    function getFilteredPublisherStatus () {
+        return getAppliedCondition(CONDITIONS.publisherStatus);
     }
 
     function getShowArchived () {
@@ -200,8 +252,8 @@ angular.module('one.services').service('zemDataFilterService', function ($locati
         return pubSub.register(EVENTS.ON_DATE_RANGE_UPDATE, callback);
     }
 
-    function onAppliedConditionsUpdate (callback) {
-        return pubSub.register(EVENTS.ON_APPLIED_CONDITIONS_UPDATE, callback);
+    function onDataFilterUpdate (callback) {
+        return pubSub.register(EVENTS.ON_DATA_FILTER_UPDATE, callback);
     }
 
     function onFilteredSourcesUpdate (callback) {
@@ -252,36 +304,40 @@ angular.module('one.services').service('zemDataFilterService', function ($locati
     }
 
     function setCondition (condition, value) {
+        var updated = false;
+
         switch (condition.type) {
         case CONDITION_TYPES.value:
-            setConditionValue(condition, value);
+            updated = setConditionValue(condition, value);
             break;
         case CONDITION_TYPES.list:
             var list = angular.isArray(value) ? value : value.split(',');
-            setConditionList(condition, list);
+            updated = setConditionList(condition, list);
             break;
         }
+
+        return updated;
     }
 
     function setConditionValue (condition, value) {
         if (condition.type !== CONDITION_TYPES.value) return;
         if (condition.permissions && !zemPermissions.hasPermission(condition.permissions)) return;
+        if (angular.equals(getAppliedCondition(condition), value)) return;
 
-        if (appliedConditions[condition.name] !== value) {
-            appliedConditions[condition.name] = value;
-            setUrlParam(condition.urlParam, value);
-            pubSub.notify(condition.event, getAppliedCondition(condition));
-        }
+        appliedConditions[condition.name] = value;
+        setUrlParam(condition.urlParam, value);
+        pubSub.notify(condition.event, getAppliedCondition(condition));
+        return true;
     }
 
     function setConditionList (condition, list) {
         if (condition.type !== CONDITION_TYPES.list) return;
         if (condition.permissions && !zemPermissions.hasPermission(condition.permissions)) return;
+        if (angular.equals(getAppliedCondition(condition), list)) return;
 
-        if (appliedConditions[condition.name] !== list) {
-            appliedConditions[condition.name] = list;
-            setUrlParam(condition.urlParam, list.join(','));
-            pubSub.notify(condition.event, getAppliedCondition(condition));
-        }
+        appliedConditions[condition.name] = list;
+        setUrlParam(condition.urlParam, list.join(','));
+        pubSub.notify(condition.event, getAppliedCondition(condition));
+        return true;
     }
 });

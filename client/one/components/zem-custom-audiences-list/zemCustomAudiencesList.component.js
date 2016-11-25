@@ -16,7 +16,7 @@ angular.module('one.legacy').directive('zemCustomAudiencesList', function () { /
     };
 });
 
-angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', function (api, zemFilterService, $scope, $uibModal) {
+angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', function (api, zemFilterService, zemDataFilterService, zemPermissions, $scope, $uibModal) {
     var vm = this;
     vm.audiences = [];
     vm.listRequestInProgress = false;
@@ -68,7 +68,12 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', function (
     vm.getAudiences = function () {
         vm.listRequestInProgress = true;
 
-        api.customAudiences.list(vm.accountId, zemFilterService.getShowArchived(), true).then(
+        var showArchived = zemFilterService.getShowArchived();
+        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+            showArchived = zemDataFilterService.getShowArchived();
+        }
+
+        api.customAudiences.list(vm.accountId, showArchived, true).then(
             function (data) {
                 for (var i = 0; i < data.length; i++) {
                     data[i].count = data[i].count || 'N/A';
@@ -107,16 +112,20 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', function (
         });
     };
 
-    $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
-
-        vm.getAudiences();
-    }, true);
-
     function init () {
         vm.getAudiences();
+
+        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+            var filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(vm.getAudiences);
+            $scope.$on('$destroy', filteredStatusesUpdateHandler);
+        } else {
+            $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
+                if (angular.equals(newValue, oldValue)) {
+                    return;
+                }
+                vm.getAudiences();
+            }, true);
+        }
     }
 
     init();

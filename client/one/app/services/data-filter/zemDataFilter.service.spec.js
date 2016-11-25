@@ -82,7 +82,17 @@ describe('zemDataFilterService', function () {
     });
 
     it('should return empty condition if requested condition is not set', function () {
-        expect(zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.sources)).toEqual([]);
+        expect(zemDataFilterService.getFilteredSources()).toEqual([]);
+    });
+
+    it('should correctly return applied conditions and exclude conditions with default values', function () {
+        spyOn(zemPermissions, 'hasPermission').and.returnValue(true);
+        zemDataFilterService.init();
+
+        var expectedConditions = {};
+        expectedConditions[zemDataFilterService.CONDITIONS.publisherStatus.name] = zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.all; // eslint-disable-line max-len
+        expect(zemDataFilterService.getAppliedConditions()).toEqual(expectedConditions);
+        expect(zemDataFilterService.getAppliedConditions(true)).toEqual({});
     });
 
     it('should correctly apply conditions', function () {
@@ -149,10 +159,10 @@ describe('zemDataFilterService', function () {
         expect(zemDataFilterService.getAppliedConditions()).toEqual(expectedConditions);
 
         zemDataFilterService.resetCondition(zemDataFilterService.CONDITIONS.sources);
-        expect(zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.sources)).toEqual([]);
+        expect(zemDataFilterService.getFilteredSources()).toEqual([]);
 
         zemDataFilterService.resetCondition(zemDataFilterService.CONDITIONS.publisherStatus);
-        expect(zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.publisherStatus)).toEqual(
+        expect(zemDataFilterService.getFilteredPublisherStatus()).toEqual(
             zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.all
         );
         expect($location.search()).toEqual({
@@ -181,8 +191,8 @@ describe('zemDataFilterService', function () {
         expect(zemDataFilterService.getAppliedConditions()).toEqual(expectedConditions);
 
         zemDataFilterService.resetAllConditions();
-        expect(zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.sources)).toEqual([]);
-        expect(zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.publisherStatus)).toEqual(
+        expect(zemDataFilterService.getFilteredSources()).toEqual([]);
+        expect(zemDataFilterService.getFilteredPublisherStatus()).toEqual(
             zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.all
         );
         expect($location.search()).toEqual({
@@ -200,7 +210,7 @@ describe('zemDataFilterService', function () {
             },
         ];
         zemDataFilterService.applyConditions(conditions);
-        expect(zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.sources)).toEqual(
+        expect(zemDataFilterService.getFilteredSources()).toEqual(
             ['1', '2', '3']
         );
         expect($location.search()).toEqual({
@@ -208,13 +218,13 @@ describe('zemDataFilterService', function () {
         });
 
         zemDataFilterService.removeValueFromConditionList(zemDataFilterService.CONDITIONS.sources, '3');
-        expect(zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.sources)).toEqual(['1', '2']);
+        expect(zemDataFilterService.getFilteredSources()).toEqual(['1', '2']);
         expect($location.search()).toEqual({
             filtered_sources: '1,2',
         });
 
         zemDataFilterService.removeValueFromConditionList(zemDataFilterService.CONDITIONS.sources, 'unknown');
-        expect(zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.sources)).toEqual(['1', '2']);
+        expect(zemDataFilterService.getFilteredSources()).toEqual(['1', '2']);
         expect($location.search()).toEqual({
             filtered_sources: '1,2',
         });

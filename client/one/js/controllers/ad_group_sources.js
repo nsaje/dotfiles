@@ -1,6 +1,6 @@
 /*globals angular,moment,constants,options*/
 
-angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants) {
+angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions) {
     $scope.constants = constants;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -247,16 +247,21 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
         }
     });
 
-    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
+    if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+        var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate($scope.getDailyStats);
+        $scope.$on('$destroy', filteredSourcesUpdateHandler);
+    } else {
+        $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) {
+                return;
+            }
 
-        $scope.removeFilteredSelectedSources();
-        $scope.updateSelectedRowsLocation();
+            $scope.removeFilteredSelectedSources();
+            $scope.updateSelectedRowsLocation();
 
-        $scope.getDailyStats();
-    }, true);
+            $scope.getDailyStats();
+        }, true);
+    }
 
     $scope.init = function () {
         var data = $scope.adGroupData[$state.params.id];

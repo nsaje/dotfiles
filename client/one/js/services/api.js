@@ -2,8 +2,7 @@
 /* eslint-disable camelcase */
 'use strict';
 
-angular.module('one.legacy').factory('api', function ($http, $q, zemFilterService) {
-
+angular.module('one.legacy').factory('api', function ($http, $q, zemFilterService, zemDataFilterService, zemPermissions) {
     function createAbortableDefer () {
         var deferred = $q.defer();
         var deferredAbort = $q.defer();
@@ -25,28 +24,50 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemFilterServic
     }
 
     function addFilteredSources (params) {
-        if (zemFilterService.getFilteredSources().length > 0) {
-            params.filtered_sources = zemFilterService.getFilteredSources().join(',');
+        var filteredSources;
+        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+            filteredSources = zemDataFilterService.getFilteredSources();
+        } else {
+            filteredSources = zemFilterService.getFilteredSources();
+        }
+        if (filteredSources.length > 0) {
+            params.filtered_sources = filteredSources.join(',');
         }
     }
 
     function addAgencyFilter (params) {
-        var filteredAgencies = zemFilterService.getFilteredAgencies();
+        var filteredAgencies;
+        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+            filteredAgencies = zemDataFilterService.getFilteredAgencies();
+        } else {
+            filteredAgencies = zemFilterService.getFilteredAgencies();
+        }
         if (filteredAgencies.length > 0) {
             params.filtered_agencies = filteredAgencies;
         }
     }
 
     function addAccountTypeFilter (params) {
-        var filteredAccountTypes = zemFilterService.getFilteredAccountTypes();
+        var filteredAccountTypes;
+        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+            filteredAccountTypes = zemDataFilterService.getFilteredAccountTypes();
+        } else {
+            filteredAccountTypes = zemFilterService.getFilteredAccountTypes();
+        }
         if (filteredAccountTypes.length > 0) {
             params.filtered_account_types = filteredAccountTypes;
         }
     }
 
     function addShowBlacklistedPublisher (params) {
-        if (zemFilterService.getBlacklistedPublishers()) {
-            params.show_blacklisted_publishers = zemFilterService.getBlacklistedPublishers();
+        var filteredPublisherStatus;
+        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+            filteredPublisherStatus = zemDataFilterService.getFilteredPublisherStatus();
+        } else {
+            filteredPublisherStatus = zemFilterService.getBlacklistedPublishers();
+        }
+        if (filteredPublisherStatus) {
+            params.show_blacklisted_publishers = filteredPublisherStatus;
         }
     }
 
@@ -769,9 +790,16 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemFilterServic
         this.get = function (id_, level_, exportSources, startDate, endDate) {
             var deferred = $q.defer();
 
+            var filteredSources;
+            if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+                filteredSources = zemDataFilterService.getFilteredSources();
+            } else {
+                filteredSources = zemFilterService.getFilteredSources();
+            }
+
             var urlId = ((level_ == constants.level.ALL_ACCOUNTS) ? '' : id_ + '/');
             var urlSources = ((exportSources.valueOf()) ? 'sources/' : '');
-            var urlFilteredSources = ((exportSources.valueOf()) ? '?filtered_sources=' + zemFilterService.getFilteredSources().join(',') : '');
+            var urlFilteredSources = ((exportSources.valueOf()) ? '?filtered_sources=' + filteredSources.join(',') : '');
             var url = '/api/' + level_ + '/' + urlId + urlSources + 'export/allowed/' + urlFilteredSources;
 
             var config = {

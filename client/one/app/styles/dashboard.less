@@ -142,8 +142,9 @@ select.media-source-select {
 
 .page {
     padding: 0;
-    margin: @default-spacing*1.5 0;
+    margin: @default-spacing*1.5+100 0 @default-spacing*1.5 0;
     border: none;
+    transition: margin-top @default-animation;
 
     .section {
         .alert {
@@ -849,84 +850,129 @@ tags-input .host .tags {
 // Tab navigation //
 ///////////////////////////
 
-.zem-tabset .nav-tabs {
-    background-color: @white;
-    border: none;
-    padding: 0 @default-spacing;
-    margin: 0 -@default-spacing;
-    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);
+.zem-tabset {
+    position: fixed;
+    width: 100%;
+    z-index: 9998;
+    top: 60px;
+    transition: all @default-animation;
+    
+    .nav-tabs {
+        width: 100%;
+        background-color: @white;
+        border: none;
+        padding: 0 @default-spacing;
+        margin: 0 -@default-spacing;
+        box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);
 
-    > li {
-        margin-bottom: 0;
-        border-right: 1px solid @light-gray;
+        > li {
+            margin-bottom: 0;
+            border-right: 1px solid @light-gray;
 
-        > a,
-        > a:hover,
-        > a:active,
-        > a:visited {
-            padding: 0;
-            margin: 0;
-            border: none;
-            border-radius: 0;
-            transition: background-color 200ms ease-in-out;
+            > a,
+            > a:hover,
+            > a:active,
+            > a:visited {
+                padding: 0;
+                margin: 0;
+                border: none;
+                border-radius: 0;
+                transition: background-color 200ms ease-in-out;
 
-            > uib-tab-heading {
-                > a,
-                > a:hover,
-                > a:active,
-                > a:visited {
-                    display: block;
-                    padding: 9px 20px;
-                    text-decoration: none;
-                    font-weight: 400;
-                    font-size: 16px;
-                    color: @text-color;
-                    text-transform: none;
+                > uib-tab-heading {
+                    > a,
+                    > a:hover,
+                    > a:active,
+                    > a:visited {
+                        display: block;
+                        padding: 9px 20px;
+                        text-decoration: none;
+                        font-weight: 400;
+                        font-size: 16px;
+                        color: @text-color;
+                        text-transform: none;
+                        transition: all @default-animation;
+                    }
+                }
+            }
+
+            > a:hover {
+                background-color: fade(@primary-color, 10%);
+            }
+
+            &.active > a {
+                > uib-tab-heading {
+                    > a,
+                    > a:hover,
+                    > a:active,
+                    > a:visited {
+                        font-weight: 500;
+                        color: @primary-color;
+                        box-sizing: border-box;
+                        padding-bottom: 6px;
+                        border-bottom: 3px solid @primary-color;
+                        margin-bottom: 0;
+                    }
                 }
             }
         }
 
-        > a:hover {
-            background-color: fade(@primary-color, 10%);
+        > li:first-child {
+            border-left: 1px solid @light-gray;
         }
 
-        &.active > a {
-            > uib-tab-heading {
-                > a,
-                > a:hover,
-                > a:active,
-                > a:visited {
-                    font-weight: 500;
-                    color: @primary-color;
-                    box-sizing: border-box;
-                    padding-bottom: 6px;
-                    border-bottom: 3px solid @primary-color;
-                    margin-bottom: 0;
-                }
-            }
-        }
-    }
-
-    > li:first-child {
-        border-left: 1px solid @light-gray;
-    }
-
-    > span {
-        float: right;
-        display: block;
-        position: relative;
-        line-height: 40px;
-        padding-left: 25px;
-
-        .tabset-little-red-square {
-            position: absolute;
+        > span {
+            float: right;
             display: block;
-            width: 15px;
-            height: 15px;
-            background-color: @light-gray;
-            border-radius: 50%;
-            left: 0;
-            top: 11px;
+            position: relative;
+            line-height: 40px;
+            padding-left: 25px;
+            transition: all @default-animation;
+
+            .tabset-little-red-square {
+                position: absolute;
+                display: block;
+                width: 15px;
+                height: 15px;
+                background-color: @light-gray;
+                border-radius: 50%;
+                left: 0;
+                top: 11px;
+                transition: all @default-animation;
+            }
+        }
+    }
+}
+
+.fixed-header {
+    .zem-tabset {
+        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.2);
+        top: 30px;
+
+        .nav-tabs {
+            & > li {
+                & > a > uib-tab-heading > a {
+                    padding: 4px 20px;
+                    font-size: 14px;
+
+                    &:hover {
+                        padding: 4px 20px;
+                        font-size: 14px;
+                    }
+                }
+
+                &.active > a > uib-tab-heading > a {
+                    padding-bottom: 1px;
+                }
+            }
+
+            > span {
+                line-height: 28px;
+
+                .tabset-little-red-square {
+                    top: 6px;
+                }
+            }
         }
     }
 }
@@ -1983,256 +2029,6 @@ tags-input .host .tags {
 }
 
 ///////////////////////////
-// Move to zemHeader.component.less //
-///////////////////////////
-
-&.fixed-header {
-    .page {
-        margin-top: @default-spacing*1.5+100;
-    }
-
-    .zem-header {
-        position: fixed;
-        z-index: 9999;
-        width: 100%;
-        animation: headerSlideIn 200ms ease-in-out;
-        height: 30px;
-
-        .logo-container {
-            height: 30px;
-            padding: 8px 20px 8px @default-spacing;
-            background-size: 12px;
-
-            a {
-                height: 14px;
-            }
-
-            img.show-new-logo {
-                height: 14px;
-                display: block;
-            }
-        }
-
-        .zem-header-navigation,
-        .zem-header-menu {
-            .dropdown-toggle {
-                height: 30px;
-                padding: 5px 20px;
-
-                &:hover {
-                    background-color: fade(@white, 10%);
-                }
-            }
-
-            .dropdown-menu {
-                margin-top: 0;
-            }
-        }
-
-
-
-        .zem-header-navigation {
-            margin: 0;
-
-            .dropdown-toggle img {
-                width: 16px;
-            }
-        }
-
-        .zem-header-breadcrumb {
-            margin-top: 0;
-            margin-bottom: 0;
-
-            .breadcrumb {
-                margin-bottom: 0px;
-
-                .slash {
-                    font-size: 22px;
-                    line-height: 30px;
-                    height: 30px;
-                }
-
-                .item {
-                    a {
-                        line-height: 18px;
-                        padding-top: 6px;
-                        padding-bottom: 6px;
-
-                        .type-name {
-                            display: none;
-                        }
-                    }
-                }
-            }
-        }
-
-        .zem-header-menu {
-            margin: 0;
-
-            .dropdown-toggle img {
-                width: 20px;
-            }
-        }
-
-        .zem-header-filter-selector-toggle {
-            height: 30px;
-            margin: 0;
-
-            .zem-filter-toggle {
-                display: inline-block;
-                height: 30px;
-                line-height: 30px;
-                padding: 0 10px;
-                background-color: transparent;
-                border-left: 1px solid fade(@white, 20%);
-                border-radius: 0;
-
-                &:hover, &:focus, &:active {
-                    background-color: fade(@white, 10%);
-                }
-
-                .filter-icon {
-                    width: 16px;
-                    height: 16px;
-                }
-            }
-        }
-
-        .zem-header-filter-legacy {
-            .zem-filter {
-                margin: 0;
-
-                .btn,
-                .btn-default {
-                    height: 30px;
-                    line-height: 32px;
-                    transition: none;
-                    background-color: transparent !important;
-                    border-left: 1px solid fade(@white, 20%);
-                    border-radius: 0;
-
-                    .dropdown-toggle {
-                        height: 30px;
-                        padding: 0 40px 0 40px;
-
-                        span {
-                            line-height: 32px;
-                        }
-
-                        .filter-icon {
-                            width: 16px;
-                            top: -1px;
-                            left: 14px;
-                        }
-
-                        .arrow-icon {
-                            top: 10px;
-                            right: 21px;
-                        }
-                    }
-
-                    &.filter-enabled {
-                       .btn-remove {
-                           padding: 0 5px;
-                       }
-                   }
-                }
-
-                .dropdown .dropdown-menu {
-                    margin-top: 0px;
-                }
-            }
-        }
-
-        .zem-header-date-range-picker .date-range-picker-container {
-            height: 30px;
-            margin: 0;
-            border-left: 1px solid fade(@white, 20%);
-
-            .date-range-picker-input {
-                padding-left: 42px;
-                padding-right: 41px;
-                width: 262px;
-                background-color: transparent;
-                border-radius: 0;
-
-                &:hover {
-                    background-color: fade(@white, 10%);
-                }
-            }
-
-            .date-range-picker-icon {
-                top: 8px;
-                width: 16px;
-                left: 16px;
-            }
-
-            .arrow-icon {
-                top: 10px;
-                right: 21px;
-            }
-        }
-    }
-
-    .zem-header-date-range-picker-dropdown {
-        position: fixed;
-        top: 30px !important;
-        margin-top: 0 !important;
-        z-index: 10000;
-    }
-
-    .zem-tabset {
-        position: fixed;
-        width: 100%;
-        z-index: 9998;
-        top: 30px;
-        animation: fadeIn 200ms ease-in-out;
-        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.2);
-
-        .nav-tabs {
-            width: 100%;
-
-            & > li {
-                & > a > uib-tab-heading > a {
-                    padding: 4px 20px;
-                    font-size: 14px;
-
-                    &:hover {
-                        padding: 4px 20px;
-                        font-size: 14px;
-                    }
-                }
-
-                &.active > a > uib-tab-heading > a {
-                    padding-bottom: 1px;
-                }
-            }
-
-            > span {
-                line-height: 28px;
-
-                .tabset-little-red-square {
-                    top: 6px;
-                }
-            }
-        }
-    }
-}
-
-&.fixed-header.fade-fixed-header {
-    .zem-header {
-        top: -30px;
-
-        animation: headerSlideOut 200ms ease-in-out;
-    }
-    .zem-tabset {
-        opacity: 0;
-
-        animation: fadeOut 200ms ease-in-out;
-    }
-}
-
-///////////////////////////
 // Move to zemGrid //
 ///////////////////////////
 
@@ -2628,8 +2424,6 @@ select.media-source-select {
 ///////////////////////////
 // Temporary solutions that should be fixed someday //
 ///////////////////////////
-
-.show-old-logo { display: none; }
 
 .graph-button {
     display: none;

@@ -5,6 +5,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
     this.getAppliedConditions = getAppliedConditions;
     this.applyFilter = applyFilter;
     this.removeAppliedCondition = removeAppliedCondition;
+    this.toggleSelectAll = toggleSelectAll;
 
     this.onSectionsUpdate = onSectionsUpdate;
 
@@ -121,6 +122,10 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             section = angular.copy(section);
             section.options = section.getOptions();
 
+            if (section.condition.type === zemDataFilterService.CONDITION_TYPES.list) {
+                section.allOptionsSelected = areAllSectionOptionsEnabled(section.options);
+            }
+
             if (section.condition.type === zemDataFilterService.CONDITION_TYPES.value) {
                 // Add value property to section to be used as radio input group model
                 section.value = zemDataFilterService.getAppliedCondition(section.condition);
@@ -133,7 +138,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
 
     function getAppliedConditions () {
         var appliedConditions = [];
-        angular.forEach(zemDataFilterService.getAppliedConditions(), function (conditionValue, conditionName) {
+        angular.forEach(zemDataFilterService.getAppliedConditions(true), function (conditionValue, conditionName) {
             var section = findConditionSection(conditionName);
             if (!section) return;
 
@@ -142,11 +147,6 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
 
             switch (section.condition.type) {
             case zemDataFilterService.CONDITION_TYPES.value:
-                if (section.condition.default === conditionValue) {
-                    // When condition value is set to default condition value dont't include it in applied conditions
-                    return;
-                }
-
                 appliedConditions.push({
                     name: section.appliedConditionName,
                     text: getOptionTextForValue(sectionOptions, conditionValue),
@@ -205,6 +205,13 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
         }
     }
 
+    function toggleSelectAll (section) {
+        section.allOptionsSelected = !section.allOptionsSelected;
+        section.options.map(function (option) {
+            option.enabled = section.allOptionsSelected;
+        });
+    }
+
 
     //
     // Events
@@ -235,6 +242,15 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
         }
     }
 
+    function areAllSectionOptionsEnabled (options) {
+        if (!options) return;
+
+        for (var i = 0; i < options.length; i++) {
+            if (!options[i].enabled) return false;
+        }
+        return true;
+    }
+
     function getSourcesOptions () {
         if (!availableSources) {
             refreshAvailableSources();
@@ -242,7 +258,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
         }
 
         var sourcesOptions = availableSources.map(function (source) {
-            source.enabled = zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.sources).indexOf(source.value) !== -1; // eslint-disable-line max-len
+            source.enabled = zemDataFilterService.getFilteredSources().indexOf(source.value) !== -1;
             return source;
         });
         sourcesOptions = $filter('orderBy')(sourcesOptions, 'text');
@@ -257,7 +273,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
         }
 
         var agenciesOptions = availableAgencies.map(function (agency) {
-            agency.enabled = zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.agencies).indexOf(agency.value) !== -1; // eslint-disable-line max-len
+            agency.enabled = zemDataFilterService.getFilteredAgencies().indexOf(agency.value) !== -1;
             return agency;
         });
 
@@ -272,7 +288,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             availableAccountTypes.push({
                 value: accountTypeId,
                 text: accountType.name,
-                enabled: zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.accountTypes).indexOf(accountTypeId) !== -1, // eslint-disable-line max-len
+                enabled: zemDataFilterService.getFilteredAccountTypes().indexOf(accountTypeId) !== -1,
             });
         });
         return availableAccountTypes;
@@ -280,7 +296,7 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
 
     function getStatusesOptions () {
         return STATUSES_OPTIONS.map(function (status) {
-            status.enabled = zemDataFilterService.getAppliedCondition(zemDataFilterService.CONDITIONS.statuses).indexOf(status.value) !== -1; // eslint-disable-line max-len
+            status.enabled = zemDataFilterService.getFilteredStatuses().indexOf(status.value) !== -1;
             return status;
         });
     }

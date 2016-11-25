@@ -181,16 +181,6 @@ describe('zemFilterSelectorService', function () {
         ]);
     });
 
-    it('should exclude conditions set to condition\'s default value from applied conditions list', function () {
-        spyOn($state, 'includes').and.returnValue(true);
-        spyOn(zemPermissions, 'hasPermission').and.returnValue(true);
-        spyOn(zemDataFilterService, 'getAppliedConditions').and.returnValue({
-            publisherStatus: zemDataFilterService.CONDITIONS.publisherStatus.default,
-        });
-
-        expect(zemFilterSelectorService.getAppliedConditions()).toEqual([]);
-    });
-
     it('should exclude unknown conditions from applied conditions list', function () {
         spyOn($state, 'includes').and.returnValue(true);
         spyOn(zemPermissions, 'hasPermission').and.returnValue(true);
@@ -259,5 +249,33 @@ describe('zemFilterSelectorService', function () {
 
         zemFilterSelectorService.removeAppliedCondition({});
         expect(zemDataFilterService.resetCondition).toHaveBeenCalled();
+    });
+
+    it('should correctly select all/none section\'s options', function () {
+        var mockedSection = {
+            options: [
+                {enabled: false},
+                {enabled: true},
+            ],
+            allOptionsSelected: false,
+        };
+
+        zemFilterSelectorService.toggleSelectAll(mockedSection);
+        expect(mockedSection).toEqual({
+            options: [
+                {enabled: true},
+                {enabled: true},
+            ],
+            allOptionsSelected: true,
+        });
+
+        zemFilterSelectorService.toggleSelectAll(mockedSection);
+        expect(mockedSection).toEqual({
+            options: [
+                {enabled: false},
+                {enabled: false},
+            ],
+            allOptionsSelected: false,
+        });
     });
 });

@@ -14,9 +14,23 @@ angular.module('one.widgets').service('zemFilterSelectorSharedService', function
 
     function setSelectorExpanded (expanded) {
         selectorExpanded = expanded;
+        toggleBodyClass(selectorExpanded);
     }
 
     function toggleSelector () {
         selectorExpanded = !selectorExpanded;
+        toggleBodyClass(selectorExpanded);
+    }
+
+
+    //
+    // Private methods
+    //
+    function toggleBodyClass (selectorExpanded) {
+        if (selectorExpanded) {
+            $('body').addClass('filter-selector-expanded');
+        } else {
+            $('body').removeClass('filter-selector-expanded');
+        }
     }
 });

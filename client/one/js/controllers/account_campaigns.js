@@ -1,5 +1,5 @@
 /*globals angular,constants,options,moment*/
-angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($window, $location, $scope, $state, $timeout, $q, api, zemCampaignService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($window, $location, $scope, $state, $timeout, $q, api, zemCampaignService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions) { // eslint-disable-line max-len
     $scope.addCampaignRequestInProgress = false;
     $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -274,12 +274,17 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($windo
         $location.search('campaign_totals', null);
     });
 
-    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
-        getDailyStats();
-    }, true);
+    if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+        var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(getDailyStats);
+        $scope.$on('$destroy', filteredSourcesUpdateHandler);
+    } else {
+        $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) {
+                return;
+            }
+            getDailyStats();
+        }, true);
+    }
 
     $scope.init();
 });

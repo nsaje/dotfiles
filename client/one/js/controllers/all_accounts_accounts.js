@@ -1,5 +1,5 @@
 /*globals angular,moment,constants,options*/
-angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($scope, $state, $location, $timeout, api, zemAccountService, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($scope, $state, $location, $timeout, api, zemAccountService, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions) { // eslint-disable-line max-len
     $scope.requestInProgress = false;
     $scope.constants = constants;
     $scope.options = options;
@@ -195,37 +195,56 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
         }
     });
 
-    $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
-        if (newValue === oldValue) {
-            return;
-        }
+    if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+        var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(getDailyStats);
+        var filteredAgenciesUpdateHandler = zemDataFilterService.onFilteredAgenciesUpdate(function () {
+            getDailyStats();
+            $scope.getInfoboxData();
+        });
+        var filteredAccountTypesUpdateHandler = zemDataFilterService.onFilteredAccountTypesUpdate(function () {
+            getDailyStats();
+            $scope.getInfoboxData();
+        });
+        var filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(getDailyStats);
+        $scope.$on('$destroy', function () {
+            filteredSourcesUpdateHandler();
+            filteredAgenciesUpdateHandler();
+            filteredAccountTypesUpdateHandler();
+            filteredStatusesUpdateHandler();
+        });
+    } else {
+        $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
+            if (newValue === oldValue) {
+                return;
+            }
 
-        getDailyStats();
-    });
+            getDailyStats();
+        });
 
-    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
+        $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) {
+                return;
+            }
 
-        getDailyStats();
-    }, true);
+            getDailyStats();
+        }, true);
 
-    $scope.$watch(zemFilterService.getFilteredAgencies, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
-        getDailyStats();
-        $scope.getInfoboxData();
-    }, true);
+        $scope.$watch(zemFilterService.getFilteredAgencies, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) {
+                return;
+            }
+            getDailyStats();
+            $scope.getInfoboxData();
+        }, true);
 
-    $scope.$watch(zemFilterService.getFilteredAccountTypes, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
-        getDailyStats();
-        $scope.getInfoboxData();
-    }, true);
+        $scope.$watch(zemFilterService.getFilteredAccountTypes, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) {
+                return;
+            }
+            getDailyStats();
+            $scope.getInfoboxData();
+        }, true);
+    }
 
     $scope.toggleChart = function () {
         $scope.chartHidden = !$scope.chartHidden;

@@ -1,6 +1,6 @@
 /*globals angular,moment,constants,options*/
 
-angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemDataFilterService) {
+angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemDataFilterService, zemPermissions) {
     $scope.constants = constants;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -163,21 +163,31 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
         }
     });
 
-    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
+    if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+        var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(getDailyStats);
+        var filteredPublisherStatusUpdateHandler = zemDataFilterService.onFilteredPublisherStatusUpdate(getDailyStats);
 
-        getDailyStats();
-    }, true);
+        $scope.$on('$destroy', function () {
+            filteredSourcesUpdateHandler();
+            filteredPublisherStatusUpdateHandler();
+        });
+    } else {
+        $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) {
+                return;
+            }
 
-    $scope.$watch(zemFilterService.getBlacklistedPublishers, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
+            getDailyStats();
+        }, true);
 
-        getDailyStats();
-    }, true);
+        $scope.$watch(zemFilterService.getBlacklistedPublishers, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) {
+                return;
+            }
+
+            getDailyStats();
+        }, true);
+    }
 
     $scope.init = function () {
         var data = $scope.adGroupData[$state.params.id];
@@ -192,9 +202,7 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
         $scope.getInfoboxData();
         zemFilterService.setShowBlacklistedPublishers(true);
 
-        var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function () {
-            getDailyStats();
-        });
+        var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(getDailyStats);
         $scope.$on('$destroy', dateRangeUpdateHandler);
 
         $scope.setActiveTab();

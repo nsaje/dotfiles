@@ -318,6 +318,9 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
     });
 
     $scope.getShowArchived = function () {
+        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+            return zemDataFilterService.getShowArchived();
+        }
         return zemFilterService.getShowArchived();
     };
 
@@ -329,28 +332,42 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
         $scope.loadSidebarInProgress = isLoading;
     });
 
-    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) { return; }
-        zemNavigationService.reload();
-    }, true);
+    if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
+        var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(zemNavigationService.reload);
+        var filteredAgenciesUpdateHandler = zemDataFilterService.onFilteredAgenciesUpdate(zemNavigationService.reload);
+        var filteredAccountTypesUpdateHandler = zemDataFilterService.onFilteredAccountTypesUpdate(zemNavigationService.reload);
+        var filteredPublisherStatusUpdateHandler = zemDataFilterService.onFilteredPublisherStatusUpdate(function (event, status) {
+            $scope.setPublisherFilterVisible(status);
+        });
+        $scope.$on('$destroy', function () {
+            filteredSourcesUpdateHandler();
+            filteredAgenciesUpdateHandler();
+            filteredAccountTypesUpdateHandler();
+            filteredPublisherStatusUpdateHandler();
+        });
+    } else {
+        $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) { return; }
+            zemNavigationService.reload();
+        }, true);
 
-    $scope.$watch(zemFilterService.getFilteredAgencies, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) { return; }
-        zemNavigationService.reload();
-    }, true);
+        $scope.$watch(zemFilterService.getFilteredAgencies, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) { return; }
+            zemNavigationService.reload();
+        }, true);
 
-    $scope.$watch(zemFilterService.getFilteredAccountTypes, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) { return; }
-        zemNavigationService.reload();
-    }, true);
+        $scope.$watch(zemFilterService.getFilteredAccountTypes, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) { return; }
+            zemNavigationService.reload();
+        }, true);
 
-    $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
-        $scope.setPublisherFilterVisible(newValue);
-    }, true);
-
+        $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
+            if (angular.equals(newValue, oldValue)) {
+                return;
+            }
+            $scope.setPublisherFilterVisible(newValue);
+        }, true);
+    }
 
     $scope.init = function () {
         zemFullStoryService.identifyUser(zemUserService.current());

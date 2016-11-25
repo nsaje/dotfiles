@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemRetargeting', function (config, zemFilterService, $state) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemRetargeting', function (config, $state) {
     return {
         restrict: 'E',
         scope: {
