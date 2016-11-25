@@ -85,6 +85,7 @@ def monitor_yesterday_spend():
             ),
             'content_ad_ids': content_ad_ids,
         }),
+        [],
         'bizwire_ads_stats_monitoring',
     )[0]
 
@@ -96,11 +97,11 @@ def monitor_yesterday_spend():
 
 def monitor_duplicate_articles():
     num_labels = dash.models.ContentAd.objects.filter(
-        ad_group__campaing=config.AUTOMATION_CAMPAIGN,
+        ad_group__campaign=config.AUTOMATION_CAMPAIGN,
     ).count()
 
     num_distinct = dash.models.ContentAd.objects.filter(
-        ad_group__campaing=config.AUTOMATION_CAMPAIGN,
+        ad_group__campaign=config.AUTOMATION_CAMPAIGN,
     ).distinct('label').count()
 
     influx.gauge('integrations.bizwire.labels', num_labels, type='all')
