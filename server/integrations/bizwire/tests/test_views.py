@@ -63,15 +63,3 @@ class PromotionExportTestCase(TestCase):
             follow=True,
         )
         self.assertEqual(expected_response, json.loads(response.content))
-
-    def test_get_mock_response(self):
-        expected_response = {
-            'response': views.MOCK_RESPONSE,
-            'error': None,
-        }
-        response = self.client.get(
-            reverse('businesswire_promotion_export'),
-            {'article_id': 'nonexistent_article'},
-            follow=True,
-        )
-        self.assertEqual(expected_response, json.loads(response.content))
