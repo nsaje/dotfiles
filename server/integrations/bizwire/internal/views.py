@@ -50,7 +50,7 @@ def _get_ad_group_id(article):
     if article.get('meta', {}).get('is_test_feed', False):
         return config.TEST_FEED_AD_GROUP
 
-    today = helpers.get_pacific_now().date
+    today = helpers.get_pacific_now().date()
     return models.AdGroupTargeting.objects.filter(
         start_date__lte=today, interest_targeting=[]
     ).latest('start_date').ad_group_id

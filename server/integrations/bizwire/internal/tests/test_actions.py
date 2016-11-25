@@ -6,7 +6,7 @@ from django.contrib.auth.models import Permission
 
 import dash.constants
 from integrations.bizwire import config, models
-from integrations.bizwire.internal import actions
+from integrations.bizwire.internal import actions, helpers
 
 from utils.test_helper import ListMatcher
 from zemauth.models import User
@@ -66,7 +66,7 @@ class RotateAdGroupsTestCase(TestCase):
 
     @patch('integrations.bizwire.config.INTEREST_TARGETING_GROUPS', [])
     def test_rotate_ad_groups(self):
-        start_date = actions._get_pacific_now().date() + datetime.timedelta(days=1)
+        start_date = helpers.get_pacific_now().date() + datetime.timedelta(days=1)
         ad_groups_before = list(dash.models.AdGroup.objects.all())
 
         actions._rotate_ad_groups(start_date)
@@ -111,7 +111,7 @@ class RotateAdGroupsTestCase(TestCase):
         (dash.constants.InterestCategory.HEALTH,),
     ])
     def test_interest_targeting_groups(self):
-        start_date = actions._get_pacific_now().date() + datetime.timedelta(days=1)
+        start_date = helpers.get_pacific_now().date() + datetime.timedelta(days=1)
         ad_groups_before = list(dash.models.AdGroup.objects.all())
 
         actions._rotate_ad_groups(start_date)
