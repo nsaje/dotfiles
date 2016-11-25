@@ -1,6 +1,5 @@
 import datetime
 import json
-import pytz
 
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
@@ -11,6 +10,7 @@ import dash.models
 from django.db import transaction
 
 from integrations.bizwire import config, models
+from integrations.bizwire.internal import helpers
 
 import restapi.views
 
@@ -22,13 +22,8 @@ from zemauth.models import User
 DEFAULT_TARGETING_STR = 'DEFAULT TARGETING'
 
 
-def _get_pacific_now():
-    tz_pacifc = pytz.timezone('America/Los_Angeles')
-    return dates_helper.utc_to_tz_datetime(dates_helper.utc_now(), tz_pacifc)
-
-
 def _is_pacific_midnight():
-    pacific_now = _get_pacific_now()
+    pacific_now = helpers.get_pacific_now()
     return pacific_now.hour == 0
 
 
@@ -68,7 +63,7 @@ def check_date_and_stop_old_ad_groups():
     if not _is_pacific_midnight():
         return
 
-    pacific_today = _get_pacific_now().date
+    pacific_today = helpers.get_pacific_now().date
     previous_start_date = models.AdGroupTargeting.objects.filter(
         start_date__lte=pacific_today,
     ).values_list('start_date', flat=True).order_by('-start_date').distinct()[1]

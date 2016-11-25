@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db import transaction
 
 from integrations.bizwire import config, models
+from integrations.bizwire.internal import helpers
 
 import dash.api
 import dash.constants
@@ -49,7 +50,7 @@ def _get_ad_group_id(article):
     if article.get('meta', {}).get('is_test_feed', False):
         return config.TEST_FEED_AD_GROUP
 
-    today = datetime.date.today()
+    today = helpers.get_pacific_now().date
     return models.AdGroupTargeting.objects.filter(
         start_date__lte=today, interest_targeting=[]
     ).latest('start_date').ad_group_id
