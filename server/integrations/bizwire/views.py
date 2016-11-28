@@ -10,6 +10,8 @@ from django.views.generic import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
+from ratelimit.mixins import RatelimitMixin
+
 import backtosql
 from redshiftapi import db
 from . import config
@@ -52,7 +54,12 @@ class BizwireView(View):
         }, status=status)
 
 
-class PromotionExport(BizwireView):
+class PromotionExport(RatelimitMixin, BizwireView):
+    ratelimit_key = 'ip'
+    ratelimit_rate = '30/s'
+    ratelimit_block = True
+    ratelimit_method = 'GET'
+
     def _get_geo_stats(self, content_ad_id):
         return db.execute_query(
             backtosql.generate_sql('bizwire_geo.sql', {}),
