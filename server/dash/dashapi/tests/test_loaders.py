@@ -53,7 +53,7 @@ class AccountsLoaderTest(TestCase):
             'status': constants.AdGroupRunningStatus.ACTIVE,
             'default_account_manager': 'mad.max@zemanta.com',
             'default_sales_representative': 'supertestuser@test.com',
-            'account_type': constants.AccountType.get_text(constants.AccountType.SELF_MANAGED),
+            'account_type': constants.AccountType.get_text(constants.AccountType.ACTIVATED),
             'settings_id': 1,
         }})
 
@@ -68,7 +68,7 @@ class AccountsLoaderTest(TestCase):
             'status': constants.AdGroupRunningStatus.ACTIVE,
             'default_account_manager': 'mad.max@zemanta.com',
             'default_sales_representative': 'supertestuser@test.com',
-            'account_type': constants.AccountType.get_text(constants.AccountType.SELF_MANAGED),
+            'account_type': constants.AccountType.get_text(constants.AccountType.ACTIVATED),
             'settings_id': 1,
         }})
 

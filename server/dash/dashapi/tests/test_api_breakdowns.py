@@ -60,7 +60,7 @@ class QueryTest(TestCase):
             dict_join({'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Self-managed'},
+                       'agency': '', 'account_type': 'Activated'},
                       EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
@@ -123,12 +123,12 @@ class QueryTest(TestCase):
             dict_join({'source_id': 1, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Self-managed'},
+                       'agency': '', 'account_type': 'Activated'},
                       EMPTY_ACCOUNT_PROJECTIONS),
             dict_join({'source_id': 2, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Self-managed'},
+                       'agency': '', 'account_type': 'Activated'},
                       EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
@@ -910,7 +910,7 @@ class QueryForRowsTest(TestCase):
             dict_join({'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Self-managed'},
+                       'agency': '', 'account_type': 'Activated'},
                       EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
@@ -935,7 +935,7 @@ class QueryForRowsTest(TestCase):
             dict_join({'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Self-managed'},
+                       'agency': '', 'account_type': 'Activated'},
                       EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
@@ -1119,13 +1119,13 @@ class QueryForRowsTest(TestCase):
                        'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Self-managed'},
+                       'agency': '', 'account_type': 'Activated'},
                       EMPTY_ACCOUNT_PROJECTIONS),
             dict_join({'source_id': 2, 'account_id': 1, 'archived': False,
                        'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Self-managed'},
+                       'agency': '', 'account_type': 'Activated'},
                       EMPTY_ACCOUNT_PROJECTIONS),
         ])
 
@@ -1159,13 +1159,13 @@ class QueryForRowsTest(TestCase):
                        'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Self-managed'},
+                       'agency': '', 'account_type': 'Activated'},
                       EMPTY_ACCOUNT_PROJECTIONS),
             dict_join({'source_id': 2, 'account_id': 1, 'archived': False,
                        'name': 'test account 1', 'status': 1},
                       {'default_account_manager': 'mad.max@zemanta.com',
                        'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Self-managed'},
+                       'agency': '', 'account_type': 'Activated'},
                       EMPTY_ACCOUNT_PROJECTIONS),
         ])
 

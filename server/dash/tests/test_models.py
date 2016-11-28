@@ -751,7 +751,7 @@ class AdGroupTestCase(TestCase):
             ).count(),
             qs.count())
 
-        qs = all_adgroups.filter_by_account_types([constants.AccountType.SELF_MANAGED])
+        qs = all_adgroups.filter_by_account_types([constants.AccountType.ACTIVATED])
         self.assertEqual(
             models.AdGroup.objects.all().filter(
                 campaign__account__id=1
@@ -828,7 +828,7 @@ class CampaignTestCase(TestCase):
             ).count(),
             qs.count())
 
-        qs = all_campaigns.filter_by_account_types([constants.AccountType.SELF_MANAGED])
+        qs = all_campaigns.filter_by_account_types([constants.AccountType.ACTIVATED])
         self.assertEqual(
             models.Campaign.objects.all().filter(
                 account__id=1
@@ -877,14 +877,14 @@ class AccountTestCase(TestCase):
             1,
             qs.count())
 
-        qs = all_accounts.filter_by_account_types([constants.AccountType.SELF_MANAGED])
+        qs = all_accounts.filter_by_account_types([constants.AccountType.ACTIVATED])
         self.assertEqual(
             1,
             qs.count())
 
         qs = all_accounts.filter_by_account_types([
             constants.AccountType.UNKNOWN,
-            constants.AccountType.SELF_MANAGED
+            constants.AccountType.ACTIVATED,
         ])
         self.assertEqual(2, qs.count())
 

@@ -2363,7 +2363,7 @@ class AllAccountsSourcesTableTest(TestCase):
 
         vf = helpers.ViewFilter()
         vf.filtered_agencies = [a]
-        vf.filtered_account_types = [constants.AccountType.SELF_MANAGED]
+        vf.filtered_account_types = [constants.AccountType.ACTIVATED]
 
         t = table.AllAccountsSourcesTable(self.redshift_user, 1, vf)
         today = datetime.datetime.utcnow()
@@ -2513,7 +2513,7 @@ class AccountsAccountsTableTest(TestCase):
         response_account_type = response['rows'][0].get('account_type', response['rows'][1].get('account_type'))
         self.assertEqual('Sandbox', response_account_type)
 
-        view_filter.filtered_account_types = [constants.AccountType.SELF_MANAGED]
+        view_filter.filtered_account_types = [constants.AccountType.ACTIVATED]
         response = t.get(self.normal_user, view_filter, start_date, end_date, order, page, size, show_archived)
         self.assertEqual([], response['rows'])
 

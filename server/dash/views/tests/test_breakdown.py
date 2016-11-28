@@ -93,7 +93,7 @@ class AllAccountsBreakdownTestCase(TestCase):
 
         mock_query.return_value = [{
             'account_id': 116,
-            'account_type': u'Self-managed',
+            'account_type': u'Activated',
             'agency': u'MBuy',
             'archived': False,
             'breakdown_id': u'116',
@@ -161,7 +161,7 @@ class AllAccountsBreakdownTestCase(TestCase):
                 },
                 'rows': [{
                     'account_id': 116,
-                    'account_type': u'Self-managed',
+                    'account_type': u'Activated',
                     'agency': u'MBuy',
                     'archived': False,
                     'breakdown_id': u'116',

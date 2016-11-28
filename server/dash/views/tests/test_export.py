@@ -525,7 +525,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         expected_content = (
             'Start Date,End Date,Account,Status (' + time.strftime('%Y-%m-%d') + ')'
             ',Account Type,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,'
-            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Self-managed,20.2300,203,200000\r\n'
+            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Activated,20.2300,203,200000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 
@@ -561,9 +561,9 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             'Start Date,End Date,Account,Campaign,Status (' + time.strftime('%Y-%m-%d') + ')'
             ',Account Type,Average CPC,Clicks,Impressions\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,'
-            'Inactive,Self-managed,20.2300,203,200000\r\n2014-06-30,2014-07-01,'
+            'Inactive,Activated,20.2300,203,200000\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
-            ',test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Self-managed,10.2300,103,100000\r\n'
+            ',test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Activated,10.2300,103,100000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 
@@ -602,9 +602,9 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
             ',test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1'
             ',test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1'
-            ',Inactive,Self-managed,10.2300,103,100000\r\n2014-06-30,2014-07-01'
+            ',Inactive,Activated,10.2300,103,100000\r\n2014-06-30,2014-07-01'
             ',test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
-            ',test campaign 2,test adgroup 2,Inactive,Self-managed,20.2300,203,200000\r\n'
+            ',test campaign 2,test adgroup 2,Inactive,Activated,20.2300,203,200000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 
@@ -688,7 +688,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             '' + time.strftime('%Y-%m-%d') + '),Account Type,Average CPC,Clicks,'
             'Impressions,Recognized Flat Fee\r\n2014-06-30,2014-07-01,'
             'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1'
-            ',Inactive,Self-managed,20.2300,203,200000,5000.0000\r\n'
+            ',Inactive,Activated,20.2300,203,200000,5000.0000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 
@@ -859,7 +859,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         expected_content = (
             'Start Date,End Date,Account,Status (' + time.strftime('%Y-%m-%d') + ')'
             ',Account Type,Average CPC,Clicks,Impressions,Recognized Flat Fee\r\n2014-06-30,2014-07-01,'
-            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Self-managed,20.2300,203,200000,5000.0000\r\n'
+            'test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,Activated,20.2300,203,200000,5000.0000\r\n'
         )
         expected_content = test_helper.format_csv_content(expected_content)
 

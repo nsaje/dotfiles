@@ -10,7 +10,7 @@ import dash.models
 import dash.constants
 
 VALID_ACCOUNT_TYPES = (
-    dash.constants.AccountType.SELF_MANAGED,
+    dash.constants.AccountType.ACTIVATED,
     dash.constants.AccountType.MANAGED,
     dash.constants.AccountType.PILOT,
 )
