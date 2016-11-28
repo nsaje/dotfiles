@@ -210,15 +210,18 @@ class AdGroupSerializer(SettingsSerializer):
 
     def update(self, data_internal, validated_data):
         """ Handle state update separately, since it's on a separate endpoint """
-        settings = data_internal['data']['settings']
-        validated_settings = validated_data['settings']
-        if validated_settings.get('state') and validated_settings['state'] != settings['state']:
-            entity_id = int(settings['id'])
-            self.request.body = RESTAPIJSONRenderer().render(({'state': validated_settings['state']}))
-            internal_view = agency.AdGroupSettingsState(rest_proxy=True)
-            data_internal_new, _ = internal_view.post(self.request, entity_id)
+        id_ = data_internal['data']['settings']['id']
+        old_state = data_internal['data']['settings']['state']
+        new_state = validated_data['settings'].get('state')
 
         data_internal_new = super(AdGroupSerializer, self).update(data_internal, validated_data)
+        if new_state and new_state != old_state:
+            entity_id = int(id_)
+            self.request.body = RESTAPIJSONRenderer().render(({'state': new_state}))
+            internal_view = agency.AdGroupSettingsState(rest_proxy=True)
+            data_internal_state, _ = internal_view.post(self.request, entity_id)
+            data_internal_new['data'].update(data_internal_state['data'])
+
         return data_internal_new
 
     def to_representation(self, data_internal):

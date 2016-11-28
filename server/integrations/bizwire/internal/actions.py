@@ -93,7 +93,7 @@ def _create_ad_group(name, start_date, interest_targeting):
     data = {
         'campaignId': config.AUTOMATION_CAMPAIGN,
         'name': name,
-        'state': 'INACTIVE',
+        'state': 'ACTIVE',
         'startDate': start_date.isoformat(),
         'endDate': None,
         'targeting': {

@@ -64,6 +64,14 @@ class RotateAdGroupsTestCase(TestCase):
             u.user_permissions.add(Permission.objects.get(codename=permission))
         u.save()
 
+        # make sure budgets exist
+        self.utc_now_patcher = patch('utils.dates_helper.utc_now')
+        mock_utc_now = self.utc_now_patcher.start()
+        mock_utc_now.return_value = datetime.datetime(2016, 11, 2)
+
+    def tearDown(self):
+        self.utc_now_patcher.stop()
+
     @patch('integrations.bizwire.config.INTEREST_TARGETING_GROUPS', [])
     def test_rotate_ad_groups(self):
         start_date = helpers.get_pacific_now().date() + datetime.timedelta(days=1)
@@ -83,7 +91,7 @@ class RotateAdGroupsTestCase(TestCase):
             interest_targeting_str=actions.DEFAULT_TARGETING_STR)
         )
         self.assertEqual(config.AUTOMATION_CAMPAIGN, ad_group.campaign_id)
-        self.assertEqual(dash.constants.AdGroupRunningStatus.INACTIVE, ad_group_settings.state)
+        self.assertEqual(dash.constants.AdGroupRunningStatus.ACTIVE, ad_group_settings.state)
         self.assertEqual(start_date, ad_group_settings.start_date)
         self.assertEqual(
             set(config.INTEREST_TARGETING_OPTIONS),
