@@ -20,7 +20,7 @@ dependencies:
         - pip install -r server/requirements_dev.txt
         - pip install awscli
         - if [ $CIRCLE_NODE_INDEX == 1 ]; then sudo chown -R $USER /usr/local/share/man/ ; fi
-        - if [ $CIRCLE_NODE_INDEX == 1 ]; then pip install pep8 ; fi 
+        - if [ $CIRCLE_NODE_INDEX == 1 ]; then pip install pep8 ; fi
         - if [ $CIRCLE_NODE_INDEX == 1 ]; then pip install xenon; fi
         - if [ $CIRCLE_NODE_INDEX == 1 ]; then npm install -g eslint; fi
         - npm install -g bower
@@ -59,7 +59,7 @@ test:
         - 'if [[ "$CIRCLE_NODE_INDEX" == "1" ]]; then tar -pc dist/ ../server/static -zf $CIRCLE_ARTIFACTS/client.tar.gz; else export; fi':
             parallel: true
             pwd: client
-        - 'if [[ "$CIRCLE_NODE_INDEX" == "1" ]] && [[ "$CIRCLE_BRANCH" == "master" ]]; then BUILD_NUMBER=${CIRCLE_BUILD_NUM} ./scripts/push_static_to_s3.sh; fi':
+        - 'if [[ "$CIRCLE_NODE_INDEX" == "1" ]] && [[ "$CIRCLE_BRANCH" == "master" ]]; then ./scripts/push_static_to_s3.sh; fi':
             parallel: true
         - coverage report > coverage_report.txt:
             pwd: server

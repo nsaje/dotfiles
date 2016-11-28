@@ -1,6 +1,10 @@
 #!/bin/bash
-#BUILD_NUM=$CIRCLE_BUILD_NUM
-BUILD_NUM=${BUILD_NUMBER:-manual}
+if [ -n "$CIRCLE_BUILD_NUM" ]; then
+	BUILD_NUM=$CIRCLE_BUILD_NUM
+else
+	BUILD_NUM=${BUILD_NUMBER:-manual}
+fi
+
 if [ -d client/dist ]; then
 	S3_PATH="s3://z1-static/${BUILD_NUM}"
 
