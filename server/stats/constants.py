@@ -88,6 +88,10 @@ def get_dimension_identifier(dimension):
     return DimensionIdentifierMapping.get(dimension, dimension)
 
 
+def get_dimension_name_key(dimension):
+    return next((k for k, v in DimensionIdentifierMapping.items() if v == dimension), dimension)
+
+
 def get_delivery_dimension(breakdown):
     dimension = set(breakdown) & set(DeliveryDimension._ALL)
     if len(dimension) == 0:

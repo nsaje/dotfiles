@@ -168,11 +168,11 @@ class ReportJobExecutor(JobExecutor):
         try:
             # temporary switch while new reports are developed
             if self.job.query['fields'][0]['field'] == 'Publisher':
-                raw_report, goals = self.get_raw_new_report(self.job)
+                raw_report, goals, filename = self.get_raw_new_report(self.job)
             else:
-                raw_report, goals = self.get_raw_report(self.job)
+                raw_report, goals, filename = self.get_raw_report(self.job)
             csv_report = self.convert_to_csv(self.job, raw_report, goals)
-            report_path = self.save_to_s3(csv_report)
+            report_path = self.save_to_s3(csv_report, filename)
             self.send_by_email(self.job, report_path)
 
             self.job.result = report_path
@@ -218,7 +218,7 @@ class ReportJobExecutor(JobExecutor):
             totals = stats.api_reports.totals(user, breakdown, constraints, goals)
             rows.append(totals)
 
-        return rows, goals
+        return rows, goals, stats.api_reports.get_filename(breakdown, constraints)
 
     @classmethod
     def get_raw_report(cls, job):
@@ -259,7 +259,7 @@ class ReportJobExecutor(JobExecutor):
         )
 
         cls.remap_columns(rows, breakdown)
-        return rows, goals
+        return rows, goals, None
 
     @classmethod
     def convert_to_csv(cls, job, data, goals):
@@ -310,9 +310,10 @@ class ReportJobExecutor(JobExecutor):
         return fieldnames
 
     @classmethod
-    def save_to_s3(cls, csv):
+    def save_to_s3(cls, csv, human_readable_filename):
         filename = cls._generate_random_filename()
-        utils.s3helpers.S3Helper(settings.RESTAPI_REPORTS_BUCKET).put(filename, csv)
+        human_readable_filename = human_readable_filename + '.csv' if human_readable_filename else None
+        utils.s3helpers.S3Helper(settings.RESTAPI_REPORTS_BUCKET).put(filename, csv, human_readable_filename)
         return os.path.join(settings.RESTAPI_REPORTS_URL, filename)
 
     @classmethod

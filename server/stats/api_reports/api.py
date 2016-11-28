@@ -1,4 +1,5 @@
 import datetime
+from django.utils.text import slugify
 
 import redshiftapi.api_reports
 import dash.dashapi.api_reports
@@ -10,6 +11,7 @@ from stats import constants
 from stats import permission_filter
 
 from utils import sort_helper
+from utils import columns
 
 
 def query(user, breakdown, constraints, goals, order):
@@ -39,6 +41,33 @@ def totals(user, breakdown, constraints, goals):
     permission_filter.filter_columns_by_permission(user, rows, goals)
 
     return rows[0]
+
+
+def get_filename(breakdown, constraints):
+
+    if constraints['allowed_accounts'].count() == 1:
+        account_name = slugify(constraints['allowed_accounts'][0].name)
+    else:
+        account_name = 'ZemantaOne'
+
+    campaign_name = None
+    if constraints['allowed_campaigns'].count() == 1:
+        campaign_name = slugify(constraints['allowed_campaigns'][0].name)
+
+    ad_group_name = None
+    if constraints['allowed_ad_groups'].count() == 1:
+        ad_group_name = slugify(constraints['allowed_ad_groups'][0].name)
+
+    breakdown = ['by_' + getattr(columns.Names, constants.get_dimension_name_key(x)).lower() for x in breakdown]
+    return '_'.join(filter(None, [
+        account_name,
+        campaign_name,
+        ad_group_name,
+        '_'.join(breakdown),
+        'report',
+        constraints['date__gte'].isoformat(),
+        constraints['date__lte'].isoformat(),
+    ]))
 
 
 def annotate(rows):

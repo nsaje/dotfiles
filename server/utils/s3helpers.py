@@ -29,9 +29,13 @@ class S3Helper(object):
             with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'r') as f:
                 return f.read()
 
-    def put(self, key, contents):
+    def put(self, key, contents, human_readable_filename=None):
         if settings.USE_S3:
             k = self.bucket.new_key(key)
+
+            if human_readable_filename:
+                k.set_metadata('Content-Disposition', 'attachment; filename={}'.format(human_readable_filename))
+
             k.set_contents_from_string(contents)
 
         elif settings.FILE_STORAGE_DIR:
