@@ -17,17 +17,17 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
-        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'one'),
-        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'eins'),
-        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
+        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'eins'),
+        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'devpwd'),
+        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'localhost'),
         'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
     },
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
-        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'one'),
-        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'eins'),
-        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
+        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'eins'),
+        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'devpwd'),
+        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'localhost'),
         'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
     },
 }
@@ -58,7 +58,7 @@ FROM_EMAIL = 'help-test@zemanta.com'
 LOG_FILE = '/app/logs/eins-log.log'
 
 # Stats
-STATSD_INFLUX_HOST = os.environ.get('TELEGRAF_PORT_8135_UDP_ADDR', 'telegraf')
+STATSD_INFLUX_HOST = os.environ.get('TELEGRAF_PORT_8135_UDP_ADDR', 'localhost')
 STATSD_INFLUX_PORT = int(os.environ.get('TELEGRAF_PORT_8135_UDP_PORT', '8135'))
 
 # Saucelabs
