@@ -1,19 +1,16 @@
 postgres:
-    container_name: postgres
-    image: postgres:9.4
+    image: postgres:9.6
     environment:
       - POSTGRES_PASSWORD=devpwd
       - POSTGRES_DB=one
       - POSTGRES_USER=eins
+    command: "-c fsync=off -c full_page_writes=off -c synchronous_commit=off"
     volumes:
       - "./fixtures/:/docker-entrypoint-initdb.d/"
-# If you like to have persistent data store you can uncomment following line
-#      - "$HOME/docker-vols/postgres-eins:/var/lib/postgresql"
 
 
 # this is fake telegraf that only prints stats on stdout
 telegraf:
-    container_name: telegraf
     image: verb/socat
     entrypoint: /usr/bin/socat
     command: udp-recv:8135 -

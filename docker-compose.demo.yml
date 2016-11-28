@@ -1,8 +1,6 @@
 eins:
   image: z1-bundle:current
-  working_dir: /app/zemanta-eins/
-  entrypoint: /bin/bash
-  command: /start-server.sh
+  working_dir: /app/z1/
   links:
     - postgres:db
   expose:
@@ -22,6 +20,7 @@ eins:
     - "ZWEI_CALLBACK_BASE_URL=http://0.0.0.0"
     - "GUNICORN_WORKERS=1"
     - "TELEGRAF_PORT_8135_UDP_ADDR=localhost"
+  command: /start-server.sh
 
 postgres:
   image: demopostgres:current

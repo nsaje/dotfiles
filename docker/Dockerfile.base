@@ -1,0 +1,38 @@
+FROM python:2.7-slim
+
+RUN useradd -m -u 1000 ubuntu
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libmemcached-dev \
+        libmagic-dev \
+        nano \
+        git \
+        dropbear \
+        openssh-server \
+        postgresql-client \
+        mime-support && \
+    apt-get -y autoremove && \
+    mkdir /var/run/sshd
+
+RUN rm -fr /app ; mkdir -p /app/logs
+
+# Add $self so we can detect change
+ADD docker/Dockerfile.base /Dockerfile.base
+
+# Add requirements.txt
+ADD server/requirements.txt /requirements.txt
+
+# Install build dependencies + requirements.txt
+RUN set -ex && \
+    buildDeps='gcc python-dev libxml2-dev libxslt1-dev libffi-dev libssl-dev libpq-dev' && \
+    apt-get install -y --no-install-recommends $buildDeps && \
+    pip install -r /requirements.txt && \
+    mv /requirements.txt /requirements.txt-installed && \
+    rm -fr ~/.cache/ && \
+    apt-get purge -y --auto-remove $buildDeps
+
+EXPOSE 8000
+
+ENTRYPOINT ["/entrypoint.sh"]

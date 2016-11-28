@@ -36,8 +36,11 @@ ALLOWED_HOSTS = []
 
 BASE_URL = 'https://one.zemanta.com'
 
+ACCOUNT_ACTIVATION_DAYS = 30
+
 SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_REDIRECT_EXEMPT = []
 
 # Email settings
 EMAIL_USE_TLS = True
@@ -46,7 +49,9 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = Secret('').get()
 
-SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
+SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = True
+SEND_NOTIFICATION_MAIL = False
+SUPPLY_REPORTS_FROM_EMAIL = 'supplyreports@zemanta.com'
 FROM_EMAIL = 'help-test@zemanta.com'
 
 # Path to log file
@@ -76,12 +81,14 @@ elif os.path.isfile('build_number.txt'):
 
 if BUILD_NUMBER:
     ROOT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}'.format(BUILD_NUMBER)
-    SERVER_STATIC_URL = ROOT_STATIC_URL + '/server'
-    CLIENT_STATIC_URL = ROOT_STATIC_URL + '/client'
+    _SERVER_STATIC_URL = ROOT_STATIC_URL + '/server'
+    _CLIENT_STATIC_URL = ROOT_STATIC_URL + '/client'
 else:
-    SERVER_STATIC_URL = '/static'
-    CLIENT_STATIC_URL = 'http://{hostname}:{port}'.format(  hostname=os.environ.get('EINSSTATIC_PORT_9999_TCP_ADDR', 'einsstatic'),
+    _SERVER_STATIC_URL = '/static'
+    _CLIENT_STATIC_URL = 'http://{hostname}:{port}'.format(  hostname=os.environ.get('EINSSTATIC_PORT_9999_TCP_ADDR', 'einsstatic'),
                                                             port=os.environ.get('EINSSTATIC_PORT_9999_TCP_PORT', '9999'))
+SERVER_STATIC_URL = _SERVER_STATIC_URL
+CLIENT_STATIC_URL = _CLIENT_STATIC_URL
 
 # Zwei callback base URL
 ZWEI_CALLBACK_BASE_URL = ''
@@ -123,6 +130,22 @@ USE_S3 = False
 # adgroup-level reports aggregations
 QUERY_AGGREGATE_REPORTS=False
 
+# cache settings
+_MEMCACHED_ADDR = os.environ.get('MEMCACHED_PORT_11211_TCP_ADDR', '127.0.0.1')
+_MEMCACHED_PORT = os.environ.get('MEMCACHED_PORT_11211_TCP_PORT', '11211')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': ['%s:%s' % (_MEMCACHED_ADDR, _MEMCACHED_PORT),
+        ]
+    },
+    'breakdowns_rs': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    },
+}
+
+
 USE_HASH_CACHE = False
 HASH_CACHE_TTL = 24 * 60 * 60
 
@@ -159,12 +182,18 @@ R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions2/request/{date
 R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result/{job_id}/'
 R1_CUSTOM_AUDIENCE_API_URL = 'https://r1.zemanta.com/api/audience/{audience_id}/'
 
+# Budget automation
+DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5
+DEPLETING_CAMPAIGN_BUDGET_EMAIL = 'help@zemanta.com'
+
 SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
 
 BIDDER_API_SIGN_KEY = Secret('').get()
 
 # BCM
 BUDGET_RESERVE_FACTOR = 0.05
+
+QUERY_INSPECT_ENABLED = False
 
 # k1
 K1_DEMO_MODE = False
@@ -185,7 +214,7 @@ DK_DEMO_DOWN_ENDPOINT = ''
 LAMBDA_REGION = 'us-east-1'
 LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('').get()
 LAMBDA_CONTENT_UPLOAD_NAMESPACE = 't'
-LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'mock'
+LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'mock-fake'
 LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = ''
 
 # Slack hooks
@@ -197,3 +226,5 @@ GA_CLIENT_EMAIL = Secret('').get()
 
 # bizwire
 BIZWIRE_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
+# path for S3 mock
+FILE_STORAGE_DIR = '/tmp'

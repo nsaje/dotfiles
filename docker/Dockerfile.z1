@@ -1,0 +1,30 @@
+FROM 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1-base
+MAINTAINER marko.celan@zemanta.com
+
+WORKDIR /app/z1
+
+# add helper shell scripts
+ADD docker/*.sh /
+ADD docker/Dockerfile* /
+RUN chmod +x /*.sh
+
+# Add project to docker image
+ADD server/ .
+
+# update needed requirements.txt
+RUN bash -c 'if [[ "$(cat requirements.txt|md5sum)" != "$(cat /requirements.txt-installed|md5sum)" ]]; then \
+        pip install -U -r requirements.txt; \
+        cp -af requirements.txt /requirements.txt-installed; \
+    else \
+        echo "requirements are up-to-date"; \
+    fi'
+
+# switch to non-privileged user
+RUN chown ubuntu -R /app
+USER ubuntu
+
+# collect static files
+RUN python manage.py collectstatic --noinput --clear
+
+ENTRYPOINT /entrypoint.sh
+CMD [ "python", "manage.py", "shell" ]

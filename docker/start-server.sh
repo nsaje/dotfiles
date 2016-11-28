@@ -1,12 +1,13 @@
 #!/bin/bash
 
-source /init.sh
+msg() {
+        echo -e "[zemanta-z1] $@"
+}
 
 GUNICORN_TO=${GUNICORN_TIMEOUT:-60}
 GUNICORN_WC=${GUNICORN_WORKERS:-4}
 
 msg "booting container. ETCD: $ETCD"
-cd /app/zemanta-eins
 python manage.py collectstatic --noinput
 if [ -z "$NEW_RELIC_LICENSE_KEY" ]; then
     msg "starting app in $PWD"

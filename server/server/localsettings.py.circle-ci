@@ -8,10 +8,7 @@ from secretcrypt import Secret
 DEBUG = True
 
 # SECURITY WARNING: keep the secret key used in production secret!
-if os.environ.get('CIRCLECI'):
-    SECRET_KEY = Secret('kms:region=us-east-1:CiB50kZLFNrp4uMD3sEwg9I9xA3R2c03wBYCqilvrmwhiBK7AQEBAgB4edJGSxTa6eLjA97BMIPSPcQN0dnNN8AWAqopb65sIYgAAACSMIGPBgkqhkiG9w0BBwaggYEwfwIBADB6BgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDOoit0knmfF+MmprKgIBEIBNiDcq5UTM6wBPguwgFIC1Fdw3KrIpmvShRrU9XJOvk9xQk7F/wTRhZmBDVxH7ynT7KrgqVikdxnrI2I0EJyXREJOUF0luI6sJO2UMyyY=').get()
-else:
-    SECRET_KEY = Secret('plain::=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l').get()
+SECRET_KEY = Secret('plain::=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l').get()
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -37,8 +34,13 @@ DATABASES = {
 
 BASE_URL = 'https://one.zemanta.com'
 
+ACCOUNT_ACTIVATION_DAYS = 30
+
+ALLOWED_HOSTS = ['*']
+
 SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_REDIRECT_EXEMPT = []
 
 # Email settings
 EMAIL_USE_TLS = True
@@ -47,6 +49,7 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = Secret('').get()
 
+SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = True
 SEND_NOTIFICATION_MAIL = False
 SUPPLY_REPORTS_FROM_EMAIL = 'supplyreports@zemanta.com'
 FROM_EMAIL = 'help-test@zemanta.com'
@@ -68,6 +71,8 @@ GOOGLE_OAUTH_CLIENT_ID = ''
 GOOGLE_OAUTH_CLIENT_SECRET = Secret('').get()
 
 # Static files
+BUILD_NUMBER = None
+
 SERVER_STATIC_URL = '/static'
 CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
 
@@ -109,14 +114,20 @@ S3_BUCKET_THUMBNAILER = ''
 USE_S3 = False
 
 # fallback dir when S3 is not used
-FILE_STORAGE_DIR = ''
+##FILE_STORAGE_DIR = ''
 
 # adgroup-level reports aggregations
 QUERY_AGGREGATE_REPORTS=False
 
+# cache settings
+_MEMCACHED_ADDR = os.environ.get('MEMCACHED_PORT_11211_TCP_ADDR', '127.0.0.1')
+_MEMCACHED_PORT = os.environ.get('MEMCACHED_PORT_11211_TCP_PORT', '11211')
+
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': ['%s:%s' % (_MEMCACHED_ADDR, _MEMCACHED_PORT),
+        ]
     },
     'breakdowns_rs': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
@@ -161,6 +172,10 @@ R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions2/request/{date
 R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result/{job_id}/'
 R1_CUSTOM_AUDIENCE_API_URL = 'https://r1.zemanta.com/api/audience/{audience_id}/'
 
+# Budget automation
+DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5
+DEPLETING_CAMPAIGN_BUDGET_EMAIL = 'help@zemanta.com'
+
 SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
 
 BIDDER_API_SIGN_KEY = Secret('').get()
@@ -178,8 +193,6 @@ K1_CONSISTENCY_PING_ACCOUNT_QUEUE = 'k1-consistency_ping_account'
 K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
 K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
 K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
-
-DEMO_MODE = False
 
 # DeployKitty
 DK_API_KEY = Secret('').get()
@@ -203,3 +216,5 @@ GA_CLIENT_EMAIL = Secret('').get()
 
 # bizwire
 BIZWIRE_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
+# path for S3 mock
+FILE_STORAGE_DIR = '/tmp'

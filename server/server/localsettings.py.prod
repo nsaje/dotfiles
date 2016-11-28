@@ -84,20 +84,15 @@ elif os.path.isfile('build_number.txt'):
     with open('build_number.txt', 'r') as build_number:
         BUILD_NUMBER = build_number.read().strip()
 
-if BUILD_NUMBER:
-    ROOT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}'.format(BUILD_NUMBER)
-    SERVER_STATIC_URL = ROOT_STATIC_URL + '/server'
-    CLIENT_STATIC_URL = ROOT_STATIC_URL + '/client'
-else:
-    SERVER_STATIC_URL = '/static'
-    CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
+_ROOT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}'.format(BUILD_NUMBER)
+SERVER_STATIC_URL = _ROOT_STATIC_URL + '/server'
+CLIENT_STATIC_URL = _ROOT_STATIC_URL + '/client'
 
 
 # Zwei callback base URL
 ZWEI_CALLBACK_BASE_URL = os.environ.get('ZWEI_CALLBACK_BASE_URL', 'https://one-cb.zemanta.com')
 
 # Zwei API
-ZWEI_API_URL = 'https://zwei.zemanta.com/purcel/task/'
 ZWEI_API_TASKS_URL = 'https://zwei.zemanta.com/purcel/tasks/'
 ZWEI_API_GET_DASH_URL_URL = 'https://zwei.zemanta.com/purcel/dash_url/'
 ZWEI_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxbBxaeRkVLiSadrR0CARCAO6QohWauEXIl/R/vAzN8VLeETU79qZGnzYxyAg3bt1dAf2dZgFwu3qUJAW1hJQXZM/n0oSUMUOFWGy5l').get()
@@ -115,14 +110,11 @@ PAGER_DUTY_ADOPS_SERVICE_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTm
 PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAylXmDSRg1yTW7NZXECARCAOy5p4/8cTtbo+v9fyG3Dp8ri9A/KtB63I9PMbty0Ecb3qP+gsuYHc1ZGDP+wofYaUWH2NXqVEZBT1eq9').get()
 PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzKOhv9CQfPyOGrg+sCARCAO+FjeoXl8gYz7leGpQWkqMjcydX9HVwL/GbCab6yUtHNG7//5Zu2K47YwxsH2yzgpMroOe/XNQEkA+gS').get()
 
-# deprecated
-PAGER_DUTY_SERVICE_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAywV0m60VH72qBo96UCARCAO/gzpBgkCvarjL2K0t11XdGdV6oVTt35bmwhCF14n9K9psen8WNOrTowJsoM9d2EQAwRe35HDpl6Hc7z').get()
-
 # Sentry config
-SENTRY_PUBLIC_KEY = '96ae3fca225743d0b52c08870527386e'
-SENTRY_SECRET_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwYn+tJNvoCzQR/1vwCARCAO7Mj3d1tkc+m/hDo+ySG+pugkfDvrULlVcxm1nPRJSzGAHkhrwKFoJMoUwlab+8QvU2E//vGExuaG0c6').get()
+_SENTRY_PUBLIC_KEY = '96ae3fca225743d0b52c08870527386e'
+_SENTRY_SECRET_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwYn+tJNvoCzQR/1vwCARCAO7Mj3d1tkc+m/hDo+ySG+pugkfDvrULlVcxm1nPRJSzGAHkhrwKFoJMoUwlab+8QvU2E//vGExuaG0c6').get()
 RAVEN_CONFIG = {
-    'dsn': 'https://%s:%s@app.getsentry.com/29768' % (SENTRY_PUBLIC_KEY, SENTRY_SECRET_KEY),
+    'dsn': 'https://%s:%s@app.getsentry.com/29768' % (_SENTRY_PUBLIC_KEY, _SENTRY_SECRET_KEY),
 }
 # Amazon AWS keys (user_name: zemanta-zwei)
 AWS_ACCESS_KEY_ID = 'AKIAI52YNGCE3IUI2KOA'
@@ -139,13 +131,13 @@ USE_S3 = True
 QUERY_AGGREGATE_REPORTS=True
 
 # cache settings
-MEMCACHED_ADDR = os.environ.get('MEMCACHED_PORT_11211_TCP_ADDR', '127.0.0.1')
-MEMCACHED_PORT = os.environ.get('MEMCACHED_PORT_11211_TCP_PORT', '11211')
+_MEMCACHED_ADDR = os.environ.get('MEMCACHED_PORT_11211_TCP_ADDR', '127.0.0.1')
+_MEMCACHED_PORT = os.environ.get('MEMCACHED_PORT_11211_TCP_PORT', '11211')
 
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': ['%s:%s' % (MEMCACHED_ADDR, MEMCACHED_PORT),
+        'LOCATION': ['%s:%s' % (_MEMCACHED_ADDR, _MEMCACHED_PORT),
         ]
     },
     'breakdowns_rs': {
@@ -215,7 +207,10 @@ SEND_NOTIFICATION_MAIL = True
 #BIDDER_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMUp4fTNfsoQXvcN/2AgEQgEeK1YVDW481cJcjPEcejHo02KokiSKwmn+c3BiYkuYwwdCB7yzmLd7U8PyK/Ay46O67ZLrBdDtUmqhJCrpJneJiqe/+qnnOBQ==').get()
 BIDDER_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMsbpTkX9V2jgJO4YFAgEQgEfLNjTOPiu5cdWeiSoaNuRCM5aXCIJbWUopbdCjGZ2mrTpQozlt8czEE8zyaHNaLoIEPLx0p5Tc1zjur7bodCCsj1oIYNsORQ==').get()
 
+# BCM
 BUDGET_RESERVE_FACTOR = 0.05
+
+QUERY_INSPECT_ENABLED = False
 
 # k1
 K1_DEMO_MODE = False
@@ -247,3 +242,5 @@ GA_CLIENT_EMAIL = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZ
 
 # bizwire
 BIZWIRE_API_SIGN_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG4wbAYJKoZIhvcNAQcGoF8wXQIBADBYBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDDtsszs9Y8ta5B7PEgIBEIArKhoNTUqBrzTjjwQs2BgvaOyvQXbHdnS1C6vY4V/QBYR3+rrlGrWZSproTA==').get()
+# path for S3 mock
+FILE_STORAGE_DIR = ''
