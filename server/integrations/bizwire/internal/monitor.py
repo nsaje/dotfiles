@@ -1,6 +1,5 @@
 import pytz
 import datetime
-import textwrap
 
 import influx
 import boto3
@@ -54,7 +53,11 @@ def monitor_num_ingested_articles():
 
 
 def monitor_remaining_budget():
-    today = dates_helper.local_today()
+    now = dates_helper.local_now()
+    if now.hour != 0:
+        return
+
+    today = now.date()
     remaining_budget = 0
     for bli in dash.models.BudgetLineItem.objects.filter(
         campaign_id=config.AUTOMATION_CAMPAIGN,
@@ -66,10 +69,9 @@ def monitor_remaining_budget():
 
     emails = ['luka.silovinac@zemanta.com']
     subject = 'Businesswire campaign is running out of budget'
-    body = textwrap.dedent('''Hi,
+    body = '''Hi,
 
-    Businesswire campaign is running out of budget. Configure any additional budgets: https://one.zemanta.com/campaigns/{}/budget
-    '''.format(config.AUTOMATION_CAMPAIGN))  # noqa
+Businesswire campaign is running out of budget. Configure any additional budgets: https://one.zemanta.com/campaigns/{}/budget'''.format(config.AUTOMATION_CAMPAIGN)  # noqa
     email_helper.send_notification_mail(emails, subject, body)
 
 
