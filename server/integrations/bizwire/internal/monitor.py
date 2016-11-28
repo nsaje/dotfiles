@@ -45,7 +45,7 @@ def monitor_num_ingested_articles():
     db_count = dash.models.ContentAd.objects.filter(
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
         created_dt__gte=dates[-1],
-        created_dt__lt=dates[0],
+        created_dt__lt=dates[0] + datetime.timedelta(days=1),
     ).count()
 
     influx.gauge('integrations.bizwire.article_count', s3_count, source='s3')
