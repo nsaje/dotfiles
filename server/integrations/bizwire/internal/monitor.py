@@ -22,21 +22,31 @@ def monitoring_hourly_job():
     monitor_remaining_budget()
 
 
+def _get_s3_keys_for_date(s3, date):
+    prefix = 'uploads/{}/{}/{}'.format(date.year, date.month, date.day)
+    objects = s3.list_objects(Bucket='businesswire-articles', Prefix=prefix)
+
+    keys = []
+    while 'Contents' in objects and len(objects['Contents']) > 0:
+        keys.extend(k['Key'] for k in objects['Contents'])
+        objects = s3.list_objects(Bucket='businesswire-articles', Prefix=prefix, Marker=objects['Contents'][-1]['Key'])
+    return keys
+
+
 def monitor_num_ingested_articles():
     s3 = boto3.client('s3')
 
-    date = dates_helper.utc_now().date()
-    prefix = 'uploads/{}/{}/{}'.format(date.year, date.month, date.day)
+    today = dates_helper.utc_now().date()
+    dates = [today - datetime.timedelta(days=x) for x in xrange(3)]
 
     s3_count = 0
-    objects = s3.list_objects(Bucket='businesswire-articles', Prefix=prefix)
-    while 'Contents' in objects and len(objects['Contents']) > 0:
-        s3_count += len(objects['Contents'])
-        objects = s3.list_objects(Bucket='businesswire-articles', Prefix=prefix, Marker=objects['Contents'][-1]['Key'])
+    for date in dates:
+        s3_count += len(_get_s3_keys_for_date(s3, date))
 
     db_count = dash.models.ContentAd.objects.filter(
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-        created_dt__gte=date,
+        created_dt__gte=min(dates),
+        created_dt__lt=max(dates),
     ).count()
 
     influx.gauge('integrations.bizwire.article_count', s3_count, source='s3')
