@@ -6,7 +6,7 @@ else
 fi
 
 if [ -d client/dist ]; then
-	S3_PATH="s3://z1-static/${BUILD_NUM}"
+	S3_PATH="s3://z1-static/build-${BUILD_NUM}"
 
 	# need to set content-disposition for attachments sync assets separately
 	aws s3 sync --acl public-read --content-disposition 'attachment' client/dist/one/assets "${S3_PATH}/client/one/assets"
