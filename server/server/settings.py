@@ -305,6 +305,9 @@ if TESTING:
         },
         'dash_db_cache': {
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+        },
+        'bizwire_cache': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
         }
     }
 

@@ -134,8 +134,12 @@ CACHES = {
     },
     'dash_db_cache': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+    },
+    'bizwire_cache': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
     }
 }
+
 USE_HASH_CACHE = False
 HASH_CACHE_TTL = 24 * 60 * 60
 

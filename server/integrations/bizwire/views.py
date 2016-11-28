@@ -1,9 +1,11 @@
 from collections import OrderedDict
 import logging
 from functools import partial
+import json
 import re
 import urllib2
 
+from django.core.cache import caches
 from django.conf import settings
 from django.http import JsonResponse, Http404
 from django.views.generic import View
@@ -22,6 +24,8 @@ from utils import request_signer
 
 
 logger = logging.getLogger(__name__)
+
+CACHE_KEY_FMT = 'bizwire_promotion_export_{}'
 
 
 class BizwireView(View):
@@ -141,6 +145,12 @@ class PromotionExport(RatelimitMixin, BizwireView):
             if m:
                 article_id = m.groups()[0]
 
+        cache = caches['bizwire_cache']
+        cache_key = CACHE_KEY_FMT.format(article_id)
+        cached_response = cache.get(cache_key)
+        if cached_response:
+            return self.response_ok(json.loads(cached_response))
+
         try:
             content_ad = dash.models.ContentAd.objects.get(
                 label=article_id,
@@ -156,4 +166,6 @@ class PromotionExport(RatelimitMixin, BizwireView):
             },
             'statistics': self._get_statistics(content_ad),
         }
+
+        cache.set(cache_key, json.dumps(response))
         return self.response_ok(response)
