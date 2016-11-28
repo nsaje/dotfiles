@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemReportService', function ($q, zemReportEndpoint, zemDataFilterService) {
+angular.module('one.widgets').service('zemReportService', function ($q, zemReportEndpoint, zemPermissions, zemFilterService, zemDataFilterService) {  // eslint-disable-line max-len
 
     // Public API
     this.startReport = startReport;
@@ -7,6 +7,11 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
         var deferred = $q.defer();
 
         var dateRange = zemDataFilterService.getDateRange();
+
+        // TODO: old filter is used, migrate to the new one when available
+        var showArchived = zemFilterService.getShowArchived();
+        var filteredSources = zemFilterService.getFilteredSources();
+        var filteredPublisherStatus = zemFilterService.getBlacklistedPublishers();
 
         var config = {
             fields: getSelectedFields(gridApi),
@@ -21,13 +26,27 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
                     field: 'Ad Group Id',
                     operator: '=',
                     value: gridApi.getMetaData().id,
-                }
+                },
             ],
             options: {
                 emailReport: true,
+                showArchived: showArchived,
+                includeTotals: includeConfig.includeTotals || false,
+                showStatusDate: true,
             },
-
         };
+
+        if (filteredSources) {
+            config.filters.push({
+                field: 'Media Source',
+                operator: 'IN',
+                values: filteredSources,
+            });
+        }
+
+        if (filteredPublisherStatus) {
+            config.options.showBlacklistedPublishers = filteredPublisherStatus;
+        }
 
         zemReportEndpoint
             .startReport(config)

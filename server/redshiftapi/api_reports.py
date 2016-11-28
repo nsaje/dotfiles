@@ -9,7 +9,7 @@ from redshiftapi import api_breakdowns
 from redshiftapi import postprocess
 
 
-__all__ = ['query']
+__all__ = ['query', 'query_totals']
 
 
 def query(breakdown, constraints, goals, order='-clicks', use_publishers_view=False):
@@ -20,6 +20,15 @@ def query(breakdown, constraints, goals, order='-clicks', use_publishers_view=Fa
         breakdown_for_name=breakdown, extra_name='reports_all')
     rows = sort_helper.sort_results(rows, [order])
     postprocess.set_default_values(breakdown, rows)
+    return rows
+
+
+def query_totals(breakdown, constraints, goals, use_publishers_view=False):
+    constraints = extract_constraints(constraints)
+
+    rows = api_breakdowns._query_all([], constraints, None, goals, use_publishers_view,
+                                     breakdown_for_name=breakdown, extra_name='report_totals')
+    postprocess.set_default_values([], rows)
     return rows
 
 

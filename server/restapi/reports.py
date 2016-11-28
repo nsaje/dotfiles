@@ -42,6 +42,10 @@ SUPPORTED_BREAKDOWNS = {
     (utils.columns.Names.publisher, utils.columns.Names.month),
 }
 
+DATED_COLUMNS = (
+    utils.columns.Names.status,
+)
+
 
 def get_breakdown_from_fields(fields):
     if not fields:
@@ -67,7 +71,22 @@ def get_filter_constraints(filters):
             date = _parse_date(f['value'])
             filter_constraints['start_date'] = date
             filter_constraints['end_date'] = date
+        if f['field'] == utils.columns.Names.source and f['operator'] == EQUALS:
+            filter_constraints['sources'] = [f['value']]
+        if f['field'] == utils.columns.Names.source and f['operator'] == IN:
+            filter_constraints['sources'] = f['values']
     return filter_constraints
+
+
+def get_options(options):
+    return {
+        'show_archived': options.get('show_archived') or False,
+        'email_report': options.get('email_report') or False,
+        'show_blacklisted_publishers': (options.get('show_blacklisted_publishers') or
+                                        constants.PublisherBlacklistFilter.SHOW_ALL),
+        'include_totals': options.get('include_totals') or False,
+        'show_status_date': options.get('show_status_date') or False,
+    }
 
 
 def _parse_date(string):
@@ -95,6 +114,11 @@ del ReportFiltersSerializer._declared_fields['frm']
 
 class ReportOptionsSerializer(serializers.Serializer):
     email_report = serializers.BooleanField(default=False)
+    show_archived = serializers.BooleanField(default=False)
+    show_blacklisted_publishers = serializers.ChoiceField(
+        constants.PublisherBlacklistFilter.get_all(), required=False)
+    include_totals = serializers.BooleanField(default=False)
+    show_status_date = serializers.BooleanField(default=False)
 
 
 class ReportQuerySerializer(serializers.Serializer):
@@ -166,16 +190,22 @@ class ReportJobExecutor(JobExecutor):
         breakdown = utils.columns.Names.get_keys(breakdown)
         breakdown = [stats.constants.get_dimension_identifier(x) for x in breakdown]
 
+        user = job.user
+
         filter_constraints = get_filter_constraints(job.query['filters'])
         ad_group_id = filter_constraints['ad_group_id']
         start_date = filter_constraints['start_date']
         end_date = filter_constraints['end_date']
+        filtered_sources = helpers.get_filtered_sources(user, ','.join(filter_constraints.get('sources', [])))
 
-        user = job.user
+        options = get_options(job.query.get('options', {}))
+
         ad_group = helpers.get_ad_group(user, ad_group_id)
-        filtered_sources = dash.models.Source.objects.all()
         constraints = stats.api_reports.prepare_constraints(
-            user, breakdown, start_date, end_date, filtered_sources, show_archived=False, ad_group_ids=[ad_group.id])
+            user, breakdown, start_date, end_date, filtered_sources,
+            show_archived=options['show_archived'],
+            show_blacklisted_publishers=options['show_blacklisted_publishers'],
+            ad_group_ids=[ad_group.id])
         goals = stats.api_reports.get_goals(constraints)
 
         rows = stats.api_reports.query(user, breakdown, constraints, goals, '-clicks')
@@ -183,6 +213,10 @@ class ReportJobExecutor(JobExecutor):
         cls.remap_columns(rows, breakdown)
 
         rows = utils.sort_helper.sort_results(rows, breakdown)
+
+        if options['include_totals']:
+            totals = stats.api_reports.totals(user, breakdown, constraints, goals)
+            rows.append(totals)
 
         return rows, goals
 
@@ -229,11 +263,18 @@ class ReportJobExecutor(JobExecutor):
 
     @classmethod
     def convert_to_csv(cls, job, data, goals):
+        options = get_options(job.query.get('options', {}))
+
         fieldnames = cls._extract_fieldnames(job.query['fields'])
         mapping = utils.columns.get_column_names_mapping(goals.pixels, goals.conversion_goals)
 
+        if options['show_status_date']:
+            fieldnames = cls._date_fieldnames(fieldnames)
+            mapping = cls._date_field_name_mapping(mapping)
+
         output = StringIO.StringIO()
-        writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
+        writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel',
+                                       quoting=unicodecsv.QUOTE_ALL)
         writer.writeheader()
         for row in data:
             csv_row = {}
@@ -284,3 +325,11 @@ class ReportJobExecutor(JobExecutor):
     @staticmethod
     def _generate_random_filename():
         return ''.join(random.choice(string.letters + string.digits) for _ in range(64)) + '.csv'
+
+    @staticmethod
+    def _date_field_name_mapping(mapping):
+        return {k: (utils.columns.add_date_to_name(v) if v in DATED_COLUMNS else v) for k, v in mapping.items()}
+
+    @staticmethod
+    def _date_fieldnames(fieldnames):
+        return [(utils.columns.add_date_to_name(x) if x in DATED_COLUMNS else x) for x in fieldnames]

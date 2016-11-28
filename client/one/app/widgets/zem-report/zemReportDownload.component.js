@@ -1,10 +1,10 @@
 angular.module('one.widgets').component('zemReportDownload', {
     bindings: {
         close: '&',
-        resolve: '=',  // TODO is ok 2 way binding?
+        resolve: '=',
     },
     templateUrl: '/app/widgets/zem-report/zemReportDownload.component.html',
-    controller: function (zemReportService, zemPermissions, zemUserService) {
+    controller: function (zemReportService, zemPermissions, zemUserService, zemDataFilterService, zemFilterSelectorService) {  // eslint-disable-line max-len
         var $ctrl = this;
 
         // Public API
@@ -14,26 +14,34 @@ angular.module('one.widgets').component('zemReportDownload', {
 
         // template variables
         $ctrl.includeTotals = false;
-        $ctrl.includeIds = false;
-        $ctrl.includeMissing = false;
         $ctrl.user = undefined;
+
+        $ctrl.dateRange = zemDataFilterService.getDateRange();
+        $ctrl.appliedFilterConditions = zemFilterSelectorService.getAppliedConditions();
+
+        $ctrl.jobPostingInProgress = false;
+        $ctrl.jobPosted = false;
+        $ctrl.jobPostedSuccessfully = false;
 
         $ctrl.$onInit = function () {
             $ctrl.user = zemUserService.current();
         };
 
         function startReport () {
+            $ctrl.jobPostingInProgress = true;
             zemReportService
                 .startReport($ctrl.resolve.api, {
                     includeTotals: $ctrl.includeTotals,
-                    includeIds: $ctrl.includeIds,
-                    includeMissing: $ctrl.includeMissing,
                 })
                 .then(function () {
-                    console.log('Start report succeeded');  // eslint-disable-line no-console
+                    $ctrl.jobPostedSuccessfully = true;
                 })
                 .catch(function () {
-                    console.log('Start report failed');  // eslint-disable-line no-console
+                    $ctrl.jobPostedSuccessfully = false;
+                })
+                .finally(function () {
+                    $ctrl.jobPosted = true;
+                    $ctrl.jobPostingInProgress = false;
                 });
         }
     }

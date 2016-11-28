@@ -4,6 +4,34 @@
 <div class="modal-body">
     <form class="form-horizontal" ng-submit="$ctrl.startReport()">
 
+        <table>
+            <tr>
+                <td>Date range:</td>
+                <td>{{ $ctrl.dateRange.startDate.format('ll') }} - {{ $ctrl.dateRange.endDate.format('ll') }}</td>
+            </tr>
+            <tr>
+                <td>Breakdown:</td>
+                <td>
+                    <span ng-repeat="dimension in $ctrl.resolve.api.getBreakdown()" style="border: 1px solid; margin: 2px;">
+                        <span>{{ dimension.name }}</span>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td>Filters:</td>
+                <td>
+                    <div ng-if="$ctrl.appliedFilterConditions.length">
+                        <div>
+                            <span ng-repeat="condition in $ctrl.appliedFilterConditions" style="border: 1px solid; margin: 2px;">
+                                <span style="color: gray">{{condition.name}}</span>
+                                <span title="{{condition.text}}">{{condition.text}}</span>
+                            </span>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
         <div class="form-group" ng-if="$ctrl.hasPermission('zemauth.can_include_totals_in_reports')">
             <div class="col-xs-4">
                 <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_include_totals_in_reports')" popover-placement="right">
@@ -15,34 +43,20 @@
             </div>
         </div>
 
-        <div class="form-group" ng-if="$ctrl.hasPermission('zemauth.can_include_model_ids_in_reports')">
-            <div class="col-xs-4">
-                <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_include_model_ids_in_reports')" popover-placement="right">
-                </zem-internal-feature>
-                <label for="add-ids-checkbox" class="control-label">Add IDs to report</label>
-            </div>
-            <div class="col-xs-4">
-                <input id="add-ids-checkbox" type="checkbox" ng-model="$ctrl.includeIds" class="checkbox">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-xs-4">
-                <label for="add-missing-checkbox" class="control-label">Include items with no spend</label>
-            </div>
-            <div class="col-xs-4">
-                <input id="add-missing-checkbox" type="checkbox" ng-model="$ctrl.includeMissing" class="checkbox">
-            </div>
-        </div>
-
         <div class="modal-footer">
-            <button type="submit" class="btn btn-add btn-icon download">
+            <button type="submit" class="btn btn-add btn-icon download" ng-show="!$ctrl.jobPosted" ng-disabled="$ctrl.jobPostingInProgress">
                 <span class="icon"></span>
                 <span class="text">Send to {{ $ctrl.user.email }}</span>
             </button>
-            <button type="button" class="btn btn-blue btn-outline" ng-click="$ctrl.close()">
+            <button type="button" class="btn btn-blue btn-outline" ng-click="$ctrl.close()" ng-show="!$ctrl.jobPosted">
                 <span class="text">Cancel</span>
             </button>
+            <button type="button" class="btn btn-blue btn-outline" ng-click="$ctrl.close()" ng-show="$ctrl.jobPosted">
+                <span class="text">Close</span>
+            </button>
+            <div class="loader" ng-show="$ctrl.jobPostingInProgress"></div>
+            <span ng-show="$ctrl.jobPosted && $ctrl.jobPostedSuccessfully">We are preparing your report, check e-mail</span>
+            <span ng-show="$ctrl.jobPosted && !$ctrl.jobPostedSuccessfully">Something went wrong</span>
         </div>
 
     </form>

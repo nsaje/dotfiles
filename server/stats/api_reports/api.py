@@ -17,8 +17,8 @@ def query(user, breakdown, constraints, goals, order):
         breakdown, constraints, goals, order,
         use_publishers_view=api_breakdowns.should_use_publishers_view(breakdown))
 
-    dash.dashapi.api_reports.annotate(rows, user, breakdown, constraints, goals, order)
-    annotate(rows, breakdown)
+    dash.dashapi.api_reports.annotate(rows, user, breakdown, constraints, goals)
+    annotate(rows)
 
     rows = sort_helper.sort_results(rows, [order])
 
@@ -27,7 +27,21 @@ def query(user, breakdown, constraints, goals, order):
     return rows
 
 
-def annotate(rows, breakdown):
+def totals(user, breakdown, constraints, goals):
+    rows = redshiftapi.api_reports.query_totals(
+        breakdown, constraints, goals,
+        use_publishers_view=api_breakdowns.should_use_publishers_view(breakdown))
+
+    assert len(rows) == 1
+
+    annotate(rows)
+
+    permission_filter.filter_columns_by_permission(user, rows, goals)
+
+    return rows[0]
+
+
+def annotate(rows):
     for row in rows:
         for column, value in row.items():
             value = dash.export._format_empty_value(value, column)

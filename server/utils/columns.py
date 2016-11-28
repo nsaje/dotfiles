@@ -1,6 +1,7 @@
 import collections
 import copy
 import dash.constants
+from utils import dates_helper
 
 
 class FieldsMeta(type):
@@ -138,3 +139,8 @@ def get_conversion_goals_column_names_mapping(conversion_goals):
         name = goal.name
         columns[key] = name
     return columns
+
+
+def add_date_to_name(name):
+    local_date = dates_helper.local_today()
+    return '{} ({})'.format(name, local_date.strftime('%Y-%m-%d'))
