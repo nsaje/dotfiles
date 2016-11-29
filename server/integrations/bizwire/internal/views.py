@@ -1,5 +1,4 @@
 from collections import defaultdict
-import datetime
 import logging
 import json
 
@@ -52,17 +51,20 @@ def _get_ad_group_id(article):
 
     today = helpers.get_pacific_now().date()
     return models.AdGroupTargeting.objects.filter(
+        ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
         start_date__lte=today, interest_targeting=[]
     ).latest('start_date').ad_group_id
 
 
 def _distribute_articles(articles_data):
     existing_candidate_labels = dash.models.ContentAdCandidate.objects.filter(
-        label__in=[article['label'] for article in articles_data]
+        ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+        label__in=[article['label'] for article in articles_data],
     ).values_list('label', flat=True)
 
     existing_contentad_labels = dash.models.ContentAd.objects.filter(
-        label__in=[article['label'] for article in articles_data]
+        ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+        label__in=[article['label'] for article in articles_data],
     ).values_list('label', flat=True)
 
     candidates_per_ad_group = defaultdict(list)
@@ -95,7 +97,10 @@ def article_upload(request):
         if len(candidates_data) > 1:
             batch_name = 'Multiple articles upload'
 
-        ad_group = dash.models.AdGroup.objects.get(id=ad_group_id)
+        ad_group = dash.models.AdGroup.objects.get(
+            id=ad_group_id,
+            ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+        )
         dash.upload.insert_candidates(candidates_data, ad_group, batch_name, filename='', auto_save=True)
 
     return JsonResponse({
