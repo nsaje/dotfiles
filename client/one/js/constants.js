@@ -1211,7 +1211,7 @@ var options = {
         {name: 'Pageviews per Visit', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
         {name: 'Cost per Visit', value: constants.campaignGoalKPI.CPV, unit: '$'},
         {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '$'},
-        {name: 'New Unique Visitors', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
+        {name: 'New Users', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
         {name: 'CPA - Setup Conversion Tracking', value: constants.campaignGoalKPI.CPA, unit: '$'},
         {name: 'Cost per Non-Bounced Visit', value: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT, unit: '$'},
     ],
