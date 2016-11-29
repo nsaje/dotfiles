@@ -85,7 +85,7 @@ def monitor_yesterday_spend():
     pacific_midnight_yesterday = pacific_midnight_today - datetime.timedelta(days=1)
     content_ad_ids = dash.models.ContentAd.objects.filter(
         ad_group__campaign=config.AUTOMATION_CAMPAIGN,
-        created_dt__lte=pacific_midnight_today,
+        created_dt__lt=pacific_midnight_today,
         created_dt__gte=pacific_midnight_yesterday,
     ).values_list('id', flat=True)
 
@@ -99,7 +99,7 @@ def monitor_yesterday_spend():
         }),
         [],
         'bizwire_ads_stats_monitoring',
-    )[0]
+    )[0]['cost']
 
     expected_spend = len(content_ad_ids) * 4
 
