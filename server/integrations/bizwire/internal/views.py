@@ -99,7 +99,7 @@ def article_upload(request):
 
         ad_group = dash.models.AdGroup.objects.get(
             id=ad_group_id,
-            ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+            campaign_id=config.AUTOMATION_CAMPAIGN,
         )
         dash.upload.insert_candidates(candidates_data, ad_group, batch_name, filename='', auto_save=True)
 
