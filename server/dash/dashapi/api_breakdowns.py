@@ -132,17 +132,19 @@ def query_section(level, user, breakdown, constraints, parent=None):
 @newrelic.agent.function_trace()
 def get_totals(level, user, breakdown, constraints):
     row = {}
-    if breakdown == ['source_id']:
-        loader = loaders.SourcesLoader.from_constraints(user, constraints)
-        augmenter.augment_sources_totals(row, loader)
+    if len(breakdown) == 1:
+        loader_cls = loaders.get_loader_for_dimension(stats.constants.get_target_dimension(breakdown), level)
+        if breakdown == ['source_id']:
+            loader = loader_cls.from_constraints(user, constraints)
+            augmenter.augment_sources_totals(row, loader)
 
-    elif breakdown == ['account_id']:
-        loader = loaders.AccountsLoader.from_constraints(user, constraints)
-        augmenter.augment_accounts_totals(row, loader)
+        elif breakdown == ['account_id']:
+            loader = loader_cls.from_constraints(user, constraints)
+            augmenter.augment_accounts_totals(row, loader)
 
-    elif breakdown == ['campaign_id']:
-        loader = loaders.CampaignsLoader.from_constraints(user, constraints)
-        augmenter.augment_campaigns_totals(row, loader)
+        elif breakdown == ['campaign_id']:
+            loader = loader_cls.from_constraints(user, constraints)
+            augmenter.augment_campaigns_totals(row, loader)
 
     return row
 
