@@ -5,14 +5,15 @@ import json
 import re
 import urllib2
 
+import influx
+from ratelimit.mixins import RatelimitMixin
+
 from django.core.cache import caches
 from django.conf import settings
 from django.http import JsonResponse, Http404
 from django.views.generic import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-
-from ratelimit.mixins import RatelimitMixin
 
 import backtosql
 from redshiftapi import db
@@ -137,6 +138,7 @@ class PromotionExport(RatelimitMixin, BizwireView):
             'geo_headline_impressions': geo_impressions,
         }
 
+    @influx.timer('integrations.bizwire.views.promotion_export')
     def get(self, request):
         article_id = request.GET.get('article_id')
         article_url = request.GET.get('article_url')
