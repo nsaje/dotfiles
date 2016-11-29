@@ -3,7 +3,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
     // Public API
     this.startReport = startReport;
 
-    function startReport (gridApi, includeConfig) {  // eslint-disable-line no-unused-vars
+    function startReport (gridApi, selectedFields, includeConfig) {  // eslint-disable-line no-unused-vars
         var deferred = $q.defer();
 
         var dateRange = zemDataFilterService.getDateRange();
@@ -14,7 +14,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
         var filteredPublisherStatus = zemFilterService.getBlacklistedPublishers();
 
         var config = {
-            fields: getSelectedFields(gridApi),
+            fields: getFields(selectedFields),
             filters: [
                 {
                     field: 'Date',
@@ -60,24 +60,13 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
         return deferred.promise;
     }
 
-    function getSelectedFields (gridApi) {
-        var fields = [], columns = gridApi.getColumns();
-
-        var breakdown = gridApi.getBreakdown();
-        for (var i = 0; i < breakdown.length; i++) {
+    function getFields (selectedFieldNames) {
+        var fields = [];
+        for (var i = 0; i < selectedFieldNames.length; i++) {
             fields.push({
-                field: breakdown[i].report_query,
+                field: selectedFieldNames[i],
             });
         }
-
-        for (i = 0; i < columns.length; i++) {
-            if (columns[i].visible && columns[i].data.name) {
-                fields.push({
-                    field: columns[i].data.name,
-                });
-            }
-        }
-
         return fields;
     }
 });

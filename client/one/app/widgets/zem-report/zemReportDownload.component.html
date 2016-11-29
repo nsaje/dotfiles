@@ -18,6 +18,16 @@
                 </td>
             </tr>
             <tr>
+                <td>Columns:</td>
+                <td>
+                    <div>
+                        <span ng-repeat="field in $ctrl.selectedFields" style="border: 1px solid; margin: 2px;">
+                            <span title="{{ field }}">{{ field }}</span>
+                        </span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
                 <td>Filters:</td>
                 <td>
                     <div ng-if="$ctrl.appliedFilterConditions.length">
