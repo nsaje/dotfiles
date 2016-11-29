@@ -28,6 +28,7 @@ Plugin 'reedes/vim-pencil'
 Plugin 'tpope/vim-sleuth' " automatic indentation settings
 "Plugin 'godlygeek/tabular' " aligning things
 "Plugin 'plasticboy/vim-markdown' " markdown (mostly for tables: :TableFormat)
+Plugin 'airblade/vim-gitgutter'
 
 
 " allow changing buffer without saving
@@ -63,6 +64,15 @@ set nu
 
 " nerdtree binding
 map <C-\> :NERDTreeToggle<CR>
+let NERDTreeIgnore = ['\.pyc$']
+
+" ctags ctrlp binding
+nnoremap <A-p> :CtrlPTag<cr>
+
+set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc     " MacOSX/Linux
+
+" close buffer
+nnoremap <C-k> :bd<cr>
 
 " theme
 syntax enable
@@ -91,8 +101,8 @@ let g:airline#extensions#tabline#show_buffers=2
 let g:airline#extensions#tabline#fnamemod = ':t'
 
 " tabs
-nnoremap <C-Left> :bprev<CR>
-nnoremap <C-Right> :bnext<CR>
+nnoremap <C-Left> :tabprev<CR>
+nnoremap <C-Right> :tabnext<CR>
 nnoremap <C-h> :bprev<CR>
 nnoremap <C-l> :bnext<CR>
 

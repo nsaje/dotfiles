@@ -65,6 +65,7 @@ export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
 export GO15VENDOREXPERIMENT=1
 
 export PATH="$PATH:~/go_appengine"
+export PATH="$PATH:~/arduino-1.6.12"
 
 
 [ -s "/home/nsaje/.scm_breeze/scm_breeze.sh" ] && source "/home/nsaje/.scm_breeze/scm_breeze.sh"
