@@ -34,7 +34,7 @@
             <div class="form-group" ng-class="{'has-error': !!errors.iabCategory}" ng-if="hasPermission('zemauth.can_modify_campaign_iab_category')">
                 <label for="iab-category-select" class="col-xs-2 control-label">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_campaign_iab_category')" popover-placement="right"></zem-internal-feature>IAB Category
-                    <zem-help-popover content="IAB category under which content of this campaign belongs." placement="top"></zem-help-popover>
+                    <zem-help-popover content="Please determine the IAB Category based on the content you are promoting." placement="top"></zem-help-popover>
                 </label>
                 <div class="col-xs-3">
                     <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="settings.iabCategory">

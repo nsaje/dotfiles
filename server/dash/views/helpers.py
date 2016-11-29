@@ -1253,12 +1253,11 @@ def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings
             user=request.user,
             action_type=constants.HistoryActionType.SETTINGS_CHANGE)
 
-        if len(changes) > 1 or 'iab_category' not in changes:
-            changes_text = models.CampaignSettings.get_changes_text(
-                old_settings,
-                new_settings,
-                separator='\n')
-            email_helper.send_campaign_notification_email(campaign, request, changes_text)
+        changes_text = models.CampaignSettings.get_changes_text(
+            old_settings,
+            new_settings,
+            separator='\n')
+        email_helper.send_campaign_notification_email(campaign, request, changes_text)
 
 
 def get_users_for_manager(user, account, current_manager=None):
