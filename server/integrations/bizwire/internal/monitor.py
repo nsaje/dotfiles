@@ -1,3 +1,4 @@
+import logging
 import pytz
 import datetime
 
@@ -12,6 +13,8 @@ import dash.models
 from redshiftapi import db
 
 from utils import dates_helper, email_helper
+
+logger = logging.getLogger(__name__)
 
 
 def monitoring_hourly_job():
@@ -67,7 +70,7 @@ def monitor_remaining_budget():
     if remaining_budget > 1000:
         return
 
-    emails = ['luka.silovinac@zemanta.com']
+    emails = config.NOTIFICATION_EMAILS
     subject = 'Businesswire campaign is running out of budget'
     body = '''Hi,
 

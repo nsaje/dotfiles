@@ -42,3 +42,8 @@ INTEREST_TARGETING_OPTIONS = [
 
 INTEREST_TARGETING_GROUPS = [  # every category in here also has to be in INTEREST_TARGETING_OPTIONS
 ]
+
+NOTIFICATION_EMAILS = [
+    'luka.silovinac@zemanta.com',
+    # 'bostjan@zemanta.com',
+]
