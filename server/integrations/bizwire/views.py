@@ -27,6 +27,29 @@ from utils import request_signer
 logger = logging.getLogger(__name__)
 
 CACHE_KEY_FMT = 'bizwire_promotion_export_{}'
+MOCK_RESPONSE = {
+    'article': {
+        'title': 'Title comes here',
+        'description': 'Description comes here'
+    },
+    'statistics': {
+        'headline_impressions': 123,
+        'release_views': 123,
+        'ctr': 0.01,
+        'industry_ctr': 0.01,
+        'publishers': [
+            'example.com',
+            'second-example.com',
+            'third-example.com'
+        ],
+        'geo_headline_impressions': {
+            'US-AL': 1,
+            'US-AK': 2,
+            'US-AZ': 3,
+            'US-AR': 4
+        }
+    }
+}
 
 
 class BizwireView(View):
@@ -160,6 +183,9 @@ class PromotionExport(RatelimitMixin, BizwireView):
             )
         except dash.models.ContentAd.DoesNotExist:
             return self.response_error('Article not found', status=404)
+
+        if content_ad.ad_group_id == config.TEST_FEED_AD_GROUP:
+            return self.response_ok(MOCK_RESPONSE)
 
         response = {
             'article': {
