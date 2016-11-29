@@ -1,6 +1,7 @@
 import logging
 import pytz
 import datetime
+import re
 
 import influx
 import boto3
@@ -38,17 +39,23 @@ def _get_s3_keys_for_date(s3, date):
 def monitor_num_ingested_articles():
     s3 = boto3.client('s3')
 
-    today = dates_helper.utc_now().date()
-    dates = [today - datetime.timedelta(days=x) for x in xrange(3)]
+    now = dates_helper.utc_now()
+    dates = [now.date() - datetime.timedelta(days=x) for x in xrange(3)]
 
     s3_count = 0
+    re_compiled = re.compile(r'.*{}/{}/{}/{}(:|%3[aA]).*'.format(now.year, now.month, now.day, now.hour))
     for date in dates:
-        s3_count += len(_get_s3_keys_for_date(s3, date))
+        for key in _get_s3_keys_for_date(s3, date):
+            if re_compiled.match(key):
+                continue
+
+            s3_count += 1
 
     db_count = dash.models.ContentAd.objects.filter(
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
         created_dt__gte=dates[-1],
-        created_dt__lt=dates[0] + datetime.timedelta(days=1),
+        created_dt__lt=datetime.datetime(
+            dates[0].year, dates[0].month, dates[0].day, now.hour),  # don't count articles from this hour
     ).count()
 
     influx.gauge('integrations.bizwire.article_count', s3_count, source='s3')
