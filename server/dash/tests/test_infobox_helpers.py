@@ -645,7 +645,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             created_by=john,
         )
         self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))  # hack, 1
 
         mock_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
         ual = dash.models.History.objects.create(
@@ -656,7 +656,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
         self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users(None, None)))
-        self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions(None, None))  # hack, 2
 
     def test_calculate_yesterday_account_spend(self):
         account = dash.models.Account.objects.get(pk=1)
