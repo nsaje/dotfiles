@@ -42,15 +42,19 @@ def monitor_num_ingested_articles():
     now = dates_helper.utc_now()
     dates = [now.date() - datetime.timedelta(days=x) for x in xrange(3)]
 
-    s3_count = 0
-    re_compiled = re.compile(r'.*{}/{}/{}/{}(:|%3[aA]).*'.format(now.year, now.month, now.day, now.hour))
+    re_compiled = re.compile(r'.*{}/{}/{}/(\d+)(:|%3[aA]).*'.format(now.year, now.month, now.day))
+    unique_ids = set()
     for date in dates:
         for key in _get_s3_keys_for_date(s3, date):
-            if re_compiled.match(key):
+            m = re_compiled.match(key)
+            hour = m.groups()[0]
+            if hour == now.hour:
                 continue
 
-            s3_count += 1
+            article_id = m.groups()[1]  # take care of article revisions
+            unique_ids.add(article_id)
 
+    s3_count = len(unique_ids)
     db_count = dash.models.ContentAd.objects.filter(
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
         created_dt__gte=dates[-1],
