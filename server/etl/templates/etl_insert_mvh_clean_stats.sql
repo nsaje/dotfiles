@@ -32,12 +32,42 @@ INSERT INTO mvh_clean_stats (
           WHEN device_type = 5 THEN 2 -- tablet
           ELSE 0 -- undefined
       END as device_type,
-      extract_country(country) as country,
-      extract_state(state) as state,
-      extract_dma(dma) as dma,
-      extract_age(age) as age,
-      extract_gender(gender) as gender,
-      extract_age_gender(stats.age, stats.gender) as age_gender,
+      UPPER(TRIM(country)) AS country,
+      UPPER(TRIM(state)) AS state,
+      dma,
+      CASE WHEN TRIM(age)='18-20' THEN 1
+           WHEN TRIM(age)='21-29' THEN 2
+           WHEN TRIM(age)='30-39' THEN 3
+           WHEN TRIM(age)='40-49' THEN 4
+           WHEN TRIM(age)='50-64' THEN 5
+           WHEN TRIM(age)='65+'   THEN 6
+           ELSE 0
+      END AS age,
+      CASE WHEN TRIM(LOWER(gender))='male'   THEN 1
+           WHEN TRIM(LOWER(gender))='female' THEN 2
+           ELSE 0
+      END AS gender,
+      CASE
+          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='18-20' THEN 1
+          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='18-20' THEN 2
+          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='18-20' THEN 3
+          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='21-29' THEN 4
+          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='21-29' THEN 5
+          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='21-29' THEN 6
+          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='30-39' THEN 7
+          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='30-39' THEN 8
+          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='30-39' THEN 9
+          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='40-49' THEN 10
+          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='40-49' THEN 11
+          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='40-49' THEN 12
+          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='50-64' THEN 13
+          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='50-64' THEN 14
+          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='50-64' THEN 15
+          WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='65+'   THEN 16
+          WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='65+'   THEN 17
+          WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='65+'   THEN 18
+      ELSE 0
+      END AS age_gender,
 
       SUM(impressions) as impressions,
       SUM(clicks) as clicks,
