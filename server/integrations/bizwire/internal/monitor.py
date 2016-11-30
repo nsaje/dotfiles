@@ -42,15 +42,13 @@ def monitor_num_ingested_articles():
     now = dates_helper.utc_now()
     dates = [now.date() - datetime.timedelta(days=x) for x in xrange(3)]
 
-    re_compiled = re.compile(
-        # example: 'uploads/2016/11/29/16:00/20161012006323r1.xml'
-        r'.*{}/{}/{}/(?P<hour>\d+)(?::|%3[aA])\d+/(?P<news_item_id>\d+)r.\.xml'.format(
-            now.year, now.month, now.day, now.hour
-        )
-    )
-
     unique_ids = set()
     for date in dates:
+        re_compiled = re.compile(
+            # example: 'uploads/2016/11/29/16:00/20161012006323r1.xml'
+            r'.*/\d+/\d+/\d+/(?P<hour>\d+)(?::|%3[aA])\d+/(?P<news_item_id>\d+)r.\.xml'
+        )
+
         for key in _get_s3_keys_for_date(s3, date):
             m = re_compiled.match(key)
             if not m or m.groupdict()['hour'] == now.hour:
