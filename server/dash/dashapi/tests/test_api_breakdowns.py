@@ -595,7 +595,7 @@ class QueryTest(TestCase):
             'state': 2,
             'maintenance': False,
             'source_id': 2,
-            'source_slug': 'gravity'
+            'source_slug': 'gravity',
             'current_bid_cpc': Decimal('0.5020'),
             'notifications': {},
         }])
