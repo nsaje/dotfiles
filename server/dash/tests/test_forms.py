@@ -518,7 +518,7 @@ class AdGroupSettingsFormTest(TestCase):
 
         self.data['bluekai_targeting'] = ["or", "bluekai:abcdef"]
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertFalse(form.is_valid())
+        self.assertTrue(form.is_valid())
 
 
 class ConversionGoalFormTestCase(TestCase):
