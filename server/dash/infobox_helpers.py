@@ -518,33 +518,31 @@ def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
     # a certain time and not when data actually changes. This behaviour is by design - currently
     # it is ok if this data is a bit dated - confirmed by product
 
-    return 0
+    cache = caches['dash_db_cache']
+    cache_key = _filtered_agencies_account_types_cache_key(
+        'selfmanaged_actions', filtered_agencies, filtered_account_types)
+    count = cache.get(cache_key, None)
 
-    # cache = caches['dash_db_cache']
-    # cache_key = _filtered_agencies_account_types_cache_key(
-    #     'selfmanaged_actions', filtered_agencies, filtered_account_types)
-    # count = cache.get(cache_key, None)
+    if count is not None:
+        influx.incr('infobox.cache', 1, method='count_weekly_selfmanaged_actions', outcome='hit')
+        return count
 
-    # if count is not None:
-    #     influx.incr('infobox.cache', 1, method='count_weekly_selfmanaged_actions', outcome='hit')
-    #     return count
+    influx.incr('infobox.cache', 1, method='count_weekly_selfmanaged_actions', outcome='miss')
+    actions = dash.models.History.objects\
+        .filter(
+            created_dt__gte=_one_week_ago(),
+            created_dt__lte=_until_today())\
+        .filter_selfmanaged()
 
-    # influx.incr('infobox.cache', 1, method='count_weekly_selfmanaged_actions', outcome='miss')
-    # actions = dash.models.History.objects\
-    #     .filter(
-    #         created_dt__gte=_one_week_ago(),
-    #         created_dt__lte=_until_today())\
-    #     .filter_selfmanaged()
+    users = zemauth.models.User.objects.all().filter(
+        pk__in=actions.values_list('created_by_id', flat=True))\
+        .filter_by_agencies(filtered_agencies)
+    filtered_users = _filter_user_by_account_type(users, filtered_account_types)
 
-    # users = zemauth.models.User.objects.all().filter(
-    #     pk__in=actions.values_list('created_by_id', flat=True))\
-    #     .filter_by_agencies(filtered_agencies)
-    # filtered_users = _filter_user_by_account_type(users, filtered_account_types)
+    count = actions.filter(created_by__in=filtered_users).count()
+    cache.set(cache_key, count)
 
-    # count = actions.filter(created_by__in=filtered_users).count()
-    # cache.set(cache_key, count)
-
-    # return count
+    return count
 
 
 def _filtered_agencies_account_types_cache_key(name, filtered_agencies, filtered_account_types):
@@ -681,8 +679,7 @@ def get_primary_campaign_goal(user, constraints, start_date, end_date):
 
     permissions = user.get_all_permissions_with_access_levels()
 
-    performance = dash.campaign_goals.get_goals_performance(
-        user, constraints, start_date, end_date, goals=[primary_goal])
+    performance = dash.campaign_goals.get_goals_performance(user, constraints, start_date, end_date, goals=[primary_goal])
     status, metric_value, planned_value, campaign_goal = performance[0]
 
     goal_description = dash.campaign_goals.format_campaign_goal(
