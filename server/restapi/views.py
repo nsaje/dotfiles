@@ -122,6 +122,8 @@ class SettingsSerializer(serializers.BaseSerializer):
         super(SettingsSerializer, self).__init__(*args, **kwargs)
 
     def update(self, data_internal, validated_data):
+        if not validated_data['settings']:
+            return data_internal
         settings = data_internal['data']['settings']
         entity_id = int(settings['id'])
         settings.update(validated_data['settings'])

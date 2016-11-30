@@ -170,6 +170,14 @@ class CampaignsTest(RESTAPITest):
         self.validate_campaign(resp_json['data'])
         self.assertEqual(resp_json['data'], test_campaign)
 
+    def test_campaigns_put_empty(self):
+        put_data = {}
+        settings_count = dash.models.CampaignSettings.objects.filter(campaign_id=608).count()
+        r = self.client.put(reverse('campaigns_details', kwargs={'entity_id': 608}), put_data, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_campaign(resp_json['data'])
+        self.assertEqual(settings_count, dash.models.CampaignSettings.objects.filter(campaign_id=608).count())
+
 
 class CampaignStatsTest(RESTAPITest):
 
