@@ -44,7 +44,7 @@ def monitor_num_ingested_articles():
 
     re_compiled = re.compile(
         # example: 'uploads/2016/11/29/16:00/20161012006323r1.xml'
-        r'.*{}/{}/{}/(?P<hour>\d{2})(?::|%3[aA])\d{2}/(?P<news_item_id>\d+)r.\.xml'.format(
+        r'.*{}/{}/{}/(?P<hour>\d+)(?::|%3[aA])\d+/(?P<news_item_id>\d+)r.\.xml'.format(
             now.year, now.month, now.day, now.hour
         )
     )
