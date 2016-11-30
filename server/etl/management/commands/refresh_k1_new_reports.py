@@ -14,6 +14,7 @@ class Command(ExceptionCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('from', type=str)
+        parser.add_argument('--account_id', type=int)
 
     def handle(self, *args, **options):
         err = []
@@ -34,4 +35,4 @@ class Command(ExceptionCommand):
             logger.error(err)
             return
 
-        refresh_k1.refresh_k1_new_reports(since)
+        refresh_k1.refresh_k1_new_reports(since, options.get('account_id'))

@@ -53,5 +53,9 @@ INSERT INTO mvh_clean_stats (
           (date=%(tzdate_from)s AND hour >= %(tzhour_from)s) OR
           (date=%(tzdate_to)s AND hour < %(tzhour_to)s)
       ))
+
+      {% if account_id %}
+          AND ad_group_id=ANY(%(ad_group_id)s)
+      {% endif %}
   GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
 );

@@ -39,6 +39,9 @@ INSERT INTO mv_pubs_master(
 
     FROM mv_master
     WHERE date BETWEEN %(date_from)s AND %(date_to)s AND publisher IS NOT NULL AND publisher <> '' AND source_id <> 3
+          {% if account_id %}
+              AND account_id=%(account_id)s
+          {% endif %}
     GROUP BY 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15
 )
 
