@@ -91,6 +91,10 @@ def article_upload(request):
         raise Http404
 
     articles_data = json.loads(request.body)
+
+    labels = [article['label'] for article in articles_data]
+    logger.info('[bizwire] article upload - uploading articles with labels: %s', labels)
+
     candidates_per_ad_group = _distribute_articles(articles_data)
     for ad_group_id, candidates_data in candidates_per_ad_group.iteritems():
         batch_name = 'Article ' + candidates_data[0]['label']
@@ -101,6 +105,7 @@ def article_upload(request):
             id=ad_group_id,
             campaign_id=config.AUTOMATION_CAMPAIGN,
         )
+
         dash.upload.insert_candidates(candidates_data, ad_group, batch_name, filename='', auto_save=True)
 
     return JsonResponse({
