@@ -564,7 +564,7 @@ class QueryTest(TestCase):
             'state': 1,
             'maintenance': False,
             'source_id': 1,
-            'source_slug': 'adsnative', 
+            'source_slug': 'adsnative',
             'current_bid_cpc': Decimal('0.5010'),
             'notifications': {},
         }, {
@@ -595,7 +595,7 @@ class QueryTest(TestCase):
             'state': 2,
             'maintenance': False,
             'source_id': 2,
-            'source_slug': 'gravity', 
+            'source_slug': 'gravity'
             'current_bid_cpc': Decimal('0.5020'),
             'notifications': {},
         }])
@@ -752,7 +752,7 @@ class QueryTest(TestCase):
             'exchange': 'AdsNative',
             'can_blacklist_publisher': True,
             'source_id': 1,
-            'source_slug': 'adsnative', 
+            'source_slug': 'adsnative',
             'domain_link': 'http://pub1.com',
             'publisher_id': 'pub1.com__1',
             'blacklisted': 'Blacklisted'
@@ -765,7 +765,7 @@ class QueryTest(TestCase):
             'exchange': 'Gravity',
             'can_blacklist_publisher': False,
             'source_id': 2,
-            'source_slug': 'gravity', 
+            'source_slug': 'gravity',
             'domain_link': 'http://pub2.com',
             'publisher_id': 'pub2.com__2',
             'blacklisted': 'Blacklisted'
@@ -778,7 +778,7 @@ class QueryTest(TestCase):
             'exchange': 'AdsNative',
             'can_blacklist_publisher': True,
             'source_id': 1,
-            'source_slug': 'adsnative', 
+            'source_slug': 'adsnative',
             'domain_link': 'http://pub3.com',
             'publisher_id': 'pub3.com__1',
             'blacklisted': 'Blacklisted'
@@ -791,7 +791,7 @@ class QueryTest(TestCase):
             'exchange': 'Gravity',
             'can_blacklist_publisher': False,
             'source_id': 2,
-            'source_slug': 'gravity', 
+            'source_slug': 'gravity',
             'domain_link': 'http://pub4.com',
             'publisher_id': 'pub4.com__2',
             'blacklisted': 'Blacklisted'
@@ -1684,7 +1684,7 @@ class QueryForRowsTest(TestCase):
             'maintenance': False,
             'current_daily_budget': Decimal('10.0000'),
             'source_id': 1,
-            'source_slug': 'adsnative', 
+            'source_slug': 'adsnative',
             'id': 1,
             'daily_budget': Decimal('10.0000'),
             'notifications': {},
@@ -1714,7 +1714,7 @@ class QueryForRowsTest(TestCase):
             'maintenance': False,
             'current_daily_budget': Decimal('20.0000'),
             'source_id': 2,
-            'source_slug': 'gravity', 
+            'source_slug': 'gravity',
             'id': 2,
             'daily_budget': Decimal('20.0000'),
             'notifications': {},
