@@ -216,6 +216,8 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.b1_sources_group_daily_budget = resource['b1_sources_group_daily_budget']
         settings.b1_sources_group_state = resource['b1_sources_group_state']
 
+        settings.bluekai_targeting = resource['bluekai_targeting']
+
     def _send_update_actions(self, ad_group, current_settings, new_settings, request):
         actionlogs_to_send = []
 

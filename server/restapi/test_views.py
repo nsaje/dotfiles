@@ -384,6 +384,7 @@ class AdGroupsTest(RESTAPITest):
         target_devices=['desktop'],
         interest_targeting=['women', 'fashion'],
         exclusion_interest_targeting=['politics'],
+        demographic_targeting=['and', 'bluekai:123', ['or', 'liveramp:123', 'outbrain:123']],
         autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
         autopilot_daily_budget='50.00',
         dayparting={},
@@ -410,7 +411,8 @@ class AdGroupsTest(RESTAPITest):
                 'interest': {
                     'included': [constants.InterestCategory.get_name(i) for i in interest_targeting],
                     'excluded': [constants.InterestCategory.get_name(i) for i in exclusion_interest_targeting],
-                }
+                },
+                'demographic': demographic_targeting,
             },
             'autopilot': {
                 'state': constants.AdGroupSettingsAutopilotState.get_name(autopilot_state),
@@ -437,6 +439,7 @@ class AdGroupsTest(RESTAPITest):
             target_devices=settings_db.target_devices,
             interest_targeting=settings_db.interest_targeting,
             exclusion_interest_targeting=settings_db.exclusion_interest_targeting,
+            demographic_targeting=settings_db.bluekai_targeting,
             autopilot_state=settings_db.autopilot_state,
             autopilot_daily_budget=settings_db.autopilot_daily_budget.quantize(Decimal('1.00')),
             dayparting=settings_db.dayparting,

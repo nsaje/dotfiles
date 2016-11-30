@@ -246,7 +246,8 @@ class AdGroupSerializer(SettingsSerializer):
                 'interest': {
                     'included': map(lambda x: DashConstantField(constants.InterestCategory).to_representation(x), settings['interest_targeting']),
                     'excluded': map(lambda x: DashConstantField(constants.InterestCategory).to_representation(x), settings['exclusion_interest_targeting']),
-                }
+                },
+                'demographic': settings['bluekai_targeting'],
             },
             'autopilot': {
                 'state': constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state']),
@@ -270,6 +271,7 @@ class AdGroupSerializer(SettingsSerializer):
             'target_devices': DashConstantField(constants.AdTargetDevice).to_internal_value_many(data['targeting']['devices']),
             'interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['included']),
             'exclusion_interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
+            'bluekai_targeting': data['targeting']['demographic'],
             'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']),
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
             'dayparting': data['dayparting'],

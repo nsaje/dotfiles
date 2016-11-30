@@ -41,3 +41,30 @@ class DaypartingField(forms.Field):
     saturday = DayField(required=False)
 
     timezone = TimeZoneField(required=False)
+
+
+class TargetingExpressionField(forms.Field):
+
+    def validate(self, value):
+        super(TargetingExpressionField, self).validate(value)
+        self._clean_targeting_expression(value)
+
+    @classmethod
+    def _clean_targeting_expression(cls, exp):
+        if not exp:
+            return
+        if isinstance(exp, list):  # ['and', 'bluekai:123', ['not', 'bluekai:321']]
+            if exp[0] not in ['and', 'or', 'not']:
+                raise forms.ValidationError(message='Targeting expression operator %s not valid' % exp[0])
+            for subexp in exp[1:]:
+                cls._clean_targeting_expression(subexp)
+        elif isinstance(exp, basestring):  # 'bluekai:123'
+            try:
+                tokens = exp.split(':', 1)
+                assert len(tokens) == 2
+                assert tokens[0] in ['bluekai', 'liveramp', 'outbrain']
+                int(tokens[1])
+            except:
+                raise forms.ValidationError('Invalid category format: "%s"' % exp)
+        else:
+            raise forms.ValidationError(message='Invalid item "%s" in the targeting expression.' % exp)
