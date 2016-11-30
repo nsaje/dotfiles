@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import transaction
 
 from integrations.bizwire import config, models
-from integrations.bizwire.internal import helpers
+from integrations.bizwire.internal import actions, helpers
 
 import dash.api
 import dash.constants
@@ -107,6 +107,12 @@ def article_upload(request):
         )
 
         dash.upload.insert_candidates(candidates_data, ad_group, batch_name, filename='', auto_save=True)
+
+    for ad_group_id in candidates_per_ad_group.keys():
+        try:
+            actions.recalculate_and_set_new_daily_budgets(ad_group_id)
+        except:
+            logger.exception('Unable to set new bizwire daily budget for ad group %s', ad_group_id)
 
     return JsonResponse({
         "status": 'ok'

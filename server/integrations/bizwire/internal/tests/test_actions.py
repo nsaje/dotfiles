@@ -16,34 +16,34 @@ class StopAdsTestCase(TestCase):
 
     @patch('utils.dates_helper.utc_now')
     @patch('dash.api.update_content_ads_state')
-    def test_check_midnight_and_stop_ads_pst_time(self, mock_update_content_ads_state, mock_utc_now):
+    def test_check_pacific_midnight_and_stop_ads_pst_time(self, mock_update_content_ads_state, mock_utc_now):
         mock_utc_now.return_value = datetime.datetime(2016, 6, 1, 6)
-        actions.check_midnight_and_stop_ads()
+        actions.check_pacific_midnight_and_stop_ads()
         self.assertFalse(mock_update_content_ads_state.called)
 
         mock_utc_now.return_value = datetime.datetime(2016, 6, 1, 8)
-        actions.check_midnight_and_stop_ads()
+        actions.check_pacific_midnight_and_stop_ads()
         self.assertFalse(mock_update_content_ads_state.called)
 
         mock_utc_now.return_value = datetime.datetime(2016, 6, 1, 7)
-        actions.check_midnight_and_stop_ads()
+        actions.check_pacific_midnight_and_stop_ads()
         self.assertEqual(
             call(ListMatcher([]), dash.constants.ContentAdSourceState.INACTIVE, None),
             mock_update_content_ads_state.call_args)
 
     @patch('utils.dates_helper.utc_now')
     @patch('dash.api.update_content_ads_state')
-    def test_check_midnight_and_stop_ads_pdt_time(self, mock_update_content_ads_state, mock_utc_now):
+    def test_check_pacific_midnight_and_stop_ads_pdt_time(self, mock_update_content_ads_state, mock_utc_now):
         mock_utc_now.return_value = datetime.datetime(2016, 12, 1, 7)
-        actions.check_midnight_and_stop_ads()
+        actions.check_pacific_midnight_and_stop_ads()
         self.assertFalse(mock_update_content_ads_state.called)
 
         mock_utc_now.return_value = datetime.datetime(2016, 12, 1, 9)
-        actions.check_midnight_and_stop_ads()
+        actions.check_pacific_midnight_and_stop_ads()
         self.assertFalse(mock_update_content_ads_state.called)
 
         mock_utc_now.return_value = datetime.datetime(2016, 12, 1, 8)
-        actions.check_midnight_and_stop_ads()
+        actions.check_pacific_midnight_and_stop_ads()
         self.assertEqual(
             call(ListMatcher([]), dash.constants.ContentAdSourceState.INACTIVE, None),
             mock_update_content_ads_state.call_args)
@@ -104,6 +104,9 @@ class RotateAdGroupsTestCase(TestCase):
             set(ad_group_settings.target_devices)
         )
         self.assertEqual(['US'], ad_group_settings.target_regions)
+        self.assertTrue(ad_group_settings.b1_sources_group_enabled)
+        self.assertEqual(config.DEFAULT_DAILY_BUDGET, ad_group_settings.b1_sources_group_daily_budget)
+        self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
         self.assertEqual(ad_group.campaign.account.allowed_sources.count(), ad_group.adgroupsource_set.all().count())
         for ad_group_source in ad_group.adgroupsource_set.all():

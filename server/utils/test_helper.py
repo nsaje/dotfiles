@@ -2,7 +2,6 @@ import datetime
 import httplib
 import operator
 from contextlib import contextmanager
-from collections import namedtuple
 
 import mock
 import unittest
