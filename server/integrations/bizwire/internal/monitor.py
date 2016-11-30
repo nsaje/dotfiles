@@ -125,6 +125,14 @@ def monitor_yesterday_spend():
     influx.gauge('integrations.bizwire.yesterday_spend', actual_spend, type='actual')
     influx.gauge('integrations.bizwire.yesterday_spend', expected_spend, type='expected')
 
+    if dates_helper.utc_now().hour == 12 and abs(expected_spend - actual_spend) > 500:
+        emails = config.NOTIFICATION_EMAILS
+        subject = 'Businesswire campaign unexpected yesterday spend'
+        body = '''Hi,
+
+Yesterday's expected spend was {} and actual spend was {}.'''.format(config.AUTOMATION_CAMPAIGN)  # noqa
+        email_helper.send_notification_mail(emails, subject, body)
+
 
 def monitor_duplicate_articles():
     num_labels = dash.models.ContentAd.objects.filter(
