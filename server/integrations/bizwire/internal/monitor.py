@@ -42,7 +42,7 @@ def monitor_num_ingested_articles():
     now = dates_helper.utc_now()
     dates = [now.date() - datetime.timedelta(days=x) for x in xrange(3)]
 
-    unique_ids = set()
+    unique_labels = set()
     for date in dates:
         re_compiled = re.compile(
             # example: 'uploads/2016/11/29/16:00/20161012006323r1.xml'
@@ -54,21 +54,22 @@ def monitor_num_ingested_articles():
             if not m:
                 continue
 
+            label = m.groupdict()['news_item_id']
             if date.day == now.day and m.groupdict()['hour'] == now.hour:
+                # ignore articles from current hour sinc they may not be processed yet
                 continue
 
-            unique_ids.add(m.groupdict()['news_item_id'])
+            unique_labels.add(label)
 
-    s3_count = len(unique_ids)
+    s3_count = len(unique_labels)
     db_count = dash.models.ContentAd.objects.filter(
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-        created_dt__gte=dates[-1],
-        created_dt__lt=datetime.datetime(
-            dates[0].year, dates[0].month, dates[0].day, now.hour),  # don't count articles from this hour
+        label__in=unique_labels,
     ).count()
 
     influx.gauge('integrations.bizwire.article_count', s3_count, source='s3')
     influx.gauge('integrations.bizwire.article_count', db_count, source='db')
+    influx.gauge('integrations.bizwire.article_count', abs(s3_count - db_count), source='diff')
 
 
 def monitor_remaining_budget():
