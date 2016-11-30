@@ -51,10 +51,10 @@ def monitor_num_ingested_articles():
 
         for key in _get_s3_keys_for_date(s3, date):
             m = re_compiled.match(key)
-            if not m or m.groupdict()['hour'] == now.hour:
+            if not m:
                 continue
 
-            if re_compiled.match(key):
+            if date.day == now.day and m.groupdict()['hour'] == now.hour:
                 continue
 
             unique_ids.add(m.groupdict()['news_item_id'])
