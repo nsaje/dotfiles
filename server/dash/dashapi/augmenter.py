@@ -229,6 +229,7 @@ def augment_row_source(row, source=None, settings=None):
         row.update({
             'id': source.id,
             'name': source.name,
+            'source_slug': source.bidder_slug,
             'archived': source.deprecated,
             'maintenance': source.maintenance,
         })
@@ -253,6 +254,7 @@ def augment_row_publisher(row, domain, source, blacklist_status, can_blacklist_s
         'name': domain,
         'source_id': source.id,
         'source_name': source.name,
+        'source_slug': source.bidder_slug,
         'exchange': source.name,
         'domain': domain,
         'domain_link': publisher_helpers.get_publisher_domain_link(domain),
@@ -275,6 +277,7 @@ def augment_row_report_publisher(row, domain, source, blacklist_status, can_blac
     row.update({
         'publisher': domain,
         'source': source.name,
+        'source_slug': source.bidder_slug,
         'status': constants.PublisherStatus.get_text(blacklist_status['status']).upper(),
         'blacklisted_level': (constants.PublisherBlacklistLevel.get_text(
             blacklist_status.get('blacklisted_level', '')) or '').upper()

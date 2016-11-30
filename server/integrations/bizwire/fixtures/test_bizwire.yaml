@@ -134,6 +134,8 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
+        tracking_slug: 'b1_adblade'
+        bidder_slug: 'adblade'
         source_type: 1
         maintenance: false
     model: dash.source
@@ -144,7 +146,8 @@
         modified_dt: '2014-06-04T00:00:00'
         name: AdBanana
         source_type: 2
-        tracking_slug: '["fake"]'
+        tracking_slug: 'b1_adbanana'
+        bidder_slug: 'adbanana'
         maintenance: false
     model: dash.source
     pk: 2
@@ -154,7 +157,8 @@
         modified_dt: '2014-06-04T00:00:00'
         name: AdOrange
         source_type: 1
-        tracking_slug: '["fake2"]'
+        tracking_slug: 'b1_adorange'
+        bidder_slug: 'adorange'
         maintenance: false
     model: dash.source
     pk: 3

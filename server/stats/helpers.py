@@ -24,12 +24,12 @@ CONTENT_ADS_FIELDS = [
 SOURCE_FIELDS = [
     'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'maintenance', 'cpc', 'bid_cpc', 'current_bid_cpc',
     'current_daily_budget', 'supply_dash_url', 'supply_dash_disabled_message', 'editable_fields',
-    'status_setting', 'id', 'notifications',
+    'status_setting', 'id', 'notifications', 'source_slug',
 ]
 
 PUBLISHER_FIELDS = [
     'source_name', 'exchange', 'domain', 'external_id', 'domain_link', 'can_blacklist_publisher', 'blacklisted', 'blacklisted_level',
-    'blacklisted_level_description'
+    'blacklisted_level_description', 'source_slug',
 ]
 
 OTHER_DASH_FIELDS = [

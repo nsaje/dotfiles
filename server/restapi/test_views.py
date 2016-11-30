@@ -503,7 +503,7 @@ class AdGroupSourcesTest(RESTAPITest):
 
     def validate_against_db(self, ad_group_id, adgroupsourcesettings):
         slug = adgroupsourcesettings['source']
-        agss_db = dash.models.AdGroupSource.objects.get(ad_group_id=ad_group_id, source__tracking_slug=slug).get_current_settings()
+        agss_db = dash.models.AdGroupSource.objects.get(ad_group_id=ad_group_id, source__bidder_slug=slug).get_current_settings()
         expected = self.adgroupsource_repr(
             source=slug,
             cpc=agss_db.cpc_cc,
