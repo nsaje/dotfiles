@@ -130,7 +130,7 @@ def monitor_yesterday_spend():
         subject = 'Businesswire campaign unexpected yesterday spend'
         body = '''Hi,
 
-Yesterday's expected spend was {} and actual spend was {}.'''.format(config.AUTOMATION_CAMPAIGN)  # noqa
+Yesterday's expected spend was {} and actual spend was {}.'''.format(expected_spend, actual_spend)  # noqa
         email_helper.send_notification_mail(emails, subject, body)
 
 
