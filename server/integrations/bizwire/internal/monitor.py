@@ -55,7 +55,7 @@ def monitor_num_ingested_articles():
                 continue
 
             label = m.groupdict()['news_item_id']
-            if date.day == now.day and m.groupdict()['hour'] == now.hour:
+            if date.day == now.day and int(m.groupdict()['hour']) == now.hour:
                 # ignore articles from current hour sinc they may not be processed yet
                 continue
 
