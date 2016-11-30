@@ -42,17 +42,24 @@ def monitor_num_ingested_articles():
     now = dates_helper.utc_now()
     dates = [now.date() - datetime.timedelta(days=x) for x in xrange(3)]
 
-    re_compiled = re.compile(r'.*{}/{}/{}/(\d+)(:|%3[aA]).*'.format(now.year, now.month, now.day))
+    re_compiled = re.compile(
+        # example: 'uploads/2016/11/29/16:00/20161012006323r1.xml'
+        r'.*{}/{}/{}/(?P<hour>\d{2})(?::|%3[aA])\d{2}/(?P<news_item_id>\d+)r.\.xml'.format(
+            now.year, now.month, now.day, now.hour
+        )
+    )
+
     unique_ids = set()
     for date in dates:
         for key in _get_s3_keys_for_date(s3, date):
             m = re_compiled.match(key)
-            hour = m.groups()[0]
-            if hour == now.hour:
+            if not m or m.groupdict()['hour'] == now.hour:
                 continue
 
-            article_id = m.groups()[1]  # take care of article revisions
-            unique_ids.add(article_id)
+            if re_compiled.match(key):
+                continue
+
+            unique_ids.add(m.groupdict()['news_item_id'])
 
     s3_count = len(unique_ids)
     db_count = dash.models.ContentAd.objects.filter(
