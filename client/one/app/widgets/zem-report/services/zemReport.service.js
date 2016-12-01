@@ -30,6 +30,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
             ],
             options: {
                 emailReport: true,
+                recipients: includeConfig.recipients,
                 showArchived: showArchived,
                 includeTotals: includeConfig.includeTotals || false,
                 showStatusDate: true,

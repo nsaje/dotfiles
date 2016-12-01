@@ -12,6 +12,9 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
     $scope.chartIsLoading = false;
     $scope.localStoragePrefix = 'adGroupPublishers';
     $scope.infoboxLinkTo = 'main.adGroups.settings';
+    $scope.tab = {
+        name: 'Publishers'
+    };
 
     $scope.grid = {
         api: undefined,

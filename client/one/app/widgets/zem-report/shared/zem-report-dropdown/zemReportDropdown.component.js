@@ -1,6 +1,7 @@
 angular.module('one.widgets').component('zemReportDropdown', {
     bindings: {
-        api: '=',
+        api: '<',
+        tab: '<'
     },
     templateUrl: '/app/widgets/zem-report/shared/zem-report-dropdown/zemReportDropdown.component.html',
     controller: function ($uibModal, zemPermissions) {
@@ -35,6 +36,7 @@ angular.module('one.widgets').component('zemReportDropdown', {
                 windowClass: 'zem-report-download',
                 resolve: {
                     api: $ctrl.api,
+                    tab: $ctrl.tab,
                 }
             });
         }

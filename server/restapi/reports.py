@@ -86,6 +86,7 @@ def get_options(options):
                                         constants.PublisherBlacklistFilter.SHOW_ALL),
         'include_totals': options.get('include_totals') or False,
         'show_status_date': options.get('show_status_date') or False,
+        'recipients': options.get('recipients') or [],
     }
 
 
@@ -119,6 +120,7 @@ class ReportOptionsSerializer(serializers.Serializer):
         constants.PublisherBlacklistFilter.get_all(), required=False)
     include_totals = serializers.BooleanField(default=False)
     show_status_date = serializers.BooleanField(default=False)
+    recipients = serializers.ListField(child=serializers.EmailField(), required=False)
 
 
 class ReportQuerySerializer(serializers.Serializer):
