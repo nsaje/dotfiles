@@ -119,7 +119,7 @@ def monitor_yesterday_spend():
         }),
         [],
         'bizwire_ads_stats_monitoring',
-    )[0]['cost']
+    )[0]['cost'] or 0
 
     expected_spend = len(content_ad_ids) * 4
 
