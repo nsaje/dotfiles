@@ -26,7 +26,7 @@ def monitoring_hourly_job():
 
 
 def _get_s3_keys_for_date(s3, date):
-    prefix = 'uploads/{}/{}/{}'.format(date.year, date.month, date.day)
+    prefix = 'uploads/{}/{:02d}/{:02d}'.format(date.year, date.month, date.day)
     objects = s3.list_objects(Bucket='businesswire-articles', Prefix=prefix)
 
     keys = []
