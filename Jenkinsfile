@@ -8,18 +8,21 @@ node {
         env.AWS_DEFAULT_REGION="us-east-1"
     }
 
+    stage('Code checkout') {
+        checkout scm
+        // make sure we don't have leftovers from previous builds
+        sh 'sudo git clean --force -d -x'
+        // linter
+        sh 'bash ./scripts/jenkins_lint_check.sh'
+    }
+
     stage ('Install dependencies') {
 /*
         sh 'mkdir -p ${JENKINS_HOME}/bin/'
         sh 'test ! -x ${JENKINS_HOME}/bin/docker-compose && curl -L https://github.com/docker/compose/releases/download/1.8.0/docker-compose-`uname -s`-`uname -m` > ${JENKINS_HOME}/bin/docker-compose || true'
         sh 'chmod +x ${JENKINS_HOME}/bin/docker-compose'
 */
-    }
-
-    stage('Code checkout') {
-        checkout scm
-        // make sure we don't have leftovers from previous builds
-        sh 'sudo git clean --force -d -x'
+        sh 'docker build -t py-tools -f docker/Dockerfile.py-tools  docker/'
     }
 
     stage ('Restore cache') {
