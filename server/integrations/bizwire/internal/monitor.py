@@ -144,5 +144,8 @@ def monitor_duplicate_articles():
         ad_group__campaign=config.AUTOMATION_CAMPAIGN,
     ).distinct('label').count()
 
+    num_duplicate = abs(num_labels - num_distinct)
+
     influx.gauge('integrations.bizwire.labels', num_labels, type='all')
     influx.gauge('integrations.bizwire.labels', num_distinct, type='distinct')
+    influx.gauge('integrations.bizwire.labels', num_duplicate, type='duplicate')
