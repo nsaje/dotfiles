@@ -41,7 +41,8 @@ angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state
                 heading: 'Settings',
                 route: 'main.campaigns.settings',
                 active: false,
-                hidden: $scope.campaign && $scope.campaign.archived === true,
+                hidden: $scope.hasPermission('zemauth.can_see_new_settings') ||
+                        $scope.campaign && $scope.campaign.archived === true,
                 internal: false,
             },
             {
@@ -127,18 +128,26 @@ angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state
         );
     };
 
+    $scope.checkArchived = function () {
+        if ($scope.campaign && $scope.campaign.archived) {
+            if ($scope.hasPermission('zemauth.can_see_new_settings')) {
+                $state.go('main.campaigns.archived', {id: $scope.campaign.id});
+            } else {
+                $state.go('main.campaigns.settings', {id: $scope.campaign.id});
+            }
+        }
+    };
+
     $scope.setModels(campaignData);
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
-
-    if ($scope.campaign && $scope.campaign.archived) {
-        $state.go('main.campaigns.archived', {id: $scope.campaign.id});
-    }
+    $scope.checkArchived();
 
     zemNavigationService.onUpdate($scope, function () {
         zemNavigationService.getCampaign($state.params.id).then(function (campaignData) {
             $scope.setModels(campaignData);
             $scope.updateBreadcrumbAndTitle();
+            $scope.checkArchived();
         });
     });
 

@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemSidePanel', {
         onClose: '&'
     },
     templateUrl: '/app/common/components/zem-side-panel/zemSidePanel.component.html',
-    controller: function ($window, hotkeys) {
+    controller: function ($window) {
         var $ctrl = this;
 
         $ctrl.close = close;
@@ -14,7 +14,6 @@ angular.module('one.widgets').component('zemSidePanel', {
         $ctrl.api.isVisible = isVisible;
 
         $ctrl.$onInit = function () {
-            hotkeys.add({combo: 'esc', callback: function () { close(); }});
         };
 
         function isVisible () {

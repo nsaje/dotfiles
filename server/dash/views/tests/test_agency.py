@@ -93,6 +93,7 @@ class AdGroupSettingsTest(TestCase):
             'data': {
                 'can_archive': True,
                 'can_restore': True,
+                'archived': False,
                 'action_is_waiting': False,
                 'default_settings': {
                     'target_devices': ['mobile'],

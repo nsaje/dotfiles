@@ -9,15 +9,11 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         entityId: '<',
     },
     templateUrl: '/app/widgets/zem-settings/container/zemSettingsContainer.component.html',
-    controller: function ($transclude, $element, $q, zemPermissions, zemEntityService, zemNavigationService) { // eslint-disable-line max-len
+    controller: function ($transclude, $element, $q, zemPermissions, zemPubSubService, zemEntityService, zemSettingsService, zemNavigationService, zemNavigationNewService) { // eslint-disable-line max-len
         var STATUS_CODE_NONE = 0;
         var STATUS_CODE_IN_PROGRESS = 1;
-        var STATUS_CODE_SUCCESS = 2;
-        var STATUS_CODE_ERROR = 3;
-
-        var STATUS_TEST_SAVE_SUCCESS = 'Your updates have been saved.';
+        var STATUS_CODE_ERROR = 2;
         var STATUS_TEST_SAVE_ERROR = 'An error occurred while saving. Please correct the marked fields and save again.';
-        var STATUS_TEST_DISCARD_SUCCESS = 'Your updates have been discarded.';
 
         var $ctrl = this;
         $ctrl.constants = constants;
@@ -31,8 +27,8 @@ angular.module('one.widgets').component('zemSettingsContainer', {
             text: ''
         };
 
+        $ctrl.close = close;
         $ctrl.save = save;
-        $ctrl.discard = discard;
         $ctrl.archive = archive;
         $ctrl.restore = restore;
         $ctrl.getButtonsBarClass = getButtonsBarClass;
@@ -90,13 +86,11 @@ angular.module('one.widgets').component('zemSettingsContainer', {
                 $ctrl.errors = {};
 
                 updateNavigationCache();
-
-                $ctrl.status.code = STATUS_CODE_SUCCESS;
-                $ctrl.status.text = STATUS_TEST_SAVE_SUCCESS;
-
                 settingsComponents.forEach(function (component) {
                     if (component.onSuccess) component.onSuccess($ctrl.entity);
                 });
+
+                close();
             },
             function (data) {
                 $ctrl.errors = data;
@@ -112,42 +106,45 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         function updateNavigationCache () {
             // TODO - delete (this will not be needed after removing zemNavigationService)
             if ($ctrl.entityType === constants.entityType.ACCOUNT) {
-                zemNavigationService.updateAccountCache($ctrl.entityId, {
+                return zemNavigationService.updateAccountCache($ctrl.entityId, {
                     name: $ctrl.entity.settings.name,
                     agency: $ctrl.entity.settings.agency.id || null,
                 });
             }
             if ($ctrl.entityType === constants.entityType.CAMPAIGN) {
-                zemNavigationService.updateCampaignCache($ctrl.entityId, {
+                return zemNavigationService.updateCampaignCache($ctrl.entityId, {
                     name: $ctrl.entity.settings.name,
                 });
             }
             if ($ctrl.entityType === constants.entityType.AD_GROUP) {
-                zemNavigationService.reloadAdGroup($ctrl.entityId);
+                return zemNavigationService.reloadAdGroup($ctrl.entityId);
             }
         }
 
-        function discard () {
-            setEntity($ctrl.origEntity);
-            $ctrl.status.code = STATUS_CODE_SUCCESS;
-            $ctrl.status.text = STATUS_TEST_DISCARD_SUCCESS;
+        function isDirty () {
+            return !angular.equals($ctrl.origEntity, $ctrl.entity);
         }
 
         function archive () {
+            if (!$ctrl.entity.canArchive) return;
             $ctrl.status.code = STATUS_CODE_IN_PROGRESS;
             zemEntityService.executeAction(constants.entityAction.ARCHIVE, $ctrl.entityType, $ctrl.entityId)
-            .then(load).then(resetStatus);
+            .then(updateNavigationCache).then(close);
         }
 
         function restore () {
+            if (!$ctrl.entity.canRestore) return;
             $ctrl.status.code = STATUS_CODE_IN_PROGRESS;
             zemEntityService.executeAction(constants.entityAction.RESTORE, $ctrl.entityType, $ctrl.entityId)
-            .then(load).then(resetStatus);
+            .then(updateNavigationCache).then(load).then(function () {
+                zemNavigationNewService.refreshState();
+                close();
+            });
         }
 
-        function resetStatus () {
-            $ctrl.status.code = STATUS_CODE_NONE;
-            $ctrl.status.text = null;
+        function close () {
+            if (isDirty() && !confirm('You have unsaved changes. \nAre you sure to close settings drawer?')) return;
+            zemSettingsService.close();
         }
 
         //

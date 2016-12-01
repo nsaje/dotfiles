@@ -9,7 +9,6 @@ angular.module('one.widgets').component('zemCampaignSettings', {
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
-
         $ctrl.$onInit = function () { };
     },
 });

@@ -26,8 +26,9 @@ angular.module('one.legacy').controller('AdGroupCtrl', function ($scope, $state,
             heading: 'Settings',
             route: 'main.adGroups.settings',
             active: false,
-            hidden: !$scope.hasPermission('dash.settings_view') ||
-                ($scope.adGroup && $scope.adGroup.archived === true),
+            hidden: $scope.hasPermission('zemauth.can_see_new_settings') ||
+                    !$scope.hasPermission('dash.settings_view') ||
+                    ($scope.adGroup && $scope.adGroup.archived === true),
         }, {
             heading: 'History',
             route: 'main.adGroups.history',
@@ -116,19 +117,27 @@ angular.module('one.legacy').controller('AdGroupCtrl', function ($scope, $state,
         $scope.setActiveTab();
     });
 
+    $scope.checkArchived = function () {
+        if ($scope.adGroup && $scope.adGroup.archived) {
+            if ($scope.hasPermission('zemauth.can_see_new_settings')) {
+                $state.go('main.adGroups.archived', {id: $scope.adGroup.id});
+            } else {
+                $state.go('main.adGroups.settings', {id: $scope.adGroup.id});
+            }
+        }
+    };
+
     $scope.setModels(adGroupData);
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
-
-    if ($scope.adGroup && $scope.adGroup.archived) {
-        $state.go('main.adGroups.settings', {id: $scope.adGroup.id});
-    }
+    $scope.checkArchived();
 
     zemNavigationService.onUpdate($scope, function () {
         zemNavigationService.getAdGroup($state.params.id).then(function (adGroupData) {
             $scope.setModels(adGroupData);
             $scope.updateBreadcrumbAndTitle();
             $scope.updateInfoboxHeader();
+            $scope.checkArchived();
         });
     });
 

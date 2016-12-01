@@ -80,14 +80,16 @@ angular.module('one.legacy').config(function ($stateProvider) {
             templateUrl: '/partials/account_account.html',
             controller: 'AccountAccountCtrl',
         })
+        .state('main.accounts.archived', {
+            // Temporary solution for archived
+            url: '/archived',
+            templateUrl: '/partials/archived_entity.html',
+            controller: 'ArchivedEntityCtrl'
+        })
         .state('main.accounts.customAudiences', {
             url: '/audiences',
             templateUrl: '/partials/account_custom_audiences.html',
             controller: 'AccountCustomAudiencesCtrl',
-        })
-        .state('main.accounts.archived', {
-            url: '/archived',
-            templateUrl: '/partials/account_settings.html',
         }).state('main.accounts.credit', {
             url: '/credit',
             templateUrl: '/partials/account_credit.html',
@@ -125,9 +127,10 @@ angular.module('one.legacy').config(function ($stateProvider) {
             controller: 'CampaignSettingsCtrl',
         })
         .state('main.campaigns.archived', {
+            // Temporary solution for archived
             url: '/archived',
-            templateUrl: '/partials/campaign_settings.html',
-            controller: 'CampaignSettingsCtrl',
+            templateUrl: '/partials/archived_entity.html',
+            controller: 'ArchivedEntityCtrl'
         })
         .state('main.campaigns.history', {
             url: '/history',
@@ -180,5 +183,11 @@ angular.module('one.legacy').config(function ($stateProvider) {
             url: '/publishers',
             templateUrl: '/partials/ad_group_publishers.html',
             controller: 'AdGroupPublishersCtrl',
+        })
+        .state('main.adGroups.archived', {
+            // Temporary solution for archived
+            url: '/archived',
+            templateUrl: '/partials/archived_entity.html',
+            controller: 'ArchivedEntityCtrl'
         });
 });

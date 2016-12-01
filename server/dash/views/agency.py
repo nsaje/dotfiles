@@ -64,6 +64,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'warnings': self.get_warnings(request, settings),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),
+            'archived': settings.archived,
         }
         return self.create_api_response(response)
 
@@ -384,6 +385,7 @@ class CampaignSettings(api_common.BaseApiView):
             'settings': self.get_dict(request, campaign_settings, campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
+            'archived': campaign_settings.archived,
         }
         if request.user.has_perm('zemauth.can_modify_campaign_manager'):
             response['campaign_managers'] = self.get_campaign_managers(request, campaign, campaign_settings)
@@ -804,6 +806,7 @@ class AccountSettings(api_common.BaseApiView):
             'settings': self.get_dict(request, account_settings, account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
+            'archived': account_settings.archived,
         }
 
         self._add_agencies(request, response)

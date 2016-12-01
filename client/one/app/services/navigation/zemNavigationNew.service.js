@@ -1,6 +1,7 @@
 angular.module('one.services').service('zemNavigationNewService', function ($rootScope, $location, $state, zemNavigationService) { // eslint-disable-line max-len
     this.init = init;
     this.navigateTo = navigateTo;
+    this.refreshState = refreshState;
     this.getEntityHref = getEntityHref;
     this.getHomeHref = getHomeHref;
     this.getActiveEntity = getActiveEntity;
@@ -186,6 +187,10 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
             if (query) href += '?' + query;
         }
         return href;
+    }
+
+    function refreshState () {
+        navigateTo(getActiveEntity());
     }
 
     function navigateTo (entity) {
