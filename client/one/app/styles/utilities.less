@@ -2,7 +2,7 @@
 // Global utility classes //
 ////////////////////////////
 
-.clear {
+.clear { // TODO: clean code with this divs
     clear: both;
     width: 0;
     height: 0;
@@ -11,8 +11,19 @@
 }
 
 .clearfix {
-    &:before, &:after{ content:""; display:table; }
-    &:after{ clear: both; }
+    &:after{
+        content: '';
+        display: table;
+        clear: both;
+    }
+}
+
+hr {
+    background-color: @light-gray;
+    height: 1px;
+    margin: @default-spacing 0;
+    padding: 0;
+    border: none;
 }
 
 .no-wrap {

@@ -32,7 +32,7 @@ angular.module('one.widgets').component('zemReportDropdown', {
         function openReportModal () {
             $uibModal.open({
                 component: 'zemReportDownload',
-                windowClass: 'model-default',
+                windowClass: 'zem-report-download',
                 resolve: {
                     api: $ctrl.api,
                 }
