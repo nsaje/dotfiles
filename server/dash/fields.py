@@ -63,7 +63,6 @@ class TargetingExpressionField(forms.Field):
                 tokens = exp.split(':', 1)
                 assert len(tokens) == 2
                 assert tokens[0] in ['bluekai', 'liveramp', 'outbrain']
-                int(tokens[1])
             except:
                 raise forms.ValidationError('Invalid category format: "%s"' % exp)
         else:

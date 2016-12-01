@@ -63,6 +63,9 @@ INSERT INTO mv_master (
     join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
   WHERE
     a.date=%(date)s
+    {% if account_id %}
+        AND c.account_id=%(account_id)s
+    {% endif %}
 );
 
 {% endautoescape %}

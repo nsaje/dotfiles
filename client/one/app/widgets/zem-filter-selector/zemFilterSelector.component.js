@@ -19,7 +19,10 @@ angular.module('one.widgets').component('zemFilterSelector', {
         $ctrl.$onInit = function () {
             zemFilterSelectorService.init();
 
-            zemFilterSelectorService.onSectionsUpdate(refresh);
+            zemFilterSelectorService.onSectionsUpdate(function () {
+                refresh();
+                updateListElementWidth();
+            });
             zemDataFilterService.onDataFilterUpdate(function () {
                 refresh();
                 updateListElementWidth();

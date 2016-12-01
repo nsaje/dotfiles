@@ -1,73 +1,64 @@
-<div class="modal-header">
-    <h4 class="modal-title">Export Report</h4>
+<div class="modal__header">
+    <div class="modal__title">Export Report</div>
 </div>
-<div class="modal-body">
-    <form class="form-horizontal" ng-submit="$ctrl.startReport()">
-
-        <table>
-            <tr>
-                <td>Date range:</td>
-                <td>{{ $ctrl.dateRange.startDate.format('ll') }} - {{ $ctrl.dateRange.endDate.format('ll') }}</td>
-            </tr>
-            <tr>
-                <td>Breakdown:</td>
-                <td>
-                    <span ng-repeat="dimension in $ctrl.resolve.api.getBreakdown()" style="border: 1px solid; margin: 2px;">
-                        <span>{{ dimension.name }}</span>
-                    </span>
-                </td>
-            </tr>
-            <tr>
-                <td>Columns:</td>
-                <td>
-                    <div>
-                        <span ng-repeat="field in $ctrl.selectedFields" style="border: 1px solid; margin: 2px;">
-                            <span title="{{ field }}">{{ field }}</span>
-                        </span>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>Filters:</td>
-                <td>
-                    <div ng-if="$ctrl.appliedFilterConditions.length">
-                        <div>
-                            <span ng-repeat="condition in $ctrl.appliedFilterConditions" style="border: 1px solid; margin: 2px;">
-                                <span style="color: gray">{{condition.name}}</span>
-                                <span title="{{condition.text}}">{{condition.text}}</span>
-                            </span>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-        </table>
-
-        <div class="form-group" ng-if="$ctrl.hasPermission('zemauth.can_include_totals_in_reports')">
-            <div class="col-xs-4">
-                <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_include_totals_in_reports')" popover-placement="right">
-                </zem-internal-feature>
-                <label for="include-totals-checkbox" class="control-label">Include totals</label>
-            </div>
-            <div class="col-xs-4">
-                <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.includeTotals" class="checkbox">
+<div class="modal__body">
+    <div class="form">
+        <div class="form__text">
+            <div class="form__title">You are downloading a report with the following settings:</div>
+        </div>
+        <div class="form__group">
+            <label class="form__label">Date range:</label>
+            <div class="form__information">{{ $ctrl.dateRange.startDate.format('ll') }} - {{ $ctrl.dateRange.endDate.format('ll') }}</div>
+        </div>
+        <div class="form__group">
+            <label class="form__label">View:</label>
+            <div class="form__information">
+                Publishers
             </div>
         </div>
-
-        <div class="modal-footer">
-            <button type="submit" class="btn btn-add btn-icon download" ng-show="!$ctrl.jobPosted" ng-disabled="$ctrl.jobPostingInProgress">
-                <span class="icon"></span>
-                <span class="text">Send to {{ $ctrl.user.email }}</span>
-            </button>
-            <button type="button" class="btn btn-blue btn-outline" ng-click="$ctrl.close()" ng-show="!$ctrl.jobPosted">
-                <span class="text">Cancel</span>
-            </button>
-            <button type="button" class="btn btn-blue btn-outline" ng-click="$ctrl.close()" ng-show="$ctrl.jobPosted">
-                <span class="text">Close</span>
-            </button>
-            <div class="loader" ng-show="$ctrl.jobPostingInProgress"></div>
-            <span ng-show="$ctrl.jobPosted && $ctrl.jobPostedSuccessfully">We are preparing your report, check e-mail</span>
-            <span ng-show="$ctrl.jobPosted && !$ctrl.jobPostedSuccessfully">Something went wrong</span>
+        <div class="form__group">
+            <label class="form__label">Breakdowns:</label>
+            <div class="form__information">
+                <span ng-repeat="dimension in $ctrl.resolve.api.getBreakdown()" class="tag">{{ dimension.name }}</span>
+            </div>
         </div>
-
-    </form>
+        <div class="form__group">
+            <label class="form__label">Columns:</label>
+            <div class="form__information">
+                <span ng-repeat="field in $ctrl.selectedFields" class="tag">{{ field }}</span>
+                <a class="tag tag--show-more">Show all</a>
+            </div>
+        </div>
+        <div class="form__group" ng-if="$ctrl.appliedFilterConditions.length">
+            <label class="form__label">Filters:</label>
+            <div class="form__information">
+                <span ng-repeat="condition in $ctrl.appliedFilterConditions" class="tag">{{condition.text}}</span>
+                <a class="tag tag--show-more">Show all</a>
+            </div>
+        </div>
+        <div class="form__group">
+            <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_include_totals_in_reports')" popover-placement="right"></zem-internal-feature>
+            <label class="form__label" for="include-totals-checkbox">Include totals</label>
+            <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.includeTotals" class="form__input--text">
+        </div>
+        <hr>
+        <div class="form__group">
+            <label class="form__label">Report will be send to:</label>
+            <div class="form__information">
+                {{ $ctrl.user.email }}
+            </div>
+        </div>
+        <div class="form__group">
+            <label class="form__label">Add more recipients:</label>
+            <textarea class="form__textarea" placeholder="Comma-separated list of recipient email addresses"></textarea>
+        </div>
+    </div>
+</div>
+<div class="modal__footer">
+    <button type="submit" class="button button--highlight button--with-icon button--send-icon" ng-click="$ctrl.startReport()" ng-show="!$ctrl.jobPosted" ng-disabled="$ctrl.jobPostingInProgress">Send</button>
+    <button type="button" class="button button--outline" ng-click="$ctrl.close()" ng-show="!$ctrl.jobPosted">Cancel</button>
+    <button type="button" class="button button--outline" ng-click="$ctrl.close()" ng-show="$ctrl.jobPosted">Close</button>
+    <div class="loader" ng-show="$ctrl.jobPostingInProgress"></div>
+    <span ng-show="$ctrl.jobPosted && $ctrl.jobPostedSuccessfully">We are preparing your report, check e-mail</span>
+    <span ng-show="$ctrl.jobPosted && !$ctrl.jobPostedSuccessfully">Something went wrong</span>
 </div>

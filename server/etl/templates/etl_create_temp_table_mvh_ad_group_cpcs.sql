@@ -9,6 +9,9 @@ SELECT
   END as cpc
 FROM stats
 WHERE media_source ILIKE %(source_name)s AND date BETWEEN %(date_from)s AND %(date_to)s
-GROUP BY date, ad_group_id;
+      {% if account_id %}
+           AND ad_group_id=ANY(%(ad_group_id)s)
+      {% endif %}
+GROUP BY date, ad_group_id
 
 {% endautoescape %}

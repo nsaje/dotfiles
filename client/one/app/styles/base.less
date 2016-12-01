@@ -32,13 +32,14 @@ a:visited {
     border-radius: @border-radius;
     box-shadow: none;
     transition: all 250ms ease-in-out;
-    outline: none; // TODO style for outline
-    
+    outline: none; // TODO: style for outline
+
     &:not(.button--disabled):not([disabled]) {
         &:hover {
             background: tint(@secondary-color, 80%);
             border-color: tint(@secondary-color, 80%);
             color: @secondary-color;
+            text-decoration: none;
         }
     }
 }
@@ -51,28 +52,27 @@ a:visited {
 
 .button--highlight {
     background: @primary-color;
-    border-color: @primary-color;
     color: @white;
 
     &:not(.button--disabled):not([disabled]) {
         &:hover {
-            background: tint(@primary-color, 40%);
-            border-color: tint(@primary-color, 40%);
+            background: darken(@primary-color, 8%);
             color: @white;
+            box-shadow: 0px 0px 6px 0px fade(@primary-color,60%);
         }
     }
 }
 
 .button--outline {
-    background: linear-gradient(to bottom, #ffffff, #f9f9f9);
-    border-color: @border-gray-color;
-    color: @text-color;
+    background: transparent;
+    border: 1px solid tint(@secondary-color, 80%);
+    line-height: (@default-button-input-height)-2;
+    color: @secondary-color;
 
     &:not(.button--disabled):not([disabled]) {
         &:hover {
-            background: linear-gradient(to bottom, #f1f1f1, #ffffff);
-            color: @text-color;
-            text-decoration: none;
+            background: tint(@secondary-color, 80%);
+            box-shadow: 0px 0px 6px 0px fade(@secondary-color,10%);
         }
     }
 }
@@ -80,7 +80,7 @@ a:visited {
 .button--dark-backgrounds {
     background-color: fade(@white,10%);
     color: @white;
-    
+
     &:not(.button--disabled):not([disabled]) {
         &:hover {
             background-color: fade(@white,20%);
@@ -112,6 +112,10 @@ a:visited {
     &.button--outline:after {
         background-image: url('images/arrow-gray.svg');
     }
+
+    &.button--dark-backgrounds:before {
+        background-image: url('images/arrow-white.svg');
+    }
 }
 
 .button--with-icon {
@@ -140,9 +144,9 @@ a:visited {
     }
 
     &.button--outline:before {
-        background-image: url('images/check-blue.svg'); // TODO: Create gray icon
+        background-image: url('images/check-blue.svg');
     }
-    
+
     &.button--dark-backgrounds:before {
         background-image: url('images/check-white.svg');
     }
@@ -158,11 +162,29 @@ a:visited {
     }
 
     &.button--outline:before {
-        background-image: url('images/remove-blue.svg'); // TODO: Create gray icon
+        background-image: url('images/remove-blue.svg');
     }
-    
+
     &.button--dark-backgrounds:before {
         background-image: url('images/remove-white.svg');
+    }
+}
+
+.button--send-icon {
+    &:before {
+        background-image: url('images/send-blue.svg');
+    }
+
+    &.button--highlight:before {
+        background-image: url('images/send-white.svg');
+    }
+
+    &.button--outline:before {
+        background-image: url('images/send-blue.svg');
+    }
+
+    &.button--dark-backgrounds:before {
+        background-image: url('images/send-white.svg');
     }
 }
 
@@ -176,9 +198,9 @@ a:visited {
     }
 
     &.button--outline:before {
-        background-image: url('images/filter-blue.svg'); // TODO: Create gray icon
+        background-image: url('images/filter-blue.svg');
     }
-    
+
     &.button--dark-backgrounds:before {
         background-image: url('images/filter-white.svg');
     }
@@ -206,6 +228,107 @@ ul.with-icons {
 
 ////////////////////////////
 // Form elements //
+////////////////////////////
+
+.input-box() {
+    background: none;
+    border: 1px solid @border-gray-color;
+    height: @default-button-input-height;
+    line-height: 18px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    border-radius: @border-radius;
+    box-shadow: inset 3px 3px 3px 0px rgba(0,0,0,0.03);
+
+    &:focus {
+        border: 1px solid darken(@border-gray-color, 20%);
+        outline: none;
+        box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
+    }
+}
+
+.form {
+
+}
+
+.form__text {
+    color: @gray;
+    margin-bottom: @default-spacing;
+}
+
+.form__title {
+    font-size: @default-font-size+4;
+    color: @secondary-color;
+    margin-bottom: 2px;
+}
+
+.form__group {
+    clear: both;
+    margin-bottom: 10px;
+    position: relative;
+
+    .clearfix();
+}
+
+.form__group--vertical {
+
+}
+
+.form__label {
+    float: left;
+    width: 25%;
+    margin: 0 2% 0 0;
+}
+
+.form__label--wider {
+
+}
+
+.form__information {
+    float: left;
+    width: 73%;
+}
+
+.form__input-text {
+    float: left;
+    width: 73%;
+}
+
+.form__input-checkbox {
+    float: left;
+}
+
+.form__input-radio {
+
+}
+
+.form__input-text--with-prefix {
+
+}
+
+.form__input-text--with-postfix {
+
+}
+
+.form__input-text-prefix {
+
+}
+
+.form__input-text-postfix {
+
+}
+
+.form__textarea {
+    .input-box();
+    float: left;
+    width: 73%;
+    height: 100px;
+    line-height: 18px;
+    padding: 5px 10px;
+}
+
+////////////////////////////
+// Form elements - OLD //
 ////////////////////////////
 
 input[type="text"], input[type="password"], input[type="search"] {
@@ -359,6 +482,75 @@ label, label.control-label, .form-horizontal .control-label {
             }
         }
     }
+}
+
+////////////////////////////
+// Modal window //
+////////////////////////////
+
+.modal {
+    .modal-dialog {
+        width: 640px;
+    }
+
+    .modal-content {
+        border-radius: @border-radius;
+    }
+}
+
+.modal--wide {
+
+}
+
+.modal__header {
+    border-bottom: 4px solid @primary-color;
+    padding: 15px 15px 10px 15px;
+}
+
+.modal__title {
+    color: @primary-color;
+    font-size: 20px;
+}
+
+.modal__body {
+    padding: @default-spacing;
+}
+
+.modal__footer {
+    padding: @default-spacing;
+    background-color: tint(@secondary-color,90%);
+    text-align: left;
+    border-bottom-right-radius: @border-radius;
+    border-bottom-left-radius: @border-radius;
+}
+
+////////////////////////////
+// Tags //
+////////////////////////////
+
+.tag {
+    padding: 2px 5px;
+    background-color: @very-light-gray;
+    font-size: @default-font-size;
+    display: inline-block;
+    color: @text-color;
+    border-radius: @border-radius;
+    margin: 0 3px 3px 0;
+}
+
+.tag--show-more {
+    color: @primary-color;
+
+    &:hover {
+        background: @primary-color;
+        color: white;
+        text-decoration: none;
+    }
+}
+
+.tag__explain {
+    color: @gray;
+    margin-right: 3px;
 }
 
 ////////////////////////////

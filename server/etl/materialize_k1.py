@@ -1,3 +1,4 @@
+import backtosql
 import logging
 import json
 from collections import defaultdict
@@ -40,7 +41,7 @@ class ContentAdStats(materialize_views.Materialize):
                 with get_write_stats_cursor() as c:
 
                     logger.info('Deleting data from table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
-                    sql, params = materialize_views.prepare_daily_delete_query(self.TABLE_NAME, date)
+                    sql, params = materialize_views.prepare_daily_delete_query(self.TABLE_NAME, date, self.account_id)
                     c.execute(sql, params)
 
                     s3_path = materialize_views.upload_csv(
@@ -55,22 +56,17 @@ class ContentAdStats(materialize_views.Materialize):
                     c.execute(sql, params)
 
     def _stats_breakdown(self, date):
-        return Breakdown(
-            date,
-            'stats',
-            ['ad_group_id', 'content_ad_id', 'media_source_type', 'media_source'],
-            [('impressions', 'sum'), ('clicks', 'sum'), ('spend', 'sum'), ('data_spend', 'sum')],
-        )
+        params = helpers.get_local_date_context(date)
+        sql = backtosql.generate_sql('etl_select_stats_for_contentadstats.sql', {
+            'account_id': self.account_id,
+        })
+        return _query_rows(sql, self._add_ad_group_id_param(params))
 
     def _postclick_stats_breakdown(self, date):
-        return Breakdown(
-            date,
-            'postclickstats',
-            ['content_ad_id', 'type', 'source'],
-            [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
-             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg'),
-             ('users', 'sum')],
-        )
+        sql = backtosql.generate_sql('etl_select_postclickstats_for_contentadstats.sql', {
+            'account_id': self.account_id,
+        })
+        return _query_rows(sql, self._add_ad_group_id_param({'date': date}))
 
     def _get_post_click_data(self, content_ad_postclick, ad_group, content_ad_id, media_source):
         post_click_list = content_ad_postclick.pop((content_ad_id, media_source), None)
@@ -98,17 +94,20 @@ class ContentAdStats(materialize_views.Materialize):
 
     def generate_rows(self, cursor, date, campaign_factors):
         content_ad_postclick = defaultdict(list)
-        for row in self._postclick_stats_breakdown(date).rows():
+
+        for row in self._postclick_stats_breakdown(date):
             content_ad_id = row[0]
             media_source = helpers.extract_source_slug(row[2])
             content_ad_postclick[(content_ad_id, media_source)].append(row)
 
-        ad_groups_map = {a.id: a for a in dash.models.AdGroup.objects.all()}
-        media_sources_map = {
-            s.bidder_slug: s for s in dash.models.Source.objects.all()
-        }
+        ad_groups = dash.models.AdGroup.objects.all()
+        if self.account_id:
+            ad_groups = ad_groups.filter(campaign__account_id=self.account_id)
 
-        for row in self._stats_breakdown(date).rows():
+        ad_groups_map = {a.id: a for a in ad_groups}
+        media_sources_map = {s.bidder_slug: s for s in dash.models.Source.objects.all()}
+
+        for row in self._stats_breakdown(date):
             content_ad_id = row[1]
             media_source_slug = row[3]
 
@@ -165,12 +164,13 @@ class ContentAdStats(materialize_views.Materialize):
                 helpers.calculate_returning_users(post_click.get('users'), post_click.get('new_visits')),
             )
 
-        content_ads_ad_group_map = {x.id: x.ad_group_id for x in dash.models.ContentAd.objects.all()}
+        content_ads = dash.models.ContentAd.objects.all()
+        if self.account_id:
+            content_ads = content_ads.filter(ad_group__campaign__account_id=self.account_id)
+        content_ads_ad_group_map = {x.id: x.ad_group_id for x in content_ads}
 
         # make a new mapping as from now on we use media_source_slugs that are already extracted
-        media_sources_map = {
-            helpers.extract_source_slug(s.bidder_slug): s for s in dash.models.Source.objects.all()
-        }
+        media_sources_map = {helpers.extract_source_slug(s.bidder_slug): s for s in dash.models.Source.objects.all()}
 
         # insert the remaining postclicks
         for content_ad_id, media_source_slug in content_ad_postclick.keys():
@@ -246,7 +246,7 @@ class Publishers(materialize_views.Materialize):
                 with get_write_stats_cursor() as c:
 
                     logger.info('Deleting data from table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
-                    sql, params = materialize_views.prepare_daily_delete_query(self.TABLE_NAME, date)
+                    sql, params = self._prepare_daily_delete_query(date, self.account_id)
                     c.execute(sql, params)
 
                     s3_path = materialize_views.upload_csv(
@@ -260,44 +260,52 @@ class Publishers(materialize_views.Materialize):
                     sql, params = materialize_views.prepare_copy_csv_query(s3_path, self.TABLE_NAME)
                     c.execute(sql, params)
 
+    def _prepare_daily_delete_query(self, date, account_id):
+        sql = backtosql.generate_sql('etl_daily_delete_publishers_1.sql', {
+            'table': self.TABLE_NAME,
+            'account_id': account_id,
+        })
+
+        params = {
+            'date': date,
+        }
+
+        if account_id:
+            params['ad_group_id'] = materialize_views.get_ad_group_ids_or_none(account_id)
+
+        return sql, params
+
     def _stats_breakdown(self, date):
-        return Breakdown(
-            date,
-            'stats',
-            ['ad_group_id', 'media_source_type', 'media_source', 'publisher'],
-            [('impressions', 'sum'), ('clicks', 'sum'), ('spend', 'sum'), ('data_spend', 'sum')],
-        )
+        sql = backtosql.generate_sql('etl_select_stats_for_publishers_1.sql', {
+            'account_id': self.account_id,
+        })
+        params = helpers.get_local_date_context(date)
+        return _query_rows(sql, self._add_ad_group_id_param(params))
 
     def _stats_outbrain_publishers(self, date):
-        fields = ['ad_group_id', 'publisher_id', 'publisher_name', 'clicks']
-        query = "select {fields} from {table} where date = '{date}'".format(
-            fields=', '.join(fields),
-            table='outbrainpublisherstats',
-            date=date.isoformat()
-        )
-        return _query_rows(query)
+        sql = backtosql.generate_sql('etl_select_outbrainpublishers_for_publishers_1.sql', {
+            'account_id': self.account_id,
+        })
+        params = {'date': date}
+        return _query_rows(sql, self._add_ad_group_id_param(params))
 
     def _postclick_stats_breakdown(self, date):
-        return Breakdown(
-            date,
-            'postclickstats',
-            ['ad_group_id', 'type', 'source', 'lower(publisher)'],
-            [('visits', 'sum'), ('new_visits', 'sum'), ('bounced_visits', 'sum'),
-             ('pageviews', 'sum'), ('total_time_on_site', 'sum'), ('conversions', 'listagg'),
-             ('users', 'sum')],
-        )
+        sql = backtosql.generate_sql('etl_select_postclickstats_for_publishers_1.sql', {
+            'account_id': self.account_id,
+        })
+        params = {'date': date}
+        return _query_rows(sql, self._add_ad_group_id_param(params))
 
     def _outbrain_cpc(self, date):
-        query = """
-            select ad_group_id, sum(spend), sum(clicks)
-            from stats
-            where media_source='outbrain' and date='{date}'
-            group by ad_group_id
-        """.format(
-            date=date.isoformat()
-        )
+        sql = backtosql.generate_sql('etl_select_outbrain_cpc_for_publishers_1.sql', {
+            'account_id': self.account_id,
+        })
+        params = self._add_ad_group_id_param({
+            'date': date,
+            'media_source_slug': 'outbrain',
+        })
         cpcs = {}
-        for line in _query_rows(query):
+        for line in _query_rows(sql, params):
             if line[1] != 0 and line[2] != 0:
                 cpcs[line[0]] = Decimal(line[1]) / line[2]
 
@@ -328,16 +336,19 @@ class Publishers(materialize_views.Materialize):
 
     def generate_rows(self, cursor, date, campaign_factors):
         content_ad_postclick = defaultdict(list)
-        for row in self._postclick_stats_breakdown(date).rows():
+        for row in self._postclick_stats_breakdown(date):
             ad_group_id = row[0]
             media_source = row[2]
             publisher = row[3]
             media_source = helpers.extract_source_slug(media_source)
             content_ad_postclick[(ad_group_id, media_source, publisher)].append(row)
 
-        ad_groups_map = {a.id: a for a in dash.models.AdGroup.objects.all()}
+        ad_groups = dash.models.AdGroup.objects.all()
+        if self.account_id:
+            ad_groups = ad_groups.filter(campaign__account_id=self.account_id)
+        ad_groups_map = {a.id: a for a in ad_groups}
 
-        for row in self._stats_breakdown(date).rows():
+        for row in self._stats_breakdown(date):
             ad_group_id = row[0]
             media_source = row[2]
             publisher = row[3]
@@ -514,7 +525,7 @@ class TouchpointConversions(materialize_views.Materialize):
     TABLE_NAME = 'touchpointconversions'
 
     def generate(self, campaign_factors):
-        for date, daily_campaign_factors in campaign_factors.iteritems():
+        for date, _ in campaign_factors.iteritems():
             with get_write_stats_transaction():
                 with get_write_stats_cursor() as c:
                     s3_path = materialize_views.upload_csv(
@@ -524,68 +535,25 @@ class TouchpointConversions(materialize_views.Materialize):
                         partial(self.generate_rows, c, date)
                     )
 
-                    sql, params = materialize_views.prepare_daily_delete_query(self.TABLE_NAME, date)
+                    sql, params = materialize_views.prepare_daily_delete_query(self.TABLE_NAME, date, self.account_id)
                     c.execute(sql, params)
 
                     sql, params = materialize_views.prepare_copy_csv_query(s3_path, self.TABLE_NAME)
                     c.execute(sql, params)
 
     def generate_rows(self, cursor, date):
-        query = """
-            select
-                zuid, slug, date, conversion_id, conversion_timestamp, account_id,
-                campaign_id, ad_group_id, content_ad_id, source_id,
-                touchpoint_id, touchpoint_timestamp, conversion_lag, publisher
-            from conversions
-            where date=%s
-        """
+        sql = backtosql.generate_sql('etl_select_conversions_for_touchpointconversions.sql', {
+            'account_id': self.account_id,
+        })
 
-        cursor.execute(query, [date])
+        cursor.execute(sql, self._add_account_id_param({'date': date}))
         for row in cursor:
             yield row
 
 
-class Breakdown(object):
-
-    def __init__(self, date, table, breakdowns, values):
-        self.date = date
-        self.table = table
-        self.breakdowns = breakdowns
-        self.values = values
-
-    def rows(self):
-        query = self._get_materialize_query()
-        return _query_rows(query)
-
-    def _get_materialize_query(self):
-        aggr_values = []
-        for field, aggr in self.values:
-            if aggr == 'listagg':
-                aggr_values.append('{aggr}({field}, \'\n\')'.format(aggr=aggr, field=field))
-            else:
-                aggr_values.append('{aggr}({field})'.format(aggr=aggr, field=field))
-
-        return """
-            select {groups}, {values}
-            from {table}
-            where {date_query}
-            group by {groups}
-        """.format(
-            groups=', '.join(self.breakdowns),
-            values=', '.join(aggr_values),
-            table=self.table,
-            date_query=self._get_date_query(),
-        )
-
-    def _get_date_query(self):
-        if self.table == 'stats':
-            return helpers.get_local_date_query(self.date)
-        return "date = '{date}'".format(date=self.date.isoformat())
-
-
-def _query_rows(query):
+def _query_rows(query, params):
     with get_write_stats_cursor() as c:
-        c.execute(query)
+        c.execute(query, params)
         for row in c:
             yield row
 

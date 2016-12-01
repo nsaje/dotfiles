@@ -9,6 +9,8 @@ from django.test import TestCase, override_settings
 from dash import models
 from dash import constants
 
+from utils import test_helper
+
 from etl import materialize_views
 
 
@@ -26,7 +28,7 @@ class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
 
     @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
     def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
-        mv = materialize_views.MVHelpersSource('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+        mv = materialize_views.MVHelpersSource('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
         mv.generate()
 
@@ -68,7 +70,7 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
 
     @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
     def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
-        mv = materialize_views.MVHelpersCampaignFactors('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+        mv = materialize_views.MVHelpersCampaignFactors('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
         mv.generate(campaign_factors={
             datetime.date(2016, 7, 1): {
@@ -114,6 +116,51 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
             })
         ])
 
+    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    def test_generate_account_id(self, mock_s3helper, mock_transaction, mock_cursor):
+        mv = materialize_views.MVHelpersCampaignFactors(
+            'asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
+
+        mv.generate(campaign_factors={
+            datetime.date(2016, 7, 1): {
+                models.Campaign.objects.get(pk=1): (1.0, 0.2, 0.25),
+            },
+            datetime.date(2016, 7, 2): {
+                models.Campaign.objects.get(pk=1): (1.0, 0.3, 0.25),
+            },
+        })
+
+        self.assertTrue(mock_s3helper.called)
+        mock_s3helper().put.assert_called_with(
+            "materialized_views/mvh_campaign_factors/2016/07/03/view_asd.csv",
+            textwrap.dedent("""\
+            2016-07-01\t1\t1.0\t0.2\t0.25\r
+            2016-07-02\t1\t1.0\t0.3\t0.25\r
+            """))
+
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(backtosql.SQLMatcher("""
+            CREATE TEMP TABLE mvh_campaign_factors (
+                date date not null encode delta,
+                campaign_id int2 not null encode lzo,
+
+                pct_actual_spend decimal(22, 18) encode lzo,
+                pct_license_fee decimal(22, 18) encode lzo,
+                pct_margin decimal(22, 18) encode lzo
+            ) sortkey(date, campaign_id)""")),
+            mock.call(backtosql.SQLMatcher("""
+            COPY mvh_campaign_factors
+            FROM %(s3_url)s
+            FORMAT CSV
+            DELIMITER AS %(delimiter)s
+            CREDENTIALS %(credentials)s
+            MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mvh_campaign_factors/2016/07/03/view_asd.csv',
+                'delimiter': '\t',
+            })
+        ])
+
 
 @mock.patch('redshiftapi.db.get_write_stats_cursor')
 @mock.patch('redshiftapi.db.get_write_stats_transaction')
@@ -123,7 +170,7 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
 
     @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
     def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
-        mv = materialize_views.MVHelpersAdGroupStructure('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+        mv = materialize_views.MVHelpersAdGroupStructure('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
         mv.generate()
 
@@ -158,6 +205,45 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
             })
         ])
 
+    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    def test_generate_account_id(self, mock_s3helper, mock_transaction, mock_cursor):
+        mv = materialize_views.MVHelpersAdGroupStructure(
+            'asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
+
+        mv.generate()
+
+        self.assertTrue(mock_s3helper.called)
+
+        # only account_id=1 is used to generate CSV
+        mock_s3helper().put.assert_called_with(
+            "materialized_views/mvh_adgroup_structure/2016/07/03/view_asd.csv",
+            textwrap.dedent("""\
+            1\t1\t1\t1\r
+            1\t1\t3\t3\r
+            1\t1\t1\t4\r
+            """))
+
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(backtosql.SQLMatcher("""
+            CREATE TEMP TABLE mvh_adgroup_structure (
+                agency_id int2 encode lzo,
+                account_id int2 encode lzo,
+                campaign_id int2 encode lzo,
+                ad_group_id int2 encode lzo
+            ) sortkey(ad_group_id, campaign_id, account_id, agency_id)""")),
+            mock.call(backtosql.SQLMatcher("""
+            COPY mvh_adgroup_structure
+            FROM %(s3_url)s
+            FORMAT CSV
+            DELIMITER AS %(delimiter)s
+            CREDENTIALS %(credentials)s
+            MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mvh_adgroup_structure/2016/07/03/view_asd.csv',
+                'delimiter': '\t',
+            })
+        ])
+
 
 @mock.patch('redshiftapi.db.get_write_stats_cursor')
 @mock.patch('redshiftapi.db.get_write_stats_transaction')
@@ -165,7 +251,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ['test_materialize_views']
 
     def test_generate(self, mock_transaction, mock_cursor):
-        mv = materialize_views.MVHelpersNormalizedStats('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+        mv = materialize_views.MVHelpersNormalizedStats('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
         mv.generate()
 
@@ -221,12 +307,42 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                         WHEN device_type = 5 THEN 2
                         ELSE 0
                     END as device_type,
-                    extract_country(country) as country,
-                    extract_state(state) as state,
-                    extract_dma(dma) as dma,
-                    extract_age(age) as age,
-                    extract_gender(gender) as gender,
-                    extract_age_gender(stats.age, stats.gender) as age_gender,
+                    UPPER(TRIM(country)) AS country,
+                    UPPER(TRIM(state)) AS state,
+                    dma,
+                    CASE WHEN TRIM(age)='18-20' THEN 1
+                        WHEN TRIM(age)='21-29' THEN 2
+                        WHEN TRIM(age)='30-39' THEN 3
+                        WHEN TRIM(age)='40-49' THEN 4
+                        WHEN TRIM(age)='50-64' THEN 5
+                        WHEN TRIM(age)='65+'   THEN 6
+                        ELSE 0
+                    END AS age,
+                    CASE WHEN TRIM(LOWER(gender))='male'   THEN 1
+                        WHEN TRIM(LOWER(gender))='female' THEN 2
+                        ELSE 0
+                    END AS gender,
+                    CASE
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='18-20' THEN 1
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='18-20' THEN 2
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='18-20' THEN 3
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='21-29' THEN 4
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='21-29' THEN 5
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='21-29' THEN 6
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='30-39' THEN 7
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='30-39' THEN 8
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='30-39' THEN 9
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='40-49' THEN 10
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='40-49' THEN 11
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='40-49' THEN 12
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='50-64' THEN 13
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='50-64' THEN 14
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='50-64' THEN 15
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='65+'   THEN 16
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='65+'   THEN 17
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='65+'   THEN 18
+                    ELSE 0
+                    END AS age_gender,
                     SUM(impressions) as impressions,
                     SUM(clicks) as clicks,
                     SUM(spend) as spend,
@@ -253,6 +369,132 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
             })
         ])
 
+    def test_generate_account_id(self, mock_transaction, mock_cursor):
+        mv = materialize_views.MVHelpersNormalizedStats(
+            'asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
+
+        mv.generate()
+
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(backtosql.SQLMatcher("""
+            CREATE TEMP TABLE mvh_clean_stats (
+                date date not null encode delta,
+                source_slug varchar(127) encode lzo,
+
+                ad_group_id int2 encode lzo,
+                content_ad_id integer encode lzo,
+                publisher varchar(255) encode lzo,
+
+                device_type int2 encode bytedict,
+                country varchar(2) encode bytedict,
+                state varchar(5) encode bytedict,
+                dma int2 encode bytedict,
+                age int2 encode bytedict,
+                gender int2 encode bytedict,
+                age_gender int2 encode bytedict,
+
+                impressions integer encode lzo,
+                clicks integer encode lzo,
+                spend bigint encode lzo,
+                data_spend bigint encode lzo
+            ) distkey(date) sortkey(date, source_slug, ad_group_id, content_ad_id, publisher)""")),
+            mock.call(
+                backtosql.SQLMatcher("""
+                INSERT INTO mvh_clean_stats
+                (SELECT
+                    CASE WHEN hour is null THEN date
+                         WHEN hour is not null
+                             AND ((date='2016-07-01'::date AND hour >= 4)
+                                 OR (date='2016-07-02'::date
+                             AND hour < 4)) THEN '2016-07-01'::date
+                         WHEN hour is not null
+                           AND ((date='2016-07-02'::date
+                                   AND hour >= 4)
+                                   OR (date='2016-07-03'::date
+                                       AND hour < 4)) THEN '2016-07-02'::date
+                         WHEN hour is not null
+                           AND ((date='2016-07-03'::date
+                                   AND hour >= 4)
+                                   OR (date='2016-07-04'::date
+                                       AND hour < 4)) THEN '2016-07-03'::date
+                    END as date,
+                    stats.media_source as source_slug,
+                    ad_group_id,
+                    content_ad_id,
+                    LOWER(publisher),
+                    CASE
+                        WHEN device_type = 4 THEN 3
+                        WHEN device_type = 2 THEN 1
+                        WHEN device_type = 5 THEN 2
+                        ELSE 0
+                    END as device_type,
+
+                    UPPER(TRIM(country)) AS country,
+                    UPPER(TRIM(state)) AS state,
+                    dma,
+                    CASE WHEN TRIM(age)='18-20' THEN 1
+                        WHEN TRIM(age)='21-29' THEN 2
+                        WHEN TRIM(age)='30-39' THEN 3
+                        WHEN TRIM(age)='40-49' THEN 4
+                        WHEN TRIM(age)='50-64' THEN 5
+                        WHEN TRIM(age)='65+'   THEN 6
+                        ELSE 0
+                    END AS age,
+                    CASE WHEN TRIM(LOWER(gender))='male'   THEN 1
+                        WHEN TRIM(LOWER(gender))='female' THEN 2
+                        ELSE 0
+                    END AS gender,
+                    CASE
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='18-20' THEN 1
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='18-20' THEN 2
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='18-20' THEN 3
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='21-29' THEN 4
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='21-29' THEN 5
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='21-29' THEN 6
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='30-39' THEN 7
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='30-39' THEN 8
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='30-39' THEN 9
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='40-49' THEN 10
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='40-49' THEN 11
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='40-49' THEN 12
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='50-64' THEN 13
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='50-64' THEN 14
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='50-64' THEN 15
+                        WHEN TRIM(LOWER(gender))='male'                    AND TRIM(age)='65+'   THEN 16
+                        WHEN TRIM(LOWER(gender))='female'                  AND TRIM(age)='65+'   THEN 17
+                        WHEN TRIM(LOWER(gender)) NOT IN ('male', 'female') AND TRIM(age)='65+'   THEN 18
+                    ELSE 0
+                    END AS age_gender,
+
+                    SUM(impressions) as impressions,
+                    SUM(clicks) as clicks,
+                    SUM(spend) as spend,
+                    SUM(data_spend) as data_spend
+                FROM stats
+                WHERE (hour is null
+                        and date>=%(date_from)s
+                        AND date<=%(date_to)s)
+                    OR (hour is not null
+                        and date>%(tzdate_from)s
+                        AND date<%(tzdate_to)s)
+                    OR (hour IS NOT NULL
+                        AND ((date=%(tzdate_from)s
+                            AND hour >= %(tzhour_from)s)
+                            OR (date=%(tzdate_to)s
+                                AND hour < %(tzhour_to)s)))
+                    AND ad_group_id=ANY(%(ad_group_id)s)
+                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);"""), {
+                    'tzhour_from': 4,
+                    'tzhour_to': 4,
+                    'tzdate_from': '2016-07-01',
+                    'tzdate_to': '2016-07-04',
+                    'date_from': '2016-07-01',
+                    'date_to': '2016-07-03',
+                    'ad_group_id': test_helper.ListMatcher([1, 3, 4]),
+                }
+            )
+        ])
+
 
 class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
@@ -266,7 +508,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         date_from = datetime.date(2016, 7, 1)
         date_to = datetime.date(2016, 7, 3)
 
-        mv = materialize_views.MasterView('asd', date_from, date_to)
+        mv = materialize_views.MasterView('asd', date_from, date_to, account_id=None)
 
         mv.generate()
 
@@ -405,7 +647,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
         with mock.patch.object(materialize_views.MasterView, 'get_postclickstats',
                                return_value=postclickstats_return_value):
-            mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+            mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
             rows = list(mv.generate_rows(mock_cursor, date))
 
             self.assertItemsEqual(rows, [
@@ -438,7 +680,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             PostclickstatsResults(2, 'omniture', 4, 'outbrain', 'Trol', 12, '{einpix: 2}', 22, 100, 20, 2, 24),
         ]
 
-        mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+        mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
         mv.prefetch()
 
         self.maxDiff = None
@@ -456,7 +698,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
 
     def test_prepare_postclickstats_query(self):
         date = datetime.date(2016, 5, 1)
-        mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+        mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
         sql, params = mv.prepare_postclickstats_query(date)
 
         self.assertSQLEquals(sql, """
@@ -485,6 +727,169 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         self.assertDictEqual(params, {'date': date})
 
 
+class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
+
+    fixtures = ['test_materialize_views']
+
+    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @mock.patch('redshiftapi.db.get_write_stats_cursor')
+    @mock.patch('redshiftapi.db.get_write_stats_transaction')
+    @mock.patch('utils.s3helpers.S3Helper')
+    def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
+        date_from = datetime.date(2016, 7, 1)
+        date_to = datetime.date(2016, 7, 3)
+
+        account_id = 1
+        mv = materialize_views.MasterView('asd', date_from, date_to, account_id=account_id)
+
+        mv.generate()
+
+        insert_into_master_sql = backtosql.SQLMatcher("""
+            INSERT INTO mv_master
+                (SELECT
+                    a.date as date,
+                    b.source_id as source_id,
+                    c.agency_id as agency_id,
+                    c.account_id as account_id,
+                    c.campaign_id as campaign_id,
+                    a.ad_group_id as ad_group_id,
+                    a.content_ad_id as content_ad_id,
+                    a.publisher as publisher,
+                    a.device_type as device_type,
+                    a.country as country,
+                    a.state as state,
+                    a.dma as dma,
+                    a.age as age,
+                    a.gender as gender,
+                    a.age_gender as age_gender,
+                    a.impressions as impressions,
+                    a.clicks as clicks,
+                    a.spend::bigint * 1000 as cost_nano,
+                    a.data_spend::bigint * 1000 as data_cost_nano,
+                    null as visits,
+                    null as new_visits,
+                    null as bounced_visits,
+                    null as pageviews,
+                    null as total_time_on_site,
+                    round(a.spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_cost_nano,
+                    round(a.data_spend * cf.pct_actual_spend::decimal(10, 8) * 1000) as effective_data_cost_nano,
+                    round( (
+                        (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                        (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                    ) * cf.pct_license_fee::decimal(10, 8) * 1000
+                    ) as license_fee_nano,
+                    round(
+                        (
+                            (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                            (
+                                (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) +
+                                (nvl(a.data_spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+                            ) * cf.pct_license_fee::decimal(10, 8)
+                        ) * cf.pct_margin::decimal(10, 8) * 1000
+                    ) as margin_nano,
+                    null as users,
+                    null as returning_users
+                FROM ( (mvh_clean_stats a left outer join mvh_source b on a.source_slug=b.bidder_slug)
+                    join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id )
+                        join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and a.date=cf.date
+                WHERE a.date=%(date)s AND c.account_id=%(account_id)s);
+            """)
+
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s'),
+                {'date': datetime.date(2016, 7, 1), 'account_id': account_id}
+            ),
+            mock.call(insert_into_master_sql, {'date': datetime.date(2016, 7, 1), 'account_id': account_id}),
+            mock.call(backtosql.SQLMatcher("""
+                SELECT
+                    ad_group_id AS ad_group_id,
+                    type AS postclick_source,
+                    content_ad_id AS content_ad_id,
+                    source AS source_slug,
+                    publisher AS publisher,
+                    SUM(bounced_visits) bounced_visits,
+                    json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
+                    SUM(new_visits) new_visits,
+                    SUM(pageviews) pageviews,
+                    SUM(total_time_on_site) total_time_on_site,
+                    SUM(users) users,
+                    SUM(visits) visits
+                FROM postclickstats
+                WHERE date=%(date)s AND ad_group_id=ANY(%(ad_group_id)s)
+                GROUP BY ad_group_id, postclick_source, content_ad_id, source_slug, publisher;
+            """), {'date': datetime.date(2016, 7, 1), 'ad_group_id': test_helper.ListMatcher([1, 3, 4])}
+            ),
+            mock.call(backtosql.SQLMatcher("""
+                COPY mv_master
+                FROM %(s3_url)s
+                FORMAT CSV
+                DELIMITER AS %(delimiter)s
+                CREDENTIALS %(credentials)s
+                MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/01/view_asd.csv',
+                'delimiter': '\t'
+            }),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 1), 'account_id': account_id}),
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s'),
+                {'date': datetime.date(2016, 7, 2), 'account_id': account_id}
+            ),
+            mock.call(insert_into_master_sql, {'date': datetime.date(2016, 7, 2), 'account_id': account_id}),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2), 'ad_group_id': test_helper.ListMatcher([1, 3, 4])}),
+            mock.call(mock.ANY, {
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/02/view_asd.csv',
+                'delimiter': '\t'
+            }),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2), 'account_id': account_id}),
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s'),
+                {'date': datetime.date(2016, 7, 3), 'account_id': account_id}
+            ),
+            mock.call(insert_into_master_sql, {'date': datetime.date(2016, 7, 3), 'account_id': account_id}),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3), 'ad_group_id': test_helper.ListMatcher([1, 3, 4])}),
+            mock.call(mock.ANY, {
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/03/view_asd.csv',
+                'delimiter': '\t'
+            }),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3), 'account_id': account_id}),
+        ])
+
+    def test_prepare_postclickstats_query(self):
+        date = datetime.date(2016, 5, 1)
+        mv = materialize_views.MasterView('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
+        sql, params = mv.prepare_postclickstats_query(date)
+
+        self.assertSQLEquals(sql, """
+        SELECT
+            ad_group_id AS ad_group_id,
+            type AS postclick_source,
+            content_ad_id AS content_ad_id,
+            source AS source_slug,
+            publisher AS publisher,
+            SUM(bounced_visits) bounced_visits,
+            json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
+            SUM(new_visits) new_visits,
+            SUM(pageviews) pageviews,
+            SUM(total_time_on_site) total_time_on_site,
+            SUM(users) users,
+            SUM(visits) visits
+        FROM postclickstats
+        WHERE date=%(date)s AND ad_group_id=ANY(%(ad_group_id)s)
+        GROUP BY
+            ad_group_id,
+            postclick_source,
+            content_ad_id,
+            source_slug,
+            publisher;""")
+
+        self.assertDictEqual(params, {'date': date, 'ad_group_id': test_helper.ListMatcher([1, 3, 4])})
+
+
 class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
 
     fixtures = ['test_materialize_views']
@@ -497,7 +902,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
         date_from = datetime.date(2016, 7, 1)
         date_to = datetime.date(2016, 7, 3)
 
-        mv = materialize_views.MVConversions('asd', date_from, date_to)
+        mv = materialize_views.MVConversions('asd', date_from, date_to, account_id=None)
 
         mv.generate()
 
@@ -587,7 +992,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
         with mock.patch.object(materialize_views.MasterView, 'get_postclickstats',
                                return_value=postclickstats_return_value):
 
-            mv = materialize_views.MVConversions('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+            mv = materialize_views.MVConversions('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
             rows = list(mv.generate_rows(mock_cursor, date))
 
             self.assertItemsEqual(rows, [
@@ -598,6 +1003,80 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
             ])
 
 
+class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
+
+    fixtures = ['test_materialize_views']
+
+    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    @mock.patch('redshiftapi.db.get_write_stats_cursor')
+    @mock.patch('redshiftapi.db.get_write_stats_transaction')
+    @mock.patch('utils.s3helpers.S3Helper')
+    def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
+        date_from = datetime.date(2016, 7, 1)
+        date_to = datetime.date(2016, 7, 3)
+
+        mv = materialize_views.MVConversions('asd', date_from, date_to, account_id=1)
+
+        mv.generate()
+
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_conversions WHERE date=%(date)s AND account_id=%(account_id)s'),
+                {'date': datetime.date(2016, 7, 1), 'account_id': 1}
+            ),
+            mock.call(backtosql.SQLMatcher("""
+                SELECT
+                    ad_group_id AS ad_group_id,
+                    type AS postclick_source,
+                    content_ad_id AS content_ad_id,
+                    source AS source_slug,
+                    publisher AS publisher,
+                    SUM(bounced_visits) bounced_visits,
+                    json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
+                    SUM(new_visits) new_visits,
+                    SUM(pageviews) pageviews,
+                    SUM(total_time_on_site) total_time_on_site,
+                    SUM(users) users,
+                    SUM(visits) visits
+                FROM postclickstats
+                WHERE date=%(date)s AND ad_group_id=ANY(%(ad_group_id)s)
+                GROUP BY ad_group_id, postclick_source, content_ad_id, source_slug, publisher;
+            """), {'date': datetime.date(2016, 7, 1), 'ad_group_id': test_helper.ListMatcher([1, 3, 4])}
+            ),
+            mock.call(backtosql.SQLMatcher("""
+                COPY mv_conversions
+                FROM %(s3_url)s
+                FORMAT CSV
+                DELIMITER AS %(delimiter)s
+                CREDENTIALS %(credentials)s
+                MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/01/view_asd.csv',
+                'delimiter': '\t'
+            }),
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_conversions WHERE date=%(date)s AND account_id=%(account_id)s'),
+                {'date': datetime.date(2016, 7, 2), 'account_id': 1}
+            ),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2), 'ad_group_id': test_helper.ListMatcher([1, 3, 4])}),
+            mock.call(mock.ANY, {
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/02/view_asd.csv',
+                'delimiter': '\t'
+            }),
+            mock.call(
+                backtosql.SQLMatcher('DELETE FROM mv_conversions WHERE date=%(date)s AND account_id=%(account_id)s'),
+                {'date': datetime.date(2016, 7, 3), 'account_id': 1}
+            ),
+            mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3), 'ad_group_id': test_helper.ListMatcher([1, 3, 4])}),
+            mock.call(mock.ANY, {
+                'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/03/view_asd.csv',
+                'delimiter': '\t'
+            }),
+        ])
+
+
 class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
     fixtures = ['test_materialize_views']
@@ -605,7 +1084,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
     @mock.patch('redshiftapi.db.get_write_stats_cursor')
     @mock.patch('redshiftapi.db.get_write_stats_transaction')
     def test_generate(self, mock_transaction, mock_cursor):
-        mv = materialize_views.MVTouchpointConversions('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+        mv = materialize_views.MVTouchpointConversions('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
         mv.generate()
 
@@ -657,12 +1136,79 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
                         RANK() OVER
                             (PARTITION BY c.conversion_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
                     FROM conversions c
+                    WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s
                 ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
-                WHERE a.conversion_lag <= 2160 AND a.date BETWEEN %(date_from)s AND %(date_to)s
                 GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);"""), {
                 'date_from': datetime.date(2016, 7, 1),
                 'date_to': datetime.date(2016, 7, 3),
             })
+        ])
+
+    @mock.patch('redshiftapi.db.get_write_stats_cursor')
+    @mock.patch('redshiftapi.db.get_write_stats_transaction')
+    def test_generate_account_id(self, mock_transaction, mock_cursor):
+        mv = materialize_views.MVTouchpointConversions(
+            'asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
+
+        mv.generate()
+
+        mock_cursor().__enter__().execute.assert_has_calls([
+            mock.call(
+                backtosql.SQLMatcher(
+                    "DELETE FROM mv_touchpointconversions WHERE date BETWEEN %(date_from)s AND %(date_to)s AND account_id=%(account_id)s;"),
+                {
+                    'date_from': datetime.date(2016, 7, 1),
+                    'date_to': datetime.date(2016, 7, 3),
+                    'account_id': 1,
+                }
+            ),
+            mock.call(backtosql.SQLMatcher("""
+            INSERT INTO mv_touchpointconversions (
+                SELECT
+                    a.date as date,
+                    a.source_id as source_id,
+                    s.agency_id as agency_id,
+                    s.account_id as account_id,
+                    s.campaign_id as campaign_id,
+                    a.ad_group_id as ad_group_id,
+                    a.content_ad_id as content_ad_id,
+                    CASE WHEN a.source_id = 3 THEN a.publisher
+                         ELSE LOWER(a.publisher)
+                    END as publisher,
+                    a.slug as slug,
+                    CASE
+                    WHEN a.conversion_lag <= 24 THEN 24
+                    WHEN a.conversion_lag <= 168 THEN 168
+                    WHEN a.conversion_lag <= 720 THEN 720
+                    ELSE 2160
+                    END AS conversion_window,
+                    COUNT(a.touchpoint_id) as touchpoint_count,
+                    SUM(CASE WHEN a.conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS conversion_count
+                FROM (
+                    SELECT
+                        c.date as date,
+                        c.source_id as source_id,
+
+                        c.ad_group_id as ad_group_id,
+                        c.content_ad_id as content_ad_id,
+                        c.publisher as publisher,
+
+                        c.slug as slug,
+
+                        c.conversion_lag as conversion_lag,
+
+                        c.touchpoint_id as touchpoint_id,
+                        RANK() OVER
+                            (PARTITION BY c.conversion_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
+                    FROM conversions c
+                    WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s AND c.account_id=%(account_id)s
+                ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
+                GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);"""), {
+                    'date_from': datetime.date(2016, 7, 1),
+                    'date_to': datetime.date(2016, 7, 3),
+                    'account_id': 1,
+                }
+            )
         ])
 
 
@@ -694,7 +1240,7 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
 
     def test_generate(self, mock_transaction):
         for mv_class, table_name in self.DERIVED_VIEWS:
-            mv = mv_class('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3))
+            mv = mv_class('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
             with mock.patch('redshiftapi.db.get_write_stats_cursor') as mock_cursor:
 
@@ -712,5 +1258,31 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                     mock.call(mock.ANY, {
                         'date_from': datetime.date(2016, 7, 1),
                         'date_to': datetime.date(2016, 7, 3),
+                    })
+                ])
+
+    def test_generate_account_id(self, mock_transaction):
+        for mv_class, table_name in self.DERIVED_VIEWS:
+            mv = mv_class('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
+
+            with mock.patch('redshiftapi.db.get_write_stats_cursor') as mock_cursor:
+
+                mv.generate()
+
+                mock_cursor().__enter__().execute.assert_has_calls([
+                    mock.call(
+                        backtosql.SQLMatcher(
+                            "DELETE FROM {} WHERE date BETWEEN %(date_from)s AND %(date_to)s AND account_id=%(account_id)s;".format(
+                                table_name)),
+                        {
+                            'date_from': datetime.date(2016, 7, 1),
+                            'date_to': datetime.date(2016, 7, 3),
+                            'account_id': 1,
+                        }
+                    ),
+                    mock.call(mock.ANY, {
+                        'date_from': datetime.date(2016, 7, 1),
+                        'date_to': datetime.date(2016, 7, 3),
+                        'account_id': 1,
                     })
                 ])

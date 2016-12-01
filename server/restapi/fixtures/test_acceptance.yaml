@@ -152,9 +152,9 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: GumGum
-        tracking_slug: 'gumgum'
+        tracking_slug: 'b1_gumgum'
         source_type: 1
-        bidder_slug: 'b1_gumgum'
+        bidder_slug: 'gumgum'
     model: dash.source
     pk: 1
 
@@ -162,9 +162,9 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: TripleLift
-        tracking_slug: 'triplelift'
+        tracking_slug: 'b1_triplelift'
         source_type: 1
-        bidder_slug: 'b1_triplelift'
+        bidder_slug: 'triplelift'
     model: dash.source
     pk: 2
 

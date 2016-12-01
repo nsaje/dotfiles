@@ -108,10 +108,12 @@
     created_dt: '2016-02-29T09:58:21'
     created_by: 1
     state: 2
+    start_date: '2016-01-01'
     display_url: 'example.com'
     brand_name: 'Example'
     description: 'Example description'
     call_to_action: 'Click here!'
+    target_devices: ['desktop', 'tablet', 'mobile']
   model: dash.adgroupsettings
   pk: 1
 
@@ -134,6 +136,8 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
+        tracking_slug: 'b1_adblade'
+        bidder_slug: 'adblade'
         source_type: 1
         maintenance: false
     model: dash.source
@@ -143,8 +147,9 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: AdBanana
-        source_type: 2
-        tracking_slug: '["fake"]'
+        source_type: 1
+        tracking_slug: 'b1_adbanana'
+        bidder_slug: 'adbanana'
         maintenance: false
     model: dash.source
     pk: 2
@@ -152,12 +157,29 @@
 -   fields:
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
-        name: AdOrange
-        source_type: 1
-        tracking_slug: '["fake2"]'
+        name: Outbrain
+        source_type: 2
+        tracking_slug: 'b1_outbrain'
+        bidder_slug: 'outbrain'
         maintenance: false
     model: dash.source
     pk: 3
+
+# Ad Group Sources
+- fields:
+    ad_group: 1
+    source: 1
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 1
+
+- fields:
+    ad_group: 1
+    source: 3
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 2
+
 
 # Default source settings
 

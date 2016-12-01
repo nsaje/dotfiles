@@ -55,6 +55,7 @@ class Names:
 
     source = 'Media Source'
     source_id = 'Media Source Id'
+    source_slug = 'Media Source Slug'
     bid_cpc = 'Bid CPC'
     daily_budget = 'Daily Spend Cap'
     supply_dash_url = 'Link'

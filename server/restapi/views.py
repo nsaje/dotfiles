@@ -589,13 +589,15 @@ class SourceIdSlugField(serializers.Field):
 
     def to_internal_value(self, data):
         try:
-            source = dash.models.Source.objects.get(tracking_slug=data)
+            if data.startswith('b1_'):
+                data = data[3:]
+            source = dash.models.Source.objects.get(bidder_slug=data)
             return source.id
         except AttributeError:
             self.fail('invalid_choice', data)
 
     def to_representation(self, source):
-        return source.tracking_slug
+        return source.bidder_slug
 
 
 class PublisherSerializer(serializers.Serializer):

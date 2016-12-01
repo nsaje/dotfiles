@@ -1,3 +1,6 @@
+{% load backtosql_tags %}
+{% autoescape off %}
+
 INSERT INTO mv_pubs_master(
   SELECT
       COALESCE(a.date, b.date) as date,
@@ -50,17 +53,30 @@ INSERT INTO mv_pubs_master(
   FROM
     (
       SELECT date, ad_group_id, publisher_id, publisher_name, SUM(clicks) as clicks FROM outbrainpublisherstats
-      WHERE date BETWEEN %(date_from)s AND %(date_to)s GROUP BY 1, 2, 3, 4
+      WHERE date BETWEEN %(date_from)s AND %(date_to)s
+            {% if account_id %}
+                AND ad_group_id=ANY(%(ad_group_id)s)
+            {% endif %}
+      GROUP BY 1, 2, 3, 4
     ) as a
     left outer join mvh_ad_group_cost_per_click ad_cpc on a.ad_group_id=ad_cpc.ad_group_id and a.date=ad_cpc.date
     full outer join (
       SELECT * FROM postclickstats
       WHERE source='outbrain' AND date BETWEEN %(date_from)s AND %(date_to)s
+            {% if account_id %}
+                AND ad_group_id=ANY(%(ad_group_id)s)
+            {% endif %}
     ) as b on a.publisher_name=b.publisher and a.date=b.date and a.ad_group_id=b.ad_group_id
     join mvh_adgroup_structure c on a.ad_group_id=c.ad_group_id or b.ad_group_id=c.ad_group_id
     join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and (a.date=cf.date or b.date=cf.date)
   WHERE
     COALESCE(a.date, b.date) BETWEEN %(date_from)s AND %(date_to)s
     AND COALESCE(a.publisher_name, b.publisher, '') <> ''
+    {% if account_id %}
+        AND (a.ad_group_id=ANY(%(ad_group_id)s) OR b.ad_group_id=ANY(%(ad_group_id)s))
+    {% endif %}
+
   GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, clicks, cost_nano, effective_cost_nano, effective_data_cost_nano, license_fee_nano, margin_nano
 )
+
+{% endautoescape %}

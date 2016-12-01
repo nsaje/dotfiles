@@ -44,7 +44,7 @@ class Command(ExceptionCommand):
     def get_all_keys(self, date):
         s3_client = boto3.client('s3')
         keys = []
-        prefix = 'uploads/{}/{}/{}'.format(date.year, date.month, date.day)
+        prefix = 'uploads/{}/{:02d}/{:02d}'.format(date.year, date.month, date.day)
         for obj in s3_client.list_objects(Bucket='businesswire-articles', Prefix=prefix)['Contents']:
             keys.append(obj['Key'])
         return keys

@@ -16,7 +16,7 @@ INSERT INTO mv_touchpointconversions (
 
         a.slug as slug,
         -- shorter conversion lags are not counted towards longer ones
-        -- eg. lag 24 is not conted in the 720
+        -- eg. lag 24 is not counted in the 720
         CASE
             WHEN a.conversion_lag <= 24 THEN 24
             WHEN a.conversion_lag <= 168 THEN 168
@@ -43,8 +43,11 @@ INSERT INTO mv_touchpointconversions (
               RANK() OVER
                   (PARTITION BY c.conversion_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked
         FROM conversions c
+        WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s
+              {% if account_id %}
+                  AND c.account_id=%(account_id)s
+              {% endif %}
     ) a join mvh_adgroup_structure s on a.ad_group_id=s.ad_group_id
-    WHERE a.conversion_lag <= 2160 AND a.date BETWEEN %(date_from)s AND %(date_to)s
     GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 );
 

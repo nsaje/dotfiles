@@ -1,16 +1,25 @@
 import json
 from mock import patch, ANY, MagicMock
 
+from freezegun import freeze_time
+
 from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings
+from django.contrib.auth.models import Permission
+
+from integrations.bizwire import config
 
 import dash.constants
 import dash.models
 
+from zemauth.models import User
 
+
+@freeze_time('2016-11-30 12:00:00')
 @patch('dash.upload._invoke_external_validation', MagicMock())
 @patch('integrations.bizwire.config.AUTOMATION_CAMPAIGN', 1)
 @patch('integrations.bizwire.config.TEST_FEED_AD_GROUP', 2)
+@patch('integrations.bizwire.config.AUTOMATION_USER_EMAIL', 'user@test.com')
 @override_settings(LAMBDA_CONTENT_UPLOAD_SIGN_KEY='test_api_key')
 class ArticleUploadTest(TestCase):
 
@@ -19,6 +28,13 @@ class ArticleUploadTest(TestCase):
     def setUp(self):
         self.verify_patcher = patch('utils.request_signer.verify_wsgi_request')
         self.mock_verify_wsgi_request = self.verify_patcher.start()
+
+        permissions = ['can_use_restapi', 'settings_view', 'can_control_ad_group_state_in_table',
+                       'add_media_sources_automatically']
+        u = User.objects.get(email='user@test.com')
+        for permission in permissions:
+            u.user_permissions.add(Permission.objects.get(codename=permission))
+        u.save()
 
     def tearDown(self):
         self.mock_verify_wsgi_request.assert_called_with(ANY, 'test_api_key')
@@ -52,6 +68,21 @@ class ArticleUploadTest(TestCase):
         self.assertEqual(
             'Article bizwire_article_2',
             dash.models.UploadBatch.objects.filter(ad_group_id=1).latest('created_dt').name
+        )
+
+        ad_group = dash.models.AdGroup.objects.get(id=1)
+        ad_group_settings = ad_group.get_current_settings()
+
+        self.assertTrue(ad_group_settings.b1_sources_group_enabled)
+
+        expected_group_daily_budget = config.DEFAULT_DAILY_BUDGET + 4
+        self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
+        self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
+
+        expected_ob_daily_budget = config.DEFAULT_DAILY_BUDGET + 1
+        self.assertEqual(
+            expected_ob_daily_budget,
+            ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc
         )
 
     def test_duplicate(self):
@@ -117,6 +148,21 @@ class ArticleUploadTest(TestCase):
         self.assertEqual(
             'Multiple articles upload',
             dash.models.UploadBatch.objects.filter(ad_group_id=1).latest('created_dt').name
+        )
+
+        ad_group = dash.models.AdGroup.objects.get(id=1)
+        ad_group_settings = ad_group.get_current_settings()
+
+        self.assertTrue(ad_group_settings.b1_sources_group_enabled)
+
+        expected_group_daily_budget = config.DEFAULT_DAILY_BUDGET + 8  # two new candidates
+        self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
+        self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
+
+        expected_ob_daily_budget = config.DEFAULT_DAILY_BUDGET + 2  # two new candidates
+        self.assertEqual(
+            expected_ob_daily_budget,
+            ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc
         )
 
     def test_article_from_test_feed(self):

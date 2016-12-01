@@ -26,7 +26,7 @@ def monitoring_hourly_job():
 
 
 def _get_s3_keys_for_date(s3, date):
-    prefix = 'uploads/{}/{}/{}'.format(date.year, date.month, date.day)
+    prefix = 'uploads/{}/{:02d}/{:02d}'.format(date.year, date.month, date.day)
     objects = s3.list_objects(Bucket='businesswire-articles', Prefix=prefix)
 
     keys = []
@@ -42,28 +42,34 @@ def monitor_num_ingested_articles():
     now = dates_helper.utc_now()
     dates = [now.date() - datetime.timedelta(days=x) for x in xrange(3)]
 
-    re_compiled = re.compile(r'.*{}/{}/{}/(\d+)(:|%3[aA]).*'.format(now.year, now.month, now.day))
-    unique_ids = set()
+    unique_labels = set()
     for date in dates:
+        re_compiled = re.compile(
+            # example: 'uploads/2016/11/29/16:00/20161012006323r1.xml'
+            r'.*/(?P<hour>\d+)(?::|%3[aA])\d+/(?P<news_item_id>\d+)r.\.xml'
+        )
+
         for key in _get_s3_keys_for_date(s3, date):
             m = re_compiled.match(key)
-            hour = m.groups()[0]
-            if hour == now.hour:
+            if not m:
                 continue
 
-            article_id = m.groups()[1]  # take care of article revisions
-            unique_ids.add(article_id)
+            label = m.groupdict()['news_item_id']
+            if date.day == now.day and int(m.groupdict()['hour']) == now.hour:
+                # ignore articles from current hour sinc they may not be processed yet
+                continue
 
-    s3_count = len(unique_ids)
+            unique_labels.add(label)
+
+    s3_count = len(unique_labels)
     db_count = dash.models.ContentAd.objects.filter(
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-        created_dt__gte=dates[-1],
-        created_dt__lt=datetime.datetime(
-            dates[0].year, dates[0].month, dates[0].day, now.hour),  # don't count articles from this hour
+        label__in=unique_labels,
     ).count()
 
     influx.gauge('integrations.bizwire.article_count', s3_count, source='s3')
     influx.gauge('integrations.bizwire.article_count', db_count, source='db')
+    influx.gauge('integrations.bizwire.article_count', abs(s3_count - db_count), source='diff')
 
 
 def monitor_remaining_budget():
@@ -120,6 +126,14 @@ def monitor_yesterday_spend():
     influx.gauge('integrations.bizwire.yesterday_spend', actual_spend, type='actual')
     influx.gauge('integrations.bizwire.yesterday_spend', expected_spend, type='expected')
 
+    if dates_helper.utc_now().hour == 12 and abs(expected_spend - actual_spend) > 500:
+        emails = config.NOTIFICATION_EMAILS
+        subject = 'Businesswire campaign unexpected yesterday spend'
+        body = '''Hi,
+
+Yesterday's expected spend was {} and actual spend was {}.'''.format(expected_spend, actual_spend)  # noqa
+        email_helper.send_notification_mail(emails, subject, body)
+
 
 def monitor_duplicate_articles():
     num_labels = dash.models.ContentAd.objects.filter(
@@ -130,5 +144,8 @@ def monitor_duplicate_articles():
         ad_group__campaign=config.AUTOMATION_CAMPAIGN,
     ).distinct('label').count()
 
+    num_duplicate = abs(num_labels - num_distinct)
+
     influx.gauge('integrations.bizwire.labels', num_labels, type='all')
     influx.gauge('integrations.bizwire.labels', num_distinct, type='distinct')
+    influx.gauge('integrations.bizwire.labels', num_duplicate, type='duplicate')

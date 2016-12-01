@@ -9,7 +9,7 @@ TEST_FEED_AD_GROUP = 2780
 
 AD_GROUP_NAME_TEMPLATE = '{start_date} - {interest_targeting_str}'
 DEFAULT_CPC = Decimal('0.2')
-DEFAULT_DAILY_BUDGET = 800
+DEFAULT_DAILY_BUDGET = 200  # starting daily budget - increases as articles start importing
 
 INTEREST_TARGETING_OPTIONS = [
     constants.InterestCategory.ENTERTAINMENT,
