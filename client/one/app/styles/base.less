@@ -207,6 +207,26 @@ a:visited {
 }
 
 ////////////////////////////
+// Buttons holder //
+////////////////////////////
+
+.buttons-panel {
+    padding: @default-spacing;
+    background-color: tint(@secondary-color,90%);
+    box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
+    text-align: left;
+
+    .button {
+        margin-right: 10px;
+    }
+
+    .message {
+        padding: 7px 0;
+        line-height: 16px;
+    }
+}
+
+////////////////////////////
 // List elements //
 ////////////////////////////
 
@@ -229,6 +249,8 @@ ul.with-icons {
 ////////////////////////////
 // Form elements //
 ////////////////////////////
+
+@form-input-width: 73%;
 
 .input-box() {
     background: none;
@@ -268,6 +290,12 @@ ul.with-icons {
     position: relative;
 
     .clearfix();
+
+    .message {
+        width: @form-input-width;
+        margin-left: 100-@form-input-width;
+        padding-top: 5px;
+    }
 }
 
 .form__group--vertical {
@@ -276,7 +304,7 @@ ul.with-icons {
 
 .form__label {
     float: left;
-    width: 25%;
+    width: 100-2-@form-input-width;
     margin: 0 2% 0 0;
 }
 
@@ -286,12 +314,16 @@ ul.with-icons {
 
 .form__information {
     float: left;
-    width: 73%;
+    width: @form-input-width;
 }
 
 .form__input-text {
     float: left;
-    width: 73%;
+    width: @form-input-width;
+}
+
+.form__input-text--error {
+    border-color: @red;
 }
 
 .form__input-checkbox {
@@ -321,10 +353,14 @@ ul.with-icons {
 .form__textarea {
     .input-box();
     float: left;
-    width: 73%;
+    width: @form-input-width;
     height: 100px;
     line-height: 18px;
     padding: 5px 10px;
+}
+
+.form__textarea--error {
+    border-color: @red;
 }
 
 ////////////////////////////
@@ -517,9 +553,6 @@ label, label.control-label, .form-horizontal .control-label {
 }
 
 .modal__footer {
-    padding: @default-spacing;
-    background-color: tint(@secondary-color,90%);
-    text-align: left;
     border-bottom-right-radius: @border-radius;
     border-bottom-left-radius: @border-radius;
 }
@@ -567,6 +600,22 @@ label, label.control-label, .form-horizontal .control-label {
         width: 500px;
         display: inline-block;
     }
+}
+
+////////////////////////////
+// Messages //
+////////////////////////////
+
+.message {
+    display: inline-block;
+}
+
+.message--success {
+    color: @green;
+}
+
+.message--error {
+    color: @red;
 }
 
 ////////////////////////////

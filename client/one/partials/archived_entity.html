@@ -8,11 +8,9 @@ Atm, this is simplest solution
     <h1>{{getEntityTypeName()}} archived</h1>
     <div class="white-background">
         <p>
-            <strong>{{entity.name}}</strong> is archived.
+            {{getEntityTypeName()}} <strong>{{entity.name}}</strong> is archived.
         </p>
-        <a class="btn btn-default" ng-click="restore()">
-            Restore
-        </a>
+        <button class="button" ng-click="restore()">Restore</button>
         <div class="loader" ng-show="requestInProgress"></div>
     </div>
 </div>

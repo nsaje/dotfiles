@@ -1,49 +1,76 @@
-@drawer-width: 800px;
-
 .zem-side-panel {
-  display:  block;
+    display: block;
+}
 
-  &__drawer {
+.zem-side-panel__drawer {
     position: fixed;
     z-index: 1000;
-    background: #f2f2f2;
+    background: @light-gray;
 
-    top: 60px;
+    top: 0;
     bottom: 0;
     width: @drawer-width;
+    min-width: 800px;
     left: 100%;
 
     transform: translateX(0);
-    transition: all .3s ease-in-out;
+    transition: all @default-animation;
     will-change: transform;
+}
 
-    &--visible {
-      transform: translateX(-@drawer-width);
+.zem-side-panel__drawer--visible {
+    transform: translateX(-100%);
+    box-shadow: -5px 0px 30px 0px fade(black,20%);
+
+    .zem-side-panel__close {
+        opacity: 0.8;
+        visibility: visible;
     }
-  }
+}
 
-  &__overlay {
+.zem-side-panel__overlay {
     position: fixed;
     z-index: 999;
     .position-properties(0);
-
-    padding-top: 60px;
     background: black;
     background-clip: content-box;
 
     visibility: hidden;
     opacity: 0;
 
-    transition: all .3s ease-out;
+    transition: all @default-animation;
     will-change: opacity;
+}
 
-    &--visible {
-      visibility: visible;
-      opacity: .5;
-      transition-property: opacity;
+.zem-side-panel__overlay--visible {
+    visibility: visible;
+    opacity: .5;
+    transition-property: opacity;
+}
+
+.zem-side-panel__container {
+
+}
+
+.zem-side-panel__close {
+    position: absolute;
+    border: none;
+    top: 5px;
+    left: -30px;
+    width: 30px;
+    height: 50px;
+    border-top-left-radius: @border-radius;
+    border-bottom-left-radius: @border-radius;
+    background: fade(@white,50%) url(images/arrow-white.svg) no-repeat 10px center;
+    background-size: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all @default-animation;
+    outline: none;
+
+    &:hover {
+        opacity: 1;
+        background-color: @light-gray;
+        background-image: url(images/arrow-gray.svg);
     }
-  }
-
-  &__container {
-  }
 }
