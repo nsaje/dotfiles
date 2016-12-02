@@ -1,7 +1,6 @@
 from decimal import Decimal
 from dash import constants
 
-# NOTE: keep in sync with R1 (https://github.com/Zemanta/r1/blob/bcad62e93fdbd587395cfdfa2338b889374e1d84/config/config.go#L69)
 AUTOMATION_CAMPAIGN = 1096
 AUTOMATION_USER_EMAIL = 'businesswire-user@zemanta.com'
 
