@@ -40,7 +40,7 @@ def monitor_num_ingested_articles():
     s3 = boto3.client('s3')
 
     now = dates_helper.utc_now()
-    dates = [now.date() - datetime.timedelta(days=x) for x in xrange(3)]
+    dates = [now.date() - datetime.timedelta(days=x) for x in xrange(1)]
 
     unique_labels = set()
     for date in dates:
