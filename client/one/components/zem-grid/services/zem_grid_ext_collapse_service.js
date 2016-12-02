@@ -24,7 +24,7 @@ angular.module('one.legacy').factory('zemGridCollapseService', function (zemGrid
 
         function isRowCollapsable (row) {
             if (row.level === zemGridConstants.gridRowLevel.FOOTER) return false;
-            if (row.type === zemGridConstants.gridRowType.GROUP) return true;
+            if (row.type === zemGridConstants.gridRowType.GROUP) return false;
             return grid.meta.dataService.getBreakdownLevel() > row.level;
         }
 
