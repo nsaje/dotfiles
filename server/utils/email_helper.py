@@ -9,11 +9,12 @@ from django.utils.http import urlsafe_base64_encode
 from django.core.mail.message import EmailMessage, EmailMultiAlternatives
 from django.template.loader import render_to_string
 
-from dash.constants import EmailTemplateType
+import dash.constants
 import dash.models
 import analytics.management_report
 
 from utils import pagerduty_helper
+from utils import dates_helper
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +87,7 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
         'changes_text': _format_changes_text(changes_text)
     }
 
-    subject, body, _ = format_email(EmailTemplateType.ADGROUP_CHANGE, **args)
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.ADGROUP_CHANGE, **args)
     emails = list(set(email_manager_list(ad_group.campaign)) - set([request.user.email]))
     if not emails:
         return
@@ -109,7 +110,7 @@ def send_campaign_notification_email(campaign, request, changes_text):
         'changes_text': _format_changes_text(changes_text)
     }
 
-    subject, body, _ = format_email(EmailTemplateType.CAMPAIGN_CHANGE, **args)
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.CAMPAIGN_CHANGE, **args)
     emails = list(set(email_manager_list(campaign)) - set([request.user.email]))
     if not emails:
         return
@@ -130,7 +131,7 @@ def send_budget_notification_email(campaign, request, changes_text):
         'link_url': link_url,
         'changes_text': _format_changes_text(changes_text),
     }
-    subject, body, _ = format_email(EmailTemplateType.BUDGET_CHANGE, **args)
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.BUDGET_CHANGE, **args)
     emails = list(set(email_manager_list(campaign)) - set([request.user.email]))
     if not emails:
         return
@@ -148,7 +149,7 @@ def send_account_pixel_notification(account, request):
         'account': account,
         'link_url': link_url
     }
-    subject, body, _ = format_email(EmailTemplateType.PIXEL_ADD, **args)
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.PIXEL_ADD, **args)
     account_settings = account.get_current_settings()
 
     send_notification_mail(
@@ -165,7 +166,7 @@ def send_password_reset_email(user, request):
         'link_url': _generate_password_reset_url(user, request),
     }
 
-    subject, body, _ = format_email(EmailTemplateType.PASSWORD_RESET, **args)
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.PASSWORD_RESET, **args)
     _send_email_to_user(user, request, subject, body)
 
 
@@ -174,7 +175,7 @@ def send_email_to_new_user(user, request):
         'user': user,
         'link_url': _generate_password_reset_url(user, request),
     }
-    subject, body, _ = format_email(EmailTemplateType.USER_NEW, **args)
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.USER_NEW, **args)
     return _send_email_to_user(user, request, subject, body)
 
 
@@ -232,13 +233,12 @@ def _send_email_to_user(user, request, subject, body):
 
 
 def send_supply_report_email(email, date, impressions, cost, publisher_report=None):
-    date_str = '%d/%d/%d' % (date.month, date.day, date.year)
     args = {
-        'date': date_str,
+        'date': dates_helper.format_date_mmddyyyy(date),
         'impressions': impressions,
         'cost': cost,
     }
-    subject, body, _ = format_email(EmailTemplateType.SUPPLY_REPORT, **args)
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.SUPPLY_REPORT, **args)
 
     try:
         email = EmailMessage(
@@ -332,7 +332,7 @@ def send_scheduled_export_report(report_name, frequency, granularity,
         'scheduled_by': scheduled_by,
     }
 
-    subject, body, _ = format_email(EmailTemplateType.SCHEDULED_EXPORT_REPORT, **args)
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.SCHEDULED_EXPORT_REPORT, **args)
 
     if not email_adresses:
         raise Exception('No recipient emails: ' + report_name)
@@ -345,7 +345,7 @@ def send_scheduled_export_report(report_name, frequency, granularity,
 
 def send_livestream_email(user, session_url):
     subject, body, recipients = format_email(
-        EmailTemplateType.LIVESTREAM_SESSION,
+        dash.constants.EmailTemplateType.LIVESTREAM_SESSION,
         user=user,
         session_url=session_url,
     )
@@ -356,7 +356,7 @@ def send_livestream_email(user, session_url):
 
 
 def send_daily_management_report_email():
-    subject, body, recipients = format_email(EmailTemplateType.DAILY_MANAGEMENT_REPORT)
+    subject, body, recipients = format_email(dash.constants.EmailTemplateType.DAILY_MANAGEMENT_REPORT)
     email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), recipients)
@@ -366,7 +366,7 @@ def send_daily_management_report_email():
 
 def send_outbrain_accounts_running_out_email(n):
     subject, body, recipients = format_email(
-        EmailTemplateType.OUTBRAIN_ACCOUNTS_RUNNING_OUT,
+        dash.constants.EmailTemplateType.OUTBRAIN_ACCOUNTS_RUNNING_OUT,
         n=n,
     )
     email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
@@ -376,7 +376,7 @@ def send_outbrain_accounts_running_out_email(n):
 
 
 def send_ga_setup_instructions(user):
-    subject, body, _ = format_email(EmailTemplateType.GA_SETUP_INSTRUCTIONS)
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.GA_SETUP_INSTRUCTIONS)
     email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), [user.email])
@@ -384,14 +384,36 @@ def send_ga_setup_instructions(user):
     email.send(fail_silently=True)
 
 
-def send_async_report(user, report_path):
+def send_async_report(
+        user, recipients, report_path, start_date, end_date, expiry_date, filtered_sources,
+        show_archived, show_blacklisted_publishers,
+        breakdown_columns, columns, include_totals, ad_group):
+
+    filters = []
+    if show_archived:
+        filters.append('Show archived items')
+    if show_blacklisted_publishers != dash.constants.PublisherBlacklistFilter.SHOW_ALL:
+        filters.append('Show {} publishers only'.format(
+            dash.constants.PublisherBlacklistFilter.get_text(show_blacklisted_publishers).lower()))
+    if filtered_sources:
+        filters.extend([x.name for x in filtered_sources])
+
     subject, body, _ = format_email(
-        EmailTemplateType.ASYNC_REPORT_RESULTS,
-        user=user,
-        link_url=report_path)
-    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
+        dash.constants.EmailTemplateType.ASYNC_REPORT_RESULTS,
+        link_url=report_path,
+        ad_group=ad_group,
+        start_date=dates_helper.format_date_mmddyyyy(start_date),
+        end_date=dates_helper.format_date_mmddyyyy(end_date),
+        expiry_date=dates_helper.format_date_mmddyyyy(expiry_date),
+        tab_name=breakdown_columns[0] if breakdown_columns else '',
+        breakdown=', '.join(breakdown_columns[1:]) if breakdown_columns else '',
+        columns=', '.join(columns),
+        filters=', '.join(filters),
+        include_totals='Yes' if include_totals else 'No',
+    )
+    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
-    ), [user.email])
+    ), [user.email] + (recipients or []))
     email.send(fail_silently=False)
 
 

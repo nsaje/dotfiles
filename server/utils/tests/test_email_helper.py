@@ -1,3 +1,4 @@
+import datetime
 from mock import patch
 
 from django.test import TestCase, override_settings
@@ -7,6 +8,7 @@ from django.conf import settings
 
 from zemauth.models import User
 from dash import models as dash_models
+import dash.constants
 from utils import email_helper
 
 
@@ -163,6 +165,46 @@ class EmailHelperTestCase(TestCase):
         email_helper.send_campaign_notification_email(campaign, self.request, 'Test')
 
         self.assertEqual(len(mail.outbox), 1)
+
+    def test_send_async_report_email(self):
+        user = User.objects.create_user('manager@user.com')
+
+        account = dash_models.Account(name='Account 1')
+        account.save(self.request)
+
+        campaign = dash_models.Campaign(account=account, name='Campaign 1')
+        campaign.save(self.request)
+
+        ad_group = dash_models.AdGroup(campaign=campaign, name='Ad Group 1')
+        ad_group.save(self.request)
+
+        email_helper.send_async_report(user, ['asd@gmail.com'], 'bla.com/test.csv',
+                                       datetime.date(2016, 1, 1), datetime.date(2016, 5, 5), datetime.date(2016, 1, 4),
+                                       [], False, dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE, ['Publisher', 'Day'],
+                                       ['Clicks'], False, ad_group)
+        subject = 'Report results'
+        body = """Hi,
+
+You requested a report with the following settings for Account 1 - Campaign 1 - Ad Group 1:
+
+Date range: 1/1/2016 - 5/5/2016
+View: Publisher
+Breakdowns: Day
+Columns: Clicks
+Filters: Show active publishers only
+Totals included: No
+
+You can download the report here: bla.com/test.csv.
+Report will be available for download until 1/4/2016.
+
+Yours truly,
+Zemanta
+    """
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, subject)
+        self.assertEqual(mail.outbox[0].body, body)
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
+        self.assertEqual(mail.outbox[0].to, ['manager@user.com', 'asd@gmail.com'])
 
     @override_settings(
         HOSTNAME='testhost',

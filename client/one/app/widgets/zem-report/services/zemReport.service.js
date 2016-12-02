@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemReportService', function ($q, zemReportEndpoint, zemPermissions, zemFilterService, zemDataFilterService) {  // eslint-disable-line max-len
+angular.module('one.widgets').service('zemReportService', function ($q, zemReportEndpoint, zemPermissions, zemDataFilterService) {  // eslint-disable-line max-len
 
     // Public API
     this.startReport = startReport;
@@ -8,10 +8,9 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
 
         var dateRange = zemDataFilterService.getDateRange();
 
-        // TODO: old filter is used, migrate to the new one when available
-        var showArchived = zemFilterService.getShowArchived();
-        var filteredSources = zemFilterService.getFilteredSources();
-        var filteredPublisherStatus = zemFilterService.getBlacklistedPublishers();
+        var showArchived = zemDataFilterService.getShowArchived();
+        var filteredSources = zemDataFilterService.getFilteredSources();
+        var filteredPublisherStatus = zemDataFilterService.getFilteredPublisherStatus();
 
         var config = {
             fields: getFields(selectedFields),

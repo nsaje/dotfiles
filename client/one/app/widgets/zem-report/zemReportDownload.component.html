@@ -62,6 +62,6 @@
     <button type="button" class="button button--outline" ng-click="$ctrl.close()" ng-show="!$ctrl.jobPosted">Cancel</button>
     <button type="button" class="button button--outline" ng-click="$ctrl.close()" ng-show="$ctrl.jobPosted">Close</button>
     <div class="loader" ng-show="$ctrl.jobPostingInProgress"></div>
+    <span ng-show="$ctrl.jobPosted">Requested report will be sent to your inbox shortly.</span>
     <span class="message message--success" ng-show="$ctrl.jobPosted && $ctrl.jobPostedSuccessfully">Requested report will be sent to your inbox shortly.</span>
-    <span class="message message--error" ng-show="$ctrl.jobPosted && !$ctrl.jobPostedSuccessfully">An error occurred. Please correct the marked fields and submit again.</span>
 </div>

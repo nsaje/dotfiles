@@ -22,6 +22,7 @@ import utils.s3helpers
 import utils.email_helper
 import utils.columns
 import utils.sort_helper
+import utils.dates_helper
 
 
 logger = logging.getLogger(__name__)
@@ -323,7 +324,26 @@ class ReportJobExecutor(JobExecutor):
         if not job.query.get('options', {}).get('email_report'):
             return
 
-        utils.email_helper.send_async_report(job.user, report_path)
+        filter_constraints = get_filter_constraints(job.query['filters'])
+
+        filtered_sources = []
+        if filter_constraints.get('sources'):
+            filtered_sources = helpers.get_filtered_sources(job.user, ','.join(filter_constraints.get('sources', [])))
+
+        options = get_options(job.query.get('options', {}))
+
+        today = utils.dates_helper.local_today()
+        expiry_date = today + datetime.timedelta(days=3)
+
+        utils.email_helper.send_async_report(
+            job.user, options['recipients'], report_path,
+            filter_constraints['start_date'], filter_constraints['end_date'], expiry_date, filtered_sources,
+            options['show_archived'], options['show_blacklisted_publishers'],
+            get_breakdown_from_fields(job.query['fields']),
+            cls._extract_fieldnames(job.query['fields']),
+            options['include_totals'],
+            ad_group=helpers.get_ad_group(job.user, filter_constraints['ad_group_id'])
+        )
 
     @staticmethod
     def _generate_random_filename():

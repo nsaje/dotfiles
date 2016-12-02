@@ -24,7 +24,6 @@ angular.module('one.widgets').component('zemReportDownload', {
 
         $ctrl.jobPostingInProgress = false;
         $ctrl.jobPosted = false;
-        $ctrl.jobPostedSuccessfully = false;
 
         $ctrl.$onInit = function () {
             $ctrl.user = zemUserService.current();
@@ -50,14 +49,13 @@ angular.module('one.widgets').component('zemReportDownload', {
                     recipients: getRecipientsList(),
                 })
                 .then(function () {
-                    $ctrl.jobPostedSuccessfully = true;
+                    $ctrl.jobPosted = true;
                 })
                 .catch(function (data) {
-                    $ctrl.jobPostedSuccessfully = false;
+                    $ctrl.jobPosted = false;
                     $ctrl.errors = data.data;
                 })
                 .finally(function () {
-                    $ctrl.jobPosted = true;
                     $ctrl.jobPostingInProgress = false;
                 });
         }
@@ -88,7 +86,13 @@ angular.module('one.widgets').component('zemReportDownload', {
         }
 
         function getRecipientsList () {
-            return $ctrl.recipients.split(',');
+            var recipients = [], list = $ctrl.recipients.split(',');
+            for (var i = 0; i < list.length; i++) {
+                if (list[i] && list[i].trim()) {
+                    recipients.push(list[i]);
+                }
+            }
+            return recipients;
         }
     }
 });
