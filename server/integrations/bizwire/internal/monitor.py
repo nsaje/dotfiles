@@ -77,12 +77,12 @@ def monitor_remaining_budget():
     if now.hour != 0:
         return
 
-    today = now.date()
+    tomorrow = now.date() + datetime.timedelta(days=1)
     remaining_budget = 0
     for bli in dash.models.BudgetLineItem.objects.filter(
         campaign_id=config.AUTOMATION_CAMPAIGN,
-    ).select_related('credit').filter_active(today):
-        remaining_budget += bli.get_available_amount(today) * (1 - bli.credit.license_fee)
+    ).select_related('credit').filter_active(tomorrow):
+        remaining_budget += bli.get_available_amount(tomorrow) * (1 - bli.credit.license_fee)
 
     if remaining_budget > 1000:
         return
