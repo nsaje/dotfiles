@@ -185,7 +185,11 @@ class EmailHelperTestCase(TestCase):
         subject = 'Report results'
         body = """Hi,
 
-You requested a report with the following settings for Account 1 - Campaign 1 - Ad Group 1:
+You requested a report with the following settings:
+
+Account: Account 1
+Campaign: Campaign 1
+Ad Group: Ad Group 1
 
 Date range: 1/1/2016 - 5/5/2016
 View: Publisher

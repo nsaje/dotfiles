@@ -3,7 +3,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
     // Public API
     this.startReport = startReport;
 
-    function startReport (gridApi, selectedFields, includeConfig) {  // eslint-disable-line no-unused-vars
+    function startReport (gridApi, selectedFields, includeConfig) {
         var deferred = $q.defer();
 
         var dateRange = zemDataFilterService.getDateRange();
@@ -33,6 +33,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
                 showArchived: showArchived,
                 includeTotals: includeConfig.includeTotals || false,
                 showStatusDate: true,
+                order: getOrder(gridApi),
             },
         };
 
@@ -68,5 +69,27 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
             });
         }
         return fields;
+    }
+
+    function getOrder (gridApi) {
+        var prefix = '', orderFieldKey = gridApi.getOrder();
+
+        if (orderFieldKey[0] === '-') {
+            prefix = '-';
+            orderFieldKey = orderFieldKey.slice(1);
+        } else if (orderFieldKey[0] === '+') {
+            prefix = '';
+            orderFieldKey = orderFieldKey.slice(1);
+        }
+
+        var orderField, columns = gridApi.getColumns();
+        for (var i = 0; i < columns.length; i++) {
+            if (columns[i].orderField === orderFieldKey) {
+                orderField = columns[i].data.name;
+                break;
+            }
+        }
+
+        return prefix + orderField;
     }
 });

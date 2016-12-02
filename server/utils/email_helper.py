@@ -15,6 +15,8 @@ import analytics.management_report
 
 from utils import pagerduty_helper
 from utils import dates_helper
+from utils import url_helper
+
 
 logger = logging.getLogger(__name__)
 
@@ -398,20 +400,23 @@ def send_async_report(
     if filtered_sources:
         filters.extend([x.name for x in filtered_sources])
 
-    subject, body, _ = format_email(
+    subject, plain_body, _ = format_email(
         dash.constants.EmailTemplateType.ASYNC_REPORT_RESULTS,
         link_url=report_path,
-        ad_group=ad_group,
+        account_name=ad_group.campaign.account.name,
+        campaign_name=ad_group.campaign.name,
+        ad_group_name=ad_group.name,
         start_date=dates_helper.format_date_mmddyyyy(start_date),
         end_date=dates_helper.format_date_mmddyyyy(end_date),
         expiry_date=dates_helper.format_date_mmddyyyy(expiry_date),
         tab_name=breakdown_columns[0] if breakdown_columns else '',
-        breakdown=', '.join(breakdown_columns[1:]) if breakdown_columns else '',
+        breakdown=', '.join(breakdown_columns[1:]) if breakdown_columns else '/',
         columns=', '.join(columns),
-        filters=', '.join(filters),
+        filters=', '.join(filters) if filters else '/',
         include_totals='Yes' if include_totals else 'No',
     )
-    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
+
+    email = EmailMessage(subject, plain_body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), [user.email] + (recipients or []))
     email.send(fail_silently=False)

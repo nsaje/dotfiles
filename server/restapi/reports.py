@@ -60,6 +60,19 @@ def get_breakdown_from_fields(fields):
     return tuple(breakdown)
 
 
+def get_order(order_fieldname):
+    prefix, fieldname = utils.sort_helper.dissect_order(order_fieldname)
+
+    try:
+        field_key = utils.columns.Names.get_keys([fieldname])[0]
+    except:
+        # the above will fail when we are sorting by name as we are remapping those columns
+        # to the dimension name, see function remap_columns
+        field_key = 'name'
+
+    return prefix + field_key
+
+
 def get_filter_constraints(filters):
     filter_constraints = {}
     for f in filters:
@@ -88,6 +101,7 @@ def get_options(options):
         'include_totals': options.get('include_totals') or False,
         'show_status_date': options.get('show_status_date') or False,
         'recipients': options.get('recipients') or [],
+        'order': get_order(options['order'])
     }
 
 
@@ -122,6 +136,7 @@ class ReportOptionsSerializer(serializers.Serializer):
     include_totals = serializers.BooleanField(default=False)
     show_status_date = serializers.BooleanField(default=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False)
+    order = serializers.CharField(required=False, default=('-' + utils.columns.Names.e_media_cost))
 
 
 class ReportQuerySerializer(serializers.Serializer):
@@ -211,11 +226,8 @@ class ReportJobExecutor(JobExecutor):
             ad_group_ids=[ad_group.id])
         goals = stats.api_reports.get_goals(constraints)
 
-        rows = stats.api_reports.query(user, breakdown, constraints, goals, '-clicks')
-
+        rows = stats.api_reports.query(user, breakdown, constraints, goals, options['order'])
         cls.remap_columns(rows, breakdown)
-
-        rows = utils.sort_helper.sort_results(rows, breakdown)
 
         if options['include_totals']:
             totals = stats.api_reports.totals(user, breakdown, constraints, goals)
