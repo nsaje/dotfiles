@@ -7,9 +7,10 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         title: '<',
         entityType: '<',
         entityId: '<',
+        api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/container/zemSettingsContainer.component.html',
-    controller: function ($transclude, $element, $q, zemPermissions, zemPubSubService, zemEntityService, zemSettingsService, zemNavigationService, zemNavigationNewService) { // eslint-disable-line max-len
+    controller: function ($transclude, $element, $q, zemPermissions, zemPubSubService, zemEntityService, zemNavigationService, zemNavigationNewService) { // eslint-disable-line max-len
         var STATUS_CODE_NONE = 0;
         var STATUS_CODE_IN_PROGRESS = 1;
         var STATUS_CODE_ERROR = 2;
@@ -38,16 +39,16 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
-        $ctrl.api = {
+        $ctrl.childApi = {
             register: registerSettingsComponent,
         };
 
-
-        $ctrl.$postLink = function () {
-        };
-
         $ctrl.$onInit = function () {
-            load();
+            $ctrl.api.register({
+                save: save,
+                load: load,
+                isDirty: isDirty,
+            });
         };
 
         function load () {
@@ -143,8 +144,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         }
 
         function close () {
-            if (isDirty() && !confirm('You have unsaved changes. \nAre you sure to close settings drawer?')) return;
-            zemSettingsService.close();
+            $ctrl.api.close();
         }
 
         //

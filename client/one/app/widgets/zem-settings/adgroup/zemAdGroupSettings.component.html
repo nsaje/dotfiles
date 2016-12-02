@@ -1,40 +1,40 @@
-<zem-settings-container title="'Ad Group settings'" entity-type="$ctrl.constants.entityType.AD_GROUP" entity-id="$ctrl.entityId">
+<zem-settings-container api="$ctrl.api" title="'Ad Group settings'" entity-type="$ctrl.constants.entityType.AD_GROUP" entity-id="$ctrl.entityId">
     <settings>
         <zem-ad-group-general-settings
                 class="zem-settings-component"
                 entity="$container.entity"
                 errors="$container.errors"
-                api="$container.api"
+                api="$container.childApi"
         ></zem-ad-group-general-settings>
         <zem-device-targeting-settings
                 class="zem-settings-component"
                 entity="$container.entity"
                 errors="$container.errors"
-                api="$container.api"
+                api="$container.childApi"
         ></zem-device-targeting-settings>
         <zem-region-targeting-settings
                 class="zem-settings-component"
                 entity="$container.entity"
                 errors="$container.errors"
-                api="$container.api"
+                api="$container.childApi"
         ></zem-region-targeting-settings>
         <zem-ad-group-targeting-settings
                 class="zem-settings-component"
                 entity="$container.entity"
                 errors="$container.errors"
-                api="$container.api"
+                api="$container.childApi"
         ></zem-ad-group-targeting-settings>
         <zem-ad-group-tracking-settings
                 class="zem-settings-component"
                 entity="$container.entity"
                 errors="$container.errors"
-                api="$container.api"
+                api="$container.childApi"
         ></zem-ad-group-tracking-settings>
         <zem-ad-group-autopilot-settings
                 class="zem-settings-component"
                 entity="$container.entity"
                 errors="$container.errors"
-                api="$container.api"
+                api="$container.childApi"
         ></zem-ad-group-autopilot-settings>
     </settings>
 

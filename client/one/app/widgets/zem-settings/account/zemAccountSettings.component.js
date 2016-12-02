@@ -1,6 +1,7 @@
 angular.module('one.widgets').component('zemAccountSettings', {
     bindings: {
         entityId: '<',
+        api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/account/zemAccountSettings.component.html',
     controller: function (zemPermissions) {

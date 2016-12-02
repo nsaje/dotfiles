@@ -1,10 +1,10 @@
-<zem-settings-container title="'Account settings'" entity-type="$ctrl.constants.entityType.ACCOUNT" entity-id="$ctrl.entityId">
+<zem-settings-container api="$ctrl.api" title="'Account settings'" entity-type="$ctrl.constants.entityType.ACCOUNT" entity-id="$ctrl.entityId">
     <settings>
         <zem-account-general-settings
                 class="zem-settings-component"
                 entity="$container.entity"
                 errors="$container.errors"
-                api="$container.api"
+                api="$container.childApi"
         ></zem-account-general-settings>
     </settings>
 

@@ -1,6 +1,7 @@
 angular.module('one.widgets').component('zemAdGroupSettings', {
     bindings: {
         entityId: '<',
+        api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/adgroup/zemAdGroupSettings.component.html',
     controller: function (zemPermissions) {

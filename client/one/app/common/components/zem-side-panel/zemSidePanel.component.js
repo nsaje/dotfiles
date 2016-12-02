@@ -2,18 +2,19 @@ angular.module('one.widgets').component('zemSidePanel', {
     transclude: true,
     bindings: {
         api: '<',
-        onClose: '&'
+        onCloseRequest: '&'
     },
     templateUrl: '/app/common/components/zem-side-panel/zemSidePanel.component.html',
-    controller: function ($window) {
+    controller: function ($window, hotkeys) {
         var $ctrl = this;
 
-        $ctrl.close = close;
+        $ctrl.requestClose = $ctrl.onCloseRequest;
         $ctrl.api.open = open;
         $ctrl.api.close = close;
         $ctrl.api.isVisible = isVisible;
 
         $ctrl.$onInit = function () {
+            hotkeys.add({combo: 'esc', callback: $ctrl.requestClose});
         };
 
         function isVisible () {
@@ -29,7 +30,6 @@ angular.module('one.widgets').component('zemSidePanel', {
         function close () {
             $ctrl.visible = false;
             $('body').removeClass('no-scroll');
-            $ctrl.onClose();
         }
     }
 });
