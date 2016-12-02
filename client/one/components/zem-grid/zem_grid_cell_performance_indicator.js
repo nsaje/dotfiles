@@ -12,8 +12,9 @@ angular.module('one.legacy').directive('zemGridCellPerformanceIndicator', functi
     statusIcons[constants.emoticon.NEUTRAL] = 'neutral_face.svg';
     statusClasses[constants.emoticon.NEUTRAL] = 'img-icon-neutral';
 
-    function isFieldVisible (rowLevel) {
-        return rowLevel === zemGridConstants.gridRowLevel.BASE;
+    function isFieldVisible (row) {
+        return row.level === zemGridConstants.gridRowLevel.BASE &&
+            row.type === zemGridConstants.gridRowType.STATS;
     }
 
     function getOverallIcon (overall) {
@@ -68,7 +69,7 @@ angular.module('one.legacy').directive('zemGridCellPerformanceIndicator', functi
                 vm.statusList = [];
 
                 if (vm.row) {
-                    vm.isFieldVisible = isFieldVisible(vm.row.level);
+                    vm.isFieldVisible = isFieldVisible(vm.row);
                 }
 
                 if (vm.data) {

@@ -1,5 +1,6 @@
 import collections
 
+from dash import models
 import dash.campaign_goals
 from dash import constants
 from dash.views import helpers
@@ -192,4 +193,41 @@ def get_ad_group_sources_extras(ad_group):
     return {
         'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings),
         'ad_group_autopilot_state': ad_group_settings.autopilot_state,
+    }
+
+
+# MVP for all-RTB-sources-as-one
+def insert_all_rtb_source_row(constraints, rows):
+    ad_group = constraints['ad_group']
+    settings = ad_group.get_current_settings()
+    if not settings.b1_sources_group_enabled:
+        return
+
+    rtb_source_ids = constraints['filtered_sources'] \
+        .filter(source_type__type=constants.SourceType.B1) \
+        .values_list('id', flat=True)
+    rtb_source_ids = map(str, rtb_source_ids)
+
+    # Create All RTB Source row using rtb_source_ids for newly created group
+    all_rtb_source_row = create_all_rtb_source_row(settings)
+    all_rtb_source_row['group'] = {'ids': rtb_source_ids}
+    rows.append(all_rtb_source_row)
+
+
+def create_all_rtb_source_row(ad_group_settings):
+    status = ad_group_settings.b1_sources_group_state
+    if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
+        status = constants.AdGroupSourceSettingsState.INACTIVE
+
+    return {
+        'breakdown_name': constants.SourceAllRTB.NAME,
+        'breakdown_id': constants.SourceAllRTB.ID,
+        'state': {'value': ad_group_settings.b1_sources_group_state},
+        'status': {'value': status},
+        'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
+        'editable_fields': {
+            'state': {'message': None, 'enabled': True},
+            'daily_budget': {'message': None, 'enabled': True},
+            'bid_cpc': {'message': None, 'enabled': False},
+        }
     }

@@ -1,14 +1,15 @@
 /* globals describe, it, beforeEach, expect, module, inject */
 
 describe('zemGridCellPerformanceIndicator', function () {
-    var scope, element, $compile;
+    var scope, element, $compile, zemGridConstants;
 
     var template = '<zem-grid-cell-performance-indicator data="ctrl.data" row="ctrl.row"></zem-grid-cell-performance-indicator>'; // eslint-disable-line max-len
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function ($rootScope, _$compile_) {
+    beforeEach(inject(function ($rootScope, _$compile_, _zemGridConstants_) {
         $compile = _$compile_;
+        zemGridConstants = _zemGridConstants_;
 
         scope = $rootScope.$new();
         scope.ctrl = {};
@@ -33,6 +34,7 @@ describe('zemGridCellPerformanceIndicator', function () {
         tests.forEach(function (test) {
             scope.ctrl.row = {
                 level: test.rowLevel,
+                type: zemGridConstants.gridRowType.STATS
             };
 
             element = $compile(template)(scope);

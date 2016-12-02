@@ -202,7 +202,7 @@ angular.module('one.legacy').factory('zemDataSourceService', function ($rootScop
         function updateData (breakdown) {
             // For each row in breakdown patch find cached row by id and apply values
             var updatedStats = [];
-            breakdown.rows.forEach (function (updatedRow) {
+            breakdown.rows.forEach(function (updatedRow) {
                 var row = findRow(updatedRow.breakdownId);
                 if (row) {
                     if (updatedRow.archived !== undefined) {
@@ -266,7 +266,14 @@ angular.module('one.legacy').factory('zemDataSourceService', function ($rootScop
             var childBreakdowns = [];
             breakdowns.forEach(function (breakdown) {
                 breakdown.rows.forEach(function (row) {
-                    if (row.breakdown) childBreakdowns.push(row.breakdown);
+                    if (row.breakdown) {
+                        if (row.group) {
+                            var groupBreakdowns = getChildBreakdowns([row.breakdown]);
+                            childBreakdowns = childBreakdowns.concat(groupBreakdowns);
+                        } else {
+                            childBreakdowns.push(row.breakdown);
+                        }
+                    }
                 });
             });
             return childBreakdowns;
@@ -352,6 +359,13 @@ angular.module('one.legacy').factory('zemDataSourceService', function ($rootScop
         }
 
         function initializeNodeBreakdown (node, level) {
+            if (node.group) {
+                // Special case for groups - initialize breakdown on childs
+                node.breakdown.rows.forEach(function (row) {
+                    initializeNodeBreakdown(row, level);
+                });
+                return;
+            }
             // Prepare empty breakdown for non-leaf (will be breakdown in future) nodes
             node.breakdown = {
                 level: level,
@@ -454,10 +468,10 @@ angular.module('one.legacy').factory('zemDataSourceService', function ($rootScop
             if (!node.breakdown) return result;
 
             node.breakdown.rows.forEach(function (child) {
-                if (node.breakdown.level === level) {
-                    result.push(child);
-                } else {
+                if (child.group || node.breakdown.level !== level) {
                     getNodesByLevel(level, child, result);
+                } else {
+                    result.push(child);
                 }
             });
 

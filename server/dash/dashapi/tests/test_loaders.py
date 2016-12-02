@@ -23,7 +23,6 @@ class GetLoaderTest(TestCase):
 
 
 class AccountsLoaderTest(TestCase):
-
     fixtures = ['test_api_breakdowns.yaml']
 
     def setUp(self):
@@ -74,7 +73,6 @@ class AccountsLoaderTest(TestCase):
 
 
 class CampaignsLoaderTest(TestCase):
-
     fixtures = ['test_api_breakdowns.yaml']
 
     def setUp(self):
@@ -138,7 +136,6 @@ class CampaignsLoaderTest(TestCase):
 
 
 class AdGroupsLoaderTest(TestCase):
-
     fixtures = ['test_api_breakdowns.yaml']
 
     def setUp(self):
@@ -231,7 +228,6 @@ class AdGroupsLoaderTest(TestCase):
 
 
 class ContentAdLoaderTest(TestCase):
-
     fixtures = ['test_api_breakdowns.yaml']
 
     def setUp(self):
@@ -359,7 +355,6 @@ class ContentAdLoaderTest(TestCase):
 
 
 class SourcesLoaderTest(TestCase):
-
     fixtures = ['test_api_breakdowns.yaml']
 
     def setUp(self):
@@ -398,7 +393,6 @@ class SourcesLoaderTest(TestCase):
 
 
 class AdGroupSourcesLoaderTest(TestCase):
-
     fixtures = ['test_api_breakdowns.yaml']
 
     def setUp(self):
@@ -420,6 +414,34 @@ class AdGroupSourcesLoaderTest(TestCase):
             1: models.Source.objects.get(pk=1),
             2: models.Source.objects.get(pk=2),
         })
+
+    def test_settings_map_all_rtb_enabled(self):
+        self.loader.ad_group_settings.b1_sources_group_enabled = True
+        self.loader.ad_group_settings.b1_sources_group_state = 1
+
+        rtb_source = self.loader.settings_map[1]
+        reg_source = self.loader.settings_map[2]
+
+        rtb_source = self.loader.settings_map[1]
+        self.assertEqual(rtb_source['state'], 1)
+        self.assertEqual(rtb_source['status'], 1)
+        self.assertEqual(rtb_source['daily_budget'], None)
+        self.assertEqual(rtb_source['editable_fields']['daily_budget']['enabled'], False)
+
+        self.assertEqual(reg_source['state'], 2)
+        self.assertEqual(reg_source['status'], 2)
+        self.assertEqual(reg_source['daily_budget'], Decimal('20.0'))
+        self.assertEqual(reg_source['editable_fields']['daily_budget']['enabled'], False)
+
+    def test_settings_map_all_rtb_enabled_and_inactive(self):
+        self.loader.ad_group_settings.b1_sources_group_enabled = True
+        self.loader.ad_group_settings.b1_sources_group_state = 2
+
+        rtb_source = self.loader.settings_map[1]
+        self.assertEqual(rtb_source['state'], 1)
+        self.assertEqual(rtb_source['status'], 2)
+        self.assertEqual(rtb_source['daily_budget'], None)
+        self.assertEqual(rtb_source['editable_fields']['daily_budget']['enabled'], False)
 
     def test_settings_map(self):
         self.assertDictEqual(self.loader.settings_map, {
@@ -476,4 +498,22 @@ class AdGroupSourcesLoaderTest(TestCase):
         self.assertDictEqual(self.loader.totals, {
             'daily_budget': Decimal('10.0000'),
             'current_daily_budget': Decimal('10.0000'),
+        })
+
+    def test_totals_all_rtb_enabled(self):
+        self.loader.ad_group_settings.b1_sources_group_enabled = True
+        self.loader.ad_group_settings.b1_sources_group_daily_budget = Decimal('100.00')
+        self.loader.ad_group_settings.b1_sources_group_state = 1
+        self.assertDictEqual(self.loader.totals, {
+            'daily_budget': Decimal('100.0000'),
+            'current_daily_budget': Decimal('100.0000'),
+        })
+
+    def test_totals_all_rtb_enabled_and_inactive(self):
+        self.loader.ad_group_settings.b1_sources_group_enabled = True
+        self.loader.ad_group_settings.b1_sources_group_daily_budget = Decimal('100.00')
+        self.loader.ad_group_settings.b1_sources_group_state = 2
+        self.assertDictEqual(self.loader.totals, {
+            'daily_budget': Decimal('0'),
+            'current_daily_budget': Decimal('0'),
         })

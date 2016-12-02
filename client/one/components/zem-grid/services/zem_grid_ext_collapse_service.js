@@ -24,6 +24,7 @@ angular.module('one.legacy').factory('zemGridCollapseService', function (zemGrid
 
         function isRowCollapsable (row) {
             if (row.level === zemGridConstants.gridRowLevel.FOOTER) return false;
+            if (row.type === zemGridConstants.gridRowType.GROUP) return true;
             return grid.meta.dataService.getBreakdownLevel() > row.level;
         }
 
@@ -51,9 +52,18 @@ angular.module('one.legacy').factory('zemGridCollapseService', function (zemGrid
             var idx = grid.body.rows.indexOf(parent);
             while (++idx < grid.body.rows.length) {
                 var child = grid.body.rows[idx];
-                if (child.level <= parent.level) break;
-                child.visible = !parent.collapsed && !child.parent.collapsed;
+                if (isChild(child, parent)) {
+                    child.visible = !parent.collapsed && !child.parent.collapsed;
+                }
             }
+        }
+
+        function isChild (row, parent) {
+            while (row) {
+                if (row.parent === parent) return true;
+                row = row.parent;
+            }
+            return false;
         }
     }
 

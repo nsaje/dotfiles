@@ -80,7 +80,7 @@ angular.module('one.legacy').factory('zemGridUIService', function ($timeout, zem
         }
 
         grid.body.rows.forEach(function (row) {
-            if (row.type !== zemGridConstants.gridRowType.STATS) return;
+            if (row.type === zemGridConstants.gridRowType.BREAKDOWN) return;
             var data = row.data.stats[column.field];
             if (!data) return;
 
@@ -90,6 +90,7 @@ angular.module('one.legacy').factory('zemGridUIService', function ($timeout, zem
             if (column.type === zemGridConstants.gridColumnTypes.BREAKDOWN) {
                 // Special case for breakdown column - add padding based on row level
                 valueWidth += (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
+                if (row.inGroup) valueWidth += zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
                 // Add additional padding when collapse icon is shown
                 if (grid.meta.dataService.getBreakdownLevel() > 1 && row.level > 0) {
                     valueWidth += zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
@@ -306,6 +307,8 @@ angular.module('one.legacy').factory('zemGridUIService', function ($timeout, zem
 
     function getBreakdownColumnStyle (grid, row) {
         var paddingLeft = (row.level - 1) * zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
+        if (row.inGroup) paddingLeft += zemGridConstants.gridStyle.BREAKDOWN_CELL_PADDING;
+
         // Indent breakdown rows on last level with additional padding because no collapse icon is shown in these rows
         var breakdownLevel = grid.meta.dataService.getBreakdownLevel();
         if (breakdownLevel > 1 && breakdownLevel === row.level) {

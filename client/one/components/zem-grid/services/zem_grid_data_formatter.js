@@ -15,7 +15,7 @@ angular.module('one.legacy').factory('zemGridDataFormatter', function ($filter, 
         case zemGridConstants.gridColumnTypes.DATE_TIME: return formatDateTime(value, options);
         case zemGridConstants.gridColumnTypes.NUMBER: return formatNumber(value, options);
         case zemGridConstants.gridColumnTypes.CURRENCY: return formatCurrency(value, options);
-        default: return value || options.defaultValue || 'N/A';
+        default: return value || (options.defaultValue === undefined ? 'N/A' : options.defaultValue);
         }
     }
 
@@ -34,35 +34,35 @@ angular.module('one.legacy').factory('zemGridDataFormatter', function ($filter, 
 
     function formatText (value, options) {
         if (value !== 0 && !value) {
-            return options.defaultValue || '';
+            return options.defaultValue === undefined ? '' : options.defaultValue;
         }
         return value + '';
     }
 
     function formatPercent (value, options) {
         if (value !== 0 && !value) {
-            return options.defaultValue || 'N/A';
+            return options.defaultValue === undefined ? 'N/A' : options.defaultValue;
         }
         return $filter('number')(value, constants.defaultFractionSize.PERCENT) + '%';
     }
 
     function formatSeconds (value, options) {
         if (value !== 0 && !value) {
-            return options.defaultValue || 'N/A';
+            return options.defaultValue === undefined ? 'N/A' : options.defaultValue;
         }
         return $filter('number')(value, constants.defaultFractionSize.SECONDS) + ' s';
     }
 
     function formatDateTime (value, options) {
         if (!value) {
-            return options.defaultValue || 'N/A';
+            return options.defaultValue === undefined ? 'N/A' : options.defaultValue;
         }
         return $filter('date')(value, 'M/d/yyyy h:mm a', 'UTC');
     }
 
     function formatNumber (value, options) {
         if (value !== 0 && !value) {
-            return options.defaultValue || 'N/A';
+            return options.defaultValue === undefined ? 'N/A' : options.defaultValue;
         }
         var fractionSize;
         if (options.fractionSize !== 0 && !options.fractionSize) {
@@ -75,7 +75,7 @@ angular.module('one.legacy').factory('zemGridDataFormatter', function ($filter, 
 
     function formatCurrency (value, options) {
         if (value !== 0 && !value) {
-            return options.defaultValue || 'N/A';
+            return options.defaultValue === undefined ? 'N/A' : options.defaultValue;
         }
         var fractionSize;
         if (options.fractionSize !== 0 && !options.fractionSize) {

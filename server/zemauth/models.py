@@ -234,6 +234,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_use_restapi', 'User can use the REST API'),
             ('can_see_new_settings', 'User can see new settings'),
             ('can_access_publisher_reports', 'User can generate publisher reports'),
+            ('can_see_rtb_sources_as_one', 'User can see RTB Sources grouped as one'),
         )
 
     def get_full_name(self):

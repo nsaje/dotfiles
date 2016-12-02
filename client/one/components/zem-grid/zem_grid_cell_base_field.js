@@ -29,7 +29,10 @@ angular.module('one.legacy').directive('zemGridCellBaseField', function () {
                 }
 
                 var value = vm.data ? vm.data.value : undefined;
-                vm.formattedValue = zemGridDataFormatter.formatValue(value, vm.column.data);
+                vm.formattedValue = '';
+                if (vm.row.type === zemGridConstants.gridRowType.STATS) {
+                    vm.formattedValue = zemGridDataFormatter.formatValue(value, vm.column.data);
+                }
 
                 vm.class = vm.column.type + '-field';
                 if (vm.data) {

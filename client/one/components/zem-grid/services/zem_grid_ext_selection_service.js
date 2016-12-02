@@ -115,6 +115,9 @@ angular.module('one.legacy').factory('zemGridSelectionService', function (zemGri
         }
 
         function isRowSelectionEnabled (row) {
+            if (row.type === zemGridConstants.gridRowType.GROUP) {
+                return getConfig().groupsEnabled;
+            }
             return getConfig().levels.indexOf(row.level) >= 0;
         }
 

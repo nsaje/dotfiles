@@ -28,9 +28,13 @@ angular.module('one.legacy').factory('zemGridParser', function ($filter, zemGrid
     function parseBreakdown (grid, parent, breakdown) {
         var rows = [];
         var level = breakdown.level;
+        var inGroup = parent && (parent.type === zemGridConstants.gridRowType.GROUP ||  parent.inGroup);
 
         breakdown.rows.forEach(function (data) {
-            var row = createRow(zemGridConstants.gridRowType.STATS, data, level, parent);
+            var type = data.group ? zemGridConstants.gridRowType.GROUP : zemGridConstants.gridRowType.STATS;
+            var row = createRow(type, data, level, parent);
+            row.inGroup = inGroup;
+
             rows.push(row);
             if (data.breakdown) {
                 var breakdownRows = parseBreakdown(grid, row, data.breakdown);
@@ -42,6 +46,7 @@ angular.module('one.legacy').factory('zemGridParser', function ($filter, zemGrid
             // Add breakdown row only if there is more data to be loaded
             // OR there is no data at all (to show empty msg)
             var row = createBreakdownRow(grid, breakdown, parent);
+            row.inGroup = inGroup;
             rows.push(row);
         }
 

@@ -14,6 +14,118 @@ describe('zemGridEndpointApiConverter', function () {
         zemGridEndpointApiConverter = _zemGridEndpointApiConverter_;
     }));
 
+    fit('should correctly convert grouped rows', function () {
+        config = {
+            level: 1,
+            breakdown: [{query: 'ad_group'}],
+        };
+        breakdown = {
+            rows: [
+                {
+                    breakdown_id: '1',
+                    breakdown_name: 'Test breakdown 1',
+
+                },
+                {
+                    breakdown_id: '2',
+                    breakdown_name: 'Test breakdown 2',
+                },
+                {
+                    breakdown_id: '3',
+                    breakdown_name: 'Test breakdown 1',
+                    group: {
+                        ids: ['2', '4']
+                    },
+                },
+                {
+                    breakdown_id: '4',
+                    breakdown_name: 'Test breakdown 4',
+                },
+            ],
+        };
+        metaData = {
+            breakdown: 'ad_group',
+            columns: [
+                {
+                    field: 'breakdown_name',
+                    type: 'breakdown',
+                },
+            ],
+            categories: [],
+        };
+
+        var expected = {
+            breakdownId: undefined,
+            level: 1,
+            pagination: undefined,
+            rows: [
+                {
+                    stats: {
+                        breakdown_name: {
+                            value: 'Test breakdown 1',
+                            text: undefined,
+                            url: undefined,
+                            redirectorUrl: undefined
+                        }
+                    },
+                    group: undefined,
+                    breakdownId: '1',
+                    archived: undefined,
+                    supplyDashDisabledMessage: undefined,
+                    entity: {type: 'adGroup', id: 1}
+                },
+                {
+                    stats: {
+                        breakdown_name: {
+                            value: 'Test breakdown 1',
+                            text: undefined,
+                            url: undefined,
+                            redirectorUrl: undefined
+                        }
+                    },
+                    group: {ids: ['2', '4']},
+                    breakdownId: '3',
+                    archived: undefined,
+                    supplyDashDisabledMessage: undefined,
+                    entity: {type: 'adGroup', id: 3},
+                    breakdown: {
+                        group: true, meta: {}, level: 1, rows: [{
+                            stats: {
+                                breakdown_name: {
+                                    value: 'Test breakdown 2',
+                                    text: undefined,
+                                    url: undefined,
+                                    redirectorUrl: undefined
+                                }
+                            },
+                            group: undefined,
+                            breakdownId: '2',
+                            archived: undefined,
+                            supplyDashDisabledMessage: undefined,
+                            entity: {type: 'adGroup', id: 2}
+                        }, {
+                            stats: {
+                                breakdown_name: {
+                                    value: 'Test breakdown 4',
+                                    text: undefined,
+                                    url: undefined,
+                                    redirectorUrl: undefined
+                                }
+                            },
+                            group: undefined,
+                            breakdownId: '4',
+                            archived: undefined,
+                            supplyDashDisabledMessage: undefined,
+                            entity: {type: 'adGroup', id: 4}
+                        }],
+                        pagination: {complete: true}
+                    }
+                }]
+        };
+
+        var convertedBreakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(config, breakdown, metaData);
+        expect(convertedBreakdown).toEqual(expected);
+    });
     it('should correctly convert breakdown object', function () {
         config = {
             level: 2,
@@ -150,6 +262,7 @@ describe('zemGridEndpointApiConverter', function () {
                         },
                     },
                     breakdownId: '3||33',
+                    group: undefined,
                     archived: false,
                     supplyDashDisabledMessage: 'Disabled',
                     entity: {
@@ -185,6 +298,7 @@ describe('zemGridEndpointApiConverter', function () {
                         },
                     },
                     breakdownId: '4||44',
+                    group: undefined,
                     archived: false,
                     supplyDashDisabledMessage: undefined,
                     entity: {
@@ -220,6 +334,7 @@ describe('zemGridEndpointApiConverter', function () {
                         },
                     },
                     breakdownId: '5||55',
+                    group: undefined,
                     archived: true,
                     supplyDashDisabledMessage: undefined,
                     entity: {

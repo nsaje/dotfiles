@@ -153,6 +153,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
             order: true,
             editable: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            defaultValue: '',
         },
         dailyBudgetSetting: {
             name: 'Daily Spend Cap',
@@ -165,6 +166,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
             order: true,
             editable: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            defaultValue: '',
         },
 
         // Content Ad

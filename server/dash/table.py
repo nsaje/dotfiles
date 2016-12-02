@@ -92,10 +92,12 @@ def set_rows_goals_performance(user, stats, start_date, end_date, campaigns):
         breakdown_helpers.set_row_goal_performance_meta(stat, performance, conversion_goals)
 
 
-def get_daily_budget_total(states):
+def get_daily_budget_total(states, include_rtb_sources=True):
     budgets = [s.daily_budget_cc for s in states if
                s is not None and s.daily_budget_cc is not None and
-               s.state == constants.AdGroupSourceSettingsState.ACTIVE]
+               s.state == constants.AdGroupSourceSettingsState.ACTIVE and
+               (include_rtb_sources or s.ad_group_source.source.source_type.type != constants.SourceType.B1)
+               ]
 
     if not budgets:
         return None
@@ -417,19 +419,48 @@ class AdGroupSourcesTableUpdates(object):
                     'current_daily_budget': current_daily_budget,
                 }
 
+                if ad_group_source.source.source_type.type == constants.SourceType.B1:
+                    self.update_rtb_source_row(ad_group_sources_table.ad_group_settings,
+                                               rows[ad_group_source.source_id])
+
             response['rows'] = rows
 
+            daily_budget = self.get_daily_budget(ad_group_sources_table)
             response['totals'] = {
-                'daily_budget': get_daily_budget_total(states),
-                'current_daily_budget': get_daily_budget_total(states)
+                'daily_budget': daily_budget,
+                'current_daily_budget': daily_budget,
             }
 
             response['notifications'] = notifications
 
-            # if user.has_perm('zemauth.data_status_column'):
-            #     response['data_status'] = ad_group_sources_table.get_data_status(user)
-
         return response
+
+    def update_rtb_source_row(self, ad_group_settings, row):
+        # MVP for all-RTB-sources-as-one
+        if ad_group_settings.b1_sources_group_enabled:
+            del row['daily_budget']
+            del row['current_daily_budget']
+
+            if ad_group_settings.b1_sources_group_state == \
+                    constants.AdGroupSourceSettingsState.INACTIVE:
+                row['status'] = constants.AdGroupSourceSettingsState.INACTIVE
+
+    def get_daily_budget(self, ad_group_sources_table):
+        # MVP for all-RTB-sources-as-one
+        all_rtb_budget = 0
+        include_rtb_sources = True
+        if ad_group_sources_table.ad_group_settings.b1_sources_group_enabled:
+            include_rtb_sources = False
+            all_rtb_budget = 0
+            if ad_group_sources_table.ad_group_settings.b1_sources_group_state == \
+                    constants.AdGroupSourceSettingsState.ACTIVE:
+                all_rtb_budget = ad_group_sources_table.ad_group_settings.b1_sources_group_daily_budget
+
+        daily_budget = get_daily_budget_total(ad_group_sources_table.ad_group_sources_states, include_rtb_sources)
+        if not include_rtb_sources:
+            daily_budget = daily_budget + all_rtb_budget if daily_budget else all_rtb_budget
+
+        return daily_budget
 
 
 class SourcesTable(object):

@@ -7,6 +7,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
     templateUrl: '/app/widgets/zem-settings/adgroup/autopilot/zemAdGroupAutopilotSettings.component.html',
     controller: function ($q, config, zemPermissions) {
         var $ctrl = this;
+        $ctrl.constants = constants;
         $ctrl.config = config;
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;

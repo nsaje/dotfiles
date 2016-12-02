@@ -392,6 +392,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
         if breakdown == ['source_id']:
             extras.update(breakdown_helpers.get_ad_group_sources_extras(ad_group))
+            breakdown_helpers.insert_all_rtb_source_row(constraints, rows)
 
         if stats.constants.get_target_dimension(breakdown) == 'publisher_id':
             extras['ob_blacklisted_count'] = publisher_helpers.get_ob_blacklisted_publishers_count(

@@ -1,18 +1,22 @@
 /* globals describe, it, beforeEach, expect, module, inject */
 
 describe('zemGridCellBaseField', function () {
-    var scope, element, $compile;
+    var scope, element, $compile, zemGridConstants;
 
     var template = '<zem-grid-cell-base-field data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid"></zem-grid-cell-base-field>'; // eslint-disable-line max-len
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function ($rootScope, _$compile_) {
+    beforeEach(inject(function ($rootScope, _$compile_, _zemGridConstants_) {
         $compile = _$compile_;
+        zemGridConstants = _zemGridConstants_;
 
         scope = $rootScope.$new();
         scope.ctrl = {};
-        scope.ctrl.row = {};
+        scope.ctrl.row = {
+            type: zemGridConstants.gridRowType.STATS
+        };
+        scope.ctrl.row.data = {};
         scope.ctrl.col = {};
         scope.ctrl.col.data = {};
         scope.ctrl.grid = {};
@@ -33,7 +37,9 @@ describe('zemGridCellBaseField', function () {
 
         expect(element.text().trim()).toEqual('');
 
-        element.isolateScope().ctrl.row = {};
+        element.isolateScope().ctrl.row = {
+            type: zemGridConstants.gridRowType.STATS
+        };
         scope.$digest();
 
         expect(element.text().trim()).toEqual('N/A');

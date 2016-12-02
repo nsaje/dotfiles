@@ -15,6 +15,7 @@ from dash import table
 from dash.views import helpers
 
 import stats.helpers
+import breakdown_helpers
 
 from utils import api_common
 from utils import exc
@@ -77,6 +78,10 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'filtered_sources' in config:
             filtered_sources = config['filtered_sources']
 
+        if source_id == constants.SourceAllRTB.ID:
+            # MVP for all-RTB-sources-as-one
+            return self.post_all_rtb_source(request, ad_group_id, filtered_sources, settings)
+
         request._body = json.dumps(settings)
         response_save_http = views.views.AdGroupSourceSettings().put(request, ad_group_id, source_id)
         response_save = json.loads(response_save_http.content)['data']
@@ -102,6 +107,30 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                    .format(sources)
         }
 
+    # MVP for all-RTB-sources-as-one
+    def post_all_rtb_source(self, request, ad_group_id, filtered_sources, settings):
+        ad_group_settings_response = views.agency.AdGroupSettings().get(request, ad_group_id)
+        ad_group_settings_dict = json.loads(ad_group_settings_response.content)['data']['settings']
+        if 'daily_budget_cc' in settings:
+            ad_group_settings_dict['b1_sources_group_daily_budget'] = settings['daily_budget_cc']
+        if 'state' in settings:
+            ad_group_settings_dict['b1_sources_group_state'] = settings['state']
+
+        request._body = json.dumps({'settings': ad_group_settings_dict})
+        views.agency.AdGroupSettings().put(request, ad_group_id)
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        row = breakdown_helpers.create_all_rtb_source_row(ad_group.get_current_settings())
+        response_update = table.AdGroupSourcesTableUpdates() \
+            .get(request.user, None, filtered_sources, ad_group_id_=ad_group_id)
+        convert_update_response(response_update, None)
+        convert_resource_response(constants.Level.AD_GROUPS, 'source_id', response_update)
+        response = {
+            'rows': [row] + response_update['rows'],
+            'totals': response_update['totals']
+        }
+        return self.create_api_response(response)
+
 
 def convert_update_response(response, updated_id):
     if 'rows' in response:
@@ -112,7 +141,7 @@ def convert_update_response(response, updated_id):
                 row['editable_fields'] = response['editable_fields']
             rows.append(row)
         response['rows'] = rows
-        del response['editable_fields']
+        response.pop('editable_fields', None)
 
 
 def convert_resource_response(level, base_dimension, response):

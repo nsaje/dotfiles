@@ -19,6 +19,7 @@ angular.module('one.legacy').factory('zemGridConstants', function () {
         gridRowType: {
             STATS: 1,
             BREAKDOWN: 2,
+            GROUP: 3,
         },
         gridRowLevel: {
             FOOTER: 0,

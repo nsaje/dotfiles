@@ -528,6 +528,14 @@ class AdGroupSourcesLoader(Loader):
                     ad_group_source, self.ad_group_settings, source_settings),
             }
 
+            # MVP for all-RTB-sources-as-one
+            if self.ad_group_settings.b1_sources_group_enabled and source.source_type.type == constants.SourceType.B1:
+                result[source_id]['daily_budget'] = None
+                result[source_id]['editable_fields']['daily_budget']['enabled'] = False
+                result[source_id]['editable_fields']['daily_budget']['message'] = None
+                if self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE:
+                    result[source_id]['status'] = constants.AdGroupSourceSettingsState.INACTIVE
+
         return result
 
     @cached_property
@@ -565,6 +573,12 @@ class AdGroupSourcesLoader(Loader):
         daily_budget = sum([
             v['daily_budget'] for v in self.settings_map.values()
             if v['daily_budget'] and v['status'] == constants.AdGroupSourceSettingsState.ACTIVE])
+
+        # MVP for all-RTB-sources-as-one
+        if self.ad_group_settings.b1_sources_group_enabled \
+           and self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.ACTIVE:
+            daily_budget += self.ad_group_settings.b1_sources_group_daily_budget
+
         totals = {
             'daily_budget': daily_budget,
             'current_daily_budget': daily_budget,

@@ -59,6 +59,7 @@ angular.module('one.legacy').factory('zemGridEndpointApiConverter', function (ze
         convertedBreakdown.rows = breakdown.rows.map(function (row) {
             return {
                 stats: convertStatsFromApi(row, metaData),
+                group: row.group,
                 breakdownId: row.breakdown_id,
                 archived: row.archived,
                 supplyDashDisabledMessage: row.supply_dash_disabled_message,
@@ -66,7 +67,40 @@ angular.module('one.legacy').factory('zemGridEndpointApiConverter', function (ze
             };
         });
 
+        // Create groups for rows with special group property
+        // Group breakdown contains rows defined in 'row.group.ids'
+        createGroups(convertedBreakdown);
+
         return convertedBreakdown;
+    }
+
+    function createGroups (breakdown) {
+        breakdown.rows.filter (function (row) {
+            return row.group;
+        }).forEach (function (groupRow) {
+            createGroup(breakdown, groupRow);
+        });
+    }
+
+    function createGroup (breakdown, groupRow) {
+        var groupedRows = breakdown.rows.filter (function (row) {
+            return groupRow.group.ids.indexOf(row.breakdownId) >= 0;
+        });
+
+        groupedRows.forEach(function (row) {
+            var idx = breakdown.rows.indexOf (row);
+            breakdown.rows.splice(idx, 1);
+        });
+
+        groupRow.breakdown = {
+            group: true,
+            meta: {},
+            level: 1,
+            rows: groupedRows,
+            pagination: {
+                complete: true
+            }
+        };
     }
 
     function convertConfigToApi (config) {

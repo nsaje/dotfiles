@@ -1805,3 +1805,9 @@ class ReportJobStatus(ConstantBase):
         IN_PROGRESS: 'In progress',
         CANCELLED: 'Cancelled',
     }
+
+
+# MVP for all-RTB-sources-as-one
+class SourceAllRTB(object):
+    ID = '0123456789'
+    NAME = 'RTB Sources'
