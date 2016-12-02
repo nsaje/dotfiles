@@ -84,7 +84,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
 
         var orderField, columns = gridApi.getColumns();
         for (var i = 0; i < columns.length; i++) {
-            if (columns[i].orderField === orderFieldKey) {
+            if (columns[i].orderField === orderFieldKey || columns[i].field === orderFieldKey) {
                 orderField = columns[i].data.name;
                 break;
             }
