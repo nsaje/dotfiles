@@ -109,17 +109,19 @@ def monitor_yesterday_spend():
         created_dt__gte=pacific_midnight_yesterday,
     ).values_list('id', flat=True)
 
-    actual_spend = db.execute_query(
-        backtosql.generate_sql('bizwire_ads_stats_monitoring.sql', {
-            'cost': backtosql.TemplateColumn(
-                'part_sum_nano.sql',
-                {'column_name': 'cost_nano'}
-            ),
-            'content_ad_ids': content_ad_ids,
-        }),
-        [],
-        'bizwire_ads_stats_monitoring',
-    )[0]['cost'] or 0
+    actual_spend = 0
+    if content_ad_ids:
+        actual_spend = db.execute_query(
+            backtosql.generate_sql('bizwire_ads_stats_monitoring.sql', {
+                'cost': backtosql.TemplateColumn(
+                    'part_sum_nano.sql',
+                    {'column_name': 'cost_nano'}
+                ),
+                'content_ad_ids': content_ad_ids,
+            }),
+            [],
+            'bizwire_ads_stats_monitoring',
+        )[0]['cost'] or 0
 
     expected_spend = len(content_ad_ids) * 4
 
