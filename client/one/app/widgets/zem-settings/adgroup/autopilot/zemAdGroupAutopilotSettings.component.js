@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/adgroup/autopilot/zemAdGroupAutopilotSettings.component.html',
-    controller: function ($q, config, zemPermissions) {
+    controller: function ($q, $state, config, zemPermissions) {
         var $ctrl = this;
         $ctrl.constants = constants;
         $ctrl.config = config;
@@ -20,9 +20,35 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
 
         $ctrl.$onInit = function () {
             $ctrl.api.register({
-                // Not needed (placeholder)
+                onSuccess: function () {
+                    if (isReloadNeeded()) $state.reload();
+                }
             });
         };
+
+        $ctrl.$onChanges = function () {
+            if ($ctrl.entity) {
+                $ctrl.origAutopilotSettings = {
+                    b1SourcesGroupEnabled: $ctrl.entity.settings.b1SourcesGroupEnabled,
+                    autopilotState: $ctrl.entity.settings.autopilotState,
+                    autopilotBudget: $ctrl.entity.settings.autopilotBudget,
+                };
+            }
+        };
+
+        function isReloadNeeded () {
+            // MVP for all-RTB-sources-as-one
+            // Reload state when all-rtb-as-one setting is changed (grid data representation changes)
+            var allRtbAsOne = $ctrl.entity.settings.b1SourcesGroupEnabled &&
+                      $ctrl.entity.settings.autopilotState ===
+                      constants.adGroupSettingsAutopilotState.INACTIVE;
+
+            var origAllRtbAsOne = $ctrl.origAutopilotSettings.b1SourcesGroupEnabled &&
+                       $ctrl.origAutopilotSettings.autopilotState ===
+                       constants.adGroupSettingsAutopilotState.INACTIVE;
+
+            return allRtbAsOne !== origAllRtbAsOne;
+        }
 
         function isInLanding () {
             if (!$ctrl.entity) return false;
