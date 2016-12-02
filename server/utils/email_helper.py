@@ -410,7 +410,7 @@ def send_async_report(
         end_date=dates_helper.format_date_mmddyyyy(end_date),
         expiry_date=dates_helper.format_date_mmddyyyy(expiry_date),
         tab_name=breakdown_columns[0] if breakdown_columns else '',
-        breakdown=', '.join(breakdown_columns[1:]) if breakdown_columns else '/',
+        breakdown=(', '.join(breakdown_columns[1:]) if breakdown_columns else '') or '/',
         columns=', '.join(columns),
         filters=', '.join(filters) if filters else '/',
         include_totals='Yes' if include_totals else 'No',
