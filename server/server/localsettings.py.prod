@@ -159,7 +159,7 @@ CACHES = {
     'bizwire_cache': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'integrations_bizwire_cache',
-        'TIMEOUT': 60 * 15,  # 15 minutes
+        'TIMEOUT': 60 * 30,  # 30 minutes
         'OPTIONS': {
             'MAX_ENTRIES': 10000,
         }
