@@ -138,7 +138,7 @@ def monitor_yesterday_spend():
     influx.gauge('integrations.bizwire.yesterday_spend', actual_spend, type='actual')
     influx.gauge('integrations.bizwire.yesterday_spend', expected_spend, type='expected')
 
-    if dates_helper.utc_now().hour == 12 and abs(expected_spend - actual_spend) > 500:
+    if dates_helper.utc_now().hour == 12 and (actual_spend < expected_spend * 0.8 or actual_spend > expected_spend):
         emails = config.NOTIFICATION_EMAILS
         subject = 'Businesswire campaign unexpected yesterday spend'
         body = '''Hi,
