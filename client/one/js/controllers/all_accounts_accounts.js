@@ -1,5 +1,5 @@
 /*globals angular,moment,constants,options*/
-angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($scope, $state, $location, $timeout, api, zemAccountService, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($scope, $state, $timeout, api, zemAccountService, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions) { // eslint-disable-line max-len
     $scope.requestInProgress = false;
     $scope.constants = constants;
     $scope.options = options;
@@ -15,6 +15,10 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
     $scope.infoboxPerformanceSettings = null;
     $scope.localStoragePrefix = 'allAccountsAccounts';
 
+    $scope.selection = {
+        entityIds: [],
+        totals: true,
+    };
     $scope.grid = {
         api: undefined,
         level: constants.level.ALL_ACCOUNTS,
@@ -118,12 +122,9 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
         );
     };
 
-    var unbindApiWatch = $scope.$watch('grid.api', function () {
-        if ($scope.grid.api) {
-            $scope.grid.api.onSelectionUpdated($scope, getDailyStats);
-            unbindApiWatch();
-        }
-    });
+    $scope.updateSelectedRowsData = function () {
+        getDailyStats();
+    };
 
     var dailyStatsPromise = undefined;
     var getDailyStats = function () {

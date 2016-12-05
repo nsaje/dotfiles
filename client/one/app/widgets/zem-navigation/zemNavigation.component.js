@@ -75,7 +75,7 @@ angular.module('one.widgets').component('zemNavigation', {
             var entity = $ctrl.selectedEntity;
             if (!entity && $ctrl.query.length > 0) {
                 // If searching select first item if no selection has been made
-                entity  = $ctrl.filteredList[0];
+                entity = $ctrl.filteredList[0];
             }
             navigateTo(entity);
         }
@@ -152,7 +152,7 @@ angular.module('one.widgets').component('zemNavigation', {
             $element.find('.scroll-container').scrollTop(0);
         }
 
-        function scrollToItem (item, scrollItemToTop) {
+        function scrollToItem (item, scrollToMiddleIfOutside) {
             if (!item) return;
 
             // Scroll to item in case that is currently not shown
@@ -170,7 +170,16 @@ angular.module('one.widgets').component('zemNavigation', {
             var viewFrom = $scrollContainer.scrollTop();
             var viewTo = viewFrom + height;
 
-            if (selectedPos < viewFrom || scrollItemToTop) {
+            if (scrollToMiddleIfOutside) {
+                // Scroll item to middle if outside of initial view
+                // [ux] last item in initial view are also scrolled to the middle
+                if (selectedPos > height - ITEM_HEIGHT_DEFAULT) {
+                    selectedPos -= height / 2;
+                    $scrollContainer.scrollTop(selectedPos);
+                } else {
+                    $scrollContainer.scrollTop(0);
+                }
+            } else if (selectedPos < viewFrom) {
                 $scrollContainer.scrollTop(selectedPos);
             } else if (selectedPos >= viewTo) {
                 $scrollContainer.scrollTop(selectedPos - height + getItemHeight($ctrl.filteredList[idx]));
