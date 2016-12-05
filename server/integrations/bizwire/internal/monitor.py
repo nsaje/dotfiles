@@ -57,11 +57,11 @@ def monitor_num_ingested_articles():
 
             label = m.groupdict()['news_item_id']
             key_day = datetime.datetime(
-                m.groupdict()['year'],
-                m.groupdict()['month'],
-                m.groupdict()['day'],
-                m.groupdict()['hour'],
-                m.groupdict()['minute'],
+                int(m.groupdict()['year']),
+                int(m.groupdict()['month']),
+                int(m.groupdict()['day']),
+                int(m.groupdict()['hour']),
+                int(m.groupdict()['minute']),
             )
 
             if (now - key_day).total_seconds() < 5 * 60:
