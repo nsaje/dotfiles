@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemSettings', {
         var $ctrl = this;
         $ctrl.constants = constants;
         $ctrl.sidePanel = {};
-        $ctrl.onCloseRequest = close;
+        $ctrl.onCloseRequest = zemSettingsService.close;
         $ctrl.api = {
             register: register,
             close: zemSettingsService.close
