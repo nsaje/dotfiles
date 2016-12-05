@@ -47,7 +47,7 @@ def monitor_num_ingested_articles():
         re_compiled = re.compile(
             # example: 'uploads/2016/11/29/16:00/20161012006323r1.xml'
             r'.*/(?P<year>\d+)/(?P<month>\d+)/(?P<day>\d+)/'
-            '(?P<hour>\d+)(?::|%3[aA])(?P<minute>\d+)/(?P<news_item_id>\d+)r.\.xml'
+            r'(?P<hour>\d+)(?::|%3[aA])(?P<minute>\d+)/(?P<news_item_id>\d+)r.\.xml'
         )
 
         for key in _get_s3_keys_for_date(s3, date):
