@@ -40,13 +40,14 @@ def monitor_num_ingested_articles():
     s3 = boto3.client('s3')
 
     now = dates_helper.utc_now()
-    dates = [now.date() - datetime.timedelta(days=x) for x in xrange(1)]
+    dates = [now.date() - datetime.timedelta(days=x) for x in xrange(3)]
 
     unique_labels = set()
     for date in dates:
         re_compiled = re.compile(
             # example: 'uploads/2016/11/29/16:00/20161012006323r1.xml'
-            r'.*/(?P<hour>\d+)(?::|%3[aA])\d+/(?P<news_item_id>\d+)r.\.xml'
+            r'.*/(?P<year>\d+)/(?P<month>\d+)/(?P<day>\d+)/'
+            '(?P<hour>\d+)(?::|%3[aA])(?P<minute>\d+)/(?P<news_item_id>\d+)r.\.xml'
         )
 
         for key in _get_s3_keys_for_date(s3, date):
@@ -55,8 +56,16 @@ def monitor_num_ingested_articles():
                 continue
 
             label = m.groupdict()['news_item_id']
-            if date.day == now.day and int(m.groupdict()['hour']) == now.hour:
-                # ignore articles from current hour sinc they may not be processed yet
+            key_day = datetime.datetime(
+                m.groupdict()['year'],
+                m.groupdict()['month'],
+                m.groupdict()['day'],
+                m.groupdict()['hour'],
+                m.groupdict()['minute'],
+            )
+
+            if (now - key_day).total_seconds() < 5 * 60:
+                # ignore articles less than five minutes old
                 continue
 
             unique_labels.add(label)
