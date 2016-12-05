@@ -14,7 +14,7 @@
         <div class="row media-source-control-row">
             <div class="col-xs-6">
                 <select ng-model="$ctrl.selectedMediaSources.available" multiple="" class="media-source-select">
-                    <option ng-repeat="mediaSource in $ctrl.getAvailableMediaSources() | orderBy: 'name'"
+                    <option ng-repeat="mediaSource in $ctrl.mediaSources.available | orderBy: 'name'"
                             value="{{mediaSource.value}}">{{mediaSource.name}} {{mediaSource.released ? '' :
                         '(unreleased)'}}
                     </option>
@@ -22,7 +22,7 @@
             </div>
             <div class="col-xs-6">
                 <select ng-model="$ctrl.selectedMediaSources.allowed" multiple="" class="media-source-select">
-                    <option ng-repeat="mediaSource in $ctrl.getAllowedMediaSources() | orderBy:'name'"
+                    <option ng-repeat="mediaSource in $ctrl.mediaSources.allowed | orderBy:'name'"
                             value="{{mediaSource.value}}">{{mediaSource.name}} {{mediaSource.released ? '' :
                         '(unreleased)'}}
                     </option>

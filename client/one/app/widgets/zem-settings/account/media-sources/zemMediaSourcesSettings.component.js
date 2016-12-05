@@ -16,6 +16,11 @@ angular.module('one.widgets').component('zemMediaSourcesSettings', {
             available: [],
         };
 
+        $ctrl.mediaSources = {
+            allowed: [],
+            available: [],
+        };
+
         $ctrl.getAllowedMediaSources = getAllowedMediaSources;
         $ctrl.getAvailableMediaSources = getAvailableMediaSources;
         $ctrl.addToAllowedMediaSources = addToAllowedMediaSources;
@@ -27,13 +32,29 @@ angular.module('one.widgets').component('zemMediaSourcesSettings', {
             });
         };
 
+        $ctrl.$onChanges = function () {
+            initialize();
+
+        };
+
+        function initialize () {
+            $ctrl.selectedMediaSources.available = [];
+            $ctrl.selectedMediaSources.allowed = [];
+            $ctrl.mediaSources.allowed = getAllowedMediaSources();
+            $ctrl.mediaSources.available = getAvailableMediaSources();
+        }
+
         function getAllowedMediaSources () {
             if (!$ctrl.entity) return;
+
             var list = [];
             angular.forEach($ctrl.entity.settings.allowedSources, function (value, key) {
                 if (value.allowed) {
-                    value.value = key;
-                    this.push(value);
+                    this.push({
+                        value: key,
+                        released: value.released,
+                        name: value.name,
+                    });
                 }
             }, list);
             return list;
@@ -41,11 +62,15 @@ angular.module('one.widgets').component('zemMediaSourcesSettings', {
 
         function getAvailableMediaSources () {
             if (!$ctrl.entity) return;
+
             var list = [];
             angular.forEach($ctrl.entity.settings.allowedSources, function (value, key) {
                 if (!value.allowed) {
-                    value.value = key;
-                    this.push(value);
+                    this.push({
+                        value: key,
+                        name: value.name,
+                        released: value.released,
+                    });
                 }
             }, list);
             return list;
@@ -55,16 +80,16 @@ angular.module('one.widgets').component('zemMediaSourcesSettings', {
             angular.forEach($ctrl.selectedMediaSources.available, function (value) {
                 $ctrl.entity.settings.allowedSources[value].allowed = true;
             });
-            $ctrl.selectedMediaSources.allowed.length = 0;
-            $ctrl.selectedMediaSources.available.length = 0;
+
+            initialize();
         }
 
         function removeFromAllowedMediaSources () {
             angular.forEach($ctrl.selectedMediaSources.allowed, function (value) {
                 $ctrl.entity.settings.allowedSources[value].allowed = false;
             });
-            $ctrl.selectedMediaSources.available.length = 0;
-            $ctrl.selectedMediaSources.allowed.length = 0;
+
+            initialize();
         }
     },
 });
