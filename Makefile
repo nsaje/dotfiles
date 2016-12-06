@@ -32,6 +32,13 @@ jenkins_test:
 	mkdir -p server/.junit_xml/
 	docker-compose -f docker-compose.yml -f docker-compose.jenkins.yml run --entrypoint=/entrypoint_dev.sh eins bash -x ./run_tests.sh
 
+test_acceptance:	## runs tests against a running server in a container
+	bash -c 'PWD=`pwd` export COMPOSE_PROJECT_NAME=acceptance-`basename ${PWD}`; \
+	echo "compose project name ${COMPOSE_PROJECT_NAME}"; \
+	docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml up --force-recreate -d; \
+	docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml run --rm dredd ./restapi-acceptance-tests.sh; \
+	docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml stop;'
+
 ####################
 # image management #
 ####################
@@ -72,6 +79,9 @@ push_baseimage:	## pushes zemanta/z1-base docker image to registry
 		&& docker tag $(ECR_BASE)/z1-base:$(GIT_BRANCH) $(ECR_BASE)/z1-base:current \
 		&& docker push $(ECR_BASE)/z1-base:current \
 		|| true
+
+pull_baseimage:	## pulls zemanta/z1-base docker image
+	docker pull $(ECR_BASE)/z1-base
 
 push:	## pushes zemanta/z1 docker image to registry
 	test -n "$(GIT_BRANCH)" && docker push $(ECR_BASE)/z1:$(GIT_BRANCH)

@@ -52,6 +52,9 @@ node {
                     zemanta/z1-static \
                     bash -c "Xvfb :99 -screen 0 1280x1024x24 & npm prune && npm install && bower install && grunt prod --build-number ${BUILD_NUMBER}"
                     """
+            },
+            acceptance: {
+                sh 'make test_acceptance'
             }
         )
     }

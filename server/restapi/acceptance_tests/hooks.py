@@ -21,13 +21,13 @@ def move_dates_into_future(transaction):
     transaction['request']['body'] = body
 
 
-@hooks.before('Acquire a new authentication token > Acquire a new authentication token')
+@hooks.before('Technical Overview > Acquire a new authentication token > Acquire a new authentication token')
 def strip_oauth2_body(transaction):
     """ API Blueprint uses Markdown, which appends a newline to a body. """
     transaction['request']['body'] = transaction['request']['body'].strip()
 
 
-@hooks.after('Acquire a new authentication token > Acquire a new authentication token')
+@hooks.after('Technical Overview > Acquire a new authentication token > Acquire a new authentication token')
 def stash_token(transaction):
     if 'real' in transaction:
         parsed_body = json.loads(transaction['real']['body'])
@@ -39,3 +39,9 @@ def stash_token(transaction):
 def add_authorization_token(transaction):
     if 'access_token' in stash:
         transaction['request']['headers']['Authorization'] = "Bearer " + stash['access_token']
+
+
+# TODO(nsaje): figure out how to mock this
+@hooks.before("Campaign Management > Campaigns > Get campaign performance")
+def skip_test(transaction):
+    transaction['skip'] = True

@@ -21,7 +21,7 @@ django.db.backends.base.creation.TEST_DATABASE_PREFIX = 'acceptance_test_'
 
 parser = argparse.ArgumentParser(
     description='Run a test server for acceptance testing the REST API.')
-parser.add_argument('addrport', nargs='?', default='8123')
+parser.add_argument('addrport', nargs='?', default='0.0.0.0:8123')
 parser.add_argument('--keepdb', dest='keepdb', action='store_true')
 parser.add_argument('--autoreload', dest='autoreload', action='store_true')
 args = parser.parse_args()
@@ -34,6 +34,13 @@ db = connection.creation.create_test_db(autoclobber=True, keepdb=args.keepdb)
 print "Using test database: %s" % db
 
 
+# OVERRIDE SETTINGS
+from django.conf import settings  # noqa
+settings.K1_DEMO_MODE = True
+settings.R1_DEMO_MODE = True
+settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'mock'
+
+
 def sigterm_handler(signum, frame):
     print "Cleaning up the test database %s" % db
     connection.creation.destroy_test_db(db, keepdb=args.keepdb)
@@ -44,6 +51,6 @@ signal.signal(signal.SIGINT, sigterm_handler)
 
 print "Loading fixtures"
 call_command('loaddata', *['test_acceptance'])
-print "Running the server"
+print "Running the server on %s" % args.addrport
 call_command('runserver', addrport=args.addrport,
              use_reloader=args.autoreload, use_threading=False)
