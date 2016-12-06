@@ -37,16 +37,16 @@ OPERATORS = [EQUALS, IN, BETWEEN]
 DEFAULT_ORDER = '-e_media_cost'
 
 SUPPORTED_BREAKDOWNS = {
-    (utils.columns.Names.content_ad_id,),
-    (utils.columns.Names.source_id,),
-    (utils.columns.Names.publisher,),
-    (utils.columns.Names.publisher, utils.columns.Names.day),
-    (utils.columns.Names.publisher, utils.columns.Names.week),
-    (utils.columns.Names.publisher, utils.columns.Names.month),
+    (utils.columns.FieldNames.content_ad_id,),
+    (utils.columns.FieldNames.source_id,),
+    (utils.columns.FieldNames.publisher,),
+    (utils.columns.FieldNames.publisher, utils.columns.FieldNames.day),
+    (utils.columns.FieldNames.publisher, utils.columns.FieldNames.week),
+    (utils.columns.FieldNames.publisher, utils.columns.FieldNames.month),
 }
 
 DATED_COLUMNS = (
-    utils.columns.Names.status,
+    utils.columns.FieldNames.status,
 )
 
 
@@ -54,10 +54,10 @@ def get_breakdown_from_fields(fields):
     if not fields:
         raise serializers.ValidationError("Must define fields!")
 
-    breakdown = [fields[0]['field']]
+    breakdown = [utils.columns.FieldNames.from_column_name(fields[0]['field'])]
     if len(fields) > 1 and fields[1]['field'] in (
-            utils.columns.Names.day, utils.columns.Names.week, utils.columns.Names.month):
-        breakdown.append(fields[1]['field'])
+            utils.columns.FieldNames.day, utils.columns.FieldNames.week, utils.columns.FieldNames.month):
+        breakdown.append(utils.columns.FieldNames.from_column_name([fields[1]['field']]))
 
     return tuple(breakdown)
 
@@ -69,7 +69,7 @@ def get_order(order_fieldname):
     prefix, fieldname = utils.sort_helper.dissect_order(order_fieldname)
 
     try:
-        field_key = utils.columns.Names.get_keys([fieldname])[0]
+        field_key = utils.columns.FieldNames.from_column_name(fieldname)
     except:
         # the above will fail when we are sorting by name as we are remapping those columns
         # to the dimension name, see function remap_columns
@@ -81,18 +81,20 @@ def get_order(order_fieldname):
 def get_filter_constraints(filters):
     filter_constraints = {}
     for f in filters:
-        if f['field'] == utils.columns.Names.ad_group_id and f['operator'] == EQUALS:
+        field_name = utils.columns.FieldNames.from_column_name(f['field'])
+
+        if field_name == utils.columns.FieldNames.ad_group_id and f['operator'] == EQUALS:
             filter_constraints['ad_group_id'] = int(f['value'])
-        if f['field'] == utils.columns.Names.date and f['operator'] == BETWEEN:
+        if field_name == utils.columns.FieldNames.date and f['operator'] == BETWEEN:
             filter_constraints['start_date'] = _parse_date(f['from'])
             filter_constraints['end_date'] = _parse_date(f['to'])
-        if f['field'] == utils.columns.Names.date and f['operator'] == EQUALS:
+        if field_name == utils.columns.FieldNames.date and f['operator'] == EQUALS:
             date = _parse_date(f['value'])
             filter_constraints['start_date'] = date
             filter_constraints['end_date'] = date
-        if f['field'] == utils.columns.Names.source and f['operator'] == EQUALS:
+        if field_name == utils.columns.FieldNames.source and f['operator'] == EQUALS:
             filter_constraints['sources'] = [f['value']]
-        if f['field'] == utils.columns.Names.source and f['operator'] == IN:
+        if field_name == utils.columns.FieldNames.source and f['operator'] == IN:
             filter_constraints['sources'] = f['values']
     return filter_constraints
 
@@ -210,7 +212,6 @@ class ReportJobExecutor(JobExecutor):
     @classmethod
     def get_raw_new_report(cls, job):
         breakdown = list(get_breakdown_from_fields(job.query['fields']))
-        breakdown = utils.columns.Names.get_keys(breakdown)
         breakdown = [stats.constants.get_dimension_identifier(x) for x in breakdown]
 
         user = job.user
@@ -243,7 +244,6 @@ class ReportJobExecutor(JobExecutor):
     @classmethod
     def get_raw_report(cls, job):
         breakdown = list(get_breakdown_from_fields(job.query['fields']))
-        breakdown = utils.columns.Names.get_keys(breakdown)
         breakdown = [stats.constants.get_dimension_identifier(x) for x in breakdown]
 
         filter_constraints = get_filter_constraints(job.query['filters'])
@@ -285,22 +285,25 @@ class ReportJobExecutor(JobExecutor):
     def convert_to_csv(cls, job, data, goals):
         options = get_options(job.query.get('options', {}))
 
-        fieldnames = cls._extract_fieldnames(job.query['fields'])
-        mapping = utils.columns.get_column_names_mapping(goals.pixels, goals.conversion_goals)
+        requested_columns = cls._extract_column_names(job.query['fields'])
+        field_name_mapping = utils.columns.get_field_names_mapping(goals.pixels, goals.conversion_goals)
 
+        csv_column_names = requested_columns
+        original_to_dated = {k: k for k in requested_columns}
         if options['show_status_date']:
-            fieldnames = cls._date_fieldnames(fieldnames)
-            mapping = cls._date_field_name_mapping(mapping)
+            csv_column_names, original_to_dated = cls._date_column_names(csv_column_names)
 
         output = StringIO.StringIO()
-        writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel',
+        writer = unicodecsv.DictWriter(output, csv_column_names, encoding='utf-8', dialect='excel',
                                        quoting=unicodecsv.QUOTE_ALL)
         writer.writeheader()
         for row in data:
             csv_row = {}
-            for column, value in row.items():
-                if column in mapping and mapping[column] in fieldnames:
-                    csv_row[mapping[column]] = value
+            for column_name in requested_columns:
+                field_name = field_name_mapping[column_name]
+                if field_name in row:
+                    csv_column = original_to_dated[column_name]
+                    csv_row[csv_column] = row[field_name]
             writer.writerow(csv_row)
         return output.getvalue()
 
@@ -318,7 +321,7 @@ class ReportJobExecutor(JobExecutor):
                 row['publisher'] = row.get('breakdown_name', row['domain'])
 
     @staticmethod
-    def _extract_fieldnames(fields_list):
+    def _extract_column_names(fields_list):
         fieldnames = []
 
         # extract unique field names
@@ -357,7 +360,7 @@ class ReportJobExecutor(JobExecutor):
             filter_constraints['start_date'], filter_constraints['end_date'], expiry_date, filtered_sources,
             options['show_archived'], options['show_blacklisted_publishers'],
             get_breakdown_from_fields(job.query['fields']),
-            cls._extract_fieldnames(job.query['fields']),
+            cls._extract_column_names(job.query['fields']),
             options['include_totals'],
             ad_group=helpers.get_ad_group(job.user, filter_constraints['ad_group_id'])
         )
@@ -367,9 +370,13 @@ class ReportJobExecutor(JobExecutor):
         return ''.join(random.choice(string.letters + string.digits) for _ in range(64)) + '.csv'
 
     @staticmethod
-    def _date_field_name_mapping(mapping):
-        return {k: (utils.columns.add_date_to_name(v) if v in DATED_COLUMNS else v) for k, v in mapping.items()}
-
-    @staticmethod
-    def _date_fieldnames(fieldnames):
-        return [(utils.columns.add_date_to_name(x) if x in DATED_COLUMNS else x) for x in fieldnames]
+    def _date_column_names(names):
+        dated_columns = []
+        original_to_dated_columns = {}
+        for name in names:
+            dated_name = name
+            if utils.columns.FieldNames.from_column_name(name, raise_exception=False) in DATED_COLUMNS:
+                dated_name = utils.columns.add_date_to_name(name)
+            dated_columns.append(dated_name)
+            original_to_dated_columns[name] = dated_name
+        return dated_columns, original_to_dated_columns

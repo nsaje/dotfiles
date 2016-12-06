@@ -130,21 +130,10 @@ class ReportViewsTest(TestCase):
 class ReportsHeelpersTest(TestCase):
 
     @mock.patch('utils.dates_helper.local_today')
-    def test_date_field_name_mapping(self, mock_today):
+    def test_date_column_names(self, mock_today):
         mock_today.return_value = datetime.date(2016, 10, 12)
-        self.assertDictEqual(reports.ReportJobExecutor._date_field_name_mapping({
-            'status': 'Status',
-            'publisher': 'Publisher',
-            'clicks': 'Clicks',
-        }), {
-            'status': 'Status (2016-10-12)',
-            'publisher': 'Publisher',
-            'clicks': 'Clicks',
-        })
-
-    @mock.patch('utils.dates_helper.local_today')
-    def test_date_fieldnames(self, mock_today):
-        mock_today.return_value = datetime.date(2016, 10, 12)
-        self.assertEqual(reports.ReportJobExecutor._date_fieldnames(['Status', 'Publisher', 'Clicks']), [
+        self.assertEqual(reports.ReportJobExecutor._date_column_names(['Status', 'Publisher', 'Clicks']), ([
             'Status (2016-10-12)', 'Publisher', 'Clicks'
-        ])
+        ], {
+            'Status': 'Status (2016-10-12)', 'Publisher': 'Publisher', 'Clicks': 'Clicks'
+        }))
