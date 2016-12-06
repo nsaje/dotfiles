@@ -162,6 +162,12 @@ In case of an error, the server will return a response with the appropriate stat
 }
 ```
 
+
+## Rate Limiting
+
+Each Zemanta One user can perform a maximum of 20 requests per second to the Zemanta One API.
+In case that limit is crossed, the API will start responding with HTTP status 429 (Too Many Requests).
+
 ## Authentication
  
 Zemanta REST API uses two-legged OAuth2 authentication using client credentials.
@@ -217,6 +223,7 @@ Authorization: Basic base64(<client_id>:<client_secret>)
             "expires_in": 36000,
             "scope": "read write"
         }
+
 
 # Group Account Credit Management
 <a name="credit"></a>
