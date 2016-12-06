@@ -959,7 +959,7 @@ class Account(api_common.BaseApiView):
 
         if managed_agency is not None:
             settings.default_sales_representative = managed_agency.sales_representative
-            settings.account_type = managed_agency.default_account_type
+            settings.account_type = constants.AccountType.ACTIVATED
 
         settings.save(request)
 

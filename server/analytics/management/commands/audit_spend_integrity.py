@@ -20,6 +20,8 @@ class Command(utils.command_helpers.ExceptionCommand):
     help = "Audit spend pattern"
 
     def add_arguments(self, parser):
+        parser.add_argument('--account_id', '-a', dest='account_id',
+                            help='Account ID')
         parser.add_argument('--date', '-d', dest='date',
                             help='Date checked (default yesterday)')
         parser.add_argument('--from-date', dest='from_date',
@@ -30,6 +32,8 @@ class Command(utils.command_helpers.ExceptionCommand):
                             help='Past days to check (including yesterday)')
         parser.add_argument('--verbose', dest='verbose', action='store_true',
                             help='Display output')
+        parser.add_argument('--slack', dest='slack', action='store_true',
+                            help='Notify via slack')
 
     def _print(self, msg):
         if not self.verbose:
@@ -38,6 +42,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
     def handle(self, *args, **options):
         self.verbose = options['verbose']
+        account_id = int(options.get('account_id', '0')) or None
         yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(1)
         dates = [yesterday]
         if options['date']:
@@ -60,20 +65,25 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         all_issues = []
         for date in dates:
-            issues = analytics.monitor.audit_spend_integrity(date)
+            issues = analytics.monitor.audit_spend_integrity(date, account_id=account_id)
             all_issues.extend(issues)
 
         if not all_issues:
             self._print('OK')
             return
 
-        self._print('FAIL')
+        if account_id:
+            account = dash.models.Account.objects.get(pk=account_id)
+            self._print('FAIL on account {}'.format(account.name))
+        else:
+            self._print('FAIL')
 
         for date, table, key, err in issues:
             self._print(' - on {}, table {}: {} (error: {})'.format(str(date), table, key, err))
-            utils.slack.publish(ALERT_MSG.format(
-                date=date.strftime('%b %d %Y'),
-                err=converters.nano_to_decimal(err),
-                tbl=table,
-                col=key
-            ), msg_type=SlackMsgTypes.CRITICAL, username='Spend patterns')
+            if options.get('slack'):
+                utils.slack.publish(ALERT_MSG.format(
+                    date=date.strftime('%b %d %Y'),
+                    err=converters.nano_to_decimal(err),
+                    tbl=table,
+                    col=key
+                ), msg_type=SlackMsgTypes.CRITICAL, username='Spend patterns')

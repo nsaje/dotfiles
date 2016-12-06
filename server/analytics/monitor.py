@@ -5,6 +5,8 @@ from decimal import Decimal
 from django.db.models import F, Sum
 
 import reports.models
+import dash.models
+import dash.constants
 import analytics.projections
 import etl.refresh_k1
 
@@ -15,31 +17,37 @@ logger = logging.getLogger('stats.monitor')
 MAX_ERR = 10**7  # 0.01$
 SPEND_INTEGRITY_QUERY = """SELECT sum(effective_cost_nano) as media, sum(effective_data_cost_nano) as data, SUM(license_fee_nano) AS fee, SUM(margin_nano) AS margin
 FROM {tbl}
-WHERE date = '{d}'
+WHERE date = '{d}'{additional}
 """
 
 
-def _get_rs_spend(table_name, date):
+def _get_rs_spend(table_name, date, account_id=None):
+    additional = ''
+    if account_id:
+        additional = ' AND account_id = {}'.format(account_id)
     with redshiftapi.db.get_stats_cursor() as c:
         c.execute(SPEND_INTEGRITY_QUERY.format(
             tbl=table_name,
-            d=str(date)
+            d=str(date),
+            additional=additional
         ))
         return redshiftapi.db.dictfetchall(c)[0]
     return {}
 
 
-def audit_spend_integrity(date):
+def audit_spend_integrity(date, account_id=None):
     if date is None:
         date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
     views = [
         tbl for tbl in etl.refresh_k1.NEW_MATERIALIZED_VIEWS
         if tbl.TABLE_NAME.startswith('mv_')
     ]
-
-    daily_spend = reports.models.BudgetDailyStatement.objects.filter(
+    spend_queryset = reports.models.BudgetDailyStatement.objects.filter(
         date=date
-    ).values('date').annotate(
+    )
+    if account_id:
+        spend_queryset = spend_queryset.filter(budget__campaign__account_id=account_id)
+    daily_spend = spend_queryset.values('date').annotate(
         media=Sum(F('media_spend_nano')),
         data=Sum(F('data_spend_nano')),
         margin=Sum(F('margin_nano')),
@@ -52,10 +60,10 @@ def audit_spend_integrity(date):
         if 'pubs'in table_name or 'conversions' in table_name or 'touch' in table_name:
             # skip for the first version
             continue
-
-        for key, rs_spend in _get_rs_spend(table_name, date).iteritems():
-            err = abs(daily_spend[key] - rs_spend)
-            if err > MAX_ERR:
+        rs_spend = _get_rs_spend(table_name, date, account_id=account_id)
+        for key in rs_spend:
+            err = daily_spend[key] - rs_spend[key]
+            if abs(err) > MAX_ERR:
                 integrity_issues.append((date, table_name, key, err))
     return integrity_issues
 
@@ -100,4 +108,12 @@ def audit_pacing(date, max_pacing=Decimal('200.0'), min_pacing=Decimal('50.0'), 
             alarms.append((campaign_id, pacing, 'high'))
         if pacing < min_pacing:
             alarms.append((campaign_id, pacing, 'low'))
+    return alarms
+
+
+def audit_iab_categories():
+    alarms = []
+    for campaign in dash.models.Campaign.objects.all().exclude_archived():
+        if campaign.get_current_settings().iab_category == dash.constants.IABCategory.IAB24:
+            alarms.append(campaign)
     return alarms

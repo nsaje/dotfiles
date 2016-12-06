@@ -211,7 +211,37 @@ class AccountsTest(TestCase):
         settings = account.get_current_settings()
 
         self.assertEqual(user, settings.default_sales_representative)
-        self.assertEqual(constants.AccountType.TEST, settings.account_type)
+        self.assertEqual(constants.AccountType.ACTIVATED, settings.account_type)
+
+    def test_put_agency_defaults_internal_user(self):
+        internal_user = User.objects.get(pk=1)
+        agency_user = User.objects.get(pk=2)
+        internal_user.user_permissions.add(Permission.objects.get(codename='all_accounts_accounts_add_account'))
+        agency_user.user_permissions.add(Permission.objects.get(codename='all_accounts_accounts_add_account'))
+
+        request = RequestFactory().put('accounts')
+        request.user = internal_user
+
+        agency = models.Agency(
+            name='agency-name',
+            sales_representative=agency_user,
+            default_account_type=constants.AccountType.UNKNOWN,
+        )
+        agency.save(request)
+        agency.users.add(agency_user)
+
+        client = Client()
+        client.login(username=internal_user.email, password='secret')
+
+        response = client.put(reverse('accounts_create'))
+
+        self.assertEqual(200, response.status_code)
+
+        account = models.Account.objects.all().order_by('-created_dt').first()
+        settings = account.get_current_settings()
+
+        self.assertEqual(None, settings.default_sales_representative)
+        self.assertEqual(constants.AccountType.UNKNOWN, settings.account_type)
 
 
 class AccountCampaignsTest(TestCase):

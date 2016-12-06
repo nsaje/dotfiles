@@ -358,7 +358,7 @@ class Agency(models.Model):
     objects = QuerySetManager()
 
     def get_long_name(self):
-        return 'Agency {}'.format(self.name)
+        return u'Agency {}'.format(self.name)
 
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,
@@ -443,7 +443,7 @@ class Account(models.Model):
     def get_long_name(self):
         agency = ''
         if self.agency:
-            agency = self.agency.get_long_name() + ', '
+            agency = self.agency.get_long_name() + u', '
         return u'{}Account {}'.format(agency, self.name)
 
     def get_current_settings(self):
@@ -656,7 +656,7 @@ class Campaign(models.Model, PermissionMixin):
         return campaign_settings_url
 
     def get_long_name(self):
-        return '{}, Campaign {}'.format(self.account.get_long_name(), self.name)
+        return u'{}, Campaign {}'.format(self.account.get_long_name(), self.name)
 
     admin_link.allow_tags = True
 
