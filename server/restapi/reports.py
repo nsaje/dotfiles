@@ -34,6 +34,8 @@ IN = 'IN'
 BETWEEN = 'between'
 OPERATORS = [EQUALS, IN, BETWEEN]
 
+DEFAULT_ORDER = '-e_media_cost'
+
 SUPPORTED_BREAKDOWNS = {
     (utils.columns.Names.content_ad_id,),
     (utils.columns.Names.source_id,),
@@ -61,6 +63,9 @@ def get_breakdown_from_fields(fields):
 
 
 def get_order(order_fieldname):
+    if not order_fieldname:
+        return DEFAULT_ORDER
+
     prefix, fieldname = utils.sort_helper.dissect_order(order_fieldname)
 
     try:
@@ -101,7 +106,7 @@ def get_options(options):
         'include_totals': options.get('include_totals') or False,
         'show_status_date': options.get('show_status_date') or False,
         'recipients': options.get('recipients') or [],
-        'order': get_order(options['order'])
+        'order': get_order(options.get('order')),
     }
 
 
@@ -136,7 +141,7 @@ class ReportOptionsSerializer(serializers.Serializer):
     include_totals = serializers.BooleanField(default=False)
     show_status_date = serializers.BooleanField(default=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False)
-    order = serializers.CharField(required=False, default=('-' + utils.columns.Names.e_media_cost))
+    order = serializers.CharField(required=False)
 
 
 class ReportQuerySerializer(serializers.Serializer):

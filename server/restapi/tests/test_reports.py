@@ -53,6 +53,42 @@ class ReportViewsTest(TestCase):
     @mock.patch('stats.api_reports.totals', return_value={})
     @mock.patch('stats.api_reports.query', return_value=[])
     @mock.patch('stats.api_reports.prepare_constraints')
+    def test_raw_new_report_no_options(self, mock_prepare_constraints, mock_query, mock_totals):
+        query = {
+            'fields': [{'field': 'Publisher'}],
+            'filters': [
+                {'field': 'Ad Group Id', 'operator': '=', 'value': '1'},
+                {'field': 'Date', 'operator': '=', 'value': '2016-10-10'},
+                {'field': 'Media Source', 'operator': 'IN', 'values': ['1']},
+            ],
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+
+        mock_prepare_constraints.assert_called_with(
+            User.objects.get(pk=1),
+            ['publisher_id'],
+            datetime.date(2016, 10, 10), datetime.date(2016, 10, 10),
+            test_helper.QuerySetMatcher(dash.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            ad_group_ids=[1]
+        )
+
+        mock_query.assert_called_with(
+            User.objects.get(pk=1),
+            ['publisher_id'],
+            mock.ANY,
+            mock.ANY,
+            '-e_media_cost'
+        )
+
+        self.assertFalse(mock_totals.called)
+
+    @mock.patch('dash.threads.AsyncFunction', dash.threads.MockAsyncFunction)
+    @mock.patch('stats.api_reports.totals', return_value={})
+    @mock.patch('stats.api_reports.query', return_value=[])
+    @mock.patch('stats.api_reports.prepare_constraints')
     def test_raw_new_report_form_handeled(self, mock_prepare_constraints, mock_query, mock_totals):
         query = {
             'fields': [{'field': 'Publisher'}],
@@ -65,6 +101,7 @@ class ReportViewsTest(TestCase):
                 'showArchived': True,
                 'showBlacklistedPublishers': 'active',
                 'includeTotals': True,
+                'order': 'Clicks'
             }
         }
         r = self.client.post(reverse('reports_list'), query, format='json')
@@ -80,7 +117,13 @@ class ReportViewsTest(TestCase):
             ad_group_ids=[1]
         )
 
-        self.assertTrue(mock_query.called)
+        mock_query.assert_called_with(
+            User.objects.get(pk=1),
+            ['publisher_id'],
+            mock.ANY,
+            mock.ANY,
+            'clicks'
+        )
         self.assertTrue(mock_totals.called)
 
 
