@@ -94,7 +94,7 @@ def monitor_remaining_budget():
     ).select_related('credit').filter_active(tomorrow):
         remaining_budget += bli.get_available_amount(tomorrow) * (1 - bli.credit.license_fee)
 
-    if remaining_budget > 1000:
+    if remaining_budget > 2000:
         return
 
     emails = config.NOTIFICATION_EMAILS
