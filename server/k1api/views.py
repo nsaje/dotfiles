@@ -438,14 +438,12 @@ class AdGroupsView(K1APIView):
                 'agency_id': None,
                 'goal_types': campaign_goal_types[ad_group_settings.ad_group.campaign.id],
                 'dayparting': ad_group_settings.dayparting,
+                'b1_sources_group': {
+                    'enabled': ad_group_settings.b1_sources_group_enabled,
+                    'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
+                    'state': ad_group_settings.b1_sources_group_state,
+                },
             }
-
-            if ad_group_settings.b1_sources_group_enabled:
-                ad_group["b1_sources_group"] = {
-                    "enabled": ad_group_settings.b1_sources_group_enabled,
-                    "daily_budget": ad_group_settings.b1_sources_group_daily_budget,
-                    "state": ad_group_settings.b1_sources_group_state,
-                }
 
             if ad_group_settings.ad_group.campaign.account.agency_id:
                 ad_group['agency_id'] = ad_group_settings.ad_group.campaign.account.agency_id
