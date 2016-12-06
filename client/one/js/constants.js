@@ -1201,7 +1201,7 @@ var options = {
     campaignGoals: [
         {name: 'CPA', value: constants.campaignGoal.CPA},
         {name: '% bounce rate', value: constants.campaignGoal.PERCENT_BOUNCE_RATE},
-        {name: 'new unique visitors', value: constants.campaignGoal.NEW_UNIQUE_VISITORS},
+        {name: 'new users', value: constants.campaignGoal.NEW_UNIQUE_VISITORS},
         {name: 'seconds time on site', value: constants.campaignGoal.SECONDS_TIME_ON_SITE},
         {name: 'pages per session', value: constants.campaignGoal.PAGES_PER_SESSION},
     ],
@@ -1302,7 +1302,7 @@ constants.campaignGoalValueText[constants.campaignGoalKPI.CPA] = 'CPA';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPC] = 'CPC';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPM] = 'CPM';
 constants.campaignGoalValueText[constants.campaignGoalKPI.MAX_BOUNCE_RATE] = 'Bounce Rate';
-constants.campaignGoalValueText[constants.campaignGoalKPI.NEW_UNIQUE_VISITORS] = 'New Unique Visitors';
+constants.campaignGoalValueText[constants.campaignGoalKPI.NEW_UNIQUE_VISITORS] = 'New Users';
 constants.campaignGoalValueText[constants.campaignGoalKPI.TIME_ON_SITE] = 'seconds Time on Site';
 constants.campaignGoalValueText[constants.campaignGoalKPI.PAGES_PER_SESSION] = 'Pageviews per Visit';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPV] = 'Cost per Visit';
