@@ -94,7 +94,7 @@ def monitor_remaining_budget():
     ).select_related('credit').filter_active(tomorrow):
         remaining_budget += bli.get_available_amount(tomorrow) * (1 - bli.credit.license_fee)
 
-    if remaining_budget > 2000:
+    if remaining_budget > 4000:
         return
 
     emails = config.NOTIFICATION_EMAILS
@@ -138,13 +138,18 @@ def monitor_yesterday_spend():
     influx.gauge('integrations.bizwire.yesterday_spend', actual_spend, type='actual')
     influx.gauge('integrations.bizwire.yesterday_spend', expected_spend, type='expected')
 
-    if dates_helper.utc_now().hour == 12 and (actual_spend < expected_spend * 0.8 or actual_spend > expected_spend):
-        emails = config.NOTIFICATION_EMAILS
-        subject = 'Businesswire campaign unexpected yesterday spend'
-        body = '''Hi,
+    if dates_helper.utc_now().hour != 12:
+        return
+
+    if expected_spend * 0.8 < actual_spend < expected_spend:
+        return
+
+    emails = config.NOTIFICATION_EMAILS
+    subject = 'Businesswire campaign unexpected yesterday spend'
+    body = '''Hi,
 
 Yesterday's expected spend was {} and actual spend was {}.'''.format(expected_spend, actual_spend)  # noqa
-        email_helper.send_notification_mail(emails, subject, body)
+    email_helper.send_notification_mail(emails, subject, body)
 
 
 def monitor_duplicate_articles():
