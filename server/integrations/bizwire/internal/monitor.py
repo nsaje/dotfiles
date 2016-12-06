@@ -18,7 +18,7 @@ from utils import dates_helper, email_helper
 logger = logging.getLogger(__name__)
 
 
-def monitoring_hourly_job():
+def run_hourly_job():
     monitor_num_ingested_articles()
     monitor_yesterday_spend()
     monitor_duplicate_articles()

@@ -22,4 +22,4 @@ class Command(ExceptionCommand):
                 description='Exception in bizwire hourly job',
             )
 
-        monitor.monitoring_hourly_job()
+        monitor.run_hourly_job()
