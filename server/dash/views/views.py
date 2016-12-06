@@ -210,7 +210,7 @@ class CampaignRestore(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign.restore(request)
 
-        actionlog.sync.CampaignSync(campaign).trigger_all(self.request)
+        actionlog.sync.CampaignSync(campaign).trigger_all(request)
         return self.create_api_response({})
 
 

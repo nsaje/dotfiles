@@ -279,6 +279,7 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertEqual(json.loads(response.content), {
                 'data': {
+                    'archived': False,
                     'action_is_waiting': False,
                     'default_settings': {
                         'target_devices': ['mobile'],
@@ -377,6 +378,7 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(json.loads(response.content), {
                 'data': {
                     'action_is_waiting': False,
+                    'archived': False,
                     'default_settings': {
                         'target_devices': ['mobile'],
                         'target_regions': ['NC', '501'],
@@ -550,6 +552,7 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertEqual(json.loads(response.content), {
                 'data': {
+                    'archived': False,
                     'action_is_waiting': False,
                     'default_settings': {
                         'target_devices': ['mobile'],

@@ -173,12 +173,32 @@ class AccountCreditViewList(RESTAPIBaseView):
 
 class CampaignSerializer(SettingsSerializer):
 
+    def update(self, data_internal, validated_data):
+        """ Handle archived update separately, since it's on a separate endpoint """
+        id_ = data_internal['data']['settings']['id']
+
+        old_archived = data_internal['data']['archived']
+        new_archived = validated_data['settings'].get('archived')
+
+        with transaction.atomic():
+            data_internal_new = super(CampaignSerializer, self).update(data_internal, validated_data)
+
+            if new_archived is not None and new_archived != old_archived:
+                entity_id = int(id_)
+                self.request.body = ''
+                internal_view = views.CampaignArchive(rest_proxy=True) if new_archived else views.CampaignRestore(rest_proxy=True)
+                data_internal_archived, _ = internal_view.post(self.request, entity_id)
+                data_internal_new['data']['archived'] = new_archived
+
+            return data_internal_new
+
     def to_representation(self, data_internal):
         settings = data_internal['data']['settings']
         return {
             'id': settings['id'],
             'accountId': settings['account_id'],
             'name': settings['name'],
+            'archived': data_internal['data']['archived'],
             # 'campaignManager': self._user_to_email(settings['campaign_manager']),  # TODO(nsaje): convert to email
             'tracking': {
                 'ga': {
@@ -198,6 +218,7 @@ class CampaignSerializer(SettingsSerializer):
         settings = {
             'id': data['id'],
             'name': data['name'],
+            'archived': data['archived'],
             # 'campaign_manager': data['campaignManager'],  # TODO(nsaje): convert from email
             'enable_ga_tracking': data['tracking']['ga']['enabled'],
             'ga_tracking_type': DashConstantField(constants.GATrackingType).to_internal_value(data['tracking']['ga']['type']),
@@ -211,25 +232,39 @@ class CampaignSerializer(SettingsSerializer):
 class AdGroupSerializer(SettingsSerializer):
 
     def update(self, data_internal, validated_data):
-        """ Handle state update separately, since it's on a separate endpoint """
+        """ Handle state and archived update separately, since they're on separate endpoints """
         id_ = data_internal['data']['settings']['id']
+
         old_state = data_internal['data']['settings']['state']
         new_state = validated_data['settings'].get('state')
 
-        data_internal_new = super(AdGroupSerializer, self).update(data_internal, validated_data)
-        if new_state and new_state != old_state:
-            entity_id = int(id_)
-            self.request.body = RESTAPIJSONRenderer().render(({'state': new_state}))
-            internal_view = agency.AdGroupSettingsState(rest_proxy=True)
-            data_internal_state, _ = internal_view.post(self.request, entity_id)
-            data_internal_new['data'].update(data_internal_state['data'])
+        old_archived = data_internal['data']['archived']
+        new_archived = validated_data['settings'].get('archived')
 
-        return data_internal_new
+        with transaction.atomic():
+            data_internal_new = super(AdGroupSerializer, self).update(data_internal, validated_data)
+
+            if new_state and new_state != old_state:
+                entity_id = int(id_)
+                self.request.body = RESTAPIJSONRenderer().render(({'state': new_state}))
+                internal_view = agency.AdGroupSettingsState(rest_proxy=True)
+                data_internal_state, _ = internal_view.post(self.request, entity_id)
+                data_internal_new['data'].update(data_internal_state['data'])
+
+            if new_archived is not None and new_archived != old_archived:
+                entity_id = int(id_)
+                self.request.body = ''
+                internal_view = views.AdGroupArchive(rest_proxy=True) if new_archived else views.AdGroupRestore(rest_proxy=True)
+                data_internal_archived, _ = internal_view.post(self.request, entity_id)
+                data_internal_new['data']['archived'] = new_archived
+
+            return data_internal_new
 
     def to_representation(self, data_internal):
         settings = data_internal['data']['settings']
         return {
             'id': settings['id'],
+            'archived': data_internal['data']['archived'],
             'campaignId': settings['campaign_id'],
             'name': settings['name'],
             'state': constants.AdGroupSettingsState.get_name(settings['state']),
@@ -262,6 +297,7 @@ class AdGroupSerializer(SettingsSerializer):
             'id': data['id'],
             'name': data['name'],
             'state': DashConstantField(constants.AdGroupSettingsState).to_internal_value(data['state']),
+            'archived': data['archived'],
             'start_date': data['startDate'],
             'end_date': data['endDate'],
             'cpc_cc': data['maxCpc'],
@@ -332,7 +368,10 @@ class SettingsViewList(RESTAPIBaseView):
     def get(self, request):
         view_internal = self.internal_view_cls(rest_proxy=True)
         settings_list = self._get_settings_list(request)
-        data_list_internal = [{'data': {'settings': view_internal.get_dict(request, settings, getattr(settings, 'ad_group', None) or getattr(settings, 'campaign'))}}
+        data_list_internal = [{'data': {
+                                   'settings': view_internal.get_dict(request, settings, getattr(settings, 'ad_group', None) or getattr(settings, 'campaign')),
+                                   'archived': settings.archived
+                              }}
                               for settings in settings_list]
         serializer = self.serializer_cls(request, view_internal, data_list_internal, many=True)
         return self.response_ok(serializer.data)

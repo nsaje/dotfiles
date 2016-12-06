@@ -87,6 +87,15 @@
     pk: 608
 
 -   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 186 # test account 1
+        name: 'Empty campaign to test archiving'
+    model: dash.campaign
+    pk: 308
+
+-   fields:
         created_dt: '2014-06-04T00:00:00'
         created_by: 1
         name: 'test campaign 2'

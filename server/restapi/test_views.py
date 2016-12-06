@@ -104,6 +104,7 @@ class CampaignsTest(RESTAPITest):
         cls,
         id=123,
         account_id=321,
+        archived=False,
         name='My Campaign',
         enable_ga_tracking=True,
         ga_tracking_type=constants.GATrackingType.EMAIL,
@@ -114,6 +115,7 @@ class CampaignsTest(RESTAPITest):
         representation = {
             'id': str(id),
             'accountId': str(account_id),
+            'archived': archived,
             'name': name,
             'tracking': {
                 'ga': {
@@ -135,6 +137,7 @@ class CampaignsTest(RESTAPITest):
         expected = self.campaign_repr(
             id=campaign_db.id,
             account_id=campaign_db.account_id,
+            archived=settings_db.archived,
             name=campaign_db.name,
             enable_ga_tracking=settings_db.enable_ga_tracking,
             ga_tracking_type=settings_db.ga_tracking_type,
@@ -177,6 +180,21 @@ class CampaignsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_campaign(resp_json['data'])
         self.assertEqual(settings_count, dash.models.CampaignSettings.objects.filter(campaign_id=608).count())
+
+    def test_campaigns_put_archive_restore(self):
+        r = self.client.put(
+            reverse('campaigns_details', kwargs={'entity_id': 308}),
+            data={'archived': True}, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_campaign(resp_json['data'])
+        self.assertEqual(resp_json['data']['archived'], True)
+
+        r = self.client.put(
+            reverse('campaigns_details', kwargs={'entity_id': 308}),
+            data={'archived': False}, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_campaign(resp_json['data'])
+        self.assertEqual(resp_json['data']['archived'], False)
 
 
 class CampaignStatsTest(RESTAPITest):
@@ -375,6 +393,7 @@ class AdGroupsTest(RESTAPITest):
         campaign_id=1,
         name='My test ad group',
         state=constants.AdGroupSettingsState.INACTIVE,
+        archived=False,
         start_date=datetime.date.today(),
         end_date=None,
         max_cpc='0.600',
@@ -394,6 +413,7 @@ class AdGroupsTest(RESTAPITest):
             'campaignId': str(campaign_id),
             'name': name,
             'state': constants.AdGroupSettingsState.get_name(state),
+            'archived': archived,
             'startDate': start_date,
             'endDate': end_date,
             'maxCpc': max_cpc,
@@ -430,6 +450,7 @@ class AdGroupsTest(RESTAPITest):
             campaign_id=adgroup_db.campaign_id,
             name=adgroup_db.name,
             state=settings_db.state,
+            archived=settings_db.archived,
             start_date=settings_db.start_date,
             end_date=settings_db.end_date,
             max_cpc=settings_db.cpc_cc.quantize(Decimal('1.000')) if settings_db.cpc_cc else '',
@@ -481,6 +502,21 @@ class AdGroupsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json['data'])
         self.assertEqual(resp_json['data']['state'], 'INACTIVE')
+
+    def test_adgroups_put_archive_restore(self):
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'entity_id': 2040}),
+            data={'archived': True}, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+        self.assertEqual(resp_json['data']['archived'], True)
+
+        r = self.client.put(
+            reverse('adgroups_details', kwargs={'entity_id': 2040}),
+            data={'archived': False}, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+        self.assertEqual(resp_json['data']['archived'], False)
 
 
 class AdGroupSourcesTest(RESTAPITest):

@@ -110,6 +110,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'settings': self.get_dict(request, new_settings, ad_group),
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': False,
+            'archived': new_settings.archived,
         }
 
         return self.create_api_response(response)
@@ -454,7 +455,8 @@ class CampaignSettings(api_common.BaseApiView):
                     email_helper.send_ga_setup_instructions(request.user)
 
         response = {
-            'settings': self.get_dict(request, new_settings, campaign)
+            'settings': self.get_dict(request, new_settings, campaign),
+            'archived': new_settings.archived,
         }
 
         if request.user.has_perm('zemauth.can_see_campaign_goals'):
