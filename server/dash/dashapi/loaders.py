@@ -572,7 +572,7 @@ class AdGroupSourcesLoader(Loader):
     def totals(self):
         daily_budget = sum([
             v['daily_budget'] for v in self.settings_map.values()
-            if v['daily_budget'] and v['status'] == constants.AdGroupSourceSettingsState.ACTIVE])
+            if v['daily_budget'] and v['state'] == constants.AdGroupSourceSettingsState.ACTIVE])
 
         # MVP for all-RTB-sources-as-one
         if self.ad_group_settings.b1_sources_group_enabled \
