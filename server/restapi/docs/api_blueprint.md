@@ -720,6 +720,7 @@ id           | string                    | the ad group's id                    
 campaignId   | string                    | id of the campaign this ad group belongs to                                                                                      | required | read only
 name         | string                    | the name of the ad group                                                                                                         | required | optional
 state        | `ACTIVE` / `INACTIVE`     | Ad group state. Set to `ACTIVE` to activate the Ad Group and to `INACTIVE` to deactivate it.                                     | optional | optional
+archived     | bool                      | Is Ad Group archived? Set to `true` to archive an Ad Group and to `false` to restore.                                            | optional | optional
 startDate    | string                    | start date of the ad group                                                                                                       | optional | optional
 endDate      | string                    | End date of the ad group. Omit to leave it running until state is manually set to `INACTIVE`.                                    | optional | optional
 startDate    | string                    | start date of the ad group                                                                                                       | optional | optional
@@ -788,6 +789,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                 "campaignId": "608",
                 "name": "My ad group 1",
                 "state": "ACTIVE",
+                "archived": false,
                 "startDate": "2016-10-05",
                 "endDate": "2016-11-05",
                 "maxCpc": "0.25",
@@ -830,6 +832,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
         {
             "name": "My ad group 2",
             "state": "INACTIVE",
+            "archived": false,
             "startDate": "2016-10-05",
             "endDate": "2016-11-05",
             "maxCpc": "0.25",
@@ -868,6 +871,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                 "campaignId": "608",
                 "name": "My ad group 2",
                 "state": "ACTIVE",
+                "archived": false,
                 "startDate": "2016-10-05",
                 "endDate": "2016-11-05",
                 "maxCpc": "0.25",
@@ -913,6 +917,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                     "campaignId": "608",
                     "name": "My ad group 1",
                     "state": "ACTIVE",
+                    "archived": false,
                     "startDate": "2016-10-05",
                     "endDate": "2016-11-05",
                     "maxCpc": "0.25",
@@ -954,6 +959,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
             "campaignId": "608",
             "name": "My ad group 3",
             "state": "INACTIVE",
+            "archived": false,
             "startDate": "2016-10-05",
             "endDate": "2016-11-05",
             "maxCpc": "0.25",
@@ -993,6 +999,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                 "campaignId": "608",
                 "name": "My ad group 1",
                 "state": "INACTIVE",
+                "archived": false,
                 "startDate": "2016-10-05",
                 "endDate": "2016-11-05",
                 "maxCpc": "0.25",
