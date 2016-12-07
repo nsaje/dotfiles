@@ -350,7 +350,7 @@ def _handle_auto_save(batch):
         if all(candidate.image_status == constants.AsyncUploadJobStatus.OK and
                candidate.url_status == constants.AsyncUploadJobStatus.OK
                for candidate in batch.contentadcandidate_set.all()):
-            logger.error('Couldn\'t auto save batch for unknown reason')
+            logger.exception('Couldn\'t auto save batch for unknown reason')
 
 
 @transaction.atomic
