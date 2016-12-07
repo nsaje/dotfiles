@@ -42,7 +42,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
     def handle(self, *args, **options):
         self.verbose = options['verbose']
-        account_id = int(options.get('account_id', '0')) or None
+        account_id = int(options.get('account_id') or '0') or None
         yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(1)
         dates = [yesterday]
         if options['date']:
