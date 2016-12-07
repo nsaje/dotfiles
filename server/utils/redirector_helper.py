@@ -113,6 +113,15 @@ def get_adgroup(ad_group_id):
         raise
 
 
+def get_adgroup_realtimestats(ad_group_id):
+    url = settings.R1_REDIRECTS_ADGROUP_REALTIMESTATS_API_URL.format(adgroup=ad_group_id)
+    try:
+        return _call_api_retry(url, method='GET')
+    except Exception:
+        logger.exception('Exception in get_adgroup')
+        raise
+
+
 def fetch_redirects_impressions(date, timeout=300):
     request_url = settings.R1_CONVERSION_STATS_URL.format(date=date.strftime('%Y-%m-%d'))
 

@@ -69,6 +69,11 @@ urlpatterns = [
         name='publishers_list'
     ),
     url(
+        r'^adgroups/(?P<ad_group_id>\d+)/realtimestats/$',
+        views.AdGroupRealtimeStatsView.as_view(),
+        name='adgroups_realtimestats'
+    ),
+    url(
         r'^contentads/batch/$',
         views.ContentAdBatchViewList.as_view(),
         name='contentads_batch_list'

@@ -22,6 +22,15 @@
     client_type: confidential, authorization_grant_type: client-credentials, client_secret: u7plEd04mHc11CckS9dojhYiwaWzNqeB1w9KgMxwe5rkW6Ss7mTRIx6Pd8t7YvdYc7bC1025H74s98E2eqhIcBlvBlHsc5vAp9TJMP2e8y6kyJKQUWkpUirFRl3Os2fC,
     name: Test application, skip_authorization: false}
 
+# test agency
+-   fields:
+        name: Alfa&Omega
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+    model: dash.agency
+    pk: 1
+
 # test account
 -   fields:
         created_dt: '2014-06-04T09:58:21'
@@ -29,6 +38,7 @@
         modified_by: 1
         users: [1]
         allowed_sources: [1,2,3]
+        agency: 1
         name: 'My account'
     model: dash.account
     pk: 186

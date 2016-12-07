@@ -196,6 +196,7 @@ R1_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8
 R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
 R1_REDIRECTS_BATCH_API_URL = 'https://r1.zemanta.com/api/redirects/batch/'
 R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
+R1_REDIRECTS_ADGROUP_REALTIMESTATS_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/realtimestats'
 R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
 R1_BLANK_REDIRECT_URL = 'https://r1.zemanta.com/r/{redirect_id}/z1/1/{content_ad_id}/'
 #R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions/request/{date}/{account_id}/{slug}/'
@@ -214,6 +215,7 @@ SEND_NOTIFICATION_MAIL = True
 
 #BIDDER_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMUp4fTNfsoQXvcN/2AgEQgEeK1YVDW481cJcjPEcejHo02KokiSKwmn+c3BiYkuYwwdCB7yzmLd7U8PyK/Ay46O67ZLrBdDtUmqhJCrpJneJiqe/+qnnOBQ==').get()
 BIDDER_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMsbpTkX9V2jgJO4YFAgEQgEfLNjTOPiu5cdWeiSoaNuRCM5aXCIJbWUopbdCjGZ2mrTpQozlt8czEE8zyaHNaLoIEPLx0p5Tc1zjur7bodCCsj1oIYNsORQ==').get()
+BIDDER_API_URL_BASE = 'https://b1api.zemanta.com'
 
 # BCM
 BUDGET_RESERVE_FACTOR = 0.05

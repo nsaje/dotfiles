@@ -4,6 +4,7 @@ import json
 import mock
 
 from django.test import TestCase, override_settings
+from django.http import Http404
 from rest_framework.test import APIClient
 from zemauth.models import User
 from django.core.urlresolvers import reverse
@@ -13,7 +14,7 @@ import dash.threads
 import views as restapi_views
 from dash import constants
 from dash import upload
-from utils import json_helper
+from utils import json_helper, redirector_helper, bidder_helper
 import redshiftapi.quickstats
 
 
@@ -608,6 +609,30 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(2040, resp_json['data'])
         self.assertEqual(test_rtbs, resp_json['data'])
+
+
+class AdGroupRealtimestatsTest(RESTAPITest):
+
+    @mock.patch.object(redirector_helper, 'get_adgroup_realtimestats', autospec=True)
+    @mock.patch.object(bidder_helper, 'get_adgroup_realtimespend', autospec=True)
+    def test_adgroups_realtimestats(self, mock_get_spend, mock_get_stats):
+        restapi_views.REALTIME_STATS_AGENCIES.append(1)
+
+        mock_get_spend.return_value = {'spend': 12.3}
+        mock_get_stats.return_value = {'clicks': 12321}
+        r = self.client.get(reverse('adgroups_realtimestats', kwargs={'ad_group_id': 2040}))
+
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(resp_json['data'], {'spend': '12.30', 'clicks': 12321})
+
+        mock_get_stats.assert_called_with(2040)
+        mock_get_spend.assert_called_with(2040)
+
+        restapi_views.REALTIME_STATS_AGENCIES.remove(1)
+
+    def test_adgroups_realtimestats_unauthorized(self):
+        r = self.client.get(reverse('adgroups_realtimestats', kwargs={'ad_group_id': 2040}))
+        self.assertEqual(r.status_code, 404)
 
 
 class ContentAdsTest(RESTAPITest):
