@@ -276,6 +276,7 @@ Property  | Type                  | Description                                |
 id        | string                | the campaign's id                          | N/A      | read only
 accountId | string                | id of the account this campaign belongs to | required | read only
 name      | string                | the name of the campaign                   | required | optional
+archived  | bool                  | Is the Campaign archived? Set to `true` to archive a Campaign and to `false` to restore it. | optional | optional
 tracking  | [tracking](#tracking) | tracking settings                          | optional | optional
 
 
@@ -307,6 +308,7 @@ adobe    |                   |                                       |
                 "id": "608",
                 "accountId": "186",
                 "name": "My Campaign 1",
+                "archived": false,
                 "tracking": {
                     "ga": {
                         "enabled": true,
@@ -331,6 +333,7 @@ adobe    |                   |                                       |
 
         {
             "name": "My Campaign 2",
+            "archived": false,
             "tracking": {
                 "ga": {
                     "enabled": true,
@@ -351,6 +354,7 @@ adobe    |                   |                                       |
                 "id": "608",
                 "accountId": "186",
                 "name": "My Campaign 2",
+                "archived": false,
                 "tracking": {
                     "ga": {
                         "enabled": true,
@@ -375,6 +379,7 @@ adobe    |                   |                                       |
                     "id": "608",
                     "accountId": "186",
                     "name": "My Campaign 1",
+                    "archived": false,
                     "tracking": {
                         "ga": {
                             "enabled": true,
@@ -399,6 +404,7 @@ adobe    |                   |                                       |
         {
             "accountId": "186",
             "name": "My Campaign 3",
+            "archived": false,
             "tracking": {
                 "ga": {
                     "enabled": true,
@@ -720,7 +726,7 @@ id           | string                    | the ad group's id                    
 campaignId   | string                    | id of the campaign this ad group belongs to                                                                                      | required | read only
 name         | string                    | the name of the ad group                                                                                                         | required | optional
 state        | `ACTIVE` / `INACTIVE`     | Ad group state. Set to `ACTIVE` to activate the Ad Group and to `INACTIVE` to deactivate it.                                     | optional | optional
-archived     | bool                      | Is Ad Group archived? Set to `true` to archive an Ad Group and to `false` to restore.                                            | optional | optional
+archived     | bool                      | Is the Ad Group archived? Set to `true` to archive an Ad Group and to `false` to restore it.                                     | optional | optional
 startDate    | string                    | start date of the ad group                                                                                                       | optional | optional
 endDate      | string                    | End date of the ad group. Omit to leave it running until state is manually set to `INACTIVE`.                                    | optional | optional
 startDate    | string                    | start date of the ad group                                                                                                       | optional | optional
