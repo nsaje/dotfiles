@@ -100,7 +100,7 @@ def publisher_exchange(source):
     by something decent once we start using source id's in Redshift
     instead of exchange strings
     """
-    return source.tracking_slug.replace('b1_', '')
+    return source and source.tracking_slug.replace('b1_', '')
 
 
 def is_publisher_domain(raw_str):
