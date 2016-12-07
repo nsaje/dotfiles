@@ -155,7 +155,7 @@ angular.module('one.legacy').component('zemGridBulkPublishersActions', {
             value: 'blacklist-adgroup',
             level: constants.publisherBlacklistLevel.ADGROUP,
             state: constants.publisherStatus.BLACKLISTED,
-            has: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+            hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status')
         }, {
             name: 'Blacklist in this campaign',
             value: 'blacklist-campaign',
