@@ -121,23 +121,13 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                             text: null
                         },
                         min: 0,
-                        lineColor: null,
-                        lineWidth: 2,
-                        plotLines: [{
-                            value: 0,
-                            width: 1
-                        }]
+                        gridLineWidth: 1,
                     }, {
                         title: {
                             text: null
                         },
                         min: 0,
-                        lineColor: null,
-                        lineWidth: 2,
-                        plotLines: [{
-                            value: 0,
-                            width: 1
-                        }],
+                        gridLineWidth: 0,
                         opposite: true
                     }],
                     tooltip: {
@@ -150,6 +140,7 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                     },
                     plotOptions: {
                         series: {
+                            animation: false,
                             marker: {
                                 states: {
                                     hover: {
