@@ -16,9 +16,9 @@ angular.module('one.services').service('zemAccountService', function ($http, $q,
     this.restoreAccounts = entityActionsService.restoreEntities;
 
     this.getAction = entityActionsService.getAction;
-    this.onAccountCreated = entityInstanceService.onEntityCreated;
-    this.onAccountUpdated = entityInstanceService.onEntityUpdated;
-    this.onAccountActionExecuted = entityActionsService.onActionExecuted;
+    this.onActionExecuted = entityActionsService.onActionExecuted;
+    this.onEntityCreated = entityInstanceService.onEntityCreated;
+    this.onEntityUpdated = entityInstanceService.onEntityUpdated;
 
     // TODO: refactor (new service?)
     this.getFacebookAccountStatus = getFacebookAccountStatus;

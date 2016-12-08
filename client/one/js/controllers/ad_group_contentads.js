@@ -1,5 +1,5 @@
 /* globals options, angular, constants, moment */
-angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $window, $state, $location, $q, api, zemContentAdService, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService, zemPermissions) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $window, $state, $location, $q, api, zemAdGroupService, zemContentAdService, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService, zemPermissions) { // eslint-disable-line max-len
     $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -86,6 +86,10 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
 
         getDailyStats();
         getInfoboxData();
+        var entityUpdateHandler = zemAdGroupService.onEntityUpdated(function () {
+            getInfoboxData();
+        });
+        $scope.$on('$destroy', entityUpdateHandler);
 
         var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function () {
             getDailyStats();

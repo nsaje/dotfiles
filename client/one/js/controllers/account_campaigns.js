@@ -1,5 +1,5 @@
 /*globals angular,constants,options,moment*/
-angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($window, $location, $scope, $state, $timeout, $q, api, zemCampaignService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($window, $location, $scope, $state, $timeout, $q, api, zemAccountService, zemCampaignService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions) { // eslint-disable-line max-len
     $scope.addCampaignRequestInProgress = false;
     $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -71,7 +71,7 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($windo
                     name: campaignData.name,
                     adGroups: [],
                 });
-                $state.go('main.campaigns.settings', {id: campaignData.id});
+                $state.go('main.campaigns.ad_groups', {id: campaignData.id, settings: 'create'});
             },
             function (data) {
                 // error
@@ -259,7 +259,12 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($windo
         $location.search('campaign_totals', campaignTotals);
 
         getDailyStats();
+
         $scope.getInfoboxData();
+        var entityUpdateHandler = zemAccountService.onEntityUpdated(function () {
+            $scope.getInfoboxData();
+        });
+        $scope.$on('$destroy', entityUpdateHandler);
 
         $scope.setActiveTab();
 

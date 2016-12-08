@@ -42,8 +42,7 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
                     'id': data.id,
                     'campaigns': [],
                 });
-
-                $state.go('main.accounts.settings', {id: data.id});
+                $state.go('main.accounts.campaigns', {id: data.id, settings: 'create'});
             },
             function (data) {
                 // error

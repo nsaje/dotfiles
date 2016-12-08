@@ -22,7 +22,7 @@ angular.module('one.services').service('zemAdGroupService', function ($http, $q,
     this.deactivateSources = entityActionsService.deactivateSources;
 
     this.getAction = entityActionsService.getAction;
-    this.onAdGroupCreated = entityInstanceService.onEntityCreated;
-    this.onAdGroupUpdated = entityInstanceService.onEntityUpdated;
     this.onActionExecuted = entityActionsService.onActionExecuted;
+    this.onEntityCreated = entityInstanceService.onEntityCreated;
+    this.onEntityUpdated = entityInstanceService.onEntityUpdated;
 });

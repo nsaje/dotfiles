@@ -1,5 +1,6 @@
-angular.module('one.widgets').service('zemSettingsService', function ($rootScope, $location, $timeout, zemPubSubService, zemNavigationNewService) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemSettingsService', function ($rootScope, $location, $state, $timeout, zemPubSubService, zemNavigationNewService) { // eslint-disable-line max-len
     var QUERY_PARAM = 'settings';
+    var QUERY_VALUE_CREATE = 'create';
 
     var EVENTS = {
         ON_OPEN: 'zem-settings-open',
@@ -24,15 +25,17 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
         var value = $location.search()[QUERY_PARAM];
         if (value) {
             $timeout(function () {
-                var entity = undefined;
-                if (typeof value === 'string') entity = JSON.stringify(value);
-                open(entity);
-            }, 3000);
+                if (value === QUERY_VALUE_CREATE) {
+                    open();
+                } else {
+                    var entity = JSON.parse(value);
+                    open(entity);
+                }
+            }, 2000);
         }
     }
 
     function open (entity) {
-        $location.search(QUERY_PARAM);
         if (entity) {
             $location.search(QUERY_PARAM, JSON.stringify({type: entity.type, id: entity.id}));
         }

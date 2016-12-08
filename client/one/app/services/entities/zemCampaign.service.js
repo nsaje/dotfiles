@@ -18,7 +18,7 @@ angular.module('one.services').service('zemCampaignService', function ($http, $q
     this.deactivateSources = entityActionsService.deactivateSources;
 
     this.getAction = entityActionsService.getAction;
-    this.onCampaignCreated = entityInstanceService.onEntityCreated;
-    this.onCampaignUpdated = entityInstanceService.onEntityUpdated;
     this.onActionExecuted = entityActionsService.onActionExecuted;
+    this.onEntityCreated = entityInstanceService.onEntityCreated;
+    this.onEntityUpdated = entityInstanceService.onEntityUpdated;
 });

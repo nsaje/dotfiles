@@ -64,6 +64,9 @@ angular.module('one').run(function ($state, $rootScope, $location, config, zemIn
 
     $rootScope.$on('$stateChangeSuccess', function () {
         // Restore all query string parameters back to $location.search
+        // and keep the new ones if applied in the process of changing state
+        // (e.g. params passed through ui-router $state)
+        angular.merge(locationSearch, $location.search());
         $location.search(locationSearch);
         $rootScope.stateChangeFired = true;
     });
