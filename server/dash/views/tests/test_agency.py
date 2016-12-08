@@ -728,6 +728,46 @@ class AdGroupSettingsTest(TestCase):
             self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
 
+    def test_validate_all_rtb_state(self):
+        view = agency.AdGroupSettings()
+        settings = models.AdGroupSettings()
+        new_settings = models.AdGroupSettings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_enabled = True
+        with self.assertRaises(exc.ValidationError):
+            view.validate_all_rtb_state(settings, new_settings)
+
+        settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = True
+        view.validate_all_rtb_state(settings, new_settings)
+
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+        with self.assertRaises(exc.ValidationError):
+            view.validate_all_rtb_state(settings, new_settings)
+
+    def test_validate_all_rtb_state_adgroup_inactive(self):
+        view = agency.AdGroupSettings()
+        settings = models.AdGroupSettings()
+        new_settings = models.AdGroupSettings()
+        new_settings.state = constants.AdGroupSettingsState.INACTIVE
+
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_enabled = True
+        view.validate_all_rtb_state(settings, new_settings)
+
+        settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = True
+        view.validate_all_rtb_state(settings, new_settings)
+
+        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+        view.validate_all_rtb_state(settings, new_settings)
+
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_non_superuser.yaml']

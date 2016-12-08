@@ -88,6 +88,8 @@ class AdGroupSettings(api_common.BaseApiView):
         new_settings = current_settings.copy_settings()
         self.set_settings(ad_group, new_settings, form.cleaned_data, request.user)
 
+        self.validate_all_rtb_state(current_settings, new_settings)
+
         # update ad group name
         current_settings.ad_group_name = previous_ad_group_name
         new_settings.ad_group_name = ad_group.name
@@ -114,6 +116,31 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def validate_all_rtb_state(self, settings, new_settings):
+        # MVP for all-RTB-sources-as-one
+        # Ensure that AdGroup is paused when enabling/disabling All RTB functionality
+        # For now this is the easiest solution to avoid conflicts with ad group budgets and state validations
+
+        if self.rest_proxy:
+            # [Workaround] Disable validation for API calls
+            # Outbrain updates RTB settings when ad-group is already active and needs to update the sequence
+            return
+
+        if new_settings.state == constants.AdGroupSettingsState.INACTIVE:
+            return
+
+        all_rtb_enabled = settings.b1_sources_group_enabled and \
+            settings.autopilot_state == constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        new_all_rtb_enabled = new_settings.b1_sources_group_enabled and \
+            new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        if all_rtb_enabled != new_all_rtb_enabled:
+            msg = 'To manage Daily Spend Cap for All RTB as one, ad group must be paused first.'
+            if not new_all_rtb_enabled:
+                'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
+            raise exc.ValidationError(errors={'autopilot_state': [msg]})
 
     def get_warnings(self, request, ad_group_settings):
         warnings = {}

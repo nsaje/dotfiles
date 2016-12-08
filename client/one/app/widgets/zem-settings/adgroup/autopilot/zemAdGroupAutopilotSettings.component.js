@@ -6,6 +6,11 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
     },
     templateUrl: '/app/widgets/zem-settings/adgroup/autopilot/zemAdGroupAutopilotSettings.component.html',
     controller: function ($q, $state, config, zemPermissions) {
+        var MSG_ALL_RTB_ENABLED = 'All RTB source will now use one joint Daily Spend Cap.\n\n' +
+            'Please check it in the Media Sources tab before you enable the ad group.\n';
+        var MSG_ALL_RTB_DISABLED = 'We have reset the Daily Spend Caps of your RTB sources.\n\n' +
+            'Please check them in the Media Sources tab before you enable the ad group.\n';
+
         var $ctrl = this;
         $ctrl.constants = constants;
         $ctrl.config = config;
@@ -21,7 +26,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         $ctrl.$onInit = function () {
             $ctrl.api.register({
                 onSuccess: function () {
-                    if (isReloadNeeded()) $state.reload();
+                    notifyAllRtbUpdates();
                 }
             });
         };
@@ -36,7 +41,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
             }
         };
 
-        function isReloadNeeded () {
+        function notifyAllRtbUpdates () {
             // MVP for all-RTB-sources-as-one
             // Reload state when all-rtb-as-one setting is changed (grid data representation changes)
             var allRtbAsOne = $ctrl.entity.settings.b1SourcesGroupEnabled &&
@@ -47,7 +52,11 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
                        $ctrl.origAutopilotSettings.autopilotState ===
                        constants.adGroupSettingsAutopilotState.INACTIVE;
 
-            return allRtbAsOne !== origAllRtbAsOne;
+
+            if (allRtbAsOne !== origAllRtbAsOne) {
+                alert(allRtbAsOne ? MSG_ALL_RTB_ENABLED : MSG_ALL_RTB_DISABLED); //eslint-disable-line no-alert
+                $state.reload();
+            }
         }
 
         function isInLanding () {

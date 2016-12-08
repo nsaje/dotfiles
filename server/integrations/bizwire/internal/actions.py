@@ -71,7 +71,7 @@ def check_date_and_stop_old_ad_groups():
         start_date=previous_start_date
     ).values_list('ad_group_id', flat=True)
     for ad_group_id in ad_group_ids:
-        _stop_ad_group(ad_group_id)
+        _set_ad_group(ad_group_id, 'INACTIVE')
 
 
 def recalculate_and_set_new_daily_budgets(ad_group_id):
@@ -121,7 +121,7 @@ def _create_ad_group(name, start_date, interest_targeting):
     data = {
         'campaignId': config.AUTOMATION_CAMPAIGN,
         'name': name,
-        'state': 'ACTIVE',
+        'state': 'INACTIVE',
         'startDate': start_date.isoformat(),
         'endDate': None,
         'targeting': {
@@ -140,12 +140,14 @@ def _create_ad_group(name, start_date, interest_targeting):
     ad_group_id = int(_make_restapi_fake_post_request(restapi.views.AdGroupViewList, url, data)['id'])
     _set_initial_sources_settings(ad_group_id)
     _set_initial_rtb_settings(ad_group_id)
+    _set_ad_group(ad_group_id, 'ACTIVE')
+
     return ad_group_id
 
 
-def _stop_ad_group(ad_group_id):
+def _set_ad_group(ad_group_id, state):
     data = {
-        'state': 'INACTIVE',
+        'state': state,
     }
     url = 'rest/v1/adgroups/{}/'.format(ad_group_id)
     return _make_restapi_fake_put_request(restapi.views.AdGroupViewDetails, url, data, view_args=[ad_group_id])

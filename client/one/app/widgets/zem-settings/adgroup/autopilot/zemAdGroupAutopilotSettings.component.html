@@ -8,7 +8,7 @@
         </div>
         <div class="form-alert-body">Autopilot is automatically enabled because the campaign is in landing mode. </div>
     </div>
-    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.autopilotState}">
+    <div class="form-group">
         <div class="radio" ng-repeat='autopilotState in $ctrl.options.adGroupSettingsAutopilotStates'>
             <label>
                 <input type="radio" ng-model="$ctrl.entity.settings.autopilotState" ng-value="autopilotState.value" ng-disabled="$ctrl.isInLanding()"> {{ autopilotState.name }} <zem-help-popover content="{{autopilotState.help}}" placement="right"></zem-help-popover>
@@ -61,6 +61,7 @@
 
         </div>
 
-        <label ng-repeat="error in $ctrl.errors.autopilotState" class="control-label error">{{ error }}</label>
+        <br/>
+        <label class="col-xs-12 error" ng-repeat="error in $ctrl.errors.autopilotState" class="control-label error">{{ error }}</label>
     </div>
 </div>
