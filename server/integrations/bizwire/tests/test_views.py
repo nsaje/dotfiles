@@ -27,7 +27,6 @@ class PromotionExportTestCase(TestCase):
     @patch.object(views.PromotionExport, '_get_pubs_stats')
     def test_get_promotion_export(self, mock_get_pubs_stats, mock_get_geo_stats, mock_get_ag_stats, mock_get_ad_stats):
         mock_get_ad_stats.return_value = {'impressions': 123, 'clicks': 12, 'ctr': 0.1}
-        mock_get_ag_stats.return_value = {'industry_ctr': 0.2}
         mock_get_geo_stats.return_value = [{'country': 'US', 'state': 'NY', 'impressions': 100},
                                            {'country': 'US', 'state': None, 'impressions': 23}]
         mock_get_pubs_stats.return_value = [{'publisher': 'cnn.com'}]
@@ -42,7 +41,7 @@ class PromotionExportTestCase(TestCase):
                     'headline_impressions': 123,
                     'release_views': 12,
                     'ctr': 0.1,
-                    'industry_ctr': 0.2,
+                    'industry_ctr': 0.17,
                     'geo_headline_impressions': {'US-NY': 100, 'Unknown': 23},
                     'publishers': ['cnn.com'],
                 }

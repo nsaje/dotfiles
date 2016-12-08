@@ -130,8 +130,8 @@ class PromotionExport(RatelimitMixin, BizwireView):
         ad_stats_thread = threads.AsyncFunction(partial(self._get_ad_stats, content_ad.id))
         ad_stats_thread.start()
 
-        ag_stats_thread = threads.AsyncFunction(partial(self._get_ag_stats, content_ad.ad_group_id))
-        ag_stats_thread.start()
+        # ag_stats_thread = threads.AsyncFunction(partial(self._get_ag_stats, content_ad.ad_group_id))
+        # ag_stats_thread.start()
 
         pubs_thread = threads.AsyncFunction(partial(self._get_pubs_stats, content_ad.ad_group_id))
         pubs_thread.start()
@@ -140,7 +140,7 @@ class PromotionExport(RatelimitMixin, BizwireView):
         geo_impressions_thread.start()
 
         ad_stats = ad_stats_thread.join_and_get_result()
-        ag_stats = ag_stats_thread.join_and_get_result()
+        # ag_stats = ag_stats_thread.join_and_get_result()
         pubs_stats = pubs_thread.join_and_get_result()
         geo_stats = geo_impressions_thread.join_and_get_result()
 
@@ -156,7 +156,7 @@ class PromotionExport(RatelimitMixin, BizwireView):
             'headline_impressions': ad_stats['impressions'] or 0,
             'release_views': ad_stats['clicks'] or 0,
             'ctr': ad_stats['ctr'] or None,
-            'industry_ctr': ag_stats['industry_ctr'] or None,
+            'industry_ctr': 0.17,
             'publishers': pubs,
             'geo_headline_impressions': geo_impressions,
         }
