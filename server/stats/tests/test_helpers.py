@@ -188,7 +188,8 @@ class HelpersTest(TestCase):
         self.assertEqual(helpers.extract_order_field('name', 'country'), 'name')
         self.assertEqual(helpers.extract_order_field('name', 'state'), 'name')
 
-        self.assertEqual(helpers.extract_order_field('-status', 'publisher_id'), '-status')
+        # we don't know how to order publishers by status yet
+        self.assertEqual(helpers.extract_order_field('-status', 'publisher_id'), '-clicks')
 
         self.assertEqual(helpers.extract_order_field('-status', 'dma'), '-status')
         self.assertEqual(helpers.extract_order_field('-status', 'gender'), '-status')
@@ -228,13 +229,6 @@ class HelpersTest(TestCase):
         self.assertEqual(helpers.extract_rs_order_field('-status', 'gender'), '-clicks')
         self.assertEqual(helpers.extract_rs_order_field('-status', 'country'), '-clicks')
         self.assertEqual(helpers.extract_rs_order_field('-status', 'state'), '-clicks')
-
-    def test_get_supported_order(self):
-        self.assertEqual('-media_cost', helpers.get_supported_order('-cost', 'ad_group_id'))
-        self.assertEqual('-pacing', helpers.get_supported_order('-pacing', 'ad_group_id'))
-        self.assertEqual('clicks', helpers.get_supported_order('state', 'publisher_id'))
-        self.assertEqual('media_cost', helpers.get_supported_order('media_cost', 'publisher_id'))
-        self.assertEqual('-name', helpers.get_supported_order('-name', 'ad_group_id'))
 
     def test_should_query_dashapi_first(self):
         for dimension in ('account_id', 'campaign_id', 'ad_group_id', 'content_ad_id', 'source_id'):

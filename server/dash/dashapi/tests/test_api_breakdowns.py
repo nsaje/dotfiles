@@ -15,22 +15,191 @@ from dash.dashapi import helpers
 from dash.dashapi import augmenter
 
 
+"""
+NOTE 1: The following dicts represent rows that are returned by dashapi.api_breakdowns query functions.
+Whenever a new field is added to augmenter/loader, add it here so that all instances of the row
+get updated.
+
+NOTE 2: To check for correct results use "assertEqual" and not "assertItemsEqual" as the order in which results
+are returned matters.
+"""
+
+
 START_DATE, END_DATE = datetime.date(2016, 7, 1), datetime.date(2016, 8, 31)
-EMPTY_ACCOUNT_PROJECTIONS = {
-    'pacing': None,
-    'allocated_budgets': Decimal('0'),
-    'spend_projection': Decimal('0'),
-    'license_fee_projection': Decimal('0'),
-    'flat_fee': 0,
-    'total_fee': 0,
-    'total_fee_projection': Decimal('0'),
+
+SOURCE_1 = {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1}  # noqa
+SOURCE_2 = {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2}  # noqa
+
+ACCOUNT_1 = {
+    'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1,
+    'default_account_manager': 'mad.max@zemanta.com', 'default_sales_representative': 'supertestuser@test.com',
+    'agency': '', 'account_type': 'Activated',
+    'pacing': None, 'allocated_budgets': Decimal('0'), 'spend_projection': Decimal('0'),
+    'license_fee_projection': Decimal('0'), 'flat_fee': 0, 'total_fee': 0, 'total_fee_projection': Decimal('0'),
 }
 
-EMPTY_CAMPAIGN_PROJECTIONS = {
-    'pacing': None,
-    'allocated_budgets': None,
-    'spend_projection': None,
-    'license_fee_projection': None,
+CAMPAIGN_1 = {
+    'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1,
+    'campaign_manager': 'supertestuser@test.com',
+    'pacing': None, 'allocated_budgets': None, 'spend_projection': None, 'license_fee_projection': None,
+}
+CAMPAIGN_2 = {
+    'campaign_id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 2,
+    'campaign_manager': 'mad.max@zemanta.com',
+    'pacing': None, 'allocated_budgets': None, 'spend_projection': None, 'license_fee_projection': None,
+}
+
+AD_GROUP_1 = {'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1}
+AD_GROUP_2 = {'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2}
+
+AD_GROUP_BASE_1 = dict_join(AD_GROUP_1, {'campaign_has_available_budget': False, 'campaign_stop_inactive': True})
+AD_GROUP_BASE_2 = dict_join(AD_GROUP_2, {'campaign_has_available_budget': False, 'campaign_stop_inactive': False})
+
+CONTENT_AD_1 = {
+    'content_ad_id': 1, 'title': 'Title 1', 'description': 'Example description', 'brand_name': 'Example',
+    'archived': False, 'name': 'Title 1', 'display_url': 'example.com', 'call_to_action': 'Call to action', 'label': '',
+    'image_hash': '100', 'image_urls': {
+        'square': '/100.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
+        'landscape': '/100.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg'
+    },
+    'batch_id': 1, 'batch_name': 'batch 1', 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
+    'redirector_url': 'http://r1.zemanta.com/b/r1/z1/1/1/', 'url': 'http://testurl1.com',
+    'state': 1, 'status': 1, 'status_per_source': {
+        1: {
+            'source_id': 1,
+            'submission_status': 1,
+            'source_name': 'AdsNative',
+            'source_status': 1,
+            'submission_errors': None
+        },
+        2: {
+            'source_id': 2,
+            'submission_status': 2,
+            'source_name': 'Gravity',
+            'source_status': 2,
+            'submission_errors': None
+        }
+    },
+}
+CONTENT_AD_2 = {
+    'content_ad_id': 2, 'title': 'Title 2', 'description': 'Example description', 'brand_name': 'Example',
+    'archived': False, 'name': 'Title 2', 'display_url': 'example.com', 'call_to_action': 'Call to action', 'label': '',
+    'image_hash': '200', 'image_urls': {
+        'square': '/200.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
+        'landscape': '/200.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg'
+    },
+    'batch_id': 1, 'batch_name': 'batch 1', 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
+    'redirector_url': 'http://r1.zemanta.com/b/r2/z1/1/2/', 'url': 'http://testurl2.com',
+    'state': 2, 'status': 2, 'status_per_source': {
+        2: {
+            'source_id': 2,
+            'submission_status': 2,
+            'source_name': 'Gravity',
+            'source_status': 2,
+            'submission_errors': None
+        }
+    },
+}
+
+# sources on ad group level
+AD_GROUP_SOURCE_1 = {
+    'source_id': 1, 'source_slug': 'adsnative', 'id': 1, 'name': 'AdsNative',
+    'daily_budget': Decimal('10.0000'), 'current_daily_budget': Decimal('10.0000'),
+    'bid_cpc': Decimal('0.5010'), 'current_bid_cpc': Decimal('0.5010'),
+    'archived': False, 'maintenance': False,
+    'supply_dash_url': None,
+    'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",  # noqa
+    'state': 1, 'status': 1,
+    'editable_fields': {
+        'state': {
+            'message': 'This source must be managed manually.',
+            'enabled': False
+        },
+        'bid_cpc': {
+            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',  # noqa
+            'enabled': False
+        },
+        'daily_budget': {
+            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',  # noqa
+            'enabled': False
+        }
+    },
+    'notifications': {},
+}
+AD_GROUP_SOURCE_2 = {
+    'source_id': 2, 'source_slug': 'gravity', 'id': 2, 'name': 'Gravity',
+    'daily_budget': Decimal('20.0000'), 'current_daily_budget': Decimal('20.0000'),
+    'bid_cpc': Decimal('0.5020'), 'current_bid_cpc': Decimal('0.5020'),
+    'archived': False, 'maintenance': False,
+    'supply_dash_url': None,
+    'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",  # noqa
+    'state': 2, 'status': 2, 'editable_fields': {
+        'state': {
+            'message': 'Please add additional budget to your campaign to make changes.',
+            'enabled': False
+        },
+        'bid_cpc': {
+            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',  # noqa
+            'enabled': False
+        },
+        'daily_budget': {
+            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',  # noqa
+            'enabled': False
+        }
+    },
+    'notifications': {},
+}
+
+SOURCE_1__CONTENT_AD_1 = {
+    'source_id': 1,
+    'content_ad_id': 1, 'title': 'Title 1', 'description': 'Example description', 'brand_name': 'Example',
+    'archived': False, 'name': 'Title 1', 'display_url': 'example.com', 'call_to_action': 'Call to action', 'label': '',
+    'image_hash': '100', 'image_urls': {
+        'square': '/100.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
+        'landscape': '/100.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg'
+    },
+    'batch_id': 1, 'batch_name': 'batch 1', 'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
+    'redirector_url': 'http://r1.zemanta.com/b/r1/z1/1/1/', 'url': 'http://testurl1.com',
+    'state': 1, 'status': 1, 'status_per_source': {
+        1: {
+            'source_id': 1,
+            'submission_status': 1,
+            'source_name': 'AdsNative',
+            'source_status': 1,
+            'submission_errors': None
+        },
+    },
+}
+
+PUBLISHER_1__SOURCE_1 = {
+    'publisher_id': 'pub1.com__1', 'publisher': 'pub1.com', 'domain': 'pub1.com', 'name': 'pub1.com', 'domain_link': 'http://pub1.com',  # noqa
+    'source_id': 1, 'source_name': 'AdsNative', 'exchange': 'AdsNative', 'source_slug': 'adsnative',
+    'status': 2, 'blacklisted': 'Blacklisted', 'can_blacklist_publisher': True,
+}
+PUBLISHER_2__SOURCE_1 = {
+    'publisher_id': 'pub2.com__1', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'name': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
+    'source_id': 1, 'source_name': 'AdsNative', 'exchange': 'AdsNative', 'source_slug': 'adsnative',
+    'status': 1, 'blacklisted': 'Active', 'can_blacklist_publisher': True,
+}
+PUBLISHER_2__SOURCE_2 = {
+    'publisher_id': 'pub2.com__2', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'name': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
+    'source_id': 2, 'source_name': 'Gravity', 'exchange': 'Gravity', 'source_slug': 'gravity',
+    'status': 2, 'blacklisted': 'Blacklisted', 'can_blacklist_publisher': False,
+}
+PUBLISHER_3__SOURCE_1 = {
+    'publisher_id': 'pub3.com__1', 'publisher': 'pub3.com', 'name': 'pub3.com', 'domain': 'pub3.com', 'domain_link': 'http://pub3.com',  # noqa
+    'source_id': 1, 'source_name': 'AdsNative', 'exchange': 'AdsNative', 'source_slug': 'adsnative',
+    'status': 2, 'blacklisted': 'Blacklisted', 'can_blacklist_publisher': True,
+}
+PUBLISHER_3__SOURCE_2 = {
+    'publisher_id': 'pub3.com__2', 'publisher': 'pub3.com', 'name': 'pub3.com', 'domain': 'pub3.com', 'domain_link': 'http://pub3.com',  # noqa
+    'source_id': 2, 'source_name': 'Gravity', 'exchange': 'Gravity', 'source_slug': 'gravity',
+    'status': 1, 'blacklisted': 'Active', 'can_blacklist_publisher': False,
+}
+PUBLISHER_4__SOURCE_2 = {
+    'publisher_id': 'pub4.com__2', 'publisher': 'pub4.com', 'name': 'pub4.com', 'domain': 'pub4.com', 'domain_link': 'http://pub4.com',  # noqa
+    'source_id': 2, 'source_name': 'Gravity', 'exchange': 'Gravity', 'source_slug': 'gravity',
+    'status': 2, 'blacklisted': 'Blacklisted', 'can_blacklist_publisher': False,
 }
 
 
@@ -56,13 +225,7 @@ class QueryTest(TestCase):
             'name', 0, 1
         )
 
-        self.assertEqual(rows, [
-            dict_join({'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
-                      {'default_account_manager': 'mad.max@zemanta.com',
-                       'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Activated'},
-                      EMPTY_ACCOUNT_PROJECTIONS),
-        ])
+        self.assertEqual(rows, [ACCOUNT_1])
 
     def test_query_all_accounts_break_source(self):
         rows = api_breakdowns.query(
@@ -78,10 +241,7 @@ class QueryTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows, [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
-        ])
+        self.assertEqual(rows, [SOURCE_1, SOURCE_2])
 
     def test_query_all_accounts_break_account_source(self):
         rows = api_breakdowns.query(
@@ -99,8 +259,8 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
+            dict_join({'account_id': 1}, SOURCE_1),
+            dict_join({'account_id': 1}, SOURCE_2),
         ])
 
     def test_query_all_accounts_break_source_account(self):
@@ -120,16 +280,8 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            dict_join({'source_id': 1, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
-                      {'default_account_manager': 'mad.max@zemanta.com',
-                       'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Activated'},
-                      EMPTY_ACCOUNT_PROJECTIONS),
-            dict_join({'source_id': 2, 'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
-                      {'default_account_manager': 'mad.max@zemanta.com',
-                       'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Activated'},
-                      EMPTY_ACCOUNT_PROJECTIONS),
+            dict_join({'source_id': 1}, ACCOUNT_1),
+            dict_join({'source_id': 2}, ACCOUNT_1),
         ])
 
     def test_query_all_accounts_break_source_campaign(self):
@@ -150,12 +302,8 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            dict_join({'source_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-                      {'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-                      {'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'source_id': 1}, CAMPAIGN_1),
+            dict_join({'source_id': 2}, CAMPAIGN_1),
         ])
 
     def test_query_all_accounts_break_account_campaign(self):
@@ -176,9 +324,7 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            dict_join({'account_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-                      {'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'account_id': 1}, CAMPAIGN_1),
         ])
 
     def test_query_accounts_break_campaign(self):
@@ -198,14 +344,7 @@ class QueryTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [
-            dict_join({'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-                      {'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'campaign_id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 2},
-                      {'campaign_manager': 'mad.max@zemanta.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-        ])
+        self.assertEqual(rows,  [CAMPAIGN_1, CAMPAIGN_2])
 
     def test_query_accounts_break_source(self):
         rows = api_breakdowns.query(
@@ -222,10 +361,7 @@ class QueryTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
-        ])
+        self.assertEqual(rows,  [SOURCE_1, SOURCE_2])
 
     def test_query_accounts_break_campaign_source(self):
         rows = api_breakdowns.query(
@@ -243,13 +379,11 @@ class QueryTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [{
-            'archived': False, 'name': 'AdsNative', 'campaign_id': 1, 'maintenance': False, 'source_id': 1, 'source_slug': 'adsnative', 'id': 1,
-        }, {
-            'archived': False, 'name': 'Gravity', 'campaign_id': 1, 'maintenance': False, 'source_id': 2, 'source_slug': 'gravity', 'id': 2,
-        }, {
-            'archived': False, 'name': 'AdsNative', 'campaign_id': 2, 'maintenance': False, 'source_id': 1, 'source_slug': 'adsnative', 'id': 1,
-        }])
+        self.assertEqual(rows,  [
+            dict_join({'campaign_id': 1}, SOURCE_1),
+            dict_join({'campaign_id': 1}, SOURCE_2),
+            dict_join({'campaign_id': 2}, SOURCE_1),
+        ])
 
     def test_query_accounts_break_source_campaign(self):
         rows = api_breakdowns.query(
@@ -269,15 +403,9 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            dict_join({'source_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-                      {'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'source_id': 1, 'campaign_id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 2},
-                      {'campaign_manager': 'mad.max@zemanta.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-                      {'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'source_id': 1}, CAMPAIGN_1),
+            dict_join({'source_id': 1}, CAMPAIGN_2),
+            dict_join({'source_id': 2}, CAMPAIGN_1),
         ])
 
     def test_query_accounts_break_source_ad_group(self):
@@ -297,10 +425,10 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'source_id': 1, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1},
-            {'source_id': 1, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2},
-            {'source_id': 2, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1},
-            {'source_id': 2, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2},
+            dict_join({'source_id': 1}, AD_GROUP_1),
+            dict_join({'source_id': 1}, AD_GROUP_2),
+            dict_join({'source_id': 2}, AD_GROUP_1),
+            dict_join({'source_id': 2}, AD_GROUP_2),
         ])
 
     def test_query_accounts_break_campaign_ad_group_not_allowed(self):
@@ -321,8 +449,8 @@ class QueryTest(TestCase):
 
         # campaign_id: 2 does not get queried
         self.assertEqual(rows, [
-            {'campaign_id': 1, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1},
-            {'campaign_id': 1, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2},
+            dict_join({'campaign_id': 1}, AD_GROUP_1),
+            dict_join({'campaign_id': 1}, AD_GROUP_2),
         ])
 
     def test_query_accounts_break_campaign_ad_group(self):
@@ -342,8 +470,8 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            {'campaign_id': 1, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1},
-            {'campaign_id': 1, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2},
+            dict_join({'campaign_id': 1}, AD_GROUP_1),
+            dict_join({'campaign_id': 1}, AD_GROUP_2),
         ])
 
     def test_query_campaigns_break_ad_group(self):
@@ -361,12 +489,7 @@ class QueryTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [
-            {'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1,
-             'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
-            {'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2,
-             'campaign_has_available_budget': False, 'campaign_stop_inactive': False},
-        ])
+        self.assertEqual(rows,  [AD_GROUP_BASE_1, AD_GROUP_BASE_2])
 
     def test_query_campaigns_break_source(self):
         rows = api_breakdowns.query(
@@ -383,10 +506,7 @@ class QueryTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_slug': 'adsnative', 'source_id': 1, 'id': 1},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_slug': 'gravity', 'source_id': 2, 'id': 2},
-        ])
+        self.assertEqual(rows,  [SOURCE_1, SOURCE_2])
 
     def test_query_campaigns_break_ad_group_source(self):
         rows = api_breakdowns.query(
@@ -405,10 +525,10 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
-            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
+            dict_join({'ad_group_id': 1}, SOURCE_1),
+            dict_join({'ad_group_id': 1}, SOURCE_2),
+            dict_join({'ad_group_id': 2}, SOURCE_1),
+            dict_join({'ad_group_id': 2}, SOURCE_2),
         ])
 
     def test_query_campaigns_break_source_ad_group(self):
@@ -427,10 +547,10 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'source_id': 1, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1},
-            {'source_id': 1, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2},
-            {'source_id': 2, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1},
-            {'source_id': 2, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2},
+            dict_join({'source_id': 1}, AD_GROUP_1),
+            dict_join({'source_id': 1}, AD_GROUP_2),
+            dict_join({'source_id': 2}, AD_GROUP_1),
+            dict_join({'source_id': 2}, AD_GROUP_2),
         ])
 
     def test_query_ad_groups_break_content_ad(self):
@@ -448,78 +568,7 @@ class QueryTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [
-            {
-                'image_hash': '100',
-                'description': 'Example description',
-                'content_ad_id': 1,
-                'redirector_url': 'http://r1.zemanta.com/b/r1/z1/1/1/',
-                'brand_name': 'Example',
-                'image_urls': {
-                    'square': '/100.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
-                    'landscape': '/100.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg'
-                },
-                'batch_name': 'batch 1',
-                'archived': False,
-                'name': 'Title 1',
-                'display_url': 'example.com',
-                'url': 'http://testurl1.com',
-                'call_to_action': 'Call to action',
-                'label': '',
-                'state': 1,
-                'status': 1,
-                'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
-                'batch_id': 1,
-                'title': 'Title 1',
-                'status_per_source': {
-                    1: {
-                        'source_id': 1,
-                        'submission_status': 1,
-                        'source_name': 'AdsNative',
-                        'source_status': 1,
-                        'submission_errors': None
-                    },
-                    2: {
-                        'source_id': 2,
-                        'submission_status': 2,
-                        'source_name': 'Gravity',
-                        'source_status': 2,
-                        'submission_errors': None
-                    }
-                },
-            }, {
-                'image_hash': '200',
-                'description': 'Example description',
-                'content_ad_id': 2,
-                'redirector_url': 'http://r1.zemanta.com/b/r2/z1/1/2/',
-                'brand_name': 'Example',
-                'image_urls': {
-                    'square': '/200.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
-                    'landscape': '/200.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg'
-                },
-                'batch_name': 'batch 1',
-                'archived': False,
-                'name': 'Title 2',
-                'display_url': 'example.com',
-                'url': 'http://testurl2.com',
-                'call_to_action': 'Call to action',
-                'label': '',
-                'state': 2,
-                'status': 2,
-                'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
-                'batch_id': 1,
-                'title': 'Title 2',
-                'status_per_source': {
-                    2: {
-                        'source_id': 2,
-                        'submission_status': 2,
-                        'source_name': 'Gravity',
-                        'source_status': 2,
-                        'submission_errors': None
-                    }
-                },
-            },
-        ])
+        self.assertEqual(rows,  [CONTENT_AD_1, CONTENT_AD_2])
 
     def test_query_ad_groups_break_content_ad_source(self):
         rows = api_breakdowns.query(
@@ -536,69 +585,10 @@ class QueryTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [{
-            'status': 1,
-            'current_daily_budget': Decimal('10.0000'),
-            'content_ad_id': 1,
-            'bid_cpc': Decimal('0.5010'),
-            'supply_dash_url': None,
-            'id': 1,
-            'name': 'AdsNative',
-            'archived': False,
-            'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
-            'daily_budget': Decimal('10.0000'),
-            'editable_fields': {
-                'state': {
-                    'message': 'This source must be managed manually.',
-                    'enabled': False
-                },
-                'bid_cpc': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                },
-                'daily_budget': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                }
-            },
-            'state': 1,
-            'maintenance': False,
-            'source_id': 1,
-            'source_slug': 'adsnative',
-            'current_bid_cpc': Decimal('0.5010'),
-            'notifications': {},
-        }, {
-            'status': 2,
-            'current_daily_budget': Decimal('20.0000'),
-            'content_ad_id': 1,
-            'bid_cpc': Decimal('0.5020'),
-            'supply_dash_url': None,
-            'id': 2,
-            'name': 'Gravity',
-            'archived': False,
-            'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
-            'daily_budget': Decimal('20.0000'),
-            'editable_fields': {
-                'state': {
-                    'message': 'Please add additional budget to your campaign to make changes.',
-                    'enabled': False
-                },
-                'bid_cpc': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                },
-                'daily_budget': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                }
-            },
-            'state': 2,
-            'maintenance': False,
-            'source_id': 2,
-            'source_slug': 'gravity',
-            'current_bid_cpc': Decimal('0.5020'),
-            'notifications': {},
-        }])
+        self.assertEqual(rows,  [
+            dict_join({'content_ad_id': 1}, AD_GROUP_SOURCE_1),
+            dict_join({'content_ad_id': 1}, AD_GROUP_SOURCE_2),
+        ])
 
     def test_query_ad_groups_break_source(self):
         rows = api_breakdowns.query(
@@ -615,67 +605,7 @@ class QueryTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [{
-            'status': 1,
-            'archived': False,
-            'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
-            'name': 'AdsNative',
-            'editable_fields': {
-                'state': {
-                    'message': 'This source must be managed manually.',
-                    'enabled': False
-                },
-                'bid_cpc': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                },
-                'daily_budget': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                }
-            },
-            'state': 1,
-            'bid_cpc': Decimal('0.5010'),
-            'current_bid_cpc': Decimal('0.5010'),
-            'supply_dash_url': None,
-            'maintenance': False,
-            'current_daily_budget': Decimal('10.0000'),
-            'source_id': 1,
-            'source_slug': 'adsnative',
-            'id': 1,
-            'daily_budget': Decimal('10.0000'),
-            'notifications': {},
-        }, {
-            'status': 2,
-            'archived': False,
-            'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
-            'name': 'Gravity',
-            'editable_fields': {
-                'state': {
-                    'message': 'Please add additional budget to your campaign to make changes.',
-                    'enabled': False
-                },
-                'bid_cpc': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                },
-                'daily_budget': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                }
-            },
-            'state': 2,
-            'bid_cpc': Decimal('0.5020'),
-            'current_bid_cpc': Decimal('0.5020'),
-            'supply_dash_url': None,
-            'maintenance': False,
-            'current_daily_budget': Decimal('20.0000'),
-            'source_id': 2,
-            'source_slug': 'gravity',
-            'id': 2,
-            'daily_budget': Decimal('20.0000'),
-            'notifications': {},
-        }])
+        self.assertEqual(rows,  [AD_GROUP_SOURCE_1, AD_GROUP_SOURCE_2])
 
     def test_query_ad_groups_break_source_content_ad(self):
         rows = api_breakdowns.query(
@@ -692,39 +622,7 @@ class QueryTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [{
-            'image_hash': '100',
-            'description': 'Example description',
-            'content_ad_id': 1,
-            'source_id': 1,
-            'redirector_url': 'http://r1.zemanta.com/b/r1/z1/1/1/',
-            'brand_name': 'Example',
-            'image_urls': {
-                'square': '/100.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
-                'landscape': '/100.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg'
-            },
-            'batch_name': 'batch 1',
-            'archived': False,
-            'name': 'Title 1',
-            'display_url': 'example.com',
-            'url': 'http://testurl1.com',
-            'call_to_action': 'Call to action',
-            'label': '',
-            'state': 1,
-            'status': 1,
-            'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
-            'batch_id': 1,
-            'title': 'Title 1',
-            'status_per_source': {
-                1: {
-                    'source_id': 1,
-                    'submission_status': 1,
-                    'source_name': 'AdsNative',
-                    'source_status': 1,
-                    'submission_errors': None
-                },
-            },
-        }])
+        self.assertEqual(rows,  [SOURCE_1__CONTENT_AD_1])
 
     def test_query_ad_groups_break_publishers(self):
         # this query is not used in the wild as we always perform RS query and than dash for publishers
@@ -743,59 +641,7 @@ class QueryTest(TestCase):
             'name', 0, 4
         )
 
-        self.assertEqual(rows, [{
-            'status': 2,
-            'publisher': 'pub1.com',
-            'domain': 'pub1.com',
-            'source_name': 'AdsNative',
-            'name': 'pub1.com',
-            'exchange': 'AdsNative',
-            'can_blacklist_publisher': True,
-            'source_id': 1,
-            'source_slug': 'adsnative',
-            'domain_link': 'http://pub1.com',
-            'publisher_id': 'pub1.com__1',
-            'blacklisted': 'Blacklisted'
-        }, {
-            'status': 2,
-            'publisher': 'pub2.com',
-            'domain': 'pub2.com',
-            'source_name': 'Gravity',
-            'name': 'pub2.com',
-            'exchange': 'Gravity',
-            'can_blacklist_publisher': False,
-            'source_id': 2,
-            'source_slug': 'gravity',
-            'domain_link': 'http://pub2.com',
-            'publisher_id': 'pub2.com__2',
-            'blacklisted': 'Blacklisted'
-        }, {
-            'status': 2,
-            'publisher': 'pub3.com',
-            'domain': 'pub3.com',
-            'source_name': 'AdsNative',
-            'name': 'pub3.com',
-            'exchange': 'AdsNative',
-            'can_blacklist_publisher': True,
-            'source_id': 1,
-            'source_slug': 'adsnative',
-            'domain_link': 'http://pub3.com',
-            'publisher_id': 'pub3.com__1',
-            'blacklisted': 'Blacklisted'
-        }, {
-            'status': 2,
-            'publisher': 'pub4.com',
-            'domain': 'pub4.com',
-            'source_name': 'Gravity',
-            'name': 'pub4.com',
-            'exchange': 'Gravity',
-            'can_blacklist_publisher': False,
-            'source_id': 2,
-            'source_slug': 'gravity',
-            'domain_link': 'http://pub4.com',
-            'publisher_id': 'pub4.com__2',
-            'blacklisted': 'Blacklisted'
-        }])
+        self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_2, PUBLISHER_3__SOURCE_1, PUBLISHER_4__SOURCE_2])
 
 
 @patch('dash.threads.AsyncFunction', threads.MockAsyncFunction)
@@ -819,12 +665,7 @@ class QueryOrderTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [
-            {'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1,
-             'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
-            {'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2,
-             'campaign_has_available_budget': False, 'campaign_stop_inactive': False},
-        ])
+        self.assertEqual(rows,  [AD_GROUP_BASE_1, AD_GROUP_BASE_2])
 
         rows = api_breakdowns.query(
             Level.CAMPAIGNS,
@@ -840,12 +681,7 @@ class QueryOrderTest(TestCase):
             '-name', 0, 2
         )
 
-        self.assertEqual(rows,  [
-            {'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2, 'state': 2,
-             'campaign_has_available_budget': False, 'campaign_stop_inactive': False},
-            {'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1, 'state': 1,
-             'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
-        ])
+        self.assertEqual(rows,  [AD_GROUP_BASE_2, AD_GROUP_BASE_1])
 
     def test_query_campaigns_break_source(self):
         rows = api_breakdowns.query(
@@ -862,10 +698,7 @@ class QueryOrderTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
-        ])
+        self.assertEqual(rows,  [SOURCE_1, SOURCE_2])
 
         rows = api_breakdowns.query(
             Level.CAMPAIGNS,
@@ -881,10 +714,7 @@ class QueryOrderTest(TestCase):
             '-name', 0, 2
         )
 
-        self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-        ])
+        self.assertEqual(rows,  [SOURCE_2, SOURCE_1])
 
 
 @patch('dash.threads.AsyncFunction', threads.MockAsyncFunction)
@@ -914,13 +744,7 @@ class QueryForRowsTest(TestCase):
             ]
         )
 
-        self.assertEqual(rows, [
-            dict_join({'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
-                      {'default_account_manager': 'mad.max@zemanta.com',
-                       'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Activated'},
-                      EMPTY_ACCOUNT_PROJECTIONS),
-        ])
+        self.assertEqual(rows, [ACCOUNT_1])
 
     def test_query_for_rows_all_accounts_break_account_no_rows(self):
         rows = api_breakdowns.query_for_rows(
@@ -939,13 +763,7 @@ class QueryForRowsTest(TestCase):
             []
         )
 
-        self.assertEqual(rows, [
-            dict_join({'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1},
-                      {'default_account_manager': 'mad.max@zemanta.com',
-                       'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Activated'},
-                      EMPTY_ACCOUNT_PROJECTIONS),
-        ])
+        self.assertEqual(rows, [ACCOUNT_1])
 
     def test_query_for_rows_all_accounts_break_source(self):
         rows = api_breakdowns.query_for_rows(
@@ -967,10 +785,7 @@ class QueryForRowsTest(TestCase):
             ]
         )
 
-        self.assertEqual(rows, [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
-        ])
+        self.assertEqual(rows, [SOURCE_1, SOURCE_2])
 
     def test_query_for_rows_all_accounts_break_source_missing_row(self):
         rows = api_breakdowns.query_for_rows(
@@ -990,10 +805,7 @@ class QueryForRowsTest(TestCase):
             ]
         )
 
-        self.assertEqual(rows, [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
-        ])
+        self.assertEqual(rows, [SOURCE_1, SOURCE_2])
 
     def test_query_for_rows_all_accounts_break_source_new_request(self):
         rows = api_breakdowns.query_for_rows(
@@ -1011,9 +823,7 @@ class QueryForRowsTest(TestCase):
             ]
         )
 
-        self.assertEqual(rows, [
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
-        ])
+        self.assertEqual(rows, [SOURCE_2])
 
     def test_query_for_rows_all_accounts_break_account_source(self):
         rows = api_breakdowns.query_for_rows(
@@ -1040,8 +850,8 @@ class QueryForRowsTest(TestCase):
             ])
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
+            dict_join({'account_id': 1}, SOURCE_1),
+            dict_join({'account_id': 1}, SOURCE_2),
         ])
 
     def test_query_for_rows_all_accounts_break_account_source_missing_row(self):
@@ -1067,8 +877,8 @@ class QueryForRowsTest(TestCase):
             ])
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
+            dict_join({'account_id': 1}, SOURCE_1),
+            dict_join({'account_id': 1}, SOURCE_2),
         ])
 
     def test_query_for_rows_all_accounts_break_account_source_new_request(self):
@@ -1092,7 +902,7 @@ class QueryForRowsTest(TestCase):
             ])
 
         self.assertEqual(rows, [
-            {'account_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
+            dict_join({'account_id': 1}, SOURCE_2),
         ])
 
     def test_query_for_rows_all_accounts_break_source_account(self):
@@ -1123,18 +933,8 @@ class QueryForRowsTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            dict_join({'source_id': 1, 'account_id': 1, 'archived': False,
-                       'name': 'test account 1', 'status': 1},
-                      {'default_account_manager': 'mad.max@zemanta.com',
-                       'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Activated'},
-                      EMPTY_ACCOUNT_PROJECTIONS),
-            dict_join({'source_id': 2, 'account_id': 1, 'archived': False,
-                       'name': 'test account 1', 'status': 1},
-                      {'default_account_manager': 'mad.max@zemanta.com',
-                       'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Activated'},
-                      EMPTY_ACCOUNT_PROJECTIONS),
+            dict_join({'source_id': 1}, ACCOUNT_1),
+            dict_join({'source_id': 2}, ACCOUNT_1),
         ])
 
     def test_query_for_rows_all_accounts_break_source_account_missing_row(self):
@@ -1163,18 +963,8 @@ class QueryForRowsTest(TestCase):
         )
 
         self.assertEqual(rows, [
-            dict_join({'source_id': 1, 'account_id': 1, 'archived': False,
-                       'name': 'test account 1', 'status': 1},
-                      {'default_account_manager': 'mad.max@zemanta.com',
-                       'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Activated'},
-                      EMPTY_ACCOUNT_PROJECTIONS),
-            dict_join({'source_id': 2, 'account_id': 1, 'archived': False,
-                       'name': 'test account 1', 'status': 1},
-                      {'default_account_manager': 'mad.max@zemanta.com',
-                       'default_sales_representative': 'supertestuser@test.com',
-                       'agency': '', 'account_type': 'Activated'},
-                      EMPTY_ACCOUNT_PROJECTIONS),
+            dict_join({'source_id': 1}, ACCOUNT_1),
+            dict_join({'source_id': 2}, ACCOUNT_1),
         ])
 
     def test_query_for_rows_all_accounts_break_source_account_new_request(self):
@@ -1230,16 +1020,10 @@ class QueryForRowsTest(TestCase):
             ]
         )
 
-        self.assertEqual(rows,  [
-            dict_join({'source_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1',
-                       'status': 1, 'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'source_id': 1, 'campaign_id': 2, 'archived': True, 'name': 'test campaign 2',
-                       'status': 2, 'campaign_manager': 'mad.max@zemanta.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1',
-                       'status': 1, 'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
+        self.assertEqual(rows, [
+            dict_join({'source_id': 1}, CAMPAIGN_1),
+            dict_join({'source_id': 1}, CAMPAIGN_2),
+            dict_join({'source_id': 2}, CAMPAIGN_1),
         ])
 
     def test_query_for_rows_all_accounts_break_source_campaign_no_rows(self):
@@ -1264,16 +1048,10 @@ class QueryForRowsTest(TestCase):
             []
         )
 
-        self.assertEqual(rows,  [
-            dict_join({'source_id': 1, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1',
-                       'status': 1, 'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'source_id': 1, 'campaign_id': 2, 'archived': True, 'name': 'test campaign 2',
-                       'status': 2, 'campaign_manager': 'mad.max@zemanta.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'source_id': 2, 'campaign_id': 1, 'archived': False, 'name': 'test campaign 1',
-                       'status': 1, 'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
+        self.assertEqual(rows, [
+            dict_join({'source_id': 1}, CAMPAIGN_1),
+            dict_join({'source_id': 1}, CAMPAIGN_2),
+            dict_join({'source_id': 2}, CAMPAIGN_1),
         ])
 
     def test_query_for_rows_accounts_break_campaign(self):
@@ -1298,14 +1076,7 @@ class QueryForRowsTest(TestCase):
             []
         )
 
-        self.assertEqual(rows,  [
-            dict_join({'campaign_id': 1, 'archived': False, 'name': 'test campaign 1', 'status': 1},
-                      {'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'campaign_id': 2, 'archived': True, 'name': 'test campaign 2', 'status': 2},
-                      {'campaign_manager': 'mad.max@zemanta.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-        ])
+        self.assertEqual(rows,  [CAMPAIGN_1, CAMPAIGN_2])
 
     def test_query_for_rows_accounts_break_source(self):
         rows = api_breakdowns.query_for_rows(
@@ -1327,10 +1098,7 @@ class QueryForRowsTest(TestCase):
             []
         )
 
-        self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
-        ])
+        self.assertEqual(rows,  [SOURCE_1, SOURCE_2])
 
     def test_query_for_rows_accounts_break_campaign_source(self):
         rows = api_breakdowns.query_for_rows(
@@ -1365,9 +1133,9 @@ class QueryForRowsTest(TestCase):
 
         # source_id: 2 was not added to campaign
         self.assertEqual(rows,  [
-            {'campaign_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'id': 1, 'source_slug': 'adsnative', 'source_id': 1},
-            {'campaign_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'id': 2, 'source_slug': 'gravity', 'source_id': 2},
-            {'campaign_id': 2, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'id': 1, 'source_slug': 'adsnative', 'source_id': 1},
+            dict_join({'campaign_id': 1}, SOURCE_1),
+            dict_join({'campaign_id': 1}, SOURCE_2),
+            dict_join({'campaign_id': 2}, SOURCE_1),
         ])
 
     def test_query_for_rows_accounts_break_source_campaign(self):
@@ -1403,18 +1171,9 @@ class QueryForRowsTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            dict_join({'campaign_id': 1, 'source_id': 1, 'archived': False,
-                       'name': 'test campaign 1', 'status': 1},
-                      {'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'campaign_id': 2, 'source_id': 1, 'archived': True,
-                       'name': 'test campaign 2', 'status': 2},
-                      {'campaign_manager': 'mad.max@zemanta.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
-            dict_join({'campaign_id': 1, 'source_id': 2, 'archived': False,
-                       'name': 'test campaign 1', 'status': 1},
-                      {'campaign_manager': 'supertestuser@test.com'},
-                      EMPTY_CAMPAIGN_PROJECTIONS),
+            dict_join({'source_id': 1}, CAMPAIGN_1),
+            dict_join({'source_id': 1}, CAMPAIGN_2),
+            dict_join({'source_id': 2}, CAMPAIGN_1),
         ])
 
     def test_query_for_rows_campaigns_break_ad_group(self):
@@ -1436,12 +1195,7 @@ class QueryForRowsTest(TestCase):
             []
         )
 
-        self.assertEqual(rows,  [
-            {'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1', 'status': 1,
-             'state': 1, 'campaign_has_available_budget': False, 'campaign_stop_inactive': True},
-            {'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2', 'status': 2,
-             'state': 2, 'campaign_has_available_budget': False, 'campaign_stop_inactive': False},
-        ])
+        self.assertEqual(rows,  [AD_GROUP_BASE_1, AD_GROUP_BASE_2])
 
     def test_query_for_rows_campaigns_break_source(self):
         rows = api_breakdowns.query_for_rows(
@@ -1462,10 +1216,7 @@ class QueryForRowsTest(TestCase):
             []
         )
 
-        self.assertEqual(rows,  [
-            {'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
-        ])
+        self.assertEqual(rows,  [SOURCE_1, SOURCE_2])
 
     def test_query_for_rows_campaigns_break_ad_group_source(self):
         rows = api_breakdowns.query_for_rows(
@@ -1499,10 +1250,10 @@ class QueryForRowsTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'ad_group_id': 1, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
-            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'AdsNative', 'source_id': 1, 'source_slug': 'adsnative', 'id': 1},
-            {'ad_group_id': 2, 'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_id': 2, 'source_slug': 'gravity', 'id': 2},
+            dict_join({'ad_group_id': 1}, SOURCE_1),
+            dict_join({'ad_group_id': 1}, SOURCE_2),
+            dict_join({'ad_group_id': 2}, SOURCE_1),
+            dict_join({'ad_group_id': 2}, SOURCE_2),
         ])
 
     def test_query_for_rows_campaigns_break_source_ad_group(self):
@@ -1537,14 +1288,10 @@ class QueryForRowsTest(TestCase):
         )
 
         self.assertEqual(rows,  [
-            {'source_id': 1, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1',
-             'status': 1, 'state': 1},
-            {'source_id': 1, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2',
-             'status': 2, 'state': 2},
-            {'source_id': 2, 'ad_group_id': 1, 'archived': False, 'name': 'test adgroup 1',
-             'status': 1, 'state': 1},
-            {'source_id': 2, 'ad_group_id': 2, 'archived': False, 'name': 'test adgroup 2',
-             'status': 2, 'state': 2},
+            dict_join({'source_id': 1}, AD_GROUP_1),
+            dict_join({'source_id': 1}, AD_GROUP_2),
+            dict_join({'source_id': 2}, AD_GROUP_1),
+            dict_join({'source_id': 2}, AD_GROUP_2),
         ])
 
     def test_query_for_rows_ad_groups_break_content_ad(self):
@@ -1566,78 +1313,7 @@ class QueryForRowsTest(TestCase):
             []
         )
 
-        self.assertEqual(rows,  [
-            {
-                'image_hash': '100',
-                'description': 'Example description',
-                'content_ad_id': 1,
-                'redirector_url': 'http://r1.zemanta.com/b/r1/z1/1/1/',
-                'brand_name': 'Example',
-                'image_urls': {
-                    'square': '/100.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
-                    'landscape': '/100.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg'
-                },
-                'batch_name': 'batch 1',
-                'archived': False,
-                'name': 'Title 1',
-                'display_url': 'example.com',
-                'url': 'http://testurl1.com',
-                'call_to_action': 'Call to action',
-                'label': '',
-                'state': 1,
-                'status': 1,
-                'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
-                'batch_id': 1,
-                'title': 'Title 1',
-                'status_per_source': {
-                    1: {
-                        'source_id': 1,
-                        'submission_status': 1,
-                        'source_name': 'AdsNative',
-                        'source_status': 1,
-                        'submission_errors': None
-                    },
-                    2: {
-                        'source_id': 2,
-                        'submission_status': 2,
-                        'source_name': 'Gravity',
-                        'source_status': 2,
-                        'submission_errors': None
-                    }
-                },
-            }, {
-                'image_hash': '200',
-                'description': 'Example description',
-                'content_ad_id': 2,
-                'redirector_url': 'http://r1.zemanta.com/b/r2/z1/1/2/',
-                'brand_name': 'Example',
-                'image_urls': {
-                    'square': '/200.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg',
-                    'landscape': '/200.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg'
-                },
-                'batch_name': 'batch 1',
-                'archived': False,
-                'name': 'Title 2',
-                'display_url': 'example.com',
-                'url': 'http://testurl2.com',
-                'call_to_action': 'Call to action',
-                'label': '',
-                'state': 2,
-                'status': 2,
-                'upload_time': datetime.datetime(2015, 2, 23, 0, 0),
-                'batch_id': 1,
-                'title': 'Title 2',
-                'status_per_source': {
-                    2: {
-                        'source_id': 2,
-                        'submission_status': 2,
-                        'source_name': 'Gravity',
-                        'source_status': 2,
-                        'submission_errors': None
-                    }
-                },
-            },
-        ])
+        self.assertEqual(rows,  [CONTENT_AD_1, CONTENT_AD_2])
 
     def test_query_for_rows_ad_groups_break_source(self):
         rows = api_breakdowns.query_for_rows(
@@ -1658,67 +1334,7 @@ class QueryForRowsTest(TestCase):
             []
         )
 
-        self.assertEqual(rows,  [{
-            'status': 1,
-            'archived': False,
-            'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
-            'name': 'AdsNative',
-            'editable_fields': {
-                'state': {
-                    'message': 'This source must be managed manually.',
-                    'enabled': False
-                },
-                'bid_cpc': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                },
-                'daily_budget': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                }
-            },
-            'state': 1,
-            'bid_cpc': Decimal('0.5010'),
-            'current_bid_cpc': Decimal('0.5010'),
-            'supply_dash_url': None,
-            'maintenance': False,
-            'current_daily_budget': Decimal('10.0000'),
-            'source_id': 1,
-            'source_slug': 'adsnative',
-            'id': 1,
-            'daily_budget': Decimal('10.0000'),
-            'notifications': {},
-        }, {
-            'status': 2,
-            'archived': False,
-            'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
-            'name': 'Gravity',
-            'editable_fields': {
-                'state': {
-                    'message': 'Please add additional budget to your campaign to make changes.',
-                    'enabled': False
-                },
-                'bid_cpc': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                },
-                'daily_budget': {
-                    'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
-                    'enabled': False
-                }
-            },
-            'state': 2,
-            'bid_cpc': Decimal('0.5020'),
-            'current_bid_cpc': Decimal('0.5020'),
-            'supply_dash_url': None,
-            'maintenance': False,
-            'current_daily_budget': Decimal('20.0000'),
-            'source_id': 2,
-            'source_slug': 'gravity',
-            'id': 2,
-            'daily_budget': Decimal('20.0000'),
-            'notifications': {},
-        }])
+        self.assertEqual(rows,  [AD_GROUP_SOURCE_1, AD_GROUP_SOURCE_2])
 
     def test_query_for_rows_ad_groups_break_publisher(self):
         rows = api_breakdowns.query_for_rows(
@@ -1742,59 +1358,7 @@ class QueryForRowsTest(TestCase):
             []
         )
 
-        self.assertEqual(rows,  [{
-                'status': 2,
-                'publisher': 'pub1.com',
-                'domain': 'pub1.com',
-                'source_name': 'AdsNative',
-                'source_slug': 'adsnative',
-                'name': 'pub1.com',
-                'exchange': 'AdsNative',
-                'can_blacklist_publisher': True,
-                'source_id': 1,
-                'domain_link': 'http://pub1.com',
-                'publisher_id': 'pub1.com__1',
-                'blacklisted': 'Blacklisted'
-            }, {
-                'status': 1,
-                'publisher': 'pub2.com',
-                'domain': 'pub2.com',
-                'source_name': 'AdsNative',
-                'source_slug': 'adsnative',
-                'name': 'pub2.com',
-                'exchange': 'AdsNative',
-                'can_blacklist_publisher': True,
-                'source_id': 1,
-                'domain_link': 'http://pub2.com',
-                'publisher_id': 'pub2.com__1',
-                'blacklisted': 'Active'
-            }, {
-                'status': 1,
-                'publisher': 'pub3.com',
-                'domain': 'pub3.com',
-                'source_name': 'Gravity',
-                'source_slug': 'gravity',
-                'name': 'pub3.com',
-                'exchange': 'Gravity',
-                'can_blacklist_publisher': False,
-                'source_id': 2,
-                'domain_link': 'http://pub3.com',
-                'publisher_id': 'pub3.com__2',
-                'blacklisted': 'Active'
-            }, {
-                'status': 2,
-                'publisher': 'pub4.com',
-                'domain': 'pub4.com',
-                'source_name': 'Gravity',
-                'source_slug': 'gravity',
-                'name': 'pub4.com',
-                'exchange': 'Gravity',
-                'can_blacklist_publisher': False,
-                'source_id': 2,
-                'domain_link': 'http://pub4.com',
-                'publisher_id': 'pub4.com__2',
-                'blacklisted': 'Blacklisted'
-            }])
+        self.assertEqual(rows,  [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_1, PUBLISHER_3__SOURCE_2, PUBLISHER_4__SOURCE_2])
 
 
 class HelpersTest(TestCase):

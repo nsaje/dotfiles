@@ -226,32 +226,6 @@ def check_constraints_are_supported(constraints):
         raise exc.UnknownFieldBreakdownError("Unknown fields in constraints {}".format(unknown_keys))
 
 
-def get_supported_order(order, target_dimension):
-    """
-    Converts order field to a column our system knows how to order.
-    """
-
-    prefix, order_field = sort_helper.dissect_order(order)
-
-    if order_field == 'cost':
-        # cost is not supported anymore, this case needs to be handled
-        # in case sort selection was cached in browser
-
-        # NOTE: Delete this 'if' statement in case this warning doesn't get fired until 2016-12-01
-        logger.warning('Order field "cost" was deprecated long ago')
-
-        return prefix + 'media_cost'
-
-    if target_dimension == 'publisher_id':
-        if order_field in ('state', 'status'):
-            return prefix + "clicks"
-
-        if order_field == 'exchange':
-            return prefix + "source_id"
-
-    return order
-
-
 def extract_order_field(order, target_dimension, primary_goals=None):
     """
     Returns the order field that should be used to get visually pleasing results. Time is always
@@ -278,6 +252,13 @@ def extract_order_field(order, target_dimension, primary_goals=None):
             order_field = 'performance_' + primary_goals[0].get_view_key()
         else:
             order_field = 'clicks'
+
+    if target_dimension == 'publisher_id':
+        if order_field == 'status':
+            order_field = "clicks"
+
+        if order_field == 'exchange':
+            order_field = "source_id"
 
     return prefix + order_field
 

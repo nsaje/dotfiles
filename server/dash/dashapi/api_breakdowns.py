@@ -16,7 +16,7 @@ from dash import threads
 
 def query(level, user, breakdown, constraints, parents, order, offset, limit):
     query_threads = query_async_start(level, user, breakdown, constraints, parents)
-    return query_async_get_results(query_threads, order, offset, limit)
+    return query_async_get_results(query_threads, breakdown, order, offset, limit)
 
 
 def query_for_rows(rows, level, user, breakdown, constraints, parents, order, offset, limit, structure_w_stats):
@@ -36,15 +36,17 @@ def query_async_start(level, user, breakdown, constraints, parents):
     return query_threads
 
 
-def query_async_get_results(query_threads, order=None, offset=None, limit=None):
+def query_async_get_results(query_threads, breakdown, order, offset=None, limit=None):
+    target_dimension = stats.constants.get_target_dimension(breakdown)
+
     rows = []
     for thread in query_threads:
         thread.join()
         thread_rows = thread.get_result()['rows']
 
-        if order:
-            thread_rows = sort_helper.sort_rows_by_order_and_archived(thread_rows, order)
-            thread_rows = sort_helper.apply_offset_limit(thread_rows, offset, limit)
+        thread_rows = sort_helper.sort_rows_by_order_and_archived(
+            thread_rows, [order] + get_default_order(target_dimension, order))
+        thread_rows = sort_helper.apply_offset_limit(thread_rows, offset, limit)
 
         rows.extend(thread_rows)
 
@@ -65,9 +67,11 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
     for thread in query_threads:
         thread.join()
 
-        parent = thread.get_result()['parent']
-        loader = thread.get_result()['loader']
-        dash_rows = thread.get_result()['rows']
+        thread_result = thread.get_result()
+
+        parent = thread_result['parent']
+        loader = thread_result['loader']
+        dash_rows = thread_result['rows']
 
         parent_key = sort_helper.get_breakdown_key(parent, parent_breakdown)
         stat_rows = rows_by_parent[parent_key]
@@ -154,6 +158,6 @@ def get_default_order(target_dimension, order):
     Order that is applied to rows whose primary order field value is None.
     """
 
-    prefix, order_field = sort_helper.dissect_order(order)
+    prefix, _ = sort_helper.dissect_order(order)
 
     return [prefix + 'name', prefix + target_dimension]
