@@ -235,6 +235,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_new_settings', 'User can see new settings'),
             ('can_access_publisher_reports', 'User can generate publisher reports'),
             ('can_see_rtb_sources_as_one', 'User can see RTB Sources grouped as one'),
+            ('can_set_interest_targeting', 'User can set and see interest targeting settings'),
         )
 
     def get_full_name(self):
