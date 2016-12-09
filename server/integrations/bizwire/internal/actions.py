@@ -95,7 +95,7 @@ def recalculate_and_set_new_daily_budgets(ad_group_id):
         created_dt__lt=utc_end,
     ).count()  # assume they're getting processed successfully
 
-    # NOTE: we're aiming for $4 spend and add $1 of reserve
+    # NOTE: we're aiming for $3.75 spend and leave $0.25 reserve
     new_rtb_daily_budget = config.DEFAULT_DAILY_BUDGET + (num_content_ads + num_candidates) * 3.6
     new_ob_daily_budget = config.DEFAULT_DAILY_BUDGET + (num_content_ads + num_candidates) * 0.4
 
