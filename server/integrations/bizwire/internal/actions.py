@@ -1,5 +1,6 @@
 import datetime
 import json
+import math
 
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
@@ -95,11 +96,11 @@ def recalculate_and_set_new_daily_budgets(ad_group_id):
     ).count()  # assume they're getting processed successfully
 
     # NOTE: we're aiming for $4 spend and add $1 of reserve
-    new_rtb_daily_budget = config.DEFAULT_DAILY_BUDGET + (num_content_ads + num_candidates) * 4
-    new_ob_daily_budget = config.DEFAULT_DAILY_BUDGET + num_content_ads + num_candidates
+    new_rtb_daily_budget = config.DEFAULT_DAILY_BUDGET + (num_content_ads + num_candidates) * 3.6
+    new_ob_daily_budget = config.DEFAULT_DAILY_BUDGET + (num_content_ads + num_candidates) * 0.4
 
-    _set_rtb_daily_budget(ad_group_id, new_rtb_daily_budget)
-    _set_source_daily_budget(ad_group_id, 'outbrain', new_ob_daily_budget)
+    _set_rtb_daily_budget(ad_group_id, math.ceil(new_rtb_daily_budget))
+    _set_source_daily_budget(ad_group_id, 'outbrain', math.ceil(new_ob_daily_budget))
 
 
 @transaction.atomic
