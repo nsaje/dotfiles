@@ -115,7 +115,9 @@ def audit_iab_categories(running_only=False, paused_only=False):
     running_campaign_ids = set(dash.models.AdGroup.objects.all().filter_running().values_list(
         'campaign_id', flat=True
     ))
-    campaigns = dash.models.Campaign.objects.all().exclude_archived()
+    campaigns = dash.models.Campaign.objects.all().exclude_archived().exclude(
+        account__agency_id__in=(29, )
+    )
     if running_only:
         campaigns = campaigns.filter(
             pk__in=running_campaign_ids
