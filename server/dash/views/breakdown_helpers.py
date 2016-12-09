@@ -221,7 +221,7 @@ def create_all_rtb_source_row(ad_group_settings):
        status['value'] == constants.AdGroupSourceSettingsState.ACTIVE:
         status['value'] = constants.AdGroupSourceSettingsState.INACTIVE
         status['popover_message'] = ('RTB Sources  are enabled but will not run until '
-                             'you enable ad group in Ad groups tab on Campaign level.')
+                                     'you enable ad group in Ad groups tab on Campaign level.')
         status['important'] = True
 
     return {

@@ -448,7 +448,7 @@ class AdGroupSourcesTableUpdates(object):
                     and row['status'] == constants.AdGroupSourceSettingsState.ACTIVE:
                 row['status'] = constants.AdGroupSourceSettingsState.INACTIVE
                 notifications[source_id] = {
-                    'message': 'This media source is enabled but will ' \
+                    'message': 'This media source is enabled but will '
                                'not run until you enable RTB Sources.',
                     'important': True,
                 }

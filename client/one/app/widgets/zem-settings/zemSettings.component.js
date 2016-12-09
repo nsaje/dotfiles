@@ -30,7 +30,7 @@ angular.module('one.widgets').component('zemSettings', {
 
         function close () {
             if ($ctrl.entitySettingsComponent.isDirty()) {
-                var close = confirm('You have unsaved changes. \nAre you sure you want to close settings?');
+                var close = confirm('You have unsaved changes. \nAre you sure you want to close settings?'); // eslint-disable-line
                 if (!close) return;
             }
 

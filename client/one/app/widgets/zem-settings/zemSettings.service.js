@@ -1,6 +1,5 @@
 angular.module('one.widgets').service('zemSettingsService', function ($rootScope, $location, $state, $timeout, zemPubSubService, zemNavigationNewService) { // eslint-disable-line max-len
     var QUERY_PARAM = 'settings';
-    var QUERY_VALUE_CREATE = 'create';
 
     var EVENTS = {
         ON_OPEN: 'zem-settings-open',
