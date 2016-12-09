@@ -53,7 +53,7 @@ class CreateDemoSnapshotTest(TransactionTestCase):
             raise
 
         # anonymization sanity check
-        dump_data = self.mock_s3.get('2016-01-01_1200/dump.json')
+        dump_data = self.mock_s3.get('2016-01-01_1200/dump.tar')
         self.assertIn('My demo account name', dump_data)
         self.assertNotIn('test account 1', dump_data)
         self.assertIn('My campaign 1', dump_data)

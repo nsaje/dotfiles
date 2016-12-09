@@ -4,9 +4,11 @@ import itertools
 import json
 import functools
 import os
+import tarfile
 import urllib
 import urllib2
 import sys
+import StringIO
 
 import faker
 
@@ -80,6 +82,8 @@ ACCOUNT_DUMP_SETTINGS = {
     ],
 }
 
+MAX_PER_FILE = 1000
+
 
 def _postgres_read_only(using='default'):
     def decorator(func):
@@ -113,19 +117,41 @@ class Command(ExceptionCommand):
         with transaction.atomic():
             demo_mappings = dash.models.DemoMapping.objects.all()
             demo_users_set = set(zemauth.models.User.objects.filter(email__endswith='+demo@zemanta.com'))
+            demo_users_pks = set(demo_user.pk for demo_user in demo_users_set)
 
             serialize_list = collections.OrderedDict()
             _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set)
-            dump_data = serialize('python', [obj for obj in reversed(serialize_list) if obj is not None])
-            _attach_demo_users(dump_data, demo_users_set)
 
             # roll back any changes we might have made (shouldn't be any)
             transaction.set_rollback(True)
 
-        dump_json = json.dumps(dump_data, indent=4, cls=json_helper.JSONEncoder)
         snapshot_id = _get_snapshot_id()
+
+        tarbuffer = StringIO.StringIO()
+        tararchive = tarfile.open(mode='w', fileobj=tarbuffer)
+
+        filtered_reversed_list = filter(lambda obj: obj is not None, reversed(serialize_list))
+        grouped_list = _grouper(MAX_PER_FILE, filtered_reversed_list)
+
+        for i, group_data in enumerate(grouped_list):
+            dump_group_data = serialize('python', group_data)
+            _attach_demo_users(dump_group_data, demo_users_pks)
+
+            group_json = json.dumps(dump_group_data, indent=4, cls=json_helper.JSONEncoder)
+
+            dumpbuffer = StringIO.StringIO()
+            dumpbuffer.write(group_json)
+            dumpbuffer.seek(0)
+
+            info = tarfile.TarInfo('dump{i}.json'.format(i=i))
+            info.size = len(dumpbuffer.buf)
+
+            tararchive.addfile(info, fileobj=dumpbuffer)
+
+        tararchive.close()
+
         s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_DEMO)
-        s3_helper.put(os.path.join(snapshot_id, 'dump.json'), dump_json)
+        s3_helper.put(os.path.join(snapshot_id, 'dump.tar'), tarbuffer.getvalue())
         s3_helper.put(os.path.join(snapshot_id, 'build.txt'), str(settings.BUILD_NUMBER))
         s3_helper.put('latest.txt', snapshot_id)
 
@@ -192,8 +218,7 @@ def _create_fake_credit(account):
     )
 
 
-def _attach_demo_users(dump_data, demo_users_set):
-    demo_users_pks = set(demo_user.pk for demo_user in demo_users_set)
+def _attach_demo_users(dump_data, demo_users_pks):
     for entity in dump_data:
         if entity['model'] == 'dash.account':
             entity['fields']['users'] = list(demo_users_pks)
@@ -276,3 +301,12 @@ def _get_many_to_many_fields(obj):
         return obj._meta.many_to_many
     except AttributeError:
         return []
+
+
+def _grouper(n, iterable):
+    it = iter(iterable)
+    while True:
+        chunk = tuple(itertools.islice(it, n))
+        if not chunk:
+            return
+        yield chunk

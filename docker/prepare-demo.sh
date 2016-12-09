@@ -23,13 +23,16 @@ echo "Running migrations"
 python /app/zemanta-eins/manage.py migrate --noinput
 
 echo "Downloading dump"
-curl -L "${DUMP_URL}" >> dump.json
+curl -L "${DUMP_URL}" >> dump.tar
 
 echo "Clearing the DB"
 python /app/zemanta-eins/manage.py sqlflush | python /app/zemanta-eins/manage.py dbshell
 
+echo "Extracting dump files"
+tar -xf dump.tar
+
 echo "Loading dump"
-python /app/zemanta-eins/manage.py loaddata dump.json
+python /app/zemanta-eins/manage.py loaddata dump*.json
 
 echo "Incrementing sequences"
 python /app/zemanta-eins/manage.py dbshell <<SQL | grep 'ALTER SEQUENCE' | python /app/zemanta-eins/manage.py dbshell
