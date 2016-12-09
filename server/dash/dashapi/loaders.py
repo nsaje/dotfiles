@@ -533,8 +533,13 @@ class AdGroupSourcesLoader(Loader):
                 result[source_id]['daily_budget'] = None
                 result[source_id]['editable_fields']['daily_budget']['enabled'] = False
                 result[source_id]['editable_fields']['daily_budget']['message'] = None
-                if self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE:
+                if self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE and \
+                   result[source_id]['status'] == constants.AdGroupSourceSettingsState.ACTIVE:
                     result[source_id]['status'] = constants.AdGroupSourceSettingsState.INACTIVE
+                    result[source_id]['notifications'] = {
+                        'message': 'This media source is enabled but will not run until you enable RTB Sources.',
+                        'important': True
+                    }
 
         return result
 

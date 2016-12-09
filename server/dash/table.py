@@ -421,7 +421,7 @@ class AdGroupSourcesTableUpdates(object):
 
                 if ad_group_source.source.source_type.type == constants.SourceType.B1:
                     self.update_rtb_source_row(ad_group_sources_table.ad_group_settings,
-                                               rows[ad_group_source.source_id])
+                                               ad_group_source, rows, notifications)
 
             response['rows'] = rows
 
@@ -435,15 +435,23 @@ class AdGroupSourcesTableUpdates(object):
 
         return response
 
-    def update_rtb_source_row(self, ad_group_settings, row):
+    def update_rtb_source_row(self, ad_group_settings, ad_group_source, rows, notifications):
         # MVP for all-RTB-sources-as-one
+        source_id = ad_group_source.source_id
+        row = rows[ad_group_source.source_id]
+
         if ad_group_settings.b1_sources_group_enabled:
             del row['daily_budget']
             del row['current_daily_budget']
 
-            if ad_group_settings.b1_sources_group_state == \
-                    constants.AdGroupSourceSettingsState.INACTIVE:
+            if ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE \
+                    and row['status'] == constants.AdGroupSourceSettingsState.ACTIVE:
                 row['status'] = constants.AdGroupSourceSettingsState.INACTIVE
+                notifications[source_id] = {
+                    'message': 'This media source is enabled but will ' \
+                               'not run until you enable RTB Sources.',
+                    'important': True,
+                }
 
     def get_daily_budget(self, ad_group_sources_table):
         # MVP for all-RTB-sources-as-one

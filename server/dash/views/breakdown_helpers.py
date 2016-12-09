@@ -215,16 +215,22 @@ def insert_all_rtb_source_row(constraints, rows):
 
 
 def create_all_rtb_source_row(ad_group_settings):
-    status = ad_group_settings.b1_sources_group_state
-    if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
-        status = constants.AdGroupSourceSettingsState.INACTIVE
+    status = {'value': ad_group_settings.b1_sources_group_state}
+    notifications = {}
+    if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE and \
+       status['value'] == constants.AdGroupSourceSettingsState.ACTIVE:
+        status['value'] = constants.AdGroupSourceSettingsState.INACTIVE
+        status['popover_message'] = ('RTB Sources  are enabled but will not run until '
+                             'you enable ad group in Ad groups tab on Campaign level.')
+        status['important'] = True
 
     return {
         'breakdown_name': constants.SourceAllRTB.NAME,
         'breakdown_id': constants.SourceAllRTB.ID,
         'state': {'value': ad_group_settings.b1_sources_group_state},
-        'status': {'value': status},
+        'status': status,
         'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
+        'notifications': notifications,
         'editable_fields': {
             'state': {'message': None, 'enabled': True},
             'daily_budget': {'message': None, 'enabled': True},
