@@ -25,7 +25,7 @@ class DailyStatementsK1TestCase(TestCase):
         self.campaign3 = dash.models.Campaign.objects.get(id=3)
 
     def _configure_ad_group_stats_mock(self, mock_ad_group_stats, return_values):
-        def f(date, all_campaigns):
+        def f(date, all_campaigns, account_id):
             return return_values.get(date, {})
         mock_ad_group_stats.configure_mock(**{'side_effect': f})
 

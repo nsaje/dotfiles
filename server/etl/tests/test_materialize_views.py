@@ -348,7 +348,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(spend) as spend,
                     SUM(data_spend) as data_spend
                 FROM stats
-                WHERE (hour is null
+                WHERE ((hour is null
                         and date>=%(date_from)s
                         AND date<=%(date_to)s)
                     OR (hour is not null
@@ -358,7 +358,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                         AND ((date=%(tzdate_from)s
                             AND hour >= %(tzhour_from)s)
                             OR (date=%(tzdate_to)s
-                                AND hour < %(tzhour_to)s)))
+                                AND hour < %(tzhour_to)s))))
                 GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);"""), {
                 'tzhour_from': 4,
                 'tzhour_to': 4,
@@ -471,7 +471,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                     SUM(spend) as spend,
                     SUM(data_spend) as data_spend
                 FROM stats
-                WHERE (hour is null
+                WHERE ((hour is null
                         and date>=%(date_from)s
                         AND date<=%(date_to)s)
                     OR (hour is not null
@@ -481,7 +481,7 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                         AND ((date=%(tzdate_from)s
                             AND hour >= %(tzhour_from)s)
                             OR (date=%(tzdate_to)s
-                                AND hour < %(tzhour_to)s)))
+                                AND hour < %(tzhour_to)s))))
                     AND ad_group_id=ANY(%(ad_group_id)s)
                 GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);"""), {
                     'tzhour_from': 4,
@@ -1091,7 +1091,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
         mock_cursor().__enter__().execute.assert_has_calls([
             mock.call(
                 backtosql.SQLMatcher(
-                    "DELETE FROM mv_touchpointconversions WHERE date BETWEEN %(date_from)s AND %(date_to)s;"),
+                    "DELETE FROM mv_touchpointconversions WHERE (date BETWEEN %(date_from)s AND %(date_to)s);"),
                 {
                     'date_from': datetime.date(2016, 7, 1),
                     'date_to': datetime.date(2016, 7, 3),
@@ -1155,7 +1155,7 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
         mock_cursor().__enter__().execute.assert_has_calls([
             mock.call(
                 backtosql.SQLMatcher(
-                    "DELETE FROM mv_touchpointconversions WHERE date BETWEEN %(date_from)s AND %(date_to)s AND account_id=%(account_id)s;"),
+                    "DELETE FROM mv_touchpointconversions WHERE (date BETWEEN %(date_from)s AND %(date_to)s) AND account_id=%(account_id)s;"),
                 {
                     'date_from': datetime.date(2016, 7, 1),
                     'date_to': datetime.date(2016, 7, 3),
@@ -1249,7 +1249,7 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                 mock_cursor().__enter__().execute.assert_has_calls([
                     mock.call(
                         backtosql.SQLMatcher(
-                            "DELETE FROM {} WHERE date BETWEEN %(date_from)s AND %(date_to)s;".format(table_name)),
+                            "DELETE FROM {} WHERE (date BETWEEN %(date_from)s AND %(date_to)s);".format(table_name)),
                         {
                             'date_from': datetime.date(2016, 7, 1),
                             'date_to': datetime.date(2016, 7, 3),
@@ -1272,7 +1272,7 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                 mock_cursor().__enter__().execute.assert_has_calls([
                     mock.call(
                         backtosql.SQLMatcher(
-                            "DELETE FROM {} WHERE date BETWEEN %(date_from)s AND %(date_to)s AND account_id=%(account_id)s;".format(
+                            "DELETE FROM {} WHERE (date BETWEEN %(date_from)s AND %(date_to)s) AND account_id=%(account_id)s;".format(
                                 table_name)),
                         {
                             'date_from': datetime.date(2016, 7, 1),

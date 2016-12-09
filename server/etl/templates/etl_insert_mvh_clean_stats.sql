@@ -75,14 +75,14 @@ INSERT INTO mvh_clean_stats (
       SUM(data_spend) as data_spend
   FROM stats
   WHERE
-      (hour is null and date>=%(date_from)s AND date<=%(date_to)s)
+      ((hour is null and date>=%(date_from)s AND date<=%(date_to)s)
       OR
       (hour is not null and date>%(tzdate_from)s AND date<%(tzdate_to)s)
       OR
       (hour IS NOT NULL AND (
           (date=%(tzdate_from)s AND hour >= %(tzhour_from)s) OR
           (date=%(tzdate_to)s AND hour < %(tzhour_to)s)
-      ))
+      )))
 
       {% if account_id %}
           AND ad_group_id=ANY(%(ad_group_id)s)

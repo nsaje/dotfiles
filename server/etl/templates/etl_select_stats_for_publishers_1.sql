@@ -12,13 +12,13 @@ SELECT
     SUM(data_spend) as data_spend
 FROM stats
 WHERE
-      (date=%(date)s and hour is null) or
+      ((date=%(date)s and hour is null) or
       (
           hour is not null and (
                (date = %(tzdate_from)s and hour >= %(tzhour_from)s) or
                (date = %(tzdate_to)s   and hour <  %(tzhour_to)s)
           )
-      )
+      ))
       {% if account_id %}
           AND ad_group_id=ANY(%(ad_group_id)s)
       {% endif %}

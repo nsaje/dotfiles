@@ -19,6 +19,7 @@ from utils import converters
 from redshiftapi import db
 
 from etl import helpers
+from etl import materialize_views
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +159,7 @@ def _get_effective_spend_pcts(date, campaign, campaign_spend):
     return pct_actual_spend, pct_license_fee, pct_margin
 
 
-def _get_campaign_spend(date, all_campaigns):
+def _get_campaign_spend(date, all_campaigns, account_id):
     logger.info("Fetching campaign spend for %s", date)
 
     campaign_spend = {}
@@ -171,12 +172,22 @@ def _get_campaign_spend(date, all_campaigns):
         for ad_group in campaign.adgroup_set.all():
             ad_group_campaign[ad_group.id] = campaign.id
 
-    query = """
+    if account_id:
+        ad_group_ids = materialize_views.get_ad_group_ids_or_none(account_id)
+        query = """
+        select ad_group_id, sum(spend), sum(data_spend)
+        from stats
+        where ({date_query}) and ad_group_id IN ({ad_group_ids})
+        group by ad_group_id
+        """.format(date_query=helpers.get_local_date_query(date),
+                   ad_group_ids=','.join(str(x) for x in ad_group_ids))
+    else:
+        query = """
         select ad_group_id, sum(spend), sum(data_spend)
         from stats
         where {date_query}
         group by ad_group_id
-    """.format(date_query=helpers.get_local_date_query(date))
+        """.format(date_query=helpers.get_local_date_query(date))
 
     logger.info("Running redshift query: %s", query)
 
@@ -265,7 +276,7 @@ def reprocess_daily_statements(date_since, account_id=None):
             all_dates.add(date)
             if date not in total_spend:
                 # do it for all campaigns at once for a single date
-                total_spend[date] = _get_campaign_spend(date, campaigns)
+                total_spend[date] = _get_campaign_spend(date, campaigns, account_id)
 
         _reprocess_campaign_statements(campaign, dates, total_spend)
 
