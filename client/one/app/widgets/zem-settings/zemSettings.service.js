@@ -25,21 +25,13 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
         var value = $location.search()[QUERY_PARAM];
         if (value) {
             $timeout(function () {
-                if (value === QUERY_VALUE_CREATE) {
-                    open();
-                } else {
-                    var entity = JSON.parse(value);
-                    open(entity);
-                }
+                open();
             }, 2000);
         }
     }
 
     function open (entity) {
-        if (entity) {
-            $location.search(QUERY_PARAM, JSON.stringify({type: entity.type, id: entity.id}));
-        }
-
+        $location.search(QUERY_PARAM, true);
         currentEntity = entity || zemNavigationNewService.getActiveEntity();
         if (currentEntity !== null) pubsub.notify(EVENTS.ON_OPEN, currentEntity);
     }
