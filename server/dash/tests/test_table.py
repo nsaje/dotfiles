@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+from dash import models
 from dash import table
 from zemauth.models import User
 from decimal import Decimal
@@ -42,6 +43,7 @@ class AdGroupSourceTableUpdatesTest(TestCase):
         self.assertDictEqual(expected, response)
 
     def test_update_rtb_source_row_disabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
         view = table.AdGroupSourcesTableUpdates()
         ad_group_sources_table = table.AdGroupSourcesTable(User.objects.get(pk=1), 1, None)
 
@@ -62,10 +64,13 @@ class AdGroupSourceTableUpdatesTest(TestCase):
             'current_bid_cpc': Decimal('0.5020')
         }
 
-        view.update_rtb_source_row(ad_group_sources_table.ad_group_settings, row)
+        notifications = {}
+        rows = {ad_group_source.source_id: row}
+        view.update_rtb_source_row(ad_group_sources_table.ad_group_settings, ad_group_source, rows, notifications)
         self.assertDictEqual(expected, row)
 
     def test_update_rtb_source_row_enabled_inactive(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
         view = table.AdGroupSourcesTableUpdates()
         ad_group_sources_table = table.AdGroupSourcesTable(User.objects.get(pk=1), 1, None)
         ad_group_sources_table.ad_group_settings.b1_sources_group_enabled = True
@@ -86,10 +91,13 @@ class AdGroupSourceTableUpdatesTest(TestCase):
             'current_bid_cpc': Decimal('0.5020')
         }
 
-        view.update_rtb_source_row(ad_group_sources_table.ad_group_settings, row)
+        notifications = {}
+        rows = {ad_group_source.source_id: row}
+        view.update_rtb_source_row(ad_group_sources_table.ad_group_settings, ad_group_source, rows, notifications)
         self.assertDictEqual(expected, row)
 
     def test_update_rtb_source_row_enabled_and_inactive(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
         view = table.AdGroupSourcesTableUpdates()
         ad_group_sources_table = table.AdGroupSourcesTable(User.objects.get(pk=1), 1, None)
         ad_group_sources_table.ad_group_settings.b1_sources_group_enabled = True
@@ -110,7 +118,9 @@ class AdGroupSourceTableUpdatesTest(TestCase):
             'current_bid_cpc': Decimal('0.5020')
         }
 
-        view.update_rtb_source_row(ad_group_sources_table.ad_group_settings, row)
+        notifications = {}
+        rows = {ad_group_source.source_id: row}
+        view.update_rtb_source_row(ad_group_sources_table.ad_group_settings, ad_group_source, rows, notifications)
         self.assertDictEqual(expected, row)
 
     def test_get_daily_budget(self):
