@@ -32,9 +32,15 @@ INSERT INTO mvh_clean_stats (
           WHEN device_type = 5 THEN 2 -- tablet
           ELSE 0 -- undefined
       END as device_type,
-      UPPER(TRIM(country)) AS country,
-      UPPER(TRIM(state)) AS state,
-      dma,
+      CASE WHEN LEN(TRIM(country)) <= 2 THEN UPPER(TRIM(country))
+           ELSE NULL
+      END AS country,
+      CASE WHEN LEN(TRIM(state)) <= 5 THEN UPPER(TRIM(state))
+           ELSE NULL
+      END AS state,
+      CASE WHEN 499 < dma AND dma < 1000 THEN dma
+           ELSE NULL
+      END AS dma,
       CASE WHEN TRIM(age)='18-20' THEN 1
            WHEN TRIM(age)='21-29' THEN 2
            WHEN TRIM(age)='30-39' THEN 3
