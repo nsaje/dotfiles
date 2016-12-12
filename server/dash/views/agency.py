@@ -98,8 +98,14 @@ class AdGroupSettings(api_common.BaseApiView):
         self._adjust_adgroup_sources(ad_group, new_settings, request)
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
+        # save
+        ad_group.save(request)
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
+            new_settings.save(
+                request,
+                action_type=constants.HistoryActionType.SETTINGS_CHANGE)
+
             changes_text = models.AdGroupSettings.get_changes_text(
                 current_settings, new_settings, request.user, separator='\n')
 
@@ -251,11 +257,6 @@ class AdGroupSettings(api_common.BaseApiView):
         actionlogs_to_send = []
 
         with transaction.atomic():
-            ad_group.save(request)
-            new_settings.save(
-                request,
-                action_type=constants.HistoryActionType.SETTINGS_CHANGE)
-
             actionlogs_to_send.extend(
                 api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
             )
