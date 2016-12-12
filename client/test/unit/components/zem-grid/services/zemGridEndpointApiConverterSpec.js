@@ -14,7 +14,7 @@ describe('zemGridEndpointApiConverter', function () {
         zemGridEndpointApiConverter = _zemGridEndpointApiConverter_;
     }));
 
-    fit('should correctly convert grouped rows', function () {
+    it('should correctly convert grouped rows', function () {
         config = {
             level: 1,
             breakdown: [{query: 'ad_group'}],
