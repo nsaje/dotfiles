@@ -173,6 +173,7 @@ angular.module('one.legacy').component('zemGridBulkPublishersActions', {
         }, {
             name: 'Blacklist globally',
             value: 'blacklist-global',
+            internal: $ctrl.api.isPermissionInternal('zemauth.can_access_global_publisher_blacklist_status'),
             level: constants.publisherBlacklistLevel.GLOBAL,
             state: constants.publisherStatus.BLACKLISTED,
             hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
