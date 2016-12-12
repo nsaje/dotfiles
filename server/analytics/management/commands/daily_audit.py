@@ -63,9 +63,11 @@ class Command(utils.command_helpers.ExceptionCommand):
 
     def audit_iab_categories(self, options):
         undefined_iab_running_campaigns = analytics.monitor.audit_iab_categories(running_only=True)
-        self.alarms = self.alarms or bool(undefined_iab_running_campaigns)
-        self.email_body += u'Active campaigns with undefined IAB categories:\n'
-        self._print('Active campaigns with undefined IAB categories')
+        if undefined_iab_running_campaigns:
+            self.alarms = True
+            self.email_body += u'Active campaigns with undefined IAB categories:\n'
+            self._print('Active campaigns with undefined IAB categories: ')
+
         for campaign in undefined_iab_running_campaigns:
             text = u' - {}: {}'.format(
                 campaign.get_long_name(),
@@ -73,6 +75,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             )
             self._print(text)
             self.email_body += text + u'\n'
+        self.email_body += '\n'
 
     def audit_campaign_pacing(self, options):
         date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
@@ -116,7 +119,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             if reason == 'low'
         ]
 
-        self.email_body = 'Overpacing campaigns:\n'
+        self.email_body += 'Overpacing campaigns:\n'
         for campaign, pacing in overpaced:
             text = ' - {} ({}%): {}'.format(
                 campaign.get_long_name(),
