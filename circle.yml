@@ -23,6 +23,7 @@ dependencies:
         - if [ $CIRCLE_NODE_INDEX == 1 ]; then pip install pep8 ; fi
         - if [ $CIRCLE_NODE_INDEX == 1 ]; then pip install xenon; fi
         - if [ $CIRCLE_NODE_INDEX == 1 ]; then npm install -g eslint; fi
+        - if [ $CIRCLE_NODE_INDEX == 1 ]; then npm install -g eslint-plugin-jasmine; fi
         - npm install -g bower
         - npm install -g grunt
         - if [ $CIRCLE_NODE_INDEX == 0 ] && [ $(node -p "try{require('aglio/package.json').version}catch(e){}") != "2.3.0" ]; then npm install aglio@2.3.0; fi  # for REST API documentation

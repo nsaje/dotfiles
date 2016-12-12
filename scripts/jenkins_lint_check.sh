@@ -36,7 +36,7 @@ green "PEP8 check successful"
 # ES Lint ----------------------------------------------------------------------
 
 # blue "ESLint in progress ..."
-# eslint client/one
+# eslint client/one client/test
 
 # EXITCODE=$?
 # if [[ $EXITCODE != 0 ]]; then

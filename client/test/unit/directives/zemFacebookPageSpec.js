@@ -1,6 +1,6 @@
 describe('zemFacebookPage', function () {
-    const FACEBOOK_PAGE = 'http://www.facebook.com/zemanta';
-    const FACEBOOK_STATUS_CONNECTED = 'Connected';
+    var FACEBOOK_PAGE = 'http://www.facebook.com/zemanta';
+    var FACEBOOK_STATUS_CONNECTED = 'Connected';
 
     var $scope, zemFacebookPageElement, isolate, inputElement;
 
@@ -9,7 +9,7 @@ describe('zemFacebookPage', function () {
 
     beforeEach(inject(function ($compile, $rootScope, $httpBackend, $q, zemAccountService) {
         var template = '<zem-facebook-page zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal" zem-config="config" zem-account-id="settings.id" zem-facebook-page-errors="errors.facebookPage" zem-facebook-page-changed="facebookPage.changed" zem-settings="settings">';
-        
+
         $scope = $rootScope.$new();
         $scope.hasPermission = function () {
             return true;

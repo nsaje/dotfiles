@@ -84,8 +84,8 @@ describe('AddScheduledReportModalCtrl', function () {
                 'test/export/',
                 {
                     type: 'view-csv',
-                    start_date : moment('2015-01-12').format(),
-                    end_date : moment('2015-01-19').format(),
+                    start_date: moment('2015-01-12').format(),
+                    end_date: moment('2015-01-19').format(),
                     order: '-cost',
                     by_day: false,
                     additional_fields: '',
@@ -130,8 +130,8 @@ describe('AddScheduledReportModalCtrl', function () {
               'test/export/',
                 {
                     type: 'view-csv',
-                    start_date : moment('2015-01-12').format(),
-                    end_date : moment('2015-01-19').format(),
+                    start_date: moment('2015-01-12').format(),
+                    end_date: moment('2015-01-19').format(),
                     order: '-cost',
                     by_day: false,
                     additional_fields: '',
@@ -176,8 +176,8 @@ describe('AddScheduledReportModalCtrl', function () {
               'test/export/',
                 {
                     type: 'view-csv',
-                    start_date : moment('2015-01-12').format(),
-                    end_date : moment('2015-01-19').format(),
+                    start_date: moment('2015-01-12').format(),
+                    end_date: moment('2015-01-19').format(),
                     order: '-cost',
                     by_day: false,
                     additional_fields: '',

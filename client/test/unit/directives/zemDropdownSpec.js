@@ -5,7 +5,7 @@ describe('zemDropdown', function () {
     var data = [];
 
     var template = '<zem-dropdown zem-placeholder="Test" zem-disabled-title="Disabled title" zem-on-select="onSelectTest(selected)" zem-check-disabled="checkDisabledTest()" zem-dropdown-options="options"></zem-dropdown>';
-    
+
     beforeEach(module('one'));
 
     beforeEach(inject(function ($compile, $rootScope) {

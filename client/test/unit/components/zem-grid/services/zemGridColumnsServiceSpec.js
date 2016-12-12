@@ -29,7 +29,7 @@ describe('zemGridColumnsService', function () {
         grid.meta.scope = scope;
         grid.meta.pubsub = zemGridPubSub.createInstance(scope);
         grid.meta.options = {};
-        grid.meta.data = { level: 'level1' };
+        grid.meta.data = {level: 'level1'};
         grid.meta.dataService = {
             getBreakdown: function () { return ['base_level', 'age']; }
         };

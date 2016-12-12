@@ -1,12 +1,14 @@
+/* globals require, __dirname, process, localConfig, exports, browser, By */
+
 var fs = require('fs');
 var path = require('path');
 
 // load local config
 if (!fs.existsSync(path.join(__dirname, 'protractor.localconf.json'))) {
-    console.log('Create a protractor.localconf.json with your local configuration based on the protractor.localconf.json.template file.');
+    console.log('Create a protractor.localconf.json with your local configuration based on the protractor.localconf.json.template file.'); // eslint-disable-line no-console
     process.exit(1);
 } else {
-    localConfig = require('./protractor.localconf.json');
+    localConfig = require('./protractor.localconf.json'); // eslint-disable-line no-global-assign
 }
 
 exports.config = {

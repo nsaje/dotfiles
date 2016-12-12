@@ -13,9 +13,9 @@ angular.module('stateMock').service('$state', function ($q) {
                 throw Error('Expected transition with params: ' + expectedState[1] + 'but the params where ' + params);
             }
         } else {
-            throw Error('No more transitions were expected! Tried to transition to ' + stateName );
+            throw Error('No more transitions were expected! Tried to transition to ' + stateName);
         }
-        console.log('Mock transition to: ' + stateName);
+        console.log('Mock transition to: ' + stateName); // eslint-disable-line no-console
         var deferred = $q.defer();
         var promise = deferred.promise;
         deferred.resolve();

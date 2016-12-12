@@ -18,7 +18,7 @@ case $CIRCLE_NODE_INDEX in
         ;;
     1)
         # Setup test
-        for pkg in eslint bower grunt; do
+        for pkg in eslint eslint-plugin-jasmine bower grunt; do
             npm install -g $pkg &
         done
         wait

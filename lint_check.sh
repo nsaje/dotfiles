@@ -31,7 +31,7 @@ green "PEP8 check successful"
 # ES Lint ----------------------------------------------------------------------
 
 blue "ESLint in progress ..."
-eslint client/one
+eslint client/one client/test
 
 if [ $? != 0 ]
   then
