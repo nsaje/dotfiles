@@ -98,7 +98,7 @@ def monitor_remaining_budget():
         return
 
     emails = config.NOTIFICATION_EMAILS
-    subject = 'Businesswire campaign is running out of budget'
+    subject = '[BIZWIRE] Campaign is running out of budget'
     body = '''Hi,
 
 Businesswire campaign is running out of budget. Configure any additional budgets: https://one.zemanta.com/campaigns/{}/budget'''.format(config.AUTOMATION_CAMPAIGN)  # noqa
@@ -145,7 +145,7 @@ def monitor_yesterday_spend():
         return
 
     emails = config.NOTIFICATION_EMAILS
-    subject = 'Businesswire campaign unexpected yesterday spend'
+    subject = '[BIZWIRE] Campaign unexpected yesterday spend'
     body = '''Hi,
 
 Yesterday's expected spend was {} and actual spend was {}.'''.format(expected_spend, actual_spend)  # noqa
