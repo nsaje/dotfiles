@@ -128,11 +128,6 @@ class AdGroupSettings(api_common.BaseApiView):
         # Ensure that AdGroup is paused when enabling/disabling All RTB functionality
         # For now this is the easiest solution to avoid conflicts with ad group budgets and state validations
 
-        if self.rest_proxy:
-            # [Workaround] Disable validation for API calls
-            # Outbrain updates RTB settings when ad-group is already active and needs to update the sequence
-            return
-
         if new_settings.state == constants.AdGroupSettingsState.INACTIVE:
             return
 
