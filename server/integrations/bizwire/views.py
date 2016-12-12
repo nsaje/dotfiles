@@ -51,6 +51,12 @@ MOCK_RESPONSE = {
     }
 }
 
+VALID_US_STATES = [
+    'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA',
+    'MD', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA',
+    'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY',
+]
+
 
 class BizwireView(View):
 
@@ -126,6 +132,12 @@ class PromotionExport(RatelimitMixin, BizwireView):
             'bizwire_ag_stats'
         )[0]
 
+    def _get_state_key(self, country, state):
+        if not country or not state or state not in VALID_US_STATES:
+            return 'Unknown'
+
+        return country + '-' + state
+
     def _get_statistics(self, content_ad):
         ad_stats_thread = threads.AsyncFunction(partial(self._get_ad_stats, content_ad.id))
         ad_stats_thread.start()
@@ -146,7 +158,7 @@ class PromotionExport(RatelimitMixin, BizwireView):
 
         geo_impressions = OrderedDict()
         for row in geo_stats:
-            key = (row['country'] + '-' + row['state']) if row['country'] and row['state'] else 'Unknown'
+            key = self._get_state_key(row['country'], row['state'])
             geo_impressions.setdefault(key, 0)
             geo_impressions[key] += row['impressions']
 
