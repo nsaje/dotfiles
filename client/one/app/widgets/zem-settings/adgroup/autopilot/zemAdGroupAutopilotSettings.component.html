@@ -18,6 +18,7 @@
                 <div ng-if="autopilotState.value === $ctrl.constants.adGroupSettingsAutopilotState.INACTIVE &&  $ctrl.hasPermission('zemauth.can_see_rtb_sources_as_one')">
                     <div class="settings-option-group">
                         <div class="settings-option-group__header">
+							<zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_see_rtb_sources_as_one')" popover-placement="right"></zem-internal-feature>
                             <span> Manage Daily Spend Caps of RTB sources: </span>
                         </div>
                         <div class="settings-option-group__control">
