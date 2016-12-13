@@ -69,10 +69,6 @@ def execute_query(sql, params, query_name):
 
     if results is CACHE_MISS_FLAG:
         influx.incr('redshiftapi.cache', 1, outcome='miss')
-
-        # TODO: Remove after 2016-10-31. Legacy way of logging - only used for comparing new and old results.
-        influx.incr('redshiftapi.api_breakdowns.cache_miss', 1)
-
         logger.info('Cache miss %s (%s)', cache_key, query_name)
 
         with influx.block_timer('redshiftapi.api_breakdowns.query', breakdown=query_name):
@@ -84,10 +80,6 @@ def execute_query(sql, params, query_name):
             cache.set(cache_key, results)
     else:
         influx.incr('redshiftapi.cache', 1, outcome='hit')
-
-        # TODO: Remove after 2016-10-31.
-        influx.incr('redshiftapi.api_breakdowns.cache_hit', 1)
-
         logger.info('Cache hit %s (%s)', cache_key, query_name)
 
     return results

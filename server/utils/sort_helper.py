@@ -80,19 +80,25 @@ def get_breakdown_key(row, breakdown):
 
 
 def group_rows_by_breakdown_key(breakdown, rows, max_1=False):
-    groups = collections.defaultdict(list)
+    """
+    Groups rows by breakdown keys. Returns an OrderedDict where keys
+    are ordered by the order they first appeared in rows.
+    """
+
+    groups = collections.OrderedDict()
 
     for row in rows:
-        groups[get_breakdown_key(row, breakdown)].append(row)
+        key = get_breakdown_key(row, breakdown)
+        if key not in groups:
+            groups[key] = []
+
+        groups[key].append(row)
 
     if max_1:
-        result = {}
         for breakdown_id, rows in groups.iteritems():
-            result[breakdown_id] = rows[0]
             if len(rows) > 1:
                 raise Exception('Expected 1 row per breakdown got {}'.format(len(rows)))
-
-        groups = result
+            groups[breakdown_id] = rows[0]
 
     return groups
 
@@ -111,11 +117,9 @@ def apply_offset_limit(rows, offset, limit):
 
 
 def apply_offset_limit_to_breakdown(breakdown, rows, offset, limit):
-    # NOTE breakdown groups are not kept in order but rows within a group are
-
     groups = group_rows_by_breakdown_key(breakdown, rows)
     rows = []
-    for breakdown_key, group_rows in groups.iteritems():
+    for group_rows in groups.values():
         rows.extend(apply_offset_limit(group_rows, offset, limit))
 
     return rows

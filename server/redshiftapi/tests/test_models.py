@@ -74,12 +74,13 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
         self.assertEqual(q.get_params(), [123, 223, date_from, date_to, 32, 1, 33, [2, 3], 35, [2, 4, 22]])
 
     def test_get_query_all_context(self):
-        context = self.model.get_query_all_context(['account_id'], {'account_id': [1, 2, 3]}, None, False)
+        context = self.model.get_query_all_context(['account_id'], {'account_id': [1, 2, 3]}, None,
+                                                   ['clicks'] + ['account_id'], False)
         self.assertEqual(context['breakdown'], self.model.select_columns(['account_id']))
         self.assertSQLEquals(context['constraints'].generate('A'), '(A.account_id=ANY(%s))')
         self.assertEqual(context['aggregates'], self.model.get_aggregates())
         self.assertEqual(context['view'], 'mv_account')
-        self.assertSQLEquals(context['order'].only_alias(), 'clicks DESC')
+        self.assertEqual([x.alias for x in context['orders']], ['clicks', 'account_id'])
 
     @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 10, 3))
     def test_get_query_all_yesterday_context(self, mock_yesterday):
@@ -88,14 +89,15 @@ class MVMasterTest(TestCase, backtosql.TestSQLMixin):
                 'account_id': [1, 2, 3],
                 'date__lte': datetime.date(2016, 10, 1),
                 'date__gte': datetime.date(2016, 9, 1)
-            }, None, False)
+            }, None,
+            ['-yesterday_cost'], False)
         self.assertEqual(context['breakdown'], self.model.select_columns(['account_id']))
         self.assertSQLEquals(context['constraints'].generate('A'), '(A.account_id=ANY(%s) AND A.date=%s)')
         self.assertEqual(context['constraints'].get_params(), [[1, 2, 3], datetime.date(2016, 10, 2)])
 
         self.assertEqual(context['aggregates'], self.model.select_columns(['yesterday_cost', 'e_yesterday_cost']))
         self.assertEqual(context['view'], 'mv_account')
-        self.assertSQLEquals(context['order'].only_alias(), 'yesterday_cost DESC')
+        self.assertSQLEquals(context['orders'][0].only_alias(), 'yesterday_cost DESC NULLS LAST')
 
     def test_get_best_view(self):
 
@@ -297,16 +299,12 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             ['account_id', 'source_id'],
             constraints,
             parents,
-            'pixel_1_24',
+            ['pixel_1_24'],
             2,
             33,
             goals,
             False
         )
-
-        self.assertFalse(context['is_order_by_conversions'])
-        self.assertTrue(context['is_order_by_touchpoints'])
-        self.assertFalse(context['is_order_by_after_join_aggregates'])
 
         self.assertListEqual(context['conversions_aggregates'], m.select_columns([
             'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5',
@@ -330,45 +328,7 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             'avg_cost_per_pixel_1_2160',
         ]))
 
-        self.assertEquals(context['order'].alias, 'pixel_1_24')
-
-    def test_get_default_context_conversions_not_supported(self):
-        campaign = dash.models.Campaign.objects.get(id=1)
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign_id=campaign.id)
-        pixels = dash.models.ConversionPixel.objects.filter(account_id=campaign.account_id)
-        goals = Goals(None, conversion_goals, None, pixels, None)
-
-        m = models.MVJointMaster()
-
-        constraints = {
-            'account_id': 123,
-            'campaign_id': 223,
-            'date__gte': datetime.date(2016, 7, 1),
-            'date__lte': datetime.date(2016, 7, 10),
-        }
-
-        parents = [
-            {'content_ad_id': 32, 'source_id': 1},
-            {'content_ad_id': 33, 'source_id': [2, 3]},
-            {'content_ad_id': 35, 'source_id': [2, 4, 22]},
-        ]
-
-        context = m.get_query_joint_context(
-            ['account_id', 'source_id', 'dma'],
-            constraints,
-            parents,
-            '-pixel_1_24',
-            2,
-            33,
-            goals,
-            False
-        )
-
-        self.assertFalse(context['is_order_by_after_join_aggregates'])
-        self.assertListEqual(context['after_join_aggregates'], [])
-
-        # the order specified is not supported for this breakdown so select the default
-        self.assertEquals(context['order'].alias, 'clicks')
+        self.assertEquals(context['orders'][0].alias, 'pixel_1_24')
 
 
 class MVJointMasterAfterJoinAggregatesTest(TestCase, backtosql.TestSQLMixin):
@@ -405,18 +365,16 @@ class MVJointMasterAfterJoinAggregatesTest(TestCase, backtosql.TestSQLMixin):
             ['account_id', 'source_id', 'dma'],
             constraints,
             parents,
-            '-' + order_field,
+            ['-' + order_field],
             2,
             33,
             goals,
             False
         )
 
-        self.assertTrue(context['is_order_by_after_join_aggregates'])
-
         self.assertListEqual(context['after_join_aggregates'], [m.get_column(order_field)])
 
-        self.assertEquals(context['order'].alias, order_field)
+        self.assertEquals(context['orders'][0].alias, order_field)
 
 
 class MVJointMasterPublishersTest(TestCase, backtosql.TestSQLMixin):
@@ -482,7 +440,7 @@ class MVJointMasterTest(TestCase, backtosql.TestSQLMixin):
             ['account_id', 'source_id'],
             constraints,
             parents,
-            '-clicks',
+            ['-clicks'],
             2,
             33,
             Goals(None, None, None, None, None),
@@ -523,6 +481,6 @@ class MVJointMasterTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertEqual(context['offset'], 2)
         self.assertEqual(context['limit'], 33)
-        self.assertEqual(context['order'].alias, 'clicks')
+        self.assertEqual(context['orders'][0].alias, 'clicks')
 
         self.assertListEqual(context['partition'], m.select_columns(['account_id']))

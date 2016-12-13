@@ -74,7 +74,8 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
         dash_rows = thread_result['rows']
 
         parent_key = sort_helper.get_breakdown_key(parent, parent_breakdown)
-        stat_rows = rows_by_parent[parent_key]
+
+        stat_rows = rows_by_parent.get(parent_key, [])
 
         rows_target_ids = [x[target_dimension] for x in stat_rows]
         selected_rows = [x for x in dash_rows if x[target_dimension] in rows_target_ids]
@@ -98,15 +99,15 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
         # as we should not add those rows
         if len(rows_target_ids) < limit and target_dimension != 'publisher_id':
             # select additional rows from
-            structure_4p = structure_by_parent[parent_key]
+            structure_4p = structure_by_parent.get(parent_key, [])
             all_used_ids = [x[target_dimension] for x in structure_4p]
 
             new_offset, new_limit = helpers.get_adjusted_limits_for_additional_rows(
                 rows_target_ids, all_used_ids, offset, limit)
 
             extra_rows = [x for x in dash_rows if x[target_dimension] not in all_used_ids]
-            extra_rows = sort_helper.sort_rows_by_order_and_archived(extra_rows,
-                                                                     get_default_order(target_dimension, order))
+            extra_rows = sort_helper.sort_rows_by_order_and_archived(
+                extra_rows, get_default_order(target_dimension, order))
             selected_rows.extend(sort_helper.apply_offset_limit(extra_rows, new_offset, new_limit))
 
         result.extend(selected_rows)

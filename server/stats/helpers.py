@@ -321,19 +321,29 @@ def should_query_dashapi(target_dimension):
 
 
 def merge_rows(breakdown, dash_rows, stats_rows):
-    group_a = sort_helper.group_rows_by_breakdown_key(breakdown, dash_rows)
-    group_b = sort_helper.group_rows_by_breakdown_key(breakdown, stats_rows)
+    """
+    Merges stats rows to dash rows. Preserves order of the rows.
+    All stats rows should have a corresponding dash row. The opposite is not
+    necessarily true in cases where there is no stats.
+    """
+
+    group_a = sort_helper.group_rows_by_breakdown_key(breakdown, dash_rows, max_1=True)
+    group_b = sort_helper.group_rows_by_breakdown_key(breakdown, stats_rows, max_1=True)
 
     rows = []
-    for key, group_rows in group_a.iteritems():
-        row_a = group_rows[0]
+    for key, row_a in group_a.iteritems():
         row_b = group_b.pop(key, None)
         if row_b:
-            row_a = merge_row(row_a, row_b[0])
+            row_a = merge_row(row_a, row_b)
+
         rows.append(row_a)
 
     if group_b:
-        logger.warning("Got stats for unknown objects")
+        # not all rows were popped from group_b, that means that we fetched
+        # stats rows for dash rows that either do not exist or were a part of
+        # some other page
+        print "Got stats for unknown objects"
+        logger.error("Got stats for unknown objects")
 
     return rows
 

@@ -1,3 +1,4 @@
+import collections
 import unittest
 from utils import sort_helper
 
@@ -143,10 +144,9 @@ class GroupRowsByBreakdownTest(unittest.TestCase):
         )
 
     def test_group_rows_by_breakdown_key_breakdown_0(self):
-        self.assertDictEqual(
-            sort_helper.group_rows_by_breakdown_key(
-                [],
-                [
+        # should preserve order
+        self.assertEqual(
+            sort_helper.group_rows_by_breakdown_key([], [
                     {'account_id': 1, 'clicks': 1},
                     {'account_id': 1, 'clicks': 2},
                     {'account_id': 2, 'clicks': 3},
@@ -160,47 +160,94 @@ class GroupRowsByBreakdownTest(unittest.TestCase):
             })
 
     def test_group_rows_by_breakdown_key_breakdown_1(self):
-        self.assertDictEqual(
+        # should preserve order
+        self.assertEqual(
             sort_helper.group_rows_by_breakdown_key(
                 ['account_id'],
                 [
+                    {'account_id': 2, 'clicks': 2},
+                    {'account_id': 2, 'clicks': 3},
+                    {'account_id': 5, 'clicks': 3},
                     {'account_id': 1, 'clicks': 1},
+                    {'account_id': 1, 'clicks': 5},
                     {'account_id': 1, 'clicks': 2},
+                ]),
+            collections.OrderedDict([
+                ((2,), [
+                    {'account_id': 2, 'clicks': 2},
                     {'account_id': 2, 'clicks': 3},
                 ]),
-            {
-                (1,): [
+
+                ((5,), [
+                    {'account_id': 5, 'clicks': 3},
+                ]),
+
+                ((1,), [
                     {'account_id': 1, 'clicks': 1},
+                    {'account_id': 1, 'clicks': 5},
                     {'account_id': 1, 'clicks': 2},
-                ],
-                (2,): [
-                    {'account_id': 2, 'clicks': 3},
-                ]
-            })
+                ])
+            ]))
 
     def test_group_rows_by_breakdown_key_breakdown_2(self):
-        self.assertDictEqual(
+        self.assertEqual(
             sort_helper.group_rows_by_breakdown_key(
                 ['account_id', 'source_id'],
                 [
                     {'account_id': 1, 'source_id': 1, 'clicks': 1},
-                    {'account_id': 1, 'source_id': 2, 'clicks': 2},
                     {'account_id': 2, 'source_id': 1, 'clicks': 3},
+                    {'account_id': 2, 'source_id': 1, 'clicks': 1},
+                    {'account_id': 1, 'source_id': 2, 'clicks': 2},
                 ]),
-            {
-                (1, 1): [
+            collections.OrderedDict([
+                ((1, 1), [
                     {'account_id': 1, 'source_id': 1, 'clicks': 1},
-                ],
-                (1, 2): [
-                    {'account_id': 1, 'source_id': 2, 'clicks': 2},
-                ],
-                (2, 1): [
+                ]),
+
+                ((2, 1), [
                     {'account_id': 2, 'source_id': 1, 'clicks': 3},
-                ]
-            })
+                    {'account_id': 2, 'source_id': 1, 'clicks': 1},
+                ]),
+
+                ((1, 2), [
+                    {'account_id': 1, 'source_id': 2, 'clicks': 2},
+                ]),
+            ]))
+
+        self.assertEqual(
+            sort_helper.group_rows_by_breakdown_key(
+                ['account_id', 'source_id'],
+                [
+                    {'source_id': 1, 'bla': 11, 'account_id': 1},
+                    {'source_id': 2, 'bla': 22, 'account_id': 1},
+                    {'source_id': 3, 'bla': 33, 'account_id': 1},
+                ]),
+            collections.OrderedDict([
+                ((1, 1), [{'source_id': 1, 'bla': 11, 'account_id': 1}]),
+                ((1, 2), [{'source_id': 2, 'bla': 22, 'account_id': 1}]),
+                ((1, 3), [{'source_id': 3, 'bla': 33, 'account_id': 1}]),
+            ])
+        )
 
     def test_group_rows_by_breakdown_key_max_1(self):
-        self.assertDictEqual(
+        self.assertEqual(
+            sort_helper.group_rows_by_breakdown_key(
+                ['account_id', 'source_id'],
+                [
+                    {'source_id': 1, 'bla': 11, 'account_id': 1},
+                    {'source_id': 2, 'bla': 22, 'account_id': 1},
+                    {'source_id': 3, 'bla': 33, 'account_id': 1},
+                ],
+                max_1=True
+            ),
+            collections.OrderedDict([
+                ((1, 1), {'source_id': 1, 'bla': 11, 'account_id': 1}),
+                ((1, 2), {'source_id': 2, 'bla': 22, 'account_id': 1}),
+                ((1, 3), {'source_id': 3, 'bla': 33, 'account_id': 1}),
+            ])
+        )
+
+        self.assertEqual(
             sort_helper.group_rows_by_breakdown_key(
                 ['account_id'],
                 [
@@ -209,10 +256,11 @@ class GroupRowsByBreakdownTest(unittest.TestCase):
                 ],
                 max_1=True
             ),
-            {
-                (1,): {'account_id': 1, 'clicks': 1},
-                (2,): {'account_id': 2, 'clicks': 3},
-            })
+            collections.OrderedDict([
+                ((1,), {'account_id': 1, 'clicks': 1}),
+                ((2,), {'account_id': 2, 'clicks': 3}),
+            ])
+        )
 
         with self.assertRaises(Exception):
             sort_helper.group_rows_by_breakdown_key(

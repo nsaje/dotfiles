@@ -37,6 +37,9 @@ def should_query_all(breakdown):
 
 
 def query(breakdown, constraints, parents, goals, order, offset, limit, use_publishers_view=False):
+
+    orders = [order, '-media_cost'] + breakdown
+
     target_dimension = stats.constants.get_target_dimension(breakdown)
     if target_dimension in stats.constants.TimeDimension._ALL:
         constraints = helpers.get_time_dimension_constraints(target_dimension, constraints, offset, limit)
@@ -47,8 +50,8 @@ def query(breakdown, constraints, parents, goals, order, offset, limit, use_publ
         all_rows = _query_all(breakdown, constraints, parents, goals, use_publishers_view,
                               breakdown_for_name=breakdown, extra_name='all')
 
-        rows = sort_helper.sort_results(all_rows, [order])
-        rows = postprocess.fill_in_missing_rows(rows, breakdown, constraints, parents, order, offset, limit)
+        rows = sort_helper.sort_results(all_rows, orders)
+        rows = postprocess.fill_in_missing_rows(rows, breakdown, constraints, parents, orders, offset, limit)
 
         # cut the resultset to size
         rows = sort_helper.apply_offset_limit_to_breakdown(
@@ -56,15 +59,15 @@ def query(breakdown, constraints, parents, goals, order, offset, limit, use_publ
     else:
         if len(breakdown) == 1:
             sql, params = queries.prepare_query_joint_base(
-                breakdown, constraints, parents, order, offset, limit, goals, use_publishers_view)
+                breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view)
         else:
             sql, params = queries.prepare_query_joint_levels(
-                breakdown, constraints, parents, order, offset, limit, goals, use_publishers_view)
+                breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view)
 
         rows = db.execute_query(sql, params, helpers.get_query_name(breakdown))
 
         postprocess.postprocess_joint_query_rows(rows)
-        rows = postprocess.fill_in_missing_rows(rows, breakdown, constraints, parents, order, offset, limit)
+        rows = postprocess.fill_in_missing_rows(rows, breakdown, constraints, parents, orders, offset, limit)
 
     postprocess.set_default_values(breakdown, rows)
     return rows

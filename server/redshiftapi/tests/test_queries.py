@@ -39,7 +39,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
             AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
-        ORDER BY clicks DESC
+        ORDER BY clicks DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, dma ASC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
@@ -61,7 +61,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             SUM(base_table.clicks) clicks
         FROM mv_account base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
-        ORDER BY clicks DESC
+        ORDER BY clicks DESC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
@@ -90,7 +90,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         FROM mv_pubs_master base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
         GROUP BY 1, 2, 3
-        ORDER BY clicks DESC
+        ORDER BY clicks DESC NULLS LAST, publisher_id ASC NULLS LAST, dma ASC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
@@ -118,7 +118,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
-        ORDER BY yesterday_cost DESC
+        ORDER BY yesterday_cost DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, dma ASC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 10, 2), 1, 2])
@@ -147,7 +147,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date = %s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
-        ORDER BY yesterday_cost DESC
+        ORDER BY yesterday_cost DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 10, 2), 1, 2])
@@ -173,7 +173,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
-        ORDER BY count DESC
+        ORDER BY count DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, slug ASC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
@@ -200,7 +200,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
-        ORDER BY count DESC
+        ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
@@ -227,7 +227,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4
-        ORDER BY count DESC
+        ORDER BY count DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, slug ASC NULLS LAST, window ASC NULLS LAST
         """)
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
@@ -256,8 +256,7 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4, 5
-        ORDER BY count DESC
-        """)
+        ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST, slug ASC NULLS LAST, window ASC NULLS LAST""")
 
         self.assertEquals(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
@@ -297,7 +296,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(None, None, None, None, None)
 
-        sql, params = queries.prepare_query_joint_base(['account_id'], constraints, None, 'total_seconds', 5, 10, goals, False)
+        sql, params = queries.prepare_query_joint_base(['account_id'], constraints, None, ['total_seconds'], 5, 10, goals, False)
 
         self.assertSQLEquals(sql, """
         WITH
@@ -348,7 +347,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(None, None, None, None, None)
 
-        sql, params = queries.prepare_query_joint_base(['publisher_id'], constraints, None, 'total_seconds', 5, 10, goals, True)
+        sql, params = queries.prepare_query_joint_base(['publisher_id'], constraints, None, ['total_seconds'], 5, 10, goals, True)
 
         self.assertSQLEquals(sql, """
         WITH
@@ -403,7 +402,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         goals = Goals(None, None, None, None, None)
 
         sql, params = queries.prepare_query_joint_levels(
-            ['account_id', 'campaign_id'], constraints, None, 'total_seconds', 5, 10, goals, False)
+            ['account_id', 'campaign_id'], constraints, None, ['total_seconds', 'account_id', 'campaign_id'], 5, 10, goals, False)
 
         self.assertSQLEquals(sql, """
         WITH
@@ -434,16 +433,28 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             b.total_seconds,
             b.e_yesterday_cost,
             b.yesterday_cost
-        FROM (
-            SELECT
-                temp_base.account_id,
-                temp_base.campaign_id,
-                temp_base.clicks,
-                temp_base.total_seconds,
-                temp_yesterday.e_yesterday_cost,
-                temp_yesterday.yesterday_cost,
-                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
-            FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday) b
+        FROM
+            (SELECT a.account_id,
+                    a.campaign_id,
+                    a.clicks,
+                    a.total_seconds,
+                    a.e_yesterday_cost,
+                    a.yesterday_cost,
+                    ROW_NUMBER() OVER (PARTITION BY a.account_id
+                                        ORDER BY a.total_seconds ASC NULLS LAST,
+                                                 a.account_id ASC NULLS LAST,
+                                                 a.campaign_id ASC NULLS LAST) AS r
+            FROM
+                (SELECT temp_base.account_id,
+                        temp_base.campaign_id,
+                        temp_base.clicks,
+                        temp_base.total_seconds,
+                        temp_yesterday.e_yesterday_cost,
+                        temp_yesterday.yesterday_cost
+                FROM temp_base NATURAL
+                LEFT OUTER JOIN temp_yesterday
+                ) a
+            ) b
         WHERE r >= 5+1 AND r <= 10
         """)
 
@@ -465,7 +476,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         goals = Goals(None, None, None, None, None)
 
         sql, params = queries.prepare_query_joint_levels(
-            ['publisher_id', 'dma'], constraints, None, 'total_seconds', 5, 10, goals, True)
+            ['publisher_id', 'dma'], constraints, None, ['total_seconds'], 5, 10, goals, True)
 
         self.assertSQLEquals(sql, """
         WITH
@@ -499,17 +510,27 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
             b.total_seconds,
             b.e_yesterday_cost,
             b.yesterday_cost
-        FROM (
-            SELECT
-                temp_base.publisher,
-                temp_base.source_id,
-                temp_base.dma,
-                temp_base.clicks,
-                temp_base.total_seconds,
-                temp_yesterday.e_yesterday_cost,
-                temp_yesterday.yesterday_cost,
-                ROW_NUMBER() OVER (PARTITION BY temp_base.publisher, temp_base.source_id ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
-            FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday) b
+        FROM
+            (SELECT a.publisher,
+                    a.source_id,
+                    a.dma,
+                    a.clicks,
+                    a.total_seconds,
+                    a.e_yesterday_cost,
+                    a.yesterday_cost ,
+                    ROW_NUMBER() OVER (PARTITION BY a.publisher, a.source_id
+                                        ORDER BY a.total_seconds ASC NULLS LAST ) AS r
+            FROM
+                (SELECT temp_base.publisher,
+                        temp_base.source_id,
+                        temp_base.dma,
+                        temp_base.clicks,
+                        temp_base.total_seconds,
+                        temp_yesterday.e_yesterday_cost,
+                        temp_yesterday.yesterday_cost
+                FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday
+                ) a
+            ) b
         WHERE r >= 5+1 AND r <= 10
         """)
 
@@ -541,7 +562,7 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, None)
 
-        sql, params = queries.prepare_query_joint_base(['account_id'], constraints, None, 'total_seconds', 5, 10, goals, False)
+        sql, params = queries.prepare_query_joint_base(['account_id'], constraints, None, ['total_seconds'], 5, 10, goals, False)
 
         self.assertSQLEquals(sql, """
         WITH temp_conversions AS (
@@ -653,7 +674,7 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
         goals = Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, None)
 
         sql, params = queries.prepare_query_joint_levels(['account_id', 'campaign_id'],
-                                                         constraints, None, 'total_seconds', 5, 10, goals, False)
+                                                         constraints, None, ['total_seconds'], 5, 10, goals, False)
 
         self.assertSQLEquals(sql, """
         WITH temp_conversions AS (
@@ -717,58 +738,82 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
              b.avg_cost_per_pixel_1_2160,
              b.performance_campaign_goal_1,
              b.performance_campaign_goal_2
-        FROM (SELECT
-                temp_base.account_id,
-                temp_base.campaign_id,
-                temp_base.clicks,
-                temp_base.total_seconds,
-                temp_yesterday.e_yesterday_cost,
-                temp_yesterday.yesterday_cost ,
-                temp_conversions.conversion_goal_2,
-                temp_conversions.conversion_goal_3,
-                temp_conversions.conversion_goal_4,
-                temp_conversions.conversion_goal_5 ,
-                temp_touchpoints.pixel_1_24,
-                temp_touchpoints.pixel_1_168,
-                temp_touchpoints.pixel_1_720,
-                temp_touchpoints.pixel_1_2160 ,
-                e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2 ,
-                e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3 ,
-                e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4 ,
-                e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5 ,
-                e_media_cost / NULLIF(pixel_1_24, 0)        avg_cost_per_pixel_1_24 ,
-                e_media_cost / NULLIF(pixel_1_168, 0)       avg_cost_per_pixel_1_168 ,
-                e_media_cost / NULLIF(pixel_1_720, 0)       avg_cost_per_pixel_1_720 ,
-                e_media_cost / NULLIF(pixel_1_2160, 0)      avg_cost_per_pixel_1_2160 ,
-                CASE
-                    WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
-                            AND NVL(TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2), 0) = 0
-                         THEN 0
-                    WHEN (CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END) IS NULL
-                            OR 0.50000 IS NULL
-                         THEN NULL
-                    WHEN TRUE THEN
-                         (2 * 0.50000 - TRUNC((CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END), 2)) / NULLIF(0.50000, 0)
-                    ELSE TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2) / NULLIF(0.50000, 0)
-                    END performance_campaign_goal_1,
-                CASE
-                        WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
-                                AND NVL(TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2), 0) = 0
-                             THEN 0
-                        WHEN (CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END) IS NULL
-                                OR 3.80000 IS NULL
-                             THEN NULL
-                        WHEN TRUE THEN
-                             (2 * 3.80000 - TRUNC((CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END), 2)) / NULLIF(3.80000, 0)
-                        ELSE TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2) / NULLIF(3.80000, 0)
-                    END performance_campaign_goal_2,
-                ROW_NUMBER() OVER (PARTITION BY temp_base.account_id ORDER BY temp_base.total_seconds ASC NULLS LAST) AS r
-        FROM temp_base NATURAL
-   LEFT OUTER JOIN temp_yesterday NATURAL
-   LEFT OUTER JOIN temp_conversions NATURAL
-   LEFT OUTER JOIN temp_touchpoints
-             )
-             b
+        FROM
+             (SELECT
+                    a.account_id,
+                    a.campaign_id,
+                    a.clicks,
+                    a.total_seconds,
+                    a.e_yesterday_cost,
+                    a.yesterday_cost ,
+                    a.conversion_goal_2,
+                    a.conversion_goal_3,
+                    a.conversion_goal_4,
+                    a.conversion_goal_5 ,
+                    a.pixel_1_24,
+                    a.pixel_1_168,
+                    a.pixel_1_720,
+                    a.pixel_1_2160 ,
+                    a.avg_cost_per_conversion_goal_2,
+                    a.avg_cost_per_conversion_goal_3,
+                    a.avg_cost_per_conversion_goal_4,
+                    a.avg_cost_per_conversion_goal_5,
+                    a.avg_cost_per_pixel_1_24,
+                    a.avg_cost_per_pixel_1_168,
+                    a.avg_cost_per_pixel_1_720,
+                    a.avg_cost_per_pixel_1_2160,
+                    a.performance_campaign_goal_1,
+                    a.performance_campaign_goal_2,
+                    ROW_NUMBER() OVER (PARTITION BY a.account_id ORDER BY a.total_seconds ASC NULLS LAST) AS r
+              FROM
+                    (SELECT
+                        temp_base.account_id,
+                        temp_base.campaign_id,
+                        temp_base.clicks,
+                        temp_base.total_seconds,
+                        temp_yesterday.e_yesterday_cost,
+                        temp_yesterday.yesterday_cost ,
+                        temp_conversions.conversion_goal_2,
+                        temp_conversions.conversion_goal_3,
+                        temp_conversions.conversion_goal_4,
+                        temp_conversions.conversion_goal_5 ,
+                        temp_touchpoints.pixel_1_24,
+                        temp_touchpoints.pixel_1_168,
+                        temp_touchpoints.pixel_1_720,
+                        temp_touchpoints.pixel_1_2160 ,
+                        e_media_cost / NULLIF(conversion_goal_2, 0) avg_cost_per_conversion_goal_2 ,
+                        e_media_cost / NULLIF(conversion_goal_3, 0) avg_cost_per_conversion_goal_3 ,
+                        e_media_cost / NULLIF(conversion_goal_4, 0) avg_cost_per_conversion_goal_4 ,
+                        e_media_cost / NULLIF(conversion_goal_5, 0) avg_cost_per_conversion_goal_5 ,
+                        e_media_cost / NULLIF(pixel_1_24, 0)        avg_cost_per_pixel_1_24 ,
+                        e_media_cost / NULLIF(pixel_1_168, 0)       avg_cost_per_pixel_1_168 ,
+                        e_media_cost / NULLIF(pixel_1_720, 0)       avg_cost_per_pixel_1_720 ,
+                        e_media_cost / NULLIF(pixel_1_2160, 0)      avg_cost_per_pixel_1_2160 ,
+                        CASE
+                            WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
+                                    AND NVL(TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2), 0) = 0
+                                THEN 0
+                            WHEN (CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END) IS NULL
+                                    OR 0.50000 IS NULL
+                                THEN NULL
+                            WHEN TRUE THEN
+                                (2 * 0.50000 - TRUNC((CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END), 2)) / NULLIF(0.50000, 0)
+                            ELSE TRUNC(CASE WHEN FALSE THEN e_media_cost / NULLIF(0, 0) ELSE cpc END, 2) / NULLIF(0.50000, 0)
+                            END performance_campaign_goal_1,
+                        CASE
+                                WHEN TRUE AND TRUNC(NVL(e_media_cost, 0), 2) > 0
+                                        AND NVL(TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2), 0) = 0
+                                    THEN 0
+                                WHEN (CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END) IS NULL
+                                        OR 3.80000 IS NULL
+                                    THEN NULL
+                                WHEN TRUE THEN
+                                    (2 * 3.80000 - TRUNC((CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END), 2)) / NULLIF(3.80000, 0)
+                                ELSE TRUNC(CASE WHEN TRUE THEN e_media_cost / NULLIF(pixel_1_168, 0) ELSE -1 END, 2) / NULLIF(3.80000, 0)
+                            END performance_campaign_goal_2
+                    FROM temp_base NATURAL LEFT OUTER JOIN temp_yesterday NATURAL LEFT OUTER JOIN temp_conversions NATURAL LEFT OUTER JOIN temp_touchpoints
+                    ) a
+            ) b
         WHERE r >= 5 + 1
   AND r <= 10
         """)

@@ -66,7 +66,7 @@ FROM
     {% if conversions_aggregates %} NATURAL LEFT OUTER JOIN temp_conversions {% endif %}
     {% if touchpoints_aggregates %} NATURAL LEFT OUTER JOIN temp_touchpoints {% endif %}
 
-ORDER BY {{ order|only_alias }}
+ORDER BY {{ orders|only_alias }}
 LIMIT {{ limit }}
 OFFSET {{ offset }}
 

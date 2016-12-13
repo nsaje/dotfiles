@@ -1,4 +1,5 @@
 import backtosql
+import collections
 import copy
 
 import dash.constants
@@ -18,8 +19,6 @@ AFTER_JOIN_AGGREGATES = 6
 
 
 class BreakdownsBase(backtosql.Model):
-    DEFAULT_ORDER = None
-
     date = backtosql.Column('date', BREAKDOWN)
 
     day = backtosql.Column('date', BREAKDOWN)
@@ -89,17 +88,17 @@ class BreakdownsBase(backtosql.Model):
 
         return parent_constraints
 
-    def get_query_all_context(self, breakdown, constraints, parents, use_publishers_view):
+    def get_query_all_context(self, breakdown, constraints, parents, orders, use_publishers_view):
         return {
             'breakdown': self.get_breakdown(breakdown),
             'aggregates': self.get_aggregates(),
             'constraints': self.get_constraints(constraints, parents),
             'view': self.get_best_view(helpers.get_all_dimensions(
                 breakdown, constraints, parents), use_publishers_view),
-            'order': self.get_column(self.DEFAULT_ORDER).as_order(self.DEFAULT_ORDER),
+            'orders': [self.get_column(x).as_order(x, nulls='last') for x in orders],
         }
 
-    def get_query_all_yesterday_context(self, breakdown, constraints, parents, use_publishers_view):
+    def get_query_all_yesterday_context(self, breakdown, constraints, parents, orders, use_publishers_view):
         constraints = helpers.get_yesterday_constraints(constraints)
 
         yesterday_cost = backtosql.TemplateColumn('part_sum_nano.sql', {'column_name': 'cost_nano'},
@@ -116,13 +115,11 @@ class BreakdownsBase(backtosql.Model):
             'constraints': self.get_constraints(constraints, parents),
             'view': self.get_best_view(helpers.get_all_dimensions(
                 breakdown, constraints, parents), use_publishers_view),
-            'order': yesterday_cost.as_order('-yesterday_cost'),
+            'orders': [self.get_column(x).as_order(x, nulls='last') for x in orders],
         }
 
 
 class MVMaster(BreakdownsBase):
-    DEFAULT_ORDER = '-clicks'
-
     device_type = backtosql.Column('device_type', BREAKDOWN)
     country = backtosql.Column('country', BREAKDOWN)
     state = backtosql.Column('state', BREAKDOWN)
@@ -197,16 +194,14 @@ class MVMasterPublishers(MVMaster):
     publisher_id = backtosql.TemplateColumn('part_publisher_id.sql', None, AGGREGATE)
     external_id = backtosql.TemplateColumn('part_max.sql', {'column_name': 'external_id'}, AGGREGATE)
 
-    def get_query_all_yesterday_context(self, breakdown, constraints, parents, use_publishers_view):
+    def get_query_all_yesterday_context(self, breakdown, constraints, parents, orders, use_publishers_view):
         context = super(MVMasterPublishers, self).get_query_all_yesterday_context(
-            breakdown, constraints, parents, use_publishers_view)
+            breakdown, constraints, parents, orders, use_publishers_view)
         context['aggregates'] += [self.publisher_id]
         return context
 
 
 class MVTouchpointConversions(BreakdownsBase):
-    DEFAULT_ORDER = '-count'
-
     slug = backtosql.Column('slug', BREAKDOWN)
     window = backtosql.Column('conversion_window', BREAKDOWN)
 
@@ -222,8 +217,6 @@ class MVTouchpointConversionsPublishers(MVTouchpointConversions):
 
 
 class MVConversions(BreakdownsBase):
-    DEFAULT_ORDER = '-count'
-
     slug = backtosql.Column('slug', BREAKDOWN)
     count = backtosql.TemplateColumn('part_sum.sql', {'column_name': 'conversion_count'}, AGGREGATE)
 
@@ -338,7 +331,7 @@ class MVJointMaster(MVMaster):
             }, alias='performance_' + campaign_goal.get_view_key(), group=column_group)
             self.add_column(column)
 
-    def get_query_joint_context(self, breakdown, constraints, parents, order, offset, limit, goals, use_publishers_view):
+    def get_query_joint_context(self, breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view):
 
         needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
         supports_conversions = view_selector.supports_conversions(needed_dimensions, use_publishers_view)
@@ -351,8 +344,8 @@ class MVJointMaster(MVMaster):
             goals.campaign_goals, goals.campaign_goal_values, goals.conversion_goals, goals.pixels,
             supports_conversions=supports_conversions)
 
-        order_col = self.get_column(order if self.has_column(order) else self.DEFAULT_ORDER)
-        order_col = order_col.as_order(order, nulls='last')
+        order_cols = self.select_columns(orders)
+        orders = [x.as_order(orders[i], nulls='last') for i, x in enumerate(order_cols)]
 
         context = {
             'breakdown': self.get_breakdown(breakdown),
@@ -368,9 +361,7 @@ class MVJointMaster(MVMaster):
             'offset': offset,
             'limit': limit,
 
-            'order': order_col,
-            'is_order_by_yesterday': order_col.group == YESTERDAY_AGGREGATES,
-            'is_order_by_after_join_aggregates': order_col.group == AFTER_JOIN_AGGREGATES,
+            'orders': orders,
 
             'base_view': view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
             'yesterday_view': view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
@@ -383,9 +374,6 @@ class MVJointMaster(MVMaster):
 
                 'conversions_aggregates': self.select_columns(group=CONVERSION_AGGREGATES),
                 'touchpoints_aggregates': self.select_columns(group=TOUCHPOINTS_AGGREGATES),
-
-                'is_order_by_conversions': order_col.group == CONVERSION_AGGREGATES,
-                'is_order_by_touchpoints': order_col.group == TOUCHPOINTS_AGGREGATES,
 
                 'conversions_view': view_selector.get_best_view_conversions(needed_dimensions, use_publishers_view),
                 'touchpoints_view': view_selector.get_best_view_touchpoints(needed_dimensions, use_publishers_view),

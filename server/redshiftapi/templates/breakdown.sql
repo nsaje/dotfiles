@@ -9,6 +9,6 @@ FROM
 WHERE
     {{ constraints|generate:"base_table" }}
 {% if breakdown %} GROUP BY {{ breakdown|indices }} {% endif %}
-ORDER BY {{ order|only_alias }}
+ORDER BY {{ orders|only_alias }}
 
 {% endautoescape %}

@@ -12,7 +12,7 @@ from redshiftapi import postprocess
 __all__ = ['query', 'query_totals']
 
 
-def query(breakdown, constraints, goals, order='-clicks', use_publishers_view=False):
+def query(breakdown, constraints, goals, order='-media_cost', use_publishers_view=False):
     constraints = extract_constraints(constraints)
 
     rows = api_breakdowns._query_all(

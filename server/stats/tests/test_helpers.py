@@ -259,7 +259,7 @@ class HelpersTest(TestCase):
             self.assertTrue(helpers.should_query_dashapi_first(field, 'ad_group_id'))
 
     def test_merge_rows(self):
-        self.assertItemsEqual(helpers.merge_rows(
+        self.assertEqual(helpers.merge_rows(
             ['account_id', 'source_id'], [
                 {'account_id': 1, 'source_id': 1, 'bla': 11},
                 {'account_id': 1, 'source_id': 2, 'bla': 22},

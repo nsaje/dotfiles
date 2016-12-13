@@ -28,16 +28,16 @@ POSTCLICK_FIELDS = [
 ]
 
 
-def fill_in_missing_rows(rows, breakdown, constraints, parents, order, offset, limit):
+def fill_in_missing_rows(rows, breakdown, constraints, parents, orders, offset, limit):
     target_dimension = constants.get_target_dimension(breakdown)
 
     if target_dimension in constants.TimeDimension._ALL:
         _fill_in_missing_rows_time_dimension(target_dimension, rows, breakdown, constraints, parents)
-        rows = sort_helper.sort_results(rows, [order])
+        rows = sort_helper.sort_results(rows, orders)
 
     if target_dimension == 'device_type':
         _fill_in_missing_rows_device_type_dimension(target_dimension, rows, breakdown, parents, offset, limit)
-        rows = sort_helper.sort_results(rows, [order])
+        rows = sort_helper.sort_results(rows, orders)
 
     return rows
 

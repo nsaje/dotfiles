@@ -95,8 +95,6 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
         else:
             rows = stats_rows
 
-    rows = sort_helper.sort_rows_by_order_and_archived(rows, [order] + dash.dashapi.api_breakdowns.get_default_order(
-        target_dimension, order))
     augmenter.augment(breakdown, rows)
     augmenter.cleanup(rows, target_dimension, constraints)
     permission_filter.filter_columns_by_permission(user, rows, goals)
