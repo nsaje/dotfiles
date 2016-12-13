@@ -171,7 +171,7 @@ angular.module('one.legacy').component('zemGridBulkPublishersActions', {
             hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
             $ctrl.api.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
         }, {
-            name: 'Blacklist globally',
+            name: 'Blacklist globally on RTB sources',
             value: 'blacklist-global',
             internal: $ctrl.api.isPermissionInternal('zemauth.can_access_global_publisher_blacklist_status'),
             level: constants.publisherBlacklistLevel.GLOBAL,
@@ -201,7 +201,7 @@ angular.module('one.legacy').component('zemGridBulkPublishersActions', {
             hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
             $ctrl.api.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
         }, {
-            name: 'Re-enable globally',
+            name: 'Re-enable globally on RTB sources',
             value: 'enable-global',
             level: constants.publisherBlacklistLevel.GLOBAL,
             state: constants.publisherStatus.ENABLED,
