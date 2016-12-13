@@ -31,18 +31,18 @@ class ContentInsightsHelperTestCase(test.TestCase):
         mock_get_stats.return_value = [
             {
                 'content_ad': ids[0],
-                'clicks': 1,
-                'impressions': 1000,
+                'clicks': 100,
+                'impressions': 100000,
             },
             {
                 'content_ad': ids[1],
-                'clicks': 10,
-                'impressions': 1000,
+                'clicks': 1000,
+                'impressions': 100000,
             },
             {
                 'content_ad': ids[2],
-                'clicks': 100,
-                'impressions': 1000,
+                'clicks': 10000,
+                'impressions': 100000,
             }
         ]
 
@@ -63,21 +63,66 @@ class ContentInsightsHelperTestCase(test.TestCase):
             }
         ], best)
 
+    @patch('dash.stats_helper.get_content_ad_stats_with_conversions')
+    def test_fetch_campaign_content_ad_metrics_with_filters(self, mock_get_stats):
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        ids = []
+        for i in range(3):
+            cad = dash.models.ContentAd.objects.create(
+                ad_group=campaign.adgroup_set.first(),
+                title='Test Ad {}'.format(i),
+                url='http://www.zemanta.com',
+                batch_id=1,
+                archived=False,
+            )
+            ids.append(cad.id)
+
+        mock_get_stats.return_value = [
+            {
+                'content_ad': ids[0],
+                'clicks': 10,
+                'impressions': 100,  # ctr 10% but too little impressions
+            },
+            {
+                'content_ad': ids[1],
+                'clicks': 100,
+                'impressions': 10000,  # ctr 1%
+            },
+            {
+                'content_ad': ids[2],
+                'clicks': 1000,
+                'impressions': 10000,  # ctr 10%
+            }
+        ]
+
+        s, e = datetime.datetime.utcnow(), datetime.datetime.utcnow()
+        best, worst = content_insights_helper.fetch_campaign_content_ad_metrics(self.user(), campaign, s, e)
+        self.assertItemsEqual([
+            {
+                'metric': '10.00%',
+                'summary': 'Test Ad 2',
+            },
+            {
+                'metric': '1.00%',
+                'summary': 'Test Ad 1',
+            }
+        ], best)
+
     def test_extract_ctr_metric(self):
         title = 'Test'
         caids = [1, 2, 3]
         mapped_stats = {
             1: {
-                'clicks': 10,
-                'impressions': 200,
+                'clicks': 1000,
+                'impressions': 20000,
             },
             2: {
-                'clicks': 15,
-                'impressions': 300,
+                'clicks': 1500,
+                'impressions': 30000,
             },
             3: {
-                'clicks': 25,
-                'impressions': 500,
+                'clicks': 2500,
+                'impressions': 50000,
             },
         }
         res = content_insights_helper._extract_ctr_metric(title, caids, mapped_stats)
@@ -85,7 +130,7 @@ class ContentInsightsHelperTestCase(test.TestCase):
             'summary': 'Test',
             'metric': '5.00%',
             'value': 0.05,
-            'clicks': 50,
+            'clicks': 5000,
         }, res)
 
     def test_deduplicate_content_ad_titles(self):

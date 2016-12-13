@@ -3164,13 +3164,13 @@ class CampaignContentInsightsTest(TestCase):
         mock_get_stats.return_value = [
             {
                 'content_ad': cad1.id,
-                'clicks': 1,
-                'impressions': 1000,
+                'clicks': 100,
+                'impressions': 100000,
             },
             {
                 'content_ad': cad2.id,
-                'clicks': 10,
-                'impressions': 1000,
+                'clicks': 1000,
+                'impressions': 100000,
             }
         ]
 
@@ -3192,6 +3192,10 @@ class CampaignContentInsightsTest(TestCase):
                     }
                 ],
                 'worst_performer_rows': [
+                    {
+                        'metric': '0.10%',
+                        'summary': 'Test Ad',
+                    },
                     {
                         'metric': '1.00%',
                         'summary': 'Awesome Ad',

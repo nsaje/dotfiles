@@ -4,6 +4,7 @@ from collections import defaultdict
 
 CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
 MIN_WORST_PERFORMER_CLICKS = 10
+MIN_BEST_PERFORMER_CLICKS = 30
 
 
 def fetch_campaign_content_ad_metrics(user, campaign, start_date, end_date):
@@ -25,8 +26,11 @@ def _extract_ends(deduplicated_ads, stats):
     for title, caids in deduplicated_ads.iteritems():
         dd_cad_metric.append(_extract_ctr_metric(title, caids, mapped_stats))
 
+    active_metrics = [cad_metric for cad_metric in dd_cad_metric if
+                      cad_metric['clicks'] >= MIN_BEST_PERFORMER_CLICKS]
+
     top_cads = sorted(
-        dd_cad_metric,
+        active_metrics,
         key=lambda dd_cad: dd_cad['value'],
         reverse=True)[:CONTENT_INSIGHTS_TABLE_ROW_COUNT]
 
@@ -46,7 +50,7 @@ def _extract_ctr_metric(title, caids, mapped_stats):
     metric = float(clicks) / impressions if impressions > 0 else None
     return {
         'summary': title,
-        'metric': '{:.2f}%'.format(metric*100) if metric else None,
+        'metric': '{:.2f}%'.format(metric * 100) if metric else None,
         'value': metric or 0,
         'clicks': clicks or 0,
     }
