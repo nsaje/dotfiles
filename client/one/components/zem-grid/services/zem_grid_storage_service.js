@@ -1,15 +1,18 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridStorageService', function (zemLocalStorageService) {
+angular.module('one.legacy').factory('zemGridStorageService', function (zemLocalStorageService, zemNavigationNewService) { // eslint-disable-line max-len
     var LOCAL_STORAGE_NAMESPACE = 'zem-grid-local-storage';
+    var ALL_ACCOUNTS_KEY = 'all-accounts';
     var KEY_COLUMNS = 'columns';
     var KEY_COLUMN_PRIMARY_GOAL = 'primary-goal';
     var KEY_ORDER = 'order';
     var DEFAULT_ORDER = '-clicks';
 
     function loadColumns (grid) {
-        var columns = zemLocalStorageService.get(KEY_COLUMNS, LOCAL_STORAGE_NAMESPACE);
+        var accountKey = getAccountKey(grid.meta.data.level, zemNavigationNewService.getActiveAccount());
+        var columns = zemLocalStorageService.get(KEY_COLUMNS, LOCAL_STORAGE_NAMESPACE) || {};
+
         grid.header.columns.forEach(function (column) {
             if (!column.data.shown) {
                 // If column shouldn't be shown (e.g. permissions) set visibility to false
@@ -21,14 +24,14 @@ angular.module('one.legacy').factory('zemGridStorageService', function (zemLocal
                 column.visible = true;
                 return;
             }
-            if (columns) {
+            if (columns[accountKey]) {
                 // Check if it was stored as visible
                 var field = column.field;
                 var autoSelect = column.data.autoSelect;
                 if (column.data.goal && column.data.default) field = KEY_COLUMN_PRIMARY_GOAL;
-                column.visible = columns.indexOf(field) > -1;
+                column.visible = columns[accountKey].indexOf(field) > -1;
                 if (autoSelect) {
-                    column.visible = columns.indexOf(autoSelect) > -1;
+                    column.visible = columns[accountKey].indexOf(autoSelect) > -1;
                 }
             } else {
                 // When no storage available use default value
@@ -38,20 +41,25 @@ angular.module('one.legacy').factory('zemGridStorageService', function (zemLocal
     }
 
     function saveColumns (grid) {
-        // Save column states - persist state for columns that are not available in current grid
-        var columns = zemLocalStorageService.get(KEY_COLUMNS, LOCAL_STORAGE_NAMESPACE) || [];
+        var accountKey = getAccountKey(grid.meta.data.level, zemNavigationNewService.getActiveAccount());
+        var columns = zemLocalStorageService.get(KEY_COLUMNS, LOCAL_STORAGE_NAMESPACE) || {};
+        if (!columns[accountKey]) {
+            columns[accountKey] = [];
+        }
+
         grid.header.columns.forEach(function (column) {
             var field = column.field;
             if (column.data.goal && column.data.default) field = KEY_COLUMN_PRIMARY_GOAL;
 
-            var idx = columns.indexOf(field);
+            var idx = columns[accountKey].indexOf(field);
             if (column.visible && idx < 0) {
-                columns.push(field);
+                columns[accountKey].push(field);
             }
             if (!column.visible && idx >= 0) {
-                columns.splice(idx, 1);
+                columns[accountKey].splice(idx, 1);
             }
         });
+
         zemLocalStorageService.set(KEY_COLUMNS, columns, LOCAL_STORAGE_NAMESPACE);
     }
 
@@ -59,7 +67,6 @@ angular.module('one.legacy').factory('zemGridStorageService', function (zemLocal
         // Load order from local storage
         // If order is used for column that is not available in
         // current configuration (level, breakdown) use default one (-clicks)
-
         var order = zemLocalStorageService.get(KEY_ORDER, LOCAL_STORAGE_NAMESPACE) || DEFAULT_ORDER;
 
         var orderField = order;
@@ -81,6 +88,14 @@ angular.module('one.legacy').factory('zemGridStorageService', function (zemLocal
         }
 
         grid.meta.dataService.setOrder(order, false);
+    }
+
+    function getAccountKey (level, activeAccount) {
+        if (level === constants.level.ALL_ACCOUNTS) {
+            return ALL_ACCOUNTS_KEY;
+        } else if (activeAccount) {
+            return activeAccount.id.toString();
+        }
     }
 
     function intersects (array1, array2) {

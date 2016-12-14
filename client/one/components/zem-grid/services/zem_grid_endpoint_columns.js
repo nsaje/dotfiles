@@ -900,18 +900,18 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
         COLUMNS.status,
         COLUMNS.submissionStatus,
         COLUMNS.performance,
-        COLUMNS.exchange,
     ];
 
     // Default columns - columns present by default (non permanent can be hidden)
     var DEFAULT_COLUMNS_GROUP = PERMANENT_COLUMNS_GROUP.concat([
         COLUMNS.imageUrls,
-        COLUMNS.eMediaCost,
         COLUMNS.dailyBudgetSetting,
         COLUMNS.bidCpcSetting,
-        COLUMNS.yesterdayCost,
         COLUMNS.eYesterdayCost,
         COLUMNS.billingCost,
+        COLUMNS.allocatedBudgets,
+        COLUMNS.pacing,
+        COLUMNS.spendProjection,
         COLUMNS.clicks,
         COLUMNS.cpc,
     ]);
@@ -934,6 +934,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
     ];
 
     var PUBLISHER_GROUP = [
+        COLUMNS.exchange,
         COLUMNS.sourceId,
         COLUMNS.externalId,
         COLUMNS.domain,

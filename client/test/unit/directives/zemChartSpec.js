@@ -46,13 +46,13 @@ describe('zemChart', function () {
         var totalsSeries = isolate.config.series[0];
 
         expect(totalsSeries.name).toBe('Totals (Media Spend)');
-        expect(totalsSeries.color).toBe('#009db2');
+        expect(totalsSeries.color).toBe('#3f547f');
         expect(totalsSeries.yAxis).toBe(0);
-        expect(totalsSeries.tooltip.pointFormat).toBe('<div class="color-box" style="background-color: #009db2"></div>Totals (Media Spend): <b>${point.y:,.2f}</b></br>');
+        expect(totalsSeries.tooltip.pointFormat).toBe('<div class="color-box" style="background-color: #3f547f"></div>Totals (Media Spend): <b>${point.y:,.2f}</b></br>');
 
         expect(totalsSeries.marker.radius).toBe(3);
         expect(totalsSeries.marker.symbol).toBe('square');
-        expect(totalsSeries.marker.fillColor).toBe('#009db2');
+        expect(totalsSeries.marker.fillColor).toBe('#3f547f');
         expect(totalsSeries.marker.lineWidth).toBe(2);
         expect(totalsSeries.marker.lineColor).toBe(null);
 

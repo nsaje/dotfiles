@@ -17,27 +17,16 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
         },
         templateUrl: '/partials/zem_chart.html',
         controller: function ($scope, $element, $attrs, $http, zemUserSettings, zemPermissions) {
-            var totalsColor, goalsColor, colors;
             var commonYAxisMetricIds = ['clicks', 'visits', 'pageviews'];
             var usedColors = {};
 
-            if (zemPermissions.hasPermission('zemauth.can_see_new_theme')) {
-                totalsColor = ['#3f547f', '#b2bbcc'];
-                goalsColor = ['#99cc00', '#d6eb99'];
-                colors = [
-                    ['#29aae3', '#a9ddf4'],
-                    ['#0aaf9f', '#9ddfd9'],
-                    ['#f15f74', '#f9bfc7'],
-                ];
-            } else {
-                totalsColor = ['#009db2', '#c9eaef'];
-                goalsColor = ['#f39c12', '#fdebd0'];
-                colors = [
-                    ['#d35400', '#eebe9e'],
-                    ['#1abc9c', '#d6f3ed'],
-                    ['#34495e', '#d6dbdf'],
-                ];
-            }
+            var totalsColor = ['#3f547f', '#b2bbcc'];
+            var goalsColor = ['#99cc00', '#d6eb99'];
+            var colors = [
+                ['#29aae3', '#a9ddf4'],
+                ['#0aaf9f', '#9ddfd9'],
+                ['#f15f74', '#f9bfc7'],
+            ];
 
             function getMetric2Options (metricOptions) {
                 // add (default) option to disable second metric
