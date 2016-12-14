@@ -10,6 +10,7 @@ EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (
     431, 305
 )
 
+
 class AccountCreditView(api_common.BaseApiView):
 
     def get(self, request, account_id):
