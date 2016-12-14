@@ -12,7 +12,9 @@ node {
         checkout scm
         // make sure we don't have leftovers from previous builds
         sh 'sudo git clean --force -d -x'
+
         // linter
+        sh 'docker build -t py-tools -f docker/Dockerfile.py-tools  docker/'
         sh 'bash ./scripts/jenkins_lint_check.sh'
     }
 
@@ -22,7 +24,6 @@ node {
         sh 'test ! -x ${JENKINS_HOME}/bin/docker-compose && curl -L https://github.com/docker/compose/releases/download/1.8.0/docker-compose-`uname -s`-`uname -m` > ${JENKINS_HOME}/bin/docker-compose || true'
         sh 'chmod +x ${JENKINS_HOME}/bin/docker-compose'
 */
-        sh 'docker build -t py-tools -f docker/Dockerfile.py-tools  docker/'
     }
 
     stage ('Restore cache') {
