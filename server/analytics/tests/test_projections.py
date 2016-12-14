@@ -71,8 +71,10 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = analytics.projections.BudgetProjections(start_date, end_date, 'account',
-                                                        projection_date=self.today)
+        with mock.patch('utils.dates_helper.local_today') as local_today:
+            local_today.return_value = self.today
+            stats = analytics.projections.BudgetProjections(start_date, end_date, 'account',
+                                                            projection_date=self.today)
 
         self.assertEqual(stats.row(1), {
             'total_fee_projection': Decimal('3999.9990'),
@@ -88,8 +90,10 @@ class ProjectionsTestCase(test.TestCase):
             'attributed_license_fee': Decimal('2000.0000'),
         })
 
-        stats = analytics.projections.BudgetProjections(start_date, end_date, 'campaign',
-                                                        projection_date=self.today)
+        with mock.patch('utils.dates_helper.local_today') as local_today:
+            local_today.return_value = self.today
+            stats = analytics.projections.BudgetProjections(start_date, end_date, 'campaign',
+                                                            projection_date=self.today)
 
         self.assertEqual(stats.row(1), {
             'ideal_media_spend': Decimal('4784.313725490196078431372549'),
@@ -167,13 +171,16 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = analytics.projections.BudgetProjections(
-            start_date,
-            end_date,
-            'account',
-            accounts=dash.models.Account.objects.filter(pk=1),
-            projection_date=self.today
-        )
+
+        with mock.patch('utils.dates_helper.local_today') as local_today:
+            local_today.return_value = self.today
+            stats = analytics.projections.BudgetProjections(
+                start_date,
+                end_date,
+                'account',
+                accounts=dash.models.Account.objects.filter(pk=1),
+                projection_date=self.today
+            )
 
         self.assertEqual(stats.row(1)['flat_fee'], 5000)
         self.assertFalse('flat_fee' in stats.row(2))
@@ -221,13 +228,16 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = analytics.projections.BudgetProjections(
-            start_date,
-            end_date,
-            'account',
-            accounts=dash.models.Account.objects.filter(pk=1),
-            projection_date=self.today
-        )
+
+        with mock.patch('utils.dates_helper.local_today') as local_today:
+            local_today.return_value = self.today
+            stats = analytics.projections.BudgetProjections(
+                start_date,
+                end_date,
+                'account',
+                accounts=dash.models.Account.objects.filter(pk=1),
+                projection_date=self.today
+            )
 
         # agency level flat fee is distributed among all agency accounts with
         # spend
@@ -269,13 +279,15 @@ class ProjectionsTestCase(test.TestCase):
                 margin_nano=0,
             )
 
-        stats = analytics.projections.BudgetProjections(
-            start_date,
-            end_date,
-            'account',
-            accounts=dash.models.Account.objects.all(),
-            projection_date=self.today
-        )
+        with mock.patch('utils.dates_helper.local_today') as local_today:
+            local_today.return_value = self.today
+            stats = analytics.projections.BudgetProjections(
+                start_date,
+                end_date,
+                'account',
+                accounts=dash.models.Account.objects.all(),
+                projection_date=self.today
+            )
 
         # agency level flat fee is distributed among all agency accounts with
         # spend
@@ -288,8 +300,10 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = analytics.projections.BudgetProjections(start_date, end_date, 'account',
-                                                        projection_date=self.today)
+        with mock.patch('utils.dates_helper.local_today') as local_today:
+            local_today.return_value = self.today
+            stats = analytics.projections.BudgetProjections(start_date, end_date, 'account',
+                                                            projection_date=self.today)
 
         self.assertEqual(stats.row(1), {
             'total_fee_projection': Decimal('4365.68627450980392156862745'),
@@ -305,8 +319,10 @@ class ProjectionsTestCase(test.TestCase):
             'attributed_license_fee': Decimal('2000.0000'),
         })
 
-        stats = analytics.projections.BudgetProjections(start_date, end_date, 'campaign',
-                                                        projection_date=self.today)
+        with mock.patch('utils.dates_helper.local_today') as local_today:
+            local_today.return_value = self.today
+            stats = analytics.projections.BudgetProjections(start_date, end_date, 'campaign',
+                                                            projection_date=self.today)
 
         self.assertEqual(stats.row(1), {
             'ideal_media_spend': Decimal('2189.355742296918767507002801'),
@@ -334,8 +350,10 @@ class ProjectionsTestCase(test.TestCase):
             dash.models.BudgetLineItem.objects.all(),
             start_date
         )
-        stats = analytics.projections.BudgetProjections(start_date, end_date, 'campaign',
-                                                        projection_date=self.today)
+        with mock.patch('utils.dates_helper.local_today') as local_today:
+            local_today.return_value = self.today
+            stats = analytics.projections.BudgetProjections(start_date, end_date, 'campaign',
+                                                            projection_date=self.today)
 
         self.assertEqual(stats.total('ideal_media_spend'),
                          Decimal('8034.313725490196078431372549'))
@@ -351,6 +369,26 @@ class ProjectionsTestCase(test.TestCase):
                          Decimal('21960.78431372549019607843137'))
         self.assertEqual(stats.total('license_fee_projection'),
                          Decimal('4000.0020'))
+
+    def test_past_projections(self):
+        start_date, end_date = datetime.date(2015, 11, 1), datetime.date(2015, 11, 30)
+
+        self._create_batch_statements(
+            dash.models.BudgetLineItem.objects.all(),
+            start_date,
+            end_date,
+        )
+        with mock.patch('utils.dates_helper.local_today') as local_today:
+            local_today.return_value = datetime.date(2015, 12, 1)
+            stats = analytics.projections.BudgetProjections(start_date, end_date, 'account')
+
+        row = stats.row(1)
+        print(row)
+        self.assertEqual(row['total_fee_projection'],
+                         row['allocated_total_budget'] - row['allocated_media_budget'])
+        self.assertEqual(row['license_fee_projection'],
+                         row['allocated_total_budget'] - row['allocated_media_budget'])
+        self.assertEqual(row['media_spend_projection'], Decimal('25000.0000'))
 
     def test_future_projections(self):
         self._create_batch_statements(

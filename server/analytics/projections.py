@@ -39,17 +39,17 @@ class BudgetProjections(object):
     @newrelic.agent.function_trace()
     def __init__(self, start_date, end_date, breakdown, projection_date=None, accounts=[], **constraints):
         assert breakdown in ('account', 'campaign', )
-        today = utils.dates_helper.local_today()
+        self.today = utils.dates_helper.local_today()
 
         self.breakdown = breakdown
         self.projection_date = min(
-            projection_date or (today - datetime.timedelta(1)),
+            projection_date or (self.today - datetime.timedelta(1)),
             end_date,
         )
         self.start_date = start_date
 
         self.first_of_month = False
-        if self.start_date == today and self.projection_date < self.start_date:
+        if self.start_date == self.today and self.projection_date < self.start_date:
             self.first_of_month = True
             self.projection_date = self.start_date
 
@@ -257,7 +257,12 @@ class BudgetProjections(object):
     def _calculate_media_spend_projection(self, key, row, budgets, statements_on_date,
                                           num_of_positive_statements):
         assert 'allocated_media_budget' in row
+        assert 'attributed_media_spend' in row
         # IMPORTANT: media here includes data
+
+        if self.end_date < self.today:
+            row['media_spend_projection'] = row['attributed_media_spend']
+            return
 
         if self._is_managed(key) and (self.first_of_month or num_of_positive_statements <= BudgetProjections.CONFIDENCE_OFFSET_DAYS):
             # skip projection if it's less than the OFFSET, assume allocated budget
@@ -316,7 +321,7 @@ class BudgetProjections(object):
         # allocated budget
         maximum_fee = row['allocated_total_budget'] - row['allocated_media_budget']
 
-        if self._is_managed(key) and (self.first_of_month or num_of_positive_statements <= BudgetProjections.CONFIDENCE_OFFSET_DAYS):
+        if self.end_date < self.today or (self._is_managed(key) and (self.first_of_month or num_of_positive_statements <= BudgetProjections.CONFIDENCE_OFFSET_DAYS)):
             # skip projection if it's less than the OFFSET, assume allocated budget
             row['license_fee_projection'] = maximum_fee
             return
