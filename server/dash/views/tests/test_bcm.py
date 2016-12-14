@@ -32,6 +32,11 @@ class BCMViewTestCase(TestCase):
 
         self.client.login(username=self.user.email, password='secret')
 
+        campaign = models.Campaign.objects.get(id=1)
+        new_campaign_settings = campaign.get_current_settings().copy_settings()
+        new_campaign_settings.automatic_campaign_stop = True
+        new_campaign_settings.save(None)
+
     def add_permission(self, name):
         permission = Permission.objects.get(codename=name)
         self.user.user_permissions.add(permission)
@@ -1084,6 +1089,47 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
         self.assertTrue(mock_min_amount.called)
         self.assertTrue(mock_valid_time.called)
         self.assertEqual(response.status_code, 200)
+
+    @patch('automation.campaign_stop.perform_landing_mode_check')
+    @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')
+    @patch('automation.campaign_stop.get_minimum_budget_amount')
+    def test_post_lower_campaign_stop_off(self, mock_min_amount, mock_valid_time, mock_lmode):
+        mock_lmode.return_value = False
+        credit = models.CreditLineItem.objects.get(pk=1)
+        credit.status = 1
+        credit.end_date = datetime.date(2015, 12, 31)
+        credit.save()
+
+        campaign = models.Campaign.objects.get(id=1)
+        new_campaign_settings = campaign.get_current_settings().copy_settings()
+        new_campaign_settings.automatic_campaign_stop = False
+        new_campaign_settings.save(None)
+
+        mock_min_amount.return_value = Decimal('80000.0000')
+        mock_valid_time.return_value = True
+        url = reverse('campaigns_budget_item', kwargs={
+            'campaign_id': 1,
+            'budget_id': 1,
+        })
+        data = {
+            'credit': 1,
+            'start_date': '2015-10-01',
+            'end_date': '2015-11-30',
+            'amount': 90000,
+            'comment': 'Test case test_post',
+        }
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 9, 30)  # before start date
+            response = self.client.post(url, json.dumps(data),
+                                        content_type='application/json')
+        response_data = json.loads(response.content)
+
+        self.assertTrue('amount' in response_data['data']['errors'])
+        self.assertEqual(response_data['data']['errors']['amount'][0],
+                         'If automatic campaign stop is off amount cannot be lowered.')
+        self.assertFalse(mock_min_amount.called)
+        self.assertFalse(mock_valid_time.called)
+        self.assertEqual(response.status_code, 400)
 
     @patch('automation.campaign_stop.perform_landing_mode_check')
     @patch('automation.campaign_stop.is_current_time_valid_for_amount_editing')

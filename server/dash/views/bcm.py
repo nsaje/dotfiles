@@ -440,6 +440,13 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         amount = Decimal(data.get('amount', '0'))
         if amount >= item.instance.amount:
             return
+        if not item.instance.campaign.get_current_settings().automatic_campaign_stop:
+            if amount < item.instance.amount:
+                item.errors.setdefault('amount', []).append(
+                    'If automatic campaign stop is off amount cannot be lowered.'
+                )
+                return
+
         min_amount = campaign_stop.get_minimum_budget_amount(item.instance)
         if min_amount is None:
             return
