@@ -1,0 +1,22 @@
+FROM digitallyseamless/nodejs-bower-grunt
+
+RUN bash -c "useradd -m -u 1000 ubuntu || true"
+
+RUN apt-get update \
+    && apt-get install  -y --no-install-recommends \
+        nano \
+        xvfb
+
+RUN test ! -x /opt/google/chrome/chrome \
+    && wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && (dpkg -i  google-chrome-stable_current_amd64.deb || true) \
+    && apt-get install -f -y \
+    && echo 'exec /opt/google/chrome/chrome --no-sandbox "$@"' > /run-chrome.sh \
+    && chmod +x /run-chrome.sh \
+    && rm -f google-chrome-stable_current_amd64.deb
+
+RUN npm install -g eslint
+RUN npm install -g grunt
+#RUN cd $(npm root -g)/bower ; npm install bower
+
+USER 1000

@@ -24,6 +24,9 @@ node {
         sh 'test ! -x ${JENKINS_HOME}/bin/docker-compose && curl -L https://github.com/docker/compose/releases/download/1.8.0/docker-compose-`uname -s`-`uname -m` > ${JENKINS_HOME}/bin/docker-compose || true'
         sh 'chmod +x ${JENKINS_HOME}/bin/docker-compose'
 */
+        // for building client
+        sh 'docker build -t zemanta/z1-static -f docker/Dockerfile.z1-static  docker/'
+
     }
 
     stage ('Restore cache') {
