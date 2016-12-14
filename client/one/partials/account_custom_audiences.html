@@ -11,15 +11,14 @@
         <div class="description">Custom audiences allow you to target your ads to a specific set of people with whom you have already established a relationship. Audiences can be defined by a combination of rules used to identify users who took specific actions on your website.</div>
         <div><zem-custom-audiences-list account-id="accountId" api="api"></zem-custo-audiences-list></div>
         <button type="button"
-                class="btn btn-blue btn-icon add"
+                class="button button--with-icon button--add-icon"
                 ng-class="{'disabled': !audiencePixel}"
                 ng-click="openAudienceModal()"
                 zem-lazy-popover-html-unsafe="{{ tooltipText() }}"
                 zem-lazy-popover-placement="right"
                 zem-lazy-popover-append-to-body="true"
                 zem-lazy-popover-animation-class="fade">
-            <span class="icon"></span>
-            <span class="text">Add Custom Audience</span>
+            Add Custom Audience
         </button>
     </div>
 </div>

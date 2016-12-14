@@ -11,7 +11,7 @@
                     <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
                     Edit
                 </a>
-                <a class="btn btn-default" ng-if="hasPermission('zemauth.can_see_new_settings') && stateId !== undefined" ng-click="showNewSettings()">
+                <a class="button" ng-if="hasPermission('zemauth.can_see_new_settings') && stateId !== undefined" ng-click="showNewSettings()">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_see_new_settings')" popover-placement="right"></zem-internal-feature>
                     Settings
                 </a>

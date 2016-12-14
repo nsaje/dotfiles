@@ -14,7 +14,7 @@
                 <img ng-src="{{ $ctrl.config.static_url }}/one/img/facebook_logo.svg" class="fb-icon">
                 <span class="name">{{$ctrl.entity.settings.facebookPage}}</span>
                 <span ng-class="$ctrl.entity.settings.facebookStatus | lowercase" class="status">{{$ctrl.entity.settings.facebookStatus}}</span>
-                <div class="btn btn-blue btn-icon btn-small remove" ng-click="$ctrl.clearFacebookPage()"><span class="icon"></span></div>
+                <div class="button button--small button--with-icon button--only-icon button--remove-icon" ng-click="$ctrl.clearFacebookPage()"><span class="icon"></span></div>
             </div>
             <div ng-if="$ctrl.entity.settings.facebookStatus == $ctrl.constants.facebookStatus.PENDING" class="col-xs-12 alert alert-warning form-alert-box fb-warning">
                 <div class="form-alert-exclamation">

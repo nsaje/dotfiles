@@ -14,23 +14,21 @@
     </div>
     <div class="section zem-internal-feature-container white-background" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature_on_ad_group_level')">
         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature_on_ad_group_level')"></zem-internal-feature>
-        
+
         <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
 
         <div class="button-bar" ng-if="grid.api">
             <div class="button-bar-item">
                 <button
                         type="button"
-                        class="btn btn-add btn-icon add"
+                        class="button button--highlight button--with-icon button--add-icon"
                         zem-upload-trigger
                         zem-upload-ad-group="adGroup"
                         zem-upload-on-save="refreshGridAndTable"
                         zem-upload-user="user"
                         zem-has-permission="hasPermission"
                         zem-is-permission-internal="isPermissionInternal"
-                >
-                    <span class="icon"></span><span class="text">Content Ads</span>
-                </button>
+                >Content Ads</button>
             </div>
             <zem-grid-bulk-actions api="grid.api"></zem-grid-bulk-actions>
             <zem-grid-export api="grid.api" class="pull-right"></zem-grid-export>

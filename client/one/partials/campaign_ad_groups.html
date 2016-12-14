@@ -22,12 +22,12 @@
 
     <div class="section zem-internal-feature-container white-background" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature')"></zem-internal-feature>
-        
+
         <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
 
         <div class="button-bar" ng-if="grid.api">
             <div class="button-bar-item add-source-container">
-                <button type="button" class="btn btn-add btn-icon add" ng-click="addAdGroup()"><span class="icon"></span><span class="text">Ad group</span></button>
+                <button type="button" class="button button--highlight button--with-icon button--add-icon" ng-click="addAdGroup()">Ad group</button>
                 <div class="loader" ng-show="addGroupRequestInProgress"></div>
             </div>
             <div ng-if="hasPermission('zemauth.bulk_actions_on_all_levels')" class="button-bar-item">

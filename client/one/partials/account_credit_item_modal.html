@@ -128,11 +128,11 @@
         </div>
     </form>
 </div>
-<div class="modal-footer">
-    <button type="button" class="btn btn-add btn-icon check" ng-click="upsertCreditItem()" ng-disabled="saveRequestInProgress"><span class="icon"></span><span class="text">Save</span></button>
-    <button type="button" class="btn btn-blue btn-outline" ng-click="discardCreditItem()" ng-disabled="saveRequestInProgress"><span class="text">Discard</span></button>
+<div class="modal-footer buttons-panel">
+    <button type="button" class="button button--highlight button--with-icon button--check-icon" ng-click="upsertCreditItem()" ng-disabled="saveRequestInProgress">Save</button>
+    <button type="button" class="button button--outline" ng-click="discardCreditItem()" ng-disabled="saveRequestInProgress">Discard</button>
     <div class="loader" ng-show="saveRequestInProgress"></div>
-    <span ng-show="saved" class="success">Your updates have been saved.</span>
-    <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
-    <span ng-show="discarded" class="success">Your updates have been discarded.</span>
+    <span ng-show="saved" class="message message--success">Your updates have been saved.</span>
+    <span ng-show="saved === false" class="message message--error">An error occurred while saving. Please correct the marked fields and save again.</span>
+    <span ng-show="discarded" class="message">Your updates have been discarded.</span>
 </div>

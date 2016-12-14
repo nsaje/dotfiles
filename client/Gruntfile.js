@@ -73,6 +73,7 @@ module.exports = function (grunt) {
                 src: [
                     'one/app/styles/variables.less',
                     'one/app/styles/mixins.less',
+                    'one/app/styles/libExtensions.less',
                     'one/app/styles/utilities.less',
                     'one/app/styles/animations.less',
                     'one/app/styles/base.less',

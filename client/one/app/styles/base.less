@@ -14,7 +14,7 @@ a:hover,
 a:active,
 a:visited {
     color: @primary-color;
-    cursor: pointer !important;
+    cursor: pointer;
 }
 
 ////////////////////////////
@@ -29,37 +29,35 @@ a:visited {
     border: none;
     color: @secondary-color;
     font-size: 14px;
+    font-weight: 400;
     border-radius: @border-radius;
     box-shadow: none;
     transition: all 250ms ease-in-out;
+    display: inline-block;
+    cursor: pointer;
+    text-decoration: none;
     outline: none; // TODO: style for outline
 
-    &:not(.button--disabled):not([disabled]) {
-        &:hover {
-            background: tint(@secondary-color, 80%);
-            border-color: tint(@secondary-color, 80%);
-            color: @secondary-color;
-            text-decoration: none;
-        }
+    &:hover {
+        background: tint(@secondary-color, 80%);
+        border-color: tint(@secondary-color, 80%);
+        color: @secondary-color;
+        text-decoration: none;
     }
-}
 
-.button--disabled,
-.button[disabled] {
-    opacity: 0.4;
-    cursor: default;
+    .zem-internal-feature {
+
+    }
 }
 
 .button--highlight {
     background: @primary-color;
     color: @white;
 
-    &:not(.button--disabled):not([disabled]) {
-        &:hover {
-            background: darken(@primary-color, 8%);
-            color: @white;
-            box-shadow: 0px 0px 6px 0px fade(@primary-color,60%);
-        }
+    &:hover {
+        background: darken(@primary-color, 8%);
+        color: @white;
+        box-shadow: 0px 0px 6px 0px fade(@primary-color,60%);
     }
 }
 
@@ -69,11 +67,9 @@ a:visited {
     line-height: (@default-button-input-height)-2;
     color: @secondary-color;
 
-    &:not(.button--disabled):not([disabled]) {
-        &:hover {
-            background: tint(@secondary-color, 80%);
-            box-shadow: 0px 0px 6px 0px fade(@secondary-color,10%);
-        }
+    &:hover {
+        background: tint(@secondary-color, 80%);
+        box-shadow: 0px 0px 6px 0px fade(@secondary-color,10%);
     }
 }
 
@@ -81,15 +77,33 @@ a:visited {
     background-color: fade(@white,10%);
     color: @white;
 
-    &:not(.button--disabled):not([disabled]) {
-        &:hover {
-            background-color: fade(@white,20%);
-            color: @white;
-        }
+    &:hover {
+        background-color: fade(@white,20%);
+        color: @white;
     }
 }
 
-.button--dropdown-toggle {
+.button--dropdown {
+    border: 1px solid @border-gray-color;
+    line-height: (@default-button-input-height)-2;
+    color: @text-color;
+    background: white;
+
+    &:hover {
+        background: white;
+        border: 1px solid darken(@border-gray-color, 20%);
+        outline: none;
+        box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
+    }
+}
+
+.button--disabled,
+.button[disabled] {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.button--dropdown-toggle-icon {
     position: relative;
     padding-right: 30px;
 
@@ -101,7 +115,7 @@ a:visited {
         right: 10px;
         width: 6px;
         height: 10px;
-        background-image: url('images/arrow-gray.svg'); // TODO: Create blue icon
+        background-image: url('images/arrow-blue.svg'); // TODO: Create blue icon
         background-repeat: no-repeat;
     }
 
@@ -110,11 +124,15 @@ a:visited {
     }
 
     &.button--outline:after {
-        background-image: url('images/arrow-gray.svg');
+        background-image: url('images/arrow-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds:after {
         background-image: url('images/arrow-white.svg');
+    }
+
+    &.button--dropdown:after {
+        background-image: url('images/arrow-gray.svg');
     }
 }
 
@@ -128,9 +146,60 @@ a:visited {
         top: 50%;
         transform: translateY(-50%);
         left: 10px;
-        width: 13px;
-        height: 13px;
+        width: 16px;
+        height: 16px;
+        background-size: 16px;
         background-repeat: no-repeat;
+    }
+
+    &.button--only-icon {
+        padding-left: 27px;
+    }
+}
+
+.button--big {
+    width: 100%;
+    line-height: 60px;
+    height: auto;
+    font-size: 24px;
+    text-align: center;
+
+    .small-text {
+        display: block;
+        color: @gray;
+        font-size: 13px;
+        line-height: 16px;
+        white-space: normal;
+        margin-bottom: 20px;
+    }
+}
+
+.button--small {
+    height: 24px;
+    line-height: 24px;
+    font-size: 12px;
+
+    &.button--with-icon {
+        padding-left: 28px;
+
+        &:before {
+            width: 12px;
+            height: 12px;
+            background-size: 12px;
+        }
+    }
+
+    &.button--only-icon {
+        padding-left: 22px;
+    }
+
+    &.button--dropdown-toggle-icon {
+        padding-right: 24px;
+    }
+
+    input[type="checkbox"] {
+        margin-top: 5px;
+        vertical-align: top;
     }
 }
 
@@ -168,6 +237,69 @@ a:visited {
     &.button--dark-backgrounds:before {
         background-image: url('images/remove-white.svg');
     }
+
+    &:hover {
+        background-color: @red;
+        color: @white;
+
+        &:before {
+            background-image: url('images/remove-white.svg');
+        }
+    }
+}
+
+.button--add-icon {
+    &:before {
+        background-image: url('images/add-blue.svg');
+    }
+
+    &.button--highlight:before {
+        background-image: url('images/add-white.svg');
+    }
+
+    &.button--outline:before {
+        background-image: url('images/add-blue.svg');
+    }
+
+    &.button--dark-backgrounds:before {
+        background-image: url('images/add-white.svg');
+    }
+}
+
+.button--edit-icon {
+    &:before {
+        background-image: url('images/edit-blue.svg');
+    }
+
+    &.button--highlight:before {
+        background-image: url('images/edit-white.svg');
+    }
+
+    &.button--outline:before {
+        background-image: url('images/edit-blue.svg');
+    }
+
+    &.button--dark-backgrounds:before {
+        background-image: url('images/edit-white.svg');
+    }
+}
+
+.button--copy-icon {
+    &:before {
+        background-image: url('images/copy-blue.svg');
+    }
+
+    &.button--highlight:before {
+        background-image: url('images/copy-white.svg');
+    }
+
+    &.button--outline:before {
+        background-image: url('images/copy-blue.svg');
+    }
+
+    &.button--dark-backgrounds:before {
+        background-image: url('images/copy-white.svg');
+    }
 }
 
 .button--send-icon {
@@ -203,6 +335,96 @@ a:visited {
 
     &.button--dark-backgrounds:before {
         background-image: url('images/filter-white.svg');
+    }
+}
+
+.button--archive-icon {
+    &:before {
+        background-image: url('images/archive-blue.svg');
+    }
+
+    &.button--highlight:before {
+        background-image: url('images/archive-white.svg');
+    }
+
+    &.button--outline:before {
+        background-image: url('images/archive-blue.svg');
+    }
+
+    &.button--dark-backgrounds:before {
+        background-image: url('images/archive-white.svg');
+    }
+}
+
+.button--folder-icon {
+    &:before {
+        background-image: url('images/folder-blue.svg');
+    }
+
+    &.button--highlight:before {
+        background-image: url('images/folder-white.svg');
+    }
+
+    &.button--outline:before {
+        background-image: url('images/folder-blue.svg');
+    }
+
+    &.button--dark-backgrounds:before {
+        background-image: url('images/folder-white.svg');
+    }
+}
+
+.button--download-icon {
+    &:before {
+        background-image: url('images/download-blue.svg');
+    }
+
+    &.button--highlight:before {
+        background-image: url('images/download-white.svg');
+    }
+
+    &.button--outline:before {
+        background-image: url('images/download-blue.svg');
+    }
+
+    &.button--dark-backgrounds:before {
+        background-image: url('images/download-white.svg');
+    }
+}
+
+.button--upload-icon {
+    &:before {
+        background-image: url('images/upload-blue.svg');
+    }
+
+    &.button--highlight:before {
+        background-image: url('images/upload-white.svg');
+    }
+
+    &.button--outline:before {
+        background-image: url('images/upload-blue.svg');
+    }
+
+    &.button--dark-backgrounds:before {
+        background-image: url('images/upload-white.svg');
+    }
+}
+
+.button--calendar-icon {
+    &:before {
+        background-image: url('images/calendar-blue.svg');
+    }
+
+    &.button--highlight:before {
+        background-image: url('images/calendar-white.svg');
+    }
+
+    &.button--outline:before {
+        background-image: url('images/calendar-blue.svg');
+    }
+
+    &.button--dark-backgrounds:before {
+        background-image: url('images/calendar-white.svg');
     }
 }
 
@@ -389,135 +611,6 @@ input[type=checkbox], input[type=radio] {
 label, label.control-label, .form-horizontal .control-label {
     font-weight: 500;
     text-align: left;
-}
-
-.select2-container {
-    margin: 0;
-    padding: 0;
-
-    &.select2-container-disabled {
-        opacity: 0.4;
-    }
-
-    &:not(.disabled):not([disabled]):not(.select2-container-disabled) {
-        &:hover {
-            background: linear-gradient(to bottom, #f1f1f1, #FFFFFF);
-        }
-    }
-
-    .select2-choice {
-        border: 1px solid @border-gray-color !important;
-        height: @default-button-input-height;
-        line-height: @default-button-input-height;
-        border-radius: @border-radius;
-        color: @text-color;
-        box-shadow: none;
-        background: linear-gradient(to bottom, #FFFFFF, #f9f9f9);
-        padding: 0 30px 0 10px;
-        cursor: pointer;
-
-        &:not(.disabled):not([disabled]):not(.select2-container-disabled) {
-            &:hover {
-                background: linear-gradient(to bottom, #f1f1f1, #FFFFFF);
-            }
-        }
-
-        &.disabled,
-        &[disabled] {
-            opacity: 0.4;
-        }
-
-        .select2-chosen {
-            font-family: @default-font-family;
-            padding-top: 0;
-            padding-right: 0;
-            margin-right: 0;
-            color: @text-color;
-        }
-
-        .select2-arrow {
-            background: none;
-            border: none;
-
-            b {
-                display: block;
-                background: url(images/arrow-gray.svg) no-repeat !important;
-                background-size: 6px;
-                transform: rotate(90deg);
-                width: 6px;
-                height: 11px;
-                position: absolute;
-                top: 10px;
-                right: 10px;
-            }
-        }
-    }
-
-    .ui-select-no-choice {
-        margin: 0 10px 10px 10px;
-    }
-
-    &.select2-dropdown-open {
-        border-color: @border-gray-color;
-    }
-
-    &.form-control {
-        border: none;
-    }
-}
-
-.select2-with-searchbox {
-    .select2-search {
-        margin: 5px 0;
-
-        input {
-            width: 100% !important;
-            background: url(images/magnifier-gray.svg) no-repeat 7px center;
-            background-size: 16px;
-            box-sizing: border-box;
-            padding-left: 30px;
-        }
-    }
-}
-
-.multiselect {
-    border: 1px solid #d2d2d2;
-    border-radius: 2px;
-    box-shadow: none;
-    padding: 6px 12px 11px 12px;
-    margin-top: 7px;
-    margin-bottom: 7px;
-
-    .multiselect-tag {
-        cursor: pointer;
-        margin-right: 5px;
-        margin-top: 5px;
-        height: 28px;
-        line-height: 28px;
-        display: inline-block;
-        position: relative;
-        border-radius: 2px;
-        font-size: 13px;
-        border: 1px solid #d2d2d2;
-
-        .multiselect-tag-label {
-            padding: 6px 6px 5px 6px;
-            border-right: 1px solid #d2d2d2;
-            margin: 0;
-        }
-
-        .multiselect-tag-name {
-            padding: 6px 27px 6px 6px;
-            margin: 0;
-            img.remove {
-                width: 7px;
-                position: absolute;
-                right: 8px;
-                top: 10px;
-                display: inline-block;
-            }
-        }
-    }
 }
 
 ////////////////////////////

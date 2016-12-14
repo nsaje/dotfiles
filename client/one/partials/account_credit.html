@@ -53,10 +53,10 @@
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
                     <td ng-if="account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
-                    <td class="notes"><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
+                    <td class="notes">{{ item.comment }}</td>
                     <td class="action-buttons">
-                        <a class="btn btn-blue btn-icon btn-small remove" ng-click="cancelCreditItem(item.id)" ng-if="item.isSigned"><span class="icon"></span><span class="text">Cancel</span></a>
-                        <a class="btn btn-blue btn-icon btn-small edit" ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled"><span class="icon"></span><span class="text">Edit</span></a>
+                        <a class="button button--small button--with-icon button--edit-icon" ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled">Edit</a>
+                        <a class="button button--small button--with-icon button--remove-icon" ng-click="cancelCreditItem(item.id)" ng-if="item.isSigned">Cancel</a>
                     </td>
                 </tr>
                 <tr ng-show="!activeCredit.length" class="message">
@@ -64,7 +64,7 @@
                 </tr>
             </tbody>
         </table>
-        <button type="button" class="btn btn-blue btn-icon add" ng-click="addCreditItem()"><span class="icon"></span><span class="text">Add Credit Item</span></button>
+        <button type="button" class="button button--with-icon button--add-icon" ng-click="addCreditItem()">Add Credit Item</button>
     </div>
     <div class="section active-credits white-background" ng-show="!loadingInProgress">
         <h2>Past Credit Items</h2>
@@ -100,9 +100,9 @@
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
                     <td ng-if="account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
-                    <td class="notes"><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
+                    <td class="notes">{{ item.comment }}</td>
                     <td class="action-buttons">
-                        <a class="btn btn-blue btn-icon btn-small edit" ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled"><span class="icon"></span><span class="text">Edit</span></a>
+                        <a class="button button--small button--with-icon button--edit-icon" ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled">Edit</a>
                     </td>
                 </tr>
                 <tr ng-show="!pastCredit.length" class="message">

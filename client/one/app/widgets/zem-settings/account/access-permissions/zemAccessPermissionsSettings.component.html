@@ -56,14 +56,14 @@
                     <div ng-show="!user.requestInProgress">
                                 <span ng-if="$ctrl.entity.settings.agency && !user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')">
                                     <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_promote_agency_managers')" popover-placement="bottom"></zem-internal-feature>
-                                    <a tabindex="-1" ng-click="$ctrl.promoteUser(user)" href="#" class="btn btn-blue btn-icon btn-small check"><span class="text">Promote to Agency Manager</span></a>
+                                    <a tabindex="-1" ng-click="$ctrl.promoteUser(user)" href="#" class="button button--small">Promote to Agency Manager</a>
                                 </span>
                                 <span ng-if="$ctrl.entity.settings.agency && user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')">
                                     <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_promote_agency_managers')" popover-placement="bottom"></zem-internal-feature>
-                                    <a tabindex="-1" ng-click="$ctrl.downgradeUser(user)" href="#" class="btn btn-blue btn-icon btn-small check"><span class="text">Downgrade to Normal User</span></a>
+                                    <a tabindex="-1" ng-click="$ctrl.downgradeUser(user)" href="#" class="button button--small">Downgrade to Normal User</a>
                                 </span>
-                        <a ng-show="!user.is_active" tabindex="-1" ng-click="$ctrl.userActionChange('resend', user.id)" href="#" class="btn btn-blue btn-icon btn-small send"><span class="icon"></span><span class="text">Resend Activation Mail</span></a>
-                        <a tabindex="-1" ng-click="$ctrl.userActionChange('remove', user.id)" href="#" class="btn btn-blue btn-icon btn-small remove"><span class="icon"></span><span class="text">Remove</span></a>
+                        <a ng-show="!user.is_active" tabindex="-1" ng-click="$ctrl.userActionChange('resend', user.id)" href="#" class="button button--small button--with-icon button--send-icon">Resend Activation Mail</a>
+                        <a tabindex="-1" ng-click="$ctrl.userActionChange('remove', user.id)" href="#" class="button button--small button--with-icon button--remove-icon">Remove</a>
                     </div>
                 </td>
             </tr>
@@ -93,7 +93,7 @@
                     <div class="form-group">
                         <label class="col-xs-2 control-label"></label>
                         <div class="col-xs-3">
-                            <button type="button" class="btn btn-blue btn-icon add" ng-click="$ctrl.addUser()"><span class="icon"></span><span class="text">Add new user</span></button>
+                            <button type="button" class="button button--with-icon button--add-icon" ng-click="$ctrl.addUser()">Add new user</button>
                             <div class="loader" ng-show="$ctrl.addUserRequestInProgress"></div>
                             <div ng-show="$ctrl.addUserErrors">
                                 <label class="error">{{$ctrl.addUserErrors.message}}</label>

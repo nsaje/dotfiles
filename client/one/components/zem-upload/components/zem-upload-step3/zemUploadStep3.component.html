@@ -6,8 +6,8 @@
             <p><strong>{{ ctrl.numSuccessful }} <ng-pluralize count="ctrl.numSuccessful" when="{'one': 'ad', 'other': 'ads'}"></ng-pluralize></strong> <ng-pluralize count="ctrl.numSuccessful" when="{'one': 'was', 'other': 'were'}"></ng-pluralize> successfully added to the ad group <strong>{{ ctrl.adGroup.name }}</strong>.</p>
         </div>
     </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-gray" ng-click="ctrl.close()">Close</button>
-        <button type="button" class="btn btn-add pull-right" ng-click="ctrl.callback()">Upload more ads</button>
+    <div class="modal-footer buttons-panel">
+        <button type="button" class="button button--outline" ng-click="ctrl.close()">Close</button>
+        <button type="button" class="button button--highlight pull-right" ng-click="ctrl.callback()">Upload more ads</button>
     </div>
 </div>

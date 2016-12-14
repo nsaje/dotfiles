@@ -79,10 +79,10 @@
                        class="checkbox">
             </div>
         </div>
-        <div class="modal-footer">
-            <button type="submit" class="btn btn-add btn-icon download" ng-disabled="!downloadAllowed"><span class="icon"></span><span class="text">Download Now</span></button>
-            <button type="button" class="btn btn-blue btn-outline" ng-click="$dismiss()"><span class="text">Cancel</span></button>
-            
+        <div class="modal-footer buttons-panel">
+            <button type="submit" class="button button--highlight button--with-icon button--download-icon" ng-disabled="!downloadAllowed">Download Now</button>
+            <button type="button" class="button button--outline" ng-click="$dismiss()">Cancel</button>
+
             <div class="loader" ng-show="addConversionGoalInProgress"></div>
             <span class="small error" ng-if="error" ng-if="!downloadAllowed">{{downloadNotAllowedMessage}}</span>
         </div>

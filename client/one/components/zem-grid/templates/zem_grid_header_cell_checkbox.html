@@ -8,13 +8,12 @@
     </div>
 
     <div class="dropdown" ng-if="ctrl.isVisible() && ctrl.getCustomFilters()" uib-dropdown>
-        <div class="btn btn-blue btn-small btn-outline dropdown-toggle" uib-dropdown-toggle>
+        <div class="button button--small button--outline button--dropdown-toggle-icon" uib-dropdown-toggle>
             <input class="allFilterCheckbox"
                    type="checkbox"
                    data-ng-model="ctrl.allFilterChecked"
                    ng-click="ctrl.toggleAllFilter($event)"
             />
-            <span class="icon"></span>
         </div>
         <ul class="dropdown-menu" role="menu" uib-dropdown-menu>
             <li role="presentation" ng-repeat="customFilter in ctrl.getCustomFilters()">

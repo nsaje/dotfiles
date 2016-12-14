@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         custom: 'custom',
     },
     bindings: {
-        title: '<',
+        settingsTitle: '<',
         entityType: '<',
         entityId: '<',
         api: '<',

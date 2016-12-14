@@ -306,7 +306,7 @@ tags-input .host .tags {
                         }
 
                         .legend-item {
-                            .btn-remove {
+                            .button-remove {
                                 position: relative;
                                 cursor: pointer;
                                 width: 22px;
@@ -356,6 +356,15 @@ tags-input .host .tags {
                     padding: 5px 20px;
                     border: 1px solid #d8d8d8;
                     background-color: @white;
+                }
+
+                .loader {
+                    width: 100%;
+                    height: 290px;
+                    background-color: fade(white, 75%);
+                    left: 25px;
+                    top: 55px;
+                    z-index: 3;
                 }
             }
         }
@@ -855,15 +864,16 @@ tags-input .host .tags {
     position: fixed;
     width: 100%;
     z-index: 998;
-    top: 60px;
+    top: @header-height;
+    height: @tabset-height;
     transition: all @default-animation;
+    left: 0px;
 
     .nav-tabs {
         width: 100%;
         background-color: @white;
         border: none;
         padding: 0 @default-spacing;
-        margin: 0 -@default-spacing;
         box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);
 
         > li {
@@ -878,11 +888,9 @@ tags-input .host .tags {
                 margin: 0;
                 border: none;
                 border-radius: 0;
-                transition: background-color 200ms ease-in-out;
 
                 > uib-tab-heading {
                     > a,
-                    > a:hover,
                     > a:active,
                     > a:visited {
                         display: block;
@@ -893,12 +901,13 @@ tags-input .host .tags {
                         color: @text-color;
                         text-transform: none;
                         transition: all @default-animation;
+                        background-color: white;
+                    }
+
+                    > a:hover {
+                        color: @primary-color !important;
                     }
                 }
-            }
-
-            > a:hover {
-                background-color: fade(@primary-color, 10%);
             }
 
             &.active > a {
@@ -907,7 +916,6 @@ tags-input .host .tags {
                     > a:hover,
                     > a:active,
                     > a:visited {
-                        font-weight: 500;
                         color: @primary-color;
                         box-sizing: border-box;
                         padding-bottom: 6px;
@@ -948,6 +956,7 @@ tags-input .host .tags {
 .fixed-header {
     .zem-tabset {
         box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.2);
+        height: @tabset-height-minimized;
         top: 30px;
 
         .nav-tabs {
@@ -1574,43 +1583,6 @@ tags-input .host .tags {
         color: @gray;
     }
 
-    .device-icon {
-        text-align: center;
-        margin-bottom: 20px;
-
-        label.icon-holder {
-            padding: 0 20px 0 0;
-            height: 100px;
-            margin-bottom: 10px;
-            position: relative;
-
-            img {
-                position: absolute;
-                bottom: 0px;
-                left: 50%;
-            }
-
-            .desktop {
-                height: 100px;
-                margin-left: -69.5px;
-            }
-            .tablet {
-                height: 60px;
-                margin-left: -32px;
-            }
-            .mobile {
-                height: 40px;
-                margin-left: -22px;
-            }
-        }
-
-        label {
-            display: block;
-            padding: 0;
-            text-align: center;
-        }
-    }
-
     .action-buttons {
         padding: @default-spacing;
         background-color: tint(@secondary-color,90%);
@@ -1634,55 +1606,6 @@ tags-input .host .tags {
     .action-buttons-account {
         &:extend(.white-background);
         margin-top: 0;
-    }
-}
-
-.fb-status {
-    .input-group-addon {
-        .fb-icon {
-            width: 16px;
-            height: 16px;
-        }
-    }
-
-    .input-with-icon {
-        position: relative;
-        border: 1px solid @border-gray-color;
-        height: @default-button-input-height;
-        line-height: (@default-button-input-height)-10;
-        padding: 5px 45px 5px 40px;
-        border-radius: @border-radius;
-        box-shadow: inset 3px 3px 3px 0px rgba(0,0,0,0.03);
-
-        .status {
-            float: right;
-            display: block;
-
-            &.connected {
-                color: @green;
-            }
-
-            &.pending {
-                color: @orange;
-            }
-
-            &.error {
-                color: @red;
-            }
-        }
-
-        .fb-icon {
-            width: 18px;
-            height: 18px;
-            position: absolute;
-            left: 5px;
-        }
-
-        .remove {
-            position: absolute;
-            right: 2px;
-            top: 2px;
-        }
     }
 }
 

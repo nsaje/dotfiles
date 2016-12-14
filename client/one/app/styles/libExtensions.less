@@ -1,0 +1,158 @@
+.select2-container {
+    margin: 0;
+    padding: 0;
+
+    &.select2-container-disabled {
+        opacity: 0.4;
+    }
+
+    &:not(.disabled):not([disabled]):not(.select2-container-disabled) {
+        &:hover {
+            background: linear-gradient(to bottom, #f1f1f1, #FFFFFF);
+        }
+    }
+
+    .select2-choice {
+        border: 1px solid @border-gray-color !important;
+        height: @default-button-input-height;
+        line-height: @default-button-input-height;
+        border-radius: @border-radius;
+        color: @text-color;
+        box-shadow: none;
+        background: linear-gradient(to bottom, #FFFFFF, #f9f9f9);
+        padding: 0 30px 0 10px;
+        cursor: pointer;
+
+        &:not(.disabled):not([disabled]):not(.select2-container-disabled) {
+            &:hover {
+                background: linear-gradient(to bottom, #f1f1f1, #FFFFFF);
+            }
+        }
+
+        &.disabled,
+        &[disabled] {
+            opacity: 0.4;
+        }
+
+        .select2-chosen {
+            font-family: @default-font-family;
+            padding-top: 0;
+            padding-right: 0;
+            margin-right: 0;
+            color: @text-color;
+        }
+
+        .select2-arrow {
+            background: none;
+            border: none;
+
+            b {
+                display: block;
+                background: url(images/arrow-gray.svg) no-repeat !important;
+                background-size: 6px;
+                transform: rotate(90deg);
+                width: 6px;
+                height: 11px;
+                position: absolute;
+                top: 10px;
+                right: 10px;
+            }
+        }
+    }
+
+    .ui-select-no-choice {
+        margin: 0 10px 10px 10px;
+    }
+
+    &.select2-dropdown-open {
+        border-color: @border-gray-color;
+    }
+
+    &.form-control {
+        border: none;
+    }
+}
+
+.select2-with-searchbox {
+    .select2-search {
+        margin: 5px 0;
+
+        input {
+            width: 100% !important;
+            background: url(images/magnifier-gray.svg) no-repeat 7px center;
+            background-size: 16px;
+            box-sizing: border-box;
+            padding-left: 30px;
+        }
+    }
+}
+
+.multiselect {
+    border: 1px solid #d2d2d2;
+    border-radius: 2px;
+    box-shadow: none;
+    padding: 6px 12px 11px 12px;
+    margin-top: 7px;
+    margin-bottom: 7px;
+
+    .multiselect-tag {
+        cursor: pointer;
+        margin-right: 5px;
+        margin-top: 5px;
+        height: 28px;
+        line-height: 28px;
+        display: inline-block;
+        position: relative;
+        border-radius: 2px;
+        font-size: 13px;
+        border: 1px solid #d2d2d2;
+
+        .multiselect-tag-label {
+            padding: 6px 6px 5px 6px;
+            border-right: 1px solid #d2d2d2;
+            margin: 0;
+        }
+
+        .multiselect-tag-name {
+            padding: 6px 27px 6px 6px;
+            margin: 0;
+            img.remove {
+                width: 7px;
+                position: absolute;
+                right: 8px;
+                top: 10px;
+                display: inline-block;
+            }
+        }
+    }
+}
+
+////////////////////////////
+// SupportHero override //
+////////////////////////////
+
+#supporthero-button,
+.supporthero-button {
+    width: 60px !important;
+    height: 60px !important;
+    background-color: #333333 !important;
+    font-size: 0 !important;
+    top: auto !important;
+    bottom: 20px !important;
+    right: 100px !important;
+    border-radius: 50% !important;
+    transform: rotate(0deg) !important;
+    box-shadow: 0 0px 32px 2px fade(black,16%);
+
+    &::after {
+        content: ' ';
+        display: block;
+        background: url(images/question-white.svg) no-repeat center center;
+        background-size: 30px;
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        top: 15px;
+        left: 15px;
+    }
+}

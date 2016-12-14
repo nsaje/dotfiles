@@ -1,3 +1,4 @@
+@applied-conditions_height: 48px;
 @applied-conditions__title_width: 35px;
 @applied-conditions__arrow_width: 36px;
 @applied-conditions__clear-filter_width: 110px;
@@ -24,10 +25,6 @@
         min-height: 36px;
         padding-top: 3px;
         padding-bottom: 3px;
-    }
-
-    .applied-conditions--border-visible {
-        margin-bottom: 3px;
     }
 
     .applied-conditions__title {
@@ -348,7 +345,7 @@
             width: 75%;
 
             .filter-sections__options-list {
-                column-count: 3;
+                column-count: 4;
                 column-gap: 2*@default-spacing;
             }
         }
@@ -358,80 +355,140 @@
 // FIXME: Refactor when tabset is moved from header section
 .filter-selector-expanded {
     .zem-filter-selector {
-        height: 324px;
+        height: @filter-sections_border-width +
+                @filter-sections_padding-top +
+                @filter-sections__section_vertical-padding*2 +
+                @filter-sections__section-title_margin-bottom +
+                @filter-sections__section-title_font-size +
+                @filter-sections__section-options-container_max-height +
+                @default-spacing;
     }
 
     .zem-tabset {
-        top: 384px;
+        top:    @filter-sections_border-width +
+                @filter-sections_padding-top +
+                @filter-sections__section_vertical-padding*2 +
+                @filter-sections__section-title_margin-bottom +
+                @filter-sections__section-title_font-size +
+                @filter-sections__section-options-container_max-height +
+                @default-spacing +
+                @header-height;
     }
 
     .page {
-        margin-top: @default-spacing*1.5+384+40;
+        margin-top: @filter-sections_border-width +
+                    @filter-sections_padding-top +
+                    @filter-sections__section_vertical-padding*2 +
+                    @filter-sections__section-title_margin-bottom +
+                    @filter-sections__section-title_font-size +
+                    @filter-sections__section-options-container_max-height +
+                    @default-spacing +
+                    @header-height +
+                    @tabset-height +
+                    @default-spacing*1.5;
     }
 }
 
 .data-filter-enabled {
     .zem-filter-selector {
-        height: 48px;
+        height: @applied-conditions_height;
     }
 
     .zem-tabset {
-        top: 108px;
+        top:    @applied-conditions_height +
+                @header-height;
     }
 
     .page {
-        margin-top: @default-spacing*1.5+108+40;
+        margin-top: @applied-conditions_height +
+                    @header-height +
+                    @tabset-height +
+                    @default-spacing*1.5;
     }
 }
 
 .data-filter-enabled.filter-selector-expanded {
     .zem-filter-selector {
-        height: 372px;
+        height: @filter-sections_border-width +
+                @filter-sections_padding-top +
+                @filter-sections__section_vertical-padding*2 +
+                @filter-sections__section-title_margin-bottom +
+                @filter-sections__section-title_font-size +
+                @filter-sections__section-options-container_max-height +
+                @default-spacing +
+                @applied-conditions_height;
     }
 
     .zem-tabset {
-        top: 432px;
+        top:    @filter-sections_border-width +
+                @filter-sections_padding-top +
+                @filter-sections__section_vertical-padding*2 +
+                @filter-sections__section-title_margin-bottom +
+                @filter-sections__section-title_font-size +
+                @filter-sections__section-options-container_max-height +
+                @default-spacing +
+                @applied-conditions_height +
+                @header-height;
     }
 
     .page {
-        margin-top: @default-spacing*1.5+432+40;
+        margin-top: @filter-sections_border-width +
+                    @filter-sections_padding-top +
+                    @filter-sections__section_vertical-padding*2 +
+                    @filter-sections__section-title_margin-bottom +
+                    @filter-sections__section-title_font-size +
+                    @filter-sections__section-options-container_max-height +
+                    @default-spacing +
+                    @applied-conditions_height +
+                    @header-height +
+                    @tabset-height +
+                    @default-spacing*1.5;
     }
 }
 
-.fixed-header.data-filter-enabled {
+.fixed-header {
     .zem-filter-selector {
-        top: 30px;
+        top: @header-height-minimized;
     }
 
-    .zem-tabset {
-        top: 78px;
+    &.data-filter-enabled {
+        .zem-tabset {
+            top:    @header-height-minimized +
+                    @applied-conditions_height;
+        }
+
+        .page {
+            margin-top: @header-height-minimized +
+                        @applied-conditions_height +
+                        @tabset-height-minimized +
+                        @default-spacing*1.5;
+        }
     }
 
-    .page {
-        margin-top: @default-spacing*1.5+108+40;
-    }
-}
-
-.fixed-header.filter-selector-expanded {
-    .zem-filter-selector {
-        top: 30px;
-    }
-
-    .zem-tabset {
-        top: 354px;
-    }
-
-    .page {
-        margin-top: @default-spacing*1.5+354+40;
-    }
-}
-
-.fixed-header.data-filter-enabled.filter-selector-expanded {
-    .zem-tabset {
-        top: 402px;
+    &.filter-selector-expanded {
+        .zem-tabset {
+            top:    @filter-sections_border-width +
+                    @filter-sections_padding-top +
+                    @filter-sections__section_vertical-padding*2 +
+                    @filter-sections__section-title_margin-bottom +
+                    @filter-sections__section-title_font-size +
+                    @filter-sections__section-options-container_max-height +
+                    @default-spacing +
+                    @header-height-minimized;
+        }
     }
 
-    .page {
-        margin-top: @default-spacing*1.5+384+40;
+    &.data-filter-enabled.filter-selector-expanded {
+        .zem-tabset {
+            top:    @filter-sections_border-width +
+                    @filter-sections_padding-top +
+                    @filter-sections__section_vertical-padding*2 +
+                    @filter-sections__section-title_margin-bottom +
+                    @filter-sections__section-title_font-size +
+                    @filter-sections__section-options-container_max-height +
+                    @default-spacing +
+                    @header-height-minimized +
+                    @applied-conditions_height;
+        }
     }
 }
