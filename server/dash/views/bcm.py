@@ -6,6 +6,9 @@ from utils import api_common, exc
 from dash.views import helpers
 from automation import campaign_stop
 
+EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (
+    431, 305
+)
 
 class AccountCreditView(api_common.BaseApiView):
 
@@ -437,11 +440,13 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         Because of this we define a 'budget minimum':
         budget_minimum = budget_spend + sum(daily_budgets) - overall_available_campaign_budget
         """
+        prev_amount = item.instance.amount
         amount = Decimal(data.get('amount', '0'))
-        if amount >= item.instance.amount:
+        if amount >= prev_amount:
             return
         if not item.instance.campaign.get_current_settings().automatic_campaign_stop:
-            if amount < item.instance.amount:
+            acc_id = item.instance.campaign.account_id
+            if amount < prev_amount and acc_id not in EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK:
                 item.errors.setdefault('amount', []).append(
                     'If automatic campaign stop is off amount cannot be lowered.'
                 )
