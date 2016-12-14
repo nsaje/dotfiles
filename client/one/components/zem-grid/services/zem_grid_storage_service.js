@@ -2,10 +2,10 @@
 'use strict';
 
 angular.module('one.legacy').factory('zemGridStorageService', function (zemLocalStorageService, zemNavigationNewService) { // eslint-disable-line max-len
-    var LOCAL_STORAGE_NAMESPACE = 'zem-grid-local-storage';
-    var ALL_ACCOUNTS_KEY = 'all-accounts';
+    var LOCAL_STORAGE_NAMESPACE = 'zemGrid';
+    var ALL_ACCOUNTS_KEY = 'allAccounts';
     var KEY_COLUMNS = 'columns';
-    var KEY_COLUMN_PRIMARY_GOAL = 'primary-goal';
+    var KEY_COLUMN_PRIMARY_GOAL = 'primaryGoal';
     var KEY_ORDER = 'order';
     var DEFAULT_ORDER = '-clicks';
 

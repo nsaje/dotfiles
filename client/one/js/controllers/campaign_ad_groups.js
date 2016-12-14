@@ -1,5 +1,5 @@
 /* globals moment,constants,options,angular */
-angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($location, $scope, $state, $timeout, api, zemCampaignService, zemAdGroupService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService, zemDataFilterService, zemGridConstants, zemPermissions) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($location, $scope, $state, $timeout, api, zemCampaignService, zemAdGroupService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService, zemDataFilterService, zemGridConstants, zemPermissions, zemChartStorageService, zemNavigationNewService) { // eslint-disable-line max-len
     $scope.addGroupRequestInProgress = false;
     $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -107,6 +107,7 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($locat
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
             }
+            zemChartStorageService.saveMetrics({metric1: $scope.chartMetric1, metric2: $scope.chartMetric2});
         }
     });
 
@@ -118,6 +119,7 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($locat
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
             }
+            zemChartStorageService.saveMetrics({metric1: $scope.chartMetric1, metric2: $scope.chartMetric2});
         }
     });
 
@@ -232,6 +234,14 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($locat
         });
     };
 
+    function initChartMetricsFromLocalStorage () {
+        var chartMetrics = zemChartStorageService.loadMetrics();
+        if (chartMetrics) {
+            $scope.chartMetric1 = chartMetrics.metric1;
+            $scope.chartMetric2 = chartMetrics.metric2;
+        }
+    }
+
     $scope.toggleChart = function () {
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
@@ -246,9 +256,8 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($locat
         var adGroupTotals = $location.search().ad_group_totals;
 
         setChartOptions();
+        initChartMetricsFromLocalStorage();
 
-        userSettings.registerWithoutWatch('chartMetric1');
-        userSettings.registerWithoutWatch('chartMetric2');
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
 
@@ -266,10 +275,15 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($locat
         $scope.getContentInsights();
 
         $scope.getInfoboxData();
+
+        var activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(initChartMetricsFromLocalStorage);
         var entityUpdateHandler = zemCampaignService.onEntityUpdated(function () {
             $scope.getInfoboxData();
         });
-        $scope.$on('$destroy', entityUpdateHandler);
+        $scope.$on('$destroy', function () {
+            activeEntityUpdateHandler();
+            entityUpdateHandler();
+        });
 
         $scope.setActiveTab();
     };

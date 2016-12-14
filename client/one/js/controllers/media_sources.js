@@ -1,5 +1,5 @@
 /* globals moment,constants,options,angular */
-angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, $timeout, zemDataFilterService, zemGridConstants, zemPermissions) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, $timeout, zemDataFilterService, zemGridConstants, zemPermissions, zemChartStorageService, zemNavigationNewService) { // eslint-disable-line max-len
     $scope.localStoragePrefix = null;
     $scope.chartMetrics = [];
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -85,6 +85,10 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
             }
+            zemChartStorageService.saveMetrics(
+                {metric1: $scope.chartMetric1, metric2: $scope.chartMetric2},
+                $scope.level
+            );
         }
     });
 
@@ -96,6 +100,10 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
             }
+            zemChartStorageService.saveMetrics(
+                {metric1: $scope.chartMetric1, metric2: $scope.chartMetric2},
+                $scope.level
+            );
         }
     });
 
@@ -253,6 +261,14 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
         );
     };
 
+    function initChartMetricsFromLocalStorage () {
+        var chartMetrics = zemChartStorageService.loadMetrics($scope.level);
+        if (chartMetrics) {
+            $scope.chartMetric1 = chartMetrics.metric1;
+            $scope.chartMetric2 = chartMetrics.metric2;
+        }
+    }
+
     var init = function () {
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
             $scope.localStoragePrefix = 'allAccountSources';
@@ -275,9 +291,8 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
         var sourceTotals = $location.search().source_totals;
 
         setChartOptions();
+        initChartMetricsFromLocalStorage();
 
-        userSettings.registerWithoutWatch('chartMetric1');
-        userSettings.registerWithoutWatch('chartMetric2');
         userSettings.registerGlobal('chartHidden');
 
         if (sourceIds) {
@@ -300,6 +315,9 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
         }
 
         $scope.setActiveTab();
+
+        var activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(initChartMetricsFromLocalStorage);
+        $scope.$on('$destroy', activeEntityUpdateHandler);
     };
 
     var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function () {

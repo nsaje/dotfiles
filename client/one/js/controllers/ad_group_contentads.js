@@ -1,5 +1,5 @@
 /* globals options, angular, constants, moment */
-angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $window, $state, $location, $q, api, zemAdGroupService, zemContentAdService, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService, zemPermissions) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $window, $state, $location, $q, api, zemAdGroupService, zemContentAdService, zemGridConstants, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemDataFilterService, zemPermissions, zemChartStorageService, zemNavigationNewService) { // eslint-disable-line max-len
     $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -24,6 +24,7 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
             }
+            zemChartStorageService.saveMetrics({metric1: $scope.chartMetric1, metric2: $scope.chartMetric2});
         }
     });
 
@@ -35,6 +36,7 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
             }
+            zemChartStorageService.saveMetrics({metric1: $scope.chartMetric1, metric2: $scope.chartMetric2});
         }
     });
 
@@ -80,9 +82,7 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
         var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
         setChartOptions();
-
-        userSettings.registerWithoutWatch('chartMetric1');
-        userSettings.registerWithoutWatch('chartMetric2');
+        initChartMetricsFromLocalStorage();
 
         getDailyStats();
         getInfoboxData();
@@ -90,6 +90,9 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
             getInfoboxData();
         });
         $scope.$on('$destroy', entityUpdateHandler);
+
+        var activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(initChartMetricsFromLocalStorage);
+        $scope.$on('$destroy', activeEntityUpdateHandler);
 
         var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function () {
             getDailyStats();
@@ -233,6 +236,14 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
         if ($scope.chartMetric1 !== validChartMetrics.metric1) $scope.chartMetric1 = validChartMetrics.metric1;
         if ($scope.chartMetric2 !== validChartMetrics.metric2) $scope.chartMetric2 = validChartMetrics.metric2;
     };
+
+    function initChartMetricsFromLocalStorage () {
+        var chartMetrics = zemChartStorageService.loadMetrics();
+        if (chartMetrics) {
+            $scope.chartMetric1 = chartMetrics.metric1;
+            $scope.chartMetric2 = chartMetrics.metric2;
+        }
+    }
 
     init();
 });

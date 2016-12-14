@@ -1,5 +1,5 @@
 /*globals angular,moment,constants,options*/
-angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($scope, $state, $timeout, api, zemAccountService, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($scope, $state, $timeout, api, zemAccountService, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions, zemChartStorageService, zemNavigationNewService) { // eslint-disable-line max-len
     $scope.requestInProgress = false;
     $scope.constants = constants;
     $scope.options = options;
@@ -186,12 +186,20 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getDailyStats();
+            zemChartStorageService.saveMetrics(
+                {metric1: $scope.chartMetric1, metric2: $scope.chartMetric2},
+                constants.level.ALL_ACCOUNTS
+            );
         }
     });
 
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getDailyStats();
+            zemChartStorageService.saveMetrics(
+                {metric1: $scope.chartMetric1, metric2: $scope.chartMetric2},
+                constants.level.ALL_ACCOUNTS
+            );
         }
     });
 
@@ -246,6 +254,14 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
         }, true);
     }
 
+    function initChartMetricsFromLocalStorage () {
+        var chartMetrics = zemChartStorageService.loadMetrics(constants.level.ALL_ACCOUNTS);
+        if (chartMetrics) {
+            $scope.chartMetric1 = chartMetrics.metric1;
+            $scope.chartMetric2 = chartMetrics.metric2;
+        }
+    }
+
     $scope.toggleChart = function () {
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
@@ -256,16 +272,18 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
     };
 
     $scope.init = function () {
-        userSettings.registerWithoutWatch('chartMetric1');
-        userSettings.registerWithoutWatch('chartMetric2');
         userSettings.registerGlobal('chartHidden');
 
         setChartOptions();
+        initChartMetricsFromLocalStorage();
 
         getDailyStats();
         $scope.getInfoboxData();
 
         $scope.setActiveTab();
+
+        var activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(initChartMetricsFromLocalStorage);
+        $scope.$on('$destroy', activeEntityUpdateHandler);
     };
 
     $scope.init();

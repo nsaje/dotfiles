@@ -1,6 +1,6 @@
 /*globals angular,moment,constants,options*/
 
-angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemDataFilterService, zemPermissions) {
+angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemDataFilterService, zemPermissions, zemChartStorageService, zemNavigationNewService) {
     $scope.constants = constants;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -144,6 +144,14 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
         }, 0);
     };
 
+    function initChartMetricsFromLocalStorage () {
+        var chartMetrics = zemChartStorageService.loadMetrics();
+        if (chartMetrics) {
+            $scope.chartMetric1 = chartMetrics.metric1;
+            $scope.chartMetric2 = chartMetrics.metric2;
+        }
+    }
+
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             if (!$scope.isMetricInChartData(newValue, $scope.chartData)) {
@@ -152,6 +160,7 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
             }
+            zemChartStorageService.saveMetrics({metric1: $scope.chartMetric1, metric2: $scope.chartMetric2});
         }
     });
 
@@ -163,6 +172,7 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
             }
+            zemChartStorageService.saveMetrics({metric1: $scope.chartMetric1, metric2: $scope.chartMetric2});
         }
     });
 
@@ -195,18 +205,21 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
     $scope.init = function () {
         var data = $scope.adGroupData[$state.params.id];
 
-        userSettings.registerWithoutWatch('chartMetric1');
-        userSettings.registerWithoutWatch('chartMetric2');
         userSettings.registerGlobal('chartHidden');
 
         setChartOptions();
+        initChartMetricsFromLocalStorage();
 
         getDailyStats();
         $scope.getInfoboxData();
         zemFilterService.setShowBlacklistedPublishers(true);
 
+        var activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(initChartMetricsFromLocalStorage);
         var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(getDailyStats);
-        $scope.$on('$destroy', dateRangeUpdateHandler);
+        $scope.$on('$destroy', function () {
+            activeEntityUpdateHandler();
+            dateRangeUpdateHandler();
+        });
 
         $scope.setActiveTab();
     };

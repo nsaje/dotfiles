@@ -1,7 +1,5 @@
-/*global $,moment,constants,angular*/
-'use strict';
-
-angular.module('one.legacy').directive('zemChart', function (config, $compile, $window) {
+// TODO: Refactor into component
+angular.module('one').directive('zemChart', function (config, $compile, $window) {
     return {
         restrict: 'E',
         scope: {
@@ -15,8 +13,8 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
             localStoragePrefix: '=localStoragePrefix',
             isLoading: '=zemIsLoading'
         },
-        templateUrl: '/partials/zem_chart.html',
-        controller: function ($scope, $element, $attrs, $http, zemUserSettings, zemPermissions) {
+        templateUrl: '/app/widgets/zem-chart/zemChart.component.html',
+        controller: function ($scope) {
             var commonYAxisMetricIds = ['clicks', 'visits', 'pageviews'];
             var usedColors = {};
 
@@ -47,7 +45,7 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                 // we use $scope.metrics because ui-select doesn't work well with
                 // simple variables on scope as ng-model, it is recommended to use a
                 // property on an object on scope
-                // (https://github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
+                // (github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
                 $scope.metric1 = newValue;
             }, true);
 
@@ -55,7 +53,7 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                 // we use $scope.metrics because ui-select doesn't work well with
                 // simple variables on scope as ng-model, it is recommended to use a
                 // property on an object on scope
-                // (https://github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
+                // (github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
                 $scope.metric2 = newValue;
             }, true);
 
@@ -67,13 +65,13 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                 $scope.metrics.metric2 = newValue;
             }, true);
 
-            $scope.$watch('metricOptions', function (newValue) {
+            $scope.$watch('metricOptions', function () {
                 $scope.metric2Options = getMetric2Options($scope.metricOptions);
             }, true);
 
             $scope.getSelectedName = function (selected) {
-                // Returns the name of the selected item. ui-select doesn't update the name correctly when choices change
-                // so the right name is returned here.
+                // Returns the name of the selected item. ui-select doesn't update the name correctly when choices
+                // change so the right name is returned here.
                 if (!selected) {
                     return '';
                 }
@@ -86,12 +84,9 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                 return '';
             };
 
-            $scope.chartMetric1Update = function () {
-                zemUserSettings.setValue('chartMetric1', $scope.metrics.metric1, $scope.localStoragePrefix);
-            };
-
-            $scope.chartMetric2Update = function () {
-                zemUserSettings.setValue('chartMetric2', $scope.metrics.metric2, $scope.localStoragePrefix);
+            $scope.chartMetricUpdate = function () {
+                $scope.chartMetric1 = $scope.metrics.metric1;
+                $scope.chartMetric2 = $scope.metrics.metric2;
             };
 
             $scope.config = {
@@ -166,13 +161,10 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                 w.unbind('resize', updateSize);
             });
 
-            $scope.$watch('data', function (newValue, oldValue) {
+            $scope.$watch('data', function (newValue) {
                 var i = 0,
                     data = newValue && newValue.groups,
-                    seriesData = null,
-                    metrics = null,
-                    metricIds = null,
-                    seriesName = null;
+                    metricIds = null;
 
                 $scope.hasData = false;
                 $scope.legendItems = [];
@@ -188,8 +180,12 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                 // they are the same, let charts figure it out because otherwise it
                 // renders strangely.
                 if ($scope.minDate.valueOf() !== $scope.maxDate.valueOf()) {
-                    $scope.config.options.xAxis.min = moment($scope.minDate).add($scope.minDate.utcOffset(), 'minutes').valueOf();
-                    $scope.config.options.xAxis.max = moment($scope.maxDate).add($scope.maxDate.utcOffset(), 'minutes').valueOf();
+                    $scope.config.options.xAxis.min = moment($scope.minDate)
+                        .add($scope.minDate.utcOffset(), 'minutes')
+                        .valueOf();
+                    $scope.config.options.xAxis.max = moment($scope.maxDate)
+                        .add($scope.maxDate.utcOffset(), 'minutes')
+                        .valueOf();
                 } else {
                     $scope.config.options.xAxis.min = null;
                     $scope.config.options.xAxis.max = null;
@@ -240,7 +236,7 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                 addLegendItem(color, group, true);
 
                 commonYAxis = true;
-                metricIds.forEach(function (metricId, index) {
+                metricIds.forEach(function (metricId) {
                     if (commonYAxisMetricIds.indexOf(metricId) === -1) {
                         commonYAxis = false;
                     }
@@ -262,7 +258,7 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                         yAxis: commonYAxis ? 0 : index,
                         data: seriesData,
                         tooltip: {
-                            pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
+                            pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>' // eslint-disable-line max-len
                         },
                         marker: {
                             radius: 3,
@@ -309,7 +305,9 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                         if (commonYAxisMetricIds.indexOf(metricId) === -1) {
                             commonYAxis = false;
                         }
-                        addGoalSeries(metricId, 'Goal (' + goal.name + ')', series, colors[index], commonYAxis ? 0 : index);
+                        addGoalSeries(
+                            metricId, 'Goal (' + goal.name + ')', series, colors[index], commonYAxis ? 0 : index
+                        );
                     });
 
                     index += 1;
@@ -330,7 +328,7 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                     dashStyle: 'ShortDash',
                     connectNulls: true,
                     tooltip: {
-                        pointFormat: '<div class="color-box" style="background-color: ' + color + '"></div>' + goalName + ': <b>' + getPointFormat(metricId) + '</b></br>'
+                        pointFormat: '<div class="color-box" style="background-color: ' + color + '"></div>' + goalName + ': <b>' + getPointFormat(metricId) + '</b></br>' // eslint-disable-line max-len
                     },
                     marker: {
                         enabled: false,
@@ -447,7 +445,7 @@ angular.module('one.legacy').directive('zemChart', function (config, $compile, $
                     return stats;
                 }
 
-                var ts, usedDates = {},
+                var usedDates = {},
                     startTS = stats[0][0],
                     endTS = stats[stats.length - 1][0];
 
