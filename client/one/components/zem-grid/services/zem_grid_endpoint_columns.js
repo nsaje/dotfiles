@@ -545,7 +545,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
             field: 'spend_projection',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
             totalRow: true,
-            help: 'Predicted media spend by the end of selected date range based on the spend in the previous days.',
+            help: 'Predicted media and data spend by the end of selected date range based on the spend in the previous days.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
