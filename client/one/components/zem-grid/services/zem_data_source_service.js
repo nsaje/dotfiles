@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemDataSourceService', function ($rootScope, $http, $q, zemDataFilterService) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemDataSourceService', function ($rootScope, $http, $q, zemDataFilterService, zemAdGroupService) { // eslint-disable-line max-len
 
     //
     // DataSource is responsible for fetching data with help of passed Endpoint and
@@ -94,7 +94,14 @@ angular.module('one.legacy').factory('zemDataSourceService', function ($rootScop
             config.endDate = newDateRange.endDate;
             getData();
         });
-        $scope.$on('$destroy', dateRangeUpdateHandler);
+
+        var adGroupEntityUpdateHandler = zemAdGroupService.onEntityUpdated(function () {
+            getData();
+        });
+        $scope.$on('$destroy', function () {
+            dateRangeUpdateHandler();
+            adGroupEntityUpdateHandler();
+        });
 
         //
         // Definitions
