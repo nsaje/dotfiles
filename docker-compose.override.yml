@@ -13,7 +13,7 @@ memcached:
 
 einsstatic:
     hostname: einsstatic
-    image: digitallyseamless/nodejs-bower-grunt
+    image: digitallyseamless/nodejs-bower-grunt:4
     ports:
       - "9999"
     volumes:

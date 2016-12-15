@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 9.6.0
--- Dumped by pg_dump version 9.6.0
+-- Dumped from database version 9.6.1
+-- Dumped by pg_dump version 9.6.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -52,8 +52,7 @@ CREATE TABLE actionlog_actionlog (
     content_ad_source_id integer,
     created_by_id integer,
     modified_by_id integer,
-    order_id integer,
-    conversion_pixel_id integer
+    order_id integer
 );
 
 
@@ -342,6 +341,37 @@ ALTER SEQUENCE automation_campaignstoplog_id_seq OWNED BY automation_campaignsto
 
 
 --
+-- Name: bizwire_adgrouptargeting; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE bizwire_adgrouptargeting (
+    id integer NOT NULL,
+    interest_targeting text NOT NULL,
+    start_date date NOT NULL,
+    ad_group_id integer NOT NULL
+);
+
+
+--
+-- Name: bizwire_adgrouptargeting_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE bizwire_adgrouptargeting_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: bizwire_adgrouptargeting_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE bizwire_adgrouptargeting_id_seq OWNED BY bizwire_adgrouptargeting.id;
+
+
+--
 -- Name: dash_account; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -512,7 +542,6 @@ CREATE TABLE dash_adgroup (
     name character varying(127) NOT NULL,
     created_dt timestamp with time zone NOT NULL,
     modified_dt timestamp with time zone NOT NULL,
-    is_demo boolean NOT NULL,
     campaign_id integer NOT NULL,
     modified_by_id integer NOT NULL
 );
@@ -575,6 +604,10 @@ CREATE TABLE dash_adgroupsettings (
     redirect_pixel_urls text NOT NULL,
     audience_targeting text NOT NULL,
     exclusion_audience_targeting text NOT NULL,
+    b1_sources_group_daily_budget numeric(10,4) NOT NULL,
+    b1_sources_group_enabled boolean NOT NULL,
+    b1_sources_group_state integer NOT NULL,
+    dayparting text NOT NULL,
     CONSTRAINT dash_adgroupsettings_system_user_check CHECK ((system_user >= 0))
 );
 
@@ -837,6 +870,19 @@ CREATE SEQUENCE dash_audience_id_seq
 --
 
 ALTER SEQUENCE dash_audience_id_seq OWNED BY dash_audience.id;
+
+
+--
+-- Name: dash_audiencerule; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE dash_audiencerule (
+    id integer NOT NULL,
+    type smallint NOT NULL,
+    value character varying(255) NOT NULL,
+    audience_id integer NOT NULL,
+    CONSTRAINT dash_rule_type_check CHECK ((type >= 0))
+);
 
 
 --
@@ -1305,7 +1351,8 @@ CREATE TABLE dash_conversionpixel (
     last_sync_dt timestamp with time zone,
     created_dt timestamp with time zone NOT NULL,
     account_id integer NOT NULL,
-    name character varying(50) NOT NULL
+    name character varying(50) NOT NULL,
+    audience_enabled boolean NOT NULL
 );
 
 
@@ -1437,37 +1484,6 @@ ALTER SEQUENCE dash_defaultsourcesettings_id_seq OWNED BY dash_defaultsourcesett
 
 
 --
--- Name: dash_demoadgrouprealadgroup; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE dash_demoadgrouprealadgroup (
-    id integer NOT NULL,
-    multiplication_factor integer NOT NULL,
-    demo_ad_group_id integer NOT NULL,
-    real_ad_group_id integer NOT NULL
-);
-
-
---
--- Name: dash_demoadgrouprealadgroup_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE dash_demoadgrouprealadgroup_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: dash_demoadgrouprealadgroup_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE dash_demoadgrouprealadgroup_id_seq OWNED BY dash_demoadgrouprealadgroup.id;
-
-
---
 -- Name: dash_demomapping; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1549,7 +1565,9 @@ CREATE TABLE dash_exportreport (
     campaign_id integer,
     created_by_id integer NOT NULL,
     include_model_ids boolean NOT NULL,
-    filtered_account_types text NOT NULL
+    filtered_account_types text NOT NULL,
+    include_totals boolean NOT NULL,
+    include_missing boolean NOT NULL
 );
 
 
@@ -1758,19 +1776,6 @@ ALTER SEQUENCE dash_publisherblacklist_id_seq OWNED BY dash_publisherblacklist.i
 
 
 --
--- Name: dash_rule; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE dash_rule (
-    id integer NOT NULL,
-    type smallint NOT NULL,
-    value character varying(255) NOT NULL,
-    audience_id integer NOT NULL,
-    CONSTRAINT dash_rule_type_check CHECK ((type >= 0))
-);
-
-
---
 -- Name: dash_rule_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -1786,7 +1791,7 @@ CREATE SEQUENCE dash_rule_id_seq
 -- Name: dash_rule_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE dash_rule_id_seq OWNED BY dash_rule.id;
+ALTER SEQUENCE dash_rule_id_seq OWNED BY dash_audiencerule.id;
 
 
 --
@@ -1911,7 +1916,9 @@ CREATE TABLE dash_source (
     supports_retargeting_manually boolean NOT NULL,
     default_cpc_cc numeric(10,4) NOT NULL,
     default_daily_budget_cc numeric(10,4) NOT NULL,
-    default_mobile_cpc_cc numeric(10,4) NOT NULL
+    default_mobile_cpc_cc numeric(10,4) NOT NULL,
+    impression_trackers_count smallint NOT NULL,
+    CONSTRAINT dash_source_impression_trackers_count_check CHECK ((impression_trackers_count >= 0))
 );
 
 
@@ -2050,7 +2057,13 @@ CREATE TABLE dash_uploadbatch (
     created_dt timestamp with time zone NOT NULL,
     status integer NOT NULL,
     ad_group_id integer,
-    original_filename character varying(1024)
+    original_filename character varying(1024),
+    default_brand_name text,
+    default_call_to_action text,
+    default_description text,
+    default_display_url text,
+    default_image_crop text,
+    auto_save boolean NOT NULL
 );
 
 
@@ -2179,6 +2192,141 @@ CREATE TABLE django_session (
     session_data text NOT NULL,
     expire_date timestamp with time zone NOT NULL
 );
+
+
+--
+-- Name: oauth2_provider_accesstoken; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE oauth2_provider_accesstoken (
+    id integer NOT NULL,
+    token character varying(255) NOT NULL,
+    expires timestamp with time zone NOT NULL,
+    scope text NOT NULL,
+    application_id integer NOT NULL,
+    user_id integer
+);
+
+
+--
+-- Name: oauth2_provider_accesstoken_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE oauth2_provider_accesstoken_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: oauth2_provider_accesstoken_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE oauth2_provider_accesstoken_id_seq OWNED BY oauth2_provider_accesstoken.id;
+
+
+--
+-- Name: oauth2_provider_application; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE oauth2_provider_application (
+    id integer NOT NULL,
+    client_id character varying(100) NOT NULL,
+    redirect_uris text NOT NULL,
+    client_type character varying(32) NOT NULL,
+    authorization_grant_type character varying(32) NOT NULL,
+    client_secret character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    user_id integer NOT NULL,
+    skip_authorization boolean NOT NULL
+);
+
+
+--
+-- Name: oauth2_provider_application_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE oauth2_provider_application_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: oauth2_provider_application_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE oauth2_provider_application_id_seq OWNED BY oauth2_provider_application.id;
+
+
+--
+-- Name: oauth2_provider_grant; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE oauth2_provider_grant (
+    id integer NOT NULL,
+    code character varying(255) NOT NULL,
+    expires timestamp with time zone NOT NULL,
+    redirect_uri character varying(255) NOT NULL,
+    scope text NOT NULL,
+    application_id integer NOT NULL,
+    user_id integer NOT NULL
+);
+
+
+--
+-- Name: oauth2_provider_grant_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE oauth2_provider_grant_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: oauth2_provider_grant_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE oauth2_provider_grant_id_seq OWNED BY oauth2_provider_grant.id;
+
+
+--
+-- Name: oauth2_provider_refreshtoken; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE oauth2_provider_refreshtoken (
+    id integer NOT NULL,
+    token character varying(255) NOT NULL,
+    access_token_id integer NOT NULL,
+    application_id integer NOT NULL,
+    user_id integer NOT NULL
+);
+
+
+--
+-- Name: oauth2_provider_refreshtoken_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE oauth2_provider_refreshtoken_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: oauth2_provider_refreshtoken_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE oauth2_provider_refreshtoken_id_seq OWNED BY oauth2_provider_refreshtoken.id;
 
 
 --
@@ -2551,6 +2699,39 @@ ALTER SEQUENCE reports_supplyreportrecipient_id_seq OWNED BY reports_supplyrepor
 
 
 --
+-- Name: restapi_reportjob; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE restapi_reportjob (
+    id integer NOT NULL,
+    created_dt timestamp with time zone NOT NULL,
+    status integer NOT NULL,
+    query text NOT NULL,
+    result text,
+    user_id integer
+);
+
+
+--
+-- Name: restapi_reportjob_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE restapi_reportjob_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: restapi_reportjob_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE restapi_reportjob_id_seq OWNED BY restapi_reportjob.id;
+
+
+--
 -- Name: zemauth_internalgroup; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2742,6 +2923,13 @@ ALTER TABLE ONLY automation_campaignstoplog ALTER COLUMN id SET DEFAULT nextval(
 
 
 --
+-- Name: bizwire_adgrouptargeting id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY bizwire_adgrouptargeting ALTER COLUMN id SET DEFAULT nextval('bizwire_adgrouptargeting_id_seq'::regclass);
+
+
+--
 -- Name: dash_account id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2837,6 +3025,13 @@ ALTER TABLE ONLY dash_article ALTER COLUMN id SET DEFAULT nextval('dash_article_
 --
 
 ALTER TABLE ONLY dash_audience ALTER COLUMN id SET DEFAULT nextval('dash_audience_id_seq'::regclass);
+
+
+--
+-- Name: dash_audiencerule id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY dash_audiencerule ALTER COLUMN id SET DEFAULT nextval('dash_rule_id_seq'::regclass);
 
 
 --
@@ -2952,13 +3147,6 @@ ALTER TABLE ONLY dash_defaultsourcesettings ALTER COLUMN id SET DEFAULT nextval(
 
 
 --
--- Name: dash_demoadgrouprealadgroup id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY dash_demoadgrouprealadgroup ALTER COLUMN id SET DEFAULT nextval('dash_demoadgrouprealadgroup_id_seq'::regclass);
-
-
---
 -- Name: dash_demomapping id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3012,13 +3200,6 @@ ALTER TABLE ONLY dash_outbrainaccount ALTER COLUMN id SET DEFAULT nextval('dash_
 --
 
 ALTER TABLE ONLY dash_publisherblacklist ALTER COLUMN id SET DEFAULT nextval('dash_publisherblacklist_id_seq'::regclass);
-
-
---
--- Name: dash_rule id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY dash_rule ALTER COLUMN id SET DEFAULT nextval('dash_rule_id_seq'::regclass);
 
 
 --
@@ -3099,6 +3280,34 @@ ALTER TABLE ONLY django_migrations ALTER COLUMN id SET DEFAULT nextval('django_m
 
 
 --
+-- Name: oauth2_provider_accesstoken id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_accesstoken ALTER COLUMN id SET DEFAULT nextval('oauth2_provider_accesstoken_id_seq'::regclass);
+
+
+--
+-- Name: oauth2_provider_application id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_application ALTER COLUMN id SET DEFAULT nextval('oauth2_provider_application_id_seq'::regclass);
+
+
+--
+-- Name: oauth2_provider_grant id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_grant ALTER COLUMN id SET DEFAULT nextval('oauth2_provider_grant_id_seq'::regclass);
+
+
+--
+-- Name: oauth2_provider_refreshtoken id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_refreshtoken ALTER COLUMN id SET DEFAULT nextval('oauth2_provider_refreshtoken_id_seq'::regclass);
+
+
+--
 -- Name: reports_adgroupgoalconversionstats id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3169,6 +3378,13 @@ ALTER TABLE ONLY reports_supplyreportrecipient ALTER COLUMN id SET DEFAULT nextv
 
 
 --
+-- Name: restapi_reportjob id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY restapi_reportjob ALTER COLUMN id SET DEFAULT nextval('restapi_reportjob_id_seq'::regclass);
+
+
+--
 -- Name: zemauth_internalgroup id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -3200,7 +3416,7 @@ ALTER TABLE ONLY zemauth_user_user_permissions ALTER COLUMN id SET DEFAULT nextv
 -- Data for Name: actionlog_actionlog; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY actionlog_actionlog (id, action, state, action_type, message, payload, expiration_dt, created_dt, modified_dt, ad_group_source_id, content_ad_source_id, created_by_id, modified_by_id, order_id, conversion_pixel_id) FROM stdin;
+COPY actionlog_actionlog (id, action, state, action_type, message, payload, expiration_dt, created_dt, modified_dt, ad_group_source_id, content_ad_source_id, created_by_id, modified_by_id, order_id) FROM stdin;
 \.
 
 
@@ -3350,9 +3566,6 @@ COPY auth_permission (id, name, content_type_id, codename) FROM stdin;
 87	Can add conversion goal	29	add_conversiongoal
 88	Can change conversion goal	29	change_conversiongoal
 89	Can delete conversion goal	29	delete_conversiongoal
-90	Can add demo ad group real ad group	30	add_demoadgrouprealadgroup
-91	Can change demo ad group real ad group	30	change_demoadgrouprealadgroup
-92	Can delete demo ad group real ad group	30	delete_demoadgrouprealadgroup
 93	Can add demo mapping	31	add_demomapping
 94	Can change demo mapping	31	change_demomapping
 95	Can delete demo mapping	31	delete_demomapping
@@ -3398,9 +3611,6 @@ COPY auth_permission (id, name, content_type_id, codename) FROM stdin;
 135	Can add audience	45	add_audience
 136	Can change audience	45	change_audience
 137	Can delete audience	45	delete_audience
-138	Can add rule	46	add_rule
-139	Can change rule	46	change_rule
-140	Can delete rule	46	delete_rule
 141	Can add user	47	add_user
 142	Can change user	47	change_user
 143	Can delete user	47	delete_user
@@ -3557,6 +3767,39 @@ COPY auth_permission (id, name, content_type_id, codename) FROM stdin;
 294	Can add campaign stop log	64	add_campaignstoplog
 295	Can change campaign stop log	64	change_campaignstoplog
 296	Can delete campaign stop log	64	delete_campaignstoplog
+297	Can add audience rule	65	add_audiencerule
+298	Can change audience rule	65	change_audiencerule
+299	Can delete audience rule	65	delete_audiencerule
+300	Can add report job	66	add_reportjob
+301	Can change report job	66	change_reportjob
+302	Can delete report job	66	delete_reportjob
+303	User can see new filter selector	47	can_see_new_filter_selector
+304	User can see new theme	47	can_see_new_theme
+305	Can include totals in reports	47	can_include_totals_in_reports
+306	Can view additional targeting	47	can_view_additional_targeting
+307	User can do bulk actions on all levels	47	bulk_actions_on_all_levels
+308	User can see landing mode alerts above tables	47	can_see_landing_mode_alerts
+309	User can manage OAuth2 applications	47	can_manage_oauth2_apps
+310	User can use the REST API	47	can_use_restapi
+311	User can see new settings	47	can_see_new_settings
+312	User can generate publisher reports	47	can_access_publisher_reports
+313	User can see RTB Sources grouped as one	47	can_see_rtb_sources_as_one
+314	User can set and see interest targeting settings	47	can_set_interest_targeting
+315	Can add application	67	add_application
+316	Can change application	67	change_application
+317	Can delete application	67	delete_application
+318	Can add grant	68	add_grant
+319	Can change grant	68	change_grant
+320	Can delete grant	68	delete_grant
+321	Can add access token	69	add_accesstoken
+322	Can change access token	69	change_accesstoken
+323	Can delete access token	69	delete_accesstoken
+324	Can add refresh token	70	add_refreshtoken
+325	Can change refresh token	70	change_refreshtoken
+326	Can delete refresh token	70	delete_refreshtoken
+327	Can add ad group targeting	71	add_adgrouptargeting
+328	Can change ad group targeting	71	change_adgrouptargeting
+329	Can delete ad group targeting	71	delete_adgrouptargeting
 \.
 
 
@@ -3564,7 +3807,7 @@ COPY auth_permission (id, name, content_type_id, codename) FROM stdin;
 -- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('auth_permission_id_seq', 296, true);
+SELECT pg_catalog.setval('auth_permission_id_seq', 329, true);
 
 
 --
@@ -3625,6 +3868,21 @@ COPY automation_campaignstoplog (id, notes, created_dt, campaign_id) FROM stdin;
 --
 
 SELECT pg_catalog.setval('automation_campaignstoplog_id_seq', 1, false);
+
+
+--
+-- Data for Name: bizwire_adgrouptargeting; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY bizwire_adgrouptargeting (id, interest_targeting, start_date, ad_group_id) FROM stdin;
+\.
+
+
+--
+-- Name: bizwire_adgrouptargeting_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('bizwire_adgrouptargeting_id_seq', 1, false);
 
 
 --
@@ -3706,7 +3964,7 @@ SELECT pg_catalog.setval('dash_accountsettings_id_seq', 1, false);
 -- Data for Name: dash_adgroup; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY dash_adgroup (id, name, created_dt, modified_dt, is_demo, campaign_id, modified_by_id) FROM stdin;
+COPY dash_adgroup (id, name, created_dt, modified_dt, campaign_id, modified_by_id) FROM stdin;
 \.
 
 
@@ -3721,7 +3979,7 @@ SELECT pg_catalog.setval('dash_adgroup_id_seq', 1, false);
 -- Data for Name: dash_adgroupsettings; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY dash_adgroupsettings (id, created_dt, state, start_date, end_date, cpc_cc, daily_budget_cc, target_devices, target_regions, tracking_code, archived, display_url, brand_name, description, call_to_action, ad_group_name, changes_text, ad_group_id, created_by_id, autopilot_daily_budget, autopilot_state, retargeting_ad_groups, system_user, landing_mode, exclusion_retargeting_ad_groups, bluekai_targeting, exclusion_interest_targeting, interest_targeting, notes, redirect_javascript, redirect_pixel_urls, audience_targeting, exclusion_audience_targeting) FROM stdin;
+COPY dash_adgroupsettings (id, created_dt, state, start_date, end_date, cpc_cc, daily_budget_cc, target_devices, target_regions, tracking_code, archived, display_url, brand_name, description, call_to_action, ad_group_name, changes_text, ad_group_id, created_by_id, autopilot_daily_budget, autopilot_state, retargeting_ad_groups, system_user, landing_mode, exclusion_retargeting_ad_groups, bluekai_targeting, exclusion_interest_targeting, interest_targeting, notes, redirect_javascript, redirect_pixel_urls, audience_targeting, exclusion_audience_targeting, b1_sources_group_daily_budget, b1_sources_group_enabled, b1_sources_group_state, dayparting) FROM stdin;
 \.
 
 
@@ -3835,6 +4093,14 @@ COPY dash_audience (id, ttl, created_dt, modified_dt, pixel_id, name, archived, 
 --
 
 SELECT pg_catalog.setval('dash_audience_id_seq', 1, false);
+
+
+--
+-- Data for Name: dash_audiencerule; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY dash_audiencerule (id, type, value, audience_id) FROM stdin;
+\.
 
 
 --
@@ -4021,7 +4287,7 @@ SELECT pg_catalog.setval('dash_conversiongoal_id_seq', 1, false);
 -- Data for Name: dash_conversionpixel; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY dash_conversionpixel (id, slug, archived, last_sync_dt, created_dt, account_id, name) FROM stdin;
+COPY dash_conversionpixel (id, slug, archived, last_sync_dt, created_dt, account_id, name, audience_enabled) FROM stdin;
 \.
 
 
@@ -4078,21 +4344,6 @@ SELECT pg_catalog.setval('dash_defaultsourcesettings_id_seq', 1, false);
 
 
 --
--- Data for Name: dash_demoadgrouprealadgroup; Type: TABLE DATA; Schema: public; Owner: -
---
-
-COPY dash_demoadgrouprealadgroup (id, multiplication_factor, demo_ad_group_id, real_ad_group_id) FROM stdin;
-\.
-
-
---
--- Name: dash_demoadgrouprealadgroup_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
---
-
-SELECT pg_catalog.setval('dash_demoadgrouprealadgroup_id_seq', 1, false);
-
-
---
 -- Data for Name: dash_demomapping; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -4124,10 +4375,14 @@ COPY dash_emailtemplate (id, template_type, subject, body, recipients) FROM stdi
 10	10	Campaign stopped - {campaign.name}, {account.name}	Hi account manager of {campaign.name}\n\nWe'd like to notify you that campaign {campaign.name}, {account.name} has run out of available budget and was stopped.\n\nPlease check {link_url} for details.\n\nYours truly,\nZemanta\n    	
 11	11	Campaign Autopilot Changes - {campaign.name}, {account.name}	Hi account manager of {account.name}\n\n            On the ad groups in campaign {campaign.name}, which are set to autopilot, the system made the following changes:{changes}\n\n            Please check {link_url} for details.\n\n            Yours truly,\n            Zemanta\n	
 12	12	Ad Group put on Bid CPC and Daily Budgets Optimising Autopilot - {account.name}	Hi account manager of {account.name}\n\n            Bid CPC and Daily Budgets Optimising Autopilot's settings on Your ad group in campaign {campaign.name} have been changed.\n            Autopilot made the following changes:{changes}\n            - all Paused Media Sources' Daily Budgets have been set to minimum values.\n\n            Please check {link_url} for details.\n\n            Yours truly,\n            Zemanta\n	
-13	13	Campaign is switching to landing mode	Hi, campaign manager,\n\n    your campaign {campaign.name} ({account.name}) has been switched to automated landing mode because it is approaching the budget limit.\n\n    The available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}. Please visit {link_url} and assign additional budget, if you don’t want campaign to be switched to the landing mode. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes, to ensure accurate delivery.\n\n    Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode.\n\n    Yours truly,\n    Zemanta	
-14	14	Campaign is running out of budget	Hi, campaign manager,\n\nyour campaign {campaign.name} ({account.name}) will soon run out of budget.\n\nThe available media budget remaining tomorrow is ${available_tomorrow:.2f}, current media daily cap is ${max_daily_budget:.2f} and yesterday's media spend was ${yesterday_spend:.2f}. Please add the budget to continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {link_url} and assign budget to your campaign.\n\nIf you don’t take any actions, system will automatically turn on the landing mode to hit your budget. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes. Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode.\n\nYours truly,\nZemanta	
 15	16	Livestream session started	User {user.email} started a new livestream session, accesssible on: {session_url}	operations@zemanta.com, ziga.stopinsek@zemanta.com
 16	17	Daily management report	Please use an email client with HTML support.	ziga.stopinsek@zemanta.com, bostjan@zemanta.com, urska.kosec@zemanta.com
+17	18	Unused Outbrain accounts running out	Hi,\nthere are only {n} unused Outbrain accounts left on Z1.\n    	
+18	19	Google Analytics Setup Instructions	Dear manager,\n\nthe instructions on http://help.zemanta.com/article/show/10814-realtime-google-analytics-reports_1 will walk you through the simple setup process in Zemanta One and your Google Analytics account.\n\nYours truly,\nZemanta\n    	
+13	13	Campaign is switching to landing mode	Hi, campaign manager,\n\nyour campaign {campaign.name} ({account.name}) has been switched to automated landing mode because it is approaching the budget limit.\n\nPlease visit {link_url} and assign additional budget, if you don’t want campaign to be switched to the landing mode. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes, to ensure accurate delivery.\n\nLearn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode.\n\nYours truly,\nZemanta	
+14	14	Campaign is running out of budget	Hi, campaign manager,\n\nyour campaign {campaign.name} ({account.name}) will soon run out of budget.\n\nPlease add the budget to continue to adjust media sources settings by your needs, if you don’t want campaign to end in a few days. To do so please visit {link_url} and assign budget to your campaign.\n\nIf you don’t take any actions, system will automatically turn on the landing mode to hit your budget. While campaign is in landing mode, CPCs and daily budgets of media sources will not be available for any changes. Learn more about landing mode: http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode.\n\nYours truly,\nZemanta	
+20	15	Demo is running	Hi,\n\nDemo is running.\nLog in to {url}\nu/p: regular.user+demo@zemanta.com / {password}\n\nNote: This instance will selfdestroy in 7 days\n\nYours truly,\nZemanta\n    	
+19	20	Report results	Hi,\n\nYou requested a report with the following settings:\n\nAccount: {account_name}\nCampaign: {campaign_name}\nAd Group: {ad_group_name}\n\nDate range: {start_date} - {end_date}\nView: {tab_name}\nBreakdowns: {breakdown}\nColumns: {columns}\nFilters: {filters}\nTotals included: {include_totals}\n\nYou can download the report here: {link_url}.\nReport will be available for download until {expiry_date}.\n\nYours truly,\nZemanta\n    	
 \.
 
 
@@ -4135,14 +4390,14 @@ COPY dash_emailtemplate (id, template_type, subject, body, recipients) FROM stdi
 -- Name: dash_emailtemplate_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('dash_emailtemplate_id_seq', 16, true);
+SELECT pg_catalog.setval('dash_emailtemplate_id_seq', 20, true);
 
 
 --
 -- Data for Name: dash_exportreport; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY dash_exportreport (id, created_dt, granularity, breakdown_by_day, breakdown_by_source, order_by, additional_fields, account_id, ad_group_id, campaign_id, created_by_id, include_model_ids, filtered_account_types) FROM stdin;
+COPY dash_exportreport (id, created_dt, granularity, breakdown_by_day, breakdown_by_source, order_by, additional_fields, account_id, ad_group_id, campaign_id, created_by_id, include_model_ids, filtered_account_types, include_totals, include_missing) FROM stdin;
 \.
 
 
@@ -4237,14 +4492,6 @@ SELECT pg_catalog.setval('dash_publisherblacklist_id_seq', 1, false);
 
 
 --
--- Data for Name: dash_rule; Type: TABLE DATA; Schema: public; Owner: -
---
-
-COPY dash_rule (id, type, value, audience_id) FROM stdin;
-\.
-
-
---
 -- Name: dash_rule_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -4300,7 +4547,7 @@ SELECT pg_catalog.setval('dash_scheduledexportreportrecipient_id_seq', 1, false)
 -- Data for Name: dash_source; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY dash_source (id, name, tracking_slug, bidder_slug, maintenance, deprecated, created_dt, modified_dt, released, content_ad_submission_type, source_type_id, supports_retargeting, supports_retargeting_manually, default_cpc_cc, default_daily_budget_cc, default_mobile_cpc_cc) FROM stdin;
+COPY dash_source (id, name, tracking_slug, bidder_slug, maintenance, deprecated, created_dt, modified_dt, released, content_ad_submission_type, source_type_id, supports_retargeting, supports_retargeting_manually, default_cpc_cc, default_daily_budget_cc, default_mobile_cpc_cc, impression_trackers_count) FROM stdin;
 \.
 
 
@@ -4360,7 +4607,7 @@ SELECT pg_catalog.setval('dash_sourcetypepixel_id_seq', 1, false);
 -- Data for Name: dash_uploadbatch; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY dash_uploadbatch (id, name, created_dt, status, ad_group_id, original_filename) FROM stdin;
+COPY dash_uploadbatch (id, name, created_dt, status, ad_group_id, original_filename, default_brand_name, default_call_to_action, default_description, default_display_url, default_image_crop, auto_save) FROM stdin;
 \.
 
 
@@ -4420,7 +4667,6 @@ COPY django_content_type (id, app_label, model) FROM stdin;
 27	dash	article
 28	dash	conversionpixel
 29	dash	conversiongoal
-30	dash	demoadgrouprealadgroup
 31	dash	demomapping
 32	dash	publisherblacklist
 33	dash	creditlineitem
@@ -4436,7 +4682,6 @@ COPY django_content_type (id, app_label, model) FROM stdin;
 43	dash	history
 44	dash	sourcetypepixel
 45	dash	audience
-46	dash	rule
 47	zemauth	user
 48	zemauth	internalgroup
 49	actionlog	actionlogorder
@@ -4455,6 +4700,13 @@ COPY django_content_type (id, app_label, model) FROM stdin;
 62	automation	autopilotadgroupsourcebidcpclog
 63	automation	autopilotlog
 64	automation	campaignstoplog
+65	dash	audiencerule
+66	restapi	reportjob
+67	oauth2_provider	application
+68	oauth2_provider	grant
+69	oauth2_provider	accesstoken
+70	oauth2_provider	refreshtoken
+71	bizwire	adgrouptargeting
 \.
 
 
@@ -4462,7 +4714,7 @@ COPY django_content_type (id, app_label, model) FROM stdin;
 -- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('django_content_type_id_seq', 64, true);
+SELECT pg_catalog.setval('django_content_type_id_seq', 71, true);
 
 
 --
@@ -4776,6 +5028,53 @@ COPY django_migrations (id, app, name, applied) FROM stdin;
 304	zemauth	0090_auto_20160907_1502	2016-10-12 08:28:48.636721+00
 305	zemauth	0091_auto_20160908_1401	2016-10-12 08:28:48.735525+00
 306	zemauth	0092_auto_20160912_0755	2016-10-12 08:28:48.943136+00
+307	actionlog	0003_auto_20160914_0941	2016-12-15 16:09:02.512553+00
+308	actionlog	0004_auto_20160916_1324	2016-12-15 16:09:02.591694+00
+309	automation	0017_auto_20161014_1205	2016-12-15 16:09:05.103246+00
+310	dash	0125_exportreport_include_totals	2016-12-15 16:09:08.768266+00
+311	dash	0126_ob_running_out_email	2016-12-15 16:09:08.77829+00
+312	dash	0126_auto_20160916_1324	2016-12-15 16:09:08.863278+00
+313	dash	0127_merge	2016-12-15 16:09:08.865531+00
+314	dash	0128_add_ga_email	2016-12-15 16:09:08.875323+00
+315	dash	0129_auto_20160920_0812	2016-12-15 16:09:08.886933+00
+316	dash	0130_auto_20160920_1354	2016-12-15 16:09:09.417418+00
+317	dash	0131_conversionpixel_outbrain_sync	2016-12-15 16:09:09.504974+00
+318	dash	0131_change_landing_mode_emails_20160923_1236	2016-12-15 16:09:09.51635+00
+319	dash	0132_merge	2016-12-15 16:09:09.518677+00
+320	dash	0133_auto_20161004_1141	2016-12-15 16:09:09.688136+00
+321	dash	0134_auto_20161007_1328	2016-12-15 16:09:10.029081+00
+322	dash	0135_auto_20161007_1410	2016-12-15 16:09:10.221596+00
+323	dash	0136_auto_20161014_1205	2016-12-15 16:09:11.112284+00
+324	dash	0137_uploadbatch_auto_save	2016-12-15 16:09:11.200841+00
+325	dash	0137_auto_20161014_1208	2016-12-15 16:09:11.447356+00
+326	dash	0138_merge	2016-12-15 16:09:11.44959+00
+327	dash	0139_auto_20161021_1034	2016-12-15 16:09:11.739567+00
+328	dash	0140_adgroupsettings_dayparting	2016-12-15 16:09:11.829042+00
+329	dash	0141_exportreport_include_missing	2016-12-15 16:09:12.023044+00
+330	dash	0142_auto_20161110_1522	2016-12-15 16:09:12.034345+00
+331	dash	0143_auto_20161110_1523	2016-12-15 16:09:12.042427+00
+332	dash	0144_change_demo_running_email	2016-12-15 16:09:12.050201+00
+333	bizwire	0001_initial	2016-12-15 16:09:12.141755+00
+334	bizwire	0002_auto_20161122_1656	2016-12-15 16:09:12.223284+00
+335	dash	0145_auto_20161130_1540	2016-12-15 16:09:12.231287+00
+336	dash	0146_auto_20161202_1418	2016-12-15 16:09:12.241305+00
+337	dash	0147_auto_20161208_0816	2016-12-15 16:09:12.399288+00
+338	oauth2_provider	0001_initial	2016-12-15 16:09:12.776321+00
+339	oauth2_provider	0002_08_updates	2016-12-15 16:09:13.227464+00
+340	restapi	0001_initial	2016-12-15 16:09:15.78995+00
+341	zemauth	0093_auto_20160915_1033	2016-12-15 16:09:25.454591+00
+342	zemauth	0094_auto_20160915_1414	2016-12-15 16:09:25.562461+00
+343	zemauth	0095_auto_20160922_1320	2016-12-15 16:09:25.665906+00
+344	zemauth	0096_auto_20160927_0923	2016-12-15 16:09:25.772818+00
+345	zemauth	0097_auto_20161004_1524	2016-12-15 16:09:25.987761+00
+346	zemauth	0098_auto_20161019_0906	2016-12-15 16:09:26.086256+00
+347	zemauth	0099_auto_20161028_0827	2016-12-15 16:09:26.186205+00
+348	zemauth	0100_auto_20161028_1432	2016-12-15 16:09:26.286158+00
+349	zemauth	0099_auto_20161024_1401	2016-12-15 16:09:26.390119+00
+350	zemauth	0101_merge	2016-12-15 16:09:26.391965+00
+351	zemauth	0102_auto_20161108_1308	2016-12-15 16:09:26.494332+00
+352	zemauth	0103_auto_20161202_1010	2016-12-15 16:09:26.60071+00
+353	zemauth	0104_auto_20161208_0816	2016-12-15 16:09:26.702415+00
 \.
 
 
@@ -4783,7 +5082,7 @@ COPY django_migrations (id, app, name, applied) FROM stdin;
 -- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('django_migrations_id_seq', 306, true);
+SELECT pg_catalog.setval('django_migrations_id_seq', 353, true);
 
 
 --
@@ -4792,6 +5091,66 @@ SELECT pg_catalog.setval('django_migrations_id_seq', 306, true);
 
 COPY django_session (session_key, session_data, expire_date) FROM stdin;
 \.
+
+
+--
+-- Data for Name: oauth2_provider_accesstoken; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY oauth2_provider_accesstoken (id, token, expires, scope, application_id, user_id) FROM stdin;
+\.
+
+
+--
+-- Name: oauth2_provider_accesstoken_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('oauth2_provider_accesstoken_id_seq', 1, false);
+
+
+--
+-- Data for Name: oauth2_provider_application; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY oauth2_provider_application (id, client_id, redirect_uris, client_type, authorization_grant_type, client_secret, name, user_id, skip_authorization) FROM stdin;
+\.
+
+
+--
+-- Name: oauth2_provider_application_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('oauth2_provider_application_id_seq', 1, false);
+
+
+--
+-- Data for Name: oauth2_provider_grant; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY oauth2_provider_grant (id, code, expires, redirect_uri, scope, application_id, user_id) FROM stdin;
+\.
+
+
+--
+-- Name: oauth2_provider_grant_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('oauth2_provider_grant_id_seq', 1, false);
+
+
+--
+-- Data for Name: oauth2_provider_refreshtoken; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY oauth2_provider_refreshtoken (id, token, access_token_id, application_id, user_id) FROM stdin;
+\.
+
+
+--
+-- Name: oauth2_provider_refreshtoken_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('oauth2_provider_refreshtoken_id_seq', 1, false);
 
 
 --
@@ -4945,6 +5304,21 @@ SELECT pg_catalog.setval('reports_supplyreportrecipient_id_seq', 1, false);
 
 
 --
+-- Data for Name: restapi_reportjob; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY restapi_reportjob (id, created_dt, status, query, result, user_id) FROM stdin;
+\.
+
+
+--
+-- Name: restapi_reportjob_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('restapi_reportjob_id_seq', 1, false);
+
+
+--
 -- Data for Name: zemauth_internalgroup; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -4964,6 +5338,7 @@ SELECT pg_catalog.setval('zemauth_internalgroup_id_seq', 1, false);
 --
 
 COPY zemauth_user (id, password, last_login, is_superuser, email, username, first_name, last_name, date_joined, is_staff, is_active, is_test_user) FROM stdin;
+1	pbkdf2_sha256$24000$GSWijssN2W0b$J0Hd1hjyMLM6BIn9xKPDSRlNU8IYx8QvqkcQPo+PI8Y=	2016-09-16 13:18:05.637437+00	t	dev@zemanta.com	\N			2016-09-16 13:18:05.637437+00	t	t	f
 \.
 
 
@@ -4986,7 +5361,7 @@ SELECT pg_catalog.setval('zemauth_user_groups_id_seq', 1, false);
 -- Name: zemauth_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('zemauth_user_id_seq', 1, false);
+SELECT pg_catalog.setval('zemauth_user_id_seq', 1, true);
 
 
 --
@@ -5098,6 +5473,22 @@ ALTER TABLE ONLY automation_campaignbudgetdepletionnotification
 
 ALTER TABLE ONLY automation_campaignstoplog
     ADD CONSTRAINT automation_campaignstoplog_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: bizwire_adgrouptargeting bizwire_adgrouptargeting_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY bizwire_adgrouptargeting
+    ADD CONSTRAINT bizwire_adgrouptargeting_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: bizwire_adgrouptargeting bizwire_adgrouptargeting_start_date_5b20e475_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY bizwire_adgrouptargeting
+    ADD CONSTRAINT bizwire_adgrouptargeting_start_date_5b20e475_uniq UNIQUE (start_date, interest_targeting);
 
 
 --
@@ -5453,30 +5844,6 @@ ALTER TABLE ONLY dash_defaultsourcesettings
 
 
 --
--- Name: dash_demoadgrouprealadgroup dash_demoadgrouprealadgroup_demo_ad_group_id_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY dash_demoadgrouprealadgroup
-    ADD CONSTRAINT dash_demoadgrouprealadgroup_demo_ad_group_id_key UNIQUE (demo_ad_group_id);
-
-
---
--- Name: dash_demoadgrouprealadgroup dash_demoadgrouprealadgroup_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY dash_demoadgrouprealadgroup
-    ADD CONSTRAINT dash_demoadgrouprealadgroup_pkey PRIMARY KEY (id);
-
-
---
--- Name: dash_demoadgrouprealadgroup dash_demoadgrouprealadgroup_real_ad_group_id_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY dash_demoadgrouprealadgroup
-    ADD CONSTRAINT dash_demoadgrouprealadgroup_real_ad_group_id_key UNIQUE (real_ad_group_id);
-
-
---
 -- Name: dash_demomapping dash_demomapping_demo_account_name_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5597,10 +5964,10 @@ ALTER TABLE ONLY dash_publisherblacklist
 
 
 --
--- Name: dash_rule dash_rule_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: dash_audiencerule dash_rule_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY dash_rule
+ALTER TABLE ONLY dash_audiencerule
     ADD CONSTRAINT dash_rule_pkey PRIMARY KEY (id);
 
 
@@ -5746,6 +6113,54 @@ ALTER TABLE ONLY django_migrations
 
 ALTER TABLE ONLY django_session
     ADD CONSTRAINT django_session_pkey PRIMARY KEY (session_key);
+
+
+--
+-- Name: oauth2_provider_accesstoken oauth2_provider_accesstoken_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_accesstoken
+    ADD CONSTRAINT oauth2_provider_accesstoken_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: oauth2_provider_application oauth2_provider_application_client_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_application
+    ADD CONSTRAINT oauth2_provider_application_client_id_key UNIQUE (client_id);
+
+
+--
+-- Name: oauth2_provider_application oauth2_provider_application_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_application
+    ADD CONSTRAINT oauth2_provider_application_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: oauth2_provider_grant oauth2_provider_grant_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_grant
+    ADD CONSTRAINT oauth2_provider_grant_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: oauth2_provider_refreshtoken oauth2_provider_refreshtoken_access_token_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_refreshtoken
+    ADD CONSTRAINT oauth2_provider_refreshtoken_access_token_id_key UNIQUE (access_token_id);
+
+
+--
+-- Name: oauth2_provider_refreshtoken oauth2_provider_refreshtoken_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_refreshtoken
+    ADD CONSTRAINT oauth2_provider_refreshtoken_pkey PRIMARY KEY (id);
 
 
 --
@@ -5901,6 +6316,14 @@ ALTER TABLE ONLY reports_supplyreportrecipient
 
 
 --
+-- Name: restapi_reportjob restapi_reportjob_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY restapi_reportjob
+    ADD CONSTRAINT restapi_reportjob_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: zemauth_internalgroup zemauth_internalgroup_group_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5976,13 +6399,6 @@ CREATE INDEX actionlog_actionlog_0b893638 ON actionlog_actionlog USING btree (cr
 --
 
 CREATE INDEX actionlog_actionlog_418c5509 ON actionlog_actionlog USING btree (action);
-
-
---
--- Name: actionlog_actionlog_51047278; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX actionlog_actionlog_51047278 ON actionlog_actionlog USING btree (conversion_pixel_id);
 
 
 --
@@ -6165,6 +6581,13 @@ CREATE INDEX automation_campaignstoplog_0b893638 ON automation_campaignstoplog U
 --
 
 CREATE INDEX automation_campaignstoplog_f14acec3 ON automation_campaignstoplog USING btree (campaign_id);
+
+
+--
+-- Name: bizwire_adgrouptargeting_22ff94c4; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX bizwire_adgrouptargeting_22ff94c4 ON bizwire_adgrouptargeting USING btree (ad_group_id);
 
 
 --
@@ -6766,7 +7189,7 @@ CREATE INDEX dash_publisherblacklist_f14acec3 ON dash_publisherblacklist USING b
 -- Name: dash_rule_cc4f3858; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX dash_rule_cc4f3858 ON dash_rule USING btree (audience_id);
+CREATE INDEX dash_rule_cc4f3858 ON dash_audiencerule USING btree (audience_id);
 
 
 --
@@ -6879,6 +7302,118 @@ CREATE INDEX django_session_de54fa62 ON django_session USING btree (expire_date)
 --
 
 CREATE INDEX django_session_session_key_c0390e0f_like ON django_session USING btree (session_key varchar_pattern_ops);
+
+
+--
+-- Name: oauth2_provider_accesstoken_6bc0a4eb; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_accesstoken_6bc0a4eb ON oauth2_provider_accesstoken USING btree (application_id);
+
+
+--
+-- Name: oauth2_provider_accesstoken_94a08da1; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_accesstoken_94a08da1 ON oauth2_provider_accesstoken USING btree (token);
+
+
+--
+-- Name: oauth2_provider_accesstoken_e8701ad4; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_accesstoken_e8701ad4 ON oauth2_provider_accesstoken USING btree (user_id);
+
+
+--
+-- Name: oauth2_provider_accesstoken_token_8af090f8_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_accesstoken_token_8af090f8_like ON oauth2_provider_accesstoken USING btree (token varchar_pattern_ops);
+
+
+--
+-- Name: oauth2_provider_application_9d667c2b; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_application_9d667c2b ON oauth2_provider_application USING btree (client_secret);
+
+
+--
+-- Name: oauth2_provider_application_client_id_03f0cc84_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_application_client_id_03f0cc84_like ON oauth2_provider_application USING btree (client_id varchar_pattern_ops);
+
+
+--
+-- Name: oauth2_provider_application_client_secret_53133678_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_application_client_secret_53133678_like ON oauth2_provider_application USING btree (client_secret varchar_pattern_ops);
+
+
+--
+-- Name: oauth2_provider_application_e8701ad4; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_application_e8701ad4 ON oauth2_provider_application USING btree (user_id);
+
+
+--
+-- Name: oauth2_provider_grant_6bc0a4eb; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_grant_6bc0a4eb ON oauth2_provider_grant USING btree (application_id);
+
+
+--
+-- Name: oauth2_provider_grant_c1336794; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_grant_c1336794 ON oauth2_provider_grant USING btree (code);
+
+
+--
+-- Name: oauth2_provider_grant_code_49ab4ddf_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_grant_code_49ab4ddf_like ON oauth2_provider_grant USING btree (code varchar_pattern_ops);
+
+
+--
+-- Name: oauth2_provider_grant_e8701ad4; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_grant_e8701ad4 ON oauth2_provider_grant USING btree (user_id);
+
+
+--
+-- Name: oauth2_provider_refreshtoken_6bc0a4eb; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_refreshtoken_6bc0a4eb ON oauth2_provider_refreshtoken USING btree (application_id);
+
+
+--
+-- Name: oauth2_provider_refreshtoken_94a08da1; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_refreshtoken_94a08da1 ON oauth2_provider_refreshtoken USING btree (token);
+
+
+--
+-- Name: oauth2_provider_refreshtoken_e8701ad4; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_refreshtoken_e8701ad4 ON oauth2_provider_refreshtoken USING btree (user_id);
+
+
+--
+-- Name: oauth2_provider_refreshtoken_token_d090daa4_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oauth2_provider_refreshtoken_token_d090daa4_like ON oauth2_provider_refreshtoken USING btree (token varchar_pattern_ops);
 
 
 --
@@ -7043,6 +7578,13 @@ CREATE INDEX reports_supplyreportrecipient_0afd9202 ON reports_supplyreportrecip
 
 
 --
+-- Name: restapi_reportjob_e8701ad4; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX restapi_reportjob_e8701ad4 ON restapi_reportjob USING btree (user_id);
+
+
+--
 -- Name: zemauth_user_email_07ae32b7_like; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -7090,14 +7632,6 @@ CREATE INDEX zemauth_user_user_permissions_e8701ad4 ON zemauth_user_user_permiss
 
 ALTER TABLE ONLY actionlog_actionlog
     ADD CONSTRAINT action_content_ad_source_id_f725f3ed_fk_dash_contentadsource_id FOREIGN KEY (content_ad_source_id) REFERENCES dash_contentadsource(id) DEFERRABLE INITIALLY DEFERRED;
-
-
---
--- Name: actionlog_actionlog actionl_conversion_pixel_id_853a9c8c_fk_dash_conversionpixel_id; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY actionlog_actionlog
-    ADD CONSTRAINT actionl_conversion_pixel_id_853a9c8c_fk_dash_conversionpixel_id FOREIGN KEY (conversion_pixel_id) REFERENCES dash_conversionpixel(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -7218,6 +7752,14 @@ ALTER TABLE ONLY automation_campaignbudgetdepletionnotification
 
 ALTER TABLE ONLY automation_campaignstoplog
     ADD CONSTRAINT automation_campaignsto_campaign_id_c521c9c6_fk_dash_campaign_id FOREIGN KEY (campaign_id) REFERENCES dash_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: bizwire_adgrouptargeting bizwire_adgrouptargetin_ad_group_id_632c2fb8_fk_dash_adgroup_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY bizwire_adgrouptargeting
+    ADD CONSTRAINT bizwire_adgrouptargetin_ad_group_id_632c2fb8_fk_dash_adgroup_id FOREIGN KEY (ad_group_id) REFERENCES dash_adgroup(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -7749,22 +8291,6 @@ ALTER TABLE ONLY dash_defaultsourcesettings
 
 
 --
--- Name: dash_demoadgrouprealadgroup dash_demoadgroupre_demo_ad_group_id_02e1e011_fk_dash_adgroup_id; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY dash_demoadgrouprealadgroup
-    ADD CONSTRAINT dash_demoadgroupre_demo_ad_group_id_02e1e011_fk_dash_adgroup_id FOREIGN KEY (demo_ad_group_id) REFERENCES dash_adgroup(id) DEFERRABLE INITIALLY DEFERRED;
-
-
---
--- Name: dash_demoadgrouprealadgroup dash_demoadgroupre_real_ad_group_id_a5d9cd34_fk_dash_adgroup_id; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY dash_demoadgrouprealadgroup
-    ADD CONSTRAINT dash_demoadgroupre_real_ad_group_id_a5d9cd34_fk_dash_adgroup_id FOREIGN KEY (real_ad_group_id) REFERENCES dash_adgroup(id) DEFERRABLE INITIALLY DEFERRED;
-
-
---
 -- Name: dash_demomapping dash_demomapping_real_account_id_92834e5c_fk_dash_account_id; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7917,10 +8443,10 @@ ALTER TABLE ONLY dash_publisherblacklist
 
 
 --
--- Name: dash_rule dash_rule_audience_id_a6ee9274_fk_dash_audience_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: dash_audiencerule dash_rule_audience_id_a6ee9274_fk_dash_audience_id; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY dash_rule
+ALTER TABLE ONLY dash_audiencerule
     ADD CONSTRAINT dash_rule_audience_id_a6ee9274_fk_dash_audience_id FOREIGN KEY (audience_id) REFERENCES dash_audience(id) DEFERRABLE INITIALLY DEFERRED;
 
 
@@ -7994,6 +8520,70 @@ ALTER TABLE ONLY django_admin_log
 
 ALTER TABLE ONLY django_admin_log
     ADD CONSTRAINT django_admin_log_user_id_c564eba6_fk_zemauth_user_id FOREIGN KEY (user_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: oauth2_provider_refreshtoken oaut_access_token_id_775e84e8_fk_oauth2_provider_accesstoken_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_refreshtoken
+    ADD CONSTRAINT oaut_access_token_id_775e84e8_fk_oauth2_provider_accesstoken_id FOREIGN KEY (access_token_id) REFERENCES oauth2_provider_accesstoken(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: oauth2_provider_accesstoken oauth2_provider_accesstoken_user_id_6e4c9a65_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_accesstoken
+    ADD CONSTRAINT oauth2_provider_accesstoken_user_id_6e4c9a65_fk_zemauth_user_id FOREIGN KEY (user_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: oauth2_provider_application oauth2_provider_application_user_id_79829054_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_application
+    ADD CONSTRAINT oauth2_provider_application_user_id_79829054_fk_zemauth_user_id FOREIGN KEY (user_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: oauth2_provider_grant oauth2_provider_grant_user_id_e8f62af8_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_grant
+    ADD CONSTRAINT oauth2_provider_grant_user_id_e8f62af8_fk_zemauth_user_id FOREIGN KEY (user_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: oauth2_provider_refreshtoken oauth2_provider_refreshtoke_user_id_da837fce_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_refreshtoken
+    ADD CONSTRAINT oauth2_provider_refreshtoke_user_id_da837fce_fk_zemauth_user_id FOREIGN KEY (user_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: oauth2_provider_refreshtoken oauth_application_id_2d1c311b_fk_oauth2_provider_application_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_refreshtoken
+    ADD CONSTRAINT oauth_application_id_2d1c311b_fk_oauth2_provider_application_id FOREIGN KEY (application_id) REFERENCES oauth2_provider_application(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: oauth2_provider_grant oauth_application_id_81923564_fk_oauth2_provider_application_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_grant
+    ADD CONSTRAINT oauth_application_id_81923564_fk_oauth2_provider_application_id FOREIGN KEY (application_id) REFERENCES oauth2_provider_application(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: oauth2_provider_accesstoken oauth_application_id_b22886e1_fk_oauth2_provider_application_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY oauth2_provider_accesstoken
+    ADD CONSTRAINT oauth_application_id_b22886e1_fk_oauth2_provider_application_id FOREIGN KEY (application_id) REFERENCES oauth2_provider_application(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -8154,6 +8744,14 @@ ALTER TABLE ONLY reports_goalconversionstats
 
 ALTER TABLE ONLY reports_supplyreportrecipient
     ADD CONSTRAINT reports_supplyreportrecipi_source_id_865b4b0c_fk_dash_source_id FOREIGN KEY (source_id) REFERENCES dash_source(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: restapi_reportjob restapi_reportjob_user_id_9145a152_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY restapi_reportjob
+    ADD CONSTRAINT restapi_reportjob_user_id_9145a152_fk_zemauth_user_id FOREIGN KEY (user_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
