@@ -12,6 +12,9 @@ angular.module('one.legacy').controller('EditConversionPixelModalCtrl', function
         $scope.inProgress = true;
         api.conversionPixel.edit(pixel).then(
             function (data) {
+                if (data.audienceEnabled) {
+                    $scope.$emit('pixelAudienceEnabled', {pixel: data});
+                }
                 $scope.$close(data);
             },
             function (data) {

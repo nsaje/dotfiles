@@ -8,6 +8,13 @@ angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', function (
         refreshAudiences: undefined,
     };
 
+    $scope.$on('pixelAudienceEnabled', function (ev, args) {
+        var pixel = args.pixel;
+        if (pixel && pixel.audienceEnabled) {
+            $scope.audiencePixel = pixel;
+        }
+    });
+
     $scope.openAudienceModal = function () {
         if (!$scope.audiencePixel) {
             return;
