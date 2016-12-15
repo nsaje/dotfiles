@@ -51,7 +51,7 @@ class Command(ExceptionCommand):
 
         mapping = {}
         for line in lines:
-            mapping[line[0]] = line[1]
+            mapping[int(line[0])] = line[1]
 
         return mapping
 
@@ -63,7 +63,12 @@ class Command(ExceptionCommand):
 
         for i, content_ad in enumerate(content_ads):
             self.stdout.write(
-                'Processing content ad {} of {}'.format(i + 1, len(content_ads)))
-
+                'Processing content ad {} of {} (label "{}" to "{}")'.format(
+                    i + 1,
+                    len(content_ads),
+                    content_ad.label,
+                    mapping[content_ad.pk],
+                )
+            )
             content_ad.label = mapping[content_ad.pk]
             content_ad.save()
