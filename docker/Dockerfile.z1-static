@@ -1,4 +1,4 @@
-FROM digitallyseamless/nodejs-bower-grunt
+FROM digitallyseamless/nodejs-bower-grunt:4
 
 RUN bash -c "useradd -m -u 1000 ubuntu || true"
 
