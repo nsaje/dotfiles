@@ -44,7 +44,6 @@ describe('ZemUploadStep2Ctrl', function () {
                 batchId: 1,
                 batchName: 'mock batch',
                 closeModal: function () {},
-                hasPermission: function () { return false; },
             }
         );
     }));

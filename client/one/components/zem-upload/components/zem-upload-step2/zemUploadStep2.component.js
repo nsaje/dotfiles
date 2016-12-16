@@ -9,14 +9,13 @@ angular.module('one.legacy').directive('zemUploadStep2', function ($window) { //
         bindToController: {
             endpoint: '=',
             callback: '&',
-            adGroup: '=',
+            adGroupId: '=',
             batchId: '=',
             batchName: '=',
             candidates: '=',
             closeModal: '=close',
             autoOpenEditForm: '=',
-            hasPermission: '=',
-            isPermissionInternal: '=',
+            isEdit: '=',
         },
         controllerAs: 'ctrl',
         templateUrl: '/components/zem-upload/components/zem-upload-step2/zemUploadStep2.component.html',
@@ -374,7 +373,7 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', function ($scope, 
     };
 
     vm.download = function () {
-        var url = '/api/ad_groups/' + vm.adGroup.id + '/contentads/upload/' + vm.batchId +
+        var url = '/api/ad_groups/' + vm.adGroupId + '/contentads/upload/' + vm.batchId +
                 '/download/?batch_name=' + encodeURIComponent(vm.formData.batchName);
         $window.open(url, '_blank');
     };
@@ -391,7 +390,7 @@ angular.module('one.legacy').controller('ZemUploadStep2Ctrl', function ($scope, 
         vm.stopPolling();
     });
 
-    if (vm.autoOpenEditForm && vm.hasPermission('zemauth.can_use_single_ad_upload')) {
+    if (vm.autoOpenEditForm) {
         $timeout(function () { // wait until edit form is loaded
             vm.editFormApi.open(vm.candidates[0]);
         }, 0);

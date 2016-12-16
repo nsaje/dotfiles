@@ -16,8 +16,8 @@ from utils import lambda_helper, k1_helper, redirector_helper
 logger = logging.getLogger(__name__)
 
 VALID_DEFAULTS_FIELDS = set(['image_crop', 'description', 'display_url', 'brand_name', 'call_to_action'])
-VALID_UPDATE_FIELDS = set(['url', 'brand_name', 'display_url', 'description', 'call_to_action', 'image_crop', 'label',
-                           'tracker_urls'])
+VALID_UPDATE_FIELDS = set(['url', 'brand_name', 'display_url', 'description', 'image_crop', 'label',
+                           'primary_tracker_url', 'secondary_tracker_url'])
 
 
 class InvalidBatchStatus(Exception):
@@ -163,6 +163,29 @@ def persist_edit_batch(request, batch):
     k1_helper.update_content_ads(
         batch.ad_group_id, [ad.pk for ad in batch.contentad_set.all()],
         msg='upload.process_async.edit'
+    )
+    return content_ads
+
+
+def persist_edit_batch(request, batch):
+    if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
+        raise InvalidBatchStatus('Invalid batch status')
+
+    if batch.type != constants.UploadBatchType.EDIT:
+        raise ChangeForbidden('Batch not in edit mode')
+
+    candidates = models.ContentAdCandidate.objects.filter(batch=batch)
+    with transaction.atomic():
+        content_ads = _update_content_ads(candidates)
+        _update_redirects(content_ads)
+        _create_manual_edit_actions(request, content_ads)
+
+        candidates.delete()
+        batch.delete()
+
+    k1_helper.update_content_ads(
+        batch.ad_group_id, [ad.pk for ad in batch.contentad_set.all()],
+        msg='upload.process_async'
     )
     return content_ads
 
@@ -324,7 +347,8 @@ def _update_defaults(data, defaults, batch):
 
 
 def _update_candidate(data, batch, files):
-    candidate = batch.contentadcandidate_set.get(id=data['id'])
+    candidate = batch.contentadcandidate_set.get(id=data.pop('id'))
+
     form = forms.ContentAdCandidateForm(data, files)
     form.is_valid()  # used only to clean data of any possible unsupported fields
 
@@ -544,6 +568,16 @@ def _apply_content_ad_edit(candidate):
     for field in VALID_UPDATE_FIELDS:
         setattr(content_ad, field, f.cleaned_data[field])
 
+    content_ad.tracker_urls = []
+
+    primary_tracker_url = f.cleaned_data['primary_tracker_url']
+    if primary_tracker_url:
+        content_ad.tracker_urls.append(primary_tracker_url)
+
+    secondary_tracker_url = f.cleaned_data['secondary_tracker_url']
+    if secondary_tracker_url:
+        content_ad.tracker_urls.append(secondary_tracker_url)
+        
     content_ad.save()
     return content_ad
 

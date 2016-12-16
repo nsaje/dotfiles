@@ -10,7 +10,6 @@ angular.module('one.legacy').directive('zemUploadStep1', function () { // eslint
             endpoint: '=',
             callback: '&',
             close: '=',
-            user: '=',
             defaultBatchName: '=',
         },
         controllerAs: 'ctrl',

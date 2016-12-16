@@ -32,7 +32,6 @@ describe('ZemUploadEditFormCtrl', function () {
                 updateCallback: function () {},
                 batchId: 1,
                 scrollTop: function () {}, // directive link function
-                hasPermission: function () { return true; },
             }
         );
     }));
@@ -148,7 +147,6 @@ describe('ZemUploadEditFormCtrl', function () {
 
     describe('update field', function () {
         it('calls the endpoint', function () {
-            ctrl.hasPermission = function () { return true; };
             ctrl.batchId = 1234;
             ctrl.selectedCandidate = {
                 id: 1,
@@ -182,7 +180,6 @@ describe('ZemUploadEditFormCtrl', function () {
         });
 
         it('adds defaults', function () {
-            ctrl.hasPermission = function () { return true; };
             ctrl.batchId = 1234;
             ctrl.selectedCandidate = {
                 id: 1,
@@ -218,7 +215,6 @@ describe('ZemUploadEditFormCtrl', function () {
         });
 
         it('retries on fail', function () {
-            ctrl.hasPermission = function () { return true; };
             ctrl.batchId = 1234;
             ctrl.selectedCandidate = {
                 id: 1,
@@ -252,7 +248,6 @@ describe('ZemUploadEditFormCtrl', function () {
         });
 
         it('saves returned errors', function () {
-            ctrl.hasPermission = function () { return true; };
             ctrl.batchId = 1234;
             ctrl.selectedCandidate = {
                 id: 1,

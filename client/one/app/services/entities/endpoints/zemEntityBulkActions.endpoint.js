@@ -7,6 +7,7 @@ angular.module('one.services').service('zemEntityBulkActionsEndpoint', function 
     this.restore = restore;
     this.activate = activate;
     this.deactivate = deactivate;
+    this.edit = edit;
 
 
     function archive (level, breakdown, parentId, selection) {
@@ -27,6 +28,11 @@ angular.module('one.services').service('zemEntityBulkActionsEndpoint', function 
         var data = createSelectionData(selection);
         data.state = constants.settingsState.INACTIVE;
         return post(getUrl(level, breakdown, parentId, 'state'), data);
+    }
+
+    function edit (level, breakdown, parentId, selection) {
+        var data = createSelectionData(selection);
+        return post(getUrl(level, breakdown, parentId, 'edit'), data);
     }
 
     function createSelectionData (selection) {

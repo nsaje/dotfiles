@@ -541,6 +541,7 @@ var constants = {
         DEACTIVATE: 'deactivate',
         ARCHIVE: 'archive',
         RESTORE: 'restore',
+        EDIT: 'edit',
     },
     entityActionType: {
         SINGLE: 'single',

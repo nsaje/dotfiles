@@ -321,15 +321,15 @@ class PersistEditBatchTestCase(TestCase):
         self.assertEqual(new_content_ad, content_ads[0])
 
         for field in upload.VALID_UPDATE_FIELDS:
-            self.assertNotEqual(getattr(content_ad, field), getattr(new_content_ad, field))
-            if field == 'tracker_urls':
-                self.assertEqual(
-                    [candidate.primary_tracker_url, candidate.secondary_tracker_url], new_content_ad.tracker_urls)
+            if field in ['primary_tracker_url', 'secondary_tracker_url']:
+                self.assertTrue(getattr(candidate, field) in new_content_ad.tracker_urls)
+                self.assertFalse(getattr(candidate, field) in content_ad.tracker_urls)
                 continue
+            self.assertNotEqual(getattr(content_ad, field), getattr(new_content_ad, field))
             self.assertEqual(getattr(candidate, field), getattr(new_content_ad, field))
 
         for field in set(forms.ContentAdCandidateForm.Meta.fields) - upload.VALID_UPDATE_FIELDS:
-            if field in ['primary_tracker_url', 'secondary_tracker_url', 'image_url']:
+            if field in ['image_url']:
                 continue
             self.assertEqual(getattr(content_ad, field), getattr(new_content_ad, field))
             self.assertNotEqual(getattr(candidate, field), getattr(new_content_ad, field))

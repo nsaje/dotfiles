@@ -24,7 +24,7 @@
                     Ad Title:
                 </label>
                 <div class="col-xs-8">
-                    <input type="text" class="form-control" id="title-input" ng-model="ctrl.selectedCandidate.title" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('title')" />
+                    <input type="text" class="form-control" id="title-input" ng-model="ctrl.selectedCandidate.title" ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }" ng-change="ctrl.updateField('title')" ng-disabled="ctrl.isEdit" />
                     <label for="title-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['title']">Something went wrong. <a href ng-click="ctrl.updateField('title')" tabindex="-1">Try again</a></label>
                     <label for="title-input" ng-repeat="error in ctrl.selectedCandidate.errors.title" class="control-label small error">{{ error }}</label>
                 </div>
@@ -63,7 +63,7 @@
                 <div class="col-xs-8">
                     <div>
                         <zem-file-input zem-file-input-change="ctrl.imageUploadCallback(file)" zem-file-input-accept="image/*">
-                            <button type="button" class="button button--with-icon button--folder-icon" zem-file-input-trigger>Choose file</button>
+                            <button type="button" class="button button--with-icon button--folder-icon" zem-file-input-trigger ng-disabled="ctrl.isEdit">Choose file</button>
                         </zem-file-input>
                     </div>
                     <label for="image-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['image']">Something went wrong. <a href ng-click="ctrl.updateField('image')" tabindex="-1">Try again</a></label>
@@ -71,7 +71,7 @@
                     <div class="help-block m-b-none">
                         Recommended image size is above 1200x1200px. Some media sources will not work with smaller images.
                     </div>
-                    <a href class="action-link" ng-click="ctrl.toggleImageUpload()" tabindex="-1">
+                    <a href class="action-link" ng-click="ctrl.toggleImageUpload()" tabindex="-1" ng-if="!ctrl.isEdit">
                         If you already have image hosted, switch to URL adding form.
                     </a>
                 </div>
@@ -97,7 +97,7 @@
                     <label for="image-crop-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageCrop" class="control-label small error">{{ error }}</label>
                 </div>
                 <div class="col-xs-2 control-label p-l-none">
-                    <a href class="action-link" ng-click="ctrl.updateField('imageCrop', true)" tabindex="-1">
+                    <a href class="action-link" ng-click="ctrl.updateField('imageCrop', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
                     <img ng-if="ctrl.fieldsLoading.imageCrop" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
@@ -116,7 +116,7 @@
                 </div>
                 <div class="col-xs-2 control-label small p-t-none p-l-none">
                     {{ ctrl.selectedCandidate.description.length }}/{{ ctrl.MAX_DESCRIPTION_LENGTH }}
-                    <a href class="action-link" ng-click="ctrl.updateField('description', true)" tabindex="-1">
+                    <a href class="action-link" ng-click="ctrl.updateField('description', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
                     <img ng-if="ctrl.fieldsLoading.description" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
@@ -133,9 +133,9 @@
                     <label for="display-url-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['displayUrl']">Something went wrong. <a href ng-click="ctrl.updateField('displayUrl')" tabindex="-1">Try again</a></label>
                     <label for="display-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.displayUrl" class="control-label small error">{{ error }}</label>
                 </div>
-                <div class="col-xs-2 control-label small p-t-none p-l-none">
+                <div class="col-xs-2 control-label small p-l-none">
                     {{ ctrl.selectedCandidate.displayUrl.length }}/{{ ctrl.MAX_DISPLAY_URL_LENGTH }}
-                    <a href class="action-link" ng-click="ctrl.updateField('displayUrl', true)" tabindex="-1">
+                    <a href class="action-link" ng-click="ctrl.updateField('displayUrl', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
                     <img ng-if="ctrl.fieldsLoading.displayUrl" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
@@ -153,9 +153,9 @@
                     <label for="brand-name-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['brandName']">Something went wrong. <a href ng-click="ctrl.updateField('brandName')" tabindex="-1">Try again</a></label>
                     <label for="brand-name-input" ng-repeat="error in ctrl.selectedCandidate.errors.brandName" class="control-label small error">{{ error }}</label>
                 </div>
-                <div class="col-xs-2 control-label small p-t-none p-l-none">
+                <div class="col-xs-2 control-label small p-l-none">
                     {{ ctrl.selectedCandidate.brandName.length }}/{{ ctrl.MAX_BRAND_NAME_LENGTH }}
-                    <a href class="action-link" ng-click="ctrl.updateField('brandName', true)" tabindex="-1">
+                    <a href class="action-link" ng-click="ctrl.updateField('brandName', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
                     <img ng-if="ctrl.fieldsLoading.brandName" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
@@ -172,9 +172,9 @@
                     <label for="call-to-action-input" class="control-label small error" ng-if="ctrl.fieldsApiErrors['callToAction']">Something went wrong. <a href ng-click="ctrl.updateField('callToAction')" tabindex="-1">Try again</a></label>
                     <label for="call-to-action-input" ng-repeat="error in ctrl.selectedCandidate.errors.callToAction" class="control-label small error">{{ error }}</label>
                 </div>
-                <div class="col-xs-2 control-label small p-t-none p-l-none">
+                <div class="col-xs-2 control-label small p-l-none">
                     {{ ctrl.selectedCandidate.callToAction.length }}/{{ ctrl.MAX_CALL_TO_ACTION_LENGTH }}
-                    <a href class="action-link" ng-click="ctrl.updateField('callToAction', true)" tabindex="-1">
+                    <a href class="action-link" ng-click="ctrl.updateField('callToAction', true)" tabindex="-1" ng-if="!ctrl.isEdit">
                         Use as default
                     </a>
                     <img ng-if="ctrl.fieldsLoading.callToAction" class="small-icon input-indicator" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg" />
@@ -258,6 +258,6 @@
             </div>
         </form>
 
-        <button type="button" class="button-close" ng-click="ctrl.api.close()">Close <span class="glyphicon glyphicon-chevron-right"></span></button>
+        <button type="button" class="button-close" ng-click="ctrl.api.close()">Hide panel <span class="glyphicon glyphicon-chevron-right"></span></button>
     </div>
 </div>

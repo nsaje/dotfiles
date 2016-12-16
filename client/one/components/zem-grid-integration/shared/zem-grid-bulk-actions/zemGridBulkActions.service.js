@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridBulkActionsService', function ($window, api, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService) {
+angular.module('one.legacy').factory('zemGridBulkActionsService', function ($window, api, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadTriggerService, zemUploadApiConverter) {
 
     function BulkActionsService (gridApi) {
         this.getActions = getActions;
@@ -74,6 +74,13 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', function ($win
                 internal: gridApi.isPermissionInternal('zemauth.archive_restore_entity'),
                 execute: restore,
             },
+            edit: {
+                name: 'Edit',
+                value: 'edit',
+                hasPermission: gridApi.hasPermission('zemauth.can_edit_content_ads'),
+                internal: gridApi.isPermissionInternal('zemauth.can_edit_content_ads'),
+                execute: edit,
+            }
         };
 
         function getActions () {
@@ -91,7 +98,8 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', function ($win
                         notification: 'All selected Content Ads will be paused and archived.',
                         execute: archive,
                     },
-                    ACTIONS.restore
+                    ACTIONS.restore,
+                    ACTIONS.edit,
                 ];
             } else if (metaData.level === constants.level.ACCOUNTS && metaData.breakdown === constants.breakdown.CAMPAIGN) {
                 return [
@@ -186,6 +194,24 @@ angular.module('one.legacy').factory('zemGridBulkActionsService', function ($win
                 selection
             ).then(function (data) {
                 refreshData(data);
+            }, handleError);
+        }
+
+        function edit (selection) {
+            var metaData = gridApi.getMetaData();
+            zemEntityService.executeBulkAction(
+                constants.entityAction.EDIT,
+                metaData.level,
+                metaData.breakdown,
+                metaData.id,
+                selection
+            ).then(function (data) {
+                zemUploadTriggerService.openEditModal(
+                    metaData.id,
+                    data.data.batch_id,
+                    zemUploadApiConverter.convertCandidatesFromApi(data.data.candidates),
+                    gridApi.loadData
+                );
             }, handleError);
         }
 

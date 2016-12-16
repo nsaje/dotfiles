@@ -6,6 +6,7 @@ angular.module('one.services').service('zemContentAdService', function ($http, $
     this.restoreContentAds = entityActionsService.restoreEntities;
     this.activateContentAds = entityActionsService.activateEntities;
     this.deactivateContentAds = entityActionsService.deactivateEntities;
+    this.editContentAds = entityActionsService.editEntities;
 
     this.getAction = entityActionsService.getAction;
     this.onActionExecuted = entityActionsService.onActionExecuted;

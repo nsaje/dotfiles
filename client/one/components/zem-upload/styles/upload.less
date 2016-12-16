@@ -210,7 +210,7 @@
         }
         h4 {
             border-bottom: 1px solid #d2d2d2;
-            padding: 15px 80px 11px 0;
+            padding: 15px 100px 11px 0;
             margin: 0 0 20px 0;
             color: @text-color;
             white-space: nowrap;
@@ -226,16 +226,28 @@
                 }
             }
 
-            .select2-container-active {
-                border: 1px solid @primary-color !important;
-            }
-
             .control-label {
                 font-size: 13px;
             }
 
             input {
                 background-color: white;
+                padding-right: 30px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+
+                &[disabled] {
+                    background-color: transparent;
+                    border-color: transparent;
+                    box-shadow: none;
+                    padding-left: 0;
+                    pointer-events: none;
+                }
+            }
+
+            textarea {
+                padding-right: 30px;
             }
 
             .action-link {
@@ -302,10 +314,10 @@
 
             .input-indicator {
                 position: absolute;
-                left: -10px;
-                top: 2px;
-                width: (@default-button-input-height)-4;
-                height: (@default-button-input-height)-4;
+                left: -43px;
+                top: 4px;
+                width: (@default-button-input-height)-8;
+                height: (@default-button-input-height)-8;
 
                 &.input-success {
                     animation: fadeOut 0.5s 1;

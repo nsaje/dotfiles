@@ -12,8 +12,7 @@ angular.module('one.legacy').directive('zemUploadEditForm', function () { // esl
             refreshCallback: '=',
             updateCallback: '=',
             batchId: '=',
-            hasPermission: '=',
-            isPermissionInternal: '=',
+            isEdit: '=',
         },
         controllerAs: 'ctrl',
         templateUrl: '/components/zem-upload/components/zem-upload-edit-form/zemUploadEditForm.component.html',
@@ -67,7 +66,7 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', function (confi
         vm.selectedCandidate.useSecondaryTracker = !!vm.selectedCandidate.secondaryTrackerUrl;
         vm.scrollTop();
         vm.api.selectedId = candidate.id;
-        vm.showImageUpload = !vm.selectedCandidate.imageUrl;
+        vm.showImageUpload = vm.isEdit || !vm.selectedCandidate.imageUrl;
         vm.fieldsLoading = {};
         vm.fieldsSaved = {};
         vm.fieldsApiErrors = {};
@@ -106,7 +105,7 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', function (confi
     vm.updateField = function (field, useAsDefault) {
         var selectedId = vm.selectedCandidate.id;
         var defaults = [];
-        if (useAsDefault) defaults.push(field);
+        if (useAsDefault && !vm.isEdit) defaults.push(field);
 
         var data = {
             id: vm.selectedCandidate.id,
@@ -185,6 +184,7 @@ angular.module('one.legacy').controller('ZemUploadEditFormCtrl', function (confi
     };
 
     vm.toggleImageUpload = function () {
+        if (vm.isEdit) return;
         vm.fieldsSaved['image'] = false;
         vm.fieldsSaved['imageUrl'] = false;
         vm.showImageUpload = !vm.showImageUpload;

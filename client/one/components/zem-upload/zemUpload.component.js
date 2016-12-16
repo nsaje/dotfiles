@@ -11,24 +11,20 @@ angular.module('one.legacy').directive('zemUpload', function () { // eslint-disa
             adGroup: '=',
             onSave: '=',
             closeModal: '=',
-            user: '=',
-            hasPermission: '=',
-            isPermissionInternal: '=',
+            candidates: '=',
+            batchId: '=',
         },
         controllerAs: 'ctrl',
         controller: 'ZemUploadCtrl',
     };
 });
 
-angular.module('one.legacy').controller('ZemUploadCtrl', function (zemUploadEndpointService) {
+angular.module('one.legacy').controller('ZemUploadCtrl', function (zemUploadEndpointService, zemUserService) {
     var vm = this;
+    var user = zemUserService.current();
     vm.endpoint = zemUploadEndpointService.createEndpoint(vm.adGroup.id);
-    vm.defaultBatchName = moment().utc().add(vm.user ? vm.user.timezoneOffset : 0, 'seconds').format('M/D/YYYY h:mm A');
-    vm.step = 1;
-
-    if (vm.hasPermission('zemauth.can_use_single_ad_upload')) {
-        vm.step = 0;
-    }
+    vm.defaultBatchName = moment().utc().add(user ? user.timezoneOffset : 0, 'seconds').format('M/D/YYYY h:mm A');
+    vm.step = 0;
 
     vm.switchToFileUpload = function () {
         vm.step = 1;

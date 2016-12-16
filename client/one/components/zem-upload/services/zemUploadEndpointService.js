@@ -2,10 +2,22 @@
 /* eslint-disable camelcase */
 'use strict';
 
-angular.module('one.legacy').factory('zemUploadEndpointService', function ($http, $q) {
+angular.module('one.legacy').factory('zemUploadEndpointService', function ($http, $q, zemUploadApiConverter) {
     function UploadEndpoint (baseUrl) {
 
-        this.upload = function (data) {
+        this.upload = upload;
+        this.createBatch = createBatch;
+
+        this.save = save;
+        this.cancel = cancel;
+
+        this.getCandidates = getCandidates;
+        this.checkStatus = checkStatus;
+        this.addCandidate = addCandidate;
+        this.updateCandidate = updateCandidate;
+        this.removeCandidate = removeCandidate;
+
+        function upload (data) {
             var deferred = $q.defer();
             var url = baseUrl + 'csv/';
 
@@ -20,7 +32,7 @@ angular.module('one.legacy').factory('zemUploadEndpointService', function ($http
                 deferred.resolve({
                     batchId: data.data.batch_id,
                     batchName: data.data.batch_name,
-                    candidates: convertCandidatesFromApi(data.data.candidates),
+                    candidates: zemUploadApiConverter.convertCandidatesFromApi(data.data.candidates),
                 });
             }).error(function (data, status) {
                 var result = {};
@@ -34,18 +46,18 @@ angular.module('one.legacy').factory('zemUploadEndpointService', function ($http
                         },
                         'success': false,
                     };
-                    result.errors = convertValidationErrorsFromApi(data.data.errors);
+                    result.errors = zemUploadApiConverter.convertValidationErrorsFromApi(data.data.errors);
                 } else if (data && data.data && data.data.errors) {
-                    result.errors = convertValidationErrorsFromApi(data.data.errors);
+                    result.errors = zemUploadApiConverter.convertValidationErrorsFromApi(data.data.errors);
                 }
 
                 deferred.reject(result);
             });
 
             return deferred.promise;
-        };
+        }
 
-        this.createBatch = function (batchName) {
+        function createBatch (batchName) {
             var deferred = $q.defer();
             var url = baseUrl + 'batch/';
             var config = {
@@ -60,20 +72,20 @@ angular.module('one.legacy').factory('zemUploadEndpointService', function ($http
                 deferred.resolve({
                     batchId: data.data.batch_id,
                     batchName: data.data.batch_name,
-                    candidates: convertCandidatesFromApi(data.data.candidates),
+                    candidates: zemUploadApiConverter.convertCandidatesFromApi(data.data.candidates),
                 });
             }).error(function (data) {
                 var errors = null;
                 if (data.data && data.data.errors) {
-                    errors = convertBatchErrorsFromApi(data.data.errors);
+                    errors = zemUploadApiConverter.convertBatchErrorsFromApi(data.data.errors);
                 }
                 deferred.reject(errors);
             });
 
             return deferred.promise;
-        };
+        }
 
-        this.checkStatus = function (batchId, candidates) {
+        function checkStatus (batchId, candidates) {
             var deferred = $q.defer();
             var url = baseUrl + batchId + '/status/';
             var config = {
@@ -87,7 +99,7 @@ angular.module('one.legacy').factory('zemUploadEndpointService', function ($http
             $http.get(url, config).
                 success(function (data) {
                     var result = {
-                        candidates: convertStatusFromApi(data.data.candidates),
+                        candidates: zemUploadApiConverter.convertStatusFromApi(data.data.candidates),
                     };
                     deferred.resolve(result);
                 }).error(function (data) {
@@ -95,9 +107,9 @@ angular.module('one.legacy').factory('zemUploadEndpointService', function ($http
                 });
 
             return deferred.promise;
-        };
+        }
 
-        this.save = function (batchId, batchName) {
+        function save (batchId, batchName) {
             var deferred = $q.defer();
             var url = baseUrl + batchId + '/save/';
             var data = {};
@@ -117,21 +129,21 @@ angular.module('one.legacy').factory('zemUploadEndpointService', function ($http
                 }).error(function (data) {
                     var errors = null;
                     if (data.data && data.data.errors) {
-                        errors = convertBatchErrorsFromApi(data.data.errors);
+                        errors = zemUploadApiConverter.convertBatchErrorsFromApi(data.data.errors);
                     }
                     deferred.reject(errors);
                 });
 
             return deferred.promise;
-        };
+        }
 
-        this.updateCandidate = function (batchId, candidate, defaults) {
+        function updateCandidate (batchId, candidate, defaults) {
             var deferred = $q.defer();
             var url = baseUrl + batchId + '/candidate_update/' + candidate.id + '/';
 
             var jsonData = {
-                candidate: convertPartialUpdateToApi(candidate),
-                defaults: convertDefaultFields(defaults),
+                candidate: zemUploadApiConverter.convertPartialUpdateToApi(candidate),
+                defaults: zemUploadApiConverter.convertDefaultFields(defaults),
             };
 
             var formData = new FormData();
@@ -147,49 +159,49 @@ angular.module('one.legacy').factory('zemUploadEndpointService', function ($http
             }).
                 success(function (data) {
                     deferred.resolve({
-                        updatedFields: convertCandidateFieldsFromApi(data.data.updated_fields),
-                        errors: convertCandidateErrorsFromApi(data.data.errors),
+                        updatedFields: zemUploadApiConverter.convertCandidateFieldsFromApi(data.data.updated_fields),
+                        errors: zemUploadApiConverter.convertCandidateErrorsFromApi(data.data.errors),
                     });
                 }).error(function (data) {
                     deferred.reject(data);
                 });
 
             return deferred.promise;
-        };
+        }
 
-        this.getCandidates = function (batchId) {
+        function getCandidates (batchId) {
             var deferred = $q.defer();
             var url = baseUrl + batchId + '/candidate/';
 
             $http.get(url).
                 success(function (result) {
                     deferred.resolve({
-                        candidates: convertCandidatesFromApi(result.data.candidates),
+                        candidates: zemUploadApiConverter.convertCandidatesFromApi(result.data.candidates),
                     });
                 }).error(function (result) {
                     deferred.reject(result);
                 });
 
             return deferred.promise;
-        };
+        }
 
-        this.addCandidate = function (batchId) {
+        function addCandidate (batchId) {
             var deferred = $q.defer();
             var url = baseUrl + batchId + '/candidate/';
 
             $http.post(url).
                 success(function (result) {
                     deferred.resolve({
-                        candidate: convertCandidateFromApi(result.data.candidate),
+                        candidate: zemUploadApiConverter.convertCandidateFromApi(result.data.candidate),
                     });
                 }).error(function (result) {
                     deferred.reject(result);
                 });
 
             return deferred.promise;
-        };
+        }
 
-        this.removeCandidate = function (candidateId, batchId) {
+        function removeCandidate (candidateId, batchId) {
             var deferred = $q.defer();
             var url = baseUrl + batchId + '/candidate/' + candidateId + '/';
 
@@ -201,217 +213,15 @@ angular.module('one.legacy').factory('zemUploadEndpointService', function ($http
                 });
 
             return deferred.promise;
-        };
+        }
 
-        this.cancel = function (batchId) {
+        function cancel (batchId) {
             var deferred = $q.defer();
             var url = batchId + '/cancel/';
 
             $http.post(url).success(deferred.resolve).error(deferred.reject);
 
             return deferred.promise;
-        };
-
-        function convertDefaultFields (defaults) {
-            if (!defaults || !defaults.length) return [];
-
-            var ret = [];
-            if (defaults.indexOf('description') >= 0) {
-                ret.push('description');
-            }
-
-            if (defaults.indexOf('imageCrop') >= 0) {
-                ret.push('image_crop');
-            }
-
-            if (defaults.indexOf('brandName') >= 0) {
-                ret.push('brand_name');
-            }
-
-            if (defaults.indexOf('callToAction') >= 0) {
-                ret.push('call_to_action');
-            }
-
-            if (defaults.indexOf('displayUrl') >= 0) {
-                ret.push('display_url');
-            }
-            return ret;
-        }
-
-        function getDefaultFields (candidate) {
-            var ret = [];
-
-            if (!candidate.defaults) {
-                return ret;
-            }
-
-            if (candidate.defaults.description) {
-                ret.push('description');
-            }
-
-            if (candidate.defaults.imageCrop) {
-                ret.push('image_crop');
-            }
-
-            if (candidate.defaults.brandName) {
-                ret.push('brand_name');
-            }
-
-            if (candidate.defaults.callToAction) {
-                ret.push('call_to_action');
-            }
-
-            if (candidate.defaults.displayUrl) {
-                ret.push('display_url');
-            }
-
-            return ret;
-        }
-
-        function convertCandidateToApi (candidate) {
-            var ret = {
-                id: candidate.id,
-                label: candidate.label,
-                url: candidate.url,
-                title: candidate.title,
-                image_url: candidate.imageUrl,
-                image_crop: candidate.imageCrop,
-                display_url: candidate.displayUrl,
-                brand_name: candidate.brandName,
-                description: candidate.description,
-                call_to_action: candidate.callToAction,
-            };
-
-            if (candidate.useTrackers) {
-                ret.primary_tracker_url = candidate.primaryTrackerUrl;
-                ret.secondary_tracker_url = candidate.secondaryTrackerUrl;
-            }
-
-            return ret;
-        }
-
-        function convertPartialUpdateToApi (candidate) {
-            return {
-                id: candidate.id,
-                label: candidate.label,
-                url: candidate.url,
-                title: candidate.title,
-                image_url: candidate.imageUrl,
-                image_crop: candidate.imageCrop,
-                display_url: candidate.displayUrl,
-                brand_name: candidate.brandName,
-                description: candidate.description,
-                call_to_action: candidate.callToAction,
-                primary_tracker_url: candidate.primaryTrackerUrl,
-                secondary_tracker_url: candidate.secondaryTrackerUrl,
-            };
-        }
-
-        function removeUndefinedValues (obj) {
-            Object.keys(obj).forEach(function (key) {
-                if (obj[key] === undefined) {
-                    delete obj[key];
-                }
-            });
-            return obj;
-        }
-
-        function convertCandidateErrorsFromApi (errors) {
-            if (!errors) return {};
-
-            return removeUndefinedValues({
-                label: errors.label,
-                title: errors.title,
-                url: errors.url,
-                image: errors.image,
-                imageUrl: errors.image_url,
-                imageCrop: errors.image_crop,
-                displayUrl: errors.display_url,
-                brandName: errors.brand_name,
-                description: errors.description,
-                callToAction: errors.call_to_action,
-                trackerUrls: errors.tracker_urls,
-                primaryTrackerUrl: errors.primary_tracker_url,
-                secondaryTrackerUrl: errors.secondary_tracker_url,
-            });
-        }
-
-        function convertCandidateFieldsFromApi (candidate) {
-            return removeUndefinedValues({
-                id: candidate.id,
-                label: candidate.label,
-                url: candidate.url,
-                title: candidate.title,
-                imageStatus: candidate.image_status,
-                urlStatus: candidate.url_status,
-                imageUrl: candidate.image_url,
-                imageId: candidate.image_id,
-                imageHash: candidate.image_hash,
-                imageWidth: candidate.image_width,
-                imageHeight: candidate.image_height,
-                imageCrop: candidate.image_crop,
-                hostedImageUrl: candidate.hosted_image_url,
-                displayUrl: candidate.display_url,
-                brandName: candidate.brand_name,
-                description: candidate.description,
-                callToAction: candidate.call_to_action,
-                trackerUrls: candidate.tracker_urls,
-                primaryTrackerUrl: candidate.primary_tracker_url,
-                secondaryTrackerUrl: candidate.secondary_tracker_url,
-            });
-        }
-
-        function convertCandidateFromApi (candidate) {
-            var newCandidate = convertCandidateFieldsFromApi(candidate);
-            newCandidate.errors = {};
-
-            if (candidate.errors) {
-                newCandidate.errors = convertCandidateErrorsFromApi(candidate.errors);
-            }
-
-            return removeUndefinedValues(newCandidate);
-        }
-
-        function convertCandidatesFromApi (candidates) {
-            var result = [];
-            angular.forEach(candidates, function (candidate) {
-                result.push(convertCandidateFromApi(candidate));
-            });
-            return result;
-        }
-
-        function convertStatusFromApi (candidates) {
-            var result = [];
-            angular.forEach(candidates, function (candidate, candidateId) {
-                result[candidateId] = convertCandidateFromApi(candidate);
-            });
-            return result;
-        }
-
-        function convertValidationErrorsFromApi (errors) {
-            var converted = {
-                file: errors.candidates,
-                batchName: errors.batch_name,
-                displayUrl: errors.display_url,
-                brandName: errors.brand_name,
-                description: errors.description,
-                callToAction: errors.call_to_action,
-            };
-
-            if (errors.details) {
-                converted.details = {
-                    reportUrl: errors.details && errors.details.report_url,
-                    description: errors.details && errors.details.description,
-                };
-            }
-
-            return converted;
-        }
-
-        function convertBatchErrorsFromApi (errors) {
-            return {
-                batchName: errors.batch_name,
-            };
         }
     }
 
