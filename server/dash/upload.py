@@ -161,7 +161,7 @@ def persist_edit_batch(request, batch):
         batch.delete()
 
     k1_helper.update_content_ads(
-        batch.ad_group_id, [ad.pk for ad in batch.contentad_set.all()],
+        batch.ad_group_id, [ad.pk for ad in content_ads],
         msg='upload.process_async.edit'
     )
     return content_ads
