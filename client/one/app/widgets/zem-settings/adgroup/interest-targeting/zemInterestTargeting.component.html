@@ -1,0 +1,41 @@
+<div class="form-group" ng-if="!$ctrl.hasPermission('zemauth.can_set_interest_targeting')">
+    <label class="col-xs-12 control-label">
+        Interest targeting
+    </label>
+    <label class="col-xs-12 control-label">
+        <span class="sidenote">Define your audience by including or excluding interests and demographics. This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change interest targeting.</span>
+    </label>
+    <div class="col-xs-12" ng-if="$ctrl.entity.settings.interestTargeting.length || $ctrl.entity.settings.exclusionInterestTargeting.length">
+        <div class="col-xs-6" ng-if="$ctrl.entity.settings.interestTargeting.length > 0">
+            <div class="text-success">Included</div>
+            <ul class="with-icons ul-checkmarks m-b-none">
+                <li ng-repeat="category in $ctrl.entity.settings.interestTargeting">{{$ctrl.constants.interestCategoryText[category]}}</li>
+            </ul>
+        </div>
+        <div class="col-xs-6" ng-if="$ctrl.entity.settings.exclusionInterestTargeting.length > 0">
+            <div class="text-danger">Excluded</div>
+            <ul class="with-icons ul-remove m-b-none">
+                <li ng-repeat="category in $ctrl.entity.settings.exclusionInterestTargeting">{{$ctrl.constants.interestCategoryText[category]}}</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="form-group" ng-if="$ctrl.hasPermission('zemauth.can_set_interest_targeting')">
+    <label class="col-xs-12 control-label">
+        <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_set_interest_targeting')" popover-placement="right"></zem-internal-feature>
+        Interest targeting
+    </label>
+    <label class="col-xs-12 control-label">
+        <span class="sidenote">Define your audience by including or excluding interests and demographics.</span>
+    </label>
+    <div class="col-xs-12 after-form-alert-box m-t">
+        <zem-inclusion-targeting-list
+            texts="$ctrl.texts"
+            targetings="$ctrl.allTargetings"
+            add-targeting="$ctrl.addTargeting(targeting)"
+            remove-targeting="$ctrl.removeTargeting(targeting)"
+        ></zem-inclusion-targeting-list>
+    </div>
+    <label ng-repeat="error in $ctrl.errors.interestTargeting" class="control-label error">{{ error }}</label>
+    <label ng-repeat="error in $ctrl.errors.exclusionInterestTargeting" class="control-label error">{{ error }}</label>
+</div>

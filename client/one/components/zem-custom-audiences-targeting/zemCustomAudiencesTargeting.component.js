@@ -16,6 +16,9 @@ angular.module('one.legacy').component('zemCustomAudiencesTargeting', {
     },
     controllerAs: 'ctrl',
     controller: function (config) {
+        // NOTE: This component is deprecated and only used in the old ad_group_settings.html
+        // It was replaced with a combination of zemAudienceTargeting and zemInclusionTargetingList
+
         var AD_GROUP_ENTITY = 'adGroup';
         var AUDIENCE_ENTITY = 'audience';
         var AD_GROUP_TARGETING = 'adGroupTargeting';

@@ -676,49 +676,49 @@ var constants = {
         SECONDS: 1,
     },
     interestCategory: {
-        FASHION: 'fashion',
-        FAMILY: 'family',
-        COMMUNICATION: 'communication',
-        HOBBIES: 'hobbies',
-        WEATHER: 'weather',
-        SPANISH: 'spanish',
-        HOME: 'home',
-        EDUCATION: 'education',
-        TECHNOLOGY: 'technology',
-        // this is a cisco specific thing and is set on the bidder based on page url keywords
-        TECHNOLOGY_CONTEXTUAL: 'technology-contextual',
-        UTILITY: 'utility',
         ENTERTAINMENT: 'entertainment',
-        MENT: 'ment',
-        MEDIA: 'media',
-        TRAVEL: 'travel',
-        SPORTS: 'sports',
-        QUIZZES: 'quizzes',
-        OTHER: 'other',
-        HEALTH: 'health',
-        PETS: 'pets',
+        FUN_QUIZZES: 'fun_quizzes',
         MUSIC: 'music',
-        DATING: 'dating',
-        UNKNOWN: '?',
-        SHOPPING: 'shopping',
-        FINANCE: 'finance',
-        FOOD: 'food',
         CARS: 'cars',
+        FINANCE: 'finance',
+        EDUCATION: 'education',
+        FAMILY: 'family',
+        HEALTH: 'health',
+        FOOD: 'food',
+        HOBBIES: 'hobbies',
+        GAMES: 'games',
+        HOME: 'home',
+        POLITICS_LAW: 'politics_law',
+        MEDIA: 'media',
+        DATING: 'dating',
+        SCIENCE: 'science',
+        WEATHER: 'weather',
+        PETS: 'pets',
+        SPORTS: 'sports',
+        FASHION: 'fashion',
+        TECHNOLOGY: 'technology',
+        UTILITY: 'utility',
+        TRAVEL: 'travel',
+        SHOPPING_COUPONS: 'shopping_coupons',
+        RELIGION: 'religion',
+        COMMUNICATION: 'communication',
+        CAREER: 'career',
+        PREMIUM: 'premium',
+        WOMEN: 'women',
         MEN: 'men',
+        FOREIGN: 'foreign',
         FRENCH: 'french',
-        HOBBY: 'hobby',
+        SPANISH: 'spanish',
+        OTHER: 'other',
+        UNKNOWN: '?',
+        OUTBRAIN: 'outbrain',
+        TECHNOLOGY_CONTEXTUAL: 'technology-contextual',  // this is a cisco specific thing and is set on the bidder based on page url keywords
+        FUN: 'fun',
+        QUIZZES: 'quizzes',
+        POLITICS: 'politics',
         LAW: 'law',
         COUPONS: 'coupons',
-        WOMEN: 'women',
-        SCIENCE: 'science',
-        FOREIGN: 'foreign',
-        POLITICS: 'politics',
-        DSASA: 'dsasa',
-        GAMES: 'games',
-        FUN: 'fun',
-        RELIGION: 'religion',
-        OUTBRAIN: 'outbrain',
-        PREMIUM: 'premium',
+        SHOPPING: 'shopping',
     }
 };
 
@@ -1272,6 +1272,51 @@ var options = {
         {name: 'Email', value: constants.gaTrackingType.EMAIL},
         {name: 'API', value: constants.gaTrackingType.API},
     ],
+    interests: [
+        {name: 'Arts & Entertainment', value: constants.interestCategory.ENTERTAINMENT},
+        {name: 'Viral, lists & Quizzes', value: constants.interestCategory.FUN_QUIZZES},
+        {name: 'Music', value: constants.interestCategory.MUSIC},
+        {name: 'Automotive', value: constants.interestCategory.CARS},
+        {name: 'Business & Finance', value: constants.interestCategory.FINANCE},
+        {name: 'Education', value: constants.interestCategory.EDUCATION},
+        {name: 'Family & Parenting', value: constants.interestCategory.FAMILY},
+        {name: 'Health & Fitness', value: constants.interestCategory.HEALTH},
+        {name: 'Food & Drink', value: constants.interestCategory.FOOD},
+        {name: 'Hobbies & Interests', value: constants.interestCategory.HOBBIES},
+        {name: 'Games & Gaming', value: constants.interestCategory.GAMES},
+        {name: 'Home & Garden', value: constants.interestCategory.HOME},
+        {name: 'Law, Gov’t & Politics', value: constants.interestCategory.POLITICS_LAW},
+        {name: 'News', value: constants.interestCategory.MEDIA},
+        {name: 'Dating & Relationships', value: constants.interestCategory.DATING},
+        {name: 'Science', value: constants.interestCategory.SCIENCE},
+        {name: 'Weather & Environment', value: constants.interestCategory.WEATHER},
+        {name: 'Pets', value: constants.interestCategory.PETS},
+        {name: 'Sports', value: constants.interestCategory.SPORTS},
+        {name: 'Beauty & Fashion', value: constants.interestCategory.FASHION},
+        {name: 'Technology', value: constants.interestCategory.TECHNOLOGY},
+        {name: 'Apps & Online services', value: constants.interestCategory.UTILITY},
+        {name: 'Travel', value: constants.interestCategory.TRAVEL},
+        {name: 'Shopping', value: constants.interestCategory.SHOPPING_COUPONS},
+        {name: 'Religion & Spirituality', value: constants.interestCategory.RELIGION},
+        {name: 'Communication Tools', value: constants.interestCategory.COMMUNICATION},
+        {name: 'Careers', value: constants.interestCategory.CAREER},
+        {name: 'Premium', value: constants.interestCategory.PREMIUM},
+        {name: 'Women’s Lifestyle', value: constants.interestCategory.WOMEN},
+        {name: 'Men’s Lifestyle', value: constants.interestCategory.MEN},
+        {name: 'Foreign', value: constants.interestCategory.FOREIGN, internal: true},
+        {name: 'French', value: constants.interestCategory.FRENCH, internal: true},
+        {name: 'Spanish', value: constants.interestCategory.SPANISH, internal: true},
+        {name: 'Other', value: constants.interestCategory.OTHER, internal: true},
+        {name: 'Unknown', value: constants.interestCategory.UNKNOWN, internal: true},
+        {name: 'Outbrain', value: constants.interestCategory.OUTBRAIN, internal: true},
+        {name: 'Technology - Contextual', value: constants.interestCategory.TECHNOLOGY_CONTEXTUAL, internal: true},
+        {name: 'Fun & Entertaining Sites', value: constants.interestCategory.FUN, internal: true},  // legacy, now in combination
+        {name: 'Quizzes', value: constants.interestCategory.QUIZZES, internal: true},  // legacy, now in combination
+        {name: 'Gov’t & Politics', value: constants.interestCategory.POLITICS, internal: true},  // legacy, now in combination
+        {name: 'Law', value: constants.interestCategory.LAW, internal: true},  // legacy, now in combination
+        {name: 'Couponing', value: constants.interestCategory.COUPONS, internal: true},  // legacy, now in combination
+        {name: 'Shopping', value: constants.interestCategory.SHOPPING, internal: true},  // legacy, now in combination
+    ],
 };
 
 var defaults = {
@@ -1308,47 +1353,11 @@ constants.campaignGoalValueText[constants.campaignGoalKPI.PAGES_PER_SESSION] = '
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPV] = 'Cost per Visit';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT] = 'Cost per Non-Bounced Visit';
 
+// legacy mapping used in the old ad_group_settings
 constants.interestCategoryText = {};
-constants.interestCategoryText[constants.interestCategory.COMMUNICATION] = 'Communication Tools';
-constants.interestCategoryText[constants.interestCategory.MEN] = 'Men’s Lifestyle';
-constants.interestCategoryText[constants.interestCategory.DATING] = 'Dating & Relationships';
-constants.interestCategoryText[constants.interestCategory.WEATHER] = 'Weather & Environment';
-constants.interestCategoryText[constants.interestCategory.FASHION] = 'Beauty & Fashion';
-constants.interestCategoryText[constants.interestCategory.TRAVEL] = 'Travel and Leisure';
-constants.interestCategoryText[constants.interestCategory.FUN] = 'Fun & Entertaining Sites';
-constants.interestCategoryText[constants.interestCategory.HEALTH] = 'Health & Fitness';
-constants.interestCategoryText[constants.interestCategory.SCIENCE] = 'Science';
-constants.interestCategoryText[constants.interestCategory.TECHNOLOGY] = 'Technology';
-// this is a cisco specific thing and is set on the bidder based on page url keywords
-constants.interestCategoryText[constants.interestCategory.TECHNOLOGY_CONTEXTUAL] = 'Technology - Contextual';
-constants.interestCategoryText[constants.interestCategory.CARS] = 'Automotive';
-constants.interestCategoryText[constants.interestCategory.MEDIA] = 'News';
-constants.interestCategoryText[constants.interestCategory.HOME] = 'Home & Garden';
-constants.interestCategoryText[constants.interestCategory.FAMILY] = 'Family & Parenting';
-constants.interestCategoryText[constants.interestCategory.SHOPPING] = 'Shopping';
-constants.interestCategoryText[constants.interestCategory.COUPONS] = 'Couponing';
-constants.interestCategoryText[constants.interestCategory.ENTERTAINMENT] = 'Arts & Entertainment';
-constants.interestCategoryText[constants.interestCategory.HOBBIES] = 'Hobbies & Interests';
-constants.interestCategoryText[constants.interestCategory.RELIGION] = 'Religion & Spirituality';
-constants.interestCategoryText[constants.interestCategory.MUSIC] = 'Music';
-constants.interestCategoryText[constants.interestCategory.FOOD] = 'Food & Drink';
-constants.interestCategoryText[constants.interestCategory.SPANISH] = 'Spanish Sites';
-constants.interestCategoryText[constants.interestCategory.PETS] = 'Pets';
-constants.interestCategoryText[constants.interestCategory.WOMEN] = 'Women’s Lifestyle';
-constants.interestCategoryText[constants.interestCategory.SPORTS] = 'Sports';
-constants.interestCategoryText[constants.interestCategory.FRENCH] = 'French Sites';
-constants.interestCategoryText[constants.interestCategory.POLITICS] = 'Gov’t & Politics';
-constants.interestCategoryText[constants.interestCategory.LAW] = 'Law';
-constants.interestCategoryText[constants.interestCategory.GAMES] = 'Games & Gaming';
-constants.interestCategoryText[constants.interestCategory.FINANCE] = 'Business & Finance';
-constants.interestCategoryText[constants.interestCategory.EDUCATION] = 'Education';
-constants.interestCategoryText[constants.interestCategory.UTILITY] = 'Software & Services';
-constants.interestCategoryText[constants.interestCategory.QUIZZES] = 'Quizzes';
-constants.interestCategoryText[constants.interestCategory.OTHER] = 'Other';
-constants.interestCategoryText[constants.interestCategory.UNKNOWN] = 'Unknown';
-constants.interestCategoryText[constants.interestCategory.FOREIGN] = 'International Sites';
-constants.interestCategoryText[constants.interestCategory.OUTBRAIN] = 'Outbrain';
-constants.interestCategoryText[constants.interestCategory.PREMIUM] = 'Premium';
+options.interests.forEach(function (interest) {
+    constants.interestCategoryText[interest.value] = interest.name;
+});
 
 constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.MAX_BOUNCE_RATE,

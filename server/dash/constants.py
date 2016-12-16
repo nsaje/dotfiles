@@ -1018,91 +1018,95 @@ class IABCategory(ConstantBase):
 
 
 class InterestCategory(ConstantBase):
-    FASHION = "fashion"
-    FAMILY = "family"
-    COMMUNICATION = "communication"
-    HOBBIES = "hobbies"
-    WEATHER = "weather"
-    SPANISH = "spanish"
-    HOME = "home"
-    EDUCATION = "education"
-    TECHNOLOGY = "technology"
+    ENTERTAINMENT = 'entertainment'
+    FUN_QUIZZES = 'fun_quizzes'
+    MUSIC = 'music'
+    CARS = 'cars'
+    FINANCE = 'finance'
+    EDUCATION = 'education'
+    FAMILY = 'family'
+    HEALTH = 'health'
+    FOOD = 'food'
+    HOBBIES = 'hobbies'
+    GAMES = 'games'
+    HOME = 'home'
+    POLITICS_LAW = 'politics_law'
+    MEDIA = 'media'
+    DATING = 'dating'
+    SCIENCE = 'science'
+    WEATHER = 'weather'
+    PETS = 'pets'
+    SPORTS = 'sports'
+    FASHION = 'fashion'
+    TECHNOLOGY = 'technology'
+    UTILITY = 'utility'
+    TRAVEL = 'travel'
+    SHOPPING_COUPONS = 'shopping_coupons'
+    RELIGION = 'religion'
+    COMMUNICATION = 'communication'
+    CAREER = 'career'
+    PREMIUM = 'premium'
+    WOMEN = 'women'
+    MEN = 'men'
+    FOREIGN = 'foreign'
+    FRENCH = 'french'
+    SPANISH = 'spanish'
+    OTHER = 'other'
+    UNKNOWN = '?'
+    OUTBRAIN = 'outbrain'
     # this is a cisco specific thing and is set on the bidder based on page url keywords
-    TECHNOLOGY_CONTEXTUAL = "technology-contextual"
-    UTILITY = "utility"
-    ENTERTAINMENT = "entertainment"
-    MENT = "ment"
-    MEDIA = "media"
-    TRAVEL = "travel"
-    SPORTS = "sports"
-    QUIZZES = "quizzes"
-    OTHER = "other"
-    HEALTH = "health"
-    PETS = "pets"
-    MUSIC = "music"
-    DATING = "dating"
-    UNKNOWN = "?"
-    SHOPPING = "shopping"
-    FINANCE = "finance"
-    FOOD = "food"
-    CARS = "cars"
-    MEN = "men"
-    FRENCH = "french"
-    HOBBY = "hobby"
-    LAW = "law"
-    COUPONS = "coupons"
-    WOMEN = "women"
-    SCIENCE = "science"
-    FOREIGN = "foreign"
-    POLITICS = "politics"
-    DSASA = "dsasa"
-    GAMES = "games"
-    FUN = "fun"
-    RELIGION = "religion"
-    OUTBRAIN = "outbrain"
-    PREMIUM = "premium"
+    TECHNOLOGY_CONTEXTUAL = 'technology-contextual'
+    FUN = 'fun'
+    QUIZZES = 'quizzes'
+    POLITICS = 'politics'
+    LAW = 'law'
+    COUPONS = 'coupons'
+    SHOPPING = 'shopping'
 
     _VALUES = {
-        COMMUNICATION: "Communication Tools",
-        MEN: "Men’s Lifestyle",
-        DATING: "Dating & Relationships",
-        WEATHER: "Weather & Environment",
-        FASHION: "Beauty & Fashion",
-        TRAVEL: "Travel and Leisure",
-        FUN: "Fun & Entertaining Sites",
-        HEALTH: "Health & Fitness",
-        SCIENCE: "Science",
-        TECHNOLOGY: "Technology",
-        # this is a cisco specific thing and is set on the bidder based on page url keywords
-        TECHNOLOGY_CONTEXTUAL: "Technology - Contextual",
-        CARS: "Automotive",
-        MEDIA: "News",
-        HOME: "Home & Garden",
-        FAMILY: "Family & Parenting",
-        SHOPPING: "Shopping",
-        COUPONS: "Couponing",
-        ENTERTAINMENT: "Arts & Entertainment",
-        HOBBIES: "Hobbies & Interests",
-        RELIGION: "Religion & Spirituality",
-        MUSIC: "Music",
-        FOOD: "Food & Drink",
-        SPANISH: "Spanish Sites",
-        PETS: "Pets",
-        WOMEN: "Women’s Lifestyle",
-        SPORTS: "Sports",
-        FRENCH: "French Sites",
-        POLITICS: "Gov’t & Politics",
-        LAW: "Law",
-        GAMES: "Games & Gaming",
-        FINANCE: "Business & Finance",
-        EDUCATION: "Education",
-        UTILITY: "Software & Services",
-        QUIZZES: "Quizzes",
-        OTHER: "Other",
-        UNKNOWN: "Unknown",
-        FOREIGN: "International Sites",
-        OUTBRAIN: "Outbrain",
-        PREMIUM: "Premium"
+        ENTERTAINMENT: 'Arts & Entertainment',
+        FUN_QUIZZES: 'Viral, lists & Quizzes',
+        MUSIC: 'Music',
+        CARS: 'Automotive',
+        FINANCE: 'Business & Finance',
+        EDUCATION: 'Education',
+        FAMILY: 'Family & Parenting',
+        HEALTH: 'Health & Fitness',
+        FOOD: 'Food & Drink',
+        HOBBIES: 'Hobbies & Interests',
+        GAMES: 'Games & Gaming',
+        HOME: 'Home & Garden',
+        POLITICS_LAW: 'Law, Gov’t & Politics',
+        MEDIA: 'News',
+        DATING: 'Dating & Relationships',
+        SCIENCE: 'Science',
+        WEATHER: 'Weather & Environment',
+        PETS: 'Pets',
+        SPORTS: 'Sports',
+        FASHION: 'Beauty & Fashion',
+        TECHNOLOGY: 'Technology',
+        UTILITY: 'Apps & Online services',
+        TRAVEL: 'Travel',
+        SHOPPING_COUPONS: 'Shopping',
+        RELIGION: 'Religion & Spirituality',
+        COMMUNICATION: 'Communication Tools',
+        CAREER: 'Careers',
+        PREMIUM: 'Premium',
+        WOMEN: 'Women’s Lifestyle',
+        MEN: 'Men’s Lifestyle',
+        FOREIGN: 'Foreign',
+        FRENCH: 'French',
+        SPANISH: 'Spanish',
+        OTHER: 'Other',
+        UNKNOWN: 'Unknown',
+        OUTBRAIN: 'Outbrain',
+        TECHNOLOGY_CONTEXTUAL: 'Technology - Contextual',
+        FUN: 'Fun & Entertaining Sites',
+        QUIZZES: 'Quizzes',
+        POLITICS: 'Gov’t & Politics',
+        LAW: 'Law',
+        COUPONS: 'Couponing',
+        SHOPPING: 'Shopping',
     }
 
 
