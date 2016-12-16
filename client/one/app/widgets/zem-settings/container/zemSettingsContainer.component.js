@@ -107,15 +107,10 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         function updateNavigationCache () {
             // TODO - delete (this will not be needed after removing zemNavigationService)
             if ($ctrl.entityType === constants.entityType.ACCOUNT) {
-                return zemNavigationService.updateAccountCache($ctrl.entityId, {
-                    name: $ctrl.entity.settings.name,
-                    agency: $ctrl.entity.settings.agency.id || null,
-                });
+                return zemNavigationService.reloadAccount($ctrl.entityId);
             }
             if ($ctrl.entityType === constants.entityType.CAMPAIGN) {
-                return zemNavigationService.updateCampaignCache($ctrl.entityId, {
-                    name: $ctrl.entity.settings.name,
-                });
+                return zemNavigationService.reloadCampaign($ctrl.entityId);
             }
             if ($ctrl.entityType === constants.entityType.AD_GROUP) {
                 return zemNavigationService.reloadAdGroup($ctrl.entityId);
