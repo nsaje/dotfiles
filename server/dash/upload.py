@@ -167,29 +167,6 @@ def persist_edit_batch(request, batch):
     return content_ads
 
 
-def persist_edit_batch(request, batch):
-    if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
-        raise InvalidBatchStatus('Invalid batch status')
-
-    if batch.type != constants.UploadBatchType.EDIT:
-        raise ChangeForbidden('Batch not in edit mode')
-
-    candidates = models.ContentAdCandidate.objects.filter(batch=batch)
-    with transaction.atomic():
-        content_ads = _update_content_ads(candidates)
-        _update_redirects(content_ads)
-        _create_manual_edit_actions(request, content_ads)
-
-        candidates.delete()
-        batch.delete()
-
-    k1_helper.update_content_ads(
-        batch.ad_group_id, [ad.pk for ad in batch.contentad_set.all()],
-        msg='upload.process_async'
-    )
-    return content_ads
-
-
 def _create_redirect_ids(content_ads):
     redirector_batch = redirector_helper.insert_redirects_batch(content_ads)
     for content_ad in content_ads:
@@ -577,7 +554,7 @@ def _apply_content_ad_edit(candidate):
     secondary_tracker_url = f.cleaned_data['secondary_tracker_url']
     if secondary_tracker_url:
         content_ad.tracker_urls.append(secondary_tracker_url)
-        
+
     content_ad.save()
     return content_ad
 
