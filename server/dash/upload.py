@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 VALID_DEFAULTS_FIELDS = set(['image_crop', 'description', 'display_url', 'brand_name', 'call_to_action'])
 VALID_UPDATE_FIELDS = set(['url', 'brand_name', 'display_url', 'description', 'image_crop', 'label',
-                           'primary_tracker_url', 'secondary_tracker_url'])
+                           'primary_tracker_url', 'secondary_tracker_url', 'call_to_action'])
 
 
 class InvalidBatchStatus(Exception):
