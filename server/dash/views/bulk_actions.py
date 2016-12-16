@@ -16,6 +16,7 @@ from dash import constants
 from dash import forms
 from dash import models
 from dash import retargeting_helper
+from dash import upload
 from dash import table
 from dash.dashapi import data_helper
 from dash.views import helpers
@@ -179,6 +180,27 @@ class AdGroupSourceState(BaseBulkActionView):
                     )
                 if not helpers.check_facebook_source(ad_group_source):
                     raise exc.ValidationError('Cannot enable Facebook media source that isn\'t connected to a Facebook page.')
+
+
+class AdGroupContentAdEdit(BaseBulkActionView):
+
+    @influx.timer('dash.api')
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_edit_content_ads'):
+            raise exc.ForbiddenError(message="Not allowed")
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        content_ads = helpers.get_selected_entities_post_request(
+            models.ContentAd.objects,
+            json.loads(request.body),
+            ad_group_id=ad_group.id,
+        )
+
+        batch, candidates = upload.insert_edit_candidates(content_ads, ad_group)
+        return self.create_api_response({
+            'batch_id': batch.id,
+            'candidates': upload.get_candidates_with_errors(candidates),
+        })
 
 
 class AdGroupContentAdArchive(BaseBulkActionView):

@@ -15,6 +15,8 @@ from utils import lambda_helper, k1_helper, redirector_helper
 logger = logging.getLogger(__name__)
 
 VALID_DEFAULTS_FIELDS = set(['image_crop', 'description', 'display_url', 'brand_name', 'call_to_action'])
+VALID_UPDATE_FIELDS = set(['url', 'brand_name', 'display_url', 'description', 'call_to_action', 'image_crop', 'label',
+                           'tracker_urls'])
 
 
 class InvalidBatchStatus(Exception):
@@ -25,9 +27,15 @@ class CandidateErrorsRemaining(Exception):
     pass
 
 
-def insert_candidates(candidates_data, ad_group, batch_name, filename, auto_save=False):
+class ChangeForbidden(Exception):
+    pass
+
+
+def insert_candidates(candidates_data, ad_group, batch_name, filename, auto_save=False, is_edit=False):
     with transaction.atomic():
-        batch = create_empty_batch(ad_group.id, batch_name, original_filename=filename, auto_save=auto_save)
+        batch = create_empty_batch(
+            ad_group.id, batch_name, original_filename=filename,
+            auto_save=auto_save, is_edit=is_edit)
         candidates = _create_candidates(candidates_data, ad_group, batch)
 
     for candidate in candidates:
@@ -36,13 +44,29 @@ def insert_candidates(candidates_data, ad_group, batch_name, filename, auto_save
     return batch, candidates
 
 
-def create_empty_batch(ad_group_id, batch_name, original_filename=None, auto_save=False):
-    return models.UploadBatch.objects.create(
+def insert_edit_candidates(content_ads, ad_group):
+    content_ads_data = []
+    for content_ad in content_ads:
+        content_ad_dict = content_ad.to_candidate_dict()
+        content_ad_dict['original_content_ad'] = content_ad
+        content_ads_data.append(content_ad_dict)
+
+    return insert_candidates(content_ads_data, ad_group, '', '', is_edit=True)
+
+
+def create_empty_batch(ad_group_id, batch_name, original_filename=None, auto_save=False, is_edit=False):
+    batch = models.UploadBatch(
         name=batch_name,
         ad_group_id=ad_group_id,
         original_filename=original_filename,
         auto_save=auto_save,
     )
+
+    if is_edit:
+        batch.type = constants.UploadBatchType.EDIT
+
+    batch.save()
+    return batch
 
 
 def _reset_candidate_async_status(candidate):
@@ -89,17 +113,23 @@ def has_skip_validation_magic_word(filename):
     return 'no-verify' in (filename or '')
 
 
-def persist_candidates(batch):
+def persist_batch(batch):
     if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
         raise InvalidBatchStatus('Invalid batch status')
 
+    if batch.type == constants.UploadBatchType.EDIT:
+        raise ChangeForbidden('Batch in edit mode')
+
     candidates = models.ContentAdCandidate.objects.filter(batch=batch).order_by('pk')
+    if any(candidate.original_content_ad_id for candidate in candidates):
+        raise ChangeForbidden('Some candidates are linked to content ads')
+
     cleaned_candidates, errors = _clean_candidates(candidates)
     if errors:
         raise CandidateErrorsRemaining('Save not permitted - candidate errors exist')
 
     with transaction.atomic():
-        content_ads = _persist_content_ads(batch, cleaned_candidates)
+        content_ads = _persist_candidates(batch, cleaned_candidates)
         _create_redirect_ids(content_ads)
 
         batch.status = constants.UploadBatchStatus.DONE
@@ -108,7 +138,29 @@ def persist_candidates(batch):
 
     k1_helper.update_content_ads(
         batch.ad_group_id, [ad.pk for ad in batch.contentad_set.all()],
-        msg='upload.process_async'
+        msg='upload.process_async.insert'
+    )
+    return content_ads
+
+
+def persist_edit_batch(batch):
+    if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
+        raise InvalidBatchStatus('Invalid batch status')
+
+    if batch.type != constants.UploadBatchType.EDIT:
+        raise ChangeForbidden('Batch not in edit mode')
+
+    candidates = models.ContentAdCandidate.objects.filter(batch=batch)
+    with transaction.atomic():
+        content_ads = _update_content_ads(candidates)
+        _update_redirects(content_ads)
+
+        candidates.delete()
+        batch.delete()
+
+    k1_helper.update_content_ads(
+        batch.ad_group_id, [ad.pk for ad in batch.contentad_set.all()],
+        msg='upload.process_async.edit'
     )
     return content_ads
 
@@ -119,6 +171,11 @@ def _create_redirect_ids(content_ads):
         content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
         content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
         content_ad.save()
+
+
+def _update_redirects(content_ads):
+    for content_ad in content_ads:
+        redirector_helper.update_redirect(content_ad.url, content_ad.redirect_id)
 
 
 def get_candidates_with_errors(candidates):
@@ -138,7 +195,7 @@ def get_candidates_csv(batch):
     return _get_candidates_csv(candidates)
 
 
-def _persist_content_ads(batch, new_content_ads):
+def _persist_candidates(batch, new_content_ads):
     ad_group_sources = []
     for ags in models.AdGroupSource.objects.filter(
             ad_group=batch.ad_group,
@@ -151,6 +208,14 @@ def _persist_content_ads(batch, new_content_ads):
         saved_content_ads.append(_create_content_ad(content_ad, batch.ad_group_id, batch.id, ad_group_sources))
 
     return saved_content_ads
+
+
+def _update_content_ads(update_candidates):
+    updated_content_ads = []
+    for candidate in update_candidates:
+        updated_content_ads.append(_apply_content_ad_edit(candidate))
+
+    return updated_content_ads
 
 
 def _get_csv(fields, rows):
@@ -219,8 +284,12 @@ def _update_candidate(data, batch, files):
 
     updated_fields = {}
     for field in data:
+        if batch.type == constants.UploadBatchType.EDIT and field not in VALID_UPDATE_FIELDS:
+            raise ChangeForbidden('Update not permitted - field is not editable')
+
         if field == 'image' or field not in form.cleaned_data:
             continue
+
         updated_fields[field] = form.cleaned_data[field]
         setattr(candidate, field, form.cleaned_data[field])
 
@@ -266,6 +335,9 @@ def update_candidate(data, defaults, batch, files=None):
 
 @transaction.atomic
 def add_candidate(batch):
+    if batch.type == constants.UploadBatchType.EDIT:
+        raise ChangeForbidden('Cannot add candidate - batch in edit mode')
+
     return batch.contentadcandidate_set.create(
         ad_group_id=batch.ad_group_id,
         image_crop=batch.default_image_crop,
@@ -274,6 +346,13 @@ def add_candidate(batch):
         description=batch.default_description,
         call_to_action=batch.default_call_to_action,
     )
+
+
+def delete_candidate(candidate):
+    if candidate.batch.type == constants.UploadBatchType.EDIT:
+        raise ChangeForbidden('Cannot delete candidate - batch in edit mode')
+
+    candidate.delete()
 
 
 def _get_cleaned_urls(candidate):
@@ -345,7 +424,7 @@ def _handle_auto_save(batch):
         return
 
     try:
-        persist_candidates(batch)
+        persist_batch(batch)
     except:
         if all(candidate.image_status == constants.AsyncUploadJobStatus.OK and
                candidate.url_status == constants.AsyncUploadJobStatus.OK
@@ -377,6 +456,9 @@ def _create_candidates(content_ads_data, ad_group, batch):
         form.is_valid()  # used only to clean data of any possible unsupported fields
 
         fields = {k: v for k, v in form.cleaned_data.items() if k != 'image'}
+        if 'original_content_ad' in content_ad:
+            fields['original_content_ad'] = content_ad['original_content_ad']
+
         candidates_added.append(
             models.ContentAdCandidate.objects.create(
                 ad_group=ad_group,
@@ -388,25 +470,35 @@ def _create_candidates(content_ads_data, ad_group, batch):
 
 
 def _create_content_ad(candidate, ad_group_id, batch_id, ad_group_sources):
-    content_ad = models.ContentAd.objects.create(
+    content_ad = models.ContentAd(
         ad_group_id=ad_group_id,
         batch_id=batch_id,
-        image_id=candidate['image_id'],
-        image_width=candidate['image_width'],
-        image_height=candidate['image_height'],
-        image_hash=candidate['image_hash'],
-        image_crop=candidate['image_crop'],
-        label=candidate['label'],
-        url=candidate['url'],
-        title=candidate['title'],
-        display_url=candidate['display_url'],
-        brand_name=candidate['brand_name'],
-        description=candidate['description'],
-        call_to_action=candidate['call_to_action'],
-        tracker_urls=candidate['tracker_urls'],
     )
 
+    for field in candidate:
+        if not hasattr(content_ad, field):
+            continue
+        setattr(content_ad, field, candidate[field])
+
+    content_ad.save()
+
     _create_content_ad_sources(content_ad, ad_group_sources)
+    return content_ad
+
+
+def _apply_content_ad_edit(candidate):
+    content_ad = candidate.original_content_ad
+    if not content_ad:
+        raise ChangeForbidden('Update not permitted - original content ad not set')
+
+    f = forms.ContentAdForm(candidate.to_dict())
+    if not f.is_valid():
+        raise CandidateErrorsRemaining('Save not permitted - candidate errors exist')
+
+    for field in VALID_UPDATE_FIELDS:
+        setattr(content_ad, field, f.cleaned_data[field])
+
+    content_ad.save()
     return content_ad
 
 

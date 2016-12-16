@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from collections import defaultdict
 from mock import patch, Mock
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
@@ -7,6 +6,7 @@ from django.test import TestCase, override_settings
 from dash import constants
 from dash import models
 from dash import upload
+from dash import forms
 
 import utils.s3helpers
 
@@ -140,7 +140,53 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual('', candidate.secondary_tracker_url)
 
 
-class PersistCandidatesTestCase(TestCase):
+class InsertEditCandidatesTestCase(TestCase):
+    fixtures = ['test_upload.yaml']
+
+    @patch('utils.lambda_helper.invoke_lambda', Mock())
+    def test_insert_edit_candidates(self):
+        ad_group = models.AdGroup.objects.get(id=5)
+        content_ads = ad_group.contentad_set.all()
+        in_progress_before = ad_group.uploadbatch_set.filter(
+            status=constants.UploadBatchStatus.IN_PROGRESS,
+        ).count()
+
+        upload.insert_edit_candidates(content_ads, ad_group)
+        in_progress_after = ad_group.uploadbatch_set.filter(
+            status=constants.UploadBatchStatus.IN_PROGRESS,
+        ).count()
+        self.assertEqual(in_progress_before+1, in_progress_after)
+
+        batch = ad_group.uploadbatch_set.get(
+            status=constants.UploadBatchStatus.IN_PROGRESS,
+        )
+        self.assertEqual(constants.UploadBatchType.EDIT, batch.type)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+
+        candidate = batch.contentadcandidate_set.get()
+        self.assertEqual(content_ads[0].ad_group_id, candidate.ad_group_id)
+        self.assertNotEqual(content_ads[0].batch_id, candidate.batch_id)
+        self.assertEqual(constants.AsyncUploadJobStatus.WAITING_RESPONSE, candidate.image_status)
+        self.assertEqual(constants.AsyncUploadJobStatus.WAITING_RESPONSE, candidate.url_status)
+        self.assertEqual(content_ads[0].label, candidate.label)
+        self.assertEqual(content_ads[0].title, candidate.title)
+        self.assertEqual(content_ads[0].url, candidate.url)
+        self.assertEqual(content_ads[0].get_image_url(), candidate.image_url)
+        self.assertEqual(content_ads[0].image_crop, candidate.image_crop)
+        self.assertEqual(content_ads[0].display_url, candidate.display_url)
+        self.assertEqual(content_ads[0].brand_name, candidate.brand_name)
+        self.assertEqual(content_ads[0].description, candidate.description)
+        self.assertEqual(content_ads[0].call_to_action, candidate.call_to_action)
+        self.assertEqual(content_ads[0].tracker_urls[0], candidate.primary_tracker_url)
+        self.assertEqual(content_ads[0].tracker_urls[1], candidate.secondary_tracker_url)
+        self.assertEqual(None, candidate.image_id)
+        self.assertEqual(None, candidate.image_width)
+        self.assertEqual(None, candidate.image_height)
+        self.assertEqual(None, candidate.image_hash)
+        self.assertEqual(content_ads[0], candidate.original_content_ad)
+
+
+class PersistBatchTestCase(TestCase):
     fixtures = ['test_upload.yaml']
 
     @patch('utils.redirector_helper.insert_redirects_batch')
@@ -163,7 +209,7 @@ class PersistCandidatesTestCase(TestCase):
 
         candidate = batch.contentadcandidate_set.get()
 
-        upload.persist_candidates(batch)
+        upload.persist_batch(batch)
         self.assertEqual(0, batch.contentadcandidate_set.count())
         self.assertEqual(1, batch.contentad_set.count())
         self.assertFalse(mock_s3helper_put.called)
@@ -189,6 +235,34 @@ class PersistCandidatesTestCase(TestCase):
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
         self.assertTrue(mock_insert_redirects_batch.called)
 
+    def test_edit_batch(self):
+        batch = models.UploadBatch.objects.get(id=7)
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
+
+        with self.assertRaises(upload.ChangeForbidden):
+            upload.persist_batch(batch)
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
+
+    def test_candidate_linked(self):
+        batch = models.UploadBatch.objects.get(id=2)
+        candidate = batch.contentadcandidate_set.get()
+        candidate.original_content_ad_id = 1
+        candidate.save()
+
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+        with self.assertRaises(upload.ChangeForbidden):
+            upload.persist_batch(batch)
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
     @patch.object(utils.s3helpers.S3Helper, 'put')
     def test_invalid_candidates(self, mock_s3helper_put):
         batch = models.UploadBatch.objects.get(id=3)
@@ -196,7 +270,7 @@ class PersistCandidatesTestCase(TestCase):
         self.assertEqual(0, batch.contentad_set.count())
 
         with self.assertRaises(upload.CandidateErrorsRemaining):
-            upload.persist_candidates(batch)
+            upload.persist_batch(batch)
 
         self.assertEqual(1, batch.contentadcandidate_set.count())
         self.assertEqual(0, batch.contentad_set.count())
@@ -214,7 +288,7 @@ class PersistCandidatesTestCase(TestCase):
         batch.save()
 
         with self.assertRaises(upload.InvalidBatchStatus):
-            upload.persist_candidates(batch)
+            upload.persist_batch(batch)
 
         # check that nothing changed
         batch.refresh_from_db()
@@ -222,6 +296,75 @@ class PersistCandidatesTestCase(TestCase):
         self.assertEqual(1, batch.contentadcandidate_set.count())
         self.assertEqual(0, batch.contentad_set.count())
         self.assertFalse(mock_s3helper_put.called)
+
+
+class PersistEditBatchTestCase(TestCase):
+
+    fixtures = ['test_upload.yaml']
+
+    @patch('utils.redirector_helper.update_redirect', autospec=True)
+    def test_persist_edit_batch(self, mock_update_redirect):
+        batch = models.UploadBatch.objects.get(id=7)
+
+        content_ad = models.ContentAd.objects.get(id=2)
+        candidate = batch.contentadcandidate_set.get()
+
+        content_ads = upload.persist_edit_batch(batch)
+        new_content_ad = models.ContentAd.objects.get(id=content_ad.id)
+        self.assertEqual(1, len(content_ads))
+        self.assertEqual(new_content_ad, content_ads[0])
+
+        for field in upload.VALID_UPDATE_FIELDS:
+            self.assertNotEqual(getattr(content_ad, field), getattr(new_content_ad, field))
+            if field == 'tracker_urls':
+                self.assertEqual(
+                    [candidate.primary_tracker_url, candidate.secondary_tracker_url], new_content_ad.tracker_urls)
+                continue
+            self.assertEqual(getattr(candidate, field), getattr(new_content_ad, field))
+
+        for field in set(forms.ContentAdCandidateForm.Meta.fields) - upload.VALID_UPDATE_FIELDS:
+            if field in ['primary_tracker_url', 'secondary_tracker_url', 'image_url']:
+                continue
+            self.assertEqual(getattr(content_ad, field), getattr(new_content_ad, field))
+            self.assertNotEqual(getattr(candidate, field), getattr(new_content_ad, field))
+
+        mock_update_redirect.assert_called_with(new_content_ad.url, new_content_ad.redirect_id)
+
+        with self.assertRaises(models.UploadBatch.DoesNotExist):
+            batch.refresh_from_db()
+
+        with self.assertRaises(models.ContentAdCandidate.DoesNotExist):
+            candidate.refresh_from_db()
+
+    def test_invalid_batch_status(self):
+        batch = models.UploadBatch.objects.get(id=7)
+        batch.status = constants.UploadBatchStatus.CANCELLED
+
+        with self.assertRaises(upload.InvalidBatchStatus):
+            upload.persist_edit_batch(batch)
+
+    def test_invalid_batch_type(self):
+        batch = models.UploadBatch.objects.get(id=7)
+        batch.type = constants.UploadBatchType.INSERT
+
+        with self.assertRaises(upload.ChangeForbidden):
+            upload.persist_edit_batch(batch)
+
+    def test_candidate_without_content_ad(self):
+        candidate = models.ContentAdCandidate.objects.filter(id=6).select_related('batch').get()
+        candidate.original_content_ad = None
+        candidate.save()
+
+        with self.assertRaises(upload.ChangeForbidden):
+            upload.persist_edit_batch(candidate.batch)
+
+    def test_candidate_with_errors(self):
+        candidate = models.ContentAdCandidate.objects.filter(id=6).select_related('batch').get()
+        candidate.title = ''
+        candidate.save()
+
+        with self.assertRaises(upload.CandidateErrorsRemaining):
+            upload.persist_edit_batch(candidate.batch)
 
 
 class CancelUploadTestCase(TestCase):
@@ -520,6 +663,16 @@ class UpdateCandidateTest(TestCase):
         self.assertNotEqual(self.other_candidate.primary_tracker_url, self.new_candidate['primary_tracker_url'])
         self.assertNotEqual(self.other_candidate.secondary_tracker_url, self.new_candidate['secondary_tracker_url'])
 
+    def test_non_updatable_field(self):
+        edit_candidate = models.ContentAdCandidate.objects.get(id=6)
+        data = {
+            'id': edit_candidate.id,
+            'title': 'new title 123',
+        }
+
+        with self.assertRaises(upload.ChangeForbidden):
+            upload.update_candidate(data, [], edit_candidate.batch)
+
     def test_partial_update(self):
         data = {
             'id': self.candidate.id,
@@ -803,33 +956,33 @@ class UploadTest(TestCase):
 
 class AutoSaveTest(TestCase):
 
-    @patch.object(upload, 'persist_candidates')
-    def test_handle_auto_save_flag(self, mock_persist_candidates):
+    @patch.object(upload, 'persist_batch')
+    def test_handle_auto_save_flag(self, mock_persist_batch):
         batch = models.UploadBatch(status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=False)
         upload._handle_auto_save(batch)
         self.assertEqual(batch.status, constants.UploadBatchStatus.IN_PROGRESS)
-        mock_persist_candidates.assert_not_called()
+        mock_persist_batch.assert_not_called()
 
-    @patch.object(upload, 'persist_candidates')
-    def test_not_in_progress(self, mock_persist_candidates):
+    @patch.object(upload, 'persist_batch')
+    def test_not_in_progress(self, mock_persist_batch):
         batch = models.UploadBatch(status=constants.UploadBatchStatus.FAILED, auto_save=True)
         upload._handle_auto_save(batch)
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
-        mock_persist_candidates.assert_not_called()
+        mock_persist_batch.assert_not_called()
 
     @patch.object(upload, '_clean_candidates')
-    @patch.object(upload, 'persist_candidates')
-    def test_batch_should_fail(self, mock_persist_candidates, mock_clean_candidates):
+    @patch.object(upload, 'persist_batch')
+    def test_batch_should_fail(self, mock_persist_batch, mock_clean_candidates):
         mock_clean_candidates.return_value = (None, {1: {'title': 'too long'}})
         batch = models.UploadBatch(status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True)
         upload._handle_auto_save(batch)
         self.assertEqual(batch.status, constants.UploadBatchStatus.FAILED)
-        mock_persist_candidates.assert_not_called()
+        mock_persist_batch.assert_not_called()
 
     @patch.object(upload, '_clean_candidates')
-    @patch.object(upload, 'persist_candidates')
-    def test_batch_should_succeed(self, mock_persist_candidates, mock_clean_candidates):
+    @patch.object(upload, 'persist_batch')
+    def test_batch_should_succeed(self, mock_persist_batch, mock_clean_candidates):
         mock_clean_candidates.return_value = (None, {})
         batch = models.UploadBatch(status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True)
         upload._handle_auto_save(batch)
-        mock_persist_candidates.assert_called_with(batch)
+        mock_persist_batch.assert_called_with(batch)

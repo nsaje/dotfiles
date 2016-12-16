@@ -1291,6 +1291,16 @@ class UploadBatchStatus(ConstantBase):
     }
 
 
+class UploadBatchType(ConstantBase):
+    INSERT = 1
+    EDIT = 2
+
+    _VALUES = {
+        INSERT: 'Insert',
+        EDIT: 'Edit',
+    }
+
+
 class RegionType(ConstantBase):
     COUNTRY = 1
     SUBDIVISION = 2

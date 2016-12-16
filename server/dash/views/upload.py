@@ -86,13 +86,7 @@ class UploadStatus(api_common.BaseApiView):
 
 class UploadSave(api_common.BaseApiView):
 
-    def post(self, request, ad_group_id, batch_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        try:
-            batch = ad_group.uploadbatch_set.get(id=batch_id)
-        except models.UploadBatch.DoesNotExist:
-            raise exc.MissingDataError('Upload batch does not exist')
-
+    def _execute_save(self, request, ad_group, batch):
         resource = {
             'batch_name': batch.name,
         }
@@ -106,7 +100,7 @@ class UploadSave(api_common.BaseApiView):
             batch.save()
 
             try:
-                content_ads = upload.persist_candidates(batch)
+                content_ads = upload.persist_batch(batch)
             except (upload.InvalidBatchStatus, upload.CandidateErrorsRemaining) as e:
                 raise exc.ValidationError(message=e.message)
 
@@ -119,6 +113,28 @@ class UploadSave(api_common.BaseApiView):
                 changes_text,
                 user=request.user,
                 action_type=constants.HistoryActionType.CONTENT_AD_CREATE)
+
+        return content_ads
+
+    def _execute_update(self, batch):
+        try:
+            return upload.persist_edit_batch(batch)
+        except (upload.InvalidBatchStatus, upload.CandidateErrorsRemaining) as e:
+            raise exc.ValidationError(message=e.message)
+
+    def post(self, request, ad_group_id, batch_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        try:
+            batch = ad_group.uploadbatch_set.get(id=batch_id)
+        except models.UploadBatch.DoesNotExist:
+            raise exc.MissingDataError('Upload batch does not exist')
+
+        if batch.type != constants.UploadBatchType.EDIT:
+            content_ads = self._execute_save(request, ad_group, batch)
+        elif request.user.has_perm('zemauth.can_edit_content_ads'):
+            content_ads = self._execute_update(batch)
+        else:
+            raise Http404('Permission denied')
 
         return self.create_api_response({
             'num_successful': len(content_ads),
@@ -225,5 +241,5 @@ class Candidate(api_common.BaseApiView):
         except models.ContentAdCandidate.DoesNotExist:
             raise exc.MissingDataError('Candidate does not exist')
 
-        candidate.delete()
+        upload.delete_candidate(candidate)
         return self.create_api_response({})

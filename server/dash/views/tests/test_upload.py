@@ -397,7 +397,7 @@ class UploadSaveTestCase(TestCase):
                 'message': 'An error occurred.'
             },
         }, json.loads(response.content))
-        self.assertEqual(0, models.ContentAd.objects.count())
+        self.assertEqual(0, models.ContentAd.objects.filter(ad_group_id=ad_group_id).count())
 
     def test_invalid_batch_status(self):
         batch_id = 4

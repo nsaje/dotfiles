@@ -2721,6 +2721,10 @@ class UploadBatch(models.Model):
         default=constants.UploadBatchStatus.IN_PROGRESS,
         choices=constants.UploadBatchStatus.get_choices()
     )
+    type = models.IntegerField(
+        default=constants.UploadBatchType.INSERT,
+        choices=constants.UploadBatchType.get_choices()
+    )
     ad_group = models.ForeignKey(AdGroup, on_delete=models.PROTECT, null=True)
     original_filename = models.CharField(max_length=1024, null=True)
 
@@ -2837,6 +2841,21 @@ class ContentAd(models.Model):
 
     def __str__(self):
         return unicode(self).encode('ascii', 'ignore')
+
+    def to_candidate_dict(self):
+        return {
+            'label': self.label,
+            'url': self.url,
+            'title': self.title,
+            'image_url': self.get_image_url(),
+            'image_crop': self.image_crop,
+            'display_url': self.display_url,
+            'description': self.description,
+            'brand_name': self.brand_name,
+            'call_to_action': self.call_to_action,
+            'primary_tracker_url': self.tracker_urls[0] if len(self.tracker_urls) > 0 else None,
+            'secondary_tracker_url': self.tracker_urls[1] if len(self.tracker_urls) > 1 else None,
+        }
 
     class Meta:
         get_latest_by = 'created_dt'
@@ -2969,6 +2988,8 @@ class ContentAdCandidate(FootprintModel):
     image_width = models.PositiveIntegerField(null=True)
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
+
+    original_content_ad = models.ForeignKey(ContentAd, null=True)
 
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
