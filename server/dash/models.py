@@ -2859,8 +2859,6 @@ class ContentAd(models.Model):
             'call_to_action': self.call_to_action,
             'primary_tracker_url': self.tracker_urls[0] if self.tracker_urls else None,
             'secondary_tracker_url': self.tracker_urls[1] if self.tracker_urls and len(self.tracker_urls) > 1 else None,
-            'primary_tracker_url': self.tracker_urls[0] if len(self.tracker_urls) > 0 else None,
-            'secondary_tracker_url': self.tracker_urls[1] if len(self.tracker_urls) > 1 else None,
         }
 
     class Meta:
