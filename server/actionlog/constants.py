@@ -17,6 +17,8 @@ class Action(ConstantBase):
     INSERT_CONTENT_AD_BATCH = 'insert_content_ad_batch'
     UPDATE_CONTENT_AD = 'update_content_ad'
 
+    EDIT_CONTENT_AD = 'edit_content_ad'
+
     SUBMIT_AD_GROUP = 'submit_ad_group'
 
     _VALUES = {
@@ -35,7 +37,9 @@ class Action(ConstantBase):
         INSERT_CONTENT_AD_BATCH: 'Insert content ad batch',
         UPDATE_CONTENT_AD: 'Update content ad',
 
-        SUBMIT_AD_GROUP: 'Submit ad group to approval'
+        EDIT_CONTENT_AD: 'Edit content ad',
+
+        SUBMIT_AD_GROUP: 'Submit ad group to approval',
     }
 
 

@@ -5,6 +5,7 @@ from django.db import transaction
 from django.conf import settings
 import unicodecsv
 
+import actionlog.api
 from dash import constants
 from dash import forms
 from dash import models
@@ -143,7 +144,7 @@ def persist_batch(batch):
     return content_ads
 
 
-def persist_edit_batch(batch):
+def persist_edit_batch(request, batch):
     if batch.status != constants.UploadBatchStatus.IN_PROGRESS:
         raise InvalidBatchStatus('Invalid batch status')
 
@@ -154,6 +155,7 @@ def persist_edit_batch(batch):
     with transaction.atomic():
         content_ads = _update_content_ads(candidates)
         _update_redirects(content_ads)
+        _create_manual_edit_actions(request, content_ads)
 
         candidates.delete()
         batch.delete()
@@ -176,6 +178,50 @@ def _create_redirect_ids(content_ads):
 def _update_redirects(content_ads):
     for content_ad in content_ads:
         redirector_helper.update_redirect(content_ad.url, content_ad.redirect_id)
+
+
+def _create_manual_edit_actions(request, content_ads):
+    content_ad_sources = models.ContentAdSource.objects.filter(
+        content_ad_id__in=[content_ad.id for content_ad in content_ads],
+        source__source_type__type=constants.SourceType.FACEBOOK,
+    ).select_related('content_ad__ad_group__campaign__account')
+    fb_account_map = {
+        fb_account.account_id: fb_account for fb_account in models.FacebookAccount.objects.filter(
+            account_id__in=set(cas.content_ad.ad_group.campaign.account_id for cas in content_ad_sources),
+        )
+    }
+
+    for content_ad_source in content_ad_sources:
+        account_id = content_ad_source.content_ad.ad_group.campaign.account_id
+        if account_id not in fb_account_map:
+            continue
+
+        if fb_account_map[account_id].status == constants.FacebookPageRequestType.EMPTY:
+            continue
+
+        fields = {}
+        for field in VALID_UPDATE_FIELDS:
+            if field in ['url', 'primary_tracker_url', 'secondary_tracker_url']:
+                continue
+
+            if field == 'image_crop':
+                fields['image_url'] = content_ad_source.content_ad.get_image_url()
+                continue
+
+            fields[field] = getattr(content_ad_source.content_ad, field)
+
+        fields['tracker_urls'] = content_ad_source.content_ad.tracker_urls
+
+        ad_group_source = models.AdGroupSource.objects.get(
+            source=content_ad_source.source,
+            ad_group=content_ad_source.content_ad.ad_group
+        )
+        actionlog.api_contentads.init_edit_content_ad(
+            request,
+            ad_group_source,
+            content_ad_source,
+            fields,
+        )
 
 
 def get_candidates_with_errors(candidates):

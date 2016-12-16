@@ -3,6 +3,7 @@ actionLogApp.controller('ActionLogCtrl', ['$scope', '$location', 'config', 'api'
     $scope.user = null;
     $scope.actionLogItems = null;
     $scope.actionLogItemsMax = null;
+    $scope.actionTypes = actionLogConstants.action;
 
     $scope.states = [
         [actionLogConstants.state.FAILED.name, actionLogConstants.state.FAILED.value],

@@ -57,7 +57,16 @@
                             <label ng-repeat="state in states" ng-click="updateState(log, state)" class="btn btn-default btn-xs" ng-class="stateClass(log, state)">{{state[0]}}</label>
                         </div>
                     </td>
-                    <td><strong>{{log.take_action}}</strong></td>
+                    <td ng-if="log.action !== actionTypes.EDIT_CONTENT_AD">
+                        <strong>{{log.take_action}}</strong>
+                    </td>
+                    <td ng-if="log.action === actionTypes.EDIT_CONTENT_AD">
+                        Content ad <strong>{{log.take_action.id}}</strong> has changed.
+                        <ul>
+                            <li ng-repeat="(field, val) in log.take_action.fields">
+                                <strong>{{field}}</strong>: {{val}}
+                            </li>
+                    </td>
                     <td>
                         <a ng-href="{{log.supply_dash_url}}" target="_blank">
                             {{log.source[0]}}

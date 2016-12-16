@@ -98,8 +98,13 @@ class ActionLogApiView(api_common.BaseApiView):
         elif action.action in (
                 constants.Action.SET_PUBLISHER_BLACKLIST,
                 constants.Action.CREATE_CUSTOM_AUDIENCE,
-                constants.Action.CREATE_AUDIENCE, ):
+                constants.Action.CREATE_AUDIENCE,
+        ):
             return action.message
+        elif action.action in (
+            constants.Action.EDIT_CONTENT_AD,
+        ):
+            return action.payload
         else:
             raise Exception('Unsupported action %s' % action.action)
 

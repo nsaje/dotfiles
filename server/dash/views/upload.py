@@ -116,9 +116,9 @@ class UploadSave(api_common.BaseApiView):
 
         return content_ads
 
-    def _execute_update(self, batch):
+    def _execute_update(self, request, batch):
         try:
-            return upload.persist_edit_batch(batch)
+            return upload.persist_edit_batch(request, batch)
         except (upload.InvalidBatchStatus, upload.CandidateErrorsRemaining) as e:
             raise exc.ValidationError(message=e.message)
 
@@ -132,7 +132,7 @@ class UploadSave(api_common.BaseApiView):
         if batch.type != constants.UploadBatchType.EDIT:
             content_ads = self._execute_save(request, ad_group, batch)
         elif request.user.has_perm('zemauth.can_edit_content_ads'):
-            content_ads = self._execute_update(batch)
+            content_ads = self._execute_update(request, batch)
         else:
             raise Http404('Permission denied')
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from mock import patch, Mock
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.http.request import HttpRequest
 from django.test import TestCase, override_settings
 
 from dash import constants
@@ -8,6 +9,7 @@ from dash import models
 from dash import upload
 from dash import forms
 
+import zemauth.models
 import utils.s3helpers
 
 valid_candidate = {
@@ -302,6 +304,10 @@ class PersistEditBatchTestCase(TestCase):
 
     fixtures = ['test_upload.yaml']
 
+    def setUp(self):
+        self.request = HttpRequest()
+        self.request.user = zemauth.models.User.objects.get(id=1)
+
     @patch('utils.redirector_helper.update_redirect', autospec=True)
     def test_persist_edit_batch(self, mock_update_redirect):
         batch = models.UploadBatch.objects.get(id=7)
@@ -309,7 +315,7 @@ class PersistEditBatchTestCase(TestCase):
         content_ad = models.ContentAd.objects.get(id=2)
         candidate = batch.contentadcandidate_set.get()
 
-        content_ads = upload.persist_edit_batch(batch)
+        content_ads = upload.persist_edit_batch(self.request, batch)
         new_content_ad = models.ContentAd.objects.get(id=content_ad.id)
         self.assertEqual(1, len(content_ads))
         self.assertEqual(new_content_ad, content_ads[0])
@@ -341,14 +347,14 @@ class PersistEditBatchTestCase(TestCase):
         batch.status = constants.UploadBatchStatus.CANCELLED
 
         with self.assertRaises(upload.InvalidBatchStatus):
-            upload.persist_edit_batch(batch)
+            upload.persist_edit_batch(self.request, batch)
 
     def test_invalid_batch_type(self):
         batch = models.UploadBatch.objects.get(id=7)
         batch.type = constants.UploadBatchType.INSERT
 
         with self.assertRaises(upload.ChangeForbidden):
-            upload.persist_edit_batch(batch)
+            upload.persist_edit_batch(self.request, batch)
 
     def test_candidate_without_content_ad(self):
         candidate = models.ContentAdCandidate.objects.filter(id=6).select_related('batch').get()
@@ -356,7 +362,7 @@ class PersistEditBatchTestCase(TestCase):
         candidate.save()
 
         with self.assertRaises(upload.ChangeForbidden):
-            upload.persist_edit_batch(candidate.batch)
+            upload.persist_edit_batch(self.request, candidate.batch)
 
     def test_candidate_with_errors(self):
         candidate = models.ContentAdCandidate.objects.filter(id=6).select_related('batch').get()
@@ -364,7 +370,7 @@ class PersistEditBatchTestCase(TestCase):
         candidate.save()
 
         with self.assertRaises(upload.CandidateErrorsRemaining):
-            upload.persist_edit_batch(candidate.batch)
+            upload.persist_edit_batch(self.request, candidate.batch)
 
 
 class CancelUploadTestCase(TestCase):
@@ -616,6 +622,7 @@ class UpdateCandidateTest(TestCase):
         self.assertEqual(self.candidate.label, self.new_candidate['label'])
         self.assertEqual(self.candidate.url, self.new_candidate['url'])
         self.assertEqual(self.candidate.title, self.new_candidate['title'])
+
         self.assertEqual(self.candidate.image_url, self.new_candidate['image_url'])
         self.assertEqual(self.candidate.image_crop, self.new_candidate['image_crop'])
         self.assertEqual(self.candidate.display_url, self.new_candidate['display_url'])

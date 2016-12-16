@@ -202,6 +202,27 @@ def init_submit_ad_group_action(ad_group_source, content_ad_source, request, sen
     return action
 
 
+def init_edit_content_ad(request, ad_group_source, content_ad_source, fields):
+    payload = {
+        'id': content_ad_source.content_ad.id,
+        'fields': {},
+    }
+    for field, val in fields.items():
+        field_name = field.replace('_', ' ').capitalize()
+        payload['fields'][field_name] = val
+
+    action = actionlog.models.ActionLog(
+        action=actionlog.constants.Action.EDIT_CONTENT_AD,
+        action_type=actionlog.constants.ActionType.MANUAL,
+        ad_group_source=ad_group_source,
+        content_ad_source=content_ad_source,
+        expiration_dt=None,
+        state=actionlog.constants.ActionState.WAITING,
+        payload=payload,
+    )
+    action.save(request)
+
+
 def _get_content_ad_dict(ad_group_source, content_ad_source):
     if ad_group_source.source.update_tracking_codes_on_content_ads() and\
             ad_group_source.can_manage_content_ads:
