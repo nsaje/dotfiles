@@ -900,13 +900,13 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
         COLUMNS.status,
         COLUMNS.submissionStatus,
         COLUMNS.performance,
+        COLUMNS.dailyBudgetSetting,
+        COLUMNS.bidCpcSetting,
     ];
 
     // Default columns - columns present by default (non permanent can be hidden)
     var DEFAULT_COLUMNS_GROUP = PERMANENT_COLUMNS_GROUP.concat([
         COLUMNS.imageUrls,
-        COLUMNS.dailyBudgetSetting,
-        COLUMNS.bidCpcSetting,
         COLUMNS.eYesterdayCost,
         COLUMNS.billingCost,
         COLUMNS.allocatedBudgets,
@@ -929,8 +929,6 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
 
     var SOURCE_GROUP = [
         COLUMNS.supplyDashUrl,
-        COLUMNS.bidCpcSetting,
-        COLUMNS.dailyBudgetSetting,
     ];
 
     var PUBLISHER_GROUP = [
@@ -1098,6 +1096,8 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
     COLUMNS.supplyDashUrl.exceptions.breakdownBaseLevelOnly = true;
 
     // Exceptions (source editable fields)
+    COLUMNS.bidCpcSetting.exceptions.breakdowns = [constants.breakdown.MEDIA_SOURCE];
+    COLUMNS.dailyBudgetSetting.exceptions.breakdowns = [constants.breakdown.MEDIA_SOURCE];
     COLUMNS.bidCpcSetting.exceptions.levels = [constants.level.AD_GROUPS];
     COLUMNS.dailyBudgetSetting.exceptions.levels = [constants.level.AD_GROUPS];
     COLUMNS.bidCpcSetting.exceptions.breakdownBaseLevelOnly = true;
