@@ -9,7 +9,7 @@ from zemauth.models import User
 
 from dash import models
 from dash import threads
-from dash.constants import Level
+from dash.constants import Level, PublisherBlacklistLevel
 from dash.dashapi import api_breakdowns
 from dash.dashapi import helpers
 from dash.dashapi import augmenter
@@ -174,7 +174,9 @@ SOURCE_1__CONTENT_AD_1 = {
 PUBLISHER_1__SOURCE_1 = {
     'publisher_id': 'pub1.com__1', 'publisher': 'pub1.com', 'domain': 'pub1.com', 'name': 'pub1.com', 'domain_link': 'http://pub1.com',  # noqa
     'source_id': 1, 'source_name': 'AdsNative', 'exchange': 'AdsNative', 'source_slug': 'adsnative',
-    'status': 2, 'blacklisted': 'Blacklisted', 'can_blacklist_publisher': True,
+    'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.ADGROUP,
+    'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.ADGROUP),
+    'can_blacklist_publisher': True,
 }
 PUBLISHER_2__SOURCE_1 = {
     'publisher_id': 'pub2.com__1', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'name': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
@@ -184,12 +186,16 @@ PUBLISHER_2__SOURCE_1 = {
 PUBLISHER_2__SOURCE_2 = {
     'publisher_id': 'pub2.com__2', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'name': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
     'source_id': 2, 'source_name': 'Gravity', 'exchange': 'Gravity', 'source_slug': 'gravity',
-    'status': 2, 'blacklisted': 'Blacklisted', 'can_blacklist_publisher': False,
+    'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.CAMPAIGN,
+    'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.CAMPAIGN),
+    'can_blacklist_publisher': False,
 }
 PUBLISHER_3__SOURCE_1 = {
     'publisher_id': 'pub3.com__1', 'publisher': 'pub3.com', 'name': 'pub3.com', 'domain': 'pub3.com', 'domain_link': 'http://pub3.com',  # noqa
     'source_id': 1, 'source_name': 'AdsNative', 'exchange': 'AdsNative', 'source_slug': 'adsnative',
-    'status': 2, 'blacklisted': 'Blacklisted', 'can_blacklist_publisher': True,
+    'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.ACCOUNT,
+    'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.ACCOUNT),
+    'can_blacklist_publisher': True,
 }
 PUBLISHER_3__SOURCE_2 = {
     'publisher_id': 'pub3.com__2', 'publisher': 'pub3.com', 'name': 'pub3.com', 'domain': 'pub3.com', 'domain_link': 'http://pub3.com',  # noqa
@@ -199,7 +205,9 @@ PUBLISHER_3__SOURCE_2 = {
 PUBLISHER_4__SOURCE_2 = {
     'publisher_id': 'pub4.com__2', 'publisher': 'pub4.com', 'name': 'pub4.com', 'domain': 'pub4.com', 'domain_link': 'http://pub4.com',  # noqa
     'source_id': 2, 'source_name': 'Gravity', 'exchange': 'Gravity', 'source_slug': 'gravity',
-    'status': 2, 'blacklisted': 'Blacklisted', 'can_blacklist_publisher': False,
+    'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.GLOBAL,
+    'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.GLOBAL),
+    'can_blacklist_publisher': False,
 }
 
 

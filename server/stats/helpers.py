@@ -28,8 +28,8 @@ SOURCE_FIELDS = [
 ]
 
 PUBLISHER_FIELDS = [
-    'source_name', 'exchange', 'domain', 'external_id', 'domain_link', 'can_blacklist_publisher', 'blacklisted', 'blacklisted_level',
-    'blacklisted_level_description', 'source_slug',
+    'source_name', 'exchange', 'domain', 'external_id', 'domain_link', 'can_blacklist_publisher', 'blacklisted',
+    'blacklisted_level', 'blacklisted_level_description', 'source_slug',
 ]
 
 OTHER_DASH_FIELDS = [

@@ -429,13 +429,13 @@ class PublisherBlacklistLoader(Loader):
             if pb.source_id:
                 d[self._get_obj_id(pb)] = {
                     'status': pb.status,
-                    'blacklist_level': pb.get_blacklist_level(),
+                    'blacklisted_level': pb.get_blacklist_level(),
                 }
             else:
                 for source_id in self.source_map.keys():
                     d[stats.helpers.create_publisher_id(pb.name, source_id)] = {
                         'status': pb.status,
-                        'blacklist_level': pb.get_blacklist_level(),
+                        'blacklisted_level': pb.get_blacklist_level(),
                     }
 
         return d
