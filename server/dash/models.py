@@ -3052,6 +3052,9 @@ class ConversionPixel(models.Model):
     archived = models.BooleanField(default=False)
     audience_enabled = models.BooleanField(default=False)
 
+    # TODO matijav 19.16.2016 a hack to allow multiple audience pixels
+    additional_pixel = models.BooleanField(default=False)
+
     last_sync_dt = models.DateTimeField(
         default=datetime.datetime.utcnow, blank=True, null=True)
     created_dt = models.DateTimeField(

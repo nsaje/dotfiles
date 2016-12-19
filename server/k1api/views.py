@@ -89,6 +89,7 @@ class AccountsView(K1APIView):
                     'name': pixel.name,
                     'slug': pixel.slug,
                     'audience_enabled': pixel.audience_enabled,
+                    'additional_pixel': pixel.additional_pixel,
                     'source_pixels': source_pixels,
                 }
                 pixels.append(pixel_dict)

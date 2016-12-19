@@ -87,7 +87,6 @@ class K1ApiTest(TestCase):
         data = data['response']
 
         self.assertTrue(len(data), 3)
-        print data
         self.assertEqual(data, ListMatcher([
             {u'id': 1,
              u'name': u'test account 1',
@@ -103,6 +102,7 @@ class K1ApiTest(TestCase):
                   u'name': u'Pixel 1',
                   u'slug': u'testslug1',
                   u'audience_enabled': False,
+                  u'additional_pixel': False,
                   u'source_pixels': ListMatcher([
                       {u'url': u'http://www.ob.com/pixelendpoint',
                        u'source_pixel_id': u'ob_zem1',
@@ -121,6 +121,7 @@ class K1ApiTest(TestCase):
                   u'name': u'Pixel 2',
                   u'slug': u'testslug2',
                   u'audience_enabled': True,
+                  u'additional_pixel': False,
                   u'source_pixels': ListMatcher([
                       {u'url': u'http://www.xy.com/pixelendpoint',
                        u'source_pixel_id': u'xy_zem2',
@@ -145,6 +146,7 @@ class K1ApiTest(TestCase):
                   u'name': u'Pixel 3',
                   u'slug': u'testslug3',
                   u'audience_enabled': True,
+                  u'additional_pixel': False,
                   u'source_pixels': []
                   },
              ]},
@@ -181,6 +183,7 @@ class K1ApiTest(TestCase):
                  u'name': u'Pixel 1',
                  u'slug': u'testslug1',
                  u'audience_enabled': False,
+                 u'additional_pixel': False,
                  u'source_pixels': ListMatcher([
                      {u'url': u'http://www.ob.com/pixelendpoint',
                       u'source_pixel_id': u'ob_zem1',
@@ -199,6 +202,7 @@ class K1ApiTest(TestCase):
                  u'name': u'Pixel 2',
                  u'slug': u'testslug2',
                  u'audience_enabled': True,
+                 u'additional_pixel': False,
                  u'source_pixels': ListMatcher([
                      {u'url': u'http://www.xy.com/pixelendpoint',
                       u'source_pixel_id': u'xy_zem2',
