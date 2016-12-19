@@ -142,6 +142,7 @@ def get_goals(constraints):
             'conversion_goal', 'conversion_goal__pixel')
         primary_goals = [campaign_goals.first()]
         campaign_goal_values = dash.campaign_goals.get_campaign_goal_values(campaign)
+        pixels = campaign.account.conversionpixel_set.filter(archived=False)
 
     elif constraints['allowed_accounts'].count() == 1:
         account = constraints['allowed_accounts'][0]
