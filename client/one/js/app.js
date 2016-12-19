@@ -61,7 +61,8 @@ angular.module('one.legacy').config(function ($stateProvider) {
             },
         })
         .state('main.accounts.campaigns', {
-            url: '/campaigns?settings',
+            url: '/campaigns',
+            params: {settings: null},
             templateUrl: '/partials/account_campaigns.html',
             controller: 'AccountCampaignsCtrl',
         })
@@ -112,7 +113,8 @@ angular.module('one.legacy').config(function ($stateProvider) {
             },
         })
         .state('main.campaigns.ad_groups', {
-            url: '/ad_groups?settings',
+            url: '/ad_groups',
+            params: {settings: null},
             templateUrl: '/partials/campaign_ad_groups.html',
             controller: 'CampaignAdGroupsCtrl',
         })
@@ -160,7 +162,8 @@ angular.module('one.legacy').config(function ($stateProvider) {
             abstract: true,
         })
         .state('main.adGroups.ads', {
-            url: '/ads?settings',
+            url: '/ads',
+            params: {settings: null},
             templateUrl: '/partials/ad_group_contentads.html',
             controller: 'AdGroupAdsCtrl',
         })

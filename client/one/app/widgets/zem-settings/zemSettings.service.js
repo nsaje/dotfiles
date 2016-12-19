@@ -21,7 +21,7 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
     }
 
     function handleStateChange () {
-        var value = $location.search()[QUERY_PARAM];
+        var value = $location.search()[QUERY_PARAM] || $state.params[QUERY_PARAM];
         if (value) {
             $timeout(function () {
                 open();
