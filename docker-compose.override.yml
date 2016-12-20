@@ -23,7 +23,6 @@ einsstatic:
     tty: true
 
 eins:
-    container_name: eins
     restart: always
     hostname: eins
     image: 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1
