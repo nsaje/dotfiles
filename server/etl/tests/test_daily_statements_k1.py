@@ -144,7 +144,8 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(0, statements[31].data_spend_nano)
         self.assertEqual(0, statements[31].license_fee_nano)
 
-    def test_overspend(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
+    @patch('etl.daily_statements_k1.OVERSPEND_CAMPAIGN_IDS', [1])
+    def test_overspend_with_campaign_stop(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
                 self.campaign1.id: {
@@ -170,6 +171,81 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(2400000000000, statements[0].media_spend_nano)
         self.assertEqual(0, statements[0].data_spend_nano)
         self.assertEqual(600000000000, statements[0].license_fee_nano)
+
+    @patch('etl.daily_statements_k1.OVERSPEND_CAMPAIGN_IDS', [1])
+    def test_overspend_manual(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
+        return_values = {
+            datetime.date(2015, 11, 1): {
+                self.campaign1.id: {
+                    'media_nano': 3000000000000,
+                    'data_nano': 500000000000,
+                }
+            }
+        }
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
+
+        campaign_settings = self.campaign1.get_current_settings()
+        campaign_settings.automatic_campaign_stop = False
+        campaign_settings.save(None)
+
+        update_from = datetime.date(2015, 11, 1)
+        daily_statements.reprocess_daily_statements(update_from)
+        statements = (
+            reports.models.BudgetDailyStatement.objects.
+            filter(budget__campaign=self.campaign1).
+            all().
+            order_by('date', 'budget_id')
+        )
+        self.assertEqual(1, len(statements))
+        self.assertEqual(1, statements[0].budget_id)
+        self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
+        self.assertEqual(3000000000000, statements[0].media_spend_nano)
+        self.assertEqual(500000000000, statements[0].data_spend_nano)
+        self.assertEqual(875000000000, statements[0].license_fee_nano)
+
+    @patch('etl.daily_statements_k1.OVERSPEND_CAMPAIGN_IDS', [1])
+    def test_overspend_manual_no_budget(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
+        return_values = {
+            datetime.date(2015, 10, 1): {
+                self.campaign1.id: {
+                    'media_nano': 3000000000000,
+                    'data_nano': 500000000000,
+                }
+            }
+        }
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
+        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 10, 1, 12))
+
+        dash.models.CreditLineItem.objects.create(
+            account_id=self.campaign1.id,
+            start_date=datetime.date(2015, 10, 1),
+            end_date=datetime.date(2015, 10, 1),
+            amount=0,
+            license_fee=Decimal('0.2'),
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+        )
+
+        campaign_settings = self.campaign1.get_current_settings()
+        campaign_settings.automatic_campaign_stop = False
+        campaign_settings.save(None)
+
+        update_from = datetime.date(2015, 10, 1)
+        daily_statements.reprocess_daily_statements(update_from)
+        statements = (
+            reports.models.BudgetDailyStatement.objects.
+            filter(budget__campaign=self.campaign1).
+            all().
+            order_by('date', 'budget_id')
+        )
+        self.assertEqual(1, len(statements))
+        self.assertEqual(0, statements[0].budget.amount)
+        self.assertEqual(datetime.date(2015, 10, 1), statements[0].budget.start_date)
+        self.assertEqual(datetime.date(2015, 10, 1), statements[0].budget.end_date)
+        self.assertEqual(datetime.date(2015, 10, 1), statements[0].date)
+        self.assertEqual(3000000000000, statements[0].media_spend_nano)
+        self.assertEqual(500000000000, statements[0].data_spend_nano)
+        self.assertEqual(875000000000, statements[0].license_fee_nano)
 
     def test_different_fees(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {

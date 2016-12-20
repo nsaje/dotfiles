@@ -24,6 +24,13 @@ from etl import materialize_views
 logger = logging.getLogger(__name__)
 
 
+OVERSPEND_CAMPAIGN_IDS = [1073]
+
+
+def _get_license_fee_pct_of_total(license_fee_pct):
+    return (1 / (1 - license_fee_pct)) - 1
+
+
 def _generate_statements(date, campaign, campaign_spend):
     logger.info("Generate daily statements for %s, %s: %s", campaign.id, date, campaign_spend)
 
@@ -72,7 +79,7 @@ def _generate_statements(date, campaign, campaign_spend):
                 attributed_media_nano = total_media_nano
                 attributed_data_nano = total_data_nano
 
-            license_fee_pct_of_total = (1 / (1 - budget.credit.license_fee)) - 1
+            license_fee_pct_of_total = _get_license_fee_pct_of_total(budget.credit.license_fee)
             license_fee_nano = (attributed_media_nano + attributed_data_nano) * license_fee_pct_of_total
 
         per_budget_spend_nano[budget.id]['media'] += attributed_media_nano
@@ -92,9 +99,63 @@ def _generate_statements(date, campaign, campaign_spend):
             margin_nano=margin_nano,
         )
 
-    if total_media_nano + total_data_nano > 0:
-        # overspend occured, can be handled here
-        pass
+    if total_media_nano > 0 or total_data_nano > 0:
+        try:
+            _handle_overspend(date, campaign, total_media_nano, total_data_nano)
+        except:
+            logger.exception('Failed to handle overspend for campaign %s on date %s', campaign.id, date)
+
+
+def _handle_overspend(date, campaign, media_nano, data_nano):
+    if campaign.get_current_settings().automatic_campaign_stop:
+        return
+
+    if campaign.id not in OVERSPEND_CAMPAIGN_IDS:
+        return
+
+    try:
+        budget = dash.models.BudgetLineItem.objects.filter(
+            campaign_id=campaign.id,
+            start_date__lte=date,
+            end_date__gte=date,
+        ).latest('created_dt')
+    except dash.models.BudgetLineItem.DoesNotExist:
+        credit = dash.models.CreditLineItem.objects.filter(
+            account_id=campaign.account_id,
+            start_date__lte=date,
+            end_date__gte=date,
+        ).latest('created_dt')
+
+        budget = dash.models.BudgetLineItem.objects.create(
+            credit=credit,
+            campaign_id=campaign.id,
+            start_date=date,
+            end_date=date,
+            amount=0,
+            comment='Budget created automatically'
+        )
+
+    try:
+        daily_statement = budget.statements.get(date=date)
+    except reports.models.BudgetDailyStatement.DoesNotExist:
+        daily_statement = reports.models.BudgetDailyStatement(
+            budget_id=budget.id,
+            date=date,
+            media_spend_nano=0,
+            data_spend_nano=0,
+            license_fee_nano=0,
+            margin_nano=0,
+        )
+
+    license_fee_pct_of_total = _get_license_fee_pct_of_total(budget.credit.license_fee)
+    license_fee_nano = (media_nano + data_nano) * license_fee_pct_of_total
+    margin_nano = (media_nano + data_nano + license_fee_nano) * budget.margin
+
+    daily_statement.media_spend_nano += media_nano
+    daily_statement.data_spend_nano += data_nano
+    daily_statement.license_fee_nano += license_fee_nano
+    daily_statement.margin_nano += margin_nano
+    daily_statement.save()
 
 
 def _get_dates(date, campaign):
