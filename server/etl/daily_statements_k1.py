@@ -24,13 +24,6 @@ from etl import materialize_views
 logger = logging.getLogger(__name__)
 
 
-OVERSPEND_CAMPAIGN_IDS = [574, 583, 1117, 1121, 591, 561, 593, 588, 587, 568, 575, 597, 594, 596, 576, 581, 598, 1118,
-                          1122, 1125, 772, 595, 592, 590, 1119, 1123, 1126, 1128, 1130, 1132, 964, 965, 985, 983, 950,
-                          953, 954, 981, 982, 984, 1116, 1026, 1120, 1124, 1127, 1074, 1020, 1027, 1073, 1028, 1081,
-                          1083, 1129, 1072, 1131, 1133, 1075, 1076, 1077, 1078, 1080, 1082, 990, 1134, 1021, 1090, 1136,
-                          1137, 1138, 1139, 1140, 1141, 1142, 1143, 1150, 1151]
-
-
 def _get_license_fee_pct_of_total(license_fee_pct):
     return (1 / (1 - license_fee_pct)) - 1
 
@@ -112,9 +105,6 @@ def _generate_statements(date, campaign, campaign_spend):
 
 def _handle_overspend(date, campaign, media_nano, data_nano):
     if campaign.get_current_settings().automatic_campaign_stop:
-        return
-
-    if campaign.id not in OVERSPEND_CAMPAIGN_IDS:
         return
 
     try:

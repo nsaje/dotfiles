@@ -144,7 +144,6 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(0, statements[31].data_spend_nano)
         self.assertEqual(0, statements[31].license_fee_nano)
 
-    @patch('etl.daily_statements_k1.OVERSPEND_CAMPAIGN_IDS', [1])
     def test_overspend_with_campaign_stop(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
@@ -172,7 +171,6 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(0, statements[0].data_spend_nano)
         self.assertEqual(600000000000, statements[0].license_fee_nano)
 
-    @patch('etl.daily_statements_k1.OVERSPEND_CAMPAIGN_IDS', [1])
     def test_overspend_manual(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
@@ -204,7 +202,6 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(500000000000, statements[0].data_spend_nano)
         self.assertEqual(875000000000, statements[0].license_fee_nano)
 
-    @patch('etl.daily_statements_k1.OVERSPEND_CAMPAIGN_IDS', [1])
     def test_overspend_manual_no_budget(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 10, 1): {
