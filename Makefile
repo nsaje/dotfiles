@@ -4,8 +4,8 @@ GIT_HASH := $(shell git rev-parse --verify HEAD)
 TIMESTAMP := $(shell date +"Created_%Y-%m-%d_%H.%M")
 
 ifdef HUDSON_COOKIE # Jenkins
-	GIT_BRANCH:= $(shell echo  ${BRANCH_NAME}) # Jenkins
-	BUILD_NUM:= $(shell echo -n ${BUILD_NUMBER}) # Jenkins
+	GIT_BRANCH:= $(shell echo -n ${BRANCH_NAME} )# Jenkins
+	BUILD_NUM:= $(shell echo -n ${BUILD_NUMBER} )# Jenkins
 else # CircleCI
 	GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 	BUILD_NUM  := $(shell test -n "${CIRCLE_BUILD_NUM}" && echo -n "${CIRCLE_BUILD_NUM}" || echo -n "00000" )
@@ -58,7 +58,7 @@ build_baseimage:	## rebuilds a zemanta/z1-base docker image
 					-t $(ECR_BASE)/z1-base:$(TIMESTAMP) \
 					-t $(ECR_BASE)/z1-base \
 					-f docker/Dockerfile.base . \
-	&& docker tag $(ECR_BASE)/z1-base:$(TIMESTAMP) $(ECR_BASE)/z1-base:${BUILD_NUM} || true
+	&& docker tag $(ECR_BASE)/z1-base:$(TIMESTAMP) $(ECR_BASE)/z1-base:$(GIT_BRANCH).$(BUILD_NUM) || true
 
 
 build:	## rebuilds a zemanta/z1 docker image
@@ -67,18 +67,14 @@ build:	## rebuilds a zemanta/z1 docker image
 					-t $(ECR_BASE)/z1:$(GIT_BRANCH) \
 					-t $(ECR_BASE)/z1:$(TIMESTAMP) \
 					-t $(ECR_BASE)/z1 \
-					-t z1:$(BUILD_NUM) \
+					-t z1:$(GIT_BRANCH).$(BUILD_NUM) \
 					-f docker/Dockerfile.z1 . \
-	&& docker tag $(ECR_BASE)/z1:$(TIMESTAMP) $(ECR_BASE)/z1:${BUILD_NUM} || true
+	&& docker tag $(ECR_BASE)/z1:$(TIMESTAMP) $(ECR_BASE)/z1:$(GIT_BRANCH).$(BUILD_NUM) || true
 
 push_baseimage:	## pushes zemanta/z1-base docker image to registry
 	test -n "$(GIT_BRANCH)" && docker push $(ECR_BASE)/z1-base:$(GIT_BRANCH)
 	test -n "$(GIT_HASH)"	&& docker push $(ECR_BASE)/z1-base:$(GIT_HASH)
-	test -n "$(BUILD_NUM)"	&& docker push $(ECR_BASE)/z1-base:$(BUILD_NUM)
-	/usr/bin/test "$(GIT_BRANCH)" == "master" \
-		&& docker tag $(ECR_BASE)/z1-base:$(GIT_BRANCH) $(ECR_BASE)/z1-base:current \
-		&& docker push $(ECR_BASE)/z1-base:current \
-		|| true
+	test -n "$(BUILD_NUM)"	&& docker push $(ECR_BASE)/z1-base:$(GIT_BRANCH).$(BUILD_NUM)
 
 pull_baseimage:	## pulls zemanta/z1-base docker image
 	docker pull $(ECR_BASE)/z1-base
@@ -86,11 +82,7 @@ pull_baseimage:	## pulls zemanta/z1-base docker image
 push:	## pushes zemanta/z1 docker image to registry
 	test -n "$(GIT_BRANCH)" && docker push $(ECR_BASE)/z1:$(GIT_BRANCH)
 	test -n "$(GIT_HASH)"	&& docker push $(ECR_BASE)/z1:$(GIT_HASH)
-	test -n "$(BUILD_NUM)"	&& docker push $(ECR_BASE)/z1:$(BUILD_NUM)
-	/usr/bin/test "$(GIT_BRANCH)" == "master" \
-		&& docker tag $(ECR_BASE)/z1:$(GIT_BRANCH) $(ECR_BASE)/z1:current \
-		&& docker push $(ECR_BASE)/z1:current \
-		|| true
+	test -n "$(BUILD_NUM)"	&& docker push $(ECR_BASE)/z1:$(GIT_BRANCH).$(BUILD_NUM)
 
 update_baseimage: login build_baseimage push_baseimage	## helper combining build & push
 

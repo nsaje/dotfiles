@@ -10,15 +10,16 @@ postgres:
 
 einsstatic:
     hostname: einsstatic
-    image: digitallyseamless/nodejs-bower-grunt
+    image: digitallyseamless/nodejs-bower-grunt:4
     expose:
       - "9999"
     command: "sleep 1h"
 
 eins:
-    image: z1:$BUILD_NUMBER
+    image: z1:$BRANCH_NAME.$BUILD_NUMBER
     volumes:
       - "./server/.junit_xml/:/app/z1/.junit_xml/"
+      - "./server/static/:/app/z1/static/"
     links:
       - "postgres:db"
       - "memcached:memcached"

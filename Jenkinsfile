@@ -15,7 +15,6 @@ node {
 
         // linter
         sh 'docker build -t py-tools -f docker/Dockerfile.py-tools  docker/'
-        sh 'bash ./scripts/jenkins_lint_check.sh'
     }
 
     stage ('Install dependencies') {
@@ -59,6 +58,9 @@ node {
             },
             acceptance: {
                 sh 'make test_acceptance'
+            },
+            linter: {
+                sh 'bash ./scripts/jenkins_lint_check.sh'
             }
         )
     }
@@ -70,6 +72,7 @@ node {
 
     stage('Collect artifacts') {
         // Client artifacts
+        sh 'rm -rf server/static && mkdir server/static && chmod 777 server/static'
         sh '''docker-compose \
                 -f docker-compose.yml \
                 -f docker-compose.jenkins.yml \
@@ -78,7 +81,7 @@ node {
                 --entrypoint=/entrypoint_dev.sh \
                 eins python manage.py collectstatic --noinput'''
 //        sh 'cd client/ && git rev-parse HEAD > dist/git_commit_hash.txt && tar -pc dist/ ../server/static -zf /tmp/${BUILD_NUMBER}-client.tar.gz'
-        sh './scripts/push_static_to_s3.sh'
+        sh '/usr/bin/test "${BRANCH_NAME}" == "master" && ./scripts/push_static_to_s3.sh || true'
         // Server
         sh 'make push'
 //        step([$class: 'S3CopyArtifact', buildSelector: [$class: 'StatusBuildSelector', stable: false], excludeFilter: '', filter: 'client/dist/', flatten: false, optional: false, projectName: '', target: 'test-test/z1/'])
