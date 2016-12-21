@@ -186,7 +186,7 @@ def monkey_patch_test_case_for_timing(test_timings):
     def measure_n_run(self, *args, **kwargs):
         start = time.time()
         __call__(self, *args, **kwargs)
-        test_timings[str(self)] = time.time() - start
+        test_timings[str(self)] = (time.time() - start) * 1000
 
     unittest.TestCase.__call__ = measure_n_run
 
@@ -199,10 +199,10 @@ def print_times(test_timings, nr_top_slow=10):
     )[:nr_top_slow]
     print "\n{} slowest tests:".format(nr_top_slow)
     for func_name, timing in by_time:
-        if timing < 1.0:
+        if timing < 1000.0:
             color = "\033[92m"
-        elif timing < 2.0:
+        elif timing < 2000.0:
             color = "\033[93m"
         else:
             color = "\033[91m"
-        print "{color}{t:.4f}s {f}".format(color=color, f=func_name, t=timing)
+        print "{color}{t:.2f}ms {f}".format(color=color, f=func_name, t=timing)
