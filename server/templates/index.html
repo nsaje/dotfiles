@@ -21,4 +21,17 @@
 <div ng-app="one" ng-strict-di>
     <div ui-view></div>
 </div>
+
+<script>
+    var adblockTest = document.createElement('div');
+    adblockTest.innerHTML = '&nbsp;';
+    adblockTest.className = 'adsbox';
+    document.body.appendChild(adblockTest);
+    window.setTimeout(function() {
+        if (adblockTest.offsetHeight === 0) {
+            alert("Zemanta One might not work as expected when an ad blocker is enabled in a web browser. Turn it off or add this web page's URL as an exception so you can continue working without any problems. After you turn off the ad blocker, you'll need to refresh your screen.");
+        }
+        adblockTest.remove();
+    }, 100);
+</script>
 {% endblock %}
