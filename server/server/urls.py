@@ -712,6 +712,11 @@ urlpatterns += [
         name='k1api.ad_groups.sources',
     ),
     url(
+        r'^k1api/ad_groups/sources/blockers$',
+        k1api.views.AdGroupSourceBlockersView.as_view(),
+        name='k1api.ad_groups.sources.blockers',
+    ),
+    url(
         r'^k1api/content_ads$',
         k1api.views.ContentAdsView.as_view(),
         name='k1api.content_ads',

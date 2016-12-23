@@ -1085,6 +1085,44 @@ class K1ApiTest(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(data['error'], 'Must provide ad_group_id, source_slug and conf')
 
+    def test_update_ad_group_source_blockers(self):
+        params = {'source_slug': 'adblade', 'ad_group_id': 1}
+        put_body = {'interest-targeting': 'Waiting for interest targeting to be set manually.'}
+        response = self.client.generic(
+            'PUT',
+            reverse('k1api.ad_groups.sources.blockers'),
+            json.dumps(put_body),
+            'application/json',
+            QUERY_STRING=urllib.urlencode(params)
+        )
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['response'], put_body)
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(ad_group_id=1, source__bidder_slug='adblade')
+        self.assertEqual(ad_group_source.blockers, put_body)
+
+    def test_update_ad_group_source_blockers_remove(self):
+        ad_group_source = dash.models.AdGroupSource.objects.get(ad_group_id=1, source__bidder_slug='adblade')
+        ad_group_source.blockers = {'interest-targeting': 'Waiting for interest targeting to be set manually.'}
+        ad_group_source.save()
+
+        params = {'source_slug': 'adblade', 'ad_group_id': 1}
+        put_body = {'interest-targeting': None}
+        response = self.client.generic(
+            'PUT',
+            reverse('k1api.ad_groups.sources.blockers'),
+            json.dumps(put_body),
+            'application/json',
+            QUERY_STRING=urllib.urlencode(params)
+        )
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['response'], {})
+
+        ad_group_source.refresh_from_db()
+        self.assertEqual(ad_group_source.blockers, {})
+
     def test_update_facebook_account(self):
         response = self.client.put(
             reverse('k1api.facebook_accounts'),

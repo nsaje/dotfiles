@@ -2035,6 +2035,7 @@ class AdGroupSource(models.Model):
         blank=True,
         null=True
     )
+    blockers = jsonfield.JSONField(blank=True, default={})
 
     objects = QuerySetManager()
 

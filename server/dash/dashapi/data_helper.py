@@ -38,9 +38,9 @@ def get_source_settings_stats(source_settings):
     }
 
 
-def get_source_status(source_state, ad_group_status):
+def get_source_status(ad_group_source, source_state, ad_group_status):
     status = constants.AdGroupSourceSettingsState.INACTIVE
-    if ad_group_status == constants.AdGroupSettingsState.ACTIVE:
+    if not ad_group_source.blockers and ad_group_status == constants.AdGroupSettingsState.ACTIVE:
         status = source_state
     return status
 
@@ -51,5 +51,11 @@ def get_ad_group_source_notification(ad_group_source, ad_group_settings, ad_grou
         if ad_group_source_settings and ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
             notification['message'] = ('This media source is enabled but will not run until'
                                        ' you enable ad group in Ad groups tab on Campaign level.')
+            notification['important'] = True
+
+    if ad_group_source.blockers:
+        if ad_group_source_settings and ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
+            reasons = [v for k, v in ad_group_source.blockers.items()]
+            notification['message'] = 'This media source is enabled but it is not running because: ' + ', '.join(reasons)
             notification['important'] = True
     return notification

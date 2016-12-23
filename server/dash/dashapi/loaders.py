@@ -515,7 +515,7 @@ class AdGroupSourcesLoader(Loader):
             state = source_settings.state if source_settings else constants.AdGroupSourceSettingsState.INACTIVE
             result[source_id] = {
                 'state': state,
-                'status': data_helper.get_source_status(state, self.ad_group_settings.state),
+                'status': data_helper.get_source_status(ad_group_source, state, self.ad_group_settings.state),
                 'cpc': source_settings.cpc_cc if source_settings else None,
                 'daily_budget': source_settings.daily_budget_cc if source_settings else None,
 

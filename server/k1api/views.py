@@ -580,6 +580,8 @@ class AdGroupSourcesView(K1APIView):
                 source_state = constants.AdGroupSettingsState.ACTIVE
             else:
                 source_state = constants.AdGroupSettingsState.INACTIVE
+            # NOTE(nsaje): taking adgroupsource.blockers into account here is not necessary, since the
+            # executor should know when it has a blocking action pending
 
             tracking_code = url_helper.combine_tracking_codes(
                 ad_group_settings.get_tracking_codes(), ''
@@ -656,6 +658,28 @@ class AdGroupSourcesView(K1APIView):
             new_settings.system_user = dash.constants.SystemUserType.K1_USER
             new_settings.save(None)
         return self.response_ok([])
+
+
+class AdGroupSourceBlockersView(K1APIView):
+
+    def put(self, request):
+        """
+        Add/remove a blocker of an ad group source.
+        """
+        ad_group_id = request.GET.get('ad_group_id')
+        source_slug = request.GET.get('source_slug')
+        ad_group_source = dash.models.AdGroupSource.objects.get(ad_group_id=ad_group_id, source__bidder_slug=source_slug)
+
+        blockers_update = json.loads(request.body)
+        for key, value in blockers_update.items():
+            if not (isinstance(key, basestring) and (isinstance(value, basestring) or value is None)):
+                return self.response_error("Bad input: blocker key should be string and value should be either string or None", status=400)
+            if not value:
+                del ad_group_source.blockers[key]
+                continue
+            ad_group_source.blockers[key] = value
+        ad_group_source.save()
+        return self.response_ok(ad_group_source.blockers)
 
 
 class ContentAdsView(K1APIView):

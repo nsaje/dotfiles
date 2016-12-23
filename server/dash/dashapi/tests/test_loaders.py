@@ -415,6 +415,17 @@ class AdGroupSourcesLoaderTest(TestCase):
             2: models.Source.objects.get(pk=2),
         })
 
+    def test_status_with_blockers(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.blockers = {'test-blocker': 'My blocker'}
+        ad_group_source.save()
+        source = self.loader.settings_map[1]
+        self.assertEqual(source['status'], 2)
+        self.assertEqual(source['notifications'], {
+            'important': True,
+            'message': 'This media source is enabled but it is not running because: My blocker',
+        })
+
     def test_settings_map_all_rtb_enabled(self):
         self.loader.ad_group_settings.b1_sources_group_enabled = True
         self.loader.ad_group_settings.b1_sources_group_state = 1
