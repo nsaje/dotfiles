@@ -20,10 +20,6 @@ angular.module('one.legacy').directive('zemGridCellEditButton', function () {
             vm.editRow = editRow;
 
             function editRow () {
-                if (!vm.row || !vm.isFieldVisible) {
-                    return;
-                }
-
                 vm.grid.meta.dataService.editRow(vm.row).success(function (response) {
                     zemUploadTriggerService.openEditModal(
                         vm.grid.meta.data.id,
