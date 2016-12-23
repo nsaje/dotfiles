@@ -1453,3 +1453,13 @@ class ConversionPixelTestCase(TestCase):
         pixel = models.ConversionPixel.objects.create(account_id=1, name='Pixel name', slug='test_slug', id=5)
 
         self.assertEqual(pixel.get_url(), 'test_prefix1/test_slug/')
+
+
+class SourceTypeTestCase(TestCase):
+
+    def test_yahoo_desktop_min_cpc(self):
+        source_type = models.SourceType(type=constants.SourceType.YAHOO, min_cpc=0.05)
+        settings = models.AdGroupSettings(ad_group_id=1)
+        settings_desktop = models.AdGroupSettings(ad_group_id=1, target_devices=[constants.AdTargetDevice.DESKTOP])
+        self.assertEqual(source_type.get_min_cpc(settings), 0.05)
+        self.assertEqual(source_type.get_min_cpc(settings_desktop), 0.25)

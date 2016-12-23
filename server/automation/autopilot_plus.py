@@ -72,7 +72,7 @@ def _get_autopilot_predictions(adjust_budgets, adjust_cpcs, adgroup, adgroup_set
             get_autopilot_daily_budget_recommendations(adgroup, adgroup_settings.autopilot_daily_budget,
                                                        data, campaign_goal=campaign_goal)
     if adjust_cpcs:
-        cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(adgroup, data, budget_changes=budget_changes)
+        cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(adgroup, adgroup_settings, data, budget_changes=budget_changes)
     return cpc_changes, budget_changes
 
 

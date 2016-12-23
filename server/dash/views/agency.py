@@ -89,6 +89,7 @@ class AdGroupSettings(api_common.BaseApiView):
         self.set_settings(ad_group, new_settings, form.cleaned_data, request.user)
 
         self.validate_all_rtb_state(current_settings, new_settings)
+        self.validate_yahoo_desktop_targeting(ad_group, current_settings, new_settings)
 
         # update ad group name
         current_settings.ad_group_name = previous_ad_group_name
@@ -142,6 +143,22 @@ class AdGroupSettings(api_common.BaseApiView):
             if not new_all_rtb_enabled:
                 'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
             raise exc.ValidationError(errors={'autopilot_state': [msg]})
+
+    @staticmethod
+    def validate_yahoo_desktop_targeting(ad_group, settings, new_settings):
+        # optimization: only check when targeting is changed to desktop only
+        if not (settings.target_devices != new_settings.target_devices and
+                new_settings.target_devices == [constants.AdTargetDevice.DESKTOP]):
+            return
+
+        for ags in ad_group.adgroupsource_set.all():
+            if ags.source.source_type.type != constants.SourceType.YAHOO:
+                continue
+            curr_ags_settings = ags.get_current_settings()
+            min_cpc = ags.source.source_type.get_min_cpc(new_settings)
+            if min_cpc and curr_ags_settings.cpc_cc < min_cpc:
+                msg = 'CPC on Yahoo too low for desktop targeting. Please lower the CPC on Yahoo before setting desktop-only targeting.'
+                raise exc.ValidationError(errors={'target_devices': [msg]})
 
     def get_warnings(self, request, ad_group_settings):
         warnings = {}

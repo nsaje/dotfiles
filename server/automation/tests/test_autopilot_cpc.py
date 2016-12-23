@@ -118,6 +118,7 @@ class AutopilotCpcTestCase(test.TestCase):
     def test_threshold_source_constraints(self, mock_source_type_min_max_cpc):
         mock_source_type_min_max_cpc.return_value = (Decimal('0.1'), Decimal('1.0'))
         ags = dash.models.AdGroupSource.objects.get(id=1).source
+        ag_settings = dash.models.AdGroup.objects.get(id=1).get_current_settings()
         test_cases = (
             # proposed_cpc, returned_cpc, returned_comments
             ('0.1', '0.1', []),
@@ -129,7 +130,7 @@ class AutopilotCpcTestCase(test.TestCase):
         for test_case in test_cases:
             comments = []
             self.assertEqual(autopilot_cpc._threshold_source_constraints(
-                Decimal(test_case[0]), ags, comments),
+                Decimal(test_case[0]), ags, ag_settings, comments),
                 Decimal(test_case[1]))
             self.assertEqual(comments, test_case[2])
 

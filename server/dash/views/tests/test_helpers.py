@@ -636,6 +636,40 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             'message': 'Please connect your Facebook page to add Facebook as media source.'
         })
 
+    def test_get_editable_fields_status_setting_yahoo_cpc_too_low(self):
+        req = RequestFactory().get('/')
+        req.user = User.objects.get(pk=1)
+
+        source = models.Source.objects.get(pk=5)
+        source.supports_retargeting = True
+
+        ad_group_source = models.AdGroupSource.objects.get(pk=12)
+        ad_group_source.source = source
+        ad_group_source.can_manage_content_ads = True
+        ad_group_source.save()
+
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.ad_group_source = ad_group_source
+        ad_group_source_settings.cpc_cc = 0.05
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_devices = [constants.AdTargetDevice.DESKTOP]
+
+        allowed_sources = set([ad_group_source.source_id])
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE
+        ]
+        ad_group_source.ad_group.save(req)
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources, True)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source can not be enabled with the current settings - CPC too low for desktop targeting.'
+        })
+
     def test_get_editable_fields_status_setting_landing_mode(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)

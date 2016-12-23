@@ -1327,6 +1327,14 @@ class SourceType(models.Model):
 
     budgets_tz = TimeZoneField(default='America/New_York')
 
+    def get_min_cpc(self, ad_group_settings):
+        """ Some source types have different minimal CPCs depending on the settings.
+            Encode these special cases here. """
+        min_cpc = self.min_cpc
+        if self.type == constants.SourceType.YAHOO and ad_group_settings.target_devices == [constants.AdTargetDevice.DESKTOP]:
+            min_cpc = max(min_cpc, 0.25)
+        return min_cpc
+
     def can_update_state(self):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_UPDATE_STATE in self.available_actions

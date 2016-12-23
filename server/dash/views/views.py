@@ -1052,6 +1052,12 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                         'state': 'Cannot enable Facebook media source that isn\'t connected to a Facebook page.',
                     }
                 )
+            elif not helpers.check_yahoo_min_cpc(ad_group_settings, ad_group_source_settings):
+                errors.update(
+                    {
+                        'state': 'Cannot enable Yahoo media source with the current settings - CPC too low',
+                    }
+                )
 
         if campaign_settings.landing_mode:
             for key in resource.keys():

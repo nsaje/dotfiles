@@ -18,7 +18,7 @@ AD_GROUP_SOURCE_CPC_CONSTRAINTS = {
 }
 
 
-def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
+def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_changes=None):
     active_sources = data.keys()
     recommended_changes = {}
     for ag_source in active_sources:
@@ -38,7 +38,7 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
         proposed_cpc = _round_cpc(proposed_cpc, decimal_places=max_decimal_places)
         proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments,
                                                        max_decimal_places)
-        proposed_cpc = _threshold_source_constraints(proposed_cpc, source_type, cpc_change_comments)
+        proposed_cpc = _threshold_source_constraints(proposed_cpc, source_type, adgroup_settings, cpc_change_comments)
         proposed_cpc = _threshold_account_source_constraints(ad_group.campaign.account_id,
                                                              proposed_cpc,
                                                              source_type,
@@ -153,8 +153,8 @@ def _threshold_ad_group_source_constraints(ad_group_id, proposed_cpc, source_typ
     return proposed_cpc
 
 
-def _threshold_source_constraints(proposed_cpc, source_type, cpc_change_comments):
-    min_cpc, max_cpc = _get_source_type_min_max_cpc(source_type)
+def _threshold_source_constraints(proposed_cpc, source_type, adgroup_settings, cpc_change_comments):
+    min_cpc, max_cpc = _get_source_type_min_max_cpc(source_type, adgroup_settings)
     if proposed_cpc > max_cpc:
         cpc_change_comments += [CpcChangeComment.OVER_SOURCE_MAX_CPC]
         return max_cpc
@@ -169,8 +169,8 @@ def _get_cpc_max_decimal_places(source_dec_places):
         autopilot_settings.AUTOPILOT_CPC_MAX_DEC_PLACES
 
 
-def _get_source_type_min_max_cpc(source_type):
-    return source_type.min_cpc, source_type.max_cpc
+def _get_source_type_min_max_cpc(source_type, adgroup_settings):
+    return source_type.get_min_cpc(adgroup_settings), source_type.max_cpc
 
 
 def _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments, max_cpc_decimal_places):
