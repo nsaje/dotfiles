@@ -302,14 +302,14 @@ class OutbrainPublishersBlacklistView(K1APIView):
         for acc in dash.models.Account.objects.filter(outbrain_marketer_id=marketer_id):
             # NOTE(sigi): sadly, we have some accounts with the same marketer id
             if acc.is_archived():
-               continue 
+                continue
             account = {
                 'id': acc.id,
                 'name': acc.name,
                 'outbrain_marketer_id': acc.outbrain_marketer_id,
             }
             break
-            
+
         return self.response_ok({
             'blacklist': list(blacklisted_publishers),
             'account': account
