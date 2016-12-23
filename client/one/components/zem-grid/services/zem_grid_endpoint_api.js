@@ -8,6 +8,7 @@ angular.module('one.legacy').factory('zemGridEndpointApi', function ($q, $http, 
     function EndpointApi (metaData) {
         this.get = get;
         this.save = save;
+        this.edit = edit;
 
         function get (config) {
             var url = createGetUrl(config);
@@ -49,6 +50,11 @@ angular.module('one.legacy').factory('zemGridEndpointApi', function ($q, $http, 
             return deferred.promise;
         }
 
+        function edit (rowId) {
+            var url = createEditUrl(rowId);
+            return $http.post(url);
+        }
+
         function convertErrorsFromApi (errors) {
             // FIXME: generalize errors & move to converter
             var result = {
@@ -87,6 +93,13 @@ angular.module('one.legacy').factory('zemGridEndpointApi', function ($q, $http, 
             }
 
             return '/api/grid/' + breakdownKey + '/' + breakdownId + '/settings/';
+        }
+
+        function createEditUrl (rowId) {
+            var levelKey = metaData.level;
+            var breakdownKey = metaData.breakdown + 's';
+
+            return '/api/grid/' + breakdownKey + '/' + rowId + '/edit/';
         }
     }
 

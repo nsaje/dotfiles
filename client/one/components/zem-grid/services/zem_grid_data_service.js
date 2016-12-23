@@ -17,6 +17,7 @@ angular.module('one.legacy').factory('zemGridDataService', function ($q, zemGrid
         this.initialize = initialize;
         this.loadData = loadData;
         this.saveData = saveData;
+        this.editRow = editRow;
 
         this.isSaveRequestInProgress = dataSource.isSaveRequestInProgress;
 
@@ -98,6 +99,10 @@ angular.module('one.legacy').factory('zemGridDataService', function ($q, zemGrid
                 deferred.reject(err);
             });
             return deferred.promise;
+        }
+
+        function editRow (row) {
+            return dataSource.editRow(row);
         }
 
         function handleSourceStatsUpdate () {

@@ -74,6 +74,7 @@ angular.module('one.legacy').factory('zemDataSourceService', function ($rootScop
         this.getMetaData = getMetaData;
         this.saveData = saveData;
         this.updateData = updateData;
+        this.editRow = editRow;
 
         this.isSaveRequestInProgress = isSaveRequestInProgress;
 
@@ -204,6 +205,10 @@ angular.module('one.legacy').factory('zemDataSourceService', function ($rootScop
                 deferred.reject(err);
             });
             return deferred.promise;
+        }
+
+        function editRow (row) {
+            return endpoint.editRow(row);
         }
 
         function updateData (breakdown) {

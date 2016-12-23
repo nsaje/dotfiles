@@ -59,6 +59,10 @@ angular.module('one.legacy').factory('zemGridEndpointService', function ($http, 
             return deferred.promise;
         };
 
+        this.editRow = function (row) {
+            return api.edit(row.id);
+        };
+
         function chainNavigationServiceUpdate (adGroupId, promise) {
             // In case we are changing AdGroup settings, notify Navigation service to reload this AdGroup
             var deferred = $q.defer();

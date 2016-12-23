@@ -46,6 +46,7 @@ angular.module('one.legacy').factory('zemGridConstants', function () {
             INTERNAL_LINK: 'internalLink',
             STATUS: 'status',
             STATE_SELECTOR: 'stateSelector',
+            EDIT_BUTTON: 'editButton',
             PERFORMANCE_INDICATOR: 'performanceIndicator',
             SUBMISSION_STATUS: 'submissionStatus',
             THUMBNAIL: 'thumbnail',

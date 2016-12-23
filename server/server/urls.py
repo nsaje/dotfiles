@@ -119,6 +119,11 @@ urlpatterns += [
         name='grid_content_ad_settings'
     ),
     url(
+        r'^api/grid/content_ads/(?P<content_ad_id>\d+)/edit/',
+        login_required(dash.views.grid.ContentAdEdit.as_view()),
+        name='grid_content_ad_edit'
+    ),
+    url(
         r'^api/grid/ad_groups/(?P<ad_group_id>\d+)/sources/(?P<source_id>\d+)/settings/',
         login_required(dash.views.grid.AdGroupSourceSettings.as_view()),
         name='grid_ad_group_source_settings'

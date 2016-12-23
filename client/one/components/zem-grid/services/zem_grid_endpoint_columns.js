@@ -40,6 +40,16 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
             totalRow: false,
             archivedField: 'archived',
         },
+        editButton: {
+            name: '',
+            help: '',
+            field: 'editButton',
+            type: zemGridConstants.gridColumnTypes.EDIT_BUTTON,
+            order: false,
+            internal: 'zemauth.can_edit_content_ads',
+            shown: 'zemauth.can_edit_content_ads',
+            totalRow: false,
+        },
         status: {
             name: '', // Branded based on breakdown
             help: '', // Branded based on breakdown
@@ -896,6 +906,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
     var PERMANENT_COLUMNS_GROUP = [
         COLUMNS.id,
         COLUMNS.state,
+        COLUMNS.editButton,
         COLUMNS.name,
         COLUMNS.status,
         COLUMNS.submissionStatus,
@@ -1068,6 +1079,12 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
     COLUMNS.state.exceptions.breakdownBaseLevelOnly = true;
     // State selector is only shown on MEDIA_SOURCE breakdown on AD_GROUPS level
     COLUMNS.state.exceptions.custom.push({level: constants.level.AD_GROUPS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: true});
+
+
+    // Exceptions (edit button - only available on base content ad level)
+    COLUMNS.editButton.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];
+    COLUMNS.editButton.exceptions.levels = [constants.level.AD_GROUPS];
+    COLUMNS.editButton.exceptions.breakdownBaseLevelOnly = true;
 
     // Exceptions (submission status - only shown on AD_GROUPS level for CONTENT_AD breakdown)
     COLUMNS.submissionStatus.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];

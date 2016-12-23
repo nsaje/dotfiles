@@ -13,6 +13,7 @@ from dash import views
 from dash import constants
 from dash import table
 from dash.views import helpers
+from dash import upload
 
 import stats.helpers
 import breakdown_helpers
@@ -63,6 +64,17 @@ class ContentAdSettings(api_common.BaseApiView):
         response = {'rows': [{'id': content_ad_id, 'status_setting': state}]}
         convert_resource_response(constants.Level.AD_GROUPS, 'content_ad_id', response)
         return self.create_api_response(response)
+
+
+class ContentAdEdit(api_common.BaseApiView):
+    def post(self, request, content_ad_id):
+        content_ad = views.helpers.get_content_ad(request.user, content_ad_id, select_related=True)
+
+        batch, candidates = upload.insert_edit_candidates([content_ad], content_ad.ad_group)
+        return self.create_api_response({
+            'batch_id': batch.id,
+            'candidates': upload.get_candidates_with_errors(candidates),
+        })
 
 
 class AdGroupSourceSettings(api_common.BaseApiView):
