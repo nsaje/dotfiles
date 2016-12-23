@@ -275,7 +275,6 @@ class AdGroupSettingsTest(TestCase):
                 json.dumps(self.settings_dict),
                 follow=True
             )
-            # import pdb; pdb.set_trace()
             mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
 
             self.assertEqual(json.loads(response.content), {
