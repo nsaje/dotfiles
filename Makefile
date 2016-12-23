@@ -68,6 +68,8 @@ build:	## rebuilds a zemanta/z1 docker image
 					-t $(ECR_BASE)/z1:$(TIMESTAMP) \
 					-t $(ECR_BASE)/z1 \
 					-t z1:$(GIT_BRANCH).$(BUILD_NUM) \
+					--build-arg BUILD=$(BUILD_NUM) \
+					--build-arg BRANCH=$(GIT_BRANCH) \
 					-f docker/Dockerfile.z1 . \
 	&& docker tag $(ECR_BASE)/z1:$(TIMESTAMP) $(ECR_BASE)/z1:$(GIT_BRANCH).$(BUILD_NUM) || true
 

@@ -13,4 +13,4 @@ until PGPASSWORD="$DB_PASS" psql -w -h "$DB_HOST" -U "$DB_USER" "$DB_NAME" -c '\
 done
 
 >&2 echo "Postgres is up - executing command"
-$(dirname $0)/entrypoint.sh $@
+exec $@

@@ -90,6 +90,10 @@ else:
 SERVER_STATIC_URL = _SERVER_STATIC_URL
 CLIENT_STATIC_URL = _CLIENT_STATIC_URL
 
+BRANCH = None
+if os.environ.get('BRANCH'):
+    BRANCH = os.environ.get('BRANCH')
+
 # Zwei callback base URL
 ZWEI_CALLBACK_BASE_URL = ''
 

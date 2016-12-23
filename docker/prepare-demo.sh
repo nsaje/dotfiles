@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ -f /app/zemanta-eins/manage.py ]]; then
+	DIR=/app/zemanta-eins
+else
+	DIR=/app/z1
+fi
+
 if [[ "$CONF_ENV" != "demo" || "${DB_ENV_POSTGRES_DB}" != "demo-one" ]]; then
     echo "ERROR: Running prepare-demo in non-demo environment, which would drop the DB! Exiting."
     exit 1
@@ -20,22 +26,22 @@ echo "PostgreSQL opened port"
 set -eo pipefail
 
 echo "Running migrations"
-python /app/zemanta-eins/manage.py migrate --noinput
+python $DIR/manage.py migrate --noinput
 
 echo "Downloading dump"
 curl -L "${DUMP_URL}" >> dump.tar
 
 echo "Clearing the DB"
-python /app/zemanta-eins/manage.py sqlflush | python /app/zemanta-eins/manage.py dbshell
+python $DIR/manage.py sqlflush | grep -v "Loading configuration from" | python $DIR/manage.py dbshell
 
 echo "Extracting dump files"
 tar -xf dump.tar
 
 echo "Loading dump"
-python /app/zemanta-eins/manage.py loaddata dump*.json
+python $DIR/manage.py loaddata dump*.json
 
 echo "Incrementing sequences"
-python /app/zemanta-eins/manage.py dbshell <<SQL | grep 'ALTER SEQUENCE' | python /app/zemanta-eins/manage.py dbshell
+python $DIR/manage.py dbshell <<SQL | grep 'ALTER SEQUENCE' | python $DIR/manage.py dbshell
 SELECT 'ALTER SEQUENCE ' ||
        quote_ident(S.relname) ||
        ' INCREMENT BY 1000000;'

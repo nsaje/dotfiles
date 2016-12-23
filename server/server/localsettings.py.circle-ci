@@ -72,6 +72,7 @@ GOOGLE_OAUTH_CLIENT_SECRET = Secret('').get()
 
 # Static files
 BUILD_NUMBER = None
+BRANCH = None
 
 SERVER_STATIC_URL = '/static'
 CLIENT_STATIC_URL = 'http://0.0.0.0:9999'

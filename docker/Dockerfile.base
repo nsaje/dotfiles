@@ -12,6 +12,7 @@ RUN apt-get update && \
         dropbear \
         openssh-server \
         postgresql-client \
+        curl \
         mime-support && \
     apt-get -y autoremove && \
     mkdir /var/run/sshd
@@ -34,5 +35,3 @@ RUN set -ex && \
     apt-get purge -y --auto-remove $buildDeps
 
 EXPOSE 8000
-
-ENTRYPOINT ["/entrypoint.sh"]

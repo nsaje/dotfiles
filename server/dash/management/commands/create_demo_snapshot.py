@@ -150,9 +150,14 @@ class Command(ExceptionCommand):
 
         tararchive.close()
 
+        build = str(settings.BUILD_NUMBER)
+        if settings.BRANCH:
+            build = settings.BRANCH + '/' + str(settings.BUILD_NUMBER)
+
         s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_DEMO)
         s3_helper.put(os.path.join(snapshot_id, 'dump.tar'), tarbuffer.getvalue())
-        s3_helper.put(os.path.join(snapshot_id, 'build.txt'), str(settings.BUILD_NUMBER))
+        s3_helper.put(os.path.join(snapshot_id, 'build.txt'), build)
+
         s3_helper.put('latest.txt', snapshot_id)
 
         _deploykitty_prepare(snapshot_id)

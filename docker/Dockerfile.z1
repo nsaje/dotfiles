@@ -8,6 +8,8 @@ ADD docker/*.sh /
 ADD docker/Dockerfile* /
 RUN chmod +x /*.sh
 
+ADD docker/bash_logout /root/.bash_logout
+
 # Add project to docker image
 ADD server/ .
 
@@ -23,8 +25,13 @@ RUN bash -c 'if [[ "$(cat requirements.txt|md5sum)" != "$(cat /requirements.txt-
 RUN chown ubuntu -R /app
 USER ubuntu
 
+ARG BUILD
+ENV BUILD ${BUILD:-0}
+
+ARG BRANCH
+ENV BRANCH ${BRANCH:-master}
+
 # collect static files
 RUN python manage.py collectstatic --noinput --clear
 
-ENTRYPOINT /entrypoint.sh
 CMD [ "python", "manage.py", "shell" ]

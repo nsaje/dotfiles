@@ -83,6 +83,10 @@ _ROOT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}'.format(BUILD_NU
 SERVER_STATIC_URL = _ROOT_STATIC_URL + '/server'
 CLIENT_STATIC_URL = _ROOT_STATIC_URL + '/client'
 
+BRANCH = None
+if os.environ.get('BRANCH'):
+    BRANCH = os.environ.get('BRANCH')
+
 # Zwei callback base URL
 ZWEI_CALLBACK_BASE_URL = ''
 
