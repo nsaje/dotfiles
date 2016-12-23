@@ -562,7 +562,14 @@ class K1ApiTest(TestCase):
                 .filter(external_id__isnull=False)
                 .values(u'name', u'external_id')
         )
-        self.assertEqual(data, {u'blacklist': list(expected)})
+        self.assertEqual(data, {
+            u'blacklist': list(expected),
+            u'account': {
+                u'id': 1,
+                u'name': u'test account 1',
+                u'outbrain_marketer_id': u'abcde'
+            }
+        })
 
     def test_get_publishers_blacklist(self):
         response = self.client.get(

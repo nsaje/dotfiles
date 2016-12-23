@@ -133,6 +133,7 @@ class AccountsView(K1APIView):
 
 
 class SourcesView(K1APIView):
+
     def get(self, request):
         source_slugs = request.GET.get("source_slugs")
         sources = dash.models.Source.objects.all().select_related('defaultsourcesettings',
@@ -295,7 +296,15 @@ class OutbrainPublishersBlacklistView(K1APIView):
                 .filter(source__source_type__type='outbrain')
                 .values('name', 'external_id')
         )
-        return self.response_ok({'blacklist': list(blacklisted_publishers)})
+        account = dash.models.Account.objects.get(outbrain_marketer_id=marketer_id)
+        return self.response_ok({
+            'blacklist': list(blacklisted_publishers),
+            'account': {
+                'id': account.id,
+                'name': account.name,
+                'outbrain_marketer_id': account.outbrain_marketer_id,
+            }
+        })
 
 
 class PublishersBlacklistView(K1APIView):
