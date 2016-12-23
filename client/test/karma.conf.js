@@ -54,6 +54,9 @@ module.exports = function (config) {
         // if true, Karma captures browsers, runs the tests and exits
         singleRun: false,
 
+        // allow 60 seconds of no messages from chrome
+        browserNoActivityTimeout: 60000,
+
         coverageReporter: {
             reporters: [
                 {
