@@ -42,7 +42,7 @@
                 <label class="col-xs-4 control-label"></label>
                 <div class="col-xs-8">
                     <div class="m-b-s">
-                        <label class="control-label m-t-s m-b-xs">Include people who visit any web page that meets the following rules:</label>
+                        <label class="control-label m-t-s m-b-xs">Include traffic that meets the following conditions:</label>
                         <div class="p-l-none p-r-none">
                             <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
                                 <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>

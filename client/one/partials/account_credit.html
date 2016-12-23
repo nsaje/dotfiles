@@ -1,5 +1,5 @@
 <div class="page page-account-credit page-section" ng-if="!account.archived">
-	<h1>Credit</h1>
+    <h1>Credit</h1>
     <div class="section white-background" ng-show="!loadingInProgress">
         <h2>Overview</h2>
         <div class="description">Account credit is the basis of allocating any budget to any campaign. Valid credit items are used by campaign budget items in the order they are listed.</div>
@@ -24,6 +24,7 @@
         <table class="table">
             <thead>
                 <tr>
+                    <th>ID</th>
                     <th>Created by</th>
                     <th>Valid From</th>
                     <th>Valid To</th>
@@ -40,6 +41,7 @@
             </thead>
             <tbody>
                 <tr ng-repeat="item in activeCredit" ng-class="{ 'row-updated': item.id == updatedId, 'row-canceled': item.isCanceled, 'row-updated-canceled': canceledIds[item.id], 'row-not-selected': !isSelected(item.startDate, item.endDate) }">
+                    <td>{{ item.id }}</td>
                     <td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>

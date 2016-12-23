@@ -38,6 +38,11 @@ OTHER_DASH_FIELDS = [
 ]
 
 
+PROJECTION_FIELDS = (
+    'allocated_budgets', 'pacing', 'flat_fee', 'total_fee',
+    'spend_projection', 'license_fee_projection', 'total_fee_projection',
+)
+
 Goals = collections.namedtuple('Goals', 'campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals')
 
 
@@ -311,6 +316,9 @@ def should_query_dashapi_first(order, target_dimension):
         return True
 
     if order_field in OTHER_DASH_FIELDS:
+        return True
+
+    if order_field in PROJECTION_FIELDS:
         return True
 
     return False

@@ -1,6 +1,6 @@
 <div class="zem-conversion-pixels white-background">
-    <h2>Conversion pixels</h2>
-    <div class="description">A conversion is an action that a person makes while consuming your content such as downloading an eBook, subscribing to a newsletter, adding an item to the shopping, or viewing a particular page.</div>
+    <h2>Pixels</h2>
+    <div class="description">Zemanta's pixels allow you to report conversions, build audiences and get insights about how people use your website.</div>
     <div class="loader" ng-show="listInProgress"></div>
     <div class="loader-container" ng-if="conversionPixels.length">
         <div class="loader" ng-show="conversionPixels.length && listInProgress"></div>
@@ -22,7 +22,7 @@
 
                     </td>
                     <td>
-                    	<span class="loader" ng-if="item.requestInProgress"></span>
+                        <span class="loader" ng-if="item.requestInProgress"></span>
                         <span ng-if="!!item.error" class="error">
                             An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
                         </span>
@@ -37,10 +37,10 @@
                             <a tabindex="-1" ng-click="restoreConversionPixel(item)" href="#" class="button button--small button--with-icon button--archive-icon">Restore</a>
                         </span>
                         <span ng-if="!item.archived">
-                        	<a tabindex="-1" ng-click="copyConversionPixelTag(item)" href="#" class="button button--small button--with-icon button--copy-icon">Copy tag</a>
+                            <a tabindex="-1" ng-click="copyConversionPixelTag(item)" href="#" class="button button--small button--with-icon button--copy-icon">Copy tag</a>
                         </span>
                         <span ng-if="!item.archived">
-                        	<a tabindex="-1" ng-click="editConversionPixel(item)" href="#" class="button button--small button--with-icon button--edit-icon">Edit pixel</a>
+                            <a tabindex="-1" ng-click="editConversionPixel(item)" href="#" class="button button--small button--with-icon button--edit-icon">Edit pixel</a>
                         </span>
                     </td>
                 </tr>
