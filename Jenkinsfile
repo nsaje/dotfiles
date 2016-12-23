@@ -26,6 +26,9 @@ node {
         // for building client
         sh 'docker build -t zemanta/z1-static -f docker/Dockerfile.z1-static  docker/'
 
+        // for building rest docs
+        sh 'docker build -t zemanta/z1-aglio -f docker/Dockerfile.z1-aglio docker/'
+
     }
 
     stage ('Restore cache') {
@@ -82,6 +85,8 @@ node {
                 eins python manage.py collectstatic --noinput'''
 //        sh 'cd client/ && git rev-parse HEAD > dist/git_commit_hash.txt && tar -pc dist/ ../server/static -zf /tmp/${BUILD_NUMBER}-client.tar.gz'
         sh '/usr/bin/test "${BRANCH_NAME}" == "master" && ./scripts/push_static_to_s3.sh || true'
+        // restapi docs
+        sh './server/restapi/docs/build-docker.sh "build-${BRANCH_NAME}.${BUILD_NUMBER}.html" && ./scripts/push_docs_to_s3.sh ./server/restapi/docs/build-${BRANCH_NAME}.${BUILD_NUMBER}.html'
         // Server
         sh 'make push'
 //        step([$class: 'S3CopyArtifact', buildSelector: [$class: 'StatusBuildSelector', stable: false], excludeFilter: '', filter: 'client/dist/', flatten: false, optional: false, projectName: '', target: 'test-test/z1/'])
