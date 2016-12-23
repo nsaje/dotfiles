@@ -15,7 +15,9 @@ angular.module('one.legacy').factory('zemGridDataService', function ($q, zemGrid
         // Public API
         //
         this.initialize = initialize;
+        this.reload = reload;
         this.loadData = loadData;
+        this.loadMetaData = loadMetaData;
         this.saveData = saveData;
         this.editRow = editRow;
 
@@ -35,7 +37,11 @@ angular.module('one.legacy').factory('zemGridDataService', function ($q, zemGrid
         function initialize () {
             dataSource.onStatsUpdated(grid.meta.scope, handleSourceStatsUpdate);
             dataSource.onDataUpdated(grid.meta.scope, handleSourceDataUpdate);
-            loadMetaData().then(function () {
+            reload();
+        }
+
+        function reload () {
+            return loadMetaData().then(function () {
                 grid.meta.initialized = true;
                 loadData().then(function () {
                     // Workaround - goals are defined after initial data is loaded; therefor reload metadata

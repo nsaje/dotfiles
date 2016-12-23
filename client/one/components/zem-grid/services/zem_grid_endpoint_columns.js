@@ -911,8 +911,8 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
         COLUMNS.status,
         COLUMNS.submissionStatus,
         COLUMNS.performance,
-        COLUMNS.dailyBudgetSetting,
         COLUMNS.bidCpcSetting,
+        COLUMNS.dailyBudgetSetting,
     ];
 
     // Default columns - columns present by default (non permanent can be hidden)

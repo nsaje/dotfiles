@@ -268,6 +268,9 @@ def augment_row_publisher(row, domain, source, blacklist_status, can_blacklist_s
             'blacklisted_level': blacklist_status['blacklisted_level'],
             'blacklisted_level_description': constants.PublisherBlacklistLevel.verbose(
                 blacklist_status['blacklisted_level']),
+            'notifications': {
+                'message': constants.PublisherBlacklistLevel.verbose(blacklist_status['blacklisted_level']),
+            },
         })
 
 

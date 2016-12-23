@@ -74,7 +74,7 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
 
     $scope.refreshGridAndTable = function () {
         if ($scope.grid && $scope.grid.api) {
-            $scope.grid.api.loadData();
+            $scope.grid.api.reload();
         }
     };
 

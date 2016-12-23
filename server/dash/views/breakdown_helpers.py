@@ -39,7 +39,7 @@ def format_report_rows_performance_fields(rows, goals):
         if row.get('campaign_id'):
             rows_by_campaign_id[row['campaign_id']].append(row)
 
-    if len(campaign_goals_by_campaign_id.keys()) > 1 and len(rows_by_campaign_id.keys()) <= 1:
+    if len(campaign_goals_by_campaign_id.keys()) > 1 and len(rows_by_campaign_id.keys()) < 1:
         # in case we have data for multiple campaigns but we couldn't separate rows by campaigns
         # then don't add performance info
         return

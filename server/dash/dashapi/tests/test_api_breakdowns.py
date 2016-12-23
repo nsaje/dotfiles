@@ -177,6 +177,9 @@ PUBLISHER_1__SOURCE_1 = {
     'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.ADGROUP,
     'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.ADGROUP),
     'can_blacklist_publisher': True,
+    'notifications': {
+        'message': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.ADGROUP)
+    },
 }
 PUBLISHER_2__SOURCE_1 = {
     'publisher_id': 'pub2.com__1', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'name': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
@@ -189,6 +192,9 @@ PUBLISHER_2__SOURCE_2 = {
     'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.CAMPAIGN,
     'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.CAMPAIGN),
     'can_blacklist_publisher': False,
+    'notifications': {
+        'message': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.CAMPAIGN)
+    },
 }
 PUBLISHER_3__SOURCE_1 = {
     'publisher_id': 'pub3.com__1', 'publisher': 'pub3.com', 'name': 'pub3.com', 'domain': 'pub3.com', 'domain_link': 'http://pub3.com',  # noqa
@@ -196,6 +202,9 @@ PUBLISHER_3__SOURCE_1 = {
     'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.ACCOUNT,
     'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.ACCOUNT),
     'can_blacklist_publisher': True,
+    'notifications': {
+        'message': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.ACCOUNT)
+    },
 }
 PUBLISHER_3__SOURCE_2 = {
     'publisher_id': 'pub3.com__2', 'publisher': 'pub3.com', 'name': 'pub3.com', 'domain': 'pub3.com', 'domain_link': 'http://pub3.com',  # noqa
@@ -208,6 +217,9 @@ PUBLISHER_4__SOURCE_2 = {
     'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.GLOBAL,
     'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.GLOBAL),
     'can_blacklist_publisher': False,
+    'notifications': {
+        'message': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.GLOBAL)
+    },
 }
 
 

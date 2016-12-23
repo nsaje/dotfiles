@@ -1832,7 +1832,7 @@ class AdGroup(models.Model):
     def archive(self, request):
         if not self.can_archive():
             raise exc.ForbiddenError(
-                'Ad group has to be in state "Paused" in order to archive it.'
+                'An ad group has to be paused for 3 days in order to archive it.'
             )
 
         if not self.is_archived():

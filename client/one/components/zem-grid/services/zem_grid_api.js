@@ -20,6 +20,7 @@ angular.module('one.legacy').factory('zemGridApi', function ($rootScope, zemGrid
 
         // Data service API
         this.DS_FILTER = grid.meta.dataService.DS_FILTER;
+        this.reload = grid.meta.dataService.reload;
         this.loadData = grid.meta.dataService.loadData;
         this.loadMetaData = grid.meta.dataService.loadMetaData;
         this.setBreakdown = grid.meta.dataService.setBreakdown;
