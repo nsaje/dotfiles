@@ -2,6 +2,7 @@ import json
 import logging
 import re
 from collections import defaultdict
+import datetime
 
 from django.conf import settings
 from django.db import transaction
@@ -16,6 +17,7 @@ import dash.models
 from dash import constants, publisher_helpers
 from utils import redirector_helper, email_helper
 from utils import url_helper, request_signer, converters
+from redshiftapi import quickstats
 
 
 logger = logging.getLogger(__name__)
@@ -531,6 +533,27 @@ class AdGroupsView(K1APIView):
         campaigns_settings_map = {cs['campaign_id']: cs for cs in campaigns_settings}
 
         return ad_groups_settings, campaigns_settings_map
+
+
+class AdGroupStatsView(K1APIView):
+    """
+    Returns quickstats for an adgroup (used for decision making based on whether the ad group has spent already)
+    """
+
+    def get(self, request):
+        ad_group_id = request.GET.get('ad_group_id')
+        source_slug = request.GET.get('source_slug')
+        ad_group = dash.models.AdGroup.objects.get(pk=ad_group_id)
+        source = dash.models.Source.objects.get(bidder_slug=source_slug)
+        from_date = ad_group.created_dt.date()
+        to_date = datetime.date.today() + datetime.timedelta(days=1)
+        stats = quickstats.query_adgroup(ad_group.id, from_date, to_date, source.id)
+        return self.response_ok({
+            'total_cost': stats['total_cost'],
+            'impressions': stats['impressions'],
+            'clicks': stats['clicks'],
+            'cpc': stats['cpc'],
+        })
 
 
 class AdGroupSourcesView(K1APIView):

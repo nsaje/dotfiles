@@ -707,6 +707,11 @@ urlpatterns += [
         name='k1api.ad_groups',
     ),
     url(
+        r'^k1api/ad_groups/stats$',
+        k1api.views.AdGroupStatsView.as_view(),
+        name='k1api.ad_groups.stats',
+    ),
+    url(
         r'^k1api/ad_groups/sources$',
         k1api.views.AdGroupSourcesView.as_view(),
         name='k1api.ad_groups.sources',

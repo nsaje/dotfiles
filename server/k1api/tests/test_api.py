@@ -1,6 +1,7 @@
 import itertools
 import time
 import json
+import datetime
 
 import mock
 from mock import patch, ANY
@@ -18,6 +19,8 @@ import logging
 from utils.test_helper import ListMatcher
 from utils import request_signer
 from utils import email_helper
+
+from redshiftapi import quickstats
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -754,6 +757,32 @@ class K1ApiTest(TestCase):
 
         for item in data:
             self.assertEqual(len(required_fields - set(item.keys())), 0)
+
+    @patch.object(quickstats, 'query_adgroup', autospec=True)
+    def test_get_ad_group_stats(self, mock_quickstats):
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        mock_stats = {
+            'total_cost': '123.0',
+            'impressions': 123,
+            'clicks': 12,
+            'cpc': '0.15',
+        }
+        mock_quickstats.return_value = mock_stats
+
+        response = self.client.get(
+            reverse('k1api.ad_groups.stats'),
+            {'ad_group_id': 1, 'source_slug': 'yahoo'}
+        )
+
+        from_date = ad_group.created_dt.date()
+        to_date = datetime.date.today() + datetime.timedelta(days=1)
+        mock_quickstats.assert_called_with(1, from_date, to_date, 5)
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(data, mock_stats)
 
     def test_get_ad_groups_sources(self):
         response = self.client.get(
