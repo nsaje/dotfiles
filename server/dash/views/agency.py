@@ -155,9 +155,11 @@ class AdGroupSettings(api_common.BaseApiView):
             if ags.source.source_type.type != constants.SourceType.YAHOO:
                 continue
             curr_ags_settings = ags.get_current_settings()
+            if curr_ags_settings.state != constants.AdGroupSettingsState.ACTIVE:
+                continue
             min_cpc = ags.source.source_type.get_min_cpc(new_settings)
             if min_cpc and curr_ags_settings.cpc_cc < min_cpc:
-                msg = 'CPC on Yahoo too low for desktop targeting. Please lower the CPC on Yahoo before setting desktop-only targeting.'
+                msg = 'CPC on Yahoo is too low for desktop-only targeting. Please set it to at least $0.25.'
                 raise exc.ValidationError(errors={'target_devices': [msg]})
 
     def get_warnings(self, request, ad_group_settings):
