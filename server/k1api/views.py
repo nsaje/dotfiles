@@ -292,27 +292,27 @@ class OutbrainPublishersBlacklistView(K1APIView):
 
     def get(self, request):
         marketer_id = request.GET.get('marketer_id')
+        account = {}
         blacklisted_publishers = (
             dash.models.PublisherBlacklist.objects
                 .filter(account__outbrain_marketer_id=marketer_id)
                 .filter(source__source_type__type='outbrain')
                 .values('name', 'external_id')
         )
-        try:
-            account = dash.models.Account.objects.get(outbrain_marketer_id=marketer_id)
-        except dash.models.Account.DoesNotExist:
-            logger.warning('Account with marketer id {} does not exist.'.format(marketer_id))
-            return self.response_ok({
-                'blacklist': [],
-                'account': None,
-            })
+        for acc in dash.models.Account.objects.filter(outbrain_marketer_id=marketer_id):
+            # NOTE(sigi): sadly, we have some accounts with the same marketer id
+            if acc.is_archived():
+               continue 
+            account = {
+                'id': acc.id,
+                'name': acc.name,
+                'outbrain_marketer_id': acc.outbrain_marketer_id,
+            }
+            break
+            
         return self.response_ok({
             'blacklist': list(blacklisted_publishers),
-            'account': {
-                'id': account.id,
-                'name': account.name,
-                'outbrain_marketer_id': account.outbrain_marketer_id,
-            }
+            'account': account
         })
 
 
