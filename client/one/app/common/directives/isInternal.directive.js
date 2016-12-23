@@ -3,10 +3,9 @@ angular.module('one.common').directive('isInternal', function (zemPermissions) {
     return {
         restrict: 'A',
         scope: false,
-        priority: -999999,
-        compile: function (tElement, tAttrs) {
-            if (zemPermissions.isPermissionInternal(tAttrs.isInternal)) {
-                angular.element(tElement).prepend(INTERNAL_FEATURE_HTML);
+        link: function (scope, element, attrs) {
+            if (zemPermissions.isPermissionInternal(attrs.isInternal)) {
+                angular.element(element).prepend(INTERNAL_FEATURE_HTML);
             }
         }
     };
