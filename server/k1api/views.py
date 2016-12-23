@@ -296,7 +296,14 @@ class OutbrainPublishersBlacklistView(K1APIView):
                 .filter(source__source_type__type='outbrain')
                 .values('name', 'external_id')
         )
-        account = dash.models.Account.objects.get(outbrain_marketer_id=marketer_id)
+        try:
+            account = dash.models.Account.objects.get(outbrain_marketer_id=marketer_id)
+        except dash.models.Account.DoesNotExist:
+            logger.warning('Account with marketer id {} does not exist.'.format(marketer_id))
+            return self.response_ok({
+                'blacklist': [],
+                'account': None,
+            })
         return self.response_ok({
             'blacklist': list(blacklisted_publishers),
             'account': {
@@ -668,7 +675,8 @@ class AdGroupSourceBlockersView(K1APIView):
         """
         ad_group_id = request.GET.get('ad_group_id')
         source_slug = request.GET.get('source_slug')
-        ad_group_source = dash.models.AdGroupSource.objects.get(ad_group_id=ad_group_id, source__bidder_slug=source_slug)
+        ad_group_source = dash.models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id, source__bidder_slug=source_slug)
 
         blockers_update = json.loads(request.body)
         for key, value in blockers_update.items():
