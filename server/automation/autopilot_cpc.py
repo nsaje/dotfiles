@@ -52,6 +52,12 @@ def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_c
             cpc_change_comments = cpc_change_not_allowed_comments
             new_cpc_cc = old_cpc_cc
 
+        # CHRISTMAS HACK(sigi) cpc is sometimes float, why?! 25.12.16
+        # https://sentry.io/zemanta/eins-1/issues/196716854/
+        if isinstance(new_cpc_cc, float):
+            logger.warning('Autopilot: CPC was float on ad group %s', ad_group)
+            new_cpc_cc = decimal.Decimal(new_cpc_cc)
+
         recommended_changes[ag_source] = {
             'old_cpc_cc': old_cpc_cc,
             'new_cpc_cc': new_cpc_cc,
