@@ -784,6 +784,14 @@ class K1ApiTest(TestCase):
 
         self.assertEqual(data, mock_stats)
 
+    def test_get_ad_group_stats_false_source(self):
+        response = self.client.get(
+            reverse('k1api.ad_groups.stats'),
+            {'ad_group_id': 1, 'source_slug': 'doesnotexist'}
+        )
+
+        self.assertEqual(response.status_code, 400)
+
     def test_get_ad_groups_sources(self):
         response = self.client.get(
             reverse('k1api.ad_groups.sources'),
