@@ -1,6 +1,8 @@
 from decimal import Decimal
 from mock import patch
 import mock
+import json
+import traceback
 
 from django import test
 
@@ -21,6 +23,34 @@ class AutopilotPlusTestCase(test.TestCase):
         # patcher = patch('dash.api.k1_helper')
         # self.k1_helper_mock = patcher.start()
         # self.addCleanup(patcher.stop)
+
+    @patch('urllib2.urlopen')
+    @test.override_settings(
+        HOSTNAME='testhost',
+        PAGER_DUTY_ENABLED=True,
+        PAGER_DUTY_URL='http://pagerduty.example.com',
+        PAGER_DUTY_ENGINEERS_SERVICE_KEY='123abc'
+    )
+    def test_report_autopilot_exception(self, mock_urlopen):
+        ad_group = dash.models.AdGroup.objects.get(id=1)
+        ex = Exception()
+        autopilot_plus._report_autopilot_exception(ad_group, ex)
+        desc = 'Autopilot failed operating on element because an exception was raised: {}'.format(
+            traceback.format_exc(ex)
+        )
+        mock_urlopen.assert_called_with(
+            'http://pagerduty.example.com',
+            json.dumps({
+                'service_key': '123abc',
+                'incident_key': 'automation_autopilot_error',
+                'event_type': 'trigger',
+                'description': desc,
+                'client': 'Zemanta One - testhost',
+                'details': {
+                    'element': '<AdGroup: Test AdGroup 1>'
+                },
+            })
+        )
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
     def test_set_autopilot_changes_only_cpc(self, mock_update_values):

@@ -138,7 +138,7 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
             'email': ', '.join(emails)
         }
         pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
             incident_key='automation_autopilot_email',
             description=u'Autopilot e-mail for campaign was not sent because an exception was raised: {}'.
                         format(traceback.format_exc(e)),
@@ -178,7 +178,7 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
             'email': ', '.join(emails)
         }
         pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
             incident_key='automation_autopilot_budget_initialisation_email',
             description=u'Autopilot e-mail for initialising budget autopilot on an adroup in ' +
                          'campaign was not sent because an exception was raised: {}'.

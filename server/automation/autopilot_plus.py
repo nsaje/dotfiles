@@ -303,7 +303,7 @@ def _report_autopilot_exception(element, e):
         'element': repr(element)
     }
     pagerduty_helper.trigger(
-        event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+        event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
         incident_key='automation_autopilot_error',
         description=u'Autopilot failed operating on element because an exception was raised: {}'.format(
             traceback.format_exc(e)),

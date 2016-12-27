@@ -7,8 +7,8 @@ from utils.constant_base import ConstantBase
 
 
 class PagerDutyEventType(ConstantBase):
-    SYSOPS = 'sysops'
-    ADOPS = 'adops'
+    SYSOPS = 'sysops'  # DEPRECATED (12/27/16)
+    ADOPS = 'adops'  # DEPRECATED (12/27/16)
     ENGINEERS = 'engineers'
 
     _VALUES = {
@@ -21,7 +21,6 @@ class PagerDutyEventType(ConstantBase):
 def trigger(event_type, incident_key, description, details=None):
     if not settings.PAGER_DUTY_ENABLED:
         return
-
     if event_type == PagerDutyEventType.SYSOPS:
         service_key = settings.PAGER_DUTY_SYSOPS_SERVICE_KEY
     elif event_type == PagerDutyEventType.ADOPS:
@@ -39,5 +38,4 @@ def trigger(event_type, incident_key, description, details=None):
         'client': 'Zemanta One - {0}'.format(settings.HOSTNAME),
         'details': details
     }
-
     urllib2.urlopen(settings.PAGER_DUTY_URL, json.dumps(data))

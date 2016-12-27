@@ -10,7 +10,7 @@ from utils import pagerduty_helper
     HOSTNAME='testhost',
     PAGER_DUTY_ENABLED=True,
     PAGER_DUTY_URL='http://pagerduty.example.com',
-    PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
+    PAGER_DUTY_ENGINEERS_SERVICE_KEY='123abc'
 )
 @patch('utils.pagerduty_helper.urllib2.urlopen')
 class PagerDutyHelperTestCase(TestCase):
@@ -27,7 +27,7 @@ class PagerDutyHelperTestCase(TestCase):
         })
 
         pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
+            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
             incident_key='adgroup_stop_failed',
             description='Adgroup stop action failed',
             details={

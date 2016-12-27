@@ -26,7 +26,7 @@ class ActionLogSignalsTestCase(TestCase):
             details={'action_log_admin_url': 'https://one.zemanta.com/admin/actionlog/actionlog/1/change/'},
             incident_key='adgroup_stop_failed',
             description='Adgroup stop action failed',
-            event_type='adops',
+            event_type='engineers',
         )
 
     def test_trigger_alert_pre_save_signal_handler_trigger_engineers(self, mock_trigger_event):

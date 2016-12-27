@@ -101,7 +101,7 @@ def _send_depleting_budget_notification_email(
             'email': ''.join(emails)
         }
         pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
             incident_key='automation_budget_depletion_notification_email',
             description='Budget depletion e-mail for campaign was not sent because an exception was raised: {}'.format(
                 traceback.format_exc(e)),
@@ -143,7 +143,7 @@ def _send_campaign_stopped_notification_email(
             'email': ', '.join(emails)
         }
         pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
             incident_key='automation_budget_stop_notification_email',
             description='Campaign stop because of budget depletion e-mail was not sent because an exception was raised: {}'.format(
                 traceback.format_exc(e)),

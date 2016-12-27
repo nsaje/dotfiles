@@ -8,12 +8,10 @@ from actionlog import models
 
 def trigger_alert_pre_save_signal_handler(sender, instance, **kwargs):
     if (instance.state == constants.ActionState.FAILED and
-           instance.action_type == constants.ActionType.AUTOMATIC and
-           instance.action == constants.Action.SET_CAMPAIGN_STATE):
+            instance.action_type == constants.ActionType.AUTOMATIC and
+            instance.action == constants.Action.SET_CAMPAIGN_STATE):
 
-        event_type = pagerduty_helper.PagerDutyEventType.ADOPS
-        if not instance.ad_group_source.source.has_3rd_party_dashboard():
-            event_type = pagerduty_helper.PagerDutyEventType.ENGINEERS
+        event_type = pagerduty_helper.PagerDutyEventType.ENGINEERS
 
         _trigger_stop_campaign_alert(instance.id, event_type)
 

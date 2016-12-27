@@ -66,7 +66,7 @@ def send_notification_mail(to_emails, subject, body, settings_url=None):
             desc['settings_url'] = settings_url
 
         pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
             incident_key='account_manager_notification_mail_failed',
             description='Account manager email notification was not sent because '
             'an exception was raised: {}'.format(traceback.format_exc(e)),
@@ -227,7 +227,7 @@ def _send_email_to_user(user, request, subject, body):
         logger.error(message)
 
         pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
             incident_key='user_mail_failed',
             description=message,
             details=desc,
@@ -277,7 +277,7 @@ def should_send_account_notification_mail(account, user, request):
             'settings_url': account.get_account_url(request)
         }
         pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
+            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
             incident_key='notification_mail_failed',
             description='E-mail notification was not sent because '
             'default account manager is not set.',
@@ -308,7 +308,7 @@ def should_send_notification_mail(campaign, user, request):
             'settings_url': campaign.get_campaign_url(request)
         }
         pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
+            event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
             incident_key='notification_mail_failed',
             description='E-mail notification was not sent because '
             'account manager is not set.',
