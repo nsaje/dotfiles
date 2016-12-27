@@ -547,7 +547,7 @@ class AdGroupStatsView(K1APIView):
         try:
             source = dash.models.Source.objects.get(bidder_slug=source_slug)
         except dash.models.Source.DoesNotExist:
-            return self.response_error('Source %s does not exist', status=400)
+            return self.response_error('Source \'{}\' does not exist'.format(source_slug), status=400)
         from_date = ad_group.created_dt.date()
         to_date = datetime.date.today() + datetime.timedelta(days=1)
         stats = quickstats.query_adgroup(ad_group.id, from_date, to_date, source.id)
