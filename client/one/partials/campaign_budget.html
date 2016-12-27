@@ -84,6 +84,7 @@
         <table class="table">
             <thead>
                 <tr>
+                    <th>ID</th>
                     <th>Start Date</th>
                     <th>End Date</th>
                     <th>Total Budget</th>
@@ -100,6 +101,7 @@
             </thead>
             <tbody>
                 <tr ng-repeat="item in pastBudget" ng-class="{ 'row-updated': item.id == updatedId }">
+                    <td>{{ item.id }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
 

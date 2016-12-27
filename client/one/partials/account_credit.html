@@ -73,6 +73,7 @@
         <table class="table">
             <thead>
                 <tr>
+                    <th>ID</th>
                     <th>Created by</th>
                     <th>Valid From</th>
                     <th>Valid To</th>
@@ -89,6 +90,7 @@
             </thead>
             <tbody>
                 <tr ng-repeat="item in pastCredit" ng-class="{ 'row-canceled': item.isCanceled, 'row-updated-canceled': canceledIds[item.id] }">
+                    <td>{{ item.id }}</td>
                     <td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
