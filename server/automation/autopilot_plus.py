@@ -72,7 +72,8 @@ def _get_autopilot_predictions(adjust_budgets, adjust_cpcs, adgroup, adgroup_set
             get_autopilot_daily_budget_recommendations(adgroup, adgroup_settings.autopilot_daily_budget,
                                                        data, campaign_goal=campaign_goal)
     if adjust_cpcs:
-        cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(adgroup, adgroup_settings, data, budget_changes=budget_changes)
+        cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(
+            adgroup, adgroup_settings, data, budget_changes=budget_changes)
     return cpc_changes, budget_changes
 
 
@@ -195,8 +196,8 @@ def prefetch_autopilot_data(ad_groups):
             col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
             goal_value = autopilot_settings.GOALS_WORST_VALUE.get(col)
             if campaign_goal.type == CampaignGoalKPI.CPA:
-                    goal_value = _get_conversions_per_cost_value(ag_source, conv_days_ago_data,
-                                                                 campaign_goal.conversion_goal, conv_goals)
+                goal_value = _get_conversions_per_cost_value(ag_source, conv_days_ago_data,
+                                                             campaign_goal.conversion_goal, conv_goals)
             elif col in row and row[col]:
                 goal_value = row[col]
             data[adg][ag_source][col] = goal_value
@@ -300,7 +301,7 @@ def _report_autopilot_exception(element, e):
                      element,
                      traceback.format_exc(e)))
     desc = {
-        'element': ''#repr(element)
+        'element': ''  # repr(element)
     }
     pagerduty_helper.trigger(
         event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
