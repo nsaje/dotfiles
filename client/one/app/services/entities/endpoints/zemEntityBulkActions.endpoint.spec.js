@@ -23,11 +23,13 @@ describe('zemEntityBulkActionsEndpoint', function () {
         zemEntityBulkActionsEndpoint.deactivate(constants.level.ACCOUNTS, constants.breakdown.CAMPAIGN, 2, {});
         zemEntityBulkActionsEndpoint.archive(constants.level.CAMPAIGNS, constants.breakdown.AD_GROUP, 3, {});
         zemEntityBulkActionsEndpoint.restore(constants.level.AD_GROUPS, constants.breakdown.CONTENT_AD, 4, {});
+        zemEntityBulkActionsEndpoint.edit(constants.level.AD_GROUPS, constants.breakdown.CONTENT_AD, 5, {});
 
         $httpBackend.expect('POST', '/api/all_accounts/accounts/state/');
         $httpBackend.expect('POST', '/api/accounts/2/campaigns/state/');
         $httpBackend.expect('POST', '/api/campaigns/3/ad_groups/archive/');
         $httpBackend.expect('POST', '/api/ad_groups/4/contentads/restore/');
+        $httpBackend.expect('POST', '/api/ad_groups/5/contentads/edit/');
         $httpBackend.flush();
     });
 

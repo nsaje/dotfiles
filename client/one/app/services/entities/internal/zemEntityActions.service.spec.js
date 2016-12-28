@@ -101,6 +101,7 @@ describe('zemEntityActionsService', function () {
         var deactivate = service.getAction(constants.entityActionType.BULK, constants.entityAction.DEACTIVATE);
         var archive = service.getAction(constants.entityActionType.BULK, constants.entityAction.ARCHIVE);
         var restore = service.getAction(constants.entityActionType.BULK, constants.entityAction.RESTORE);
+        var edit = service.getAction(constants.entityActionType.BULK, constants.entityAction.EDIT);
 
         var activateSources = service.getAction(constants.entityActionType.BULK,
             constants.entityAction.ACTIVATE, constants.breakdown.MEDIA_SOURCE);
@@ -111,6 +112,7 @@ describe('zemEntityActionsService', function () {
         expect(deactivate).toBe(service.deactivateEntities);
         expect(archive).toBe(service.archiveEntities);
         expect(restore).toBe(service.restoreEntities);
+        expect(edit).toBe(service.editEntities);
 
         expect(activateSources).toBe(service.activateSources);
         expect(deactivateSources).toBe(service.deactivateSources);

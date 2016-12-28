@@ -51,8 +51,14 @@ angular.module('one.legacy').factory('zemGridEndpointApi', function ($q, $http, 
         }
 
         function edit (rowId) {
+            var deferred = $q.defer();
             var url = createEditUrl(rowId);
-            return $http.post(url);
+            $http.post(url).success(function (response) {
+                deferred.resolve(response);
+            }).error(function (data) {
+                deferred.reject(data);
+            });
+            return deferred;
         }
 
         function convertErrorsFromApi (errors) {

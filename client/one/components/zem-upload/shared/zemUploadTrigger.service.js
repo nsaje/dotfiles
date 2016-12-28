@@ -6,17 +6,13 @@ angular.module('one.legacy').service('zemUploadTriggerService', function ($uibMo
     this.openUploadModal = openUploadModal;
     this.openEditModal = openEditModal;
 
-    function openUploadModal (adGroup, onSave, isEdit, batchId, candidates) {
+    function openUploadModal (adGroup, onSave) {
         var modalScope = $rootScope.$new();
         modalScope.adGroup = adGroup;
         modalScope.onSave = onSave;
 
-        modalScope.isEdit = isEdit;
-        modalScope.candidates = candidates;
-        modalScope.batchId = batchId;
-
         $uibModal.open({
-            template: '<zem-upload ad-group="adGroup" on-save="onSave" close-modal="closeModal" is-edit="isEdit" candidates="candidates" batch-id="batchId"></zem-upload>',
+            template: '<zem-upload ad-group="adGroup" on-save="onSave" close-modal="closeModal"></zem-upload>',
             controller: function ($scope) {
                 $scope.closeModal = $scope.$close;
             },

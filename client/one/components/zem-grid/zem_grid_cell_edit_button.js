@@ -29,7 +29,7 @@ angular.module('one.legacy').directive('zemGridCellEditButton', function () {
             }
 
             function editRow () {
-                vm.grid.meta.dataService.editRow(vm.row).success(function (response) {
+                vm.grid.meta.dataService.editRow(vm.row).then(function (response) {
                     zemUploadTriggerService.openEditModal(
                         vm.grid.meta.data.id,
                         response.data.batch_id,
