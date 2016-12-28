@@ -300,7 +300,7 @@ def _report_autopilot_exception(element, e):
                      element,
                      traceback.format_exc(e)))
     desc = {
-        'element': repr(element)
+        'element': ''#repr(element)
     }
     pagerduty_helper.trigger(
         event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
