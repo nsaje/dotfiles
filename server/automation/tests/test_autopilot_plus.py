@@ -47,7 +47,7 @@ class AutopilotPlusTestCase(test.TestCase):
                 'description': desc,
                 'client': 'Zemanta One - testhost',
                 'details': {
-                    'element': '<AdGroup: Test AdGroup 1>'
+                    'element': ''  # '<AdGroup: Test AdGroup 1>'
                 },
             })
         )
