@@ -79,7 +79,7 @@ def monitor_num_ingested_articles():
 
     influx.gauge('integrations.bizwire.article_count', s3_count, source='s3')
     influx.gauge('integrations.bizwire.article_count', db_count, source='db')
-    influx.gauge('integrations.bizwire.article_count', abs(s3_count - db_count), source='diff')
+    influx.gauge('integrations.bizwire.article_count', s3_count - db_count, source='diff')
 
 
 def monitor_remaining_budget():
