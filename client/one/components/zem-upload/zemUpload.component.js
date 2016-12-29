@@ -11,8 +11,6 @@ angular.module('one.legacy').directive('zemUpload', function () { // eslint-disa
             adGroup: '=',
             onSave: '=',
             closeModal: '=',
-            candidates: '=',
-            batchId: '=',
         },
         controllerAs: 'ctrl',
         controller: 'ZemUploadCtrl',
