@@ -454,18 +454,16 @@ class AdGroupsView(K1APIView):
                 'exclusion_interest_targeting': ad_group_settings.exclusion_interest_targeting,
                 'campaign_id': ad_group_settings.ad_group.campaign.id,
                 'account_id': ad_group_settings.ad_group.campaign.account.id,
-                'agency_id': None,
+                'agency_id': ad_group_settings.ad_group.campaign.account.agency_id,
                 'goal_types': campaign_goal_types[ad_group_settings.ad_group.campaign.id],
                 'dayparting': ad_group_settings.dayparting,
+                'max_cpm': ad_group_settings.max_cpm,
                 'b1_sources_group': {
                     'enabled': ad_group_settings.b1_sources_group_enabled,
                     'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
                     'state': ad_group_settings.b1_sources_group_state,
                 },
             }
-
-            if ad_group_settings.ad_group.campaign.account.agency_id:
-                ad_group['agency_id'] = ad_group_settings.ad_group.campaign.account.agency_id
 
             ad_groups.append(ad_group)
 

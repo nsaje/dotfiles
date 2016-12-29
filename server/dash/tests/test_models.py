@@ -69,6 +69,7 @@ class AdGroupSettingsTest(TestCase):
             'autopilot_state': 2,
             'landing_mode': False,
             'dayparting': {"monday": [1, 2, 5], "tuesday": [10, 12], "timezone": "CET"},
+            'max_cpm': Decimal('1.6'),
             'b1_sources_group_enabled': True,
             'b1_sources_group_daily_budget': Decimal('5.0000'),
             'b1_sources_group_state': constants.AdGroupSourceSettingsState.ACTIVE,
@@ -152,6 +153,7 @@ class AdGroupSettingsTest(TestCase):
             'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot", '
             'Dayparting set to "Timezone: CET; Tuesday: 10, 12; Monday: 1, 2, 5", '
             'Exclusion custom audience targeting set to "test audience 3, test audience 4", '
+            'Max CPM set to "$1.60", '
             'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
             'Locations set to "United States", '
             'Display URL set to "example.com", '

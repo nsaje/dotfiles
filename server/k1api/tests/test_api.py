@@ -720,6 +720,7 @@ class K1ApiTest(TestCase):
                 u'state': 2,
             },
             u'dayparting': {u'monday': [1, 2, 3], u'timezone': u'CET'},
+            u'max_cpm': u'1.6000',
         })
 
     def test_get_ad_groups(self):

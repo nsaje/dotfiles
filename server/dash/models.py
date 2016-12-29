@@ -2175,6 +2175,7 @@ class AdGroupSettings(SettingsBase):
         'b1_sources_group_daily_budget',
         'b1_sources_group_state',
         'dayparting',
+        'max_cpm',
     ]
     history_fields = list(_settings_fields)
 
@@ -2259,6 +2260,14 @@ class AdGroupSettings(SettingsBase):
     )
 
     dayparting = jsonfield.JSONField(blank=True, default=dict)
+
+    max_cpm = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Maximum CPM'
+    )
 
     class Meta:
         ordering = ('-created_dt',)
@@ -2358,6 +2367,7 @@ class AdGroupSettings(SettingsBase):
             'autopilot_daily_budget': 'Autopilot\'s Daily Spend Cap',
             'landing_mode': 'Landing Mode',
             'dayparting': 'Dayparting',
+            'max_cpm': 'Max CPM',
             'b1_sources_group_enabled': 'Group all RTB sources',
             'b1_sources_group_daily_budget': 'Daily budget for all RTB sources',
             'b1_sources_group_state': 'State of all RTB sources',
@@ -2413,6 +2423,8 @@ class AdGroupSettings(SettingsBase):
             value = ', '.join(value)
         elif prop_name == 'dayparting':
             value = cls._get_dayparting_human_value(value)
+        elif prop_name == 'max_cpm' and value is not None:
+            value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'b1_sources_group_state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'b1_sources_group_daily_budget' and value is not None:

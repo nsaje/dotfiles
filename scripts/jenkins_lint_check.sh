@@ -52,7 +52,7 @@ green "PEP8 check successful"
 blue "Xenon (cyclomatic complexity) check in progress ..."
 docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=xenon py-tools  \
   --max-absolute D \
-  -e "server/dash/table.py,server/dash/views/views.py,server/dash/dashapi/api_breakdowns.py" \
+  -e "server/dash/table.py,server/dash/models.py,server/dash/views/views.py,server/dash/dashapi/api_breakdowns.py" \
   ./server/
 
 EXITCODE=$?
