@@ -18,7 +18,6 @@ from zemauth.models import User
 @freeze_time('2016-11-30 12:00:00')
 @patch('dash.upload._invoke_external_validation', MagicMock())
 @patch('integrations.bizwire.config.AUTOMATION_CAMPAIGN', 1)
-@patch('integrations.bizwire.config.TEST_FEED_AD_GROUP', 2)
 @patch('integrations.bizwire.config.AUTOMATION_USER_EMAIL', 'user@test.com')
 @override_settings(LAMBDA_CONTENT_UPLOAD_SIGN_KEY='test_api_key')
 class ArticleUploadTest(TestCase):
@@ -163,42 +162,6 @@ class ArticleUploadTest(TestCase):
         self.assertEqual(
             expected_ob_daily_budget,
             ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc
-        )
-
-    def test_article_from_test_feed(self):
-        self.assertEqual(0, dash.models.ContentAdCandidate.objects.filter(ad_group_id=1).count())
-        self.assertEqual(0, dash.models.ContentAdCandidate.objects.filter(ad_group_id=2).count())
-        article_data = {
-            'label': 'bizwire_article_2',
-            'title': 'Title 2',
-            'url': 'http://example.com',
-            'image_url': 'http://example.com/image.jpg',
-            'image_crop': 'center',
-            'description': 'Example description',
-            'brand_name': 'Example brand',
-            'display_url': 'example.com',
-            'call_to_action': 'Read more',
-            'meta': {
-                'is_test_feed': True,
-            }
-        }
-        response = self.client.post(
-            reverse('businesswire_article_upload'),
-            data=json.dumps([article_data]),
-            content_type='application/json',
-        )
-
-        self.assertEqual(200, response.status_code)
-        self.assertEqual({
-            'status': 'ok',
-        }, json.loads(response.content))
-
-        self.assertEqual(0, dash.models.ContentAdCandidate.objects.filter(ad_group_id=1).count())
-        self.assertEqual(1, dash.models.ContentAdCandidate.objects.filter(ad_group_id=2).count())
-
-        self.assertEqual(
-            'Article bizwire_article_2',
-            dash.models.UploadBatch.objects.filter(ad_group_id=2).latest('created_dt').name
         )
 
 

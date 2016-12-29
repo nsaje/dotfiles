@@ -1,16 +1,11 @@
-import jsonfield
 from django.db import models
 
 
-class AdGroupTargeting(models.Model):
+class AdGroupRotation(models.Model):
 
     ad_group = models.ForeignKey('dash.AdGroup')
-    interest_targeting = jsonfield.JSONField(default=[])
-    start_date = models.DateField()
+    start_date = models.DateField(unique=True)
 
     def __repr__(self):
-        return 'AdGroupTargeting: [{} - {}: {}]'.format(
-            self.start_date.isoformat(), self.interest_targeting, self.ad_group_id)
-
-    class Meta:
-        unique_together = ('start_date', 'interest_targeting')
+        return 'AdGroupRotation: [{}: {}]'.format(
+            self.start_date.isoformat(), self.ad_group_id)

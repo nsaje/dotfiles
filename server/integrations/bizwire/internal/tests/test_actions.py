@@ -72,7 +72,6 @@ class RotateAdGroupsTestCase(TestCase):
     def tearDown(self):
         self.utc_now_patcher.stop()
 
-    @patch('integrations.bizwire.config.INTEREST_TARGETING_GROUPS', [])
     def test_rotate_ad_groups(self):
         start_date = helpers.get_pacific_now().date() + datetime.timedelta(days=1)
         ad_groups_before = list(dash.models.AdGroup.objects.all())
@@ -86,15 +85,17 @@ class RotateAdGroupsTestCase(TestCase):
         ad_group = ad_groups_added[0]
         ad_group_settings = ad_group.get_current_settings()
 
-        self.assertEqual(ad_group.name, config.AD_GROUP_NAME_TEMPLATE.format(
-            start_date=start_date,
-            interest_targeting_str=actions.DEFAULT_TARGETING_STR)
+        self.assertEqual(
+            ad_group.name,
+            actions.AD_GROUP_NAME_TEMPLATE.format(
+                start_date=start_date,
+            ),
         )
         self.assertEqual(config.AUTOMATION_CAMPAIGN, ad_group.campaign_id)
         self.assertEqual(dash.constants.AdGroupRunningStatus.ACTIVE, ad_group_settings.state)
         self.assertEqual(start_date, ad_group_settings.start_date)
         self.assertEqual(
-            set(config.INTEREST_TARGETING_OPTIONS),
+            set(config.INTEREST_TARGETING),
             set(ad_group_settings.interest_targeting)
         )
         self.assertEqual(
@@ -114,36 +115,3 @@ class RotateAdGroupsTestCase(TestCase):
             self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_source_settings.state)
             self.assertEqual(config.DEFAULT_CPC, ad_group_source_settings.cpc_cc)
             self.assertEqual(config.DEFAULT_DAILY_BUDGET, ad_group_source_settings.daily_budget_cc)
-
-    @patch('integrations.bizwire.config.INTEREST_TARGETING_GROUPS', [
-        (dash.constants.InterestCategory.ENTERTAINMENT, dash.constants.InterestCategory.FUN),
-        (dash.constants.InterestCategory.POLITICS, dash.constants.InterestCategory.FASHION,
-         dash.constants.InterestCategory.FINANCE),
-        (dash.constants.InterestCategory.HEALTH,),
-    ])
-    def test_interest_targeting_groups(self):
-        start_date = helpers.get_pacific_now().date() + datetime.timedelta(days=1)
-        ad_groups_before = list(dash.models.AdGroup.objects.all())
-
-        actions._rotate_ad_groups(start_date)
-        ad_groups_after = list(dash.models.AdGroup.objects.all())
-
-        ad_groups_added = [ag for ag in ad_groups_after if not any(agb.id == ag.id for agb in ad_groups_before)]
-        self.assertEqual(4, len(ad_groups_added))
-
-        actual_targetings = []
-        for ad_group in ad_groups_added:
-            ad_group_settings = ad_group.get_current_settings()
-            targeting = models.AdGroupTargeting.objects.get(start_date=start_date, ad_group_id=ad_group.id)
-            if targeting.interest_targeting != []:
-                self.assertEqual(set(targeting.interest_targeting), set(ad_group_settings.interest_targeting))
-            actual_targetings.append(set(ad_group_settings.interest_targeting))
-
-        expected_targetings = [
-            set(config.INTEREST_TARGETING_OPTIONS),
-            set([dash.constants.InterestCategory.ENTERTAINMENT, dash.constants.InterestCategory.FUN]),
-            set([dash.constants.InterestCategory.POLITICS, dash.constants.InterestCategory.FASHION,
-                 dash.constants.InterestCategory.FINANCE]),
-            set([dash.constants.InterestCategory.HEALTH]),
-        ]
-        self.assertEqual(expected_targetings, actual_targetings)

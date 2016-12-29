@@ -46,13 +46,10 @@ def click_capping(request):
 
 
 def _get_ad_group_id(article):
-    if article.get('meta', {}).get('is_test_feed', False):
-        return config.TEST_FEED_AD_GROUP
-
     today = helpers.get_pacific_now().date()
-    return models.AdGroupTargeting.objects.filter(
+    return models.AdGroupRotation.objects.filter(
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-        start_date__lte=today, interest_targeting=[]
+        start_date__lte=today
     ).latest('start_date').ad_group_id
 
 

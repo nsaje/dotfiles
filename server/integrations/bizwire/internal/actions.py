@@ -20,7 +20,7 @@ from utils import k1_helper
 
 from zemauth.models import User
 
-DEFAULT_TARGETING_STR = 'DEFAULT TARGETING'
+AD_GROUP_NAME_TEMPLATE = '{start_date} - DEFAULT TARGETING'
 
 
 def _is_pacific_midnight():
@@ -65,10 +65,10 @@ def check_date_and_stop_old_ad_groups():
         return
 
     pacific_today = helpers.get_pacific_now().date()
-    previous_start_date = models.AdGroupTargeting.objects.filter(
+    previous_start_date = models.AdGroupRotation.objects.filter(
         start_date__lte=pacific_today,
     ).values_list('start_date', flat=True).order_by('-start_date').distinct()[1]
-    ad_group_ids = models.AdGroupTargeting.objects.filter(
+    ad_group_ids = models.AdGroupRotation.objects.filter(
         start_date=previous_start_date
     ).values_list('ad_group_id', flat=True)
     for ad_group_id in ad_group_ids:
@@ -105,20 +105,14 @@ def recalculate_and_set_new_daily_budgets(ad_group_id):
 
 @transaction.atomic
 def _rotate_ad_groups(start_date):
-    targeting_options = []
-    default_ad_group_name = _get_ad_group_name(start_date)
-    default_ad_group_id = _create_ad_group(default_ad_group_name, start_date, config.INTEREST_TARGETING_OPTIONS)
-    targeting_options.append((default_ad_group_id, []))
-
-    for interest_targeting in config.INTEREST_TARGETING_GROUPS:
-        name = _get_ad_group_name(start_date, interest_targeting=interest_targeting)
-        ad_group_id = _create_ad_group(name, start_date, interest_targeting)
-        targeting_options.append((ad_group_id, interest_targeting))
-
-    _persist_targeting_options(start_date, targeting_options)
+    ad_group_name = AD_GROUP_NAME_TEMPLATE.format(
+        start_date=start_date,
+    )
+    ad_group_id = _create_ad_group(ad_group_name, start_date)
+    _persist_ad_group_rotation(start_date, ad_group_id)
 
 
-def _create_ad_group(name, start_date, interest_targeting):
+def _create_ad_group(name, start_date):
     data = {
         'campaignId': config.AUTOMATION_CAMPAIGN,
         'name': name,
@@ -133,7 +127,7 @@ def _create_ad_group(name, start_date, interest_targeting):
                 }
             },
             'interest': {
-                'included': [cat.upper() for cat in interest_targeting]
+                'included': [cat.upper() for cat in config.INTEREST_TARGETING]
             },
         }
     }
@@ -196,35 +190,14 @@ def _set_rtb_daily_budget(ad_group_id, daily_budget):
         restapi.views.AdGroupSourcesRTBViewDetails, url, data, view_args=[ad_group_id])
 
 
-def _persist_targeting_options(start_date, targeting_options):
-    if models.AdGroupTargeting.objects.filter(start_date__gte=start_date):
-        raise Exception('Targetings already exist')
+def _persist_ad_group_rotation(start_date, ad_group_id):
+    if models.AdGroupRotation.objects.filter(start_date__gte=start_date):
+        raise Exception('Ad group already exists')
 
-    for ad_group_id, interest_targeting in targeting_options:
-        models.AdGroupTargeting.objects.create(
-            ad_group_id=ad_group_id,
-            interest_targeting=sorted(interest_targeting),
-            start_date=start_date,
-        )
-
-
-def _get_ad_group_name(start_date, interest_targeting=None):
-    interest_targeting_str = DEFAULT_TARGETING_STR
-    if interest_targeting:
-        interest_targeting = sorted(list(set(interest_targeting) & set(config.INTEREST_TARGETING_OPTIONS)))
-        interest_targeting_str = ', '.join(
-            category.upper() for category in (interest_targeting)
-        )
-
-    name = config.AD_GROUP_NAME_TEMPLATE.format(
+    models.AdGroupRotation.objects.create(
+        ad_group_id=ad_group_id,
         start_date=start_date,
-        interest_targeting_str=interest_targeting_str,
     )
-    name_max_length = dash.models.AdGroup._meta.get_field('name').max_length
-    if len(name) > name_max_length:
-        name = name[:name_max_length-4] + ' ...'
-
-    return name
 
 
 def _make_restapi_fake_get_request(viewcls, url, view_args=[]):

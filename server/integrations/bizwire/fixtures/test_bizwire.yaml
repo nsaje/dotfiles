@@ -265,12 +265,11 @@
   model: dash.contentad
   pk: 1
 
-# Ad group targeting
+# Ad group rotation
 - fields:
     ad_group_id: 1
-    interest_targeting: []
     start_date: '2016-11-01'
-  model: bizwire.adgrouptargeting
+  model: bizwire.adgrouprotation
   pk: 1
 
 # Credit line items
