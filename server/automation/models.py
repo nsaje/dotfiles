@@ -182,6 +182,7 @@ class AutopilotLog(models.Model):
     )
     cpc_comments = models.CharField(max_length=1024, null=True, blank=True)
     budget_comments = models.CharField(max_length=1024, null=True, blank=True)
+    is_autopilot_job_run = models.NullBooleanField(default=False, null=True, blank=True)
 
     def __unicode__(self):
         return '{0} {1}'.format(

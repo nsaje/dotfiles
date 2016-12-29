@@ -7,8 +7,10 @@ from django.db.models import F, Sum
 import reports.models
 import dash.models
 import dash.constants
+import automation.models
 import analytics.projections
 import etl.refresh_k1
+from automation import autopilot_helpers
 
 import redshiftapi.db
 
@@ -130,4 +132,61 @@ def audit_iab_categories(running_only=False, paused_only=False):
     for campaign in campaigns:
         if campaign.get_current_settings().iab_category == dash.constants.IABCategory.IAB24:
             alarms.append(campaign)
+    return alarms
+
+
+def audit_autopilot_ad_groups():
+    date = datetime.date.today()
+    ap_logs = automation.models.AutopilotLog.objects.filter(
+        created_dt__range=(datetime.datetime.combine(date, datetime.time.min),
+                           datetime.datetime.combine(date, datetime.time.max)),
+        is_autopilot_job_run=True
+    )
+    ad_groups_in_logs = set(log.ad_group for log in ap_logs)
+    ad_groups_ap_running = set(autopilot_helpers.get_active_ad_groups_on_autopilot()[0])
+    return ad_groups_ap_running - ad_groups_in_logs
+
+
+def audit_autopilot_cpc_changes(date, min_changes=10):
+    ap_logs = automation.models.AutopilotLog.objects.filter(
+        created_dt__range=(datetime.datetime.combine(date, datetime.time.min),
+                           datetime.datetime.combine(date, datetime.time.max)),
+        is_autopilot_job_run=True
+    )
+    source_changes = {}
+    for log in ap_logs:
+        source_changes.setdefault(
+            log.ad_group_source.source,
+            []
+        ).append(log.new_cpc_cc - log.previous_cpc_cc)
+    alarms = {}
+    for source, changes in source_changes.iteritems():
+        if len(changes) < min_changes:
+            continue
+        positive_changes = filter(lambda x: x >= 0, changes)
+        negative_changes = filter(lambda x: x >= 0, changes)
+        if len(positive_changes) == len(changes):
+            alarms[source] = sum(positive_changes)
+        if len(negative_changes) == len(changes):
+            alarms[source] = sum(negative_changes)
+    return alarms
+
+
+def audit_autopilot_budget_changes(date, error=Decimal('0.001')):
+    ap_logs = automation.models.AutopilotLog.objects.filter(
+        created_dt__range=(datetime.datetime.combine(date, datetime.time.min),
+                           datetime.datetime.combine(date, datetime.time.max)),
+        is_autopilot_job_run=True
+    )
+    total_changes = {}
+    for log in ap_logs:
+        total_changes.setdefault(
+            log.ad_group,
+            []
+        ).append(log.new_daily_budget - log.previous_daily_budget)
+    alarms = {}
+    for ad_group, changes in total_changes.iteritems():
+        budget_changes = sum(changes)
+        if abs(budget_changes) > error:
+            alarms[ad_group] = budget_changes
     return alarms

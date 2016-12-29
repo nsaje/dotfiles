@@ -52,6 +52,47 @@ class AutopilotPlusTestCase(test.TestCase):
             })
         )
 
+    @patch('automation.autopilot_plus.prefetch_autopilot_data')
+    @patch('automation.autopilot_helpers.get_active_ad_groups_on_autopilot')
+    @patch('automation.autopilot_plus._get_autopilot_predictions')
+    @patch('automation.autopilot_plus.set_autopilot_changes')
+    @patch('automation.autopilot_plus.persist_autopilot_changes_to_log')
+    @patch('automation.autopilot_plus._get_autopilot_campaign_changes_data')
+    @patch('automation.autopilot_plus._report_autopilot_exception')
+    @patch('actionlog.zwei_actions')
+    @patch('utils.k1_helper.update_ad_group')
+    def test_dry_run(self, mock_k1, mock_zwei, mock_exc, mock_get_changes, mock_log, mock_set,
+                     mock_predict, mock_active, mock_prefetch):
+        ad_groups = list(dash.models.AdGroup.objects.all())
+        mock_prefetch.return_value = (
+            {
+                a: {} for a in ad_groups
+            },
+            {},
+        )
+        mock_active.return_value = (
+            ad_groups,
+            [a.get_current_settings() for a in ad_groups],
+        )
+        mock_predict.return_value = (
+            {}, {}
+        )
+        autopilot_plus.run_autopilot(
+            send_mail=False,
+            report_to_influx=False,
+            no_save=True
+        )
+        self.assertEqual(mock_exc.called, False)
+        self.assertEqual(mock_k1.called, False)
+        self.assertEqual(mock_zwei.called, False)
+        self.assertEqual(mock_log.called, False)
+
+        self.assertEqual(mock_predict.called, True)
+        self.assertEqual(mock_get_changes.called, True)
+        mock_set.assert_called_with(
+            {}, {}, no_save=True
+        )
+
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
     def test_set_autopilot_changes_only_cpc(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
