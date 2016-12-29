@@ -71,9 +71,6 @@ def _distribute_articles(articles_data):
             continue
 
         ad_group_id = _get_ad_group_id(article)
-        if 'meta' in article:
-            del article['meta']
-
         candidates_per_ad_group[ad_group_id].append(article)
 
     return candidates_per_ad_group

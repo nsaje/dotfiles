@@ -22,10 +22,9 @@ class PromotionExportTestCase(TestCase):
         self.verify_patcher.stop()
 
     @patch.object(views.PromotionExport, '_get_ad_stats')
-    @patch.object(views.PromotionExport, '_get_ag_stats')
     @patch.object(views.PromotionExport, '_get_geo_stats')
     @patch.object(views.PromotionExport, '_get_pubs_stats')
-    def test_get_promotion_export(self, mock_get_pubs_stats, mock_get_geo_stats, mock_get_ag_stats, mock_get_ad_stats):
+    def test_get_promotion_export(self, mock_get_pubs_stats, mock_get_geo_stats, mock_get_ad_stats):
         mock_get_ad_stats.return_value = {'impressions': 123, 'clicks': 12, 'ctr': 0.1}
         mock_get_geo_stats.return_value = [{'country': 'US', 'state': 'NY', 'impressions': 100},
                                            {'country': 'US', 'state': None, 'impressions': 23}]

@@ -70,10 +70,12 @@ class PromotionExport(RatelimitMixin, BizwireView):
     ratelimit_block = True
     ratelimit_method = 'GET'
 
-    def _get_geo_stats(self, content_ad_id):
+    def _get_geo_stats(self, content_ads):
         return db.execute_query(
-            backtosql.generate_sql('bizwire_geo.sql', {}),
-            [content_ad_id],
+            backtosql.generate_sql('bizwire_geo.sql', {
+                'content_ad_ids': [content_ad.id for content_ad in content_ads],
+            }),
+            [],
             'bizwire_geo'
         )
 
@@ -84,29 +86,30 @@ class PromotionExport(RatelimitMixin, BizwireView):
             'bizwire_pubs'
         )
 
-    def _get_ad_stats(self, content_ad_id):
+    def _get_ad_stats(self, content_ads):
         return db.execute_query(
             backtosql.generate_sql('bizwire_ad_stats.sql', {
                 'ctr': backtosql.TemplateColumn(
                     'part_sumdiv_perc.sql',
                     {'expr': 'clicks', 'divisor': 'impressions'}
-                )
+                ),
+                'content_ad_ids': [content_ad.id for content_ad in content_ads],
             }),
-            [content_ad_id],
+            [],
             'bizwire_ad_stats'
         )[0]
 
-    def _get_ag_stats(self, ad_group_id):
-        return db.execute_query(
-            backtosql.generate_sql('bizwire_ag_stats.sql', {
-                'industry_ctr': backtosql.TemplateColumn(
-                    'part_sumdiv_perc.sql',
-                    {'expr': 'clicks', 'divisor': 'impressions'}
-                )
-            }),
-            [ad_group_id],
-            'bizwire_ag_stats'
-        )[0]
+    # def _get_ag_stats(self, ad_group_id):
+    #     return db.execute_query(
+    #         backtosql.generate_sql('bizwire_ag_stats.sql', {
+    #             'industry_ctr': backtosql.TemplateColumn(
+    #                 'part_sumdiv_perc.sql',
+    #                 {'expr': 'clicks', 'divisor': 'impressions'}
+    #             )
+    #         }),
+    #         [ad_group_id],
+    #         'bizwire_ag_stats'
+    #     )[0]
 
     def _get_state_key(self, country, state):
         if not country or not state or state not in VALID_US_STATES:
@@ -114,17 +117,17 @@ class PromotionExport(RatelimitMixin, BizwireView):
 
         return country + '-' + state
 
-    def _get_statistics(self, content_ad):
-        ad_stats_thread = threads.AsyncFunction(partial(self._get_ad_stats, content_ad.id))
+    def _get_statistics(self, content_ads):
+        ad_stats_thread = threads.AsyncFunction(partial(self._get_ad_stats, content_ads))
         ad_stats_thread.start()
 
         # ag_stats_thread = threads.AsyncFunction(partial(self._get_ag_stats, content_ad.ad_group_id))
         # ag_stats_thread.start()
 
-        pubs_thread = threads.AsyncFunction(partial(self._get_pubs_stats, content_ad.ad_group_id))
+        pubs_thread = threads.AsyncFunction(partial(self._get_pubs_stats, content_ads[0].ad_group_id))
         pubs_thread.start()
 
-        geo_impressions_thread = threads.AsyncFunction(partial(self._get_geo_stats, content_ad.id))
+        geo_impressions_thread = threads.AsyncFunction(partial(self._get_geo_stats, content_ads))
         geo_impressions_thread.start()
 
         ad_stats = ad_stats_thread.join_and_get_result()
@@ -165,7 +168,9 @@ class PromotionExport(RatelimitMixin, BizwireView):
             return self.response_ok(json.loads(cached_response))
 
         try:
-            content_ad = dash.models.ContentAd.objects.get(
+            # NOTE: it is possible in rare situations for a single article to get inserted multiple times and
+            # this is handled here by using filter instead of get
+            content_ads = dash.models.ContentAd.objects.filter(
                 label=article_id,
                 ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
             )
@@ -174,10 +179,10 @@ class PromotionExport(RatelimitMixin, BizwireView):
 
         response = {
             'article': {
-                'title': content_ad.title,
-                'description': content_ad.description,
+                'title': content_ads[0].title,
+                'description': content_ads[0].description,
             },
-            'statistics': self._get_statistics(content_ad),
+            'statistics': self._get_statistics(content_ads),
         }
 
         cache.set(cache_key, json.dumps(response))
