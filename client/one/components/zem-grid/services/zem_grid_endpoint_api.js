@@ -58,7 +58,7 @@ angular.module('one.legacy').factory('zemGridEndpointApi', function ($q, $http, 
             }).error(function (data) {
                 deferred.reject(data);
             });
-            return deferred;
+            return deferred.promise;
         }
 
         function convertErrorsFromApi (errors) {
