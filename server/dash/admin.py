@@ -705,6 +705,7 @@ class IsArchivedFilter(admin.SimpleListFilter):
 
 
 class AdGroupAdmin(admin.ModelAdmin):
+
     class Media:
         css = {'all': ('css/admin/style.css',)}
 
@@ -1011,6 +1012,20 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
         'created_dt',
         'modified_dt',
     )
+    list_filter = ('used', )
+    search_fields = ('marketer_name', 'marketer_id', )
+    readonly_fields = ('_z1_account', )
+
+    def _z1_account(self, obj):
+        return u', '.join(
+            '<a href="{account_url}">{account}</a>'.format(
+                account_url=reverse('admin:dash_account_change', args=(account.pk,)),
+                account=account.name
+            ) for account in models.Account.objects.filter(
+                outbrain_marketer_id=obj.marketer_id
+            )
+        )
+    _z1_account.allow_tags = True
 
 
 def reject_content_ad_sources(modeladmin, request, queryset):
