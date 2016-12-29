@@ -1005,6 +1005,61 @@ class K1ApiTest(TestCase):
         ag = dash.models.AdGroup.objects.get(pk=1)
         self.assertEqual(ag.campaign.account.outbrain_marketer_id, data['response'])
 
+    def test_sync_outbrain_marketer_new(self):
+        self.assertFalse(
+            dash.models.OutbrainAccount.objects.filter(
+                marketer_id='abc-456',
+                marketer_name='Abc 456'
+            ).exists()
+        )
+        response = self.client.generic(
+            'PUT',
+            reverse('k1api.outbrain_marketer_sync'),
+            QUERY_STRING=urllib.urlencode({'marketer_id': 'abc-456', 'marketer_name': 'Abc 456'})
+        )
+        self.assertEqual(
+            json.loads(response.content)['response'],
+            {
+                'created': True,
+                'marketer_id': 'abc-456',
+                'marketer_name': 'Abc 456',
+                'used': False,
+            }
+        )
+        self.assertTrue(
+            dash.models.OutbrainAccount.objects.filter(
+                marketer_id='abc-456',
+                marketer_name='Abc 456'
+            ).exists()
+        )
+
+    def test_sync_outbrain_marketer_existing(self):
+        dash.models.OutbrainAccount.objects.create(
+            marketer_id='abc-123',
+            marketer_name='Abc 123',
+            used=True
+        )
+        response = self.client.generic(
+            'PUT',
+            reverse('k1api.outbrain_marketer_sync'),
+            QUERY_STRING=urllib.urlencode({'marketer_id': 'abc-123', 'marketer_name': 'Abc 123'})
+        )
+        self.assertEqual(
+            json.loads(response.content)['response'],
+            {
+                'created': False,
+                'marketer_id': 'abc-123',
+                'marketer_name': 'Abc 123',
+                'used': True,
+            }
+        )
+        self.assertTrue(
+            dash.models.OutbrainAccount.objects.filter(
+                marketer_id='abc-123',
+                marketer_name='Abc 123'
+            ).exists()
+        )
+
     @patch.object(email_helper, 'send_outbrain_accounts_running_out_email')
     def test_get_outbrain_marketer_id_assign_new(self, mock_sendmail):
         response = self.client.get(

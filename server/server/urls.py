@@ -777,6 +777,11 @@ urlpatterns += [
         name='k1api.outbrain_marketer_id',
     ),
     url(
+        r'^k1api/outbrain/sync_marketer$',
+        k1api.views.OutbrainMarketerSyncView.as_view(),
+        name='k1api.outbrain_marketer_sync',
+    ),
+    url(
         r'^k1api/facebook/accounts$',
         k1api.views.FacebookAccountsView.as_view(),
         name='k1api.facebook_accounts',
