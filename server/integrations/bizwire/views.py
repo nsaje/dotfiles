@@ -167,14 +167,13 @@ class PromotionExport(RatelimitMixin, BizwireView):
         if cached_response:
             return self.response_ok(json.loads(cached_response))
 
-        try:
-            # NOTE: it is possible in rare situations for a single article to get inserted multiple times and
-            # this is handled here by using filter instead of get
-            content_ads = dash.models.ContentAd.objects.filter(
-                label=article_id,
-                ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-            )
-        except dash.models.ContentAd.DoesNotExist:
+        # NOTE: it is possible in rare situations for a single article to get inserted multiple times and
+        # this is handled here by using filter instead of get
+        content_ads = dash.models.ContentAd.objects.filter(
+            label=article_id,
+            ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+        )
+        if not content_ads:
             return self.response_error('Article not found', status=404)
 
         response = {
