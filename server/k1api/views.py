@@ -326,11 +326,14 @@ class PublishersBlacklistView(K1APIView):
                                 Q(account=ad_group.campaign.account))
             blacklisted = (dash.models.PublisherBlacklist.objects
                            .filter(blacklist_filter)
+                           .filter(status=constants.PublisherStatus.BLACKLISTED)
                            .filter(Q(source__isnull=True) | Q(source__source_type__type=constants.SourceType.B1))
                            .select_related('source', 'ad_group'))
         else:
-            running_ad_groups = dash.models.AdGroup.objects.all().filter_running().select_related('campaign',
-                                                                                                  'campaign__account')
+            running_ad_groups = (dash.models.AdGroup.objects.all()
+                                 .filter_running()
+                                 .select_related('campaign',
+                                                 'campaign__account'))
             running_campaigns = set([ag.campaign for ag in running_ad_groups])
             running_accounts = set([c.account for c in running_campaigns])
 
@@ -340,6 +343,7 @@ class PublishersBlacklistView(K1APIView):
                                 Q(account__in=running_accounts))
             blacklisted = (dash.models.PublisherBlacklist.objects
                            .filter(blacklist_filter)
+                           .filter(status=constants.PublisherStatus.BLACKLISTED)
                            .filter(Q(source__isnull=True) | Q(source__source_type__type=constants.SourceType.B1))
                            .select_related('source', 'ad_group', 'campaign', 'account', 'account')
                            .prefetch_related('campaign__adgroup_set',
@@ -358,7 +362,6 @@ class PublishersBlacklistView(K1APIView):
                     'ad_group_id': ad_group.id,
                     'domain': item.name,
                     'exchange': exchange,
-                    'status': item.status,
                     'external_id': item.external_id,
                 }
                 blacklist[hash(tuple(entry.values()))] = entry
@@ -376,7 +379,6 @@ class PublishersBlacklistView(K1APIView):
                 'ad_group_id': item.ad_group_id,
                 'domain': item.name,
                 'exchange': exchange,
-                'status': item.status,
                 'external_id': item.external_id,
             }
             blacklist[hash(tuple(entry.values()))] = entry
@@ -393,7 +395,6 @@ class PublishersBlacklistView(K1APIView):
                 'ad_group_id': None,
                 'domain': item.name,
                 'exchange': exchange,
-                'status': item.status,
                 'external_id': item.external_id,
             }
             blacklist[hash(tuple(entry.values()))] = entry
@@ -406,7 +407,6 @@ class PublishersBlacklistView(K1APIView):
                     'ad_group_id': ad_group.id,
                     'domain': item.name,
                     'exchange': exchange,
-                    'status': item.status,
                     'external_id': item.external_id,
                 }
                 blacklist[hash(tuple(entry.values()))] = entry
