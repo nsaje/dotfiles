@@ -51,6 +51,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         self.audit_iab_categories(options)
         self.audit_campaign_pacing(options)
+        self.audit_autopilot(options)
 
         if self.alarms and self.send_emails:
             email = utils.email_helper.EmailMessage(
@@ -61,12 +62,28 @@ class Command(utils.command_helpers.ExceptionCommand):
                 ), RECIPIANTS)
             email.send()
 
+    def audit_autopilot(self, options):
+        ap_alarms = analytics.monitor.audit_autopilot_ad_groups()
+        if not ap_alarms:
+            return
+        self.alarms = True
+        self._print('Autopilot did not run on the following ad groups:')
+        self.email_body += u'Autopilot did not run on the following ad groups:\n'
+
+        for ad_group in ap_alarms:
+            self._print(u'- {} {}'.format(ad_group.name, ad_group.pk))
+            self.email_body += u' - {} {}\n'.format(
+                ad_group.name,
+                u'https://one.zemanta.com/ad_groups/{}/ads'.format(ad_group.pk)
+            )
+        self.email_body += '\n'
+
     def audit_iab_categories(self, options):
         undefined_iab_running_campaigns = analytics.monitor.audit_iab_categories(running_only=True)
         if undefined_iab_running_campaigns:
             self.alarms = True
             self.email_body += u'Active campaigns with undefined IAB categories:\n'
-            self._print('Active campaigns with undefined IAB categories: ')
+            self._print(u'Active campaigns with undefined IAB categories: ')
 
         for campaign in undefined_iab_running_campaigns:
             text = u' - {}: {}'.format(

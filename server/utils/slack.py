@@ -7,6 +7,7 @@ from django.conf import settings
 from analytics.constants import SlackMsgTypes
 
 DEFAULT_USERNAME = 'z1'
+AD_GROUP_URL = 'https://one.zemanta.com/ad_groups/{id}/{tab}'
 
 
 def _post_to_slack(data):
@@ -19,7 +20,15 @@ def _post_to_slack(data):
 
 
 def link(url='', anchor=''):
-    return '<{url}|{anchor}>'.format(url=url, anchor=anchor)
+    return u'<{url}|{anchor}>'.format(url=url, anchor=anchor)
+
+
+def ad_group_url(ad_group, tab='ads'):
+    url = AD_GROUP_URL.format(
+        id=ad_group.pk,
+        tab='sources'
+    )
+    return link(url, ad_group.name)
 
 
 def publish(text, channel=None, msg_type=SlackMsgTypes.INFO, username=DEFAULT_USERNAME):

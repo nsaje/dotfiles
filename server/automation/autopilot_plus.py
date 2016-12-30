@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 @influx.timer('automation.autopilot_plus.run_autopilot')
 def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
-                  send_mail=False, initialization=False, report_to_influx=False, no_save=False):
+                  send_mail=False, initialization=False, report_to_influx=False, dry_run=False):
     if not ad_groups:
         ad_groups_on_ap, ad_group_settings_on_ap = autopilot_helpers.get_active_ad_groups_on_autopilot()
     else:
@@ -48,19 +48,19 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
             adjust_budgets, adjust_cpcs, adg, adg_settings, data[adg], campaign_goals.get(adg.campaign))
         try:
             with transaction.atomic():
-                actions.extend(set_autopilot_changes(cpc_changes, budget_changes, no_save=no_save))
-                if not no_save:
+                actions.extend(set_autopilot_changes(cpc_changes, budget_changes, dry_run=dry_run))
+                if not dry_run:
                     persist_autopilot_changes_to_log(cpc_changes, budget_changes, data[adg],
                                                      adg_settings.autopilot_state,
                                                      campaign_goals.get(adg.campaign),
                                                      is_autopilot_job_run=is_autopilot_job_run)
             changes_data = _get_autopilot_campaign_changes_data(
                 adg, changes_data, cpc_changes, budget_changes)
-            if not no_save:
+            if not dry_run:
                 k1_helper.update_ad_group(adg.pk, 'run_autopilot')
         except Exception as e:
             _report_autopilot_exception(adg, e)
-    if not no_save:
+    if not dry_run:
         actionlog.zwei_actions.send(actions)
     if send_mail:
         autopilot_helpers.send_autopilot_changes_emails(changes_data, data, initialization)
@@ -170,7 +170,7 @@ def persist_autopilot_changes_to_log(cpc_changes, budget_changes, data, autopilo
 
 def set_autopilot_changes(cpc_changes={}, budget_changes={},
                           system_user=dash.constants.SystemUserType.AUTOPILOT,
-                          no_save=False, landing_mode=None):
+                          dry_run=False, landing_mode=None):
     actions = []
     for ag_source in set(cpc_changes.keys() + budget_changes.keys()):
         changes = {}
@@ -178,7 +178,7 @@ def set_autopilot_changes(cpc_changes={}, budget_changes={},
             changes['cpc_cc'] = cpc_changes[ag_source]['new_cpc_cc']
         if budget_changes and budget_changes[ag_source]['old_budget'] != budget_changes[ag_source]['new_budget']:
             changes['daily_budget_cc'] = budget_changes[ag_source]['new_budget']
-        if changes and not no_save:
+        if changes and not dry_run:
             actions.extend(
                 autopilot_helpers.update_ad_group_source_values(ag_source, changes, system_user, landing_mode))
     return actions

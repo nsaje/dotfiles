@@ -9,7 +9,7 @@ import utils.slack
 
 logger = logging.getLogger(__name__)
 
-ALERT_MSG = """Autopilot terminated with an exception today ({}). PagerDuty alert might not have been sent. Check <https://sentry.io/zemanta/eins-1/|sentry>"""
+ALERT_MSG = """Autopilot terminated with an exception today ({}). PagerDuty alert might not have been sent. Check <https://sentry.io/zemanta/eins-1/|sentry>."""
 
 
 class Command(ExceptionCommand):
@@ -27,7 +27,7 @@ class Command(ExceptionCommand):
             automation.autopilot_plus.run_autopilot(
                 send_mail=not dry_run,
                 report_to_influx=not dry_run,
-                no_save=dry_run
+                dry_run=dry_run
             )
         except Exception as exc:
             if not dry_run:

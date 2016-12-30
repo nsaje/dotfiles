@@ -147,11 +147,15 @@ def audit_autopilot_ad_groups():
     return ad_groups_ap_running - ad_groups_in_logs
 
 
-def audit_autopilot_cpc_changes(date, min_changes=10):
+def audit_autopilot_cpc_changes(date=None, min_changes=10):
+    if not date:
+        date = datetime.date.today()
     ap_logs = automation.models.AutopilotLog.objects.filter(
         created_dt__range=(datetime.datetime.combine(date, datetime.time.min),
                            datetime.datetime.combine(date, datetime.time.max)),
-        is_autopilot_job_run=True
+        is_autopilot_job_run=True,
+        ad_group_source__source__deprecated=False,
+        ad_group_source__source__maintenance=False
     )
     source_changes = {}
     for log in ap_logs:
@@ -164,7 +168,7 @@ def audit_autopilot_cpc_changes(date, min_changes=10):
         if len(changes) < min_changes:
             continue
         positive_changes = filter(lambda x: x >= 0, changes)
-        negative_changes = filter(lambda x: x >= 0, changes)
+        negative_changes = filter(lambda x: x <= 0, changes)
         if len(positive_changes) == len(changes):
             alarms[source] = sum(positive_changes)
         if len(negative_changes) == len(changes):
@@ -172,11 +176,35 @@ def audit_autopilot_cpc_changes(date, min_changes=10):
     return alarms
 
 
-def audit_autopilot_budget_changes(date, error=Decimal('0.001')):
+def audit_autopilot_budget_totals(date=None, error=Decimal('0.001')):
+    if not date:
+        date = datetime.date.today()
+    alarms = {}
+    state = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+    ad_groups, ad_groups_settings = autopilot_helpers.get_active_ad_groups_on_autopilot(state)
+    ad_group_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups)
+    for settings in ad_groups_settings:
+        total_ap_budget = Decimal(0)
+        filtered_source_settings = filter(
+            lambda agss: agss.ad_group_source.ad_group_id == settings.ad_group_id,
+            ad_group_sources_settings
+        )
+        for source_settings in filtered_source_settings:
+            total_ap_budget += source_settings.daily_budget_cc
+        if abs(settings.autopilot_daily_budget - total_ap_budget) >= error:
+            alarms[settings.ad_group] = settings.autopilot_daily_budget - total_ap_budget
+    return alarms
+
+
+def audit_autopilot_budget_changes(date=None, error=Decimal('0.001')):
+    if not date:
+        date = datetime.date.today()
     ap_logs = automation.models.AutopilotLog.objects.filter(
         created_dt__range=(datetime.datetime.combine(date, datetime.time.min),
                            datetime.datetime.combine(date, datetime.time.max)),
-        is_autopilot_job_run=True
+        is_autopilot_job_run=True,
+        ad_group_source__source__deprecated=False,
+        ad_group_source__source__maintenance=False
     )
     total_changes = {}
     for log in ap_logs:

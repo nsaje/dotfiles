@@ -80,7 +80,7 @@ class AutopilotPlusTestCase(test.TestCase):
         autopilot_plus.run_autopilot(
             send_mail=False,
             report_to_influx=False,
-            no_save=True
+            dry_run=True
         )
         self.assertEqual(mock_exc.called, False)
         self.assertEqual(mock_k1.called, False)
@@ -90,7 +90,7 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertEqual(mock_predict.called, True)
         self.assertEqual(mock_get_changes.called, True)
         mock_set.assert_called_with(
-            {}, {}, no_save=True
+            {}, {}, dry_run=True
         )
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
