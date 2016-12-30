@@ -20,7 +20,7 @@ def validate_daily_budget_cc(daily_budget_cc, source_type):
                                     .format(utils.string_helper.format_decimal(max_daily_budget, 0, 0)))
 
 
-def validate_source_cpc_cc(cpc_cc, ad_group_settings, source, source_type):
+def validate_source_cpc_cc(cpc_cc, source, source_type):
     if cpc_cc < 0:
         raise forms.ValidationError('This value must be positive')
 
@@ -30,7 +30,7 @@ def validate_source_cpc_cc(cpc_cc, ad_group_settings, source, source_type):
             'CPC on {} cannot exceed {} decimal place{}.'.format(
                 source.name, decimal_places, 's' if decimal_places != 1 else ''))
 
-    min_cpc = source_type.get_min_cpc(ad_group_settings)
+    min_cpc = source_type.min_cpc
     if min_cpc is not None and cpc_cc < min_cpc:
         raise forms.ValidationError(
             'Minimum CPC is ${}.'.format(utils.string_helper.format_decimal(min_cpc, 2, 3)))
@@ -44,7 +44,13 @@ def validate_source_cpc_cc(cpc_cc, ad_group_settings, source, source_type):
 def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
 
-    validate_source_cpc_cc(cpc_cc, ad_group_settings, ad_group_source.source, ad_group_source.source.source_type)
+    source_type = ad_group_source.source.source_type
+    validate_source_cpc_cc(cpc_cc, ad_group_source.source, source_type)
+
+    min_cpc = source_type.get_min_cpc(ad_group_settings)
+    if min_cpc is not None and cpc_cc < min_cpc:
+        raise forms.ValidationError(
+            'Minimum CPC is ${}.'.format(utils.string_helper.format_decimal(min_cpc, 2, 3)))
 
     max_cpc = ad_group_settings.cpc_cc
     if max_cpc is not None and cpc_cc > max_cpc:
