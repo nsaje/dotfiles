@@ -11,7 +11,6 @@ import oauth2_provider.views
 
 from zemauth.forms import AuthenticationForm
 
-import zweiapi.views
 import k1api.views
 import actionlog.views
 import reports.views
@@ -693,15 +692,6 @@ urlpatterns += [
         login_required(actionlog.views.ActionLogApiView.as_view()),
         name='action_log_api_put',
     ),
-]
-
-# Zwei Api
-urlpatterns += [
-    url(
-        r'^api/zwei_callback/(?P<action_id>\d+)$',
-        zweiapi.views.zwei_callback,
-        name='api.zwei_callback',
-    )
 ]
 
 # K1 API

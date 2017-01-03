@@ -140,7 +140,7 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
         def _filter_non_transaction_tests(test):
             # django.test.TestCase inherits from django.test.TransactionTestCase so
             # every test will be subclass of TransactionTestCase unless it uses
-            # unittest.TestCase
+            # python unittest.TestCase base class
             return issubclass(type(test), django.test.TestCase) or\
                 not issubclass(type(test), django.test.TransactionTestCase)
 
