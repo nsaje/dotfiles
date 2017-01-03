@@ -54,7 +54,7 @@ a:active {
     text-decoration: none;
     outline: none; // TODO: style for outline
 
-    &:hover {
+    &:not(.button--disabled):not([disabled]):hover {
         background: tint(@secondary-color, 80%);
         border-color: tint(@secondary-color, 80%);
         color: @secondary-color;
@@ -74,7 +74,7 @@ a:active {
     background: @primary-color;
     color: @white;
 
-    &:hover {
+    &:not(.button--disabled):not([disabled]):hover {
         background: darken(@primary-color, 8%);
         color: @white;
         box-shadow: 0px 0px 6px 0px fade(@primary-color,60%);
@@ -87,7 +87,7 @@ a:active {
     line-height: (@default-button-input-height)-2;
     color: @secondary-color;
 
-    &:hover {
+    &:not(.button--disabled):not([disabled]):hover {
         background: tint(@secondary-color, 80%);
         box-shadow: 0px 0px 6px 0px fade(@secondary-color,10%);
     }
@@ -97,7 +97,7 @@ a:active {
     background-color: fade(@white,10%);
     color: @white;
 
-    &:hover {
+    &:not(.button--disabled):not([disabled]):hover {
         background-color: fade(@white,20%);
         color: @white;
     }
@@ -109,7 +109,7 @@ a:active {
     color: @text-color;
     background: white;
 
-    &:hover {
+    &:not(.button--disabled):not([disabled]):hover {
         background: white;
         border: 1px solid darken(@border-gray-color, 20%);
         outline: none;
@@ -120,7 +120,7 @@ a:active {
 .button--disabled,
 .button[disabled] {
     opacity: 0.4;
-    pointer-events: none;
+    cursor: default;
 }
 
 .button--dropdown-toggle-icon {
@@ -258,7 +258,7 @@ a:active {
         background-image: url('images/remove-white.svg');
     }
 
-    &:hover {
+    &:not(.button--disabled):not([disabled]):hover {
         background-color: @red;
         color: @white;
 
