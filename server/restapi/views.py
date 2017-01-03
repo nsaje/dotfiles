@@ -274,6 +274,7 @@ class AdGroupSerializer(SettingsSerializer):
             'startDate': settings['start_date'],
             'endDate': settings['end_date'],
             'maxCpc': settings['cpc_cc'],
+            'maxCpm': settings['max_cpm'],
             'dailyBudget': settings['daily_budget_cc'],
             'trackingCode': settings['tracking_code'],
             'targeting': {
@@ -304,6 +305,7 @@ class AdGroupSerializer(SettingsSerializer):
             'start_date': data['startDate'],
             'end_date': data['endDate'],
             'cpc_cc': data['maxCpc'],
+            'max_cpm': data['maxCpm'],
             'daily_budget_cc': data['dailyBudget'],
             'tracking_code': data['trackingCode'],
             'target_regions': self._unpartition_regions(data['targeting']['geo']['included']),

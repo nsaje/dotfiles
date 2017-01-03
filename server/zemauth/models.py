@@ -169,6 +169,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
              'Can modify Outbrain account publisher blacklist status'),
             ('can_set_adgroup_to_auto_pilot', 'Can set Ad Group to Auto-Pilot (budget and CPC automation)'),
             ('can_set_ad_group_max_cpc', 'Can set ad group max cpc'),
+            ('can_set_ad_group_max_cpm', 'Can set ad group max CPM'),
             ('can_view_retargeting_settings', 'Can view retargeting settings'),
             ('can_view_flat_fees', 'Can view flat fees in All accounts/accounts table'),
             ('can_control_ad_group_state_in_table', 'Can control ad group state in Campaign / Ad Groups table'),

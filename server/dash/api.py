@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # There should be no manual actions for
 # display_url, brand_name, description and call_to_action
 BLOCKED_AD_GROUP_SETTINGS = [
-    'state', 'cpc_cc', 'daily_budget_cc', 'display_url',
+    'state', 'cpc_cc', 'max_cpm', 'daily_budget_cc', 'display_url',
     'brand_name', 'description', 'call_to_action',
     'autopilot_state', 'autopilot_daily_budget', 'landing_mode',
 ]

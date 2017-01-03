@@ -331,6 +331,7 @@ class AdGroupSettingsFormTest(TestCase):
         self.user = User.objects.get(pk=1)
         self.data = {
             'cpc_cc': '1.00',
+            'max_cpm': '1.50',
             'daily_budget_cc': '10.00',
             'end_date': '2014-12-31',
             'id': '248',
@@ -364,6 +365,7 @@ class AdGroupSettingsFormTest(TestCase):
         self.maxDiff = None
         self.assertEqual(form.cleaned_data, {
             'cpc_cc': Decimal('1.00'),
+            'max_cpm': Decimal('1.50'),
             'daily_budget_cc': Decimal('10.00'),
             'end_date': datetime.date(2014, 12, 31),
             'id': 248,
@@ -456,6 +458,21 @@ class AdGroupSettingsFormTest(TestCase):
     def test_max_cpc_setting_value_too_high(self, mock_today):
         mock_today.return_value = datetime.date(2014, 12, 31)
         self.data['cpc_cc'] = 10.01
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
+        self.assertFalse(form.is_valid())
+
+    @patch('utils.dates_helper.local_today')
+    def test_max_cpm(self, mock_today):
+        mock_today.return_value = datetime.date(2014, 12, 31)
+        self.data['max_cpm'] = '1.5'
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
+        self.assertTrue(form.is_valid())
+
+        self.data['max_cpm'] = '0.04'
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
+        self.assertFalse(form.is_valid())
+
+        self.data['max_cpm'] = '10.1'
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 

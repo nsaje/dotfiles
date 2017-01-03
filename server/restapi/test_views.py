@@ -398,6 +398,7 @@ class AdGroupsTest(RESTAPITest):
         start_date=datetime.date.today(),
         end_date=None,
         max_cpc='0.600',
+        max_cpm='1.700',
         daily_budget='15.00',
         tracking_code='a=b',
         target_regions=['US'],
@@ -418,6 +419,7 @@ class AdGroupsTest(RESTAPITest):
             'startDate': start_date,
             'endDate': end_date,
             'maxCpc': max_cpc,
+            'maxCpm': max_cpm,
             'dailyBudget': daily_budget,
             'trackingCode': tracking_code,
             'targeting': {
@@ -455,6 +457,7 @@ class AdGroupsTest(RESTAPITest):
             start_date=settings_db.start_date,
             end_date=settings_db.end_date,
             max_cpc=settings_db.cpc_cc.quantize(Decimal('1.000')) if settings_db.cpc_cc else '',
+            max_cpm=settings_db.max_cpm.quantize(Decimal('1.000')) if settings_db.max_cpm else '',
             daily_budget=settings_db.daily_budget_cc.quantize(Decimal('1.00')),
             tracking_code=settings_db.tracking_code,
             target_regions=settings_db.target_regions,

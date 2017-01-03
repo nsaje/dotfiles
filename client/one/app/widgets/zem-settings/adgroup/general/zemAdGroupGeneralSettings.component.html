@@ -80,4 +80,19 @@
         </div>
         <label ng-repeat="error in $ctrl.errors.cpc" class="control-label error" for="cpc-input">{{ error }}</label>
     </div>
+
+    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.max_cpm}" ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_max_cpm')">
+        <label for="cpm-input" class="col-xs-3 control-label">
+            <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_set_ad_group_max_cpm')" popover-placement="right"></zem-internal-feature>
+            Maximum CPM
+            <zem-help-popover content="Maximum allowed CPM in this ad group." placement="top"></zem-help-popover>
+        </label>
+        <div class="col-xs-4">
+            <div class="input-group">
+                <span class="input-group-addon">$</span>
+                <input id="cpm-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.maxCpm" zem-currency-input fraction-size="3" empty-text="No limit">
+            </div>
+        </div>
+        <label ng-repeat="error in $ctrl.errors.maxCpm" class="control-label error" for="cpm-input">{{ error }}</label>
+    </div>
 </div>

@@ -197,6 +197,9 @@ class AdGroupSettings(api_common.BaseApiView):
                 'cpc_cc':
                     '{:.3f}'.format(settings.cpc_cc)
                     if settings.cpc_cc is not None else '',
+                'max_cpm':
+                    '{:.3f}'.format(settings.max_cpm)
+                    if settings.max_cpm is not None else '',
                 'daily_budget_cc':
                     '{:.2f}'.format(settings.daily_budget_cc)
                     if settings.daily_budget_cc is not None else '',
@@ -244,6 +247,9 @@ class AdGroupSettings(api_common.BaseApiView):
 
         if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
+
+        if user.has_perm('zemauth.can_set_ad_group_max_cpm'):
+            settings.max_cpm = resource['max_cpm']
 
         if not settings.landing_mode and user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
             settings.autopilot_state = resource['autopilot_state']
