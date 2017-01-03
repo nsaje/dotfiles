@@ -154,7 +154,7 @@ def persist_edit_batch(request, batch):
     candidates = models.ContentAdCandidate.objects.filter(batch=batch)
     with transaction.atomic():
         content_ads = _update_content_ads(candidates)
-        _update_redirects(content_ads)
+        redirector_helper.update_redirects(content_ads)
 
         candidates.delete()
         batch.delete()
@@ -167,16 +167,11 @@ def persist_edit_batch(request, batch):
 
 
 def _create_redirect_ids(content_ads):
-    redirector_batch = redirector_helper.insert_redirects_batch(content_ads)
+    redirector_batch = redirector_helper.insert_redirects(content_ads)
     for content_ad in content_ads:
         content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
         content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
         content_ad.save()
-
-
-def _update_redirects(content_ads):
-    for content_ad in content_ads:
-        redirector_helper.update_redirect(content_ad.url, content_ad.redirect_id)
 
 
 def get_candidates_with_errors(candidates):
