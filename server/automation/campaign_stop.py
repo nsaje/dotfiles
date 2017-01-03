@@ -1215,7 +1215,7 @@ def _get_user_daily_budget_per_ags(date, campaign):
 
     ags_settings_list = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__ad_group_id__in=active_ag_ids, landing_mode=False
-    ).group_current_settings().select_related('ad_group_source__source')
+    ).group_current_settings().select_related('ad_group_source__source__source_type')
 
     ags_budget = {}
     for ags_settings in ags_settings_list:
