@@ -77,7 +77,7 @@ def update_redirects(content_ads):
     if settings.R1_DEMO_MODE:
         return data
 
-    return _call_api_retry(settings.R1_REDIRECTS_BATCH_API_URL, data, method='PUT')
+    return _call_api_retry(settings.R1_REDIRECTS_BATCH_API_URL, json.dumps(data), method='PUT')
 
 
 def update_redirect(url, redirect_id):
