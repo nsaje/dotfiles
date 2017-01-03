@@ -284,12 +284,14 @@ class CampaignBudgetView(api_common.BaseApiView):
             campaign_id=campaign.id,
         ).select_related('credit').order_by('-created_dt')
         active_budget = self._get_active_budget(user, budget_items)
+        automatic_campaign_stop = campaign.get_current_settings().automatic_campaign_stop
         return self.create_api_response({
             'active': active_budget,
             'past': self._get_past_budget(user, budget_items),
             'totals': self._get_budget_totals(user, campaign, active_budget),
             'credits': self._get_available_credit_items(user, campaign),
-            'min_amount': campaign_stop.get_min_budget_increase(campaign),
+            'min_amount': (automatic_campaign_stop and campaign_stop.get_min_budget_increase(campaign)
+                           or 0),
         })
 
     def _get_available_credit_items(self, user, campaign):
