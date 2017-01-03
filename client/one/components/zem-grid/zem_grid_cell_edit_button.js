@@ -40,7 +40,7 @@ angular.module('one.legacy').directive('zemGridCellEditButton', function () {
             }
 
             function isFieldVisible (rowLevel) {
-                return rowLevel !== zemGridConstants.gridRowLevel.FOOTER;
+                return rowLevel === zemGridConstants.gridRowLevel.BASE;
             }
         },
     };
