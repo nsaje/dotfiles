@@ -429,20 +429,21 @@ def _handle_auto_save(batch):
             logger.exception('Couldn\'t auto save batch for unknown reason')
 
 
-@transaction.atomic
 def process_callback(callback_data):
-    try:
-        candidate_id = callback_data.get('id')
-        candidate = models.ContentAdCandidate.objects.filter(pk=candidate_id).select_related('batch').get()
-    except models.ContentAdCandidate.DoesNotExist:
-        logger.exception('No candidate with id %s', callback_data['id'])
-        return
+    with transaction.atomic():
+        try:
+            candidate_id = callback_data.get('id')
+            candidate = models.ContentAdCandidate.objects.filter(pk=candidate_id).select_related('batch').get()
+        except models.ContentAdCandidate.DoesNotExist:
+            logger.exception('No candidate with id %s', callback_data['id'])
+            return
 
-    cleaned_urls = _get_cleaned_urls(candidate)
-    _process_url_update(candidate, cleaned_urls['url'], callback_data)
-    _process_image_url_update(candidate, cleaned_urls['image_url'], callback_data)
+        cleaned_urls = _get_cleaned_urls(candidate)
+        _process_url_update(candidate, cleaned_urls['url'], callback_data)
+        _process_image_url_update(candidate, cleaned_urls['image_url'], callback_data)
 
-    candidate.save()
+        candidate.save()
+
     _handle_auto_save(candidate.batch)
 
 
