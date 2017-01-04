@@ -64,6 +64,7 @@ FACEBOOK_DASH_URL = 'https://business.facebook.com/ads/manager/campaign/?ids={ca
 # These agencies should have campaign stop turned off
 # (for example Outbrain)
 AGENCIES_WITHOUT_CAMPAIGN_STOP = {55}
+ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490}
 
 
 def create_name(objects, name):
@@ -992,7 +993,7 @@ class AccountCampaigns(api_common.BaseApiView):
         settings.name = name
         settings.campaign_manager = request.user
 
-        if account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:
+        if account.id in ACCOUNTS_WITHOUT_CAMPAIGN_STOP or account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:
             settings.automatic_campaign_stop = False
 
         settings.save(request, action_type=constants.HistoryActionType.CREATE)
