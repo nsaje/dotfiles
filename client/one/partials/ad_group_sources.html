@@ -22,10 +22,10 @@
             <div ng-if="hasPermission('zemauth.ad_group_sources_add_source')" class="button-bar-item add-source-container">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.ad_group_sources_add_source')" popover-placement="bottom"></zem-internal-feature>
                 <zem-dropdown
-                        zem-placeholder="+ Media Sources"
+                        zem-placeholder="Media Sources"
                         zem-no-matches-placeholder="All sources added"
                         zem-dropdown-options="sources"
-                        zem-css-class="add-source"
+                        zem-css-class="add-source button button--highlight button--with-icon button--add-icon button--dropdown-toggle-icon"
                         zem-on-select="addSource(selected)"
                         zem-dropdown-css-class="add-source-dropdown">
                 </zem-dropdown>

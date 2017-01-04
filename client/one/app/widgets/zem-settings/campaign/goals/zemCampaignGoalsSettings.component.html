@@ -11,7 +11,7 @@
             <input id="goal-input" type="text" class="form-control" ng-model="settings.goalQuantity">
         </div>
         <div class="col-xs-3">
-            <select ui-select2="{minimumResultsForSearch: 10}" class="form-control" ng-model="settings.campaignGoal">
+            <select ui-select2="{minimumResultsForSearch: 10}" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="settings.campaignGoal">
                 <option ng-repeat="goal in $ctrl.options.campaignGoals" value="{{goal.value}}">{{goal.name}}</option>
             </select>
         </div>

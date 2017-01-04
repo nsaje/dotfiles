@@ -3,7 +3,6 @@
 ///////////////////////////
 
 .zem-internal-feature-container {
-    margin: 0px;
     position: relative;
 
     > zem-internal-feature {
@@ -123,17 +122,6 @@ zem-internal-feature {
 }
 
 ///////////////////////////
-// Forms window //
-///////////////////////////
-
-select.media-source-select {
-    border: 1px solid @border-input-color;
-    border-radius: @border-radius;
-    box-shadow: inset 3px 3px 3px 0px rgba(0,0,0,0.03);
-    padding: 5px 10px;
-}
-
-///////////////////////////
 // Layout //
 ///////////////////////////
 
@@ -154,40 +142,7 @@ select.media-source-select {
             border: none;
             border-radius: 0;
         }
-
-        .button-bar {
-            margin-bottom: @default-spacing;
-
-            .button-bar-item {
-                display: block;
-                float: left;
-                margin-right: 10px;
-            }
-
-            .pull-right {
-                margin-left: 10px;
-            }
-
-            &:after {
-                clear:both;
-                content: "";
-                display: block;
-            }
-        }
     }
-}
-
-.spacing {
-    display: table-cell;
-    width: @default-spacing*1.5;
-}
-
-.white-background {
-    background-color: @white;
-    box-shadow: 0px 0px 3px 0px rgba(0,0,0,0.1);
-    padding: @default-spacing;
-    margin-top: @default-spacing*1.5;
-    position: relative;
 }
 
 ///////////////////////////
@@ -592,7 +547,7 @@ tags-input .host .tags {
                     }
 
                     .infobox-body {
-                        height: 244px;
+                        height: 224px;
                         padding: 10px;
                         margin-right: 0;
                         overflow-x: hidden;
@@ -603,7 +558,7 @@ tags-input .host .tags {
                         background-color: fade(@secondary-color,10%);
                         padding: 10px;
                         margin-right: 0;
-                        height: 80px;
+                        height: 100px;
                         position: absolute;
                         bottom: 0px;
                         width: 100%;
@@ -616,12 +571,12 @@ tags-input .host .tags {
 
                     .infobox-setting {
                         overflow: hidden;
-                        margin-bottom: 8px;
+                        margin-bottom: 6px;
 
                         .infobox-setting-value-container {
                             float: left;
                             line-height: 16px;
-                            width: 158px;
+                            width: 189px;
 
                             &.primary .infobox-setting-value {
                                 font-weight: 500;
@@ -638,7 +593,7 @@ tags-input .host .tags {
                             float: left;
                             color: @gray;
                             line-height: 16px;
-                            width: 145px;
+                            width: 125px;
                         }
 
                         .infobox-setting-value {
@@ -955,377 +910,39 @@ tags-input .host .tags {
     }
 }
 
-.fixed-header {
-    .zem-tabset {
-        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.2);
-        height: @tabset-height-minimized;
-        top: 30px;
+@media only screen and (min-width: @min-app-width) {
+    .fixed-header {
+        .zem-tabset {
+            box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.2);
+            height: @tabset-height-minimized;
+            top: 30px;
 
-        .nav-tabs {
-            & > li {
-                & > a > uib-tab-heading > a {
-                    padding: 4px 20px;
-                    font-size: 14px;
-
-                    &:hover {
+            .nav-tabs {
+                & > li {
+                    & > a > uib-tab-heading > a {
                         padding: 4px 20px;
                         font-size: 14px;
+
+                        &:hover {
+                            padding: 4px 20px;
+                            font-size: 14px;
+                        }
+                    }
+
+                    &.active > a > uib-tab-heading > a {
+                        padding-bottom: 1px;
                     }
                 }
 
-                &.active > a > uib-tab-heading > a {
-                    padding-bottom: 1px;
-                }
-            }
+                > span {
+                    line-height: 28px;
 
-            > span {
-                line-height: 28px;
-
-                .tabset-little-red-square {
-                    top: 6px;
+                    .tabset-little-red-square {
+                        top: 6px;
+                    }
                 }
             }
         }
-    }
-}
-
-///////////////////////////
-// Buttons & Dropdowns & Switchers //
-///////////////////////////
-
-.btn {
-    padding: 0 10px;
-    border: none;
-    height: @default-button-input-height;
-
-    &.btn-icon {
-        position: relative;
-        padding: 0 10px 0 0;
-        white-space: nowrap;
-        vertical-align: top;
-
-        .icon {
-            position: relative;
-            width: 16px;
-            height: @default-button-input-height;
-            transition: all 250ms ease-in-out;
-            margin: 0 0 0 10px;
-            display: inline-block;
-            overflow: hidden;
-            vertical-align: top;
-            background-position: left floor(@default-button-input-height/4);
-            background-repeat: no-repeat;
-        }
-
-        .text {
-            display: inline-block;
-            height: @default-button-input-height;
-            padding-top: floor(@default-button-input-height/4-2);
-        }
-    }
-
-    .text {
-        margin-left: 10px;
-        transition: all 250ms ease-in-out;
-        display: inline-block;
-        height: @default-button-input-height;
-        padding-top: floor(@default-button-input-height/4-2);
-    }
-
-    &.btn-small {
-        padding: 0 10px 0 0;
-        height: 24px;
-
-        &.btn-icon {
-            height: 24px;
-
-            .icon {
-                width: 12px;
-                height: 24px;
-                background-position: left 6px;
-            }
-
-            .text {
-                height: 24px;
-                padding-top: 4px;
-            }
-        }
-
-        .text {
-            font-size: 12px !important;
-        }
-    }
-
-    &.btn-big {
-        width: 100%;
-        line-height: 60px;
-        height: auto;
-
-        .text {
-            font-size: 24px;
-        }
-
-        .small-text {
-            display: block;
-            color: @gray;
-            font-size: 13px;
-            line-height: 16px;
-            white-space: normal;
-            margin-bottom: 20px;
-        }
-    }
-
-    &.btn-outline {
-        padding: 0 10px 0 0;
-        border: 1px solid;
-
-        &.btn-blue {
-            background-color: transparent;
-            border-color: tint(@secondary-color, 80%);
-
-            &:not(.disabled):not([disabled]) {
-                &:hover {
-                    background-color: tint(@secondary-color, 80%);
-                    color: @secondary-color;
-                }
-            }
-        }
-    }
-
-    &.dropdown-toggle {
-        padding-right: 28px !important;
-        position: relative;
-
-        .icon {
-            display: block;
-            background: url(images/arrow-gray.svg) no-repeat;
-            background-size: 6px;
-            transform: rotate(90deg);
-            width: 6px;
-            height: 11px;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-
-        &.btn-small {
-            .icon {
-                top: 6px;
-            }
-        }
-    }
-
-    &:focus,
-    &:hover,
-    &:active {
-        outline: none !important;
-    }
-}
-
-.btn-default,
-.btn-default:focus,
-.btn-default:hover,
-.btn-default:active,
-.btn-default.active,
-.open .dropdown-toggle.btn-default {
-    background: linear-gradient(to bottom, #FFFFFF, #f9f9f9);
-    border: 1px solid @border-gray-color;
-    line-height: @default-button-input-height;
-    border-radius: @border-radius;
-    color: @text-color !important;
-    box-shadow: none;
-    font-weight: 400 !important;
-
-    &:not(.disabled):not([disabled]) {
-        &:hover {
-            border-color: @border-gray-color;
-            color: @text-color;
-            background: linear-gradient(to bottom, #f1f1f1, #FFFFFF);
-        }
-    }
-
-    &.disabled {
-        color: @gray;
-        pointer-events: all;
-        cursor: auto;
-        background: transparent;
-    }
-
-    a {
-        color: @text-color !important;
-        font-weight: 400 !important;
-    }
-}
-
-.btn-add,
-.btn-add:focus,
-.btn-add:hover,
-.btn-add:active,
-.btn-add.active,
-.btn-primary,
-.btn-primary:focus,
-.btn-primary:hover,
-.btn-primary:active,
-.btn-primary.active {
-    background-color: @primary-color;
-    border: none;
-    color: @white;
-    box-shadow: none;
-    transition: all 250ms ease-in-out;
-
-    &:not(.disabled):not([disabled]) {
-        &:hover {
-            background-color: tint(@primary-color,40%);
-        }
-    }
-
-    &[disabled],
-    &[disabled]:hover {
-        color: @white;
-        border-color: @primary-color;
-        background-color: @primary-color;
-    }
-
-    &.btn-icon {
-        &.add {
-            .icon {
-                background-image: url(images/add-white.svg);
-            }
-        }
-        &.check {
-            .icon {
-                background-image: url(images/check-white.svg);
-            }
-        }
-        &.download {
-            .icon {
-                background-image: url(images/download-white.svg);
-            }
-        }
-        &.calendar {
-            .icon {
-                background-image: url(images/calendar-white.svg);
-            }
-        }
-    }
-}
-
-.btn-blue {
-    background-color: tint(@secondary-color, 90%);
-    border-color: tint(@secondary-color, 90%);
-    border-radius: @border-radius;
-    box-shadow: none;
-    transition: all 250ms ease-in-out;
-
-    .text {
-        color: @secondary-color !important;
-        font-weight: 500 !important;
-    }
-
-    &:not(.disabled):not([disabled]) {
-        &:hover {
-            background-color: tint(@secondary-color, 80%);
-            border-color: tint(@secondary-color, 80%);
-            color: @secondary-color;
-        }
-    }
-
-    &[disabled],
-    &[disabled]:hover {
-        color: @secondary-color;
-        border-color: tint(@secondary-color, 90%);
-    }
-
-    &.btn-icon {
-        &.add {
-            .icon {
-                background-image: url(images/add-blue.svg);
-            }
-        }
-        &.edit {
-            .icon {
-                background-image: url(images/edit-blue.svg);
-            }
-        }
-        &.copy {
-            .icon {
-                background-image: url(images/copy-blue.svg);
-            }
-        }
-        &.remove {
-            .icon {
-                background-image: url(images/remove-blue.svg);
-            }
-
-            &:hover {
-                background-color: @red !important;
-                border-color: @red !important;
-                .text {
-                    color: @white !important;
-                }
-
-                .icon {
-                    background-image: url(images/remove-white.svg);
-                }
-            }
-        }
-        &.check {
-            .icon {
-                background-image: url(images/check-blue.svg);
-            }
-        }
-        &.send {
-            .icon {
-                background-image: url(images/send-blue.svg);
-            }
-        }
-        &.archive {
-            .icon {
-                background-image: url(images/archive-blue.svg);
-            }
-        }
-        &.folder {
-            .icon {
-                background-image: url(images/folder-blue.svg);
-            }
-        }
-        &.download {
-            .icon {
-                background-image: url(images/download-blue.svg);
-            }
-        }
-    }
-}
-
-.select2-drop,
-.select2-drop.select2-drop-above {
-    border: 1px solid @border-color;
-    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
-
-    .select2-results {
-        // bug fix for mac os scroll bars
-        transform: translateZ(0);
-
-        li {
-            &.ui-select-choices-row:hover {
-                background-color: fade(@primary-color,20%);
-                border-radius: @border-radius;
-            }
-
-            &.select2-highlighted {
-                background-color: @primary-color;
-                border-radius: @border-radius;
-                color: @white;
-
-                &.ui-select-choices-row:hover {
-                    background-color: @primary-color;
-                }
-            }
-        }
-    }
-
-    &.select2-drop-above.select2-drop-active {
-        border-top: none;
     }
 }
 
@@ -1362,22 +979,6 @@ tags-input .host .tags {
         li:hover .checkbox label {
             text-decoration: underline;
         }
-    }
-}
-
-.help-popover {
-    background-color: fade(@secondary-color, 50%);
-
-    &:hover, &:active, &:visited {
-        background-color: fade(@secondary-color, 50%);
-
-        &:after {
-            color: @white;
-        }
-    }
-
-    &:after {
-        color: @white;
     }
 }
 
@@ -1525,6 +1126,9 @@ tags-input .host .tags {
 
     .notes {
         max-width: 200px;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        word-break: break-all;
     }
 }
 
@@ -1743,14 +1347,14 @@ tags-input .host .tags {
 
     .optimization-label {
         color: @secondary-color;
-        font-size: 13px;
+        font-size: @default-font-size;
         margin-bottom: 10px;
     }
 
     .helper-label {
         color: #aaaaaa;
         text-align: right;
-        font-size: 13px;
+        font-size: @default-font-size;
     }
 
     .campaign-goal-row {
@@ -1956,112 +1560,6 @@ tags-input .host .tags {
     a {
         color: @red !important;
     }
-}
-
-///////////////////////////
-// Move to zemGrid //
-///////////////////////////
-
-.zem-grid-container {
-    .zem-grid {
-        a {
-            color: @secondary-color;
-            font-weight: 500;
-        }
-
-        .zem-grid-header,
-        .zem-grid-footer {
-            .zem-grid-cell {
-                border-color: fade(@secondary-color, 20%);
-                background-color: tint(@secondary-color, 90%);
-
-                &.zem-grid-header-cell-checkbox {
-                    .btn {
-                        padding-right: 22px !important;
-                        display: block;
-                        margin-top: 10px;
-
-                        input.allFilterCheckbox {
-                            vertical-align: top;
-                        }
-
-                        .icon {
-                            right: 8px;
-                        }
-                    }
-                }
-            }
-
-            a, span {
-                color: @secondary-color;
-                font-weight: 500;
-                font-size: (@default-font-size)-1;
-            }
-        }
-
-        .zem-grid-body {
-            .zem-grid-row {
-                &.level-last:hover {
-                    background-color: tint(@secondary-color, 95%);
-                }
-
-                &:last-child {
-                    .zem-grid-cell {
-                        border-bottom: none;
-                    }
-                }
-            }
-        }
-
-        .zem-grid-footer {
-            background-color: tint(@secondary-color, 90%);
-
-            .zem-grid-cell {
-                border: none;
-                border-top: 1px solid fade(@secondary-color, 20%);
-            }
-        }
-    }
-}
-
-.zem-grid-submission-status-popover {
-    .submission-status-popover-table {
-        .submission-status-popover-row {
-            line-height: 18px;
-
-            &.submission-status-emphasis {
-                font-style: normal;
-            }
-
-            .submission-status-popover-cell {
-                &.submission-status-label {
-                    color: @text-color;
-                    font-weight: normal;
-                    padding-right: 50px;
-                }
-            }
-        }
-    }
-}
-
-.icon-link {
-    .link-img {
-        width: 15px;
-        height: 15px;
-
-        &.link-img-disabled {
-            opacity: 0.4;
-        }
-    }
-}
-
-.performance-icon {
-    width: 14px;
-    height: 14px;
-    display: inline-block;
-    background-size: 14px;
-    background-image: url(images/smiley-blue.svg);
-    vertical-align: text-bottom;
 }
 
 ///////////////////////////
@@ -2372,10 +1870,6 @@ select.media-source-select {
     color: @red !important;
 }
 
-div, input, select, ul, li, ol, a, strong {
-    outline: none !important;
-}
-
 .zem-grid-column-selector,
 .zem-grid-breakdown-selector {
     zem-internal-feature {
@@ -2468,3 +1962,19 @@ div, input, select, ul, li, ol, a, strong {
     &__control { }
 }
 
+////////////////////////////
+// Responsive //
+////////////////////////////
+
+@media only screen and (max-width: ((@min-app-width)-1)) {
+    .zem-tabset {
+        position: relative;
+        width: auto;
+        margin: 0 -@default-spacing;
+        top: auto;
+    }
+
+    .page {
+        margin-top: @default-spacing*1.5;
+    }
+}

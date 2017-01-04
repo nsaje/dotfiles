@@ -55,9 +55,10 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            font-size: 14px;
-            height: 30px; /* NOTE: Change in JavaScript too! */
-            padding: 5px 0;
+            font-size: @default-font-size;
+            line-height: 16px;
+            height: 24px; /* NOTE: Change in JavaScript too! */
+            padding: 4px 0;
 
             &.active {
                 border-right: 3px solid @primary-color;
@@ -85,11 +86,12 @@
             }
 
             &.account {
-                height: 31px; // NOTE: Change in JavaScript too!
+                height: 28px; // NOTE: Change in JavaScript too!
                 font-weight: 500;
-                font-size: 14px;
+                font-size: @default-font-size;
                 color: @primary-color;
                 border-bottom: 1px solid @primary-color;
+                padding: 6px 0;
 
                 &.selected {
                     color: @primary-color !important;
@@ -105,13 +107,13 @@
             &.campaign {
                 padding-left: 10px;
                 font-weight: 500;
-                height: 30px; /* NOTE: Change in JavaScript too! */
+                height: 24px; /* NOTE: Change in JavaScript too! */
             }
 
             &.group {
                 font-weight: 300;
                 height: 24px; /* NOTE: Change in JavaScript too! */
-                padding: 2px 0 2px 35px;
+                padding: 4px 0 4px 35px;
             }
         }
 

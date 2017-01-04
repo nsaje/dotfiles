@@ -5,9 +5,9 @@ angular.module('one.widgets').component('zemNavigation', {
         var KEY_DOWN_ARROW = 40;
         var KEY_ENTER = 13;
 
-        var ITEM_HEIGHT_DEFAULT = 30; // NOTE: Change in CSS too!
-        var ITEM_HEIGHT_ACCOUNT = 31; // NOTE: Change in CSS too!
-        var ITEM_HEIGHT_CAMPAIGN = 30; // NOTE: Change in CSS too!
+        var ITEM_HEIGHT_DEFAULT = 24; // NOTE: Change in CSS too!
+        var ITEM_HEIGHT_ACCOUNT = 28; // NOTE: Change in CSS too!
+        var ITEM_HEIGHT_CAMPAIGN = 24; // NOTE: Change in CSS too!
         var ITEM_HEIGHT_AD_GROUP = 24; // NOTE: Change in CSS too!
 
         var filteredStatusesUpdateHandler;

@@ -13,7 +13,7 @@
         height: 60px;
         width: 160px;
         padding: 19px 20px 19px @default-spacing;
-        background: url(images/zemanta-logo-new-squares-white.svg) no-repeat top left;
+        background: url(images/zemanta-logo-squares-white.svg) no-repeat top left;
         background-size: 20px;
         transition: all @default-animation;
 
@@ -309,7 +309,7 @@
                 color: @white;
                 border-radius: @border-radius;
                 box-shadow: none;
-                font-size: (@default-font-size)+1;
+                font-size: 14px;
                 transition: all @default-animation;
 
                 &:focus {
@@ -401,194 +401,196 @@
     }
 }
 
-.fixed-header {
-    .page {
-        margin-top: @default-spacing*1.5+100;
-    }
-
-    .zem-header {
-        height: 30px;
-
-        .logo-container {
-            height: 30px;
-            padding: 8px 20px 8px @default-spacing;
-            background-size: 12px;
-
-            a {
-                height: 14px;
-            }
-
-            img {
-                height: 14px;
-                margin: 0 auto;
-            }
+@media only screen and (min-width: @min-app-width) {
+    .fixed-header {
+        .page {
+            margin-top: @default-spacing*1.5+100;
         }
 
-        .zem-header-navigation,
-        .zem-header-menu {
-            .dropdown-toggle {
-                height: 30px;
-                padding: 5px 20px;
+        .zem-header {
+            height: 30px;
 
-                &:hover {
-                    background-color: fade(@white, 10%);
+            .logo-container {
+                height: 30px;
+                padding: 8px 20px 8px @default-spacing;
+                background-size: 12px;
+
+                a {
+                    height: 14px;
+                }
+
+                img {
+                    height: 14px;
+                    margin: 0 auto;
                 }
             }
 
-            .dropdown-menu {
-                margin-top: 0;
-            }
-        }
-
-        .zem-header-navigation {
-            margin: 0;
-
-            .dropdown-toggle img {
-                width: 16px;
-            }
-        }
-
-        .zem-header-breadcrumb {
-            margin-top: 0;
-            margin-bottom: 0;
-            height: 30px;
-
-            .breadcrumb {
-                margin-bottom: 0px;
-                height: 30px;
-
-                .slash {
-                    font-size: 22px;
-                    line-height: 30px;
+            .zem-header-navigation,
+            .zem-header-menu {
+                .dropdown-toggle {
                     height: 30px;
+                    padding: 5px 20px;
+
+                    &:hover {
+                        background-color: fade(@white, 10%);
+                    }
                 }
 
-                .item {
-                    a {
-                        line-height: 18px;
-                        padding-top: 6px;
-                        padding-bottom: 6px;
+                .dropdown-menu {
+                    margin-top: 0;
+                }
+            }
 
-                        .type-name {
-                            opacity: 0;
-                            font-size: 0;
-                            height: 0;
+            .zem-header-navigation {
+                margin: 0;
+
+                .dropdown-toggle img {
+                    width: 16px;
+                }
+            }
+
+            .zem-header-breadcrumb {
+                margin-top: 0;
+                margin-bottom: 0;
+                height: 30px;
+
+                .breadcrumb {
+                    margin-bottom: 0px;
+                    height: 30px;
+
+                    .slash {
+                        font-size: 22px;
+                        line-height: 30px;
+                        height: 30px;
+                    }
+
+                    .item {
+                        a {
+                            line-height: 18px;
+                            padding-top: 6px;
+                            padding-bottom: 6px;
+
+                            .type-name {
+                                opacity: 0;
+                                font-size: 0;
+                                height: 0;
+                            }
                         }
                     }
                 }
             }
-        }
 
-        .zem-header-menu {
-            margin: 0;
+            .zem-header-menu {
+                margin: 0;
 
-            .dropdown-toggle img {
-                width: 20px;
-                background-size: 20px;
+                .dropdown-toggle img {
+                    width: 20px;
+                    background-size: 20px;
+                }
             }
-        }
 
-        .zem-header-filter-selector-toggle {
-            height: 30px;
-            margin: 0;
-
-            .zem-filter-toggle {
-                display: inline-block;
+            .zem-header-filter-selector-toggle {
                 height: 30px;
-                line-height: 30px;
-                padding: 0 10px;
-                background-color: transparent;
-                border-left: 1px solid fade(@white, 20%);
-                border-radius: 0;
+                margin: 0;
 
-                &:hover, &:focus, &:active {
-                    background-color: fade(@white, 10%);
+                .zem-filter-toggle {
+                    display: inline-block;
+                    height: 30px;
+                    line-height: 30px;
+                    padding: 0 10px;
+                    background-color: transparent;
+                    border-left: 1px solid fade(@white, 20%);
+                    border-radius: 0;
+
+                    &:hover, &:focus, &:active {
+                        background-color: fade(@white, 10%);
+                    }
+
+                    .filter-icon {
+                        width: 16px;
+                        height: 16px;
+                    }
                 }
 
-                .filter-icon {
-                    width: 16px;
-                    height: 16px;
+                .button {
+                    height: 30px;
+                    background-color: fade(@white, 0%);
+                    border-left: 1px solid fade(@white, 20%);
+                    color: @white;
+                    border-radius: 0;
+
+                    &:hover {
+                        background-color: fade(@white, 10%);
+                    }
                 }
-            }
 
-            .button {
-                height: 30px;
-                background-color: fade(@white, 0%);
-                border-left: 1px solid fade(@white, 20%);
-                color: @white;
-                border-radius: 0;
-
-                &:hover {
-                    background-color: fade(@white, 10%);
-                }
-            }
-
-            .button--with-icon {
-                padding-left: 38px;
-
-                &:before {
-                    left: 10px;
-                    width: 16px;
-                    height: 16px;
-                    background-size: 16px;
-                }
-            }
-
-            .button--filter-icon {
-                &:before {
-                    background-image: url('images/filter-white.svg');
-                }
-            }
-
-            @media only screen and (max-width: 1190px) {
                 .button--with-icon {
-                    padding-left: 26px;
+                    padding-left: 38px;
+
+                    &:before {
+                        left: 10px;
+                        width: 16px;
+                        height: 16px;
+                        background-size: 16px;
+                    }
+                }
+
+                .button--filter-icon {
+                    &:before {
+                        background-image: url('images/filter-white.svg');
+                    }
+                }
+            }
+
+            .zem-header-date-range-picker .date-range-picker-container {
+                height: 30px;
+                margin: 0;
+                border-left: 1px solid fade(@white, 20%);
+
+                .date-range-picker-input {
+                    padding-left: 42px;
+                    padding-right: 41px;
+                    width: 262px;
+                    background-color: transparent;
+                    border-radius: 0;
+
+                    &:hover {
+                        background-color: fade(@white, 10%);
+                    }
+                }
+
+                .date-range-picker-icon {
+                    top: 8px;
+                    width: 16px;
+                    left: 16px;
+                }
+
+                .arrow-icon {
+                    top: 10px;
+                    right: 21px;
                 }
             }
         }
 
-        .zem-header-date-range-picker .date-range-picker-container {
-            height: 30px;
-            margin: 0;
-            border-left: 1px solid fade(@white, 20%);
-
-            .date-range-picker-input {
-                padding-left: 42px;
-                padding-right: 41px;
-                width: 262px;
-                background-color: transparent;
-                border-radius: 0;
-
-                &:hover {
-                    background-color: fade(@white, 10%);
-                }
-            }
-
-            @media only screen and (max-width: 1155px) {
-                .date-range-picker-input {
-                    width: auto;
-                    padding-right: 30px;
-                    cursor: pointer !important;
-                }
-            }
-
-            .date-range-picker-icon {
-                top: 8px;
-                width: 16px;
-                left: 16px;
-            }
-
-            .arrow-icon {
-                top: 10px;
-                right: 21px;
-            }
+        .zem-header-date-range-picker-dropdown {
+            position: fixed;
+            top: 30px !important;
+            margin-top: 0 !important;
         }
     }
+}
 
-    .zem-header-date-range-picker-dropdown {
-        position: fixed;
-        top: 30px !important;
-        margin-top: 0 !important;
+@media only screen and (min-width: @min-app-width) and (max-width: 1190px) {
+    .fixed-header .zem-header .zem-header-filter-selector-toggle .button--with-icon {
+        padding-left: 26px;
+    }
+}
+
+@media only screen and (min-width: @min-app-width) and (max-width: 1155px) {
+    .fixed-header .zem-header .zem-header-date-range-picker .date-range-picker-container .date-range-picker-input {
+        width: auto;
+        padding-right: 30px;
+        cursor: pointer !important;
     }
 }
 
@@ -626,4 +628,11 @@
 			display: none;
 		}
 	}
+}
+
+@media only screen and (max-width: ((@min-app-width)-1)) {
+    .zem-header {
+        position: relative;
+        width: auto;
+    }
 }

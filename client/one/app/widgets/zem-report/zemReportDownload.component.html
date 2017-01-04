@@ -6,23 +6,23 @@
         <div class="form__text">
             <div class="form__title">You are downloading a report with the following settings:</div>
         </div>
-        <div class="form__group">
+        <div class="form__group form__group--informative">
             <label class="form__label">Date range:</label>
             <div class="form__information">{{ $ctrl.dateRange.startDate.format('ll') }} - {{ $ctrl.dateRange.endDate.format('ll') }}</div>
         </div>
-        <div class="form__group">
+        <div class="form__group form__group--informative">
             <label class="form__label">View:</label>
             <div class="form__information">
                 {{ $ctrl.resolve.tab.name }}
             </div>
         </div>
-        <div class="form__group" ng-if="$ctrl.breakdown.length > 0">
+        <div class="form__group form__group--informative" ng-if="$ctrl.breakdown.length > 0">
             <label class="form__label">Breakdowns:</label>
             <div class="form__information">
                 <span ng-repeat="dimension in $ctrl.breakdown" class="tag">{{ dimension.name }}</span>
             </div>
         </div>
-        <div class="form__group">
+        <div class="form__group form__group--informative">
             <label class="form__label">Columns:</label>
             <div class="form__information">
                 <span ng-repeat="field in $ctrl.shownSelectedFields" class="tag">{{ field }}</span>
@@ -30,7 +30,7 @@
                    ng-if="$ctrl.shownSelectedFields.length < $ctrl.selectedFields.length">...</a>
             </div>
         </div>
-        <div class="form__group" ng-if="$ctrl.appliedFilterConditions.length">
+        <div class="form__group form__group--informative" ng-if="$ctrl.appliedFilterConditions.length">
             <label class="form__label">Filters:</label>
             <div class="form__information">
                 <span ng-repeat="condition in $ctrl.shownAppliedFilterConditions" class="tag">{{condition.text}}</span>
@@ -38,10 +38,10 @@
                    ng-if="$ctrl.shownAppliedFilterConditions.length < $ctrl.appliedFilterConditions.length">...</a>
             </div>
         </div>
-        <div class="form__group">
+        <div class="form__group form__group--informative">
             <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_include_totals_in_reports')" popover-placement="right"></zem-internal-feature>
             <label class="form__label" for="include-totals-checkbox">Include totals</label>
-            <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.includeTotals" class="form__input--text">
+            <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.includeTotals" class="form__input-checkbox">
         </div>
         <hr>
         <div class="form__group">
@@ -50,9 +50,9 @@
                 {{ $ctrl.user.email }}
             </div>
         </div>
-        <div class="form__group">
+        <div class="form__group" ng-class="{'form__group--error': $ctrl.errors.details.options.recipients.length > 0}">
             <label class="form__label">Add more recipients:</label>
-            <textarea class="form__textarea" ng-class="{'form__textarea--error': $ctrl.errors.details.options.recipients.length > 0}" ng-model="$ctrl.recipients" placeholder="Comma-separated list of recipient email addresses"></textarea>
+            <textarea class="form__textarea" ng-model="$ctrl.recipients" placeholder="Comma-separated list of recipient email addresses"></textarea>
             <div ng-repeat="error in $ctrl.errors.details.options.recipients" class="message message--error" for="recipients">{{ error }}</div>
         </div>
     </div>

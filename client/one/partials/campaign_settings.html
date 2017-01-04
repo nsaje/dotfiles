@@ -55,10 +55,10 @@
                 </label>
                 <div class="col-xs-4 form-inline">
                     <label id="goal-input-label" class="col-xs-6" for="goal-input">Meet or beat the goal of</label>
-                    <input id="goal-input" type="text" class="form-control" ng-model="settings.goalQuantity">
+                    <input id="goal-input" type="text" class="form__input-text" ng-model="settings.goalQuantity">
                 </div>
                 <div class="col-xs-3">
-                    <select ui-select2="{minimumResultsForSearch: 10}" class="form-control" ng-model="settings.campaignGoal">
+                    <select ui-select2="{minimumResultsForSearch: 10}" class="button button--full-width button--dropdown-toggle-icon" ng-model="settings.campaignGoal">
                         <option ng-repeat="goal in options.campaignGoals" value="{{goal.value}}">{{goal.name}}</option>
                     </select>
                 </div>
@@ -120,7 +120,7 @@
             <div class="description">The countries, states and DMA regions where your content ads will be shown. Used for all newly created ad groups.</div>
             <div class="form-vertical">
                 <div class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
-                    <div class="col-xs-6">
+                    <div class="col-xs-12">
                         <zem-locations zem-selected-location-codes="settings.targetRegions" zem-has-permission="hasPermission"></zem-locations>
                     </div>
 

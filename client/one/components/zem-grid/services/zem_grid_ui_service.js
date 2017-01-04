@@ -287,7 +287,7 @@ angular.module('one.legacy').factory('zemGridUIService', function ($timeout, zem
             // TODO: this will probably change in the future - create util functions/styles
             // fade right border to show pivot column break when h-scrolled
             var style = {};
-            var borderStyle = 'solid 1px rgb(224,224,224)';
+            var borderStyle = 'solid 1px rgba(63, 84, 127, 0.2)';
             style['border-right'] = leftOffset ? borderStyle : '';
             return style;
         }

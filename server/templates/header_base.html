@@ -5,10 +5,3 @@
 {% block head_extra %}
 <link type="text/css" rel="stylesheet" href="{% static "css/style.css" %}">
 {% endblock %}
-
-{% block header %}
-<header>
-    <a href="{% block header_logo_link %}/{% endblock %}"><img class="item logo" src="{% static "img/logo_one.png" %}" alt="Zemanta Logo"/></a>
-    <a class="item contact" href="mailto:help@zemanta.com{% block support_mail_extra %}{% endblock %}">Contact Support</a>
-</header>
-{% endblock %}
