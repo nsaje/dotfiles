@@ -23,6 +23,6 @@
 15 7 * * *          /home/ubuntu/docker-manage-py.sh audit_spend_patterns
 20 7,11 * * *       /home/ubuntu/docker-manage-py.sh audit_spend_integrity --slack
 20 12 * * *          /home/ubuntu/docker-manage-py.sh daily_audit --send-emails
-#0 * * * *           /home/ubuntu/docker-manage-py.sh bizwire_hourly_job
+0 * * * *           /home/ubuntu/docker-manage-py.sh bizwire_hourly_job
 0 0 * * *           /home/ubuntu/docker-manage-py.sh cleartokens
 0 10 * * 1          /home/ubuntu/docker-manage-py.sh release_ob_accounts
