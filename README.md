@@ -186,11 +186,6 @@ npm install
 bower install --dev
 ```
 
-In case you are getting *protractor* related errors when deploying client you will need to install it as root.
-```bash
-npm install -g protractor
-```
-
 Now you have grunt and all the development dependencies installed so you can run grunt in order to build it:
 ```bash
 grunt
@@ -212,7 +207,7 @@ grunt dev
 The debug toolbar will help you profile your code and templates, find slow and duplicated queries, find if cache is hit or miss etc. If you're interested
 in using it, you can do so by:
 
-1. installing development requirements `pip install -r requirements_dev.txt` and then 
+1. installing development requirements `pip install -r requirements_dev.txt` and then
 2. enabling the toolbar in `localsettings.py`:
 
     ```
@@ -223,7 +218,7 @@ in using it, you can do so by:
 and thus we need to install a [debug toolbar panel chrome extension](https://chrome.google.com/webstore/detail/django-debug-panel/nbiajhhibgfgkjegbnflpdccejocmbbn) that will
 show the panel in a separate developemnt tools tab for every request we make. If the one behind the given link doesn't work for you
 try with [this fork](https://github.com/perython/chrome-django-panel/tree/master) - it solves display problems and at the time I was writting this it wasn't yet merged
-into the master panel. 
+into the master panel.
 
 _NOTE_: In case you're not running your development django server on localhost, add `INTERNAL_IPS` to your settings, where you list your server IPs. For example:
 
@@ -238,7 +233,7 @@ INTERNAL_IPS = ['127.0.0.1', '192.168.10.1', '10.0.2.2']
 
 We have [pep8](https://pypi.python.org/pypi/pep8) and [eslint](http://eslint.org/docs/rules/) set up on circle CI. Meaning, that the build will break, if you will commit unconventional code.
 
-We suggest using a pep8 + eslint in your code editor alongside running `./lint_check.sh` on your code before commiting to this repository. Git pre-commit hooks are great too on your local machine dev setup. 
+We suggest using a pep8 + eslint in your code editor alongside running `./lint_check.sh` on your code before commiting to this repository. Git pre-commit hooks are great too on your local machine dev setup.
 
 
 ## Documentation
@@ -306,9 +301,9 @@ DATABASES = {
 }
 ```
 
-You can also speed up the test suite by using `--parallel` flag. In order to 
-reap the most benefits, you can also use `--keepdb` flag to avoid setting up 
-test databases on every test run. When using `--keepdb`, the 
+You can also speed up the test suite by using `--parallel` flag. In order to
+reap the most benefits, you can also use `--keepdb` flag to avoid setting up
+test databases on every test run. When using `--keepdb`, the
 `--skip-transaction-tests` should also be used. It was created as a workaround
 for transaction tests truncating tables after they run. Since a part of app data
 is loaded into the databases using data migrations, it will be missing on the
@@ -330,56 +325,6 @@ of the JSON, just the schema! E.g. the JSON must contain all fields etc -
 [more on what it checks](http://www.relishapp.com/apiary/gavel/docs/expectations/body-json-example)).
 This means that the documentation and the fixtures don't have to match 100%.
 
-### End-to-end testing
-
-Integration testing is done using <a href="https://github.com/angular/protractor">Protractor</a>.
-
-To setup, first copy the protractor.localconf.js template:
-```bash
-cp test/protractor.localconf.json.template test/protractor.localconf.json
-```
-
-and modify as needed.
-
-Then set your Amazon Redshift testing credentials for the `STATS_E2E_DB_NAME` database in `server/localsettings.py`. Use the template from the `server/localsettings.py.circle-ci` file. The credentials
-can be obtained here: [Amazon Redshift and E2E tests](https://sites.google.com/a/zemanta.com/root/engineering/amazon-redshift-e2e-credentials). These credentials can be the
-same for CircleCI and local testing.
-
-Then from project root run:
-```bash
-./run_e2e.sh
-```
-It will load the fixtures for you and run server and client applications.
-
-The test suite will be run in your local Chrome browser.
-
-##### Notes on Amazon Redshift and E2E tests
-
-Each time when end-to-end tests are run, a new Amazon Redshift database with a random name is created. This way each e2e test suite run uses its own Amazon Redshift database. How it works:
-
-The DATABASES dictionary should contain 2 entries for Redshift database connections:
-
- - `STATS_DB_NAME` - the database used for retrieving statistics
- - `STATS_E2E_DB_NAME` - the database used for creating random named `STATS_DB_NAME` databases for E2E tests.
-
-1. `run_e2e.sh` generates a new database name and stores it in `E2E_REDDB` environmental variable.
-2. `server/settings.py` updates the `STATS_DB_NAME` connection with the newly generated database name and access credentials. Access credentials are either taken from environmental variables `REDSHIFT_E2E_USER`, `REDSHIFT_E2E_PASS` and `REDSHIFT_E2E_HOST` (usually used for CircleCI runs), or from credentials set for the `STATS_E2E_DB_NAME` database connection in `server/localsettings.py` (usually used for local development).
-3. `redshift_create_e2e_db` django command then connects with the `STATS_E2E_DB_NAME` connection and creates the database specified in `STATS_DB_NAME`.
-4. `redshift_migrate` django command then applies schema migrations to the new database. Schema migration files are read from `reports/migrations/redshift/` directory.
-5. E2E tests execute.
-6. `redshift_cleanup_e2e_db` django command then drops the database that was created in the 3rd step.
-
-##### Running tests on SauceLabs
-
-You can also test on multiple browsers using SauceLabs cloud. To do this, first set up your sauce.json file as described in the Unit Testing section if you haven't done that yet.
-
-Next, create a secure tunnel to the SauceLabs cloud by following the instructions at https://saucelabs.com/connect.
-
-After you are done, you can run your tests using
-```bash
-grunt e2e --sauce
-```
-
 ### Test ride your pull request in production
 
 **WARNING** Using this you can change production data through code that has not been reviewed yet. Use with care.
@@ -391,7 +336,7 @@ builds are not yet supported as builds that are not from master branch do not ge
 2. Ssh into the container and set the following settings in `server/localsettings.py`:
    ```
    SECURE_SSL_REDIRECT = False
-   
+
    # put here the current build of the master branch (its used to get static files from s3 which were not uploaded for your pull request)
    # this line should be located before the `if BUILD_NUMBER:` statement
    BUILD_NUMBER = '123245'
@@ -400,7 +345,7 @@ builds are not yet supported as builds that are not from master branch do not ge
 4. Go to your local terminal and tunnel the connection to your localhost:
    ```
    # format: {kitty ssh command} -L {your local port}:localhost:8000 -N
-   
+
    ssh -p 37076 root@ec2-54-152-214-179.compute-1.amazonaws.com -L 9871:localhost:8000 -N
    ```
 5. Visit `localhost:{your local port}` and you should be running your PR backend on production data.

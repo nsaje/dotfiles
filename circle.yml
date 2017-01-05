@@ -6,7 +6,6 @@ general:
 checkout:
     post:
         - cp ./server/server/localsettings.py.circle-ci ./server/server/localsettings.py
-        - cp ./client/test/protractor.localconf.json.circle-ci ./client/test/protractor.localconf.json
 
 machine:
     python:

@@ -1,8 +1,0 @@
-- fields:
-    email: protractor@zemanta.com
-    password: pbkdf2_sha256$12000$UKSXsIjn3rPl$dmZNkFDKBvHFU/kUIjK9dQvZEnoMiIZ5cXOLyZ6Ovus=
-    date_joined: "2014-06-10T10:00:00"
-    is_staff: false
-    is_superuser: true
-    groups: [4]
-  model: zemauth.user

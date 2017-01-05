@@ -3,10 +3,6 @@ general:
         - ./server/coverage_report.txt
         - ./client/coverage/text/*
 
-checkout:
-    post:
-        - cp ./client/test/protractor.localconf.json.circle-ci ./client/test/protractor.localconf.json
-
 machine:
     pre:
         - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
