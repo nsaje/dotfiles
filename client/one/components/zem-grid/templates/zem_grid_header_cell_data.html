@@ -1,19 +1,16 @@
 <div class="zem-grid-header-cell-data zem-grid-cell {{ctrl.column.type}}-field">
     <zem-internal-feature ng-if="ctrl.column.data.internal"></zem-internal-feature>
-
-    <span ng-switch="ctrl.column.data.order">
-        <a ng-switch-when='true' href ng-class="ctrl.column.data.nameCssClass"
-           ng-click="ctrl.setOrder(column)">
-            {{ ctrl.column.data.name }}
-            <span ng-if="ctrl.column.data.breakdownByStructureText">
-                {{ctrl.column.data.breakdownByStructureText}}
-            </span>
-        </a>
-        <span ng-switch-default ng-class="ctrl.column.data.nameCssClass">
-            {{ ctrl.column.data.name }}
-            <span ng-if="ctrl.column.data.breakdownByStructureText">
-                {{ctrl.column.data.breakdownByStructureText}}
-            </span>
+    <a ng-if="ctrl.column.data.order" href ng-class="ctrl.column.data.nameCssClass"
+       ng-click="ctrl.setOrder(column)">
+        {{ ctrl.column.data.name }}
+        <span ng-if="ctrl.column.data.breakdownByStructureText">
+            {{ctrl.column.data.breakdownByStructureText}}
+        </span>
+    </a>
+    <span ng-if="!ctrl.column.data.order" ng-class="ctrl.column.data.nameCssClass">
+        {{ ctrl.column.data.name }}
+        <span ng-if="ctrl.column.data.breakdownByStructureText">
+            {{ctrl.column.data.breakdownByStructureText}}
         </span>
     </span>
 

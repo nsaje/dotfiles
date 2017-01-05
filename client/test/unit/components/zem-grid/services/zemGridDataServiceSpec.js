@@ -73,13 +73,15 @@ describe('zemGridDataService', function () {
         spyOn(grid.meta.pubsub, 'notify');
         grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
-        $timeout.flush();
+        $timeout.flush(); // Endpoint delay
+        grid.meta.scope.$apply();
+        $timeout.flush(); // Grid data load delay
 
         expect(grid.meta.pubsub.notify.calls.allArgs()).toEqual([
             [grid.meta.pubsub.EVENTS.METADATA_UPDATED], // first meta data request
             [grid.meta.pubsub.EVENTS.DATA_UPDATED], // initialize root (breakdown tree)
-            [grid.meta.pubsub.EVENTS.DATA_UPDATED], // data retrieved from endpoint
             [grid.meta.pubsub.EVENTS.METADATA_UPDATED], // second meta data request
+            [grid.meta.pubsub.EVENTS.DATA_UPDATED], // data retrieved from endpoint and delayed
         ]);
 
         grid.meta.pubsub.notify.calls.reset();
@@ -93,7 +95,9 @@ describe('zemGridDataService', function () {
 
         grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
-        $timeout.flush();
+        $timeout.flush(); // Endpoint delay
+        grid.meta.scope.$apply();
+        $timeout.flush(); // Grid data load delay
 
         expect(zemGridParser.parse).toHaveBeenCalled();
         expect(zemGridParser.parseMetaData).toHaveBeenCalled();
@@ -106,7 +110,9 @@ describe('zemGridDataService', function () {
     it('should be able to load data by breakdown and size', function () {
         grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
-        $timeout.flush();
+        $timeout.flush(); // Endpoint delay
+        grid.meta.scope.$apply();
+        $timeout.flush(); // Grid data load delay
 
         spyOn(dataSource, 'getData').and.callThrough();
         var rowsCount = grid.body.rows.length;
@@ -123,7 +129,9 @@ describe('zemGridDataService', function () {
     it('should save data through data source and notify updates', function () {
         grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
-        $timeout.flush();
+        $timeout.flush(); // Endpoint delay
+        grid.meta.scope.$apply();
+        $timeout.flush(); // Grid data load delay
 
         spyOn(grid.meta.pubsub, 'notify');
         spyOn(dataSource, 'saveData').and.callThrough();

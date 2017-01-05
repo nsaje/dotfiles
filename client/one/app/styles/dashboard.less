@@ -1958,6 +1958,21 @@ select.media-source-select {
     &__control { }
 }
 
+.splash {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    text-align: center;
+    transform: translate(-50%, -50%);
+    &__loader {
+        &:extend(.loader);
+    }
+}
+
+[ng-cloak].splash {
+    display: block !important;
+}
 ////////////////////////////
 // Responsive //
 ////////////////////////////
