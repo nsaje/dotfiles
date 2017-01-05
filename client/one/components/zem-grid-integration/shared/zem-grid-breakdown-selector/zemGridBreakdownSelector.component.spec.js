@@ -34,6 +34,8 @@ describe('component: zemGridBreakdownSelector', function () {
         expectedBreakdown.push(api.getMetaData().breakdownGroups.base.breakdowns[0]);
         expectedBreakdown.push(breakdown);
 
+        $ctrl.applyBreakdown();
+
         expect(api.setBreakdown).toHaveBeenCalled();
         expect(api.setBreakdown).toHaveBeenCalledWith(expectedBreakdown, true);
     });

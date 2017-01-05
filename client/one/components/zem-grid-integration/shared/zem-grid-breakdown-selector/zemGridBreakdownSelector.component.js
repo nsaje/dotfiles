@@ -35,6 +35,7 @@ angular.module('one.legacy').component('zemGridBreakdownSelector', {
                         }
                     });
                 });
+                $ctrl.applyBreakdown();
             }
         }
 
@@ -44,7 +45,6 @@ angular.module('one.legacy').component('zemGridBreakdownSelector', {
                     if (b !== breakdown) b.checked = false;
                 });
             }
-            applyBreakdown();
         }
 
         function applyBreakdown () {

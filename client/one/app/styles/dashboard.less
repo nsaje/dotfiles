@@ -1877,16 +1877,24 @@ select.media-source-select {
     }
 
     ul.dropdown-menu {
-        > div {
-            margin: 0 0 10px 16px;
-            border-bottom: 1px solid @line-color;
-            padding-bottom: 10px;
+        .list-wrapper {
+            padding-bottom: @default-spacing;
 
-            &:last-child {
-                border: none;
-                padding-bottom: 0;
-                margin-bottom: 0;
+            > div {
+                margin: 0 0 10px 16px;
+                border-bottom: 1px solid @line-color;
+                padding-bottom: 10px;
+
+                &:last-child {
+                    border: none;
+                    padding-bottom: 0;
+                    margin-bottom: 0;
+                }
             }
+        }
+
+        .buttons-panel {
+            padding: 10px @default-spacing;
         }
 
         li {
