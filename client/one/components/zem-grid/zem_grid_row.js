@@ -38,8 +38,9 @@ angular.module('one.legacy').directive('zemGridRow', function (zemGridConstants)
                     return;
                 }
                 var visibleRows = grid.body.visibleRows.length;
-                if (!visibleRows) {
-                    // Ignore when there is no visibleRows (data updated -> this row will be destroyed)
+                if (!visibleRows || visibleRows <= scope.ctrl.index) {
+                    // Ignore when there is no visibleRows or row is outside of bounds (no needed)
+                    // data updated -> this row will be destroyed
                     return;
                 }
 

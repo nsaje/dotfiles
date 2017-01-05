@@ -15,10 +15,14 @@ angular.module('one.legacy').directive('zemGridCell', function () {
             grid: '=',
         },
         templateUrl: '/components/zem-grid/templates/zem_grid_cell.html',
-        controller: function (zemGridConstants) {
+        controller: function ($scope, zemGridConstants) {
             var ctrl = this;
             ctrl.gridColumnTypes = zemGridConstants.gridColumnTypes;
             ctrl.type = getFieldType();
+
+            $scope.$watch('ctrl.col', function () {
+                ctrl.type = getFieldType();
+            });
 
             function getFieldType () {
                 if (!ctrl.col) {
