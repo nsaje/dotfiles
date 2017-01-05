@@ -2,22 +2,9 @@
 
 describe('DownloadExportReportModalCtrl', function () {
     var $scope, api, $q, openedDeferred, $window;
-    var zemFilterServiceMock;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
-
-    beforeEach(module(function ($provide) {
-        zemFilterServiceMock = {
-            getShowArchived: function () { return true; },
-            isSourceFilterOn: function () { return false; },
-            isAgencyFilterOn: function () { return false; },
-            isAccountTypeFilterOn: function () { return false; },
-            getFilteredSources: function () {}
-        };
-        $provide.value('zemFilterService', zemFilterServiceMock);
-    }));
-
 
     beforeEach(inject(function ($controller, $rootScope, _$q_, zemDataFilterService) {
         $q = _$q_;

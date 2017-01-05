@@ -2,7 +2,7 @@
 'use strict';
 
 describe('CampaignCtrl', function () {
-    var $scope, parentScope, $state, api, zemServiceMock, zemFilterServiceMock;
+    var $scope, parentScope, $state, api, zemServiceMock;
 
     beforeEach(function () {
         module('one');
@@ -27,16 +27,6 @@ describe('CampaignCtrl', function () {
                 },
             };
 
-            zemFilterServiceMock = {
-                getShowArchived: function () {
-                    return true;
-                },
-                getFilteredSources: function () {},
-                getFilteredAccountTypes: function () {},
-                getFilteredAgencies: function () {},
-            };
-
-            $provide.value('zemFilterService', zemFilterServiceMock);
             $provide.value('api', api);
         });
 

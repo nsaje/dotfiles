@@ -1,13 +1,11 @@
 /* globals moment,constants,options,angular */
-angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, $timeout, zemDataFilterService, zemGridConstants, zemPermissions, zemChartStorageService, zemNavigationNewService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, $timeout, zemDataFilterService, zemGridConstants, zemPermissions, zemChartStorageService, zemNavigationNewService) { // eslint-disable-line max-len
     $scope.localStoragePrefix = null;
     $scope.chartMetrics = [];
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
-    $scope.chartHidden = false;
     $scope.chartMetricOptions = [];
-    $scope.chartBtnTitle = 'Hide chart';
     $scope.chartIsLoading = false;
 
     $scope.infoboxHeader = null;
@@ -70,9 +68,10 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
     };
 
     $scope.removeFilteredSelectedSources = function () {
-        if (zemFilterService.isSourceFilterOn()) {
+        var filteredSources = zemDataFilterService.getFilteredSources();
+        if (filteredSources.length > 0) {
             $scope.selection.entityIds = $scope.selection.entityIds.filter(function (sourceId) {
-                return zemFilterService.isSourceFiltered(sourceId);
+                return filteredSources.indexOf(sourceId) !== -1;
             });
         }
     };
@@ -106,13 +105,6 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
             );
         }
     });
-
-    $scope.toggleChart = function () {
-        $scope.chartHidden = !$scope.chartHidden;
-        $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
-
-        $scope.reflowGraph(0);
-    };
 
     var getDailyStatsMetrics = function () {
         // always query for default metrics
@@ -293,8 +285,6 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
         setChartOptions();
         initChartMetricsFromLocalStorage();
 
-        userSettings.registerGlobal('chartHidden');
-
         if (sourceIds) {
             $scope.selection.entityIds = sourceIds.split(',');
             $scope.removeFilteredSelectedSources();
@@ -333,21 +323,8 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
     });
     $scope.$on('$destroy', dateRangeUpdateHandler);
 
-    if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-        var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(getDailyStats);
-        $scope.$on('$destroy', filteredSourcesUpdateHandler);
-    } else {
-        $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-            if (angular.equals(newValue, oldValue)) {
-                return;
-            }
-
-            $scope.removeFilteredSelectedSources();
-            $scope.updateSelectedRowsLocation();
-
-            getDailyStats();
-        }, true);
-    }
+    var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(getDailyStats);
+    $scope.$on('$destroy', filteredSourcesUpdateHandler);
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('source_ids', null);

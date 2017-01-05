@@ -1,7 +1,6 @@
 /*globals angular,constants,options,moment*/
-angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($window, $location, $scope, $state, $timeout, $q, api, zemAccountService, zemCampaignService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions, zemChartStorageService, zemNavigationNewService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($window, $location, $scope, $state, $timeout, $q, api, zemAccountService, zemCampaignService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions, zemChartStorageService, zemNavigationNewService) { // eslint-disable-line max-len
     $scope.addCampaignRequestInProgress = false;
-    $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
@@ -240,22 +239,12 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($windo
         );
     };
 
-    $scope.toggleChart = function () {
-        $scope.chartHidden = !$scope.chartHidden;
-        $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
-
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    };
-
     $scope.init = function () {
         var campaignIds = $location.search().campaign_ids;
         var campaignTotals = $location.search().campaign_totals;
 
         initChartMetricsFromLocalStorage();
 
-        userSettings.registerGlobal('chartHidden');
         setChartOptions();
 
         if (campaignIds) {
@@ -291,17 +280,8 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($windo
         $location.search('campaign_totals', null);
     });
 
-    if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-        var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(getDailyStats);
-        $scope.$on('$destroy', filteredSourcesUpdateHandler);
-    } else {
-        $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-            if (angular.equals(newValue, oldValue)) {
-                return;
-            }
-            getDailyStats();
-        }, true);
-    }
+    var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(getDailyStats);
+    $scope.$on('$destroy', filteredSourcesUpdateHandler);
 
     $scope.init();
 });

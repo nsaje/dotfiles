@@ -1,33 +1,14 @@
 <div class="container-fluid">
-    <zem-header class="zem-header row" level="$parent.level" enable-publisher-filter="$parent.enablePublisherFilter" show-publisher-selected="$parent.showPublisherSelected"></zem-header>
+    <zem-header class="zem-header row"></zem-header>
     <zem-settings ng-if="hasPermission('zemauth.can_see_new_settings')" class="zem-settings"></zem-settings>
-    <zem-filter-selector ng-if="hasPermission('zemauth.can_see_new_filter_selector')" class="zem-filter-selector row"></zem-filter-selector>
+    <zem-filter-selector class="zem-filter-selector row"></zem-filter-selector>
 
     <div class="row body">
-        <div class="content" ng-show="accountsAccess.hasAccounts" ng-class="{'content-short': navigationPaneVisible && !hasPermission('zemauth.can_see_new_header'), 'content-full': !navigationPaneVisible || hasPermission('zemauth.can_see_new_header')}">
-            <form id="datepicker" ng-if="!hasPermission('zemauth.can_see_new_header')" class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.*.agency') || $state.includes('*.*.settings') || $state.includes('*.*.budget') || $state.includes('*.*.budget')">
-                <div class="input-group calendar">
-                    <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/calendar.svg"></i>
-                    <input date-range-picker class="form-control date-picker" type="text" ng-model="$parent.dateRange" options="$parent.dateRangeOptions">
-                </div>
-            </form>
-            <zem-filter
-                ng-if="!hasPermission('zemauth.can_see_new_header')"
-                zem-has-permission="$parent.hasPermission"
-                zem-is-permission-internal="$parent.isPermissionInternal"
-                zem-level="$parent.level"
-                enable-publisher-filter="$parent.enablePublisherFilter"
-                show-publisher-selected="$parent.showPublisherSelected">
-            </zem-filter>
-            <div ng-if="hasPermission('zemauth.can_hide_chart') && isChartVisible()" class="btn btn-default graph-button pull-right" ng-click="toggleGraph()">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_hide_chart')" popover-placement="left"></zem-internal-feature>
-                <img class="graph-button-image" ng-src="{{ config.static_url }}/one/img/chart.svg">
-            </div>
+        <div class="content content-full" ng-show="accountsAccess.hasAccounts">
             <div ui-view></div>
         </div>
 
         <div ng-show="!accountsAccess.hasAccounts" ng-include src="'/partials/403.html'"></div>
-
     </div>
 
     <div class="row footer" ng-include src="'/partials/footer.html'"></div>

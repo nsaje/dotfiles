@@ -1,6 +1,6 @@
 angular.module('one.widgets').component('zemNavigation', {
     templateUrl: '/app/widgets/zem-navigation/zemNavigation.component.html',
-    controller: function ($scope, $element, $timeout, hotkeys, zemPermissions, zemNavigationUtils, zemNavigationNewService, zemFilterService, zemDataFilterService) { // eslint-disable-line max-len
+    controller: function ($scope, $element, $timeout, hotkeys, zemPermissions, zemNavigationUtils, zemNavigationNewService, zemDataFilterService) { // eslint-disable-line max-len
         var KEY_UP_ARROW = 38;
         var KEY_DOWN_ARROW = 40;
         var KEY_ENTER = 13;
@@ -29,14 +29,7 @@ angular.module('one.widgets').component('zemNavigation', {
         $ctrl.$onInit = function () {
             zemNavigationNewService.onHierarchyUpdate(initializeList);
             zemNavigationNewService.onActiveEntityChange(initializeList);
-            if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-                filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(filterList);
-            } else {
-                $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
-                    if (angular.equals(newValue, oldValue)) { return; }
-                    filterList();
-                });
-            }
+            filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(filterList);
             $element.keydown(handleKeyDown);
         };
 
@@ -124,10 +117,7 @@ angular.module('one.widgets').component('zemNavigation', {
 
         function filterList () {
             if (!$ctrl.list) return;
-            var showArchived = zemFilterService.getShowArchived();
-            if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-                showArchived = zemDataFilterService.getShowArchived();
-            }
+            var showArchived = zemDataFilterService.getShowArchived();
 
             var list = $ctrl.list;
             if ($ctrl.entityList && $ctrl.query.length === 0) {

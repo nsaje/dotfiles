@@ -16,7 +16,7 @@ angular.module('one.legacy').directive('zemCustomAudiencesList', function () { /
     };
 });
 
-angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', function (api, zemFilterService, zemDataFilterService, zemPermissions, $scope, $uibModal) {
+angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', function (api, zemDataFilterService, zemPermissions, $scope, $uibModal) {
     var vm = this;
     vm.audiences = [];
     vm.listRequestInProgress = false;
@@ -68,10 +68,7 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', function (
     vm.getAudiences = function () {
         vm.listRequestInProgress = true;
 
-        var showArchived = zemFilterService.getShowArchived();
-        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-            showArchived = zemDataFilterService.getShowArchived();
-        }
+        var showArchived = zemDataFilterService.getShowArchived();
 
         api.customAudiences.list(vm.accountId, showArchived, true).then(
             function (data) {
@@ -115,17 +112,8 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', function (
     function init () {
         vm.getAudiences();
 
-        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-            var filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(vm.getAudiences);
-            $scope.$on('$destroy', filteredStatusesUpdateHandler);
-        } else {
-            $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
-                if (angular.equals(newValue, oldValue)) {
-                    return;
-                }
-                vm.getAudiences();
-            }, true);
-        }
+        var filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(vm.getAudiences);
+        $scope.$on('$destroy', filteredStatusesUpdateHandler);
     }
 
     init();
