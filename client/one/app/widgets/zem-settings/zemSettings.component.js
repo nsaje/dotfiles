@@ -27,15 +27,32 @@ angular.module('one.widgets').component('zemSettings', {
         }
 
         function open () {
+            var entity = null;
+            var visible = false;
             $ctrl.entity = zemSettingsService.getCurrentEntity();
+
+            // Make side-panel animation smooth
+            // At first wait for initial render (empty settings)
+            // after that trigger open and wait for animation to end (400ms should be enough)
+            // and then load entity (this depends fetch status - finished before or after side panel is opened)
             $timeout(function () {
                 $ctrl.sidePanel.open();
+                $timeout(function () {
+                    visible = true;
+                    if (entity) {
+                        $ctrl.currentContainer.load(entity);
+                    }
+                }, 400);
             }, 0);
 
-            zemEntityService.getEntity($ctrl.entity.type, $ctrl.entity.id).then(function (entity) {
-                entity.id = $ctrl.entity.id;
-                entity.type = $ctrl.entity.type;
-                $ctrl.currentContainer.load(entity);
+            zemEntityService.getEntity($ctrl.entity.type, $ctrl.entity.id).then(function (e) {
+                e.id = $ctrl.entity.id;
+                e.type = $ctrl.entity.type;
+                if (visible) {
+                    $ctrl.currentContainer.load(e);
+                } else {
+                    entity = e;
+                }
             });
         }
 
