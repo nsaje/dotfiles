@@ -1,7 +1,7 @@
 'use strict';
 
 describe('AdGroupCtrl', function () {
-    var $scope, parentScope, $state, api, zemFilterServiceMock;
+    var $scope, parentScope, $state, api;
 
     beforeEach(function () {
         module('one');
@@ -26,16 +26,6 @@ describe('AdGroupCtrl', function () {
                 },
             };
 
-            zemFilterServiceMock = {
-                getShowArchived: function () {
-                    return true;
-                },
-                getFilteredSources: function () {},
-                getFilteredAccountTypes: function () {},
-                getFilteredAgencies: function () {},
-            };
-
-            $provide.value('zemFilterService', zemFilterServiceMock);
             $provide.value('api', api);
         });
 

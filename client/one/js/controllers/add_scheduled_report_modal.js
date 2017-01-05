@@ -1,5 +1,5 @@
 /* globals angular, options, constants */
-angular.module('one.legacy').controller('AddScheduledReportModalCtrl', function ($scope, api, zemFilterService, zemDataFilterService, zemPermissions) {  // eslint-disable-line max-len
+angular.module('one.legacy').controller('AddScheduledReportModalCtrl', function ($scope, api, zemDataFilterService, zemPermissions) {  // eslint-disable-line max-len
     $scope.exportSchedulingFrequencies = options.exportFrequency;
     $scope.exportSchedulingTimePeriods = options.exportTimePeriod;
     $scope.exportSchedulingDayOfWeek = options.exportDayOfWeek;
@@ -39,11 +39,7 @@ angular.module('one.legacy').controller('AddScheduledReportModalCtrl', function 
         $scope.showInProgress = true;
         var url = $scope.baseUrl + 'export/';
         var dateRange = zemDataFilterService.getDateRange();
-        var filteredSources = zemFilterService.isSourceFilterOn() ?
-                zemFilterService.getFilteredSources().join(',') : '';
-        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-            filteredSources = zemDataFilterService.getFilteredSources().join(',');
-        }
+        var filteredSources = zemDataFilterService.getFilteredSources().join(',');
 
         var data = {
             'type': $scope.export.type.value,
@@ -60,22 +56,14 @@ angular.module('one.legacy').controller('AddScheduledReportModalCtrl', function 
             'report_name': $scope.export.reportName,
         };
 
-        if (zemFilterService.isAgencyFilterOn()) {
-            data.filtered_agencies = zemFilterService.getFilteredAgencies().join(',');
-        }
-        if (zemFilterService.isAccountTypeFilterOn()) {
-            data.filtered_account_types = zemFilterService.getFilteredAccountTypes().join(',');
+        var filteredAgencies = zemDataFilterService.getFilteredAgencies();
+        if (filteredAgencies.length > 0) {
+            data.filtered_agencies = filteredAgencies.join(',');
         }
 
-        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-            var filteredAgencies = zemDataFilterService.getFilteredAgencies();
-            var filteredAccountTypes = zemDataFilterService.getFilteredAccountTypes();
-            if (filteredAgencies.length > 0) {
-                data.filtered_agencies = filteredAgencies.join(',');
-            }
-            if (filteredAccountTypes.length > 0) {
-                data.filtered_account_types = filteredAccountTypes.join(',');
-            }
+        var filteredAccountTypes = zemDataFilterService.getFilteredAccountTypes();
+        if (filteredAccountTypes.length > 0) {
+            data.filtered_account_types = filteredAccountTypes.join(',');
         }
 
         if ($scope.hasPermission('zemauth.can_include_model_ids_in_reports')) {

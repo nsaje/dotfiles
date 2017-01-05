@@ -1,13 +1,11 @@
 /*globals angular,moment,constants,options*/
 
-angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions, zemChartStorageService, zemNavigationNewService) {
+angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataFilterService, zemGridConstants, zemPermissions, zemChartStorageService, zemNavigationNewService) {
     $scope.constants = constants;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
-    $scope.chartHidden = false;
     $scope.chartMetricOptions = [];
-    $scope.chartBtnTitle = 'Hide chart';
     $scope.chartIsLoading = false;
     $scope.sources = [];
     $scope.sourcesWaiting = null;
@@ -71,9 +69,10 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
     };
 
     $scope.removeFilteredSelectedSources = function () {
-        if (zemFilterService.isSourceFilterOn()) {
+        var filteredSources = zemDataFilterService.getFilteredSources();
+        if (filteredSources.length > 0) {
             $scope.selection.entityIds = $scope.selection.entityIds.filter(function (sourceId) {
-                return zemFilterService.isSourceFiltered(sourceId);
+                return filteredSources.indexOf(sourceId) !== -1;
             });
         }
     };
@@ -216,15 +215,6 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
         $scope.updateSelectedRowsData();
     };
 
-    $scope.toggleChart = function () {
-        $scope.chartHidden = !$scope.chartHidden;
-        $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
-
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    };
-
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             if (!$scope.isMetricInChartData(newValue, $scope.chartData)) {
@@ -249,21 +239,8 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
         }
     });
 
-    if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-        var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate($scope.getDailyStats);
-        $scope.$on('$destroy', filteredSourcesUpdateHandler);
-    } else {
-        $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-            if (angular.equals(newValue, oldValue)) {
-                return;
-            }
-
-            $scope.removeFilteredSelectedSources();
-            $scope.updateSelectedRowsLocation();
-
-            $scope.getDailyStats();
-        }, true);
-    }
+    var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate($scope.getDailyStats);
+    $scope.$on('$destroy', filteredSourcesUpdateHandler);
 
     $scope.init = function () {
         var data = $scope.adGroupData[$state.params.id];
@@ -272,8 +249,6 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
 
         setChartOptions();
         initChartMetricsFromLocalStorage();
-
-        userSettings.registerGlobal('chartHidden');
 
         if (sourceIds) {
             $scope.selection.entityIds = sourceIds.split(',');

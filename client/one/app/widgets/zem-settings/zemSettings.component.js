@@ -1,7 +1,10 @@
 angular.module('one.widgets').component('zemSettings', {
     templateUrl: '/app/widgets/zem-settings/zemSettings.component.html',
-    controller: function ($timeout, hotkeys, zemSettingsService) {
+    controller: function ($timeout, hotkeys, zemSettingsService, zemEntityService) {
         var $ctrl = this;
+        $ctrl.currentContainer = null;
+        $ctrl.currentContainerType = null;
+
         $ctrl.constants = constants;
         $ctrl.sidePanel = {};
         $ctrl.onCloseRequest = zemSettingsService.close;
@@ -18,18 +21,26 @@ angular.module('one.widgets').component('zemSettings', {
             zemSettingsService.onClose(close);
         };
 
-        function register (entitySettingsComponent) {
-            $ctrl.entitySettingsComponent = entitySettingsComponent;
-            $ctrl.entitySettingsComponent.load();
+        function register (type, entitySettingsComponent) {
+            $ctrl.currentContainer = entitySettingsComponent;
+            $ctrl.currentContainerType = type;
         }
 
         function open () {
             $ctrl.entity = zemSettingsService.getCurrentEntity();
-            $ctrl.sidePanel.open();
+            $timeout(function () {
+                $ctrl.sidePanel.open();
+            }, 0);
+
+            zemEntityService.getEntity($ctrl.entity.type, $ctrl.entity.id).then(function (entity) {
+                entity.id = $ctrl.entity.id;
+                entity.type = $ctrl.entity.type;
+                $ctrl.currentContainer.load(entity);
+            });
         }
 
         function close () {
-            if ($ctrl.entitySettingsComponent.isDirty()) {
+            if ($ctrl.currentContainer.isDirty()) {
                 var close = confirm('You have unsaved changes. \nAre you sure you want to close settings?'); // eslint-disable-line
                 if (!close) return;
             }
@@ -38,7 +49,6 @@ angular.module('one.widgets').component('zemSettings', {
             $timeout(function () {
                 if (!$ctrl.sidePanel.isVisible()) {
                     $ctrl.entity = null;
-                    $ctrl.entitySettingsComponent = null;
                 }
             }, 500);
         }

@@ -154,7 +154,7 @@ def persist_edit_batch(request, batch):
     candidates = models.ContentAdCandidate.objects.filter(batch=batch)
     with transaction.atomic():
         content_ads = _update_content_ads(candidates)
-        _update_redirects(content_ads)
+        redirector_helper.update_redirects(content_ads)
 
         candidates.delete()
         batch.delete()
@@ -167,16 +167,11 @@ def persist_edit_batch(request, batch):
 
 
 def _create_redirect_ids(content_ads):
-    redirector_batch = redirector_helper.insert_redirects_batch(content_ads)
+    redirector_batch = redirector_helper.insert_redirects(content_ads)
     for content_ad in content_ads:
         content_ad.url = redirector_batch[str(content_ad.id)]["redirect"]["url"]
         content_ad.redirect_id = redirector_batch[str(content_ad.id)]["redirectid"]
         content_ad.save()
-
-
-def _update_redirects(content_ads):
-    for content_ad in content_ads:
-        redirector_helper.update_redirect(content_ad.url, content_ad.redirect_id)
 
 
 def get_candidates_with_errors(candidates):
@@ -434,20 +429,21 @@ def _handle_auto_save(batch):
             logger.exception('Couldn\'t auto save batch for unknown reason')
 
 
-@transaction.atomic
 def process_callback(callback_data):
-    try:
-        candidate_id = callback_data.get('id')
-        candidate = models.ContentAdCandidate.objects.filter(pk=candidate_id).select_related('batch').get()
-    except models.ContentAdCandidate.DoesNotExist:
-        logger.exception('No candidate with id %s', callback_data['id'])
-        return
+    with transaction.atomic():
+        try:
+            candidate_id = callback_data.get('id')
+            candidate = models.ContentAdCandidate.objects.filter(pk=candidate_id).select_related('batch').get()
+        except models.ContentAdCandidate.DoesNotExist:
+            logger.exception('No candidate with id %s', callback_data['id'])
+            return
 
-    cleaned_urls = _get_cleaned_urls(candidate)
-    _process_url_update(candidate, cleaned_urls['url'], callback_data)
-    _process_image_url_update(candidate, cleaned_urls['image_url'], callback_data)
+        cleaned_urls = _get_cleaned_urls(candidate)
+        _process_url_update(candidate, cleaned_urls['url'], callback_data)
+        _process_image_url_update(candidate, cleaned_urls['image_url'], callback_data)
 
-    candidate.save()
+        candidate.save()
+
     _handle_auto_save(candidate.batch)
 
 

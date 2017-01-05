@@ -11,7 +11,7 @@ angular.module('one.legacy').directive('zemConversionPixels', function (config, 
             account: '=zemAccount'
         },
         templateUrl: '/partials/zem_conversion_pixels.html',
-        controller: function ($scope, $element, $uibModal, api, zemFilterService, zemDataFilterService, zemPermissions) {
+        controller: function ($scope, $element, $uibModal, api, zemDataFilterService, zemPermissions) {
             $scope.conversionPixels = [];
             $scope.listInProgress = false;
             $scope.listError = false;
@@ -143,14 +143,9 @@ angular.module('one.legacy').directive('zemConversionPixels', function (config, 
             };
 
             $scope.filterConversionPixels = function (conversionPixel) {
-                if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-                    if (zemDataFilterService.getShowArchived()) {
-                        return true;
-                    }
-                } else if (zemFilterService.getShowArchived()) {
+                if (zemDataFilterService.getShowArchived()) {
                     return true;
                 }
-
                 return !conversionPixel.archived;
             };
 

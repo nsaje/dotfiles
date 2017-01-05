@@ -731,6 +731,7 @@ startDate    | string                    | start date of the ad group           
 endDate      | string                    | End date of the ad group. Omit to leave it running until state is manually set to `INACTIVE`.                                    | optional | optional
 startDate    | string                    | start date of the ad group                                                                                                       | optional | optional
 maxCpc       | [money](#money)           | maximum CPC for this ad group                                                                                                    | optional | optional
+maxCpm       | [money](#money)           | maximum CPM for this ad group (currently beta only, please contact us for access)                                                | optional | optional
 targeting    | [targeting](#targeting)   | targeting settings                                                                                                               | optional | optional
 dayparting   | [dayparting](#dayparting) | dayparting settings                                                                                                              | optional | optional
 trackingCode | string                    | tracking codes appended to all content ads URLs ([more](http://help.zemanta.com/article/show/12985-tracking-parameters--macros)) | optional | optional
@@ -799,6 +800,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                 "startDate": "2016-10-05",
                 "endDate": "2016-11-05",
                 "maxCpc": "0.25",
+                "maxCpm": "1.20",
                 "dailyBudget": "20.0",
                 "targeting": {
                     "devices": ["DESKTOP", "TABLET"],
@@ -842,6 +844,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
             "startDate": "2016-10-05",
             "endDate": "2016-11-05",
             "maxCpc": "0.25",
+            "maxCpm": "1.20",
             "dailyBudget": "20.0",
             "targeting": {
                 "devices": ["DESKTOP", "TABLET"],
@@ -881,6 +884,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                 "startDate": "2016-10-05",
                 "endDate": "2016-11-05",
                 "maxCpc": "0.25",
+                "maxCpm": "1.20",
                 "dailyBudget": "20.0",
                 "targeting": {
                     "devices": ["desktop", "tablet"],
@@ -927,6 +931,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                     "startDate": "2016-10-05",
                     "endDate": "2016-11-05",
                     "maxCpc": "0.25",
+                    "maxCpm": "1.20",
                     "dailyBudget": "20.0",
                     "targeting": {
                         "devices": ["DESKTOP", "TABLET"],
@@ -969,6 +974,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
             "startDate": "2016-10-05",
             "endDate": "2016-11-05",
             "maxCpc": "0.25",
+            "maxCpm": "1.20",
             "dailyBudget": "20.0",
             "targeting": {
                 "devices": ["DESKTOP", "TABLET"],
@@ -1009,6 +1015,7 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                 "startDate": "2016-10-05",
                 "endDate": "2016-11-05",
                 "maxCpc": "0.25",
+                "maxCpm": "1.20",
                 "dailyBudget": "20.0",
                 "targeting": {
                     "devices": ["DESKTOP", "TABLET"],

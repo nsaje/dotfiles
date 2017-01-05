@@ -1,5 +1,6 @@
 import datetime
 
+import influx
 from django import test
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
@@ -16,10 +17,80 @@ from reports import exc as repsexc
 from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_keys
 from utils.url_helper import clean_url
 
-from zweiapi.views import _prepare_report_rows, _remove_content_ad_sources_from_report_rows
-
 import reports.update
 import utils.pagination
+
+
+# NOTE: added here for tests to pass when deleting zweiapi
+# (ad_group_id -> source_id -> date) triplets for which we do not want to check if
+# received reports content ad ids exist in z1. Use only after discrepancies were
+# fixed - eg. content ad ids synced, content ads paused/reinserted etc.
+SUPRESS_INVALID_CONTENT_ID_CHECK = {
+    # content that should not exist in Outbrain and made some impressions
+    927: {3: ['2015-12-08']},
+    701: {3: ['2016-04-02']},
+    1: {46: ['2016-05-10']},
+}
+
+
+# NOTE: added here for tests to pass when deleting zweiapi
+def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None):
+
+    raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
+    articles = dashapi.reconcile_articles(ad_group, raw_articles)
+
+    # in some cases we need to suppress content ad id check due to legacy content still in z1
+    suppress_invalid_content_ad_check = date in SUPRESS_INVALID_CONTENT_ID_CHECK.get(ad_group.id, {}).get(source.id, {})
+
+    if not len(articles) == len(data_rows):
+        raise Exception('Not all articles were reconciled')
+
+    content_ad_sources = {}
+    for content_ad_source in dashmodels.ContentAdSource.objects.filter(
+            content_ad__ad_group=ad_group,
+            source=source).select_related('source__source_type'):
+        content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
+
+    stats_rows = []
+    for article, data_row in zip(articles, data_rows):
+        if 'id' not in data_row:
+            influx.incr('reports.update.err_content_ad_no_id', 1)
+            raise Exception('\'id\' field not present in data row.')
+
+        if data_row['id'] not in content_ad_sources and ad_group_source.can_manage_content_ads:
+            if suppress_invalid_content_ad_check:
+                # Stats for an unknown id, but we decided to skip
+                influx.incr('reports.update.err_unknown_content_ad_id_skipped', 1)
+                continue
+            else:
+                influx.incr('reports.update.err_unknown_content_ad_id', 1)
+                raise Exception('Stats for an unknown id. ad group={}. source={}. id={}.'.format(
+                    ad_group.id,
+                    source.id,
+                    data_row['id']
+                ))
+
+        row_dict = {
+            'id': data_row['id'],
+            'article': article,
+            'impressions': data_row['impressions'],
+            'clicks': data_row['clicks'],
+            'data_cost_cc': data_row.get('data_cost_cc') or 0,
+            'cost_cc': data_row['cost_cc']
+        }
+
+        if data_row['id'] in content_ad_sources:
+            row_dict['content_ad_source'] = content_ad_sources[data_row['id']]
+
+        stats_rows.append(row_dict)
+
+    return stats_rows
+
+
+# NOTE: added here for tests to pass when deleting zweiapi
+def _remove_content_ad_sources_from_report_rows(report_rows):
+    ignored_keys = ('content_ad_source', 'id')
+    return [{k: v for k, v in row.items() if k not in ignored_keys} for row in report_rows]
 
 
 class QueryTestCase(test.TestCase):
@@ -130,7 +201,6 @@ class QueryTestCase(test.TestCase):
         }
 
         result = api.query(start, end, [], ad_group=1)
-        
 
         self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
 

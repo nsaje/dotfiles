@@ -191,9 +191,9 @@ class InsertEditCandidatesTestCase(TestCase):
 class PersistBatchTestCase(TestCase):
     fixtures = ['test_upload.yaml']
 
-    @patch('utils.redirector_helper.insert_redirects_batch')
+    @patch('utils.redirector_helper.insert_redirects')
     @patch.object(utils.s3helpers.S3Helper, 'put')
-    def test_valid_candidates(self, mock_s3helper_put, mock_insert_redirects_batch):
+    def test_valid_candidates(self, mock_s3helper_put, mock_insert_redirects):
         def redirector_response(content_ads):
             return {
                 str(content_ad.id): {
@@ -203,7 +203,7 @@ class PersistBatchTestCase(TestCase):
                     'redirectid': '123456',
                 } for content_ad in content_ads
             }
-        mock_insert_redirects_batch.side_effect = redirector_response
+        mock_insert_redirects.side_effect = redirector_response
 
         batch = models.UploadBatch.objects.get(id=2)
         self.assertEqual(1, batch.contentadcandidate_set.count())
@@ -235,7 +235,7 @@ class PersistBatchTestCase(TestCase):
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
-        self.assertTrue(mock_insert_redirects_batch.called)
+        self.assertTrue(mock_insert_redirects.called)
 
     def test_edit_batch(self):
         batch = models.UploadBatch.objects.get(id=7)
@@ -308,8 +308,8 @@ class PersistEditBatchTestCase(TestCase):
         self.request = HttpRequest()
         self.request.user = zemauth.models.User.objects.get(id=1)
 
-    @patch('utils.redirector_helper.update_redirect', autospec=True)
-    def test_persist_edit_batch(self, mock_update_redirect):
+    @patch('utils.redirector_helper.update_redirects', autospec=True)
+    def test_persist_edit_batch(self, mock_update_redirects):
         batch = models.UploadBatch.objects.get(id=7)
 
         content_ad = models.ContentAd.objects.get(id=2)
@@ -334,7 +334,7 @@ class PersistEditBatchTestCase(TestCase):
             self.assertEqual(getattr(content_ad, field), getattr(new_content_ad, field))
             self.assertNotEqual(getattr(candidate, field), getattr(new_content_ad, field))
 
-        mock_update_redirect.assert_called_with(new_content_ad.url, new_content_ad.redirect_id)
+        mock_update_redirects.assert_called_with([new_content_ad])
 
         with self.assertRaises(models.UploadBatch.DoesNotExist):
             batch.refresh_from_db()

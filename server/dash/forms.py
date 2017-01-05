@@ -143,6 +143,16 @@ class AdGroupSettingsForm(forms.Form):
             'max_value': 'Maximum CPC can\'t be higher than $10.00.'
         }
     )
+    max_cpm = forms.DecimalField(
+        min_value=decimal.Decimal('0.05'),
+        max_value=decimal.Decimal('10'),
+        decimal_places=4,
+        required=False,
+        error_messages={
+            'min_value': 'Maximum CPM can\'t be lower than $%(limit_value)s.',
+            'max_value': 'Maximum CPM can\'t be higher than $%(limit_value)s.'
+        }
+    )
     daily_budget_cc = forms.DecimalField(
         min_value=10,
         decimal_places=4,

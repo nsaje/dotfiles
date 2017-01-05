@@ -6,7 +6,7 @@
             <zem-help-popover content="Name of the campaign." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-6">
-            <input id="name-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.name">
+            <input id="name-input" type="text" class="form__input-text" ng-model="$ctrl.entity.settings.name">
         </div>
 
         <label ng-repeat="error in $ctrl.errors.name" class="control-label error" for="name-input">{{ error }}</label>
@@ -18,7 +18,7 @@
             <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-6">
-            <ui-select theme="select2" id="account-manager-select" class="form-control" ng-model="$ctrl.entity.settings.campaignManager">
+            <ui-select theme="select2" id="account-manager-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="$ctrl.entity.settings.campaignManager">
                 <ui-select-match>{{$select.selected.name}}</ui-select-match>
                 <ui-select-choices repeat="manager.id as manager in $ctrl.entity.campaignManagers | orderBy:getName | filter:$select.search">
                     <div ng-bind-html="manager.name | highlight: $select.search"></div>
@@ -34,7 +34,7 @@
             <zem-help-popover content="IAB category under which content of this campaign belongs." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-6">
-            <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="$ctrl.entity.settings.iabCategory">
+            <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="$ctrl.entity.settings.iabCategory">
                 <option ng-repeat="category in $ctrl.options.iabCategories" value="{{category.value}}">{{category.name}}</option>
             </select>
         </div>

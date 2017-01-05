@@ -13,12 +13,16 @@
     .targeting-select-buttons {
         float: right;
         font-size: 13px;
-        line-height: 22px;
+        line-height: 30px;
+        margin: -7px -10px;
 
         a {
-            padding: 0 5px;
+            padding: 0 10px;
+            box-sizing: border-box;
+            display: block;
+            float: left;
 
-            &:first-child {
+            &.text-success {
                 border-right: 1px solid @line-color;
             }
 
@@ -37,7 +41,28 @@
         color: inherit !important;
 
         &:hover {
-            background-color: #f5f5f5 !important;
+            background-color: @secondary-color !important;
+            color: white !important;
+        }
+    }
+
+    .ui-select-choices-row:hover {
+        .text-success {
+            background-color: @green !important;
+            border-right: 1px solid @green;
+            color: white;
+        }
+
+        .text-danger {
+            background-color: @red !important;
+            color: white;
+            border-top-right-radius: @border-radius;
+            border-bottom-right-radius: @border-radius;
+        }
+
+        a:hover {
+            text-decoration: underline !important;
+            color: white !important;
         }
     }
 

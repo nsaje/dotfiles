@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'zemauth',
     'actionlog',
     'reports',
-    'zweiapi',
     'k1api',
     'raven.contrib.django.raven_compat',
     'automation',

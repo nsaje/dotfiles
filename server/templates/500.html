@@ -1,13 +1,15 @@
 {% extends "header_base.html" %}
 
-{% block support_mail_extra %}?Subject=Help%20Needed{% endblock %}
-
 {% block content %}
-<div id="error-box" class="center-container">
-    <div class="title">We'll be back shortly.</div>
-    <div>
-        <div><strong>Need help? Contact us.</strong></div>
-        <div><a class="contact" href="mailto:help@zemanta.com?Subject=Help%20Needed">help@zemanta.com</a></div>
+<div class="page">
+    <div class="container" id="error-box">
+        <div class="container__left container__left--smaller">
+            <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
+        </div>
+        <div class="container__right container__right--maintenance">
+            <h2>We'll be back shortly.</h2>
+            <p><strong>Need help?</strong> <a class="link" href="mailto:help@zemanta.com?Subject=Help%20Needed" target="_blank">Contact us</a></p>
+        </div>
     </div>
 </div>
 {% endblock %}

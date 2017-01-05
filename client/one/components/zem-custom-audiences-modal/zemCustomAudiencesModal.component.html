@@ -8,7 +8,7 @@
                 Audience Name
             </label>
             <div class="col-xs-8">
-                <input type="text" id="zem-custom-audiences-modal-name" class="form-control" ng-model="ctrl.selectedName" ng-change="ctrl.removeError('name')" placeholder="Audience Name" />
+                <input type="text" id="zem-custom-audiences-modal-name" class="form__input-text" ng-model="ctrl.selectedName" ng-change="ctrl.removeError('name')" />
                 <label ng-repeat="error in ctrl.errors.name" class="control-label error">{{ error }}</label>
             </div>
         </div>
@@ -19,7 +19,7 @@
                 <zem-help-popover content="The pixel that is the source of this traffic." placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
             <div class="col-xs-8">
-                <input type="text" class="form-control" ng-model="ctrl.pixel.name" ng-readonly="true" />
+                <input type="text" class="form__input-text" ng-model="ctrl.pixel.name" ng-readonly="true" />
                 <label ng-repeat="error in ctrl.errors.pixelId" class="control-label error">{{ error }}</label>
             </div>
         </div>
@@ -30,7 +30,7 @@
                 <zem-help-popover content="Choose how you want to add people to your audience. Include all of your website visitors, or create rules that only add people who visit specific parts of your website." placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
             <div class="col-xs-8">
-                <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-rule-select" class="form-control" ng-model="ctrl.selectedTopRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
+                <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-rule-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="ctrl.selectedTopRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
                     <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
                     <ui-select-choices repeat="rule.id as rule in ctrl.rules">
                         {{ rule.name }}
@@ -44,7 +44,7 @@
                     <div class="m-b-s">
                         <label class="control-label m-t-s m-b-xs">Include traffic that meets the following conditions:</label>
                         <div class="p-l-none p-r-none">
-                            <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="form-control" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
+                            <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
                                 <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
                                 <ui-select-choices repeat="rule.id as rule in ctrl.refererRules">
                                     {{ rule.name }}
@@ -74,9 +74,9 @@
                 <zem-help-popover content="<p class='m-b-s'>The number of days people will remain in your audience after they've visited your website. People will be removed from your audience after the set time period, unless they visit your website again.</p><p><strong>Maximum time:</strong> 365 days.</p>" placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
             <div class="col-xs-3">
-                <div class="input-group">
-                    <input type="text" class="days-input form-control" ng-model="ctrl.selectedTtl" placeholder="Enter Days" ng-change="ctrl.removeError('ttl')"/>
-                    <span class="input-group-addon" id="basic-addon2">days</span>
+                <div class="form__input-text--with-postfix">
+                    <i class="input-text__postfix" id="basic-addon2">days</i>
+                    <input type="text" class="form__input-text" ng-model="ctrl.selectedTtl" ng-change="ctrl.removeError('ttl')"/>
                 </div>
 
                 <label ng-repeat="error in ctrl.errors.ttl" class="control-label error">{{ error }}</label>

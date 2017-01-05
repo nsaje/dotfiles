@@ -16,9 +16,8 @@
                 Valid From
             </label>
             <div class="col-xs-4">
-                <div class="input-group">
-                    <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
-                    <input id="start-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-model="creditItem.startDate" datepicker-options="startDatePickerOptions" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" ng-disabled="creditItem.isSigned" />
+                <div class="form__prefixed-field form__prefixed-field--with-icon form__prefixed-field--calendar-icon">
+                    <input id="start-date-input" type="text" class="form__input-text" uib-datepicker-popup="MM/dd/yyyy" ng-model="creditItem.startDate" datepicker-options="startDatePickerOptions" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" ng-disabled="creditItem.isSigned" />
                 </div>
             </div>
             <label ng-repeat="error in errors.startDate" class="col-xs-5 control-label error" for="start-date-input">{{ error }}</label>
@@ -28,9 +27,8 @@
                 Valid To
             </label>
             <div class="col-xs-4">
-                <div class="input-group">
-                    <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
-                    <input id="end-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-model="creditItem.endDate" datepicker-options="endDatePickerOptions" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()" />
+                <div class="form__prefixed-field form__prefixed-field--with-icon form__prefixed-field--calendar-icon">
+                    <input id="end-date-input" type="text" class="form__input-text" uib-datepicker-popup="MM/dd/yyyy" ng-model="creditItem.endDate" datepicker-options="endDatePickerOptions" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()" />
                 </div>
             </div>
             <label ng-repeat="error in errors.endDate" class="col-xs-5 control-label error" for="end-date-input">{{ error }}</label>
@@ -40,7 +38,7 @@
                 License Fee (%)
             </label>
             <div class="col-xs-4">
-                <ui-select theme="select2" id="license-fee-select" class="form-control" ng-model="creditItem.licenseFee" ng-disabled="creditItem.isSigned">
+                <ui-select theme="select2" id="license-fee-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="creditItem.licenseFee" ng-disabled="creditItem.isSigned">
                     <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
                     <ui-select-choices repeat="fee in getLicenseFees($select.search, creditItem.licenseFee) | filter: $select.search">
                         <span ng-bind-html="fee"></span>%
@@ -55,10 +53,10 @@
                 Credit
             </label>
             <div class="col-xs-4">
-                <div class="input-group">
-                    <span class="input-group-addon">$</span>
-                    <input id="amount-input" type="text" class="form-control" ng-model="creditItem.amount" zem-currency-input fraction-size="0">
-                    <div class="input-group-addon">.00</div>
+                <div class="form__prefixed-field form__postfixed-field">
+                    <span class="form__field-prefix">$</span>
+                    <input id="amount-input" type="text" class="form__input-text" ng-model="creditItem.amount" zem-currency-input fraction-size="0">
+                    <span class="form__field-postfix">.00</span>
                 </div>
             </div>
 
@@ -68,8 +66,8 @@
             <label for="comment-input" class="col-xs-3 control-label">
                 Custom Notes
             </label>
-            <div class="col-xs-4">
-                <textarea id="comment-input" type="text" class="form-control" ng-model="creditItem.comment" maxlength="256"></textarea>
+            <div class="col-xs-9">
+                <textarea id="comment-input" type="text" class="form__textarea" ng-model="creditItem.comment" maxlength="256"></textarea>
             </div>
             <label ng-repeat="error in errors.comment" class="col-xs-5 control-label error" for="comment">{{ error }}</label>
         </div>

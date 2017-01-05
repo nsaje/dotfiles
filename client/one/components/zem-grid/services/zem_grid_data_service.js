@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').factory('zemGridDataService', function ($q, zemGridParser, zemAlertsService) { // eslint-disable-line max-len
+angular.module('one.legacy').factory('zemGridDataService', function ($q, $timeout, zemGridParser, zemAlertsService) { // eslint-disable-line max-len
 
     // GridDataService is responsible to request data from DataSource and listen to any DataSource changes
     // It prepares data suitable for Grid component along with data states (initializing, loading, etc.) used
@@ -116,9 +116,37 @@ angular.module('one.legacy').factory('zemGridDataService', function ($q, zemGrid
         }
 
         function handleSourceDataUpdate (event, data) {
+            if (!delayInitialDataUpdate(data)) {
+                doHandleSourceDataUpdate(data);
+            }
+        }
+
+        function doHandleSourceDataUpdate (data) {
             zemGridParser.parse(grid, data);
             grid.meta.loading = !data.breakdown;
             grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
+        }
+
+
+        // Delay initial load (data update) to allow faster switching between pages
+        // Data rows add significant JS work at initialization therefor we
+        // are deferring this for 1s
+        var metaDataLoadTime;
+        var dataLoadTime;
+        function delayInitialDataUpdate (data) {
+            if (!metaDataLoadTime) {
+                metaDataLoadTime = new Date().getTime();
+            } else if (!dataLoadTime) {
+                dataLoadTime = new Date().getTime();
+                var diff = dataLoadTime - metaDataLoadTime;
+                if (diff < 1000) {
+                    $timeout(function () {
+                        doHandleSourceDataUpdate(data);
+                    }, 1000 - diff);
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

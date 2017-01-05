@@ -10,14 +10,14 @@
 </div>
 
 <div ng-if="showUndo()">
-    <b>{{someReplacedNames.join(", ")}}</b> 
-    <ng-pluralize count="someReplacedNames.length" when="{'1': 'was', 'other': 'were'}"></ng-pluralize> 
-    replaced by 
-    <b>{{name}}</b> 
+    <b>{{someReplacedNames.join(", ")}}</b>
+    <ng-pluralize count="someReplacedNames.length" when="{'1': 'was', 'other': 'were'}"></ng-pluralize>
+    replaced by
+    <b>{{name}}</b>
     since it is a {{reason}} location targeting.
     <a href="" ng-click="undo()">Undo?</a>
 </div>
-<select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location">
+<select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location" class="button button--with-icon button--add-icon button--dropdown-toggle-icon">
     <option value=""></option>
     <optgroup label="Countries">
         <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isCountry" value="{{location.code}}">{{location.name}}</option>

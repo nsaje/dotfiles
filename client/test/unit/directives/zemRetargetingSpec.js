@@ -2,17 +2,15 @@
 'use strict';
 
 describe('zemRetargeting', function () {
-    var $scope, element, isolate, zemFilterService;
+    var $scope, element, isolate;
 
     var template = '<zem-retargeting zem-selected-adgroup-ids="selectedAdgroupIds" zem-retargetable-adgroups="retargetableAdgroups" zem-account="account"></zem-locations>'; // eslint-disable-line max-len
 
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function ($compile, $rootScope, _zemFilterService_) {
+    beforeEach(inject(function ($compile, $rootScope) {
         $scope = $rootScope.$new();
-
-        zemFilterService = _zemFilterService_;
 
         $scope.selectedAdgroupIds = [];
         $scope.retargetableAdgroups = [
@@ -38,8 +36,6 @@ describe('zemRetargeting', function () {
     }));
 
     it('adds new ad groups', function () {
-        spyOn(zemFilterService, 'isArchivedFilterOn').and.returnValue(false);
-
         isolate.addAdgroup({id: 1});
         $scope.$digest();
         expect($scope.selectedAdgroupIds).toEqual([1]);
@@ -53,8 +49,6 @@ describe('zemRetargeting', function () {
     });
 
     it('removes selected ad groups', function () {
-        spyOn(zemFilterService, 'isArchivedFilterOn').and.returnValue(false);
-
         $scope.selectedAdgroupIds = [1, 3];
         $scope.$digest();
 
@@ -71,7 +65,6 @@ describe('zemRetargeting', function () {
     });
 
     it('shows archived ad groups when enabled', function () {
-        spyOn(zemFilterService, 'isArchivedFilterOn').and.returnValue(true);
         expect(isolate.availableAdgroups().length).toBe(3);
     });
 });

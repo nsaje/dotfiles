@@ -8,7 +8,6 @@ describe('MainCtrl', function () {
     var zemFullStoryService;
     var user;
     var zemUserServiceMock;
-    var zemFilterServiceMock;
     var zemUserSettings;
     var accountsAccess;
 
@@ -41,16 +40,6 @@ describe('MainCtrl', function () {
                 permissions: {},
             };
 
-            zemFilterServiceMock = {
-                getShowArchived: function () {
-                    return true;
-                },
-                getFilteredSources: function () {},
-                getFilteredAccountTypes: function () {},
-                getFilteredAgencies: function () {},
-            };
-
-            $provide.value('zemFilterService', zemFilterServiceMock);
             $provide.value('api', api);
         });
 

@@ -23,10 +23,6 @@ angular.module('one.legacy').directive('zemGridBody', function ($timeout, $inter
                 renderedRows: [],
             };
 
-            // Initialize dummy rows to optimize initial data rendering
-            for (var idx = 0; idx < zemGridConstants.gridBodyRendering.NUM_OF_DUMMY_ROWS; ++idx) {
-                scope.state.renderedRows.push({index: scope.state.renderedRows.length});
-            }
 
             var visibleRows;
             var numberOfRenderedRows = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE
@@ -108,7 +104,7 @@ angular.module('one.legacy').directive('zemGridBody', function ($timeout, $inter
                     $timeout(function () {
                         scope.state.renderedRows.forEach(function (row) { row.dummy = false; });
                         zemGridUIService.resizeGridColumns(scope.ctrl.grid);
-                    });
+                    }, 0);
                 }
             }
 
@@ -143,6 +139,16 @@ angular.module('one.legacy').directive('zemGridBody', function ($timeout, $inter
                 updateVisibleRows();
                 updateTableStyle();
                 pubsub.notify(pubsub.EVENTS.BODY_ROWS_UPDATED);
+            }
+
+
+            // Initialize dummy rows to optimize initial data rendering
+            // Delay 0.5s to allow quick page switch and before data is loaded (delayed for 1s)
+            $timeout(initialLoad, 500);
+            function initialLoad () {
+                for (var idx = 0; idx < zemGridConstants.gridBodyRendering.NUM_OF_DUMMY_ROWS; ++idx) {
+                    scope.state.renderedRows.push({index: scope.state.renderedRows.length});
+                }
             }
 
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, scope, updateBody);

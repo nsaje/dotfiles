@@ -37,6 +37,7 @@ class AdGroupSettingsTest(TestCase):
                 'start_date': '2015-05-01',
                 'end_date': str(datetime.date.today()),
                 'cpc_cc': '0.3000',
+                'max_cpm': '1.6000',
                 'daily_budget_cc': '200.0000',
                 'target_devices': ['desktop'],
                 'target_regions': ['693', 'GB'],
@@ -151,6 +152,7 @@ class AdGroupSettingsTest(TestCase):
                 ],
                 'settings': {
                     'cpc_cc': '',
+                    'max_cpm': '',
                     'daily_budget_cc': '100.00',
                     'end_date': '2015-04-02',
                     'id': '1',
@@ -266,6 +268,7 @@ class AdGroupSettingsTest(TestCase):
             add_permissions(self.user, [
                 'settings_view',
                 'can_set_ad_group_max_cpc',
+                'can_set_ad_group_max_cpm',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences'
@@ -287,6 +290,7 @@ class AdGroupSettingsTest(TestCase):
                     },
                     'settings': {
                         'cpc_cc': '0.300',
+                        'max_cpm': '1.600',
                         'daily_budget_cc': '200.00',
                         'end_date': str(datetime.date.today()),
                         'id': '1',
@@ -385,6 +389,7 @@ class AdGroupSettingsTest(TestCase):
                     },
                     'settings': {
                         'cpc_cc': '0.050',
+                        'max_cpm': '',
                         'daily_budget_cc': '200.00',
                         'end_date': str(datetime.date.today()),
                         'id': '1',
@@ -560,6 +565,7 @@ class AdGroupSettingsTest(TestCase):
                     },
                     'settings': {
                         'cpc_cc': '0.300',
+                        'max_cpm': '',
                         'daily_budget_cc': '200.00',
                         'end_date': str(datetime.date.today()),
                         'id': '10',

@@ -28,13 +28,13 @@ describe('zemGridCellPerformanceIndicator', function () {
     it('should correctly set field visibility', function () {
         var tests = [
             {rowLevel: 1, expectedResult: true},
-            {rowLevel: 2, expectedResult: false},
+            {rowLevel: 2, expectedResult: true},
+            {rowLevel: 0, expectedResult: false},
         ];
 
         tests.forEach(function (test) {
             scope.ctrl.row = {
                 level: test.rowLevel,
-                type: zemGridConstants.gridRowType.STATS
             };
 
             element = $compile(template)(scope);

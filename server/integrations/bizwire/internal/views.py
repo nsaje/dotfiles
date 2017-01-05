@@ -2,10 +2,10 @@ from collections import defaultdict
 import logging
 import json
 
+import influx
 from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from django.db import transaction
 
 from integrations.bizwire import config, models
 from integrations.bizwire.internal import actions, helpers
@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
+@influx.timer('integrations.bizwire.internal.views.click_capping')
 def click_capping(request):
     try:
         request_signer.verify_wsgi_request(request, settings.R1_API_SIGN_KEY)
@@ -36,10 +37,16 @@ def click_capping(request):
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
     ).select_related('ad_group').get()
 
-    with transaction.atomic():
-        dash.api.update_content_ads_state([content_ad], dash.constants.ContentAdSourceState.INACTIVE, None)
-        k1_helper.update_content_ad(content_ad.ad_group.id, content_ad.id)
+    if content_ad.state != dash.constants.ContentAdSourceState.INACTIVE:
+        content_ad.state = dash.constants.ContentAdSourceState.INACTIVE
+        content_ad.save()
 
+    for content_ad_source in content_ad.contentadsource_set.all():
+        if content_ad_source.state != dash.constants.ContentAdSourceState.INACTIVE:
+            content_ad_source.state = dash.constants.ContentAdSourceState.INACTIVE
+            content_ad_source.save()
+
+    k1_helper.update_content_ad(content_ad.ad_group.id, content_ad.id)
     return JsonResponse({
         "status": 'ok'
     })
@@ -77,6 +84,7 @@ def _distribute_articles(articles_data):
 
 
 @csrf_exempt
+@influx.timer('integrations.bizwire.internal.views.article_upload')
 def article_upload(request):
     try:
         request_signer.verify_wsgi_request(request, settings.LAMBDA_CONTENT_UPLOAD_SIGN_KEY)

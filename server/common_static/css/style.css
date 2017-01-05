@@ -1,165 +1,275 @@
-body {
+body, html {
     margin: 0;
-    font-family: proxima-nova, sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-weight: 300;
+    background: url("/static/img/background.jpg") no-repeat center center;
+    background-attachment: fixed;
+    background-size: cover;
+    height: 100%;
+    width: 100%;
+    display: table;
 }
 
 a {
     text-decoration: none;
-    color: #2fa8c7;
+    color: #e35325;
 }
 
-a img {
-    border: 0;
+a:hover {
+    text-decoration: underline;
 }
 
-header {
-    border-bottom: 1px solid #dadada;
+hr {
+    border: none;
+    background-color: #FFFFFF;
+    height: 1px;
+    margin: 30px 0 36px 0;
 }
 
-p {
-    font-size: 15px;
-}
-
-.item.logo {
-    width: 90px;
-    padding-left: 30px;
-    padding: 21px;
-}
-
-.wf-loading .item.contact {
-    visibility: hidden;    
-}
-
-.item.contact {
-    color: #313131;
-    float: right;
-    padding-right: 30px;
-    padding: 19px;
-}
-
-.wf-loading .center-container {
-    visibility: hidden;
-}
-
-.center-container {
-    width: 230px;
-    margin: 100px auto;
-    color: #313131;
-}
-
-.center-container h1 {
-    font-weight: 200;
-    margin-bottom: 8px;
-    font-size: 29px;
-}
-
-.center-container h2 {
-    font-weight: 200;
-    font-size: 20px;
-    margin-bottom: 8px;
-    margin-top: -8px;
-}
-
-.center-container input,
-.center-container .btn {
+input[type="text"], input[type="password"] {
     width: 100%;
-    margin-bottom: 7px;
-    -moz-box-sizing: border-box;
+    height: 40px;
+    line-height: 40px;
+    margin: 0 0 10px 0;
+    padding: 0px 10px;
+    font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    outline: none;
     box-sizing: border-box;
+    transition: all 250ms ease-in-out;
+}
+
+input[type="text"]:focus, input[type="password"]:focus {
+    border: 1px solid rgba(255, 255, 255, 1.0);
+    box-shadow: 0px 0px 6px 0px rgba(255, 255, 255, 0.2);
+}
+
+::-webkit-input-placeholder {
+   color: #FFFFFF;
+}
+
+:-moz-placeholder {
+   color: #FFFFFF;
+}
+
+::-moz-placeholder {
+   color: #FFFFFF;
+}
+
+:-ms-input-placeholder {
+   color: #FFFFFF;
+}
+
+.button {
+    height: 40px;
+    line-height: 40px;
+    padding: 0 20px;
+    margin-bottom: 10px;
+    border: none;
+    color: #e35325;
+    font-size: 16px;
+    font-weight: 400;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    transition: all 250ms ease-in-out;
     display: block;
-
-    -webkit-appearance: none;
-    border-radius: 0;
-    -moz-border-radius: 0;
-    -webkit-border-radius: 0;
+    cursor: pointer;
+    text-decoration: none;
+    outline: none;
 }
 
-.center-container .placeholder,
-.center-container input[name="username"],
-.center-container input[name="password"],
-.center-container input[name="new_password"] {
-    font-family: proxima-nova, sans-serif;
-    border: 1px solid #2fa8c7;
-    padding: 10px 12px;
-    font-size: 16px;
+.page {
+    position: relative;
+    display: table-cell;
+    vertical-align: middle;
+    height: 100%;
+}
+
+.container {
+    width: 1000px;
+    margin: 0 auto;
+    background-color: #3f547f;
+}
+
+.container::after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.container__left {
+    background: #e35325 url("/static/img/zemanta-logo-squares-white.svg") no-repeat left top;
+    background-size: 40px;
+    width: 280px;
+    margin: 0 auto;
+    padding: 40px;
+    display: table-cell;
+    vertical-align: top;
+}
+
+.container__left .logo {
+    width: 200px;
+    display: block;
+    margin-bottom: 30px;
+}
+
+.container__left--smaller {
+    width: 200px;
+}
+
+.container__left--smaller .logo {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-bottom: 0;
+}
+
+.container__left--logo-on-top .logo {
+    top: auto;
+    transform: none;
+}
+
+.container__left h1 {
+    color: #FFFFFF;
     font-weight: 300;
+    font-size: 28px;
 }
 
-/* placeholder text */
-
-.center-container input[name="username"]::-webkit-input-placeholder,
-.center-container input[name="password"]::-webkit-input-placeholder {
-    color: #777;    
-    font-family: proxima-nova, sans-serif;
+.container__left p {
+    color: #FFFFFF;
     font-weight: 300;
-
+    margin-top: -10px;
 }
-.center-container input[name="username"]::-moz-placeholder,
-.center-container input[name="password"]::-moz-placeholder {
-    color: #313131;    
-    font-family: proxima-nova, sans-serif;
+
+.container__left .button {
+    background: #FFFFFF;
+}
+
+.container__left .button:hover {
+    box-shadow: 0px 0px 15px 0px rgba(255, 255, 255, 0.6);
+}
+
+.container__left .link {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+}
+
+.message--error {
+    background-color: #cc0000;
+    color: #FFFFFF;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.container__right {
+    color: #FFFFFF;
+    font-size: 14px;
     font-weight: 300;
+    line-height: 20px;
+    padding: 36px 40px;
+    display: table-cell;
+    width: 560px;
+    vertical-align: top;
 }
 
-/* older versions of FF */
-.center-container input[name="username"]:-moz-placeholder,
-.center-container input[name="password"]:-moz-placeholder {
-    color: #313131;    
-    font-family: proxima-nova, sans-serif;
-    font-weight: 300;
-}
-
-.center-container input[name="username"]:-ms-input-placeholder, 
-.center-container input[name="password"]:-ms-input-placeholder {
-    color: #313131;    
-    font-family: proxima-nova, sans-serif;
-    font-weight: 300;
-}
-
-.center-container input[type=submit],
-.center-container .btn {
-    background-color: #F59017;
-    border: 0;
-    color: #fff;
-    font-size: 16px;
-    font-family: proxima-nova, sans-serif;
-    padding: 10px 0;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    text-align: center;
-}
-
-
-.failure-text {
-    color: #EC0A0A;
+.container__right h2 {
+    font-size: 42px;
     font-weight: 400;
-    margin-top: 0;
+    line-height: 46px;
+    margin: 0 0 20px 0;
 }
 
-
-/* 404 */
-#error-box {
-    color: #777;
-    text-align: center;
-    font-size: 13px;
-    width: 300px;
+.container__right ul {
+    margin: 0 0 20px 0;
+    padding: 0;
+    list-style: none;
 }
 
-#error-box .message {
-    margin-bottom: 13px;
+.container__right ul li {
+    background: url("/static/img/check-white.svg") no-repeat left 1px;
+    background-size: 16px;
+    padding-left: 30px;
+    margin-bottom: 5px;
 }
 
-#error-box .title {
-    color: #313131;
-    font-size: 30px;
-    margin-bottom: 20px;
+.container__right .button {
+    color: #FFFFFF;
+    background-color: #e35325;
+    display: inline-block;
 }
 
-#error-box .contact {
-    color: #777;
+.container__right .button:hover {
+    background-color: #c64319;
+    text-decoration: none;
+    box-shadow: 0px 0px 15px 0px rgba(227, 83, 37, 0.6);
 }
 
-#error-box strong {
+.container__right .link {
+    display: inline-block;
+    color: #FFFFFF;
+}
+
+.zemanta-pixel {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+}
+
+.container__right--error {
+    width: 460px;
+    background: url("/static/img/sad-face-white.svg") no-repeat 40px center;
+    background-size: 140px;
+    padding-left: 220px;
+}
+
+.container__right--error p.bigger {
+    font-size: 18px;
+    line-height: 24px;
+}
+
+.container__right--maintenance {
+    width: 480px;
+    background: url("/static/img/maintenance-white.svg") no-repeat 40px center;
+    background-size: 120px;
+    padding-left: 200px;
+}
+
+.container__right--content {
+    width: 640px;
+    background-color: white;
+    color: #222222;
+}
+
+.container__right--content h1, .container__right--content h2, .container__right--content h3 {
+    color: #3f547f;
+    font-size: 42px;
     font-weight: 400;
+    line-height: 46px;
+    margin: 0 0 20px 0;
+}
+
+.container__right--content h2 {
+    font-size: 28px;
+    line-height: 32px;
+    margin: 0 0 10px 0;
+}
+
+.container__right--content h3 {
+    font-size: 20px;
+    line-height: 24px;
+    margin: 0 0 10px 0;
+}
+
+.container__right--content ol li {
+    margin-bottom: 5px;
+}
+
+.container__right--content ol.alphabet {
+    list-style-type: lower-alpha;
 }

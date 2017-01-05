@@ -261,7 +261,7 @@ class UploadSaveTestCase(TestCase):
     fixtures = ['test_upload.yaml']
 
     @staticmethod
-    def _mock_insert_redirects_batch(content_ads):
+    def _mock_insert_redirects(content_ads):
         return {
             str(content_ad.id): {
                 'redirect': {
@@ -271,9 +271,9 @@ class UploadSaveTestCase(TestCase):
             } for content_ad in content_ads
         }
 
-    @patch('utils.redirector_helper.insert_redirects_batch')
+    @patch('utils.redirector_helper.insert_redirects')
     def test_ok(self, mock_insert_batch):
-        mock_insert_batch.side_effect = self._mock_insert_redirects_batch
+        mock_insert_batch.side_effect = self._mock_insert_redirects
         batch_id = 2
         ad_group_id = 3
 
@@ -298,9 +298,9 @@ class UploadSaveTestCase(TestCase):
             'Imported batch "batch 2" with 1 content ad.',
         )
 
-    @patch('utils.redirector_helper.insert_redirects_batch')
+    @patch('utils.redirector_helper.insert_redirects')
     def test_change_batch_name(self, mock_insert_batch):
-        mock_insert_batch.side_effect = self._mock_insert_redirects_batch
+        mock_insert_batch.side_effect = self._mock_insert_redirects
 
         batch_id = 2
         ad_group_id = 3
@@ -352,9 +352,9 @@ class UploadSaveTestCase(TestCase):
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(batch.name, 'batch 2')
 
-    @patch('utils.redirector_helper.insert_redirects_batch')
+    @patch('utils.redirector_helper.insert_redirects')
     def test_errors(self, mock_insert_batch):
-        mock_insert_batch.side_effect = self._mock_insert_redirects_batch
+        mock_insert_batch.side_effect = self._mock_insert_redirects
 
         batch_id = 3
         ad_group_id = 4
@@ -376,7 +376,7 @@ class UploadSaveTestCase(TestCase):
             }
         }, json.loads(response.content))
 
-    @patch('utils.redirector_helper.insert_redirects_batch')
+    @patch('utils.redirector_helper.insert_redirects')
     def test_redirector_error(self, mock_insert_batch):
         mock_insert_batch.side_effect = Exception()
 

@@ -33,12 +33,20 @@ def validate_source_cpc_cc(cpc_cc, source, source_type):
     min_cpc = source_type.min_cpc
     if min_cpc is not None and cpc_cc < min_cpc:
         raise forms.ValidationError(
-            'Minimum CPC is ${}.'.format(utils.string_helper.format_decimal(min_cpc, 2, 3)))
+            'Minimum CPC on {} is ${}.'.format(
+                source.name,
+                utils.string_helper.format_decimal(min_cpc, 2, 3)
+            )
+        )
 
     max_cpc = source_type.max_cpc
     if max_cpc is not None and cpc_cc > max_cpc:
         raise forms.ValidationError(
-            'Maximum CPC is ${}.'.format(utils.string_helper.format_decimal(max_cpc, 2, 3)))
+            'Maximum CPC on {} is ${}.'.format(
+                source.name,
+                utils.string_helper.format_decimal(max_cpc, 2, 3)
+            )
+        )
 
 
 def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
@@ -50,7 +58,10 @@ def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
     min_cpc = source_type.get_min_cpc(ad_group_settings)
     if min_cpc is not None and cpc_cc < min_cpc:
         raise forms.ValidationError(
-            'Minimum CPC is ${}.'.format(utils.string_helper.format_decimal(min_cpc, 2, 3)))
+            'Minimum CPC on {} is ${}.'.format(
+                ad_group_source.source.name,
+                utils.string_helper.format_decimal(min_cpc, 2, 3)
+            ))
 
     max_cpc = ad_group_settings.cpc_cc
     if max_cpc is not None and cpc_cc > max_cpc:

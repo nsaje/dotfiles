@@ -156,7 +156,7 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                     var content = '<div class="popover {{ placement }} {{ animationClass }} {{ customClasses }}">' +
                                   '<div class="arrow"></div>' +
                                   '<div class="popover-inner">' +
-                                  '<div class="popover-content">' +
+                                  '<div class="popover-content custom-scroller">' +
                                   templateContent +
                                   '</div>' +
                                   '</div>' +

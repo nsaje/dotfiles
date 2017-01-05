@@ -64,8 +64,8 @@ angular.module('one.legacy').directive('zemContentInsights', function () {
                 w.unbind('resize', resize);
             });
 
-            $timeout($scope.updateTableState, 0);
-            $timeout($scope.showBestPerformersCollapsed, 0);
+            $timeout($scope.updateTableState);
+            $timeout($scope.showBestPerformersCollapsed);
         },
     };
 });

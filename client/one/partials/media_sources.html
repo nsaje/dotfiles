@@ -1,6 +1,6 @@
 <div class="page page-media-sources">
     <div class="section">
-        <div class="graph-infobox-parent" ng-class="{'graph-collapsed': !graphVisible}">
+        <div class="graph-infobox-parent">
             <div class="graph-infobox-row">
                 <div ng-if="sideBarVisible" class='sidebar-container'>
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_view_sidetabs')" popover-placement="bottom"></zem-internal-feature>
@@ -21,7 +21,7 @@
     </div>
     <div class="section zem-internal-feature-container white-background" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature')"></zem-internal-feature>
-        
+
         <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
 
         <div class="button-bar" ng-if="grid.api">

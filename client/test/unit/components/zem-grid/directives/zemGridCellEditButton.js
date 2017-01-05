@@ -76,7 +76,7 @@ describe('zemGridCellEditButton', function () {
         element = $compile(template)(scope);
         scope.$digest();
 
-        element.find('a').click();
+        element.find('button').click();
         expect(zemUploadTriggerService.openEditModal).toHaveBeenCalled();
     });
 });

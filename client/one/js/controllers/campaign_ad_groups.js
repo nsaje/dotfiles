@@ -1,7 +1,6 @@
 /* globals moment,constants,options,angular */
-angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($location, $scope, $state, $timeout, api, zemCampaignService, zemAdGroupService, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService, zemDataFilterService, zemGridConstants, zemPermissions, zemChartStorageService, zemNavigationNewService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($location, $scope, $state, $timeout, api, zemCampaignService, zemAdGroupService, zemPostclickMetricsService, zemUserSettings, zemNavigationService, zemDataSourceService, zemGridEndpointService, zemDataFilterService, zemGridConstants, zemPermissions, zemChartStorageService, zemNavigationNewService) { // eslint-disable-line max-len
     $scope.addGroupRequestInProgress = false;
-    $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
@@ -242,15 +241,6 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($locat
         }
     }
 
-    $scope.toggleChart = function () {
-        $scope.chartHidden = !$scope.chartHidden;
-        $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
-
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    };
-
     $scope.init = function () {
         var adGroupIds = $location.search().ad_group_ids;
         var adGroupTotals = $location.search().ad_group_totals;
@@ -259,7 +249,6 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($locat
         initChartMetricsFromLocalStorage();
 
         userSettings.register('order');
-        userSettings.registerGlobal('chartHidden');
 
         if (adGroupIds) {
             adGroupIds.split(',').forEach(function (id) {
@@ -299,17 +288,8 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($locat
     });
     $scope.$on('$destroy', dateRangeUpdateHandler);
 
-    if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-        var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(getDailyStats);
-        $scope.$on('$destroy', filteredSourcesUpdateHandler);
-    } else {
-        $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-            if (angular.equals(newValue, oldValue)) {
-                return;
-            }
-            getDailyStats();
-        }, true);
-    }
+    var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(getDailyStats);
+    $scope.$on('$destroy', filteredSourcesUpdateHandler);
 
     $scope.init();
 });

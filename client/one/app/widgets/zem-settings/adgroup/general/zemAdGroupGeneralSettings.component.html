@@ -21,7 +21,7 @@
             <zem-help-popover content="The name of the ad group." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-6">
-            <input id="name-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.name">
+            <input id="name-input" type="text" class="form__input-text" ng-model="$ctrl.entity.settings.name">
         </div>
 
         <label ng-repeat="error in $ctrl.errors.name" class="control-label error" for="name-input">{{ error }}</label>
@@ -33,7 +33,9 @@
             <zem-help-popover content="The date when content promotion commenced." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-6">
-            <input id="start-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-model="$ctrl.entity.settings.startDate" is-open="$ctrl.startDatePicker.isOpen" ng-click="$ctrl.openDatePicker('startDate')">
+            <div class="form__prefixed-field form__prefixed-field--with-icon form__prefixed-field--calendar-icon">
+                <input id="start-date-input" type="text" class="form__input-text" uib-datepicker-popup="MM/dd/yyyy" ng-model="$ctrl.entity.settings.startDate" is-open="$ctrl.startDatePicker.isOpen" ng-click="$ctrl.openDatePicker('startDate')">
+            </div>
         </div>
 
         <label ng-repeat="error in $ctrl.errors.startDate" class="control-label error" for="start-date-input">{{ error }}</label>
@@ -46,7 +48,9 @@
         </label>
 
         <div class="col-xs-4">
-            <input ng-disabled="$ctrl.entity.warnings.endDate !== undefined" id="end-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" datepicker-options="$ctrl.endDatePickerOptions" ng-model="$ctrl.entity.settings.endDate" is-open="$ctrl.endDatePicker.isOpen" ng-click="$ctrl.openDatePicker('endDate')">
+            <div class="form__prefixed-field form__prefixed-field--with-icon form__prefixed-field--calendar-icon">
+                <input ng-disabled="$ctrl.entity.warnings.endDate !== undefined" id="end-date-input" type="text" class="form__input-text" uib-datepicker-popup="MM/dd/yyyy" datepicker-options="$ctrl.endDatePickerOptions" ng-model="$ctrl.entity.settings.endDate" is-open="$ctrl.endDatePicker.isOpen" ng-click="$ctrl.openDatePicker('endDate')">
+            </div>
         </div>
 
         <div class="checkbox col-xs-4">
@@ -73,11 +77,26 @@
             <zem-help-popover content="Maximum allowed CPC in this ad group." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-4">
-            <div class="input-group">
-                <span class="input-group-addon">$</span>
-                <input id="cpc-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.cpc" zem-currency-input fraction-size="3" empty-text="No limit">
+            <div class="form__prefixed-field">
+                <span class="form__field-prefix">$</span>
+                <input id="cpc-input" type="text" class="form__input-text" ng-model="$ctrl.entity.settings.cpc" zem-currency-input fraction-size="3" empty-text="No limit">
             </div>
         </div>
         <label ng-repeat="error in $ctrl.errors.cpc" class="control-label error" for="cpc-input">{{ error }}</label>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.max_cpm}" ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_max_cpm')">
+        <label for="cpm-input" class="col-xs-3 control-label">
+            <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_set_ad_group_max_cpm')" popover-placement="right"></zem-internal-feature>
+            Maximum CPM
+            <zem-help-popover content="Maximum allowed CPM in this ad group." placement="top"></zem-help-popover>
+        </label>
+        <div class="col-xs-4">
+            <div class="form__prefixed-field">
+                <span class="form__field-prefix">$</span>
+                <input id="cpm-input" type="text" class="form__input-text" ng-model="$ctrl.entity.settings.maxCpm" zem-currency-input fraction-size="3" empty-text="No limit">
+            </div>
+        </div>
+        <label ng-repeat="error in $ctrl.errors.maxCpm" class="control-label error" for="cpm-input">{{ error }}</label>
     </div>
 </div>

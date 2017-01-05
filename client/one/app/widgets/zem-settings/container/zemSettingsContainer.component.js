@@ -6,7 +6,6 @@ angular.module('one.widgets').component('zemSettingsContainer', {
     bindings: {
         settingsTitle: '<',
         entityType: '<',
-        entityId: '<',
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/container/zemSettingsContainer.component.html',
@@ -44,17 +43,15 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         };
 
         $ctrl.$onInit = function () {
-            $ctrl.api.register({
+            $ctrl.api.register($ctrl.entityType, {
                 save: save,
                 load: load,
                 isDirty: isDirty,
             });
         };
 
-        function load () {
-            return zemEntityService.getEntity($ctrl.entityType, $ctrl.entityId).then(function (entity) {
-                setEntity(entity);
-            });
+        function load (entity) {
+            setEntity(entity);
         }
 
         function registerSettingsComponent (settingsComponent) {
@@ -81,7 +78,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
 
         function executeSave (updateData) {
             $ctrl.status.code = STATUS_CODE_IN_PROGRESS;
-            zemEntityService.updateEntity($ctrl.entityType, $ctrl.entityId, updateData).then(function (entity) {
+            zemEntityService.updateEntity($ctrl.entity.type, $ctrl.entity.id, updateData).then(function (entity) {
                 angular.merge($ctrl.entity, entity);
                 $ctrl.origEntity = angular.copy($ctrl.entity);
                 $ctrl.errors = {};
@@ -113,7 +110,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
                 return zemNavigationService.reloadCampaign($ctrl.entityId);
             }
             if ($ctrl.entityType === constants.entityType.AD_GROUP) {
-                return zemNavigationService.reloadAdGroup($ctrl.entityId);
+                return zemNavigationService.reloadAdGroup($ctrl.entity.id);
             }
         }
 
@@ -124,14 +121,14 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         function archive () {
             if (!$ctrl.entity.canArchive) return;
             $ctrl.status.code = STATUS_CODE_IN_PROGRESS;
-            zemEntityService.executeAction(constants.entityAction.ARCHIVE, $ctrl.entityType, $ctrl.entityId)
+            zemEntityService.executeAction(constants.entityAction.ARCHIVE, $ctrl.entityType, $ctrl.entity.id)
             .then(updateNavigationCache).then(close);
         }
 
         function restore () {
             if (!$ctrl.entity.canRestore) return;
             $ctrl.status.code = STATUS_CODE_IN_PROGRESS;
-            zemEntityService.executeAction(constants.entityAction.RESTORE, $ctrl.entityType, $ctrl.entityId)
+            zemEntityService.executeAction(constants.entityAction.RESTORE, $ctrl.entityType, $ctrl.entity.id)
             .then(updateNavigationCache).then(load).then(function () {
                 zemNavigationNewService.refreshState();
                 close();

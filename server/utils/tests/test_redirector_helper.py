@@ -143,7 +143,7 @@ class InsertRedirectTest(TestCase):
 
 
 @override_settings(
-    R1_REDIRECTS_BATCH_API_URL='https://r1.example.com/api/redirects/batch/',
+    R1_REDIRECTS_BATCH_API_URL='https://r1.example.com/api/redirects/redirectsbatch/',
     R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA',
     R1_DEMO_MODE=False
 )
@@ -152,7 +152,7 @@ class InsertRedirectsBatchTest(TestCase):
 
     fixtures = ['test_api.yaml']
 
-    def test_insert_redirects_batch(self, mock_urlopen):
+    def test_insert_redirects(self, mock_urlopen):
         content_ads = [
             dash.models.ContentAd.objects.get(id=1),
             dash.models.ContentAd.objects.get(id=2),
@@ -180,7 +180,7 @@ class InsertRedirectsBatchTest(TestCase):
         response.getcode = lambda: 200
         mock_urlopen.return_value = response
 
-        response_dict = redirector_helper.insert_redirects_batch(content_ads)
+        response_dict = redirector_helper.insert_redirects(content_ads)
         for content_ad in content_ads:
             self.assertEqual(response_dict[str(content_ad.id)]["redirectid"], redirect_id)
 
@@ -200,7 +200,7 @@ class InsertRedirectsBatchTest(TestCase):
             dash.models.ContentAd.objects.get(id=1),
             dash.models.ContentAd.objects.get(id=2),
         ]
-        response_dict = redirector_helper.insert_redirects_batch(content_ads)
+        response_dict = redirector_helper.insert_redirects(content_ads)
         for content_ad in content_ads:
             self.assertEqual(response_dict[str(content_ad.id)], {
                 'redirect': {'url': 'http://example.com/FAKE'},

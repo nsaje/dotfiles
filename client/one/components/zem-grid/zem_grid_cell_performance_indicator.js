@@ -13,8 +13,7 @@ angular.module('one.legacy').directive('zemGridCellPerformanceIndicator', functi
     statusClasses[constants.emoticon.NEUTRAL] = 'img-icon-neutral';
 
     function isFieldVisible (row) {
-        return row.level === zemGridConstants.gridRowLevel.BASE &&
-            row.type === zemGridConstants.gridRowType.STATS;
+        return row.level !== zemGridConstants.gridRowLevel.FOOTER;
     }
 
     function getOverallIcon (overall) {

@@ -1,6 +1,5 @@
 angular.module('one.widgets').component('zemCampaignSettings', {
     bindings: {
-        entityId: '<',
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/campaign/zemCampaignSettings.component.html',

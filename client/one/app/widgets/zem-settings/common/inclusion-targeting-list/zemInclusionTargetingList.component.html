@@ -1,7 +1,7 @@
 <div class="zem-inclusion-targeting-list">
     <div ng-show="$ctrl.included.length || $ctrl.excluded.length"
          class="targeting-list form-group m-b-none">
-        <div class="col-xs-3 m-t-xs" ng-if="$ctrl.included.length">
+        <div class="col-xs-6 m-t-xs" ng-if="$ctrl.included.length">
             <div class="text-success">{{ $ctrl.texts.selectedIncludedTitle }}</div>
             <ul class="with-icons ul-checkmarks">
                 <li class="targeting-list-tag" ng-repeat="targeting in $ctrl.included | orderBy:'type'">
@@ -13,7 +13,7 @@
                 </li>
             </ul>
         </div>
-        <div class="col-xs-3 m-t-xs" ng-if="$ctrl.excluded.length">
+        <div class="col-xs-6 m-t-xs" ng-if="$ctrl.excluded.length">
             <div class="text-danger">{{ $ctrl.texts.selectedExcludedTitle }}</div>
             <ul class="with-icons ul-remove">
                 <li class="targeting-list-tag" ng-repeat="targeting in $ctrl.excluded | orderBy:'type'">
@@ -26,7 +26,7 @@
              </ul>
          </div>
     </div>
-    <ui-select theme="select2" ng-model="$ctrl.currentlySelected" on-select="$ctrl.addIncluded($select.selected)" class="targeting-select larger m-t-s">
+    <ui-select theme="select2" ng-model="$ctrl.currentlySelected" on-select="$ctrl.addIncluded($select.selected)" class="button button--with-icon button--add-icon button--dropdown-toggle-icon targeting-select larger m-t-s">
         <ui-select-match placeholder="{{ $ctrl.texts.selectTargetingButton }}">{{ $select.selected.name }}</ui-select-match>
         <ui-select-choices group-by="$ctrl.groupBySection" repeat="targeting in $ctrl.notSelected | filter: {name: $select.search} track by targeting.id" position="down">
             <div class="audience-select-option">

@@ -44,7 +44,7 @@ def insert_redirect(url, content_ad_id, ad_group_id):
         raise
 
 
-def insert_redirects_batch(content_ads):
+def insert_redirects(content_ads):
     if settings.R1_DEMO_MODE:
         data = {
             str(content_ad.id): {
@@ -65,6 +65,19 @@ def insert_redirects_batch(content_ads):
     except Exception:
         logger.exception('Exception in insert_redirect_batch')
         raise
+
+
+def update_redirects(content_ads):
+    data = [{
+        'redirectid': content_ad.redirect_id,
+        'redirect': {
+            'url': content_ad.url,
+        }
+    } for content_ad in content_ads]
+    if settings.R1_DEMO_MODE:
+        return data
+
+    return _call_api_retry(settings.R1_REDIRECTS_BATCH_API_URL, json.dumps(data), method='PUT')
 
 
 def update_redirect(url, redirect_id):

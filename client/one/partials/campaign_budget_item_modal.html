@@ -55,9 +55,8 @@
                 Start Date
             </label>
             <div class="col-xs-4">
-                <div class="input-group">
-                    <input id="start-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-disabled="!budgetItem.credit || !budgetItem.isEditable" datepicker-options="{initDate: initStartDate, minDate: minDate, maxDate: maxDate}" ng-model="budgetItem.startDate" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" />
-                    <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
+                <div class="form__prefixed-field form__prefixed-field--with-icon form__prefixed-field--calendar-icon">
+                    <input id="start-date-input" type="text" class="form__input-text" uib-datepicker-popup="MM/dd/yyyy" ng-disabled="!budgetItem.credit || !budgetItem.isEditable" datepicker-options="{initDate: initStartDate, minDate: minDate, maxDate: maxDate}" ng-model="budgetItem.startDate" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" />
                 </div>
             </div>
             <label ng-repeat="error in errors.startDate" class="col-xs-5 control-label error" for="start-date-input">{{ error }}</label>
@@ -67,9 +66,8 @@
                 End Date
             </label>
             <div class="col-xs-4">
-                <div class="input-group">
-                    <input id="end-date-input" type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy" ng-disabled="!budgetItem.credit || !(budgetItem.isUpdatable || budgetItem.isEditable)" datepicker-options="{initDate: initEndDate, minDate: minDate, maxDate: maxDate}" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()">
-                    <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
+                <div class="form__prefixed-field form__prefixed-field--with-icon form__prefixed-field--calendar-icon">
+                    <input id="end-date-input" type="text" class="form__input-text" uib-datepicker-popup="MM/dd/yyyy" ng-disabled="!budgetItem.credit || !(budgetItem.isUpdatable || budgetItem.isEditable)" datepicker-options="{initDate: initEndDate, minDate: minDate, maxDate: maxDate}" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()">
                 </div>
             </div>
             <label ng-repeat="error in errors.endDate" class="col-xs-5 control-label error" for="end-date-input">{{ error }}</label>
@@ -79,10 +77,10 @@
                 Total Budget
             </label>
             <div class="col-xs-4">
-                <div class="input-group">
-                    <span class="input-group-addon">$</span>
-                    <input id="amount-input" ng-disabled="!budgetItem.credit || !(budgetItem.isEditable || budgetItem.isUpdatable)" type="text" class="form-control" ng-model="budgetItem.amount" zem-currency-input fraction-size="0" />
-                    <div class="input-group-addon">.00</div>
+                <div class="form__prefixed-field form__postfixed-field">
+                    <span class="form__field-prefix">$</span>
+                    <input id="amount-input" ng-disabled="!budgetItem.credit || !(budgetItem.isEditable || budgetItem.isUpdatable)" type="text" class="form__input-text" ng-model="budgetItem.amount" zem-currency-input fraction-size="0" />
+                    <span class="form__field-postfix">.00</span>
                 </div>
             </div>
             <label ng-repeat="error in errors.amount" class="col-xs-5 control-label error" for="amount">{{ error }}</label>
@@ -93,7 +91,7 @@
                 Margin (%)
             </label>
             <div class="col-xs-4">
-                <ui-select theme="select2" id="margin-select" class="form-control" ng-model="budgetItem.margin" ng-disabled="!isNew">
+                <ui-select theme="select2" id="margin-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="budgetItem.margin" ng-disabled="!isNew">
                     <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
                     <ui-select-choices repeat="fee in getLicenseFees($select.search, budgetItem.margin) | filter: $select.search">
                         <span ng-bind-html="fee"></span>%
@@ -102,16 +100,16 @@
             </div>
             <label ng-repeat="error in errors.margin" class="col-xs-5 control-label error" for="margin-input">{{ error }}</label>
         </div>
-        <div class="row">
+        <div class="row" ng-if="isInLanding()">
             <p class="col-xs-3"></p>
-            <p ng-if="isInLanding()" class="col-xs-9 text-info">Add at least ${{ minAmount | number:2 }} to adjust media sources by your needs.</p>
+            <p class="col-xs-9 text-info">Add at least ${{ minAmount | number:2 }} to adjust media sources by your needs.</p>
         </div>
         <div class="form-group" ng-class="{'has-error': !!errors.comment}">
             <label for="comment-input" class="col-xs-3 control-label">
                 Notes
             </label>
-            <div class="col-xs-4">
-                <textarea id="comment-input" type="text" class="form-control" ng-model="budgetItem.comment" maxlength="256"></textarea>
+            <div class="col-xs-9">
+                <textarea id="comment-input" type="text" class="form__textarea" ng-model="budgetItem.comment" maxlength="256"></textarea>
             </div>
             <label ng-repeat="error in errors.comment" class="col-xs-5 control-label error" for="comment">{{ error }}</label>
         </div>

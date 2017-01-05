@@ -1,75 +1,91 @@
-.select2-container {
-    margin: 0;
-    padding: 0;
+.button {
+    &.select2-container {
+        padding: 0px;
 
-    &.select2-container-disabled {
-        opacity: 0.4;
-    }
-
-    &:not(.disabled):not([disabled]):not(.select2-container-disabled) {
-        &:hover {
-            background: linear-gradient(to bottom, #f1f1f1, #FFFFFF);
-        }
-    }
-
-    .select2-choice {
-        border: 1px solid @border-gray-color !important;
-        height: @default-button-input-height;
-        line-height: @default-button-input-height;
-        border-radius: @border-radius;
-        color: @text-color;
-        box-shadow: none;
-        background: linear-gradient(to bottom, #FFFFFF, #f9f9f9);
-        padding: 0 30px 0 10px;
-        cursor: pointer;
-
-        &:not(.disabled):not([disabled]):not(.select2-container-disabled) {
-            &:hover {
-                background: linear-gradient(to bottom, #f1f1f1, #FFFFFF);
-            }
-        }
-
-        &.disabled,
-        &[disabled] {
-            opacity: 0.4;
-        }
-
-        .select2-chosen {
-            font-family: @default-font-family;
-            padding-top: 0;
-            padding-right: 0;
-            margin-right: 0;
-            color: @text-color;
-        }
-
-        .select2-arrow {
-            background: none;
+        .select2-choice {
+            height: inherit;
+            line-height: 16px;
             border: none;
+            background: none !important;
+            background-color: transparent !important;
+            padding: 7px 0 0 10px;
+            box-shadow: none;
+            color: inherit !important;
 
-            b {
-                display: block;
-                background: url(images/arrow-gray.svg) no-repeat !important;
-                background-size: 6px;
-                transform: rotate(90deg);
-                width: 6px;
-                height: 11px;
-                position: absolute;
-                top: 10px;
-                right: 10px;
+            .select2-chosen {
+                margin-right: 30px;
+            }
+
+            .select2-arrow {
+                display: none;
             }
         }
-    }
 
-    .ui-select-no-choice {
-        margin: 0 10px 10px 10px;
-    }
+        &.button--plain,
+        &.button--outline {
+            .select2-choice {
+                margin: -1px;
+            }
+        }
 
-    &.select2-dropdown-open {
-        border-color: @border-gray-color;
-    }
+        &.button--with-icon {
+            .select2-choice {
+                padding-left: 33px;
+            }
+        }
 
-    &.form-control {
-        border: none;
+        &::after {
+            pointer-events: none;
+        }
+
+        &.select2-container-active {
+            &.button--plain {
+                border-color: darken(@border-gray-color, 20%);
+            }
+
+            &.button--outline {
+                border-color: tint(@secondary-color, 80%);
+            }
+        }
+
+        &.select2-container-disabled {
+            opacity: 0.5;
+        }
+    }
+}
+
+.select2-drop,
+.select2-drop.select2-drop-above {
+    border: 1px solid @border-color;
+    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+
+    .select2-results {
+        // bug fix for mac os scroll bars
+        transform: translateZ(0);
+
+        .select2-result-label {
+            padding: 7px 10px;
+            line-height: 16px;
+        }
+
+        li {
+            &.ui-select-choices-row:hover {
+                background-color: @secondary-color;
+                border-radius: @border-radius;
+                color: white;
+            }
+
+            &.select2-highlighted {
+                background-color: fade(@secondary-color,10%);
+                border-radius: @border-radius;
+                color: @text-color;
+
+                &.ui-select-choices-row:hover {
+                    background-color: @secondary-color;
+                    color: white;
+                }
+            }
+        }
     }
 }
 
@@ -104,7 +120,7 @@
         display: inline-block;
         position: relative;
         border-radius: 2px;
-        font-size: 13px;
+        font-size: @default-font-size;
         border: 1px solid #d2d2d2;
 
         .multiselect-tag-label {
@@ -135,23 +151,32 @@
     width: 60px !important;
     height: 60px !important;
     background-color: #333333 !important;
+    padding: 0 !important;
     font-size: 0 !important;
     top: auto !important;
-    bottom: 20px !important;
-    right: 100px !important;
+    bottom: 50px !important;
+    right: 130px !important;
     border-radius: 50% !important;
     transform: rotate(0deg) !important;
     box-shadow: 0 0px 32px 2px fade(black,16%);
+    animation: SupportHeroShow 0.25s 1;
+    animation-fill-mode: forwards;
+    animation-delay: 3s;
+    opacity: 0;
+    visibility: hidden;
 
     &::after {
         content: ' ';
         display: block;
         background: url(images/question-white.svg) no-repeat center center;
-        background-size: 30px;
+        background-size: 100%;
         width: 30px;
         height: 30px;
         position: absolute;
         top: 15px;
         left: 15px;
+        animation: SupportHeroQuestionMarkShow 0.25s 1;
+        animation-fill-mode: forwards;
+        animation-delay: 3s;
     }
 }

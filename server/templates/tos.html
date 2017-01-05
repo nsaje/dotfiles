@@ -1,6 +1,5 @@
 {% extends "header_base.html" %}
 
-
 {% load staticfiles %}
 
 {% block head_extra %}
@@ -11,78 +10,108 @@
 
 
 {% block content %}
+<div class="page">
+    <div class="container">
+        <div class="container__left container__left--smaller container__left--logo-on-top">
+            <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
+        </div>
+        <div class="container__right container__right--content">
+            <h1>Terms of Service</h1>
 
-<div id="tos-container">
+            <p>This Content Provider Agreement (<strong><em>&ldquo;Agreement&rdquo;</em></strong>) sets forth the legally binding terms between you, as an Agency or Advertiser (each as defined below), and Zemanta Inc., a Delaware corporation (<strong><em>&ldquo;Zemanta&rdquo;</em></strong>) with respect to your use of Zemanta’s Demand-Side Platform (DSP) and/or Editorial Network advertising distribution platform services (the <strong><em>&ldquo;Advertising Services&rdquo;</em></strong>). By agreeing to a Zemanta online or offline written insertion order, whether by click-wrap consent or manual signature (each, an <strong><em>&ldquo;IO&rdquo;</em></strong>), you agree to be bound to the terms of this Agreement.  To the extent you do not agree to an IO, you may not use the Advertising Services and your use of any other Zemanta services or products shall be governed by Zemanta’s Terms of Service Agreement set forth at <a href="http://www.zemanta.com/legal/terms-of-service">http://www.zemanta.com/legal/terms-of-service</a> (the <strong><em>&ldquo;General Terms&rdquo;</em></strong>).  As set forth in Section 9 of this Agreement, certain provisions of the General Terms are incorporated into and made part of this Agreement.</p>
 
-    <h1>Zemanta &mdash; Terms of Service</h1>
+            <h2>1. Advertising Services.</h2>
+            <p>Zemanta will use reasonable efforts to:</p>
+            <ol>
+                <li>provide Advertising Services to you;</li>
+                <li>make available advertising content you supply to Zemanta via Zemanta’s online content submission tools (the <strong><em>&ldquo;Ad(s)&rdquo;</em></strong>) to Zemanta’s network of end users who use Zemanta’s online publisher enhancement tools (collectively, the <strong><em>&ldquo;Zemanta Network Publishers&rdquo;</em></strong>) for use by Zemanta Network Publishers in accordance with the trafficking criteria set forth in an IO;</li>
+                <li>make available online reporting tools, which are generally broken out by day and summarized by creative execution, content area (Ad placement), and other variables defined in the IO (e.g., impressions, and/or clicks).</li>
+            </ol>
+            <p>You acknowledge that notwithstanding anything to the contrary herein or in any IO (all of which are incorporated herein by reference),</p>
+            <ol class="alphabet">
+                <li>Zemanta does not guarantee that the Zemanta Network Publishers shall incorporate your Ads into their respective online offerings (e.g., no minimum Deliverable requirements) and</li>
+                <li>Zemanta will not be liable for the acts or omissions of any Zemanta Network Publishers.</li>
+            </ol>
 
-    <p>
-        This Content Provider Agreement (<strong><em>&ldquo;Agreement&rdquo;</em></strong>) sets forth the legally binding terms between you, as an Agency or Advertiser (each as defined below), and Zemanta Inc., a Delaware corporation (<strong><em>&ldquo;Zemanta&rdquo;</em></strong>) with respect to your use of Zemanta’s Demand-Side Platform (DSP) and/or Editorial Network advertising distribution platform services (the <strong><em>&ldquo;Advertising Services&rdquo;</em></strong>). By agreeing to a Zemanta online or offline written insertion order, whether by click-wrap consent or manual signature (each, an <strong><em>&ldquo;IO&rdquo;</em></strong>), you agree to be bound to the terms of this Agreement.  To the extent you do not agree to an IO, you may not use the Advertising Services and your use of any other Zemanta services or products shall be governed by Zemanta’s Terms of Service Agreement set forth at <a href="http://www.zemanta.com/about/related-posts-terms-of-service/">http://www.zemanta.com/about/related-posts-terms-of-service/</a> (the <strong><em>&ldquo;General Terms&rdquo;</em></strong>).  As set forth in Section 9 of this Agreement, certain provisions of the General Terms are incorporated into and made part of this Agreement.  
-    </p>
+            <h2>2. Insertion Orders.</h2>
+            <p> An IO may either be submitted by an individual/company which desires to promote its products and services (an <strong><em>&ldquo;Advertiser&rdquo;</em></strong>), or by an advertising agency (an <strong><em>&ldquo;Agency&rdquo;</em></strong>) that represents the interests of an Advertiser (either an Advertiser, or an Advertiser and Agency, together, a <strong><em>&ldquo;Content Provider&rdquo;</em></strong>).   In either case, an IO will be binding upon the parties when confirmed by Zemanta that the IO was properly submitted (either by email or the Advertising Services’ user interface communication). Each IO shall specify:</p>
+            <ol>
+                <li>the type(s) of inventory desired by Content Provider (e.g., impressions, clicks or other desired actions) (the <strong><em>&ldquo;Deliverables&rdquo;</em></strong>);
+                <li>the price(s) for such Deliverables (e.g., CPM rate, CPC rate);</li>
+                <li>the maximum amount of money to be spent pursuant to the IO (if applicable);</li>
+                <li>the start and end dates of the campaign.</li>
+            </ol>
+            <p>Other items that may be included in an IO, include (among others) geographic restrictions, device preferences, daily budget limits, and tracking codes. If you are an Agency, as provided in Section 8 of this Agreement, you are required to represent and warrant that you have the authority as agent of and to bind the applicable Advertiser to this Agreement and each applicable IO. Agency agrees to defend, indemnify and hold harmless Zemanta and its Affiliates (defined below) and their respective directors, officers, employees and agents from any and all Losses (defined below) incurred as a result of Agency’s alleged breach of the foregoing sentence.</p>
 
-    <p>
-        <strong>1.          Advertising Services.</strong>  Zemanta will use reasonable efforts to: (i) provide Advertising Services to you; (ii) make available advertising content you supply to Zemanta via Zemanta’s online content submission tools (the <strong><em>&ldquo;Ad(s)&rdquo;</em></strong>) to Zemanta’s network of end users who use Zemanta’s online publisher enhancement tools (collectively, the <strong><em>&ldquo;Zemanta Network Publishers&rdquo;</em></strong>) for use by Zemanta Network Publishers in accordance with the trafficking criteria set forth in an IO; and (iii) make available online reporting tools, which are generally broken out by day and summarized by creative execution, content area (Ad placement), and other variables defined in the IO (e.g., impressions, and/or clicks).  You acknowledge that notwithstanding anything to the contrary herein or in any IO (all of which are incorporated herein by reference), (a) Zemanta does not guarantee that the Zemanta Network Publishers shall incorporate your Ads into their respective online offerings (e.g., no minimum Deliverable requirements) and (b) Zemanta will not be liable for the acts or omissions of any Zemanta Network Publishers.
-    </p>
+            <h2>3. Compensation.</h2>
+            <h3>3.1 Invoices.</h3>
+            <p>Without offset of any kind, Content Provider shall pay Zemanta for any Deliverables attained as determined by Zemanta's proprietary tracking tools. Zemanta will generally issue invoices on or around the fifth (5th) day of each calendar month for Deliverables accrued in the preceding calendar month.  To the extent Content Provider has a credit card on file with Zemanta, Content Provider authorizes Zemanta to charge such card for the amount of any invoices. Content Provider’s billing address, as set forth in the IO, must include information reasonably specified by Content Provider, such as the IO number, Advertiser’s name, brand name or campaign name, and any number or other identifiable references required for invoicing on the IO.  Zemanta will provide performance metrics for the invoiced period, which may include access to online or electronic reporting.  All payments shall be made in United States dollars.</p>
 
-    <p>
-        <strong>2.          Insertion Orders.</strong> An IO may either be submitted by an individual/company which desires to promote its products and services (an <strong><em>&ldquo;Advertiser&rdquo;</em></strong>), or by an advertising agency (an <strong><em>&ldquo;Agency&rdquo;</em></strong>) that represents the interests of an Advertiser (either an Advertiser, or an Advertiser and Agency, together, a <strong><em>&ldquo;Content Provider&rdquo;</em></strong>).   In either case, an IO will be binding upon the parties when confirmed by Zemanta that the IO was properly submitted (either by email or the Advertising Services’ user interface communication). Each IO shall specify: (i) the type(s) of inventory desired by Content Provider (e.g., impressions, clicks or other desired actions) (the <strong><em>&ldquo;Deliverables&rdquo;</em></strong>); (ii) the price(s) for such Deliverables (e.g., CPM rate, CPC rate); (iii) the maximum amount of money to be spent pursuant to the IO (if applicable); and (iv) the start and end dates of the campaign.  Other items that may be included in an IO, include (among others) geographic restrictions, device preferences, daily budget limits, and tracking codes.   If you are an Agency, as provided in Section 8 of this Agreement, you are required to represent and warrant that you have the authority as agent of and to bind the applicable Advertiser to this Agreement and each applicable IO. Agency agrees to defend, indemnify and hold harmless Zemanta and its Affiliates (defined below) and their respective directors, officers, employees and agents from any and all Losses (defined below) incurred as a result of Agency’s alleged breach of the foregoing sentence.
+            <h3>3.2 Payment Due Dates.</h3>
+            <p>Content Provider will make payment thirty (30) days from receipt of invoice, or as otherwise stated in a payment schedule set forth in the applicable IO, if any.  To the extent Agency is representing an Advertiser, Zemanta may notify Agency that it has not received payment in such thirty (30) day period and whether it intends to seek payment directly from Advertiser, and may do so five (5) business days after providing such notice.  Late payments shall bear interest at the rate of 1.5% per month (or the highest rate permitted by law, if less).  All charges are exclusive of taxes.  Content Provider will pay all taxes and other government charges (except for taxes on Zemanta’s income), and reasonable expenses and outside attorneys’ fees that Zemanta incurs in collecting late payments.  To the extent Content Provider has pre-paid for the Advertising Services, Zemanta shall be entitled to apply such pre-paid amounts towards any amounts owed hereunder.</p>
 
-    <p>
-        <strong>3.          Compensation.</strong>
-    </p>
-    <p class="level-two">
-        <strong>3.1       Invoices.</strong>   Without offset of any kind, Content Provider shall pay Zemanta for any Deliverables attained as determined by Zemanta's proprietary tracking tools. Zemanta will generally issue invoices on or around the fifth (5th) day of each calendar month for Deliverables accrued in the preceding calendar month.  To the extent Content Provider has a credit card on file with Zemanta, Content Provider authorizes Zemanta to charge such card for the amount of any invoices. Content Provider’s billing address, as set forth in the IO, must include information reasonably specified by Content Provider, such as the IO number, Advertiser’s name, brand name or campaign name, and any number or other identifiable references required for invoicing on the IO.  Zemanta will provide performance metrics for the invoiced period, which may include access to online or electronic reporting.  All payments shall be made in United States dollars.
-    </p>
-    <p class="level-two">
-        <strong>3.2       Payment Due Dates.</strong>  Content Provider will make payment thirty (30) days from receipt of invoice, or as otherwise stated in a payment schedule set forth in the applicable IO, if any.  To the extent Agency is representing an Advertiser, Zemanta may notify Agency that it has not received payment in such thirty (30) day period and whether it intends to seek payment directly from Advertiser, and may do so five (5) business days after providing such notice.  Late payments shall bear interest at the rate of 1.5% per month (or the highest rate permitted by law, if less).  All charges are exclusive of taxes.  Content Provider will pay all taxes and other government charges (except for taxes on Zemanta’s income), and reasonable expenses and outside attorneys’ fees that Zemanta incurs in collecting late payments.  To the extent Content Provider has pre-paid for the Advertising Services, Zemanta shall be entitled to apply such pre-paid amounts towards any amounts owed hereunder.
-    </p>
-    <p class="level-two">
-                        <strong>3.3       Payment Liability.</strong>  Unless otherwise set forth by Agency on an IO, Zemanta agrees to hold Agency liable for payments solely to the extent proceeds have cleared from the represented Advertiser to Agency for Ads placed in accordance with the IO. For sums not cleared to Agency, Zemanta agrees to hold Advertiser solely liable. Agency agrees to make every reasonable effort to collect and clear payment from Advertiser on a timely basis.  Upon the request of Zemanta, Agency will confirm whether Advertiser has paid to Agency in advance funds sufficient to make payments pursuant to the IO.
-    </p>
-    <p class="level-two">
-                        <strong>3.4       DSP Clients – Managed Service Fee.</strong>  If the Advertising Services include DSP services and Content Provider’s media spend is less than $50,000 at time of cancellation or termination for any reason, Zemanta will charge a twenty-five percent (25%) managed service fee against the total media spend by the Content Provider.                                                                                                      
+            <h3>3.3 Payment Liability.</h3>
+            <p>Unless otherwise set forth by Agency on an IO, Zemanta agrees to hold Agency liable for payments solely to the extent proceeds have cleared from the represented Advertiser to Agency for Ads placed in accordance with the IO. For sums not cleared to Agency, Zemanta agrees to hold Advertiser solely liable. Agency agrees to make every reasonable effort to collect and clear payment from Advertiser on a timely basis.  Upon the request of Zemanta, Agency will confirm whether Advertiser has paid to Agency in advance funds sufficient to make payments pursuant to the IO.</p>
 
-    </p>
-    <p>                                  
-        <strong>4.          Cancellation and Termination.</strong>  Unless earlier terminated, this Agreement will remain in effect until all IOs have terminated. Content Provider may cancel an IO for any reason by providing Zemanta written notice of cancellation which will be effective (i) for DSP services, within forty-eight (48) hours of Zemanta’s confirmation of receipt of the termination notice and (ii) for Editorial Network services, within thirty (30) days of Zemanta’s confirmation of receipt of the termination notice.  Either party may terminate an IO at any time if the other party is in material breach of its obligations hereunder that is not cured within 10 days after written notice thereof from the non-breaching party, except as otherwise stated in this Agreement with regard to specific breaches.
+            <h3>3.4 DSP Clients Managed Service Fee.</h3>
+            <p>If the Advertising Services include DSP services and Content Provider’s media spend is less than $50,000 at time of cancellation or termination for any reason, Zemanta will charge a twenty-five percent (25%) managed service fee against the total media spend by the Content Provider.</p>
 
-    <p>
-        <strong>5.          Ad Materials.</strong>
-    </p>
-    <p class="level-two">
-        <strong>5.1       Compliance with Policies.</strong>  It is Content Provider’s obligation to submit Ads in accordance with Zemanta’s advertising criteria or specifications (including content limitations, technical specifications, privacy policies, user experience policies, policies regarding consistency with Zemanta’s public image, community standards regarding obscenity or indecency, other editorial or advertising policies, and material due dates) (collectively, the <strong><em>&ldquo;Policies&rdquo;</em></strong>). 
+            <h2>4. Cancellation and Termination.</h2>
+            <p>Unless earlier terminated, this Agreement will remain in effect until all IOs have terminated. Content Provider may cancel an IO for any reason by providing Zemanta written notice of cancellation which will be effective</p>
+            <ol>
+                <li>for DSP services, within forty-eight (48) hours of Zemanta’s confirmation of receipt of the termination notice and</li>
+                <li>for Editorial Network services, within thirty (30) days of Zemanta’s confirmation of receipt of the termination notice.</li>
+            </ol>
+            <p>Either party may terminate an IO at any time if the other party is in material breach of its obligations hereunder that is not cured within 10 days after written notice thereof from the non-breaching party, except as otherwise stated in this Agreement with regard to specific breaches.</p>
 
-    </p>
-    <p class="level-two">
-                        <strong>5.2       Rejection and Removal.</strong>  Zemanta reserves the right, within its sole discretion, to reject or remove from its network any Ads where the Ads (or the site to which the Ad is linked) do not comply with its Policies, or that in Zemanta’s sole reasonable judgment do not comply with any applicable law, regulation, or other judicial or administrative order. In addition, Zemanta reserves the right, within its sole discretion, to reject or remove from its network any Ads or links to the site connected with the Ad that may bring disparagement, ridicule, or scorn upon Zemanta or any of its Affiliates.
-    </p>
-    <p>
-        <strong>6.          Indemnification.</strong>
-    </p>
-    <p class="level-two">
-        <strong>6.1       By Zemanta.</strong>  Zemanta agrees to defend, indemnify, and hold harmless Agency and Advertiser, their Affiliates (as defined below) and their respective directors, officers, employees and agents from any and all damages, liabilities, costs and expenses (including reasonable attorneys’ fees) (collectively, <strong><em>&ldquo;Losses&rdquo;</em></strong>) incurred as a result of a Third Party (as defined below) claim, judgment, or proceeding relating to or arising out of Zemanta’s breach of this Agreement or an IO,  except to the extent (i) that such claim, judgment ,or proceeding resulted from the content of an Ad, or (ii) such claim, judgment, or proceeding results from Zemanta fulfilling Agency's or Advertiser's unique specifications provided that Zemanta did not know or should not have reasonably known that such specifications would give rise to the Loss.  An <strong><em>&ldquo;Affiliate&rdquo;</em></strong> means, with respect to either party, any corporation, firm, partnership, person or other entity, whether de jure or de facto, which directly or indirectly owns, is owned by or is under common ownership with such party to the extent of at least 50% of the equity having the power to vote on or direct the affairs of the entity, and any person, firm, partnership, corporation or other entity actually controlled by, controlling or under common control with such party. A <strong><em>&ldquo;Third Party&rdquo;</em></strong> means an entity other than the parties to this Agreement, their respective Affiliates, and each of their respective directors, officers, employees and agents.
-    </p>
-    <p class="level-two">
-        <strong>6.2       By Advertiser and Agency.</strong>  Content Provider (Advertiser or Agency, as applicable) agree to jointly and severally defend, indemnify, and hold harmless Zemanta its Affiliates and their respective directors, officers, employees and agents from any and all Losses incurred as a result of a Third Party claim, judgment, or proceeding relating to or arising out of Content Provider’s breach of this Agreement, any Policies (to the extent the applicable terms of such Policies have been provided to Advertiser at least ten days prior to the violation giving rise to the claim), or the content or subject matter of any Ad or Advertising Materials to the extent used by Zemanta in accordance with this Agreement or an IO, including but not limited allegations that such content or subject matter violate the right of a Third Party, are defamatory or obscene, or violate any law, regulations or other judicial or administrative action.
-    </p>
-    <p class="level-two">
-        <strong>6.3       Indemnity Process.</strong>  If any action will be brought against either party (the <strong><em>&ldquo;Indemnified Party&rdquo;</em></strong>) in respect to any allegation for which indemnity may be sought from the other party (<strong><em>&ldquo;Indemnifying Party&rdquo;</em></strong>), the Indemnified Party will promptly notify the Indemnifying Party of any such claim of which it becomes aware and will: (i) provide reasonable cooperation to the Indemnifying Party at the Indemnifying Party's expense in connection with the defense or settlement of any such claim; and (ii) be entitled to participate at its own expense in the defense of any such claim. The Indemnified Party agrees that the Indemnifying Party will have sole and exclusive control over the defense and settlement of any such third party claim. However, the Indemnifying Party will not acquiesce to any judgment or enter into any settlement that adversely affects the Indemnified Party's rights or interests without the prior written consent of the Indemnified Party.
+            <h2>5. Ad Materials.</h2>
+            <h3>5.1 Compliance with Policies.</h3>
+            <p>It is Content Provider’s obligation to submit Ads in accordance with Zemanta’s advertising criteria or specifications (including content limitations, technical specifications, privacy policies, user experience policies, policies regarding consistency with Zemanta’s public image, community standards regarding obscenity or indecency, other editorial or advertising policies, and material due dates) (collectively, the <strong><em>&ldquo;Policies&rdquo;</em></strong>).</p>
 
-    </p>
-    <p>
-        <strong>7.          Force Majeure.</strong>  Neither party will be liable for delay or default in the performance of its obligations under this Agreement if such delay or default is caused by conditions beyond its reasonable control, including but not limited to, fire, flood, accident, earthquakes, telecommunications line failures, electrical outages, network failures, acts of God, or organized labor disputes.
-    </p>
-    <p>
-        <strong>8.          Agency Authority.</strong>  If you are an Agency, you represent, warrant, and covenant that: (i) you are the authorized agent of the Advertiser and have the legal authority to enter into the Agreement on behalf of the Advertiser, make all decisions, and take all actions relating to the Advertiser’s accounts; (ii) by agreeing to an IO, the Advertiser is also entering into the Agreement; (iii) you will not, without Zemanta’s prior written consent: (a) make any representation, guarantee, condition, or warranty concerning the Advertising Services or Zemanta including that you are affiliated with or a partner of Zemanta (b) make any commitments (e.g., guarantees as to placement of Ads) to  an Advertiser or potential Advertiser regarding the Advertising Services, (c) negotiate any terms or conditions related to the Advertising Services which may affect the rights, protections, and/or obligations of Zemanta, and/or that are inconsistent with the Agreement, or (d) engage in any telesales or telemarketing in connection with the Advertising Services; and (iv) you will perform your duties pursuant to the Agreement in a professional manner consistent with the requirements established by Zemanta. Upon Zemanta’s request, you will immediately deliver to Zemanta each agreement that designates you as the Advertiser’s agent and authorizes you to act on the Advertiser’s behalf in connection with the Agreement.  You will not at any time use data or information received in connection with the Agreement to conduct any marketing efforts targeted at Zemanta Network Publishers.
-    </p>
+            <h3>5.2 Rejection and Removal.</h3>
+            <p>Zemanta reserves the right, within its sole discretion, to reject or remove from its network any Ads where the Ads (or the site to which the Ad is linked) do not comply with its Policies, or that in Zemanta’s sole reasonable judgment do not comply with any applicable law, regulation, or other judicial or administrative order. In addition, Zemanta reserves the right, within its sole discretion, to reject or remove from its network any Ads or links to the site connected with the Ad that may bring disparagement, ridicule, or scorn upon Zemanta or any of its Affiliates.</p>
 
-    <p>
-        <strong>9.          General Terms.</strong>   The Advertising Services shall be construed as &ldquo;Services&rdquo; as such term is defined in the General Terms.  The following sections of the General Terms are hereby incorporated herein by reference: 1 (ELIGIBILITY/ACCOUNT REGISTRATION), 3 (YOUR CONTENT), 4 (PROHIBITED USES), 5 (PERMISSION TO USE ZEMANTA SERVICE), 6.2 (PROPRIETARY RIGHTS), 7 (WARRANTY DISCLAIMER), 8 (LIMITATION OF LIABILITY), 10 (COPYRIGHT POLICY), 11 (REPRESENTATION AND WARRANTY), 13 (CHOICE OF LAW AND VENUE), 14 (ZEMANTA PRIVACY POLICY), 15 (MODIFICATIONS), and 16 (MISCELLANEOUS).  To the extent the aforementioned sections in the General Terms conflict with the other terms contained in this Agreement or any IO, the terms of this Agreement and the IO shall supersede the conflicting term.
+            <h2>6. Indemnification.</h2>
+            <h3>6.1 By Zemanta.</h3>
+            <p>Zemanta agrees to defend, indemnify, and hold harmless Agency and Advertiser, their Affiliates (as defined below) and their respective directors, officers, employees and agents from any and all damages, liabilities, costs and expenses (including reasonable attorneys’ fees) (collectively, <strong><em>&ldquo;Losses&rdquo;</em></strong>) incurred as a result of a Third Party (as defined below) claim, judgment, or proceeding relating to or arising out of Zemanta’s breach of this Agreement or an IO, except to the extent</p>
+            <ol>
+                <li>that such claim, judgment ,or proceeding resulted from the content of an Ad, or</li>
+                <li>such claim, judgment, or proceeding results from Zemanta fulfilling Agency's or Advertiser's unique specifications provided that Zemanta did not know or should not have reasonably known that such specifications would give rise to the Loss.</li>
+            </ol>
+            <p>An <strong><em>&ldquo;Affiliate&rdquo;</em></strong> means, with respect to either party, any corporation, firm, partnership, person or other entity, whether de jure or de facto, which directly or indirectly owns, is owned by or is under common ownership with such party to the extent of at least 50% of the equity having the power to vote on or direct the affairs of the entity, and any person, firm, partnership, corporation or other entity actually controlled by, controlling or under common control with such party. A <strong><em>&ldquo;Third Party&rdquo;</em></strong> means an entity other than the parties to this Agreement, their respective Affiliates, and each of their respective directors, officers, employees and agents.</p>
 
-    </p>
+            <h3>6.2 By Advertiser and Agency.</h3>
+            <p>Content Provider (Advertiser or Agency, as applicable) agree to jointly and severally defend, indemnify, and hold harmless Zemanta its Affiliates and their respective directors, officers, employees and agents from any and all Losses incurred as a result of a Third Party claim, judgment, or proceeding relating to or arising out of Content Provider’s breach of this Agreement, any Policies (to the extent the applicable terms of such Policies have been provided to Advertiser at least ten days prior to the violation giving rise to the claim), or the content or subject matter of any Ad or Advertising Materials to the extent used by Zemanta in accordance with this Agreement or an IO, including but not limited allegations that such content or subject matter violate the right of a Third Party, are defamatory or obscene, or violate any law, regulations or other judicial or administrative action.</p>
 
+            <h3>6.3 Indemnity Process.</h3>
+            <p>If any action will be brought against either party (the <strong><em>&ldquo;Indemnified Party&rdquo;</em></strong>) in respect to any allegation for which indemnity may be sought from the other party (<strong><em>&ldquo;Indemnifying Party&rdquo;</em></strong>), the Indemnified Party will promptly notify the Indemnifying Party of any such claim of which it becomes aware and will:</p>
+            <ol>
+                <li>provide reasonable cooperation to the Indemnifying Party at the Indemnifying Party's expense in connection with the defense or settlement of any such claim; and</li>
+                <li>be entitled to participate at its own expense in the defense of any such claim.</li>
+            </ol>
+            <p>The Indemnified Party agrees that the Indemnifying Party will have sole and exclusive control over the defense and settlement of any such third party claim. However, the Indemnifying Party will not acquiesce to any judgment or enter into any settlement that adversely affects the Indemnified Party's rights or interests without the prior written consent of the Indemnified Party.</p>
 
+            <h2>7. Force Majeure.</h2>
+            <p>Neither party will be liable for delay or default in the performance of its obligations under this Agreement if such delay or default is caused by conditions beyond its reasonable control, including but not limited to, fire, flood, accident, earthquakes, telecommunications line failures, electrical outages, network failures, acts of God, or organized labor disputes.</p>
 
+            <h2>8. Agency Authority.</h2>
+            <p>If you are an Agency, you represent, warrant, and covenant that:</p>
+            <ol>
+                <li>you are the authorized agent of the Advertiser and have the legal authority to enter into the Agreement on behalf of the Advertiser, make all decisions, and take all actions relating to the Advertiser’s accounts;</li>
+                <li>by agreeing to an IO, the Advertiser is also entering into the Agreement;</li>
+                <li>you will not, without Zemanta’s prior written consent:
+                    <ol class="alphabet">
+                        <li>make any representation, guarantee, condition, or warranty concerning the Advertising Services or Zemanta including that you are affiliated with or a partner of Zemanta</li>
+                        <li>make any commitments (e.g., guarantees as to placement of Ads) to  an Advertiser or potential Advertiser regarding the Advertising Services, (c) negotiate any terms or conditions related to the Advertising Services which may affect the rights, protections, and/or obligations of Zemanta, and/or that are inconsistent with the Agreement, or (d) engage in any telesales or telemarketing in connection with the Advertising Services;</li>
+                    </ol>
+                </li>
+                <li>you will perform your duties pursuant to the Agreement in a professional manner consistent with the requirements established by Zemanta.</li>
+            </ol>
+            <p>Upon Zemanta’s request, you will immediately deliver to Zemanta each agreement that designates you as the Advertiser’s agent and authorizes you to act on the Advertiser’s behalf in connection with the Agreement.  You will not at any time use data or information received in connection with the Agreement to conduct any marketing efforts targeted at Zemanta Network Publishers.</p>
+
+            <h2>9. General Terms.</h2>
+            <p>The Advertising Services shall be construed as &ldquo;Services&rdquo; as such term is defined in the General Terms.  The following sections of the General Terms are hereby incorporated herein by reference: 1 (ELIGIBILITY/ACCOUNT REGISTRATION), 3 (YOUR CONTENT), 4 (PROHIBITED USES), 5 (PERMISSION TO USE ZEMANTA SERVICE), 6.2 (PROPRIETARY RIGHTS), 7 (WARRANTY DISCLAIMER), 8 (LIMITATION OF LIABILITY), 10 (COPYRIGHT POLICY), 11 (REPRESENTATION AND WARRANTY), 13 (CHOICE OF LAW AND VENUE), 14 (ZEMANTA PRIVACY POLICY), 15 (MODIFICATIONS), and 16 (MISCELLANEOUS).  To the extent the aforementioned sections in the General Terms conflict with the other terms contained in this Agreement or any IO, the terms of this Agreement and the IO shall supersede the conflicting term.</p>
+        </div>
+    </div>
 </div>
-
 {% endblock %}

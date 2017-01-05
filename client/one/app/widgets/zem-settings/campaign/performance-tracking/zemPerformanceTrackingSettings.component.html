@@ -20,7 +20,7 @@
         <div class="col-xs-8">
             <ui-select
                     id="ga-tracking-type-select"
-                    class="ga-tracking-type-select"
+                    class="ga-tracking-type-select button button--plain button--dropdown-toggle-icon"
                     theme="select2"
                     search-enabled="false"
                     ng-model="$ctrl.entity.settings.gaTrackingType">
@@ -77,7 +77,7 @@
             <zem-help-popover content="Name of the tracking parameter used for Adobe Analytics." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-8">
-            <input id="adobe-tracking-param-input" type="text" class="form-control" ng-model="$ctrl.entity.settings.adobeTrackingParam">
+            <input id="adobe-tracking-param-input" type="text" class="form__input-text" ng-model="$ctrl.entity.settings.adobeTrackingParam">
         </div>
         <div class="checkbox col-xs-12">
             <a href="http://help.zemanta.com/article/show/12524-setting-up-automated-adobe-analytics-reports" target="_blank">Download a guide to setting up Automated Adobe Analytics Report</a>

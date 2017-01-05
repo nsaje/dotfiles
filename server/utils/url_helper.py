@@ -40,7 +40,9 @@ def get_full_z1_url(partial_url):
 
 def get_zwei_callback_url(action_id):
     """Returns full zwei callback URL"""
+
+    # TODO: remove when actionlog app is removed
     return urlparse.urljoin(
         settings.ZWEI_CALLBACK_BASE_URL,
-        reverse('api.zwei_callback', kwargs={'action_id': action_id})
+        '/api/zwei_callback/{}'.format(action_id),
     )

@@ -230,23 +230,16 @@
                 font-size: 13px;
             }
 
-            input {
-                background-color: white;
+            input.form__input-text {
                 padding-right: 30px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
 
                 &[disabled] {
                     background-color: transparent;
-                    border-color: transparent;
-                    box-shadow: none;
-                    padding-left: 0;
                     pointer-events: none;
                 }
             }
 
-            textarea {
+            textarea.form__textarea {
                 padding-right: 30px;
             }
 
@@ -316,13 +309,15 @@
                 position: absolute;
                 left: -43px;
                 top: 4px;
-                width: (@default-button-input-height)-8;
+                width: auto;
                 height: (@default-button-input-height)-8;
 
                 &.input-success {
                     animation: fadeOut 0.5s 1;
                     animation-fill-mode: forwards;
                     animation-delay:2s;
+                    width: (@default-button-input-height)-8;
+                    height: (@default-button-input-height)-8;
                 }
             }
         }

@@ -1,5 +1,5 @@
 /* globals $, angular, constants */
-angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, zemUserService, zemPermissions, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, zemHeaderDateRangePickerService, zemDataFilterService, zemRedesignHelpersService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, zemUserService, zemPermissions, api, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, zemHeaderDateRangePickerService, zemDataFilterService, zemRedesignHelpersService) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
@@ -15,9 +15,6 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
     $scope.campaign = null;
     $scope.adGroup = null;
 
-    $scope.graphVisible = true;
-    $scope.navigationPaneVisible = false;
-
     $scope.hasPermission = zemPermissions.hasPermission;
     $scope.isPermissionInternal = zemPermissions.isPermissionInternal;
 
@@ -29,16 +26,6 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
             return true;
         }
         return false;
-    };
-
-    $scope.toggleGraph = function () {
-        $scope.graphVisible = !$scope.graphVisible;
-        $scope.reflowGraph(0);
-    };
-
-    $scope.toggleNavigationPane = function () {
-        $scope.navigationPaneVisible = !$scope.navigationPaneVisible;
-        $scope.reflowGraph(0);
     };
 
     $scope.reflowGraph = function (delay) {
@@ -286,44 +273,6 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
         }
     });
 
-    $document.bind('keyup', function (event) {
-        if (!event) {
-            return;
-        }
-
-        event.preventDefault();
-
-        if (String.fromCharCode(event.keyCode).toLowerCase() !== 'f') {
-            return;
-        }
-
-        // nav search shortcut
-        var el = $('#nav-search .select2-container');
-
-        if (document.activeElement.tagName.toLowerCase() === 'input' ||
-            document.activeElement.tagName.toLowerCase() === 'select' ||
-            document.activeElement.tagName.toLowerCase() === 'textarea') {
-            // input element in focus
-            return;
-        }
-
-        if ($uibModalStack.getTop()) {
-            // some modal window exists
-            return;
-        }
-
-        if (el) {
-            el.select2('open');
-        }
-    });
-
-    $scope.getShowArchived = function () {
-        if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-            return zemDataFilterService.getShowArchived();
-        }
-        return zemFilterService.getShowArchived();
-    };
-
     zemNavigationService.onUpdate($scope, function () {
         $scope.accounts = zemNavigationService.getAccounts();
     });
@@ -332,57 +281,28 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
         $scope.loadSidebarInProgress = isLoading;
     });
 
-    if (zemPermissions.hasPermission('zemauth.can_see_new_filter_selector')) {
-        var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(zemNavigationService.reload);
-        var filteredAgenciesUpdateHandler = zemDataFilterService.onFilteredAgenciesUpdate(zemNavigationService.reload);
-        var filteredAccountTypesUpdateHandler = zemDataFilterService.onFilteredAccountTypesUpdate(zemNavigationService.reload);
-        var filteredPublisherStatusUpdateHandler = zemDataFilterService.onFilteredPublisherStatusUpdate(function (event, status) {
+    var filteredSourcesUpdateHandler = zemDataFilterService.onFilteredSourcesUpdate(zemNavigationService.reload);
+    var filteredAgenciesUpdateHandler = zemDataFilterService.onFilteredAgenciesUpdate(zemNavigationService.reload);
+    var filteredAccountTypesUpdateHandler = zemDataFilterService.onFilteredAccountTypesUpdate(
+        zemNavigationService.reload
+    );
+    var filteredPublisherStatusUpdateHandler = zemDataFilterService.onFilteredPublisherStatusUpdate(
+        function (event, status) {
             $scope.setPublisherFilterVisible(status);
-        });
-        $scope.$on('$destroy', function () {
-            filteredSourcesUpdateHandler();
-            filteredAgenciesUpdateHandler();
-            filteredAccountTypesUpdateHandler();
-            filteredPublisherStatusUpdateHandler();
-        });
-    } else {
-        $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
-            if (angular.equals(newValue, oldValue)) { return; }
-            zemNavigationService.reload();
-        }, true);
-
-        $scope.$watch(zemFilterService.getFilteredAgencies, function (newValue, oldValue) {
-            if (angular.equals(newValue, oldValue)) { return; }
-            zemNavigationService.reload();
-        }, true);
-
-        $scope.$watch(zemFilterService.getFilteredAccountTypes, function (newValue, oldValue) {
-            if (angular.equals(newValue, oldValue)) { return; }
-            zemNavigationService.reload();
-        }, true);
-
-        $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
-            if (angular.equals(newValue, oldValue)) {
-                return;
-            }
-            $scope.setPublisherFilterVisible(newValue);
-        }, true);
-    }
+        }
+    );
+    $scope.$on('$destroy', function () {
+        filteredSourcesUpdateHandler();
+        filteredAgenciesUpdateHandler();
+        filteredAccountTypesUpdateHandler();
+        filteredPublisherStatusUpdateHandler();
+    });
 
     $scope.init = function () {
         zemFullStoryService.identifyUser(zemUserService.current());
         zemIntercomService.boot(zemUserService.current());
         zemSupportHeroService.boot(zemUserService.current());
         zemNavigationService.reload();
-
-        var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
-        userSettings.registerGlobal('graphVisible');
-        userSettings.registerGlobal('navigationPaneVisible');
-
-        if (document.referrer.indexOf(location.protocol + '//' + location.host) === 0 &&
-            document.referrer.indexOf('/signin') > 0) {
-            $scope.navigationPaneVisible = false;
-        }
     };
 
     $scope.init();
