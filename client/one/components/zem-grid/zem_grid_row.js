@@ -6,7 +6,7 @@ angular.module('one.legacy').directive('zemGridRow', function (zemGridConstants)
         entity: constants.entityType.ACCOUNT,
         level: zemGridConstants.gridRowLevel.BASE,
         type: zemGridConstants.gridRowType.STATS,
-        data: {},
+        data: {stats: {}},
         dummy: true,
     };
 

@@ -38,6 +38,7 @@ angular.module('one.legacy').component('zemGridBulkPublishersActions', {
                 },
                 callbacks: {
                     isRowSelectable: function (row) {
+                        if (!row.data.stats.exchange) return false;
                         var exchange = row.data.stats.exchange.value;
                         var sum = getBlacklistedPublishers(exchange) + getSelectedPublishers(exchange);
                         return sum < getMaxBlacklistedPublishers(exchange);
