@@ -1,5 +1,6 @@
 import logging
 
+import newrelic.agent
 from django.conf import settings
 
 from server.celery import app
@@ -51,6 +52,7 @@ def update_blacklist(ad_group_id, msg=''):
                msg=msg)
 
 
+@newrelic.agent.function_trace()
 def _send_task(queue_name, task_name, **kwargs):
     if settings.K1_DEMO_MODE:
         return
