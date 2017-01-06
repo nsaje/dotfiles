@@ -3072,6 +3072,8 @@ class ConversionPixel(models.Model):
     slug = models.CharField(blank=False, null=False, max_length=32)
     archived = models.BooleanField(default=False)
     audience_enabled = models.BooleanField(default=False)
+    last_triggered = models.DateTimeField(blank=True, null=True)
+    impressions = models.PositiveIntegerField(default=0)
 
     # TODO matijav 19.16.2016 a hack to allow multiple audience pixels
     additional_pixel = models.BooleanField(default=False)

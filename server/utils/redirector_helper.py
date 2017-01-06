@@ -185,6 +185,25 @@ def delete_audience(audience_id):
         raise
 
 
+def get_pixel_traffic(timeout=300):
+    request_url = settings.R1_PIXEL_TRAFFIC_URL
+
+    logger.info('Querying pixel traffix')
+    job_id = _call_api_retry(request_url, method='GET')
+
+    start_time = time.time()
+    while (time.time() - start_time) < timeout:
+        logger.info('Polling pixel traffic results')
+        result = _call_api_retry(settings.R1_PIXEL_TRAFFIC_RESULT_URL.format(job_id=job_id), method='GET')
+        if result is None:
+            time.sleep(2)
+            continue
+
+        return result
+
+    raise Exception('Pixel traffic timeout')
+
+
 def _call_api_paginated(url, data=None, method='POST'):
     result = _call_api_retry(url, data, method)
     if result is None:

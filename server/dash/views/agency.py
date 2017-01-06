@@ -668,15 +668,7 @@ class ConversionPixel(api_common.BaseApiView):
         if audience_enabled_only:
             pixels = pixels.filter(audience_enabled=True)
 
-        rows = [
-            {
-                'id': pixel.id,
-                'name': pixel.name,
-                'url': pixel.get_url(),
-                'audience_enabled': pixel.audience_enabled,
-                'archived': pixel.archived
-            } for pixel in pixels
-        ]
+        rows = [self._format_pixel(pixel, request.user) for pixel in pixels]
 
         return self.create_api_response({
             'rows': rows,
@@ -734,13 +726,7 @@ class ConversionPixel(api_common.BaseApiView):
 
         email_helper.send_account_pixel_notification(account, request)
 
-        return self.create_api_response({
-            'id': conversion_pixel.id,
-            'name': conversion_pixel.name,
-            'url': conversion_pixel.get_url(),
-            'archived': conversion_pixel.archived,
-            'audience_enabled': conversion_pixel.audience_enabled,
-        })
+        return self.create_api_response(self._format_pixel(conversion_pixel, request.user))
 
     def put(self, request, conversion_pixel_id):
         try:
@@ -795,13 +781,7 @@ class ConversionPixel(api_common.BaseApiView):
                 k1_helper.update_account(conversion_pixel.account.id)
                 self._r1_upsert_audiences(conversion_pixel)
 
-        return self.create_api_response({
-            'id': conversion_pixel.id,
-            'name': conversion_pixel.name,
-            'url': conversion_pixel.get_url(),
-            'archived': conversion_pixel.archived,
-            'audience_enabled': conversion_pixel.audience_enabled,
-        })
+        return self.create_api_response(self._format_pixel(conversion_pixel, request.user))
 
     def _r1_upsert_audiences(self, conversion_pixel):
         audiences = models.Audience.objects.\
@@ -844,6 +824,19 @@ class ConversionPixel(api_common.BaseApiView):
             account.write_history(change_text,
                                   user=request.user,
                                   action_type=constants.HistoryActionType.CONVERSION_PIXEL_AUDIENCE_ENABLED)
+
+    def _format_pixel(self, pixel, user):
+        data = {
+            'id': pixel.id,
+            'name': pixel.name,
+            'url': pixel.get_url(),
+            'audience_enabled': pixel.audience_enabled,
+            'archived': pixel.archived
+        }
+        if user.has_perm('zemauth.can_see_pixel_traffic'):
+            data['last_triggered'] = pixel.last_triggered
+            data['impressions'] = pixel.impressions
+        return data
 
 
 class AccountSettings(api_common.BaseApiView):

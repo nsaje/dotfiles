@@ -814,6 +814,8 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterSe
                 url: conversionPixel.url,
                 archived: conversionPixel.archived,
                 audienceEnabled: conversionPixel.audience_enabled,
+                lastTriggered: conversionPixel.last_triggered,
+                impressions: conversionPixel.impressions,
             };
         }
 
