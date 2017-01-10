@@ -245,21 +245,16 @@ class AdGroupSettingsTest(TestCase):
         )
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_actionlog_api,
-                 mock_order_ad_group_settings_update):
+    def test_put(self, mock_k1_ping, mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
 
-            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
-
             # we need this to track call order across multiple mocks
             mock_manager = Mock()
-            mock_manager.attach_mock(mock_actionlog_api, 'mock_actionlog_api')
             mock_manager.attach_mock(mock_order_ad_group_settings_update, 'mock_order_ad_group_settings_update')
 
             old_settings = ad_group.get_current_settings()
@@ -334,28 +329,22 @@ class AdGroupSettingsTest(TestCase):
             mock_manager.assert_has_calls([
                 call.mock_order_ad_group_settings_update(
                     ad_group, old_settings, new_settings, ANY, send=False),
-                ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
             ])
 
             hist = history_helpers.get_ad_group_history(ad_group).first()
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put_low_cpc(self, mock_k1_ping, mock_actionlog_api,
-                         mock_order_ad_group_settings_update):
+    def test_put_low_cpc(self, mock_k1_ping, mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
 
-            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
-
             # we need this to track call order across multiple mocks
             mock_manager = Mock()
-            mock_manager.attach_mock(mock_actionlog_api, 'mock_actionlog_api')
             mock_manager.attach_mock(mock_order_ad_group_settings_update, 'mock_order_ad_group_settings_update')
 
             old_settings = ad_group.get_current_settings()
@@ -438,18 +427,15 @@ class AdGroupSettingsTest(TestCase):
             mock_manager.assert_has_calls([
                 call.mock_order_ad_group_settings_update(
                     ad_group, old_settings, new_settings, ANY, send=False),
-                ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
             ])
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
-    def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+    def test_put_without_non_propagated_settings(self, mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
-            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
             old_settings = ad_group.get_current_settings()
 
             self.assertIsNotNone(old_settings.pk)
@@ -485,21 +471,19 @@ class AdGroupSettingsTest(TestCase):
                 ad_group, old_settings, new_settings, ANY, send=False)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
     def test_put_set_budget_autopilot_triggers_budget_reallocation(
-            self, mock_actionlog_api, mock_order_ad_group_settings_update, mock_init_autopilot):
+            self, mock_order_ad_group_settings_update, mock_init_autopilot):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
-            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
             old_settings = ad_group.get_current_settings()
             new_settings = old_settings.copy_settings()
             new_settings.autopilot_state = 2
             new_settings.save(None)
-            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
             self.assertIsNotNone(old_settings.pk)
             self.settings_dict['settings']['autopilot_state'] = 1
             self.settings_dict['settings']['autopilot_daily_budget'] = '200.00'
@@ -525,16 +509,12 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(mock_init_autopilot.called, True)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
-    def test_put_firsttime_create_settings(self, mock_actionlog_api,
-                                           mock_order_ad_group_settings_update):
+    def test_put_firsttime_create_settings(self, mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=10)
-
-            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
             # this ad group does not have settings
             current_settings = ad_group.get_current_settings()
@@ -621,15 +601,12 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
-    def test_put_tracking_codes_with_permission(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+    def test_put_tracking_codes_with_permission(self, mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
-            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
-
             self.settings_dict['settings']['tracking_code'] = 'asd=123'
 
             add_permissions(self.user, ['settings_view'])
@@ -644,11 +621,8 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(response_settings_dict['tracking_code'], 'asd=123')
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
-    def test_put_invalid_target_region(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+    def test_put_invalid_target_region(self, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
-
-        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
         self.settings_dict['settings']['target_regions'] = ["123"]
 
@@ -664,11 +638,8 @@ class AdGroupSettingsTest(TestCase):
         self.assertIn('target_regions', response_dict['data']['errors'])
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
-    def test_put_us_and_dmas(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+    def test_put_us_and_dmas(self, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
-
-        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
         self.settings_dict['settings']['target_regions'] = ['US', '693']
 
@@ -684,8 +655,7 @@ class AdGroupSettingsTest(TestCase):
         self.assertIn('target_regions', response_dict['data']['errors'])
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
-    def test_end_date_in_the_past(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+    def test_end_date_in_the_past(self, mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -694,8 +664,6 @@ class AdGroupSettingsTest(TestCase):
             new_settings = ad_group.get_current_settings().copy_settings()
             new_settings.state = constants.AdGroupSettingsState.ACTIVE
             new_settings.save(None)
-
-            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
             self.settings_dict['settings']['end_date'] = '2015-05-02'
 
@@ -711,14 +679,12 @@ class AdGroupSettingsTest(TestCase):
             self.assertIn('end_date', response_dict['data']['errors'])
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
-    @patch('dash.views.agency.actionlog_api')
-    def test_put_set_settings_no_permissions(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+    def test_put_set_settings_no_permissions(self, mock_order_ad_group_settings_update):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
-            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
             add_permissions(self.user, ['settings_view'])
             response = self.client.put(
@@ -871,9 +837,8 @@ class AdGroupSettingsStateTest(TestCase):
 
     @patch('automation.campaign_stop.can_enable_all_ad_groups')
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
-    @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
-    def test_activate(self, mock_k1_ping, mock_zwei_send, mock_budget_check, mock_campaign_stop):
+    def test_activate(self, mock_k1_ping, mock_budget_check, mock_campaign_stop):
         ad_group = models.AdGroup.objects.get(pk=2)
         mock_budget_check.return_value = True
         mock_campaign_stop.return_value = True
@@ -890,16 +855,13 @@ class AdGroupSettingsStateTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_zwei_send.called, True)
-        self.assertEqual(len(mock_zwei_send.call_args), 2)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.ACTIVE)
         mock_k1_ping.assert_called_with(2, msg='AdGroupSettingsState.post')
 
     @patch('automation.campaign_stop.can_enable_all_ad_groups')
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
-    @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
-    def test_activate_already_activated(self, mock_k1_ping, mock_zwei_send, mock_budget_check, mock_campaign_stop):
+    def test_activate_already_activated(self, mock_k1_ping, mock_budget_check, mock_campaign_stop):
         ad_group = models.AdGroup.objects.get(pk=1)
         mock_budget_check.return_value = True
         mock_campaign_stop.return_value = True
@@ -916,12 +878,10 @@ class AdGroupSettingsStateTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_zwei_send.called, False)
         self.assertFalse(mock_k1_ping.called)
 
-    @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
-    def test_activate_without_budget(self, mock_k1_ping, mock_zwei_send):
+    def test_activate_without_budget(self, mock_k1_ping):
         ad_group = models.AdGroup.objects.get(pk=2)
 
         add_permissions(self.user, ['can_control_ad_group_state_in_table'])
@@ -934,13 +894,11 @@ class AdGroupSettingsStateTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
-        self.assertEqual(mock_zwei_send.called, False)
         self.assertFalse(mock_k1_ping.called)
 
     @patch('dash.dashapi.data_helper.campaign_has_available_budget')
-    @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
-    def test_activate_no_goals(self, mock_k1_ping, mock_zwei_send, mock_budget_check):
+    def test_activate_no_goals(self, mock_k1_ping, mock_budget_check):
         ad_group = models.AdGroup.objects.get(pk=2)
         mock_budget_check.return_value = True
 
@@ -954,8 +912,7 @@ class AdGroupSettingsStateTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    @patch('actionlog.zwei_actions.send')
-    def test_campaign_in_landing_mode(self, mock_zwei_send):
+    def test_campaign_in_landing_mode(self):
         ad_group = models.AdGroup.objects.get(pk=2)
         new_campaign_settings = ad_group.campaign.get_current_settings().copy_settings()
         new_campaign_settings.landing_mode = True
@@ -970,11 +927,9 @@ class AdGroupSettingsStateTest(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
-        self.assertEqual(mock_zwei_send.called, False)
 
-    @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
-    def test_inactivate(self, mock_k1_ping, mock_zwei_send):
+    def test_inactivate(self, mock_k1_ping):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         add_permissions(self.user, ['can_control_ad_group_state_in_table'])
@@ -986,14 +941,11 @@ class AdGroupSettingsStateTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_zwei_send.called, True)
-        self.assertEqual(len(mock_zwei_send.call_args[0]), 1)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
         mock_k1_ping.assert_called_with(1, msg='AdGroupSettingsState.post')
 
     @patch('automation.campaign_stop.can_enable_all_ad_groups')
-    @patch('actionlog.zwei_actions.send')
-    def test_inactivate_already_inactivated(self, mock_zwei_send, mock_campaign_stop):
+    def test_inactivate_already_inactivated(self, mock_campaign_stop):
         ad_group = models.AdGroup.objects.get(pk=2)
         mock_campaign_stop.return_value = True
 
@@ -1006,7 +958,6 @@ class AdGroupSettingsStateTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_zwei_send.called, False)
 
 
 class ConversionPixelTestCase(TestCase):

@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemGridBody', function ($timeout, $interval, zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemGridBody', function (zemGridConstants, zemGridUIService) { // eslint-disable-line max-len
 
     return {
         restrict: 'E',
@@ -91,19 +91,21 @@ angular.module('one.legacy').directive('zemGridBody', function ($timeout, $inter
 
                 doLoadingStep();
 
-                var promise = $interval(function () {
+                var interval = setInterval(function () {
                     if (renderedRows.length <= scope.state.renderedRows.length) {
-                        $interval.cancel(promise);
+                        clearInterval(interval);
                         return;
                     }
                     doLoadingStep ();
+                    scope.$digest();
                 }, 50);
 
                 function doLoadingStep () {
                     scope.state.renderedRows = renderedRows.slice(0, scope.state.renderedRows.length + step);
-                    $timeout(function () {
+                    setTimeout(function () {
                         scope.state.renderedRows.forEach(function (row) { row.dummy = false; });
                         zemGridUIService.resizeGridColumns(scope.ctrl.grid);
+                        scope.$digest();
                     }, 0);
                 }
             }
@@ -144,11 +146,12 @@ angular.module('one.legacy').directive('zemGridBody', function ($timeout, $inter
 
             // Initialize dummy rows to optimize initial data rendering
             // Delay 0.5s to allow quick page switch and before data is loaded (delayed for 1s)
-            $timeout(initialLoad, 500);
+            setTimeout(initialLoad, 500);
             function initialLoad () {
                 for (var idx = 0; idx < zemGridConstants.gridBodyRendering.NUM_OF_DUMMY_ROWS; ++idx) {
                     scope.state.renderedRows.push({index: scope.state.renderedRows.length});
                 }
+                scope.$digest();
             }
 
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, scope, updateBody);

@@ -102,6 +102,18 @@
     color: @gray;
 }
 
+.zem-settings__different-than-default {
+    float: right;
+    color: @gray;
+    font-weight: normal;
+    line-height: 26px;
+    font-size: @default-font-size;
+}
+
+///////////////////////////
+// Facebook //
+///////////////////////////
+
 .zem-settings-component__container--facebook {
     .form__input-text--facebook {
         input {
@@ -131,6 +143,189 @@
     .message--warning {
         margin-top: 10px;
     }
+}
+
+///////////////////////////
+// Campaign goals //
+///////////////////////////
+
+.zem-settings-component__container--campaign-goals {
+    :not(.message--info).message {
+        display: block;
+        margin-bottom: 15px;
+    }
+}
+
+.zem-settings-campaign-goals__primary-goal {
+    color: @gray;
+    float: right;
+
+    &:before {
+        content: "";
+        height: 10px;
+        width: 10px;
+        display: inline-block;
+        background-color: @secondary-color;
+        right: 5px;
+        position: relative;
+    }
+}
+
+.zem-settings-campaign-goals__optimization {
+    margin: 10px 0;
+}
+
+.zem-settings-campaign-goals__goal {
+    border: 1px solid @light-gray;
+    border-radius: @border-radius;
+    height: 50px;
+    position: relative;
+    margin-bottom: 10px;
+    padding-right: 100px;
+
+    .button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    &:not(.zem-settings-campaign-goals__goal--primary):hover {
+        cursor: pointer;
+        color: @secondary-color;
+
+        .zem-settings-campaign-goals__goal-number {
+            background-color: tint(@secondary-color,90%);
+        }
+    }
+}
+
+.zem-settings-campaign-goals__goal-number {
+    position: absolute;
+    left: -1px;
+    top: -1px;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    line-height: 50px;
+    font-size: 22px;
+    color: @secondary-color;
+    border: 1px solid @light-gray;
+    border-top-left-radius: @border-radius;
+    border-bottom-left-radius: @border-radius;
+}
+
+.zem-settings-campaign-goals__goal-description {
+    position: absolute;
+    left: 65px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.zem-settings-campaign-goals__edit-button {
+    right: 55px;
+}
+
+.zem-settings-campaign-goals__delete-button {
+    right: 9px;
+}
+
+.zem-settings-campaign-goals__goal--primary {
+    .zem-settings-campaign-goals__goal-number {
+        background-color: @secondary-color;
+        border-color: @secondary-color;
+        color: white;
+    }
+
+    .zem-settings-campaign-goals__goal-description {
+        color: @secondary-color;
+    }
+}
+
+///////////////////////////
+// Device targeting //
+///////////////////////////
+
+.zem-settings-component__container--device-targeting {
+    .form::after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+
+    .form__group {
+        clear: none;
+        width: 33.3%;
+        float: left;
+        text-align: center;
+        margin-top: 0;
+    }
+
+    .form__label {
+        float: none;
+        width: auto;
+        height: 100px;
+        margin: 0;
+        padding: 0;
+        display: block;
+        cursor: pointer;
+    }
+
+    input.form__input-checkbox {
+        float: none;
+    }
+}
+
+.zem-settings-device-targeting__desktop {
+    .form__label {
+        background: url('images/device-desktop-gray.svg') no-repeat center center;
+        background-size: 100px;
+    }
+
+    &.zem-settings-device-targeting__active {
+        .form__label {
+            background-image: url('images/device-desktop-blue.svg');
+        }
+    }
+}
+
+.zem-settings-device-targeting__tablet {
+    .form__label {
+        background: url('images/device-tablet-gray.svg') no-repeat center 40px;
+        background-size: 40px;
+    }
+
+    &.zem-settings-device-targeting__active {
+        .form__label {
+            background-image: url('images/device-tablet-blue.svg');
+        }
+    }
+}
+
+.zem-settings-device-targeting__mobile {
+    .form__label {
+        background: url('images/device-mobile-gray.svg') no-repeat center 60px;
+        background-size: 20px;
+    }
+
+    &.zem-settings-device-targeting__active {
+        .form__label {
+            background-image: url('images/device-mobile-blue.svg');
+        }
+    }
+}
+
+///////////////////////////
+// Locations //
+///////////////////////////
+
+.zem-settings-component__container--locations {
+    .button {
+        .clearfix();
+    }
+}
+
+.zem-settings-locations__undo {
+    margin-bottom: 10px;
 }
 
 //

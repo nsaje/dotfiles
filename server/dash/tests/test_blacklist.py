@@ -8,8 +8,6 @@ import dash.models
 import dash.constants
 import dash.blacklist
 import zemauth.models
-import actionlog.constants
-import actionlog.models
 
 BLACKLISTED = dash.constants.PublisherStatus.BLACKLISTED
 ENABLED = dash.constants.PublisherStatus.ENABLED
@@ -150,15 +148,6 @@ class BlacklistTestCase(TestCase):
                                                            status=BLACKLISTED,
                                                            account=self.account)
         self.assertEqual(bl.count(), dash.constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD + 1)
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.get(
-            action_type=actionlog.constants.ActionType.MANUAL,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(
-            publisher_blacklist_action.message,
-            u'Blacklist the following publishers on Outbrain for account ZemAccount (#1):'
-            u' www.google.com, www.zemanata.com #abc, www.zemanta.com #123'
-        )
 
     def test_enable_blacklist_ob_over_threshold(self):
         for i in range(dash.constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD + 5):
@@ -186,15 +175,6 @@ class BlacklistTestCase(TestCase):
                                                            status=BLACKLISTED,
                                                            account=self.account)
         self.assertEqual(bl.count(), dash.constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD + 5)
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.get(
-            action_type=actionlog.constants.ActionType.MANUAL,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(
-            publisher_blacklist_action.message,
-            u'Enable the following publishers on Outbrain for account ZemAccount (#1): '
-            u'www.google.com, www.zemanata.com #abc, www.zemanta.com #123'
-        )
 
     def test_enable_blacklist_ob_drop_under_threshold(self):
         for i in range(dash.constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD + 1):
@@ -218,11 +198,6 @@ class BlacklistTestCase(TestCase):
         self.assertEqual(bl.count(), dash.constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD - 3)
 
         # No manual action should be present because we went under threshold
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action_type=actionlog.constants.ActionType.MANUAL,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(publisher_blacklist_action.count(), 0)
 
     def test_account_enabling(self):
         dash.models.PublisherBlacklist.objects.create(

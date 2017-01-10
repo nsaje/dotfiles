@@ -30,8 +30,6 @@ def click_capping(request):
         raise Http404
 
     content_ad_id = int(request.GET.get('creativeId'))
-    logger.info('[bizwire] click capping - content ad id: %s', content_ad_id)
-
     content_ad = dash.models.ContentAd.objects.filter(
         id=content_ad_id,
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,

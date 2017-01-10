@@ -1,27 +1,25 @@
-<div class="zem-settings-component__container">
-    <h2 ng-if="$ctrl.isDefault()">Default device targeting</h2>
-    <h2 ng-if="!$ctrl.isDefault()">Device targeting<div class="sidenote different-than-default" ng-if="!$ctrl.isEqualToDefault()">Different than campaign default</div></h2>
-
-    <div class="description">The devices on which your content ads will be shown. <span ng-if="$ctrl.isDefault()">Used for all newly created ad groups.</span></div>
-    <div class="form-vertical">
-        <div class="form-group m-b-none" ng-class="{'has-error': !!$ctrl.errors.targetDevices}">
-            <div class="col-xs-4 device-icon checkbox" ng-repeat='device in $ctrl.entity.settings.targetDevices'>
-                <label class="icon-holder" for="{{ device.name }}">
-                    <ng-switch on="device.name">
-                        <img ng-switch-when="Desktop" class="desktop" ng-src="{{ $ctrl.config.static_url }}/one/images/device-desktop-gray.svg"/>
-                        <img ng-switch-when="Tablet" class="tablet" ng-src="{{ $ctrl.config.static_url }}/one/images/device-tablet-gray.svg"/>
-                        <img ng-switch-when="Mobile" class="mobile" ng-src="{{ $ctrl.config.static_url }}/one/images/device-mobile-gray.svg"/>
-                    </ng-switch>
-                </label>
-                <label>
-                    <input type="checkbox" id="{{ device.name }}" ng-model="device.checked"> {{ device.name }}
-                </label>
-            </div>
-
-            <div class="col-xs-12 sidenote">* Yahoo, Outbrain, Facebook and Instagram don't support Tablet option.</div>
-
-            <label ng-repeat="error in $ctrl.errors.targetDevices" class="control-label error">{{ error }}</label>
+<div class="zem-settings-component__container zem-settings-component__container--device-targeting">
+    <div class="zem-settings-component__header" ng-if="$ctrl.isDefault()">Default device targeting</div>
+    <div class="zem-settings-component__header" ng-if="!$ctrl.isDefault()">
+        Device targeting
+        <div class="zem-settings__different-than-default" ng-if="!$ctrl.isEqualToDefault()">Different than campaign default</div>
+    </div>
+    <div class="zem-settings-component__description">The devices on which your content ads will be shown. <span ng-if="$ctrl.isDefault()">Used for all newly created ad groups.</span></div>
+    <!-- TODO: Device classes should be calculated in controler -->
+    <div class="form">
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.targetDevices,
+                                           'zem-settings-device-targeting__mobile': device.name == 'Mobile',
+                                           'zem-settings-device-targeting__tablet': device.name == 'Tablet',
+                                           'zem-settings-device-targeting__desktop': device.name == 'Desktop',
+                                           'zem-settings-device-targeting__active': device.checked,
+                                           }" ng-repeat='device in $ctrl.entity.settings.targetDevices'>
+            <label class="form__label" for="{{ device.name }}"></label>
+            <input class="form__input-checkbox" type="checkbox" id="{{ device.name }}" ng-model="device.checked">
+            <label class="form__checkbox-text" for="{{ device.name }}">{{ device.name }}</label>
         </div>
     </div>
+    <div class="message message--error" ng-repeat="error in $ctrl.errors.targetDevices">{{ error }}</div>
+    <!-- TODO: Message should only be display if selected device is Tablet -->
+    <div class="message message--info message--with-icon">Yahoo, Outbrain, Facebook and Instagram don't support Tablet option.</div>
 </div>
 

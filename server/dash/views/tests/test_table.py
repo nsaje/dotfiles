@@ -2,14 +2,12 @@
 # -*- coding: utf-8 -*-
 import datetime
 import json
-import unittest
 from mock import patch
 from django.contrib.auth import models as authmodels
 
 from django.http.request import HttpRequest
 from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
-from unittest import skip
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
@@ -21,8 +19,6 @@ from dash import table
 from dash import conversions_helper
 from utils import test_helper
 from dash.views import helpers
-from actionlog.models import ActionLog
-import actionlog.constants
 
 import reports.redshift as redshift
 
@@ -778,16 +774,6 @@ class AdGroupAdsTableUpdatesTest(TestCase):
 
     def test_get(self):
         ad_group = models.AdGroup.objects.get(pk=1)
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-        content_ad_source = models.ContentAdSource.objects.get(pk=1)
-
-        ActionLog(
-            state=actionlog.constants.ActionState.WAITING,
-            content_ad_source=content_ad_source,
-            ad_group_source=ad_group_source,
-            action=actionlog.constants.Action.UPDATE_CONTENT_AD,
-            action_type=actionlog.constants.ActionType.AUTOMATIC
-        ).save()
 
         params = {}
         response = self.client.get(
@@ -807,15 +793,10 @@ class AdGroupAdsTableUpdatesTest(TestCase):
         self.assertEqual(result['data']['last_change'], '2015-02-22T19:00:00')
 
         self.assertIn('notifications', result['data'])
-        self.assertEqual(result['data']['notifications'], {
-            '1': {
-                'message': 'Status is being changed from Paused to Enabled',
-                'in_progress': True
-            }
-        })
+        self.assertEqual(result['data']['notifications'], {})
 
         self.assertIn('in_progress', result['data'])
-        self.assertEqual(result['data']['in_progress'], True)
+        self.assertEqual(result['data']['in_progress'], False)
 
         self.assertIn('rows', result['data'])
         expected_submission_status = [{

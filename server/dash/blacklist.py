@@ -5,7 +5,6 @@ from django.db import transaction
 import dash.constants
 import dash.models
 import utils.k1_helper
-import actionlog.models
 
 ALLOWED_LEVEL_CONSTRAINTS = (
     'ad_group',
@@ -104,13 +103,9 @@ def _update_source(constraints, status, domain_names, external_map, request=None
     if not source.can_modify_publisher_blacklist_automatically():
         return
 
-    if source.source_type.type == dash.constants.SourceType.OUTBRAIN:
-        try:
-            _handle_outbrain(source, constraints, status, domain_names, external_map,
-                             request, ad_group)
-        except BlacklistException:
-            logger.exception('Blacklist exception when using constraints: %s', str(constraints))
-            return
+    if source.source_type.type == dash.constants.SourceType.OUTBRAIN and 'account' not in constraints:
+        return
+
     _handle_all(constraints, status, domain_names, external_map, request=request, ad_group=ad_group)
 
 
@@ -152,48 +147,3 @@ def _global_blacklist(constraints, status, domain_names, external_map):
 def _handle_outbrain(source, constraints, status, domain_names, external_map, request, ad_group):
     if 'account' not in constraints:
         raise BlacklistException('OB blacklist is allowed only on account level')
-    ob_domains = dash.models.PublisherBlacklist.objects.filter(
-        account=constraints['account'],
-        source__source_type__type=dash.constants.SourceType.OUTBRAIN,
-        status__in=NOT_ENABLED_BLACKLIST_STATUSES
-    )
-    count_ob = ob_domains.count()
-    if status in NOT_ENABLED_BLACKLIST_STATUSES:
-        count_ob += len(domain_names)
-    else:
-        count_ob -= len(
-            set(domain_names) & set(ob_domains.values_list('name', flat=True))
-        )
-
-    if count_ob > dash.constants.MANUAL_ACTION_OUTBRAIN_BLACKLIST_THRESHOLD:
-        _trigger_manual_ob_blacklist_action(request, ad_group, status, domain_names, external_map)
-
-
-def _trigger_manual_ob_blacklist_action(request, ad_group, state, domain_names, external_map):
-    action_name = ACTION_TO_MESSAGE[state]
-    domains = ', '.join(
-        '{}{}'.format(
-            domain, ' #' + external_map[domain] if external_map.get(domain) else ''
-        )
-        for domain in sorted(domain_names)
-    )
-
-    action = actionlog.models.ActionLog(
-        action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST,
-        action_type=actionlog.constants.ActionType.MANUAL,
-        expiration_dt=None,
-        state=actionlog.constants.ActionState.WAITING,
-        ad_group_source=dash.models.AdGroupSource.objects.filter(
-            ad_group=ad_group,
-            source__tracking_slug=dash.constants.SourceType.OUTBRAIN
-        ).first(),
-        payload={
-            'ad_group_id': ad_group.pk,
-            'state': state,
-            'domains': domains
-        },
-        message=u'{} the following publishers on Outbrain for account {} (#{}): {}'.format(
-            action_name, ad_group.campaign.account.name, ad_group.campaign.account.pk, domains
-        )
-    )
-    action.save(request)

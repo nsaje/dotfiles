@@ -1,8 +1,6 @@
 import logging
 from threading import Thread
 
-import actionlog.sync
-
 from dash.views import helpers
 from dash import models
 from utils import api_common
@@ -22,7 +20,7 @@ class TriggerAccountSyncThread(Thread):
     def run(self):
         try:
             for account in self.accounts:
-                actionlog.sync.AccountSync(account, sources=self.sources).trigger_all(self.request)
+                pass  # actionlog.sync.AccountSync(account, sources=self.sources).trigger_all(self.request)
         except Exception:
             logger.exception('Exception in TriggerAccountSyncThread')
 
@@ -38,7 +36,7 @@ class TriggerCampaignSyncThread(Thread):
     def run(self):
         try:
             for campaign in self.campaigns:
-                actionlog.sync.CampaignSync(campaign, sources=self.sources).trigger_all(self.request)
+                pass  # actionlog.sync.CampaignSync(campaign, sources=self.sources).trigger_all(self.request)
         except Exception:
             logger.exception('Exception in TriggerCampaignSyncThread')
 
@@ -53,7 +51,7 @@ class TriggerAdGroupSyncThread(Thread):
 
     def run(self):
         try:
-            actionlog.sync.AdGroupSync(self.ad_group, sources=self.sources).trigger_all(self.request)
+            pass  # actionlog.sync.AdGroupSync(self.ad_group, sources=self.sources).trigger_all(self.request)
         except Exception:
             logger.exception('Exception in TriggerAdGroupSyncThread')
 
@@ -63,9 +61,9 @@ class AccountSync(api_common.BaseApiView):
     def get(self, request):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         accounts = models.Account.objects.all().filter_by_user(request.user)
-        if not actionlog.api.is_sync_in_progress(accounts=accounts, sources=filtered_sources):
-            # trigger account sync asynchronously and immediately return
-            TriggerAccountSyncThread(accounts, filtered_sources, request).start()
+        # if not actionlog.api.is_sync_in_progress(accounts=accounts, sources=filtered_sources):
+        #     # trigger account sync asynchronously and immediately return
+        #     TriggerAccountSyncThread(accounts, filtered_sources, request).start()
 
         return self.create_api_response({})
 
@@ -75,7 +73,7 @@ class AccountSyncProgress(api_common.BaseApiView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         accounts = models.Account.objects.all().filter_by_user(request.user)
 
-        in_progress = actionlog.api.is_sync_in_progress(accounts=accounts, sources=filtered_sources)
+        in_progress = False  # actionlog.api.is_sync_in_progress(accounts=accounts, sources=filtered_sources)
 
         return self.create_api_response({'is_sync_in_progress': in_progress})
 
@@ -97,9 +95,9 @@ class CampaignSync(api_common.BaseApiView):
             if campaign_id:
                 campaigns = campaigns.filter(pk=campaign_id)
 
-        if not actionlog.api.is_sync_in_progress(campaigns=campaigns, sources=filtered_sources):
-            # trigger account sync asynchronously and immediately return
-            TriggerCampaignSyncThread(campaigns, filtered_sources, request).start()
+        # if not actionlog.api.is_sync_in_progress(campaigns=campaigns, sources=filtered_sources):
+        #     # trigger account sync asynchronously and immediately return
+        #     TriggerCampaignSyncThread(campaigns, filtered_sources, request).start()
 
         return self.create_api_response({})
 
@@ -119,7 +117,7 @@ class CampaignSyncProgress(api_common.BaseApiView):
             if campaign_id:
                 campaigns = campaigns.filter(pk=campaign_id)
 
-        in_progress = actionlog.api.is_sync_in_progress(campaigns=campaigns, sources=filtered_sources)
+        in_progress = False  # actionlog.api.is_sync_in_progress(campaigns=campaigns, sources=filtered_sources)
 
         return self.create_api_response({'is_sync_in_progress': in_progress})
 
@@ -130,9 +128,9 @@ class AdGroupSync(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        if not actionlog.api.is_sync_in_progress(ad_groups=[ad_group], sources=filtered_sources):
-            # trigger ad group sync asynchronously and immediately return
-            TriggerAdGroupSyncThread(ad_group, filtered_sources, request).start()
+        # if not actionlog.api.is_sync_in_progress(ad_groups=[ad_group], sources=filtered_sources):
+        #     # trigger ad group sync asynchronously and immediately return
+        #     TriggerAdGroupSyncThread(ad_group, filtered_sources, request).start()
 
         return self.create_api_response({})
 
@@ -143,7 +141,7 @@ class AdGroupCheckSyncProgress(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        in_progress = actionlog.api.is_sync_in_progress(ad_groups=[ad_group], sources=filtered_sources)
+        in_progress = False  # actionlog.api.is_sync_in_progress(ad_groups=[ad_group], sources=filtered_sources)
 
         return self.create_api_response({'is_sync_in_progress': in_progress})
 
@@ -152,6 +150,6 @@ class AdGroupPublisherBlacklistCheckSyncProgress(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        in_progress = actionlog.api.is_publisher_blacklist_sync_in_progress(ad_group)
+        in_progress = False  # actionlog.api.is_publisher_blacklist_sync_in_progress(ad_group)
 
         return self.create_api_response({'is_sync_in_progress': in_progress})

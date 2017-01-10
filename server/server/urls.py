@@ -12,7 +12,6 @@ import oauth2_provider.views
 from zemauth.forms import AuthenticationForm
 
 import k1api.views
-import actionlog.views
 import reports.views
 import zemauth.views
 
@@ -672,25 +671,6 @@ urlpatterns += [
         r'^api/callbacks/content-upload/$',
         dash.views.callbacks.content_upload,
         name='callbacks.content_upload',
-    ),
-]
-
-# Action Log
-urlpatterns += [
-    url(
-        r'^action_log/?$',
-        login_required(actionlog.views.action_log),
-        name='action_log_view',
-    ),
-    url(
-        r'^action_log/api/$',
-        login_required(actionlog.views.ActionLogApiView.as_view()),
-        name='action_log_api',
-    ),
-    url(
-        r'^action_log/api/(?P<action_log_id>\d+)/$',
-        login_required(actionlog.views.ActionLogApiView.as_view()),
-        name='action_log_api_put',
     ),
 ]
 

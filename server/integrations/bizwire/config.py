@@ -9,8 +9,8 @@ DEFAULT_DAILY_BUDGET = 25  # initial daily budget - increases as articles start 
 
 INTEREST_TARGETING = [
     constants.InterestCategory.ENTERTAINMENT,
-    constants.InterestCategory.FUN,
-    constants.InterestCategory.POLITICS,
+    constants.InterestCategory.FUN_QUIZZES,
+    constants.InterestCategory.POLITICS_LAW,
     constants.InterestCategory.FASHION,
     constants.InterestCategory.FINANCE,
     constants.InterestCategory.MEDIA,
@@ -31,7 +31,6 @@ INTEREST_TARGETING = [
     constants.InterestCategory.CARS,
     constants.InterestCategory.SPORTS,
     constants.InterestCategory.HEALTH,
-    constants.InterestCategory.LAW,
     constants.InterestCategory.UTILITY,
     constants.InterestCategory.PREMIUM,
 ]

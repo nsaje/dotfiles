@@ -227,8 +227,7 @@ class AudiencesTest(TestCase):
 
     @mock.patch('utils.k1_helper.update_account')
     @mock.patch('utils.redirector_helper.upsert_audience')
-    @mock.patch('actionlog.api.create_audience')
-    def test_post(self, actionlog_create_audience_mock, redirector_upsert_audience_mock, k1_update_account_mock):
+    def test_post(self, redirector_upsert_audience_mock, k1_update_account_mock):
         data = self._get_valid_post_data()
         url = reverse('accounts_audiences', kwargs={'account_id': 1})
 
@@ -289,7 +288,6 @@ class AudiencesTest(TestCase):
         self.assertEqual(history[0].changes, None)
         self.assertEqual(history[0].created_by_id, 1)
 
-        actionlog_create_audience_mock.assert_called_with(audiences[0], mock.ANY)
         redirector_upsert_audience_mock.assert_called_with(audiences[0])
         k1_update_account_mock.assert_called_with(audiences[0].pixel.account_id)
 

@@ -129,6 +129,9 @@ DEADJOE
 .idea
 *.iml
 
+# Visual Studio Code
+.vscode
+
 # tags script
 rebuild_tags.sh
 tags
