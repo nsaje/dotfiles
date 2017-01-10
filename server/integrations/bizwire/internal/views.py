@@ -30,28 +30,21 @@ def click_capping(request):
         raise Http404
 
     content_ad_id = int(request.GET.get('creativeId'))
-    logger.info('[bizwire] click capping - content ad id: %s', content_ad_id)
-
     content_ad = dash.models.ContentAd.objects.filter(
         id=content_ad_id,
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
     ).select_related('ad_group').get()
 
-    changed = False
     if content_ad.state != dash.constants.ContentAdSourceState.INACTIVE:
-        changed = True
         content_ad.state = dash.constants.ContentAdSourceState.INACTIVE
         content_ad.save()
 
     for content_ad_source in content_ad.contentadsource_set.all():
         if content_ad_source.state != dash.constants.ContentAdSourceState.INACTIVE:
-            changed = True
             content_ad_source.state = dash.constants.ContentAdSourceState.INACTIVE
             content_ad_source.save()
 
-    if changed:
-        k1_helper.update_content_ad(content_ad.ad_group.id, content_ad.id)
-
+    k1_helper.update_content_ad(content_ad.ad_group.id, content_ad.id)
     return JsonResponse({
         "status": 'ok'
     })
