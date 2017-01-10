@@ -1048,6 +1048,8 @@ class InterestCategory(ConstantBase):
     PREMIUM = 'premium'
     WOMEN = 'women'
     MEN = 'men'
+
+    # internal from here on
     FOREIGN = 'foreign'
     FRENCH = 'french'
     SPANISH = 'spanish'
