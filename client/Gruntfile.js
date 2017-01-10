@@ -86,14 +86,6 @@ module.exports = function (grunt) {
                 ],
                 dest: 'dist/tmp/zemanta-one.less',
             },
-            actionlog: {
-                src: [
-                    'dist/build/config.js',
-                    'actionlog/app.js',
-                    'actionlog/js/**/*.js'
-                ],
-                dest: 'dist/actionlog/zemanta-one.actionlog.js'
-            }
         },
         bower_concat: {
             one_lib: {
@@ -106,19 +98,6 @@ module.exports = function (grunt) {
                     'angular': 'bootstrap-daterangepicker'
                 }
             },
-            actionlog_lib: {
-                dest: 'dist/actionlog/zemanta-one.actionlog.lib.js',
-                cssDest: 'dist/actionlog/zemanta-one.actionlog.lib.css',
-                mainFiles: {
-                    bootstrap: ['dist/css/bootstrap.min.css', 'dist/js/bootstrap.min.js']
-                },
-                include: [
-                    'jquery',
-                    'bootstrap',
-                    'angular',
-                    'angular-bootstrap',
-                ]
-            }
         },
         cssmin: {
             one_styles: {
@@ -146,16 +125,6 @@ module.exports = function (grunt) {
                     dest: 'dist/one/zemanta-one.lib.min.css'
                 }]
             },
-            actionlog_lib: {
-                options: {
-                    // used to rewrite css urls
-                    target: 'lib'
-                },
-                files: [{
-                    src: 'dist/actionlog/zemanta-one.actionlog.lib.css',
-                    dest: 'dist/actionlog/zemanta-one.actionlog.lib.min.css'
-                }]
-            }
         },
         copy: {
             one: {
@@ -181,12 +150,6 @@ module.exports = function (grunt) {
                     }
                 ]
             },
-            actionlog: {
-                files: [
-                    {expand: true, flatten: true, src: 'actionlog/partials/**/*.html', dest: 'dist/actionlog/'},
-                    {expand: true, flatten: true, src: 'actionlog/img/*', dest: 'dist/actionlog/img/'}
-                ]
-            }
         },
         ngAnnotate: {
             options: {
@@ -212,16 +175,6 @@ module.exports = function (grunt) {
                     'dist/one/zemanta-one.lib.min.js': ['dist/one/zemanta-one.lib.js']
                 }
             },
-            actionlog: {
-                files: {
-                    'dist/actionlog/zemanta-one.actionlog.min.js': ['dist/actionlog/zemanta-one.actionlog.js']
-                }
-            },
-            actionlog_lib: {
-                files: {
-                    'dist/actionlog/zemanta-one.actionlog.lib.min.js': ['dist/actionlog/zemanta-one.actionlog.lib.js']
-                }
-            }
         },
         less: {
             options: {
@@ -234,11 +187,6 @@ module.exports = function (grunt) {
                     'dist/one/zemanta-one.css': 'dist/tmp/zemanta-one.less',
                 }
             },
-            actionlog: {
-                files: {
-                    'dist/actionlog/zemanta-one.actionlog.min.css': 'actionlog/less/**/*.less'
-                }
-            }
         },
         watch: {
             options: {
@@ -266,15 +214,6 @@ module.exports = function (grunt) {
                 ],
                 tasks: ['build:one']
             },
-            actionlog: {
-                files: [
-                    'actionlog/**/*.js',
-                    'actionlog/partials/**/*.html',
-                    'actionlog/less/**/*.less',
-                    'actionlog/img/**/*'
-                ],
-                tasks: ['build:actionlog']
-            }
         },
         connect: {
             dev: {
@@ -366,14 +305,10 @@ module.exports = function (grunt) {
         build: {
             one: ['html2js:one', 'concat:one_js', 'ngAnnotate:one', 'concat:one_styles', 'less:one', 'postcss:one', 'copy:one', 'clean:tmp'],
             one_lib: ['bower_concat:one_lib', 'cssmin:one_lib', 'copy:one_lib'],
-            actionlog: ['concat:actionlog', 'less:actionlog', 'copy:actionlog'],
-            actionlog_lib: ['bower_concat:actionlog_lib', 'cssmin:actionlog_lib'],
         },
         dist: {
             one: ['uglify:one', 'cssmin:one_styles'],
             one_lib: ['uglify:one_lib'],
-            actionlog: ['uglify:actionlog'],
-            actionlog_lib: ['uglify:actionlog_lib']
         },
     });
 

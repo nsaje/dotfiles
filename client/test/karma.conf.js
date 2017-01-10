@@ -20,12 +20,11 @@ module.exports = function (config) {
             'one/app/**/*.js',
             'one/js/**/*.js',
             'one/components/**/*.js',
-            'actionlog/**/*.js',
             'test/unit/**/*.js',
         ],
 
         preprocessors: {
-            '{actionlog,one}/js/**/*.js': 'coverage'
+            '{one}/js/**/*.js': 'coverage'
         },
 
         // test results reporter to use
