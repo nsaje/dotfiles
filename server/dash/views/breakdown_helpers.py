@@ -230,10 +230,11 @@ def create_all_rtb_source_row(ad_group_settings):
         'state': {'value': ad_group_settings.b1_sources_group_state},
         'status': status,
         'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
+        'bid_cpc': ad_group_settings.b1_sources_group_cpc_cc,
         'notifications': notifications,
         'editable_fields': {
             'state': {'message': None, 'enabled': True},
             'daily_budget': {'message': None, 'enabled': True},
-            'bid_cpc': {'message': None, 'enabled': False},
+            'bid_cpc': {'message': None, 'enabled': True},
         }
     }

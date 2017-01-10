@@ -125,6 +125,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         ad_group_settings_dict = json.loads(ad_group_settings_response.content)['data']['settings']
         if 'daily_budget_cc' in settings:
             ad_group_settings_dict['b1_sources_group_daily_budget'] = settings['daily_budget_cc']
+        if 'cpc_cc' in settings:
+            ad_group_settings_dict['b1_sources_group_cpc_cc'] = settings['cpc_cc']
         if 'state' in settings:
             ad_group_settings_dict['b1_sources_group_state'] = settings['state']
 

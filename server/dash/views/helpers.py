@@ -1189,6 +1189,11 @@ def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, ac
     cpc_cc = ad_group_source.source.default_cpc_cc
     if mobile_only:
         cpc_cc = ad_group_source.source.default_mobile_cpc_cc
+    ag_settings = ad_group_source.ad_group.get_current_settings()
+    if (ag_settings.b1_sources_group_enabled and
+            ag_settings.b1_sources_group_cpc_cc > 0.0 and
+            ad_group_source.source.source_type.type == constants.SourceType.B1):
+        cpc_cc = ag_settings.b1_sources_group_cpc_cc
     if max_cpc:
         cpc_cc = min(max_cpc, cpc_cc)
 

@@ -95,13 +95,18 @@ class AdGroupSettings(api_common.BaseApiView):
         current_settings.ad_group_name = previous_ad_group_name
         new_settings.ad_group_name = ad_group.name
 
+        changes = current_settings.get_setting_changes(new_settings)
+        if changes.get('b1_sources_group_enabled'):
+            new_settings.b1_sources_group_cpc_cc = min(new_settings.cpc_cc, constants.RTB_SOURCES_DEFAULT_CPC_CC)
+            new_settings.b1_sources_group_daily_budget = constants.RTB_SOURCES_DEFAULT_DAILY_BUDGET
+            changes = current_settings.get_setting_changes(new_settings)
+
         self._send_update_actions(ad_group, current_settings, new_settings, request)
         self._adjust_adgroup_sources(ad_group, new_settings, request)
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
         # save
         ad_group.save(request)
-        changes = current_settings.get_setting_changes(new_settings)
         if changes:
             new_settings.save(
                 request,
@@ -225,6 +230,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 'dayparting': settings.dayparting,
                 'b1_sources_group_enabled': settings.b1_sources_group_enabled,
                 'b1_sources_group_daily_budget': settings.b1_sources_group_daily_budget,
+                'b1_sources_group_cpc_cc': settings.b1_sources_group_cpc_cc,
                 'b1_sources_group_state': settings.b1_sources_group_state,
             }
 
@@ -269,6 +275,7 @@ class AdGroupSettings(api_common.BaseApiView):
         # TODO(nsaje): protect with permission?
         settings.b1_sources_group_enabled = resource['b1_sources_group_enabled']
         settings.b1_sources_group_daily_budget = resource['b1_sources_group_daily_budget']
+        settings.b1_sources_group_cpc_cc = resource['b1_sources_group_cpc_cc']
         settings.b1_sources_group_state = resource['b1_sources_group_state']
 
         settings.bluekai_targeting = resource['bluekai_targeting']
@@ -295,6 +302,29 @@ class AdGroupSettings(api_common.BaseApiView):
                 request=None,
                 send_to_zwei=False
             )
+
+    ''' # TODO DAVORIN
+    def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request):
+        for ags in ad_group.adgroupsource_set.all():
+            curr_ags_settings = ags.get_current_settings()
+            proposed_cpc = curr_ags_settings.cpc_cc
+            if (ad_group_settings.b1_sources_group_enabled == constants.AdGroupSourceSettingsState.ACTIVE and
+                    ad_group_settings.b1_sources_group_cpc_cc > 0.0 and
+                    ags.source.source_type.type == constants.SourceType.B1):
+                proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
+            if proposed_cpc > ad_group_settings.cpc_cc:
+                proposed_cpc = ad_group_settings.cpc_cc
+
+            if proposed_cpc == curr_ags_settings.cpc_cc:
+                continue
+            api.AdGroupSourceSettingsWriter(ags).set(
+                {
+                    'cpc_cc': proposed_cpc
+                },
+                request=None,
+                send_to_zwei=False
+            )
+    '''
 
     def get_default_settings_dict(self, ad_group):
         settings = ad_group.campaign.get_current_settings()

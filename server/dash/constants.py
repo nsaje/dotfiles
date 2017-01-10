@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from utils.constant_base import ConstantBase
 from dash import regions
+from decimal import Decimal
 
 
 # Outbrain supports only 10 blocked publisher per marketer id
@@ -14,6 +15,8 @@ MAX_CONVERSION_GOALS_PER_CAMPAIGN = 15
 GA_PROPERTY_ID_REGEX = r'UA-([0-9]+)-([0-9]+)'
 DEFAULT_CALL_TO_ACTION = 'Read more'
 
+RTB_SOURCES_DEFAULT_DAILY_BUDGET = Decimal('50.0')
+RTB_SOURCES_DEFAULT_CPC_CC = Decimal('0.45')
 
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1

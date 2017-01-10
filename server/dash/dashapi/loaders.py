@@ -533,6 +533,8 @@ class AdGroupSourcesLoader(Loader):
                 result[source_id]['daily_budget'] = None
                 result[source_id]['editable_fields']['daily_budget']['enabled'] = False
                 result[source_id]['editable_fields']['daily_budget']['message'] = None
+                result[source_id]['editable_fields']['bid_cpc']['enabled'] = False
+                result[source_id]['editable_fields']['bid_cpc']['message'] = 'RTB Sources\' Bid CPC MESSAGE' # TODO Davorin
                 if self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE and \
                    result[source_id]['status'] == constants.AdGroupSourceSettingsState.ACTIVE:
                     result[source_id]['status'] = constants.AdGroupSourceSettingsState.INACTIVE

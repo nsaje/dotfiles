@@ -41,6 +41,7 @@ BLOCKED_AD_GROUP_SETTINGS = [
     'state', 'cpc_cc', 'max_cpm', 'daily_budget_cc', 'display_url',
     'brand_name', 'description', 'call_to_action',
     'autopilot_state', 'autopilot_daily_budget', 'landing_mode',
+    'b1_sources_group_enabled', 'b1_sources_group_daily_budget'
 ]
 
 AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT = '0082c33a43e59aa0da8849b5af3448bc7b'
@@ -760,6 +761,14 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
             new_field_value = field_value
             force_manual_change = False
+
+            if field_name == 'b1_sources_group_cpc_cc':
+                if (new_settings.b1_sources_group_enabled and
+                        new_settings.b1_sources_group_cpc_cc > 0.0 and
+                        ad_group_source.source.source_type.type == constants.SourceType.B1):
+                    new_field_value = new_settings.b1_sources_group_cpc_cc
+                    field_name = 'cpc_cc'
+
             if field_name == 'tracking_code':
                 new_field_value = utils.url_helper.combine_tracking_codes(
                     new_settings.get_tracking_codes(),

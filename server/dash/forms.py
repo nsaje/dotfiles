@@ -238,6 +238,11 @@ class AdGroupSettingsForm(forms.Form):
         required=False,
     )
 
+    b1_sources_group_cpc_cc = forms.DecimalField(
+        decimal_places=4,
+        required=False,
+    )
+
     b1_sources_group_state = forms.TypedChoiceField(
         required=False,
         choices=constants.AdGroupSourceSettingsState.get_choices(),
@@ -351,6 +356,12 @@ class AdGroupSettingsForm(forms.Form):
         if not dayparting:
             dayparting = {}
         return dayparting
+
+    def clean_b1_sources_group_cpc_cc(self):
+        cpc_cc = self.cleaned_data.get('b1_sources_group_cpc_cc')
+        validation_helpers.validate_b1_sources_group_cpc_cc(
+            cpc_cc, self.ad_group)
+        return cpc_cc
 
 
 class AdGroupSourceSettingsCpcForm(forms.Form):

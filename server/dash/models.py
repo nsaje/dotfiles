@@ -2173,6 +2173,7 @@ class AdGroupSettings(SettingsBase):
         'landing_mode',
         'b1_sources_group_enabled',
         'b1_sources_group_daily_budget',
+        'b1_sources_group_cpc_cc',
         'b1_sources_group_state',
         'dayparting',
         'max_cpm',
@@ -2253,6 +2254,12 @@ class AdGroupSettings(SettingsBase):
         decimal_places=4,
         verbose_name='Bidder\'s Daily Cap',
         default=0
+    )
+    b1_sources_group_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        default=SourceType.objects.get(type=constants.SourceType.B1).min_cpc,
+        verbose_name='Bidder\'s Bid CPC'
     )
     b1_sources_group_state = models.IntegerField(
         default=constants.AdGroupSourceSettingsState.INACTIVE,
@@ -2370,6 +2377,7 @@ class AdGroupSettings(SettingsBase):
             'max_cpm': 'Max CPM',
             'b1_sources_group_enabled': 'Group all RTB sources',
             'b1_sources_group_daily_budget': 'Daily budget for all RTB sources',
+            'b1_sources_group_cpc_cc': 'Bid CPC for all RTB sources',
             'b1_sources_group_state': 'State of all RTB sources',
         }
 
@@ -2429,6 +2437,8 @@ class AdGroupSettings(SettingsBase):
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'b1_sources_group_daily_budget' and value is not None:
             value = lc_helper.default_currency(Decimal(value))
+        elif prop_name == 'b1_sources_group_cpc_cc' and value is not None:
+            value = lc_helper.default_currency(Decimal(value), places=3)
 
         return value
 

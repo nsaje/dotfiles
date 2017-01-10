@@ -2,6 +2,9 @@ from decimal import Decimal
 
 from django import forms
 
+import constants
+import models
+
 import utils.string_helper
 
 
@@ -28,13 +31,14 @@ def validate_source_cpc_cc(cpc_cc, source, source_type):
     if decimal_places is not None and has_too_many_decimal_places(cpc_cc, decimal_places):
         raise forms.ValidationError(
             'CPC on {} cannot exceed {} decimal place{}.'.format(
-                source.name, decimal_places, 's' if decimal_places != 1 else ''))
+                source.name if source else constants.SourceAllRTB.NAME, decimal_places,
+                's' if decimal_places != 1 else ''))
 
     min_cpc = source_type.min_cpc
     if min_cpc is not None and cpc_cc < min_cpc:
         raise forms.ValidationError(
             'Minimum CPC on {} is ${}.'.format(
-                source.name,
+                source.name if source else constants.SourceAllRTB.NAME,
                 utils.string_helper.format_decimal(min_cpc, 2, 3)
             )
         )
@@ -43,7 +47,7 @@ def validate_source_cpc_cc(cpc_cc, source, source_type):
     if max_cpc is not None and cpc_cc > max_cpc:
         raise forms.ValidationError(
             'Maximum CPC on {} is ${}.'.format(
-                source.name,
+                source.name if source else constants.SourceAllRTB.NAME,
                 utils.string_helper.format_decimal(max_cpc, 2, 3)
             )
         )
@@ -67,6 +71,16 @@ def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
     if max_cpc is not None and cpc_cc > max_cpc:
         raise forms.ValidationError(
             'Maximum ad group CPC is ${}.'.format(utils.string_helper.format_decimal(max_cpc, 2, 3)))
+
+
+def validate_b1_sources_group_cpc_cc(cpc_cc, ad_group):
+    ad_group_settings = ad_group.get_current_settings()
+    source_type = models.SourceType.objects.get(type=constants.SourceType.B1)
+    validate_source_cpc_cc(cpc_cc, None, source_type)
+    max_adgroup_cpc = ad_group_settings.cpc_cc
+    if max_adgroup_cpc is not None and cpc_cc > max_adgroup_cpc:
+        raise forms.ValidationError(
+            'Maximum ad group CPC is ${}.'.format(utils.string_helper.format_decimal(max_adgroup_cpc, 2, 3)))
 
 
 def validate_ad_group_cpc_cc(cpc_cc, ad_group):
