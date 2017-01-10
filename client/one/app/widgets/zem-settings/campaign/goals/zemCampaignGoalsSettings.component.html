@@ -1,42 +1,13 @@
-<div class="zem-settings-component__container">
-    <h2>Campaign goals</h2>
-    <div class="description">Define your marketing objectives by adding campaign goals.</div>
-    <div class="form-group" ng-class="{'has-error': !!$ctrl.errors.campaignGoal}" ng-if="!$ctrl.hasPermission('zemauth.can_see_campaign_goals')">
-        <label for="goal-input-label" class="col-xs-3 control-label">
-            Campaign goal
-            <zem-help-popover content="The top level goal of this campaign." placement="top"></zem-help-popover>
-        </label>
-        <div class="col-xs-4 form-inline">
-            <label id="goal-input-label" class="col-xs-6" for="goal-input">Meet or beat the goal of</label>
-            <input id="goal-input" type="text" class="form-control" ng-model="settings.goalQuantity">
-        </div>
-        <div class="col-xs-3">
-            <select ui-select2="{minimumResultsForSearch: 10}" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="settings.campaignGoal">
-                <option ng-repeat="goal in $ctrl.options.campaignGoals" value="{{goal.value}}">{{goal.name}}</option>
-            </select>
-        </div>
-        <label ng-repeat="error in $ctrl.errors.campaignGoal" class="control-label error" for="goal-select">{{ error }}</label>
-    </div>
-
-    <div ng-if="$ctrl.hasPermission('zemauth.can_see_campaign_goals')">
-        <div class="form-group section table-campaign-goals" ng-class="{'has-error': !!$ctrl.errors.goals || $ctrl.errors.noGoals}">
-            <label class="col-xs-2 control-label">
-                <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_see_campaign_goals')" popover-placement="right"></zem-internal-feature>Goals:
-            </label>
-            <span class="col-xs-10" ng-show="!!$ctrl.errors.noGoals">
-                <label class="control-label error">{{ $ctrl.errors.noGoals }}</label>
-            </span>
-            <span class="col-xs-10" ng-show="$ctrl.entity.goals.length > 1">
-                <span class="pull-right primary-goal-label">Primary goal</span>
-            </span>
-
-            <div class="col-xs-12">
-                <zem-campaign-goals account="$ctrl.account" campaign="$ctrl.entity.settings" goals="$ctrl.entity.goals" model="$ctrl.entityGoalsDiff"></zem-campaign-goals>
-            </div>
-            <div class="col-xs-12" ng-show="!!$ctrl.errors.goals">
-                <label ng-repeat="error in $ctrl.errors.goals" class="control-label error">{{ error }}</label>
-            </div>
+<div class="zem-settings-component__container zem-settings-component__container--campaign-goals">
+    <div class="zem-settings-component__header">Campaign goals</div>
+    <div class="zem-settings-component__description">Define your marketing objectives by adding campaign goals.</div>
+    <div ng-if="$ctrl.hasPermission('zemauth.can_see_campaign_goals')" is-internal="zemauth.can_see_campaign_goals">
+        <div class="zem-settings-campaign-goals" ng-class="{'has-error': !!$ctrl.errors.goals || $ctrl.errors.noGoals}">
+            <div class="message message--error" ng-show="!!$ctrl.errors.noGoals">{{ $ctrl.errors.noGoals }}</div>
+            <zem-campaign-goals account="$ctrl.account" campaign="$ctrl.entity.settings"
+                                goals="$ctrl.entity.goals" model="$ctrl.entityGoalsDiff"></zem-campaign-goals>
+            <div class="message message--error" ng-show="!!$ctrl.errors.goals"
+                 ng-repeat="error in $ctrl.errors.goals" >{{ error }}</div>
         </div>
     </div>
 </div>
-

@@ -1,54 +1,24 @@
-<div class="zem-campaign-goals">
-    <div ng-show="!campaignGoals.length">
-        <div class="col-xs-7 campaign-goal-row p-none">
-            Currently there are no defined campaign goals.
+<div class="message" ng-show="!campaignGoals.length">Currently there are no defined campaign goals.</div>
+<div class="zem-settings-campaign-goals__goal" ng-repeat="goal in campaignGoals"
+     ng-class="{'zem-settings-campaign-goals__goal--primary': goal.primary}"
+     ng-click="setPrimary(goal)">
+    <div class="zem-settings-campaign-goals__goal-number">{{ $index + 1 }}</div>
+    <div class="zem-settings-campaign-goals__goal-description">
+        Meet or beat the goal of <strong>{{ formatGoalValue(goal) }}</strong>.
+        <div ng-if="goal.type === 4" class="zem-settings-campaign-goals__goal-conversion">
+            Connected with conversion {{ goal.conversionGoal.name }}.
+            <a ng-if="goal.conversionGoal.pixelUrl" ng-click="copyConversionPixelTag(goal.conversionGoal, $event)">Copy tag</a>
         </div>
     </div>
-    <div class="campaign-goal-row clearfix" ng-repeat="goal in campaignGoals" ng-class="{'primary': goal.primary}">
-        <div class="campaign-goal-index col-xs-1" ng-click="setPrimary(goal)">
-            <div class="center-area">
-                <div class="centered">{{ $index + 1 }}</div>
-            </div>
-        </div>
-        <div class="campaign-goal-desc col-xs-9" ng-click="setPrimary(goal)">
-            <div class="center-area">
-                <div class="centered">
-                    <div class="camp-goal-text">
-                        Meet or beat the goal of <strong>{{ formatGoalValue(goal) }}</strong>.
-                    </div>
-                    <div ng-if="goal.type === 4" class="conv-goal-text">
-                        Connected with conversion {{ goal.conversionGoal.name }}.
-                        <a ng-if="goal.conversionGoal.pixelUrl" ng-click="copyConversionPixelTag(goal.conversionGoal, $event)">Copy tag</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="campaign-goal-edit col-xs-1" ng-click="editGoal(goal)">
-            <div class="center-area">
-                <div class="centered">
-                    <zem-icon img-class="zem-icon-edit" file="edit-new.svg" title="Edit"></zem-icon>
-                </div>
-            </div>
-        </div>
-        <div class="campaign-goal-delete col-xs-1" ng-click="deleteGoal(goal)">
-            <div class="center-area">
-                <div class="centered">
-                    <zem-icon img-class="zem-icon-remove" file="remove-new.svg" title="Remove"></zem-icon>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div ng-if="getKPIOptimizationLabel()">
-        <div class="col-xs-12 p-none optimization-label">
-            {{getKPIOptimizationLabel()}}
-        </div>
-    </div>
-    <div>
-        <div class="col-xs-5 p-none">
-            <button type="button" class="button button--with-icon button--add-icon" ng-click="addGoal()">Add new goal</button>
-        </div>
-        <div class="col-xs-7 helper-label p-none" ng-show="(campaignGoals.length || 0) > 1">
-            Click on a goal to set it as primary <zem-help-popover content="Primary goal will be used for auto-optimizing your campaign." placement="top"></zem-help-popover>
-        </div>
-    </div>
+    <button class="button button--with-icon button--only-icon button--edit-icon zem-settings-campaign-goals__edit-button"
+            ng-click="editGoal(goal)"></button>
+    <button class="button button--with-icon button--only-icon button--remove-icon zem-settings-campaign-goals__delete-button"
+            ng-click="deleteGoal(goal)"></button>
 </div>
+<div class="zem-settings-campaign-goals__primary-goal" ng-show="(campaignGoals.length || 0) > 1">
+    Click on a goal to set it as primary
+    <zem-help-popover content="Primary goal will be used for auto-optimizing your campaign." placement="top"></zem-help-popover>
+</div>
+<div ng-if="getKPIOptimizationLabel()"
+     class="message message--info message--with-icon zem-settings-campaign-goals__optimization">{{getKPIOptimizationLabel()}}</div>
+<button type="button" class="button button--with-icon button--add-icon" ng-click="addGoal()">Add new goal</button>

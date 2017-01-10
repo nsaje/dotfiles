@@ -17,6 +17,12 @@ a:active {
     cursor: pointer;
 }
 
+a.alternative-link,
+a.alternative-link:hover,
+a.alternative-link:active {
+    color: @secondary-color;
+}
+
 ////////////////////////////
 // Internal feature //
 ////////////////////////////
@@ -570,18 +576,9 @@ ul.with-icons {
     }
 }
 
-.form__label--wider {
-
-}
-
 .form__information {
     float: left;
-    width: @form-input-width;
-    padding-top: 7px;
-
-    .tag {
-        margin-top: -2px;
-    }
+    width: 100%;
 }
 
 .form__input-text {
@@ -686,16 +683,16 @@ ul.with-icons {
 
 .form__prefixed-field--facebook-icon::before {
     background-image: url('images/facebook.svg');
-    background-size: @default-button-input-height - 6;
-    background-position: 2px center;
-    width: 37px;
+    background-size: @default-button-input-height - 4;
+    background-position: 1px center;
+    width: 29px;
 }
 
 .form__postfixed-field--facebook-icon::after {
     background-image: url('images/facebook.svg');
     background-size: @default-button-input-height - 6;
-    background-position: 13px center;
-    width: 37px;
+    background-position: 4px center;
+    width: 29px;
 }
 
 .form__prefixed-field--calendar-icon::before {
@@ -725,6 +722,15 @@ input.form__input-checkbox {
     width: auto;
     height: auto;
     margin-top: 9px;
+    vertical-align: top;
+    cursor: pointer;
+}
+
+.form__checkbox-text {
+    margin-left: 5px;
+    cursor: pointer;
+
+    .clearfix();
 }
 
 input.form__input-radio {
@@ -748,6 +754,56 @@ select.form__multiselect {
 
     option:checked {
         background: @very-light-gray linear-gradient(0deg, @very-light-gray 0%, @very-light-gray 100%);
+    }
+}
+
+.form__input-tags {
+    .input-box();
+    min-height: 38px;
+    height: auto;
+    max-height: 200px;
+    margin-bottom: 10px;
+    padding: 5px 5px 0 0;
+    overflow: auto;
+    white-space: normal;
+}
+
+.input-tag__item {
+    background-color: @very-light-gray;
+    border-radius: @border-radius;
+    display: inline-block;
+    padding: 4px 10px;
+    margin: 0 0 5px 5px;
+}
+
+.input-tag__prefix {
+
+}
+
+.input-tag__name {
+
+}
+
+.input-tag__item--with-remove {
+    cursor: pointer;
+    position: relative;
+    padding-right: 25px;
+
+    &::after {
+        content: "";
+        display: block;
+        width: 12px;
+        height: 12px;
+        background: url('images/remove-gray.svg') no-repeat center center;
+        position: absolute;
+        right: 5px;
+        top: 7px;
+    }
+
+    &:hover {
+        &::after {
+            background-image: url('images/remove-red.svg');
+        }
     }
 }
 
@@ -783,7 +839,8 @@ select.form__multiselect {
     .form__input-text,
     select.form__multiselect,
     .form__prefixed-field,
-    .form__postfixed-field {
+    .form__postfixed-field,
+    .form__information {
         float: left;
         width: @form-input-width;
     }
@@ -815,6 +872,13 @@ select.form__multiselect {
 
 .form__group--informative {
     margin: 3px 0;
+}
+
+.form__indented {
+    margin-left: 19px;
+    margin-bottom: 30px;
+    border-left: 3px solid @light-gray;
+    padding-left: 20px;
 }
 
 .form--error {
@@ -963,18 +1027,14 @@ label, label.control-label, .form-horizontal .control-label {
     padding: 8px 10px;
     position: relative;
     border-radius: @border-radius;
+}
 
-    &::before {
-        content: "";
-        background: url('images/exclamation-orange.svg') no-repeat center center;
-        background-size: 18px;
-        width: 18px;
-        height: 18px;
-        position: absolute;
-        left: 7px;
-        top: 7px;
-        opacity: 0.5;
-    }
+.message--info {
+    background-color: fade(@blue, 5%);
+    border: 1px solid fade(@blue, 10%);
+    padding: 8px 10px;
+    position: relative;
+    border-radius: @border-radius;
 }
 
 .message--with-icon {
@@ -996,6 +1056,12 @@ label, label.control-label, .form-horizontal .control-label {
     &.message--warning {
         &::before {
             background-image: url('images/exclamation-orange.svg');
+        }
+    }
+
+    &.message--info {
+        &::before {
+            background-image: url('images/info-blue.svg');
         }
     }
 }

@@ -1,31 +1,32 @@
-<div ng-show="selectedLocationCodes" class="multiselect">
-    <div class="multiselect-tag" ng-if="!selectedLocationCodes.length"><span class="multiselect-tag-name">Worldwide</span></div>
-    <div class="multiselect-tag" ng-repeat="location in selectedLocations()" ng-click="removeSelectedLocation(location)">
-        <span ng-if="regions.isDMA(location) || regions.isUSState(location)" class="multiselect-tag-label">US</span>
-        <span class="multiselect-tag-name">
+<div ng-show="selectedLocationCodes" class="form__input-tags custom-scroller">
+    <div class="input-tag__item" ng-if="!selectedLocationCodes.length"><span class="input-tag__name">Worldwide</span></div>
+    <div class="input-tag__item input-tag__item--with-remove" ng-repeat="location in selectedLocations()" ng-click="removeSelectedLocation(location)">
+        <span ng-if="regions.isDMA(location) || regions.isUSState(location)" class="input-tag__prefix">US</span>
+        <span class="input-tag__name input-tag__name--with-remove">
             {{location.name}}
-            <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">
         </span>
     </div>
 </div>
 
-<div ng-if="showUndo()">
-    <b>{{someReplacedNames.join(", ")}}</b>
+<div class="message message--warning message--with-icon zem-settings-locations__undo" ng-if="showUndo()">
+    <strong>{{someReplacedNames.join(", ")}}</strong>
     <ng-pluralize count="someReplacedNames.length" when="{'1': 'was', 'other': 'were'}"></ng-pluralize>
     replaced by
-    <b>{{name}}</b>
+    <strong>{{name}}</strong>
     since it is a {{reason}} location targeting.
     <a href="" ng-click="undo()">Undo?</a>
 </div>
-<select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location" class="button button--with-icon button--add-icon button--dropdown-toggle-icon">
-    <option value=""></option>
-    <optgroup label="Countries">
-        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isCountry" value="{{location.code}}">{{location.name}}</option>
-    </optgroup>
-    <optgroup label="DMAs (United States)">
-        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isDMA" value="{{location.code}}">US: {{location.name}}</option>
-    </optgroup>
-    <optgroup label="U.S. States" ng-if="hasPermission('zemauth.can_set_subdivision_targeting')">
-        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isUSState" value="{{location.code}}">{{location.name}}</option>
-    </optgroup>
-</select>
+<div>
+    <select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location" class="button button--with-icon button--add-icon button--dropdown-toggle-icon">
+        <option value=""></option>
+        <optgroup label="Countries">
+            <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isCountry" value="{{location.code}}">{{location.name}}</option>
+        </optgroup>
+        <optgroup label="DMAs (United States)">
+            <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isDMA" value="{{location.code}}">US: {{location.name}}</option>
+        </optgroup>
+        <optgroup label="U.S. States" ng-if="hasPermission('zemauth.can_set_subdivision_targeting')">
+            <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isUSState" value="{{location.code}}">{{location.name}}</option>
+        </optgroup>
+    </select>
+</div>
