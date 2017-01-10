@@ -24,7 +24,6 @@ from utils import test_helper
 from reports import redshift
 import reports.models
 
-import actionlog.models
 import zemauth.models
 
 
@@ -495,9 +494,8 @@ class CampaignAdGroups(TestCase):
         self.client.login(username=user.email, password='secret')
 
     @patch('utils.redirector_helper.insert_adgroup')
-    @patch('actionlog.zwei_actions.send')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_insert_adgroup, mock_zwei_send):
+    def test_put(self, mock_k1_ping, mock_insert_adgroup):
         campaign = models.Campaign.objects.get(pk=1)
 
         response = self.client.put(
@@ -505,7 +503,6 @@ class CampaignAdGroups(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(mock_insert_adgroup.called)
-        self.assertTrue(mock_zwei_send.called)
 
         response_dict = json.loads(response.content)
         mock_k1_ping.assert_called_with(response_dict['data']['id'], msg='CampaignAdGroups.put')
@@ -514,7 +511,6 @@ class CampaignAdGroups(TestCase):
         ad_group = models.AdGroup.objects.get(pk=response_dict['data']['id'])
         ad_group_settings = ad_group.get_current_settings()
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
-        waiting_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
 
         hist = history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(hist.first().created_by, self.user)
@@ -529,7 +525,6 @@ class CampaignAdGroups(TestCase):
         self.assertIsNotNone(hist.first().changes_text)
         self.assertEquals(ad_group.name, ad_group_settings.ad_group_name)
         self.assertEqual(len(ad_group_sources), 1)
-        self.assertEqual(len(waiting_sources), 1)
 
         # check if default settings from campaign level are
         # copied to the newly created settings
@@ -543,43 +538,34 @@ class CampaignAdGroups(TestCase):
         request.META['SERVER_PORT'] = 1234
         request.user = User.objects.get(pk=1)
         view = views.CampaignAdGroups()
-        ad_group, ad_group_settings, changes_text, actions = view._create_ad_group(campaign, request)
+        ad_group, ad_group_settings, changes_text = view._create_ad_group(campaign, request)
 
         self.assertIsNotNone(ad_group)
         self.assertIsNotNone(ad_group_settings)
-        self.assertEqual(len(actions), 1)
 
     def test_create_ad_group_no_add_media_sources_automatically_permission(self):
         campaign = models.Campaign.objects.get(pk=1)
         request = HttpRequest()
         request.user = User.objects.get(pk=2)
         view = views.CampaignAdGroups()
-        ad_group, ad_group_settings, changes_text, actions = view._create_ad_group(campaign, request)
+        ad_group, ad_group_settings, changes_text = view._create_ad_group(campaign, request)
 
         self.assertIsNotNone(ad_group)
         self.assertIsNotNone(ad_group_settings)
-        self.assertEqual(len(actions), 0)
 
-    @patch('actionlog.api.create_campaign')
-    def test_add_media_sources(self, mock_create_campaign):
+    def test_add_media_sources(self):
         ad_group = models.AdGroup.objects.get(pk=2)
         ad_group_settings = ad_group.get_current_settings()
         request = None
 
         view = views.CampaignAdGroups()
-        actions, changes_text = view._add_media_sources(ad_group, ad_group_settings, request)
+        changes_text = view._add_media_sources(ad_group, ad_group_settings, request)
 
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
-        waiting_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
         added_source = models.Source.objects.get(pk=1)
-
-        self.assertEqual(len(actions), 1)
-        self.assertEqual(mock_create_campaign.call_count, 1)
-        self.assertFalse(mock_create_campaign.call_args[1]['send'])
 
         self.assertEqual(len(ad_group_sources), 1)
         self.assertEqual(ad_group_sources[0].source, added_source)
-        self.assertEqual(waiting_ad_group_sources, [])
 
         self.assertEqual(
             changes_text,
@@ -593,8 +579,7 @@ class CampaignAdGroups(TestCase):
             [adgss.state == constants.AdGroupSourceSettingsState.INACTIVE for adgss in ad_group_source_settings]
         ))
 
-    @patch('actionlog.api.create_campaign')
-    def test_add_media_sources_with_retargeting(self, mock_create_campaign):
+    def test_add_media_sources_with_retargeting(self):
         ad_group = models.AdGroup.objects.get(pk=2)
 
         # remove ability to retarget from all sources
@@ -750,41 +735,6 @@ class AdGroupArchiveRestoreTest(TestCase):
 
         ad_group = models.AdGroup.objects.get(pk=1)
         self.assertFalse(ad_group.is_archived())
-
-        pub_blacklist_actions = actionlog.models.ActionLog.objects.filter(
-            action='set_publisher_blacklist',
-        )
-        self.assertEqual(2, pub_blacklist_actions.count())
-
-        first_al_entry = pub_blacklist_actions[0]
-        self.assertDictEqual({
-            u'key': [1],
-            u'level': u'account',
-            'publishers': [
-                {
-                    u'domain': u'google.com',
-                    u'exchange': u'adiant',
-                    u'source_id': 2,
-                    u'ad_group_id': 1,
-                }
-            ],
-            'state': 2
-        }, first_al_entry.payload['args'])
-
-        second_al_entry = pub_blacklist_actions[1]
-        self.assertDictEqual({
-            u'key': [1],
-            u'level': u'campaign',
-            'publishers': [
-                {
-                    u'domain': u'zemanta.com',
-                    u'exchange': u'adiant',
-                    u'source_id': 2,
-                    u'ad_group_id': 1,
-                }
-            ],
-            'state': 2
-        }, second_al_entry.payload['args'])
 
 
 class AdGroupSourcesTest(TestCase):
@@ -963,10 +913,7 @@ class AdGroupSourcesTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
         source = models.Source.objects.get(pk=9)
         ad_group_sources = ad_group.sources.all()
-        waiting_sources = (ad_group_source.source for ad_group_source
-                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
         self.assertIn(source, ad_group_sources)
-        self.assertIn(source, waiting_sources)
 
     def test_put_overwrite_cpc(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -982,17 +929,7 @@ class AdGroupSourcesTest(TestCase):
 
         source = models.Source.objects.get(pk=9)
         ad_group_sources = ad_group.sources.all()
-        waiting_sources = (ad_group_source.source for ad_group_source
-                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
         self.assertIn(source, ad_group_sources)
-        self.assertIn(source, waiting_sources)
-
-        ags = [ags for ags in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
-               if ags.source == source][0]
-        self.assertEqual(
-            ags.get_current_settings().cpc_cc,
-            decimal.Decimal('0.01')
-        )
 
     @override_settings(K1_CONSISTENCY_SYNC=True)
     def test_put_add_content_ad_sources(self):
@@ -1005,10 +942,7 @@ class AdGroupSourcesTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
         source = models.Source.objects.get(pk=9)
         ad_group_sources = ad_group.sources.all()
-        waiting_sources = (ad_group_source.source for ad_group_source
-                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
         self.assertIn(source, ad_group_sources)
-        self.assertNotIn(source, waiting_sources)
 
         content_ads = models.ContentAd.objects.filter(ad_group=ad_group)
         content_ad_sources = models.ContentAdSource.objects.filter(content_ad__ad_group=ad_group, source=source)
@@ -1037,10 +971,7 @@ class AdGroupSourcesTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
         ad_group_sources = ad_group.sources.all()
-        waiting_sources = (ad_group_source.source for ad_group_source
-                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
         self.assertNotIn(source, ad_group_sources)
-        self.assertNotIn(source, waiting_sources)
 
     def test_put_existing_source(self):
         response = self.client.put(
@@ -1050,7 +981,6 @@ class AdGroupSourcesTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
-@patch('dash.views.views.actionlog.api_contentads.init_update_content_ad_action')
 class SharethroughApprovalTest(TestCase):
 
     fixtures = ['test_api.yaml']
@@ -1058,7 +988,7 @@ class SharethroughApprovalTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_approved_creative(self, mock_update):
+    def test_approved_creative(self):
         data = {
             'status': 0,
             'crid': 1,
@@ -1079,10 +1009,8 @@ class SharethroughApprovalTest(TestCase):
 
         self.assertEqual(2, cas.submission_status)
         self.assertEqual(None, cas.submission_errors)
-        self.assertTrue(mock_update.called)
-        mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)
 
-    def test_rejected_creative(self, mock_update):
+    def test_rejected_creative(self):
         data = {
             'status': 1,
             'crid': 1,
@@ -1103,8 +1031,6 @@ class SharethroughApprovalTest(TestCase):
 
         self.assertEqual(3, cas.submission_status)
         self.assertEqual(None, cas.submission_errors)
-        self.assertTrue(mock_update.called)
-        mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)
 
 
 class PublishersBlacklistStatusTest(TestCase):
@@ -1728,39 +1654,8 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist(1, payload)
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.get(
-            action_type=actionlog.constants.ActionType.MANUAL,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(
-            publisher_blacklist_action.message,
-            u'Blacklist the following publishers on Outbrain for account ZemAccount (#1): '
-            u'Test #sfdafkl1230899012asldas'
-        )
         self.assertTrue(res['success'])
         self.assertEqual(32, models.PublisherBlacklist.objects.count())
-
-        # Revert
-        publisher_blacklist_action.delete()
-        payload = {
-            "state": constants.PublisherStatus.ENABLED,
-            "level": constants.PublisherBlacklistLevel.ACCOUNT,
-            "start_date": start_date.isoformat(),
-            "end_date": end_date.isoformat(),
-            "select_all": True,
-            "publishers_selected": [],
-            "publishers_not_selected": []
-        }
-        res = self._post_publisher_blacklist(1, payload)
-        publisher_blacklist_action = actionlog.models.ActionLog.objects.get(
-            action_type=actionlog.constants.ActionType.MANUAL,
-            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
-        )
-        self.assertEqual(
-            publisher_blacklist_action.message,
-            u'Enable the following publishers on Outbrain for account ZemAccount (#1): '
-            u'Test #sfdafkl1230899012asldas'
-        )
 
 
 class AdGroupOverviewTest(TestCase):

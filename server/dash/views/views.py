@@ -34,13 +34,6 @@ from utils import request_signer
 
 from automation import autopilot_plus
 
-import actionlog.api
-import actionlog.models
-import actionlog.constants
-import actionlog.api_contentads
-import actionlog.sync
-import actionlog.zwei_actions
-
 from automation import campaign_stop
 
 from dash import models, region_targeting_helper, retargeting_helper
@@ -185,7 +178,6 @@ class AccountRestore(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
         account.restore(request)
-        actionlog.sync.AccountSync(account).trigger_all(self.request)
         return self.create_api_response({})
 
 
@@ -211,7 +203,6 @@ class CampaignRestore(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign.restore(request)
 
-        actionlog.sync.CampaignSync(campaign).trigger_all(request)
         return self.create_api_response({})
 
 
@@ -434,11 +425,10 @@ class CampaignAdGroups(api_common.BaseApiView):
     @influx.timer('dash.api')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
-        ad_group, ad_group_settings, changes_text, actions = self._create_ad_group(campaign, request)
+        ad_group, ad_group_settings, changes_text = self._create_ad_group(campaign, request)
         ad_group_settings.save(None)
 
         api.update_ad_group_redirector_settings(ad_group, ad_group_settings)
-        actionlog.zwei_actions.send(actions)
 
         ad_group.write_history(
             changes_text,
@@ -452,7 +442,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def _create_ad_group(self, campaign, request):
-        actions = []
         changes_text = None
         with transaction.atomic():
             ad_group = models.AdGroup(
@@ -462,13 +451,12 @@ class CampaignAdGroups(api_common.BaseApiView):
             ad_group.save(request)
             ad_group_settings = self._create_new_settings(ad_group, request)
             if request.user.has_perm('zemauth.add_media_sources_automatically'):
-                media_sources_actions, changes_text = self._add_media_sources(ad_group, ad_group_settings, request)
-                actions.extend(media_sources_actions)
+                changes_text = self._add_media_sources(ad_group, ad_group_settings, request)
 
         k1_helper.update_ad_group(ad_group.pk,
                                   msg='CampaignAdGroups.put')
 
-        return ad_group, ad_group_settings, changes_text, actions
+        return ad_group, ad_group_settings, changes_text
 
     def _create_new_settings(self, ad_group, request):
         current_settings = ad_group.get_current_settings()  # get default ad group settings
@@ -483,7 +471,6 @@ class CampaignAdGroups(api_common.BaseApiView):
 
     def _add_media_sources(self, ad_group, ad_group_settings, request):
         sources = ad_group.campaign.account.allowed_sources.all()
-        actions = []
         added_sources = []
         for source in sources:
             try:
@@ -492,18 +479,15 @@ class CampaignAdGroups(api_common.BaseApiView):
                 logger.exception('Exception occurred on campaign with id %s', ad_group.campaign.pk)
                 continue
 
-            ad_group_source = self._create_ad_group_source(request, source_default_settings, ad_group_settings)
-            external_name = ad_group_source.get_external_name()
-            action = actionlog.api.create_campaign(ad_group_source, external_name, request, send=False)
+            self._create_ad_group_source(request, source_default_settings, ad_group_settings)
             added_sources.append(source)
-            actions.append(action)
 
         changes_text = None
         if added_sources:
             changes_text = 'Created settings and automatically created campaigns for {} sources ({})'.format(
                 len(added_sources), ', '.join([source.name for source in added_sources]))
 
-        return actions, changes_text
+        return changes_text
 
     def _create_ad_group_source(self, request, source_settings, ad_group_settings):
         ad_group = ad_group_settings.ad_group
@@ -879,12 +863,9 @@ class AdGroupSources(api_common.BaseApiView):
                 'can_retarget': retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
             })
 
-        sources_waiting = set([ad_group_source.source.name for ad_group_source
-                               in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)])
-
         return self.create_api_response({
             'sources': sorted(sources, key=lambda source: source['name']),
-            'sources_waiting': list(sources_waiting),
+            'sources_waiting': [],
         })
 
     @influx.timer('dash.api')
@@ -913,9 +894,6 @@ class AdGroupSources(api_common.BaseApiView):
         default_settings = helpers.get_source_default_settings(source)
         ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
         ad_group_source.save(None)
-
-        external_name = ad_group_source.get_external_name()
-        actionlog.api.create_campaign(ad_group_source, external_name, request)
 
         ad_group.write_history(
             '{} campaign created.'.format(ad_group_source.source.name),
@@ -1610,9 +1588,7 @@ def sharethrough_approval(request):
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
 
     content_ad_source.save()
-
-    actionlog.api_contentads.init_update_content_ad_action(content_ad_source, {'state': content_ad_source.state},
-                                                           request=None, send=True)
+    k1_helper.update_content_ad(content_ad_source.content_ad_id, content_ad_source.content_ad.ad_group_id)
 
     return HttpResponse('OK')
 

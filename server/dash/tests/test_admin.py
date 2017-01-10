@@ -38,9 +38,8 @@ class AdGroupAdmin(TestCase):
 
     fixtures = ['test_models']
 
-    @mock.patch.object(admin.AdGroupAdmin, '_handle_manual_interest_targeting_action')
     @mock.patch.object(admin.utils.redirector_helper, 'insert_adgroup')
-    def test_save_additional_targeting(self, mock_r1_insert_adgroup, mock_handle_manual):
+    def test_save_additional_targeting(self, mock_r1_insert_adgroup):
         trackers = ['http://a.com', 'http://b.com']
         javascript = 'alert("A");'
         interest_targeting = ['segment1', 'segment2']
@@ -83,15 +82,3 @@ class AdGroupAdmin(TestCase):
             new_settings,
             campaign_settings,
         )
-        self.assertEqual(mock_handle_manual.call_count, 6)
-
-    @mock.patch.object(admin.actionlog.api, 'init_set_ad_group_manual_property')
-    def test_handle_manual_interest_targeting_action(self, mock_actionlog_init_manual):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        current_settings = ad_group.get_current_settings()
-        new_settings = current_settings.copy_settings()
-        new_settings.interest_targeting = ['new', 'targeting']
-        new_settings.exclusion_interest_targeting = ['new', 'targeting']
-        admin.AdGroupAdmin._handle_manual_interest_targeting_action(
-            mock.Mock(), ad_group, 'adiant', current_settings, new_settings)
-        self.assertEqual(mock_actionlog_init_manual.call_count, 2)

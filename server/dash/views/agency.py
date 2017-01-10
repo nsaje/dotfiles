@@ -9,8 +9,6 @@ from django.conf import settings
 from django.contrib.auth import models as authmodels
 from django.http import Http404
 
-from actionlog import api as actionlog_api
-from actionlog import zwei_actions
 from automation import autopilot_budgets, autopilot_plus
 from dash.views import helpers
 from dash import forms
@@ -95,7 +93,7 @@ class AdGroupSettings(api_common.BaseApiView):
         current_settings.ad_group_name = previous_ad_group_name
         new_settings.ad_group_name = ad_group.name
 
-        self._send_update_actions(ad_group, current_settings, new_settings, request)
+        api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
         self._adjust_adgroup_sources(ad_group, new_settings, request)
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
@@ -273,16 +271,6 @@ class AdGroupSettings(api_common.BaseApiView):
 
         settings.bluekai_targeting = resource['bluekai_targeting']
 
-    def _send_update_actions(self, ad_group, current_settings, new_settings, request):
-        actionlogs_to_send = []
-
-        with transaction.atomic():
-            actionlogs_to_send.extend(
-                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
-            )
-
-        zwei_actions.send(actionlogs_to_send)
-
     def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request):
         for ags in ad_group.adgroupsource_set.all():
             curr_ags_settings = ags.get_current_settings()
@@ -384,7 +372,6 @@ class AdGroupSettingsState(api_common.BaseApiView):
 
         changed = ad_group.set_state(request, new_state)
         if changed:
-            actionlog_api.init_set_ad_group_state(ad_group, new_state, request, send=True)
             k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettingsState.post')
 
         return self.create_api_response({

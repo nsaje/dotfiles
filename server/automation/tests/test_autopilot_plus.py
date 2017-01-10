@@ -59,9 +59,8 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch('automation.autopilot_plus.persist_autopilot_changes_to_log')
     @patch('automation.autopilot_plus._get_autopilot_campaign_changes_data')
     @patch('automation.autopilot_plus._report_autopilot_exception')
-    @patch('actionlog.zwei_actions')
     @patch('utils.k1_helper.update_ad_group')
-    def test_dry_run(self, mock_k1, mock_zwei, mock_exc, mock_get_changes, mock_log, mock_set,
+    def test_dry_run(self, mock_k1, mock_exc, mock_get_changes, mock_log, mock_set,
                      mock_predict, mock_active, mock_prefetch):
         ad_groups = list(dash.models.AdGroup.objects.all())
         mock_prefetch.return_value = (
@@ -84,7 +83,6 @@ class AutopilotPlusTestCase(test.TestCase):
         )
         self.assertEqual(mock_exc.called, False)
         self.assertEqual(mock_k1.called, False)
-        self.assertEqual(mock_zwei.called, False)
         self.assertEqual(mock_log.called, False)
 
         self.assertEqual(mock_predict.called, True)

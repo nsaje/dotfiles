@@ -25,7 +25,6 @@ import reports.api_publishers
 import reports.constants
 import reports.models
 from analytics.projections import BudgetProjections
-import actionlog.sync
 
 
 def has_aggregate_postclick_permission(user):
@@ -145,18 +144,20 @@ class AllAccountsSourcesTable(object):
 
     def get_last_success_actions(self):
         if not hasattr(self, '_last_success_actions'):
-            self._last_success_actions = actionlog.sync.GlobalSync(
-                sources=self.view_filter.filtered_sources
-            ).get_latest_source_success()
+            pass
+            # self._last_success_actions = actionlog.sync.GlobalSync(
+            #     sources=self.view_filter.filtered_sources
+            # ).get_latest_source_success()
         return self._last_success_actions
 
     def get_last_pixel_sync(self):
         return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False))
 
     def is_sync_in_progress(self):
-        return actionlog.api.is_sync_in_progress(
-            accounts=self.accounts,
-            sources=self.view_filter.filtered_sources)
+        return
+        # return actionlog.api.is_sync_in_progress(
+        #     accounts=self.accounts,
+        #     sources=self.view_filter.filtered_sources)
 
     def get_data_status(self, user):
         return helpers.get_data_status(self.get_sources())
@@ -337,10 +338,11 @@ class AdGroupSourcesTable(object):
 
     def get_last_success_actions(self):
         if not hasattr(self, '_last_success_actions'):
-            self._last_success_actions = actionlog.sync.AdGroupSync(
-                self.ad_group,
-                sources=self.filtered_sources
-            ).get_latest_source_success()
+            self._last_success_actions = None
+            # self._last_success_actions = actionlog.sync.AdGroupSync(
+            #     self.ad_group,
+            #     sources=self.filtered_sources
+            # ).get_latest_source_success()
         return self._last_success_actions
 
     def get_last_pixel_sync(self):
@@ -1004,7 +1006,7 @@ class AdGroupAdsTableUpdates(object):
                 'submission_status': submission_status
             }
 
-        notifications = helpers.get_content_ad_notifications(ad_group)
+        notifications = {}
 
         response_dict = {
             'rows': rows,
@@ -1103,7 +1105,7 @@ class AdGroupAdsTable(object):
                 'endIndex': end_index,
                 'size': size
             },
-            'notifications': helpers.get_content_ad_notifications(ad_group),
+            'notifications': {},
             'last_change': helpers.get_content_ad_last_change_dt(ad_group, filtered_sources),
             'last_sync': None,  # pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': True,  # helpers.is_sync_recent(last_success_actions_joined.values()),

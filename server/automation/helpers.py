@@ -8,9 +8,8 @@ import dash
 import dash.constants
 import decimal
 import dash.views.helpers
-import actionlog.api
 import utils.dates_helper
-from actionlog import zwei_actions
+import utils.k1_helper
 
 
 def get_yesterdays_spends(campaigns):
@@ -126,10 +125,7 @@ def stop_campaign(campaign):
         new_settings = current_settings.copy_settings()
         new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
         new_settings.save(None)
-        actionlogs_to_send = []
-        with transaction.atomic():
-            actionlogs_to_send = actionlog.api.init_pause_ad_group(ad_group, None, send=False)
-        zwei_actions.send(actionlogs_to_send)
+        utils.k1_helper.update_ad_group(ad_group.id)
 
 
 def update_ad_group_source_value(ad_group_source, field, new_value):

@@ -29,10 +29,6 @@ import utils.k1_helper
 import utils.email_helper
 import utils.redirector_helper
 
-import actionlog.api
-import actionlog.api_contentads
-import actionlog.zwei_actions
-
 from automation import campaign_stop
 from utils.admin_common import SaveWithRequestMixin
 
@@ -761,12 +757,6 @@ class AdGroupAdmin(admin.ModelAdmin):
         if changes:
             new_settings.save(request)
             utils.k1_helper.update_ad_group(ad_group.pk, msg='AdGroup admin')
-            self._handle_manual_interest_targeting_action(
-                request, ad_group, constants.SourceType.FACEBOOK, current_settings, new_settings)
-            self._handle_manual_interest_targeting_action(
-                request, ad_group, constants.SourceType.YAHOO, current_settings, new_settings)
-            self._handle_manual_interest_targeting_action(
-                request, ad_group, constants.SourceType.OUTBRAIN, current_settings, new_settings)
             if (current_settings.redirect_pixel_urls != new_settings.redirect_pixel_urls or
                     current_settings.redirect_javascript != new_settings.redirect_javascript):
                 self._update_redirector_adgroup(ad_group, new_settings)
@@ -774,30 +764,6 @@ class AdGroupAdmin(admin.ModelAdmin):
                 current_settings, new_settings, request.user, separator='\n')
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)
-
-    @staticmethod
-    def _handle_manual_interest_targeting_action(request, ad_group, source_slug, current_settings, new_settings):
-        ad_group_source = models.AdGroupSource.objects.filter(
-            ad_group=ad_group,
-            source__tracking_slug=source_slug
-        ).first()
-        if not ad_group_source:
-            return
-
-        if current_settings.interest_targeting != new_settings.interest_targeting:
-            actionlog.api.init_set_ad_group_manual_property(
-                ad_group_source,
-                request,
-                'interest_targeting',
-                new_settings.interest_targeting
-            )
-        if current_settings.exclusion_interest_targeting != new_settings.exclusion_interest_targeting:
-            actionlog.api.init_set_ad_group_manual_property(
-                ad_group_source,
-                request,
-                'exclusion_interest_targeting',
-                new_settings.exclusion_interest_targeting
-            )
 
     @staticmethod
     def _update_redirector_adgroup(ad_group, new_settings):
@@ -835,7 +801,6 @@ class AdGroupAdmin(admin.ModelAdmin):
     campaign_.admin_order_field = 'campaign'
 
     def save_formset(self, request, form, formset, change):
-        actions = []
         if formset.model == models.AdGroupSource:
             instances = formset.save(commit=False)
 
@@ -844,7 +809,7 @@ class AdGroupAdmin(admin.ModelAdmin):
                 for changed_instance, changed_fields in formset.changed_objects:
                     if changed_instance.id == instance.id and ('submission_status' in changed_fields or
                                                                'source_content_ad_id' in changed_fields):
-                        actions.extend(api.update_content_ads_submission_status(instance))
+                        api.update_content_ads_submission_status(instance)
 
             for obj in formset.deleted_objects:
                 obj.delete()
@@ -858,11 +823,10 @@ def approve_ad_group_sources(modeladmin, request, queryset):
             [el.id for el in queryset]
         )
     )
-    actions = []
     for ad_group_source in queryset:
         ad_group_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
         ad_group_source.save()
-        actions.extend(api.update_content_ads_submission_status(ad_group_source))
+        api.update_content_ads_submission_status(ad_group_source)
 approve_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as APPROVED'
 
 
@@ -872,11 +836,10 @@ def reject_ad_group_sources(modeladmin, request, queryset):
             [el.id for el in queryset]
         )
     )
-    actions = []
     for ad_group_source in queryset:
         ad_group_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
         ad_group_source.save()
-        actions.extend(api.update_content_ads_submission_status(ad_group_source))
+        api.update_content_ads_submission_status(ad_group_source)
 reject_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as REJECTED'
 
 
@@ -1147,22 +1110,9 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         return constants.AdGroupSettingsState.get_text(ad_group_settings.state)
 
     def save_model(self, request, content_ad_source, form, change):
-        current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
         content_ad_source.save()
         utils.k1_helper.update_content_ad(content_ad_source.content_ad.ad_group_id,
                                           content_ad_source.content_ad_id)
-
-        if current_content_ad_source.submission_status != content_ad_source.submission_status and\
-           content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
-            changes = {
-                'state': content_ad_source.state,
-            }
-
-            actionlog.api_contentads.init_update_content_ad_action(
-                content_ad_source,
-                changes,
-                request
-            )
 
     def __init__(self, *args, **kwargs):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)

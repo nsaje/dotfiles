@@ -15,12 +15,10 @@ import xlrd
 from django import forms
 from django.contrib.postgres import forms as postgres_forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from django.db import transaction
 from django.core import validators
 from django.utils.html import strip_tags
 
 from automation import autopilot_budgets, autopilot_settings
-from dash import api
 from dash import constants
 from dash import fields
 from dash import models
@@ -30,9 +28,6 @@ from dash.views import helpers
 from utils import dates_helper
 
 from zemauth.models import User as ZemUser
-
-import actionlog.api_contentads
-import actionlog.zwei_actions
 
 import stats.constants
 
@@ -1133,19 +1128,6 @@ class PublisherBlacklistForm(forms.ModelForm):
             'domain': name,
             'source': candidate_source,
         })
-
-        actionlogs_to_send = []
-        with transaction.atomic():
-            actionlogs_to_send.extend(
-                api.create_global_publisher_blacklist_actions(
-                    None,
-                    self.request,
-                    constants.PublisherStatus.BLACKLISTED,
-                    global_blacklist,
-                    send=False
-                )
-            )
-        actionlog.zwei_actions.send(actionlogs_to_send)
 
     class Meta:
         model = models.PublisherBlacklist

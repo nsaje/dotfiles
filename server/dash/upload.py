@@ -5,7 +5,6 @@ from django.db import transaction
 from django.conf import settings
 import unicodecsv
 
-import actionlog.api
 from dash import constants
 from dash import forms
 from dash import models

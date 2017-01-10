@@ -11,10 +11,6 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, Max
 
-import actionlog.api
-import actionlog.constants
-import actionlog.models
-import actionlog.zwei_actions
 import automation
 
 from dash import models
@@ -232,29 +228,6 @@ def is_agency_manager(user, account):
     return get_user_agency(user) == account.agency
 
 
-def get_last_sync(sync_times):
-    if not len(sync_times) or None in sync_times:
-        return None
-
-    return min(sync_times)
-
-
-def is_sync_recent(sync_times):
-    if not len(sync_times):
-        return True  # Sync is recent if there is no children
-
-    min_sync_date = datetime.datetime.utcnow() - datetime.timedelta(
-        hours=settings.ACTIONLOG_RECENT_HOURS
-    )
-
-    last_sync = get_last_sync(sync_times)
-
-    if last_sync is None:
-        return False
-
-    return last_sync >= min_sync_date
-
-
 def _get_adgroups_for(modelcls, modelobjects):
     if modelcls is models.Account:
         return models.AdGroup.objects.filter(campaign__account__in=modelobjects)
@@ -271,27 +244,14 @@ def get_active_ad_group_sources(modelcls, modelobjects):
         filter(ad_group__in=adgroups).\
         group_current_settings()
     archived_adgroup_ids = [setting.ad_group_id for setting in adgroup_settings if setting.archived]
-    inactive_adgroup_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=adgroups)
-    inactive_adgroup_source_ids = [adgroup_source.pk for adgroup_source in inactive_adgroup_sources]
 
     active_ad_group_sources = models.AdGroupSource.objects \
         .filter(ad_group__in=adgroups).\
-        exclude(pk__in=inactive_adgroup_source_ids).\
         exclude(ad_group__in=archived_adgroup_ids).\
         select_related('source__source_type').\
         select_related('ad_group')
 
     return active_ad_group_sources
-
-
-def join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync):
-    last_success_actions_joined = {}
-    for id_, last_sync_time in last_success_actions.items():
-        if last_sync_time is None or last_pixel_sync is None:
-            last_success_actions_joined[id_] = None
-            continue
-        last_success_actions_joined[id_] = min(last_sync_time, last_pixel_sync)
-    return last_success_actions_joined
 
 
 def get_ad_group_sources_last_change_dt(ad_group_sources, ad_group_sources_settings,
@@ -335,42 +295,18 @@ def get_ad_group_sources_last_change_dt(ad_group_sources, ad_group_sources_setti
     return max(last_change_dts), changed_ad_group_sources
 
 
-def _get_keys_in_progress(ad_group_source, waiting_delayed_actions):
-    keys_in_progress = set()
-    for action in waiting_delayed_actions:
-        if action.ad_group_source_id != ad_group_source.id:
-            continue
-
-        keys = action.payload.get('args', {}).get('conf', {}).keys()
-
-        for key in keys:
-            keys_in_progress.add(key)
-
-    return keys_in_progress
-
-
 def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
                                        ad_group_sources_settings, ad_group_sources_states):
     notifications = {}
-
-    waiting_delayed_actions = actionlog.models.ActionLog.objects.filter(
-        state__in=(actionlog.constants.ActionState.WAITING, actionlog.constants.ActionState.DELAYED),
-        action=actionlog.constants.Action.SET_CAMPAIGN_STATE,
-        ad_group_source_id__in=[ags.id for ags in ad_group_sources],
-    )
 
     for ags in ad_group_sources:
         notification = {}
 
         ad_group_source_settings = _get_ad_group_source_settings_from_filter_qs(ags, ad_group_sources_settings)
-        ad_group_source_state = _get_ad_group_source_state_from_filter_qs(ags, ad_group_sources_states)
 
         messages = []
-        in_progress = False
         important = False
         state_message = None
-
-        keys_in_progress = _get_keys_in_progress(ags, waiting_delayed_actions)
 
         if not models.AdGroup.is_ad_group_active(ad_group_settings):
             if ad_group_source_settings and ad_group_source_settings.state == constants.AdGroupSettingsState.ACTIVE:
@@ -378,44 +314,7 @@ def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
                                  ' you enable ad group in Ad groups tab on Campaign level.')
                 messages.append(state_message)
 
-                if len(keys_in_progress):
-                    if 'state' in keys_in_progress:
-                        messages.append(_get_state_update_notification(ags, ad_group_settings, ad_group_source_state))
                 important = True
-
-        if len(keys_in_progress):
-            update_messages = []
-
-            if state_message is None and 'state' in keys_in_progress:
-                update_messages.append(
-                    _get_state_update_notification(
-                        ags,
-                        ad_group_source_settings,
-                        ad_group_source_state
-                    )
-                )
-
-            if 'cpc_cc' in keys_in_progress:
-                update_messages.append(
-                    _get_cpc_update_notification(
-                        ags,
-                        ad_group_source_settings,
-                        ad_group_source_state
-                    )
-                )
-
-            if 'daily_budget_cc' in keys_in_progress:
-                update_messages.append(
-                    _get_budget_update_notification(
-                        ags,
-                        ad_group_source_settings,
-                        ad_group_source_state
-                    )
-                )
-
-            in_progress = len(update_messages) > 0
-
-            messages += update_messages
 
         message = '<br />'.join([t for t in messages if t is not None])
 
@@ -423,48 +322,10 @@ def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
             continue
 
         notification['message'] = message
-        notification['in_progress'] = in_progress
+        notification['in_progress'] = False
         notification['important'] = important
 
         notifications[ags.source_id] = notification
-
-    return notifications
-
-
-def get_content_ad_notifications(ad_group):
-    actions = actionlog.models.ActionLog.objects.filter(
-        state=actionlog.constants.ActionState.WAITING,
-        content_ad_source__isnull=False,
-        ad_group_source__ad_group=ad_group,
-        action=actionlog.constants.Action.UPDATE_CONTENT_AD
-    ).select_related('content_ad_source__content_ad')
-
-    content_ads = {}
-    for action in actions:
-        content_ad_id = action.content_ad_source.content_ad.id
-
-        if content_ad_id not in content_ads:
-            content_ads[content_ad_id] = []
-
-        content_ads[content_ad_id].append(action.content_ad_source)
-
-    notifications = {}
-    for content_ad_id, content_ad_sources in content_ads.items():
-        if any(c.state != c.source_state for c in content_ad_sources):
-            state = content_ad_sources[0].state  # take first since all are equal
-
-            if state == constants.ContentAdSourceState.ACTIVE:
-                old_state = constants.ContentAdSourceState.INACTIVE
-            else:
-                old_state = constants.ContentAdSourceState.ACTIVE
-
-            notifications[str(content_ad_id)] = {
-                'message': 'Status is being changed from {} to {}'.format(
-                    constants.ContentAdSourceState.get_text(old_state),
-                    constants.ContentAdSourceState.get_text(state)
-                ),
-                'in_progress': True
-            }
 
     return notifications
 
@@ -522,63 +383,6 @@ def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_s
         submission_status.append(status)
 
     return submission_status
-
-
-def _get_state_update_notification(ags, settings, state):
-    if ags.source.can_update_state() and\
-       settings is not None and settings.state is not None and\
-       (state is None or state.state != settings.state):
-        msg = 'Status is being changed from <strong>{old_state}</strong> ' +\
-              'to <strong>{new_state}</strong>.'
-
-        return msg.format(
-            new_state=constants.AdGroupSettingsState.get_text(settings.state),
-            old_state=constants.AdGroupSettingsState.get_text(
-                (state and state.state) or 'N/A'
-            )
-        )
-
-    return None
-
-
-def _get_cpc_update_notification(ags, settings, state):
-    if ags.source.can_update_cpc() and\
-       settings is not None and settings.cpc_cc is not None and\
-       (state is None or state.cpc_cc != settings.cpc_cc):
-        msg = 'Bid CPC is being changed from <strong>{old_cpc}</strong> ' +\
-              'to <strong>{new_cpc}</strong>.'
-
-        if state and state.cpc_cc:
-            old_cpc = '{:.3f}'.format(state.cpc_cc)
-        else:
-            old_cpc = 'N/A'
-
-        return msg.format(
-            old_cpc=old_cpc,
-            new_cpc='{:.3f}'.format(settings.cpc_cc),
-        )
-
-    return None
-
-
-def _get_budget_update_notification(ags, settings, state):
-    if ags.source.can_update_daily_budget_automatic() and\
-       settings is not None and settings.daily_budget_cc is not None and\
-       (state is None or state.daily_budget_cc != settings.daily_budget_cc):
-        msg = 'Daily spend cap is being changed from <strong>{old_daily_budget}</strong> ' +\
-              'to <strong>{new_daily_budget}</strong>.'
-
-        if state and state.daily_budget_cc is not None:
-            old_daily_budget = '{:.2f}'.format(state.daily_budget_cc)
-        else:
-            old_daily_budget = 'N/A'
-
-        return msg.format(
-            old_daily_budget=old_daily_budget,
-            new_daily_budget='{:.2f}'.format(settings.daily_budget_cc),
-        )
-
-    return None
 
 
 def get_data_status(objects):
@@ -657,39 +461,6 @@ def get_content_ad_data_status(ad_group, content_ads):
     return data_status
 
 
-def get_last_sync_messages(objects, last_sync_times):
-    last_sync_messages = {}
-    for obj in objects:
-        message_parts, ok = [], True
-
-        last_sync = last_sync_times.get(obj.id)
-        if last_sync is not None:
-            ok = is_sync_recent([last_sync])
-
-            last_sync = pytz.utc.localize(last_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
-            message_parts.append('Last OK sync was on: <b>{}</b>.'.format(last_sync.strftime('%m/%d/%Y %-I:%M %p')))
-
-        if hasattr(obj, 'is_archived') and obj.is_archived():
-            ok = True
-
-        last_sync_messages[obj.id] = message_parts, ok
-
-    return last_sync_messages
-
-
-def get_last_pixel_sync_message(last_pixel_sync):
-    ok = False
-    message = 'Last OK conversion pixel sync was on: <b>{}</b>.'
-    if last_pixel_sync is not None:
-        ok = is_sync_recent([last_pixel_sync])
-        last_pixel_sync = pytz.utc.localize(last_pixel_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
-        message = message.format(last_pixel_sync.strftime('%m/%d/%Y %-I:%M %p'))
-    else:
-        message = message.format('N/A')
-
-    return message, ok
-
-
 def get_selected_entities(objects, select_all, selected_ids, not_selected_ids, include_archived, select_batch_id=None, **constraints):
     if select_all:
         if constraints:
@@ -731,62 +502,6 @@ def get_selected_entities_post_request(objects, data, include_archived=False, **
     not_selected_ids = parse_post_request_ids(data, 'not_selected_ids')
 
     return get_selected_entities(objects, select_all, selected_ids, not_selected_ids, include_archived, select_batch_id, **constraints)
-
-
-def get_ad_group_sources_state_messages(ad_group_sources, ad_group_settings,
-                                        ad_group_sources_settings, ad_group_sources_states):
-    sources_messages = {}
-
-    waiting_delayed_actionlogs = actionlog.models.ActionLog.objects.filter(
-        state__in=(actionlog.constants.ActionState.WAITING, actionlog.constants.ActionState.DELAYED),
-        action=actionlog.constants.Action.SET_CAMPAIGN_STATE,
-        ad_group_source_id__in=[ags.id for ags in ad_group_sources]
-    )
-
-    for ad_group_source in ad_group_sources:
-        ags_settings = _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sources_settings)
-        ags_state = _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_states)
-        sources_messages[ad_group_source.source_id] = _get_state_messages(ad_group_source, ad_group_settings,
-                                                                          ags_settings, ags_state,
-                                                                          waiting_delayed_actionlogs)
-
-    return sources_messages
-
-
-def _get_state_messages(ad_group_source, ad_group_settings, ad_group_source_settings,
-                        ad_group_source_state, actionlogs):
-    message_template = '<b>{name}</b> for this Media Source differs from '\
-                       '{name} in the Media Source\'s 3rd party dashboard.'
-
-    for al in actionlogs:
-        if al.ad_group_source.id == ad_group_source.id:
-            # there are updates in progress
-            return [], True
-
-    if ad_group_source_settings is None:
-        return [], True
-
-    messages = []
-    if ad_group_source.source.can_update_cpc() and ad_group_source_settings.cpc_cc is not None and (
-            ad_group_source_state is None or ad_group_source_settings.cpc_cc != ad_group_source_state.cpc_cc):
-        messages.append(message_template.format(name='Bid CPC'))
-
-    if (ad_group_source.source.can_update_daily_budget_automatic() or
-            ad_group_source.source.can_update_daily_budget_manual()) and\
-        ad_group_source_settings.daily_budget_cc is not None and (
-            ad_group_source_state is None or ad_group_source_settings.daily_budget_cc != ad_group_source_state.daily_budget_cc):
-        messages.append(message_template.format(name='Daily Spend Cap'))
-
-    if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
-        expected_state = constants.AdGroupSourceSettingsState.INACTIVE
-    else:
-        expected_state = ad_group_source_settings.state
-
-    if ad_group_source_settings.state is not None and (
-            ad_group_source_state is None or expected_state != ad_group_source_state.state):
-        messages.append(message_template.format(name='Status'))
-
-    return messages, len(messages) == 0
 
 
 def _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sources_settings):
@@ -1132,18 +847,6 @@ def _get_status_setting_disabled_message_for_target_regions(
     if unsupported_targets:
         return 'This source can not be enabled because it does not support {} targeting.'.format(" and ".join(unsupported_targets))
 
-    activation_settings = models.AdGroupSourceSettings.objects.filter(
-        ad_group_source=ad_group_source, state=constants.AdGroupSourceSettingsState.ACTIVE)
-
-    # disable when waiting for manual actions for target_regions after campaign creation
-    # message this only when the source is about to be enabled for the first time
-    if manual_targets and\
-       actionlog.api.is_waiting_for_manual_set_target_regions_action(ad_group_source) and\
-       not activation_settings.exists():
-        return 'This source needs to set {} targeting manually, please contact support to enable this source.'.format(" and ".join(manual_targets))
-
-    return None
-
 
 def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings, campaign_settings):
     if campaign_settings.landing_mode:
@@ -1223,8 +926,6 @@ def get_source_default_settings(source):
 
 
 def save_campaign_settings_and_propagate(campaign, old_settings, new_settings, request):
-    actions = []
-
     with transaction.atomic():
         campaign.save(request)
         new_settings.save(request)
@@ -1237,22 +938,17 @@ def save_campaign_settings_and_propagate(campaign, old_settings, new_settings, r
 
         for ad_group in campaign_ad_groups:
             adgroup_settings = ad_group.get_current_settings()
-            actions.extend(
-                api.order_ad_group_settings_update(
-                    ad_group,
-                    adgroup_settings,
-                    adgroup_settings,
-                    request,
-                    send=False,
-                    iab_update=True,
-                    campaign_tracking_changes=tracking_changes
-                )
+            api.order_ad_group_settings_update(
+                ad_group,
+                adgroup_settings,
+                adgroup_settings,
+                request,
+                send=False,
+                iab_update=True,
+                campaign_tracking_changes=tracking_changes
             )
-
     k1_helper.update_ad_groups((ad_group.pk for ad_group in campaign_ad_groups),
                                msg='views.helpers.save_campaign_settings_and_propagate')
-
-    actionlog.zwei_actions.send(actions)
 
 
 def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request):
