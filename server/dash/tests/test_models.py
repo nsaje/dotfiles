@@ -73,6 +73,7 @@ class AdGroupSettingsTest(TestCase):
             'b1_sources_group_enabled': True,
             'b1_sources_group_daily_budget': Decimal('5.0000'),
             'b1_sources_group_state': constants.AdGroupSourceSettingsState.ACTIVE,
+            'b1_sources_group_cpc_cc': Decimal('0.1'),
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -139,6 +140,7 @@ class AdGroupSettingsTest(TestCase):
             models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
             'Daily spend cap set to "$50.00", '
             'Brand name set to "Example", '
+            'Bid CPC for all RTB sources set to "$0.100", '
             'Daily budget for all RTB sources set to "$5.00", '
             'Max CPC bid set to "$1.000", '
             'Interest targeting set to "A, B", '

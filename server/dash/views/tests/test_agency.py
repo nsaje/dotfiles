@@ -59,6 +59,7 @@ class AdGroupSettingsTest(TestCase):
                 'b1_sources_group_enabled': True,
                 'b1_sources_group_daily_budget': '5.0000',
                 'b1_sources_group_state': 1,
+                'b1_sources_group_cpc_cc': '0.0100',
             }
         }
 
@@ -181,6 +182,7 @@ class AdGroupSettingsTest(TestCase):
                     'b1_sources_group_enabled': False,
                     'b1_sources_group_daily_budget': '0.0000',
                     'b1_sources_group_state': 2,
+                    'b1_sources_group_cpc_cc': '0.0100',
                 },
                 'warnings': {}
             },
@@ -312,8 +314,9 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '5.0000',
+                        'b1_sources_group_daily_budget': str(constants.RTB_SOURCES_DEFAULT_DAILY_BUDGET),
                         'b1_sources_group_state': 1,
+                        'b1_sources_group_cpc_cc': '0.3000',
                     }
                 },
                 'success': True
@@ -405,8 +408,9 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '5.0000',
+                        'b1_sources_group_daily_budget': str(constants.RTB_SOURCES_DEFAULT_DAILY_BUDGET),
                         'b1_sources_group_state': 1,
+                        'b1_sources_group_cpc_cc': '0.05',
                     }
                 },
                 'success': True
@@ -572,8 +576,9 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': '',
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '5.0000',
+                        'b1_sources_group_daily_budget': str(constants.RTB_SOURCES_DEFAULT_DAILY_BUDGET),
                         'b1_sources_group_state': 1,
+                        'b1_sources_group_cpc_cc': '0.3000',
                     }
                 },
                 'success': True

@@ -239,6 +239,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_set_interest_targeting', 'User can set and see interest targeting settings'),
             ('can_edit_content_ads', 'User can use edit form to edit existing content ads'),
             ('can_see_pixel_traffic', 'User can see pixel traffic in pixels table'),
+            ('can_set_rtb_sources_as_one_cpc', 'User can see and set the bid CPC for RTB Sources grouped as one'),
         )
 
     def get_full_name(self):

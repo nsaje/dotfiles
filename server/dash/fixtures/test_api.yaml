@@ -164,6 +164,8 @@
 -   fields:
         type: 'b1'
         available_actions: [4, 19, 20]
+        min_cpc: 0.01
+        max_cpc: 7.0
     model: dash.sourcetype
     pk: 1
 

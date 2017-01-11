@@ -17,6 +17,8 @@ DEFAULT_CALL_TO_ACTION = 'Read more'
 
 RTB_SOURCES_DEFAULT_DAILY_BUDGET = Decimal('50.0')
 RTB_SOURCES_DEFAULT_CPC_CC = Decimal('0.45')
+RTB_SOURCES_MIN_CPC = Decimal('0.01')
+RTB_SOURCES_MAX_CPC = Decimal('7.0')
 
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1

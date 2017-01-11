@@ -75,10 +75,12 @@ def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
 
 def validate_b1_sources_group_cpc_cc(cpc_cc, ad_group):
     ad_group_settings = ad_group.get_current_settings()
+    if not ad_group_settings.b1_sources_group_enabled:
+        return
     source_type = models.SourceType.objects.get(type=constants.SourceType.B1)
     validate_source_cpc_cc(cpc_cc, None, source_type)
     max_adgroup_cpc = ad_group_settings.cpc_cc
-    if max_adgroup_cpc is not None and cpc_cc > max_adgroup_cpc:
+    if max_adgroup_cpc and cpc_cc > max_adgroup_cpc:
         raise forms.ValidationError(
             'Maximum ad group CPC is ${}.'.format(utils.string_helper.format_decimal(max_adgroup_cpc, 2, 3)))
 

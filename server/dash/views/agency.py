@@ -98,6 +98,10 @@ class AdGroupSettings(api_common.BaseApiView):
             new_settings.b1_sources_group_cpc_cc = min(new_settings.cpc_cc, constants.RTB_SOURCES_DEFAULT_CPC_CC)
             new_settings.b1_sources_group_daily_budget = constants.RTB_SOURCES_DEFAULT_DAILY_BUDGET
             changes = current_settings.get_setting_changes(new_settings)
+        if (new_settings.b1_sources_group_enabled and changes.get('cpc_cc') and
+                new_settings.cpc_cc < new_settings.b1_sources_group_cpc_cc):
+            new_settings.b1_sources_group_cpc_cc = new_settings.cpc_cc
+            changes = current_settings.get_setting_changes(new_settings)
 
         api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
         self._adjust_adgroup_sources(ad_group, new_settings, request)
@@ -281,22 +285,9 @@ class AdGroupSettings(api_common.BaseApiView):
     def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request):
         for ags in ad_group.adgroupsource_set.all():
             curr_ags_settings = ags.get_current_settings()
-            if curr_ags_settings.cpc_cc <= ad_group_settings.cpc_cc:
-                continue
-            api.AdGroupSourceSettingsWriter(ags).set(
-                {
-                    'cpc_cc': ad_group_settings.cpc_cc
-                },
-                request=None,
-                send_to_zwei=False
-            )
-
-    ''' # TODO DAVORIN
-    def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request):
-        for ags in ad_group.adgroupsource_set.all():
-            curr_ags_settings = ags.get_current_settings()
             proposed_cpc = curr_ags_settings.cpc_cc
-            if (ad_group_settings.b1_sources_group_enabled == constants.AdGroupSourceSettingsState.ACTIVE and
+            if (request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and
+                    ad_group_settings.b1_sources_group_enabled == constants.AdGroupSourceSettingsState.ACTIVE and
                     ad_group_settings.b1_sources_group_cpc_cc > 0.0 and
                     ags.source.source_type.type == constants.SourceType.B1):
                 proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
@@ -312,7 +303,6 @@ class AdGroupSettings(api_common.BaseApiView):
                 request=None,
                 send_to_zwei=False
             )
-    '''
 
     def get_default_settings_dict(self, ad_group):
         settings = ad_group.campaign.get_current_settings()
