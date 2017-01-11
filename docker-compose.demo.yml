@@ -18,7 +18,6 @@ eins:
   environment:
     - "INSTANCE_NAME=${INSTANCE_NAME}"
     - "CONF_ENV=demo"
-    - "ZWEI_CALLBACK_BASE_URL=http://0.0.0.0"
     - "GUNICORN_WORKERS=1"
     - "TELEGRAF_PORT_8135_UDP_ADDR=localhost"
 

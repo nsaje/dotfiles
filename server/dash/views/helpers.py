@@ -792,9 +792,6 @@ def get_source_supply_dash_disabled_message(ad_group_source, source):
     if not source.has_3rd_party_dashboard():
         return "This media source doesn't have a dashboard of its own. " \
             "All campaign management is done through Zemanta One dashboard."
-    elif ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
-        return "Dashboard of this media source is not yet available because the " \
-            "media source is still being set up for this ad group."
 
     return None
 
@@ -881,9 +878,6 @@ def add_source_to_ad_group(default_source_settings, ad_group):
         source_credentials=default_source_settings.credentials,
         can_manage_content_ads=default_source_settings.source.can_manage_content_ads(),
     )
-
-    if default_source_settings.source.source_type.type == constants.SourceType.GRAVITY:
-        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
     return ad_group_source
 

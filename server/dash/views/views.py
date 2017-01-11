@@ -1553,45 +1553,6 @@ def oauth_redirect(request, source_name):
     return redirect(reverse('admin:dash_sourcecredentials_change', args=(credentials.id,)))
 
 
-@csrf_exempt
-def sharethrough_approval(request):
-    data = json.loads(request.body)
-
-    logger.info('sharethrough approval, content ad id: %s, status: %s', data['crid'], data['status'])
-
-    sig = request.GET.get('sig')
-    if not sig:
-        logger.debug('Sharethrough approval postback without signature. crid: %s', data['crid'])
-        calculated = None
-    else:
-        calculated = base64.urlsafe_b64encode(hmac.new(settings.SHARETHROUGH_PARAM_SIGN_KEY,
-                                                       msg=str(data['crid']),
-                                                       digestmod=hashlib.sha256)).digest()
-
-        if sig != calculated:
-            logger.debug('Invalid sharethrough signature. crid: %s', data['crid'])
-
-    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
-                                                           source=models.Source.objects.get(name='Sharethrough'))
-
-    if data['status'] == 0:
-        if sig != calculated:
-            logger.debug('Invalid sharethrough signature. crid: %s', data['crid'])
-
-    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
-                                                           source=models.Source.objects.get(name='Sharethrough'))
-
-    if data['status'] == 0:
-        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
-    else:
-        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
-
-    content_ad_source.save()
-    k1_helper.update_content_ad(content_ad_source.content_ad_id, content_ad_source.content_ad.ad_group_id)
-
-    return HttpResponse('OK')
-
-
 class LiveStreamAllow(api_common.BaseApiView):
 
     def post(self, request):

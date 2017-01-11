@@ -22,7 +22,6 @@ eins:
     environment:
       - "CONF_ENV=prod"
       - "VIRTUAL_HOST=one.zemanta.com"
-      - "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com"
       - "NEW_RELIC_LICENSE_KEY=1dfbd7b07a5cbf7bcc6eb18db5003808a058d16f"
       - "NEW_RELIC_APP_NAME=Zemanta One"
       - "NEW_RELIC_PROCESS_HOST_DISPLAY_NAME=${HOSTNAME}-docker"
@@ -35,7 +34,6 @@ eins-api-callback:
     extends: eins
     environment:
       - "VIRTUAL_HOST=one-cb.zemanta.com"
-      - "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com"
       - "NEW_RELIC_LICENSE_KEY=1dfbd7b07a5cbf7bcc6eb18db5003808a058d16f"
       - "NEW_RELIC_APP_NAME=Zemanta One (callback API)"
       - "NEW_RELIC_PROCESS_HOST_DISPLAY_NAME=${HOSTNAME}-docker"

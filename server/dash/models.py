@@ -2079,8 +2079,7 @@ class AdGroupSource(models.Model):
         )
 
     def get_supply_dash_url(self):
-        if not self.source.has_3rd_party_dashboard() or\
-                self.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+        if not self.source.has_3rd_party_dashboard():
             return None
 
         return '{}?ad_group_id={}&source_id={}'.format(

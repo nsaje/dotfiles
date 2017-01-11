@@ -77,14 +77,6 @@ BRANCH = None
 SERVER_STATIC_URL = '/static'
 CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
 
-# Zwei callback base URL
-ZWEI_CALLBACK_BASE_URL = ''
-
-# Zwei API
-ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'
-ZWEI_API_GET_DASH_URL_URL = 'http://127.0.0.1/purcel/dash_url/'
-ZWEI_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
-
 # K1 API
 K1_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
 
@@ -183,8 +175,6 @@ R1_PIXEL_TRAFFIC_RESULT_URL = 'https://r1.zemanta.com/api/pixeltraffic/result/{j
 # Budget automation
 DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5
 DEPLETING_CAMPAIGN_BUDGET_EMAIL = 'help@zemanta.com'
-
-SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
 
 BIDDER_API_SIGN_KEY = Secret('').get()
 BIDDER_API_URL_BASE = 'https://b1api.zemanta.com'
