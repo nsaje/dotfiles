@@ -4311,3 +4311,45 @@ def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):
     account = account or campaign and campaign.account
     agency = agency or account and account.agency
     return campaign, account, agency
+
+
+class PublisherGroup(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(
+        max_length=127,
+        editable=True,
+        blank=False,
+        null=False
+    )
+
+    # it can be defined per account, agency or globaly
+    account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, blank=True)
+    agency = models.ForeignKey(Agency, on_delete=models.PROTECT, null=True, blank=True)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+
+    def save(self, request, *args, **kwargs):
+        self.modified_by = request.user
+        super(PublisherGroup, self).save(*args, **kwargs)
+
+    objects = QuerySetManager()
+
+    class QuerySet(models.QuerySet):
+        def filter_by_account(self, account):
+            return self.filter(account=account)
+
+    def can_delete(self):
+        # TODO should check all ad group settings of the corresponding account if this is in any case referenced
+        return True
+
+
+class PublisherGroupEntry(models.Model):
+    id = models.AutoField(primary_key=True)
+    publisher_group = models.ForeignKey(PublisherGroup, related_name='entries')
+
+    publisher = models.CharField(max_length=127, blank=False, null=False, verbose_name='Publisher name or domain')
+    source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
+
+    outbrain_publisher_id = models.CharField(max_length=127, blank=True, verbose_name='Special Outbrain publisher ID')

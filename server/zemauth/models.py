@@ -238,6 +238,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_rtb_sources_as_one', 'User can see RTB Sources grouped as one'),
             ('can_set_interest_targeting', 'User can set and see interest targeting settings'),
             ('can_edit_content_ads', 'User can use edit form to edit existing content ads'),
+            ('can_edit_publisher_groups', 'User can edit publisher groups'),
+            ('can_set_white_blacklist_publisher_groups', 'User can set white or blacklist publisher groups'),
+            ('can_access_additional_outbrain_publisher_settings', 'User can see, set or edit additional Outbrain specific publisher settings'),
             ('can_see_pixel_traffic', 'User can see pixel traffic in pixels table'),
         )
 
