@@ -304,19 +304,6 @@ def add_content_ad_sources(ad_group_source):
     return content_ad_sources_added
 
 
-@transaction.atomic()
-def update_content_ads_submission_status(ad_group_source, request=None):
-    models.ContentAdSource.objects.filter(
-        content_ad__ad_group_id=ad_group_source.ad_group_id,
-        source_id=ad_group_source.source_id,
-        submission_status__in=[constants.ContentAdSubmissionStatus.NOT_SUBMITTED,
-                               constants.ContentAdSubmissionStatus.PENDING]
-    ).update(
-        source_content_ad_id=ad_group_source.source_content_ad_id,
-        submission_status=ad_group_source.submission_status,
-    )
-
-
 def update_ad_group_redirector_settings(ad_group, ad_group_settings):
     campaign_settings = ad_group.campaign.get_current_settings()
     redirector_helper.insert_adgroup(

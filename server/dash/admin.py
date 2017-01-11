@@ -800,68 +800,14 @@ class AdGroupAdmin(admin.ModelAdmin):
     campaign_.allow_tags = True
     campaign_.admin_order_field = 'campaign'
 
-    def save_formset(self, request, form, formset, change):
-        if formset.model == models.AdGroupSource:
-            instances = formset.save(commit=False)
-
-            for instance in instances:
-                instance.save(request)
-                for changed_instance, changed_fields in formset.changed_objects:
-                    if changed_instance.id == instance.id and ('submission_status' in changed_fields or
-                                                               'source_content_ad_id' in changed_fields):
-                        api.update_content_ads_submission_status(instance)
-
-            for obj in formset.deleted_objects:
-                obj.delete()
-        else:
-            formset.save()
-
-
-def approve_ad_group_sources(modeladmin, request, queryset):
-    logger.info(
-        'BULK APPROVE AD GROUP SOURCES: Bulk approve ad group sources started. Ad group sources: {}'.format(
-            [el.id for el in queryset]
-        )
-    )
-    for ad_group_source in queryset:
-        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
-        ad_group_source.save()
-        api.update_content_ads_submission_status(ad_group_source)
-approve_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as APPROVED'
-
-
-def reject_ad_group_sources(modeladmin, request, queryset):
-    logger.info(
-        'BULK REJECT AD GROUP SOURCES: Bulk reject ad group sources started. Ad group sources: {}'.format(
-            [el.id for el in queryset]
-        )
-    )
-    for ad_group_source in queryset:
-        ad_group_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
-        ad_group_source.save()
-        api.update_content_ads_submission_status(ad_group_source)
-reject_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as REJECTED'
-
 
 class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'ad_group_',
         'source_content_ad_id',
-        'submission_status_',
-        'submission_errors',
     )
 
-    actions = [approve_ad_group_sources, reject_ad_group_sources]
-
-    list_filter = ('source', 'submission_status')
-
-    display_submission_status_colors = {
-        constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
-        constants.ContentAdSubmissionStatus.REJECTED: '#d9534f',
-        constants.ContentAdSubmissionStatus.PENDING: '#428bca',
-        constants.ContentAdSubmissionStatus.LIMIT_REACHED: '#e6c440',
-        constants.ContentAdSubmissionStatus.NOT_SUBMITTED: '#bcbcbc',
-    }
+    list_filter = ('source',)
 
     def ad_group_(self, obj):
         return u'<a href="{ad_group_url}">{name}</a>'.format(
@@ -876,14 +822,6 @@ class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         )
     ad_group_.allow_tags = True
     ad_group_.admin_order_field = 'ad_group'
-
-    def submission_status_(self, obj):
-        return '<span style="color:{color}">{submission_status}</span>'.format(
-            color=self.display_submission_status_colors[obj.submission_status],
-            submission_status=obj.get_submission_status_display(),
-        )
-    submission_status_.allow_tags = True
-    submission_status_.admin_order_field = 'submission_status'
 
 
 class AdGroupSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
