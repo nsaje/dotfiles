@@ -25,7 +25,7 @@ Plugin 'avakhov/vim-yaml'
 Plugin 'scrooloose/nerdcommenter'
 Plugin 'junegunn/goyo.vim'
 Plugin 'reedes/vim-pencil'
-Plugin 'tpope/vim-sleuth' " automatic indentation settings
+"Plugin 'tpope/vim-sleuth' " automatic indentation settings
 "Plugin 'godlygeek/tabular' " aligning things
 "Plugin 'plasticboy/vim-markdown' " markdown (mostly for tables: :TableFormat)
 Plugin 'airblade/vim-gitgutter'
