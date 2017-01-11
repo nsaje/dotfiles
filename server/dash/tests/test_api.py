@@ -4,7 +4,7 @@ import mock
 
 from django.db import connection
 from django.conf import settings
-from django.test import TestCase, TransactionTestCase, override_settings
+from django.test import TestCase, override_settings
 from django.http.request import HttpRequest
 
 import dash.models
@@ -75,238 +75,6 @@ class AddContentAdSources(TestCase):
         content_ad_sources = api.add_content_ad_sources(ad_group_source)
 
         self.assertEqual(content_ad_sources, [])
-
-
-@override_settings(
-    R1_REDIRECTS_ADGROUP_API_URL='https://r1.example.com/api/redirects/',
-    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA'
-)
-class UpdateAdGroupSourceSettings(TestCase):
-    fixtures = ['test_api.yaml']
-
-    def setUp(self):
-        self.props = []
-        self.values = []
-
-        patcher = mock.patch('utils.redirector_helper.insert_adgroup')
-        self.mock_insert_adgroup = patcher.start()
-        self.addCleanup(patcher.stop)
-
-    def test_ad_group_name_change(self):
-        ad_group_source = models.AdGroupSource.objects.get(id=1)
-        ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME
-        )
-        ad_group_source.source.source_type.save()
-        ad_group_source.save()
-
-        adgs1 = models.AdGroupSettings()
-        adgs2 = models.AdGroupSettings()
-        adgs2.ad_group_name = "Test"
-
-        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
-        self.assertTrue(self.mock_insert_adgroup.called, 'Should be called because settings are fresh')
-
-    def test_tracking_code_manual_action(self):
-        ad_group_source = models.AdGroupSource.objects.get(id=16)
-
-        adgs1 = ad_group_source.ad_group.get_current_settings()
-        adgs2 = adgs1.copy_settings()
-        adgs2.tracking_code = "test={amazing}&blob={sourceDomain}&x={sourceDomainUnderscore}"
-        adgs2.save(None)
-
-        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
-        self.mock_insert_adgroup.assert_called_with(
-            ad_group_source.ad_group,
-            ad_group_source.ad_group.get_current_settings(),
-            ad_group_source.ad_group.campaign.get_current_settings(),
-        )
-
-    def test_tracking_codes_automatic(self):
-        ad_group_source = models.AdGroupSource.objects.get(id=1)
-
-        adgs1 = ad_group_source.ad_group.get_current_settings()
-        adgs2 = adgs1.copy_settings()
-        adgs2.tracking_code = "a=b"
-        adgs2.save(None)
-
-        cs = ad_group_source.ad_group.campaign.get_current_settings()
-        cs.save(None)  # initial settings
-
-        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
-        self.mock_insert_adgroup.assert_called_with(
-            ad_group_source.ad_group,
-            ad_group_source.ad_group.get_current_settings(),
-            ad_group_source.ad_group.campaign.get_current_settings(),
-        )
-
-    def test_tracking_codes_automatic_per_content_ad(self):
-        ad_group_source1 = models.AdGroupSource.objects.get(id=1)
-        ad_group_source1.can_manage_content_ads = True
-        ad_group_source1.save()
-
-        ad_group_source1.source.source_type.available_actions.append(
-            constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS
-        )
-        ad_group_source1.source.source_type.save()
-
-        adgs1 = ad_group_source1.ad_group.get_current_settings()
-        adgs2 = adgs1.copy_settings()
-        adgs2.tracking_code = "a=b"
-        adgs2.save(None)
-
-        cs = ad_group_source1.ad_group.campaign.get_current_settings()
-        cs.save(None)  # initial settings
-
-        api.order_ad_group_settings_update(ad_group_source1.ad_group, adgs1, adgs2, None)
-        self.mock_insert_adgroup.assert_called_with(
-            ad_group_source1.ad_group,
-            ad_group_source1.ad_group.get_current_settings(),
-            ad_group_source1.ad_group.campaign.get_current_settings(),
-        )
-
-    def test_tracking_codes_automatic_action_for_gravity(self):
-        """ Tests a fix for a bug in gravitys dashboard - when a tracking code does not
-        have a value assigned, it should create a manual action, even though the source
-        is set to create an automatic action for tracking code changes.
-
-        This test tests if the automatic action is created.
-        """
-
-        ad_group_source = models.AdGroupSource.objects.get(id=2)
-        ad_group_source.source.source_type.save()
-
-        adgs1 = models.AdGroupSettings()
-        adgs2 = models.AdGroupSettings()
-        adgs2.tracking_code = 'test=123'
-
-        api.order_ad_group_settings_update(
-            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
-
-    def test_tracking_codes_manual_action_for_gravity(self):
-        """ Tests a fix for a bug in gravitys dashboard - when a tracking code does not
-        have a value assigned, it should create a manual action, even though the source
-        is set to create an automatic action for tracking code changes.
-
-        This test tests if the manual action is created.
-        """
-
-        ad_group_source = models.AdGroupSource.objects.get(id=2)  # should be Gravity
-        ad_group_source.source.source_type.save()
-
-        adgs1 = models.AdGroupSettings()
-        adgs2 = models.AdGroupSettings()
-        adgs2.tracking_code = 'test'
-
-        api.order_ad_group_settings_update(
-            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
-
-    def test_iab_category_automatic(self):
-        ad_group_source = models.AdGroupSource.objects.get(id=1)
-        ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC
-        )
-        ad_group_source.source.source_type.save()
-
-        adgs1 = models.AdGroupSettings()
-        adgs2 = models.AdGroupSettings()
-        adgs2.iab_category = 'IAB1'
-
-        api.order_ad_group_settings_update(
-            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
-
-    def test_tracking_propagation_remove_tracking_ids(self):
-        ad_group_source = models.AdGroupSource.objects.get(id=1)
-        ad_group_source.source.source_type.save()
-
-        adgs = ad_group_source.ad_group.get_current_settings().copy_settings()
-        adgs.tracking_code = ''
-        adgs.save(None)
-
-        cs = ad_group_source.ad_group.campaign.get_current_settings().copy_settings()
-        cs.enable_ga_tracking = False
-        cs.enable_adobe_tracking = False
-        cs.adobe_tracking_param = ''
-        cs.save(None)
-
-        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs, adgs, None, campaign_tracking_changes=True)
-
-        self.mock_insert_adgroup.assert_called_with(
-            ad_group_source.ad_group,
-            ad_group_source.ad_group.get_current_settings(),
-            ad_group_source.ad_group.campaign.get_current_settings(),
-        )
-
-    def test_tracking_propagation_add_tracking_ids(self):
-        ad_group_source = models.AdGroupSource.objects.get(id=1)
-        ad_group_source.source.source_type.save()
-
-        adgs = ad_group_source.ad_group.get_current_settings().copy_settings()
-        adgs.tracking_code = ''
-        adgs.save(None)
-
-        cs = ad_group_source.ad_group.campaign.get_current_settings().copy_settings()
-        cs.enable_ga_tracking = True
-        cs.enable_adobe_tracking = True
-        cs.adobe_tracking_param = 'cid'
-        cs.save(None)
-
-        api.order_ad_group_settings_update(ad_group_source.ad_group, adgs, adgs, None, campaign_tracking_changes=True)
-        self.mock_insert_adgroup.assert_called_with(
-            ad_group_source.ad_group,
-            ad_group_source.ad_group.get_current_settings(),
-            ad_group_source.ad_group.campaign.get_current_settings(),
-        )
-
-    def test_propagate_redirects(self):
-        r = HttpRequest()
-        r.user = User.objects.get(id=1)
-        ad_group = models.AdGroup(campaign_id=1)
-        ad_group.save(r)
-
-        adgs1 = ad_group.get_current_settings()
-        adgs2 = adgs1.copy_settings()
-        adgs2.save(None)
-
-        ad_group.campaign.get_current_settings().save(None)  # create initial settings
-
-        api.order_ad_group_settings_update(ad_group, adgs1, adgs2, None)
-
-        # should insert ad group into redirector as settings are fresh
-        self.mock_insert_adgroup.assert_called_with(
-            ad_group,
-            ad_group.get_current_settings(),
-            ad_group.campaign.get_current_settings(),
-        )
-
-    def test_no_need_to_propagate_redirects(self):
-        adgs1 = models.AdGroupSettings(ad_group_id=1)
-        adgs1.save(None)  # id is not null - settings are not fresh
-
-        adgs2 = models.AdGroupSettings()
-
-        api.order_ad_group_settings_update(models.AdGroup.objects.get(pk=1), adgs1, adgs2, None)
-        # no need to insert into redirector - settings exist from before, no changes
-        self.assertFalse(self.mock_insert_adgroup.called)
-
-    def test_changes_propagate_redirects(self):
-        adgs1 = models.AdGroupSettings(ad_group_id=1)
-        adgs1.save(None)  # id is not null - settings are not fresh
-        adgs2 = adgs1.copy_settings()
-        adgs2.tracking_code = 'asd'
-        adgs2.save(None)
-
-        campaign_settings = adgs1.ad_group.campaign.get_current_settings()  # initial settings
-        campaign_settings.save(None)
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        api.order_ad_group_settings_update(ad_group, adgs1, adgs2, None)
-        # should insert ad group into redirector as relevant settings were changed
-        self.mock_insert_adgroup.assert_called_with(
-            ad_group,
-            adgs2,
-            campaign_settings,
-        )
 
 
 class UpdateAdGroupSourceState(TestCase):
@@ -693,13 +461,12 @@ class PublisherCallbackTest(TestCase):
         api.refresh_publisher_blacklist(adgs, None)
 
 
-class AdGroupSourceSettingsWriterTest(TestCase):
+class SetAdGroupSourceSettingsTest(TestCase):
 
     fixtures = ['test_api.yaml']
 
     def setUp(self):
         self.ad_group_source = models.AdGroupSource.objects.get(id=1)
-        self.writer = api.AdGroupSourceSettingsWriter(self.ad_group_source)
         self.ad_group_settings = \
             models.AdGroupSettings.objects \
                                   .filter(ad_group=self.ad_group_source.ad_group) \
@@ -709,18 +476,6 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         patcher = mock.patch('dash.api.k1_helper')
         self.k1_helper_mock = patcher.start()
         self.addCleanup(patcher.stop)
-
-    def test_can_not_trigger_action_if_ad_group_disabled(self):
-        self.assertFalse(self.writer.can_trigger_action())
-
-    def test_can_trigger_action_if_ad_group_enabled(self):
-        request = HttpRequest()
-        request.user = User.objects.create_user('test@example.com')
-
-        ad_group_settings_copy = self.ad_group_settings.copy_settings()
-        ad_group_settings_copy.state = 1
-        ad_group_settings_copy.save(request)
-        self.assertTrue(self.writer.can_trigger_action())
 
     @mock.patch('utils.email_helper.send_ad_group_notification_email')
     def test_should_write_if_no_settings_yet(self, mock_send_mail):
@@ -734,7 +489,11 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        self.writer.set({'state': 1}, request)
+        api.set_ad_group_source_settings(
+            self.ad_group_source,
+            {'state': 1},
+            request
+        )
 
         self.assertTrue(
             models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).count() > 0
@@ -760,7 +519,11 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(2)}, request)
+        api.set_ad_group_source_settings(
+            self.ad_group_source,
+            {'cpc_cc': decimal.Decimal(2)},
+            request
+        )
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -786,7 +549,12 @@ class AdGroupSourceSettingsWriterTest(TestCase):
 
         request = None
 
-        self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request, system_user=constants.SystemUserType.AUTOPILOT)
+        api.set_ad_group_source_settings(
+            self.ad_group_source,
+            {'cpc_cc': decimal.Decimal(0.1)},
+            request,
+            system_user=constants.SystemUserType.AUTOPILOT
+        )
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -811,7 +579,11 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(2)}, request, create_action=False)
+        api.set_ad_group_source_settings(
+            self.ad_group_source,
+            {'cpc_cc': decimal.Decimal(2)},
+            request
+        )
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -834,7 +606,10 @@ class AdGroupSourceSettingsWriterTest(TestCase):
 
         request = HttpRequest()
 
-        self.writer.set({'daily_budget_cc': decimal.Decimal(50)}, request)
+        api.set_ad_group_source_settings(
+            self.ad_group_source,
+            {'daily_budget_cc': decimal.Decimal(50)},
+            request)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -853,7 +628,8 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(2)}, None, landing_mode=True)
+        api.set_ad_group_source_settings(
+            self.ad_group_source, {'cpc_cc': decimal.Decimal(2)}, None, landing_mode=True)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
@@ -872,8 +648,8 @@ class AdGroupSourceSettingsWriterTest(TestCase):
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(2)}, None,
-                        10289340)
+        api.set_ad_group_source_settings(
+            self.ad_group_source, {'cpc_cc': decimal.Decimal(2)}, None, 1028)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \

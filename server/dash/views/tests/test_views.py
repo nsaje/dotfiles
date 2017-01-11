@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-from mock import patch
+from mock import patch, Mock
 import datetime
 import decimal
 
@@ -291,14 +291,6 @@ class AccountCampaignsTest(TestCase):
 class AdGroupSourceSettingsTest(TestCase):
     fixtures = ['test_models.yaml', 'test_views.yaml', ]
 
-    class MockSettingsWriter(object):
-
-        def __init__(self, init):
-            pass
-
-        def set(self, resource, request):
-            pass
-
     def setUp(self):
         self.client = Client()
         self.client.login(username=User.objects.get(pk=1).email, password='secret')
@@ -332,7 +324,7 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
-    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     @patch('utils.k1_helper.update_ad_group')
     def test_end_date_future(self, mock_k1_ping):
         self._set_ad_group_end_date(days_delta=3)
@@ -343,7 +335,7 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         mock_k1_ping.assert_called_with(1, msg='AdGroupSourceSettings.put')
 
-    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     @patch('utils.k1_helper.update_ad_group')
     def test_cpc_bigger_than_max(self, mock_k1_ping):
         current_settings = self.ad_group.get_current_settings()
@@ -356,7 +348,7 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     @patch('utils.k1_helper.update_ad_group')
     def test_set_state_landing_mode(self, mock_k1_ping):
         self._set_campaign_landing_mode()
@@ -367,7 +359,7 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertFalse(mock_k1_ping.called)
 
-    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     def test_set_cpc_landing_mode(self):
         self._set_campaign_landing_mode()
         response = self.client.put(
@@ -376,7 +368,7 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     def test_set_daily_budget_landing_mode(self):
         self._set_campaign_landing_mode()
         response = self.client.put(
@@ -398,7 +390,7 @@ class AdGroupSourceSettingsTest(TestCase):
         hist = history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.MEDIA_SOURCE_SETTINGS_CHANGE, hist.action_type)
 
-    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     @patch('automation.campaign_stop.get_max_settable_source_budget')
     def test_daily_budget_over_max_settable(self, mock_max_settable_budget):
         mock_max_settable_budget.return_value = decimal.Decimal('500')
@@ -429,7 +421,7 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     def test_source_cpc_over_ad_group_maximum(self):
         self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
@@ -438,7 +430,7 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     def test_source_cpc_equal_ad_group_maximum(self):
         self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
@@ -448,7 +440,7 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     @patch('automation.campaign_stop.can_enable_media_source')
-    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
     def test_adgroup_on_budget_autopilot_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap, mock_campaign_stop):
         self._set_ad_group_end_date(days_delta=3)
@@ -460,7 +452,7 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     @patch('automation.campaign_stop.can_enable_media_source')
-    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
     def test_adgroup_not_on_budget_autopilot_not_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap, mock_campaign_stop):
         self._set_ad_group_end_date(days_delta=3)

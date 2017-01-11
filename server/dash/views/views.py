@@ -908,6 +908,7 @@ class AdGroupSources(api_common.BaseApiView):
         if settings.K1_CONSISTENCY_SYNC:
             api.add_content_ad_sources(ad_group_source)
 
+        k1_helper.update_ad_group(ad_group_id, msg='AdGroupSources.put')
         return self.create_api_response(None)
 
 
@@ -995,8 +996,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source_id=source_id)
         except models.AdGroupSource.DoesNotExist:
             raise exc.MissingDataError(message='Requested source not found')
-
-        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
 
         ad_group_source_settings = ad_group_source.get_current_settings()
         campaign_settings = ad_group.campaign.get_current_settings()
@@ -1091,7 +1090,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
 
-        settings_writer.set(resource, request)
+        api.set_ad_group_source_settings(ad_group_source, resource, request)
         autopilot_changed_sources_text = ''
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
         if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\

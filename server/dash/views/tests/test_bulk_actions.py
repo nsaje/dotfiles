@@ -38,9 +38,9 @@ class AdGroupSourceStateTest(TestCase):
     @patch('dash.views.bulk_actions.table.AdGroupSourcesTableUpdates')
     @patch('dash.views.bulk_actions.AdGroupSourceState._check_can_set_state')
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
-    @patch('dash.views.bulk_actions.api.AdGroupSourceSettingsWriter')
+    @patch('dash.views.bulk_actions.api.set_ad_group_source_settings')
     @patch('utils.k1_helper.update_ad_group')
-    def test_post(self, mock_k1_ping, mock_settings_writer, mock_autopilot_initialize, mock_check, mock_table_update):
+    def test_post(self, mock_k1_ping, mock_set_ags_settings, mock_autopilot_initialize, mock_check, mock_table_update):
         ad_group_id = 1
         source_id = 1
         maintenance_source_id = 6
@@ -88,7 +88,8 @@ class AdGroupSourceStateTest(TestCase):
             },
         })
 
-        mock_settings_writer.return_value.set.assert_called_once_with(
+        mock_set_ags_settings.assert_called_once_with(
+            models.AdGroupSource.objects.get(ad_group_id=ad_group_id, source_id=source_id),
             {'state': constants.AdGroupSourceSettingsState.ACTIVE},
             response.wsgi_request,
         )
