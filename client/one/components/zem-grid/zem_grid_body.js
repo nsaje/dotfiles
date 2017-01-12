@@ -148,6 +148,7 @@ angular.module('one.legacy').directive('zemGridBody', function (zemGridConstants
             // Delay 0.5s to allow quick page switch and before data is loaded (delayed for 1s)
             setTimeout(initialLoad, 500);
             function initialLoad () {
+                if (scope.state.renderedRows.length > 0) return;
                 for (var idx = 0; idx < zemGridConstants.gridBodyRendering.NUM_OF_DUMMY_ROWS; ++idx) {
                     scope.state.renderedRows.push({index: scope.state.renderedRows.length});
                 }
