@@ -19,7 +19,6 @@ import dash.views.daily_stats
 import dash.views.bcm
 import dash.views.breakdown
 import dash.views.export
-import dash.views.sync
 import dash.views.table
 import dash.views.agency
 import dash.views.views
@@ -169,12 +168,6 @@ urlpatterns += [
         name='ad_group_publishers_blacklist'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/check_sync_progress/',
-        login_required(dash.views.sync.AdGroupPublisherBlacklistCheckSyncProgress.as_view()),
-        name='ad_group_publishers_blacklist_sync_progress'
-    ),
-
-    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
         login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
     ),
@@ -301,14 +294,6 @@ urlpatterns += [
         login_required(dash.views.table.AccountsAccountsTable.as_view()),
     ),
     url(
-        r'^api/accounts/sync/',
-        login_required(dash.views.sync.AccountSync.as_view()),
-    ),
-    url(
-        r'^api/accounts/check_sync_progress/',
-        login_required(dash.views.sync.AccountSyncProgress.as_view()),
-    ),
-    url(
         r'^api/accounts/overview/',
         login_required(dash.views.views.AllAccountsOverview.as_view()),
         name='all_accounts_overview'
@@ -317,14 +302,6 @@ urlpatterns += [
         r'^api/history/',
         login_required(dash.views.agency.History.as_view()),
         name='history'
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/sync/',
-        login_required(dash.views.sync.AdGroupSync.as_view()),
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/check_sync_progress/',
-        login_required(dash.views.sync.AdGroupCheckSyncProgress.as_view()),
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/daily_stats/',
@@ -391,14 +368,6 @@ urlpatterns += [
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/goals/validate/',
         login_required(dash.views.agency.CampaignGoalValidation.as_view()),
-    ),
-    url(
-        r'^api/campaigns/sync/',
-        login_required(dash.views.sync.CampaignSync.as_view()),
-    ),
-    url(
-        r'^api/campaigns/check_sync_progress/',
-        login_required(dash.views.sync.CampaignSyncProgress.as_view()),
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/',
