@@ -15,7 +15,7 @@ function green {
 blue "PEP8 lint in progress ..."
 pep8 \
   --first \
-  --exclude="__init__.py,test_api.py,settings.py,wsgi.py,migrations,actionlog,localsettings.py,regions.py" \
+  --exclude="__init__.py,test_api.py,settings.py,wsgi.py,migrations,localsettings.py,regions.py" \
   --max-line-length=700 \
   ./server/
 
