@@ -18,8 +18,6 @@ echo "running $0 $TASK $TASK_PARAMS"
 
 exec /usr/bin/docker run --rm -h $(hostname) \
     --name="${TASK}" \
-    -w /app/zemanta-eins \
-    --link=statsd \
     -e "CONF_ENV=prod" \
     --link=memcached \
     --entrypoint=python \
