@@ -29,6 +29,18 @@ eins:
       labels: "eins"
     mem_limit: 1g
 
+one_ambassador:
+    image: verb/socat
+    restart: always
+    command: TCP-LISTEN:8000,fork TCP:upstream:8000
+    links:
+      - eins:upstream
+    ports:
+      - "8001:8000"
+    mem_limit: 128m
+    labels:
+      traefik.enable: "false"
+
 # for local callback from K1 and BusinessWire integration
 eins-api-callback:
     extends: eins
@@ -42,6 +54,18 @@ eins-api-callback:
     labels:
       traefik.backend: "one-cb.zemanta.com"
       traefik.frontend.rule: "Host:one-cb.zemanta.com"
+
+one-cb_ambassador:
+    image: verb/socat
+    restart: always
+    command: TCP-LISTEN:8000,fork TCP:upstream:8000
+    links:
+      - eins-api-callback:upstream
+    ports:
+      - "8002:8000"
+    mem_limit: 128m
+    labels:
+      traefik.enable: "false"
 
 # for REST API
 eins-rest-api:
@@ -57,18 +81,17 @@ eins-rest-api:
       traefik.backend: "oneapi.zemanta.com"
       traefik.frontend.rule: "Host:oneapi.zemanta.com"
 
-api_ambassador:
+oneapi_ambassador:
     image: verb/socat
     restart: always
     command: TCP-LISTEN:8000,fork TCP:upstream:8000
     links:
-      - eins:upstream
+      - eins-rest-api:upstream
     ports:
-      - "8001:8000"
+      - "8004:8000"
     mem_limit: 128m
     labels:
       traefik.enable: "false"
-
 
 einsworker_convapi:
     extends: eins
