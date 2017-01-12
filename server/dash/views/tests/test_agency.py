@@ -209,14 +209,36 @@ class AdGroupSettingsTest(TestCase):
         )
 
         self.assertDictEqual(
-            json.loads(response.content)['data']['warnings'], {
-                'retargeting': {
-                    'sources': [
-                        'AdsNative',
-                        'Gravity',
-                        'Yahoo',
-                    ],
-                }
+            json.loads(response.content)['data']['warnings']['retargeting'], {
+                'sources': [
+                    'AdsNative',
+                    'Gravity',
+                    'Yahoo',
+                ],
+            }
+        )
+
+    def test_get_max_cpm_unsupported(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        req = RequestFactory().get('/')
+        req.user = User(id=1)
+
+        for source_settings in models.AdGroupSourceSettings.objects.all():
+            new_source_settings = source_settings.copy_settings()
+            new_source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
+            new_source_settings.save(req)
+
+        add_permissions(self.user, ['settings_view'])
+        response = self.client.get(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            follow=True
+        )
+        self.assertDictEqual(
+            json.loads(response.content)['data']['warnings']['max_cpm'], {
+                'sources': [
+                    'Yahoo',
+                ],
             }
         )
 

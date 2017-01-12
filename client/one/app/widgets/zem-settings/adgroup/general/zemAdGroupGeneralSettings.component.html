@@ -94,9 +94,12 @@
         <div class="col-xs-4">
             <div class="form__prefixed-field">
                 <span class="form__field-prefix">$</span>
-                <input id="cpm-input" type="text" class="form__input-text" ng-model="$ctrl.entity.settings.maxCpm" zem-currency-input fraction-size="3" empty-text="No limit">
+                <input id="cpm-input" ng-disabled="$ctrl.entity.warnings.maxCpm !== undefined" type="text" class="form__input-text" ng-model="$ctrl.entity.settings.maxCpm" zem-currency-input fraction-size="3" empty-text="No limit">
             </div>
         </div>
-        <label ng-repeat="error in $ctrl.errors.maxCpm" class="control-label error" for="cpm-input">{{ error }}</label>
+        <div ng-if="$ctrl.entity.warnings.maxCpm !== undefined" class="message message--warning message--with-icon">
+            {{ $ctrl.MESSAGES.WARNING_MAX_CPM }}
+        </div>
+        <label ng-if="$ctrl.entity.warnings.maxCpm === undefined" ng-repeat="error in $ctrl.errors.maxCpm" class="control-label error" for="cpm-input">{{ error }}</label>
     </div>
 </div>

@@ -1435,6 +1435,10 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC in self.available_actions
 
+    def can_set_max_cpm(self):
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_SET_MAX_CPM in self.available_actions
+
     def __str__(self):
         return self.type
 
@@ -1562,6 +1566,9 @@ class Source(models.Model):
 
     def can_modify_retargeting_manually(self):
         return self.supports_retargeting_manually and not self.maintenance and not self.deprecated
+
+    def can_set_max_cpm(self):
+        return self.source_type.can_set_max_cpm() and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
