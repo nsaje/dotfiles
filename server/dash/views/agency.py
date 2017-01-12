@@ -95,8 +95,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes.get('b1_sources_group_enabled'):
-            new_settings.b1_sources_group_cpc_cc = min(new_settings.cpc_cc, constants.RTB_SOURCES_DEFAULT_CPC_CC)
-            new_settings.b1_sources_group_daily_budget = constants.RTB_SOURCES_DEFAULT_DAILY_BUDGET
+            new_settings.b1_sources_group_cpc_cc = min(new_settings.cpc_cc, constants.SourceAllRTB.DEFAULT_CPC_CC)
+            new_settings.b1_sources_group_daily_budget = constants.SourceAllRTB.DEFAULT_DAILY_BUDGET
             changes = current_settings.get_setting_changes(new_settings)
         if (new_settings.b1_sources_group_enabled and changes.get('cpc_cc') and
                 new_settings.cpc_cc < new_settings.b1_sources_group_cpc_cc):

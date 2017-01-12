@@ -314,7 +314,7 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': str(constants.RTB_SOURCES_DEFAULT_DAILY_BUDGET),
+                        'b1_sources_group_daily_budget': str(constants.SourceAllRTB.DEFAULT_DAILY_BUDGET),
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.3000',
                     }
@@ -408,7 +408,7 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': str(constants.RTB_SOURCES_DEFAULT_DAILY_BUDGET),
+                        'b1_sources_group_daily_budget': str(constants.SourceAllRTB.DEFAULT_DAILY_BUDGET),
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.05',
                     }
@@ -576,7 +576,7 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': '',
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': str(constants.RTB_SOURCES_DEFAULT_DAILY_BUDGET),
+                        'b1_sources_group_daily_budget': str(constants.SourceAllRTB.DEFAULT_DAILY_BUDGET),
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.3000',
                     }

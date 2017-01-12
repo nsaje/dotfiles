@@ -15,10 +15,6 @@ MAX_CONVERSION_GOALS_PER_CAMPAIGN = 15
 GA_PROPERTY_ID_REGEX = r'UA-([0-9]+)-([0-9]+)'
 DEFAULT_CALL_TO_ACTION = 'Read more'
 
-RTB_SOURCES_DEFAULT_DAILY_BUDGET = Decimal('50.0')
-RTB_SOURCES_DEFAULT_CPC_CC = Decimal('0.45')
-RTB_SOURCES_MIN_CPC = Decimal('0.01')
-RTB_SOURCES_MAX_CPC = Decimal('7.0')
 
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
@@ -1832,3 +1828,8 @@ class ReportJobStatus(ConstantBase):
 class SourceAllRTB(object):
     ID = '0123456789'
     NAME = 'RTB Sources'
+    MAX_CPC = Decimal('7.0')
+    MIN_CPC = Decimal('0.01')
+    DECIMAL_PLACES = 3
+    DEFAULT_DAILY_BUDGET = Decimal('50.0')
+    DEFAULT_CPC_CC = Decimal('0.45')

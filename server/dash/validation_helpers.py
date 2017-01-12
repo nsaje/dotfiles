@@ -28,29 +28,13 @@ def validate_source_cpc_cc(cpc_cc, source, source_type):
         raise forms.ValidationError('This value must be positive')
 
     decimal_places = source_type.cpc_decimal_places
-    if decimal_places is not None and has_too_many_decimal_places(cpc_cc, decimal_places):
-        raise forms.ValidationError(
-            'CPC on {} cannot exceed {} decimal place{}.'.format(
-                source.name if source else constants.SourceAllRTB.NAME, decimal_places,
-                's' if decimal_places != 1 else ''))
+    _validate_cpc_decimal_places(cpc_cc, decimal_places, source.name)
 
     min_cpc = source_type.min_cpc
-    if min_cpc is not None and cpc_cc < min_cpc:
-        raise forms.ValidationError(
-            'Minimum CPC on {} is ${}.'.format(
-                source.name if source else constants.SourceAllRTB.NAME,
-                utils.string_helper.format_decimal(min_cpc, 2, 3)
-            )
-        )
+    _validate_min_cpc(cpc_cc, min_cpc, source.name)
 
     max_cpc = source_type.max_cpc
-    if max_cpc is not None and cpc_cc > max_cpc:
-        raise forms.ValidationError(
-            'Maximum CPC on {} is ${}.'.format(
-                source.name if source else constants.SourceAllRTB.NAME,
-                utils.string_helper.format_decimal(max_cpc, 2, 3)
-            )
-        )
+    _validate_max_cpc(cpc_cc, max_cpc, source.name)
 
 
 def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
@@ -60,29 +44,24 @@ def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
     validate_source_cpc_cc(cpc_cc, ad_group_source.source, source_type)
 
     min_cpc = source_type.get_min_cpc(ad_group_settings)
-    if min_cpc is not None and cpc_cc < min_cpc:
-        raise forms.ValidationError(
-            'Minimum CPC on {} is ${}.'.format(
-                ad_group_source.source.name,
-                utils.string_helper.format_decimal(min_cpc, 2, 3)
-            ))
+    _validate_min_cpc(cpc_cc, min_cpc, ad_group_source.source.name)
 
     max_cpc = ad_group_settings.cpc_cc
-    if max_cpc is not None and cpc_cc > max_cpc:
-        raise forms.ValidationError(
-            'Maximum ad group CPC is ${}.'.format(utils.string_helper.format_decimal(max_cpc, 2, 3)))
+    _validate_max_cpc(cpc_cc, max_cpc, 'ad group')
 
 
 def validate_b1_sources_group_cpc_cc(cpc_cc, ad_group):
     ad_group_settings = ad_group.get_current_settings()
     if not ad_group_settings.b1_sources_group_enabled:
         return
-    source_type = models.SourceType.objects.get(type=constants.SourceType.B1)
-    validate_source_cpc_cc(cpc_cc, None, source_type)
-    max_adgroup_cpc = ad_group_settings.cpc_cc
-    if max_adgroup_cpc and cpc_cc > max_adgroup_cpc:
-        raise forms.ValidationError(
-            'Maximum ad group CPC is ${}.'.format(utils.string_helper.format_decimal(max_adgroup_cpc, 2, 3)))
+
+    if cpc_cc < 0:
+        raise forms.ValidationError('RTB Sources\' bid CPC must be positive')
+
+    _validate_cpc_decimal_places(cpc_cc, constants.SourceAllRTB.DECIMAL_PLACES, constants.SourceAllRTB.NAME)
+    _validate_min_cpc(cpc_cc, constants.SourceAllRTB.MIN_CPC, constants.SourceAllRTB.NAME)
+    _validate_max_cpc(cpc_cc, constants.SourceAllRTB.MAX_CPC, constants.SourceAllRTB.NAME)
+    _validate_max_cpc(cpc_cc, ad_group_settings.cpc_cc, 'ad group')
 
 
 def validate_ad_group_cpc_cc(cpc_cc, ad_group):
@@ -106,3 +85,31 @@ def validate_ad_group_cpc_cc(cpc_cc, ad_group):
 def has_too_many_decimal_places(num, decimal_places):
     rounded_num = num.quantize(Decimal('1.{}'.format('0' * decimal_places)))
     return rounded_num != num
+
+
+def _validate_cpc_decimal_places(cpc_cc, decimal_places, source_name):
+    if decimal_places is not None and has_too_many_decimal_places(cpc_cc, decimal_places):
+        raise forms.ValidationError(
+            'CPC on {} cannot exceed {} decimal place{}.'.format(
+                source_name,
+                's' if decimal_places != 1 else ''))
+
+
+def _validate_min_cpc(cpc_cc, min_cpc, name):
+    if min_cpc is not None and cpc_cc < min_cpc:
+        raise forms.ValidationError(
+            'Minimum CPC on {} is ${}.'.format(
+                name,
+                utils.string_helper.format_decimal(min_cpc, 2, 3)
+            )
+        )
+
+
+def _validate_max_cpc(cpc_cc, max_cpc, name):
+    if max_cpc is not None and cpc_cc > max_cpc:
+        raise forms.ValidationError(
+            'Maximum CPC on {} is ${}.'.format(
+                name,
+                utils.string_helper.format_decimal(max_cpc, 2, 3)
+            )
+        )
