@@ -756,6 +756,11 @@ urlpatterns += [
         k1api.views.FacebookAccountsView.as_view(),
         name='k1api.facebook_accounts',
     ),
+    url(
+        r'^k1api/publisher_groups$',
+        k1api.views.PublisherGroupsView.as_view(),
+        name='k1api.publisher_groups',
+    ),
 ]
 
 # Crossvalidation Api

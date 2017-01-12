@@ -6,7 +6,7 @@ import datetime
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, F
 from django.http import JsonResponse, Http404
 from django.views.generic import View
 from django.utils.decorators import method_decorator
@@ -410,6 +410,31 @@ class PublishersBlacklistView(K1APIView):
                     'external_id': item.external_id,
                 }
                 blacklist[hash(tuple(entry.values()))] = entry
+
+
+class PublisherGroupsView(K1APIView):
+
+    def get(self, request):
+        account_id = request.GET.get('account_id')
+        offset = request.GET.get('offset') or 0
+        limit = request.GET.get('limit')
+
+        if not limit:
+            return self.response_error('Limit parameter is missing', status=400)
+
+        # ensure unique order
+        entries = dash.models.PublisherGroupEntry.objects.all().order_by('pk')
+        if account_id:
+            publisher_groups = dash.models.PublisherGroup.objects.all().filter_by_account(
+                dash.models.Account.objects.get(pk=account_id))
+            entries = entries.filter(publisher_group__in=publisher_groups)
+
+        return self.response_ok({
+            'count': entries.count(),
+            'data': list(entries[offset:offset+limit].annotate(
+                source_slug=F('source__bidder_slug'),
+            ).values('source_slug', 'publisher_group_id', 'outbrain_publisher_id', 'publisher')),
+        })
 
 
 class AdGroupsView(K1APIView):

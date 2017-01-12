@@ -28,7 +28,7 @@ logger.setLevel(logging.INFO)
 
 class K1ApiTest(TestCase):
 
-    fixtures = ['test_k1_api.yaml']
+    fixtures = ['test_publishers.yaml', 'test_k1_api.yaml']
 
     def setUp(self):
         self.test_signature = True
@@ -69,6 +69,7 @@ class K1ApiTest(TestCase):
             'k1api.ga_accounts',
             'k1api.publishers_blacklist',
             'k1api.facebook_accounts',
+            'k1api.publisher_groups',
         ]
         for path in test_paths:
             self._test_signature(path)
@@ -524,6 +525,55 @@ class K1ApiTest(TestCase):
         self.assertGreater(len(data), 0)
         for source in data:
             self.assertIn('id', source)
+
+    def test_get_publisher_groups(self):
+        account_id = 1
+
+        response = self.client.get(
+            reverse('k1api.publisher_groups'),
+            {'account_id': account_id, 'offset': 0, 'limit': 10}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(data, {
+            'count': 2,
+            'data': [
+                {'outbrain_publisher_id': '', 'publisher': 'pub1', 'publisher_group_id': 1, 'source_slug': 'adblade'},
+                {'outbrain_publisher_id': 'asd123', 'publisher': 'pub2', 'publisher_group_id': 1, 'source_slug': None},
+            ]
+        })
+
+    def test_get_publisher_groups_limit(self):
+        account_id = 1
+
+        response = self.client.get(
+            reverse('k1api.publisher_groups'),
+            {'account_id': account_id, 'offset': 1, 'limit': 1}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(data, {
+            'count': 2,
+            'data': [
+                {'outbrain_publisher_id': 'asd123', 'publisher': 'pub2', 'publisher_group_id': 1, 'source_slug': None},
+            ]
+        })
+
+    def test_get_publisher_groups_no_limit_error(self):
+        account_id = 1
+
+        response = self.client.get(
+            reverse('k1api.publisher_groups'),
+            {'account_id': account_id}
+        )
+
+        self.assertEqual(response.status_code, 400)
 
     def test_get_accounts_slugs_ad_groups(self):
         accounts = (1, 2)
