@@ -743,7 +743,7 @@ class IABCategory(ConstantBase):
         IAB7_35: "Pediatrics",
         IAB7_36: "Physical Therapy",
         IAB7_37: "Psychology/Psychiatry",
-        IAB7_38: "Senor Health",
+        IAB7_38: "Senior Health",
         IAB7_39: "Sexuality",
         IAB7_40: "Sleep Disorders",
         IAB7_41: "Smoking Cessation",
