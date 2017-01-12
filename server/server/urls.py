@@ -781,15 +781,6 @@ urlpatterns += [
     )
 ]
 
-# Sharethrough callback
-urlpatterns += [
-    url(
-        r'^sharethrough_approval/',
-        dash.views.views.sharethrough_approval,
-        name='sharethrough_approval'
-    )
-]
-
 # Health Check
 urlpatterns += [
     url(

@@ -246,18 +246,14 @@ class AdGroupSettingsTest(TestCase):
             }
         )
 
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('utils.redirector_helper.insert_adgroup')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_order_ad_group_settings_update):
+    def test_put(self, mock_k1_ping, mock_redirector_insert_adgroup):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
-
-            # we need this to track call order across multiple mocks
-            mock_manager = Mock()
-            mock_manager.attach_mock(mock_order_ad_group_settings_update, 'mock_order_ad_group_settings_update')
 
             old_settings = ad_group.get_current_settings()
             self.assertIsNotNone(old_settings.pk)
@@ -329,26 +325,19 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(new_settings.description, 'Example description')
             self.assertEqual(new_settings.call_to_action, 'Call to action')
 
-            mock_manager.assert_has_calls([
-                call.mock_order_ad_group_settings_update(
-                    ad_group, old_settings, new_settings, ANY, send=False),
-            ])
+            mock_redirector_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
 
             hist = history_helpers.get_ad_group_history(ad_group).first()
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('utils.redirector_helper.insert_adgroup')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put_low_cpc(self, mock_k1_ping, mock_order_ad_group_settings_update):
+    def test_put_low_cpc(self, mock_k1_ping, mock_insert_adgroup):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
-
-            # we need this to track call order across multiple mocks
-            mock_manager = Mock()
-            mock_manager.attach_mock(mock_order_ad_group_settings_update, 'mock_order_ad_group_settings_update')
 
             old_settings = ad_group.get_current_settings()
             self.assertIsNotNone(old_settings.pk)
@@ -428,13 +417,10 @@ class AdGroupSettingsTest(TestCase):
                 # All cpc are adjusted to be lower or equal to 0.05
                 self.assertTrue(cpc <= Decimal('0.05'))
 
-            mock_manager.assert_has_calls([
-                call.mock_order_ad_group_settings_update(
-                    ad_group, old_settings, new_settings, ANY, send=False),
-            ])
+            mock_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
 
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
-    def test_put_without_non_propagated_settings(self, mock_order_ad_group_settings_update):
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_put_without_non_propagated_settings(self, mock_redirector_insert_adgroup):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -471,13 +457,12 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(new_settings.cpc_cc, None)
             self.assertEqual(new_settings.daily_budget_cc, None)
 
-            mock_order_ad_group_settings_update.assert_called_with(
-                ad_group, old_settings, new_settings, ANY, send=False)
+            mock_redirector_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
 
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('utils.redirector_helper.insert_adgroup')
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
     def test_put_set_budget_autopilot_triggers_budget_reallocation(
-            self, mock_order_ad_group_settings_update, mock_init_autopilot):
+            self, mock_redirector_insert_adgroup, mock_init_autopilot):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -512,8 +497,8 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertEqual(mock_init_autopilot.called, True)
 
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
-    def test_put_firsttime_create_settings(self, mock_order_ad_group_settings_update):
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_put_firsttime_create_settings(self, mock_redirector_insert_adgroup):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -587,26 +572,13 @@ class AdGroupSettingsTest(TestCase):
             new_settings = ad_group.get_current_settings()
             self.assertIsNotNone(new_settings.pk)
 
-            # uses 'ANY' instead of 'current_settings' because before settings are created, the
-            # 'get_current_settings' returns a new AdGroupSettings instance each time
-            mock_order_ad_group_settings_update.assert_called_with(
-                ad_group, ANY, new_settings, response.wsgi_request, send=False)
-
-            # when saving settings, previous ad_group.name gets added to previous settings
-            # - and the only time it makes a real difference is the first time the settings are
-            # saved
-            current_settings.ad_group_name = 'test adgroup 10'
-
-            self.assertDictEqual(
-                mock_order_ad_group_settings_update.call_args[0][1].get_settings_dict(),
-                current_settings.get_settings_dict()
-            )
+            mock_redirector_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
 
             hist = history_helpers.get_ad_group_history(ad_group).first()
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
-    def test_put_tracking_codes_with_permission(self, mock_order_ad_group_settings_update):
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_put_tracking_codes_with_permission(self, mock_redirector_insert_adgroup):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -625,8 +597,8 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertEqual(response_settings_dict['tracking_code'], 'asd=123')
 
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
-    def test_put_invalid_target_region(self, mock_order_ad_group_settings_update):
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_put_invalid_target_region(self, mock_redirector_insert_adgroup):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         self.settings_dict['settings']['target_regions'] = ["123"]
@@ -642,8 +614,8 @@ class AdGroupSettingsTest(TestCase):
         self.assertFalse(response_dict['success'])
         self.assertIn('target_regions', response_dict['data']['errors'])
 
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
-    def test_put_us_and_dmas(self, mock_order_ad_group_settings_update):
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_put_us_and_dmas(self, mock_redirector_insert_adgroup):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         self.settings_dict['settings']['target_regions'] = ['US', '693']
@@ -659,8 +631,8 @@ class AdGroupSettingsTest(TestCase):
         self.assertFalse(response_dict['success'])
         self.assertIn('target_regions', response_dict['data']['errors'])
 
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
-    def test_end_date_in_the_past(self, mock_order_ad_group_settings_update):
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_end_date_in_the_past(self, mock_redirector_insert_adgroup):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -683,8 +655,8 @@ class AdGroupSettingsTest(TestCase):
             self.assertFalse(response_dict['success'])
             self.assertIn('end_date', response_dict['data']['errors'])
 
-    @patch('dash.views.agency.api.order_ad_group_settings_update')
-    def test_put_set_settings_no_permissions(self, mock_order_ad_group_settings_update):
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_put_set_settings_no_permissions(self, mock_redirector_insert_adgroup):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)

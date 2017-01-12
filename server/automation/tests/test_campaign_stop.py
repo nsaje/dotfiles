@@ -1352,10 +1352,9 @@ class UpdateCampaignsInLandingTestCase(TestCase):
     @patch('automation.campaign_stop._can_resume_campaign')
     @patch('automation.campaign_stop._get_yesterday_source_spends')
     @patch('automation.campaign_stop._get_past_7_days_data')
-    @patch('dash.api.order_ad_group_settings_update')
     @patch('utils.k1_helper.update_ad_group')
     def test_update_campaigns_in_landing(self, mock_k1_ping,
-                                         mock_order_ad_group_update, mock_get_past_data,
+                                         mock_get_past_data,
                                          mock_get_yesterday_spends,
                                          mock_can_resume, mock_local_today):
         today = datetime.date(2016, 4, 5)
@@ -1367,9 +1366,6 @@ class UpdateCampaignsInLandingTestCase(TestCase):
 
         campaign = dash.models.Campaign.objects.get(id=1)
         campaign_stop._switch_campaign_to_landing_mode(campaign)
-
-        mock_order_ad_group_update.reset_mock()
-        mock_order_ad_group_update.return_value = []
 
         ret = {}
         for ad_group in campaign.adgroup_set.all():
@@ -1433,9 +1429,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
     @patch('automation.campaign_stop._get_yesterday_source_spends')
     @patch('automation.campaign_stop._get_past_7_days_data')
     @patch('automation.campaign_stop._check_ad_groups_end_date')
-    @patch('dash.api.order_ad_group_settings_update')
-    def test_wrap_up_landing_mode(self, mock_order_ad_group_update,
-                                  mock_get_end_date, mock_get_past_data,
+    def test_wrap_up_landing_mode(self, mock_get_end_date, mock_get_past_data,
                                   mock_get_yesterday_spends, mock_can_resume, mock_local_today):
         today = datetime.date(2016, 4, 5)
 
@@ -1446,9 +1440,6 @@ class UpdateCampaignsInLandingTestCase(TestCase):
 
         campaign = dash.models.Campaign.objects.get(id=1)
         campaign_stop._switch_campaign_to_landing_mode(campaign)
-
-        mock_order_ad_group_update.reset_mock()
-        mock_order_ad_group_update.return_value = []
 
         ret = {}
         for ad_group in campaign.adgroup_set.all():

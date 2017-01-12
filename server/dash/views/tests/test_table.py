@@ -839,16 +839,6 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
 
         self.assertIsNone(result)
 
-    def test_get_supply_dash_url_pending(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-        ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
-        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
-
-        result = ad_group_source.get_supply_dash_url()
-
-        self.assertIsNone(result)
-
     def test_get_source_supply_dash_disabled_message(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = [
@@ -868,19 +858,6 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         self.assertEqual(result,
                          "This media source doesn't have a dashboard of its own. "
                          "All campaign management is done through Zemanta One dashboard.")
-
-    def test_get_source_supply_dash_disabled_message_pending(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-        ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.HAS_3RD_PARTY_DASHBOARD
-        ]
-        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
-
-        result = helpers.get_source_supply_dash_disabled_message(ad_group_source, ad_group_source.source)
-
-        self.assertEqual(result,
-                         "Dashboard of this media source is not yet available because the "
-                         "media source is still being set up for this ad group.")
 
 
 @override_settings(

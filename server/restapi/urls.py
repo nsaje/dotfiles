@@ -103,4 +103,26 @@ urlpatterns = [
         views.ReportsViewDetails.as_view(),
         name='reports_details'
     ),
+    url(
+        r'^accounts/(?P<account_id>\d+)/publishergroups/$',
+        views.PublisherGroupViewSet.as_view(actions={'get': 'list', 'post': 'create'}),
+        name='publisher_group_list'
+    ),
+    url(
+        r'^accounts/(?P<account_id>\d+)/publishergroups/(?P<publisher_group_id>\d+)$',
+        views.PublisherGroupViewSet.as_view(actions={
+            'get': 'retrieve', 'put': 'partial_update', 'delete': 'destroy'}),
+        name='publisher_group_details'
+    ),
+    url(
+        r'^publishergroups/(?P<publisher_group_id>\d+)/entries/$',
+        views.PublisherGroupEntryViewSet.as_view(actions={'get': 'list', 'post': 'create'}),
+        name='publisher_group_entry_list'
+    ),
+    url(
+        r'^publishergroups/(?P<publisher_group_id>\d+)/entries/(?P<entry_id>\d+)$',
+        views.PublisherGroupEntryViewSet.as_view(actions={
+            'get': 'retrieve', 'put': 'partial_update', 'delete': 'destroy'}),
+        name='publisher_group_entry_details'
+    ),
 ]

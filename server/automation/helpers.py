@@ -129,6 +129,5 @@ def stop_campaign(campaign):
 
 
 def update_ad_group_source_value(ad_group_source, field, new_value):
-    settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
     resource = {field: new_value}
-    settings_writer.set(resource, None)
+    dash.api.set_ad_group_source_settings(ad_group_source, resource, None)

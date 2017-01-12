@@ -908,6 +908,7 @@ class AdGroupSources(api_common.BaseApiView):
         if settings.K1_CONSISTENCY_SYNC:
             api.add_content_ad_sources(ad_group_source)
 
+        k1_helper.update_ad_group(ad_group_id, msg='AdGroupSources.put')
         return self.create_api_response(None)
 
 
@@ -995,8 +996,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source_id=source_id)
         except models.AdGroupSource.DoesNotExist:
             raise exc.MissingDataError(message='Requested source not found')
-
-        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
 
         ad_group_source_settings = ad_group_source.get_current_settings()
         campaign_settings = ad_group.campaign.get_current_settings()
@@ -1091,7 +1090,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
 
-        settings_writer.set(resource, request)
+        api.set_ad_group_source_settings(ad_group_source, resource, request)
         autopilot_changed_sources_text = ''
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
         if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
@@ -1552,45 +1551,6 @@ def oauth_redirect(request, source_name):
         credentials.save()
 
     return redirect(reverse('admin:dash_sourcecredentials_change', args=(credentials.id,)))
-
-
-@csrf_exempt
-def sharethrough_approval(request):
-    data = json.loads(request.body)
-
-    logger.info('sharethrough approval, content ad id: %s, status: %s', data['crid'], data['status'])
-
-    sig = request.GET.get('sig')
-    if not sig:
-        logger.debug('Sharethrough approval postback without signature. crid: %s', data['crid'])
-        calculated = None
-    else:
-        calculated = base64.urlsafe_b64encode(hmac.new(settings.SHARETHROUGH_PARAM_SIGN_KEY,
-                                                       msg=str(data['crid']),
-                                                       digestmod=hashlib.sha256)).digest()
-
-        if sig != calculated:
-            logger.debug('Invalid sharethrough signature. crid: %s', data['crid'])
-
-    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
-                                                           source=models.Source.objects.get(name='Sharethrough'))
-
-    if data['status'] == 0:
-        if sig != calculated:
-            logger.debug('Invalid sharethrough signature. crid: %s', data['crid'])
-
-    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
-                                                           source=models.Source.objects.get(name='Sharethrough'))
-
-    if data['status'] == 0:
-        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
-    else:
-        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
-
-    content_ad_source.save()
-    k1_helper.update_content_ad(content_ad_source.content_ad_id, content_ad_source.content_ad.ad_group_id)
-
-    return HttpResponse('OK')
 
 
 class LiveStreamAllow(api_common.BaseApiView):

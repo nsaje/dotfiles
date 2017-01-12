@@ -93,6 +93,7 @@ class AdGroupSettings(api_common.BaseApiView):
         current_settings.ad_group_name = previous_ad_group_name
         new_settings.ad_group_name = ad_group.name
 
+        campaign_settings = ad_group.campaign.get_current_settings()
         changes = current_settings.get_setting_changes(new_settings)
         if changes.get('b1_sources_group_enabled'):
             new_settings.b1_sources_group_cpc_cc = min(new_settings.cpc_cc, constants.SourceAllRTB.DEFAULT_CPC_CC)
@@ -103,7 +104,13 @@ class AdGroupSettings(api_common.BaseApiView):
             new_settings.b1_sources_group_cpc_cc = new_settings.cpc_cc
             changes = current_settings.get_setting_changes(new_settings)
 
-        api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
+        if new_settings.id is None or 'tracking_code' in changes:
+            redirector_helper.insert_adgroup(
+                ad_group,
+                new_settings,
+                campaign_settings,
+            )
+
         self._adjust_adgroup_sources(ad_group, new_settings, request)
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
@@ -296,12 +303,13 @@ class AdGroupSettings(api_common.BaseApiView):
 
             if proposed_cpc == curr_ags_settings.cpc_cc:
                 continue
-            api.AdGroupSourceSettingsWriter(ags).set(
+            api.set_ad_group_source_settings(
+                ags,
                 {
                     'cpc_cc': proposed_cpc
                 },
                 request=None,
-                send_to_zwei=False
+                ping_k1=False
             )
 
     def get_default_settings_dict(self, ad_group):

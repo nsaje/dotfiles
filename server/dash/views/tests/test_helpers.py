@@ -115,8 +115,8 @@ class ViewHelpersTestCase(TestCase):
             },
         }, data_status)
 
-    @patch.object(helpers.api, 'order_ad_group_settings_update')
-    def test_save_campaign_settings_and_propagate(self, mock_adgroup_update):
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_save_campaign_settings_and_propagate(self, mock_insert_adgroup):
         campaign = models.Campaign.objects.get(pk=1)
         s1 = models.CampaignSettings(campaign=campaign)
         s1.enable_ga_tracking = False
@@ -130,10 +130,7 @@ class ViewHelpersTestCase(TestCase):
         request = HttpRequest()
         request.user = User.objects.get(pk=1)
         helpers.save_campaign_settings_and_propagate(campaign, s1, s2, request)
-
-        mock_adgroup_update.assert_called_with(
-            ANY, ANY, ANY, request, send=False,
-            iab_update=True, campaign_tracking_changes=True)
+        self.assertTrue(mock_insert_adgroup.called)
 
 
 class RunningStateHelpersTestCase(TestCase):
@@ -1055,8 +1052,8 @@ class SetAdGroupSourceTest(TestCase):
 
     def test_set_ad_group_source_settings_mobile(self):
         ad_group_source, source_settings = self.prepare_ad_group_source()
-        helpers.set_ad_group_source_settings(self.request, ad_group_source, mobile_only=True,
-                                             active=True, create_action=False)
+        helpers.set_ad_group_source_settings(
+            self.request, ad_group_source, mobile_only=True, active=True)
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
         self.assertEqual(ad_group_source_settings.count(), 2)
@@ -1068,8 +1065,8 @@ class SetAdGroupSourceTest(TestCase):
 
     def test_set_ad_group_source_settings_desktop(self):
         ad_group_source, source_settings = self.prepare_ad_group_source()
-        helpers.set_ad_group_source_settings(self.request, ad_group_source, mobile_only=False,
-                                             active=False, create_action=False)
+        helpers.set_ad_group_source_settings(
+            self.request, ad_group_source, mobile_only=False, active=False)
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
         self.assertEqual(ad_group_source_settings.count(), 2)

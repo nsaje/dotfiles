@@ -23,6 +23,7 @@ from utils import exc
 from utils import email_helper
 from utils import k1_helper
 from utils import columns
+from utils import redirector_helper
 
 import zemauth.models
 
@@ -791,9 +792,6 @@ def get_source_supply_dash_disabled_message(ad_group_source, source):
     if not source.has_3rd_party_dashboard():
         return "This media source doesn't have a dashboard of its own. " \
             "All campaign management is done through Zemanta One dashboard."
-    elif ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
-        return "Dashboard of this media source is not yet available because the " \
-            "media source is still being set up for this ad group."
 
     return None
 
@@ -881,14 +879,11 @@ def add_source_to_ad_group(default_source_settings, ad_group):
         can_manage_content_ads=default_source_settings.source.can_manage_content_ads(),
     )
 
-    if default_source_settings.source.source_type.type == constants.SourceType.GRAVITY:
-        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
-
     return ad_group_source
 
 
-def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, active=False,
-                                 create_action=False, max_cpc=None):
+def set_ad_group_source_settings(
+        request, ad_group_source, mobile_only=False, active=False, max_cpc=None):
     cpc_cc = ad_group_source.source.default_cpc_cc
     if mobile_only:
         cpc_cc = ad_group_source.source.default_mobile_cpc_cc
@@ -906,8 +901,12 @@ def set_ad_group_source_settings(request, ad_group_source, mobile_only=False, ac
         'state': constants.ContentAdSourceState.ACTIVE if active else constants.ContentAdSourceState.INACTIVE
     }
 
-    settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
-    settings_writer.set(resource, request, create_action=create_action)
+    api.set_ad_group_source_settings(
+        ad_group_source,
+        resource,
+        request,
+        ping_k1=False,
+    )
 
 
 def format_decimal_to_percent(num):
@@ -930,6 +929,16 @@ def get_source_default_settings(source):
     return default_settings
 
 
+def _update_ad_groups_redirector_settings(campaign, campaign_settings):
+    for ad_group in campaign.adgroup_set.all():
+        ad_group_settings = ad_group.get_current_settings()
+        redirector_helper.insert_adgroup(
+            ad_group,
+            ad_group_settings,
+            campaign_settings,
+        )
+
+
 def save_campaign_settings_and_propagate(campaign, old_settings, new_settings, request):
     with transaction.atomic():
         campaign.save(request)
@@ -938,20 +947,11 @@ def save_campaign_settings_and_propagate(campaign, old_settings, new_settings, r
         # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
         campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
 
-        tracking_changes = any(prop in old_settings.get_setting_changes(new_settings) for prop in
-                               ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param'])
+        any_tracking_changes = any(prop in old_settings.get_setting_changes(new_settings) for prop in
+                                   ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param'])
+        if any_tracking_changes:
+            _update_ad_groups_redirector_settings(campaign, new_settings)
 
-        for ad_group in campaign_ad_groups:
-            adgroup_settings = ad_group.get_current_settings()
-            api.order_ad_group_settings_update(
-                ad_group,
-                adgroup_settings,
-                adgroup_settings,
-                request,
-                send=False,
-                iab_update=True,
-                campaign_tracking_changes=tracking_changes
-            )
     k1_helper.update_ad_groups((ad_group.pk for ad_group in campaign_ad_groups),
                                msg='views.helpers.save_campaign_settings_and_propagate')
 

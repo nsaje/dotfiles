@@ -73,8 +73,11 @@ class AutopilotHelpersTestCase(test.TestCase):
 
         source = dash.models.AdGroupSource.objects.get(id=1)
         self.assertTrue(source in [setting.ad_group_source for setting in active_enabled_sources])
-        settings_writer = dash.api.AdGroupSourceSettingsWriter(source)
-        settings_writer.set({'state': AdGroupSettingsState.INACTIVE}, None)
+        dash.api.set_ad_group_source_settings(
+            source,
+            {'state': AdGroupSettingsState.INACTIVE},
+            None
+        )
         self.assertEqual(source.get_current_settings().state, AdGroupSettingsState.INACTIVE)
         self.assertFalse(source in [setting.ad_group_source for setting in
                                     autopilot_helpers.get_autopilot_active_sources_settings(adgroups)])

@@ -336,8 +336,6 @@ if TESTING:
         STATS_DB_NAME = 'default'
 
 # App specific
-ACTIONLOG_RECENT_HOURS = 2
-
 LAST_N_DAY_REPORTS = 3
 
 SOURCE_OAUTH_URIS = {
@@ -351,9 +349,6 @@ PASSWORD_RESET_TIMEOUT_DAYS = 7
 
 # Time zone used to convert datetimes in API responses
 DEFAULT_TIME_ZONE = 'America/New_York'
-
-# Placeholder value for source_campaign_key while campaign is being created
-SOURCE_CAMPAIGN_KEY_PENDING_VALUE = 'PENDING'
 
 CONVERSION_PIXEL_PREFIX = 'https://p1.zemanta.com/p/'
 

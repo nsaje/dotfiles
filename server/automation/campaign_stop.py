@@ -856,16 +856,7 @@ def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
     if pause_ad_group:
         new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
 
-    if current_settings.get_setting_changes(new_settings):
-        new_settings.save(None)
-        dash.api.order_ad_group_settings_update(
-            ad_group,
-            current_settings,
-            new_settings,
-            request=None,
-            send=False,
-        )
-
+    new_settings.save(None)
     _restore_user_sources_settings(ad_group)
 
 
@@ -884,7 +875,6 @@ def _restore_user_sources_settings(ad_group):
     }
 
     for ad_group_source in ad_group.adgroupsource_set.all():
-        settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
         user_settings = user_ad_group_sources_settings[ad_group_source.id]
         current_settings = current_ad_group_sources_settings[ad_group_source.id]
 
@@ -892,13 +882,14 @@ def _restore_user_sources_settings(ad_group):
             if getattr(user_settings, key) == getattr(current_settings, key):
                 continue
 
-            settings_writer.set(
+            dash.api.set_ad_group_source_settings(
+                ad_group_source,
                 {
                     key: getattr(user_settings, key),
                 },
                 request=None,
-                send_to_zwei=False,
                 system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
+                ping_k1=False,
             )
 
         if current_settings.landing_mode:
@@ -931,36 +922,26 @@ def _set_ad_group_end_date(ad_group, end_date):
     new_ag_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
     new_ag_settings.save(None)
 
-    return dash.api.order_ad_group_settings_update(
-        ad_group,
-        current_ag_settings,
-        new_ag_settings,
-        request=None,
-        send=False,
-    )
-
 
 def _stop_ad_group_source(ad_group_source):
-    settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
-    settings_writer.set(
+    dash.api.set_ad_group_source_settings(
+        ad_group_source,
         {'state': dash.constants.AdGroupSourceSettingsState.INACTIVE},
         request=None,
-        create_action=True,
-        send_to_zwei=False,
         system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
-        landing_mode=True
+        landing_mode=True,
+        ping_k1=False
     )
 
 
 def _update_ad_group_source_cap(ad_group_source, cap):
-    settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
-    settings_writer.set(
+    dash.api.set_ad_group_source_settings(
+        ad_group_source,
         {'daily_budget_cc': cap},
         request=None,
-        create_action=True,
-        send_to_zwei=False,
         system_user=dash.constants.SystemUserType.CAMPAIGN_STOP,
-        landing_mode=True
+        landing_mode=True,
+        ping_k1=False,
     )
 
 

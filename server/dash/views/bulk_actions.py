@@ -78,8 +78,11 @@ class AdGroupSourceState(BaseBulkActionView):
 
         with transaction.atomic():
             for ad_group_source in ad_group_sources:
-                settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
-                settings_writer.set({'state': state}, request)
+                api.set_ad_group_source_settings(
+                    ad_group_source,
+                    {'state': state},
+                    request,
+                )
 
         if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)

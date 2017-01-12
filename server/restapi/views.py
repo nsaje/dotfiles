@@ -11,6 +11,8 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import permissions
+from rest_framework import viewsets
+from rest_framework import pagination
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
@@ -115,6 +117,33 @@ class DashConstantField(serializers.Field):
 
     def to_representation_many(self, data):
         return map(lambda x: self.to_representation(x), data)
+
+
+class DataNodeSerializerMixin(object):
+    @property
+    def data(self):
+        return {
+            'data': super(DataNodeSerializerMixin, self).data,
+        }
+
+
+class DataNodeListSerializer(DataNodeSerializerMixin, serializers.ListSerializer):
+    pass
+
+
+class StandardPagination(pagination.LimitOffsetPagination):
+    max_limit = 1000
+
+    def get_paginated_response(self, data):
+        if 'data' in data:
+            data = data['data']
+
+        return Response(collections.OrderedDict([
+            ('count', self.count),
+            ('next', self.get_next_link()),
+            ('previous', self.get_previous_link()),
+            ('data', data)
+        ]))
 
 
 class SettingsSerializer(serializers.BaseSerializer):
@@ -636,7 +665,7 @@ class SourceIdSlugField(serializers.Field):
             if data.startswith('b1_'):
                 data = data[3:]
             source = dash.models.Source.objects.get(bidder_slug=data)
-            return source.id
+            return source
         except AttributeError:
             self.fail('invalid_choice', data)
 
@@ -660,7 +689,7 @@ class PublisherSerializer(serializers.Serializer):
             'state': validated_data['status'],
             'publishers_selected': [
                 {
-                    'source_id': validated_data['source'],
+                    'source_id': validated_data['source'].id,
                     'domain': validated_data['name'],
                     'external_id': validated_data.get('external_id')
                 }
@@ -707,6 +736,7 @@ class PublishersViewList(RESTAPIBaseView):
         return self.response_ok(serializer.data)
 
     def put(self, request, ad_group_id):
+        helpers.get_ad_group(request.user, ad_group_id)  # validate ad group is allowed
         serializer = PublisherSerializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request, ad_group_id=ad_group_id)
@@ -722,7 +752,7 @@ class AdGroupSourceSerializer(serializers.Serializer):
     def create(self, validated_data):
         request = validated_data['request']
         ad_group_id = validated_data['ad_group_id']
-        source_id = validated_data['ad_group_source']['source']
+        source_id = validated_data['ad_group_source']['source'].id
         put_data = {field: validated_data[field] for field in ['cpc_cc', 'daily_budget_cc', 'state'] if field in validated_data}
         request.body = RESTAPIJSONRenderer().render(put_data)
         view_internal = views.AdGroupSourceSettings(rest_proxy=True)
@@ -828,6 +858,7 @@ class ContentAdViewDetails(RESTAPIBaseView):
         return self.response_ok(serializer.data)
 
     def put(self, request, content_ad_id):
+        helpers.get_content_ad(request.user, content_ad_id)  # validation
         serializer = ContentAdSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request, content_ad_id=content_ad_id)
@@ -954,3 +985,107 @@ class ReportsViewDetails(RESTAPIBaseView):
     def get(self, request, job_id):
         job = restapi.models.ReportJob.objects.get(pk=job_id)
         return self.response_ok(ReportJobSerializer(job).data)
+
+
+class PublisherGroupSerializer(DataNodeSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = dash.models.PublisherGroup
+        fields = ('id', 'name', 'account_id')
+        list_serializer_class = DataNodeListSerializer
+
+    id = IdField(read_only=True)
+    account_id = IdField(read_only=True)
+
+    def create(self, validated_data):
+        pgroup = dash.models.PublisherGroup(
+            name=validated_data['name'],
+            account_id=validated_data['account_id'])
+        pgroup.save(validated_data['request'])
+        return pgroup
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.save(validated_data['request'])
+        return instance
+
+
+class PublisherGroupEntrySerializer(DataNodeSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = dash.models.PublisherGroupEntry
+        fields = ('id', 'publisher', 'publisher_group_id', 'source')
+        list_serializer_class = DataNodeListSerializer
+
+    id = IdField(read_only=True)
+    publisher_group_id = IdField(read_only=True)
+    source = SourceIdSlugField(required=False)
+
+
+class OutbrainPublisherGroupEntrySerializer(PublisherGroupEntrySerializer):
+    class Meta:
+        model = dash.models.PublisherGroupEntry
+        fields = ('id', 'publisher', 'publisher_group_id', 'source', 'outbrain_publisher_id')
+        list_serializer_class = DataNodeListSerializer
+
+
+class CanEditPublisherGroupsPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.has_perm('zemauth.can_edit_publisher_groups'))
+
+
+class PublisherGroupViewSet(RESTAPIBaseView, viewsets.ModelViewSet):
+    renderer_classes = (CamelCaseJSONRenderer,)
+    parser_classes = (CamelCaseJSONParser,)
+
+    serializer_class = PublisherGroupSerializer
+    lookup_url_kwarg = 'publisher_group_id'
+    permission_classes = RESTAPIBaseView.permission_classes + (CanEditPublisherGroupsPermission,)
+
+    def get_queryset(self):
+        account = helpers.get_account(self.request.user, self.kwargs['account_id'])  # check user has account access
+        return dash.models.PublisherGroup.objects.all().filter_by_account(account)
+
+    def perform_create(self, serializer):
+        helpers.get_account(self.request.user, self.kwargs['account_id'])
+        serializer.save(request=self.request, account_id=self.kwargs['account_id'])
+
+    def perform_update(self, serializer):
+        serializer.save(request=self.request, account_id=self.kwargs['account_id'])
+
+    def destroy(self, request, *args, **kwargs):
+        publisher_group = self.get_object()
+        if not publisher_group.can_delete():
+            raise exc.ValidationError('This publisher group can not be deleted')
+
+        return super(PublisherGroupViewSet, self).destroy(request, *args, **kwargs)
+
+
+class PublisherGroupEntryViewSet(RESTAPIBaseView, viewsets.ModelViewSet):
+    renderer_classes = (CamelCaseJSONRenderer,)
+    parser_classes = (CamelCaseJSONParser,)
+    pagination_class = StandardPagination
+    permission_classes = RESTAPIBaseView.permission_classes + (CanEditPublisherGroupsPermission,)
+
+    lookup_url_kwarg = 'entry_id'
+
+    def get_serializer_class(self):
+        if self.request.user.has_perm('zemauth.can_access_additional_outbrain_publisher_settings'):
+            return OutbrainPublisherGroupEntrySerializer
+        return PublisherGroupEntrySerializer
+
+    def get_queryset(self):
+        publisher_group = dash.models.PublisherGroup.objects.get(pk=self.kwargs['publisher_group_id'])
+        helpers.get_account(self.request.user, publisher_group.account_id)
+        return publisher_group.entries.all()
+
+    def create(self, request, *args, **kwargs):
+        # support create multiple through the "many" parameter
+        serializer = self.get_serializer(data=request.data, many=not isinstance(request.data, dict))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=201, headers=headers)
+
+    def perform_create(self, serializer):
+        publisher_group = dash.models.PublisherGroup.objects.get(pk=self.kwargs['publisher_group_id'])
+        helpers.get_account(self.request.user, publisher_group.account_id)
+        serializer.save(publisher_group_id=self.kwargs['publisher_group_id'])
