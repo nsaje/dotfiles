@@ -541,8 +541,10 @@ class K1ApiTest(TestCase):
         self.assertEqual(data, {
             'count': 2,
             'data': [
-                {'outbrain_publisher_id': '', 'publisher': 'pub1', 'publisher_group_id': 1, 'source_slug': 'adblade'},
-                {'outbrain_publisher_id': 'asd123', 'publisher': 'pub2', 'publisher_group_id': 1, 'source_slug': None},
+                {'outbrain_publisher_id': '', 'publisher': 'pub1',
+                 'publisher_group_id': 1, 'source_slug': 'adblade', 'account_id': 1},
+                {'outbrain_publisher_id': 'asd123', 'publisher': 'pub2',
+                 'publisher_group_id': 1, 'source_slug': None, 'account_id': 1},
             ]
         })
 
@@ -561,7 +563,8 @@ class K1ApiTest(TestCase):
         self.assertEqual(data, {
             'count': 2,
             'data': [
-                {'outbrain_publisher_id': 'asd123', 'publisher': 'pub2', 'publisher_group_id': 1, 'source_slug': None},
+                {'outbrain_publisher_id': 'asd123', 'publisher': 'pub2',
+                 'publisher_group_id': 1, 'source_slug': None, 'account_id': 1},
             ]
         })
 

@@ -433,7 +433,8 @@ class PublisherGroupsView(K1APIView):
             'count': entries.count(),
             'data': list(entries[offset:offset+limit].annotate(
                 source_slug=F('source__bidder_slug'),
-            ).values('source_slug', 'publisher_group_id', 'outbrain_publisher_id', 'publisher')),
+                account_id=F('publisher_group__account_id'),
+            ).values('source_slug', 'publisher_group_id', 'outbrain_publisher_id', 'publisher', 'account_id')),
         })
 
 
