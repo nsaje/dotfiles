@@ -1530,6 +1530,40 @@ class AudienceAdmin(admin.ModelAdmin):
     exclude = ('ad_group_settings',)
 
 
+class CpcConstraintAdmin(admin.ModelAdmin):
+    model = models.CpcConstraint
+    list_display = (
+        'id',
+        'agency',
+        'account',
+        'campaign',
+        'ad_group',
+        'min_cpc',
+        'max_cpc',
+        'constraint_type',
+        'created_dt',
+    )
+
+    list_filter = (
+        'constraint_type',
+    )
+
+    search_fields = (
+        'agency__id',
+        'agency__name',
+        'account__name',
+        'account__id',
+        'campaign__name',
+        'campaign__id',
+        'ad_group__name',
+        'ad_group__id',
+    )
+
+    readonly_fields = ('created_dt', )
+
+    ordering = ('-created_dt', )
+    date_hierarchy = 'created_dt'
+
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1556,3 +1590,4 @@ admin.site.register(models.FacebookAccount, FacebookAccount)
 admin.site.register(models.EmailTemplate, EmailTemplateAdmin)
 admin.site.register(models.History, HistoryAdmin)
 admin.site.register(models.Audience, AudienceAdmin)
+admin.site.register(models.CpcConstraint, CpcConstraintAdmin)

@@ -1829,3 +1829,13 @@ class ReportJobStatus(ConstantBase):
 class SourceAllRTB(object):
     ID = '0123456789'
     NAME = 'RTB Sources'
+
+
+class CpcConstraintType(ConstantBase):
+    MANUAL = 1
+    OUTBRAIN_BLACKLIST = 2
+
+    _VALUES = {
+        MANUAL: 'Manual',
+        OUTBRAIN_BLACKLIST: 'Outbrain blacklist',
+    }
