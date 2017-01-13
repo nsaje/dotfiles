@@ -38,14 +38,6 @@ angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state
                 internal: false,
             },
             {
-                heading: 'Settings',
-                route: 'main.campaigns.settings',
-                active: false,
-                hidden: $scope.hasPermission('zemauth.can_see_new_settings') ||
-                        $scope.campaign && $scope.campaign.archived === true,
-                internal: false,
-            },
-            {
                 heading: 'History',
                 route: 'main.campaigns.history',
                 active: false,
@@ -130,11 +122,7 @@ angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state
 
     $scope.checkArchived = function () {
         if ($scope.campaign && $scope.campaign.archived) {
-            if ($scope.hasPermission('zemauth.can_see_new_settings')) {
-                $state.go('main.campaigns.archived', {id: $scope.campaign.id});
-            } else {
-                $state.go('main.campaigns.settings', {id: $scope.campaign.id});
-            }
+            $state.go('main.campaigns.archived', {id: $scope.campaign.id});
         }
     };
 

@@ -72,7 +72,7 @@ describe('AdGroupCtrl', function () {
 
     it('hides Content Ads+ tab when no permission', function () {
         var tabs = $scope.getTabs();
-        expect(tabs.length).toEqual(5);
+        expect(tabs.length).toEqual(4);
     });
 
     describe('setAdGroupData', function () {

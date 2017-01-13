@@ -75,11 +75,6 @@ angular.module('one.legacy').config(function ($stateProvider) {
             templateUrl: '/partials/account_history.html',
             controller: 'AccountHistoryCtrl',
         })
-        .state('main.accounts.settings', {
-            url: '/settings',
-            templateUrl: '/partials/account_account.html',
-            controller: 'AccountAccountCtrl',
-        })
         .state('main.accounts.archived', {
             // Temporary solution for archived
             url: '/archived',
@@ -121,11 +116,6 @@ angular.module('one.legacy').config(function ($stateProvider) {
             url: '/sources',
             templateUrl: '/partials/media_sources.html',
             controller: 'MediaSourcesCtrl',
-        })
-        .state('main.campaigns.settings', {
-            url: '/settings',
-            templateUrl: '/partials/campaign_settings.html',
-            controller: 'CampaignSettingsCtrl',
         })
         .state('main.campaigns.archived', {
             // Temporary solution for archived
@@ -170,11 +160,6 @@ angular.module('one.legacy').config(function ($stateProvider) {
             url: '/sources',
             templateUrl: '/partials/ad_group_sources.html',
             controller: 'AdGroupSourcesCtrl',
-        })
-        .state('main.adGroups.settings', {
-            url: '/settings',
-            templateUrl: '/partials/ad_group_settings.html',
-            controller: 'AdGroupSettingsCtrl',
         })
         .state('main.adGroups.history', {
             url: '/history',
