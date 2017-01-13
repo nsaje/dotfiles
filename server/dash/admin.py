@@ -1530,6 +1530,26 @@ class AudienceAdmin(admin.ModelAdmin):
     exclude = ('ad_group_settings',)
 
 
+class PublisherGroupEntryAdmin(admin.TabularInline):
+    model = models.PublisherGroupEntry
+    extra = 3
+
+    def get_formset(self, request, obj=None, **kwargs):
+        f = super(PublisherGroupEntryAdmin, self).get_formset(request, obj=obj, **kwargs)
+        f.form.base_fields['source'].required = False
+        return f
+
+
+class PublisherGroupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'account', 'agency', 'created_dt', 'modified_dt')
+    readonly_fields = ('modified_by',)
+
+    inlines = [PublisherGroupEntryAdmin]
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
+
 class CpcConstraintAdmin(admin.ModelAdmin):
     model = models.CpcConstraint
     list_display = (
@@ -1564,6 +1584,7 @@ class CpcConstraintAdmin(admin.ModelAdmin):
     ordering = ('-created_dt', )
     date_hierarchy = 'created_dt'
 
+
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1590,4 +1611,5 @@ admin.site.register(models.FacebookAccount, FacebookAccount)
 admin.site.register(models.EmailTemplate, EmailTemplateAdmin)
 admin.site.register(models.History, HistoryAdmin)
 admin.site.register(models.Audience, AudienceAdmin)
+admin.site.register(models.PublisherGroup, PublisherGroupAdmin)
 admin.site.register(models.CpcConstraint, CpcConstraintAdmin)
