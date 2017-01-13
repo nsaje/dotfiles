@@ -66,14 +66,19 @@
             </label>
             <div class="form__prefixed-field form__prefixed-field--narrow">
                 <span class="form__field-prefix">$</span>
-                <input id="cpm-input" ng-disabled="$ctrl.entity.warnings.maxCpm !== undefined" type="text" class="form__input-text" ng-model="$ctrl.entity.settings.maxCpm" zem-currency-input fraction-size="3" empty-text="No limit">
+                <input id="cpm-input"
+                       class="form__input-text"
+                       ng-model="$ctrl.entity.settings.maxCpm"
+                       ng-disabled="$ctrl.entity.warnings.maxCpm !== undefined"
+                       type="text"
+                       empty-text="No limit"
+                       zem-currency-input fraction-size="3">
             </div>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.maxCpm"
-                 for="cpm-input">{{ error }}</div>
+            <div class="message message--warning message--with-icon" ng-if="$ctrl.entity.warnings.maxCpm !== undefined">
+                {{ $ctrl.MESSAGES.WARNING_MAX_CPM }}
+            </div>
+            <div class="message message--error" ng-if="$ctrl.entity.warnings.maxCpm === undefined"
+                 ng-repeat="error in $ctrl.errors.maxCpm" for="cpm-input">{{ error }}</div>
         </div>
-        <div ng-if="$ctrl.entity.warnings.maxCpm !== undefined" class="message message--warning message--with-icon">
-            {{ $ctrl.MESSAGES.WARNING_MAX_CPM }}
-        </div>
-        <label ng-if="$ctrl.entity.warnings.maxCpm === undefined" ng-repeat="error in $ctrl.errors.maxCpm" class="control-label error" for="cpm-input">{{ error }}</label>
     </div>
 </div>
