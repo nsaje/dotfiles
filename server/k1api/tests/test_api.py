@@ -629,31 +629,24 @@ class K1ApiTest(TestCase):
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
-
-        self.assertEqual(len(data['blacklist']), 5)
-
-        sorted_blacklist = sorted(data['blacklist'], key=lambda b: (b['ad_group_id'], b['domain']))
+        self.assertEqual(len(data['blacklist']), 3)
+        sorted_blacklist = sorted(data['blacklist'],
+                                  key=lambda b: (b.get('ad_group_id'), b['domain']))
         self.assertDictEqual(sorted_blacklist[0], {
-            'ad_group_id': 1,
-            'domain': 'pub2.com',
+            'ad_group_ids': [1, 2],
+            'domain': 'pub5.com',
             'exchange': 'google',
-            'external_id': '',
+            'external_id': u'',
         })
         self.assertDictEqual(sorted_blacklist[1], {
-            'ad_group_id': 1,
-            'domain': 'pub5.com',
+            'ad_group_ids': [1, 2],
+            'domain': 'pub6.com',
             'exchange': 'google',
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[2], {
             'ad_group_id': 1,
-            'domain': 'pub6.com',
-            'exchange': 'google',
-            'external_id': '',
-        })
-        self.assertDictEqual(sorted_blacklist[3], {
-            'ad_group_id': 2,
-            'domain': 'pub5.com',
+            'domain': 'pub2.com',
             'exchange': 'google',
             'external_id': '',
         })

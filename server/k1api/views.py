@@ -384,11 +384,28 @@ class PublishersBlacklistView(K1APIView):
             blacklist[hash(tuple(entry.values()))] = entry
         # if campaign then generate all running ad groups is this campaign
         elif item.campaign:
-            cls._process_campaign(blacklist, item, item.campaign, exchange, running_ad_groups)
+            cls._process_batch(
+                blacklist,
+                item,
+                [
+                    ad_group.id for ad_group in item.campaign.adgroup_set.all()
+                    if ad_group in running_ad_groups
+                ],
+                exchange
+            )
         # if account then generate all running ad groups in this account
         elif item.account:
-            for campaign in item.account.campaign_set.all():
-                cls._process_campaign(blacklist, item, campaign, exchange, running_ad_groups)
+            cls._process_batch(
+                blacklist,
+                item,
+                [
+                    ad_group.id
+                    for campaign in item.account.campaign_set.all()
+                    for ad_group in campaign.adgroup_set.all()
+                    if ad_group in running_ad_groups
+                ],
+                exchange
+            )
         # global blacklist
         else:
             entry = {
@@ -400,16 +417,15 @@ class PublishersBlacklistView(K1APIView):
             blacklist[hash(tuple(entry.values()))] = entry
 
     @staticmethod
-    def _process_campaign(blacklist, item, campaign, exchange, running_ad_groups):
-        for ad_group in campaign.adgroup_set.all():
-            if ad_group in running_ad_groups:
-                entry = {
-                    'ad_group_id': ad_group.id,
-                    'domain': item.name,
-                    'exchange': exchange,
-                    'external_id': item.external_id,
-                }
-                blacklist[hash(tuple(entry.values()))] = entry
+    def _process_batch(blacklist, item, ad_group_ids, exchange):
+        # We'll let k1 expand this list into valid entries
+        entry = {
+            'ad_group_ids': tuple(ad_group_ids),
+            'domain': item.name,
+            'exchange': exchange,
+            'external_id': item.external_id,
+        }
+        blacklist[hash(tuple(entry.values()))] = entry
 
 
 class PublisherGroupsView(K1APIView):
