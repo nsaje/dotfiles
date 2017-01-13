@@ -16,6 +16,7 @@ angular.module('one.legacy').directive('zemGridBody', function (zemGridConstants
             var grid = scope.ctrl.grid;
             var pubsub = grid.meta.pubsub;
 
+            grid.body.ui.numOfRows = calculateNumOfRows();
             grid.body.ui.element = element;
             grid.body.ui.scrollLeft = 0;
             grid.body.ui.scrollTop = 0;
@@ -23,10 +24,17 @@ angular.module('one.legacy').directive('zemGridBody', function (zemGridConstants
                 renderedRows: [],
             };
 
-
             var visibleRows;
-            var numberOfRenderedRows = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE
-                + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
+
+            function calculateNumOfRows () {
+                // Calculate how much rows we need to fill the entire page
+                // To simplify handling (window resize, etc.) we enforce that MIN_NUM_OF_ROWS_PER_PAGE (25)
+                // is always prepared and can be greater if viewport is higher than 1125px + 90px (footer+header).
+                // TODO: This can be improved in future if we find it necessary
+                var numOfRows = Math.ceil (document.documentElement.clientHeight / zemGridConstants.gridBodyRendering.ROW_HEIGHT);
+                numOfRows = Math.max (numOfRows, zemGridConstants.gridBodyRendering.MIN_NUM_OF_ROWS_PER_PAGE);
+                return numOfRows;
+            }
 
             function scrollListener (event) {
                 if (grid.body.ui.scrollLeft !== event.target.scrollLeft) {
@@ -36,9 +44,12 @@ angular.module('one.legacy').directive('zemGridBody', function (zemGridConstants
                         grid.body.ui.scrollLeft
                     );
                 }
+            }
 
-                if (grid.body.ui.scrollTop !== event.target.scrollTop) {
-                    grid.body.ui.scrollTop = event.target.scrollTop;
+            function scrollWindowListener () {
+                var scrollTop = Math.max(0, window.pageYOffset - element.offset().top);
+                if (grid.body.ui.scrollTop !== scrollTop) {
+                    grid.body.ui.scrollTop = scrollTop;
                     pubsub.notify(
                         pubsub.EVENTS.BODY_VERTICAL_SCROLL,
                         grid.body.ui.scrollTop
@@ -61,21 +72,12 @@ angular.module('one.legacy').directive('zemGridBody', function (zemGridConstants
                     }
                 });
 
-                if (visibleRowsCount > zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE) {
-                    var dummyRow;
-                    for (var j = 0; j < zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS; j++) {
-                        dummyRow = Object.create(visibleRows[0]);
-                        dummyRow.style = {'display': 'none'};
-                        visibleRows.push(dummyRow);
-                    }
-                }
-
                 for (var i = 0; i < visibleRows.length; i++) {
-                    visibleRows[i].index = i % numberOfRenderedRows;
+                    visibleRows[i].index = i % grid.body.ui.numOfRows;
                 }
 
                 scope.ctrl.grid.body.visibleRows = visibleRows;
-                var renderedRows = visibleRows.slice(0, numberOfRenderedRows);
+                var renderedRows = visibleRows.slice(0, grid.body.ui.numOfRows);
                 graduallyPopulateRenderedRows(renderedRows);
             }
 
@@ -128,13 +130,6 @@ angular.module('one.legacy').directive('zemGridBody', function (zemGridConstants
                 element.find('.zem-grid-table').css({
                     height: height + 'px',
                 });
-
-                // Update scroll top position to fit new viewport size
-                if (element.height() + element.scrollTop() > height) {
-                    var scrollTop = Math.max(0, height - element.height());
-                    element.scrollTop(scrollTop);
-                    grid.body.ui.scrollTop = scrollTop;
-                }
             }
 
             function updateBody () {
@@ -149,8 +144,8 @@ angular.module('one.legacy').directive('zemGridBody', function (zemGridConstants
             setTimeout(initialLoad, 500);
             function initialLoad () {
                 if (scope.state.renderedRows.length > 0) return;
-                for (var idx = 0; idx < zemGridConstants.gridBodyRendering.NUM_OF_DUMMY_ROWS; ++idx) {
-                    scope.state.renderedRows.push({index: scope.state.renderedRows.length});
+                for (var idx = 0; idx < zemGridConstants.gridBodyRendering.GRADUAL_POPULATE_STEP; ++idx) {
+                    scope.state.renderedRows.push({index: idx});
                 }
                 scope.$digest();
             }
@@ -158,6 +153,10 @@ angular.module('one.legacy').directive('zemGridBody', function (zemGridConstants
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, scope, updateBody);
 
             element.on('scroll', scrollListener);
+            window.addEventListener('scroll', scrollWindowListener);
+            scope.$on('$destroy', function () {
+                window.removeEventListener ('scroll', scrollWindowListener);
+            });
         },
         controller: function () {},
     };
