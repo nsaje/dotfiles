@@ -601,6 +601,10 @@ class AdGroupBreakdownTestCase(TestCase):
 
         mock_query.return_value = {}
 
+        s = models.AdGroup.objects.get(pk=1).get_current_settings().copy_settings()
+        s.b1_sources_group_enabled = False
+        s.save(None)
+
         mock_totals.return_value = {
             'clicks': 123,
         }

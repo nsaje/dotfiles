@@ -95,14 +95,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         campaign_settings = ad_group.campaign.get_current_settings()
         changes = current_settings.get_setting_changes(new_settings)
-        if changes.get('b1_sources_group_enabled'):
-            new_settings.b1_sources_group_cpc_cc = min(new_settings.cpc_cc, constants.SourceAllRTB.DEFAULT_CPC_CC)
-            new_settings.b1_sources_group_daily_budget = constants.SourceAllRTB.DEFAULT_DAILY_BUDGET
-            changes = current_settings.get_setting_changes(new_settings)
-        if (new_settings.b1_sources_group_enabled and changes.get('cpc_cc') and
-                new_settings.cpc_cc < new_settings.b1_sources_group_cpc_cc):
-            new_settings.b1_sources_group_cpc_cc = new_settings.cpc_cc
-            changes = current_settings.get_setting_changes(new_settings)
+        changes, current_settings, new_settings = self.b1_sources_group_adjustments(changes, current_settings, new_settings)
 
         if new_settings.id is None or 'tracking_code' in changes:
             redirector_helper.insert_adgroup(
@@ -157,6 +150,27 @@ class AdGroupSettings(api_common.BaseApiView):
             if not new_all_rtb_enabled:
                 'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
             raise exc.ValidationError(errors={'autopilot_state': [msg]})
+
+    def b1_sources_group_adjustments(self, changes, current_settings, new_settings):
+        # Turning on RTB-as-one
+        if changes.get('b1_sources_group_enabled'):
+            new_b1_sources_group_cpc = constants.SourceAllRTB.DEFAULT_CPC_CC
+            if changes.get('b1_sources_group_cpc_cc'):
+                new_b1_sources_group_cpc = changes.get('b1_sources_group_cpc_cc')
+            if new_settings.cpc_cc:
+                new_b1_sources_group_cpc = min(new_settings.cpc_cc, new_b1_sources_group_cpc)
+            new_settings.b1_sources_group_cpc_cc = new_b1_sources_group_cpc
+
+            if changes.get('b1_sources_group_daily_budget'):
+                new_settings.b1_sources_group_daily_budget = changes.get('b1_sources_group_daily_budget')
+            else:
+                new_settings.b1_sources_group_daily_budget = constants.SourceAllRTB.DEFAULT_DAILY_BUDGET
+
+        # Changing adgroup max cpc
+        if changes.get('cpc_cc') and new_settings.b1_sources_group_enabled:
+            new_settings.b1_sources_group_cpc_cc = min(changes.get('cpc_cc'), new_settings.b1_sources_group_cpc_cc)
+
+        return current_settings.get_setting_changes(new_settings), current_settings, new_settings
 
     @staticmethod
     def validate_yahoo_desktop_targeting(ad_group, settings, new_settings):

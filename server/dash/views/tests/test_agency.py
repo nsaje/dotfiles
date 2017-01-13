@@ -179,9 +179,9 @@ class AdGroupSettingsTest(TestCase):
                     'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
                     'redirect_javascript': "alert('a')",
                     'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 23], "timezone": "America/New_York"},
-                    'b1_sources_group_enabled': False,
-                    'b1_sources_group_daily_budget': '0.0000',
-                    'b1_sources_group_state': 2,
+                    'b1_sources_group_enabled': True,
+                    'b1_sources_group_daily_budget': '5.0000',
+                    'b1_sources_group_state': 1,
                     'b1_sources_group_cpc_cc': '0.0100',
                 },
                 'warnings': {}
@@ -310,9 +310,9 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': str(constants.SourceAllRTB.DEFAULT_DAILY_BUDGET),
+                        'b1_sources_group_daily_budget': '5.0000',
                         'b1_sources_group_state': 1,
-                        'b1_sources_group_cpc_cc': '0.3000',
+                        'b1_sources_group_cpc_cc': '0.0100',
                     }
                 },
                 'success': True
@@ -397,9 +397,9 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': str(constants.SourceAllRTB.DEFAULT_DAILY_BUDGET),
+                        'b1_sources_group_daily_budget': '5.0000',
                         'b1_sources_group_state': 1,
-                        'b1_sources_group_cpc_cc': '0.05',
+                        'b1_sources_group_cpc_cc': '0.0100',
                     }
                 },
                 'success': True
@@ -561,7 +561,7 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': '',
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': str(constants.SourceAllRTB.DEFAULT_DAILY_BUDGET),
+                        'b1_sources_group_daily_budget': '5.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.3000',
                     }
@@ -716,6 +716,104 @@ class AdGroupSettingsTest(TestCase):
 
         settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
         view.validate_all_rtb_state(settings, new_settings)
+
+    def test_b1_sources_group_adjustments_sets_default_cpc_and_daily_budget(self):
+        view = agency.AdGroupSettings()
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_cpc_cc = Decimal('0.111')
+        new_settings.b1_sources_group_daily_budget = Decimal('100.0')
+        new_settings.cpc_cc = Decimal('0.5')
+        new_settings.save(None)
+
+        # turn on rtb as one
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = True
+        new_settings.save(None)
+
+        changes = current_settings.get_setting_changes(new_settings)
+        self.assertDictEqual(changes, {'b1_sources_group_enabled': True})
+
+        changes_new, cs2, ns2 = view.b1_sources_group_adjustments(changes, current_settings, new_settings)
+
+        self.assertDictEqual(changes_new, {
+            'b1_sources_group_enabled': True,
+            'b1_sources_group_cpc_cc': min(ns2.cpc_cc, constants.SourceAllRTB.DEFAULT_CPC_CC),
+            'b1_sources_group_daily_budget': constants.SourceAllRTB.DEFAULT_DAILY_BUDGET,
+        })
+
+    def test_b1_sources_group_adjustments_sets_new_cpc_daily_budget(self):
+        view = agency.AdGroupSettings()
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_cpc_cc = Decimal('0.111')
+        new_settings.b1_sources_group_daily_budget = Decimal('100.0')
+        new_settings.cpc_cc = Decimal('0.5')
+        new_settings.save(None)
+
+        # turn on rtb as one
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_daily_budget = Decimal('10.0')
+        new_settings.b1_sources_group_cpc_cc = Decimal('0.211')
+        new_settings.save(None)
+
+        changes = current_settings.get_setting_changes(new_settings)
+        self.assertDictEqual(changes, {
+            'b1_sources_group_enabled': True,
+            'b1_sources_group_cpc_cc': Decimal('0.211'),
+            'b1_sources_group_daily_budget': Decimal('10.0'),
+        })
+
+        changes_new, cs2, ns2 = view.b1_sources_group_adjustments(changes, current_settings, new_settings)
+
+        self.assertDictEqual(changes_new, {
+            'b1_sources_group_enabled': True,
+            'b1_sources_group_cpc_cc': Decimal('0.211'),
+            'b1_sources_group_daily_budget': Decimal('10.0'),
+        })
+
+
+def test_b1_sources_group_adjustments_obeys_new_adgroup_max_cpc(self):
+    view = agency.AdGroupSettings()
+    ad_group = models.AdGroup.objects.get(pk=1)
+
+    current_settings = ad_group.get_current_settings()
+    new_settings = current_settings.copy_settings()
+    new_settings.b1_sources_group_enabled = False
+    new_settings.b1_sources_group_cpc_cc = Decimal('0.111')
+    new_settings.b1_sources_group_daily_budget = Decimal('100.0')
+    new_settings.cpc_cc = Decimal('0.5')
+    new_settings.save(None)
+
+    # turn on rtb as one
+    current_settings = ad_group.get_current_settings()
+    new_settings = current_settings.copy_settings()
+    new_settings.b1_sources_group_enabled = True
+    new_settings.cpc_cc = Decimal('0.05')
+    new_settings.save(None)
+
+    changes = current_settings.get_setting_changes(new_settings)
+    self.assertDictEqual(changes, {
+        'b1_sources_group_enabled': True,
+        'cpc_cc': Decimal('0.05'),
+    })
+
+    changes_new, cs2, ns2 = view.b1_sources_group_adjustments(changes, current_settings, new_settings)
+
+    self.assertDictEqual(changes_new, {
+        'b1_sources_group_enabled': True,
+        'b1_sources_group_cpc_cc': Decimal('0.05'),
+        'b1_sources_group_daily_budget': constants.SourceAllRTB.DEFAULT_DAILY_BUDGET,
+    })
 
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
