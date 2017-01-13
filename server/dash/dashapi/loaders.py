@@ -480,17 +480,18 @@ class SourcesLoader(Loader):
 
 class AdGroupSourcesLoader(Loader):
 
-    def __init__(self, sources_qs, ad_group, **kwargs):
+    def __init__(self, sources_qs, ad_group, user, **kwargs):
         super(AdGroupSourcesLoader, self).__init__(sources_qs.select_related('source_type'), **kwargs)
 
         self.base_objects = [ad_group]
         self.ad_group = ad_group
         self.ad_group_settings = ad_group.get_current_settings()
         self.campaign_settings = ad_group.campaign.get_current_settings()
+        self.user = user
 
     @classmethod
     def from_constraints(cls, user, constraints):
-        return cls(constraints['filtered_sources'], constraints['ad_group'],
+        return cls(constraints['filtered_sources'], constraints['ad_group'], user,
                    start_date=constraints.get('date__gte'),
                    end_date=constraints.get('date__lte'))
 
@@ -530,11 +531,13 @@ class AdGroupSourcesLoader(Loader):
 
             # MVP for all-RTB-sources-as-one
             if self.ad_group_settings.b1_sources_group_enabled and source.source_type.type == constants.SourceType.B1:
+                can_edit_cpc = not self.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc')
                 result[source_id]['daily_budget'] = None
                 result[source_id]['editable_fields']['daily_budget']['enabled'] = False
                 result[source_id]['editable_fields']['daily_budget']['message'] = None
-                # result[source_id]['editable_fields']['bid_cpc']['enabled'] = False
-                # result[source_id]['editable_fields']['bid_cpc']['message'] = 'RTB Sources\' Bid CPC MESSAGE' # TODO Davorin
+                result[source_id]['editable_fields']['bid_cpc']['enabled'] = can_edit_cpc
+                result[source_id]['editable_fields']['bid_cpc']['message'] = 'This value can not be edited.' if\
+                    not can_edit_cpc else ''
                 if self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE and \
                    result[source_id]['status'] == constants.AdGroupSourceSettingsState.ACTIVE:
                     result[source_id]['status'] = constants.AdGroupSourceSettingsState.INACTIVE
