@@ -328,116 +328,194 @@
     margin-bottom: 10px;
 }
 
-//
-// TODO: component styles
-//
-zem-settings-general-account {
-    display: block;
-}
+///////////////////////////
+// Ad group general settings //
+///////////////////////////
 
-zem-settings-media-sources {
-    display: block;
-}
-
-zem-settings-pixels {
-    display: block;
-}
-
-zem-settings-access-permissions {
-    display: block;
-}
-
-zem-account-settings {
-    display: block;
-}
-
-zem-campaign-settings {
-    display: block;
-}
-
-zem-ad-group-settings {
-    display: block;
-}
-
-zem-settings-container {
-    display: block;
-}
-
-//
-// TODO: refactor - create elements for zem-settings-component
-//
-.zem-settings-component {
-    .section {
-        .alert {
-            margin: -@default-spacing -@default-spacing @default-spacing -@default-spacing;
-            border: none;
-            border-radius: 0;
-        }
+.zem-settings-component__container--ad-group-general-settings {
+    .form__input-checkbox {
+        margin: 9px 0 0 20px;
     }
 
-    h1 {
-        //margin: -10px 0 -10px 0;
-        color: @secondary-color;
+    .form__checkbox-text {
+        margin-top: 7px;
         font-weight: 400;
-        font-size: 24px;
-    }
-
-    h2 {
-        margin: -@default-spacing -@default-spacing 20px -@default-spacing;
-        padding: (@default-spacing/2)+6 @default-spacing (@default-spacing/2)+4 @default-spacing;
-        color: @secondary-color;
-        font-size: 18px;
-        font-weight: 500;
-        border-bottom: 1px solid @border-color;
-    }
-
-    h3 {
-        color: @secondary-color;
-        font-size: 16px;
-        font-weight: 500;
-    }
-
-    .description {
-        margin-bottom: @default-spacing;
-        color: @gray;
-    }
-
-    .device-icon {
-        text-align: center;
-        margin-bottom: 20px;
-
-        label.icon-holder {
-            padding: 0 20px 0 0;
-            height: 100px;
-            margin-bottom: 10px;
-            position: relative;
-
-            img {
-                position: absolute;
-                bottom: 0px;
-                left: 50%;
-            }
-
-            .desktop {
-                height: 100px;
-                margin-left: -69.5px;
-            }
-            .tablet {
-                height: 60px;
-                margin-left: -32px;
-            }
-            .mobile {
-                height: 40px;
-                margin-left: -22px;
-            }
-        }
-
-        label {
-            display: block;
-            padding: 0;
-            text-align: center;
-        }
     }
 }
-/* LESS Document */
 
+///////////////////////////
+// Targeting //
+///////////////////////////
+
+.zem-settings-component__container--targeting {
+    .form {
+        padding: 0 @default-spacing @default-spacing+5 @default-spacing;
+        margin: 0 -@default-spacing @default-spacing -@default-spacing;
+        border-bottom: 1px solid @light-gray;
+    }
+
+    .form--last {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .form__title .internal-feature {
+        left: -@default-spacing;
+        top: -@default-spacing;
+    }
+
+    .form__text {
+        margin-bottom: 0;
+    }
+
+    .form__checkbox-text {
+
+    }
+
+    .button--add-icon {
+        margin-top: 10px;
+    }
+
+    .message--warning {
+        margin-bottom: 10px;
+    }
+
+    .select2-drop {
+        width: 700px;
+    }
+
+    .targeting-select-buttons {
+        float: right;
+        font-size: 13px;
+        line-height: 30px;
+        margin: -7px -10px;
+
+        a {
+            padding: 0 10px;
+            box-sizing: border-box;
+            display: block;
+            float: left;
+
+            &.targeting-select-buttons__include {
+                color: @green;
+                border-right: 1px solid @line-color;
+            }
+
+            &.targeting-select-buttons__exclude {
+                color: @red;
+            }
+        }
+    }
+
+    .select2-highlighted {
+        background-color: transparent !important;
+        color: inherit !important;
+
+        &:hover {
+            background-color: @secondary-color !important;
+            color: white !important;
+        }
+    }
+
+    .ui-select-choices-row:hover {
+        .targeting-select-buttons__include {
+            background-color: @green !important;
+            border-right: 1px solid @green;
+            color: white;
+        }
+
+        .targeting-select-buttons__exclude {
+            background-color: @red !important;
+            color: white;
+            border-top-right-radius: @border-radius;
+            border-bottom-right-radius: @border-radius;
+        }
+
+        a:hover {
+            text-decoration: underline !important;
+            color: white !important;
+        }
+    }
+
+    .select2-results {
+        max-height: 400px;
+    }
+}
+
+.zem-settings-targeting-list {
+    display: table;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.zem-settings-targeting-list__list-container {
+    width: 100%;
+    display: table-cell;
+    border: 1px solid @light-gray;
+}
+
+.zem-settings-targeting-list__list-container--half {
+    width: 48%;
+}
+
+.zem-settings-targeting-list__spacing {
+    width: 4%;
+    display: table-cell;
+}
+
+.zem-settings-targeting-list__title {
+    font-size: @default-font-size+2;
+    padding: 5px 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid @light-gray;
+}
+
+.zem-settings-targeting-list__list {
+    margin-left: 10px;
+    list-style: none;
+
+    li {
+        padding: 5px 40px 5px 0;
+        position: relative;
+
+        &::before {
+            top: 10px;
+        }
+    }
+
+    .button {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}
+
+///////////////////////////
+// Tracking //
+///////////////////////////
+
+.zem-settings-component__container--tracking {
+    .form {
+        padding: 0 @default-spacing @default-spacing+5 @default-spacing;
+        margin: 0 -@default-spacing @default-spacing -@default-spacing;
+        border-bottom: 1px solid @light-gray;
+    }
+
+    .form--last {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+}
+
+///////////////////////////
+// Automatic mode //
+///////////////////////////
+
+.zem-settings-component__container--automatic-mode {
+    .message {
+        margin-bottom: 10px;
+    }
+}
