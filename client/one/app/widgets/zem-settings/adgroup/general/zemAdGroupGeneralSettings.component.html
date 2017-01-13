@@ -66,8 +66,6 @@
             </label>
             <div class="form__prefixed-field form__prefixed-field--narrow">
                 <span class="form__field-prefix">$</span>
-                <input class="form__input-text" id="cpm-input" type="text" ng-model="$ctrl.entity.settings.maxCpm"
-                       zem-currency-input fraction-size="3" empty-text="No limit">
                 <input id="cpm-input" ng-disabled="$ctrl.entity.warnings.maxCpm !== undefined" type="text" class="form__input-text" ng-model="$ctrl.entity.settings.maxCpm" zem-currency-input fraction-size="3" empty-text="No limit">
             </div>
             <div class="message message--error" ng-repeat="error in $ctrl.errors.maxCpm"
