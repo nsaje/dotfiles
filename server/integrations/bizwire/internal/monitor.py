@@ -36,12 +36,10 @@ def _get_s3_keys_for_date(s3, date):
     return keys
 
 
-def monitor_num_ingested_articles():
+def _get_unique_s3_labels(dates):
     s3 = boto3.client('s3')
 
     now = dates_helper.utc_now()
-    dates = [now.date() - datetime.timedelta(days=x) for x in xrange(3)]
-
     unique_labels = set()
     for date in dates:
         re_compiled = re.compile(
@@ -70,6 +68,13 @@ def monitor_num_ingested_articles():
                 continue
 
             unique_labels.add(label)
+    return unique_labels
+
+
+def monitor_num_ingested_articles():
+    now = dates_helper.utc_now()
+    dates = [now.date() - datetime.timedelta(days=x) for x in xrange(3)]
+    unique_labels = _get_unique_s3_labels(dates)
 
     s3_count = len(unique_labels)
     db_count = dash.models.ContentAd.objects.filter(
