@@ -350,6 +350,11 @@ class PublishersBlacklistView(K1APIView):
                                              'account__campaign_set',
                                              'account__campaign_set__adgroup_set'))
 
+        campaign_map, account_map = {}, {}
+        for ad_group in running_ad_groups:
+            campaign_map.setdefault(ad_group.campaign_id, set()).add(ad_group.pk)
+            account_map.setdefault(ad_group.campaign.account_id, set()).add(ad_group.pk)
+
         blacklist = {}
         for item in blacklisted:
             exchange = None
@@ -367,12 +372,12 @@ class PublishersBlacklistView(K1APIView):
                 blacklist[hash(tuple(entry.values()))] = entry
             # for all ad groups generate all ad_group_ids
             else:
-                self._process_item(blacklist, item, exchange, running_ad_groups)
+                self._process_item(blacklist, item, exchange, campaign_map, account_map)
 
         return self.response_ok({'blacklist': list(blacklist.values())})
 
     @classmethod
-    def _process_item(cls, blacklist, item, exchange, running_ad_groups):
+    def _process_item(cls, blacklist, item, exchange, campaign_map, account_map):
         # if ad_group then use this ad_group_id
         if item.ad_group:
             entry = {
@@ -387,10 +392,7 @@ class PublishersBlacklistView(K1APIView):
             cls._process_batch(
                 blacklist,
                 item,
-                [
-                    ad_group.id for ad_group in item.campaign.adgroup_set.all()
-                    if ad_group in running_ad_groups
-                ],
+                campaign_map.get(item.campaign.pk, []),
                 exchange
             )
         # if account then generate all running ad groups in this account
@@ -398,12 +400,7 @@ class PublishersBlacklistView(K1APIView):
             cls._process_batch(
                 blacklist,
                 item,
-                [
-                    ad_group.id
-                    for campaign in item.account.campaign_set.all()
-                    for ad_group in campaign.adgroup_set.all()
-                    if ad_group in running_ad_groups
-                ],
+                account_map.get(item.account.pk, []),
                 exchange
             )
         # global blacklist
@@ -445,7 +442,7 @@ class PublisherGroupsView(K1APIView):
                 dash.models.Account.objects.get(pk=account_id))
             entries = entries.filter(publisher_group__in=publisher_groups)
 
-        return self.response_ok(list(entries[offset:offset+limit].annotate(
+        return self.response_ok(list(entries[offset:offset + limit].annotate(
             source_slug=F('source__bidder_slug'),
             account_id=F('publisher_group__account_id'),
         ).values('source_slug', 'publisher_group_id', 'outbrain_publisher_id', 'publisher', 'account_id')))
