@@ -320,6 +320,7 @@ class PublishersBlacklistView(K1APIView):
 
     def get(self, request):
         ad_group_id = request.GET.get('ad_group_id')
+        running_ad_groups = []
         if ad_group_id:
             ad_group = dash.models.AdGroup.objects.get(id=ad_group_id)
             blacklist_filter = (Q(ad_group=ad_group) | Q(campaign=ad_group.campaign) |
