@@ -59,6 +59,7 @@ class AdGroupSettingsTest(TestCase):
                 'b1_sources_group_enabled': True,
                 'b1_sources_group_daily_budget': '5.0000',
                 'b1_sources_group_state': 1,
+                'whitelist_publisher_groups': [1],
             }
         }
 
@@ -181,6 +182,7 @@ class AdGroupSettingsTest(TestCase):
                     'b1_sources_group_enabled': False,
                     'b1_sources_group_daily_budget': '0.0000',
                     'b1_sources_group_state': 2,
+                    'whitelist_publisher_groups': [],
                 },
                 'warnings': {}
             },
@@ -284,7 +286,8 @@ class AdGroupSettingsTest(TestCase):
                 'can_set_ad_group_max_cpm',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
-                'can_target_custom_audiences'
+                'can_target_custom_audiences',
+                'can_set_white_blacklist_publisher_groups',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -332,6 +335,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_enabled': True,
                         'b1_sources_group_daily_budget': '5.0000',
                         'b1_sources_group_state': 1,
+                        'whitelist_publisher_groups': [1],
                     }
                 },
                 'success': True
@@ -366,7 +370,7 @@ class AdGroupSettingsTest(TestCase):
                 'can_set_ad_group_max_cpc',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
-                'can_target_custom_audiences'
+                'can_target_custom_audiences',
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -418,6 +422,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_enabled': True,
                         'b1_sources_group_daily_budget': '5.0000',
                         'b1_sources_group_state': 1,
+                        'whitelist_publisher_groups': [],  # no permission to set
                     }
                 },
                 'success': True
@@ -534,7 +539,8 @@ class AdGroupSettingsTest(TestCase):
                 'can_set_ad_group_max_cpc',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
-                'can_target_custom_audiences'
+                'can_target_custom_audiences',
+                'can_set_white_blacklist_publisher_groups',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -581,6 +587,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_enabled': True,
                         'b1_sources_group_daily_budget': '5.0000',
                         'b1_sources_group_state': 1,
+                        'whitelist_publisher_groups': [1],
                     }
                 },
                 'success': True
@@ -647,6 +654,23 @@ class AdGroupSettingsTest(TestCase):
         response_dict = json.loads(response.content)
         self.assertFalse(response_dict['success'])
         self.assertIn('target_regions', response_dict['data']['errors'])
+
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_put_invalid_publisher_groups(self, _):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        self.settings_dict['settings']['whitelist_publisher_groups'] = ['2']
+
+        add_permissions(self.user, ['settings_view'])
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertIn('whitelist_publisher_groups', response_dict['data']['errors'])
 
     @patch('utils.redirector_helper.insert_adgroup')
     def test_end_date_in_the_past(self, mock_redirector_insert_adgroup):

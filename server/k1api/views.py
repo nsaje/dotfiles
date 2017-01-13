@@ -502,6 +502,8 @@ class AdGroupsView(K1APIView):
                     'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
                     'state': ad_group_settings.b1_sources_group_state,
                 },
+                'whitelist_publisher_groups': ad_group_settings.whitelist_publisher_groups,
+                'blacklist_publisher_groups': ad_group_settings.blacklist_publisher_groups,
             }
 
             ad_groups.append(ad_group)

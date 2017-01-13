@@ -413,6 +413,7 @@ class AdGroupsTest(RESTAPITest):
         autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
         autopilot_daily_budget='50.00',
         dayparting={},
+        whitelist_publisher_groups=[],
             ):
         representation = {
             'id': str(id),
@@ -440,6 +441,9 @@ class AdGroupsTest(RESTAPITest):
                     'excluded': [constants.InterestCategory.get_name(i) for i in exclusion_interest_targeting],
                 },
                 'demographic': demographic_targeting,
+                'publisherGroups': {
+                    'included': whitelist_publisher_groups,
+                }
             },
             'autopilot': {
                 'state': constants.AdGroupSettingsAutopilotState.get_name(autopilot_state),
@@ -472,6 +476,7 @@ class AdGroupsTest(RESTAPITest):
             autopilot_state=settings_db.autopilot_state,
             autopilot_daily_budget=settings_db.autopilot_daily_budget.quantize(Decimal('1.00')),
             dayparting=settings_db.dayparting,
+            whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
         )
         self.assertEqual(expected, adgroup)
 

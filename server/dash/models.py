@@ -2156,6 +2156,8 @@ class AdGroupSettings(SettingsBase):
         'exclusion_interest_targeting',
         'audience_targeting',
         'exclusion_audience_targeting',
+        'whitelist_publisher_groups',
+        'blacklist_publisher_groups',
         'redirect_pixel_urls',
         'redirect_javascript',
         'notes',
@@ -2212,10 +2214,14 @@ class AdGroupSettings(SettingsBase):
     exclusion_retargeting_ad_groups = jsonfield.JSONField(
         blank=True, default=[])
     bluekai_targeting = jsonfield.JSONField(blank=True, default=[])
+
     interest_targeting = jsonfield.JSONField(blank=True, default=[])
     exclusion_interest_targeting = jsonfield.JSONField(blank=True, default=[])
     audience_targeting = jsonfield.JSONField(blank=True, default=[])
     exclusion_audience_targeting = jsonfield.JSONField(blank=True, default=[])
+    whitelist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
+    blacklist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
+
     redirect_pixel_urls = jsonfield.JSONField(blank=True, default=[])
     redirect_javascript = models.TextField(blank=True)
     notes = models.TextField(blank=True)
@@ -2345,6 +2351,8 @@ class AdGroupSettings(SettingsBase):
             'target_regions': 'Locations',
             'retargeting_ad_groups': 'Retargeting ad groups',
             'exclusion_retargeting_ad_groups': 'Exclusion ad groups',
+            'whitelist_publisher_groups': 'Whitelist publisher groups',
+            'blacklist_publisher_groups': 'Blacklist publisher groups',
             'bluekai_targeting': 'BlueKai targeting',
             'interest_targeting': 'Interest targeting',
             'exclusion_interest_targeting': 'Exclusion interest targeting',
@@ -2403,6 +2411,12 @@ class AdGroupSettings(SettingsBase):
                 names = AdGroup.objects.filter(
                     pk__in=value).values_list('name', flat=True)
                 value = ', '.join(names)
+        elif prop_name in ('whitelist_publisher_groups', 'blacklist_publisher_groups'):
+            if not value:
+                value = ''
+            else:
+                names = PublisherGroup.objects.filter(pk__in=value).values_list('name', flat=True)
+                value = ', '.join(names)
         elif prop_name == 'bluekai_targeting':
             value = json.dumps(value)
         elif prop_name in ('interest_targeting', 'exclusion_interest_targeting'):
@@ -2453,6 +2467,9 @@ class AdGroupSettings(SettingsBase):
         for key, value in changes.iteritems():
             if key in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups') and\
                     not user.has_perm('zemauth.can_view_retargeting_settings'):
+                continue
+            if key in ('whitelist_publisher_groups', 'blacklist_publisher_groups') and\
+                    not user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
                 continue
             valid_changes[key] = value
 
@@ -4336,11 +4353,29 @@ class PublisherGroup(models.Model):
 
     class QuerySet(models.QuerySet):
         def filter_by_account(self, account):
+            if account.agency:
+                return self.filter(models.Q(account=account) | models.Q(agency=account.agency))
+
             return self.filter(account=account)
 
     def can_delete(self):
-        # TODO should check all ad group settings of the corresponding account if this is in any case referenced
-        return True
+        # Check all ad group settings of the corresponding account/agency if they reference the publisher group
+        if self.agency:
+            ad_groups_settings = AdGroupSettings.objects.filter(ad_group__campaign__account__agency=self.agency)
+        else:
+            ad_groups_settings = AdGroupSettings.objects.filter(ad_group__campaign__account=self.account)
+        ad_group_settings = ad_groups_settings.group_current_settings().only(
+            'whitelist_publisher_groups', 'blacklist_publisher_groups')
+        publisher_groups = [
+            x.whitelist_publisher_groups + x.blacklist_publisher_groups for x in ad_group_settings
+        ]
+        return not any(self.id in x for x in publisher_groups)
+
+    def __unicode__(self):
+        return u'{} ({})'.format(self.name, self.id)
+
+    def __str__(self):
+        return unicode(self).encode('ascii', 'ignore')
 
 
 class PublisherGroupEntry(models.Model):
@@ -4351,3 +4386,9 @@ class PublisherGroupEntry(models.Model):
     source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
 
     outbrain_publisher_id = models.CharField(max_length=127, blank=True, verbose_name='Special Outbrain publisher ID')
+
+    def __unicode__(self):
+        return u'{} ({})'.format(self.publisher, self.source if self.source else 'All sources')
+
+    def __str__(self):
+        return unicode(self).encode('ascii', 'ignore')

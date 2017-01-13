@@ -240,6 +240,7 @@
         b1_sources_group_enabled: true
         b1_sources_group_daily_budget: '5.0000'
         b1_sources_group_state: 1
+        whitelist_publisher_groups: [1]
     model: dash.adgroupsettings
     pk: 1
 
@@ -469,3 +470,15 @@
         value: "test"
     model: dash.audiencerule
     pk: 5
+
+# publisher groups
+
+-   fields:
+        name: 'pg 1'
+        account: 1
+        agency: !!null
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+    model: dash.publishergroup
+    pk: 1

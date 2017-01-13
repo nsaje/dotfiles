@@ -262,6 +262,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 'b1_sources_group_enabled': settings.b1_sources_group_enabled,
                 'b1_sources_group_daily_budget': settings.b1_sources_group_daily_budget,
                 'b1_sources_group_state': settings.b1_sources_group_state,
+                'whitelist_publisher_groups': settings.whitelist_publisher_groups,
             }
 
         return result
@@ -308,6 +309,9 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.b1_sources_group_state = resource['b1_sources_group_state']
 
         settings.bluekai_targeting = resource['bluekai_targeting']
+
+        if user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
+            settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
 
     def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request):
         for ags in ad_group.adgroupsource_set.all():

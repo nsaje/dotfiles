@@ -726,6 +726,8 @@ class K1ApiTest(TestCase):
             },
             u'dayparting': {u'monday': [1, 2, 3], u'timezone': u'CET'},
             u'max_cpm': u'1.6000',
+            u'whitelist_publisher_groups': [1, 2],
+            u'blacklist_publisher_groups': [],
         })
 
     def test_get_ad_groups(self):

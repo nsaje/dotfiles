@@ -220,6 +220,14 @@ class AdGroupSettingsForm(forms.Form):
         }
     )
 
+    whitelist_publisher_groups = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=None,
+        error_messages={
+            'invalid_choice': 'Invalid whitelist publisher group selection.'
+        }
+    )
+
     bluekai_targeting = fields.TargetingExpressionField(
         required=False, help_text='Example: ["and", "bluekai:446103", ["not", ["or", "bluekai:510120", "bluekai:510122"]]]')
 
@@ -252,6 +260,8 @@ class AdGroupSettingsForm(forms.Form):
             pixel__account_id=ad_group.campaign.account.pk)
         self.fields['exclusion_audience_targeting'].queryset = models.Audience.objects.filter(
             pixel__account_id=ad_group.campaign.account.pk)
+        self.fields['whitelist_publisher_groups'].queryset = models.PublisherGroup.objects.all().filter_by_account(
+            ad_group.campaign.account)
         self.current_settings = self.ad_group.get_current_settings()
 
     def clean_retargeting_ad_groups(self):
@@ -346,6 +356,10 @@ class AdGroupSettingsForm(forms.Form):
         if not dayparting:
             dayparting = {}
         return dayparting
+
+    def clean_whitelist_publisher_groups(self):
+        publisher_groups = self.cleaned_data.get('whitelist_publisher_groups') or []
+        return [x.id for x in publisher_groups]
 
 
 class AdGroupSourceSettingsCpcForm(forms.Form):

@@ -376,3 +376,25 @@
         value: "test"
     model: dash.audiencerule
     pk: 6
+
+# publisher groups
+
+-   fields:
+        name: 'pg 1'
+        account: 1
+        agency: !!null
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+    model: dash.publishergroup
+    pk: 1
+
+-   fields:
+        name: 'pg 2'
+        account: 2
+        agency: !!null
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+    model: dash.publishergroup
+    pk: 2
