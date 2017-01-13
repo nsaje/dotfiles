@@ -17,6 +17,28 @@ angular.module('one.legacy').directive('zemGridHeader', function ($timeout, zemG
             var requestAnimationFrame = zemGridUIService.requestAnimationFrame;
             ctrl.grid.header.ui.element = element;
 
+            initialize();
+
+            function initialize () {
+                resizeColumns();
+
+                pubsub.register(pubsub.EVENTS.DATA_UPDATED, scope, resizeColumns);
+                pubsub.register(pubsub.EVENTS.EXT_COLUMNS_UPDATED, scope, resizeColumns);
+                pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, scope, handleHorizontalScroll);
+                pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, scope, handleHorizontalScrollPivotColumns);
+
+                window.addEventListener ('resize', resizeColumns);
+                window.addEventListener('scroll', updateStickyElements);
+                scope.$on('$destroy', function () {
+                    window.removeEventListener ('scroll', updateStickyElements);
+                    window.removeEventListener ('resize', resizeColumns);
+                });
+            }
+
+            function updateStickyElements () {
+                zemGridUIService.updateStickyElements(ctrl.grid);
+            }
+
             function resizeColumns () {
                 // Workaround: call resize 2 times - in some cases  (e.g. initialization) table is not
                 // yet rendered causing resize to function on empty table. On the other hand call resize
@@ -27,13 +49,14 @@ angular.module('one.legacy').directive('zemGridHeader', function ($timeout, zemG
                         zemGridUIService.resizeGridColumns(ctrl.grid);
                     });
                 }, 0, false);
+                updateStickyElements();
             }
 
             function handleHorizontalScroll () {
                 var leftOffset = -1 * ctrl.grid.body.ui.scrollLeft;
                 var translateCssProperty = 'translateX(' + leftOffset + 'px)';
 
-                element.css({
+                element.find('.zem-grid-header').css({
                     '-webkit-transform': translateCssProperty,
                     '-moz-transform': translateCssProperty,
                     '-ms-transform': translateCssProperty,
@@ -91,19 +114,6 @@ angular.module('one.legacy').directive('zemGridHeader', function ($timeout, zemG
                     if (callNow) func.apply(context, args);
                 };
             }
-
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, scope, resizeColumns);
-            pubsub.register(pubsub.EVENTS.EXT_COLUMNS_UPDATED, scope, resizeColumns);
-            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, scope, handleHorizontalScroll);
-            pubsub.register(pubsub.EVENTS.BODY_HORIZONTAL_SCROLL, scope, handleHorizontalScrollPivotColumns);
-
-            // Resize columns on window resize
-            window.addEventListener ('resize', resizeColumns);
-            scope.$on('$destroy', function () {
-                window.removeEventListener ('resize', resizeColumns);
-            });
-
-            resizeColumns();
         },
         controller: function ($scope) {
             var vm = this;

@@ -1435,6 +1435,10 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC in self.available_actions
 
+    def can_set_max_cpm(self):
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_SET_MAX_CPM in self.available_actions
+
     def __str__(self):
         return self.type
 
@@ -1562,6 +1566,9 @@ class Source(models.Model):
 
     def can_modify_retargeting_manually(self):
         return self.supports_retargeting_manually and not self.maintenance and not self.deprecated
+
+    def can_set_max_cpm(self):
+        return self.source_type.can_set_max_cpm() and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
@@ -2149,6 +2156,8 @@ class AdGroupSettings(SettingsBase):
         'exclusion_interest_targeting',
         'audience_targeting',
         'exclusion_audience_targeting',
+        'whitelist_publisher_groups',
+        'blacklist_publisher_groups',
         'redirect_pixel_urls',
         'redirect_javascript',
         'notes',
@@ -2206,10 +2215,14 @@ class AdGroupSettings(SettingsBase):
     exclusion_retargeting_ad_groups = jsonfield.JSONField(
         blank=True, default=[])
     bluekai_targeting = jsonfield.JSONField(blank=True, default=[])
+
     interest_targeting = jsonfield.JSONField(blank=True, default=[])
     exclusion_interest_targeting = jsonfield.JSONField(blank=True, default=[])
     audience_targeting = jsonfield.JSONField(blank=True, default=[])
     exclusion_audience_targeting = jsonfield.JSONField(blank=True, default=[])
+    whitelist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
+    blacklist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
+
     redirect_pixel_urls = jsonfield.JSONField(blank=True, default=[])
     redirect_javascript = models.TextField(blank=True)
     notes = models.TextField(blank=True)
@@ -2345,6 +2358,8 @@ class AdGroupSettings(SettingsBase):
             'target_regions': 'Locations',
             'retargeting_ad_groups': 'Retargeting ad groups',
             'exclusion_retargeting_ad_groups': 'Exclusion ad groups',
+            'whitelist_publisher_groups': 'Whitelist publisher groups',
+            'blacklist_publisher_groups': 'Blacklist publisher groups',
             'bluekai_targeting': 'BlueKai targeting',
             'interest_targeting': 'Interest targeting',
             'exclusion_interest_targeting': 'Exclusion interest targeting',
@@ -2404,6 +2419,12 @@ class AdGroupSettings(SettingsBase):
                 names = AdGroup.objects.filter(
                     pk__in=value).values_list('name', flat=True)
                 value = ', '.join(names)
+        elif prop_name in ('whitelist_publisher_groups', 'blacklist_publisher_groups'):
+            if not value:
+                value = ''
+            else:
+                names = PublisherGroup.objects.filter(pk__in=value).values_list('name', flat=True)
+                value = ', '.join(names)
         elif prop_name == 'bluekai_targeting':
             value = json.dumps(value)
         elif prop_name in ('interest_targeting', 'exclusion_interest_targeting'):
@@ -2456,6 +2477,9 @@ class AdGroupSettings(SettingsBase):
         for key, value in changes.iteritems():
             if key in ('retargeting_ad_groups', 'exclusion_retargeting_ad_groups') and\
                     not user.has_perm('zemauth.can_view_retargeting_settings'):
+                continue
+            if key in ('whitelist_publisher_groups', 'blacklist_publisher_groups') and\
+                    not user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
                 continue
             valid_changes[key] = value
 
@@ -4314,6 +4338,67 @@ def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):
     return campaign, account, agency
 
 
+class CpcConstraint(models.Model):
+    id = models.AutoField(primary_key=True)
+    min_cpc = models.DecimalField(max_digits=10, decimal_places=4, null=True,
+                                  verbose_name='Minimum CPC')
+    max_cpc = models.DecimalField(max_digits=10, decimal_places=4, null=True,
+                                  verbose_name='Maximum CPC')
+    agency = models.ForeignKey(Agency, null=True, related_name='cpc_constraints',
+                               on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, null=True, related_name='cpc_constraints',
+                                on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, null=True, related_name='cpc_constraints',
+                                 on_delete=models.PROTECT)
+    ad_group = models.ForeignKey(AdGroup, null=True, related_name='cpc_constraints',
+                                 on_delete=models.PROTECT)
+    source = models.ForeignKey(Source, null=True, related_name='cpc_constraints',
+                               on_delete=models.PROTECT)
+    constraint_type = models.IntegerField(
+        default=constants.CpcConstraintType.MANUAL,
+        choices=constants.CpcConstraintType.get_choices()
+    )
+    reason = models.TextField(null=True, blank=True)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    objects = QuerySetManager()
+
+    def __str__(self):
+        desc = 'CPC constraint'
+        if self.source:
+            desc += ' on source {}'.format(self.source.name)
+        else:
+            desc += ' on all sources'
+        desc += ' with'
+        if self.min_cpc:
+            desc += ' min. CPC {}'.format(lc_helper.default_currency(self.min_cpc))
+        if self.max_cpc:
+            if self.min_cpc:
+                desc += ' and'
+            desc += ' max. CPC {}'.format(lc_helper.default_currency(self.max_cpc))
+        return desc
+
+    class QuerySet(models.QuerySet):
+
+        def filter_applied(self, cpc, source=None, **levels):
+            ad_group = levels.get('ad_group')
+            campaign, account, agency = _generate_parents(**levels)
+            rules = models.Q(agency=agency)
+            if account:
+                rules |= models.Q(account=account)
+            if campaign:
+                rules |= models.Q(campaign=campaign)
+            if ad_group:
+                rules |= models.Q(ad_group=ad_group)
+            queryset = self.filter(rules).filter(
+                models.Q(min_cpc__isnull=False) & models.Q(min_cpc__gte=cpc) |
+                models.Q(max_cpc__isnull=False) & models.Q(max_cpc__lte=cpc)
+            )
+            if source:
+                queryset = queryset.filter(source=source)
+            return queryset
+
+
 class PublisherGroup(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(
@@ -4338,12 +4423,31 @@ class PublisherGroup(models.Model):
     objects = QuerySetManager()
 
     class QuerySet(models.QuerySet):
+
         def filter_by_account(self, account):
+            if account.agency:
+                return self.filter(models.Q(account=account) | models.Q(agency=account.agency))
+
             return self.filter(account=account)
 
     def can_delete(self):
-        # TODO should check all ad group settings of the corresponding account if this is in any case referenced
-        return True
+        # Check all ad group settings of the corresponding account/agency if they reference the publisher group
+        if self.agency:
+            ad_groups_settings = AdGroupSettings.objects.filter(ad_group__campaign__account__agency=self.agency)
+        else:
+            ad_groups_settings = AdGroupSettings.objects.filter(ad_group__campaign__account=self.account)
+        ad_group_settings = ad_groups_settings.group_current_settings().only(
+            'whitelist_publisher_groups', 'blacklist_publisher_groups')
+        publisher_groups = [
+            x.whitelist_publisher_groups + x.blacklist_publisher_groups for x in ad_group_settings
+        ]
+        return not any(self.id in x for x in publisher_groups)
+
+    def __unicode__(self):
+        return u'{} ({})'.format(self.name, self.id)
+
+    def __str__(self):
+        return unicode(self).encode('ascii', 'ignore')
 
 
 class PublisherGroupEntry(models.Model):
@@ -4354,3 +4458,9 @@ class PublisherGroupEntry(models.Model):
     source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
 
     outbrain_publisher_id = models.CharField(max_length=127, blank=True, verbose_name='Special Outbrain publisher ID')
+
+    def __unicode__(self):
+        return u'{} ({})'.format(self.publisher, self.source if self.source else 'All sources')
+
+    def __str__(self):
+        return unicode(self).encode('ascii', 'ignore')

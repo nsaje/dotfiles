@@ -6,7 +6,6 @@ angular.module('one.legacy').controller('AccountCtrl', function ($scope, $state,
         return [
             {heading: 'Campaigns', route: 'main.accounts.campaigns', active: true, hidden: !$scope.hasPermission('zemauth.account_campaigns_view') || ($scope.account && $scope.account.archived === true), internal: $scope.isPermissionInternal('zemauth.account_campaigns_view')},
             {heading: 'Media sources', route: 'main.accounts.sources', active: false, hidden: !$scope.hasPermission('zemauth.account_sources_view') || ($scope.account && $scope.account.archived === true), internal: $scope.isPermissionInternal('zemauth.account_sources_view')},
-            {heading: 'Settings', route: 'main.accounts.settings', active: false, hidden: $scope.hasPermission('zemauth.can_see_new_settings') || !$scope.hasPermission('zemauth.account_account_view') || ($scope.account && $scope.account.archived === true), internal: $scope.isPermissionInternal('zemauth.account_account_view')},
             {heading: 'History', route: 'main.accounts.history', active: false, hidden: !$scope.hasPermission('zemauth.account_history_view') || ($scope.account && $scope.account.archived === true), internal: $scope.isPermissionInternal('zemauth.account_history_view')},
             {heading: 'Settings', route: 'main.accounts.archived', active: false, hidden: $scope.hasPermission('zemauth.account_account_view') || !$scope.account || !$scope.account.archived === true, internal: false},
             {heading: 'Pixels & Audiences', route: 'main.accounts.customAudiences', active: false, hidden: !$scope.hasPermission('zemauth.account_custom_audiences_view'), internal: $scope.isPermissionInternal('zemauth.account_custom_audiences_view')},
@@ -41,11 +40,7 @@ angular.module('one.legacy').controller('AccountCtrl', function ($scope, $state,
 
     $scope.checkArchived = function () {
         if ($scope.account && $scope.account.archived) {
-            if ($scope.hasPermission('zemauth.can_see_new_settings')) {
-                $state.go('main.accounts.archived', {id: $scope.account.id});
-            } else {
-                $state.go('main.accounts.settings', {id: $scope.account.id});
-            }
+            $state.go('main.accounts.archived', {id: $scope.account.id});
         }
     };
 

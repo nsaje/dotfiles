@@ -6,7 +6,7 @@ import datetime
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, F
 from django.http import JsonResponse, Http404
 from django.views.generic import View
 from django.utils.decorators import method_decorator
@@ -320,6 +320,7 @@ class PublishersBlacklistView(K1APIView):
 
     def get(self, request):
         ad_group_id = request.GET.get('ad_group_id')
+        running_ad_groups = []
         if ad_group_id:
             ad_group = dash.models.AdGroup.objects.get(id=ad_group_id)
             blacklist_filter = (Q(ad_group=ad_group) | Q(campaign=ad_group.campaign) |
@@ -350,6 +351,11 @@ class PublishersBlacklistView(K1APIView):
                                              'account__campaign_set',
                                              'account__campaign_set__adgroup_set'))
 
+        campaign_map, account_map = {}, {}
+        for ad_group in running_ad_groups:
+            campaign_map.setdefault(ad_group.campaign_id, set()).add(ad_group.pk)
+            account_map.setdefault(ad_group.campaign.account_id, set()).add(ad_group.pk)
+
         blacklist = {}
         for item in blacklisted:
             exchange = None
@@ -367,12 +373,12 @@ class PublishersBlacklistView(K1APIView):
                 blacklist[hash(tuple(entry.values()))] = entry
             # for all ad groups generate all ad_group_ids
             else:
-                self._process_item(blacklist, item, exchange, running_ad_groups)
+                self._process_item(blacklist, item, exchange, campaign_map, account_map)
 
         return self.response_ok({'blacklist': list(blacklist.values())})
 
     @classmethod
-    def _process_item(cls, blacklist, item, exchange, running_ad_groups):
+    def _process_item(cls, blacklist, item, exchange, campaign_map, account_map):
         # if ad_group then use this ad_group_id
         if item.ad_group:
             entry = {
@@ -384,11 +390,20 @@ class PublishersBlacklistView(K1APIView):
             blacklist[hash(tuple(entry.values()))] = entry
         # if campaign then generate all running ad groups is this campaign
         elif item.campaign:
-            cls._process_campaign(blacklist, item, item.campaign, exchange, running_ad_groups)
+            cls._process_batch(
+                blacklist,
+                item,
+                campaign_map.get(item.campaign.pk, []),
+                exchange
+            )
         # if account then generate all running ad groups in this account
         elif item.account:
-            for campaign in item.account.campaign_set.all():
-                cls._process_campaign(blacklist, item, campaign, exchange, running_ad_groups)
+            cls._process_batch(
+                blacklist,
+                item,
+                account_map.get(item.account.pk, []),
+                exchange
+            )
         # global blacklist
         else:
             entry = {
@@ -400,16 +415,38 @@ class PublishersBlacklistView(K1APIView):
             blacklist[hash(tuple(entry.values()))] = entry
 
     @staticmethod
-    def _process_campaign(blacklist, item, campaign, exchange, running_ad_groups):
-        for ad_group in campaign.adgroup_set.all():
-            if ad_group in running_ad_groups:
-                entry = {
-                    'ad_group_id': ad_group.id,
-                    'domain': item.name,
-                    'exchange': exchange,
-                    'external_id': item.external_id,
-                }
-                blacklist[hash(tuple(entry.values()))] = entry
+    def _process_batch(blacklist, item, ad_group_ids, exchange):
+        # We'll let k1 expand this list into valid entries
+        entry = {
+            'ad_group_ids': tuple(ad_group_ids),
+            'domain': item.name,
+            'exchange': exchange,
+            'external_id': item.external_id,
+        }
+        blacklist[hash(tuple(entry.values()))] = entry
+
+
+class PublisherGroupsView(K1APIView):
+
+    def get(self, request):
+        account_id = request.GET.get('account_id')
+        offset = request.GET.get('offset') or 0
+        limit = request.GET.get('limit')
+
+        if not limit:
+            return self.response_error('Limit parameter is missing', status=400)
+
+        # ensure unique order
+        entries = dash.models.PublisherGroupEntry.objects.all().order_by('pk')
+        if account_id:
+            publisher_groups = dash.models.PublisherGroup.objects.all().filter_by_account(
+                dash.models.Account.objects.get(pk=account_id))
+            entries = entries.filter(publisher_group__in=publisher_groups)
+
+        return self.response_ok(list(entries[offset:offset + limit].annotate(
+            source_slug=F('source__bidder_slug'),
+            account_id=F('publisher_group__account_id'),
+        ).values('source_slug', 'publisher_group_id', 'outbrain_publisher_id', 'publisher', 'account_id')))
 
 
 class AdGroupsView(K1APIView):
@@ -463,6 +500,8 @@ class AdGroupsView(K1APIView):
                     'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
                     'state': ad_group_settings.b1_sources_group_state,
                 },
+                'whitelist_publisher_groups': ad_group_settings.whitelist_publisher_groups,
+                'blacklist_publisher_groups': ad_group_settings.blacklist_publisher_groups,
             }
 
             ad_groups.append(ad_group)

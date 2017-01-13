@@ -60,6 +60,7 @@ class AdGroupSettingsTest(TestCase):
                 'b1_sources_group_daily_budget': '5.0000',
                 'b1_sources_group_state': 1,
                 'b1_sources_group_cpc_cc': '0.0100',
+                'whitelist_publisher_groups': [1],
             }
         }
 
@@ -183,6 +184,7 @@ class AdGroupSettingsTest(TestCase):
                     'b1_sources_group_daily_budget': '5.0000',
                     'b1_sources_group_state': 1,
                     'b1_sources_group_cpc_cc': '0.0100',
+                    'whitelist_publisher_groups': [],
                 },
                 'warnings': {}
             },
@@ -211,14 +213,36 @@ class AdGroupSettingsTest(TestCase):
         )
 
         self.assertDictEqual(
-            json.loads(response.content)['data']['warnings'], {
-                'retargeting': {
-                    'sources': [
-                        'AdsNative',
-                        'Gravity',
-                        'Yahoo',
-                    ],
-                }
+            json.loads(response.content)['data']['warnings']['retargeting'], {
+                'sources': [
+                    'AdsNative',
+                    'Gravity',
+                    'Yahoo',
+                ],
+            }
+        )
+
+    def test_get_max_cpm_unsupported(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        req = RequestFactory().get('/')
+        req.user = User(id=1)
+
+        for source_settings in models.AdGroupSourceSettings.objects.all():
+            new_source_settings = source_settings.copy_settings()
+            new_source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
+            new_source_settings.save(req)
+
+        add_permissions(self.user, ['settings_view'])
+        response = self.client.get(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            follow=True
+        )
+        self.assertDictEqual(
+            json.loads(response.content)['data']['warnings']['max_cpm'], {
+                'sources': [
+                    'Yahoo',
+                ],
             }
         )
 
@@ -264,7 +288,8 @@ class AdGroupSettingsTest(TestCase):
                 'can_set_ad_group_max_cpm',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
-                'can_target_custom_audiences'
+                'can_target_custom_audiences',
+                'can_set_white_blacklist_publisher_groups',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -313,6 +338,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_daily_budget': '5.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.0100',
+                        'whitelist_publisher_groups': [1],
                     }
                 },
                 'success': True
@@ -347,7 +373,7 @@ class AdGroupSettingsTest(TestCase):
                 'can_set_ad_group_max_cpc',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
-                'can_target_custom_audiences'
+                'can_target_custom_audiences',
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -400,6 +426,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_daily_budget': '5.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.0100',
+                        'whitelist_publisher_groups': [],  # no permission to set
                     }
                 },
                 'success': True
@@ -516,7 +543,8 @@ class AdGroupSettingsTest(TestCase):
                 'can_set_ad_group_max_cpc',
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
-                'can_target_custom_audiences'
+                'can_target_custom_audiences',
+                'can_set_white_blacklist_publisher_groups',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -564,6 +592,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_daily_budget': '5.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.3000',
+                        'whitelist_publisher_groups': [1],
                     }
                 },
                 'success': True
@@ -630,6 +659,23 @@ class AdGroupSettingsTest(TestCase):
         response_dict = json.loads(response.content)
         self.assertFalse(response_dict['success'])
         self.assertIn('target_regions', response_dict['data']['errors'])
+
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_put_invalid_publisher_groups(self, _):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        self.settings_dict['settings']['whitelist_publisher_groups'] = ['2']
+
+        add_permissions(self.user, ['settings_view'])
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertIn('whitelist_publisher_groups', response_dict['data']['errors'])
 
     @patch('utils.redirector_helper.insert_adgroup')
     def test_end_date_in_the_past(self, mock_redirector_insert_adgroup):

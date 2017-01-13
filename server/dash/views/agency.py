@@ -84,7 +84,17 @@ class AdGroupSettings(api_common.BaseApiView):
         self.set_ad_group(ad_group, form.cleaned_data)
 
         new_settings = current_settings.copy_settings()
-        self.set_settings(ad_group, new_settings, form.cleaned_data, request.user)
+        latest_ad_group_source_settings = models.AdGroupSourceSettings.objects.all().\
+            filter(ad_group_source__ad_group=ad_group).\
+            group_current_settings().\
+            select_related('ad_group_source')
+        self.set_settings(
+            ad_group,
+            latest_ad_group_source_settings,
+            new_settings,
+            form.cleaned_data,
+            request.user
+        )
 
         self.validate_all_rtb_state(current_settings, new_settings)
         self.validate_yahoo_desktop_targeting(ad_group, current_settings, new_settings)
@@ -190,13 +200,29 @@ class AdGroupSettings(api_common.BaseApiView):
                 msg = 'CPC on Yahoo is too low for desktop-only targeting. Please set it to at least $0.25.'
                 raise exc.ValidationError(errors={'target_devices': [msg]})
 
+    def _supports_max_cpm(self, latest_ad_group_source_settings):
+        unsupported_sources = []
+        for ad_group_source_settings in latest_ad_group_source_settings:
+            if ad_group_source_settings.state != constants.AdGroupSourceSettingsState.ACTIVE:
+                continue
+
+            source = ad_group_source_settings.ad_group_source.source
+            if not source.can_set_max_cpm():
+                unsupported_sources.append(source)
+
+        return unsupported_sources
+
     def get_warnings(self, request, ad_group_settings):
         warnings = {}
 
+        ad_group = ad_group_settings.ad_group
+        latest_ad_group_source_settings = models.AdGroupSourceSettings.objects.all().\
+            filter(ad_group_source__ad_group=ad_group).\
+            group_current_settings().\
+            select_related('ad_group_source__source')
+
         supports_retargeting, unsupported_sources =\
-            retargeting_helper.supports_retargeting(
-                ad_group_settings.ad_group
-            )
+            retargeting_helper.supports_retargeting(latest_ad_group_source_settings)
         if not supports_retargeting:
             retargeting_warning = {
                 'sources': [s.name for s in unsupported_sources]
@@ -207,6 +233,10 @@ class AdGroupSettings(api_common.BaseApiView):
             warnings['end_date'] = {
                 'campaign_id': ad_group_settings.ad_group.campaign.id,
             }
+
+        max_cpm_unsupported_sources = self._supports_max_cpm(latest_ad_group_source_settings)
+        if max_cpm_unsupported_sources:
+            warnings['max_cpm'] = {'sources': [s.name for s in max_cpm_unsupported_sources]}
 
         return warnings
 
@@ -255,6 +285,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 'b1_sources_group_daily_budget': settings.b1_sources_group_daily_budget,
                 'b1_sources_group_cpc_cc': settings.b1_sources_group_cpc_cc,
                 'b1_sources_group_state': settings.b1_sources_group_state,
+                'whitelist_publisher_groups': settings.whitelist_publisher_groups,
             }
 
         return result
@@ -262,7 +293,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, ad_group, settings, resource, user):
+    def set_settings(self, ad_group, latest_ad_group_source_settings, settings, resource, user):
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
         settings.daily_budget_cc = resource['daily_budget_cc']
@@ -286,11 +317,11 @@ class AdGroupSettings(api_common.BaseApiView):
                 settings.autopilot_daily_budget = resource['autopilot_daily_budget']
 
         if user.has_perm('zemauth.can_view_retargeting_settings') and\
-                retargeting_helper.supports_retargeting(ad_group):
+                retargeting_helper.supports_retargeting(latest_ad_group_source_settings):
             settings.retargeting_ad_groups = resource['retargeting_ad_groups']
 
         if user.has_perm('zemauth.can_target_custom_audiences') and\
-                retargeting_helper.supports_retargeting(ad_group):
+                retargeting_helper.supports_retargeting(latest_ad_group_source_settings):
             settings.exclusion_retargeting_ad_groups = resource['exclusion_retargeting_ad_groups']
             settings.audience_targeting = resource['audience_targeting']
             settings.exclusion_audience_targeting = resource['exclusion_audience_targeting']
@@ -302,6 +333,9 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.b1_sources_group_state = resource['b1_sources_group_state']
 
         settings.bluekai_targeting = resource['bluekai_targeting']
+
+        if user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
+            settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
 
     def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request):
         for ags in ad_group.adgroupsource_set.all():

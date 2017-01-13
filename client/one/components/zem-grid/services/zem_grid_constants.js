@@ -6,10 +6,8 @@ angular.module('one.legacy').factory('zemGridConstants', function () {
     var constants = {
         gridBodyRendering: {
             ROW_HEIGHT: 45,
-            NUM_OF_ROWS_PER_PAGE: 41,
-            NUM_OF_PRERENDERED_ROWS: 2,
-            NUM_OF_DUMMY_ROWS: 3,
-            GRADUAL_POPULATE_STEP: 3,
+            MIN_NUM_OF_ROWS_PER_PAGE: 25,
+            GRADUAL_POPULATE_STEP: 5,
         },
         gridColumnOrder: {
             NONE: 'none',

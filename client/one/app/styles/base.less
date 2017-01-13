@@ -239,6 +239,32 @@ a.alternative-link:active {
     }
 }
 
+.button--extra-small {
+    height: 18px;
+    line-height: 18px;
+    font-size: 10px;
+    padding: 0 5px;
+
+    &.button--with-icon {
+        padding-left: 18px;
+
+        &:before {
+            width: 8px;
+            height: 8px;
+            background-size: 8px;
+            left: 5px;
+        }
+    }
+
+    &.button--only-icon {
+        padding-left: 13px;
+    }
+
+    &.button--dropdown-toggle-icon {
+        padding-right: 26px;
+    }
+}
+
 .button--full-width {
     width: 100%;
     padding: 0 10px;
@@ -508,19 +534,52 @@ a.alternative-link:active {
 // List elements //
 ////////////////////////////
 
-ul.with-icons {
+.list-with-icons {
     padding-left: 20px;
     list-style: none;
 
-    &.ul-checkmarks li {
-        background: url('images/check-green.svg') no-repeat left 2px;
-        background-size: 14px;
-        padding-left: 20px;
+    li {
+        position: relative;
     }
-    &.ul-remove li {
-        background: url('images/remove-red.svg') no-repeat left 4px;
-        background-size: 10px;
-        padding-left: 20px;
+
+    li::before {
+        content: "";
+        display: block;
+        width: 14px;
+        height: 14px;
+        position: absolute;
+        left: -20px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    &.checkmarks-icon li::before {
+        background-image: url('images/check-green.svg');
+    }
+    &.remove-icon li::before {
+        width: 12px;
+        height: 12px;
+        background-image: url('images/remove-red.svg');
+    }
+}
+
+.list-with-bullets {
+    padding-left: 15px;
+    list-style: none;
+
+    li {
+        position: relative;
+    }
+
+    li::before {
+        content: "";
+        display: block;
+        width: 5px;
+        height: 5px;
+        background-color: @light-gray;
+        position: absolute;
+        left: -15px;
+        top: 4px;
     }
 }
 
@@ -563,16 +622,17 @@ ul.with-icons {
     font-size: @default-font-size+4;
     color: @secondary-color;
     margin-bottom: 2px;
+    position: relative;
 }
 
 .form__label {
     width: 100%;
-    position: relative;
     margin-bottom: 5px;
+    position: relative;
 
     .internal-feature {
         left: -5px;
-        top: 5px;
+        top: -2px;
     }
 }
 
@@ -591,6 +651,12 @@ ul.with-icons {
     &[readonly], &[disabled] {
         background-color: @very-light-gray;
     }
+}
+
+.form__input-text--narrow,
+.form__prefixed-field--narrow,
+.form__postfixed-field--narrow {
+    max-width: 200px;
 }
 
 .form__prefixed-field,
@@ -718,7 +784,8 @@ textarea.form__textarea {
     overflow: auto;
 }
 
-input.form__input-checkbox {
+input.form__input-checkbox,
+input.form__input-radio {
     width: auto;
     height: auto;
     margin-top: 9px;
@@ -726,15 +793,11 @@ input.form__input-checkbox {
     cursor: pointer;
 }
 
-.form__checkbox-text {
+.form__checkbox-text, .form__radio-text {
     margin-left: 5px;
     cursor: pointer;
 
     .clearfix();
-}
-
-input.form__input-radio {
-
 }
 
 select.form__multiselect {
@@ -833,6 +896,11 @@ select.form__multiselect {
         width: 100-2-@form-input-width;
         margin: 0 2% 0 0;
         padding-top: 7px;
+
+        .internal-feature {
+            left: -5px;
+            top: 5px;
+        }
     }
 
     textarea.form__textarea,
@@ -875,10 +943,13 @@ select.form__multiselect {
 }
 
 .form__indented {
-    margin-left: 19px;
-    margin-bottom: 30px;
+    margin: 5px 0 20px 22px;
     border-left: 3px solid @light-gray;
     padding-left: 20px;
+
+    .form__group:first-child {
+        margin-top: 0px;
+    }
 }
 
 .form--error {
@@ -887,6 +958,10 @@ select.form__multiselect {
     .form__multiselect,
     .button--plain,
     .button--outline,
+    .form__field-prefix,
+    .form__field-postfix,
+    .form__prefixed-field--with-icon::before,
+    .form__postfixed-field--with-icon::after,
     .form__prefixed-field .form__input-text,
     .form__postfixed-field .form__input-text {
         border-color: @red;
@@ -1011,6 +1086,7 @@ label, label.control-label, .form-horizontal .control-label {
 
 .message {
     display: inline-block;
+    position: relative;
 }
 
 .message--success {
@@ -1025,7 +1101,6 @@ label, label.control-label, .form-horizontal .control-label {
     background-color: fade(@orange, 5%);
     border: 1px solid fade(@orange, 10%);
     padding: 8px 10px;
-    position: relative;
     border-radius: @border-radius;
 }
 
@@ -1033,7 +1108,6 @@ label, label.control-label, .form-horizontal .control-label {
     background-color: fade(@blue, 5%);
     border: 1px solid fade(@blue, 10%);
     padding: 8px 10px;
-    position: relative;
     border-radius: @border-radius;
 }
 
@@ -1051,6 +1125,16 @@ label, label.control-label, .form-horizontal .control-label {
         left: 7px;
         top: 7px;
         opacity: 0.5;
+    }
+
+    &.message--success {
+        padding-left: 28px;
+
+        &::before {
+            background-image: url('images/success-green.svg');
+            left: 0px;
+            top: 0px;
+        }
     }
 
     &.message--warning {

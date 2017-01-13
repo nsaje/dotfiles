@@ -13,7 +13,8 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
 
         $ctrl.MESSAGES = {
             WARNING_END_DATE: 'Your campaign has been switched to landing mode. ' +
-            'Please add the budget and continue to adjust settings by your needs. '
+            'Please add the budget and continue to adjust settings by your needs. ',
+            WARNING_MAX_CPM: ''
         };
 
         $ctrl.startDatePicker = {isOpen: false};
@@ -27,6 +28,16 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
                 // Not needed (placeholder)
             });
         };
+
+        $ctrl.$onChanges = function () {
+            if ($ctrl.entity && $ctrl.entity.warnings.maxCpm) {
+                $ctrl.MESSAGES.WARNING_MAX_CPM = "You have some active media sources " +
+                "that don't support max CPM restriction. To start using it, please " +
+                "disable/pause these media sources: " +
+                $ctrl.entity.warnings.maxCpm.sources.join(', ') +
+                "."
+            }
+        }
 
         function initializeWatches () {
             // TODO: Refactor - remove the need for watches

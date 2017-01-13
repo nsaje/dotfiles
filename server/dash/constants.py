@@ -744,7 +744,7 @@ class IABCategory(ConstantBase):
         IAB7_35: "Pediatrics",
         IAB7_36: "Physical Therapy",
         IAB7_37: "Psychology/Psychiatry",
-        IAB7_38: "Senor Health",
+        IAB7_38: "Senior Health",
         IAB7_39: "Sexuality",
         IAB7_40: "Sleep Disorders",
         IAB7_41: "Smoking Cessation",
@@ -1209,6 +1209,7 @@ class SourceAction(ConstantBase):
     CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL = 17
     CAN_FETCH_REPORT_BY_PUBLISHER = 18
     CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC = 19
+    CAN_SET_MAX_CPM = 20
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
@@ -1230,6 +1231,7 @@ class SourceAction(ConstantBase):
         CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL: 'Can modify ad group IAB category manually',
         CAN_FETCH_REPORT_BY_PUBLISHER: 'Can fetch report by publishers',
         CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC: 'Can modify publisher blacklist',
+        CAN_SET_MAX_CPM: 'Can set max CPM',
     }
 
 
@@ -1833,3 +1835,13 @@ class SourceAllRTB(object):
     DECIMAL_PLACES = 3
     DEFAULT_DAILY_BUDGET = Decimal('50.0')
     DEFAULT_CPC_CC = Decimal('0.45')
+
+
+class CpcConstraintType(ConstantBase):
+    MANUAL = 1
+    OUTBRAIN_BLACKLIST = 2
+
+    _VALUES = {
+        MANUAL: 'Manual',
+        OUTBRAIN_BLACKLIST: 'Outbrain blacklist',
+    }

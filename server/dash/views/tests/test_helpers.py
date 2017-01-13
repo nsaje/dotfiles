@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import decimal
 
 from django.db import connection
 from django.test import TestCase, RequestFactory
@@ -511,6 +512,50 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         self.assertEqual(result, {
             'enabled': False,
             'message': 'This source can not be enabled with the current settings - CPC too low for desktop targeting.'
+        })
+
+    def test_get_editable_fields_status_setting_max_cpm(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source.source.supports_retargeting = True
+        ad_group_source.source.save()
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.max_cpm = decimal.Decimal('1.5')
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE,
+            constants.SourceAction.CAN_SET_MAX_CPM
+        ]
+
+        allowed_sources = set([ad_group_source.source_id])
+        result = helpers._get_editable_fields_status_setting(
+            ad_group_source.ad_group,
+            ad_group_source,
+            ad_group_settings,
+            ad_group_source_settings,
+            allowed_sources,
+            True
+        )
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+        ad_group_source.source.source_type.available_actions.remove(constants.SourceAction.CAN_SET_MAX_CPM)
+        result = helpers._get_editable_fields_status_setting(
+            ad_group_source.ad_group,
+            ad_group_source,
+            ad_group_settings,
+            ad_group_source_settings,
+            allowed_sources,
+            True
+        )
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source can not be enabled because it does not support max CPM restriction.'
         })
 
     def test_get_editable_fields_status_setting_landing_mode(self):

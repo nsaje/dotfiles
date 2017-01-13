@@ -44,17 +44,14 @@ angular.module('one.legacy').directive('zemGridRow', function (zemGridConstants)
                     return;
                 }
 
-                var renderedRows = zemGridConstants.gridBodyRendering.NUM_OF_ROWS_PER_PAGE
-                    + zemGridConstants.gridBodyRendering.NUM_OF_PRERENDERED_ROWS;
-
                 // Find appropriate row to be used based on circular row indexes inside visible rows collection
                 var firstRowPos = Math.floor(grid.body.ui.scrollTop / zemGridConstants.gridBodyRendering.ROW_HEIGHT);
-                var firstRowIndex = firstRowPos % renderedRows;
+                var firstRowIndex = firstRowPos % grid.body.ui.numOfRows;
                 var rowPos = (firstRowPos - firstRowIndex) + scope.ctrl.index;
-                if (rowPos < firstRowPos) rowPos += renderedRows;
+                if (rowPos < firstRowPos) rowPos += grid.body.ui.numOfRows;
 
                 // Be sure no to fall out -> renderedRows <= visibleRows
-                if (rowPos >= visibleRows) rowPos -= renderedRows;
+                if (rowPos >= visibleRows) rowPos -= grid.body.ui.numOfRows;
                 var row = scope.ctrl.grid.body.visibleRows[rowPos];
                 if (row && scope.ctrl.row !== row) {
                     scope.ctrl.row = row;
@@ -64,7 +61,7 @@ angular.module('one.legacy').directive('zemGridRow', function (zemGridConstants)
                 return false;
             }
         },
-        controller: function ($scope, zemGridConstants, zemGridUIService) {
+        controller: function ($scope, zemGridConstants) {
             $scope.constants = zemGridConstants;
             var vm = this;
             vm.getRowClass = getRowClass;

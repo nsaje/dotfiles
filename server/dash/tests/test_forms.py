@@ -354,6 +354,7 @@ class AdGroupSettingsFormTest(TestCase):
             'b1_sources_group_daily_budget': '5.00',
             'b1_sources_group_state': 2,
             'b1_sources_group_cpc_cc': Decimal('0.1'),
+            'whitelist_publisher_groups': [1],
         }
 
     @patch('utils.dates_helper.local_today')
@@ -389,6 +390,7 @@ class AdGroupSettingsFormTest(TestCase):
             'b1_sources_group_daily_budget': Decimal('5.00'),
             'b1_sources_group_state': 2,
             'b1_sources_group_cpc_cc': Decimal('0.1'),
+            'whitelist_publisher_groups': [1],
         })
 
     @patch('utils.dates_helper.local_today')
@@ -495,6 +497,10 @@ class AdGroupSettingsFormTest(TestCase):
             ],
             'exclusion_audience_targeting': [
                 'Invalid audience selection.'
+            ],
+            'whitelist_publisher_groups': [
+                # adgroup 2 belongs to account 2, publisher group 1 to account 1
+                'Invalid whitelist publisher group selection.'
             ],
         }
         self.assertEqual(form.errors, expected)

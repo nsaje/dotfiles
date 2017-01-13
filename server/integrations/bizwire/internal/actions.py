@@ -95,9 +95,9 @@ def recalculate_and_set_new_daily_budgets(ad_group_id):
         created_dt__lt=utc_end,
     ).count()  # assume they're getting processed successfully
 
-    # NOTE: we're aiming for $3.75 spend and leave $0.25 reserve
-    new_rtb_daily_budget = config.DEFAULT_DAILY_BUDGET + (num_content_ads + num_candidates) * 3.6
-    new_ob_daily_budget = config.DEFAULT_DAILY_BUDGET + (num_content_ads + num_candidates) * 0.4
+    # NOTE: we're aiming for max $3.75 spend per content ad
+    new_rtb_daily_budget = max(config.DEFAULT_DAILY_BUDGET, (num_content_ads + num_candidates) * 3.5625)
+    new_ob_daily_budget = max(config.DEFAULT_DAILY_BUDGET, (num_content_ads + num_candidates) * 0.1875)
 
     _set_rtb_daily_budget(ad_group_id, math.ceil(new_rtb_daily_budget))
     _set_source_daily_budget(ad_group_id, 'outbrain', math.ceil(new_ob_daily_budget))

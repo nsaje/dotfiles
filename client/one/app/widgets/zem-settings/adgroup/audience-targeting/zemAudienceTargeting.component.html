@@ -1,24 +1,16 @@
-<div class="form-group" ng-if="$ctrl.hasPermission('zemauth.can_view_retargeting_settings') && !$ctrl.hasPermission('zemauth.can_target_custom_audiences')" ng-class="{'has-error': !!$ctrl.errors.retargetingIds}">
-    <label class="col-xs-12 control-label">
-        <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_view_retargeting_settings')" popover-placement="right"></zem-internal-feature>
-        Retargeting
-    </label>
-    <label class="col-xs-12 control-label m-b-s">
-        <span class="sidenote">Content ads will only be shown to people who have already seen an ad from selected ad groups.</span>
-    </label>
-    <div class="col-xs-12 m-b-s">
-        <input type="checkbox" id="enable-retargeting" ng-model="$ctrl.retargetingEnabled"> Enable retargeting
-    </div>
-    <div ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting !== undefined" class="col-xs-6 alert alert-warning form-alert-box">
-        <div class="form-alert-exclamation">
-            <img class="warning-icon" ng-src="{{ $ctrl.config.static_url }}/one/img/notification-warning.svg"></img>
-        </div>
-        <div class="form-alert-body">
-            {{ $ctrl.entity.warnings.retargeting.text }} {{ $ctrl.entity.warnings.retargeting.sourcesText }}.
-        </div>
+<div class="form" ng-if="$ctrl.hasPermission('zemauth.can_view_retargeting_settings') && !$ctrl.hasPermission('zemauth.can_target_custom_audiences')"
+     ng-class="{'form--error': !!$ctrl.errors.retargetingIds}">
+    <div class="form__title" is-internal="zemauth.can_view_retargeting_settings">Retargeting</div>
+    <div class="form__text m-b">Content ads will only be shown to people who have already seen an ad from selected ad groups.</div>
+    <input class="form__input-checkbox" type="checkbox" id="enable-retargeting" ng-model="$ctrl.retargetingEnabled">
+    <label class="form__checkbox-text" for="enable-retargeting">Enable retargeting</label>
+    <br/>
+    <div class="message message--warning message--with-icon"
+         ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting !== undefined">
+        {{ $ctrl.entity.warnings.retargeting.text }} {{ $ctrl.entity.warnings.retargeting.sourcesText }}.
     </div>
 
-    <div ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting === undefined" class="col-xs-6 col-md-4 after-form-alert-box">
+    <div ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting === undefined">
         <zem-retargeting
             zem-selected-adgroup-ids="$ctrl.entity.settings.retargetingAdGroups"
             zem-retargetable-adgroups="$ctrl.entity.retargetableAdGroups"
@@ -27,32 +19,21 @@
         ></zem-retargeting>
     </div>
 </div>
-<div class="form-group"
-     ng-if="$ctrl.hasPermission('zemauth.can_target_custom_audiences')"
-     ng-class="{'has-error': !!$ctrl.errors.audienceTargeting || !!$ctrl.errors.exclusionAudienceTargeting || !!$ctrl.errors.retargetingAdGroups || !!$ctrl.errors.exclusionRetargetingAdGroups}">
 
-    <label class="col-xs-12 control-label">
-        <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_target_custom_audiences')" popover-placement="right"></zem-internal-feature>
-        Audience targeting
-    </label>
-    <label class="col-xs-12 control-label">
-        <span class="sidenote">Target people you have seen previously. Audience targeting can be based on pixels you placed or on clicks to other ad groups.</span>
-    </label>
-    <div class="col-xs-12 checkbox m-t-none">
-        <label>
-            <input type="checkbox" id="enable-audience-targeting" ng-model="$ctrl.retargetingEnabled"> Enable audience targeting
-        </label>
-    </div>
-    <div ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting !== undefined" class="col-xs-6 alert alert-warning form-alert-box m-t">
-        <div class="form-alert-exclamation">
-            <img class="warning-icon" ng-src="{{ $ctrl.config.static_url }}/one/img/notification-warning.svg"></img>
-        </div>
-        <div class="form-alert-body">
-            {{ $ctrl.getTargetingWarningMessage() }}
-        </div>
+<div class="form" ng-if="$ctrl.hasPermission('zemauth.can_target_custom_audiences')"
+     ng-class="{'form--error': !!$ctrl.errors.audienceTargeting || !!$ctrl.errors.exclusionAudienceTargeting || !!$ctrl.errors.retargetingAdGroups || !!$ctrl.errors.exclusionRetargetingAdGroups}">
+
+    <div class="form__title" is-internal="zemauth.can_target_custom_audiences">Audience targeting</div>
+    <div class="form__text m-b">Target people you have seen previously. Audience targeting can be based on pixels you placed or on clicks to other ad groups.</div>
+    <input class="form__input-checkbox" type="checkbox" id="enable-audience-targeting" ng-model="$ctrl.retargetingEnabled">
+    <label class="form__checkbox-text" for="enable-audience-targeting">Enable audience targeting</label>
+    <br/>
+    <div class="message message--warning message--with-icon"
+         ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting !== undefined">
+        {{ $ctrl.getTargetingWarningMessage() }}
     </div>
 
-    <div ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting === undefined" class="col-xs-12 after-form-alert-box m-t">
+    <div ng-if="$ctrl.retargetingEnabled && $ctrl.entity.warnings.retargeting === undefined">
         <zem-inclusion-targeting-list
             texts="$ctrl.texts"
             targetings="$ctrl.allTargetings"
@@ -61,8 +42,8 @@
         ></zem-inclusion-targeting-list>
     </div>
 
-    <label ng-repeat="error in $ctrl.errors.retargetingAdGroups" class="control-label error">{{ error }}</label>
-    <label ng-repeat="error in $ctrl.errors.exclusionRetargetingAdGroups" class="control-label error">{{ error }}</label>
-    <label ng-repeat="error in $ctrl.errors.audienceTargeting" class="control-label error">{{ error }}</label>
-    <label ng-repeat="error in $ctrl.errors.exclusionAudienceTargeting" class="control-label error">{{ error }}</label>
+    <div class="message message--error" ng-repeat="error in $ctrl.errors.retargetingAdGroups">{{ error }}</div>
+    <div class="message message--error" ng-repeat="error in $ctrl.errors.exclusionRetargetingAdGroups">{{ error }}</div>
+    <div class="message message--error" ng-repeat="error in $ctrl.errors.audienceTargeting">{{ error }}</div>
+    <div class="message message--error" ng-repeat="error in $ctrl.errors.exclusionAudienceTargeting">{{ error }}</div>
 </div>

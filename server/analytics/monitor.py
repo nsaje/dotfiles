@@ -147,7 +147,7 @@ def audit_autopilot_ad_groups():
     return ad_groups_ap_running - ad_groups_in_logs
 
 
-def audit_autopilot_cpc_changes(date=None, min_changes=10):
+def audit_autopilot_cpc_changes(date=None, min_changes=25):
     if not date:
         date = datetime.date.today()
     ap_logs = automation.models.AutopilotLog.objects.filter(

@@ -316,6 +316,9 @@ class AdGroupSerializer(SettingsSerializer):
                     'excluded': map(lambda x: DashConstantField(constants.InterestCategory).to_representation(x), settings['exclusion_interest_targeting']),
                 },
                 'demographic': settings['bluekai_targeting'],
+                'publisherGroups': {
+                    'included': settings['whitelist_publisher_groups'],
+                }
             },
             'autopilot': {
                 'state': constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state']),
@@ -345,6 +348,7 @@ class AdGroupSerializer(SettingsSerializer):
             'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']),
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
             'dayparting': data['dayparting'],
+            'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
         }
         return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
 

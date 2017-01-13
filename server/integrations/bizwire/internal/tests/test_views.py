@@ -75,11 +75,11 @@ class ArticleUploadTest(TestCase):
 
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
 
-        expected_group_daily_budget = config.DEFAULT_DAILY_BUDGET + 4
+        expected_group_daily_budget = config.DEFAULT_DAILY_BUDGET
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
-        expected_ob_daily_budget = config.DEFAULT_DAILY_BUDGET + 1
+        expected_ob_daily_budget = config.DEFAULT_DAILY_BUDGET
         self.assertEqual(
             expected_ob_daily_budget,
             ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc
@@ -132,6 +132,46 @@ class ArticleUploadTest(TestCase):
             'brand_name': 'Example brand',
             'display_url': 'example.com',
             'call_to_action': 'Read more',
+        }, {
+            'label': 'bizwire_article_4',
+            'title': 'Title 4',
+            'url': 'http://example.com',
+            'image_url': 'http://example.com/image1jpg',
+            'image_crop': 'center',
+            'description': 'Example description',
+            'brand_name': 'Example brand',
+            'display_url': 'example.com',
+            'call_to_action': 'Read more',
+        }, {
+            'label': 'bizwire_article_5',
+            'title': 'Title 5',
+            'url': 'http://example.com',
+            'image_url': 'http://example.com/image1jpg',
+            'image_crop': 'center',
+            'description': 'Example description',
+            'brand_name': 'Example brand',
+            'display_url': 'example.com',
+            'call_to_action': 'Read more',
+        }, {
+            'label': 'bizwire_article_6',
+            'title': 'Title 6',
+            'url': 'http://example.com',
+            'image_url': 'http://example.com/image1jpg',
+            'image_crop': 'center',
+            'description': 'Example description',
+            'brand_name': 'Example brand',
+            'display_url': 'example.com',
+            'call_to_action': 'Read more',
+        }, {
+            'label': 'bizwire_article_7',
+            'title': 'Title 7',
+            'url': 'http://example.com',
+            'image_url': 'http://example.com/image1jpg',
+            'image_crop': 'center',
+            'description': 'Example description',
+            'brand_name': 'Example brand',
+            'display_url': 'example.com',
+            'call_to_action': 'Read more',
         }]
         response = self.client.post(
             reverse('businesswire_article_upload'),
@@ -144,7 +184,7 @@ class ArticleUploadTest(TestCase):
             'status': 'ok',
         }, json.loads(response.content))
 
-        self.assertEqual(2, dash.models.ContentAdCandidate.objects.filter(ad_group_id=1).count())
+        self.assertEqual(6, dash.models.ContentAdCandidate.objects.filter(ad_group_id=1).count())
         self.assertEqual(
             'Multiple articles upload',
             dash.models.UploadBatch.objects.filter(ad_group_id=1).latest('created_dt').name
@@ -155,11 +195,11 @@ class ArticleUploadTest(TestCase):
 
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
 
-        expected_group_daily_budget = config.DEFAULT_DAILY_BUDGET + 8  # two new candidates
+        expected_group_daily_budget = 22
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
-        expected_ob_daily_budget = config.DEFAULT_DAILY_BUDGET + 1  # two new candidates
+        expected_ob_daily_budget = config.DEFAULT_DAILY_BUDGET
         self.assertEqual(
             expected_ob_daily_budget,
             ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc

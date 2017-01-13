@@ -446,6 +446,7 @@
         b1_sources_group_state: 2
         dayparting: {"timezone": "CET", "monday": [1, 2, 3]}
         max_cpm: '1.6'
+        whitelist_publisher_groups: [1, 2]
     model: dash.adgroupsettings
     pk: 1
 

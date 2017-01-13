@@ -23,13 +23,6 @@ angular.module('one.legacy').controller('AdGroupCtrl', function ($scope, $state,
                 ($scope.adGroup && $scope.adGroup.archived === true),
             internal: $scope.isPermissionInternal('zemauth.can_see_publishers'),
         }, {
-            heading: 'Settings',
-            route: 'main.adGroups.settings',
-            active: false,
-            hidden: $scope.hasPermission('zemauth.can_see_new_settings') ||
-                    !$scope.hasPermission('dash.settings_view') ||
-                    ($scope.adGroup && $scope.adGroup.archived === true),
-        }, {
             heading: 'History',
             route: 'main.adGroups.history',
             active: false,
@@ -119,11 +112,7 @@ angular.module('one.legacy').controller('AdGroupCtrl', function ($scope, $state,
 
     $scope.checkArchived = function () {
         if ($scope.adGroup && $scope.adGroup.archived) {
-            if ($scope.hasPermission('zemauth.can_see_new_settings')) {
-                $state.go('main.adGroups.archived', {id: $scope.adGroup.id});
-            } else {
-                $state.go('main.adGroups.settings', {id: $scope.adGroup.id});
-            }
+            $state.go('main.adGroups.archived', {id: $scope.adGroup.id});
         }
     };
 

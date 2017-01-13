@@ -28,7 +28,7 @@ logger.setLevel(logging.INFO)
 
 class K1ApiTest(TestCase):
 
-    fixtures = ['test_k1_api.yaml']
+    fixtures = ['test_publishers.yaml', 'test_k1_api.yaml']
 
     def setUp(self):
         self.test_signature = True
@@ -69,6 +69,7 @@ class K1ApiTest(TestCase):
             'k1api.ga_accounts',
             'k1api.publishers_blacklist',
             'k1api.facebook_accounts',
+            'k1api.publisher_groups',
         ]
         for path in test_paths:
             self._test_signature(path)
@@ -525,6 +526,52 @@ class K1ApiTest(TestCase):
         for source in data:
             self.assertIn('id', source)
 
+    def test_get_publisher_groups(self):
+        account_id = 1
+
+        response = self.client.get(
+            reverse('k1api.publisher_groups'),
+            {'account_id': account_id, 'offset': 0, 'limit': 10}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(data, [
+            {'outbrain_publisher_id': '', 'publisher': 'pub1',
+             'publisher_group_id': 1, 'source_slug': 'adblade', 'account_id': 1},
+            {'outbrain_publisher_id': 'asd123', 'publisher': 'pub2',
+             'publisher_group_id': 1, 'source_slug': None, 'account_id': 1},
+        ])
+
+    def test_get_publisher_groups_limit(self):
+        account_id = 1
+
+        response = self.client.get(
+            reverse('k1api.publisher_groups'),
+            {'account_id': account_id, 'offset': 1, 'limit': 1}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(data, [
+            {'outbrain_publisher_id': 'asd123', 'publisher': 'pub2',
+             'publisher_group_id': 1, 'source_slug': None, 'account_id': 1},
+        ])
+
+    def test_get_publisher_groups_no_limit_error(self):
+        account_id = 1
+
+        response = self.client.get(
+            reverse('k1api.publisher_groups'),
+            {'account_id': account_id}
+        )
+
+        self.assertEqual(response.status_code, 400)
+
     def test_get_accounts_slugs_ad_groups(self):
         accounts = (1, 2)
         response = self.client.get(
@@ -582,31 +629,24 @@ class K1ApiTest(TestCase):
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
-
-        self.assertEqual(len(data['blacklist']), 5)
-
-        sorted_blacklist = sorted(data['blacklist'], key=lambda b: (b['ad_group_id'], b['domain']))
+        self.assertEqual(len(data['blacklist']), 3)
+        sorted_blacklist = sorted(data['blacklist'],
+                                  key=lambda b: (b.get('ad_group_id'), b['domain']))
         self.assertDictEqual(sorted_blacklist[0], {
-            'ad_group_id': 1,
-            'domain': 'pub2.com',
+            'ad_group_ids': [1, 2],
+            'domain': 'pub5.com',
             'exchange': 'google',
-            'external_id': '',
+            'external_id': u'',
         })
         self.assertDictEqual(sorted_blacklist[1], {
-            'ad_group_id': 1,
-            'domain': 'pub5.com',
+            'ad_group_ids': [1, 2],
+            'domain': 'pub6.com',
             'exchange': 'google',
             'external_id': '',
         })
         self.assertDictEqual(sorted_blacklist[2], {
             'ad_group_id': 1,
-            'domain': 'pub6.com',
-            'exchange': 'google',
-            'external_id': '',
-        })
-        self.assertDictEqual(sorted_blacklist[3], {
-            'ad_group_id': 2,
-            'domain': 'pub5.com',
+            'domain': 'pub2.com',
             'exchange': 'google',
             'external_id': '',
         })
@@ -686,6 +726,8 @@ class K1ApiTest(TestCase):
             },
             u'dayparting': {u'monday': [1, 2, 3], u'timezone': u'CET'},
             u'max_cpm': u'1.6000',
+            u'whitelist_publisher_groups': [1, 2],
+            u'blacklist_publisher_groups': [],
         })
 
     def test_get_ad_groups(self):

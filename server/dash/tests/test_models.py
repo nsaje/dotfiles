@@ -74,6 +74,8 @@ class AdGroupSettingsTest(TestCase):
             'b1_sources_group_daily_budget': Decimal('5.0000'),
             'b1_sources_group_state': constants.AdGroupSourceSettingsState.ACTIVE,
             'b1_sources_group_cpc_cc': Decimal('0.1'),
+            'whitelist_publisher_groups': [1],
+            'blacklist_publisher_groups': [],
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -139,6 +141,7 @@ class AdGroupSettingsTest(TestCase):
         self.assertHTMLEqual(
             models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
             'Daily spend cap set to "$50.00", '
+            'Whitelist publisher groups set to "pg 1", '
             'Brand name set to "Example", '
             'Bid CPC for all RTB sources set to "$0.100", '
             'Daily budget for all RTB sources set to "$5.00", '
@@ -158,10 +161,10 @@ class AdGroupSettingsTest(TestCase):
             'Max CPM set to "$1.60", '
             'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
             'Locations set to "United States", '
-            'Display URL set to "example.com", '
+            'Call to action set to "Call to action", '
             'Device targeting set to "Mobile", '
             'Notes set to "Some note", '
-            'Call to action set to "Call to action", '
+            'Display URL set to "example.com", '
             'Pixel retargeting JavaScript set to "alert(\'a\')", '
             'Group all RTB sources set to "True", '
             'Ad group name set to "AdGroup name", BlueKai targeting set to "["or", 3, 4]"'
@@ -1467,3 +1470,23 @@ class SourceTypeTestCase(TestCase):
         settings_desktop = models.AdGroupSettings(ad_group_id=1, target_devices=[constants.AdTargetDevice.DESKTOP])
         self.assertEqual(source_type.get_min_cpc(settings), Decimal('0.05'))
         self.assertEqual(source_type.get_min_cpc(settings_desktop), Decimal('0.25'))
+
+
+class PublisherGroupTest(TestCase):
+    fixtures = ['test_publishers.yaml', 'test_models.yaml']
+
+    def test_can_delete(self):
+        pg = models.PublisherGroup.objects.get(pk=1)
+        ags = models.AdGroup.objects.get(pk=1).get_current_settings()
+
+        ags = ags.copy_settings()
+        ags.whitelist_publisher_groups = [pg.id]
+        ags.blacklist_publisher_groups = []
+        ags.save(None)
+        self.assertFalse(pg.can_delete())
+
+        ags = ags.copy_settings()
+        ags.whitelist_publisher_groups = []
+        ags.blacklist_publisher_groups = []
+        ags.save(None)
+        self.assertTrue(pg.can_delete())

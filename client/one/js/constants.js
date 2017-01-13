@@ -941,7 +941,7 @@ var options = {
         {name: 'IAB7-35 - Pediatrics', value: constants.iabCategory.IAB7_35},
         {name: 'IAB7-36 - Physical Therapy', value: constants.iabCategory.IAB7_36},
         {name: 'IAB7-37 - Psychology/Psychiatry', value: constants.iabCategory.IAB7_37},
-        {name: 'IAB7-38 - Senor Health', value: constants.iabCategory.IAB7_38},
+        {name: 'IAB7-38 - Senior Health', value: constants.iabCategory.IAB7_38},
         {name: 'IAB7-39 - Sexuality', value: constants.iabCategory.IAB7_39},
         {name: 'IAB7-40 - Sleep Disorders', value: constants.iabCategory.IAB7_40},
         {name: 'IAB7-41 - Smoking Cessation', value: constants.iabCategory.IAB7_41},

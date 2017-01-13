@@ -16,16 +16,10 @@ def can_add_source_with_retargeting(source, ad_group_settings):
         source.can_modify_retargeting_manually()
 
 
-def supports_retargeting(ad_group):
+def supports_retargeting(latest_adgroup_source_settings):
     '''
     Return true if all active sources on adgroup support retargeting
     '''
-    latest_adgroup_source_settings = dash.models.AdGroupSourceSettings.objects.all().filter(
-        ad_group_source__ad_group=ad_group
-    ).group_current_settings().select_related(
-        'ad_group_source'
-    )
-
     unsupported_sources = []
     for adgroup_source_setting in latest_adgroup_source_settings:
         if adgroup_source_setting.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
