@@ -2,8 +2,7 @@ from decimal import Decimal
 
 from django import forms
 
-import constants
-import models
+from dash import constants
 
 import utils.string_helper
 

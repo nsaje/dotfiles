@@ -912,39 +912,39 @@ class AdGroupSettingsTest(TestCase):
             'b1_sources_group_daily_budget': Decimal('10.0'),
         })
 
+    def test_b1_sources_group_adjustments_obeys_new_adgroup_max_cpc(self):
+        view = agency.AdGroupSettings()
+        ad_group = models.AdGroup.objects.get(pk=1)
 
-def test_b1_sources_group_adjustments_obeys_new_adgroup_max_cpc(self):
-    view = agency.AdGroupSettings()
-    ad_group = models.AdGroup.objects.get(pk=1)
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_cpc_cc = Decimal('0.111')
+        new_settings.b1_sources_group_daily_budget = Decimal('100.0')
+        new_settings.cpc_cc = Decimal('0.5')
+        new_settings.save(None)
 
-    current_settings = ad_group.get_current_settings()
-    new_settings = current_settings.copy_settings()
-    new_settings.b1_sources_group_enabled = False
-    new_settings.b1_sources_group_cpc_cc = Decimal('0.111')
-    new_settings.b1_sources_group_daily_budget = Decimal('100.0')
-    new_settings.cpc_cc = Decimal('0.5')
-    new_settings.save(None)
+        # turn on rtb as one
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = True
+        new_settings.cpc_cc = Decimal('0.05')
+        new_settings.save(None)
 
-    # turn on rtb as one
-    current_settings = ad_group.get_current_settings()
-    new_settings = current_settings.copy_settings()
-    new_settings.b1_sources_group_enabled = True
-    new_settings.cpc_cc = Decimal('0.05')
-    new_settings.save(None)
+        changes = current_settings.get_setting_changes(new_settings)
+        self.assertDictEqual(changes, {
+            'b1_sources_group_enabled': True,
+            'cpc_cc': Decimal('0.05'),
+        })
 
-    changes = current_settings.get_setting_changes(new_settings)
-    self.assertDictEqual(changes, {
-        'b1_sources_group_enabled': True,
-        'cpc_cc': Decimal('0.05'),
-    })
+        changes_new, cs2, ns2 = view.b1_sources_group_adjustments(changes, current_settings, new_settings)
 
-    changes_new, cs2, ns2 = view.b1_sources_group_adjustments(changes, current_settings, new_settings)
-
-    self.assertDictEqual(changes_new, {
-        'b1_sources_group_enabled': True,
-        'b1_sources_group_cpc_cc': Decimal('0.05'),
-        'b1_sources_group_daily_budget': constants.SourceAllRTB.DEFAULT_DAILY_BUDGET,
-    })
+        self.assertDictEqual(changes_new, {
+            'b1_sources_group_enabled': True,
+            'b1_sources_group_cpc_cc': Decimal('0.05'),
+            'b1_sources_group_daily_budget': constants.SourceAllRTB.DEFAULT_DAILY_BUDGET,
+            'cpc_cc': Decimal('0.05')
+        })
 
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):

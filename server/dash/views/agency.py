@@ -163,10 +163,10 @@ class AdGroupSettings(api_common.BaseApiView):
 
     def b1_sources_group_adjustments(self, changes, current_settings, new_settings):
         # Turning on RTB-as-one
-        if changes.get('b1_sources_group_enabled'):
+        if 'b1_sources_group_enabled' in changes and changes['b1_sources_group_enabled']:
             new_b1_sources_group_cpc = constants.SourceAllRTB.DEFAULT_CPC_CC
             if changes.get('b1_sources_group_cpc_cc'):
-                new_b1_sources_group_cpc = changes.get('b1_sources_group_cpc_cc')
+                new_b1_sources_group_cpc = changes['b1_sources_group_cpc_cc']
             if new_settings.cpc_cc:
                 new_b1_sources_group_cpc = min(new_settings.cpc_cc, new_b1_sources_group_cpc)
             new_settings.b1_sources_group_cpc_cc = new_b1_sources_group_cpc
@@ -339,12 +339,11 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
 
     def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request):
-        for ags in ad_group.adgroupsource_set.all():
+        for ags in ad_group.adgroupsource_set.all().select_related('source__source_type'):
             curr_ags_settings = ags.get_current_settings()
             proposed_cpc = curr_ags_settings.cpc_cc
             if (request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and
-                    ad_group_settings.b1_sources_group_enabled == constants.AdGroupSourceSettingsState.ACTIVE and
-                    ad_group_settings.b1_sources_group_cpc_cc > 0.0 and
+                    ad_group_settings.b1_sources_group_enabled and
                     ags.source.source_type.type == constants.SourceType.B1):
                 proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
             if proposed_cpc > ad_group_settings.cpc_cc:

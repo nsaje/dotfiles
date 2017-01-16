@@ -2262,7 +2262,7 @@ class AdGroupSettings(SettingsBase):
     b1_sources_group_cpc_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
-        default=Decimal('0.0100'),
+        default=constants.SourceAllRTB.MIN_CPC,
         verbose_name='Bidder\'s Bid CPC'
     )
     b1_sources_group_state = models.IntegerField(
