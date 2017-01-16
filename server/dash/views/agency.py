@@ -329,8 +329,9 @@ class AdGroupSettings(api_common.BaseApiView):
         # TODO(nsaje): protect with permission?
         settings.b1_sources_group_enabled = resource['b1_sources_group_enabled']
         settings.b1_sources_group_daily_budget = resource['b1_sources_group_daily_budget']
-        settings.b1_sources_group_cpc_cc = resource['b1_sources_group_cpc_cc']
         settings.b1_sources_group_state = resource['b1_sources_group_state']
+        if user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and settings.b1_sources_group_enabled:
+            settings.b1_sources_group_cpc_cc = resource['b1_sources_group_cpc_cc']
 
         settings.bluekai_targeting = resource['bluekai_targeting']
 
