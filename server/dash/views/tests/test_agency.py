@@ -607,6 +607,91 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
 
     @patch('utils.redirector_helper.insert_adgroup')
+    @patch('utils.k1_helper.update_ad_group')
+    def test_rtb_sources_cpc_change_changes_all_rtb_cpcs(self, mock_k1_ping, mock_insert_adgroup):
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
+
+            ad_group = models.AdGroup.objects.get(pk=1)
+
+            old_settings = ad_group.get_current_settings()
+            self.assertIsNotNone(old_settings.pk)
+
+            add_permissions(self.user, [
+                'settings_view',
+                'can_set_ad_group_max_cpc',
+                'can_set_adgroup_to_auto_pilot',
+                'can_view_retargeting_settings',
+                'can_target_custom_audiences',
+                'can_set_rtb_sources_as_one_cpc'
+            ])
+            new_settings = {}
+            new_settings.update(self.settings_dict)
+            new_settings['settings']['b1_sources_group_cpc_cc'] = '0.1'
+
+            response = self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(new_settings),
+                follow=True
+            )
+            mock_k1_ping.assert_called_with(1, msg='AdGroupSettings.put')
+
+            self.assertEqual(json.loads(response.content), {
+                'data': {
+                    'action_is_waiting': False,
+                    'archived': False,
+                    'default_settings': {
+                        'target_devices': ['mobile'],
+                        'target_regions': ['NC', '501'],
+                    },
+                    'settings': {
+                        'cpc_cc': '0.300',
+                        'max_cpm': '',
+                        'daily_budget_cc': '200.00',
+                        'end_date': str(datetime.date.today()),
+                        'id': '1',
+                        'campaign_id': '1',
+                        'name': 'Test ad group name',
+                        'start_date': '2015-05-01',
+                        'state': 2,
+                        'target_devices': ['desktop'],
+                        'target_regions': ['693', 'GB'],
+                        'autopilot_state': 2,
+                        'autopilot_daily_budget': '50.00',
+                        'retargeting_ad_groups': [2],
+                        'exclusion_retargeting_ad_groups': [9],
+                        'tracking_code': 'def=123',
+                        'autopilot_min_budget': '0',
+                        'autopilot_optimization_goal': None,
+                        'notes': 'Some note',
+                        'bluekai_targeting': ['and', 'bluekai:123', ['or', 'liveramp:123', 'outbrain:321']],
+                        'interest_targeting': ['fun', 'games'],
+                        'exclusion_interest_targeting': ['religion', 'weather'],
+                        'audience_targeting': [1],
+                        'exclusion_audience_targeting': [4],
+                        'redirect_pixel_urls': ["http://a.com/b.jpg", "http://a.com/c.jpg"],
+                        'redirect_javascript': "alert('a')",
+                        'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
+                        'b1_sources_group_enabled': True,
+                        'b1_sources_group_daily_budget': '5.0000',
+                        'b1_sources_group_state': 1,
+                        'b1_sources_group_cpc_cc': '0.1',
+                        'whitelist_publisher_groups': [],  # no permission to set
+                    }
+                },
+                'success': True
+            })
+
+            for ags in ad_group.adgroupsource_set.all():
+                cpc = ags.get_current_settings().cpc_cc
+                # All b1 sources cpcs are adjusted to 0.05
+                if ags.source.source_type.type == constants.SourceType.B1:
+                    self.assertTrue(cpc == Decimal('0.1'))
+
+            mock_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
+
+    @patch('utils.redirector_helper.insert_adgroup')
     def test_put_tracking_codes_with_permission(self, mock_redirector_insert_adgroup):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
