@@ -925,6 +925,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
         COLUMNS.spendProjection,
         COLUMNS.clicks,
         COLUMNS.cpc,
+        COLUMNS.exchange,
     ]);
 
     var ACCOUNT_MANAGEMENT_GROUP = [
