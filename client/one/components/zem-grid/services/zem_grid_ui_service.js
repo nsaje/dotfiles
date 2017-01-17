@@ -352,7 +352,7 @@ angular.module('one.legacy').factory('zemGridUIService', function ($timeout, zem
 
         function getTopOffset () {
             var offset = 0;
-            if ($('body').hasClass('fixed-header')) {
+            if ($('body').hasClass('fixed-header') && window.matchMedia('(min-width: 1024px)').matches) {
                 offset += FIXED_HEADER_HEIGHT;
                 if ($('body').hasClass('data-filter-enabled'))  offset += FIXED_DATA_FILTER_HEIGHT;
             }
