@@ -740,17 +740,19 @@ autopilot    | [autopilot](#autopilot)   | Zemanta Autopilot settings           
 <a name="targeting"></a>
 #### Targeting Settings
 
-Targeting | Property | Property  | Type                                          | Description
-----------|----------|-----------|-----------------------------------------------|---------------------------------------------------------------------------------------------|
-devices   |          |           | array[[device](#device)]                      | A list of device types to target. If none specified, content is served to all device types.
-geo       |          |           |
-&nbsp;    | included |           |                                               |
-&nbsp;    |          | countries | array[[country](#country)]                    | countries to target
-&nbsp;    |          | regions   | array[[region](#region)]                      | regions to target
-&nbsp;    |          | dma       | array[[DMA](#dma)]                            | DMA IDs to target
-interest  |          |           |
-&nbsp;    | included |           | array[[interestCategory](#interest-category)] | interest categories to target
-&nbsp;    | excluded |           | array[[interestCategory](#interest-category)] | interest categories to avoid
+Targeting        | Property | Property  | Type                                          | Description
+-----------------|----------|-----------|-----------------------------------------------|---------------------------------------------------------------------------------------------|
+devices          |          |           | array[[device](#device)]                      | A list of device types to target. If none specified, content is served to all device types.
+geo              |          |           |
+&nbsp;           | included |           |                                               |
+&nbsp;           |          | countries | array[[country](#country)]                    | countries to target
+&nbsp;           |          | regions   | array[[region](#region)]                      | regions to target
+&nbsp;           |          | dma       | array[[DMA](#dma)]                            | DMA IDs to target
+interest         |          |           |
+&nbsp;           | included |           | array[[interestCategory](#interest-category)] | interest categories to target
+&nbsp;           | excluded |           | array[[interestCategory](#interest-category)] | interest categories to avoid
+publisherGroups  |          |           |                                               | 
+&nbsp;           | included |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
 
 
 <a name="dayparting"></a>
@@ -1463,6 +1465,231 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
         }
 
 
+## Publisher Groups [/rest/v1/accounts/{accountId}/publishergroups/] ##
+
+Publisher Groups are named collections of publishers that can be referenced in Ad Group's `publisherGroups` 
+targeting section as whitelists. 
+Publishers are represented as publisher domain (or name) and source pairs in the same manner as in publisher reports and blacklist management.
+
+Property     | Type                | Description
+-------------|---------------------|---------------------------------------------------------------|
+id           | string              | id of the publisher group
+name         | string              | name of the publisher group
+
+### List publisher groups [GET /rest/v1/accounts/{accountId}/publishergroups/] ###
+
++ Parameters
+    + accountId: 186 (required)
+    
++ Response 200 (application/json)
+
+
+        {
+            "data": [
+                {
+                    "id": "111",
+                    "accountId": "186",
+                    "name": "Default whitelist",
+                }
+            ]
+        }
+
+### Create a new publisher group [POST /rest/v1/accounts/{accountId}/publishergroups/] ###
+
++ Parameters
+    + accountId: 186 (required)
+    
++ Request (application/json)
+
+        {
+            "name": "Secondary whitelist"
+        }
+
++ Response 201 (application/json)
+
+        {
+            "data": {
+                  "id": "153",
+                  "accountId": "186",
+                  "name": "Secondary whitelist",
+            }
+        }
+
+### Get publisher group details [GET /rest/v1/accounts/{accountId}/publishergroups/{publisherGroupId}] ###
+
++ Parameters
+    + accountId: 186 (required)
+    + publisherGroupId: 153 (required)
+    
++ Response 200 (application/json)
+
+        {
+            "data": {
+                  "id": "153",
+                  "accountId": "186",
+                  "name": "Secondary whitelist",
+            }
+        }
+        
+### Edit a publisher group [PUT /rest/v1/accounts/{accountId}/publishergroups/{publisherGroupId}] ###
+
++ Parameters
+    + accountId: 186 (required)
+    + publisherGroupId: 153 (required)
+    
++ Request (application/json)
+    
+        {
+            "name": "Mobile campaigns whitelist"
+        }
+        
++ Response 200 (application/json)
+
+        {
+            "data": {
+                  "id": "153",
+                  "accountId": "186",
+                  "name": "Mobile campaigns whitelist",
+            }
+        }
+        
+### Delete a publisher group [DELETE /rest/v1/accounts/{accountId}/publishergroups/{publisherGroupId}] ###
+
+Publisher groups can be deleted when they are not referenced by any Ad Group.
+
++ Parameters
+    + accountId: 186 (required)
+    + publisherGroupId: 153 (required)
+
++ Response 204 (application/json)
+
+## Publisher Groups Entries [/rest/v1/publishergroups/{publisherGroupId}/entries/] ##
+
+Property           | Type                | Description                                                           | Create         |
+-------------------|---------------------|-----------------------------------------------------------------------|----------------|
+id                 | string              | id of the entry                                                       | N/A            | 
+publisherGroupId   | string              | id of the publisher group                                             | required       |
+publisher          | string              | publisher's domain (or name), strict matching                        | required       |
+source             | string              | source identifier, if not set it refers to all sources                | optional       |
+
+### List publisher group entries [GET /rest/v1/publishergroups/{publisherGroupId}/entries/{?offset,limit}] ###
+
++ Parameters
+    + publisherGroupId: 154 (required)
+    + offset: 0 (optional, int) - 0-based starting index
+    + limit: 100 (required, int) - Maximum number of entries to return, up to `1000`, defaults to `100`
+
++ Response 200 (application/json)
+
+        {
+            "count": 2,
+            "next": "https://oneapi.zemanta.com/rest/v1/publishergroups/154/entries/?offset=2&limit=5",
+            "data": [
+                {
+                    "id": "652",
+                    "publisherGroupId": "153",
+                    "publisher": "example.com/publisher1",
+                    "source": "gumgum"
+                },
+                {
+                    "id": "655",
+                    "publisherGroupId": "153",
+                    "publisher": "example.com/publisher2",
+                    "source": "gumgum"
+                }
+            ]
+        }
+
+### Create new publisher group entries [POST /rest/v1/publishergroups/{publisherGroupId}/entries/] ###
+
+This endpoint supports creating multiple entries at once that are all appended to the same publisher group.
+
++ Parameters
+    + publisherGroupId: 154 (required)
+    
++ Request (application/json)
+
+        [
+            {
+                "publisherGroupId": "153",
+                "publisher": "example.com/publisher3",
+                "source": "triplelift"
+            },
+            {
+                "publisherGroupId": "153",
+                "publisher": "example.com/publisher4",
+                "source": "yahoo"
+            }
+        ]
+
++ Response 201 (application/json)
+
+        {
+            "data": [
+                {
+                      "id": "650",
+                      "publisherGroupId": "153",
+                      "publisher": "example.com/publisher3",
+                      "source": "triplelift"
+                },
+                {
+                      "id": "622",
+                      "publisherGroupId": "153",
+                      "publisher": "example.com/publisher4",
+                      "source": "yahoo"
+                }
+            ]
+        }
+
+### Get a publisher group entry [GET /rest/v1/publishergroups/{publisherGroupId}/entries/{entryId}] ###
+
++ Parameters
+    + publisherGroupId: 153 (required)
+    + entryId: 622 (required)
+    
++ Response 200 (application/json)
+
+        {
+            "data": {
+                  "id": "622",
+                  "publisherGroupId": "153",
+                  "publisher": "example.com/publisher4",
+                  "source": "yahoo"
+            }
+        }
+        
+### Edit a publisher group entry [PUT /rest/v1/publishergroups/{publisherGroupId}/entries/{entryId}] ###
+
++ Parameters
+    + publisherGroupId: 153 (required)
+    + entryId: 622 (required)
+    
++ Request (application/json)
+
+        {
+                  "publisher": "example.com/publisher4",
+                  "source": "yahoo"
+        }
+    
++ Response 200 (application/json)
+
+        {
+            "data": {
+                  "id": "622",
+                  "publisherGroupId": "153",
+                  "publisher": "example.com/publisher4",
+                  "source": "yahoo"
+            }
+        }
+        
+### Delete a publisher group entry [DELETE /rest/v1/publishergroups/{publisherGroupId}/entries/{entryId}] ###
+
++ Parameters
+    + publisherGroupId: 153 (required)
+    + entryId: 622 (required)
+
++ Response 204 (application/json)
+
 # Group Reporting
 <a name='reporting'></a>
 
@@ -1606,7 +1833,7 @@ A string representing a decimal number. Example: `"15.48"`
 - `WEATHER` - Weather & Environment
 - `FASHION` - Beauty & Fashion
 - `TRAVEL` - Travel and Leisure
-- `FUN` - Fun & Entertaining Sites
+- `FUN_QUIZZES` - Viral, lists & Quizzes
 - `HEALTH` - Health & Fitness
 - `SCIENCE` - Science
 - `TECHNOLOGY` - Technology
@@ -1614,8 +1841,7 @@ A string representing a decimal number. Example: `"15.48"`
 - `MEDIA` - News
 - `HOME` - Home & Garden
 - `FAMILY` - Family & Parenting
-- `SHOPPING` - Shopping
-- `COUPONS` - Couponing
+- `SHOPPING_COUPONS` - Shopping
 - `ENTERTAINMENT` - Arts & Entertainment
 - `HOBBIES` - Hobbies & Interests
 - `RELIGION` - Religion & Spirituality
@@ -1626,13 +1852,11 @@ A string representing a decimal number. Example: `"15.48"`
 - `WOMEN` - Women’s Lifestyle
 - `SPORTS` - Sports
 - `FRENCH` - French Sites
-- `POLITICS` - Gov’t & Politics
-- `LAW` - Law
+- `POLITICS_LAW` - Law, Gov’t & Politics
 - `GAMES` - Games & Gaming
 - `FINANCE` - Business & Finance
 - `EDUCATION` - Education
 - `UTILITY` - Software & Services
-- `QUIZZES` - Quizzes
 - `OTHER` - Other
 - `FOREIGN` - International Sites
 

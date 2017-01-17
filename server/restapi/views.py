@@ -135,6 +135,7 @@ class DataNodeListSerializer(DataNodeSerializerMixin, serializers.ListSerializer
 
 class StandardPagination(pagination.LimitOffsetPagination):
     max_limit = 1000
+    default_limit = 100
 
     def get_paginated_response(self, data):
         if 'data' in data:
