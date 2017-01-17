@@ -10,7 +10,7 @@
         <input class="form__input-text" id="fb-page-input" type="text" value="{{$ctrl.entity.settings.facebookPage}}" disabled>
         <span class="form__field-postfix" ng-class="$ctrl.entity.settings.facebookStatus | lowercase">
             {{$ctrl.entity.settings.facebookStatus}}
-            <button class="button button--small button--with-icon button--only-icon button--remove-icon"
+            <button class="button button--small button--with-icon button--only-icon remove-icon"
                 ng-click="$ctrl.clearFacebookPage()"></button>
         </span>
     </div>

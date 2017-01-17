@@ -46,24 +46,24 @@
                     <td class="action-buttons">
                         <span ng-if="hasPermission('zemauth.archive_restore_entity') && !item.archived">
                             <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="left"></zem-internal-feature>
-                            <a tabindex="-1" ng-click="archiveConversionPixel(item)" href="#" class="button button--small button--with-icon button--archive-icon">Archive</a>
+                            <a tabindex="-1" ng-click="archiveConversionPixel(item)" href="#" class="button button--small button--with-icon archive-icon">Archive</a>
                         </span>
                         <span ng-if="hasPermission('zemauth.archive_restore_entity') && !!item.archived">
                             <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="left"></zem-internal-feature>
-                            <a tabindex="-1" ng-click="restoreConversionPixel(item)" href="#" class="button button--small button--with-icon button--archive-icon">Restore</a>
+                            <a tabindex="-1" ng-click="restoreConversionPixel(item)" href="#" class="button button--small button--with-icon archive-icon">Restore</a>
                         </span>
                         <span ng-if="!item.archived">
-                            <a tabindex="-1" ng-click="copyConversionPixelTag(item)" href="#" class="button button--small button--with-icon button--copy-icon">Copy tag</a>
+                            <a tabindex="-1" ng-click="copyConversionPixelTag(item)" href="#" class="button button--small button--with-icon copy-icon">Copy tag</a>
                         </span>
                         <span ng-if="!item.archived">
-                            <a tabindex="-1" ng-click="editConversionPixel(item)" href="#" class="button button--small button--with-icon button--edit-icon">Edit pixel</a>
+                            <a tabindex="-1" ng-click="editConversionPixel(item)" href="#" class="button button--small button--with-icon edit-icon">Edit pixel</a>
                         </span>
                     </td>
                 </tr>
             </tbody>
         </table>
     </div>
-    <button type="button" class="button button--with-icon button--add-icon" ng-class="{'disabled': !!listInProgress || !!listError}" ng-click="addConversionPixel()">Add Pixel</button>
+    <button type="button" class="button button--with-icon add-icon" ng-class="{'disabled': !!listInProgress || !!listError}" ng-click="addConversionPixel()">Add Pixel</button>
     <span ng-if="!!listError" class="error">
         An error has occurred while loading pixels. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
     </span>

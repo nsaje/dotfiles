@@ -98,7 +98,7 @@
                     <span class="form__field-prefix">$</span>
                     <input class="form__input-text" type="text" ng-model="ctrl.editFormInputValue" ng-trim="false" ng-change="ctrl.filterInput()" focus ng-keydown="ctrl.onKeyDown($event)">
                 </div>
-                <button class="button button--highlight button--with-icon button--check-icon" ng-class="{'disabled': ctrl.showLoader}" ng-click="ctrl.save()"><span ng-show="ctrl.showLoader" class="loader-image"></span><span ng-show="!ctrl.showLoader">Save</span></button>
+                <button class="button button--highlight button--with-icon check-icon" ng-class="{'disabled': ctrl.showLoader}" ng-click="ctrl.save()"><span ng-show="ctrl.showLoader" class="loader-image"></span><span ng-show="!ctrl.showLoader">Save</span></button>
                 <button class="button button--outline" ng-click="ctrl.closeModal()">Cancel</button>
                 <span class="message message--error" ng-repeat="error in ctrl.errors">{{error}}</span>
             </div>

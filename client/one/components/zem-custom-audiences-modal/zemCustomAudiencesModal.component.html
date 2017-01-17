@@ -84,8 +84,8 @@
         </div>
 
         <div class="modal-footer buttons-panel">
-            <button class="button button--highlight button--with-icon button--check-icon" ng-if="ctrl.readonly" ng-click="ctrl.updateAudience()">Update Audience</button>
-            <button class="button button--highlight button--with-icon button--check-icon" ng-if="!ctrl.readonly" ng-click="ctrl.createAudience()">Create Audience</button>
+            <button class="button button--highlight button--with-icon check-icon" ng-if="ctrl.readonly" ng-click="ctrl.updateAudience()">Update Audience</button>
+            <button class="button button--highlight button--with-icon check-icon" ng-if="!ctrl.readonly" ng-click="ctrl.createAudience()">Create Audience</button>
             <button type="button" class="button button--outline" ng-if="ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Close</button>
             <button type="button" class="button button--outline" ng-if="!ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Cancel</button>
             <div class="loader" ng-show="ctrl.putRequestInProgress"></div>

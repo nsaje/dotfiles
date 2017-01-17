@@ -140,12 +140,12 @@
 
         <div class="modal-footer buttons-panel">
             <span ng-if="!showAddConversionGoalForm()">
-                <button type="submit" class="button button--highlight button--with-icon button--add-icon" ng-if="newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}">Add goal</button>
-                <button type="submit" class="button button--highlight button--with-icon button--check-icon" ng-if="!newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}">Update goal</button>
+                <button type="submit" class="button button--highlight button--with-icon add-icon" ng-if="newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}">Add goal</button>
+                <button type="submit" class="button button--highlight button--with-icon check-icon" ng-if="!newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}">Update goal</button>
             </span>
             <span ng-if="showAddConversionGoalForm()">
-                <button type="submit" class="button button--highlight button--with-icon button--add-icon" ng-if="newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Add goal and conversion tracking</button>
-                <button type="submit" class="button button--highlight button--with-icon button--check-icon" ng-if="!newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Save goal and conversion tracking</button>
+                <button type="submit" class="button button--highlight button--with-icon add-icon" ng-if="newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Add goal and conversion tracking</button>
+                <button type="submit" class="button button--highlight button--with-icon check-icon" ng-if="!newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Save goal and conversion tracking</button>
             </span>
             <button type="button" class="button button--outline" ng-click="cancel()">Cancel</button>
             <div class="loader" ng-show="addConversionGoalInProgress"></div>

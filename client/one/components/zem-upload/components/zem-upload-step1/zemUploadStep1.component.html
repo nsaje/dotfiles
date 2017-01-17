@@ -24,7 +24,7 @@
                 </label>
                 <div class="col-xs-10 info">
                     <zem-file-input zem-file-input-change="ctrl.fileUploadCallback(file)" zem-file-input-accept=".csv,.xls,.xlsx">
-                        <button type="button" class="button button--with-icon button--folder-icon" ng-click="ctrl.clearFormErrors('file')" zem-file-input-trigger>Choose file</button>
+                        <button type="button" class="button button--with-icon folder-icon" ng-click="ctrl.clearFormErrors('file')" zem-file-input-trigger>Choose file</button>
                     </zem-file-input>
 
                     <input type="text" id="file-input" readonly class="form-control file-choosen" placeholder="No file chosen" ng-value="ctrl.formData.file.name">
@@ -43,7 +43,7 @@
 
     <div class="modal-footer buttons-panel">
         <button type="button" class="button button--outline" ng-click="ctrl.close()">Cancel</button>
-        <button type="button" class="button button--highlight button--with-icon button--check-icon pull-right" ng-click="ctrl.upload()" ng-disabled="ctrl.requestInProgress">Upload file</button>
+        <button type="button" class="button button--highlight button--with-icon check-icon pull-right" ng-click="ctrl.upload()" ng-disabled="ctrl.requestInProgress">Upload file</button>
         <img class="loader-icon small-icon pull-right" ng-if="ctrl.requestInProgress" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
         <span class="error pull-right" ng-if="ctrl.requestFailed && !ctrl.formErrors && !ctrl.requestInProgress">Oops. Something went wrong. Please try again.</span>
     </div>

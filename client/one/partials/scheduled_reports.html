@@ -38,7 +38,7 @@
                         <td ng-if="hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">{{ item.day_of_week }}</td>
                         <td ng-if="hasPermission('zemauth.can_set_time_period_in_scheduled_reports')">{{ item.time_period }}</td>
                         <td>{{ item.recipients }}</td>
-                        <td><button type="button" class="button button--small button--with-icon button--remove-icon" ng-click="removeReport(item.scheduled_report_id)">Remove</button></td>
+                        <td><button type="button" class="button button--small button--with-icon remove-icon" ng-click="removeReport(item.scheduled_report_id)">Remove</button></td>
                     </tr>
                 </tbody>
             </table>

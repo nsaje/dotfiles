@@ -8,7 +8,7 @@
                 <span class="zem-settings-targeting-list__archived" ng-if="targeting.archived">
                     (Archived)
                 </span>
-                <a href="" class="button button--extra-small button--with-icon button--only-icon button--remove-icon"
+                <a href="" class="button button--extra-small button--with-icon button--only-icon remove-icon"
                            ng-click="$ctrl.remove(targeting)"></a>
             </li>
         </ul>
@@ -23,7 +23,7 @@
                 <span class="zem-settings-targeting-list__archived" ng-if="targeting.archived">
                     (Archived)
                 </span>
-                <a href="" class="button button--extra-small button--with-icon button--only-icon button--remove-icon"
+                <a href="" class="button button--extra-small button--with-icon button--only-icon remove-icon"
                            ng-click="$ctrl.remove(targeting)"></a>
              </li>
          </ul>
@@ -31,7 +31,7 @@
 </div>
 
 <ui-select theme="select2" ng-model="$ctrl.currentlySelected" on-select="$ctrl.addIncluded($select.selected)"
-           class="button button--with-icon button--add-icon button--dropdown-toggle-icon">
+           class="button button--with-icon add-icon button--dropdown-toggle-icon">
     <ui-select-match placeholder="{{ $ctrl.texts.selectTargetingButton }}">{{ $ctrl.texts.selectTargetingButton }}</ui-select-match>
     <ui-select-choices group-by="$ctrl.groupBySection" repeat="targeting in $ctrl.notSelected | filter: {name: $select.search} track by targeting.id" position="down">
         <div class="audience-select-option">

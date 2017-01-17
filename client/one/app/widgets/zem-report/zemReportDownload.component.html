@@ -58,7 +58,7 @@
     </div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button type="submit" class="button button--highlight button--with-icon button--send-icon" ng-click="$ctrl.startReport()" ng-show="!$ctrl.jobPosted" ng-disabled="$ctrl.jobPostingInProgress">Send</button>
+    <button type="submit" class="button button--highlight button--with-icon send-icon" ng-click="$ctrl.startReport()" ng-show="!$ctrl.jobPosted" ng-disabled="$ctrl.jobPostingInProgress">Send</button>
     <button type="button" class="button button--outline" ng-click="$ctrl.close()" ng-show="!$ctrl.jobPosted">Cancel</button>
     <button type="button" class="button button--outline" ng-click="$ctrl.close()" ng-show="$ctrl.jobPosted">Close</button>
     <div class="loader" ng-show="$ctrl.jobPostingInProgress"></div>

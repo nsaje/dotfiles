@@ -20,7 +20,7 @@
         <div class="button-bar" ng-if="grid.api">
             <div ng-if="hasPermission('zemauth.account_campaigns_add_campaign')" class="button-bar-item add-source-container">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.account_campaigns_add_campaign')" popover-placement="bottom"></zem-internal-feature>
-                <button type="button" class="button button--highlight button--with-icon button--add-icon" ng-click="addCampaign()">Campaign</button>
+                <button type="button" class="button button--highlight button--with-icon add-icon" ng-click="addCampaign()">Campaign</button>
                 <div class="loader" ng-show="addCampaignRequestInProgress"></div>
             </div>
             <div ng-if="hasPermission('zemauth.bulk_actions_on_all_levels')" class="button-bar-item">

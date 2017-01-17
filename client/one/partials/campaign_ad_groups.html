@@ -27,7 +27,7 @@
 
         <div class="button-bar" ng-if="grid.api">
             <div class="button-bar-item add-source-container">
-                <button type="button" class="button button--highlight button--with-icon button--add-icon" ng-click="addAdGroup()">Ad group</button>
+                <button type="button" class="button button--highlight button--with-icon add-icon" ng-click="addAdGroup()">Ad group</button>
                 <div class="loader" ng-show="addGroupRequestInProgress"></div>
             </div>
             <div ng-if="hasPermission('zemauth.bulk_actions_on_all_levels')" class="button-bar-item">
