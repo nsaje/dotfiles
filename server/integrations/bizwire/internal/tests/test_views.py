@@ -198,7 +198,7 @@ class ArticleUploadTest(TestCase):
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
 
         # NOTE: DAILY_BUDGET_INITIAL is patched
-        expected_group_daily_budget = 20
+        expected_group_daily_budget = 19
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
