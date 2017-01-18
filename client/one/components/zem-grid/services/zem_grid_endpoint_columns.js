@@ -913,6 +913,7 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
         COLUMNS.performance,
         COLUMNS.bidCpcSetting,
         COLUMNS.dailyBudgetSetting,
+        COLUMNS.exchange,
     ];
 
     // Default columns - columns present by default (non permanent can be hidden)
@@ -925,7 +926,6 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
         COLUMNS.spendProjection,
         COLUMNS.clicks,
         COLUMNS.cpc,
-        COLUMNS.exchange,
     ]);
 
     var ACCOUNT_MANAGEMENT_GROUP = [
@@ -944,7 +944,6 @@ angular.module('one.legacy').factory('zemGridEndpointColumns', function (zemGrid
     ];
 
     var PUBLISHER_GROUP = [
-        COLUMNS.exchange,
         COLUMNS.sourceId,
         COLUMNS.externalId,
         COLUMNS.domain,
