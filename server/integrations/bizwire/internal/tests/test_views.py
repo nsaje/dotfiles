@@ -20,6 +20,7 @@ from zemauth.models import User
 @patch('utils.redirector_helper.insert_adgroup', MagicMock())
 @patch('integrations.bizwire.config.AUTOMATION_CAMPAIGN', 1)
 @patch('integrations.bizwire.config.AUTOMATION_USER_EMAIL', 'user@test.com')
+@patch('integrations.bizwire.config.DAILY_BUDGET_INITIAL', 0)
 @override_settings(LAMBDA_CONTENT_UPLOAD_SIGN_KEY='test_api_key')
 class ArticleUploadTest(TestCase):
 
@@ -75,11 +76,12 @@ class ArticleUploadTest(TestCase):
 
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
 
-        expected_group_daily_budget = config.DEFAULT_DAILY_BUDGET
+        # NOTE: DAILY_BUDGET_INITIAL is patched
+        expected_group_daily_budget = 4
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
-        expected_ob_daily_budget = config.DEFAULT_DAILY_BUDGET
+        expected_ob_daily_budget = 1
         self.assertEqual(
             expected_ob_daily_budget,
             ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc
@@ -195,11 +197,12 @@ class ArticleUploadTest(TestCase):
 
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
 
-        expected_group_daily_budget = 22
+        # NOTE: DAILY_BUDGET_INITIAL is patched
+        expected_group_daily_budget = 20
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
-        expected_ob_daily_budget = config.DEFAULT_DAILY_BUDGET
+        expected_ob_daily_budget = 2
         self.assertEqual(
             expected_ob_daily_budget,
             ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc

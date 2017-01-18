@@ -138,7 +138,7 @@ def monitor_yesterday_spend():
             'bizwire_ads_stats_monitoring',
         )[0]['cost'] or 0
 
-    expected_spend = len(content_ad_ids) * 3.75
+    expected_spend = len(content_ad_ids) * config.DAILY_BUDGET_PER_ARTICLE
 
     influx.gauge('integrations.bizwire.yesterday_spend', actual_spend, type='actual')
     influx.gauge('integrations.bizwire.yesterday_spend', expected_spend, type='expected')

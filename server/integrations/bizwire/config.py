@@ -5,7 +5,8 @@ AUTOMATION_CAMPAIGN = 1096
 AUTOMATION_USER_EMAIL = 'businesswire-user@zemanta.com'
 
 DEFAULT_CPC = Decimal('0.2')
-DEFAULT_DAILY_BUDGET = 10  # initial daily budget - increases as articles start importing
+DAILY_BUDGET_INITIAL = 10  # initial daily budget - increases as articles start importing
+DAILY_BUDGET_PER_ARTICLE = 3.375
 
 INTEREST_TARGETING = [
     constants.InterestCategory.ENTERTAINMENT,

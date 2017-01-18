@@ -95,9 +95,14 @@ def recalculate_and_set_new_daily_budgets(ad_group_id):
         created_dt__lt=utc_end,
     ).count()  # assume they're getting processed successfully
 
-    # NOTE: we're aiming for max $3.75 spend per content ad
-    new_rtb_daily_budget = max(config.DEFAULT_DAILY_BUDGET, (num_content_ads + num_candidates) * 3.5625)
-    new_ob_daily_budget = max(config.DEFAULT_DAILY_BUDGET, (num_content_ads + num_candidates) * 0.1875)
+    new_rtb_daily_budget = max(
+        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * 0.95,
+        config.DAILY_BUDGET_INITIAL,
+    )
+    new_ob_daily_budget = max(
+        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * 0.05,
+        config.DAILY_BUDGET_INITIAL,
+    )
 
     _set_rtb_daily_budget(ad_group_id, math.ceil(new_rtb_daily_budget))
     _set_source_daily_budget(ad_group_id, 'outbrain', math.ceil(new_ob_daily_budget))
@@ -154,14 +159,14 @@ def _list_ad_group_sources(ad_group_id):
 
 
 def _set_initial_rtb_settings(ad_group_id):
-    return _set_rtb_daily_budget(ad_group_id, config.DEFAULT_DAILY_BUDGET)
+    return _set_rtb_daily_budget(ad_group_id, config.DAILY_BUDGET_INITIAL)
 
 
 def _set_initial_sources_settings(ad_group_id):
     sources = _list_ad_group_sources(ad_group_id)
     data = [{
         'source': source['source'],
-        'dailyBudget': config.DEFAULT_DAILY_BUDGET,
+        'dailyBudget': config.DAILY_BUDGET_INITIAL,
         'cpc': config.DEFAULT_CPC,
         'state': 'ACTIVE',
     } for source in sources]
