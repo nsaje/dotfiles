@@ -35,17 +35,21 @@ green "PEP8 check successful"
 
 # ES Lint ----------------------------------------------------------------------
 
-# blue "ESLint in progress ..."
-# eslint client/one client/test
+blue "ESLint in progress ..."
 
-# EXITCODE=$?
-# if [[ $EXITCODE != 0 ]]; then
-#     red "+---------------------------+"
-#     red "|    ESLINT CHECK FAILED    |"
-#     red "+---------------------------+"
-#     exit 1
-# fi
-# green "ESLint check successful"
+docker run --rm \
+           -v $PWD/.eslintrc.yml:/root/.eslintrc.yml \
+           -v $PWD/client:/src:ro \
+           markocelan/eslint one test
+
+EXITCODE=$?
+if [[ $EXITCODE != 0 ]]; then
+    red "+---------------------------+"
+    red "|    ESLINT CHECK FAILED    |"
+    red "+---------------------------+"
+    exit 1
+fi
+green "ESLint check successful"
 
 # Xenon ------------------------------------------------------------------------
 
