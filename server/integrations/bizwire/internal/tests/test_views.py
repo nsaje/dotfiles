@@ -202,7 +202,7 @@ class ArticleUploadTest(TestCase):
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
-        expected_ob_daily_budget = 2
+        expected_ob_daily_budget = 1
         self.assertEqual(
             expected_ob_daily_budget,
             ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc
