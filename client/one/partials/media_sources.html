@@ -14,7 +14,8 @@
                 </div>
                 <div class="spacing"></div>
                 <div class="infobox-container">
-                    <zem-infobox class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-infobox>
+                    <zem-infobox ng-if="hasPermission('zemauth.can_see_new_infobox')" class="zem-infobox"></zem-infobox>
+                    <zem-legacy-infobox ng-if="!hasPermission('zemauth.can_see_new_infobox')" class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-legacy-infobox>
                 </div>
             </div>
         </div>

@@ -1,0 +1,188 @@
+@zem-infobox_spacing: 10px;
+@zem-infobox-header__height: 47px;
+@zem-infobox-header__state-switch_width: 40px;
+@zem-infobox-header__settings_width: 80px;
+
+.zem-infobox {
+    display: block;
+    position: absolute;
+    .position-properties(0);
+}
+
+.zem-infobox-header {
+    position: relative;
+    display: block;
+    padding-right: @zem-infobox_spacing;
+    padding-left: @zem-infobox_spacing;
+    border-bottom: 1px solid @border-gray-color;
+}
+
+.zem-infobox-header__item {
+    display: block;
+    height: @zem-infobox-header__height - 1;
+    line-height: @zem-infobox-header__height - 1;
+}
+
+.zem-infobox-header__state-switch {
+    position: absolute;
+    top: 0;
+    left: @zem-infobox_spacing;
+    width: @zem-infobox-header__state-switch_width;
+}
+
+.zem-infobox-header__entity-info {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: @zem-infobox-header__state-switch_width + @zem-infobox_spacing;
+    padding-right: @zem-infobox-header__settings_width + @zem-infobox_spacing;
+}
+
+.zem-infobox-header__entity-info--no-state-switch {
+    padding-left: 0;
+}
+
+.zem-infobox-header__entity-info--no-entity {
+    padding-right: 0;
+
+    .zem-infobox-header__level {
+        height: 36px;
+        line-height: 36px;
+        color: @secondary-color;
+        font-size: 16px;
+        font-weight: 600;
+    }
+}
+
+.zem-infobox-header__level {
+    height: 18px;
+    line-height: 18px;
+    color: @gray;
+    font-size: 12px;
+}
+
+.zem-infobox-header__entity-name {
+    height: 18px;
+    line-height: 18px;
+    color: @secondary-color;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.zem-infobox-header__settings {
+    position: absolute;
+    top: 0;
+    right: @zem-infobox_spacing;
+    width: @zem-infobox-header__settings_width;
+    text-align: right;
+}
+
+.zem-infobox-header__error-message {
+    position: absolute;
+    z-index: 1;
+    top: @zem-infobox-header__height - 1px;
+    right: 0;
+    left: 0;
+    opacity: 0;
+    visibility: hidden;
+    padding: @zem-infobox_spacing;
+    border-bottom: 1px solid @border-gray-color;
+    background-color: white;
+    transition: all @default-animation;
+}
+
+.zem-infobox-header__error-message--visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.zem-infobox__content {
+    position: absolute;
+    .position-properties(
+        @zem-infobox-header__height + @zem-infobox_spacing,
+        0,
+        @zem-infobox_spacing,
+        0
+    );
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.zem-infobox__delivery-icon {
+    display: inline-block;
+    position: relative;
+    width: 11px;
+    height: 11px;
+    margin-right: 2px;
+
+    &::before {
+        content: '';
+        position: absolute;
+        .position-properties(0);
+    }
+}
+
+.zem-infobox__delivery--active .zem-infobox__delivery-icon::before {
+    background-color: @green;
+    border-radius: 50%;
+}
+
+.zem-infobox__delivery--inactive {
+    .zem-infobox__delivery-icon::before {
+        background-color: @red;
+        border-radius: 50%;
+    }
+
+    .zem-infobox__delivery-text {
+        color: @red;
+    }
+}
+
+.zem-infobox__delivery--paused .zem-infobox__delivery-icon::before {
+    background-color: @light-gray;
+    border-radius: 50%;
+}
+
+.zem-infobox__delivery--autopilot .zem-infobox__delivery-icon::before {
+    background: url("images/autopilot.svg") no-repeat;
+}
+
+.zem-infobox__delivery--landing-mode .zem-infobox__delivery-icon {
+    // TODO: One icon size
+    width: 14px;
+    height: 14px;
+
+    &::before {
+        background: url("images/landing.svg") no-repeat;
+        margin-top: 4px;
+    }
+}
+
+.zem-infobox__content-separator {
+    margin-top: @zem-infobox_spacing/2;
+    margin-bottom: @zem-infobox_spacing/2;
+}
+
+.zem-infobox-data-row {
+    display: block;
+    position: relative;
+    margin-top: @zem-infobox_spacing/2;
+    padding-right: @zem-infobox_spacing;
+    padding-left: @zem-infobox_spacing;
+    line-height: 1.3;
+
+    &:first-child {
+        margin-top: 0;
+    }
+
+    .internal-feature {
+        left: 7px;
+    }
+}
+
+.zem-infobox-data-row__value-label {
+    color: @gray;
+    font-weight: 400;
+}

@@ -37,11 +37,15 @@ function zemSpecsHelperProvider () {
         $httpBackend.whenGET(/^\/api\/.*\/nav\//).respond(200, {data: {}});
     }
 
-    function getMockedAsyncFunction ($injector, data) {
+    function getMockedAsyncFunction ($injector, data, reject) {
         return function () {
             var $q = $injector.get('$q');
             var deferred = $q.defer();
-            deferred.resolve(data);
+            if (reject) {
+                deferred.reject(data);
+            } else {
+                deferred.resolve(data);
+            }
             return deferred.promise;
         };
     }

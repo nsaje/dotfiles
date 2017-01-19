@@ -4,7 +4,7 @@ angular.module('one.common').directive('isInternal', function (zemPermissions) {
         restrict: 'A',
         scope: false,
         link: function (scope, element, attrs) {
-            if (zemPermissions.isPermissionInternal(attrs.isInternal)) {
+            if (attrs.isInternal === 'true' || zemPermissions.isPermissionInternal(attrs.isInternal)) {
                 angular.element(element).prepend(INTERNAL_FEATURE_HTML);
             }
         }
