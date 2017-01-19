@@ -234,13 +234,16 @@ def _send_email_to_user(user, request, subject, body):
         )
 
 
-def send_supply_report_email(email, date, impressions, cost, publisher_report=None):
+def send_supply_report_email(email, date, impressions, cost, custom_subject=None, publisher_report=None):
+    date = dates_helper.format_date_mmddyyyy(date)
     args = {
-        'date': dates_helper.format_date_mmddyyyy(date),
+        'date': date,
         'impressions': impressions,
         'cost': cost,
     }
     subject, body, _ = format_email(dash.constants.EmailTemplateType.SUPPLY_REPORT, **args)
+    if custom_subject:
+        subject = custom_subject.format(date=date)
 
     try:
         email = EmailMessage(

@@ -77,6 +77,7 @@ class Command(ExceptionCommand):
                 yesterday,
                 impressions,
                 cost,
+                recipient.custom_subject,
                 publisher_report=publisher_report
             )
 

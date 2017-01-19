@@ -122,7 +122,7 @@ urlpatterns = [
     url(
         r'^publishergroups/(?P<publisher_group_id>\d+)/entries/(?P<entry_id>\d+)$',
         views.PublisherGroupEntryViewSet.as_view(actions={
-            'get': 'retrieve', 'put': 'partial_update', 'delete': 'destroy'}),
+            'get': 'retrieve', 'delete': 'destroy', 'put': 'partial_update'}),
         name='publisher_group_entry_details'
     ),
 ]

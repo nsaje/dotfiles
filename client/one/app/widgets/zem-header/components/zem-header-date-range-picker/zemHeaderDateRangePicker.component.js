@@ -14,7 +14,7 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
                 maxDate: moment().endOf('month'),
                 ranges: predefinedRanges,
                 opens: 'left',
-                applyClass: 'button button--highlight button--with-icon button--check-icon',
+                applyClass: 'button button--highlight button--with-icon check-icon',
                 cancelClass: 'button',
                 linkedCalendars: false,
                 locale: {

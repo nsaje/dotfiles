@@ -1,0 +1,29 @@
+<span class="zem-grid-breakdown-selector dropdown" uib-dropdown>
+    <a href class="button button--dropdown-toggle-icon" uib-dropdown-toggle title="Show/hide breakdowns">
+        Breakdowns
+        <span class="icon"></span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+        <div class="list-wrapper custom-scroller">
+            <div ng-repeat="group in $ctrl.breakdownGroups" ng-click="$event.stopPropagation()">
+                <div class="category-name" ng-if="group.breakdowns.length > 0">
+                    <zem-internal-feature ng-if="group.internal"></zem-internal-feature>
+                    {{ group.name }}
+                </div>
+                <li ng-repeat="breakdown in group.breakdowns">
+                    <div class="checkbox">
+                        <label>
+                            <zem-internal-feature ng-if="breakdown.internal"></zem-internal-feature>
+                            <input type="checkbox" ng-model="breakdown.checked" ng-change="$ctrl.onChecked(breakdown, group)">
+                            {{ breakdown.name }}
+                        </label>
+                    </div>
+                </li>
+            </div>
+        </div>
+        <div class="buttons-panel">
+            <button type="button" class="button button--highlight button--with-icon check-icon"
+                    ng-click="$ctrl.applyBreakdown()">Apply</button>
+        </div>
+    </ul>
+</span>

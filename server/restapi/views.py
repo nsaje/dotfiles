@@ -69,7 +69,9 @@ class RESTAPIBaseView(APIView):
     permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission,)
 
     def dispatch(self, request, *args, **kwargs):
-        with influx.block_timer('restapi.request', endpoint=self.__class__.__name__, method=request.method):
+        user = getattr(request, 'user', None)
+        user_email = getattr(user, 'email', 'unknown')
+        with influx.block_timer('restapi.request', endpoint=self.__class__.__name__, method=request.method, user=user_email):
             return super(RESTAPIBaseView, self).dispatch(request, *args, **kwargs)
 
     @staticmethod
@@ -133,6 +135,7 @@ class DataNodeListSerializer(DataNodeSerializerMixin, serializers.ListSerializer
 
 class StandardPagination(pagination.LimitOffsetPagination):
     max_limit = 1000
+    default_limit = 100
 
     def get_paginated_response(self, data):
         if 'data' in data:

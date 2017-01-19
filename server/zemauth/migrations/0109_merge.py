@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('zemauth', '0108_auto_20170111_0808'),
+        ('zemauth', '0108_auto_20170111_0923'),
         ('zemauth', '0108_auto_20170111_1018'),
     ]
 

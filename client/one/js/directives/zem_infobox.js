@@ -1,7 +1,7 @@
 /*global $,angular,constants*/
 'use strict';
 
-angular.module('one.legacy').directive('zemInfobox', function (config, $window) {
+angular.module('one.legacy').directive('zemLegacyInfobox', function (config, $window) {
 
     return {
         restrict: 'E',

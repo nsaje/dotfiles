@@ -61,12 +61,16 @@ angular.module('one.widgets').component('zemInterestTargeting', {
         }
 
         function getInterests () {
-            var included, excluded, result = [];
+            var interests = options.interests.slice(),
+                included, excluded, result = [];
 
             if (!$ctrl.entity) {
                 return result;
             }
-            options.interests.forEach(function (interest) {
+            interests.sort(function (opt1, opt2) {
+                return opt1.name.localeCompare(opt2.name);
+            });
+            interests.forEach(function (interest) {
                 included = $ctrl.entity.settings.interestTargeting.indexOf(interest.value) >= 0;
                 excluded = $ctrl.entity.settings.exclusionInterestTargeting.indexOf(interest.value) >= 0;
 

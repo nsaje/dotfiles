@@ -67,8 +67,8 @@
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
                     <td class="notes">{{ item.comment }}</td>
                     <td class="action-buttons">
-                        <a class="button button--small button--with-icon button--edit-icon" ng-click="editBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable">Edit</a>
-                        <a class="button button--small button--with-icon button--remove-icon" ng-click="deleteBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable" ng-disabled="deleteRequestInProgress">Delete</a>
+                        <a class="button button--small button--with-icon edit-icon" ng-click="editBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable">Edit</a>
+                        <a class="button button--small button--with-icon remove-icon" ng-click="deleteBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable" ng-disabled="deleteRequestInProgress">Delete</a>
                     </td>
                 </tr>
                 <tr ng-show="!activeBudget.length" class="message">
@@ -76,7 +76,7 @@
                 </tr>
             </tbody>
         </table>
-        <button type="button" class="button button--with-icon button--add-icon" ng-click="addBudgetItem()" ng-disabled="!getAvailableCredit().length">Add Budget Item</button>
+        <button type="button" class="button button--with-icon add-icon" ng-click="addBudgetItem()" ng-disabled="!getAvailableCredit().length">Add Budget Item</button>
     </div>
 
     <div class="section white-background budgets-past-pending">
@@ -115,7 +115,7 @@
 
                     <td class="notes">{{ item.comment }}</td>
                     <td class="text-right">
-                        <a class="button button--small button--with-icon button--edit-icon" ng-click="editBudgetItem(item.id)" ng-if="item.isEditable">Edit</a>
+                        <a class="button button--small button--with-icon edit-icon" ng-click="editBudgetItem(item.id)" ng-if="item.isEditable">Edit</a>
                     </td>
                 </tr>
                 <tr ng-show="!pastBudget.length" class="message">

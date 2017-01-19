@@ -17,7 +17,7 @@
     <a href="" ng-click="undo()">Undo?</a>
 </div>
 <div>
-    <select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location" class="button button--with-icon button--add-icon button--dropdown-toggle-icon">
+    <select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location" class="button button--with-icon add-icon button--dropdown-toggle-icon">
         <option value=""></option>
         <optgroup label="Countries">
             <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isCountry" value="{{location.code}}">{{location.name}}</option>

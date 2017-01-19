@@ -62,8 +62,8 @@
                                     <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_promote_agency_managers')" popover-placement="bottom"></zem-internal-feature>
                                     <button tabindex="-1" ng-click="$ctrl.downgradeUser(user)" href="#" class="button button--small" title="Downgrade to Normal User">Downgrade</button>
                                 </span>
-                        <button ng-show="!user.is_active" tabindex="-1" ng-click="$ctrl.userActionChange('resend', user.id)" href="#" class="button button--small button--with-icon button--send-icon" title="Resend Activation Mail">Resend</button>
-                        <button tabindex="-1" ng-click="$ctrl.userActionChange('remove', user.id)" href="#" class="button button--small button--with-icon button--remove-icon">Remove</button>
+                        <button ng-show="!user.is_active" tabindex="-1" ng-click="$ctrl.userActionChange('resend', user.id)" href="#" class="button button--small button--with-icon send-icon" title="Resend Activation Mail">Resend</button>
+                        <button tabindex="-1" ng-click="$ctrl.userActionChange('remove', user.id)" href="#" class="button button--small button--with-icon remove-icon">Remove</button>
                     </div>
                 </td>
             </tr>
@@ -93,7 +93,7 @@
                     <div class="form-group">
                         <label class="col-xs-2 control-label"></label>
                         <div class="col-xs-3">
-                            <button type="button" class="button button--with-icon button--add-icon" ng-click="$ctrl.addUser()">Add new user</button>
+                            <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.addUser()">Add new user</button>
                             <div class="loader" ng-show="$ctrl.addUserRequestInProgress"></div>
                             <div ng-show="$ctrl.addUserErrors">
                                 <label class="error">{{$ctrl.addUserErrors.message}}</label>

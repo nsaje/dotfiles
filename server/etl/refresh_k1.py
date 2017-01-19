@@ -94,6 +94,7 @@ def _refresh_k1_reports(update_since, views, account_id=None):
             mv = mv_class(job_id, date_from, date_to, account_id=account_id)
             mv.generate(campaign_factors=effective_spend_factors)
 
+    influx.incr('etl.refresh_k1.refresh_k1_reports_finished', 1)
     # while everything is being updated data is not consistent among tables
     # so might as well leave cache until refresh finishes
     invalidate_breakdowns_rs_cache()

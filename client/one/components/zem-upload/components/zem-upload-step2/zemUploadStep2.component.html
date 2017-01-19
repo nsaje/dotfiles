@@ -6,8 +6,8 @@
                 <span>Batch name:</span>
                 <span class="title" ng-show="!ctrl.batchNameEdit">{{ ctrl.formData.batchName }}</span>
                 <input type="text" class="form-control" ng-show="ctrl.batchNameEdit" ng-model="ctrl.formData.batchName" id="batch-name-input" ng-focus="ctrl.clearBatchNameErrors()" />
-                <a href class="button button--small button--with-icon button--edit-icon" ng-click="ctrl.toggleBatchNameEdit($event)" ng-if="!ctrl.batchNameEdit">Edit batch name</a>
-                <a href class="button button--small button--with-icon button--check-icon" ng-click="ctrl.toggleBatchNameEdit($event)" ng-if="ctrl.batchNameEdit">Save</a>
+                <a href class="button button--small button--with-icon edit-icon" ng-click="ctrl.toggleBatchNameEdit($event)" ng-if="!ctrl.batchNameEdit">Edit batch name</a>
+                <a href class="button button--small button--with-icon check-icon" ng-click="ctrl.toggleBatchNameEdit($event)" ng-if="ctrl.batchNameEdit">Save</a>
             </div>
             <div class="batch-name form-group" ng-if="ctrl.isEdit">
                 <span class="title">You're editing:</span>
@@ -43,8 +43,8 @@
                     </td>
                     <td class="action">
                         <img class="loader-icon small-icon" ng-if="candidate.removeRequestInProgress" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
-                        <a href ng-click="ctrl.editFormApi.open(candidate)" class="button button--with-icon button--edit-icon" ng-disabled="candidate.removeRequestInProgress">Edit</a>
-                        <a href ng-click="ctrl.removeCandidate(candidate, $event)" class="button button--with-icon button--remove-icon" ng-disabled="candidate.removeRequestInProgress" ng-if="!ctrl.isEdit">Remove</a>
+                        <a href ng-click="ctrl.editFormApi.open(candidate)" class="button button--with-icon edit-icon" ng-disabled="candidate.removeRequestInProgress">Edit</a>
+                        <a href ng-click="ctrl.removeCandidate(candidate, $event)" class="button button--with-icon remove-icon" ng-disabled="candidate.removeRequestInProgress" ng-if="!ctrl.isEdit">Remove</a>
                         <div class="error" ng-if="candidate.removeRequestFailed">
                             Something went wrong. Please try again.
                         </div>
@@ -53,11 +53,11 @@
             </table>
 
             <div class="buttons-panel">
-                <button type="button" class="button button--highlight button--with-icon button--add-icon" ng-click="ctrl.addCandidate()" ng-disabled="ctrl.addCandidateRequestInProgress" ng-if="!ctrl.isEdit">
+                <button type="button" class="button button--highlight button--with-icon add-icon" ng-click="ctrl.addCandidate()" ng-disabled="ctrl.addCandidateRequestInProgress" ng-if="!ctrl.isEdit">
                     Add new
                 </button>
 
-                <button type="button" class="button button--with-icon button--download-icon" ng-click="ctrl.download()">
+                <button type="button" class="button button--with-icon download-icon" ng-click="ctrl.download()">
                     Download Ads Snapshot
                 </button>
 
@@ -71,7 +71,7 @@
     </div>
     <div class="modal-footer buttons-panel">
         <button type="button" class="button button--outline" ng-click="ctrl.cancel()">Cancel</button>
-        <button type="button" class="button button--highlight button--with-icon button--check-icon pull-right" ng-click="ctrl.save()" ng-disabled="ctrl.isSaveDisabled()">
+        <button type="button" class="button button--highlight button--with-icon check-icon pull-right" ng-click="ctrl.save()" ng-disabled="ctrl.isSaveDisabled()">
             <span class="text" ng-if="!ctrl.isEdit">Upload</span>
             <span class="text" ng-if="ctrl.isEdit">Save</span>
         </button>

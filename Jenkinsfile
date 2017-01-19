@@ -1,5 +1,5 @@
 #!groovy
-node {
+node('master') {
     stage ('Setup') {
         sh 'export' // for debug puropses
         env.CACHE_DIR = "${JENKINS_HOME}/workspace/_CACHE/${JOB_NAME}"
@@ -32,7 +32,7 @@ node {
     }
 
     stage ('Restore cache') {
-        sh "tar -xf ${CACHE_DIR}/node_modules.tar || (echo 'No cache'; true)"
+        sh "tar -xf ${CACHE_DIR}/node_modules.tar || tar -xf ${CACHE_DIR}/../master/node_modules.tar || (echo 'No cache'; true)"
     }
 
     stage('Run tests') {

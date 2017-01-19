@@ -4436,8 +4436,12 @@ class PublisherGroup(models.Model):
             ad_groups_settings = AdGroupSettings.objects.filter(ad_group__campaign__account__agency=self.agency)
         else:
             ad_groups_settings = AdGroupSettings.objects.filter(ad_group__campaign__account=self.account)
+
+        # use `only` instead of `values` so that JSON fields get converted to arrays
         ad_group_settings = ad_groups_settings.group_current_settings().only(
             'whitelist_publisher_groups', 'blacklist_publisher_groups')
+
+        # flatten the list a bit (1 level still remains)
         publisher_groups = [
             x.whitelist_publisher_groups + x.blacklist_publisher_groups for x in ad_group_settings
         ]

@@ -7,7 +7,8 @@
                 </div>
                 <div class="spacing"></div>
                 <div class="infobox-container">
-                    <zem-infobox class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-infobox>
+                    <zem-infobox ng-if="hasPermission('zemauth.can_see_new_infobox')" class="zem-infobox"></zem-infobox>
+                    <zem-legacy-infobox ng-if="!hasPermission('zemauth.can_see_new_infobox')" class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-legacy-infobox>
                 </div>
             </div>
         </div>
@@ -21,7 +22,7 @@
         <div class="button-bar" ng-if="grid.api">
             <div  ng-if="hasPermission('zemauth.all_accounts_accounts_add_account')" class="button-bar-item add-source-container">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.all_accounts_accounts_add_account')" popover-placement="bottom"></zem-internal-feature>
-                <button type="button" class="button button--highlight button--with-icon button--add-icon" ng-click="addAccount()">Account</button>
+                <button type="button" class="button button--highlight button--with-icon add-icon" ng-click="addAccount()">Account</button>
                 <div class="loader" ng-show="requestInProgress"></div>
             </div>
             <div ng-if="hasPermission('zemauth.bulk_actions_on_all_levels')" class="button-bar-item">
@@ -41,9 +42,7 @@
 
                 selection="selection"
                 selection-callback="updateSelectedRowsData"
-
-                zem-has-permission="hasPermission"
-                zem-is-permission-internal="isPermissionInternal">
+        >
         </zem-grid-integration>
     </div>
 </div>

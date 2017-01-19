@@ -365,7 +365,10 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         filled_daily_ratio = float(yesterday_cost or 0) / float(daily_budget)
 
     if filled_daily_ratio:
-        daily_ratio_description = '{:.2f}% of daily budget'.format(abs(filled_daily_ratio) * 100)
+        daily_ratio_description = '{:.2f}% of {} daily budget'.format(
+            abs(filled_daily_ratio) * 100,
+            utils.lc_helper.default_currency(daily_budget)
+        )
     else:
         daily_ratio_description = 'N/A'
 
@@ -631,6 +634,19 @@ def get_account_running_status(account):
         campaign__account=account
     ).filter_active().exists()
     return dash.constants.InfoboxStatus.INACTIVE if active_exists else dash.constants.InfoboxStatus.STOPPED
+
+
+def get_entity_delivery_text(status):
+    if status == dash.constants.InfoboxStatus.ACTIVE:
+        return 'Active'
+    if status == dash.constants.InfoboxStatus.AUTOPILOT:
+        return 'Active - Autopilot mode'
+    if status == dash.constants.InfoboxStatus.LANDING_MODE:
+        return 'Active - Landing mode'
+    if status == dash.constants.InfoboxStatus.STOPPED:
+        return 'Paused'
+    if status == dash.constants.InfoboxStatus.INACTIVE:
+        return 'Inactive'
 
 
 def _retrieve_active_creditlineitems(account, date):

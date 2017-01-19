@@ -7,7 +7,8 @@
                 </div>
                 <div class="spacing"></div>
                 <div class="infobox-container">
-                    <zem-infobox class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-infobox>
+                    <zem-infobox ng-if="hasPermission('zemauth.can_see_new_infobox')" class="zem-infobox"></zem-infobox>
+                    <zem-legacy-infobox ng-if="!hasPermission('zemauth.can_see_new_infobox')" class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-legacy-infobox>
                 </div>
             </div>
         </div>
@@ -25,7 +26,7 @@
                         zem-placeholder="Media Sources"
                         zem-no-matches-placeholder="All sources added"
                         zem-dropdown-options="sources"
-                        zem-css-class="add-source button button--highlight button--with-icon button--add-icon button--dropdown-toggle-icon"
+                        zem-css-class="add-source button button--highlight button--with-icon add-icon button--dropdown-toggle-icon"
                         zem-on-select="addSource(selected)"
                         zem-dropdown-css-class="add-source-dropdown">
                 </zem-dropdown>
@@ -47,9 +48,7 @@
 
                 selection="selection"
                 selection-callback="updateSelectedRowsData"
-
-                zem-has-permission="hasPermission"
-                zem-is-permission-internal="isPermissionInternal">
+        >
         </zem-grid-integration>
     </div>
 </div>

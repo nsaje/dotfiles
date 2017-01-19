@@ -51,9 +51,10 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     }
 
     function fetchAndConvertLegacyEntityData (type, id) {
-        if (type === constants.entityType.ACCOUNT) zemNavigationService.getAccount(id).then(convertData);
-        if (type === constants.entityType.CAMPAIGN) zemNavigationService.getCampaign(id).then(convertData);
-        if (type === constants.entityType.AD_GROUP) zemNavigationService.getAdGroup(id).then(convertData);
+        if (type === null) return setActiveEntity(null); // On all accounts level
+        if (type === constants.entityType.ACCOUNT) return zemNavigationService.getAccount(id).then(convertData);
+        if (type === constants.entityType.CAMPAIGN) return zemNavigationService.getCampaign(id).then(convertData);
+        if (type === constants.entityType.AD_GROUP) return zemNavigationService.getAdGroup(id).then(convertData);
 
         function convertData (data) {
             var entity;
