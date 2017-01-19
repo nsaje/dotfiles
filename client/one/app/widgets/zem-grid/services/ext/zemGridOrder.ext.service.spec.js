@@ -92,6 +92,7 @@ describe('zemGridOrderService', function () {
     it('should load order when meta data is updated for the first time', function () {
         var grid = createGrid();
         var pubsub = grid.meta.pubsub;
+        zemGridOrderService.createInstance(grid);
 
         spyOn(zemGridStorageService, 'loadOrder');
 
