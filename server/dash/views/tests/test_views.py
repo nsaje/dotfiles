@@ -350,6 +350,29 @@ class AdGroupSourceSettingsTest(TestCase):
 
     @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     @patch('utils.k1_helper.update_ad_group')
+    def test_cpc_smaller_than_constraint(self, mock_k1_ping):
+        models.CpcConstraint.objects.create(
+            ad_group_id=1,
+            source_id=1,
+            min_cpc=decimal.Decimal('0.65')
+        )
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.cpc_cc = decimal.Decimal('0.70')
+        new_settings.save(None)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.5'})
+        )
+        response_content = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response_content['data']['errors']['cpc_cc'],
+            ["Bid CPC is violating some constraints: "
+             "CPC constraint on source AdBlade with min. CPC $0.65"])
+
+    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
+    @patch('utils.k1_helper.update_ad_group')
     def test_set_state_landing_mode(self, mock_k1_ping):
         self._set_campaign_landing_mode()
         response = self.client.put(

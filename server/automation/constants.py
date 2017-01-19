@@ -16,10 +16,11 @@ class CpcChangeComment(ConstantBase):
     OVER_AD_GROUP_MAX_CPC = 12
     OVER_AUTOPILOT_MAX_CPC = 13
     UNDER_AUTOPILOT_MIN_CPC = 14
-    OVER_ACCOUNT_SOURCE_MIN_CPC = 15
-    UNDER_ACCOUNT_SOURCE_MIN_CPC = 16
-    OVER_AD_GROUP_SOURCE_MIN_CPC = 17
-    UNDER_AD_GROUP_SOURCE_MIN_CPC = 18
+    OVER_ACCOUNT_SOURCE_MIN_CPC = 15  # deprecated
+    UNDER_ACCOUNT_SOURCE_MIN_CPC = 16  # deprecated
+    OVER_AD_GROUP_SOURCE_MIN_CPC = 17  # deprecated
+    UNDER_AD_GROUP_SOURCE_MIN_CPC = 18  # deprecated
+    CPC_CONSTRAINT_APPLIED = 19
 
     _VALUES = {
         BUDGET_MANUALLY_CHANGED: 'budget was manually changed recently',
@@ -40,6 +41,7 @@ class CpcChangeComment(ConstantBase):
         UNDER_ACCOUNT_SOURCE_MIN_CPC: 'lower bid CPC would not meet Account-Source specific CPC constraint',
         OVER_AD_GROUP_SOURCE_MIN_CPC: 'higher bid CPC would not meet Ad Group-Source specific CPC constraint',
         UNDER_AD_GROUP_SOURCE_MIN_CPC: 'lower bid CPC would not meet Ad Group-Source specific CPC constraint',
+        CPC_CONSTRAINT_APPLIED: 'bid CPC had to be adjusted to meet applied CPC constraints'
     }
 
 

@@ -1562,6 +1562,7 @@ class CpcConstraintAdmin(admin.ModelAdmin):
         'max_cpc',
         'constraint_type',
         'created_dt',
+        '_reason',
     )
 
     list_filter = (
@@ -1580,9 +1581,15 @@ class CpcConstraintAdmin(admin.ModelAdmin):
     )
 
     readonly_fields = ('created_dt', )
+    raw_id_fields = ('agency', 'account', 'campaign', 'ad_group')
 
     ordering = ('-created_dt', )
     date_hierarchy = 'created_dt'
+
+    def _reason(self, obj):
+        if len(obj.reason) > 30:
+            return obj.reason[:27] + ' ...'
+        return obj.reason
 
 
 admin.site.register(models.Agency, AgencyAdmin)

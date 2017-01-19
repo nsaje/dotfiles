@@ -20,6 +20,7 @@ from dash import campaign_goals
 from dash import facebook_helper
 from dash import ga_helper
 from dash import content_insights_helper
+from dash import cpc_constraints
 
 from utils import api_common
 from utils import exc
@@ -105,7 +106,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
         campaign_settings = ad_group.campaign.get_current_settings()
         changes = current_settings.get_setting_changes(new_settings)
-        changes, current_settings, new_settings = self.b1_sources_group_adjustments(changes, current_settings, new_settings)
+        changes, current_settings, new_settings = self.b1_sources_group_adjustments(
+            changes, current_settings, new_settings)
 
         if new_settings.id is None or 'tracking_code' in changes:
             redirector_helper.insert_adgroup(
@@ -113,9 +115,13 @@ class AdGroupSettings(api_common.BaseApiView):
                 new_settings,
                 campaign_settings,
             )
-
-        self._adjust_adgroup_sources(ad_group, new_settings, request,
-                                     change_b1_rtb_sources_cpcs='b1_sources_group_cpc_cc' in changes)
+        try:
+            self._adjust_adgroup_sources(ad_group, new_settings, request,
+                                         change_b1_rtb_sources_cpcs='b1_sources_group_cpc_cc' in changes)
+        except cpc_constraints.ValidationError as err:
+            raise exc.ValidationError(errors={
+                'b1_sources_group_cpc_cc': list(err)
+            })
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
         # save
@@ -339,6 +345,7 @@ class AdGroupSettings(api_common.BaseApiView):
         if user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
             settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
 
+    @transaction.atomic
     def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request, change_b1_rtb_sources_cpcs):
         for ags in ad_group.adgroupsource_set.all().select_related('source__source_type'):
             curr_ags_settings = ags.get_current_settings()
@@ -353,6 +360,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
             if proposed_cpc == curr_ags_settings.cpc_cc:
                 continue
+            if proposed_cpc:
+                cpc_constraints.validate_cpc(proposed_cpc, ad_group=ad_group, source=ags.source)
             api.set_ad_group_source_settings(
                 ags,
                 {
@@ -778,7 +787,10 @@ class ConversionPixel(api_common.BaseApiView):
                     filter(audience_enabled=True).\
                     exclude(pk=conversion_pixel.id)
                 if audience_pixels:
-                    msg = "This pixel cannot be used for building custom audiences because another pixel is already used: {}.".format(audience_pixels[0].name)
+                    msg = (
+                        "This pixel cannot be used for building custom audiences "
+                        "because another pixel is already used: {}."
+                    ).format(audience_pixels[0].name)
                     raise exc.ValidationError(errors={'audience_enabled': msg})
 
                 k1_helper.update_account(account_id)
@@ -824,7 +836,8 @@ class ConversionPixel(api_common.BaseApiView):
                 conversion_pixel.archived = form.cleaned_data['archived']
 
                 if conversion_pixel.audience_enabled and conversion_pixel.archived:
-                    raise exc.ValidationError(errors={'audience_enabled': 'Cannot archive pixel used for building custom audiences.'})
+                    raise exc.ValidationError(
+                        errors={'audience_enabled': 'Cannot archive pixel used for building custom audiences.'})
 
             self._write_name_change_to_history(
                 request, account, conversion_pixel, form.cleaned_data)
@@ -840,7 +853,8 @@ class ConversionPixel(api_common.BaseApiView):
                     filter(audience_enabled=True).\
                     exclude(pk=conversion_pixel.id)
                 if audience_pixels:
-                    msg = "This pixel cannot be used for building custom audiences because another pixel is already used: {}.".format(audience_pixels[0].name)
+                    msg = "This pixel cannot be used for building custom audiences because another pixel is already used: {}.".format(audience_pixels[
+                                                                                                                                      0].name)
                     raise exc.ValidationError(errors={'audience_enabled': msg})
 
                 k1_helper.update_account(conversion_pixel.account.id)

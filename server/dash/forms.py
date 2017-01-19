@@ -24,6 +24,7 @@ from dash import fields
 from dash import models
 from dash import regions
 from dash import validation_helpers
+from dash import cpc_constraints
 from dash.views import helpers
 from utils import dates_helper
 
@@ -389,6 +390,11 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
         cpc_cc = self.cleaned_data.get('cpc_cc')
         validation_helpers.validate_ad_group_source_cpc_cc(
             cpc_cc, self.ad_group_source)
+        cpc_constraints.validate_cpc(
+            decimal.Decimal(cpc_cc),
+            ad_group=self.ad_group_source.ad_group,
+            source=self.ad_group_source.source,
+        )
 
 
 class AdGroupSourceSettingsDailyBudgetForm(forms.Form):

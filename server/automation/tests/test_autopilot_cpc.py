@@ -134,69 +134,53 @@ class AutopilotCpcTestCase(test.TestCase):
                 Decimal(test_case[1]))
             self.assertEqual(comments, test_case[2])
 
-    @patch('automation.autopilot_cpc.ACCOUNT_SOURCE_CPC_CONSTRAINTS', {
-        (2, 'yahoo'): (None, Decimal('1.8')),
-        (2, 'outbrain'): (Decimal('0.65'), None),
-        (3, 'outbrain'): (Decimal('0.65'), Decimal('0.70')),
-    })
-    def test_threshold_account_source_constraints(self):
-        yahoo = dash.models.SourceType(type='yahoo')
-        ob = dash.models.SourceType(type='outbrain')
-        test_cases = (
-            # account, source, proposed_cpc, returned_cpc, returned_comments
-            (1, yahoo, '0.1', '0.1', []),
-            (2, yahoo, '1.0', '1.0', []),
-            (2, yahoo, '1.9', '1.8', [CpcChangeComment.OVER_ACCOUNT_SOURCE_MIN_CPC]),
-            (2, ob, '1.0', '1.0', []),
-            (2, ob, '0.4', '0.65', [CpcChangeComment.UNDER_ACCOUNT_SOURCE_MIN_CPC]),
-            (3, ob, '0.4', '0.65', [CpcChangeComment.UNDER_ACCOUNT_SOURCE_MIN_CPC]),
-            (3, ob, '0.67', '0.67', []),
-            (3, ob, '0.80', '0.70', [CpcChangeComment.OVER_ACCOUNT_SOURCE_MIN_CPC]),
+    def test_threshold_cpc_constraints(self):
+        s1 = dash.models.Source.objects.get(pk=1)
+        s2 = dash.models.Source.objects.get(pk=2)
+        dash.models.CpcConstraint.objects.create(
+            ad_group_id=3,
+            max_cpc=Decimal('1.5'),
+        )
+        dash.models.CpcConstraint.objects.create(
+            ad_group_id=2,
+            source=s1,
+            min_cpc=Decimal('0.65'),
+        )
+        dash.models.CpcConstraint.objects.create(
+            ad_group_id=3,
+            source=s2,
+            min_cpc=Decimal('0.5'),
+        )
+        dash.models.CpcConstraint.objects.create(
+            account_id=1,
+            source=s1,
+            min_cpc=Decimal('0.65'),
+            max_cpc=Decimal('1.65'),
         )
 
-        for test_case in test_cases:
-            comments = []
-            self.assertEqual(
-                autopilot_cpc._threshold_account_source_constraints(
-                    test_case[0],
-                    Decimal(test_case[2]),
-                    test_case[1],
-                    comments
-                ),
-                Decimal(test_case[3]))
-            self.assertEqual(comments, test_case[4])
-
-    @patch('automation.autopilot_cpc.AD_GROUP_SOURCE_CPC_CONSTRAINTS', {
-        (2, 'yahoo'): (None, Decimal('1.8')),
-        (2, 'outbrain'): (Decimal('0.65'), None),
-        (3, 'outbrain'): (Decimal('0.65'), Decimal('0.70')),
-    })
-    def test_threshold_ad_group_source_constraints(self):
-        yahoo = dash.models.SourceType(type='yahoo')
-        ob = dash.models.SourceType(type='outbrain')
         test_cases = (
-            # account, source, proposed_cpc, returned_cpc, returned_comments
-            (1, yahoo, '0.1', '0.1', []),
-            (2, yahoo, '1.0', '1.0', []),
-            (2, yahoo, '1.9', '1.8', [CpcChangeComment.OVER_AD_GROUP_SOURCE_MIN_CPC]),
-            (2, ob, '1.0', '1.0', []),
-            (2, ob, '0.4', '0.65', [CpcChangeComment.UNDER_AD_GROUP_SOURCE_MIN_CPC]),
-            (3, ob, '0.4', '0.65', [CpcChangeComment.UNDER_AD_GROUP_SOURCE_MIN_CPC]),
-            (3, ob, '0.67', '0.67', []),
-            (3, ob, '0.80', '0.70', [CpcChangeComment.OVER_AD_GROUP_SOURCE_MIN_CPC]),
+            (1, s2, '1.5', '1.5', []),
+            (1, s2, '0.01', '0.01', []),
+            (1, s1, '0.01', '0.65', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
+            (1, s1, '2.00', '1.65', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
+            (2, s1, '0.1', '0.65', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
+            (2, s2, '0.1', '0.1', []),
+            (3, s1, '0.5', '0.5', []),
+            (3, s1, '2.5', '1.5', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
+            (3, s1, '0.1', '0.1', []),
+            (3, s2, '1.6', '1.5', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
+            (3, s2, '0.1', '0.5', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
         )
-
-        for test_case in test_cases:
+        for ad_group_id, source, proposed_cpc, expected_cpc, expected_comment in test_cases:
             comments = []
-            self.assertEqual(
-                autopilot_cpc._threshold_ad_group_source_constraints(
-                    test_case[0],
-                    Decimal(test_case[2]),
-                    test_case[1],
-                    comments
-                ),
-                Decimal(test_case[3]))
-            self.assertEqual(comments, test_case[4])
+            adjusted_cpc = autopilot_cpc._threshold_cpc_constraints(
+                dash.models.AdGroup.objects.get(pk=ad_group_id),
+                source,
+                Decimal(proposed_cpc),
+                comments,
+            )
+            self.assertEqual(adjusted_cpc, Decimal(expected_cpc))
+            self.assertEqual(comments, expected_comment)
 
     def test_round_cpc(self):
         test_cases = (

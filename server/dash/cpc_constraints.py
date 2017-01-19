@@ -1,4 +1,4 @@
-from django import forms
+from django.forms import ValidationError
 from django.db import models
 
 import dash.models
@@ -10,8 +10,8 @@ def validate_cpc(cpc, **levels):
     rules = dash.models.CpcConstraint.objects.all().filter_applied(cpc, **levels)
     if not rules:
         return
-    raise forms.ValidationError(
-       'Bid CPC is violating some constraints: ' + ', '.join(map(str, rules))
+    raise ValidationError(
+        'Bid CPC is violating some constraints: ' + ', '.join(map(str, rules))
     )
 
 
@@ -29,13 +29,11 @@ def validate_source_settings(min_cpc=None, max_cpc=None, **levels):
     if any existing bid CPCs violate the introduced limitations.
     """
     constraints = _get_level_constraints(levels)
-    cpc_rules = None
-    if min_cpc and max_cpc:
-        cpc_rules = models.Q(cpc_cc__lte=min_cpc) | models.Q(cpc_cc__gte=max_cpc)
-    elif min_cpc:
-        cpc_rules = models.Q(cpc_cc__lte=min_cpc)
-    elif max_cpc:
-        cpc_rules = models.Q(cpc_cc__gte=max_cpc)
+    cpc_rules = models.Q()
+    if min_cpc:
+        cpc_rules |= models.Q(cpc_cc__lte=min_cpc)
+    if max_cpc:
+        cpc_rules |= models.Q(cpc_cc__gte=max_cpc)
     ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
         pk__in=dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group_id__in=(
@@ -64,7 +62,7 @@ def validate_source_settings(min_cpc=None, max_cpc=None, **levels):
             msg += 'under {} '.format(
                 lc_helper.default_currency(max_cpc),
             )
-        raise forms.ValidationError(msg + 'on all ad groups')
+        raise ValidationError(msg + 'on all ad groups')
 
 
 def create(constraint_type=dash.constants.CpcConstraintType.MANUAL, min_cpc=None, max_cpc=None,

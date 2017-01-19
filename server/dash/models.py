@@ -4344,15 +4344,15 @@ class CpcConstraint(models.Model):
                                   verbose_name='Minimum CPC')
     max_cpc = models.DecimalField(max_digits=10, decimal_places=4, null=True,
                                   verbose_name='Maximum CPC')
-    agency = models.ForeignKey(Agency, null=True, related_name='cpc_constraints',
+    agency = models.ForeignKey(Agency, null=True, blank=True, related_name='cpc_constraints',
                                on_delete=models.PROTECT)
-    account = models.ForeignKey(Account, null=True, related_name='cpc_constraints',
+    account = models.ForeignKey(Account, null=True, blank=True, related_name='cpc_constraints',
                                 on_delete=models.PROTECT)
-    campaign = models.ForeignKey(Campaign, null=True, related_name='cpc_constraints',
+    campaign = models.ForeignKey(Campaign, null=True, blank=True, related_name='cpc_constraints',
                                  on_delete=models.PROTECT)
-    ad_group = models.ForeignKey(AdGroup, null=True, related_name='cpc_constraints',
+    ad_group = models.ForeignKey(AdGroup, null=True, blank=True, related_name='cpc_constraints',
                                  on_delete=models.PROTECT)
-    source = models.ForeignKey(Source, null=True, related_name='cpc_constraints',
+    source = models.ForeignKey(Source, null=True, blank=True, related_name='cpc_constraints',
                                on_delete=models.PROTECT)
     constraint_type = models.IntegerField(
         default=constants.CpcConstraintType.MANUAL,
@@ -4383,7 +4383,9 @@ class CpcConstraint(models.Model):
         def filter_applied(self, cpc, source=None, **levels):
             ad_group = levels.get('ad_group')
             campaign, account, agency = _generate_parents(**levels)
-            rules = models.Q(agency=agency)
+            rules = models.Q()
+            if agency:
+                rules |= models.Q(agency=agency)
             if account:
                 rules |= models.Q(account=account)
             if campaign:
@@ -4391,11 +4393,11 @@ class CpcConstraint(models.Model):
             if ad_group:
                 rules |= models.Q(ad_group=ad_group)
             queryset = self.filter(rules).filter(
-                models.Q(min_cpc__isnull=False) & models.Q(min_cpc__gte=cpc) |
-                models.Q(max_cpc__isnull=False) & models.Q(max_cpc__lte=cpc)
+                models.Q(min_cpc__isnull=False) & models.Q(min_cpc__gt=cpc) |
+                models.Q(max_cpc__isnull=False) & models.Q(max_cpc__lt=cpc)
             )
             if source:
-                queryset = queryset.filter(source=source)
+                queryset = queryset.filter(models.Q(source=source) | models.Q(source=None))
             return queryset
 
 
