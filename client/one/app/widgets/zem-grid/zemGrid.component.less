@@ -1,0 +1,750 @@
+@zem-grid-bg-color: #ffffff;
+
+zem-grid {
+    display: block;
+}
+
+.button-bar {
+    margin-bottom: @default-spacing;
+
+    .button-bar-item {
+        display: block;
+        float: left;
+        margin-right: 10px;
+    }
+
+    .pull-right {
+        margin-left: 10px;
+
+        .show-rows {
+            margin-right: 0;
+        }
+    }
+
+    .show-rows {
+        margin-right: 10px;
+    }
+
+    &:after {
+        clear:both;
+        content: "";
+        display: block;
+    }
+
+    .button--report {
+        width: 100px;
+    }
+}
+
+.zem-grid-container {
+    width: 100%;
+    font-size: @default-font-size;
+    color: @text-color;
+
+    .loader { // Initial loader
+        margin: 50px; // Don't cover header and footer
+    }
+
+    .zem-grid {
+        width: 100%;
+        overflow: hidden;
+        background-color: @zem-grid-bg-color;
+        position: relative;
+
+        a {
+            color: @secondary-color;
+            font-weight: 500;
+        }
+
+        .zem-grid-row {
+            height: 45px;
+
+            // Rendering optimizations (speed up virtual scroll)
+            transform: translateZ(0);
+            will-change: transform;
+
+            font-size: 0; // Hide whitespaces between inline elements
+            white-space: nowrap; // Show all cells in the same row
+
+            .zem-grid-cell {
+                background-color: inherit;
+                display: inline-block;
+                vertical-align: middle;
+                height: 45px;
+                line-height: 45px;
+                border-bottom: 1px solid tint(@secondary-color, 90%);
+                text-align: left;
+                padding: 0 8px;
+                overflow: hidden;
+
+                font-size: @default-font-size;
+                white-space: nowrap;
+                // TODO: Change to more sophisticated way of trimming long text in cells
+                text-overflow: ellipsis;
+            }
+
+            .zem-grid-cell-checkbox {
+                display: inline-block;
+                margin: 0;
+                width: 100%;
+
+                input {
+                    width: auto;
+                    margin: -2px 0 0 11px;
+                    vertical-align: middle;
+                }
+            }
+
+            .zem-grid-cell-edit-button {
+                .button {
+                    margin-top: 10px;
+                }
+            }
+
+            &.level-1 {
+                background-color: tint(@secondary-color, 95%);
+                &:hover {
+                    background-color: tint(@secondary-color, 90%);
+                }
+            }
+
+            &.level-2 {
+                background-color: tint(@secondary-color, 95%);
+                &:hover {
+                    background-color: tint(@secondary-color, 90%);
+                }
+            }
+
+            &.level-3 {
+                background-color: tint(@secondary-color, 95%);
+                &:hover {
+                    background-color: tint(@secondary-color, 90%);
+                }
+            }
+
+            &.level-4 {
+                background-color: tint(@secondary-color, 95%);
+                &:hover {
+                    background-color: tint(@secondary-color, 90%);
+                }
+            }
+
+            &.level-last {
+                background-color: @zem-grid-bg-color;
+
+                &:hover {
+                    background-color: tint(@secondary-color, 95%);
+                }
+            }
+        }
+
+        .loading-cell {
+            height: 100%;
+            color: #00cc18;
+            background-image: url('images/loader.gif');
+            background-position: 10px center;
+            background-repeat: no-repeat;
+            background-size: 20px 10px;
+        }
+
+        .zem-grid-sticky {
+            &__container {
+                height: 45px;
+            }
+
+            &__header, &__footer {
+                z-index: 900;
+                overflow: hidden;
+            }
+
+            &__scroller-container {
+                display: none;
+                height: 15px;
+                overflow-x: auto;
+                overflow-y: hidden;
+            }
+
+            &__scroller-content {
+                height: 15px;
+            }
+        }
+
+        .zem-grid-header, .zem-grid-footer {
+            height: 45px;
+            background-color: tint(@secondary-color, 90%);
+            color: @secondary-color;
+
+            .zem-grid-cell {
+                background-color: tint(@secondary-color, 90%);
+                border-color: fade(@secondary-color, 20%);
+            }
+        }
+
+        .zem-grid-header {
+            font-weight: 500;
+            position: relative;
+            z-index: 100;
+
+            .zem-grid-header-cell {
+                display: inline-block;
+            }
+
+            .zem-grid-header-cell-data {
+                // NOTE: [type]-field classes are generated in templates by concatenating field's type and '-type' postfix
+                &.number-field, &.percent-field, &.seconds-field, &.currency-field {
+                    text-align: right;
+                }
+
+                &.performanceIndicator-field {
+                    max-width: 60px;
+                    min-width: 60px;
+                }
+
+                &.stateSelector-field {
+                    max-width: 80px;
+                    min-width: 80px;
+                }
+
+                zem-internal-feature {
+                    margin-right: 5px;
+                    margin-top: 15px;
+                    content: " ";
+                    display: inline-block;
+                    vertical-align: top;
+                    border-top: 7px solid @internal-color;
+                    border-right: 7px solid transparent;
+                }
+
+                .ordered {
+                    .arrow-down();
+                }
+                .ordered-reverse {
+                    .arrow-up();
+                }
+            }
+
+            .zem-grid-header-cell-checkbox {
+                overflow: visible;
+                .dropdown {
+                    display:inline-block;
+                    position: relative;
+                    line-height: 30px;
+
+                    .btn {
+                        padding: 4px 8px;
+                        border-color: #bbb;
+                    }
+                    input {
+                        margin: 5px 0 0 0;
+                        vertical-align: top;
+                    }
+
+                    &:not(.open) .drop-arrow {
+                        .arrow-down();
+                        top: 1px;
+                        margin-left: 0;
+                    }
+                    &.open .drop-arrow {
+                        .arrow-up();
+                        margin-left: 0;
+                    }
+
+                    .dropdown-menu {
+                        padding: 8px 10px;
+
+                        .link {
+                            font-weight: 300;
+                            cursor: pointer;
+                            &:hover {
+                                text-decoration: underline;
+                            }
+                        }
+
+                        .link-list {
+                            .link-list-name {
+                                vertical-align: top;
+                                display: inline-block;
+                                font-weight: 300;
+                                line-height: 22px;
+                            }
+
+                            .link-list-items {
+                                vertical-align: top;
+                                display: inline-block;
+                                font-weight: 400;
+                                line-height: 22px;
+
+                                .link-list-item {
+                                    cursor: pointer;
+                                    &:hover {
+                                        text-decoration: underline; }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            .performance-icon {
+                width: 14px;
+                height: 14px;
+                display: inline-block;
+                background-size: 14px;
+                background-image: url(images/smiley-blue.svg);
+                vertical-align: text-bottom;
+            }
+        }
+
+        .zem-grid-footer {
+            .zem-grid-cell-totals-label {
+                font-weight: 500;
+            }
+
+            .zem-grid-cell {
+                border: none;
+                border-top: 1px solid fade(@secondary-color, 20%);
+            }
+        }
+
+        .zem-grid-body {
+            min-height: 45px;
+            overflow: auto;
+
+            background-color: white;
+
+            .zem-grid-table {
+                position: relative;
+                width: 100%;
+            }
+
+            .zem-grid-row {
+                position: absolute;
+
+                &.archived {
+                    background-color: @very-light-gray;
+                    border-color: @very-light-gray;
+                    color: @gray;
+
+                    a {
+                        color: @gray;
+                    }
+                }
+
+                &:last-child {
+                    .zem-grid-cell {
+                        border-bottom: none;
+                    }
+                }
+            }
+
+            .zem-grid-row-breakdown {
+                color: #8b8b8b;
+                a {
+                    color: #8b8b8b;
+                }
+
+                .load-more-icon {
+                    width: 14px;
+                    height: 14px;
+                    margin-top: -3px;
+                    margin-right: 3px;
+                    opacity: 0.2;
+                }
+            }
+
+            .icon-link {
+                .link-img {
+                    width: 15px;
+                    height: 15px;
+
+                    &.link-img-disabled {
+                        opacity: 0.4;
+                    }
+                }
+            }
+        }
+
+        // Workaround for links without href attribute
+        a {
+            cursor: pointer;
+        }
+
+        // NOTE: [type]-field classes are generated in templates by concatenating field's type and '-type' postfix
+        .zem-grid-cell-base-field:not(.text-field):not(.dateTime-field),
+        .zem-grid-cell-editable-base-field:not(.text-field):not(.dateTime-field) {
+            display: block;
+            text-align: right;
+        }
+
+        .zem-grid-cell-base-field {
+            &.superperforming-goal {
+                color: @green;
+            }
+
+            &.underperforming-goal {
+                color: @red;
+            }
+        }
+
+        .zem-grid-cell-editable-base-field {
+            .auto-pilot-icon {
+                display: inline-block;
+                width: 9px;
+                height: 9px;
+                margin-right: 2px;
+                background-image: url('images/autopilot.svg');
+                background-size: auto;
+                background-position: 0;
+            }
+
+            .edit-modal-trigger {
+                position: relative;
+                margin-right: -4px;
+                padding: 3px 24px 3px 3px;
+                border: 1px dashed transparent;
+                border-radius: 2px;
+                transition: all @default-animation;
+
+                &:before {
+                    content: '';
+                    position: absolute;
+                    top: 4px;
+                    right: 4px;
+                    width: 12px;
+                    height: 12px;
+                    background-size: 12px;
+                    background: url('images/edit-blue.svg') no-repeat center;
+                    opacity: 0.4;
+                }
+
+                &:hover:not(.modal-open) {
+                    cursor: pointer;
+                    border-color: tint(@secondary-color, 60%);
+                    background-color: tint(@secondary-color, 90%);
+
+                    &:before {
+                        opacity: 1.0;
+                    }
+                }
+            }
+        }
+
+        .zem-grid-cell-breakdown-field {
+            font-size: 0; // Hide whitespaces between inline elements
+
+            > * {
+                font-size: @default-font-size;
+            }
+
+            .zem-grid-cell-breakdown-collapse {
+                display: inline-block;
+                width: 15px;
+                height: 20px;
+                line-height: 20px;
+                margin-right: 5px;
+                text-decoration: none;
+            }
+
+            .collapse-icon {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                margin-top: -2px;
+                opacity: 0.2;
+
+                &.expanded {
+                    transform: rotate(90deg);
+                }
+            }
+        }
+
+        .zem-grid-cell-thumbnail {
+            img {
+                vertical-align: top;
+                width: 35px;
+                height: 35px;
+                margin-top: 5px;
+            }
+        }
+
+        .zem-grid-cell-status-field {
+            &.important {
+                color: #c70000;
+            }
+        }
+
+        .zem-grid-cell-performance-indicator {
+            position: relative;
+
+            .zem-icon {
+                width: 15px;
+                height: 15px;
+            }
+
+            .performance-popover-trigger {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        .zem-grid-cell-state-selector {
+            .button {
+                .state-icon {
+                    margin-top: -3px;
+                }
+
+                &.modal-open {
+                    border-bottom-left-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+            }
+
+
+        }
+
+        .zem-grid-cell-edit-button {
+            a {
+                display: inline-block;
+                vertical-align: top;
+
+                &:before {
+                    content: "";
+                    display: inline-block;
+                    width: 12px;
+                    height: 12px;
+                    background-size: 12px;
+                    background-image: url('images/edit-blue.svg');
+                }
+            }
+        }
+
+        .zem-grid-cell-submission-status {
+            display: inline-block;
+            vertical-align: middle;
+            width: 60px;
+            height: 18px;
+            font-size: 0;
+            cursor: default;
+
+            .popover {
+                max-width: 600px;
+            }
+
+            .field {
+                display: inline-block;
+                vertical-align: top;
+                width: 30px;
+                height: 18px;
+                line-height: 10px;
+                text-align: center;
+                color: @green;
+                font-size: 10px;
+                padding: 4px 1px;
+                border: 1px solid @green;
+
+                &.one-field,
+                &.no-submission {
+                    width: 60px;
+                    border-top-left-radius: @border-radius;
+                    border-bottom-left-radius: @border-radius;
+                    border-top-right-radius: @border-radius;
+                    border-bottom-right-radius: @border-radius;
+                }
+
+                &.approved,
+                &.non-approved.only-field {
+                    border-top-left-radius: @border-radius;
+                    border-bottom-left-radius: @border-radius;
+                }
+
+                &.non-approved,
+                &.approved.only-field {
+                    border-top-right-radius: @border-radius;
+                    border-bottom-right-radius: @border-radius;
+                }
+
+                &.archived {
+                    background-color: @very-light-gray;
+                    border-color: @very-light-gray;
+                    color: @gray;
+                }
+
+                &.approved {
+                    background-color: @green;
+                    color: @zem-grid-bg-color;
+
+                    &.archived {
+                        background-color: @very-light-gray;
+                        border-color: @very-light-gray;
+                        color: @gray;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Popovers
+.zem-grid-submission-status-popover {
+    max-width: 600px;
+
+    .submission-status-emphasis {
+        font-style: italic;
+    }
+
+    .submission-status-popover-table {
+        display: table;
+        font-size: 11px;
+
+        .submission-status-popover-row {
+            display: table-row;
+            line-height: 18px;
+
+            &.no-submission-message {
+                font-size: @default-font-size;
+            }
+
+            &.submission-status-emphasis {
+                font-style: normal;
+            }
+
+            .submission-status-popover-cell {
+                display: table-cell;
+                white-space: nowrap;
+
+                &.bold {
+                    font-weight: 600;
+                }
+
+                hr {
+                    margin: 3px 0;
+                }
+            }
+
+            .left-cell {
+                padding-right: 10px;
+            }
+
+            .submission-status-label {
+                color: @text-color;
+                font-weight: normal;
+                padding-right: 50px;
+            }
+        }
+    }
+}
+
+// Popovers
+.zem-grid-thumbnail-preview-popover {
+    img {
+        height: 80px;
+    }
+}
+
+// Modals
+.zem-grid-modal {
+    display: block;
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+
+    &.state-selector-modal {
+        width: auto;
+        background-color: @zem-grid-bg-color;
+        border: 1px solid tint(@secondary-color, 80%);
+        border-top-right-radius: @border-radius;
+        border-bottom-left-radius: @border-radius;
+        border-bottom-right-radius: @border-radius;
+        margin-top: 4px;
+
+        .wait-message {
+            padding: 5px;
+        }
+
+        .state-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+
+            .state-item {
+                display: block;
+                padding: 5px 10px;
+                color: @text-color;
+                transition: background-color @default-animation;
+            }
+
+            .state-item:hover {
+                background-color: tint(@secondary-color, 80%);
+                cursor: pointer;
+            }
+
+            .state-icon {
+                margin-right: 10px;
+            }
+
+            .state-text {
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+            .disabled-message {
+                font-size: 12px;
+                text-decoration: underline;
+            }
+        }
+    }
+
+    &.editable-currency-field-modal {
+        width: auto;
+        padding: 8px;
+        background-color: tint(@secondary-color, 90%);
+        border: 1px dashed tint(@secondary-color, 60%);
+        font-size: @default-font-size;
+        box-sizing: border-box;
+        height: 46px;
+        margin-top: 3px;
+        z-index: 999;
+
+        .message, .button, .form__prefixed-field {
+            float: left;
+            margin-left: 10px;
+        }
+
+        .form__prefixed-field {
+            margin-left: 0;
+            width: 100px;
+        }
+
+        .message {
+            line-height: 46px;
+        }
+    }
+}
+
+.state-icon {
+    display: inline-block;
+    vertical-align: middle;
+    width: 15px;
+    height: 15px;
+
+    &.active {
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        background-color: @green;
+    }
+
+    &.paused {
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        background-color: @light-gray;
+    }
+
+    &.autopilot {
+        background-image: url('images/autopilot-orange.svg');
+    }
+}
