@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from utils.constant_base import ConstantBase
 from dash import regions
+from decimal import Decimal
 
 
 # Outbrain supports only 10 blocked publisher per marketer id
@@ -1829,6 +1830,11 @@ class ReportJobStatus(ConstantBase):
 class SourceAllRTB(object):
     ID = '0123456789'
     NAME = 'RTB Sources'
+    MAX_CPC = Decimal('7.0')
+    MIN_CPC = Decimal('0.01')
+    DECIMAL_PLACES = 3
+    DEFAULT_DAILY_BUDGET = Decimal('50.0')
+    DEFAULT_CPC_CC = Decimal('0.45')
 
 
 class CpcConstraintType(ConstantBase):

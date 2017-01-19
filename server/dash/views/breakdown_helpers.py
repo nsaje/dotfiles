@@ -197,7 +197,7 @@ def get_ad_group_sources_extras(ad_group):
 
 
 # MVP for all-RTB-sources-as-one
-def insert_all_rtb_source_row(constraints, rows):
+def insert_all_rtb_source_row(constraints, rows, show_rtb_group_cpc):
     ad_group = constraints['ad_group']
     settings = ad_group.get_current_settings()
     if not settings.b1_sources_group_enabled:
@@ -209,12 +209,12 @@ def insert_all_rtb_source_row(constraints, rows):
     rtb_source_ids = map(str, rtb_source_ids)
 
     # Create All RTB Source row using rtb_source_ids for newly created group
-    all_rtb_source_row = create_all_rtb_source_row(settings)
+    all_rtb_source_row = create_all_rtb_source_row(settings, show_rtb_group_cpc)
     all_rtb_source_row['group'] = {'ids': rtb_source_ids}
     rows.append(all_rtb_source_row)
 
 
-def create_all_rtb_source_row(ad_group_settings):
+def create_all_rtb_source_row(ad_group_settings, show_rtb_group_cpc):
     status = {'value': ad_group_settings.b1_sources_group_state}
     notifications = {}
     if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE and \
@@ -230,10 +230,11 @@ def create_all_rtb_source_row(ad_group_settings):
         'state': {'value': ad_group_settings.b1_sources_group_state},
         'status': status,
         'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
+        'bid_cpc': ad_group_settings.b1_sources_group_cpc_cc if show_rtb_group_cpc else '',
         'notifications': notifications,
         'editable_fields': {
             'state': {'message': None, 'enabled': True},
             'daily_budget': {'message': None, 'enabled': True},
-            'bid_cpc': {'message': None, 'enabled': False},
+            'bid_cpc': {'message': None, 'enabled': show_rtb_group_cpc},
         }
     }

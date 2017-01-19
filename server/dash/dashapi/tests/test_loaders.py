@@ -397,7 +397,7 @@ class AdGroupSourcesLoaderTest(TestCase):
 
     def setUp(self):
         sources = models.Source.objects.all()
-        self.loader = loaders.AdGroupSourcesLoader(sources, models.AdGroup.objects.get(pk=1))
+        self.loader = loaders.AdGroupSourcesLoader(sources, models.AdGroup.objects.get(pk=1), User.objects.get(pk=1))
 
     def test_from_constraints_select_loader_class(self):
         loader = loaders.AdGroupSourcesLoader.from_constraints(User.objects.get(pk=1), {

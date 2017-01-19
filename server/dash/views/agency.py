@@ -105,6 +105,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
         campaign_settings = ad_group.campaign.get_current_settings()
         changes = current_settings.get_setting_changes(new_settings)
+        changes, current_settings, new_settings = self.b1_sources_group_adjustments(changes, current_settings, new_settings)
+
         if new_settings.id is None or 'tracking_code' in changes:
             redirector_helper.insert_adgroup(
                 ad_group,
@@ -112,12 +114,12 @@ class AdGroupSettings(api_common.BaseApiView):
                 campaign_settings,
             )
 
-        self._adjust_adgroup_sources(ad_group, new_settings, request)
+        self._adjust_adgroup_sources(ad_group, new_settings, request,
+                                     change_b1_rtb_sources_cpcs='b1_sources_group_cpc_cc' in changes)
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
         # save
         ad_group.save(request)
-        changes = current_settings.get_setting_changes(new_settings)
         if changes:
             new_settings.save(
                 request,
@@ -159,6 +161,27 @@ class AdGroupSettings(api_common.BaseApiView):
             if not new_all_rtb_enabled:
                 'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
             raise exc.ValidationError(errors={'autopilot_state': [msg]})
+
+    def b1_sources_group_adjustments(self, changes, current_settings, new_settings):
+        # Turning on RTB-as-one
+        if 'b1_sources_group_enabled' in changes and changes['b1_sources_group_enabled']:
+            new_b1_sources_group_cpc = constants.SourceAllRTB.DEFAULT_CPC_CC
+            if changes.get('b1_sources_group_cpc_cc'):
+                new_b1_sources_group_cpc = changes['b1_sources_group_cpc_cc']
+            if new_settings.cpc_cc:
+                new_b1_sources_group_cpc = min(new_settings.cpc_cc, new_b1_sources_group_cpc)
+            new_settings.b1_sources_group_cpc_cc = new_b1_sources_group_cpc
+
+            if changes.get('b1_sources_group_daily_budget'):
+                new_settings.b1_sources_group_daily_budget = changes.get('b1_sources_group_daily_budget')
+            else:
+                new_settings.b1_sources_group_daily_budget = constants.SourceAllRTB.DEFAULT_DAILY_BUDGET
+
+        # Changing adgroup max cpc
+        if changes.get('cpc_cc') and new_settings.b1_sources_group_enabled:
+            new_settings.b1_sources_group_cpc_cc = min(changes.get('cpc_cc'), new_settings.b1_sources_group_cpc_cc)
+
+        return current_settings.get_setting_changes(new_settings), current_settings, new_settings
 
     @staticmethod
     def validate_yahoo_desktop_targeting(ad_group, settings, new_settings):
@@ -261,6 +284,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 'dayparting': settings.dayparting,
                 'b1_sources_group_enabled': settings.b1_sources_group_enabled,
                 'b1_sources_group_daily_budget': settings.b1_sources_group_daily_budget,
+                'b1_sources_group_cpc_cc': settings.b1_sources_group_cpc_cc,
                 'b1_sources_group_state': settings.b1_sources_group_state,
                 'whitelist_publisher_groups': settings.whitelist_publisher_groups,
             }
@@ -307,21 +331,32 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.b1_sources_group_enabled = resource['b1_sources_group_enabled']
         settings.b1_sources_group_daily_budget = resource['b1_sources_group_daily_budget']
         settings.b1_sources_group_state = resource['b1_sources_group_state']
+        if user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and settings.b1_sources_group_enabled:
+            settings.b1_sources_group_cpc_cc = resource['b1_sources_group_cpc_cc']
 
         settings.bluekai_targeting = resource['bluekai_targeting']
 
         if user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
             settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
 
-    def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request):
-        for ags in ad_group.adgroupsource_set.all():
+    def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request, change_b1_rtb_sources_cpcs):
+        for ags in ad_group.adgroupsource_set.all().select_related('source__source_type'):
             curr_ags_settings = ags.get_current_settings()
-            if curr_ags_settings.cpc_cc <= ad_group_settings.cpc_cc:
+            proposed_cpc = curr_ags_settings.cpc_cc
+            if (change_b1_rtb_sources_cpcs and
+                    request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and
+                    ad_group_settings.b1_sources_group_enabled and
+                    ags.source.source_type.type == constants.SourceType.B1):
+                proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
+            if proposed_cpc > ad_group_settings.cpc_cc:
+                proposed_cpc = ad_group_settings.cpc_cc
+
+            if proposed_cpc == curr_ags_settings.cpc_cc:
                 continue
             api.set_ad_group_source_settings(
                 ags,
                 {
-                    'cpc_cc': ad_group_settings.cpc_cc
+                    'cpc_cc': proposed_cpc
                 },
                 request=None,
                 ping_k1=False

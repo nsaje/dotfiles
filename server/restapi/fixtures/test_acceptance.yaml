@@ -124,7 +124,7 @@
         campaign: 608
         created_dt: '2014-06-04T09:58:21'
         type: 2
-        name: 'My conversion goal'        
+        name: 'My conversion goal'
         goal_id: 'mygoal0'
         conversion_window: 168
     model: dash.conversiongoal
@@ -260,6 +260,7 @@
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
         redirect_javascript: "alert('a')"
         dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
+        b1_sources_group_cpc_cc: '0.01'
     model: dash.adgroupsettings
     pk: 1
 
