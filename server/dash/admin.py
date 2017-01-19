@@ -1554,6 +1554,7 @@ class CpcConstraintAdmin(admin.ModelAdmin):
     model = models.CpcConstraint
     list_display = (
         'id',
+        'source',
         'agency',
         'account',
         'campaign',
@@ -1566,7 +1567,7 @@ class CpcConstraintAdmin(admin.ModelAdmin):
     )
 
     list_filter = (
-        'constraint_type',
+        'constraint_type', 'source',
     )
 
     search_fields = (

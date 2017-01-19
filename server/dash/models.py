@@ -4340,9 +4340,9 @@ def _generate_parents(ad_group=None, campaign=None, account=None, agency=None):
 
 class CpcConstraint(models.Model):
     id = models.AutoField(primary_key=True)
-    min_cpc = models.DecimalField(max_digits=10, decimal_places=4, null=True,
+    min_cpc = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True,
                                   verbose_name='Minimum CPC')
-    max_cpc = models.DecimalField(max_digits=10, decimal_places=4, null=True,
+    max_cpc = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True,
                                   verbose_name='Maximum CPC')
     agency = models.ForeignKey(Agency, null=True, blank=True, related_name='cpc_constraints',
                                on_delete=models.PROTECT)
