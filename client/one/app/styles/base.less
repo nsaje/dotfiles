@@ -1097,13 +1097,27 @@ label, label.control-label, .form-horizontal .control-label {
     color: @green;
 }
 
+.message--success-box {
+    background-color: fade(@green, 5%);
+    border: 1px solid fade(@green, 10%);
+    padding: 8px 10px 8px 34px;
+    border-radius: @border-radius;
+}
+
 .message--error {
     color: @red;
 }
 
+.message--error-box {
+    background-color: tint(@red, 95%);
+    border: 1px solid tint(@red, 90%);
+    padding: 8px 10px 8px 34px;
+    border-radius: @border-radius;
+}
+
 .message--warning {
-    background-color: fade(@orange, 5%);
-    border: 1px solid fade(@orange, 10%);
+    background-color: tint(@orange, 95%);
+    border: 1px solid tint(@orange, 90%);
     padding: 8px 10px;
     border-radius: @border-radius;
 }
@@ -1111,6 +1125,13 @@ label, label.control-label, .form-horizontal .control-label {
 .message--info {
     background-color: fade(@blue, 5%);
     border: 1px solid fade(@blue, 10%);
+    padding: 8px 10px;
+    border-radius: @border-radius;
+}
+
+.message--help {
+    background-color: fade(@very-light-gray, 50%);
+    border: 1px solid @very-light-gray;
     padding: 8px 10px;
     border-radius: @border-radius;
 }
@@ -1129,6 +1150,20 @@ label, label.control-label, .form-horizontal .control-label {
         left: 7px;
         top: 7px;
         opacity: 0.5;
+    }
+
+    &.message--error {
+        padding-left: 28px;
+
+        &::before {
+            background-image: url('images/error-red.svg');
+        }
+    }
+
+    &.message--error-box {
+        &::before {
+            background-image: url('images/error-red.svg');
+        }
     }
 
     &.message--success {
@@ -1150,6 +1185,12 @@ label, label.control-label, .form-horizontal .control-label {
     &.message--info {
         &::before {
             background-image: url('images/info-blue.svg');
+        }
+    }
+
+    &.message--help {
+        &::before {
+            background-image: url('images/help-dark-gray.svg');
         }
     }
 }

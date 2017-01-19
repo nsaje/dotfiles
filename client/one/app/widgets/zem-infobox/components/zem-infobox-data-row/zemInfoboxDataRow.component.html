@@ -15,7 +15,11 @@
           zem-lazy-popover-append-to-body="true"
           zem-lazy-popover-animation-class="fade"
           zem-lazy-popover-stay-open-on-hover="true">
-        <span class="zem-infobox-data-row__value">{{$ctrl.row.value}}</span>
+        <span class="zem-infobox-data-row__value"
+              ng-class="{
+                  'text-green': $ctrl.row.icon === $ctrl.constants.emoticon.HAPPY,
+                  'text-red': $ctrl.row.icon === $ctrl.constants.emoticon.SAD,
+              }">{{$ctrl.row.value}}</span>
         <span ng-if="$ctrl.row.detailsLabel" class="zem-infobox-data-row__details-label">({{$ctrl.row.detailsLabel}})</span>
     </span>
     <zem-help-popover ng-if="$ctrl.row.warning"
