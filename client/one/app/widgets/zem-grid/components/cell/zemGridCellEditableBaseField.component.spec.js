@@ -3,7 +3,8 @@
 describe('zemGridCellEditableBaseField', function () {
     var scope, element, $compileProvider, $compile, $q;
 
-    var template = '<zem-grid-cell-editable-base-field data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid">' +
+    var template = '<zem-grid-cell-editable-base-field ' +
+                        'data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid">' +
                    '</zem-grid-cell-editable-base-field>';
 
     function mockDirective (directive) {

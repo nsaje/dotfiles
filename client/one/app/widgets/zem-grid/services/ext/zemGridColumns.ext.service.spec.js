@@ -14,7 +14,7 @@ describe('zemGridColumnsService', function () {
         $provide.value('zemGridUIService', {resizeGridColumns: angular.noop});
     }));
 
-    beforeEach(inject(function (_$rootScope_, _zemGridObject_, _zemGridPubSub_, _zemGridColumnsService_, _zemGridStorageService_) {
+    beforeEach(inject(function (_$rootScope_, _zemGridObject_, _zemGridPubSub_, _zemGridColumnsService_, _zemGridStorageService_) { // eslint-disable-line max-len
         $rootScope = _$rootScope_;
         zemGridObject = _zemGridObject_;
         zemGridPubSub = _zemGridPubSub_;

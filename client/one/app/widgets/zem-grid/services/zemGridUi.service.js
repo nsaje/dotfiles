@@ -343,8 +343,8 @@ angular.module('one.widgets').factory('zemGridUIService', function ($timeout, ze
         var gridViewportOffset = window.pageYOffset - grid.ui.element.offset().top + topOffset;
 
         var isHeaderSticky = gridViewportOffset > 0;
-        var isFooterSticky = isHeaderSticky &&
-            gridViewportOffset + document.documentElement.clientHeight < grid.ui.element.height() + STICKY_FOOTER_HEIGHT;
+        var isFooterSticky = isHeaderSticky && gridViewportOffset +
+            document.documentElement.clientHeight < grid.ui.element.height() + STICKY_FOOTER_HEIGHT;
 
         stickyHeader.css(getHeaderStyle(isHeaderSticky));
         stickyFooter.css(getFooterStyle(isFooterSticky));

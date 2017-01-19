@@ -95,14 +95,14 @@ angular.module('one.widgets').factory('zemGridEndpointApi', function ($q, $http,
 
             if (metaData.breakdown === constants.breakdown.MEDIA_SOURCE ||
                 metaData.breakdown === constants.breakdown.PUBLISHER) {
-                return '/api/grid/' + levelKey + '/' + metaData.id + '/' + breakdownKey + '/' + breakdownId + '/settings/';
+                return '/api/grid/' + levelKey + '/' + metaData.id + '/' +
+                    breakdownKey + '/' + breakdownId + '/settings/';
             }
 
             return '/api/grid/' + breakdownKey + '/' + breakdownId + '/settings/';
         }
 
         function createEditUrl (rowId) {
-            var levelKey = metaData.level;
             var breakdownKey = metaData.breakdown + 's';
 
             return '/api/grid/' + breakdownKey + '/' + rowId + '/edit/';

@@ -13,7 +13,7 @@ angular.module('one.widgets').component('zemGridIntegration', {
         selectionCallback: '=',
     },
     templateUrl: '/app/widgets/zem-grid-integration/zemGridIntegration.component.html',
-    controller: function ($scope, $timeout, $state, zemGridEndpointService, zemDataSourceService, zemDataFilterService, zemPermissions) {
+    controller: function ($scope, $timeout, $state, zemGridEndpointService, zemDataSourceService, zemDataFilterService, zemPermissions) { // eslint-disable-line max-len
         var dataFilterUpdateHandler;
         var $ctrl = this;
 

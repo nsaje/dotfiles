@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.widgets').factory('zemGridBulkActionsService', function ($window, api, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadTriggerService, zemUploadApiConverter) {
+angular.module('one.widgets').factory('zemGridBulkActionsService', function ($window, api, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadTriggerService, zemUploadApiConverter) { // eslint-disable-line max-len
 
     function BulkActionsService (gridApi) {
         this.getActions = getActions;
@@ -33,7 +33,9 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
                 return {
                     name: batch.name,
                     batch: batch, // store for later use
-                    callback: function (row) { return row.data.stats[zemGridEndpointColumns.COLUMNS.batchId.field].value === batch.id; },
+                    callback: function (row) {
+                        return row.data.stats[zemGridEndpointColumns.COLUMNS.batchId.field].value === batch.id;
+                    },
                 };
             });
 
@@ -85,7 +87,8 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
 
         function getActions () {
             var metaData = gridApi.getMetaData();
-            if (metaData.level === constants.level.AD_GROUPS && metaData.breakdown === constants.breakdown.CONTENT_AD) {
+            if (metaData.level === constants.level.AD_GROUPS
+                && metaData.breakdown === constants.breakdown.CONTENT_AD) {
                 return [
                     ACTIONS.pause,
                     ACTIONS.enable,
@@ -101,7 +104,8 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
                     ACTIONS.restore,
                     ACTIONS.edit,
                 ];
-            } else if (metaData.level === constants.level.ACCOUNTS && metaData.breakdown === constants.breakdown.CAMPAIGN) {
+            } else if (metaData.level === constants.level.ACCOUNTS
+                        && metaData.breakdown === constants.breakdown.CAMPAIGN) {
                 return [
                     {
                         name: 'Archive',
@@ -114,7 +118,8 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
                     },
                     ACTIONS.restore
                 ];
-            } else if (metaData.level === constants.level.ALL_ACCOUNTS && metaData.breakdown == constants.breakdown.ACCOUNT) {
+            } else if (metaData.level === constants.level.ALL_ACCOUNTS
+                        && metaData.breakdown === constants.breakdown.ACCOUNT) {
                 return [
                     {
                         name: 'Archive',
@@ -127,7 +132,8 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
                     },
                     ACTIONS.restore
                 ];
-            } else if (metaData.level === constants.level.CAMPAIGNS && metaData.breakdown == constants.breakdown.AD_GROUP) {
+            } else if (metaData.level === constants.level.CAMPAIGNS
+                        && metaData.breakdown === constants.breakdown.AD_GROUP) {
                 return [
                     ACTIONS.pause,
                     ACTIONS.enable,
@@ -142,7 +148,8 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
                     },
                     ACTIONS.restore,
                 ];
-            } else if (metaData.level === constants.level.AD_GROUPS && metaData.breakdown == constants.breakdown.MEDIA_SOURCE) {
+            } else if (metaData.level === constants.level.AD_GROUPS
+                        && metaData.breakdown === constants.breakdown.MEDIA_SOURCE) {
                 return [
                     ACTIONS.pause,
                     ACTIONS.enable
@@ -153,7 +160,7 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
         function checkCanArchive () {
             var selection = gridApi.getSelection();
             return !selection.selected.every(function (item) {
-                if (item.level != 1) {
+                if (item.level !== 1) {
                     return true;
                 }
                 return item.data.stats.status.value !== constants.settingsState.ACTIVE;
@@ -177,7 +184,7 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
                 metaData.id,
                 selection
             ).then(function (data) {
-                if (metaData.level == constants.level.AD_GROUPS) {
+                if (metaData.level === constants.level.AD_GROUPS) {
                     notifyArchivingSuccess(data.data.archivedCount, data.data.activeCount);
                 }
                 refreshData(data);
@@ -274,7 +281,8 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
         }
 
         function handleError (data) {
-            zemAlertsService.notify(constants.notificationType.danger, 'Error executing action: ' + data.data.message, true);
+            zemAlertsService.notify(constants.notificationType.danger,
+                'Error executing action: ' + data.data.message, true);
         }
     }
 

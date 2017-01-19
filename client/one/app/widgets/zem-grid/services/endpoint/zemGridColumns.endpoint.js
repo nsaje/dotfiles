@@ -555,7 +555,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             field: 'spend_projection',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
             totalRow: true,
-            help: 'Predicted media and data spend by the end of selected date range based on the spend in the previous days.',
+            help: 'Predicted media and data spend by the end of ' +
+                  'selected date range based on the spend in the previous days.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
@@ -566,7 +567,8 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             field: 'license_fee_projection',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
             totalRow: true,
-            help: 'Predicted license fee by the end of selected date range based on the license fee in the previous days.',
+            help: 'Predicted license fee by the end of selected date range based on the ' +
+                    'license fee in the previous days.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
@@ -577,11 +579,12 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             field: 'total_fee_projection',
             type: zemGridConstants.gridColumnTypes.CURRENCY,
             totalRow: true,
-            help: 'Predicted total fee by the end of selected date range based on the license fee in the previous days and recognized flat fee.',
+            help: 'Predicted total fee by the end of selected date range based on the ' +
+                    'license fee in the previous days and recognized flat fee.',
             order: true,
             initialOrder: zemGridConstants.gridColumnOrder.DESC,
             internal: 'zemauth.can_see_projections',
-            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown', 'zemauth.can_view_flat_fees'],
+            shown: ['zemauth.can_see_projections', 'zemauth.can_view_platform_cost_breakdown', 'zemauth.can_view_flat_fees'], // eslint-disable-line max-len
         },
 
         // Optimisation metrics
@@ -1070,15 +1073,16 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     configureBreakdownExceptions(SOURCE_GROUP, [constants.breakdown.MEDIA_SOURCE]);
     configureBreakdownExceptions(PUBLISHER_GROUP, [constants.breakdown.PUBLISHER]);
 
-    // Exceptions (Projections) - ALL_ACCOUNTS, ACCOUNTS level, MEDIA_SOURCE breakdown are only shown on ALL_ACCOUNTS level
+    // Exceptions (Projections) - ALL_ACCOUNTS, ACCOUNTS level, MEDIA_SOURCE
+    // breakdown are only shown on ALL_ACCOUNTS level
     configureLevelExceptions(PROJECTIONS_GROUP, [constants.level.ALL_ACCOUNTS, constants.level.ACCOUNTS]);
-    configureCustomException(PROJECTIONS_GROUP, {level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
+    configureCustomException(PROJECTIONS_GROUP, {level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false}); // eslint-disable-line max-len
 
     // Exceptions (state - not yet supported everywhere, only available on base level)
     COLUMNS.state.exceptions.breakdowns = [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD];
     COLUMNS.state.exceptions.breakdownBaseLevelOnly = true;
     // State selector is only shown on MEDIA_SOURCE breakdown on AD_GROUPS level
-    COLUMNS.state.exceptions.custom.push({level: constants.level.AD_GROUPS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: true});
+    COLUMNS.state.exceptions.custom.push({level: constants.level.AD_GROUPS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: true}); // eslint-disable-line max-len
 
 
     // Exceptions (edit button - only available on base content ad level)
@@ -1093,13 +1097,13 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
     COLUMNS.exchange.exceptions.breakdowns = [constants.breakdown.PUBLISHER];
 
     // Exceptions (performance - not shown on ALL_ACCOUNTS level and on ACCOUNT - MEDIA SOURCES)
-    COLUMNS.performance.exceptions.levels = [constants.level.ACCOUNTS, constants.level.CAMPAIGNS, constants.level.AD_GROUPS];
-    COLUMNS.performance.exceptions.custom.push({level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
+    COLUMNS.performance.exceptions.levels = [constants.level.ACCOUNTS, constants.level.CAMPAIGNS, constants.level.AD_GROUPS]; // eslint-disable-line max-len
+    COLUMNS.performance.exceptions.custom.push({level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false}); // eslint-disable-line max-len
 
     // Exceptions (media source status column - shown only on Ad Group level)
-    COLUMNS.status.exceptions.custom.push({level: constants.level.ALL_ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
-    COLUMNS.status.exceptions.custom.push({level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
-    COLUMNS.status.exceptions.custom.push({level: constants.level.CAMPAIGNS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false});
+    COLUMNS.status.exceptions.custom.push({level: constants.level.ALL_ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false}); // eslint-disable-line max-len
+    COLUMNS.status.exceptions.custom.push({level: constants.level.ACCOUNTS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false}); // eslint-disable-line max-len
+    COLUMNS.status.exceptions.custom.push({level: constants.level.CAMPAIGNS, breakdown: constants.breakdown.MEDIA_SOURCE, shown: false}); // eslint-disable-line max-len
 
     // Exceptions (total fee and recognized flat fee - only shown on ALL_ACCOUNTS level)
     COLUMNS.totalFee.exceptions.levels = [constants.level.ALL_ACCOUNTS];
@@ -1255,7 +1259,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         return COLUMNS_ORDERED.filter(function (column) {
             var result = true;
             if (column.exceptions.breakdowns) result = result && intersects(column.exceptions.breakdowns, breakdowns);
-            if (column.exceptions.breakdownBaseLevelOnly) result = result && column.exceptions.breakdowns.indexOf(breakdowns[0]) >= 0;
+            if (column.exceptions.breakdownBaseLevelOnly) result = result && column.exceptions.breakdowns.indexOf(breakdowns[0]) >= 0; // eslint-disable-line max-len
             if (column.exceptions.levels) result = result && column.exceptions.levels.indexOf(level) >= 0;
             column.exceptions.custom.forEach(function (customException) {
                 if (level === customException.level && breakdowns[0] === customException.breakdown) {

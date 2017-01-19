@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.widgets').directive('zemGridHeaderCellData', function ($timeout, zemGridUIService) {
+angular.module('one.widgets').directive('zemGridHeaderCellData', function () {
 
     return {
         restrict: 'E',

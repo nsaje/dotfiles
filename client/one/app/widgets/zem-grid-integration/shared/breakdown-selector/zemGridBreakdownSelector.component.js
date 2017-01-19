@@ -20,7 +20,8 @@ angular.module('one.widgets').component('zemGridBreakdownSelector', {
                 $ctrl.api.getMetaData().breakdownGroups.time,
             ].filter(function (group) { return group.available !== false; });
 
-            setDefaultBreakdowns(constants.level.ACCOUNTS, constants.breakdown.CAMPAIGN, [constants.breakdown.AD_GROUP]);
+            setDefaultBreakdowns(constants.level.ACCOUNTS, constants.breakdown.CAMPAIGN,
+                [constants.breakdown.AD_GROUP]);
         };
 
         function setDefaultBreakdowns (level, breakdown, defaultBreakdowns) {

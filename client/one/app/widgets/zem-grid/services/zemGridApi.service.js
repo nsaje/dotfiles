@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.widgets').factory('zemGridApi', function ($rootScope, zemGridStorageService) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridApi', function () { // eslint-disable-line max-len
 
     //
     // GridApi provides interface for interaction with zem-grid

@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.widgets').directive('zemGridCellExternalLink', function (zemGridEndpointColumns) {
+angular.module('one.widgets').directive('zemGridCellExternalLink', function () {
 
     return {
         restrict: 'E',

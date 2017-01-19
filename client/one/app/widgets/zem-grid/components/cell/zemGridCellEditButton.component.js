@@ -1,8 +1,4 @@
 angular.module('one.widgets').directive('zemGridCellEditButton', function () {
-    var EDITABLE_ENTITIES = [
-        constants.entityType.CONTENT_AD,
-    ];
-
     return {
         restrict: 'E',
         replace: true,

@@ -20,7 +20,7 @@ describe('zemGridEndpointColumnsSpec', function () {
     }
 
     it('should configure columns', function () {
-        var columns = zemGridEndpointColumns.createColumns(constants.level.CAMPAIGNS, [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD, constants.breakdown.MEDIA_SOURCE]);
+        var columns = zemGridEndpointColumns.createColumns(constants.level.CAMPAIGNS, [constants.breakdown.AD_GROUP, constants.breakdown.CONTENT_AD, constants.breakdown.MEDIA_SOURCE]); // eslint-disable-line max-len
         var nameColumn = findColumn(zemGridEndpointColumns.COLUMNS.name, columns);
         expect (nameColumn.permanent).toBe(true);
         expect (nameColumn.default).toBe(true);
@@ -76,8 +76,8 @@ describe('zemGridEndpointColumnsSpec', function () {
         var pixels = [{prefix: 'pixel_1', name: 'Pixel goal'}];
         var conversionGoals = [{id: 'conversion_goal_1', name: 'Conversion goal'}];
         var campaignGoals = [
-            {fields: {avg_cost_per_pixel_1_24: true}, name: 'Avg. CPA', conversion: 'Pixel goal - 1 day', value: 20, primary: true},
-            {fields: {avg_cost_per_conversion_goal_1: true}, name: 'Avg. CPA', conversion: 'Conversion goal', value: 50, primary: false},
+            {fields: {avg_cost_per_pixel_1_24: true}, name: 'Avg. CPA', conversion: 'Pixel goal - 1 day', value: 20, primary: true}, // eslint-disable-line max-len
+            {fields: {avg_cost_per_conversion_goal_1: true}, name: 'Avg. CPA', conversion: 'Conversion goal', value: 50, primary: false}, // eslint-disable-line max-len
         ];
 
         zemGridEndpointColumns.setDynamicColumns(columns, categories, campaignGoals, conversionGoals, pixels);

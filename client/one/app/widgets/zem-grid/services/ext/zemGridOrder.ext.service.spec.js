@@ -15,7 +15,7 @@ describe('zemGridOrderService', function () {
         $provide.value('zemGridUIService', {resizeGridColumns: angular.noop});
     }));
 
-    beforeEach(inject(function (_$rootScope_, _zemGridConstants_, _zemGridObject_, _zemGridPubSub_, _zemGridOrderService_, _zemGridStorageService_) {
+    beforeEach(inject(function (_$rootScope_, _zemGridConstants_, _zemGridObject_, _zemGridPubSub_, _zemGridOrderService_, _zemGridStorageService_) { // eslint-disable-line max-len
         $rootScope = _$rootScope_;
         zemGridConstants = _zemGridConstants_;
         zemGridObject = _zemGridObject_;
@@ -79,8 +79,8 @@ describe('zemGridOrderService', function () {
         spyOn(grid.meta.pubsub, 'notify').and.callThrough();
 
         var orderService = zemGridOrderService.createInstance(grid);
-        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.METADATA_UPDATED, jasmine.any(Object), jasmine.any(Function));
-        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.DATA_UPDATED, jasmine.any(Object), jasmine.any(Function));
+        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.METADATA_UPDATED, jasmine.any(Object), jasmine.any(Function)); // eslint-disable-line max-len
+        expect(grid.meta.pubsub.register).toHaveBeenCalledWith(pubsub.EVENTS.DATA_UPDATED, jasmine.any(Object), jasmine.any(Function)); // eslint-disable-line max-len
 
         pubsub.notify(pubsub.EVENTS.METADATA_UPDATED);
         expect(grid.meta.pubsub.notify).toHaveBeenCalledWith(pubsub.EVENTS.EXT_ORDER_UPDATED);
@@ -92,7 +92,6 @@ describe('zemGridOrderService', function () {
     it('should load order when meta data is updated for the first time', function () {
         var grid = createGrid();
         var pubsub = grid.meta.pubsub;
-        var orderService = zemGridOrderService.createInstance(grid);
 
         spyOn(zemGridStorageService, 'loadOrder');
 
