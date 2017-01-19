@@ -114,7 +114,8 @@ class AdGroupSettings(api_common.BaseApiView):
                 campaign_settings,
             )
 
-        self._adjust_adgroup_sources(ad_group, new_settings, request)
+        self._adjust_adgroup_sources(ad_group, new_settings, request,
+                                     change_b1_rtb_sources_cpcs='b1_sources_group_cpc_cc' in changes)
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSettings.put')
 
         # save
@@ -338,11 +339,12 @@ class AdGroupSettings(api_common.BaseApiView):
         if user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
             settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
 
-    def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request):
+    def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request, change_b1_rtb_sources_cpcs):
         for ags in ad_group.adgroupsource_set.all().select_related('source__source_type'):
             curr_ags_settings = ags.get_current_settings()
             proposed_cpc = curr_ags_settings.cpc_cc
-            if (request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and
+            if (change_b1_rtb_sources_cpcs and
+                    request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and
                     ad_group_settings.b1_sources_group_enabled and
                     ags.source.source_type.type == constants.SourceType.B1):
                 proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
