@@ -31,7 +31,8 @@ angular.module('one.widgets').directive('zemGridBody', function (zemGridConstant
                 // To simplify handling (window resize, etc.) we enforce that MIN_NUM_OF_ROWS_PER_PAGE (25)
                 // is always prepared and can be greater if viewport is higher than 1125px + 90px (footer+header).
                 // TODO: This can be improved in future if we find it necessary
-                var numOfRows = Math.ceil (document.documentElement.clientHeight / zemGridConstants.gridBodyRendering.ROW_HEIGHT);
+                var numOfRows = Math.ceil (document.documentElement.clientHeight /
+                                           zemGridConstants.gridBodyRendering.ROW_HEIGHT);
                 numOfRows = Math.max (numOfRows, zemGridConstants.gridBodyRendering.MIN_NUM_OF_ROWS_PER_PAGE);
                 return numOfRows;
             }

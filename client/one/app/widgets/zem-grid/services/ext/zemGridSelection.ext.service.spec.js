@@ -9,7 +9,7 @@ describe('zemGridSelectionService', function () {
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function (_$rootScope_, _zemGridConstants_, _zemGridObject_, _zemGridPubSub_, _zemGridSelectionService_) {
+    beforeEach(inject(function (_$rootScope_, _zemGridConstants_, _zemGridObject_, _zemGridPubSub_, _zemGridSelectionService_) { // eslint-disable-line max-len
         $rootScope = _$rootScope_;
         zemGridConstants = _zemGridConstants_;
         zemGridObject = _zemGridObject_;
@@ -38,10 +38,10 @@ describe('zemGridSelectionService', function () {
 
         grid.footer.row = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, {}, 0, null);
 
-        var baseRow = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, {breakdownId: 'id-1-1'}, 1, grid.footer.row);
+        var baseRow = zemGridObject.createRow(zemGridConstants.gridRowType.STATS, {breakdownId: 'id-1-1'}, 1, grid.footer.row); // eslint-disable-line max-len
         grid.body.rows.push(baseRow);
-        grid.body.rows.push(zemGridObject.createRow(zemGridConstants.gridRowType.STATS, {breakdownId: 'id-2-1'}, 2, baseRow));
-        grid.body.rows.push(zemGridObject.createRow(zemGridConstants.gridRowType.STATS, {breakdownId: 'id-2-2'}, 2, baseRow));
+        grid.body.rows.push(zemGridObject.createRow(zemGridConstants.gridRowType.STATS, {breakdownId: 'id-2-1'}, 2, baseRow)); // eslint-disable-line max-len
+        grid.body.rows.push(zemGridObject.createRow(zemGridConstants.gridRowType.STATS, {breakdownId: 'id-2-2'}, 2, baseRow)); // eslint-disable-line max-len
 
         return grid;
     }

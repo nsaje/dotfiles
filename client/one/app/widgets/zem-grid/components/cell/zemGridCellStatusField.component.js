@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.widgets').directive('zemGridCellStatusField', function (zemGridEndpointColumns) {
+angular.module('one.widgets').directive('zemGridCellStatusField', function () {
 
     function getStatusText (value, row, statusValuesAndTexts) {
         if (row.archived) {

@@ -2,8 +2,7 @@
 
 describe('zemGridStateAndStatusHelpers', function () {
     var zemGridStateAndStatusHelpers,
-        tests,
-        options;
+        tests;
 
     beforeEach(module('one'));
 
@@ -43,7 +42,8 @@ describe('zemGridStateAndStatusHelpers', function () {
         ];
 
         tests.forEach(function (test) {
-            expect(zemGridStateAndStatusHelpers.getStatusValuesAndTexts(test.level, test.breakdown)).toEqual(test.expectedResult);
+            expect(zemGridStateAndStatusHelpers.getStatusValuesAndTexts(test.level, test.breakdown))
+            .toEqual(test.expectedResult);
         });
     });
 
@@ -56,7 +56,8 @@ describe('zemGridStateAndStatusHelpers', function () {
         ];
 
         tests.forEach(function (test) {
-            expect(zemGridStateAndStatusHelpers.getStateValues(test.level, test.breakdown)).toEqual(test.expectedResult);
+            expect(zemGridStateAndStatusHelpers.getStateValues(test.level, test.breakdown))
+            .toEqual(test.expectedResult);
         });
     });
 });

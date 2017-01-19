@@ -3,7 +3,7 @@
 
 'use strict';
 
-angular.module('one.widgets').factory('zemGridEndpointService', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemNavigationService, zemGridEndpointApiConverter) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridEndpointService', function ($http, $q, zemGridEndpointApi, zemGridEndpointBreakdowns, zemGridEndpointColumns, zemNavigationService) { // eslint-disable-line max-len
 
     function EndpointService (metaData) {
 

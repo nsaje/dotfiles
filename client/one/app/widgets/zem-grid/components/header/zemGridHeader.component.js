@@ -74,7 +74,8 @@ angular.module('one.widgets').directive('zemGridHeader', function ($timeout, zem
 
             var scrollStopped = debounce(function () {
                 // Animate fade-in
-                // First set position to be hidden on the left side and after that slide-in columns to correct fixed position
+                // First set position to be hidden on the left side and after that
+                // slide-in columns to correct fixed position
                 var startPosition = Math.max(0, ctrl.grid.body.ui.scrollLeft - ctrl.grid.ui.pivotColumnsWidth);
                 var endPosition = ctrl.grid.body.ui.scrollLeft;
                 zemGridUIService.updatePivotColumns(ctrl.grid, startPosition);

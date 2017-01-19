@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.widgets').factory('zemGridStateAndStatusHelpers', function (zemGridEndpointColumns) {
+angular.module('one.widgets').factory('zemGridStateAndStatusHelpers', function () {
     return {
         getStatusValuesAndTexts: getStatusValuesAndTexts,
         getStateValues: getStateValues,

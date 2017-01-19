@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
     bindings: {
         api: '=',
     },
-    templateUrl: '/app/widgets/zem-grid-integration/shared/bulk-publishers-actions/zemGridBulkPublishersActions.component.html',
+    templateUrl: '/app/widgets/zem-grid-integration/shared/bulk-publishers-actions/zemGridBulkPublishersActions.component.html', // eslint-disable-line max-len
     controller: function ($window, api, zemGridConstants, zemGridEndpointColumns, zemDataFilterService) { // eslint-disable-line max-len
         var COLUMNS = zemGridEndpointColumns.COLUMNS;
         var MAX_BLACKLISTED_PUBLISHERS_YAHOO = 0;

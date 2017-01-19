@@ -19,7 +19,8 @@ angular.module('one.widgets').directive('zemGridCellStateSelector', function () 
             var vm = this;
 
             vm.isSaveRequestInProgress = vm.grid.meta.dataService.isSaveRequestInProgress;
-            vm.stateValues = zemGridStateAndStatusHelpers.getStateValues(vm.grid.meta.data.level, vm.grid.meta.data.breakdown);
+            vm.stateValues = zemGridStateAndStatusHelpers
+                .getStateValues(vm.grid.meta.data.level, vm.grid.meta.data.breakdown);
             vm.setState = setState;
 
             $scope.$watch('ctrl.row', update);
