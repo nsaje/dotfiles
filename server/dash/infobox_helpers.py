@@ -367,7 +367,7 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
     if filled_daily_ratio:
         daily_ratio_description = '{:.2f}% of {} daily budget'.format(
             abs(filled_daily_ratio) * 100,
-            utils.lc_helper.default_currency(yesterday_cost)
+            utils.lc_helper.default_currency(daily_budget)
         )
     else:
         daily_ratio_description = 'N/A'
