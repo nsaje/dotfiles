@@ -116,8 +116,9 @@ class AdGroupSettings(api_common.BaseApiView):
                 campaign_settings,
             )
         try:
-            self._adjust_adgroup_sources(ad_group, new_settings, request,
-                                         change_b1_rtb_sources_cpcs='b1_sources_group_cpc_cc' in changes)
+            change_b1_rtb_sources_cpcs = ('b1_sources_group_cpc_cc' in changes or
+                                          changes.get('b1_sources_group_enabled'))
+            self._adjust_adgroup_sources(ad_group, new_settings, request, change_b1_rtb_sources_cpcs)
         except cpc_constraints.ValidationError as err:
             raise exc.ValidationError(errors={
                 'b1_sources_group_cpc_cc': list(err)
