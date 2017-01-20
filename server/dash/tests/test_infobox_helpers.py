@@ -353,12 +353,12 @@ class InfoBoxHelpersTest(TestCase):
         setting = dash.infobox_helpers.create_yesterday_spend_setting(50, 100)
 
         self.assertEqual("$50.00", setting.value)
-        self.assertEqual("50.00% of $100.00 daily budget", setting.description)
+        self.assertEqual("50.00% of $100.00 Daily Spend Cap", setting.description)
 
         setting_1 = dash.infobox_helpers.create_yesterday_spend_setting(110, 100)
 
         self.assertEqual("$110.00", setting_1.value)
-        self.assertEqual("110.00% of $100.00 daily budget", setting_1.description)
+        self.assertEqual("110.00% of $100.00 Daily Spend Cap", setting_1.description)
 
         setting_0 = dash.infobox_helpers.create_yesterday_spend_setting(50, 0)
 

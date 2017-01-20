@@ -1857,7 +1857,7 @@ class AdGroupOverviewTest(TestCase):
 
         yesterday_setting = self._get_setting(settings, 'yesterday')
         self.assertEqual('$60.00', yesterday_setting['value'])
-        self.assertEqual('120.00% of $50.00 daily budget', yesterday_setting['description'])
+        self.assertEqual('120.00% of $50.00 Daily Spend Cap', yesterday_setting['description'])
 
 
 class CampaignOverviewTest(TestCase):
