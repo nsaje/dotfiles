@@ -63,10 +63,10 @@ angular.module('one.widgets').factory('zemGridEndpointApi', function ($q, $http,
 
         function convertErrorsFromApi (errors) {
             // FIXME: generalize errors & move to converter
-            if ('b1_sources_group_cpc_cc' in errors) {
+            if (errors.hasOwnProperty('b1_sources_group_cpc_cc')) {
               errors.cpc_cc = (errors.cpc_cc || []).concat(errors.b1_sources_group_cpc_cc);
             }
-            if ('b1_sources_group_daily_budget' in errors) {
+            if (errors.hasOwnProperty('b1_sources_group_daily_budget')) {
               errors.daily_budget_cc = (errors.daily_budget_cc || []).concat(errors.b1_sources_group_daily_budget);
             }
             var result = {
