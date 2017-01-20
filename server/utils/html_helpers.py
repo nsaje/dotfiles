@@ -10,7 +10,7 @@ class Url():
         self.text = text or href
 
     def as_html(self):
-        return '<a href="{}">{}</a>'.format(self.href, self.text)
+        return u'<a href="{}">{}</a>'.format(self.href, self.text)
 
 
 class TableCell():
