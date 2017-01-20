@@ -28,6 +28,11 @@ def _is_pacific_midnight():
     return pacific_now.hour == 0
 
 
+def _is_local_midnight():
+    local_now = dates_helper.local_now()
+    return local_now.hour == 0
+
+
 def _is_day_before_new_rotation():
     return True  # TODO: define days when rotation happens
 
@@ -73,6 +78,16 @@ def check_date_and_stop_old_ad_groups():
     ).values_list('ad_group_id', flat=True)
     for ad_group_id in ad_group_ids:
         _set_ad_group(ad_group_id, 'INACTIVE')
+
+
+def check_local_midnight_and_recalculate_daily_budgets():
+    # NOTE: if no article is uploaded at midnight, daily budgets will stay the same
+    # as before, potentially causing overspend, so we recalculate at midnight
+    if not _is_local_midnight():
+        return
+
+    ad_group_id = helpers.get_current_ad_group_id()
+    recalculate_and_set_new_daily_budgets(ad_group_id)
 
 
 def recalculate_and_set_new_daily_budgets(ad_group_id):

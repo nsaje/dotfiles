@@ -7,7 +7,7 @@ from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
-from integrations.bizwire import config, models
+from integrations.bizwire import config
 from integrations.bizwire.internal import actions, helpers
 
 import dash.api
@@ -52,14 +52,6 @@ def click_capping(request):
     })
 
 
-def _get_ad_group_id(article):
-    today = helpers.get_pacific_now().date()
-    return models.AdGroupRotation.objects.filter(
-        ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-        start_date__lte=today
-    ).latest('start_date').ad_group_id
-
-
 def _distribute_articles(articles_data):
     existing_candidate_labels = dash.models.ContentAdCandidate.objects.filter(
         ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
@@ -77,7 +69,7 @@ def _distribute_articles(articles_data):
             # prevent inserting multiple times if calls are repeated
             continue
 
-        ad_group_id = _get_ad_group_id(article)
+        ad_group_id = helpers.get_current_ad_group_id()
         candidates_per_ad_group[ad_group_id].append(article)
 
     return candidates_per_ad_group
