@@ -355,7 +355,7 @@ class AdGroupSettings(api_common.BaseApiView):
                     ad_group_settings.b1_sources_group_enabled and
                     ags.source.source_type.type == constants.SourceType.B1):
                 proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
-            if proposed_cpc > ad_group_settings.cpc_cc:
+            if ad_group_settings.cpc_cc and proposed_cpc > ad_group_settings.cpc_cc:
                 proposed_cpc = ad_group_settings.cpc_cc
 
             if proposed_cpc == curr_ags_settings.cpc_cc:
