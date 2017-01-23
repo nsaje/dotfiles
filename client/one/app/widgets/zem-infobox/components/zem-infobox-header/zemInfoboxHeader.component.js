@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         entity: '<',
     },
     templateUrl: '/app/widgets/zem-infobox/components/zem-infobox-header/zemInfoboxHeader.component.html',
-    controller: function ($timeout, zemSettingsService, zemEntityService, zemNavigationService) {
+    controller: function ($timeout, zemSettingsService, zemEntityService, zemNavigationService, zemPermissions) {
         var $ctrl = this;
 
         $ctrl.openSettings = zemSettingsService.open;
@@ -34,7 +34,12 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         }
 
         function getLevelFromEntity (entity) {
-            if (!entity) return 'All Accounts';
+            if (!entity) {
+                if (zemPermissions.hasPermission('dash.group_account_automatically_add')) {
+                    return 'All accounts';
+                }
+                return 'My accounts';
+            }
 
             switch (entity.type) {
             case constants.entityType.ACCOUNT: return 'Account';
