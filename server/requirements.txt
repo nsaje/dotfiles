@@ -47,7 +47,8 @@ google-api-python-client==1.4.2
 secretcrypt==0.4.1
 
 # Influx
-git+https://github.com/Zemanta/django-statsd-influx.git@v0.1
+git+https://github.com/Zemanta/django-statsd-influx.git@v0.1.5
+django-ipware==1.1.6
 
 # Demo anonymization
 fake-factory==0.5.7

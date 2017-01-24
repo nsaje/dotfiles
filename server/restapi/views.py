@@ -1,6 +1,9 @@
 import collections
 import logging
 import influx
+from django.conf import settings
+import ipware.ip
+import time
 
 from django.db import transaction
 from django.db.models import Q
@@ -69,11 +72,32 @@ class RESTAPIBaseView(APIView):
     renderer_classes = [RESTAPIJSONRenderer]
     permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission,)
 
-    def dispatch(self, request, *args, **kwargs):
+    def initialize_request(self, request, *args, **kwargs):
+        drf_request = super(RESTAPIBaseView, self).initialize_request(request, *args, **kwargs)
+        drf_request.method = request.method
+        drf_request.start_time = time.time()
+        return drf_request
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        drf_response = super(RESTAPIBaseView, self).finalize_response(request, response, *args, **kwargs)
         user = getattr(request, 'user', None)
         user_email = getattr(user, 'email', 'unknown')
-        with influx.block_timer('restapi.request', endpoint=self.__class__.__name__, method=request.method, user=user_email):
-            return super(RESTAPIBaseView, self).dispatch(request, *args, **kwargs)
+        influx.timing(
+            'restapi.request',
+            (time.time() - request.start_time),
+            endpoint=self.__class__.__name__,
+            method=request.method,
+            status=str(response.status_code),
+            user=user_email
+        )
+        logger.info('REST API request/response: endpoint={endpoint}, method={method}, status={status}, user={user}, ip={ip}'.format(
+            endpoint=self.__class__.__name__,
+            method=request.method,
+            status=str(response.status_code),
+            user=user_email,
+            ip=ipware.ip.get_ip(request)
+        ))
+        return drf_response
 
     @staticmethod
     def response_ok(data, errors=None, **kwargs):
