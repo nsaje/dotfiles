@@ -787,6 +787,7 @@ class AdGroupSourcesRTBSerializer(serializers.Serializer):
     groupEnabled = serializers.BooleanField(source='b1_sources_group_enabled')
     dailyBudget = serializers.DecimalField(max_digits=10, decimal_places=2, source='b1_sources_group_daily_budget')
     state = DashConstantField(constants.AdGroupSourceSettingsState, source='b1_sources_group_state')
+    cpc = serializers.DecimalField(max_digits=10, decimal_places=4, source='b1_sources_group_cpc_cc')
 
     def update(self, data_internal, validated_data):
         request = validated_data['request']
