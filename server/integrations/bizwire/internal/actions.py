@@ -171,13 +171,10 @@ def _set_ad_group(ad_group_id, state):
 
 def _set_custom_cpcs(ad_group_id):
     for source_id, custom_cpc in config.CUSTOM_CPC_SETTINGS.items():
-        try:
-            current_settings = dash.models.AdGroupSource.objects.get(
-                ad_group_id=ad_group_id,
-                source_id=source_id
-            ).get_current_settings()
-        except dash.models.AdGroupSource.DoesNotExist:
-            continue
+        current_settings = dash.models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id
+        ).get_current_settings()
 
         new_settings = current_settings.copy_settings()
         new_settings.cpc_cc = custom_cpc
