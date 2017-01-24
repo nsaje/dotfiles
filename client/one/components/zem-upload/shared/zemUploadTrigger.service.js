@@ -18,7 +18,7 @@ angular.module('one.legacy').service('zemUploadTriggerService', function ($uibMo
             },
             backdrop: 'static',
             keyboard: false,
-            windowClass: 'modal-zem-upload',
+            windowClass: 'content-upload',
             scope: modalScope,
         });
     }
@@ -41,7 +41,7 @@ angular.module('one.legacy').service('zemUploadTriggerService', function ($uibMo
             },
             backdrop: 'static',
             keyboard: false,
-            windowClass: 'modal-zem-upload',
+            windowClass: 'content-upload',
             scope: modalScope,
         });
     }

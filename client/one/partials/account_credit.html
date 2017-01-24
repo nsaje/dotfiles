@@ -61,8 +61,8 @@
                         <a class="button button--small button--with-icon remove-icon" ng-click="cancelCreditItem(item.id)" ng-if="item.isSigned">Cancel</a>
                     </td>
                 </tr>
-                <tr ng-show="!activeCredit.length" class="message">
-                    <td colspan="12">No active credit items.</td>
+                <tr ng-show="!activeCredit.length">
+                    <td colspan="13">No active credit items.</td>
                 </tr>
             </tbody>
         </table>

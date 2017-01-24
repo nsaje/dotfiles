@@ -1,94 +1,81 @@
-<div class="zem-custom-audiences-modal">
-    <div class="modal-header">
-        <h4 class="modal-title">Create Custom Audience</h4>
-    </div>
-    <div class="modal-body form-horizontal">
-        <div class="form-group" ng-class="{'has-error': !!ctrl.errors.name}">
-            <label for="zem-custom-audiences-modal-name" class="col-xs-4 control-label">
-                Audience Name
-            </label>
-            <div class="col-xs-8">
-                <input type="text" id="zem-custom-audiences-modal-name" class="form__input-text" ng-model="ctrl.selectedName" ng-change="ctrl.removeError('name')" />
-                <label ng-repeat="error in ctrl.errors.name" class="control-label error">{{ error }}</label>
-            </div>
+<div class="modal__header">
+    <div class="modal__title">Create Custom Audience</div>
+</div>
+<div class="modal__body">
+    <div class="form">
+        <div class="form__group" ng-class="{'form--error': !!ctrl.errors.name}">
+            <label class="form__label" for="zem-custom-audiences-modal-name">Audience Name</label>
+            <input class="form__input-text" type="text" id="zem-custom-audiences-modal-name" ng-model="ctrl.selectedName"
+                   ng-change="ctrl.removeError('name')" />
+            <div class="message message--error" ng-repeat="error in ctrl.errors.name">{{ error }}</div>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!ctrl.errors.pixelId}">
-             <label for="zem-custom-audience-modal-pixie-select" class="col-xs-4 control-label">
+        <div class="form__group" ng-class="{'form--error': !!ctrl.errors.pixelId}">
+             <label class="form__label" for="zem-custom-audience-modal-pixie-select">
                 Pixel
                 <zem-help-popover content="The pixel that is the source of this traffic." placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
-            <div class="col-xs-8">
-                <input type="text" class="form__input-text" ng-model="ctrl.pixel.name" ng-readonly="true" />
-                <label ng-repeat="error in ctrl.errors.pixelId" class="control-label error">{{ error }}</label>
-            </div>
+            <input class="form__input-text" type="text" ng-model="ctrl.pixel.name" ng-readonly="true" />
+            <div class="message message--error" ng-repeat="error in ctrl.errors.pixelId">{{ error }}</div>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!ctrl.errors.rules}">
-            <label for="zem-custom-audience-modal-rule-select" class="col-xs-4 control-label">
+        <div class="form__group" ng-class="{'form--error': !!ctrl.errors.rules}">
+            <label class="form__label" for="zem-custom-audience-modal-rule-select">
                 Website traffic
                 <zem-help-popover content="Choose how you want to add people to your audience. Include all of your website visitors, or create rules that only add people who visit specific parts of your website." placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
-            <div class="col-xs-8">
-                <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-rule-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="ctrl.selectedTopRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
-                    <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
-                    <ui-select-choices repeat="rule.id as rule in ctrl.rules">
-                        {{ rule.name }}
-                    </ui-select-choices>
-                </ui-select>
-            </div>
-
-            <div ng-if="ctrl.showRefererRules()">
-                <label class="col-xs-4 control-label"></label>
-                <div class="col-xs-8">
-                    <div class="m-b-s">
-                        <label class="control-label m-t-s m-b-xs">Include traffic that meets the following conditions:</label>
-                        <div class="p-l-none p-r-none">
-                            <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
-                                <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
-                                <ui-select-choices repeat="rule.id as rule in ctrl.refererRules">
-                                    {{ rule.name }}
-                                </ui-select-choices>
-                            </ui-select>
-                        </div>
-                    </div>
-                    <div class="m-b-xs">
-                        <tags-input ng-show="ctrl.selectedRefererRuleId=='startsWith'" placeholder="Add URLs" ng-model="ctrl.selectedRefererRuleStartsWithValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
-                        <tags-input ng-show="ctrl.selectedRefererRuleId=='contains'" placeholder="Add tags" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly" on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')" ng-disabled="ctrl.readonly" min-length="1"></tags-input>
-                        <div class="description small m-t-xs m-b-none" ng-show="ctrl.selectedRefererRuleId=='startsWith'">Confirm URL with ENTER or delete previously added URL with double BACKSPACE or by clicking X.</div>
-                        <div class="description small m-t-xs m-b-none" ng-show="ctrl.selectedRefererRuleId=='contains'">Confirm tag with ENTER or delete previously added tag with double BACKSPACE or by clicking X.</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-xs-offset-4 col-xs-8 p-r-none">
-                    <label ng-repeat="error in ctrl.errors.rules" class="control-label error">{{ error }}</label>
-                </div>
-            </div>
+            <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-rule-select"
+                       class="button button--plain button--full-width button--dropdown-toggle-icon"
+                       ng-model="ctrl.selectedTopRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
+                <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices repeat="rule.id as rule in ctrl.rules">
+                    {{ rule.name }}
+                </ui-select-choices>
+            </ui-select>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!ctrl.errors.ttl}">
-            <label for="zem-custom-audience-modal-rule-select" class="col-xs-4 control-label">
+        <div class="form__group--indented" ng-if="ctrl.showRefererRules()">
+            <label class="form__label">Include traffic that meets the following conditions:</label>
+            <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
+                <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices repeat="rule.id as rule in ctrl.refererRules">
+                    {{ rule.name }}
+                </ui-select-choices>
+            </ui-select>
+        </div>
+        <div class="form__group--indented" ng-if="ctrl.selectedRefererRuleId=='startsWith'">
+            <tags-input placeholder="Add URLs" ng-model="ctrl.selectedRefererRuleStartsWithValue" ng-readonly="ctrl.readonly"
+                        on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')"
+                        ng-disabled="ctrl.readonly" min-length="1">
+            </tags-input>
+            <div class="form__text--small">Confirm URL with ENTER or delete previously added URL with double BACKSPACE or by clicking X.</div>
+        </div>
+        <div class="form__group--indented" ng-if="ctrl.selectedRefererRuleId=='contains'">
+            <tags-input placeholder="Add tags" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly"
+                        on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')"
+                        ng-disabled="ctrl.readonly" min-length="1">
+            </tags-input>
+            <div class="form__text--small">Confirm tag with ENTER or delete previously added tag with double BACKSPACE or by clicking X.</div>
+        </div>
+        <div class="message message--error message--indented" ng-repeat="error in ctrl.errors.rules">{{ error }}</div>
+        <div class="form__group" ng-class="{'form--error': !!ctrl.errors.ttl}">
+            <label class="form__label" for="zem-custom-audience-modal-rule-select">
                 In the last
                 <zem-help-popover content="<p class='m-b-s'>The number of days people will remain in your audience after they've visited your website. People will be removed from your audience after the set time period, unless they visit your website again.</p><p><strong>Maximum time:</strong> 365 days.</p>" placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
-            <div class="col-xs-3">
-                <div class="form__input-text--with-postfix">
-                    <i class="input-text__postfix" id="basic-addon2">days</i>
-                    <input type="text" class="form__input-text" ng-model="ctrl.selectedTtl" ng-change="ctrl.removeError('ttl')"/>
-                </div>
-
-                <label ng-repeat="error in ctrl.errors.ttl" class="control-label error">{{ error }}</label>
+            <div class="form__postfixed-field form__postfixed-field--narrow">
+                <input class="form__input-text" type="text" ng-model="ctrl.selectedTtl" ng-change="ctrl.removeError('ttl')"/>
+                <span class="form__field-postfix" id="basic-addon2">days</span>
             </div>
-        </div>
 
-        <div class="modal-footer buttons-panel">
-            <button class="button button--highlight button--with-icon check-icon" ng-if="ctrl.readonly" ng-click="ctrl.updateAudience()">Update Audience</button>
-            <button class="button button--highlight button--with-icon check-icon" ng-if="!ctrl.readonly" ng-click="ctrl.createAudience()">Create Audience</button>
-            <button type="button" class="button button--outline" ng-if="ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Close</button>
-            <button type="button" class="button button--outline" ng-if="!ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Cancel</button>
-            <div class="loader" ng-show="ctrl.putRequestInProgress"></div>
+            <div class="message message--error" ng-repeat="error in ctrl.errors.ttl">{{ error }}</div>
         </div>
     </div>
+</div>
+<div class="modal__footer buttons-panel">
+    <button class="button button--highlight button--with-icon check-icon" ng-if="ctrl.readonly" ng-click="ctrl.updateAudience()">Update Audience</button>
+    <button class="button button--highlight button--with-icon check-icon" ng-if="!ctrl.readonly" ng-click="ctrl.createAudience()">Create Audience</button>
+    <button type="button" class="button button--outline" ng-if="ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Close</button>
+    <button type="button" class="button button--outline" ng-if="!ctrl.readonly" ng-click="ctrl.modalInstance.dismiss()">Cancel</button>
+    <div class="loader" ng-show="ctrl.putRequestInProgress"></div>
 </div>

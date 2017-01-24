@@ -23,6 +23,36 @@ a.alternative-link:active {
     color: @secondary-color;
 }
 
+h1 {
+    color: @secondary-color;
+    font-weight: 400;
+    font-size: 24px;
+    margin: 0 0 @default-spacing 0;
+}
+
+h2 {
+    color: @secondary-color;
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0 0 @default-spacing 0;
+}
+
+h3 {
+    color: @secondary-color;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 @default-spacing 0;
+}
+
+////////////////////////////
+// Frequently used elements //
+////////////////////////////
+
+.description {
+    margin-bottom: @default-spacing;
+    color: @gray;
+}
+
 ////////////////////////////
 // Internal feature //
 ////////////////////////////
@@ -290,41 +320,41 @@ a.alternative-link:active {
 ////////////////////////////
 
 .check-icon {
-    &:before {
+    &::before {
         background-image: url('images/check-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/check-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/check-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/check-white.svg');
     }
 }
 
 .remove-icon {
-    &:before {
+    &::before {
         background-image: url('images/remove-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/remove-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/remove-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/remove-white.svg');
     }
 
-    &:not(.button--disabled):not([disabled]):hover {
+    &.button:not(.button--disabled):not([disabled]):hover {
         background-color: @red;
         color: @white;
 
@@ -335,182 +365,212 @@ a.alternative-link:active {
 }
 
 .add-icon {
-    &:before {
+    &::before {
         background-image: url('images/add-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/add-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/add-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/add-white.svg');
     }
 }
 
 .edit-icon {
-    &:before {
+    &::before {
         background-image: url('images/edit-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/edit-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/edit-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/edit-white.svg');
     }
 }
 
 .copy-icon {
-    &:before {
+    &::before {
         background-image: url('images/copy-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/copy-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/copy-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/copy-white.svg');
     }
 }
 
 .send-icon {
-    &:before {
+    &::before {
         background-image: url('images/send-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/send-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/send-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/send-white.svg');
     }
 }
 
 .filter-icon {
-    &:before {
+    &::before {
         background-image: url('images/filter-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/filter-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/filter-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/filter-white.svg');
     }
 }
 
 .archive-icon {
-    &:before {
+    &::before {
         background-image: url('images/archive-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/archive-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/archive-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/archive-white.svg');
     }
 }
 
 .folder-icon {
-    &:before {
+    &::before {
         background-image: url('images/folder-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/folder-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/folder-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/folder-white.svg');
     }
 }
 
 .download-icon {
-    &:before {
+    &::before {
         background-image: url('images/download-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/download-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/download-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/download-white.svg');
     }
 }
 
 .upload-icon {
-    &:before {
+    &::before {
         background-image: url('images/upload-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/upload-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/upload-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/upload-white.svg');
     }
 }
 
 .calendar-icon {
-    &:before {
+    &::before {
         background-image: url('images/calendar-blue.svg');
     }
 
-    &.button--highlight:before {
+    &.button--highlight::before {
         background-image: url('images/calendar-white.svg');
     }
 
-    &.button--outline:before {
+    &.button--outline::before {
         background-image: url('images/calendar-blue.svg');
     }
 
-    &.button--dark-backgrounds:before {
+    &.button--dark-backgrounds::before {
         background-image: url('images/calendar-white.svg');
+    }
+
+    &.form__prefixed-field--with-icon::before {
+        background-image: url('images/calendar-gray.svg');
+        background-size: @default-button-input-height - 12;
+        background-position: 8px 6px;
+        width: 34px;
+    }
+
+    .form__postfixed-field--with-icon::after {
+        background-image: url('images/calendar-gray.svg');
+        background-size: @default-button-input-height - 12;
+        background-position: 8px 6px;
+        width: 34px;
+    }
+}
+
+.facebook-icon {
+    &.form__prefixed-field--with-icon::before {
+        background-image: url('images/facebook.svg');
+        background-size: @default-button-input-height - 4;
+        background-position: 1px center;
+        width: 29px;
+    }
+
+    &.form__postfixed-field--with-icon::after {
+        background-image: url('images/facebook.svg');
+        background-size: @default-button-input-height - 6;
+        background-position: 4px center;
+        width: 29px;
     }
 }
 
@@ -532,6 +592,21 @@ a.alternative-link:active {
         padding: 7px 0;
         line-height: 16px;
     }
+
+    .loader {
+        display: inline-block;
+    }
+
+    &.form__group--indented,
+    &.form__group {
+        padding: 0;
+        background-color: transparent;
+        box-shadow: none;
+    }
+}
+
+.table .buttons-panel .loader {
+    display: inline-block;
 }
 
 ////////////////////////////
@@ -592,6 +667,7 @@ a.alternative-link:active {
 ////////////////////////////
 
 @form-input-width: 73%;
+@form-input-width-modal: 67%;
 
 .input-box() {
     background: white;
@@ -614,12 +690,23 @@ a.alternative-link:active {
 }
 
 .form {
+    .message--indented {
+        margin-left: 100-@form-input-width;
+    }
 
+    .message {
+        margin-bottom: 10px;
+    }
 }
 
 .form__text {
     color: @gray;
     margin-bottom: @default-spacing;
+}
+
+.form__text--small {
+    color: @gray;
+    font-size: 11px;
 }
 
 .form__title {
@@ -654,6 +741,7 @@ a.alternative-link:active {
 
     &[readonly], &[disabled] {
         background-color: @very-light-gray;
+        cursor: not-allowed;
     }
 }
 
@@ -669,10 +757,13 @@ a.alternative-link:active {
     width: 100%;
 
     .form__input-text {
-        .input-box();
         float: none;
         width: 100%;
         display: table-cell;
+
+        &:focus {
+            box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
+        }
     }
 }
 
@@ -684,6 +775,7 @@ a.alternative-link:active {
 
     &:focus {
         padding-left: 9px;
+        border-left: 1px solid darken(@border-gray-color, 20%);
     }
 }
 
@@ -691,6 +783,10 @@ a.alternative-link:active {
     border-right: none;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+
+    &:focus {
+        border-right: 1px solid darken(@border-gray-color, 20%);
+    }
 }
 
 .form__field-prefix,
@@ -751,60 +847,57 @@ a.alternative-link:active {
     }
 }
 
-.form__prefixed-field--facebook-icon::before {
-    background-image: url('images/facebook.svg');
-    background-size: @default-button-input-height - 4;
-    background-position: 1px center;
-    width: 29px;
-}
-
-.form__postfixed-field--facebook-icon::after {
-    background-image: url('images/facebook.svg');
-    background-size: @default-button-input-height - 6;
-    background-position: 4px center;
-    width: 29px;
-}
-
-.form__prefixed-field--calendar-icon::before {
-    background-image: url('images/calendar-gray.svg');
-    background-size: @default-button-input-height - 12;
-    background-position: 8px 6px;
-    width: 34px;
-}
-
-.form__postfixed-field--calendar-icon::after {
-    background-image: url('images/calendar-gray.svg');
-    background-size: @default-button-input-height - 12;
-    background-position: 8px 6px;
-    width: 34px;
-}
-
-textarea.form__textarea {
+.form__textarea {
     .input-box();
     width: 100%;
+    max-width: 100%;
     height: 100px;
     line-height: 18px;
     padding: 5px 10px;
     overflow: auto;
+    white-space: pre-wrap;
+    text-overflow: clip;
 }
 
-input.form__input-checkbox,
-input.form__input-radio {
+.form__textarea--dashed {
+    .input-box();
+    border: 1px dashed @border-input-color;
+    width: 100%;
+    max-width: 100%;
+    height: 100px;
+    padding: 5px 10px;
+    overflow: auto;
+    white-space: pre-wrap;
+    text-overflow: clip;
+
+    &:focus {
+        border: 1px dashed darken(@border-gray-color, 20%);
+    }
+}
+
+.form__input-checkbox,
+.form__input-radio {
     width: auto;
     height: auto;
-    margin-top: 9px;
+    margin-top: 2px;
     vertical-align: top;
     cursor: pointer;
+
+    &[type="checkbox"],
+    &[type="radio"] {
+        margin-top: 2px;
+    }
 }
 
 .form__checkbox-text, .form__radio-text {
     margin-left: 5px;
+    margin-bottom: 0px;
     cursor: pointer;
 
     .clearfix();
 }
 
-select.form__multiselect {
+.form__multiselect {
     .input-box();
     width: 100%;
     height: 100px;
@@ -881,10 +974,29 @@ select.form__multiselect {
 
     .clearfix();
 
-    .message {
+    .message,
+    .form__text,
+    .form__text--small {
+        margin: 10px 0 10px 100-@form-input-width;
+        clear: both;
+    }
+
+    .form__text,
+    .form__text--small {
         width: @form-input-width;
-        margin-left: 100-@form-input-width;
-        margin-top: 10px;
+    }
+
+    .message--error,
+    .form__text,
+    .form__text--small {
+        margin: 0 0 0 100-@form-input-width;
+        padding-top: 5px;
+    }
+
+    .loader {
+        float: left;
+        display: block;
+        margin-top: 5px;
     }
 
     .button {
@@ -907,12 +1019,12 @@ select.form__multiselect {
         }
     }
 
-    textarea.form__textarea,
+    .form__textarea,
     .form__input-text,
-    select.form__multiselect,
+    .form__multiselect,
+    .form__information,
     .form__prefixed-field,
-    .form__postfixed-field,
-    .form__information {
+    .form__postfixed-field {
         float: left;
         width: @form-input-width;
     }
@@ -926,20 +1038,30 @@ select.form__multiselect {
 
         .button {
             float: none;
-            margin-top: -4px;
+            margin-top: -6px;
             margin-bottom: -3px;
             vertical-align: middle;
         }
     }
 
     .form__postfixed-field .button {
-        margin-right: -9px;
+        margin-right: -8px;
         margin-left: 10px;
     }
 
-    input.form__input-checkbox {
+    .form__input-checkbox {
         float: left;
+        margin-top: 9px;
     }
+
+    .form__checkbox-text {
+        float: left;
+        margin-top: 7px;
+    }
+}
+
+.form__group--indented {
+    margin: 10px 0 10px 100-@form-input-width;
 }
 
 .form__group--informative {
@@ -973,36 +1095,6 @@ select.form__multiselect {
 }
 
 ////////////////////////////
-// Form elements - OLD //
-////////////////////////////
-
-input {
-    background: none;
-    border: 1px solid @border-gray-color;
-    height: @default-button-input-height;
-    line-height: 18px;
-    padding: 5px 10px;
-    box-sizing: border-box;
-    border-radius: @border-radius;
-    box-shadow: inset 3px 3px 3px 0px rgba(0,0,0,0.05);
-
-    &:focus {
-        border: 1px solid darken(@border-gray-color, 20%);
-    }
-}
-
-input[type="checkbox"], input[type="radio"] {
-    height: auto;
-    margin-top: 2px;
-    box-shadow: none;
-}
-
-label, label.control-label, .form-horizontal .control-label {
-    font-weight: 500;
-    text-align: left;
-}
-
-////////////////////////////
 // Modal window //
 ////////////////////////////
 
@@ -1032,6 +1124,50 @@ label, label.control-label, .form-horizontal .control-label {
 
 .modal__body {
     padding: @default-spacing;
+
+    .form {
+        .message--indented {
+            margin-left: 100-@form-input-width-modal;
+        }
+    }
+
+    .form__group {
+        .message,
+        .form__text,
+        .form__text--small {
+            width: @form-input-width-modal;
+            margin-left: 100-@form-input-width-modal;
+        }
+
+        .button--full-width {
+            width: @form-input-width-modal;
+        }
+
+        .form__label {
+            width: 100-2-@form-input-width-modal;
+        }
+
+        .form__textarea,
+        .form__input-text,
+        .form__multiselect,
+        .form__prefixed-field,
+        .form__postfixed-field,
+        .form__information {
+            width: @form-input-width-modal;
+        }
+
+        .form__prefixed-field,
+        .form__postfixed-field {
+            .form__input-text {
+                float: none;
+                width: 100%;
+            }
+        }
+    }
+
+    .form__group--indented {
+        margin-left: 100-@form-input-width-modal;
+    }
 }
 
 .modal__footer {
@@ -1093,7 +1229,8 @@ label, label.control-label, .form-horizontal .control-label {
     position: relative;
 }
 
-.message--success {
+.message--success,
+.message--success a {
     color: @green;
 }
 
@@ -1104,7 +1241,8 @@ label, label.control-label, .form-horizontal .control-label {
     border-radius: @border-radius;
 }
 
-.message--error {
+.message--error,
+.message--error a {
     color: @red;
 }
 
@@ -1167,7 +1305,10 @@ label, label.control-label, .form-horizontal .control-label {
     }
 
     &.message--success {
-        padding-left: 28px;
+        background-color: fade(@green, 5%);
+        border: 1px solid fade(@green, 10%);
+        padding: 8px 10px;
+        border-radius: @border-radius;
 
         &::before {
             background-image: url('images/success-green.svg');

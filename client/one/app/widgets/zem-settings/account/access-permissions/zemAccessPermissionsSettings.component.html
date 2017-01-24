@@ -29,7 +29,7 @@
         <table class="table table-hover">
             <thead>
             <tr>
-                <th>Name and Lastname</th>
+                <th>Name and Last name</th>
                 <th>Email</th>
                 <th>Role</th>
                 <th></th>
@@ -72,32 +72,28 @@
             <tr id="add-user-row" class="add_new">
                 <td colspan="4">
                     <h3>Add new user</h3>
-                    <div class="form-group">
-                        <label for="first-name-input" class="col-xs-2 control-label">Name:</label>
-                        <div class="col-xs-6">
-                            <input id="first-name-input" type="text" ng-class="{'has-error': !!$ctrl.addUserErrors.errors.firstName}" class="form__input-text" placeholder="Name" ng-model="$ctrl.addUserData.firstName">
+                    <div class="form">
+                        <div class="form__group" ng-class="{'form--error': !!$ctrl.addUserErrors.errors.firstName}">
+                            <label class="form__label" for="first-name-input">Name:</label>
+                            <input class="form__input-text" id="first-name-input" type="text" placeholder="Name"
+                                   ng-model="$ctrl.addUserData.firstName">
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="last-name-input" class="col-xs-2 control-label">Lastname:</label>
-                        <div class="col-xs-6">
-                            <input id="last-name-input" type="text" ng-class="{'has-error': !!$ctrl.addUserErrors.errors.lastName}" class="form__input-text last" placeholder="Last name" ng-model="$ctrl.addUserData.lastName">
+                        <div class="form__group" ng-class="{'form--error': !!$ctrl.addUserErrors.errors.lastName}">
+                            <label class="form__label" for="last-name-input">Last name:</label>
+                            <input class="form__input-text" id="last-name-input" type="text"
+                                   placeholder="Last name" ng-model="$ctrl.addUserData.lastName">
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email-input" class="col-xs-2 control-label">Email:</label>
-                        <div class="col-xs-6">
-                            <input id="email-input" type="text" ng-class="{'has-error': !!$ctrl.addUserErrors.errors.email}" class="form__input-text" placeholder="Email" ng-model="$ctrl.addUserData.email">
+                        <div class="form__group" ng-class="{'form--error': !!$ctrl.addUserErrors.errors.email}">
+                            <label class="form__label" for="email-input">Email:</label>
+                            <input class="form__input-text" id="email-input" type="text" placeholder="Email"
+                                   ng-model="$ctrl.addUserData.email">
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-xs-2 control-label"></label>
-                        <div class="col-xs-3">
+                        <div class="form__group--indented buttons-panel">
                             <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.addUser()">Add new user</button>
                             <div class="loader" ng-show="$ctrl.addUserRequestInProgress"></div>
-                            <div ng-show="$ctrl.addUserErrors">
-                                <label class="error">{{$ctrl.addUserErrors.message}}</label>
-                                <label ng-show="$ctrl.addUserErrors.conflict" class="error"></label>
+                            <div class="message message--error" ng-show="$ctrl.addUserErrors">
+                                <span class="error">{{$ctrl.addUserErrors.message}}</span>
+                                <span ng-show="$ctrl.addUserErrors.conflict"></span>
                             </div>
                         </div>
                     </div>

@@ -1,7 +1,7 @@
 <div class="zem-settings-component__container zem-settings-component__container--ad-group-general-settings">
     <div class="zem-settings-component__header">General settings</div>
     <div class="form">
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.state}">
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.name}">
             <label class="form__label" for="name-input">Name:</label>
             <input class="form__input-text" id="name-input" type="text" ng-model="$ctrl.entity.settings.name">
             <div class="message message--error" ng-repeat="error in $ctrl.errors.name"
@@ -13,7 +13,7 @@
                 Start date:
                 <zem-help-popover content="The date when content promotion commenced." placement="top"></zem-help-popover>
             </label>
-            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon form__prefixed-field--calendar-icon">
+            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
                 <input class="form__input-text" id="start-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
                        ng-model="$ctrl.entity.settings.startDate" is-open="$ctrl.startDatePicker.isOpen"
                        ng-click="$ctrl.openDatePicker('startDate')">
@@ -23,12 +23,12 @@
         </div>
 
         <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.endDate}">
-            <label class="form__label" for="start-date-input">
+            <label class="form__label" for="end-date-input">
                 End date:
                 <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>
             </label>
-            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon form__prefixed-field--calendar-icon">
-                <input class="form__input-text" ng-disabled="$ctrl.entity.warnings.endDate !== undefined" id="end-date-input"
+            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
+                <input class="form__input-text" id="end-date-input" ng-disabled="$ctrl.entity.warnings.endDate !== undefined"
                        type="text" uib-datepicker-popup="MM/dd/yyyy" datepicker-options="$ctrl.endDatePickerOptions"
                        ng-model="$ctrl.entity.settings.endDate" is-open="$ctrl.endDatePicker.isOpen"
                        ng-click="$ctrl.openDatePicker('endDate')">
@@ -60,7 +60,7 @@
 
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_max_cpm')"
              ng-class="{'form--error': !!$ctrl.errors.maxCpm}">
-            <label class="form__label" for="cpc-input" is-internal="zemauth.can_set_ad_group_max_cpm">
+            <label class="form__label" for="cpm-input" is-internal="zemauth.can_set_ad_group_max_cpm">
                 Maximum CPM:
                 <zem-help-popover content="Maximum allowed CPM in this ad group." placement="top"></zem-help-popover>
             </label>

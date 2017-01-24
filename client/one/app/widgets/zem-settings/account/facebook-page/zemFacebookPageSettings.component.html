@@ -1,11 +1,11 @@
 <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_modify_facebook_page')"
                          ng-class="{'form--error': !!$ctrl.errors.facebookPage}">
     <label class="form__label" for="fb-page-input" is-internal="zemauth.can_modify_facebook_page">Facebook page URL:</label>
-    <div class="form__prefixed-field form__prefixed-field--with-icon form__prefixed-field--facebook-icon"
+    <div class="form__prefixed-field form__prefixed-field--with-icon facebook-icon"
          ng-if="$ctrl.entity.settings.facebookStatus && $ctrl.entity.settings.facebookStatus == $ctrl.constants.facebookStatus.EMPTY">
         <input class="form__input-text" id="fb-page-input" type="text" ng-model="$ctrl.entity.settings.facebookPage">
     </div>
-    <div class="form__prefixed-field form__prefixed-field--with-icon form__prefixed-field--facebook-icon form__postfixed-field"
+    <div class="form__prefixed-field form__prefixed-field--with-icon facebook-icon form__postfixed-field"
          ng-if="$ctrl.entity.settings.facebookStatus && $ctrl.entity.settings.facebookStatus != $ctrl.constants.facebookStatus.EMPTY">
         <input class="form__input-text" id="fb-page-input" type="text" value="{{$ctrl.entity.settings.facebookPage}}" disabled>
         <span class="form__field-postfix" ng-class="$ctrl.entity.settings.facebookStatus | lowercase">

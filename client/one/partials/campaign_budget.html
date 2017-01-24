@@ -71,8 +71,8 @@
                         <a class="button button--small button--with-icon remove-icon" ng-click="deleteBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable" ng-disabled="deleteRequestInProgress">Delete</a>
                     </td>
                 </tr>
-                <tr ng-show="!activeBudget.length" class="message">
-                    <td colspan="9">No active budget items.</td>
+                <tr ng-show="!activeBudget.length">
+                    <td colspan="10">No active budget items.</td>
                 </tr>
             </tbody>
         </table>

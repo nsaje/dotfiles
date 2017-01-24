@@ -1,23 +1,14 @@
-<div class="modal-header">
-    <h4 class="modal-title">Copy Tag</h4>
+<div class="modal__header">
+    <div class="modal__title">Copy Tag</div>
 </div>
-<div class="modal-body">
-    <div class="conversion-pixel-form modal-form form-horizontal">
-        <div class="form-group">
-            <div class="col-xs-12">
-                <textarea rows="3" id="copy-tag-input" class="textarea-with-border pre" readonly ng-model="conversionPixelTag" zem-focus-select></textarea>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-xs-12 notice">
-                <h5>Where do I place my pixel on my site?</h5>
-                <p>Pixels need to be properly placed in order to measure goals effectively. We recommend placing your pixel on the confirmation page which is shown to a person after the desired action is performed.
-                </p>
-            </div>
-        </div>
+<div class="modal__body">
+    <div class="form">
+        <textarea rows="3" id="copy-tag-input" class="form__textarea--dashed"
+                  readonly ng-model="conversionPixelTag" zem-focus-select onClick="this.select();"></textarea>
     </div>
+    <h3>Where do I place my pixel on my site?</h3>
+    <p>Pixels need to be properly placed in order to measure goals effectively. We recommend placing your pixel on the confirmation page which is shown to a person after the desired action is performed.</p>
 </div>
-<div class="modal-footer buttons-panel">
+<div class="modal__footer buttons-panel">
     <button type="button" class="button button--outline" ng-click="$dismiss()">Close</button>
 </div>

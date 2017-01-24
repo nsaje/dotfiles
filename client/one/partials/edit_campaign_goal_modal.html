@@ -1,155 +1,140 @@
-<div class="modal-header">
-    <h4 class="modal-title" ng-if="!!newCampaignGoal">Add a New Campaign Goal</h4>
-    <h4 class="modal-title" ng-if="!newCampaignGoal">Edit a Campaign Goal</h4>
+<div class="modal__header">
+    <div class="modal__title" ng-if="!!newCampaignGoal">Add a New Campaign Goal</div>
+    <div class="modal__title" ng-if="!newCampaignGoal">Edit a Campaign Goal</div>
 </div>
-<div class="modal-body">
-    <form id="edit-campaign-goal-form" ng-submit="save()" class="modal-form campaign-goal-form form-horizontal">
-        <div class="form-part m-b">
-            <div class="form-group">
-                <label for="goal-type-select" class="col-xs-4 control-label">
-                    Meet or beat the goal of
-                </label>
-                <div class="col-xs-3" ng-class="{'has-error': errors.type}">
-                    <div class="goal-type" ng-class="{'form__postfixed-field': !!unit}">
-                        <input id="goal-value" type="text" zem-focus-select zem-numeric-validator class="form__input-text" ng-model="campaignGoal.value" placeholder="0.00" maxlength="5" />
-                        <span class="form__field-postfix" ng-show="!!unit">{{ unit }}</span>
-                    </div>
-                    <label ng-repeat="error in errors.value" class="error" for="goal-value">{{ error }}</label>
-                </div>
-                <div class="col-xs-5" ng-class="{'has-error': errors.value}">
-                    <ui-select ng-disabled="!!campaignGoal.id" theme="select2" search-enabled="false" id="goal-type-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="campaignGoal.type" on-select="updateTypeChange($select.selected.unit)">
-                        <ui-select-match placeholder="Choose type">{{ prepareName($select.selected) }}</ui-select-match>
-                        <ui-select-choices repeat="goal.value as goal in campaignGoalKPIs">
-                            {{ goal.name }}
-                        </ui-select-choices>
-                    </ui-select>
-                    <label ng-repeat="error in errors.type" class="error" for="goal-type-select">{{ error }}</label>
-                </div>
+<div class="modal__body">
+    <div class="form" id="edit-campaign-goal-form">
+        <!-- TODO: When opening modal and clicking Add goal without entering and selecting anything nothing happens, no errors -->
+        <div class="form__group form__group--meet-or-beat-goal">
+            <label class="form__label" for="goal-type-select">Meet or beat the goal of</label>
+            <div ng-class="{'form__postfixed-field': !!unit}" ng-class="{'form--error': errors.type}">
+                <input class="form__input-text" id="goal-value" type="text" zem-focus-select zem-numeric-validator
+                       ng-model="campaignGoal.value" placeholder="0.00" maxlength="5" />
+                <span class="form__field-postfix" ng-show="!!unit">{{ unit }}</span>
             </div>
+            <ui-select ng-disabled="!!campaignGoal.id" theme="select2" search-enabled="false" id="goal-type-select"
+                       class="button button--plain button--full-width button--dropdown-toggle-icon"
+                       ng-model="campaignGoal.type" on-select="updateTypeChange($select.selected.unit)"
+                       ng-class="{'form--error': errors.value}">
+                <ui-select-match placeholder="Choose type">{{ prepareName($select.selected) }}</ui-select-match>
+                <ui-select-choices repeat="goal.value as goal in campaignGoalKPIs">
+                    {{ goal.name }}
+                </ui-select-choices>
+            </ui-select>
+            <div class="message message--error" ng-repeat="error in errors.value" for="goal-value">{{ error }}</div>
+            <div class="message message--error" ng-repeat="error in errors.type" for="goal-type-select">{{ error }}</div>
         </div>
 
-        <div class="form-part m-b" ng-if="showAddConversionGoalForm()">
-            <div class="form-group" ng-class="{'has-error': !!errors.conversionGoal.type}">
-                <label for="conversion-type-select" class="col-xs-4 control-label">
+        <div ng-if="showAddConversionGoalForm()">
+            <div class="form__group" ng-class="{'form--error': !!errors.conversionGoal.type}">
+                <label class="form__label" for="conversion-type-select">
                     Type
                     <zem-help-popover content="The technology used for tracking conversions or goals." placement="top"></zem-help-popover>
                 </label>
-                <div class="col-xs-8">
-                    <ui-select theme="select2" search-enabled="false" id="conversion-type-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="campaignGoal.conversionGoal.type" on-select="updateTypeChange()"  ng-disabled="!!campaignGoal.id">
-                        <ui-select-match placeholder="Choose type">{{$select.selected.name}}</ui-select-match>
-                        <ui-select-choices repeat="goal.value as goal in conversionGoalTypes">
-                            {{goal.name}}
-                        </ui-select-choices>
-                    </ui-select>
-                </div>
-                <div class="col-xs-3">
-                    <label ng-repeat="error in errors.conversionGoal.type" class="control-label small error" for="conversion-type-select">{{ error }}</label>
-                </div>
+                <ui-select theme="select2" search-enabled="false" id="conversion-type-select"
+                           class="button button--plain button--full-width button--dropdown-toggle-icon"
+                           ng-model="campaignGoal.conversionGoal.type" on-select="updateTypeChange()"
+                           ng-disabled="!!campaignGoal.id">
+                    <ui-select-match placeholder="Choose type">{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="goal.value as goal in conversionGoalTypes">
+                        {{goal.name}}
+                    </ui-select-choices>
+                </ui-select>
+                <div ng-repeat="error in errors.conversionGoal.type" class="message message--error"
+                     for="conversion-type-select">{{ error }}</div>
             </div>
 
-            <div class="form-group" ng-if="showConversionPixelForm()" ng-class="{'has-error': !!errors.conversionGoal.pixel}">
-                <label for="pixel-name-select" class="col-xs-4 control-label">
+            <div class="form__group" ng-if="showConversionPixelForm()">
+                <label class="form__label" for="pixel-name-select">
                     Pixel
                     <zem-help-popover content="One of pre-set conversions pixels. You can add additional ones on Account tab of the account." placement="top"></zem-help-popover>
                 </label>
-                <div class="col-xs-4" ng-if="loadingPixels">
-                    <div class="loader"></div>
-                </div>
-                <div class="col-xs-8" ng-if="availablePixels.length">
-                    <ui-select theme="select2" search-enabled="false" id="pixel-name-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="campaignGoal.conversionGoal.goalId"  on-select="refreshConversionWindows(campaignGoal.conversionGoal.goalId)" ng-disabled="!!campaignGoal.id">
-                        <ui-select-match placeholder="Choose pixel">{{$select.selected.name}}</ui-select-match>
-                        <ui-select-choices repeat="pixel.id as pixel in availablePixels">
-                            {{pixel.name}}
-                        </ui-select-choices>
-                    </ui-select>
-                </div>
-                <div class="col-xs-8" ng-if="!loadingPixels && !availablePixels.length">
-                    <p class="form-control-static">
-                        Not available. You must
-                        <a ng-if="hasPermission('zemauth.account_account_view')" zem-in-link="main.accounts.settings({ id: account.id })">set up a pixel</a>
-                        <span ng-if="!hasPermission('zemauth.account_account_view')">set up a pixel</span> first.
-                    </p>
+                <div class="loader" ng-if="loadingPixels"></div>
+                <ui-select theme="select2" search-enabled="false" id="pixel-name-select"
+                           class="button button--plain button--full-width button--dropdown-toggle-icon"
+                           ng-model="campaignGoal.conversionGoal.goalId"
+                           on-select="refreshConversionWindows(campaignGoal.conversionGoal.goalId)"
+                           ng-disabled="!!campaignGoal.id" ng-if="availablePixels.length && !loadingPixels">
+                    <ui-select-match placeholder="Choose pixel">{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="pixel.id as pixel in availablePixels">
+                        {{pixel.name}}
+                    </ui-select-choices>
+                </ui-select>
+                <div class="message message--warning message--with-icon" ng-if="!loadingPixels && !availablePixels.length">
+                    Not available. You must
+                    <a ng-if="hasPermission('zemauth.account_account_view')" zem-in-link="main.accounts.settings({ id: account.id })">set up a pixel</a>
+                    <span ng-if="!hasPermission('zemauth.account_account_view')">set up a pixel</span> first.
                 </div>
             </div>
 
-            <div class="form-group" ng-if="campaignGoal.conversionGoal.goalId === '___new___'">
-                <label class="control-label col-xs-4">
-                    Pixel name
-                </label>
-                <div class="col-xs-8">
-                    <input type="text" id="goal-new-pixel-input" class="form__input-text" ng-model="pixel.name" placeholder="Pixel name" />
-                </div>
+            <div class="form__group" ng-if="campaignGoal.conversionGoal.goalId === '___new___'"
+                 ng-class="{'form--error': !!errors.conversionGoal.pixel}">
+                <label class="form__label">Pixel name</label>
+                <input class="form__input-text" type="text" id="goal-new-pixel-input" ng-model="pixel.name" placeholder="Pixel name" />
+                <div class="message message--error" ng-repeat="error in errors.conversionGoal.pixel" for="pixel-name-select">{{ error }}</div>
             </div>
 
-            <!-- This div is here to move error messages below the value field (it serves as a blank label) -->
-            <div class="form-group" ng-if="!availablePixels.length">
-                <div class="col-xs-4"></div>
-
-                <div class="col-xs-4">
-                    <label ng-repeat="error in errors.conversionGoal.pixel" class="control-label small error" for="pixel-name-select">{{ error }}</label>
-                </div>
-            </div>
-
-            <div class="form-group" ng-if="showConversionPixelForm()" ng-class="{'has-error': !!errors.conversionGoal.conversionWindow}">
-                <label for="pixel-conversion-window-select" class="col-xs-4 control-label">
+            <!-- TODO: When selecting CPA - Setup Conversion Tracking and then choosing one pixel and set conversion window for instance 90 days twice you don't get error ... nothing happens when you click on button ... i guess this error below is not working -->
+            <div class="form__group" ng-if="showConversionPixelForm()" ng-class="{'form--error': !!errors.conversionGoal.conversionWindow}">
+                <label class="form__label" for="pixel-conversion-window-select">
                     Conversion window
                     <zem-help-popover content="Conversion will be counted if less than the specified amount of time has passed before the first visit and the actual conversion." placement="top"></zem-help-popover>
                 </label>
-                <div class="col-xs-8" ng-show="conversionWindows.length">
-                    <ui-select theme="select2" search-enabled="false" id="pixel-conversion-window-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="campaignGoal.conversionGoal.conversionWindow"  ng-disabled="!!campaignGoal.id">
-                        <ui-select-match placeholder="Choose conversion window">{{$select.selected.name}}</ui-select-match>
-                        <ui-select-choices repeat="window.value as window in conversionWindows">
-                            {{window.name}}
-                        </ui-select-choices>
-                    </ui-select>
-                </div>
-                <div class="col-xs-4" ng-show="!conversionWindows.length">
-                    There are no more available conversion windows for this pixie.
-                </div>
-                <div class="col-xs-4">
-                    <label ng-repeat="error in errors.conversionGoal.conversionWindow" class="control-label small error" for="pixel-conversion-window-select">{{ error }}</label>
-                </div>
+                <ui-select theme="select2" search-enabled="false" id="pixel-conversion-window-select"
+                           class="button button--plain button--full-width button--dropdown-toggle-icon"
+                           ng-model="campaignGoal.conversionGoal.conversionWindow"  ng-disabled="!!campaignGoal.id"
+                           ng-show="conversionWindows.length">
+                    <ui-select-match placeholder="Choose conversion window">{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="window.value as window in conversionWindows">
+                        {{window.name}}
+                    </ui-select-choices>
+                </ui-select>
+                <div class="message message--warning message--with-icon" ng-show="!conversionWindows.length">There are no more available conversion windows for this pixie.</div>
+                <div class="message message--error" ng-repeat="error in errors.conversionGoal.conversionWindow"
+                     for="pixel-conversion-window-select">{{ error }}</div>
             </div>
 
-            <div class="form-group" ng-if="showGAForm()" ng-class="{'has-error': !!errors.conversionGoal.goalId}">
-                <label for="ga-goal-input" class="col-xs-4 control-label">
+            <div class="form__group" ng-if="showGAForm()" ng-class="{'form--error': !!errors.conversionGoal.goalId}">
+                <label class="form__label" for="ga-goal-input">
                     Choose Goal
                     <zem-help-popover content="The name or id of Google Analytics goal that is tracking the conversions. Can be left empty in case of unnumbered or unnamed goal." placement="top"></zem-help-popover>
                 </label>
-                <div class="col-xs-4">
-                    <input type="text" placeholder="Goal name" id="ga-goal-input" class="form__input-text" ng-model="campaignGoal.conversionGoal.goalId" ng-focus="clearErrors('conversionGoal')"  ng-disabled="!!campaignGoal.id" />
-                </div>
-                <div class="col-xs-4">
-                    <label ng-repeat="error in errors.conversionGoal.goalId" class="control-label small error" for="ga-goal-input">{{ error }}</label>
-                </div>
+                <input class="form__input-text" type="text" placeholder="Goal name" id="ga-goal-input"
+                       ng-model="campaignGoal.conversionGoal.goalId" ng-focus="clearErrors('conversionGoal')"
+                       ng-disabled="!!campaignGoal.id" />
+                <div class="message message--error" ng-repeat="error in errors.conversionGoal.goalId" for="ga-goal-input">{{ error }}</div>
             </div>
 
-            <div class="form-group" ng-if="showOmnitureForm()" ng-class="{'has-error': !!errors.conversionGoal.goalId}">
-                <label for="omniture-event-input" class="col-xs-4 control-label">
+            <div class="form__group" ng-if="showOmnitureForm()" ng-class="{'form--error': !!errors.conversionGoal.goalId}">
+                <label class="form__label" for="omniture-event-input">
                     Choose Event
                     <zem-help-popover content="The Adobe Analytics event that is tracking the conversions." placement="top"></zem-help-popover>
                 </label>
-                <div class="col-xs-4">
-                    <input type="text" placeholder="Event name" id="omniture-event-input" class="form__input-text" ng-model="campaignGoal.conversionGoal.goalId" ng-focus="clearErrors('conversionGoal')"  ng-disabled="!!campaignGoal.id" />
-                </div>
-                <div class="col-xs-4">
-                    <label ng-repeat="error in errors.conversionGoal.goalId" class="control-label small error" for="omniture-event-input">{{ error }}</label>
-                </div>
+                <input class="form__input-text" type="text" placeholder="Event name" id="omniture-event-input"
+                       ng-model="campaignGoal.conversionGoal.goalId" ng-focus="clearErrors('conversionGoal')"
+                       ng-disabled="!!campaignGoal.id" />
+                <div class="message message--error" ng-repeat="error in errors.conversionGoal.goalId"
+                     for="omniture-event-input">{{ error }}</div>
             </div>
         </div>
-
-        <div class="modal-footer buttons-panel">
-            <span ng-if="!showAddConversionGoalForm()">
-                <button type="submit" class="button button--highlight button--with-icon add-icon" ng-if="newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}">Add goal</button>
-                <button type="submit" class="button button--highlight button--with-icon check-icon" ng-if="!newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}">Update goal</button>
-            </span>
-            <span ng-if="showAddConversionGoalForm()">
-                <button type="submit" class="button button--highlight button--with-icon add-icon" ng-if="newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Add goal and conversion tracking</button>
-                <button type="submit" class="button button--highlight button--with-icon check-icon" ng-if="!newCampaignGoal" ng-click="clearError()" ng-class="{'disabled': !!addConversionGoalInProgress}" ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Save goal and conversion tracking</button>
-            </span>
-            <button type="button" class="button button--outline" ng-click="cancel()">Cancel</button>
-            <div class="loader" ng-show="addConversionGoalInProgress"></div>
-            <span class="message message--error" ng-if="error">An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.</span>
-        </div>
-    </form>
+    </div>
+</div>
+<div class="modal__footer buttons-panel">
+    <span ng-if="!showAddConversionGoalForm()">
+        <button type="submit" class="button button--highlight button--with-icon add-icon" ng-if="newCampaignGoal"
+                ng-click="save()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}">Add goal</button>
+        <button type="submit" class="button button--highlight button--with-icon check-icon" ng-if="!newCampaignGoal"
+                ng-click="save()" ng-class="{'disabled': !!addConversionGoalInProgress || !campaignGoal.type}">Update goal</button>
+    </span>
+    <span ng-if="showAddConversionGoalForm()">
+        <button type="submit" class="button button--highlight button--with-icon add-icon" ng-if="newCampaignGoal"
+                ng-click="save()" ng-class="{'disabled': !!addConversionGoalInProgress}"
+                ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Add goal and conversion tracking</button>
+        <button type="submit" class="button button--highlight button--with-icon check-icon" ng-if="!newCampaignGoal"
+                ng-click="save()" ng-class="{'disabled': !!addConversionGoalInProgress}"
+                ng-disabled="!campaignGoal.conversionGoal.goalId || savingInProgress">Save goal and conversion tracking</button>
+    </span>
+    <button type="button" class="button button--outline" ng-click="cancel()">Cancel</button>
+    <div class="loader" ng-show="addConversionGoalInProgress"></div>
+    <span class="message message--error" ng-if="error">An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.</span>
 </div>
