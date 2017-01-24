@@ -157,6 +157,7 @@ def _create_ad_group(name, start_date):
     _set_initial_rtb_settings(ad_group_id)
     _set_ad_group(ad_group_id, 'ACTIVE')
     _set_custom_cpcs(ad_group_id)
+    _set_all_rtb_default_cpc(ad_group_id)
 
     return ad_group_id
 
@@ -181,6 +182,17 @@ def _set_custom_cpcs(ad_group_id):
         new_settings.save(None)
 
     k1_helper.update_ad_group(ad_group_id)
+
+
+def _set_all_rtb_default_cpc(ad_group_id):
+    # HACK: when restapi supports setting all rtb cpc, this can be removed
+    current_settings = dash.models.AdGroup.objects.get(id=ad_group_id).get_current_settings()
+    if current_settings.b1_sources_group_cpc_cc == config.DEFAULT_CPC:
+        return
+
+    new_settings = current_settings.copy_settings()
+    new_settings.b1_sources_group_cpc_cc = config.DEFAULT_CPC
+    new_settings.save(None)
 
 
 def _list_ad_group_sources(ad_group_id):
