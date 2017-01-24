@@ -24,6 +24,10 @@ angular.module('one.legacy').controller('ZemUploadCtrl', function (zemUploadEndp
     vm.defaultBatchName = moment().utc().add(user ? user.timezoneOffset : 0, 'seconds').format('M/D/YYYY h:mm A');
     vm.step = 0;
 
+    vm.switchToBeginning = function () {
+        vm.step = 0;
+    };
+
     vm.switchToFileUpload = function () {
         vm.step = 1;
     };
