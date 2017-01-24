@@ -26,6 +26,17 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
+    // HACK: Just to make binding with zem-chart-legacy work (it will be replaced in near future with zem-chart)
+    // (adding ng-if for permission makes binding stop working)
+    $scope._chartMetrics = {
+        metric1: constants.chartMetric.CLICKS,
+        metric2: constants.chartMetric.IMPRESSIONS
+    };
+    $scope.$watch('_chartMetrics', function (newValue, oldValue) {
+        $scope.chartMetric1 = $scope._chartMetrics.metric1;
+        $scope.chartMetric2 = $scope._chartMetrics.metric2;
+    }, true);
+
     var getDailyStatsMetrics = function () {
         // always query for default metrics
         var metrics = [$scope.chartMetric1, $scope.chartMetric2];

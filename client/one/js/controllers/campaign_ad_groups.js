@@ -31,6 +31,16 @@ angular.module('one.legacy').controller('CampaignAdGroupsCtrl', function ($locat
 
     var userSettings = zemUserSettings.getInstance($scope, 'campaignAdGroups');
 
+    // HACK: Just to make binding with zem-chart-legacy work (it will be replaced in near future with zem-chart)
+    // (adding ng-if for permission makes binding stop working)
+    $scope._chartMetrics = {
+        metric1: constants.chartMetric.CLICKS,
+        metric2: constants.chartMetric.IMPRESSIONS
+    };
+    $scope.$watch('_chartMetrics', function (newValue, oldValue) {
+        $scope.chartMetric1 = $scope._chartMetrics.metric1;
+        $scope.chartMetric2 = $scope._chartMetrics.metric2;
+    }, true);
     $scope.updateSelectedAdGroups = function (adGroupId) {
         adGroupId = adGroupId.toString();
 

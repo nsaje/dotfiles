@@ -10,7 +10,7 @@
                     <zem-content-insights summary="contentInsights.summary" metric="contentInsights.metric" best-performer-rows="contentInsights.bestPerformerRows" worst-performer-rows="contentInsights.worstPerformerRows"></zem-content-insights>
                 </div>
                 <div class="graph-container" ng-show="isChartVisible" ng-class="{'all-accounts-sources': $state.current.name.includes('main.allAccounts.sources'), 'account-sources': $state.current.name.includes('main.accounts.sources')}">
-                    <zem-chart-legacy ng-if="!hasPermission('zemauth.can_see_new_chart')" zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix" zem-is-loading="chartIsLoading"></zem-chart-legacy>
+                    <zem-chart-legacy ng-if="!hasPermission('zemauth.can_see_new_chart')" zem-data="chartData" zem-metrics="_chartMetrics" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix" zem-is-loading="chartIsLoading"></zem-chart-legacy>
                     <zem-chart ng-if="hasPermission('zemauth.can_see_new_chart')"
                             level="config.level"
                             breakdown="config.breakdown"

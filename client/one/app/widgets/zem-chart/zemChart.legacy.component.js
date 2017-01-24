@@ -5,8 +5,7 @@ angular.module('one').directive('zemChartLegacy', function (config, $compile, $w
         scope: {
             data: '=zemData',
             metricOptions: '=zemMetricOptions',
-            metric1: '=zemMetric1',
-            metric2: '=zemMetric2',
+            zemMetrics: '=zemMetrics',
             minDate: '=zemMinDate',
             maxDate: '=zemMaxDate',
             onRemove: '&zemOnRemove',
@@ -36,9 +35,10 @@ angular.module('one').directive('zemChartLegacy', function (config, $compile, $w
             $scope.appConfig = config;
 
             $scope.metric2Options = getMetric2Options($scope.metricOptions);
+
             $scope.metrics = {
-                metric1: $scope.metric1,
-                metric2: $scope.metric2
+                metric1: $scope.zemMetrics.metric1,
+                metric2: $scope.zemMetrics.metric2
             };
 
             $scope.$watch('metrics.metric1', function (newValue) {
@@ -46,7 +46,7 @@ angular.module('one').directive('zemChartLegacy', function (config, $compile, $w
                 // simple variables on scope as ng-model, it is recommended to use a
                 // property on an object on scope
                 // (github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
-                $scope.metric1 = newValue;
+                $scope.zemMetrics.metric1 = newValue;
             }, true);
 
             $scope.$watch('metrics.metric2', function (newValue) {
@@ -54,15 +54,14 @@ angular.module('one').directive('zemChartLegacy', function (config, $compile, $w
                 // simple variables on scope as ng-model, it is recommended to use a
                 // property on an object on scope
                 // (github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
-                $scope.metric2 = newValue;
+                $scope.zemMetrics.metric2 = newValue;
             }, true);
 
-            $scope.$watch('metric1', function (newValue) {
-                $scope.metrics.metric1 = newValue;
-            }, true);
-
-            $scope.$watch('metric2', function (newValue) {
-                $scope.metrics.metric2 = newValue;
+            $scope.$watch('zemMetrics', function () {
+                $scope.metric1 = $scope.metrics.metric1;
+                $scope.metric2 = $scope.metrics.metric2;
+                $scope.metrics.metric1 = $scope.zemMetrics.metric1;
+                $scope.metrics.metric2 = $scope.zemMetrics.metric2;
             }, true);
 
             $scope.$watch('metricOptions', function () {
