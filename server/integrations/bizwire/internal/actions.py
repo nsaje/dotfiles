@@ -159,6 +159,7 @@ def _create_ad_group(name, start_date):
     _set_custom_cpcs(ad_group_id)
     _set_all_rtb_default_cpc(ad_group_id)
 
+    k1_helper.update_ad_group(ad_group_id)
     return ad_group_id
 
 
@@ -180,8 +181,6 @@ def _set_custom_cpcs(ad_group_id):
         new_settings = current_settings.copy_settings()
         new_settings.cpc_cc = custom_cpc
         new_settings.save(None)
-
-    k1_helper.update_ad_group(ad_group_id)
 
 
 def _set_all_rtb_default_cpc(ad_group_id):
