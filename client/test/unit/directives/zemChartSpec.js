@@ -1,6 +1,6 @@
 'use strict';
 
-describe('zemChart', function () {
+describe('zemChartLegacy', function () {
     var scope, chart, isolate;
     var data = {
         id: 'totals',
@@ -21,7 +21,7 @@ describe('zemChart', function () {
     beforeEach(inject(function ($rootScope, $compile) {
         scope = $rootScope.$new();
 
-        chart = '<zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="startDate" zem-max-date="endDate"></zem-chart>';
+        chart = '<zem-chart-legacy zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="startDate" zem-max-date="endDate"></zem-chart-legacy>';
 
         scope.chartMetric1 = 'media_cost';
         scope.chartMetricOptions = [{name: 'Media Spend', value: 'media_cost'}];

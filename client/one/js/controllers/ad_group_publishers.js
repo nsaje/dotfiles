@@ -14,11 +14,14 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
         name: 'Publishers'
     };
 
-    $scope.grid = {
-        api: undefined,
+    $scope.config = {
         level: constants.level.AD_GROUPS,
         breakdown: constants.breakdown.PUBLISHER,
         entityId: $state.params.id,
+    };
+
+    $scope.grid = {
+        api: undefined,
     };
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
@@ -94,6 +97,8 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
 
     var dailyStatsPromise = undefined;
     var getDailyStats = function () {
+        if ($scope.hasPermission('zemauth.can_see_new_chart')) return;
+
         if (dailyStatsPromise) {
             dailyStatsPromise.abort();
         }

@@ -17,11 +17,14 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
         totals: true,
     };
 
-    $scope.grid = {
-        api: undefined,
+    $scope.config = {
         level: constants.level.AD_GROUPS,
         breakdown: constants.breakdown.MEDIA_SOURCE,
         entityId: $state.params.id,
+    };
+
+    $scope.grid = {
+        api: undefined,
     };
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
@@ -150,6 +153,8 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
 
     var dailyStatsPromise = undefined;
     $scope.getDailyStats = function () {
+        if ($scope.hasPermission('zemauth.can_see_new_chart')) return;
+
         if (dailyStatsPromise) {
             dailyStatsPromise.abort();
         }
@@ -173,7 +178,7 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
             convertedSelection.selectAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
         }
 
-        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics(), null);
+        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.config.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics(), null);
         dailyStatsPromise.then(
             function (data) {
                 refreshChartOptions(data.conversionGoals, data.pixels);

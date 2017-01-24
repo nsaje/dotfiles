@@ -244,6 +244,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_access_additional_outbrain_publisher_settings', 'User can see, set or edit additional Outbrain specific publisher settings'),
             ('can_see_pixel_traffic', 'User can see pixel traffic in pixels table'),
             ('can_set_rtb_sources_as_one_cpc', 'User can see and set the bid CPC for RTB Sources grouped as one'),
+            ('can_see_new_chart', 'User can see new chart component'),
         )
 
     def get_full_name(self):

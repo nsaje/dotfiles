@@ -19,11 +19,14 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
         totals: true,
     };
 
-    $scope.grid = {
-        api: undefined,
+    $scope.config = {
         level: $scope.level,
         breakdown: constants.breakdown.MEDIA_SOURCE,
         entityId: $state.params.id,
+    };
+
+    $scope.grid = {
+        api: undefined,
     };
 
     var userSettings = null,
@@ -129,6 +132,8 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
 
     var dailyStatsPromise = undefined;
     var getDailyStats = function () {
+        if ($scope.hasPermission('zemauth.can_see_new_chart')) return;
+
         if (dailyStatsPromise) {
             dailyStatsPromise.abort();
         }
@@ -152,7 +157,7 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
         }
 
         var dateRange = zemDataFilterService.getDateRange();
-        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate,
+        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.config.breakdown, dateRange.startDate,
             dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics());
 
         dailyStatsPromise.then(

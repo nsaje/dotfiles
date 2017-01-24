@@ -1,7 +1,8 @@
-angular.module('one.services').service('zemUtils', function () { // eslint-disable-line max-len
+angular.module('one.services').service('zemUtils', function ($q) { // eslint-disable-line max-len
 
     this.convertToCamelCase = convertToCamelCase;
     this.convertToUnderscore = convertToUnderscore;
+    this.createAbortableDefer = createAbortableDefer;
 
     function convertToCamelCase (obj) {
         if (!(obj instanceof Object)) return obj;
@@ -28,6 +29,22 @@ angular.module('one.services').service('zemUtils', function () { // eslint-disab
             convertedObj[convertedKey] = value;
         });
         return convertedObj;
+    }
+
+    function createAbortableDefer () {
+        var deferred = $q.defer();
+        var deferredAbort = $q.defer();
+        deferred.promise.abort = function () {
+            deferredAbort.resolve();
+        };
+        deferred.promise.finally(
+            function () {
+                deferred.promise.abort = angular.noop;
+            }
+        );
+
+        deferred.abortPromise = deferredAbort.promise;
+        return deferred;
     }
 
 });

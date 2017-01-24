@@ -17,10 +17,13 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
         entityIds: [],
         totals: true,
     };
-    $scope.grid = {
-        api: undefined,
+    $scope.config = {
+        entityId: undefined,
         level: constants.level.ALL_ACCOUNTS,
         breakdown: constants.breakdown.ACCOUNT,
+    };
+    $scope.grid = {
+        api: undefined,
     };
     if (!$scope.hasPermission('zemauth.bulk_actions_on_all_levels')) {
         $scope.grid.options = {};
@@ -125,6 +128,8 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
 
     var dailyStatsPromise = undefined;
     var getDailyStats = function () {
+        if ($scope.hasPermission('zemauth.can_see_new_chart')) return;
+
         if (dailyStatsPromise) {
             dailyStatsPromise.abort();
         }
@@ -148,7 +153,7 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
             convertedSelection.selectAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
         }
 
-        dailyStatsPromise = api.dailyStats.list($scope.level, null, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, true, getDailyStatsMetrics());
+        dailyStatsPromise = api.dailyStats.list($scope.level, null, $scope.config.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, true, getDailyStatsMetrics());
         dailyStatsPromise.then(
             function (data) {
                 setChartOptions();
