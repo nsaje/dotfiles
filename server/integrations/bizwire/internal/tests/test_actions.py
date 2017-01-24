@@ -49,6 +49,7 @@ class StopAdsTestCase(TestCase):
             call(ListMatcher([]), dash.constants.ContentAdSourceState.INACTIVE, None),
             mock_update_content_ads_state.call_args)
 
+
 @patch('integrations.bizwire.config.AUTOMATION_CAMPAIGN', 1)
 @patch('integrations.bizwire.config.AUTOMATION_USER_EMAIL', 'user@test.com')
 @patch('utils.redirector_helper.insert_adgroup', MagicMock())
@@ -114,7 +115,6 @@ class RotateAdGroupsTestCase(TestCase):
         for ad_group_source in ad_group.adgroupsource_set.all():
             ad_group_source_settings = ad_group_source.get_current_settings()
             self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_source_settings.state)
-            print ad_group_source.source_id
             if ad_group_source.source_id in config.CUSTOM_CPC_SETTINGS:
                 self.assertEqual(config.CUSTOM_CPC_SETTINGS[ad_group_source.source_id], ad_group_source_settings.cpc_cc)
             else:
