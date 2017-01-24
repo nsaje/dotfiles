@@ -13,6 +13,7 @@ from rest_framework import serializers
 from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework import pagination
+from rest_framework import exceptions
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
@@ -991,6 +992,8 @@ class ReportsViewDetails(RESTAPIBaseView):
 
     def get(self, request, job_id):
         job = restapi.models.ReportJob.objects.get(pk=job_id)
+        if job.user != request.user:
+            raise exceptions.PermissionDenied
         return self.response_ok(ReportJobSerializer(job).data)
 
 
