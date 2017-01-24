@@ -218,6 +218,7 @@ def _set_rtb_daily_budget(ad_group_id, daily_budget):
     data = {
         'groupEnabled': True,
         'dailyBudget': daily_budget,
+        'cpc': config.DEFAULT_CPC,
         'state': 'ACTIVE',
     }
     url = 'rest/v1/adgroups/{}/sources/rtb/'.format(ad_group_id)
