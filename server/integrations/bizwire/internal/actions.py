@@ -156,6 +156,7 @@ def _create_ad_group(name, start_date):
     _set_initial_sources_settings(ad_group_id)
     _set_initial_rtb_settings(ad_group_id)
     _set_ad_group(ad_group_id, 'ACTIVE')
+    _set_custom_cpcs(ad_group_id)
 
     return ad_group_id
 
@@ -166,6 +167,23 @@ def _set_ad_group(ad_group_id, state):
     }
     url = 'rest/v1/adgroups/{}/'.format(ad_group_id)
     return _make_restapi_fake_put_request(restapi.views.AdGroupViewDetails, url, data, view_args=[ad_group_id])
+
+
+def _set_custom_cpcs(ad_group_id):
+    for source_id, custom_cpc in config.CUSTOM_CPC_SETTINGS.items():
+        try:
+            current_settings = dash.models.AdGroupSource.objects.get(
+                ad_group_id=ad_group_id,
+                source_id=source_id
+            ).get_current_settings()
+        except dash.models.AdGroupSource.DoesNotExist:
+            continue
+
+        new_settings = current_settings.copy_settings()
+        new_settings.cpc_cc = custom_cpc
+        new_settings.save(None)
+
+    k1_helper.update_ad_group(ad_group_id)
 
 
 def _list_ad_group_sources(ad_group_id):
