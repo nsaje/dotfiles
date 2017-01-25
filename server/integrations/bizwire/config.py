@@ -16,8 +16,6 @@ CUSTOM_CPC_SETTINGS = {
 }
 
 INTEREST_TARGETING = [
-    constants.InterestCategory.ENTERTAINMENT,
-    constants.InterestCategory.FUN_QUIZZES,
     constants.InterestCategory.POLITICS_LAW,
     constants.InterestCategory.FASHION,
     constants.InterestCategory.FINANCE,
