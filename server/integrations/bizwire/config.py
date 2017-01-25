@@ -8,6 +8,8 @@ DEFAULT_CPC = Decimal('0.2')
 DAILY_BUDGET_INITIAL = 10  # initial daily budget - increases as articles start importing
 DAILY_BUDGET_PER_ARTICLE = 3.25
 
+OB_DAILY_BUDGET_PCT = 0.1
+
 CUSTOM_CPC_SETTINGS = {
     39: Decimal('0.07'),
     62: Decimal('0.1'),

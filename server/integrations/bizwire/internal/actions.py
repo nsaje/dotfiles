@@ -111,11 +111,11 @@ def recalculate_and_set_new_daily_budgets(ad_group_id):
     ).count()  # assume they're getting processed successfully
 
     new_rtb_daily_budget = max(
-        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * 0.95,
+        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT),
         config.DAILY_BUDGET_INITIAL,
     )
     new_ob_daily_budget = max(
-        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * 0.05,
+        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT,
         config.DAILY_BUDGET_INITIAL,
     )
 
