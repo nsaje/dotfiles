@@ -204,9 +204,6 @@ Authorization: Basic base64(<client_id>:<client_secret>)
 ```
 
 + Request (application/x-www-form-urlencoded)
-    + Attributes
-        + `grant_type`: `client_credentials` (string, required)
-
     + Headers
 
             Authorization: Basic WkNTeDJXanhIeHhWNnJLWkMzaGRiNmVqTzhHTHdjZFV0bHRtcHQ5Sjp1N3BsRWQwNG1IYzExQ2NrUzlkb2poWWl3YVd6TnFlQjF3OUtnTXh3ZTVya1c2U3M3bVRSSXg2UGQ4dDdZdmRZYzdiQzEwMjVINzRzOThFMmVxaEljQmx2QmxIc2M1dkFwOVRKTVAyZTh5Nmt5SktRVVdrcFVpckZSbDNPczJmQw==
