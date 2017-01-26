@@ -1,7 +1,7 @@
 /* globals angular,$ */
 'use strict';
 
-angular.module('one.legacy').directive('zemContentInsights', function () {
+angular.module('one.legacy').directive('zemContentInsightsLegacy', function () {
     return {
         restrict: 'E',
         scope: {

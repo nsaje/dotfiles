@@ -1,0 +1,125 @@
+.zem-content-insights {
+    display: block;
+    width: 100%;
+    vertical-align: top;
+    padding-right: 20px;
+
+    .table-insights>tbody>tr:nth-child(even) {
+        background-color: @very-light-gray;
+    }
+
+    .content-insights {
+        display: table;
+        width: 100%;
+
+        &>div {
+            display: table-row;
+        }
+
+        .best-performers {
+            display:table-cell;
+            padding-right: 20px;
+            width: 50%;
+
+            td:last-child {
+                color: @green;
+            }
+        }
+        .worst-performers {
+            display: table-cell;
+            width: 50%;
+
+            td:last-child {
+                color: @red;
+            }
+        }
+        .worst-selected-performers {
+            td:last-child {
+                color: @red;
+            }
+        }
+
+        .table {
+            margin-bottom: 0;
+
+            td:first-child {
+                width: 30px;
+            }
+
+            td:last-child {
+                width: 35px;
+            }
+
+            td {
+                padding: 4px;
+                line-height: 18px;
+            }
+        }
+
+        .performer-switch-table {
+            display: table;
+            &>div {
+                display: table-row;
+            }
+
+            .link-cell {
+                display: table-cell;
+            }
+
+            a {
+                white-space: nowrap;
+                margin-left: 10px;
+                margin-right:10px;
+            }
+
+            a:link,
+            a:focus,
+            a:hover,
+            a:visited {
+                border-width: 0;
+                text-decoration: none;
+            }
+
+            .top-selection-cell {
+                display: table-cell;
+                width: 6px;
+                height: 9px;
+                vertical-align: bottom;
+                text-align: center;
+                position:relative;
+
+                &:first-of-type {
+                    border-right: 1px solid @insights-table-header;
+                }
+
+                .top-arrow {
+                    display: block;
+                    width: 0;
+                    height: 0;
+                    border-style: solid;
+                    border-width: 0 6px 6px 6px;
+                    border-color: transparent transparent @insights-table-header transparent;
+                    margin: 0 auto; // centers the arrow
+                }
+            }
+
+
+            .link-cell:first-of-type,
+            .top-selection-cell:first-of-type {
+                border-right: 1px solid @insights-table-header;
+            }
+        }
+
+        .insights-title {
+            font-size: 16px;
+        }
+        .insights-best-title {
+            .insights-title;
+            color: @insights-text-green;
+        }
+        .insights-worst-title {
+            .insights-title;
+            color: @insights-text-red;
+        }
+    }
+}
