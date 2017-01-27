@@ -10,6 +10,7 @@ import dash.models
 from etl import daily_statements_k1
 from etl import materialize_k1
 from etl import materialize_views
+from etl import maintenance
 
 
 logger = logging.getLogger(__name__)
@@ -104,9 +105,13 @@ def _refresh_k1_reports(update_since, views, account_id=None):
             mv.generate(campaign_factors=effective_spend_factors)
 
     influx.incr('etl.refresh_k1.refresh_k1_reports_finished', 1)
+
     # while everything is being updated data is not consistent among tables
     # so might as well leave cache until refresh finishes
     invalidate_breakdowns_rs_cache()
+
+    # check how it went
+    maintenance.crossvalidate_traffic(date_from, date_to)
 
 
 def generate_job_id(account_id):
