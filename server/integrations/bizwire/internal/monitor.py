@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 def run_hourly_job():
     monitor_num_ingested_articles()
     monitor_yesterday_spend()
+    monitor_yesterday_clicks()
     monitor_duplicate_articles()
     monitor_remaining_budget()
 
@@ -110,7 +111,7 @@ Businesswire campaign is running out of budget. Configure any additional budgets
     email_helper.send_notification_mail(emails, subject, body)
 
 
-def monitor_yesterday_spend():
+def _get_content_ad_ids_added_yesterday():
     pacific_tz = pytz.timezone('US/Pacific')
     pacific_today = helpers.get_pacific_now().date()
     pacific_midnight_today = pacific_tz.localize(
@@ -118,12 +119,39 @@ def monitor_yesterday_spend():
     )
 
     pacific_midnight_yesterday = pacific_midnight_today - datetime.timedelta(days=1)
-    content_ad_ids = dash.models.ContentAd.objects.filter(
+    return dash.models.ContentAd.objects.filter(
         ad_group__campaign=config.AUTOMATION_CAMPAIGN,
         created_dt__lt=pacific_midnight_today,
         created_dt__gte=pacific_midnight_yesterday,
     ).values_list('id', flat=True)
 
+
+def monitor_yesterday_clicks():
+    content_ad_ids = _get_content_ad_ids_added_yesterday()
+    result = db.execute_query(
+        backtosql.generate_sql('bizwire_ads_clicks_monitoring.sql', {
+            'content_ad_ids': content_ad_ids,
+        }),
+        [],
+        'bizwire_ads_clicks_monitoring',
+    )
+
+    content_ads_by_clicks = {row['content_ad_id']: row['clicks'] for row in result}
+    missing_clicks = 0
+
+    for content_ad_id in content_ad_ids:
+        if content_ad_id not in content_ads_by_clicks:
+            missing_clicks += 15
+            continue
+
+        missing_clicks += max(15 - content_ads_by_clicks[content_ad_id], 0)
+
+    influx.gauge('integrations.bizwire.yesterday_missing_clicks', missing_clicks)
+    _send_missing_clicks_email_alert(missing_clicks)
+
+
+def monitor_yesterday_spend():
+    content_ad_ids = _get_content_ad_ids_added_yesterday()
     actual_spend = 0
     if content_ad_ids:
         actual_spend = db.execute_query(
@@ -142,19 +170,7 @@ def monitor_yesterday_spend():
 
     influx.gauge('integrations.bizwire.yesterday_spend', actual_spend, type='actual')
     influx.gauge('integrations.bizwire.yesterday_spend', expected_spend, type='expected')
-
-    if dates_helper.utc_now().hour != 12:
-        return
-
-    if expected_spend * 0.8 < actual_spend < expected_spend:
-        return
-
-    emails = config.NOTIFICATION_EMAILS
-    subject = '[BIZWIRE] Campaign unexpected yesterday spend'
-    body = '''Hi,
-
-Yesterday's expected spend was {} and actual spend was {}.'''.format(expected_spend, actual_spend)  # noqa
-    email_helper.send_notification_mail(emails, subject, body)
+    _send_unexpected_spend_email_alert(expected_spend, actual_spend)
 
 
 def monitor_duplicate_articles():
@@ -171,3 +187,33 @@ def monitor_duplicate_articles():
     influx.gauge('integrations.bizwire.labels', num_labels, type='all')
     influx.gauge('integrations.bizwire.labels', num_distinct, type='distinct')
     influx.gauge('integrations.bizwire.labels', num_duplicate, type='duplicate')
+
+
+def _send_unexpected_spend_email_alert(expected_spend, actual_spend):
+    if dates_helper.utc_now().hour != 12:
+        return
+
+    if expected_spend * 0.8 < actual_spend < expected_spend:
+        return
+
+    emails = config.NOTIFICATION_EMAILS
+    subject = '[BIZWIRE] Campaign unexpected yesterday spend'
+    body = '''Hi,
+
+Yesterday's expected spend was {} and actual spend was {}.'''.format(expected_spend, actual_spend)
+    email_helper.send_notification_mail(emails, subject, body)
+
+
+def _send_missing_clicks_email_alert(missing_clicks):
+    if dates_helper.utc_now().hour != 12:
+        return
+
+    if missing_clicks < 1:
+        return
+
+    emails = config.NOTIFICATION_EMAILS
+    subject = '[BIZWIRE] Missing yesterday clicks'
+    body = '''Hi,
+
+Missing {} on content ads yesterday.'''.format(missing_clicks)
+    email_helper.send_notification_mail(emails, subject, body)
