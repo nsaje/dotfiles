@@ -4,6 +4,7 @@ from django.contrib.postgres import forms as postgres_forms
 
 
 class DayField(forms.Field):
+
     def clean(self, value):
         super(DayField, self).clean(value)
 
@@ -19,6 +20,7 @@ class DayField(forms.Field):
 
 
 class TimeZoneField(forms.Field):
+
     def clean(self, value):
         super(TimeZoneField, self).clean(value)
 
@@ -62,7 +64,8 @@ class TargetingExpressionField(forms.Field):
             try:
                 tokens = exp.split(':', 1)
                 assert len(tokens) == 2
-                assert tokens[0] in ['bluekai', 'liveramp', 'outbrain']
+                # lr example: lr-IntuitTurbo:45936607
+                assert 'lr-' == exp[:3] or tokens[0] in ['bluekai', 'liveramp', 'outbrain']
             except:
                 raise forms.ValidationError('Invalid category format: "%s"' % exp)
         else:
