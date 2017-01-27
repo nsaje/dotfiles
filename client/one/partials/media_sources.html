@@ -2,11 +2,11 @@
     <div class="section">
         <div class="graph-infobox-parent">
             <div class="graph-infobox-row">
-                <div ng-if="hasPermission('zemauth.can_see_content_insights') && sideBarVisible" class='sidebar-container'>
+                <div ng-if="!hasPermission('zemauth.can_see_new_content_insights') && sideBarVisible" class='sidebar-container'>
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_view_sidetabs')" popover-placement="bottom"></zem-internal-feature>
                     <zem-side-tabset zem-selected="selectedSideTab.tab" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"/>
                 </div>
-                <div ng-if="!hasPermission('zemauth.can_see_content_insights')" class="insights-container" ng-show="isContentInsightsVisible">
+                <div ng-if="!hasPermission('zemauth.can_see_new_content_insights')" class="insights-container" ng-show="isContentInsightsVisible">
                     <zem-content-insights-legacy summary="contentInsights.summary" metric="contentInsights.metric" best-performer-rows="contentInsights.bestPerformerRows" worst-performer-rows="contentInsights.worstPerformerRows"></zem-content-insights-legacy>
                 </div>
                 <div class="graph-container" ng-show="isChartVisible" ng-class="{'all-accounts-sources': $state.current.name.includes('main.allAccounts.sources'), 'account-sources': $state.current.name.includes('main.accounts.sources')}"
