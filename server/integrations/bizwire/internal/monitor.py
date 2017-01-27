@@ -82,16 +82,20 @@ def monitor_num_ingested_articles():
         dates.append(current_date)
         current_date += datetime.timedelta(days=1)
     unique_labels = _get_unique_s3_labels(dates)
+    content_ad_labels = set(
+        dash.models.ContentAd.objects.filter(
+            ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+            label__in=unique_labels,
+        ).values_list('label', flat=True)
+    )
 
     s3_count = len(unique_labels)
-    db_count = dash.models.ContentAd.objects.filter(
-        ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-        label__in=unique_labels,
-    ).count()
+    db_count = len(content_ad_labels)
+    diff = set(unique_labels - content_ad_labels)
 
     influx.gauge('integrations.bizwire.article_count', s3_count, source='s3')
     influx.gauge('integrations.bizwire.article_count', db_count, source='db')
-    influx.gauge('integrations.bizwire.article_count', s3_count - db_count, source='diff')
+    influx.gauge('integrations.bizwire.article_count', diff, source='diff')
 
 
 def monitor_remaining_budget():
