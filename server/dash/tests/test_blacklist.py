@@ -355,3 +355,192 @@ class BlacklistTestCase(TestCase):
                               ENABLED, self.domains)
         self.assertEqual(dash.models.PublisherBlacklist.objects.all().count(), 1)
         mock_k1_ping.assert_called_with(1, msg='blacklist.update')
+
+
+class OutbrainBlacklistTestCase(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.request = HttpRequest()
+        self.request.user = zemauth.models.User.objects.get(id=1)
+
+        self.ad_group = dash.models.AdGroup.objects.get(pk=1)
+        self.campaign = self.ad_group.campaign
+        self.account = self.campaign.account
+        self.ob = dash.models.Source.objects.get(
+            source_type__type=dash.constants.SourceType.OUTBRAIN
+        )
+        self.ob.source_type.available_actions = [
+            dash.constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC
+        ]
+        self.ob.source_type.save()
+
+    def _generate_domains(self, offset=0, limit=10):
+        return set('domain{}.com'.format(i) for i in range(offset, offset+limit))
+
+    def _initial_blacklist(self, count=10, status=BLACKLISTED, source=None, account=None):
+        if not source:
+            source = self.ob
+        if not account:
+            account = self.account
+        for domain in self._generate_domains(0, count):
+            dash.models.PublisherBlacklist.objects.create(
+                name=domain,
+                external_id=domain,
+                status=status,
+                source=source,
+                account=account
+            )
+
+    @patch('dash.blacklist._handle_outbrain_account_constraints')
+    def test_handle_outbrain_account_constraints_triggered(self, mock):
+        random_source = dash.models.Source.objects.get(pk=1)
+
+        dash.blacklist._update_source(
+            {'source': random_source, 'account': self.account},
+            BLACKLISTED,
+            self._generate_domains(),
+            {},
+            request=self.request,
+            ad_group=self.ad_group
+        )
+        self.assertFalse(mock.called)
+
+        mock.resetMock()
+
+        dash.blacklist._update_source(
+            {'source': self.ob},
+            BLACKLISTED,
+            self._generate_domains(),
+            {},
+            request=self.request,
+            ad_group=self.ad_group
+        )
+        self.assertFalse(mock.called)
+
+        mock.resetMock()
+
+        dash.blacklist._update_source(
+            {'source': self.ob, 'account': self.account},
+            BLACKLISTED,
+            self._generate_domains(),
+            {},
+            request=self.request,
+            ad_group=self.ad_group
+        )
+        self.assertTrue(mock.called)
+
+    def test_addition_under_limit(self):
+        self._initial_blacklist(10)
+        dash.blacklist._update_source(
+            {'source': self.ob, 'account': self.account},
+            BLACKLISTED,
+            self._generate_domains(5, 15),
+            {}
+        )
+        self.assertFalse(
+            dash.models.CpcConstraint.objects.filter(
+                source=self.ob,
+                account=self.account
+            ).count()
+        )
+
+    def test_addition_overlap(self):
+        self._initial_blacklist(29)
+        dash.blacklist._update_source(
+            {'source': self.ob, 'account': self.account},
+            BLACKLISTED,
+            self._generate_domains(5, 15),
+            {}
+        )
+        self.assertFalse(
+            dash.models.CpcConstraint.objects.filter(
+                source=self.ob,
+                account=self.account
+            ).count()
+        )
+
+    def test_addition_over_limit(self):
+        self._initial_blacklist(29)
+        dash.blacklist._update_source(
+            {'source': self.ob, 'account': self.account},
+            BLACKLISTED,
+            self._generate_domains(29, 10),
+            {}
+        )
+        constraint = dash.models.CpcConstraint.objects.get(
+            source=self.ob,
+            account=self.account
+        )
+        self.assertEqual(constraint.constraint_type,
+                         dash.constants.CpcConstraintType.OUTBRAIN_BLACKLIST)
+        self.assertEqual(constraint.min_cpc, dash.blacklist.OUTBRAIN_CPC_CONSTRAINT_MIN)
+        self.assertEqual(constraint.max_cpc, None)
+
+    def test_already_over_limit(self):
+        self._initial_blacklist(35)
+        self.assertFalse(
+            dash.models.CpcConstraint.objects.filter(
+                source=self.ob,
+                account=self.account
+            ).count()
+        )
+        dash.blacklist._update_source(
+            {'source': self.ob, 'account': self.account},
+            BLACKLISTED,
+            self._generate_domains(40, 10),
+            {}
+        )
+        constraint = dash.models.CpcConstraint.objects.get(
+            source=self.ob,
+            account=self.account
+        )
+        self.assertEqual(constraint.constraint_type,
+                         dash.constants.CpcConstraintType.OUTBRAIN_BLACKLIST)
+        self.assertEqual(constraint.min_cpc, dash.blacklist.OUTBRAIN_CPC_CONSTRAINT_MIN)
+        self.assertEqual(constraint.max_cpc, None)
+
+    def test_constraint_cleared(self):
+        dash.blacklist._update_source(
+            {'source': self.ob, 'account': self.account},
+            BLACKLISTED,
+            self._generate_domains(10, 50),
+            {}
+        )
+        self.assertEqual(
+            dash.models.PublisherBlacklist.objects.filter(
+                account=self.account,
+                source=self.ob,
+                status=BLACKLISTED
+            ).count(),
+            50
+        )
+        constraint = dash.models.CpcConstraint.objects.get(
+            source=self.ob,
+            account=self.account
+        )
+        self.assertEqual(constraint.constraint_type,
+                         dash.constants.CpcConstraintType.OUTBRAIN_BLACKLIST)
+        self.assertEqual(constraint.min_cpc, dash.blacklist.OUTBRAIN_CPC_CONSTRAINT_MIN)
+        self.assertEqual(constraint.max_cpc, None)
+
+        dash.blacklist._update_source(
+            {'source': self.ob, 'account': self.account},
+            ENABLED,
+            self._generate_domains(15, 45),
+            {}
+        )
+        self.assertEqual(
+            dash.models.PublisherBlacklist.objects.filter(
+                account=self.account,
+                source=self.ob,
+                status=BLACKLISTED
+            ).count(),
+            5
+        )
+        self.assertFalse(
+            dash.models.CpcConstraint.objects.filter(
+                source=self.ob,
+                account=self.account
+            ).count()
+        )

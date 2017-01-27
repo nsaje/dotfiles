@@ -24,6 +24,7 @@ from dash import constants
 from dash import models
 from dash import forms as dash_forms
 from dash import validation_helpers
+from dash import cpc_constraints
 
 import utils.k1_helper
 import utils.email_helper
@@ -1591,6 +1592,14 @@ class CpcConstraintAdmin(admin.ModelAdmin):
         if len(obj.reason) > 30:
             return obj.reason[:27] + ' ...'
         return obj.reason
+
+    def save_model(self, request, obj, form, change):
+        cpc_constraints.enforce_rule(obj.min_cpc, obj.max_cpc, **{
+            lvl: getattr(obj, lvl)
+            for lvl in ('agency', 'account', 'campaign', 'ad_group', 'source')
+            if getattr(obj, lvl) is not None
+        })
+        obj.save()
 
 
 admin.site.register(models.Agency, AgencyAdmin)
