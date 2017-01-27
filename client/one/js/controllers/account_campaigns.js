@@ -242,6 +242,7 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($windo
         if (chartMetrics) {
             $scope.chartMetric1 = chartMetrics.metric1;
             $scope.chartMetric2 = chartMetrics.metric2;
+            $scope._chartMetrics = chartMetrics;
         }
     }
 
