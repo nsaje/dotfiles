@@ -145,6 +145,24 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     }
 
     function getEntityState (entity) {
+        var defaultState = getDefaultState(entity);
+        var state = defaultState;
+
+        // keep the same tab if possible
+        // - standard
+        if ($state.includes('**.sources')) state += '.sources';
+        if ($state.includes('**.history')) state += '.history';
+        if ($state.includes('**.settings')) state += '.settings';
+        if ($state.includes('**.insights')) state += '.insights';
+        // - special
+        if (entity) state = getSpecialEntityState(entity, state, $state);
+
+        if (!$state.get(state)) state = defaultState;
+
+        return state;
+    }
+
+    function getDefaultState (entity) {
         var defaultState = 'main.allAccounts';
 
         if (entity) {
@@ -160,19 +178,7 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
                 break;
             }
         }
-
-        // keep the same tab if possible
-        var state = defaultState;
-        // - standard
-        if ($state.includes('**.sources')) state += '.sources';
-        if ($state.includes('**.history')) state += '.history';
-        if ($state.includes('**.settings')) state += '.settings';
-        // - special
-        if (entity) state = getSpecialEntityState(entity, state, $state);
-
-        if (!$state.get(state)) state = defaultState;
-
-        return state;
+        return defaultState;
     }
 
     function getHomeHref () {

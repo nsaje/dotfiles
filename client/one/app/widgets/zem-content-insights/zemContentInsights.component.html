@@ -1,68 +1,49 @@
 <div class="content-insights">
-    <div class="loader-container">
-        <div class="loader" ng-show="$ctrl.loading"></div>
+    <div class="loader" ng-show="$ctrl.loading"></div>
 
-        <div ng-if="!$ctrl.loading">
-            <div class="best-performers"
-                 ng-class="{'worst-selected-performers': !$ctrl.expanded && $ctrl.collapsedDataState === 'worst-performers'}">
-                <p ng-if="$ctrl.expanded" class="insights-best-title">Best Titles</p>
+    <div ng-if="!$ctrl.loading" class="clearfix">
+        <div class="content-insights__container">
+            <div class="content-insights__title text-green">Best Titles</div>
 
-                <div class="performer-switch-table" ng-if="!$ctrl.expanded">
-                    <div>
-                        <div class="link-cell">
-                            <a href ng-click="$ctrl.showBestPerformersCollapsed()" class="insights-best-title">Best
-                                Titles</a>
-                        </div>
-                        <div class="link-cell">
-                            <a href ng-click="$ctrl.showWorstPerformersCollapsed()" class="insights-worst-title">Worst
-                                Titles</a>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="top-selection-cell">
-                            <div ng-if="$ctrl.collapsedDataState === 'best-performers'" class="top-arrow"></div>
-                        </div>
-                        <div class="top-selection-cell">
-                            <div ng-if="$ctrl.collapsedDataState === 'worst-performers'" class="top-arrow"></div>
-                        </div>
-                    </div>
-                </div>
-                <table class="table table-insights">
-                    <thead>
-                    <th></th>
-                    <th>{{$ctrl.data.summary}}</th>
-                    <th>{{$ctrl.data.metric}}</th>
-                    </thead>
-                    <tbody>
-                    <tr ng-repeat="row in ($ctrl.expanded ? $ctrl.data.bestPerformerRows : $ctrl.collapsedRows) track by $index"
-                        ng-class="{'archived': row.archived}" class="zem-table-row {{ performance(row.performance) }}">
-                        <td>{{$index + 1}}</td>
-                        <td>{{ row.summary }}</td>
-                        <td>{{ row.metric }}</td>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>{{$ctrl.data.summary}}</th>
+                        <th class="text-right">{{$ctrl.data.metric}}</th>
                     </tr>
-                    </tbody>
-                </table>
-            </div>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in $ctrl.data.bestPerformerRows track by $index"
+                        ng-class="{'archived': row.archived}">
+                        <td class="content-insights__number-column text-gray">{{$index + 1}}</td>
+                        <td>{{ row.summary }}</td>
+                        <td class="content-insights__number-performance-column text-right text-green">{{ row.metric }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-            <div ng-if="$ctrl.expanded" class="worst-performers">
-                <p class="insights-worst-title">Worst Titles</p>
+        <div class="content-insights__container m-r-none">
+            <div class="content-insights__title text-red">Worst Titles</div>
 
-                <table class="table table-insights">
-                    <thead>
-                    <th></th>
-                    <th>{{$ctrl.data.summary}}</th>
-                    <th>{{$ctrl.data.metric}}</th>
-                    </thead>
-                    <tbody>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>{{$ctrl.data.summary}}</th>
+                        <th class="text-right">{{$ctrl.data.metric}}</th>
+                    </tr>
+                </thead>
+                <tbody>
                     <tr ng-repeat="row in $ctrl.data.worstPerformerRows track by $index"
-                        ng-class="{'archived': row.archived}" class="zem-table-row {{ performance(row.performance) }}">
-                        <td>{{$index + 1}}</td>
+                        ng-class="{'archived': row.archived}">
+                        <td class="content-insights__number-column text-gray">{{$index + 1}}</td>
                         <td>{{ row.summary }}</td>
-                        <td>{{ row.metric }}</td>
+                        <td class="content-insights__number-performance-column text-right text-red">{{ row.metric }}</td>
                     </tr>
-                    </tbody>
-                </table>
-            </div>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
