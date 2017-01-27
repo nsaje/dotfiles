@@ -87,7 +87,16 @@ def _refresh_k1_reports(update_since, views, account_id=None):
     date_from, date_to = dates[0], dates[-1]
     job_id = generate_job_id(account_id)
 
-    logger.info('Starting refresh k1 reports job %s for date range %s - %s', job_id, date_from, date_to)
+    logger.info('Starting refresh k1 reports job %s for date range %s - %s, requested update since %s',
+                job_id, date_from, date_to, update_since)
+
+    extra_dayspan = (update_since.date() - date_from).days
+    influx.gauge('etl.refresh_k1.extra_dayspan', extra_dayspan)
+    if extra_dayspan:
+        logger.warning(
+            'Refresh K1 is processing older statements than requested (requested update since %s,'
+            'real update since %s), job %s',
+            update_since, date_from, job_id)
 
     for mv_class in views:
         with influx.block_timer('etl.refresh_k1.generate_table', table=mv_class.TABLE_NAME):

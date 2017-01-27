@@ -152,7 +152,7 @@ def _handle_overspend(date, campaign, media_nano, data_nano):
     daily_statement.save()
 
 
-def _get_dates(date, campaign):
+def _get_dates(date_since, campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id)
     existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
 
@@ -164,10 +164,14 @@ def _get_dates(date, campaign):
         by_date[existing_statement.date][existing_statement.budget_id] = existing_statement
 
     today = dates_helper.local_today()
-    from_date = min(date, *(budget.start_date for budget in budgets))
     to_date = min(max(budget.end_date for budget in budgets), today)
+    from_date = min(date_since, *(budget.start_date for budget in budgets))
+    if from_date < date_since:
+        logger.info('Found unprocessed budgets older than requested reprocess period for campaign %s,'
+                    'unprocessed range %s - %s, requested since %s',
+                    campaign.id, from_date, to_date, date_since)
 
-    while from_date <= to_date and from_date < date:
+    while from_date <= to_date and from_date < date_since:
         found = False
         for budget in budgets:
             if budget.start_date <= from_date <= budget.end_date and budget.id not in by_date[from_date]:
@@ -327,13 +331,25 @@ def reprocess_daily_statements(date_since, account_id=None):
 
         # get dates for a single campaign
         dates = _get_dates(date_since, campaign)
-        for date in dates:
-            all_dates.add(date)
-            if date not in total_spend:
+        for dt in dates:
+            all_dates.add(dt)
+            if dt not in total_spend:
                 # do it for all campaigns at once for a single date
-                total_spend[date] = _get_campaign_spend(date, campaigns, account_id)
+                total_spend[dt] = _get_campaign_spend(dt, campaigns, account_id)
 
+        # generate daily statements for the date for the campaign
         _reprocess_campaign_statements(campaign, dates, total_spend)
+
+    # It can happen that not all of the dates in the range need to have their daily statements
+    # reprocessed. When this happens total_spend and all_dates will have have some dates missing.
+    # We need to assure that we provide campaign factors for all the dates within the range we
+    # are processing. The following statements add campaign spend for the missing dates:
+    for dt in rrule.rrule(rrule.DAILY, dtstart=min(all_dates), until=max(all_dates)):
+        dt = dt.date()
+        all_dates.add(dt)
+        if dt not in total_spend:
+            logger.info("Fetching spend for the date %s that wasn't reprocessed", dt)
+            total_spend[dt] = _get_campaign_spend(dt, campaigns, account_id)
 
     effective_spend = defaultdict(lambda: {})
 
@@ -342,8 +358,8 @@ def reprocess_daily_statements(date_since, account_id=None):
         campaigns = campaigns.filter(account_id=account_id)
 
     for campaign in campaigns:
-        for date in all_dates:
-            spend = total_spend[date].get(campaign.id)
-            effective_spend[date][campaign] = _get_effective_spend_pcts(date, campaign, spend)
+        for dt in all_dates:
+            spend = total_spend[dt].get(campaign.id)
+            effective_spend[dt][campaign] = _get_effective_spend_pcts(dt, campaign, spend)
 
     return dict(effective_spend)
