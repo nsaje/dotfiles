@@ -18,6 +18,8 @@ class Command(ExceptionCommand):
         results = maintenance.crossvalidate_traffic(date_from, date_to)
 
         print "Comparison of statistics between {} and {}".format(date_from.isoformat(), date_to.isoformat())
+        print "NOTE: It is recomended that you run this validation when ETL is not running, otherwise you will"
+        print "most certanly vitness various discrepancies"
         print "-" * 40
         print "Clicks: {:d}".format(results.clicks)
         print "stats.clicks - contentadstats.clicks = {:d}".format(results.diff_s_ca_clicks)

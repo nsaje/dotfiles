@@ -38,6 +38,11 @@ def cluster_tables_disk_usage():
 
 
 def crossvalidate_traffic(date_from, date_to):
+    """
+    NOTE: It is recommended that you run this validation when ETL is not running, otherwise you will
+    most certanly vitness various discrepancies.
+    """
+
     params = helpers.get_local_multiday_date_context(date_from, date_to)
     sql = backtosql.generate_sql('etl_crossvalidate_traffic.sql', None)
 
