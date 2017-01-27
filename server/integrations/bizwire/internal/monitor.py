@@ -17,6 +17,8 @@ from utils import dates_helper, email_helper
 
 logger = logging.getLogger(__name__)
 
+START_DATE = datetime.date(2016, 12, 3)
+
 
 def run_hourly_job():
     monitor_num_ingested_articles()
@@ -74,7 +76,11 @@ def _get_unique_s3_labels(dates):
 
 def monitor_num_ingested_articles():
     now = dates_helper.utc_now()
-    dates = [now.date() - datetime.timedelta(days=x) for x in xrange(3)]
+    dates = []
+    current_date = START_DATE
+    while current_date < now.date():
+        dates.append(current_date)
+        current_date += datetime.timedelta(days=1)
     unique_labels = _get_unique_s3_labels(dates)
 
     s3_count = len(unique_labels)
