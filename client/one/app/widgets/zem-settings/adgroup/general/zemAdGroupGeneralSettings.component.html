@@ -27,7 +27,7 @@
                 End date:
                 <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>
             </label>
-            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
+            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon m-r">
                 <input class="form__input-text" id="end-date-input" ng-disabled="$ctrl.entity.warnings.endDate !== undefined"
                        type="text" uib-datepicker-popup="MM/dd/yyyy" datepicker-options="$ctrl.endDatePickerOptions"
                        ng-model="$ctrl.entity.settings.endDate" is-open="$ctrl.endDatePicker.isOpen"

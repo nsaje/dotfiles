@@ -10,11 +10,26 @@
     }
 }
 
+.container-fluid, .container {
+    min-height: 100vh;
+    padding-bottom: 52px;
+    position: relative;
+
+    .footer {
+        position: absolute;
+        bottom: 0;
+    }
+}
+
+.body .content-full {
+
+}
+
 ///////////////////////////
 // Edit-campaign-goal modal //
 ///////////////////////////
 
-.form__group.form__group--meet-or-beat-goal {
+.form__group--meet-or-beat-goal {
     .form__postfixed-field,
     .form__input-text {
         width: @form-input-width-modal - 45% - 2%;
@@ -129,6 +144,12 @@ zem-internal-feature {
 
                 .chart {
                     height: 290px;
+                    margin-left: -10px;
+                    margin-right: -10px;
+
+                    .highcharts-background {
+                        fill: none;
+                    }
                 }
 
                 .chart-selector {
@@ -848,13 +869,6 @@ zem-internal-feature {
     }
 }
 
-.zem-grid-column-selector .dropdown-menu,
-.zem-grid-breakdown-selector .dropdown-menu {
-    border: 1px solid @border-color;
-    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
-    margin-top: 8px;
-}
-
 .custom-cols.dropdown {
     .dropdown-menu {
         margin-top: 7px;
@@ -1506,14 +1520,6 @@ select.media-source-select {
 
 .zem-grid-column-selector,
 .zem-grid-breakdown-selector {
-    zem-internal-feature {
-        left: -5px;
-    }
-
-    .internal {
-        border: none;
-    }
-
     ul.dropdown-menu {
         .list-wrapper {
             padding-bottom: @default-spacing;
@@ -1572,7 +1578,6 @@ select.media-source-select {
             margin: 3px 0 3px 5px;
             label {
                 font-weight: normal;
-                color: @text-color;
                 font-size: @default-font-size;
 
                 &.disabled {
