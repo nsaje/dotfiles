@@ -1134,7 +1134,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
                 'state' in resource:
             changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)
-            autopilot_changed_sources_text = ', '.join([s.source.name for s in changed_sources])
+            autopilot_changed_sources_text = ', '.join([s.source.name if s != 'b1_sources' else 'RTB Sources'
+                                                        for s in changed_sources])
 
         k1_helper.update_ad_group(ad_group.pk,
                                   msg='AdGroupSourceSettings.put')

@@ -48,6 +48,7 @@ class AutopilotLogAdmin(admin.ModelAdmin):
         'ad_group',
         'ad_group_source',
         'autopilot_type',
+        'is_rtb_as_one',
         'campaign_goal',
         'previous_cpc_cc',
         'new_cpc_cc',

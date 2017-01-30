@@ -4,11 +4,15 @@ import logging
 from automation.constants import CpcChangeComment
 from automation import autopilot_settings
 from dash import cpc_constraints
+from dash.constants import SourceType, SourceAllRTB
 
 logger = logging.getLogger(__name__)
 
 
-def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_changes=None):
+def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_changes=None, adjust_rtb_sources=True):
+    if not adjust_rtb_sources:
+        data = {ags: v for ags, v in data.iteritems() if
+                ags == 'b1_sources' or ags.source.source_type.type != SourceType.B1}
     active_sources = data.keys()
     recommended_changes = {}
     for ag_source in active_sources:
@@ -23,13 +27,16 @@ def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_c
             daily_budget,
             yesterdays_spend)
         cpc_change_comments += calculation_comments
-        source_type = ag_source.source.source_type
-        max_decimal_places = _get_cpc_max_decimal_places(source_type.cpc_decimal_places)
+        max_decimal_places = _get_cpc_max_decimal_places(ag_source.source.source_type.cpc_decimal_places if
+                                                         ag_source != 'b1_sources' else SourceAllRTB.DECIMAL_PLACES)
         proposed_cpc = _round_cpc(proposed_cpc, decimal_places=max_decimal_places)
         proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments,
                                                        max_decimal_places)
+        ''' # TODO DAVORIN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         proposed_cpc = _threshold_cpc_constraints(ad_group, ag_source.source, proposed_cpc,
                                                   cpc_change_comments)
+        '''
+        source_type = ag_source.source.source_type if ag_source != 'b1_sources' else 'b1_sources'
         proposed_cpc = _threshold_source_constraints(proposed_cpc, source_type, adgroup_settings, cpc_change_comments)
 
         new_cpc_cc = proposed_cpc
@@ -141,6 +148,8 @@ def _get_cpc_max_decimal_places(source_dec_places):
 
 
 def _get_source_type_min_max_cpc(source_type, adgroup_settings):
+    if source_type == 'b1_sources':
+        return SourceAllRTB.MIN_CPC, SourceAllRTB.MAX_CPC
     return source_type.get_min_cpc(adgroup_settings), source_type.max_cpc
 
 

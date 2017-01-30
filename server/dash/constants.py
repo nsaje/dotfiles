@@ -1835,6 +1835,8 @@ class SourceAllRTB(object):
     DECIMAL_PLACES = 3
     DEFAULT_DAILY_BUDGET = Decimal('50.0')
     DEFAULT_CPC_CC = Decimal('0.45')
+    MIN_DAILY_BUDGET = Decimal('1.00')
+    MAX_DAILY_BUDGET = Decimal('10000.00')
 
 
 class CpcConstraintType(ConstantBase):

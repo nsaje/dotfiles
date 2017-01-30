@@ -75,13 +75,20 @@ def update_ad_group_source_values(ad_group_source, changes, system_user=None, la
         ad_group_source, changes, None, system_user=system_user, landing_mode=landing_mode, ping_k1=False)
 
 
+def update_ad_group_values(ad_group, changes, system_user=None, landing_mode=None):
+    print 'UPDATING ADGROUP SETTINGS: ', changes # TODO DAVORINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+
+
 def get_ad_group_sources_minimum_cpc(ad_group_source):
     return max(autopilot_settings.AUTOPILOT_MIN_CPC, ad_group_source.source.source_type.min_cpc)
 
 
 def get_ad_group_sources_minimum_daily_budget(ad_group_source,
                                               ap_type=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET):
-    source_min_daily_budget = ad_group_source.source.source_type.min_daily_budget
+    if ad_group_source == 'b1_sources':
+        source_min_daily_budget = constants.SourceAllRTB.MIN_DAILY_BUDGET
+    else:
+        source_min_daily_budget = ad_group_source.source.source_type.min_daily_budget
     if ap_type != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         return source_min_daily_budget
     return max(autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
@@ -109,8 +116,11 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
     changesText = []
     for adgroup, adgroup_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
+        if 'b1_sources' in adgroup_changes:
+            changesText.append(_get_email_source_changes_text('RTB Sources', adgroup_changes['b1_sources']))
+            adgroup_changes.pop('b1_sources', None)
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
-            changesText.append(_get_email_source_changes_text(ag_source, adgroup_changes[ag_source]))
+            changesText.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
         changesText.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes))
 
     args = {
@@ -121,6 +131,7 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
     }
     subject, body, _ = format_email(EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE, **args)
     try:
+        print body # TODO DAVORIN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         send_mail(
             subject,
             body,
@@ -150,8 +161,11 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
     changesText = []
     for adgroup, adgroup_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
+        if 'b1_sources' in adgroup_changes:
+            changesText.append(_get_email_source_changes_text('RTB Sources', adgroup_changes['b1_sources']))
+            adgroup_changes.pop('b1_sources', None)
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
-            changesText.append(_get_email_source_changes_text(ag_source, adgroup_changes[ag_source]))
+            changesText.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
 
     args = {
         'campaign': campaign,
@@ -196,13 +210,13 @@ AdGroup: {adg_name} ({adg_url}):'''.format(
     )
 
 
-def _get_email_source_changes_text(ag_source, changes):
+def _get_email_source_changes_text(source_name, changes):
     cpc_pilot_on = all(c in changes for c in ['old_cpc_cc', 'new_cpc_cc'])
     cpc_changed = cpc_pilot_on and changes['old_cpc_cc'] != changes['new_cpc_cc']
     budget_pilot_on = all(b in changes for b in ['new_budget', 'old_budget'])
     budget_changed = budget_pilot_on and changes['old_budget'] != changes['new_budget']
 
-    text = u'\n- on {} '.format(ag_source.source.name)
+    text = u'\n- on {} '.format(source_name)
     if budget_pilot_on:
         text += _get_budget_changes_text(budget_changed, changes)
         text += u' and ' if cpc_pilot_on else u''
@@ -217,7 +231,7 @@ def _get_email_adgroup_pausing_suggestions_text(adgroup_changes):
         changes = adgroup_changes[ag_source]
         if all(b in changes for b in ['new_budget', 'old_budget']) and\
                 changes['new_budget'] == get_ad_group_sources_minimum_daily_budget(ag_source):
-            suggested_sources.append(ag_source.source.name)
+            suggested_sources.append(ag_source.source.name if ag_source != 'b1_sources' else 'RTB Sources')
     if suggested_sources:
         return '\n\nTo improve ad group\'s performance, please consider pausing the following media sources: ' +\
                ", ".join(suggested_sources) + '.\n'
