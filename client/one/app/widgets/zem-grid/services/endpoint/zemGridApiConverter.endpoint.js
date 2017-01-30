@@ -2,7 +2,7 @@
 /* eslint-disable camelcase*/
 'use strict';
 
-angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (zemGridConstants, zemGridEndpointColumns) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (zemGridConstants, zemGridEndpointColumns, zemUtils) { // eslint-disable-line max-len
 
     return {
         convertBreakdownFromApi: convertBreakdownFromApi,
@@ -11,34 +11,8 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
     };
 
     function convertBreakdownFromApi (config, breakdown, metaData, convertDiffAfterSave) {
-        var convertedBreakdown = {
-            breakdownId: breakdown.breakdown_id,
-            level: config.level,
-            pagination: breakdown.pagination,
-        };
-
-        // TODO: find better solution for optional fields (and camelcase converting)
-        if (breakdown.campaign_goals) {
-            convertedBreakdown.campaignGoals = breakdown.campaign_goals;
-        }
-        if (breakdown.conversion_goals) {
-            convertedBreakdown.conversionGoals = breakdown.conversion_goals;
-        }
-        if (breakdown.pixels) {
-            convertedBreakdown.pixels = breakdown.pixels;
-        }
-        if (breakdown.enabling_autopilot_sources_allowed !== undefined) {
-            convertedBreakdown.enablingAutopilotSourcesAllowed = breakdown.enabling_autopilot_sources_allowed;
-        }
-        if (breakdown.ad_group_autopilot_state) {
-            convertedBreakdown.adGroupAutopilotState = breakdown.ad_group_autopilot_state;
-        }
-        if (breakdown.batches) {
-            convertedBreakdown.batches = breakdown.batches;
-        }
-        if (breakdown.notification) {
-            convertedBreakdown.notification = breakdown.notification;
-        }
+        var convertedBreakdown = zemUtils.convertToCamelCase(breakdown);
+        convertedBreakdown.level = config.level;
 
         if (config.level === 1 && !convertDiffAfterSave) {
             // set dynamic columns based on pixels, conversion goals and campaign goals from response

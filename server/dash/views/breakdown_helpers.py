@@ -195,6 +195,7 @@ def get_ad_group_sources_extras(ad_group):
     return {
         'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings),
         'ad_group_autopilot_state': ad_group_settings.autopilot_state,
+        'ad_group_landing_mode': ad_group_settings.landing_mode,
     }
 
 

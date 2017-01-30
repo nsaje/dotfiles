@@ -143,6 +143,11 @@ angular.module('one.widgets').factory('zemGridEndpointService', function ($http,
             metaData.adGroupAutopilotState = breakdown.adGroupAutopilotState;
             delete breakdown.adGroupAutopilotState;
         }
+
+        if (breakdown.adGroupLandingMode !== undefined) {
+            metaData.adGroupLandingMode = breakdown.adGroupLandingMode;
+            delete breakdown.adGroupLandingMode;
+        }
     }
 
     function createEndpoint (metaData) {
