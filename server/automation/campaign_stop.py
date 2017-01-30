@@ -227,15 +227,22 @@ def can_enable_all_ad_groups(campaign, campaign_settings, ad_groups):
         agss.state == dash.constants.AdGroupSourceSettingsState.ACTIVE
     ]
 
+    inactive_ad_groups_with_active_b1_group = [
+        ags.ad_group for ags in inactive_ad_group_settings if ags.b1_sources_group_enabled and
+        ags.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE
+    ]
+
     today = dates_helper.local_today()
     max_daily_budget_per_ags, max_group_daily_budget_per_ag = _get_max_daily_budget_per_ags(today, campaign)
     remaining_today, available_tomorrow, _ = _get_minimum_remaining_budget(
         campaign, _sum_daily_budget(max_daily_budget_per_ags, max_group_daily_budget_per_ag))
 
-    return _can_enable_all_ad_group_sources(
+    return _can_enable_all_sources(
         campaign,
-        inactive_ad_group_settings,
-        inactive_ad_group_active_ags_settings,
+        [s.ad_group_source for s in inactive_ad_group_active_ags_settings],
+        inactive_ad_groups_with_active_b1_group,
+        current_ag_settings.values(),
+        current_ags_settings,
         max_daily_budget_per_ags,
         max_group_daily_budget_per_ag,
         remaining_today,
@@ -272,13 +279,22 @@ def can_enable_ad_groups(campaign, campaign_settings):
 
     ret = {}
     for ad_group in ad_groups:
-        if current_ag_settings[ad_group].state == dash.constants.AdGroupSettingsState.ACTIVE:
+        ag_settings = current_ag_settings[ad_group]
+        if ag_settings.state == dash.constants.AdGroupSettingsState.ACTIVE:
             ret[ad_group.id] = True
             continue
 
-        ret[ad_group.id] = _can_enable_all_ad_group_sources(
+        ad_groups = []
+        if ag_settings.b1_sources_group_enabled and\
+           ag_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
+            ad_groups = [ad_group]  # b1 sources group is active - it adds budget if enabled
+
+        active_ad_group_sources = [s.ad_group_source for s in current_active_ags_settings[ad_group]]
+        ret[ad_group.id] = _can_enable_all_sources(
             campaign,
-            [current_ag_settings[ad_group]],
+            active_ad_group_sources,
+            ad_groups,
+            [ag_settings],
             current_active_ags_settings[ad_group],
             max_daily_budget_per_ags,
             max_group_daily_budget_per_ag,
@@ -295,13 +311,45 @@ def can_enable_media_source(ad_group_source, campaign, campaign_settings, ad_gro
 
 def can_enable_media_sources(ad_group, campaign, campaign_settings, ad_group_settings):
     ad_group_sources = ad_group.adgroupsource_set.all()
-    if not campaign_settings.automatic_campaign_stop or ad_group_settings.state == dash.constants.AdGroupSettingsState.INACTIVE:
+    if not campaign_settings.automatic_campaign_stop or\
+       ad_group_settings.state == dash.constants.AdGroupSettingsState.INACTIVE:
         return {ags.id: True for ags in ad_group_sources}
 
     if campaign_settings.landing_mode:
         return {ags.id: False for ags in ad_group_sources}
 
     return _can_enable_media_sources(ad_group_sources, campaign)
+
+
+def can_enable_b1_sources_group(ad_group, campaign, ad_group_settings, campaign_settings):
+    if not campaign_settings.automatic_campaign_stop:
+        return True
+
+    if campaign_settings.landing_mode:
+        return False
+
+    if ad_group_settings.state == dash.constants.AdGroupSettingsState.INACTIVE:
+        return True
+
+    if ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
+        return True
+
+    today = dates_helper.local_today()
+    max_daily_budget_per_ags, max_group_daily_budget_per_ag = _get_max_daily_budget_per_ags(today, campaign)
+    remaining_today, available_tomorrow, _ = _get_minimum_remaining_budget(
+        campaign, _sum_daily_budget(max_daily_budget_per_ags, max_group_daily_budget_per_ag))
+
+    return _can_enable_all_sources(
+        campaign,
+        [],
+        [ad_group],
+        [ad_group_settings],
+        [],
+        max_daily_budget_per_ags,
+        max_group_daily_budget_per_ag,
+        remaining_today,
+        available_tomorrow
+    )
 
 
 def can_enable_all_media_sources(campaign, campaign_settings, ad_group_sources, ad_group_settings):
@@ -318,10 +366,10 @@ def can_enable_all_media_sources(campaign, campaign_settings, ad_group_sources, 
         ad_group_source__in=ad_group_sources,
     ).group_current_settings().select_related('ad_group_source__source')
 
-    inactive_ags_settings = [
-        agss for agss in current_ags_settings if agss.state == dash.constants.AdGroupSourceSettingsState.INACTIVE
+    inactive_ad_group_sources = [
+        agss.ad_group_source for agss in current_ags_settings if
+        agss.state == dash.constants.AdGroupSourceSettingsState.INACTIVE
     ]
-
     current_ag_settings = dash.models.AdGroupSettings.objects.filter(
         ad_group__in=set(ags.ad_group for ags in ad_group_sources)
     ).group_current_settings().select_related('ad_group')
@@ -331,10 +379,12 @@ def can_enable_all_media_sources(campaign, campaign_settings, ad_group_sources, 
     remaining_today, available_tomorrow, _ = _get_minimum_remaining_budget(
         campaign, _sum_daily_budget(max_daily_budget_per_ags, max_group_daily_budget_per_ag))
 
-    return _can_enable_all_ad_group_sources(
+    return _can_enable_all_sources(
         campaign,
+        inactive_ad_group_sources,
+        [],  # NOTE: assumes b1 group can't be enabled in bulk actions
         current_ag_settings,
-        inactive_ags_settings,
+        current_ags_settings,
         max_daily_budget_per_ags,
         max_group_daily_budget_per_ag,
         remaining_today,
@@ -491,31 +541,68 @@ def _can_enable_media_sources(ad_group_sources, campaign):
     return ret
 
 
-def _can_enable_all_ad_group_sources(
-        campaign, ad_groups_settings, ad_group_sources_settings,
+def _can_enable_all_sources(
+        campaign,
+        ad_group_sources,
+        b1_group_ad_groups,
+        ad_groups_settings,
+        ad_group_sources_settings,
         max_daily_budget_per_ags, max_group_daily_budget,
         remaining_today, available_tomorrow):
 
-    ad_groups_settings_map = {s.ad_group_id: s for s in ad_groups_settings}
+    ad_groups_settings_map = {ags.ad_group_id: ags for ags in ad_groups_settings}
+    ad_group_sources_settings_map = {agss.ad_group_source_id: agss for agss in ad_group_sources_settings}
 
-    daily_budget_total = 0
+    ags_daily_budget_added, ags_daily_budget_total = _get_ad_group_sources_daily_budget_change(
+        ad_group_sources,
+        ad_groups_settings_map,
+        ad_group_sources_settings_map,
+        max_daily_budget_per_ags,
+    )
+    b1_groups_daily_budget_added, b1_groups_daily_budget_total = _get_b1_groups_daily_budget_change(
+        b1_group_ad_groups,
+        ad_groups_settings_map,
+        max_group_daily_budget,
+    )
+
+    daily_budget_added = ags_daily_budget_added + b1_groups_daily_budget_added
+    daily_budget_total = ags_daily_budget_total + b1_groups_daily_budget_total
+
+    can_enable_today = daily_budget_added <= remaining_today
+    can_enable_tomorrow = daily_budget_added + daily_budget_total <= available_tomorrow
+
+    return can_enable_today and can_enable_tomorrow
+
+
+def _get_ad_group_sources_daily_budget_change(ad_group_sources, ad_groups_settings_map,
+                                              ad_group_sources_settings_map, max_daily_budget_per_ags):
     daily_budget_added = 0
-    for ad_group_source_settings in ad_group_sources_settings:
-        ad_group_settings = ad_groups_settings_map[ad_group_source_settings.ad_group_source.ad_group_id]
-        if _is_ags_always_in_budget_group(ad_group_source_settings.ad_group_source, [ad_group_settings]):
+    daily_budget_total = 0
+
+    for ad_group_source in ad_group_sources:
+        ad_group_source_settings = ad_group_sources_settings_map[ad_group_source.id]
+        ad_group_settings = ad_groups_settings_map[ad_group_source.ad_group_id]
+        if _is_ags_always_in_budget_group(ad_group_source, [ad_group_settings]):
             continue
 
-        max_daily_budget = max_daily_budget_per_ags.get(ad_group_source_settings.ad_group_source.id, DECIMAL_ZERO)
+        max_daily_budget = max_daily_budget_per_ags.get(ad_group_source.id, DECIMAL_ZERO)
         current_daily_budget = ad_group_source_settings.daily_budget_cc
         if not current_daily_budget:
-            current_daily_budget = ad_group_source_settings.ad_group_source.source.default_daily_budget_cc
+            current_daily_budget = ad_group_source.source.default_daily_budget_cc
 
         daily_budget_total += current_daily_budget
         daily_budget_added += max(0, current_daily_budget - max_daily_budget)
 
-    for ad_group_settings in ad_groups_settings:
-        if not ad_group_settings.b1_sources_group_enabled or \
-                not ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
+    return daily_budget_added, daily_budget_total
+
+
+def _get_b1_groups_daily_budget_change(ad_groups, ad_groups_settings_map, max_group_daily_budget):
+    daily_budget_added = 0
+    daily_budget_total = 0
+
+    for ad_group in ad_groups:
+        ad_group_settings = ad_groups_settings_map[ad_group.id]
+        if not ad_group_settings.b1_sources_group_enabled:
             continue
 
         max_daily_budget = max_group_daily_budget.get(ad_group_settings.ad_group_id, DECIMAL_ZERO)
@@ -524,10 +611,7 @@ def _can_enable_all_ad_group_sources(
         daily_budget_total += current_daily_budget
         daily_budget_added += max(0, current_daily_budget - max_daily_budget)
 
-    can_enable_today = daily_budget_added <= remaining_today
-    can_enable_tomorrow = daily_budget_added + daily_budget_total <= available_tomorrow
-
-    return can_enable_today and can_enable_tomorrow
+    return daily_budget_added, daily_budget_total
 
 
 def get_min_budget_increase(campaign):
@@ -1384,7 +1468,7 @@ def _get_effective_daily_budget(date, ad_group_source, ag_settings, ags_settings
        (ag_settings.end_date and ag_settings.end_date < date):
         return DECIMAL_ZERO
 
-    if ag_settings.b1_sources_group_enabled:
+    if _is_ags_always_in_budget_group(ad_group_source, [ag_settings]):
         return DECIMAL_ZERO
 
     daily_budget_cc = ags_settings.daily_budget_cc

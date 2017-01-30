@@ -192,6 +192,18 @@ class AdGroupSettings(api_common.BaseApiView):
                         ]
                 })
 
+        if 'b1_sources_group_state' in changes:
+            can_enable_b1_sources_group = campaign_stop.can_enable_b1_sources_group(
+                ad_group,
+                ad_group.campaign,
+                new_settings,
+                campaign_settings,
+            )
+            if not can_enable_b1_sources_group:
+                raise exc.ValidationError(errors={
+                    'state': ['Please add additional budget to your campaign to make changes.']
+                })
+
     def b1_sources_group_adjustments(self, changes, current_settings, new_settings):
         # Turning on RTB-as-one
         if 'b1_sources_group_enabled' in changes and changes['b1_sources_group_enabled']:

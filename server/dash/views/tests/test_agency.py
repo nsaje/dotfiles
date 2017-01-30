@@ -884,6 +884,35 @@ class AdGroupSettingsTest(TestCase):
                 ad_group.campaign.get_current_settings()
             )
 
+    @patch('automation.campaign_stop.can_enable_b1_sources_group')
+    def test_validate_all_rtb_campaign_stop_state(self, mock_can_enable):
+        view = agency.AdGroupSettings()
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        current_settings = ad_group.get_current_settings().copy_settings()
+        current_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
+        current_settings.save(None)
+
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.ACTIVE
+
+        mock_can_enable.return_value = True
+        view.validate_all_rtb_campaign_stop(
+            ad_group,
+            current_settings,
+            new_settings,
+            ad_group.campaign.get_current_settings()
+        )  # no exception should be raised
+
+        mock_can_enable.return_value = False
+        with self.assertRaises(exc.ValidationError):
+            view.validate_all_rtb_campaign_stop(
+                ad_group,
+                current_settings,
+                new_settings,
+                ad_group.campaign.get_current_settings()
+            )
+
     def test_b1_sources_group_adjustments_sets_default_cpc_and_daily_budget(self):
         view = agency.AdGroupSettings()
         ad_group = models.AdGroup.objects.get(pk=1)

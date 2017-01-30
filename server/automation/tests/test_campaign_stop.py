@@ -546,7 +546,7 @@ class GetMaxSettableB1SourcesGroupDailyBudgetTest(TestCase):
 
     def test_get_max_settable_b1_sources_group_daily_budget(self):
         self.assertEqual(
-            Decimal('550'),
+            Decimal('500'),
             campaign_stop.get_max_settable_b1_sources_group_budget(
                 self.ad_group,
                 self.ad_group.campaign,
@@ -801,6 +801,108 @@ class CanEnableMediaSourcesTestCase(TestCase):
         }, can_enable)
 
 
+class CanEnableB1SourceGroupTestCase(TestCase):
+
+    fixtures = ['test_campaign_stop.yaml', 'test_campaign_stop_b1_sources_group.yaml']
+
+    def setUp(self):
+        self.ad_group = dash.models.AdGroup.objects.get(id=222001)
+        get_max_daily_budget_patcher = patch('automation.campaign_stop._get_max_daily_budget_per_ags')
+        mock_get_max_daily_budget = get_max_daily_budget_patcher.start()
+        mock_get_max_daily_budget.return_value = {}, {self.ad_group.id: Decimal('55')}
+        self.addCleanup(get_max_daily_budget_patcher.stop)
+
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_state = dash.constants.AdGroupSourceSettingsState.INACTIVE
+        new_settings.b1_sources_group_daily_budget = Decimal('100')
+        new_settings.save(None)
+
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_can_enable_b1_sources_group_enough_budget(self, mock_get_mrb):
+        mock_get_mrb.return_value = Decimal('45'), Decimal('145'), None
+
+        can_enable = campaign_stop.can_enable_b1_sources_group(
+            self.ad_group,
+            self.ad_group.campaign,
+            self.ad_group.get_current_settings(),
+            self.ad_group.campaign.get_current_settings()
+        )
+        self.assertTrue(can_enable)
+
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_can_enable_b1_sources_group_not_enough_budget_today(self, mock_get_mrb):
+        mock_get_mrb.return_value = Decimal('40'), Decimal('145'), None
+
+        can_enable = campaign_stop.can_enable_b1_sources_group(
+            self.ad_group,
+            self.ad_group.campaign,
+            self.ad_group.get_current_settings(),
+            self.ad_group.campaign.get_current_settings()
+        )
+        self.assertFalse(can_enable)
+
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_can_enable_b1_sources_group_not_enough_budget_tomorrow(self, mock_get_mrb):
+        mock_get_mrb.return_value = Decimal('45'), Decimal('140'), None
+
+        can_enable = campaign_stop.can_enable_b1_sources_group(
+            self.ad_group,
+            self.ad_group.campaign,
+            self.ad_group.get_current_settings(),
+            self.ad_group.campaign.get_current_settings()
+        )
+        self.assertFalse(can_enable)
+
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_ad_group_inactive(self, mock_get_mrb):
+        mock_get_mrb.return_value = Decimal('0'), Decimal('0'), None
+
+        new_settings = self.ad_group.get_current_settings().copy_settings()
+        new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+        new_settings.save(None)
+
+        can_enable = campaign_stop.can_enable_b1_sources_group(
+            self.ad_group,
+            self.ad_group.campaign,
+            self.ad_group.get_current_settings(),
+            self.ad_group.campaign.get_current_settings()
+        )
+        self.assertTrue(can_enable)
+
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_automatic_campaign_stop(self, mock_get_mrb):
+        mock_get_mrb.return_value = Decimal('0'), Decimal('0'), None
+
+        new_settings = self.ad_group.campaign.get_current_settings().copy_settings()
+        new_settings.automatic_campaign_stop = False
+        new_settings.save(None)
+
+        can_enable = campaign_stop.can_enable_b1_sources_group(
+            self.ad_group,
+            self.ad_group.campaign,
+            self.ad_group.get_current_settings(),
+            self.ad_group.campaign.get_current_settings()
+        )
+        self.assertTrue(can_enable)
+
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_landing_mode(self, mock_get_mrb):
+        mock_get_mrb.return_value = Decimal('0'), Decimal('0'), None
+
+        new_settings = self.ad_group.campaign.get_current_settings().copy_settings()
+        new_settings.landing_mode = True
+        new_settings.save(None)
+
+        can_enable = campaign_stop.can_enable_b1_sources_group(
+            self.ad_group,
+            self.ad_group.campaign,
+            self.ad_group.get_current_settings(),
+            self.ad_group.campaign.get_current_settings()
+        )
+        self.assertFalse(can_enable)
+
+
 class CanEnableAdGroupsTestCase(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
@@ -852,15 +954,17 @@ class CanEnableAdGroupsTestCase(TestCase):
         can_enable = campaign_stop.can_enable_all_ad_groups(campaign, campaign.get_current_settings(), ad_groups)
         self.assertTrue(can_enable)
 
-    def test_can_enable_all_ad_group_sources(self):
+    def test_can_enable_all_sources(self):
         ad_group = dash.models.AdGroup.objects.get(id=1)
 
         new_settings = ad_group.get_current_settings().copy_settings()
         new_settings.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
         new_settings.save(None)
 
-        can_enable = campaign_stop._can_enable_all_ad_group_sources(
+        can_enable = campaign_stop._can_enable_all_sources(
             ad_group.campaign,
+            ad_group.adgroupsource_set.all(),
+            [],
             [ad_group.get_current_settings()],
             self._get_ad_group_sources_settings(ad_group),
             {},
@@ -878,8 +982,10 @@ class CanEnableAdGroupsTestCase(TestCase):
             5: Decimal('50'),
         }
         self.assertTrue(
-            campaign_stop._can_enable_all_ad_group_sources(
+            campaign_stop._can_enable_all_sources(
                 ad_group.campaign,
+                ad_group.adgroupsource_set.all(),
+                [],
                 [ad_group.get_current_settings()],
                 self._get_ad_group_sources_settings(ad_group),
                 max_daily_budget_per_ags,
@@ -889,8 +995,10 @@ class CanEnableAdGroupsTestCase(TestCase):
             )
         )
         self.assertFalse(
-            campaign_stop._can_enable_all_ad_group_sources(
+            campaign_stop._can_enable_all_sources(
                 ad_group.campaign,
+                ad_group.adgroupsource_set.all(),
+                [],
                 [ad_group.get_current_settings()],
                 self._get_ad_group_sources_settings(ad_group),
                 max_daily_budget_per_ags,
@@ -900,8 +1008,10 @@ class CanEnableAdGroupsTestCase(TestCase):
             )
         )
         self.assertFalse(
-            campaign_stop._can_enable_all_ad_group_sources(
+            campaign_stop._can_enable_all_sources(
                 ad_group.campaign,
+                ad_group.adgroupsource_set.all(),
+                [],
                 [ad_group.get_current_settings()],
                 self._get_ad_group_sources_settings(ad_group),
                 max_daily_budget_per_ags,
