@@ -6,26 +6,13 @@ angular.module('one.widgets').component('zemChart', {
         gridApi: '<', // Used for selection - TODO: replace with SelectionService
     },
     templateUrl: '/app/widgets/zem-chart/zemChart.component.html',
-    controller: function ($scope, $window, config, zemDataFilterService, zemChartService, zemChartObject, zemChartStorageService, zemChartMetricsService, zemGridConstants, zemNavigationNewService) { //eslint-disable-line max-len
+    controller: function ($scope, $window, config, zemDataFilterService, zemChartService, zemChartObject, zemChartStorageService, zemGridConstants) { //eslint-disable-line max-len
         var $ctrl = this;
         var selectionListenerInitialized = false;
-
-        $ctrl.onMetricsChanged = onMetricsChanged;
+        $ctrl.chartMetricUpdate = chartMetricUpdate;
         $ctrl.removeLegendItem = removeLegendItem;
 
         $ctrl.$onInit = function () {
-            var entity = zemNavigationNewService.getActiveEntity();
-            if (entity) {
-                initialize();
-            } else {
-                var handler = zemNavigationNewService.onActiveEntityChange(function () {
-                    initialize();
-                    handler();
-                });
-            }
-        };
-
-        function initialize () {
             $ctrl.config = config;
 
             // Initialize Chart Data Object and Service
@@ -34,12 +21,14 @@ angular.module('one.widgets').component('zemChart', {
                 $ctrl.chart, $ctrl.level, $ctrl.breakdown, $ctrl.entityId);
             $ctrl.chartDataService.initialize();
 
+            // Metrics initialization
+            loadMetrics();
+            updateMetricOptions();
+
             initializeWindowResizeListeners();
             initializeDataListeners();
-
-            loadMetrics();
             loadData();
-        }
+        };
 
 
         function initializeDataListeners () {
@@ -52,9 +41,7 @@ angular.module('one.widgets').component('zemChart', {
         }
 
         function updateDataSource () {
-            var metrics = [$ctrl.metrics.metric1.value];
-            if ($ctrl.metrics.metric2) metrics.push($ctrl.metrics.metric2.value);
-            $ctrl.chartDataService.setMetrics(metrics);
+            $ctrl.chartDataService.setMetrics([$ctrl.metrics.metric1, $ctrl.metrics.metric2]);
             $ctrl.chartDataService.setSelection(getSelection());
         }
 
@@ -62,6 +49,7 @@ angular.module('one.widgets').component('zemChart', {
             updateDataSource();
             $ctrl.chartDataService.getData().then(function () {
                 // Chart is already updated
+                updateMetricOptions();
             });
         }
 
@@ -82,6 +70,11 @@ angular.module('one.widgets').component('zemChart', {
                     chart.setSize(w, h, false);
                 }
             }
+        }
+
+        function chartMetricUpdate () {
+            saveMetrics();
+            loadData();
         }
 
         function removeLegendItem (item) { // eslint-disable-line no-unused-vars
@@ -117,39 +110,46 @@ angular.module('one.widgets').component('zemChart', {
 
 
         // /////////////////////////////////////////////////////////////////
-        // Metrics selection
+        // Metrics selection Stuff TODO: Refactor - use dedicated components
         //
-        function onMetricsChanged (metric1, metric2) {
-            $ctrl.metrics.metric1 = metric1;
-            $ctrl.metrics.metric2 = metric2;
-            saveMetrics();
-            loadData();
-        }
-
         function saveMetrics () {
             zemChartStorageService.saveMetrics(
-                {
-                    metric1: $ctrl.metrics.metric1.value,
-                    metric2: $ctrl.metrics.metric2 ? $ctrl.metrics.metric2.value : null
-                }, $ctrl.level
+                {metric1: $ctrl.metrics.metric1, metric2: $ctrl.metrics.metric2}, $ctrl.level
             );
         }
 
         function loadMetrics () {
-            var categories = $ctrl.chart.metrics.options;
-            $ctrl.metrics = {
-                metric1: zemChartMetricsService.findMetricByValue(categories, constants.chartMetric.CLICKS),
-                metric2: zemChartMetricsService.findMetricByValue(categories, constants.chartMetric.IMPRESSIONS),
-            };
-
             var metrics = zemChartStorageService.loadMetrics($ctrl.level);
             if (metrics) {
-                var metric1 = zemChartMetricsService.findMetricByValue(categories, metrics.metric1);
-                var metric2 = zemChartMetricsService.findMetricByValue(categories, metrics.metric2);
-
-                if (metric1) $ctrl.metrics.metric1 = metric1;
-                if (metric2) $ctrl.metrics.metric2 = metric2;
+                $ctrl.metrics = metrics;
+            } else {
+                $ctrl.metrics = {metric1: constants.chartMetric.CLICKS, metric2: constants.chartMetric.IMPRESSIONS};
             }
         }
+
+
+        function updateMetricOptions () {
+            $ctrl.metric2Options = getMetric2Options($ctrl.chart.metrics.options);
+        }
+
+        function getMetric2Options (metricOptions) {
+            // add (default) option to disable second metric
+            return $.merge([{'value': 'none', 'name': 'None'}], metricOptions);
+        }
+
+        $ctrl.getSelectedName = function (selected) {
+            // Returns the name of the selected item. ui-select doesn't update the name correctly when choices
+            // change so the right name is returned here.
+            if (!selected) {
+                return '';
+            }
+
+            for (var i = 0; i < $ctrl.metric2Options.length; i++) {
+                if ($ctrl.metric2Options[i].value === selected.value) {
+                    return $ctrl.metric2Options[i].name;
+                }
+            }
+            return '';
+        };
     }
 });

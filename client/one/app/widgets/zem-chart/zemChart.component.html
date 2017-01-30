@@ -1,17 +1,27 @@
 <div is-internal="zemauth.can_see_new_chart" class="chart-container loader-container">
     <div class="loader" ng-show="$ctrl.chart.isLoading"></div>
     <div class="chart-selector">
-        <zem-chart-metric-selector class="zem-chart-metrics-selector"
-                chart="$ctrl.chart"
-                metric="$ctrl.metrics.metric1"
-                on-metric-changed="$ctrl.onMetricsChanged(value, $ctrl.metrics.metric2)"
-        ></zem-chart-metric-selector>
-        <zem-chart-metric-selector class="zem-chart-metrics-selector"
-               chart="$ctrl.chart"
-               metric="$ctrl.metrics.metric2"
-               on-metric-changed="$ctrl.onMetricsChanged($ctrl.metrics.metric1, value)"
-               nullable="true"
-        ></zem-chart-metric-selector>
+        <ui-select theme="select2" search-enabled="false" class="button button--dropdown-toggle-icon metric1" ng-model="$ctrl.metrics.metric1" ng-change="$ctrl.chartMetricUpdate()">
+            <ui-select-match>{{$ctrl.getSelectedName($select.selected)}}</ui-select-match>
+            <ui-select-choices repeat="metric.value as metric in $ctrl.chart.metrics.options | filter:{shown: '!false'}">
+                <span>
+                    <zem-internal-feature ng-if="metric.internal"></zem-internal-feature>
+                    {{metric.name}}
+                </span>
+            </ui-select-choices>
+        </ui-select>
+
+        <span class="middle-text">VS.</span>
+
+        <ui-select theme="select2" search-enabled="false" class="button button--dropdown-toggle-icon metric2" ng-model="$ctrl.metrics.metric2" ng-change="$ctrl.chartMetricUpdate()">
+            <ui-select-match>{{$ctrl.getSelectedName($select.selected)}}</ui-select-match>
+            <ui-select-choices repeat="metric.value as metric in $ctrl.metric2Options | filter:{shown: '!false'}">
+                <span>
+                    <zem-internal-feature ng-if="metric.internal"></zem-internal-feature>
+                    {{metric.name}}
+                </span>
+            </ui-select-choices>
+        </ui-select>
     </div>
     <ul class="chart-legend">
         <li ng-repeat="item in $ctrl.chart.legend.items">
