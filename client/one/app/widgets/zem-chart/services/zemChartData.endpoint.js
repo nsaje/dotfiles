@@ -29,14 +29,8 @@ angular.module('one.widgets').service('zemChartEndpoint', function ($q, $http, z
                                 goalFields: data.goal_fields,
                             };
                         }
-                        if (data.conversion_goals) {
-                            conversionGoals = data.conversion_goals;
-                            zemChartMetricsService.insertConversionsGoalChartOptions(metaData.metrics, conversionGoals);
-                        }
-                        if (data.pixels) {
-                            pixels = data.pixels;
-                            zemChartMetricsService.insertPixelChartOptions(metaData.metrics, pixels);
-                        }
+                        zemChartMetricsService.insertDynamicMetrics(
+                            metaData.metrics, data.pixels, data.conversion_goals);
                     }
                     deferred.resolve({
                         chartData: chartData,
@@ -95,73 +89,6 @@ angular.module('one.widgets').service('zemChartEndpoint', function ($q, $http, z
         return '/api/' + level + (id ? ('/' + id) : '') + '/' + breakdownUrlMap[breakdown] + '/daily_stats/';
     }
 
-    function getChartMetrics (level) {
-        var entityChartMetrics;
-        switch (level) {
-        case constants.level.ALL_ACCOUNTS:
-            entityChartMetrics = options.allAccountsChartMetrics;
-            break;
-        case constants.level.ACCOUNTS:
-            entityChartMetrics = options.accountChartMetrics;
-            break;
-        case constants.level.CAMPAIGNS:
-            entityChartMetrics = options.campaignChartMetrics;
-            break;
-        case constants.level.AD_GROUPS:
-            entityChartMetrics = options.adGroupChartMetrics;
-            break;
-        }
-        var chartMetricOptions = entityChartMetrics;
-
-        if (zemPermissions.hasPermission('zemauth.aggregate_postclick_acquisition')) {
-            chartMetricOptions = zemChartMetricsService.concatAcquisitionChartOptions(
-                chartMetricOptions,
-                zemPermissions.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
-            );
-        }
-
-        if (zemPermissions.hasPermission('zemauth.aggregate_postclick_engagement')) {
-            chartMetricOptions = zemChartMetricsService.concatEngagementChartOptions(
-                chartMetricOptions,
-                zemPermissions.isPermissionInternal('zemauth.aggregate_postclick_engagement')
-            );
-        }
-
-        if (zemPermissions.hasPermission('zemauth.can_view_platform_cost_breakdown')) {
-            chartMetricOptions = zemChartMetricsService.concatChartOptions(
-                chartMetricOptions,
-                options.platformCostChartMetrics,
-                zemPermissions.isPermissionInternal('zemauth.can_view_platform_cost_breakdown')
-            );
-        }
-
-        chartMetricOptions = zemChartMetricsService.concatChartOptions(
-            chartMetricOptions,
-            options.billingCostChartMetrics,
-            false
-        );
-
-        if (zemPermissions.hasPermission('zemauth.can_view_actual_costs')) {
-            chartMetricOptions = zemChartMetricsService.concatChartOptions(
-                chartMetricOptions,
-                options.actualCostChartMetrics,
-                zemPermissions.isPermissionInternal('zemauth.can_view_actual_costs')
-            );
-        }
-
-        chartMetricOptions = zemChartMetricsService.concatChartOptions(
-            chartMetricOptions,
-            options.conversionChartMetrics
-        );
-
-        chartMetricOptions = zemChartMetricsService.concatChartOptions(
-            chartMetricOptions,
-            options.goalChartMetrics
-        );
-
-        return chartMetricOptions;
-    }
-
     function createEndpoint (metaData) {
         return new EndpointService(metaData);
 
@@ -173,7 +100,7 @@ angular.module('one.widgets').service('zemChartEndpoint', function ($q, $http, z
             level: level,
             breakdown: breakdown,
             url: getUrl(level, id, breakdown),
-            metrics: getChartMetrics(level),
+            metrics: zemChartMetricsService.getChartMetrics(level),
         };
     }
 
