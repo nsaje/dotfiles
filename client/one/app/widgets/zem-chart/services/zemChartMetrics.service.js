@@ -60,11 +60,7 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         );
         categories.push({name: 'Audience Metrics', metrics: audienceMetrics});
 
-        // Conversion & CPAs
-        //categories.push({name: 'Conversions & CPAs', metrics: createMetrics(options.conversionChartMetrics)});
-
         return categories;
-
     }
 
     var CONVERSIONS_CATEGORY_NAME = 'Google & Adobe Analytics Goals';
