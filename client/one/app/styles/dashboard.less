@@ -1,3 +1,37 @@
+.page {
+    h1 {
+        margin: -10px 0 -10px 0;
+    }
+
+    h2 {
+        margin: -@default-spacing -@default-spacing 20px -@default-spacing;
+        padding: (@default-spacing/2)+6 @default-spacing (@default-spacing/2)+4 @default-spacing;
+        border-bottom: 1px solid @border-color;
+    }
+}
+
+///////////////////////////
+// Edit-campaign-goal modal //
+///////////////////////////
+
+.form__group.form__group--meet-or-beat-goal {
+    .form__postfixed-field,
+    .form__input-text {
+        width: @form-input-width-modal - 45% - 2%;
+        margin-right: 2%;
+    }
+
+    .form__postfixed-field {
+        .form__input-text {
+            width: 100%;
+        }
+    }
+
+    .button {
+        width: 45%;
+    }
+}
+
 ///////////////////////////
 // Internal feature //
 ///////////////////////////
@@ -43,85 +77,6 @@ zem-internal-feature {
 }
 
 ///////////////////////////
-// Modal window //
-///////////////////////////
-
-.modal-default {
-    .modal-dialog {
-        width: 640px;
-        margin-top: 22vh;
-    }
-
-    .modal-content {
-        padding: @default-spacing;
-        border-radius: 3px;
-        border-top: 3px solid @primary-color;
-    }
-}
-
-.modal {
-    .modal-dialog {
-        margin-top: 22vh;
-
-        .modal-content {
-            border: none;
-
-            .modal-header {
-                border-bottom: 4px solid @primary-color;
-                padding: 15px 15px 10px 15px;
-                margin-bottom: 5px;
-
-                h4 {
-                    color: @primary-color;
-                }
-
-                p {
-                    color: @text-color;
-                    margin-bottom: 0;
-                }
-            }
-
-            .modal-body {
-                padding: @default-spacing;
-                margin-bottom: 10px;
-
-                .form-horizontal {
-                    margin-top: 0;
-                    padding: 0;
-
-                    .form-group:last-child {
-                        margin-bottom: 0;
-                    }
-                }
-
-                .modal-footer {
-                    margin: 0 -@default-spacing -@default-spacing -@default-spacing;
-                }
-            }
-
-            .modal-footer {
-                border: none;
-                background-color: tint(@secondary-color,90%);
-                text-align: left;
-                border-bottom-right-radius: @border-radius;
-                border-bottom-left-radius: @border-radius;
-
-                .error {
-                    color: @red;
-                    padding-top: 8px;
-                }
-
-                .loader-icon {
-                    margin: 0 20px 0 0;
-                    width: 30px;
-                    height: 30px;
-                }
-            }
-        }
-    }
-}
-
-///////////////////////////
 // Layout //
 ///////////////////////////
 
@@ -141,59 +96,6 @@ zem-internal-feature {
             margin: -@default-spacing -@default-spacing @default-spacing -@default-spacing;
             border: none;
             border-radius: 0;
-        }
-    }
-}
-
-///////////////////////////
-// Inputs
-///////////////////////////
-
-tags-input .host .tags {
-    font-weight: 400;
-    font-size: 14px;
-    color: #414141;
-    border-color: #d2d2d2;
-    min-height: 36px;
-    border-radius: 2px;
-    box-shadow: none;
-    -webkit-appearance: none;
-
-    input {
-        border: 0;
-        outline: 0;
-        margin: 2px;
-        padding: 0 0 0 5px;
-        height: 28px;
-        line-height: 26px;
-        box-shadow: none !important;
-    }
-
-    .tag-item {
-        background: none;
-        background-color: @light-gray;
-        border: 1px solid @light-gray;
-        color: @text-color;
-        height: 28px;
-        line-height: 26px;
-
-        .remove-button {
-            color: @text-color;
-
-            &:hover {
-                color: @red;
-                text-decoration: none;
-            }
-        }
-
-        &.selected {
-            background-color: @red;
-            border: 1px solid @red;
-            color: @white;
-
-            .remove-button {
-                color: @white;
-            }
         }
     }
 }
@@ -1065,23 +967,6 @@ tags-input .host .tags {
                 border-top: 1px solid tint(@secondary-color, 80%);
             }
         }
-
-        .form-group {
-            margin-left: 0;
-            margin-right: 0;
-        }
-
-        .add_new {
-            h3 {
-                margin: 5px 0 15px 15px;
-            }
-        }
-    }
-
-    tr {
-        td:last-child {
-            padding-right: 10px;
-        }
     }
 
     &.table-hover {
@@ -1105,12 +990,6 @@ tags-input .host .tags {
 ///////////////////////////
 // Settings general //
 ///////////////////////////
-
-.textarea-with-border {
-    border: 1px dashed @border-input-color;
-    width: 100%;
-    padding: 5px 10px;
-}
 
 .form-group {
     &.indented  {
@@ -1144,36 +1023,6 @@ tags-input .host .tags {
         color: @secondary-color;
         font-size: 16px;
         font-weight: 500;
-    }
-
-    .description {
-        margin-bottom: @default-spacing;
-        color: @gray;
-    }
-
-    .action-buttons {
-        padding: @default-spacing;
-        background-color: tint(@secondary-color,90%);
-        box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-
-        .btn {
-            margin-right: 10px;
-        }
-
-        .pull-right .btn {
-            margin-right: 0px;
-            margin-left: 10px;
-        }
-    }
-
-    .action-buttons-account {
-        &:extend(.white-background);
-        margin-top: 0;
     }
 }
 
@@ -1338,11 +1187,9 @@ tags-input .host .tags {
     }
 }
 
-.table tr td {
-    .loader {
-        display: block;
-        margin: 0 auto;
-    }
+.table tr td .loader {
+    display: block;
+    margin: 0 auto;
 }
 
 .error {

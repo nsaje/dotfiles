@@ -1,0 +1,224 @@
+# Accounts
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    name: 'Test B1 Sources Group'
+  model: dash.account
+  pk: 222001
+
+# Campaigns
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 222001
+    name: 'Test B1 Sources Group Campaign'
+  model: dash.campaign
+  pk: 222001
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 222001
+    name: 'Test B1 Sources Group Campaign'
+  model: dash.campaign
+  pk: 222002
+
+  # Ad groups
+- fields:
+    created_dt: '2017-01-01T09:00:00'
+    modified_dt: '2017-01-01T09:00:00'
+    modified_by: 1
+    campaign: 222001
+    name: 'Test B1 Sources Group Ad Group'
+  model: dash.adgroup
+  pk: 222001
+
+- fields:
+    created_dt: '2017-01-01T09:00:00'
+    modified_dt: '2017-01-01T09:00:00'
+    modified_by: 1
+    campaign: 222002
+    name: 'Test B1 Sources Group Ad Group 2'
+  model: dash.adgroup
+  pk: 222002
+
+# Ad Group Settings
+- fields:
+    ad_group_id: 222001
+    created_dt: '2017-01-01T09:00:00'
+    created_by: 1
+    state: 2
+    cpc_cc: 100.00
+    b1_sources_group_enabled: true
+    b1_sources_group_daily_budget: 300
+    b1_sources_group_state: 1
+  model: dash.adgroupsettings
+  pk: 222001
+
+- fields:
+    ad_group_id: 222001
+    created_dt: '2017-01-01T09:10:00'
+    created_by: 1
+    state: 1
+    cpc_cc: 100.00
+    b1_sources_group_enabled: true
+    b1_sources_group_daily_budget: 300
+    b1_sources_group_state: 1
+  model: dash.adgroupsettings
+  pk: 222002
+
+- fields:
+    ad_group_id: 222002
+    created_dt: '2017-01-01T09:00:00'
+    created_by: 1
+    state: 2
+    cpc_cc: 100.00
+    b1_sources_group_enabled: true
+    b1_sources_group_daily_budget: 300
+    b1_sources_group_state: 1
+  model: dash.adgroupsettings
+  pk: 222003
+
+# Ad Group Sources
+- fields:
+    source: 1  # b1 source type
+    ad_group: 222001
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 222001
+
+- fields:
+    source: 2  # not b1
+    ad_group: 222001
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 222002
+
+- fields:
+    source: 3  # b1 source type
+    ad_group: 222001
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 222003
+
+- fields:
+    source: 1  # b1 source type
+    ad_group: 222002
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 222004
+
+- fields:
+    source: 2  # not b1
+    ad_group: 222002
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 222005
+
+- fields:
+    source: 3  # b1 source type
+    ad_group: 222002
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 222006
+
+# Ad Group Source Settings
+- fields:
+    created_dt: '2017-01-01T09:00:00'
+    ad_group_source: 222001
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.00'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 222001
+
+- fields:
+    created_dt: '2017-01-01T09:00:00'
+    ad_group_source: 222002
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.00'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 222002
+
+- fields:
+    created_dt: '2017-01-01T09:00:00'
+    ad_group_source: 222003
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.00'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 222003
+
+- fields:
+    created_dt: '2017-01-01T09:00:00'
+    ad_group_source: 222004
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.00'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 222004
+
+- fields:
+    created_dt: '2017-01-01T09:00:00'
+    ad_group_source: 222005
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.00'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 222005
+
+- fields:
+    created_dt: '2017-01-01T09:00:00'
+    ad_group_source: 222006
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.00'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 222006
+
+
+# Credit line items
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    created_by: 1
+    account: 222001
+    start_date: '2017-01-01'
+    end_date: '2017-12-31'
+    amount: 100000
+    license_fee: 0.1
+    status: 2
+    comment: 'B1 Sources Group Credit'
+  model: dash.creditlineitem
+  pk: 222001
+
+# Budget line items
+- fields:
+    created_dt: '2016-01-01T00:00:00'
+    modified_dt: '2016-01-01T00:00:00'
+    created_by: 1
+    credit: 222001 # test credit 1
+    campaign: 222001
+    start_date: '2017-01-01'
+    end_date: '2017-01-31'
+    amount: 1000
+    comment: 'B1 Sources Group Budget'
+  model: dash.budgetlineitem
+  pk: 222001
+
+- fields:
+    created_dt: '2016-01-01T00:00:00'
+    modified_dt: '2016-01-01T00:00:00'
+    created_by: 1
+    credit: 222001 # test credit 1
+    campaign: 222002
+    start_date: '2017-01-01'
+    end_date: '2017-01-31'
+    amount: 1000
+    comment: 'B1 Sources Group Budget'
+  model: dash.budgetlineitem
+  pk: 222002

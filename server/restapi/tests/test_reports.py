@@ -126,6 +126,27 @@ class ReportViewsTest(TestCase):
         )
         self.assertTrue(mock_totals.called)
 
+    def test_get_report_job_authorization(self):
+        query = {
+            'fields': [{'field': 'Content Ad Id'}],
+            'filters': [{'field': 'Ad Group Id', 'operator': '=', 'value': '123'},
+                        {'field': 'Date', 'operator': '=', 'value': '2016-10-10'}]
+        }
+        r = self.client.post(reverse('reports_list'), query, format='json')
+        self.assertEqual(r.status_code, 201)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json['data'], dict)
+
+        job_id = int(resp_json['data']['id'])
+
+        r = self.client.get(reverse('reports_details', kwargs={'job_id': job_id}))
+        self.assertEqual(r.status_code, 200)
+
+        # try as different user
+        self.client.force_authenticate(user=User.objects.get(pk=2))
+        r = self.client.get(reverse('reports_details', kwargs={'job_id': job_id}))
+        self.assertEqual(r.status_code, 403)
+
 
 class ReportsHeelpersTest(TestCase):
 

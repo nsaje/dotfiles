@@ -55,9 +55,7 @@ describe('zemGridEndpointApiConverter', function () {
         };
 
         var expected = {
-            breakdownId: undefined,
             level: 1,
-            pagination: undefined,
             rows: [
                 {
                     stats: {

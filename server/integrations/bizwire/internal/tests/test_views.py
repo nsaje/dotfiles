@@ -1,4 +1,5 @@
 import json
+import math
 from mock import patch, ANY, MagicMock
 
 from freezegun import freeze_time
@@ -77,11 +78,11 @@ class ArticleUploadTest(TestCase):
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
 
         # NOTE: DAILY_BUDGET_INITIAL is patched
-        expected_group_daily_budget = 4
+        expected_group_daily_budget = math.ceil(config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT))
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
-        expected_ob_daily_budget = 1
+        expected_ob_daily_budget = math.ceil(config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT)
         self.assertEqual(
             expected_ob_daily_budget,
             ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc
@@ -198,11 +199,11 @@ class ArticleUploadTest(TestCase):
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
 
         # NOTE: DAILY_BUDGET_INITIAL is patched
-        expected_group_daily_budget = 19
+        expected_group_daily_budget = math.ceil(6 * config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT))
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
-        expected_ob_daily_budget = 1
+        expected_ob_daily_budget = math.ceil(6 * config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT)
         self.assertEqual(
             expected_ob_daily_budget,
             ad_group.adgroupsource_set.get(source__name='Outbrain').get_current_settings().daily_budget_cc

@@ -668,7 +668,8 @@ class AdGroupBreakdownTestCase(TestCase):
                 ],
                 "pixels": [{"prefix": "pixel_1", "name": "test"}],
                 'enabling_autopilot_sources_allowed': True,
-                'ad_group_autopilot_state': 1
+                'ad_group_autopilot_state': 1,
+                'ad_group_landing_mode': False,
             }],
             "success": True
         })

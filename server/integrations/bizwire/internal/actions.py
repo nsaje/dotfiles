@@ -111,11 +111,11 @@ def recalculate_and_set_new_daily_budgets(ad_group_id):
     ).count()  # assume they're getting processed successfully
 
     new_rtb_daily_budget = max(
-        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * 0.95,
+        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT),
         config.DAILY_BUDGET_INITIAL,
     )
     new_ob_daily_budget = max(
-        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * 0.05,
+        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT,
         config.DAILY_BUDGET_INITIAL,
     )
 
@@ -156,7 +156,10 @@ def _create_ad_group(name, start_date):
     _set_initial_sources_settings(ad_group_id)
     _set_initial_rtb_settings(ad_group_id)
     _set_ad_group(ad_group_id, 'ACTIVE')
+    _set_custom_cpcs(ad_group_id)
+    _set_all_rtb_default_cpc(ad_group_id)
 
+    k1_helper.update_ad_group(ad_group_id)
     return ad_group_id
 
 
@@ -166,6 +169,29 @@ def _set_ad_group(ad_group_id, state):
     }
     url = 'rest/v1/adgroups/{}/'.format(ad_group_id)
     return _make_restapi_fake_put_request(restapi.views.AdGroupViewDetails, url, data, view_args=[ad_group_id])
+
+
+def _set_custom_cpcs(ad_group_id):
+    for source_id, custom_cpc in config.CUSTOM_CPC_SETTINGS.items():
+        current_settings = dash.models.AdGroupSource.objects.get(
+            ad_group_id=ad_group_id,
+            source_id=source_id
+        ).get_current_settings()
+
+        new_settings = current_settings.copy_settings()
+        new_settings.cpc_cc = custom_cpc
+        new_settings.save(None)
+
+
+def _set_all_rtb_default_cpc(ad_group_id):
+    # HACK: when restapi supports setting all rtb cpc, this can be removed
+    current_settings = dash.models.AdGroup.objects.get(id=ad_group_id).get_current_settings()
+    if current_settings.b1_sources_group_cpc_cc == config.DEFAULT_CPC:
+        return
+
+    new_settings = current_settings.copy_settings()
+    new_settings.b1_sources_group_cpc_cc = config.DEFAULT_CPC
+    new_settings.save(None)
 
 
 def _list_ad_group_sources(ad_group_id):
@@ -203,6 +229,7 @@ def _set_rtb_daily_budget(ad_group_id, daily_budget):
     data = {
         'groupEnabled': True,
         'dailyBudget': daily_budget,
+        'cpc': config.DEFAULT_CPC,
         'state': 'ACTIVE',
     }
     url = 'rest/v1/adgroups/{}/sources/rtb/'.format(ad_group_id)

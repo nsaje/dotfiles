@@ -1,90 +1,66 @@
-<div class="modal-header">
-    <h4 class="modal-title">Export Report</h4>
+<div class="modal__header">
+    <div class="modal__title">Export Report</div>
 </div>
-<div class="modal-body">
-    <form id="download-export-report-form" ng-submit="downloadReport()" class="modal-form add-scheduled-report-form form-horizontal">
-        <div class="form-group" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')">
-            <span class="col-xs-12">
-                Note: Exports currently don't support some of the breakdowns available in the table view.
-            </span>
-        </div>
-
-        <div class="form-group">
-            <label for="granularity-select" class="col-xs-4 control-label">
+<div class="modal__body">
+    <div class="message message--info message--with-icon m-b-s"
+         ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')">
+        Exports currently don't support some of the breakdowns available in the table view.
+    </div>
+    <div class="form" id="download-export-report-form">
+        <div class="form__group">
+            <label class="form__label" for="granularity-select">
                 Report Granularity
                 <zem-help-popover content="Granularity of the report." placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-5">
-              <ui-select config
-                  id="granularity-select"
-                  theme="select2"
-                  search-enabled="false"
-                  ng-model="export.type"
-                  class="form-control"
-                  ng-change="checkDownloadAllowed()">
-                  <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
-                  <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
-                      {{option.name}}
-                  </ui-select-choices>
-              </ui-select>
-            </div>
+            <ui-select config
+                id="granularity-select"
+                theme="select2"
+                search-enabled="false"
+                ng-model="export.type"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-change="checkDownloadAllowed()">
+                <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
+                    {{option.name}}
+                </ui-select-choices>
+            </ui-select>
         </div>
-
-        <div class="form-group">
-          <div class="col-xs-4">
-            <label for="by-day-checkbox" class="control-label">Breakdown by day</label>
-          </div>
-          <div class="col-xs-4">
+        <div class="form__group">
+            <label class="form__label" for="by-day-checkbox">Breakdown by day</label>
             <input id="by-day-checkbox"
                 type="checkbox"
                 ng-model="export.byDay"
-                class="checkbox"
+                class="form__input-checkbox"
                 ng-change="checkDownloadAllowed()">
-          </div>
         </div>
+        <div class="form__group" ng-if="hasPermission('zemauth.can_include_totals_in_reports')">
+            <label class="form__label" for="include-totals-checkbox" is-internal="zemauth.can_include_totals_in_reports">Include totals</label>
+            <input id="include-totals-checkbox"
+                   type="checkbox"
+                   ng-model="export.includeTotals"
+                   class="form__input-checkbox">
+        </div>
+        <div class="form__group" ng-if="hasPermission('zemauth.can_include_model_ids_in_reports')">
+            <label class="form__label" for="add-ids-checkbox" is-internal="zemauth.can_include_model_ids_in_reports">Add IDs to report</label>
+            <input id="add-ids-checkbox"
+                   type="checkbox"
+                   ng-model="export.includeIds"
+                   class="form__input-checkbox">
+        </div>
+        <div class="form__group">
+            <label class="form__label" for="add-missing-checkbox" >Include items with no spend</label>
+            <input id="add-missing-checkbox"
+                   type="checkbox"
+                   ng-model="export.includeMissing"
+                   class="form__input-checkbox">
+        </div>
+    </div>
+</div>
+<div class="modal__footer buttons-panel">
+    <button type="submit" class="button button--highlight button--with-icon download-icon"
+            ng-disabled="!downloadAllowed" ng-click="downloadReport()">Download Now</button>
+    <button type="button" class="button button--outline" ng-click="$dismiss()">Cancel</button>
 
-        <div class="form-group" ng-if="hasPermission('zemauth.can_include_totals_in_reports')">
-            <div class="col-xs-4">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_include_totals_in_reports')" popover-placement="right"></zem-internal-feature>
-                <label for="include-totals-checkbox" class="control-label">Include totals</label>
-            </div>
-            <div class="col-xs-4">
-                <input id="include-totals-checkbox"
-                       type="checkbox"
-                       ng-model="export.includeTotals"
-                       class="checkbox">
-            </div>
-        </div>
-
-        <div class="form-group" ng-if="hasPermission('zemauth.can_include_model_ids_in_reports')">
-            <div class="col-xs-4">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_include_model_ids_in_reports')" popover-placement="right"></zem-internal-feature>
-                <label for="add-ids-checkbox" class="control-label">Add IDs to report</label>
-            </div>
-            <div class="col-xs-4">
-                <input id="add-ids-checkbox"
-                       type="checkbox"
-                       ng-model="export.includeIds"
-                       class="checkbox">
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="col-xs-4">
-                <label for="add-missing-checkbox" class="control-label">Include items with no spend</label>
-            </div>
-            <div class="col-xs-4">
-                <input id="add-missing-checkbox"
-                       type="checkbox"
-                       ng-model="export.includeMissing"
-                       class="checkbox">
-            </div>
-        </div>
-        <div class="modal-footer buttons-panel">
-            <button type="submit" class="button button--highlight button--with-icon download-icon" ng-disabled="!downloadAllowed">Download Now</button>
-            <button type="button" class="button button--outline" ng-click="$dismiss()">Cancel</button>
-
-            <div class="loader" ng-show="addConversionGoalInProgress"></div>
-            <span class="small error" ng-if="error" ng-if="!downloadAllowed">{{downloadNotAllowedMessage}}</span>
-        </div>
-    </form>
+    <div class="loader" ng-show="addConversionGoalInProgress"></div>
+    <span class="message message--error" ng-if="error" ng-if="!downloadAllowed">{{downloadNotAllowedMessage}}</span>
 </div>

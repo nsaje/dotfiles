@@ -38,6 +38,14 @@ angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state
                 internal: false,
             },
             {
+                heading: 'Content insights',
+                route: 'main.campaigns.insights',
+                active: false,
+                hidden: $scope.campaign && $scope.campaign.archived === true ||
+                    !$scope.hasPermission('zemauth.can_see_new_content_insights'),
+                internal: $scope.isPermissionInternal('zemauth.can_see_new_content_insights')
+            },
+            {
                 heading: 'History',
                 route: 'main.campaigns.history',
                 active: false,
@@ -102,6 +110,9 @@ angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state
     });
 
     $scope.getContentInsights = function () {
+        if ($scope.hasPermission('zemauth.can_see_new_content_insights')) {
+            return;
+        }
         if (!$scope.hasPermission('zemauth.can_view_sidetabs')) {
             return;
         }

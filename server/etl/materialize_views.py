@@ -25,10 +25,15 @@ from etl import helpers
 logger = logging.getLogger(__name__)
 
 MATERIALIZED_VIEWS_S3_PREFIX = 'materialized_views'
-MATERIALIZED_VIEWS_FILENAME = 'view_{}.csv'
+MATERIALIZED_VIEWS_FILENAME = '{}_{}.csv'
 
 S3_FILE_URI = 's3://{bucket_name}/{key}'
 CSV_DELIMITER = '\t'
+
+"""
+NOTE: Some of the views in the master views rely on having campaign factors
+available for the whole range.
+"""
 
 
 def upload_csv(table_name, date, job_id, generator):
@@ -37,7 +42,7 @@ def upload_csv(table_name, date, job_id, generator):
         MATERIALIZED_VIEWS_S3_PREFIX,
         table_name,
         date.strftime("%Y/%m/%d/"),
-        MATERIALIZED_VIEWS_FILENAME.format(job_id),
+        MATERIALIZED_VIEWS_FILENAME.format(table_name, job_id),
     )
 
     bucket = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
@@ -170,6 +175,7 @@ class MVHelpersSource(Materialize):
                 logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
                 sql, params = prepare_copy_csv_query(s3_path, self.TABLE_NAME)
                 c.execute(sql, params)
+                logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
 
     def generate_rows(self):
         sources = dash.models.Source.objects.all().order_by('id')
@@ -184,13 +190,15 @@ class MVHelpersSource(Materialize):
 
 class MVHelpersCampaignFactors(Materialize):
     """
-    Helper view that puts campaign factors into redshift. Its than used to construct the mv_master view.
+    Helper view that puts campaign factors into redshift. Its then used to construct the mv_master view.
     """
 
     TABLE_NAME = 'mvh_campaign_factors'
     IS_TEMPORARY_TABLE = True
 
     def generate(self, campaign_factors, **kwargs):
+        self.check_date_range_continuation(campaign_factors)
+
         s3_path = upload_csv(
             self.TABLE_NAME,
             self.date_to,
@@ -206,6 +214,7 @@ class MVHelpersCampaignFactors(Materialize):
                 logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
                 sql, params = prepare_copy_csv_query(s3_path, self.TABLE_NAME)
                 c.execute(sql, params)
+                logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
 
     def generate_rows(self, campaign_factors):
         for date, campaign_dict in campaign_factors.iteritems():
@@ -218,6 +227,14 @@ class MVHelpersCampaignFactors(Materialize):
                     factors[1],
                     factors[2],
                 )
+
+    def check_date_range_continuation(self, campaign_factors):
+        # checks that all the dates withing the reprocessed date range have campaign factors set
+        for dt in rrule.rrule(rrule.DAILY, dtstart=self.date_from, until=self.date_to):
+            dt = dt.date()
+            if dt not in campaign_factors:
+                raise Exception('Campaign factors missing for the date %s within date range %s - %s, job %s',
+                                dt, self.date_from, self.date_to, self.job_id)
 
 
 class MVHelpersAdGroupStructure(Materialize):
@@ -245,6 +262,7 @@ class MVHelpersAdGroupStructure(Materialize):
                 logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
                 sql, params = prepare_copy_csv_query(s3_path, self.TABLE_NAME)
                 c.execute(sql, params)
+                logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
 
     def generate_rows(self):
         ad_groups = dash.models.AdGroup.objects.select_related('campaign', 'campaign__account').all()
@@ -279,6 +297,7 @@ class MVHelpersNormalizedStats(Materialize):
                 logger.info('Running insert into table "%s", job %s', self.TABLE_NAME, self.job_id)
                 sql, params = self.prepare_insert_query()
                 c.execute(sql, params)
+                logger.info('Done insert into table "%s", job %s', self.TABLE_NAME, self.job_id)
 
     def prepare_insert_query(self):
         params = helpers.get_local_multiday_date_context(self.date_from, self.date_to)

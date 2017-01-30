@@ -62,6 +62,56 @@ class CpcConstraintsTestCase(test.TestCase):
         self.assertEqual(err3.exception.messages[0],
                          'Bid CPC has to be between $0.65 and $1.65 on all ad groups')
 
+    def test_enforce_account_rule_on_settings(self):
+        settings = models.AdGroupSource.objects.get(
+            ad_group_id=1,
+            source_id=1
+        ).get_current_settings()
+        self.assertEqual(settings.cpc_cc, Decimal('0.12'))
+        settings = models.AdGroupSource.objects.get(
+            ad_group_id=4,
+            source_id=1
+        ).get_current_settings()
+        self.assertEqual(settings.cpc_cc, Decimal('0.12'))
+
+        cpc_constraints.enforce_rule(min_cpc=Decimal('0.65'), account_id=1, source_id=1)
+
+        settings = models.AdGroupSource.objects.get(
+            ad_group_id=1,
+            source_id=1
+        ).get_current_settings()
+        self.assertEqual(settings.cpc_cc, Decimal('0.65'))
+        settings = models.AdGroupSource.objects.get(
+            ad_group_id=4,
+            source_id=1
+        ).get_current_settings()
+        self.assertEqual(settings.cpc_cc, Decimal('0.65'))
+
+    def test_enforce_ad_group_rule_on_settings(self):
+        settings = models.AdGroupSource.objects.get(
+            ad_group_id=1,
+            source_id=1
+        ).get_current_settings()
+        self.assertEqual(settings.cpc_cc, Decimal('0.12'))
+        settings = models.AdGroupSource.objects.get(
+            ad_group_id=4,
+            source_id=1
+        ).get_current_settings()
+        self.assertEqual(settings.cpc_cc, Decimal('0.12'))
+
+        cpc_constraints.enforce_rule(max_cpc=Decimal('0.10'), ad_group_id=1, source_id=1)
+
+        settings = models.AdGroupSource.objects.get(
+            ad_group_id=1,
+            source_id=1
+        ).get_current_settings()
+        self.assertEqual(settings.cpc_cc, Decimal('0.10'))
+        settings = models.AdGroupSource.objects.get(
+            ad_group_id=4,
+            source_id=1
+        ).get_current_settings()
+        self.assertEqual(settings.cpc_cc, Decimal('0.12'))
+
     def test_clear(self):
         with self.assertRaises(AssertionError):
             cpc_constraints.clear(constants.CpcConstraintType.OUTBRAIN_BLACKLIST)

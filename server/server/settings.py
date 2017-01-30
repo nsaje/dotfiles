@@ -228,6 +228,9 @@ LOGGING = {
         'standard': {
             'format': '%(asctime)s [%(levelname)s] %(name)s PID=%(process)d: %(message)s'
         },
+        'timestamp': {
+            'format': '%(asctime)s: %(message)s'
+        },
     },
     'handlers': {
         'file': {
@@ -238,7 +241,8 @@ LOGGING = {
         },
         'console': {
             'level': 'INFO',
-            'class': 'logging.StreamHandler'
+            'class': 'logging.StreamHandler',
+            'formatter': 'timestamp'
         },
         'db_handler': {
             'level': 'INFO',

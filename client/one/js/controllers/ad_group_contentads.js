@@ -8,12 +8,27 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
     $scope.localStoragePrefix = 'adGroupContentAds';
     $scope.infoboxLinkTo = 'main.adGroups.settings';
 
-    $scope.grid = {
-        api: undefined,
+    $scope.config = {
         level: constants.level.AD_GROUPS,
         breakdown: constants.breakdown.CONTENT_AD,
         entityId: $state.params.id,
     };
+
+    $scope.grid = {
+        options: undefined,
+        api: undefined,
+    };
+
+    // HACK: Just to make binding with zem-chart-legacy work (it will be replaced in near future with zem-chart)
+    // (adding ng-if for permission makes binding stop working)
+    $scope._chartMetrics = {
+        metric1: constants.chartMetric.CLICKS,
+        metric2: constants.chartMetric.IMPRESSIONS
+    };
+    $scope.$watch('_chartMetrics', function (newValue, oldValue) {
+        $scope.chartMetric1 = $scope._chartMetrics.metric1;
+        $scope.chartMetric2 = $scope._chartMetrics.metric2;
+    }, true);
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
@@ -98,6 +113,8 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
 
     var dailyStatsPromise = undefined;
     var getDailyStats = function () {
+        if ($scope.hasPermission('zemauth.can_see_new_chart')) return;
+
         if (dailyStatsPromise) {
             dailyStatsPromise.abort();
         }
@@ -123,7 +140,7 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
                 selection.filter.batch.id : null;
         }
 
-        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate,
+        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.config.breakdown, dateRange.startDate,
             dateRange.endDate, convertedSelection, true, getDailyStatsMetrics());
         dailyStatsPromise.then(
             function (data) {
@@ -217,6 +234,7 @@ angular.module('one.legacy').controller('AdGroupAdsCtrl', function ($scope, $win
         if (chartMetrics) {
             $scope.chartMetric1 = chartMetrics.metric1;
             $scope.chartMetric2 = chartMetrics.metric2;
+            $scope._chartMetrics = chartMetrics;
         }
     }
 

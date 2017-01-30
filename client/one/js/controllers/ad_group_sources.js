@@ -17,15 +17,28 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
         totals: true,
     };
 
-    $scope.grid = {
-        api: undefined,
+    $scope.config = {
         level: constants.level.AD_GROUPS,
         breakdown: constants.breakdown.MEDIA_SOURCE,
         entityId: $state.params.id,
     };
 
+    $scope.grid = {
+        api: undefined,
+    };
+
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
+    // HACK: Just to make binding with zem-chart-legacy work (it will be replaced in near future with zem-chart)
+    // (adding ng-if for permission makes binding stop working)
+    $scope._chartMetrics = {
+        metric1: constants.chartMetric.CLICKS,
+        metric2: constants.chartMetric.IMPRESSIONS
+    };
+    $scope.$watch('_chartMetrics', function (newValue, oldValue) {
+        $scope.chartMetric1 = $scope._chartMetrics.metric1;
+        $scope.chartMetric2 = $scope._chartMetrics.metric2;
+    }, true);
     $scope.updateSelectedSources = function (sourceId) {
         var i = $scope.selection.entityIds.indexOf(sourceId);
 
@@ -150,6 +163,8 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
 
     var dailyStatsPromise = undefined;
     $scope.getDailyStats = function () {
+        if ($scope.hasPermission('zemauth.can_see_new_chart')) return;
+
         if (dailyStatsPromise) {
             dailyStatsPromise.abort();
         }
@@ -173,7 +188,7 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
             convertedSelection.selectAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
         }
 
-        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics(), null);
+        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.config.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics(), null);
         dailyStatsPromise.then(
             function (data) {
                 refreshChartOptions(data.conversionGoals, data.pixels);
@@ -345,6 +360,7 @@ angular.module('one.legacy').controller('AdGroupSourcesCtrl', function ($scope, 
         if (chartMetrics) {
             $scope.chartMetric1 = chartMetrics.metric1;
             $scope.chartMetric2 = chartMetrics.metric2;
+            $scope._chartMetrics = chartMetrics;
         }
     }
 

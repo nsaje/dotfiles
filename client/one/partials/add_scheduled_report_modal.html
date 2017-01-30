@@ -1,203 +1,158 @@
-<div class="modal-header">
-    <h4 class="modal-title">Schedule Report</h4>
+<div class="modal__header">
+    <div class="modal__title">Schedule Report</div>
 </div>
-<div class="modal-body">
-    <form id="add-scheduled-report-form" ng-submit="addScheduledReport()" class="modal-form add-scheduled-report-form form-horizontal">
-        <div class="form-group" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')">
-            <span class="col-xs-12">
-                Note: Exports currently don't support some of the breakdowns available in the table view.
-            </span>
-        </div>
+<div class="modal__body">
+    <div class="message message--info message--with-icon m-b-s"
+         ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')">
+        Exports currently don't support some of the breakdowns available in the table view.
+    </div>
 
-        <div class="form-group" ng-class="{'has-error': !!validationErrors.report_name}">
-            <label for="report-name-input" class="col-xs-4 control-label">
-                Report name
-            </label>
-            <div class="col-xs-5">
-                <input type="text"
-                       zem-focus-select
-                       id="report-name-input"
-                       class="form-control"
-                       ng-model="export.reportName"
-                       placeholder="Name of the report" />
-            </div>
-            <div class="col-xs-3">
-                <label ng-repeat="error in validationErrors.report_name" class="control-label small error" for="report-name-input">{{ error }}</label>
-            </div>
+    <div class="form" id="add-scheduled-report-form">
+        <div class="form__group" ng-class="{'form--error': !!validationErrors.report_name}">
+            <label class="form__label" for="report-name-input">Report name</label>
+            <input type="text"
+                   zem-focus-select
+                   id="report-name-input"
+                   class="form__input-text"
+                   ng-model="export.reportName"
+                   placeholder="Name of the report" />
+            <div class="message message--error" ng-repeat="error in validationErrors.report_name"
+                 for="report-name-input">{{ error }}</div>
         </div>
-
-        <div class="form-group" ng-class="{'has-error': !!validationErrors.granularity}">
-            <label for="granularity-select" class="col-xs-4 control-label">
+        <div class="form__group" ng-class="{'form--error': !!validationErrors.granularity}">
+            <label class="form__label" for="granularity-select">
                 Report Granularity
                 <zem-help-popover content="Granularity of the report." placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-5">
-              <ui-select config
-                  id="granularity-select"
-                  theme="select2"
-                  search-enabled="false"
-                  ng-model="export.type"
-                  class="form-control">
-                  <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
-                  <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
-                      {{option.name}}
-                  </ui-select-choices>
-              </ui-select>
-            </div>
-
-            <div class="col-xs-3">
-                <label ng-repeat="error in validationErrors.granularity" class="control-label small error" for="granularity-select">{{ error }}</label>
-            </div>
+            <ui-select config
+                id="granularity-select"
+                theme="select2"
+                search-enabled="false"
+                ng-model="export.type"
+                class="button button--plain button--full-width button--dropdown-toggle-icon">
+                <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
+                    {{option.name}}
+                </ui-select-choices>
+            </ui-select>
+            <div class="message message--error" ng-repeat="error in validationErrors.granularity"
+                 for="granularity-select">{{ error }}</div>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!validationErrors.frequency}">
-            <label for="frequency-select" class="col-xs-4 control-label">
+        <div class="form__group" ng-class="{'form--error': !!validationErrors.frequency}">
+            <label class="form__label" for="frequency-select">
                 Frequency
-                <zem-help-popover content="Report will be delivered to your inbox every day, week or month at 2AM EST." placement="top"></zem-help-popover>
+                <zem-help-popover content="Report will be delivered to your inbox every day, week or month at 2AM EST."
+                                  placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-5">
-              <ui-select
-                      theme="select2"
-                      search-enabled="false"
-                      id="frequency-select"
-                      class="form-control"
-                      ng-model="export.frequency"
-                      ng-change="frequencyChanged()">
-                  <ui-select-match placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
-                  <ui-select-choices repeat="freq in exportSchedulingFrequencies">
-                      <div>{{freq.name}}</div>
-                  </ui-select-choices>
-              </ui-select>
-            </div>
-
-            <div class="col-xs-3">
-                <label ng-repeat="error in validationErrors.frequency" class="control-label small error" for="frequency-select">{{ error }}</label>
-            </div>
+            <ui-select
+                theme="select2"
+                search-enabled="false"
+                id="frequency-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="export.frequency"
+                ng-change="frequencyChanged()">
+                <ui-select-match placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="freq in exportSchedulingFrequencies">
+                    <div>{{freq.name}}</div>
+                </ui-select-choices>
+            </ui-select>
+            <div class="message message--error" ng-repeat="error in validationErrors.frequency"
+                 for="frequency-select">{{ error }}</div>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!validationErrors.day_of_week}" ng-if="dayOfWeekShown && hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">
-            <div class="col-xs-4">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_day_of_week_in_scheduled_reports')" popover-placement="right"></zem-internal-feature>
-                <label for="day-of-week-select" class="control-label">
-                    Day of week
-                    <zem-help-popover content="Report will be delivered every week on this day." placement="top"></zem-help-popover>
-                </label>
-            </div>
-            <div class="col-xs-5">
-              <ui-select
-                      theme="select2"
-                      search-enabled="false"
-                      id="day-of-week-select"
-                      class="form-control"
-                      ng-model="export.dayOfWeek">
-                  <ui-select-match placeholder="Choose day of week">{{$select.selected.name}}</ui-select-match>
-                  <ui-select-choices repeat="dow in exportSchedulingDayOfWeek">
-                      <div>{{dow.name}}</div>
-                  </ui-select-choices>
-              </ui-select>
-            </div>
-
-            <div class="col-xs-3">
-                <label ng-repeat="error in validationErrors.day_of_week" class="control-label small error" for="day-of-week-select">{{ error }}</label>
-            </div>
+        <div class="form__group" ng-class="{'form--error': !!validationErrors.day_of_week}"
+             ng-if="dayOfWeekShown && hasPermission('zemauth.can_set_day_of_week_in_scheduled_reports')">
+            <label class="form__label" for="day-of-week-select" is-internal="zemauth.can_set_day_of_week_in_scheduled_reports">
+                Day of week
+                <zem-help-popover content="Report will be delivered every week on this day." placement="top"></zem-help-popover>
+            </label>
+            <ui-select
+                theme="select2"
+                search-enabled="false"
+                id="day-of-week-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="export.dayOfWeek">
+                <ui-select-match placeholder="Choose day of week">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="dow in exportSchedulingDayOfWeek">
+                    <div>{{dow.name}}</div>
+                </ui-select-choices>
+            </ui-select>
+            <div class="message message--error" ng-repeat="error in validationErrors.day_of_week"
+                 for="day-of-week-select">{{ error }}</div>
         </div>
 
-
-        <div class="form-group" ng-class="{'has-error': !!validationErrors.time_period}" ng-if="hasPermission('zemauth.can_set_time_period_in_scheduled_reports')">
-            <div class="col-xs-4">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_time_period_in_scheduled_reports')" popover-placement="right"></zem-internal-feature>
-                <label for="time-period-select" class="control-label">
-                    Time period
-                    <zem-help-popover content="Report will contain data for selected time period." placement="top"></zem-help-popover>
-                </label>
-            </div>
-            <div class="col-xs-5">
-              <ui-select
-                      theme="select2"
-                      search-enabled="false"
-                      id="time-period-select"
-                      class="form-control"
-                      ng-model="export.timePeriod"
-                      ng-change="timePeriodChanged()">
-                  <ui-select-match placeholder="Choose Time period">{{$select.selected.name}}</ui-select-match>
-                  <ui-select-choices repeat="tp in exportSchedulingTimePeriods">
-                      <div>{{tp.name}}</div>
-                  </ui-select-choices>
-              </ui-select>
-            </div>
-
-            <div class="col-xs-3">
-                <label ng-repeat="error in validationErrors.time_period" class="control-label small error" for="time-period-select">{{ error }}</label>
-            </div>
+        <div class="form__group" ng-class="{'form--error': !!validationErrors.time_period}"
+             ng-if="hasPermission('zemauth.can_set_time_period_in_scheduled_reports')">
+            <label class="form__label" for="time-period-select" is-internal="zemauth.can_set_time_period_in_scheduled_reports">
+                Time period
+                <zem-help-popover content="Report will contain data for selected time period." placement="top"></zem-help-popover>
+            </label>
+            <ui-select
+                theme="select2"
+                search-enabled="false"
+                id="time-period-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="export.timePeriod"
+                ng-change="timePeriodChanged()">
+                <ui-select-match placeholder="Choose Time period">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="tp in exportSchedulingTimePeriods">
+                    <div>{{tp.name}}</div>
+                </ui-select-choices>
+            </ui-select>
+            <div class="message message--error" ng-repeat="error in validationErrors.time_period"
+                 for="time-period-select">{{ error }}</div>
         </div>
 
-        <div class="form-group">
-          <div class="col-xs-4">
-            <label for="by-day-checkbox" class="control-label">Breakdown by day</label>
-          </div>
-          <div class="col-xs-4">
+        <div class="form__group">
+            <label class="form__label" for="by-day-checkbox">Breakdown by day</label>
             <input id="by-day-checkbox"
                 type="checkbox"
                 ng-model="export.byDay"
-                class="checkbox"
+                class="form__input-checkbox"
                 ng-disabled="breakdownByDayDisabled">
-          </div>
         </div>
 
-        <div class="form-group" ng-if="hasPermission('zemauth.can_include_totals_in_reports')">
-            <div class="col-xs-4">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_include_totals_in_reports')" popover-placement="right"></zem-internal-feature>
-                <label for="include-totals-checkbox" class="control-label">Include totals</label>
-            </div>
-            <div class="col-xs-4">
-                <input id="include-totals-checkbox"
-                       type="checkbox"
-                       ng-model="export.includeTotals"
-                       class="checkbox">
-            </div>
-        </div>
-
-        <div class="form-group" ng-if="hasPermission('zemauth.can_include_model_ids_in_reports')">
-            <div class="col-xs-4">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_include_model_ids_in_reports')" popover-placement="right"></zem-internal-feature>
-                <label for="add-ids-checkbox" class="control-label">Add IDs to report</label>
-            </div>
-            <div class="col-xs-4">
-                <input id="add-ids-checkbox"
-                       type="checkbox"
-                       ng-model="export.includeIds"
-                       class="checkbox">
-            </div>
-        </div>
-
-        <div class="form-group" ng-class="{'has-error': !!validationErrors.recipient_emails}">
-            <label for="recipient-emails-textarea" class="col-xs-4 control-label" id="recipient-emails-label">
-                Recipient emails
-                <zem-help-popover content="Comma-separated list of recipient email addresses." placement="top"></zem-help-popover>
+        <div class="form__group" ng-if="hasPermission('zemauth.can_include_totals_in_reports')">
+            <label class="form__label" for="include-totals-checkbox" is-internal="zemauth.can_include_totals_in_reports">
+                Include totals
             </label>
+            <input id="include-totals-checkbox"
+                   type="checkbox"
+                   ng-model="export.includeTotals"
+                   class="form__input-checkbox">
+        </div>
 
-            <div class="col-xs-8">
-                <label ng-repeat="error in validationErrors.recipient_emails" class="control-label small error" for="recipient-emails-label">{{ error }}</label>
-            </div>
+        <div class="form__group" ng-if="hasPermission('zemauth.can_include_model_ids_in_reports')">
+            <label class="form__label" for="add-ids-checkbox" is-internal="zemauth.can_include_model_ids_in_reports">
+                Add IDs to report
+            </label>
+            <input id="add-ids-checkbox"
+                   type="checkbox"
+                   ng-model="export.includeIds"
+                   class="form__input-checkbox">
+        </div>
 
-            <div class="col-xs-12">
-
+        <div class="form__group" ng-class="{'form--error': !!validationErrors.recipient_emails}">
+            <label class="form__label" for="recipient-emails-textarea" id="recipient-emails-label">
+                Recipient emails
+            </label>
             <textarea
                 ng-model="export.recipientEmails"
                 id="recipient-emails-textarea"
-                class="form-control recipient-emails"
+                class="form__textarea"
                 type="text"
                 placeholder="Comma-separated list of recipient email addresses">
             </textarea>
-
-            </div>
+            <div class="message message--error" ng-repeat="error in validationErrors.recipient_emails"
+                 for="recipient-emails-label">{{ error }}</div>
         </div>
-
-        <div class="modal-footer buttons-panel">
-            <button type="submit" class="button button--highlight button--with-icon calendar-icon">Schedule</button>
-            <button type="button" class="button button--outline" ng-click="$dismiss()">Cancel</button>
-            <div class="loader" ng-show="showInProgress"></div>
-            <span class="small error" ng-if="hasError">An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.</span>
-        </div>
-    </form>
+    </div>
+</div>
+<div class="modal__footer buttons-panel">
+    <button type="submit" class="button button--highlight button--with-icon calendar-icon"
+            ng-click="addScheduledReport()">Schedule</button>
+    <button type="button" class="button button--outline" ng-click="$dismiss()">Cancel</button>
+    <div class="loader" ng-show="showInProgress"></div>
+    <span class="message message--error" ng-if="hasError">An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.</span>
 </div>

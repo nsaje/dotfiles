@@ -19,15 +19,29 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
         totals: true,
     };
 
-    $scope.grid = {
-        api: undefined,
+    $scope.config = {
         level: $scope.level,
         breakdown: constants.breakdown.MEDIA_SOURCE,
         entityId: $state.params.id,
     };
 
+    $scope.grid = {
+        api: undefined,
+    };
+
     var userSettings = null,
         hasCampaignGoals = $scope.level === constants.level.CAMPAIGNS;
+
+    // HACK: Just to make binding with zem-chart-legacy work (it will be replaced in near future with zem-chart)
+    // (adding ng-if for permission makes binding stop working)
+    $scope._chartMetrics = {
+        metric1: constants.chartMetric.CLICKS,
+        metric2: constants.chartMetric.IMPRESSIONS
+    };
+    $scope.$watch('_chartMetrics', function (newValue, oldValue) {
+        $scope.chartMetric1 = $scope._chartMetrics.metric1;
+        $scope.chartMetric2 = $scope._chartMetrics.metric2;
+    }, true);
 
     $scope.updateSelectedSources = function (sourceId) {
         var i = $scope.selection.entityIds.indexOf(sourceId);
@@ -129,6 +143,8 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
 
     var dailyStatsPromise = undefined;
     var getDailyStats = function () {
+        if ($scope.hasPermission('zemauth.can_see_new_chart')) return;
+
         if (dailyStatsPromise) {
             dailyStatsPromise.abort();
         }
@@ -152,7 +168,7 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
         }
 
         var dateRange = zemDataFilterService.getDateRange();
-        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate,
+        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.config.breakdown, dateRange.startDate,
             dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics());
 
         dailyStatsPromise.then(
@@ -258,6 +274,7 @@ angular.module('one.legacy').controller('MediaSourcesCtrl', function ($scope, $s
         if (chartMetrics) {
             $scope.chartMetric1 = chartMetrics.metric1;
             $scope.chartMetric2 = chartMetrics.metric2;
+            $scope._chartMetrics = chartMetrics;
         }
     }
 

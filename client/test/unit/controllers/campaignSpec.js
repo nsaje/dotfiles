@@ -81,13 +81,5 @@ describe('CampaignCtrl', function () {
             });
         });
     });
-
-    it('inits models propery', function () {
-        $scope.getContentInsights();
-        expect($scope.contentInsights).toEqual({
-            metric: 'ctr',
-            summary: 'title',
-            rows: [],
-        });
-    });
 });
+

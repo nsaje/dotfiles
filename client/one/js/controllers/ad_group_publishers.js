@@ -14,14 +14,28 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
         name: 'Publishers'
     };
 
-    $scope.grid = {
-        api: undefined,
+    $scope.config = {
         level: constants.level.AD_GROUPS,
         breakdown: constants.breakdown.PUBLISHER,
         entityId: $state.params.id,
     };
 
+    $scope.grid = {
+        api: undefined,
+    };
+
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
+
+    // HACK: Just to make binding with zem-chart-legacy work (it will be replaced in near future with zem-chart)
+    // (adding ng-if for permission makes binding stop working)
+    $scope._chartMetrics = {
+        metric1: constants.chartMetric.CLICKS,
+        metric2: constants.chartMetric.IMPRESSIONS
+    };
+    $scope.$watch('_chartMetrics', function (newValue, oldValue) {
+        $scope.chartMetric1 = $scope._chartMetrics.metric1;
+        $scope.chartMetric2 = $scope._chartMetrics.metric2;
+    }, true);
 
     var getDailyStatsMetrics = function () {
         // always query for default metrics
@@ -94,6 +108,8 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
 
     var dailyStatsPromise = undefined;
     var getDailyStats = function () {
+        if ($scope.hasPermission('zemauth.can_see_new_chart')) return;
+
         if (dailyStatsPromise) {
             dailyStatsPromise.abort();
         }
@@ -138,6 +154,7 @@ angular.module('one.legacy').controller('AdGroupPublishersCtrl', function ($scop
         if (chartMetrics) {
             $scope.chartMetric1 = chartMetrics.metric1;
             $scope.chartMetric2 = chartMetrics.metric2;
+            $scope._chartMetrics = chartMetrics;
         }
     }
 

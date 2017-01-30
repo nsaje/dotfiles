@@ -745,10 +745,11 @@ class AdGroupSourceBlockersView(K1APIView):
         for key, value in blockers_update.items():
             if not (isinstance(key, basestring) and (isinstance(value, basestring) or value is None)):
                 return self.response_error("Bad input: blocker key should be string and value should be either string or None", status=400)
-            if not value:
+            if value:
+                ad_group_source.blockers[key] = value
+            if not value and key in ad_group_source.blockers:
                 del ad_group_source.blockers[key]
-                continue
-            ad_group_source.blockers[key] = value
+
         ad_group_source.save()
         return self.response_ok(ad_group_source.blockers)
 

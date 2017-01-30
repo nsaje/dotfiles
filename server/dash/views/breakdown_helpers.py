@@ -1,5 +1,7 @@
 import collections
 
+from automation import campaign_stop
+
 from dash import models
 import dash.campaign_goals
 from dash import constants
@@ -193,6 +195,7 @@ def get_ad_group_sources_extras(ad_group):
     return {
         'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings),
         'ad_group_autopilot_state': ad_group_settings.autopilot_state,
+        'ad_group_landing_mode': ad_group_settings.landing_mode,
     }
 
 
@@ -209,12 +212,12 @@ def insert_all_rtb_source_row(constraints, rows, show_rtb_group_cpc):
     rtb_source_ids = map(str, rtb_source_ids)
 
     # Create All RTB Source row using rtb_source_ids for newly created group
-    all_rtb_source_row = create_all_rtb_source_row(settings, show_rtb_group_cpc)
+    all_rtb_source_row = create_all_rtb_source_row(ad_group, settings, show_rtb_group_cpc)
     all_rtb_source_row['group'] = {'ids': rtb_source_ids}
     rows.append(all_rtb_source_row)
 
 
-def create_all_rtb_source_row(ad_group_settings, show_rtb_group_cpc):
+def create_all_rtb_source_row(ad_group, ad_group_settings, show_rtb_group_cpc):
     status = {'value': ad_group_settings.b1_sources_group_state}
     notifications = {}
     if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE and \
@@ -223,6 +226,20 @@ def create_all_rtb_source_row(ad_group_settings, show_rtb_group_cpc):
         status['popover_message'] = ('RTB Sources  are enabled but will not run until '
                                      'you enable ad group in Ad groups tab on Campaign level.')
         status['important'] = True
+
+    campaign_settings = ad_group.campaign.get_current_settings()
+
+    state_edit_enabled = True
+    state_edit_message = None
+    if not campaign_stop.can_enable_b1_sources_group(ad_group, ad_group.campaign, ad_group_settings, campaign_settings):
+        state_edit_enabled = False
+        state_edit_message = 'Please add additional budget to your campaign to make changes.'
+
+    daily_budget_edit_enabled = True
+    daily_budget_edit_message = None
+    if campaign_settings.landing_mode:
+        daily_budget_edit_enabled = False
+        daily_budget_edit_message = 'This value cannot be edited because campaign is in landing mode.'
 
     return {
         'breakdown_name': constants.SourceAllRTB.NAME,
@@ -233,8 +250,8 @@ def create_all_rtb_source_row(ad_group_settings, show_rtb_group_cpc):
         'bid_cpc': ad_group_settings.b1_sources_group_cpc_cc if show_rtb_group_cpc else '',
         'notifications': notifications,
         'editable_fields': {
-            'state': {'message': None, 'enabled': True},
-            'daily_budget': {'message': None, 'enabled': True},
+            'state': {'message': state_edit_message, 'enabled': state_edit_enabled},
+            'daily_budget': {'message': daily_budget_edit_message, 'enabled': daily_budget_edit_enabled},
             'bid_cpc': {'message': None, 'enabled': show_rtb_group_cpc},
         }
     }

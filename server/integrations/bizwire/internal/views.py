@@ -105,7 +105,7 @@ def article_upload(request):
     for ad_group_id in candidates_per_ad_group.keys():
         try:
             actions.recalculate_and_set_new_daily_budgets(ad_group_id)
-        except:
+        except Exception:
             logger.exception('Unable to set new bizwire daily budget for ad group %s', ad_group_id)
 
     return JsonResponse({

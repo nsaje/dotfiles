@@ -3,7 +3,13 @@
         <div class="graph-infobox-parent">
             <div class="graph-infobox-row">
                 <div class="graph-container">
-                    <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix" zem-is-loading="chartIsLoading"></zem-chart>
+                    <zem-chart-legacy ng-if="!hasPermission('zemauth.can_see_new_chart')" zem-data="chartData" zem-metrics="_chartMetrics" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix" zem-is-loading="chartIsLoading"></zem-chart-legacy>
+                    <zem-chart ng-if="hasPermission('zemauth.can_see_new_chart')"
+                        level="config.level"
+                        breakdown="config.breakdown"
+                        entity-id="config.entityId"
+                        grid-api="grid.api"
+                    ></zem-chart>
                 </div>
                 <div class="spacing"></div>
                 <div class="infobox-container">
@@ -16,7 +22,7 @@
     <div class="section zem-internal-feature-container white-background" ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature')">
         <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_access_table_breakdowns_feature')"></zem-internal-feature>
 
-        <zem-alerts level="grid.level" entity-id="grid.entityId"></zem-alerts>
+        <zem-alerts level="config.level" entity-id="config.entityId"></zem-alerts>
 
         <div class="button-bar" ng-if="grid.api">
             <div ng-if="hasPermission('zemauth.account_campaigns_add_campaign')" class="button-bar-item add-source-container">
@@ -35,9 +41,9 @@
 
         <zem-grid-integration
                 api="grid.api"
-                level="grid.level"
-                breakdown="grid.breakdown"
-                entity-id="grid.entityId"
+                level="config.level"
+                breakdown="config.breakdown"
+                entity-id="config.entityId"
                 options="grid.options"
 
                 selection="selection"

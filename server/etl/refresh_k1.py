@@ -10,6 +10,7 @@ import dash.models
 from etl import daily_statements_k1
 from etl import materialize_k1
 from etl import materialize_views
+from etl import maintenance
 
 
 logger = logging.getLogger(__name__)
@@ -87,7 +88,16 @@ def _refresh_k1_reports(update_since, views, account_id=None):
     date_from, date_to = dates[0], dates[-1]
     job_id = generate_job_id(account_id)
 
-    logger.info('Starting refresh k1 reports job %s for date range %s - %s', job_id, date_from, date_to)
+    logger.info('Starting refresh k1 reports job %s for date range %s - %s, requested update since %s',
+                job_id, date_from, date_to, update_since)
+
+    extra_dayspan = (update_since.date() - date_from).days
+    influx.gauge('etl.refresh_k1.extra_dayspan', extra_dayspan)
+    if extra_dayspan:
+        logger.warning(
+            'Refresh K1 is processing older statements than requested (requested update since %s,'
+            'real update since %s), job %s',
+            update_since, date_from, job_id)
 
     for mv_class in views:
         with influx.block_timer('etl.refresh_k1.generate_table', table=mv_class.TABLE_NAME):
@@ -95,9 +105,13 @@ def _refresh_k1_reports(update_since, views, account_id=None):
             mv.generate(campaign_factors=effective_spend_factors)
 
     influx.incr('etl.refresh_k1.refresh_k1_reports_finished', 1)
+
     # while everything is being updated data is not consistent among tables
     # so might as well leave cache until refresh finishes
     invalidate_breakdowns_rs_cache()
+
+    # check how it went
+    maintenance.crossvalidate_traffic(date_from, date_to)
 
 
 def generate_job_id(account_id):

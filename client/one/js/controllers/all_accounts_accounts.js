@@ -17,10 +17,13 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
         entityIds: [],
         totals: true,
     };
-    $scope.grid = {
-        api: undefined,
+    $scope.config = {
+        entityId: undefined,
         level: constants.level.ALL_ACCOUNTS,
         breakdown: constants.breakdown.ACCOUNT,
+    };
+    $scope.grid = {
+        api: undefined,
     };
     if (!$scope.hasPermission('zemauth.bulk_actions_on_all_levels')) {
         $scope.grid.options = {};
@@ -28,6 +31,16 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
+    // HACK: Just to make binding with zem-chart-legacy work (it will be replaced in near future with zem-chart)
+    // (adding ng-if for permission makes binding stop working)
+    $scope._chartMetrics = {
+        metric1: constants.chartMetric.CLICKS,
+        metric2: constants.chartMetric.IMPRESSIONS
+    };
+    $scope.$watch('_chartMetrics', function (newValue, oldValue) {
+        $scope.chartMetric1 = $scope._chartMetrics.metric1;
+        $scope.chartMetric2 = $scope._chartMetrics.metric2;
+    }, true);
     $scope.setModels(null);
 
     $scope.addAccount = function () {
@@ -125,6 +138,8 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
 
     var dailyStatsPromise = undefined;
     var getDailyStats = function () {
+        if ($scope.hasPermission('zemauth.can_see_new_chart')) return;
+
         if (dailyStatsPromise) {
             dailyStatsPromise.abort();
         }
@@ -148,7 +163,7 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
             convertedSelection.selectAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
         }
 
-        dailyStatsPromise = api.dailyStats.list($scope.level, null, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, true, getDailyStatsMetrics());
+        dailyStatsPromise = api.dailyStats.list($scope.level, null, $scope.config.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, true, getDailyStatsMetrics());
         dailyStatsPromise.then(
             function (data) {
                 setChartOptions();
@@ -223,6 +238,7 @@ angular.module('one.legacy').controller('AllAccountsAccountsCtrl', function ($sc
         if (chartMetrics) {
             $scope.chartMetric1 = chartMetrics.metric1;
             $scope.chartMetric2 = chartMetrics.metric2;
+            $scope._chartMetrics = chartMetrics;
         }
     }
 

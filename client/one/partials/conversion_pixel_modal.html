@@ -1,57 +1,47 @@
-<div class="modal-header">
-    <h4 class="modal-title">{{title}}</h4>
+<div class="modal__header">
+    <div class="modal__title">{{title}}</div>
 </div>
-<div class="modal-body">
-    <form id="conversion-pixel-form" ng-submit="submit()" class="modal-form conversion-pixel-form form-horizontal">
-        <div class="form-group" ng-class="{'has-error': !!error && !!errorMessage}">
-            <label for="name-input" class="col-xs-4 control-label">
-                Name
-                <zem-help-popover content="Pixel's name" placement="bottom"></zem-help-popover>
-            </label>
-            <div class="col-xs-8">
-                <input type="text" zem-focus-select id="name-input" class="form__input-text" ng-model="pixel.name" ng-focus="clearError()" ng-change="clearError()" />
-            </div>
+<div class="modal__body">
+    <div class="form" id="conversion-pixel-form">
+        <div class="form__group" ng-class="{'form--error': !!error && !!errorMessage}">
+            <label class="form__label" for="name-input">Name</label>
+            <input class="form__input-text" type="text" zem-focus-select id="name-input" ng-model="pixel.name"
+                   ng-focus="clearError()" ng-change="clearError()" />
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!error && !!errorMessage}" ng-if="hasPermission('zemauth.account_custom_audiences_view')">
-            <label for="audience-enabled-input" class="col-xs-4 control-label">
-                <zem-internal-feature ng-if="isPermissionInternal('zemauth.account_custom_audiences_view')" popover-placement="right"></zem-internal-feature>
+        <div class="form__group" ng-class="{'form--error': !!error && !!errorMessage}"
+             ng-if="hasPermission('zemauth.account_custom_audiences_view')">
+            <label class="form__label" for="audience-enabled-input" is-internal="zemauth.account_custom_audiences_view">
                 Build custom audiences from this pixel
             </label>
-            <div class="col-xs-8 checkbox-no-text">
-                <input type="checkbox" id="audience-enabled-input" ng-model="pixel.audienceEnabled" ng-disabled="!!audiencePixel" ng-focus="clearError()" ng-change="clearError()" />
-            </div>
+            <input class="form__input-checkbox" type="checkbox" id="audience-enabled-input" ng-model="pixel.audienceEnabled"
+                   ng-disabled="!!audiencePixel" ng-focus="clearError()" ng-change="clearError()" />
+        </div>
+    </div>
+
+    <div ng-if="hasPermission('zemauth.account_custom_audiences_view')">
+        <div class="message message--info message--with-icon" ng-if="!audiencePixel">
+            Only one pixel can be used for building custom audiences. This choice is permanent. If you want to change this, please contact your Account Manager.
         </div>
 
-        <div class="form-group" ng-if="hasPermission('zemauth.account_custom_audiences_view')">
-            <div class="col-xs-12 notice" ng-if="!audiencePixel">
-                Only one pixel can be used for building custom audiences. This choice is permanent. If you want to change this, please contact your Account Manager.
-            </div>
+        <div class="message message--info message--with-icon" ng-if="audiencePixel && audiencePixel.id != pixel.id">
+            Only one pixel can be used for building custom audiences. You have already set pixel {{ audiencePixel.name }} for audience building, if you want to change this, please contact your Account Manager.
+        </div>
+    </div>
 
-            <div class="col-xs-12 notice" ng-if="audiencePixel && audiencePixel.id != pixel.id">
-                Only one pixel can be used for building custom audiences. You have already set pixel {{ audiencePixel.name }} for audience building, if you want to change this, please contact your Account Manager.
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-xs-12 notice">
-                <h5>Where do I place my pixel on my site?</h5>
-                <p>Pixels need to be properly placed in order to measure goals effectively. We recommend placing your pixel on the confirmation page which is shown to a person after the desired action is performed.
-                </p>
-            </div>
-        </div>
-        <div class="modal-footer buttons-panel">
-            <button type="submit" class="button button--highlight button--with-icon check-icon" ng-click="clearError()" ng-class="{'disabled': !!inProgress}">{{buttonText}}</button>
-            <button type="button" class="button button--outline" ng-click="$dismiss()">Cancel</button>
-            <div class="loader" ng-show="inProgress"></div>
-            <span class="message message--error" ng-if="error">
-                <span ng-if="!!errorMessage">
-                    {{ errorMessage }}
-                </span>
-                <span ng-if="!errorMessage">
-                    An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
-                </span>
-            </span>
-        </div>
-    </form>
+    <h3>Where do I place my pixel on my site?</h3>
+    <p>Pixels need to be properly placed in order to measure goals effectively. We recommend placing your pixel on the confirmation page which is shown to a person after the desired action is performed.</p>
+</div>
+<div class="modal-footer buttons-panel">
+    <button type="submit" class="button button--highlight button--with-icon check-icon" ng-click="submit()" ng-class="{'disabled': !!inProgress}">{{buttonText}}</button>
+    <button type="button" class="button button--outline" ng-click="$dismiss()">Cancel</button>
+    <div class="loader" ng-show="inProgress"></div>
+    <span class="message message--error" ng-if="error">
+        <span ng-if="!!errorMessage">
+            {{ errorMessage }}
+        </span>
+        <span ng-if="!errorMessage">
+            An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+        </span>
+    </span>
 </div>

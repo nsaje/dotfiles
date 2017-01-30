@@ -31,8 +31,8 @@ zem-grid {
         display: block;
     }
 
-    .button--report {
-        width: 100px;
+    .button--report .button {
+        width: 90px;
     }
 }
 
@@ -223,68 +223,6 @@ zem-grid {
                 }
             }
 
-            .zem-grid-header-cell-checkbox {
-                overflow: visible;
-                .dropdown {
-                    display:inline-block;
-                    position: relative;
-                    line-height: 30px;
-
-                    .btn {
-                        padding: 4px 8px;
-                        border-color: #bbb;
-                    }
-                    input {
-                        margin: 5px 0 0 0;
-                        vertical-align: top;
-                    }
-
-                    &:not(.open) .drop-arrow {
-                        .arrow-down();
-                        top: 1px;
-                        margin-left: 0;
-                    }
-                    &.open .drop-arrow {
-                        .arrow-up();
-                        margin-left: 0;
-                    }
-
-                    .dropdown-menu {
-                        padding: 8px 10px;
-
-                        .link {
-                            font-weight: 300;
-                            cursor: pointer;
-                            &:hover {
-                                text-decoration: underline;
-                            }
-                        }
-
-                        .link-list {
-                            .link-list-name {
-                                vertical-align: top;
-                                display: inline-block;
-                                font-weight: 300;
-                                line-height: 22px;
-                            }
-
-                            .link-list-items {
-                                vertical-align: top;
-                                display: inline-block;
-                                font-weight: 400;
-                                line-height: 22px;
-
-                                .link-list-item {
-                                    cursor: pointer;
-                                    &:hover {
-                                        text-decoration: underline; }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             .performance-icon {
                 width: 14px;
                 height: 14px;
@@ -393,6 +331,16 @@ zem-grid {
                 height: 9px;
                 margin-right: 2px;
                 background-image: url('images/autopilot.svg');
+                background-size: auto;
+                background-position: 0;
+            }
+
+            .landing-mode-icon {
+                display: inline-block;
+                width: 13px;
+                height: 8px;
+                margin-right: 2px;
+                background-image: url('images/landing.svg');
                 background-size: auto;
                 background-position: 0;
             }
@@ -587,6 +535,41 @@ zem-grid {
     }
 }
 
+// Dropdowns
+.zem-grid-header-cell-checkbox-custom-filters-dropdown-menu {
+    padding: 8px 10px;
+
+    .link {
+        font-weight: 300;
+        cursor: pointer;
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .link-list {
+        .link-list-name {
+            vertical-align: top;
+            display: inline-block;
+            font-weight: 300;
+            line-height: 22px;
+        }
+
+        .link-list-items {
+            vertical-align: top;
+            display: inline-block;
+            font-weight: 400;
+            line-height: 22px;
+
+            .link-list-item {
+                cursor: pointer;
+                &:hover {
+                    text-decoration: underline; }
+            }
+        }
+    }
+}
+
 // Popovers
 .zem-grid-submission-status-popover {
     max-width: 600px;
@@ -637,7 +620,6 @@ zem-grid {
     }
 }
 
-// Popovers
 .zem-grid-thumbnail-preview-popover {
     img {
         height: 80px;

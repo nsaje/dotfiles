@@ -1,11 +1,12 @@
 import datetime
+import decimal
 from mock import patch, call, MagicMock
 
 from django.test import TestCase
 from django.contrib.auth.models import Permission
 
 import dash.constants
-from integrations.bizwire import config, models
+from integrations.bizwire import config
 from integrations.bizwire.internal import actions, helpers
 
 from utils.test_helper import ListMatcher
@@ -72,6 +73,7 @@ class RotateAdGroupsTestCase(TestCase):
     def tearDown(self):
         self.utc_now_patcher.stop()
 
+    @patch('integrations.bizwire.config.CUSTOM_CPC_SETTINGS', {1: decimal.Decimal('0.12')})
     def test_rotate_ad_groups(self):
         start_date = helpers.get_pacific_now().date() + datetime.timedelta(days=1)
         ad_groups_before = list(dash.models.AdGroup.objects.all())
@@ -107,11 +109,15 @@ class RotateAdGroupsTestCase(TestCase):
         self.assertEqual(['US'], ad_group_settings.target_regions)
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
         self.assertEqual(config.DAILY_BUDGET_INITIAL, ad_group_settings.b1_sources_group_daily_budget)
+        self.assertEqual(config.DEFAULT_CPC, ad_group_settings.b1_sources_group_cpc_cc)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
         self.assertEqual(ad_group.campaign.account.allowed_sources.count(), ad_group.adgroupsource_set.all().count())
         for ad_group_source in ad_group.adgroupsource_set.all():
             ad_group_source_settings = ad_group_source.get_current_settings()
             self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_source_settings.state)
-            self.assertEqual(config.DEFAULT_CPC, ad_group_source_settings.cpc_cc)
+            if ad_group_source.source_id in config.CUSTOM_CPC_SETTINGS:
+                self.assertEqual(config.CUSTOM_CPC_SETTINGS[ad_group_source.source_id], ad_group_source_settings.cpc_cc)
+            else:
+                self.assertEqual(config.DEFAULT_CPC, ad_group_source_settings.cpc_cc)
             self.assertEqual(config.DAILY_BUDGET_INITIAL, ad_group_source_settings.daily_budget_cc)

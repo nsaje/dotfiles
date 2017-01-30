@@ -1,9 +1,11 @@
 import logging
+from decimal import Decimal
 
 from django.db import transaction
 
 import dash.constants
 import dash.models
+import dash.cpc_constraints
 import utils.k1_helper
 
 ALLOWED_LEVEL_CONSTRAINTS = (
@@ -21,6 +23,9 @@ ACTION_TO_MESSAGE = {
     dash.constants.PublisherStatus.BLACKLISTED: 'Blacklist',
     dash.constants.PublisherStatus.ENABLED: 'Enable',
 }
+
+OUTBRAIN_CPC_CONSTRAINT_LIMIT = 30
+OUTBRAIN_CPC_CONSTRAINT_MIN = Decimal('0.65')
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +48,7 @@ def update(ad_group, constraints, status, domains, everywhere=False,
         ))
     with transaction.atomic():
         if all_b1_sources:
+            # Note: this will skip OB
             constraints['source'] = None
             _handle_all(constraints, status, domain_names, external_map, ad_group=ad_group)
         elif all_sources:
@@ -102,9 +108,12 @@ def _update_source(constraints, status, domain_names, external_map, request=None
 
     if not source.can_modify_publisher_blacklist_automatically():
         return
-
-    if source.source_type.type == dash.constants.SourceType.OUTBRAIN and 'account' not in constraints:
-        return
+    if source.source_type.type == dash.constants.SourceType.OUTBRAIN:
+        if 'account' not in constraints:
+            return
+        _handle_outbrain_account_constraints(
+            constraints['account'], source, set(domain_names), status
+        )
 
     _handle_all(constraints, status, domain_names, external_map, request=request, ad_group=ad_group)
 
@@ -144,6 +153,26 @@ def _global_blacklist(constraints, status, domain_names, external_map):
         )
 
 
-def _handle_outbrain(source, constraints, status, domain_names, external_map, request, ad_group):
-    if 'account' not in constraints:
-        raise BlacklistException('OB blacklist is allowed only on account level')
+def _handle_outbrain_account_constraints(account, source, blacklist_addition, status):
+    blacklist_current = set(item.name for item in dash.models.PublisherBlacklist.objects.filter(
+        source=source,
+        account=account,
+        status=dash.constants.PublisherStatus.BLACKLISTED
+    ))
+    count = len(blacklist_current | blacklist_addition)
+    if status == dash.constants.PublisherStatus.ENABLED:
+        count = len(blacklist_current - blacklist_addition)
+    if count >= OUTBRAIN_CPC_CONSTRAINT_LIMIT:
+        dash.cpc_constraints.create(
+            min_cpc=OUTBRAIN_CPC_CONSTRAINT_MIN,
+            constraint_type=dash.constants.CpcConstraintType.OUTBRAIN_BLACKLIST,
+            source=source,
+            account=account,
+        )
+    else:
+        dash.cpc_constraints.clear(
+            min_cpc=OUTBRAIN_CPC_CONSTRAINT_MIN,
+            constraint_type=dash.constants.CpcConstraintType.OUTBRAIN_BLACKLIST,
+            source=source,
+            account=account,
+        )

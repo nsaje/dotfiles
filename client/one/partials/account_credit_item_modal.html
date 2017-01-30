@@ -1,132 +1,99 @@
-<div class="modal-header">
-    <h4 class="modal-title" ng-if="isNew">Add Credit</h4>
-    <h4 class="modal-title" ng-if="!isNew">Edit Credit Item #{{ creditItem.id }}</h4>
+<div class="modal__header">
+    <div class="modal__title" ng-if="isNew">Add Credit</div>
+    <div class="modal__title" ng-if="!isNew">Edit Credit Item #{{ creditItem.id }}</div>
 </div>
-<div class="modal-body modal-page">
+<div class="modal__body">
     <div class="loader" ng-show="isLoadingInProgress"></div>
-    <form id="form-account-credit-item" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }" ng-show="!isLoadingInProgress">
-        <div class="form-group" ng-if="!isNew">
-            <label class="col-xs-8">Created by {{ creditItem.createdBy }} on {{ creditItem.createdOn }}</label>
-        </div>
-        <div class="form-group" ng-if="isNew">
-            <label class="col-xs-8">Created by {{ user.name }} on {{ today }}</label>
-        </div>
-        <div class="form-group" ng-class="{'has-error': !!errors.startDate}">
-            <label for="start-date-input" class="col-xs-3 control-label">
-                Valid From
-            </label>
-            <div class="col-xs-4">
-                <div class="form__prefixed-field form__prefixed-field--with-icon form__prefixed-field--calendar-icon">
-                    <input id="start-date-input" type="text" class="form__input-text" uib-datepicker-popup="MM/dd/yyyy" ng-model="creditItem.startDate" datepicker-options="startDatePickerOptions" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" ng-disabled="creditItem.isSigned" />
-                </div>
+    <p ng-if="!isNew">Created by <strong>{{ creditItem.createdBy }}</strong> on <strong>{{ creditItem.createdOn }}</strong></p>
+    <p ng-if="isNew">Created by <strong>{{ user.name }}</strong> on <strong>{{ today }}</strong></p>
+    <hr>
+    <div class="form" id="form-account-credit-item" ng-class="{ 'new': isNew, 'edit': !isNew }" ng-show="!isLoadingInProgress">
+        <div class="form__group" ng-class="{'form--error': !!errors.startDate}">
+            <label class="form__label" for="start-date-input">Valid From</label>
+            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
+                <input class="form__input-text" id="start-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
+                       ng-model="creditItem.startDate" datepicker-options="startDatePickerOptions"
+                       is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" ng-disabled="creditItem.isSigned" />
             </div>
-            <label ng-repeat="error in errors.startDate" class="col-xs-5 control-label error" for="start-date-input">{{ error }}</label>
+            <div ng-repeat="error in errors.startDate" class="message message--error" for="start-date-input">{{ error }}</div>
         </div>
-        <div class="form-group" ng-class="{'has-error': !!errors.endDate}">
-            <label for="end-date-input" class="col-xs-3 control-label">
-                Valid To
-            </label>
-            <div class="col-xs-4">
-                <div class="form__prefixed-field form__prefixed-field--with-icon form__prefixed-field--calendar-icon">
-                    <input id="end-date-input" type="text" class="form__input-text" uib-datepicker-popup="MM/dd/yyyy" ng-model="creditItem.endDate" datepicker-options="endDatePickerOptions" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()" />
-                </div>
+        <div class="form__group" ng-class="{'form--error': !!errors.endDate}">
+            <label class="form__label" for="end-date-input">Valid To</label>
+            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
+                <input class="form__input-text" id="end-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
+                       ng-model="creditItem.endDate" datepicker-options="endDatePickerOptions"
+                       is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()" />
             </div>
-            <label ng-repeat="error in errors.endDate" class="col-xs-5 control-label error" for="end-date-input">{{ error }}</label>
+            <div ng-repeat="error in errors.endDate" class="message message--error" for="end-date-input">{{ error }}</div>
         </div>
-        <div class="form-group" ng-class="{'has-error': !!errors.licenseFee}">
-            <label for="license-fee-input" class="col-xs-3 control-label">
-                License Fee (%)
-            </label>
-            <div class="col-xs-4">
-                <ui-select theme="select2" id="license-fee-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="creditItem.licenseFee" ng-disabled="creditItem.isSigned">
-                    <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
-                    <ui-select-choices repeat="fee in getLicenseFees($select.search, creditItem.licenseFee) | filter: $select.search">
-                        <span ng-bind-html="fee"></span>%
-                    </ui-select-choices>
-                </ui-select>
+        <div class="form__group" ng-class="{'form--error': !!errors.licenseFee}">
+            <label class="form__label" for="license-fee-input">License Fee (%)</label>
+            <ui-select class="button button--plain button--full-width button--dropdown-toggle-icon" theme="select2"
+                       id="license-fee-select" ng-model="creditItem.licenseFee" ng-disabled="creditItem.isSigned"
+                       search-enabled="false">
+                <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
+                <ui-select-choices repeat="fee in getLicenseFees($select.search, creditItem.licenseFee) | filter: $select.search">
+                    <span ng-bind-html="fee"></span>%
+                </ui-select-choices>
+            </ui-select>
+            <div class="message message--error" ng-repeat="error in errors.licenseFee" for="license-fee">{{ error }}</div>
+        </div>
+        <div class="form__group" ng-class="{'form--error': !!errors.amount}">
+            <label class="form__label" for="amount-input">Credit</label>
+            <div class="form__prefixed-field form__postfixed-field form__prefixed-field--narrow form__postfixed-field--narrow">
+                <span class="form__field-prefix">$</span>
+                <input class="form__input-text" id="amount-input" type="text" ng-model="creditItem.amount" zem-currency-input fraction-size="0">
+                <span class="form__field-postfix">.00</span>
             </div>
-
-            <label ng-repeat="error in errors.licenseFee" class="col-xs-5 control-label error" for="license-fee">{{ error }}</label>
+            <div ng-repeat="error in errors.amount" class="message message--error" for="amount">{{ error }}</div>
         </div>
-        <div class="form-group" ng-class="{'has-error': !!errors.amount}">
-            <label for="amount-input" class="col-xs-3 control-label">
-                Credit
-            </label>
-            <div class="col-xs-4">
-                <div class="form__prefixed-field form__postfixed-field">
-                    <span class="form__field-prefix">$</span>
-                    <input id="amount-input" type="text" class="form__input-text" ng-model="creditItem.amount" zem-currency-input fraction-size="0">
-                    <span class="form__field-postfix">.00</span>
-                </div>
-            </div>
-
-            <label ng-repeat="error in errors.amount" class="col-xs-5 control-label error" for="amount">{{ error }}</label>
+        <div class="form__group" ng-class="{'form--error': !!errors.comment}">
+            <label class="form__label" for="comment-input">Custom Notes</label>
+            <textarea class="form__textarea" id="comment-input" type="text" ng-model="creditItem.comment" maxlength="256"></textarea>
+            <div class="message message--error" ng-repeat="error in errors.comment" for="comment">{{ error }}</div>
         </div>
-        <div class="form-group" ng-class="{'has-error': !!errors.comment}">
-            <label for="comment-input" class="col-xs-3 control-label">
-                Custom Notes
-            </label>
-            <div class="col-xs-9">
-                <textarea id="comment-input" type="text" class="form__textarea" ng-model="creditItem.comment" maxlength="256"></textarea>
-            </div>
-            <label ng-repeat="error in errors.comment" class="col-xs-5 control-label error" for="comment">{{ error }}</label>
+        <div class="form__group" ng-class="{'form--error': !!errors.agency}" ng-if="account.agency">
+            <label class="form__label">Agency credit</label>
+            <input class="form__input-checkbox" id="is-agency-input" type="checkbox" ng-model="creditItem.isAgency">
+            <div class="message message--error" ng-repeat="error in errors.agency" for="is-agency-input">{{ error }}</div>
         </div>
-        <div class="form-group" ng-class="{'has-error': !!errors.agency}" ng-if="account.agency">
-            <div class="col-xs-8">
-                <label>
-                    <input id="is-agency-input" type="checkbox" ng-model="creditItem.isAgency"> Agency credit
-                </label>
-            </div>
-            <label ng-repeat="error in errors.agency" class="control-label error" for="is-agency-input">{{ error }}</label>
+        <hr>
+        <p>By signing the credit line item, no more future changes to the amount, fee and start date will be possible.</p>
+        <div ng-class="{'form--error': !!errors.status}">
+            <input class="form__input-checkbox" id="is-signed-input" type="checkbox" ng-model="creditItem.isSigned" ng-disabled="wasSigned">
+            <label class="form__checkbox-text" for="is-signed-input">Signed</label>
+            <div ng-repeat="error in errors.status" class="message message--error" for="is-signed-input">{{ error }}</div>
         </div>
-        <hr />
-        <div class="form-group">
-            <label for="is-signed-input" class="col-xs-12 control-label">
-                By signing the credit line item, no more future changes to the amount, fee and start date will be possible.
-            </label>
-        </div>
-        <div class="form-group" ng-class="{'has-error': !!errors.status}">
-            <div class="col-xs-4">
-                <label>
-                    <input type="checkbox" ng-model="creditItem.isSigned" ng-disabled="wasSigned"> Signed
-                </label>
-            </div>
-            <label ng-repeat="error in errors.status" class="control-label error" for="is-signed-input">{{ error }}</label>
-        </div>
-        <hr ng-show="!isNew" />
-        <div class="form-group" ng-show="!isNew">
-            <label class="col-xs-8 control-label">
-                Allocated budget items
-            </label>
-        </div>
-        <div class="scrollable" ng-show="!isNew">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Campaign</th>
-                        <th>Budget</th>
-                        <th>Total spend</th>
-                        <th>Flight dates</th>
-						<th>Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="item in creditItem.budgets">
-                        <td>{{ item.campaign }}</td>
-                        <td>{{ item.total | decimalCurrency:"$":2  }}</td>
-                        <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
-                        <td>{{ item.startDate }} - {{ item.endDate }}</td>
-						<td><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
-                    </tr>
-                    <tr ng-show="!creditItem.numOfBudgets" class="message">
-                        <td colspan="5">No allocated budget items.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </form>
+    </div>
+    <div ng-show="!isNew">
+        <hr>
+        <h3>Allocated budget items</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Campaign</th>
+                    <th>Budget</th>
+                    <th>Total spend</th>
+                    <th>Flight dates</th>
+					<th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="item in creditItem.budgets">
+                    <td>{{ item.campaign }}</td>
+                    <td>{{ item.total | decimalCurrency:"$":2  }}</td>
+                    <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
+                    <td>{{ item.startDate }} - {{ item.endDate }}</td>
+					<td><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
+                </tr>
+                <tr ng-show="!creditItem.numOfBudgets" class="message">
+                    <td colspan="5">No allocated budget items.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-<div class="modal-footer buttons-panel">
+<div class="modal__footer buttons-panel">
     <button type="button" class="button button--highlight button--with-icon check-icon" ng-click="upsertCreditItem()" ng-disabled="saveRequestInProgress">Save</button>
     <button type="button" class="button button--outline" ng-click="discardCreditItem()" ng-disabled="saveRequestInProgress">Discard</button>
     <div class="loader" ng-show="saveRequestInProgress"></div>

@@ -585,13 +585,15 @@ class AdGroupSourcesRTBTest(RESTAPITest):
     def adgroupsourcertb_repr(
         cls,
         group_enabled=True,
-        daily_budget='50.00',
-        state=constants.AdGroupSourceSettingsState.ACTIVE
+        daily_budget=constants.SourceAllRTB.DEFAULT_DAILY_BUDGET,
+        state=constants.AdGroupSourceSettingsState.ACTIVE,
+        cpc=constants.SourceAllRTB.DEFAULT_CPC_CC
             ):
         representation = {
             'groupEnabled': group_enabled,
             'dailyBudget': daily_budget,
             'state': constants.AdGroupSourceSettingsState.get_name(state),
+            'cpc': cpc
         }
         return normalize(representation)
 
@@ -600,7 +602,8 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         expected = self.adgroupsourcertb_repr(
             group_enabled=settings_db.b1_sources_group_enabled,
             daily_budget=settings_db.b1_sources_group_daily_budget.quantize(Decimal('1.00')),
-            state=settings_db.b1_sources_group_state
+            state=settings_db.b1_sources_group_state,
+            cpc=settings_db.b1_sources_group_cpc_cc,
         )
         self.assertEqual(expected, agsrtb)
 
@@ -613,7 +616,20 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         test_rtbs = self.adgroupsourcertb_repr(
             group_enabled=True,
             daily_budget='12.38',
-            state=constants.AdGroupSettingsState.ACTIVE
+            state=constants.AdGroupSettingsState.ACTIVE,
+            cpc='0.1230'
+        )
+        r = self.client.put(
+            reverse('adgroups_sources_rtb_details', kwargs={'ad_group_id': 2040}),
+            data=test_rtbs, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(2040, resp_json['data'])
+        self.assertEqual(test_rtbs, resp_json['data'])
+
+    def test_adgroups_sources_rtb_put_default_values(self):
+        test_rtbs = self.adgroupsourcertb_repr(
+            group_enabled=True,
+            state=constants.AdGroupSettingsState.ACTIVE,
         )
         r = self.client.put(
             reverse('adgroups_sources_rtb_details', kwargs={'ad_group_id': 2040}),

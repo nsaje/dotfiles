@@ -1,387 +1,474 @@
-.modal-zem-upload .modal-dialog {
-    @modal-content-width: 1180px;
+@modal-content-width: 1180px;
+@form-input-width-content-upload: 68%;
+@form-additional-info-width-content-upload: 14%;
+
+.content-upload .modal-dialog {
     margin-top: 10vh !important;
     width: @modal-content-width;
     box-sizing: border-box;
     max-height: 70vh;
 
-    zem-internal-feature .internal {
-        position: absolute;
+    .button--big {
+        width: 49%;
+        float: left;
+        margin-right: 2%;
+    }
 
-        &:before {
-            content: " ";
-            width: 0;
-            height: 0;
-            display: block;
-            border-top: 7px solid @internal-color;
-            border-right: 7px solid transparent;
-            float: left;
+    .file-upload-form {
+        .form__label {
+            width: 10%;
+        }
+
+        .form__input-text {
+            width: 88%;
+        }
+
+        .message,
+        .form__text--small {
+            margin-left: 12%;
+        }
+
+        .form__text--small {
+            width: 88%;
+        }
+
+        .form__group--choose-file {
+            .button {
+                width: 10%;
+                margin-right: 1%;
+            }
+
+            .form__input-text {
+                width: 77%;
+            }
         }
     }
 
-    button .internal {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-    }
-
-    .modal-body {
+    .modal__body {
         overflow: hidden;
         position: relative;
 		margin-bottom: 0 !important;
+    }
+}
 
-        .description {
-            margin-bottom: 20px;
-            color: @gray;
+.content-upload__contentad-picker {
+    padding: 0 !important;
+    width: 100%;
+    overflow: hidden;
+    height: 70vh;
+}
+
+.content-upload__contentad-picker--editing {
+    .content-upload__ads-container,
+    .content-upload__batch-name-container {
+        width: @modal-content-width - @modal-content-width*0.6;
+    }
+
+    .content-upload__batch-name-container {
+        .form__input-text {
+            width: 75%;
+        }
+
+        .button {
+            font-size: 0;
+            padding-left: 22px;
+            transition: none;
         }
     }
 
-    .contentad-picker {
-        padding: 0 !important;
-        width: 100%;
-        overflow: hidden;
-        height: 70vh;
+    .content-upload__ad-link {
+        display: none;
     }
 
-    .candidate-table {
-        width: @modal-content-width;
-        transition: none;
+    .content-upload__ad-error {
+        font-size: 0;
+        padding-left: 0;
+        height: 18px;
+        width: 14px;
+    }
+
+    .content-upload__ad-action-buttons {
+        white-space: nowrap;
+
+        .button {
+            font-size: 0;
+            padding-left: 22px;
+            margin-right: 0;
+            transition: none;
+        }
+    }
+
+    .content-upload__edit-form {
         position: absolute;
         top: 0;
+        right: 0;
         bottom: 0;
-        overflow-y: auto;
+    }
+}
 
-        .batch-name {
-            border-bottom: 4px solid @primary-color;
-            padding: 8px 60px 8px 15px;
-            margin: 0;
-            color: @primary-color;
-            position: relative;
-            white-space: nowrap;
-            overflow:hidden;
-            text-overflow: ellipsis;
+.content-upload__ads-container {
+    width: @modal-content-width;
+    transition: all @default-animation;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    overflow-y: auto;
+    margin-top: 50px;
 
-            span {
-                color: @text-color;
-                font-size: 18px;
-                font-weight: 300;
-            }
+    .buttons-panel {
+        background-color: transparent;
+        box-shadow: none;
+    }
+}
 
-            .button {
-                position: absolute;
-                top: 11px;
-                right: 10px;
-            }
+.content-upload__batch-name-container {
+    border-bottom: 4px solid @primary-color;
+    width: @modal-content-width;
+    padding: 8px 60px 8px 15px;
+    margin: 0;
+    color: @primary-color;
+    position: relative;
+    white-space: nowrap;
+    overflow:hidden;
+    text-overflow: ellipsis;
+    line-height: 30px;
+    font-size: 18px;
+    transition: all @default-animation;
 
-            input {
-                display: inline-block;
-                width: 88.2%;
-                color: @primary-color;
-                font-size: 18px;
-                font-weight: 500;
-                padding: 0 5px;
-                line-height: 28px;
-                height: auto;
-            }
+    .button {
+        position: absolute;
+        top: 11px;
+        right: 10px;
+    }
 
-            .title {
-                color: @secondary-color;
-                font-weight: 500;
-                line-height: 30px;
-            }
+    .form__input-text {
+        width: 88.2%;
+        color: @secondary-color;
+        font-size: 18px;
+        font-weight: 500;
+    }
+}
 
-            &.has-error {
-                span {
-                    color: @red;
-                }
+.content-upload__batch-name {
+    color: @text-color;
+    font-weight: 300;
+}
 
-                input {
-                    color: @red;
-                }
-            }
-        }
+.content-upload__batch-title {
+    color: @secondary-color;
+    font-weight: 500;
+}
 
-        table {
-            margin-bottom: 0;
+.content-upload__ads-table {
+    margin-bottom: 0;
 
-            tr {
-                cursor: pointer;
+    tr {
+        cursor: pointer;
 
-                td {
-                    padding: 6px 10px;
-                    vertical-align: middle;
-                    height: 55px;
-                }
-            }
-
-            tr:first-child td {
-                border-top: none;
-            }
-
-            tr:last-child td {
-                border-bottom: 1px solid tint(@secondary-color,80%);
-            }
-
-            tr:hover td {
-                background: tint(@secondary-color,96%);
-            }
-
-            td.status {
-                width: 40px;
-            }
-
-            td.image {
-                width: 60px;
-                background-image: url('img/dummy_ad_image.png') !important;
-                background-size: 40px 40px !important;
-                background-position: 10px 6px !important;
-                background-repeat: no-repeat !important;
-
-                img {
-                    width: 40px;
-                    height: auto;
-                }
-            }
-
-            td.link {
-                max-width: 560px;
-                word-wrap: break-word;
-            }
-
-            td.errors div {
-                color: @red;
-                position: relative;
-
-                img {
-                    width: 14px;
-                    height: 14px;
-                    position: absolute;
-                    left: 0;
-                    top: 2px;
-                }
-                span {
-                    padding-left: 20px;
-                    line-height: 20px;
-                    display: block;
-                }
-            }
-
-            td.action {
-                text-align: right;
-                white-space: nowrap;
-
-                .error {
-                    padding-top: 6px;
-                    white-space: normal;
-                }
-            }
-        }
-
-        .buttons-panel {
-            background-color: transparent;
-            box-shadow: none;
-
-            img.loader-icon {
-                vertical-align: initial;
-            }
+        td {
+            padding: 6px 10px;
+            vertical-align: middle;
+            height: 56px;
         }
     }
 
-    .edit-form {
-        width: @modal-content-width - @modal-content-width*0.4;
+    tr:first-child td {
+        border-top: none;
+    }
+
+    tr:last-child td {
+        border-bottom: 1px solid tint(@secondary-color,80%);
+    }
+
+    tr:hover td {
+        background: tint(@secondary-color,96%);
+    }
+}
+
+.content-upload__selected-ad {
+    background: tint(@secondary-color,96%);
+}
+
+.content-upload__ad-status {
+    width: 40px;
+    position: relative;
+
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: center center no-repeat;
+    }
+}
+
+.content-upload__ad-status--loading {
+    &::before {
+        height: 8px;
+        background-image: url('images/loader.gif');
+    }
+}
+
+.content-upload__ad-status--ok {
+    &::before {
+        background-image: url('images/check-green.svg');
+    }
+}
+
+.content-upload__ad-status--error {
+    &::before {
+        background-image: url('images/error-red.svg');
+    }
+}
+
+.content-upload__ad-image-container {
+    width: 56px;
+    position: relative;
+
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #FFFFFF url('images/image-gray.svg') center center no-repeat;
+        background-size: 20px;
+        border: 1px solid @light-gray;
+    }
+}
+
+.content-upload__ad-image {
+    width: 40px;
+    height: auto;
+    position: relative;
+}
+
+.content-upload__ad-link {
+    max-width: 560px;
+    word-wrap: break-word;
+}
+
+.content-upload__ad-error {
+    color: @red;
+    position: relative;
+    padding-left: 18px;
+
+    &::before {
+        content: "";
+        display: block;
+        width: 12px;
+        height: 12px;
+        position: absolute;
+        left: 0px;
+        top: 2px;
+        background: center center no-repeat;
+    }
+}
+
+.content-upload__ad-error--content {
+    &:before {
+        background-image: url('images/content-red.svg');
+    }
+}
+
+.content-upload__ad-error--image {
+    &:before {
+        background-image: url('images/image-red.svg');
+    }
+}
+
+.content-upload__ad-action-buttons {
+    text-align: right;
+    white-space: nowrap;
+
+    .message--error {
+        padding-top: 6px;
+        white-space: normal;
+    }
+
+    .loader {
+        width: 25px;
+        height: 10px;
+    }
+}
+
+.content-upload__edit-form {
+    width: @modal-content-width - @modal-content-width*0.4;
+    position: absolute;
+    overflow: hidden;
+    top: 0;
+    bottom: 0;
+    right: -(@modal-content-width - @modal-content-width*0.4 + 20);
+    transition: all @default-animation;
+    padding: 0 15px 15px 15px;
+    background: tint(@secondary-color,96%);
+    box-shadow: 0 0 10px 0 fade(@secondary-color,25%);
+    border-top-right-radius: @border-radius;
+
+    .form {
         position: absolute;
         overflow-y: auto;
         overflow-x: hidden;
-        top: 0;
+        top: 49px;
         bottom: 0;
-        right: -(@modal-content-width - @modal-content-width*0.4 + 20);
-        transition: all 200ms ease-in-out;
-        padding: 0 15px 15px 15px;
-        background: tint(@secondary-color,96%);
-        box-shadow: 0 0 10px 0 fade(@secondary-color,25%);
-
-        .button-close {
-            position: absolute;
-            top: 5px;
-            right: 15px;
-            background: none;
-            border: none;
-            line-height: 35px;
-        }
-        h4 {
-            border-bottom: 1px solid #d2d2d2;
-            padding: 15px 100px 11px 0;
-            margin: 0 0 20px 0;
-            color: @text-color;
-            white-space: nowrap;
-            overflow:hidden;
-            text-overflow: ellipsis;
-        }
-        .form-group {
-            margin-bottom: 10px;
-
-            .button {
-                &:focus {
-                    border: 1px solid @primary-color;
-                }
-            }
-
-            .control-label {
-                font-size: 13px;
-            }
-
-            input.form__input-text {
-                padding-right: 30px;
-
-                &[disabled] {
-                    background-color: transparent;
-                    pointer-events: none;
-                }
-            }
-
-            textarea.form__textarea {
-                padding-right: 30px;
-                white-space: normal;
-            }
-
-            .action-link {
-                font-size: 12px;
-                color: @text-color;
-                font-weight: 400;
-                display: inline-block;
-            }
-        }
+        left: @default-spacing;
+        right: 0;
     }
 
-    .editing {
-        .candidate-table {
-            width: @modal-content-width - @modal-content-width*0.6;
-            transition: all 200ms ease-in-out;
-
-            .batch-name {
-                input {
-                    width: 75%;
-                }
-
-                .button {
-                    font-size: 0;
-                    padding-left: 22px;
-                }
-            }
-
-            tr.selected td {
-                background: tint(@secondary-color,96%);
-            }
-            td.link {
-                display: none;
-            }
-            td.errors div {
-                width: 14px;
-                height: 14px;
-
-                &:first-child {
-                    margin-bottom: 4px;
-                }
-                img {
-                    position: relative;
-                    display: block;
-                    top: 0;
-                }
-                span {
-                    display: none;
-                }
-            }
-            td.action {
-                white-space: nowrap;
-
-                .button {
-                    font-size: 0;
-                    padding-left: 27px;
-                }
-            }
-        }
-        .edit-form {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-
-            .input-indicator {
-                position: absolute;
-                left: -43px;
-                top: 4px;
-                // FIXME: quick fix by luka
-                // width: auto;
-                // height: (@default-button-input-height)-8;
-                width: 22px;
-                height: auto;
-
-                &.input-success {
-                    animation: fadeOut 0.5s 1;
-                    animation-fill-mode: forwards;
-                    animation-delay:2s;
-                    width: (@default-button-input-height)-8;
-                    height: (@default-button-input-height)-8;
-                }
-            }
-        }
+    .form__group--indented {
+        width: @form-input-width-content-upload;
+        margin-left: 100 - @form-input-width-content-upload - @form-additional-info-width-content-upload;
     }
 
-    .control-label.small {
-        font-size: 12px;
-        font-weight: 400;
-        padding-top: 9px;
-        color: @gray;
+    .form__group {
+        .message,
+        .form__text,
+        .form__text--small {
+            width: @form-input-width-content-upload;
+            margin-left: 100 - @form-input-width-content-upload - @form-additional-info-width-content-upload;
+        }
 
-        &.error {
-            color: @red;
+        .button--full-width {
+            width: @form-input-width-content-upload;
+        }
+
+        .form__label {
+            width: 100 - 2 - @form-input-width-content-upload - @form-additional-info-width-content-upload;
+        }
+
+        .form__textarea,
+        .form__input-text,
+        .form__multiselect,
+        .form__prefixed-field,
+        .form__postfixed-field,
+        .form__information {
+            width: @form-input-width-content-upload;
         }
     }
+}
 
-    .form-group {
-        .info {
-            color: @gray;
+.content-upload__edit-form-hide {
+    position: absolute;
+    top: 0;
+    right: 15px;
+    background: none;
+    border: none;
+    height: 49px;
+    line-height: 49px;
+    padding-right: 20px;
 
-            .file-choosen {
-                display: inline-block;
-                width: 50%;
-            }
-
-            .help-block {
-                padding: 10px 0 0 30px;
-                position: relative;
-                font-style: normal;
-
-                .small-icon {
-                    position: absolute;
-                    top: 7px;
-                    left: 0;
-                    width: 20px;
-                    height: 20px;
-                }
-                a {
-                    display: block;
-                    font-weight: 700;
-                    color: @gray;
-                }
-            }
-        }
+    &::after {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: url('images/arrow-gray.svg') center center no-repeat;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
     }
+}
 
-    .uploading_completed {
-        padding: 30px 50px 30px 160px;
-        position: relative;
+.content-upload__edit-form-title-container {
+    border-bottom: 1px solid #d2d2d2;
+    padding: 15px 100px 11px 0;
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    line-height: 22px;
+    white-space: nowrap;
+    overflow:hidden;
+    text-overflow: ellipsis;
+}
 
-        img {
-            width: 120px;
-            height: 120px;
-            position: absolute;
-            left: 0;
-            top: 20px;
-        }
+.content-upload__edit-form-name {
+    color: @text-color;
+    font-weight: 300;
+}
 
-        h1 {
-            color: @green;
-        }
+.content-upload__edit-form-title {
+    color: @secondary-color;
+    font-weight: 500;
+}
+
+.content-upload__field-additional-info {
+    float: left;
+    width: @form-additional-info-width-content-upload;
+    line-height: 30px;
+    height: 30px;
+    color: @gray;
+    font-size: 11px;
+    padding-left: 10px;
+}
+
+.content-upload__field-additional-info--with-link {
+    line-height: 14px;
+}
+
+.content-upload__change-status--visible {
+    padding-right: 40px;
+}
+
+.content-upload__change-status {
+    position: relative;
+
+    &::before {
+        content: "";
+        display: block;
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        left: -30px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: no-repeat center center;
+        pointer-events: none;
     }
+}
+
+.content-upload__change-status--dropdown-on-the-left::before {
+    left: -50px;
+}
+
+.content-upload__change-status--loading::before {
+    background-image: url('images/loader.gif');
+    height: 8px;
+}
+
+.content-upload__change-status--successful::before {
+    background-image: url('images/check-green.svg');
+}
+
+.content-upload__zem-file-input {
+    width: @form-input-width-content-upload;
+    height: 30px;
+    float: left;
+}
+
+.content-upload__uploading-completed {
+    padding: 20px 0 10px 80px;
+    position: relative;
+
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: url('images/check-green.svg') center center no-repeat;
+    }
+}
+
+.content-upload__uploading-completed-title {
+    color: @green;
+    font-size: 24px;
 }

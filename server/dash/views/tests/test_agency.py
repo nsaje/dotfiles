@@ -3,7 +3,7 @@ import json
 import datetime
 import httplib
 
-from mock import patch, ANY, Mock, call
+from mock import patch, ANY, call
 from decimal import Decimal
 
 from django.test import TestCase, RequestFactory
@@ -270,9 +270,10 @@ class AdGroupSettingsTest(TestCase):
             }
         )
 
+    @patch.object(agency.AdGroupSettings, 'validate_all_rtb_campaign_stop', autospec=True)
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_redirector_insert_adgroup):
+    def test_put(self, mock_k1_ping, mock_redirector_insert_adgroup, mock_validate_all_rtb_campaign_stop):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -351,6 +352,7 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(new_settings.description, 'Example description')
             self.assertEqual(new_settings.call_to_action, 'Call to action')
 
+            mock_validate_all_rtb_campaign_stop.assert_called_with(ANY, ad_group, ANY, ANY, ANY)
             mock_redirector_insert_adgroup.assert_called_with(ad_group, ANY, ANY)
 
             hist = history_helpers.get_ad_group_history(ad_group).first()
@@ -847,6 +849,69 @@ class AdGroupSettingsTest(TestCase):
 
         settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
         view.validate_all_rtb_state(settings, new_settings)
+
+    @patch('automation.campaign_stop.get_max_settable_b1_sources_group_budget')
+    def test_validate_all_rtb_campaign_stop_daily_budget(self, mock_get_max_settable_budget):
+        view = agency.AdGroupSettings()
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_daily_budget = Decimal('100')
+
+        mock_get_max_settable_budget.return_value = None
+        view.validate_all_rtb_campaign_stop(
+            ad_group,
+            current_settings,
+            new_settings,
+            ad_group.campaign.get_current_settings()
+        )  # no exception should be raised
+
+        mock_get_max_settable_budget.return_value = Decimal('100')
+        view.validate_all_rtb_campaign_stop(
+            ad_group,
+            current_settings,
+            new_settings,
+            ad_group.campaign.get_current_settings()
+        )  # no exception should be raised
+
+        mock_get_max_settable_budget.return_value = Decimal('99')
+        with self.assertRaises(exc.ValidationError):
+            view.validate_all_rtb_campaign_stop(
+                ad_group,
+                current_settings,
+                new_settings,
+                ad_group.campaign.get_current_settings()
+            )
+
+    @patch('automation.campaign_stop.can_enable_b1_sources_group')
+    def test_validate_all_rtb_campaign_stop_state(self, mock_can_enable):
+        view = agency.AdGroupSettings()
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        current_settings = ad_group.get_current_settings().copy_settings()
+        current_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
+        current_settings.save(None)
+
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.ACTIVE
+
+        mock_can_enable.return_value = True
+        view.validate_all_rtb_campaign_stop(
+            ad_group,
+            current_settings,
+            new_settings,
+            ad_group.campaign.get_current_settings()
+        )  # no exception should be raised
+
+        mock_can_enable.return_value = False
+        with self.assertRaises(exc.ValidationError):
+            view.validate_all_rtb_campaign_stop(
+                ad_group,
+                current_settings,
+                new_settings,
+                ad_group.campaign.get_current_settings()
+            )
 
     def test_b1_sources_group_adjustments_sets_default_cpc_and_daily_budget(self):
         view = agency.AdGroupSettings()

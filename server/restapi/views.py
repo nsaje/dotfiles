@@ -1,6 +1,9 @@
 import collections
 import logging
 import influx
+from django.conf import settings
+import ipware.ip
+import time
 
 from django.db import transaction
 from django.db.models import Q
@@ -13,6 +16,7 @@ from rest_framework import serializers
 from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework import pagination
+from rest_framework import exceptions
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
@@ -68,11 +72,32 @@ class RESTAPIBaseView(APIView):
     renderer_classes = [RESTAPIJSONRenderer]
     permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission,)
 
-    def dispatch(self, request, *args, **kwargs):
+    def initialize_request(self, request, *args, **kwargs):
+        drf_request = super(RESTAPIBaseView, self).initialize_request(request, *args, **kwargs)
+        drf_request.method = request.method
+        drf_request.start_time = time.time()
+        return drf_request
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        drf_response = super(RESTAPIBaseView, self).finalize_response(request, response, *args, **kwargs)
         user = getattr(request, 'user', None)
         user_email = getattr(user, 'email', 'unknown')
-        with influx.block_timer('restapi.request', endpoint=self.__class__.__name__, method=request.method, user=user_email):
-            return super(RESTAPIBaseView, self).dispatch(request, *args, **kwargs)
+        influx.timing(
+            'restapi.request',
+            (time.time() - request.start_time),
+            endpoint=self.__class__.__name__,
+            method=request.method,
+            status=str(response.status_code),
+            user=user_email
+        )
+        logger.info('REST API request/response: endpoint={endpoint}, method={method}, status={status}, user={user}, ip={ip}'.format(
+            endpoint=self.__class__.__name__,
+            method=request.method,
+            status=str(response.status_code),
+            user=user_email,
+            ip=ipware.ip.get_ip(request)
+        ))
+        return drf_response
 
     @staticmethod
     def response_ok(data, errors=None, **kwargs):
@@ -787,6 +812,7 @@ class AdGroupSourcesRTBSerializer(serializers.Serializer):
     groupEnabled = serializers.BooleanField(source='b1_sources_group_enabled')
     dailyBudget = serializers.DecimalField(max_digits=10, decimal_places=2, source='b1_sources_group_daily_budget')
     state = DashConstantField(constants.AdGroupSourceSettingsState, source='b1_sources_group_state')
+    cpc = serializers.DecimalField(max_digits=10, decimal_places=4, source='b1_sources_group_cpc_cc')
 
     def update(self, data_internal, validated_data):
         request = validated_data['request']
@@ -991,6 +1017,8 @@ class ReportsViewDetails(RESTAPIBaseView):
 
     def get(self, request, job_id):
         job = restapi.models.ReportJob.objects.get(pk=job_id)
+        if job.user != request.user:
+            raise exceptions.PermissionDenied
         return self.response_ok(ReportJobSerializer(job).data)
 
 

@@ -18,14 +18,29 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($windo
         totals: true,
     };
 
-    $scope.grid = {
-        api: undefined,
+    $scope.config = {
         level: constants.level.ACCOUNTS,
         breakdown: constants.breakdown.CAMPAIGN,
         entityId: $state.params.id,
     };
 
+    $scope.grid = {
+        options: undefined,
+        api: undefined,
+    };
+
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
+
+    // HACK: Just to make binding with zem-chart-legacy work (it will be replaced in near future with zem-chart)
+    // (adding ng-if for permission makes binding stop working)
+    $scope._chartMetrics = {
+        metric1: constants.chartMetric.CLICKS,
+        metric2: constants.chartMetric.IMPRESSIONS
+    };
+    $scope.$watch('_chartMetrics', function (newValue, oldValue) {
+        $scope.chartMetric1 = $scope._chartMetrics.metric1;
+        $scope.chartMetric2 = $scope._chartMetrics.metric2;
+    }, true);
 
     $scope.updateSelectedCampaigns = function (campaignId) {
         campaignId = campaignId.toString();
@@ -169,6 +184,8 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($windo
 
     var dailyStatsPromise = undefined;
     var getDailyStats = function () {
+        if ($scope.hasPermission('zemauth.can_see_new_chart')) return;
+
         if (dailyStatsPromise) {
             dailyStatsPromise.abort();
         }
@@ -192,7 +209,7 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($windo
             convertedSelection.selectAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
         }
 
-        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.grid.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics());
+        dailyStatsPromise = api.dailyStats.list($scope.level, $state.params.id, $scope.config.breakdown, dateRange.startDate, dateRange.endDate, convertedSelection, $scope.selection.totals, getDailyStatsMetrics());
         dailyStatsPromise.then(
             function (data) {
                 refreshChartOptions(data.pixels);
@@ -225,6 +242,7 @@ angular.module('one.legacy').controller('AccountCampaignsCtrl', function ($windo
         if (chartMetrics) {
             $scope.chartMetric1 = chartMetrics.metric1;
             $scope.chartMetric2 = chartMetrics.metric2;
+            $scope._chartMetrics = chartMetrics;
         }
     }
 

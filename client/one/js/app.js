@@ -123,6 +123,11 @@ angular.module('one.legacy').config(function ($stateProvider) {
             templateUrl: '/partials/archived_entity.html',
             controller: 'ArchivedEntityCtrl'
         })
+        .state('main.campaigns.insights', {
+            url: '/insights',
+            templateUrl: '/partials/campaign_insights.html',
+            controller: 'CampaignInsightsCtrl',
+        })
         .state('main.campaigns.history', {
             url: '/history',
             templateUrl: '/partials/campaign_history.html',

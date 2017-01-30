@@ -1,3 +1,7 @@
+///////////////////////////
+// Dropdowns //
+///////////////////////////
+
 .button {
     &.select2-container {
         padding: 0px;
@@ -138,6 +142,61 @@
                 right: 8px;
                 top: 10px;
                 display: inline-block;
+            }
+        }
+    }
+}
+
+///////////////////////////
+// Tags //
+///////////////////////////
+
+tags-input .host .tags {
+    .form__input-tags();
+    margin-bottom: 0;
+
+    input {
+        border: 0;
+        outline: 0;
+        margin: 0 0 0 10px;
+        padding: 0;
+        height: 26px;
+        line-height: 26px;
+        box-shadow: none !important;
+    }
+
+    .tag-item {
+        background: none;
+        .input-tag__item();
+        border: none;
+        color: @text-color;
+        height: 26px;
+        line-height: inherit;
+        font: inherit;
+        position: relative;
+        padding-right: 25px;
+
+        .remove-button {
+            font-size: 0;
+            display: block;
+            width: 12px;
+            height: 12px;
+            background: url('images/remove-gray.svg') no-repeat center center;
+            position: absolute;
+            right: 5px;
+            top: 7px;
+
+            &:hover {
+                background-image: url('images/remove-red.svg');
+            }
+        }
+
+        &.selected {
+            background-color: @red;
+            color: @white;
+
+            .remove-button {
+                background-image: url('images/remove-white.svg');
             }
         }
     }

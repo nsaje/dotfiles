@@ -34,7 +34,7 @@ class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertTrue(mock_s3helper.called)
         mock_s3helper().put.assert_called_with(
-            "materialized_views/mvh_source/2016/07/03/view_asd.csv",
+            "materialized_views/mvh_source/2016/07/03/mvh_source_asd.csv",
             textwrap.dedent("""\
             1\tadblade\tadblade\r
             2\tadiant\tadiant\r
@@ -56,7 +56,7 @@ class MVHSourceTest(TestCase, backtosql.TestSQLMixin):
             CREDENTIALS %(credentials)s
             MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mvh_source/2016/07/03/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mvh_source/2016/07/03/mvh_source_asd.csv',
                 'delimiter': '\t',
             })
         ])
@@ -70,7 +70,7 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
 
     @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
     def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
-        mv = materialize_views.MVHelpersCampaignFactors('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
+        mv = materialize_views.MVHelpersCampaignFactors('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 2), account_id=None)
 
         mv.generate(campaign_factors={
             datetime.date(2016, 7, 1): {
@@ -85,7 +85,7 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertTrue(mock_s3helper.called)
         mock_s3helper().put.assert_called_with(
-            "materialized_views/mvh_campaign_factors/2016/07/03/view_asd.csv",
+            "materialized_views/mvh_campaign_factors/2016/07/02/mvh_campaign_factors_asd.csv",
             textwrap.dedent("""\
             2016-07-01\t1\t1.0\t0.2\t0.25\r
             2016-07-01\t2\t0.2\t0.2\t0.25\r
@@ -111,15 +111,33 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
             CREDENTIALS %(credentials)s
             MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mvh_campaign_factors/2016/07/03/view_asd.csv',
+                's3_url': ('s3://test_bucket/materialized_views/'
+                           'mvh_campaign_factors/2016/07/02/mvh_campaign_factors_asd.csv'),
                 'delimiter': '\t',
             })
         ])
 
     @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
+    def test_generate_checks_range_continuation(self, mock_s3helper, mock_transaction, mock_cursor):
+        mv = materialize_views.MVHelpersCampaignFactors('asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
+
+        with self.assertRaises(Exception):
+            mv.generate(campaign_factors={
+                datetime.date(2016, 7, 1): {
+                    models.Campaign.objects.get(pk=1): (1.0, 0.2, 0.25),
+                    models.Campaign.objects.get(pk=2): (0.2, 0.2, 0.25),
+                },
+                # missing for 2016-07-02
+                datetime.date(2016, 7, 3): {
+                    models.Campaign.objects.get(pk=1): (1.0, 0.3, 0.25),
+                    models.Campaign.objects.get(pk=2): (0.2, 0.3, 0.25),
+                },
+            })
+
+    @override_settings(S3_BUCKET_STATS='test_bucket', AWS_ACCESS_KEY_ID='bar', AWS_SECRET_ACCESS_KEY='foo')
     def test_generate_account_id(self, mock_s3helper, mock_transaction, mock_cursor):
         mv = materialize_views.MVHelpersCampaignFactors(
-            'asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
+            'asd', datetime.date(2016, 7, 1), datetime.date(2016, 7, 2), account_id=1)
 
         mv.generate(campaign_factors={
             datetime.date(2016, 7, 1): {
@@ -132,7 +150,7 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertTrue(mock_s3helper.called)
         mock_s3helper().put.assert_called_with(
-            "materialized_views/mvh_campaign_factors/2016/07/03/view_asd.csv",
+            "materialized_views/mvh_campaign_factors/2016/07/02/mvh_campaign_factors_asd.csv",
             textwrap.dedent("""\
             2016-07-01\t1\t1.0\t0.2\t0.25\r
             2016-07-02\t1\t1.0\t0.3\t0.25\r
@@ -156,7 +174,7 @@ class MVHCampaignFactorsTest(TestCase, backtosql.TestSQLMixin):
             CREDENTIALS %(credentials)s
             MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mvh_campaign_factors/2016/07/03/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mvh_campaign_factors/2016/07/02/mvh_campaign_factors_asd.csv',
                 'delimiter': '\t',
             })
         ])
@@ -176,7 +194,7 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
 
         self.assertTrue(mock_s3helper.called)
         mock_s3helper().put.assert_called_with(
-            "materialized_views/mvh_adgroup_structure/2016/07/03/view_asd.csv",
+            "materialized_views/mvh_adgroup_structure/2016/07/03/mvh_adgroup_structure_asd.csv",
             textwrap.dedent("""\
             1\t1\t1\t1\r
             1\t2\t2\t2\r
@@ -200,7 +218,8 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
             CREDENTIALS %(credentials)s
             MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mvh_adgroup_structure/2016/07/03/view_asd.csv',
+                's3_url': ('s3://test_bucket/materialized_views/'
+                           'mvh_adgroup_structure/2016/07/03/mvh_adgroup_structure_asd.csv'),
                 'delimiter': '\t',
             })
         ])
@@ -216,7 +235,7 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
 
         # only account_id=1 is used to generate CSV
         mock_s3helper().put.assert_called_with(
-            "materialized_views/mvh_adgroup_structure/2016/07/03/view_asd.csv",
+            "materialized_views/mvh_adgroup_structure/2016/07/03/mvh_adgroup_structure_asd.csv",
             textwrap.dedent("""\
             1\t1\t1\t1\r
             1\t1\t3\t3\r
@@ -239,7 +258,8 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
             CREDENTIALS %(credentials)s
             MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mvh_adgroup_structure/2016/07/03/view_asd.csv',
+                's3_url': ('s3://test_bucket/materialized_views/'
+                           'mvh_adgroup_structure/2016/07/03/mvh_adgroup_structure_asd.csv'),
                 'delimiter': '\t',
             })
         ])
@@ -609,7 +629,8 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                 CREDENTIALS %(credentials)s
                 MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/01/view_asd.csv',
+                's3_url': ('s3://test_bucket/materialized_views/'
+                           'mv_master/2016/07/01/mv_master_asd.csv'),
                 'delimiter': '\t'
             }),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 1)}),
@@ -621,7 +642,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/02/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/02/mv_master_asd.csv',
                 'delimiter': '\t'
             }),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
@@ -633,7 +654,7 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/03/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/03/mv_master_asd.csv',
                 'delimiter': '\t'
             }),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
@@ -841,7 +862,7 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
                 CREDENTIALS %(credentials)s
                 MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/01/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/01/mv_master_asd.csv',
                 'delimiter': '\t'
             }),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 1), 'account_id': account_id}),
@@ -853,7 +874,7 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2), 'ad_group_id': test_helper.ListMatcher([1, 3, 4])}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/02/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/02/mv_master_asd.csv',
                 'delimiter': '\t'
             }),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2), 'account_id': account_id}),
@@ -865,7 +886,7 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3), 'ad_group_id': test_helper.ListMatcher([1, 3, 4])}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/03/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mv_master/2016/07/03/mv_master_asd.csv',
                 'delimiter': '\t'
             }),
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3), 'account_id': account_id}),
@@ -950,7 +971,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                 CREDENTIALS %(credentials)s
                 MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/01/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/01/mv_conversions_asd.csv',
                 'delimiter': '\t'
             }),
             mock.call(
@@ -960,7 +981,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2)}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/02/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/02/mv_conversions_asd.csv',
                 'delimiter': '\t'
             }),
             mock.call(
@@ -970,7 +991,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3)}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/03/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/03/mv_conversions_asd.csv',
                 'delimiter': '\t'
             }),
         ])
@@ -1063,7 +1084,7 @@ class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
                 CREDENTIALS %(credentials)s
                 MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""), {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/01/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/01/mv_conversions_asd.csv',
                 'delimiter': '\t'
             }),
             mock.call(
@@ -1073,7 +1094,7 @@ class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 2), 'ad_group_id': test_helper.ListMatcher([1, 3, 4])}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/02/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/02/mv_conversions_asd.csv',
                 'delimiter': '\t'
             }),
             mock.call(
@@ -1083,7 +1104,7 @@ class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
             mock.call(mock.ANY, {'date': datetime.date(2016, 7, 3), 'ad_group_id': test_helper.ListMatcher([1, 3, 4])}),
             mock.call(mock.ANY, {
                 'credentials': 'aws_access_key_id=bar;aws_secret_access_key=foo',
-                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/03/view_asd.csv',
+                's3_url': 's3://test_bucket/materialized_views/mv_conversions/2016/07/03/mv_conversions_asd.csv',
                 'delimiter': '\t'
             }),
         ])

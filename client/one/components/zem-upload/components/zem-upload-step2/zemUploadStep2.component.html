@@ -1,81 +1,80 @@
 <div>
-    <div class="modal-body contentad-picker" ng-class="{editing: !!ctrl.editFormApi.selectedId}">
+    <div class="modal__body content-upload__contentad-picker" ng-class="{'content-upload__contentad-picker--editing': !!ctrl.editFormApi.selectedId}">
         <div class="clearfix"></div>
-        <div class="candidate-table custom-scroller">
-            <div class="batch-name form-group" ng-class="{'has-error': ctrl.saveErrors.batchName}" ng-if="!ctrl.isEdit">
-                <span>Batch name:</span>
-                <span class="title" ng-show="!ctrl.batchNameEdit">{{ ctrl.formData.batchName }}</span>
-                <input type="text" class="form-control" ng-show="ctrl.batchNameEdit" ng-model="ctrl.formData.batchName" id="batch-name-input" ng-focus="ctrl.clearBatchNameErrors()" />
-                <a href class="button button--small button--with-icon edit-icon" ng-click="ctrl.toggleBatchNameEdit($event)" ng-if="!ctrl.batchNameEdit">Edit batch name</a>
-                <a href class="button button--small button--with-icon check-icon" ng-click="ctrl.toggleBatchNameEdit($event)" ng-if="ctrl.batchNameEdit">Save</a>
-            </div>
-            <div class="batch-name form-group" ng-if="ctrl.isEdit">
-                <span class="title">You're editing:</span>
-            </div>
-            <table class="table">
-                <tr ng-repeat="candidate in ctrl.candidates" ng-class="{selected: candidate.id === ctrl.editFormApi.selectedId}" ng-click="ctrl.editFormApi.open(candidate)">
-                    <td class="status">
-                        <ng-switch on="ctrl.getStatus(candidate)">
-                            <img ng-switch-when="loading" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
-                            <img ng-switch-when="ok" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/checkmark.svg"/>
-                            <img ng-switch-when="errors" class="small-icon" ng-src="{{ ctrl.config.static_url }}/one/img/warning.svg"/>
-                        </ng-switch>
+        <div class="content-upload__batch-name-container" ng-if="!ctrl.isEdit">
+            <span class="content-upload__batch-name">Batch name:</span>
+            <span class="content-upload__batch-title" ng-show="!ctrl.batchNameEdit">{{ ctrl.formData.batchName }}</span>
+            <input class="form__input-text" type="text" ng-show="ctrl.batchNameEdit" ng-model="ctrl.formData.batchName"
+                   id="batch-name-input" ng-focus="ctrl.clearBatchNameErrors()" ng-class="{'form--error': ctrl.saveErrors.batchName}"/>
+            <a href class="button button--small button--with-icon edit-icon" ng-click="ctrl.toggleBatchNameEdit($event)"
+               ng-if="!ctrl.batchNameEdit">Edit batch name</a>
+            <a href class="button button--small button--with-icon check-icon" ng-click="ctrl.toggleBatchNameEdit($event)"
+               ng-if="ctrl.batchNameEdit">Save</a>
+        </div>
+        <div class="content-upload__batch-name-container" ng-if="ctrl.isEdit">
+            <span class="content-upload__batch-title">You're editing:</span>
+        </div>
+        <div class="content-upload__ads-container custom-scroller">
+            <table class="table content-upload__ads-table">
+                <tr ng-repeat="candidate in ctrl.candidates" ng-class="{'content-upload__selected-ad': candidate.id === ctrl.editFormApi.selectedId}" ng-click="ctrl.editFormApi.open(candidate)">
+                    <td class="content-upload__ad-status" ng-class="{
+                        'content-upload__ad-status--loading': ctrl.getStatus(candidate) === 'loading',
+                        'content-upload__ad-status--ok': ctrl.getStatus(candidate) === 'ok',
+                        'content-upload__ad-status--error': ctrl.getStatus(candidate) === 'errors'
+                    }">
                     </td>
-                    <td class="image">
-                        <img ng-if="candidate.hostedImageUrl" ng-src="{{candidate.hostedImageUrl}}" ng-if="candidate.imageUrl" />
+                    <td class="content-upload__ad-image-container">
+                        <img class="content-upload__ad-image" ng-if="candidate.hostedImageUrl || candidate.imageUrl" ng-src="{{candidate.hostedImageUrl}}" />
                     </td>
-                    <td class="title">
+                    <td class="content-upload__ad-title">
                         {{ candidate.title }}
                         <span ng-if="!candidate.title">Content ad title</span>
                     </td>
-                    <td class="link">
+                    <td class="content-upload__ad-link">
                         {{ candidate.url }}
                     </td>
-                    <td class="errors">
-                        <div ng-if="ctrl.getContentErrorsMsg(candidate)">
-                            <img ng-src="{{ ctrl.config.static_url }}/one/img/error-content.svg"/>
-                            <span class="error-text">{{ ctrl.getContentErrorsMsg(candidate) }}</span>
+                    <td>
+                        <div ng-if="ctrl.getContentErrorsMsg(candidate)" class="content-upload__ad-error content-upload__ad-error--content">
+                            {{ ctrl.getContentErrorsMsg(candidate) }}
                         </div>
-                        <div ng-if="ctrl.getImageErrorsMsg(candidate)">
-                            <img ng-src="{{ ctrl.config.static_url }}/one/img/error-image.svg"/>
-                            <span class="error-text">{{ ctrl.getImageErrorsMsg(candidate) }}</span>
+                        <div ng-if="ctrl.getImageErrorsMsg(candidate)" class="content-upload__ad-error content-upload__ad-error--image">
+                            {{ ctrl.getImageErrorsMsg(candidate) }}
                         </div>
                     </td>
-                    <td class="action">
-                        <img class="loader-icon small-icon" ng-if="candidate.removeRequestInProgress" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
-                        <a href ng-click="ctrl.editFormApi.open(candidate)" class="button button--with-icon edit-icon" ng-disabled="candidate.removeRequestInProgress">Edit</a>
-                        <a href ng-click="ctrl.removeCandidate(candidate, $event)" class="button button--with-icon remove-icon" ng-disabled="candidate.removeRequestInProgress" ng-if="!ctrl.isEdit">Remove</a>
-                        <div class="error" ng-if="candidate.removeRequestFailed">
+                    <td class="buttons-panel content-upload__ad-action-buttons">
+                        <div class="message message--error" ng-if="candidate.removeRequestFailed">
                             Something went wrong. Please try again.
                         </div>
+                        <div class="loader" ng-if="candidate.removeRequestInProgress"></div>
+                        <a href ng-click="ctrl.editFormApi.open(candidate)" class="button button--small button--with-icon edit-icon" ng-disabled="candidate.removeRequestInProgress">Edit</a>
+                        <a href ng-click="ctrl.removeCandidate(candidate, $event)" class="button button--small button--with-icon remove-icon" ng-disabled="candidate.removeRequestInProgress" ng-if="!ctrl.isEdit">Remove</a>
                     </td>
                 </tr>
             </table>
 
             <div class="buttons-panel">
-                <button type="button" class="button button--highlight button--with-icon add-icon" ng-click="ctrl.addCandidate()" ng-disabled="ctrl.addCandidateRequestInProgress" ng-if="!ctrl.isEdit">
+                <button type="button" class="button button--highlight button--with-icon add-icon"
+                    ng-click="ctrl.addCandidate()" ng-disabled="ctrl.addCandidateRequestInProgress" ng-if="!ctrl.isEdit">
                     Add new
                 </button>
-
                 <button type="button" class="button button--with-icon download-icon" ng-click="ctrl.download()">
                     Download Ads Snapshot
                 </button>
-
-                <span class="error" ng-if="ctrl.addCandidateRequestFailed">Something went wrong. Please try again.</span>
-                <img class="loader-icon small-icon" ng-if="ctrl.addCandidateRequestInProgress" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
+                <div class="loader" ng-if="ctrl.addCandidateRequestInProgress"></div>
+                <div class="message message--error" ng-if="ctrl.addCandidateRequestFailed">Something went wrong. Please try again.</div>
             </div>
         </div>
 
         <zem-upload-edit-form endpoint="ctrl.endpoint" api="ctrl.editFormApi" update-callback="ctrl.updateCandidateCallback" refresh-callback="ctrl.refreshCandidatesCallback" batch-id="ctrl.batchId" is-edit="ctrl.isEdit"></zem-upload-edit-form>
         <div class="clear"></div>
     </div>
-    <div class="modal-footer buttons-panel">
-        <button type="button" class="button button--outline" ng-click="ctrl.cancel()">Cancel</button>
-        <button type="button" class="button button--highlight button--with-icon check-icon pull-right" ng-click="ctrl.save()" ng-disabled="ctrl.isSaveDisabled()">
-            <span class="text" ng-if="!ctrl.isEdit">Upload</span>
-            <span class="text" ng-if="ctrl.isEdit">Save</span>
+    <div class="modal__footer buttons-panel">
+        <button type="button" class="button button--highlight button--with-icon check-icon" ng-click="ctrl.save()" ng-disabled="ctrl.isSaveDisabled()">
+            <span ng-if="!ctrl.isEdit">Upload</span>
+            <span ng-if="ctrl.isEdit">Save</span>
         </button>
-        <span class="error pull-right m-r" ng-if="ctrl.getSaveErrorMsg()">{{ ctrl.getSaveErrorMsg() }}</span>
-        <img class="loader-icon small-icon pull-right" ng-if="ctrl.isLoading()" ng-src="{{ ctrl.config.static_url }}/one/img/loader.svg"/>
+        <button type="button" class="button button--outline" ng-click="ctrl.cancel()">Cancel</button>
+        <div class="loader" ng-if="ctrl.isLoading()"></div>
+        <div class="message message--error" ng-if="ctrl.getSaveErrorMsg()">{{ ctrl.getSaveErrorMsg() }}</div>
     </div>
 </div>
