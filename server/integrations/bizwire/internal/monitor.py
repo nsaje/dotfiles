@@ -91,7 +91,7 @@ def monitor_num_ingested_articles():
 
     s3_count = len(unique_labels)
     db_count = len(content_ad_labels)
-    diff = set(unique_labels - content_ad_labels)
+    diff_count = len(set(unique_labels - content_ad_labels))
 
     influx.gauge('integrations.bizwire.article_count', s3_count, source='s3')
     influx.gauge('integrations.bizwire.article_count', db_count, source='db')
