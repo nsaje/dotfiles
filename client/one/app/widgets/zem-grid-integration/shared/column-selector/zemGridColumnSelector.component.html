@@ -1,35 +1,41 @@
 <span class="zem-grid-column-selector dropdown" uib-dropdown>
-    <a href class="button button--dropdown-toggle-icon" uib-dropdown-toggle title="Show/hide columns">Columns</a>
-    <div class="dropdown-menu dropdown-menu-right" uib-dropdown-menu ng-click="$event.stopPropagation()">
-        <div class="dropdown-menu__container custom-scroller">
-            <div class="dropdown-menu__category" ng-repeat="category in $ctrl.categories">
-                <div class="dropdown-menu__category-name">{{ category.name }}</div>
-                <div class="dropdown-menu__category-description" ng-if="category.description">{{ category.description }}</div>
-                <ul class="dropdown-menu__list dropdown-menu__list--two-columns" ng-if="category.columns.length">
-                    <li class="dropdown-menu__list-item" ng-repeat="column in category.columns"
-                        zem-lazy-popover-visible="{{ $ctrl.getTooltip(column) }}"
-                        zem-lazy-popover-text="{{ $ctrl.getTooltip(column) }}"
-                        zem-lazy-popover-placement="left"
-                        zem-lazy-popover-animation-class="fade"
-                        zem-lazy-popover-append-to-body="true"
-                        is-internal="{{column.data.internal}}">
-                        <input class="form__input-checkbox" ng-disabled="column.disabled" type="checkbox"
-                               ng-model="column.visible" ng-change="$ctrl.columnChecked(column)" id="{{column.data.field}}"/>
-                        <label class="form__checkbox-text" ng-class="{disabled: column.disabled}" for="{{column.data.field}}">{{ column.data.name }}</label>
-                    </li>
-                </ul>
-                <div ng-repeat="subcategory in category.subcategories" class="dropdown-menu__subcategory">
-                    <div class="dropdown-menu__subcategory-name">{{ subcategory.name }}</div>
-                    <ul ng-if="subcategory.type === 'condensed'" class="dropdown-menu__list dropdown-menu__list--condensed">
-                        <li class="dropdown-menu__list-item" ng-repeat="column in subcategory.columns">
-                            <input class="form__input-checkbox" type="checkbox" ng-model="column.visible"
-                                   ng-change="$ctrl.columnChecked(column)" id="{{column.data.field}}"/>
-                            <label class="form__checkbox-text" for="{{column.data.field}}">{{ column.data.shortName }}</label>
-                        </li>
-                    </ul>
+  <a href class="button button--dropdown-toggle-icon" uib-dropdown-toggle title="Show/hide columns">Columns</a>
+  <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu ng-click="$event.stopPropagation()">
+        <div class="list-wrapper custom-scroller">
+            <div ng-repeat="category in $ctrl.categories" class="row">
+                <div class="category-name col-xs-12"> <span>{{ category.name }}</span></div>
+                <div class="description col-xs-12" ng-if="category.description"><span>{{ category.description }}</span></div>
+                <li ng-repeat="column in category.columns" class="col-xs-6">
+                    <div class="checkbox"
+                         zem-lazy-popover-visible="{{ $ctrl.getTooltip(column) }}"
+                         zem-lazy-popover-text="{{ $ctrl.getTooltip(column) }}"
+                         zem-lazy-popover-placement="left"
+                         zem-lazy-popover-animation-class="fade"
+                         zem-lazy-popover-append-to-body="true">
+                        <label ng-class="{disabled: column.disabled}">
+                            <input ng-disabled="column.disabled" type="checkbox" ng-model="column.visible" ng-change="$ctrl.columnChecked(column)">
+                            <zem-internal-feature ng-if="column.data.internal"></zem-internal-feature>
+                            {{ column.data.name }}
+                        </label>
+                    </div>
+                </li>
+                <div ng-repeat="subcategory in category.subcategories" class="subcategory">
+                    <div ng-if="subcategory.type === 'condensed'" class="col-xs-6 condensed">
+                        <div class="sub-category-name row"><span>{{ subcategory.name }}</span></div>
+                        <div class="row">
+                            <li ng-repeat="column in subcategory.columns">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" ng-model="column.visible" ng-change="$ctrl.columnChecked(column)" />
+                                        {{ column.data.shortName }}
+                                    </label>
+                                </div>
+                            </li>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+  </ul>
 </span>
 

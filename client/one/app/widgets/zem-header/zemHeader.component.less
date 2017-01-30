@@ -4,7 +4,6 @@
     background-color: @primary-color;
     position: fixed;
     z-index: 999;
-    top: 0;
     width: 100%;
     transition: all @default-animation;
     transform: translateZ(0);
@@ -235,29 +234,10 @@
             color: @white !important;
             transition: all @default-animation;
 
-            &::before {
-                top: 10px;
-                transform: none;
-            }
-
             &:hover {
                 background-color: fade(@white, 50%);
                 border-left: 1px solid fade(@white,0%);
                 color: @white !important;
-            }
-
-            &.zem-header__filter-active {
-                background-color: @very-dark-gray;
-                height: 50px;
-                border-bottom-left-radius: 0px;
-                border-bottom-right-radius: 0px;
-                box-sizing: border-box;
-                padding-bottom: 10px;
-
-                &::before {
-                    top: 10px;
-                    transform: none;
-                }
             }
         }
 
@@ -541,15 +521,6 @@
 
                     &:hover {
                         background-color: fade(@white, 10%);
-                    }
-
-                    &::before {
-                        top: 50%;
-                        transform: translateY(-50%);
-                    }
-
-                    &.zem-header__filter-active {
-                        background-color: @very-dark-gray;
                     }
                 }
 

@@ -137,6 +137,7 @@
         padding-top: @filter-sections_padding-top;
         padding-left: @default-spacing;
         padding-right: @default-spacing;
+        border-top: @filter-sections_border-width solid lighten(@very-dark-gray, 5%);
     }
 
     .filter-sections__section {
@@ -172,16 +173,12 @@
         margin-bottom: @filter-sections__section-title_margin-bottom;
         line-height: @filter-sections__section-title_font-size;
         font-size: @filter-sections__section-title_font-size;
-        color: white;
+        color: @white;
     }
 
     .filter-sections__select-all-toggle {
         float: right;
         font-size: @default-font-size;
-    }
-
-    .filter-sections__select-all-toggle--select-none {
-        color: @light-gray;
     }
 
     .filter-sections__options-container {
@@ -196,99 +193,139 @@
         padding: 0;
     }
 
-    .filter-sections__option {
+    .filter-sections__option-label {
+        position: relative;
+        font-weight: normal;
+        color: @white;
         margin-bottom: 4px;
     }
 
-    .form__input-checkbox {
-        + .form__checkbox-text::before {
-            border: 1px solid lighten(@very-dark-gray, 20%);
-            background: @very-dark-gray;
-        }
+    .filter-sections__option-input {
+        position: absolute;
+        left: 0;
+        width: 25px;
+        margin: 0;
+    }
 
-        + .form__checkbox-text::after {
-            background: url('images/checkbox-orange.svg') no-repeat;
-        }
-
-        &:hover {
-            + .form__checkbox-text {
-                color: @primary-color;
-            }
-
-            + .form__checkbox-text::before {
-                border: 1px solid @primary-color;
-            }
-        }
-
+    .filter-sections__option-input--checkbox {
+        &:not(:checked),
         &:checked {
-            + .form__checkbox-text {
-                color: @primary-color;
-            }
-
-            + .form__checkbox-text::before,
-            &:hover + .form__checkbox-text::before {
-                border: 1px solid @primary-color;
-            }
+            position: absolute;
+            left: -9999px;
+        }
+        &:not(:checked) + span,
+        &:checked + span {
+            position: relative;
+            padding-left: 25px;
+            cursor: pointer;
+            color: @gray;
         }
 
-        &:disabled + .form__checkbox-text {
+        &:checked + span {
+            color: @white;
+        }
+
+        &:not(:checked) + span:before,
+        &:checked + span:before {
+            content: '';
+            position: absolute;
+            left:0;
+            top: 0;
+            width: 14px;
+            height: 14px;
+            border: 1px solid lighten(@very-dark-gray, 5%);
+            background: @very-dark-gray;
+            border-radius: @border-radius;
+        }
+        &:checked + span:before {
+            border: 1px solid @dark-gray;
+        }
+
+        &:checked + span:after {
+            background: url('images/check-orange.svg') no-repeat;
+            position: absolute;
+            content: " ";
+            top: -2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background-size: 16px;
+        }
+
+        &:disabled + span {
             color: @dark-gray;
+        }
+
+        &:hover + span:before {
+            border: 1px solid @dark-gray;
         }
     }
 
-    .form__input-radio {
-        + .form__radio-text::before {
-            border: 1px solid lighten(@very-dark-gray, 20%);
-            background: @very-dark-gray;
+    .filter-sections__option-input--radio {
+        top: 2px;
+
+        &:not(:checked),
+        &:checked {
+            position: absolute;
+            left: -9999px;
+        }
+        &:not(:checked) + span,
+        &:checked + span {
+            position: relative;
+            padding-left: 25px;
+            cursor: pointer;
+            color: @gray;
         }
 
-        + .form__radio-text::after {
+        &:checked + span {
+            color: @white;
+        }
+
+        &:not(:checked) + span:before,
+        &:checked + span:before {
+            content: '';
+            position: absolute;
+            left:0;
+            top: 0;
+            width: 14px;
+            height: 14px;
+            border: 1px solid lighten(@very-dark-gray, 5%);
+            background: @very-dark-gray;
+            border-radius: 50%;
+        }
+        &:checked + span:before {
+            border: 1px solid @dark-gray;
+        }
+
+        &:checked + span:after {
+            position: absolute;
+            display: block;
+            border-radius: 50%;
             background-color: @primary-color;
+            content: " ";
+            top: 3px;
+            left: 3px;
+            width: 8px;
+            height: 8px;
         }
 
-        &:hover {
-            + .form__radio-text {
-                color: @primary-color;
-            }
-
-            + .form__radio-text:before {
-                border: 1px solid @primary-color;
-            }
-        }
-
-        &:checked {
-            + .form__radio-text {
-                color: @primary-color;
-            }
-
-            + .form__radio-text::before,
-            &:hover + .form__radio-text::before {
-                border: 1px solid @primary-color;
-            }
-        }
-
-        &:disabled + .form__radio-text {
+        &:disabled + span {
             color: @dark-gray;
         }
-    }
 
-    .form__checkbox-text,
-    .form__radio-text {
-        color: @light-gray;
+        &:hover + span:before {
+            border: 1px solid @dark-gray;
+        }
     }
 
     .filter-sections__option-text {
         padding-left: 25px;
     }
 
-    .filter-sections__button-container {
+    .filter-sections__apply-filter {
         position: absolute;
         right: @default-spacing;
         bottom: 0;
-
-        .button {
-            margin: 0 0 0 10px;
-        }
     }
 
     // Transform visible sources list into multiple columns when other sections are hidden
@@ -372,10 +409,6 @@
 }
 
 .data-filter-enabled.filter-selector-expanded {
-    .filter-sections {
-        border-top: @filter-sections_border-width solid lighten(@very-dark-gray, 5%);
-    }
-
     .zem-filter-selector {
         height: @filter-sections_border-width +
                 @filter-sections_padding-top +

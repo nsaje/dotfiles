@@ -8,7 +8,6 @@ body, html {
     color: @text-color;
     background-color: @light-gray;
     min-width: @min-app-width;
-    height: 100%;
 }
 
 a,
@@ -154,7 +153,7 @@ h3 {
 }
 
 .button--plain {
-    border: 1px solid @input-border-color;
+    border: 1px solid @border-gray-color;
     line-height: (@default-button-input-height)-2;
     color: @text-color;
     background: white;
@@ -162,7 +161,7 @@ h3 {
 
     &:not(.button--disabled):not([disabled]):hover {
         background: white;
-        border: 1px solid darken(@input-border-color, 20%);
+        border: 1px solid darken(@border-gray-color, 20%);
         outline: none;
         box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
         color: @text-color;
@@ -580,6 +579,9 @@ h3 {
 ////////////////////////////
 
 .buttons-panel {
+    padding: @default-spacing;
+    background-color: tint(@secondary-color,90%);
+    box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
     text-align: left;
 
     .button {
@@ -669,7 +671,7 @@ h3 {
 
 .input-box() {
     background: white;
-    border: 1px solid @input-border-color;
+    border: 1px solid @border-gray-color;
     height: @default-button-input-height;
     line-height: 18px;
     padding: 5px 10px;
@@ -681,7 +683,7 @@ h3 {
     text-overflow: ellipsis;
 
     &:focus {
-        border: 1px solid darken(@input-border-color, 20%);
+        border: 1px solid darken(@border-gray-color, 20%);
         outline: none;
         box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
     }
@@ -718,7 +720,6 @@ h3 {
     width: 100%;
     margin-bottom: 5px;
     position: relative;
-    font-weight: 500;
 
     .internal-feature {
         left: -5px;
@@ -774,7 +775,7 @@ h3 {
 
     &:focus {
         padding-left: 9px;
-        border-left: 1px solid darken(@input-border-color, 20%);
+        border-left: 1px solid darken(@border-gray-color, 20%);
     }
 }
 
@@ -784,7 +785,7 @@ h3 {
     border-bottom-right-radius: 0;
 
     &:focus {
-        border-right: 1px solid darken(@input-border-color, 20%);
+        border-right: 1px solid darken(@border-gray-color, 20%);
     }
 }
 
@@ -870,168 +871,28 @@ h3 {
     text-overflow: clip;
 
     &:focus {
-        border: 1px dashed darken(@input-border-color, 20%);
+        border: 1px dashed darken(@border-gray-color, 20%);
     }
 }
 
-.form__input-checkbox {
-    position: absolute;
-    left: -9999px;
-
-    + .form__checkbox-text::before {
-        content: '';
-        position: absolute;
-        left:0;
-        top: 1px;
-        width: 14px;
-        height: 14px;
-        border: 1px solid darken(@input-border-color,10%);
-        background: white;
-        border-radius: @border-radius;
-        transition: all @default-animation;
-    }
-
-    + .form__checkbox-text::after {
-        background: url('images/checkbox-blue.svg') no-repeat;
-        position: absolute;
-        content: "";
-        display: block;
-        top: 8px;
-        left: 7px;
-        width: 0px;
-        height: 0px;
-        background-size: 0px;
-        transition: all @default-animation;
-    }
-
-    &:hover {
-        + .form__checkbox-text {
-            color: @secondary-color;
-        }
-
-        + .form__checkbox-text::before {
-            border: 1px solid @secondary-color;
-        }
-    }
-
-    &:checked {
-        + .form__checkbox-text {
-            color: @secondary-color;
-            font-weight: 500;
-        }
-
-        + .form__checkbox-text::before,
-        &:hover + .form__checkbox-text::before {
-            border: 1px solid @secondary-color;
-        }
-
-        + .form__checkbox-text::after {
-            top: 3px;
-            left: 2px;
-            width: 10px;
-            height: 10px;
-            background-size: 10px;
-        }
-    }
-
-    &:disabled {
-        + .form__checkbox-text {
-            color: @gray;
-        }
-
-        + .form__checkbox-text::before,
-        &:hover + .form__checkbox-text::before {
-            border: 1px solid @gray;
-        }
-
-        + .form__checkbox-text::after {
-            background: url('images/checkbox-gray.svg') no-repeat;
-        }
-    }
-}
-
+.form__input-checkbox,
 .form__input-radio {
-    position: absolute;
-    left: -9999px;
+    width: auto;
+    height: auto;
+    margin-top: 2px;
+    vertical-align: top;
+    cursor: pointer;
 
-    + .form__radio-text::before {
-        content: '';
-        position: absolute;
-        left:0;
-        top: 0;
-        width: 14px;
-        height: 14px;
-        border: 1px solid darken(@input-border-color,10%);
-        background: white;
-        border-radius: 50%;
-        transition: all @default-animation;
-    }
-
-    + .form__radio-text::after {
-        position: absolute;
-        display: block;
-        border-radius: 50%;
-        background-color: @secondary-color;
-        content: " ";
-        top: 7px;
-        left: 7px;
-        width: 0px;
-        height: 0px;
-        transition: all @default-animation;
-    }
-
-    &:hover {
-        + .form__radio-text {
-            color: @secondary-color;
-        }
-
-        + .form__radio-text:before {
-            border: 1px solid @secondary-color;
-        }
-    }
-
-    &:checked {
-        + .form__radio-text {
-            color: @secondary-color;
-            font-weight: 500;
-        }
-
-        + .form__radio-text::before,
-        &:hover + .form__radio-text::before {
-            border: 1px solid @secondary-color;
-        }
-
-        + .form__radio-text::after {
-            top: 3px;
-            left: 3px;
-            width: 8px;
-            height: 8px;
-        }
-    }
-
-    &:disabled {
-        + .form__radio-text {
-            color: @gray;
-        }
-
-        + .form__radio-text::before,
-        &:hover + .form__radio-text::before {
-            border: 1px solid @gray;
-        }
-
-        + .form__radio-text::after {
-            background-color: @gray;
-        }
+    &[type="checkbox"],
+    &[type="radio"] {
+        margin-top: 2px;
     }
 }
 
 .form__checkbox-text, .form__radio-text {
+    margin-left: 5px;
     margin-bottom: 0px;
     cursor: pointer;
-    overflow: visible;
-    position: relative;
-    padding-left: 20px;
-    font-weight: 400;
 
     .clearfix();
 }
@@ -1312,9 +1173,6 @@ h3 {
 .modal__footer {
     border-bottom-right-radius: @border-radius;
     border-bottom-left-radius: @border-radius;
-    padding: @default-spacing;
-    background-color: tint(@secondary-color,90%);
-    box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
 }
 
 ////////////////////////////
@@ -1481,7 +1339,6 @@ h3 {
 ////////////////////////////
 // Performance emoticons //
 ////////////////////////////
-
 .performance-emoticon {
     position: relative;
     display: inline-block;
@@ -1501,26 +1358,25 @@ h3 {
 
 .performance-emoticon--neutral {
     &::before {
-        background-image: url('images/emoticon-neutral-gray.svg');
+        background-image: url('img/neutral_face.svg'); // TODO: New icon
     }
 }
 
 .performance-emoticon--happy {
     &::before {
-        background-image: url('images/emoticon-happy-green.svg');
+        background-image: url('img/happy_face.svg'); // TODO: New icon
     }
 }
 
 .performance-emoticon--sad {
     &::before {
-        background-image: url('images/emoticon-sad-red.svg');
+        background-image: url('img/sad_face.svg'); // TODO: New icon
     }
 }
 
 ////////////////////////////
 // Switch //
 ////////////////////////////
-
 .switch-button {
     display: inline-block;
     vertical-align: middle;

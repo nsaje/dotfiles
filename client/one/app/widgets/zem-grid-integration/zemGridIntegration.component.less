@@ -1,148 +1,123 @@
 .export-select { min-width: 90px; }
 
 .zem-grid-integration {
-    .footnotes {
-        margin-top: 10px;
-        text-align: center;
-        font-size: 12px;
-        color: #737373;
-    }
-
-    .alert {
-        margin-bottom: 10px;
-    }
+  .footnotes {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #737373;
+  }
+  .alert {
+    margin-bottom: 10px;
+  }
 }
 
 .zem-grid-column-selector,
 .zem-grid-breakdown-selector {
-    zem-internal-feature {
-        left: -6px;
-        top: -1px;
+  .internal {
+    border-top: 7px solid @internal-color;
+    border-right: 7px solid transparent;
+    line-height: 5px;
+    margin-right: 3px;
+    vertical-align: bottom;
+  }
+
+  .dropdown-menu {
+    margin-top: 11px;
+    border: 1px solid @primary-color;
+    color: @primary-color;
+
+    width: 18em;
+
+    max-height: 400px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+
+    .checkbox {
+        margin: 3px 20px;
     }
 
-    .internal {
-        border: none;
-        line-height: 5px;
-        margin-right: 3px;
-        vertical-align: bottom;
+    .category-name {
+      color: grey;
+      margin-left: 8px;
+      font-weight: 500;
+      font-size: 16px;
+  	  position: relative;
     }
 
-    .dropdown-menu {
-        margin: 8px 0 20px 0;
-        padding: 0;
-        border: none;
-        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
-        width: 18em;
-        max-height: 400px;
-        overflow: hidden;
-        box-sizing: border-box;
+    .sub-category-name {
+      margin-left: 8px;
+      font-weight: 400;
+      font-size: 14px;
     }
+
+    .description {
+        margin-left: 8px;
+        font-size: 13px;
+        font-weight: 300;
+        color: @dark-gray;
+    }
+
+    .condensed {
+        li {
+            position: relative;
+            display: inline-block;
+            font-size: 12px;
+
+            input[type=checkbox] {
+                margin-top: 1px;
+            }
+
+            .checkbox {
+                margin-right: 0px;
+            }
+
+            &:not(:first-child) .checkbox {
+                margin-left: 15px;
+            }
+        }
+    }
+  }
 }
 
 .zem-grid-breakdown-selector .dropdown-menu {
-    .dropdown-menu__container {
-        max-height: 350px;
-        margin-bottom: 50px;
+    height: auto;
+    max-height: none;
+
+    overflow: hidden;
+    padding-bottom: 0px;
+
+    .list-wrapper {
+        overflow-x: hidden;
+        overflow-y: scroll;
+
+        height: auto;
+        max-height: 344px;
+
+        margin-bottom: 0px;
     }
 
-    .buttons-panel {
-        background-color: tint(@secondary-color,90%);
-        box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
-        padding: 10px @default-spacing;
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
+    button {
+        margin: 0px;
     }
 }
 
 .zem-grid-column-selector {
-    label.disabled {
-        color: #afafaf;
-        cursor: default;
-    }
-    .row {
-        margin: 0px;
-    }
-    .dropdown-menu {
-        width: 465px;
-    }
+  label.disabled {
+    color: #afafaf;
+    cursor: default;
+  }
+  .row {
+    margin: 0px;
+  }
+  .dropdown-menu {
+    width: 465px;
+  }
 
-    .category-name {
-        margin-top: 10px;
-        margin-left: 10px;
-    }
-}
-
-.dropdown-menu__container {
-    padding: 10px @default-spacing;
-    max-height: 400px;
-    overflow: auto;
-}
-
-.dropdown-menu__category {
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid @light-gray;
-
-    .clearfix();
-
-    &:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-        margin-bottom: 0;
-    }
-}
-
-.dropdown-menu__category-name {
-    color: @secondary-color;
-    font-weight: 500;
-    font-size: 16px;
-}
-
-.dropdown-menu__category-description {
-    color: @gray;
-}
-
-.dropdown-menu__subcategory {
-    width: 50%;
-    float: left;
-    margin-top: 5px;
-}
-
-.dropdown-menu__subcategory-name {
-    color: @secondary-color;
-    font-weight: 500;
-}
-
-.dropdown-menu__list {
-    margin: 5px 0 0 0;
-    padding: 0;
-
-    .clearfix();
-}
-
-.dropdown-menu__list--two-columns {
-    .dropdown-menu__list-item {
-        width: 50%;
-        float: left;
-    }
-}
-
-.dropdown-menu__list-item {
-    list-style: none;
-    margin: 0 0 5px 0;
-    padding: 0 10px 0 0;
-    position: relative;
-}
-
-.dropdown-menu__list--condensed {
-    .dropdown-menu__list-item {
-        width: auto;
-        float: left;
-        margin-bottom: 0;
-        padding-right: 15px;
-    }
+  .category-name {
+    margin-top: 10px;
+    margin-left: 10px;
+  }
 }
 
 zem-grid-export {

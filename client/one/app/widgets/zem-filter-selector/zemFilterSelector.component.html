@@ -17,9 +17,7 @@
     <div ng-repeat="section in $ctrl.visibleSections" is-internal="{{section.permissions[0]}}" class="filter-sections__section filter-sections__section--{{section.cssClass}}">
         <div class="filter-sections__section-title">
             {{section.title}}
-            <a ng-if="section.condition.type === 'list' && section.options.length > 1"
-               ng-click="$ctrl.toggleSelectAll(section)" class="filter-sections__select-all-toggle"
-               ng-class="{'filter-sections__select-all-toggle--select-none':section.allOptionsSelected}">
+            <a ng-if="section.condition.type === 'list' && section.options.length > 1" ng-click="$ctrl.toggleSelectAll(section)" class="filter-sections__select-all-toggle">
                 <span ng-if="!section.allOptionsSelected">Select all</span>
                 <span ng-if="section.allOptionsSelected">Select none</span>
             </a>
@@ -27,18 +25,14 @@
         <div class="filter-sections__options-container custom-scroller">
             <ul class="filter-sections__options-list">
                 <li ng-repeat="option in section.options" class="filter-sections__option">
-                    <span ng-switch="section.condition.type">
-                        <input ng-switch-when="list" class="form__input-checkbox" type="checkbox" name="{{section.condition.name}}" id="{{section.condition.name}}-{{option.value}}" ng-model="option.enabled">
-                        <label ng-switch-when="list" class="form__checkbox-text" for="{{section.condition.name}}-{{option.value}}">{{option.text}}</label>
-                        <input ng-switch-when="value" class="form__input-radio" type="radio" name="{{section.condition.name}}" id="{{section.condition.name}}-{{option.value}}" ng-model="section.value" ng-value="option.value">
-                        <label ng-switch-when="value" class="form__radio-text" for="{{section.condition.name}}-{{option.value}}">{{option.text}}</label>
-                    </span>
+                    <label ng-switch="section.condition.type" class="filter-sections__option-label">
+                        <input ng-switch-when="list" type="checkbox" name="section.condition.name" ng-model="option.enabled" class="filter-sections__option-input filter-sections__option-input--checkbox">
+                        <input ng-switch-when="value" type="radio" name="section.condition.name" ng-model="section.value" ng-value="option.value" class="filter-sections__option-input filter-sections__option-input--radio">
+                        <span class="filter-sections__option-text">{{option.text}}</span>
+                    </label>
                 </li>
             </ul>
         </div>
     </div>
-    <div class="buttons-panel filter-sections__button-container">
-        <button ng-click="$ctrl.closeFilter()" class="button button--dark-backgrounds">Close</button>
-        <button ng-click="$ctrl.applyFilter()" class="button button--highlight button--with-icon check-icon">Apply filter</button>
-    </div>
+    <button ng-click="$ctrl.applyFilter()" class="filter-sections__apply-filter button button--highlight button--with-icon check-icon">Apply filter</button>
 </div>
