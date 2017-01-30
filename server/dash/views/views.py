@@ -60,6 +60,9 @@ AGENCIES_WITHOUT_CAMPAIGN_STOP = {55}
 ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490}
 
 
+LANDING_MODE_PREVENT_UPDATE = ['daily_budget_cc', 'state']
+
+
 def create_name(objects, name):
     objects = objects.filter(name__regex=r'^{}( [0-9]+)?$'.format(name))
 
@@ -1077,6 +1080,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         if campaign_settings.landing_mode:
             for key in resource.keys():
+                if key not in LANDING_MODE_PREVENT_UPDATE:
+                    continue
                 errors.update({key: 'Not allowed'})
         elif campaign_settings.automatic_campaign_stop:
             if 'daily_budget_cc' in resource:

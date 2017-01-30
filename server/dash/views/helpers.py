@@ -723,7 +723,6 @@ def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, c
 
     if not ad_group_source.source.can_update_cpc() or\
             _is_end_date_past(ad_group_settings) or\
-            campaign_settings.landing_mode or\
             ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
         message = _get_bid_cpc_daily_budget_disabled_message(
             ad_group, ad_group_source, ad_group_settings, campaign_settings)

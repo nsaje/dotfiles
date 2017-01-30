@@ -694,7 +694,7 @@ def _get_minimum_remaining_budget(campaign, max_daily_budget):
 
 def _update_landing_campaign(campaign):
     """
-    Stops ad groups and sources that have no spend yesterday, prepares remaining for autopilot and runs it.
+    Stops ad groups and sources that have no spend yesterday and divide remaining budget between the rest
     """
     campaign_settings = campaign.get_current_settings()
     if _can_resume_campaign(campaign, campaign_settings):
@@ -717,7 +717,6 @@ def _update_landing_campaign(campaign):
         _wrap_up_landing(campaign)
         return
 
-    _persist_daily_caps(daily_caps)
     _set_end_date_to_today(campaign)
 
 
@@ -737,19 +736,6 @@ def _check_ad_groups_end_date(campaign):
                 unicode(ad_group) for ad_group in finished
             ))
         )
-
-
-def _persist_daily_caps(daily_caps):
-    adgroup_settings_list = dash.models.AdGroupSettings.objects.filter(
-        ad_group_id__in=daily_caps.keys()
-    ).group_current_settings()
-    for settings in adgroup_settings_list:
-        dcap = decimal.Decimal(daily_caps.get(settings.ad_group_id, DECIMAL_ZERO))
-        new_settings = settings.copy_settings()
-        new_settings.autopilot_state = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        new_settings.autopilot_daily_budget = dcap
-        new_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
-        new_settings.save(None)
 
 
 def _adjust_source_caps(campaign, daily_caps):
@@ -1005,8 +991,6 @@ def _restore_user_ad_group_settings(ad_group, pause_ad_group=False):
     new_settings = current_settings.copy_settings()
     new_settings.state = user_settings.state
     new_settings.end_date = user_settings.end_date
-    new_settings.autopilot_state = user_settings.autopilot_state
-    new_settings.autopilot_daily_budget = user_settings.autopilot_daily_budget
     new_settings.landing_mode = False
     new_settings.system_user = dash.constants.SystemUserType.CAMPAIGN_STOP
 

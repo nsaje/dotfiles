@@ -812,36 +812,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             'message': None
         })
 
-    def test_get_editable_fields_bid_cpc_landing_mode(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.end_date = None
-        ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-        campaign_settings = ad_group_source.ad_group.campaign.get_current_settings()
-
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
-
-        result = helpers._get_editable_fields_bid_cpc(
-            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings)
-
-        self.assertEqual(result, {
-            'enabled': True,
-            'message': None
-        })
-
-        new_campaign_settings = ad_group_source.ad_group.campaign.get_current_settings().copy_settings()
-        new_campaign_settings.landing_mode = True
-        new_campaign_settings.save(None)
-
-        result = helpers._get_editable_fields_bid_cpc(
-            ad_group_source.ad_group, ad_group_source, ad_group_settings, new_campaign_settings)
-
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'This value cannot be edited because campaign is in landing mode.'
-        })
-
     def test_get_editable_fields_bid_cpc_disabled(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 

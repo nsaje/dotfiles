@@ -235,6 +235,12 @@ def create_all_rtb_source_row(ad_group, ad_group_settings, show_rtb_group_cpc):
         state_edit_enabled = False
         state_edit_message = 'Please add additional budget to your campaign to make changes.'
 
+    daily_budget_edit_enabled = True
+    daily_budget_edit_message = None
+    if campaign_settings.landing_mode:
+        daily_budget_edit_enabled = False
+        daily_budget_edit_message = 'This value cannot be edited because campaign is in landing mode.'
+
     return {
         'breakdown_name': constants.SourceAllRTB.NAME,
         'breakdown_id': constants.SourceAllRTB.ID,
@@ -245,7 +251,7 @@ def create_all_rtb_source_row(ad_group, ad_group_settings, show_rtb_group_cpc):
         'notifications': notifications,
         'editable_fields': {
             'state': {'message': state_edit_message, 'enabled': state_edit_enabled},
-            'daily_budget': {'message': None, 'enabled': True},
+            'daily_budget': {'message': daily_budget_edit_message, 'enabled': daily_budget_edit_enabled},
             'bid_cpc': {'message': None, 'enabled': show_rtb_group_cpc},
         }
     }
