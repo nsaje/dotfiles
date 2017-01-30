@@ -27,7 +27,8 @@ logger = logging.getLogger(__name__)
 
 @influx.timer('automation.autopilot_plus.run_autopilot')
 def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
-                  send_mail=False, initialization=False, report_to_influx=False, dry_run=False):
+                  send_mail=False, initialization=False, report_to_influx=False, dry_run=False,
+                  daily_run=False):
     if not ad_groups:
         ad_groups_on_ap, ad_group_settings_on_ap = autopilot_helpers.get_active_ad_groups_on_autopilot()
     else:
@@ -39,11 +40,11 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
         return {}
     changes_data = {}
 
-    is_autopilot_job_run = not initialization and not ad_groups
     for adg_settings in ad_group_settings_on_ap:
         adg = adg_settings.ad_group
+        run_daily_budget_autopilot = adjust_budgets and (daily_run or not adg_settings.landing_mode)
         cpc_changes, budget_changes = _get_autopilot_predictions(
-            adjust_budgets, adjust_cpcs, adg, adg_settings, data[adg], campaign_goals.get(adg.campaign))
+            run_daily_budget_autopilot, adjust_cpcs, adg, adg_settings, data[adg], campaign_goals.get(adg.campaign))
         try:
             with transaction.atomic():
                 set_autopilot_changes(cpc_changes, budget_changes, dry_run=dry_run)
@@ -51,7 +52,7 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
                     persist_autopilot_changes_to_log(cpc_changes, budget_changes, data[adg],
                                                      adg_settings.autopilot_state,
                                                      campaign_goals.get(adg.campaign),
-                                                     is_autopilot_job_run=is_autopilot_job_run)
+                                                     is_autopilot_job_run=daily_run)
             changes_data = _get_autopilot_campaign_changes_data(
                 adg, changes_data, cpc_changes, budget_changes)
             if not dry_run:
