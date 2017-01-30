@@ -1083,7 +1083,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 new_daily_budget = decimal.Decimal(resource['daily_budget_cc'])
                 max_daily_budget = campaign_stop.get_max_settable_source_budget(
                     ad_group_source,
-                    new_daily_budget,
                     ad_group.campaign,
                     ad_group_source_settings,
                     ad_group_settings,

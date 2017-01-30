@@ -281,13 +281,13 @@ class SwitchToLandingModeTestCase(TestCase):
             self.assertEqual(in_30_days, current_ad_group_settings.end_date)
 
 
-class CanChangeDailyBudgetTestCase(TestCase):
+class GetMaxSettableSourceDailyBudgetTest(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
 
-    @patch('utils.dates_helper.local_today')
-    def test_get_max_settable_source_budget(self, mock_local_today):
-        mock_local_today.return_value = datetime.date(2016, 3, 15)
+    @patch('utils.dates_helper.utc_now')
+    def test_get_max_settable_source_budget(self, mock_utc_now):
+        mock_utc_now.return_value = datetime.datetime(2016, 3, 15, 12)
         ags1 = dash.models.AdGroupSource.objects.get(id=1)
         ags2 = dash.models.AdGroupSource.objects.get(id=2)
         ags3 = dash.models.AdGroupSource.objects.get(id=3)
@@ -296,7 +296,6 @@ class CanChangeDailyBudgetTestCase(TestCase):
             Decimal('485'),
             campaign_stop.get_max_settable_source_budget(
                 ags1,
-                Decimal('400'),
                 ags1.ad_group.campaign,
                 ags1.get_current_settings(),
                 ags1.ad_group.get_current_settings(),
@@ -307,7 +306,6 @@ class CanChangeDailyBudgetTestCase(TestCase):
             Decimal('485'),
             campaign_stop.get_max_settable_source_budget(
                 ags1,
-                Decimal('450'),
                 ags1.ad_group.campaign,
                 ags1.get_current_settings(),
                 ags1.ad_group.get_current_settings(),
@@ -318,7 +316,6 @@ class CanChangeDailyBudgetTestCase(TestCase):
             Decimal('460'),
             campaign_stop.get_max_settable_source_budget(
                 ags2,
-                Decimal('390'),
                 ags2.ad_group.campaign,
                 ags2.get_current_settings(),
                 ags2.ad_group.get_current_settings(),
@@ -329,7 +326,6 @@ class CanChangeDailyBudgetTestCase(TestCase):
             Decimal('460'),
             campaign_stop.get_max_settable_source_budget(
                 ags2,
-                Decimal('420'),
                 ags2.ad_group.campaign,
                 ags2.get_current_settings(),
                 ags2.ad_group.get_current_settings(),
@@ -337,10 +333,9 @@ class CanChangeDailyBudgetTestCase(TestCase):
             )
         )
         self.assertEqual(
-            Decimal('430'),
+            None,  # ad group not running
             campaign_stop.get_max_settable_source_budget(
                 ags3,
-                Decimal('350'),
                 ags3.ad_group.campaign,
                 ags3.get_current_settings(),
                 ags3.ad_group.get_current_settings(),
@@ -348,76 +343,17 @@ class CanChangeDailyBudgetTestCase(TestCase):
             )
         )
 
-    @patch('utils.dates_helper.local_today')
-    def test_no_budget_remaining_today(self, mock_local_today):
-        mock_local_today.return_value = datetime.date(2016, 4, 16)
+    @patch('utils.dates_helper.utc_now')
+    def test_no_budget_remaining_today(self, mock_utc_now):
+        mock_utc_now.return_value = datetime.datetime(2016, 4, 16, 12)
         ags1 = dash.models.AdGroupSource.objects.get(id=1)
         ags2 = dash.models.AdGroupSource.objects.get(id=2)
         ags3 = dash.models.AdGroupSource.objects.get(id=3)
-
-        self.assertEqual(
-            Decimal('0'),
-            campaign_stop.get_max_settable_source_budget(
-                ags1,
-                Decimal('60'),
-                ags1.ad_group.campaign,
-                ags1.get_current_settings(),
-                ags1.ad_group.get_current_settings(),
-                ags1.ad_group.campaign.get_current_settings(),
-            )
-        )
-        self.assertEqual(
-            Decimal('0'),
-            campaign_stop.get_max_settable_source_budget(
-                ags2,
-                Decimal('40'),
-                ags2.ad_group.campaign,
-                ags2.get_current_settings(),
-                ags2.ad_group.get_current_settings(),
-                ags2.ad_group.campaign.get_current_settings(),
-            )
-        )
-        self.assertEqual(
-            Decimal('0'),
-            campaign_stop.get_max_settable_source_budget(
-                ags3,
-                Decimal('10'),
-                ags3.ad_group.campaign,
-                ags3.get_current_settings(),
-                ags3.ad_group.get_current_settings(),
-                ags3.ad_group.campaign.get_current_settings(),
-            )
-        )
-
-    @patch('utils.dates_helper.local_today')
-    def test_max_daily_budgets_higher(self, mock_local_today):
-        today = datetime.date(2016, 4, 16)
-        mock_local_today.return_value = today
-        ags1 = dash.models.AdGroupSource.objects.get(id=1)
-        ags2 = dash.models.AdGroupSource.objects.get(id=2)
-        ags3 = dash.models.AdGroupSource.objects.get(id=3)
-
-        max_daily_budgets, max_daily_budget_group = campaign_stop._get_max_daily_budget_per_ags(
-            today, dash.models.Campaign.objects.get(id=1)
-        )
-        self.assertEqual({
-            1: Decimal('55.0000'),
-            2: Decimal('30.0000'),
-            3: 0,
-            4: Decimal('20.0000'),
-            5: Decimal('80.0000'),
-            7: 0,
-        }, max_daily_budgets)
-
-        self.assertEqual({
-            2: Decimal('50.0000'),
-        }, max_daily_budget_group)
 
         self.assertEqual(
             Decimal('55'),
             campaign_stop.get_max_settable_source_budget(
                 ags1,
-                Decimal('50'),
                 ags1.ad_group.campaign,
                 ags1.get_current_settings(),
                 ags1.ad_group.get_current_settings(),
@@ -428,7 +364,6 @@ class CanChangeDailyBudgetTestCase(TestCase):
             Decimal('30'),
             campaign_stop.get_max_settable_source_budget(
                 ags2,
-                Decimal('25'),
                 ags2.ad_group.campaign,
                 ags2.get_current_settings(),
                 ags2.ad_group.get_current_settings(),
@@ -436,10 +371,9 @@ class CanChangeDailyBudgetTestCase(TestCase):
             )
         )
         self.assertEqual(
-            Decimal('0'),
+            None,  # ad group not running
             campaign_stop.get_max_settable_source_budget(
                 ags3,
-                Decimal('0'),
                 ags3.ad_group.campaign,
                 ags3.get_current_settings(),
                 ags3.ad_group.get_current_settings(),
@@ -447,18 +381,17 @@ class CanChangeDailyBudgetTestCase(TestCase):
             )
         )
 
-    @patch('utils.dates_helper.local_today')
-    def test_no_budet_tomorrow(self, mock_local_today):
-        mock_local_today.return_value = datetime.date(2016, 3, 31)
+    @patch('utils.dates_helper.utc_now')
+    def test_no_budet_tomorrow(self, mock_utc_now):
+        mock_utc_now.return_value = datetime.datetime(2016, 3, 31, 12)
         ags1 = dash.models.AdGroupSource.objects.get(id=1)
         ags2 = dash.models.AdGroupSource.objects.get(id=2)
         ags3 = dash.models.AdGroupSource.objects.get(id=3)
 
         self.assertEqual(
-            Decimal('0'),
+            Decimal('55'),  # max budget today
             campaign_stop.get_max_settable_source_budget(
                 ags1,
-                Decimal('60'),
                 ags1.ad_group.campaign,
                 ags1.get_current_settings(),
                 ags1.ad_group.get_current_settings(),
@@ -466,10 +399,9 @@ class CanChangeDailyBudgetTestCase(TestCase):
             )
         )
         self.assertEqual(
-            Decimal('0'),
+            Decimal('30'),  # max budget today
             campaign_stop.get_max_settable_source_budget(
                 ags2,
-                Decimal('45'),
                 ags2.ad_group.campaign,
                 ags2.get_current_settings(),
                 ags2.ad_group.get_current_settings(),
@@ -477,10 +409,9 @@ class CanChangeDailyBudgetTestCase(TestCase):
             )
         )
         self.assertEqual(
-            Decimal('0'),
+            None,  # ad group not running
             campaign_stop.get_max_settable_source_budget(
                 ags3,
-                Decimal('30'),
                 ags3.ad_group.campaign,
                 ags3.get_current_settings(),
                 ags3.ad_group.get_current_settings(),
@@ -488,16 +419,53 @@ class CanChangeDailyBudgetTestCase(TestCase):
             )
         )
 
-    @patch('utils.dates_helper.local_today')
-    def test_ad_group_not_running(self, mock_local_today):
-        mock_local_today.return_value = datetime.date(2016, 3, 15)
+    @patch('utils.dates_helper.utc_now')
+    def test_no_budet_tomorrow_before_job_ran(self, mock_utc_now):
+        mock_utc_now.return_value = datetime.datetime(2016, 3, 31, 11)
+        ags1 = dash.models.AdGroupSource.objects.get(id=1)
+        ags2 = dash.models.AdGroupSource.objects.get(id=2)
+        ags3 = dash.models.AdGroupSource.objects.get(id=3)
+
+        self.assertEqual(
+            Decimal('720'),
+            campaign_stop.get_max_settable_source_budget(
+                ags1,
+                ags1.ad_group.campaign,
+                ags1.get_current_settings(),
+                ags1.ad_group.get_current_settings(),
+                ags1.ad_group.campaign.get_current_settings(),
+            )
+        )
+        self.assertEqual(
+            Decimal('695'),
+            campaign_stop.get_max_settable_source_budget(
+                ags2,
+                ags2.ad_group.campaign,
+                ags2.get_current_settings(),
+                ags2.ad_group.get_current_settings(),
+                ags2.ad_group.campaign.get_current_settings(),
+            )
+        )
+        self.assertEqual(
+            None,  # ad group not running
+            campaign_stop.get_max_settable_source_budget(
+                ags3,
+                ags3.ad_group.campaign,
+                ags3.get_current_settings(),
+                ags3.ad_group.get_current_settings(),
+                ags3.ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    @patch('utils.dates_helper.utc_now')
+    def test_ad_group_not_running(self, mock_utc_now):
+        mock_utc_now.return_value = datetime.datetime(2016, 3, 15, 12)
         ags7 = dash.models.AdGroupSource.objects.get(id=7)
 
         self.assertEqual(
-            Decimal('430'),
+            None,
             campaign_stop.get_max_settable_source_budget(
                 ags7,
-                Decimal('30'),
                 ags7.ad_group.campaign,
                 ags7.get_current_settings(),
                 ags7.ad_group.get_current_settings(),
@@ -505,16 +473,15 @@ class CanChangeDailyBudgetTestCase(TestCase):
             )
         )
 
-    @patch('utils.dates_helper.local_today')
-    def test_campaign_in_landing(self, mock_local_today):
-        mock_local_today.return_value = datetime.date(2016, 3, 15)
+    @patch('utils.dates_helper.utc_now')
+    def test_campaign_in_landing(self, mock_utc_now):
+        mock_utc_now.return_value = datetime.datetime(2016, 3, 15, 12)
         ags8 = dash.models.AdGroupSource.objects.get(id=8)
 
         self.assertEqual(
             0,
             campaign_stop.get_max_settable_source_budget(
                 ags8,
-                Decimal('100'),
                 ags8.ad_group.campaign,
                 ags8.get_current_settings(),
                 ags8.ad_group.get_current_settings(),
@@ -526,7 +493,6 @@ class CanChangeDailyBudgetTestCase(TestCase):
             0,
             campaign_stop.get_max_settable_source_budget(
                 ags8,
-                Decimal('0'),
                 ags8.ad_group.campaign,
                 ags8.get_current_settings(),
                 ags8.ad_group.get_current_settings(),
@@ -534,16 +500,15 @@ class CanChangeDailyBudgetTestCase(TestCase):
             )
         )
 
-    @patch('utils.dates_helper.local_today')
-    def test_automatic_campaign_stop_disabled(self, mock_local_today):
-        mock_local_today.return_value = datetime.date(2016, 3, 15)
+    @patch('utils.dates_helper.utc_now')
+    def test_automatic_campaign_stop_disabled(self, mock_utc_now):
+        mock_utc_now.return_value = datetime.datetime(2016, 3, 15, 12)
         ags1 = dash.models.AdGroupSource.objects.get(id=1)
 
         self.assertEqual(
             Decimal('485'),
             campaign_stop.get_max_settable_source_budget(
                 ags1,
-                Decimal('500'),
                 ags1.ad_group.campaign,
                 ags1.get_current_settings(),
                 ags1.ad_group.get_current_settings(),
@@ -559,11 +524,116 @@ class CanChangeDailyBudgetTestCase(TestCase):
             None,
             campaign_stop.get_max_settable_source_budget(
                 ags1,
-                Decimal('500'),
                 ags1.ad_group.campaign,
                 ags1.get_current_settings(),
                 ags1.ad_group.get_current_settings(),
                 ags1.ad_group.campaign.get_current_settings(),
+            )
+        )
+
+
+class GetMaxSettableB1SourcesGroupDailyBudgetTest(TestCase):
+
+    fixtures = ['test_campaign_stop.yaml', 'test_campaign_stop_b1_sources_group.yaml']
+
+    def setUp(self):
+        self.ad_group = dash.models.AdGroup.objects.get(id=222001)
+
+        utc_now_patcher = patch('utils.dates_helper.utc_now')
+        self.mock_utc_now = utc_now_patcher.start()
+        self.mock_utc_now.return_value = datetime.datetime(2017, 1, 1, 12, 5)  # campaign stop job already ran today
+        self.addCleanup(utc_now_patcher.stop)
+
+    def test_get_max_settable_b1_sources_group_daily_budget(self):
+        self.assertEqual(
+            Decimal('550'),
+            campaign_stop.get_max_settable_b1_sources_group_budget(
+                self.ad_group,
+                self.ad_group.campaign,
+                self.ad_group.get_current_settings(),
+                self.ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_no_remaining_budget_today(self, mock_get_mrb):
+        mock_get_mrb.return_value = Decimal(0), Decimal(1000), Decimal(0)
+        self.assertEqual(
+            Decimal('300'),  # allow changing to max already set today
+            campaign_stop.get_max_settable_b1_sources_group_budget(
+                self.ad_group,
+                self.ad_group.campaign,
+                self.ad_group.get_current_settings(),
+                self.ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_no_budget_tomorrow(self, mock_get_mrb):
+        mock_get_mrb.return_value = Decimal(1000), Decimal(0), Decimal(0)
+        self.assertEqual(
+            Decimal('300'),
+            campaign_stop.get_max_settable_b1_sources_group_budget(
+                self.ad_group,
+                self.ad_group.campaign,
+                self.ad_group.get_current_settings(),
+                self.ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    @patch('automation.campaign_stop._get_minimum_remaining_budget')
+    def test_no_budget_tomorrow_before_job_ran(self, mock_get_mrb):
+        self.mock_utc_now.return_value = datetime.datetime(2017, 1, 1, 11)
+        mock_get_mrb.return_value = Decimal(1000), Decimal(0), Decimal(0)
+        self.assertEqual(
+            Decimal('1300'),  # remaining + max today
+            campaign_stop.get_max_settable_b1_sources_group_budget(
+                self.ad_group,
+                self.ad_group.campaign,
+                self.ad_group.get_current_settings(),
+                self.ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    def test_ad_group_not_running(self):
+        ad_group = dash.models.AdGroup.objects.get(id=222002)
+        self.assertEqual(
+            None,
+            campaign_stop.get_max_settable_b1_sources_group_budget(
+                ad_group,
+                ad_group.campaign,
+                ad_group.get_current_settings(),
+                ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    def test_automatic_campaign_stop_disabled(self):
+        campaign_settings = self.ad_group.campaign.get_current_settings()
+        campaign_settings.automatic_campaign_stop = False
+        campaign_settings.save(None)
+
+        self.assertEqual(
+            None,
+            campaign_stop.get_max_settable_b1_sources_group_budget(
+                self.ad_group,
+                self.ad_group.campaign,
+                self.ad_group.get_current_settings(),
+                self.ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    def test_campaign_in_landing(self):
+        campaign_settings = self.ad_group.campaign.get_current_settings()
+        campaign_settings.landing_mode = True
+        campaign_settings.save(None)
+
+        self.assertEqual(
+            0,
+            campaign_stop.get_max_settable_b1_sources_group_budget(
+                self.ad_group,
+                self.ad_group.campaign,
+                self.ad_group.get_current_settings(),
+                self.ad_group.campaign.get_current_settings(),
             )
         )
 

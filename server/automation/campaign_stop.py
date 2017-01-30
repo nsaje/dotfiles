@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 NON_SPENDING_SOURCE_THRESHOLD_DOLLARS = decimal.Decimal('1')
 DECIMAL_ZERO = decimal.Decimal(0)
+JOB_HOUR_UTC = 12
 
 
 def run_job():
@@ -169,7 +170,7 @@ def is_current_time_valid_for_amount_editing(campaign):
     ]
 
     any_source_after_midnight = any(dt.date() >= utc_today for dt in current_times)
-    return not (utc_now.hour < 12 and any_source_after_midnight)
+    return not (utc_now.hour < JOB_HOUR_UTC and any_source_after_midnight)
 
 
 def update_campaigns_in_landing(campaigns, pagerduty_on_fail=True):
@@ -341,35 +342,107 @@ def can_enable_all_media_sources(campaign, campaign_settings, ad_group_sources, 
     )
 
 
-def get_max_settable_source_budget(ad_group_source, new_daily_budget, campaign,
-                                   ad_group_source_settings, ad_group_settings, campaign_settings):
+def get_max_settable_source_budget(
+        ad_group_source,
+        campaign,
+        ad_group_source_settings,
+        ad_group_settings,
+        campaign_settings
+):
+
+    if _is_ags_always_in_budget_group(ad_group_source, [ad_group_settings]):
+        return None
+
     if not campaign_settings.automatic_campaign_stop:
         return None
 
     if campaign_settings.landing_mode:
         return DECIMAL_ZERO
 
-    if _is_ags_always_in_budget_group(ad_group_source, [ad_group_settings]):
+    if ad_group_settings.state == dash.constants.AdGroupSettingsState.INACTIVE:
+        return None
+
+    if ad_group_source_settings.state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
         return None
 
     today = dates_helper.local_today()
     max_daily_budget_per_ags, max_group_daily_budget_per_ag = _get_max_daily_budget_per_ags(today, campaign)
-    remaining_today, available_tomorrow, _ = _get_minimum_remaining_budget(
-        campaign, _sum_daily_budget(max_daily_budget_per_ags, max_group_daily_budget_per_ag))
-
+    user_daily_budget_per_ags, user_group_daily_budget_per_ag = _get_user_daily_budget_per_ags(today, campaign)
     max_ags_daily_budget = max_daily_budget_per_ags.get(ad_group_source.id, DECIMAL_ZERO)
-    if new_daily_budget <= max_ags_daily_budget:
-        return max_ags_daily_budget
+    user_ags_daily_budget = user_daily_budget_per_ags.get(ad_group_source.id, DECIMAL_ZERO)
+    return _get_max_settable_daily_budget(
+        campaign,
+        max_ags_daily_budget,
+        user_ags_daily_budget,
+        max_daily_budget_per_ags,
+        user_daily_budget_per_ags,
+        max_group_daily_budget_per_ag,
+        user_group_daily_budget_per_ag,
+    )
 
-    ags_max_daily_budget = max_daily_budget_per_ags.get(ad_group_source.id, DECIMAL_ZERO)
-    other_sources_max_sum = _sum_daily_budget(max_daily_budget_per_ags, max_group_daily_budget_per_ag) - ags_max_daily_budget
 
-    max_today = decimal.Decimal(ags_max_daily_budget + remaining_today)\
+def get_max_settable_b1_sources_group_budget(
+        ad_group,
+        campaign,
+        ad_group_settings,
+        campaign_settings
+):
+    if not campaign_settings.automatic_campaign_stop:
+        return None
+
+    if campaign_settings.landing_mode:
+        return DECIMAL_ZERO
+
+    if ad_group_settings.state == dash.constants.AdGroupSettingsState.INACTIVE:
+        return None
+
+    if ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.INACTIVE:
+        return None
+
+    today = dates_helper.local_today()
+    max_daily_budget_per_ags, max_group_daily_budget_per_ag = _get_max_daily_budget_per_ags(today, campaign)
+    user_daily_budget_per_ags, user_group_daily_budget_per_ag = _get_user_daily_budget_per_ags(today, campaign)
+    max_group_daily_budget = max_group_daily_budget_per_ag.get(ad_group.id, DECIMAL_ZERO)
+    user_group_daily_budget = user_group_daily_budget_per_ag.get(ad_group.id, DECIMAL_ZERO)
+    return _get_max_settable_daily_budget(
+        campaign,
+        max_group_daily_budget,
+        user_group_daily_budget,
+        max_daily_budget_per_ags,
+        user_daily_budget_per_ags,
+        max_group_daily_budget_per_ag,
+        user_group_daily_budget_per_ag,
+    )
+
+
+def _get_max_settable_daily_budget(campaign,
+                                   max_budget_today,
+                                   user_budget_today,
+                                   max_daily_budget_per_ags,
+                                   user_daily_budget_per_ags,
+                                   max_group_daily_budget_per_ag,
+                                   user_group_daily_budget_per_ag):
+    remaining_today, available_tomorrow, _ = _get_minimum_remaining_budget(
+        campaign,
+        _sum_daily_budget(max_daily_budget_per_ags,
+                          max_group_daily_budget_per_ag)
+    )
+
+    utc_now = dates_helper.utc_now()
+    max_today = decimal.Decimal(max_budget_today + remaining_today)\
                        .to_integral_exact(rounding=decimal.ROUND_CEILING)
-    max_tomorrow = decimal.Decimal(available_tomorrow - other_sources_max_sum)\
-                          .to_integral_exact(rounding=decimal.ROUND_CEILING)
+    if utc_now.hour < JOB_HOUR_UTC:
+        # NOTE: if there wont' be enough budget for tomorrow, landing mode
+        # should trigger when job runs
+        return max(max_today, max_budget_today)
 
-    return max(min(max_today, max_tomorrow), DECIMAL_ZERO)
+    other_sources_user_sum = _sum_daily_budget(
+        user_daily_budget_per_ags,
+        user_group_daily_budget_per_ag,
+    ) - user_budget_today
+    max_tomorrow = decimal.Decimal(available_tomorrow - other_sources_user_sum)\
+                          .to_integral_exact(rounding=decimal.ROUND_CEILING)
+    return max(min(max_today, max_tomorrow), max_budget_today)
 
 
 def _can_enable_media_sources(ad_group_sources, campaign):

@@ -1,6 +1,7 @@
 import json
 import re
 import logging
+import decimal
 
 from django.db import transaction
 from django.db.models import Prefetch
@@ -9,7 +10,7 @@ from django.conf import settings
 from django.contrib.auth import models as authmodels
 from django.http import Http404
 
-from automation import autopilot_budgets, autopilot_plus
+from automation import autopilot_budgets, autopilot_plus, campaign_stop
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -97,14 +98,16 @@ class AdGroupSettings(api_common.BaseApiView):
             request.user
         )
 
+        campaign_settings = ad_group.campaign.get_current_settings()
+
         self.validate_all_rtb_state(current_settings, new_settings)
         self.validate_yahoo_desktop_targeting(ad_group, current_settings, new_settings)
+        self.validate_all_rtb_campaign_stop(ad_group, current_settings, new_settings, campaign_settings)
 
         # update ad group name
         current_settings.ad_group_name = previous_ad_group_name
         new_settings.ad_group_name = ad_group.name
 
-        campaign_settings = ad_group.campaign.get_current_settings()
         changes = current_settings.get_setting_changes(new_settings)
         changes, current_settings, new_settings = self.b1_sources_group_adjustments(
             changes, current_settings, new_settings)
@@ -168,6 +171,26 @@ class AdGroupSettings(api_common.BaseApiView):
             if not new_all_rtb_enabled:
                 'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
             raise exc.ValidationError(errors={'autopilot_state': [msg]})
+
+    def validate_all_rtb_campaign_stop(self, ad_group, current_settings, new_settings, campaign_settings):
+        changes = current_settings.get_setting_changes(new_settings)
+        if 'b1_sources_group_daily_budget' in changes:
+            new_daily_budget = decimal.Decimal(changes['b1_sources_group_daily_budget'])
+            max_daily_budget = campaign_stop.get_max_settable_b1_sources_group_budget(
+                ad_group,
+                ad_group.campaign,
+                new_settings,
+                campaign_settings,
+            )
+            if max_daily_budget is not None and new_daily_budget > max_daily_budget:
+                raise exc.ValidationError(errors={
+                        'daily_budget_cc': [
+                            'Daily Spend Cap is too high. Maximum daily spend '
+                            'cap can be up to ${max_daily_budget}.'.format(
+                                max_daily_budget=max_daily_budget
+                            )
+                        ]
+                })
 
     def b1_sources_group_adjustments(self, changes, current_settings, new_settings):
         # Turning on RTB-as-one
