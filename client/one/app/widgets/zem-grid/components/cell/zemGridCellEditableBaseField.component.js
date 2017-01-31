@@ -73,6 +73,10 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
                     return false;
                 }
 
+                if (vm.column.field === zemGridEndpointColumns.COLUMNS.bidCpcSetting.field) {
+                    return false;
+                }
+
                 if (!vm.grid.meta.data.adGroupLandingMode) {
                     return false;
                 }
