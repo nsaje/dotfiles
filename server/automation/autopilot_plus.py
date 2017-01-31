@@ -181,14 +181,12 @@ def prefetch_autopilot_data(ad_groups):
     enabled_ag_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups)
     sources = [s.ad_group_source.source.id for s in enabled_ag_sources_settings]
     yesterday_data, days_ago_data, conv_days_ago_data, campaign_goals, conv_goals = _fetch_data(ad_groups, sources)
-    data = {}
+    data = {adg: {} for adg in ad_groups}
     for source_setting in enabled_ag_sources_settings:
         ag_source = source_setting.ad_group_source
         adg = ag_source.ad_group
         row, yesterdays_spend_cc, yesterdays_clicks = _find_corresponding_source_data(
             ag_source, days_ago_data, yesterday_data)
-        if adg not in data:
-            data[adg] = {}
         data[adg][ag_source] = _populate_prefetch_adgroup_source_data(ag_source, source_setting,
                                                                       yesterdays_spend_cc, yesterdays_clicks)
         campaign_goal = campaign_goals.get(adg.campaign)
