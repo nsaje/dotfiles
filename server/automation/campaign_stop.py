@@ -1443,7 +1443,11 @@ def _get_b1_group_max_daily_budget(date, ad_group_settings, ad_group_sources_set
     if not running_sources:
         return DECIMAL_ZERO
 
-    return max(s.b1_sources_group_daily_budget for s in ad_group_settings)
+    if not any(s.state == dash.constants.AdGroupSettingsState.ACTIVE for s in ad_group_settings):
+        return DECIMAL_ZERO
+
+    return max(s.b1_sources_group_daily_budget for s in ad_group_settings
+               if s.state == dash.constants.AdGroupSettingsState.ACTIVE)
 
 
 def _get_effective_daily_budget(date, ad_group_source, ag_settings, ags_settings):
