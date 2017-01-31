@@ -184,7 +184,7 @@ def prefetch_autopilot_data(ad_groups):
     enabled_ag_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups)
     sources = [s.ad_group_source.source.id for s in enabled_ag_sources_settings]
     yesterday_data, days_ago_data, conv_days_ago_data, campaign_goals, conv_goals = _fetch_data(ad_groups, sources)
-    data = {adg: {} for adg in ad_groups}
+    data = {}
     for source_setting in enabled_ag_sources_settings:
         ag_source = source_setting.ad_group_source
         adg = ag_source.ad_group
