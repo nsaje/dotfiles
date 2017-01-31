@@ -78,7 +78,7 @@ def monitor_num_ingested_articles():
     now = dates_helper.utc_now()
     dates = []
     current_date = START_DATE
-    while current_date < now.date():
+    while current_date <= now.date():
         dates.append(current_date)
         current_date += datetime.timedelta(days=1)
     unique_labels = _get_unique_s3_labels(dates)
