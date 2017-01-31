@@ -3,8 +3,8 @@ from dash import stats_helper
 from collections import defaultdict
 
 CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10
-MIN_WORST_PERFORMER_CLICKS = 10
-MIN_BEST_PERFORMER_CLICKS = 30
+MIN_WORST_PERFORMER_CLICKS = 20
+MIN_BEST_PERFORMER_CLICKS = 20
 
 
 def fetch_campaign_content_ad_metrics(user, campaign, start_date, end_date):
