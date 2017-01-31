@@ -421,6 +421,11 @@ class Account(models.Model):
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
                                     related_name='+', on_delete=models.PROTECT)
 
+    default_whitelist = models.ForeignKey('PublisherGroup', related_name='whitelisted_accounts',
+                                          on_delete=models.PROTECT, null=True)
+    default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_accounts',
+                                          on_delete=models.PROTECT, null=True)
+
     objects = QuerySetManager()
     allowed_sources = models.ManyToManyField('Source')
 
@@ -633,6 +638,11 @@ class Campaign(models.Model, PermissionMixin):
         auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True)
+
+    default_whitelist = models.ForeignKey('PublisherGroup', related_name='whitelisted_campaigns',
+                                          on_delete=models.PROTECT, null=True)
+    default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_campaigns',
+                                          on_delete=models.PROTECT, null=True)
 
     USERS_FIELD = 'users'
 
@@ -913,6 +923,8 @@ class AccountSettings(SettingsBase):
         'default_account_manager',
         'default_sales_representative',
         'account_type',
+        'whitelist_publisher_groups',
+        'blacklist_publisher_groups',
     ]
     history_fields = list(_settings_fields)
 
@@ -941,6 +953,10 @@ class AccountSettings(SettingsBase):
         default=constants.AccountType.UNKNOWN,
         choices=constants.AccountType.get_choices()
     )
+
+    whitelist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
+    blacklist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
+
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(
@@ -958,6 +974,8 @@ class AccountSettings(SettingsBase):
             'default_account_manager': 'Account Manager',
             'default_sales_representative': 'Sales Representative',
             'account_type': 'Account Type',
+            'whitelist_publisher_groups': 'Whitelist publisher groups',
+            'blacklist_publisher_groups': 'Blacklist publisher groups',
         }
         return NAMES[prop_name]
 
@@ -971,6 +989,12 @@ class AccountSettings(SettingsBase):
         elif prop_name == 'default_sales_representative':
             value = views.helpers.get_user_full_name_or_email(
                 value).decode('utf-8')
+        elif prop_name in ('whitelist_publisher_groups', 'blacklist_publisher_groups'):
+            if not value:
+                value = ''
+            else:
+                names = PublisherGroup.objects.filter(pk__in=value).values_list('name', flat=True)
+                value = ', '.join(names)
         elif prop_name == 'account_type':
             value = constants.AccountType.get_text(value)
         return value
@@ -1033,6 +1057,8 @@ class CampaignSettings(SettingsBase):
         'ga_property_id',
         'enable_adobe_tracking',
         'adobe_tracking_param',
+        'whitelist_publisher_groups',
+        'blacklist_publisher_groups',
     ]
     history_fields = list(_settings_fields)
 
@@ -1078,6 +1104,8 @@ class CampaignSettings(SettingsBase):
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
+    whitelist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
+    blacklist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
 
     automatic_campaign_stop = models.BooleanField(default=True)
     landing_mode = models.BooleanField(default=False)
@@ -1162,6 +1190,8 @@ class CampaignSettings(SettingsBase):
             'ga_property_id': 'GA web property ID',
             'enable_adobe_tracking': 'Enable Adobe tracking',
             'adobe_tracking_param': 'Adobe tracking parameter',
+            'whitelist_publisher_groups': 'Whitelist publisher groups',
+            'blacklist_publisher_groups': 'Blacklist publisher groups',
         }
 
         return NAMES[prop_name]
@@ -1194,6 +1224,12 @@ class CampaignSettings(SettingsBase):
             value = str(value)
         elif prop_name == 'ga_tracking_type':
             value = constants.GATrackingType.get_text(value)
+        elif prop_name in ('whitelist_publisher_groups', 'blacklist_publisher_groups'):
+            if not value:
+                value = ''
+            else:
+                names = PublisherGroup.objects.filter(pk__in=value).values_list('name', flat=True)
+                value = ', '.join(names)
 
         return value
 
@@ -1695,6 +1731,11 @@ class AdGroup(models.Model):
         auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+
+    default_whitelist = models.ForeignKey('PublisherGroup', related_name='whitelisted_ad_groups',
+                                          on_delete=models.PROTECT, null=True)
+    default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_ad_groups',
+                                          on_delete=models.PROTECT, null=True)
 
     objects = QuerySetManager()
 
@@ -4462,6 +4503,7 @@ class PublisherGroupEntry(models.Model):
 
     publisher = models.CharField(max_length=127, blank=False, null=False, verbose_name='Publisher name or domain')
     source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
+    include_subdomains = models.BooleanField(default=True)
 
     outbrain_publisher_id = models.CharField(max_length=127, blank=True, verbose_name='Special Outbrain publisher ID')
 
