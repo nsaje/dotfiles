@@ -28,6 +28,7 @@ angular.module('one.widgets').factory('zemGridSelectionService', function (zemGr
         this.isFilterSelectionEnabled = isFilterSelectionEnabled;
         this.isRowSelectionEnabled = isRowSelectionEnabled;
         this.isRowSelectable = isRowSelectable;
+        this.isSelectionEmpty = isSelectionEmpty;
 
         this.isRowSelected = isRowSelected;
         this.setRowSelection = setRowSelection;
@@ -123,7 +124,14 @@ angular.module('one.widgets').factory('zemGridSelectionService', function (zemGr
 
         function isRowSelectable (row) {
             if (!isRowSelectionEnabled(row)) return false;
-            if (isRowSelected(row)) return true;
+
+            if (isRowSelected(row)) {
+                // Prevent un-selection of footer row if it's the only row selected
+                if (row.level === zemGridConstants.gridRowLevel.FOOTER && isSelectionEmpty()) {
+                    return false;
+                }
+                return true;
+            }
 
             var config = getConfig();
             if (config.callbacks && config.callbacks.isRowSelectable) {
@@ -163,6 +171,15 @@ angular.module('one.widgets').factory('zemGridSelectionService', function (zemGr
             if (isRowSelectionEnabled(row) && !isRowSelectable(row)) return config.info.disabledRow;
             // TODO: extend functionality for other row states
             return null;
+        }
+
+        function isSelectionEmpty () {
+            if (getSelection().type !== zemGridConstants.gridSelectionFilterType.NONE) return false;
+
+            var selectedRowsWithoutFooter = getSelection().selected.filter(function (row) {
+                return row.level !== zemGridConstants.gridRowLevel.FOOTER;
+            });
+            return selectedRowsWithoutFooter.length === 0;
         }
     }
 

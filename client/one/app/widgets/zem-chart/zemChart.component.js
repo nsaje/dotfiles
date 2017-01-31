@@ -3,12 +3,10 @@ angular.module('one.widgets').component('zemChart', {
         level: '<',
         breakdown: '<',
         entityId: '<',
-        gridApi: '<', // Used for selection - TODO: replace with SelectionService
     },
     templateUrl: '/app/widgets/zem-chart/zemChart.component.html',
-    controller: function ($scope, $window, config, zemDataFilterService, zemChartService, zemChartObject, zemChartStorageService, zemChartMetricsService, zemGridConstants, zemNavigationNewService) { //eslint-disable-line max-len
+    controller: function ($scope, $window, config, zemDataFilterService, zemChartService, zemChartObject, zemChartStorageService, zemChartMetricsService, zemGridConstants, zemNavigationNewService, zemSelectionService) { //eslint-disable-line max-len
         var $ctrl = this;
-        var selectionListenerInitialized = false;
 
         $ctrl.onMetricsChanged = onMetricsChanged;
         $ctrl.removeLegendItem = removeLegendItem;
@@ -35,19 +33,20 @@ angular.module('one.widgets').component('zemChart', {
             $ctrl.chartDataService.initialize();
 
             initializeWindowResizeListeners();
-            initializeDataListeners();
-
+            subscribeToEvents();
             loadMetrics();
             loadData();
         }
 
 
-        function initializeDataListeners () {
+        function subscribeToEvents () {
             var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(loadData);
             var dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(loadData);
+            var selectionUpdateHandler = zemSelectionService.onSelectionUpdate(loadData);
             $scope.$on('$destroy', function () {
                 dateRangeUpdateHandler();
                 dataFilterUpdateHandler();
+                selectionUpdateHandler();
             });
         }
 
@@ -84,34 +83,23 @@ angular.module('one.widgets').component('zemChart', {
             }
         }
 
-        function removeLegendItem (item) { // eslint-disable-line no-unused-vars
-            // TODO: Remove item using selection service
+        function removeLegendItem (item) {
+            if (!item.removable) return;
+
+            switch (item.id) {
+            case 'totals': return zemSelectionService.unselectTotals();
+            case 'selected': return zemSelectionService.unselectAll();
+            default: return zemSelectionService.remove(item.id);
+            }
         }
 
-        $ctrl.$onChanges = function () {
-            // TODO: Use SelectionService and not directly GridApi
-            if (!selectionListenerInitialized && $ctrl.gridApi) {
-                $ctrl.gridApi.onSelectionUpdated($scope, loadData);
-                selectionListenerInitialized = true;
-            }
-        };
-
         function getSelection () {
-            // TODO: Use SelectionService
-            if (!$ctrl.gridApi) return {};
-            var gridSelection = $ctrl.gridApi.getSelection();
             var selection = {};
-            selection.selectedIds = gridSelection.selected.filter(function (row) {
-                return row.level === 1;
-            }).map(function (row) {
-                return row.id;
-            });
-            selection.unselectedIds = gridSelection.unselected.filter(function (row) {
-                return row.level === 1;
-            }).map(function (row) {
-                return row.id;
-            });
-            selection.selectAll = gridSelection.type === zemGridConstants.gridSelectionFilterType.ALL;
+            selection.selectedIds = zemSelectionService.getSelection().selected;
+            selection.unselectedIds = zemSelectionService.getSelection().unselected;
+            selection.totals = zemSelectionService.isTotalsSelected();
+            selection.selectAll = zemSelectionService.isAllSelected();
+            selection.batchId = zemSelectionService.getSelectedBatch();
             return selection;
         }
 

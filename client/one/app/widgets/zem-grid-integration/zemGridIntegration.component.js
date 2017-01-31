@@ -8,14 +8,13 @@ angular.module('one.widgets').component('zemGridIntegration', {
         level: '=level',
         breakdown: '=breakdown',
         entityId: '=entityId',
-
-        selection: '=',
-        selectionCallback: '=',
     },
     templateUrl: '/app/widgets/zem-grid-integration/zemGridIntegration.component.html',
-    controller: function ($scope, $timeout, $state, zemGridEndpointService, zemDataSourceService, zemDataFilterService, zemPermissions) { // eslint-disable-line max-len
-        var dataFilterUpdateHandler;
+    controller: function ($scope, $timeout, $state, zemGridEndpointService, zemDataSourceService, zemDataFilterService, zemPermissions, zemGridIntegrationSelectionService, zemGridConstants, zemSelectionService) { // eslint-disable-line max-len
         var $ctrl = this;
+        var dataFilterUpdateHandler;
+        var selectionUpdateHandler;
+        var canUpdateSelection = true;
 
         $ctrl.grid = undefined;
 
@@ -24,17 +23,24 @@ angular.module('one.widgets').component('zemGridIntegration', {
             initializeFilterWatches();
             loadState();
 
+            selectionUpdateHandler = zemSelectionService.onSelectionUpdate(function () {
+                canUpdateSelection = false;
+                loadSelection();
+                canUpdateSelection = true;
+            });
+
             $scope.$watch('$ctrl.grid.api', function (newValue, oldValue) {
                 if (newValue === oldValue) return; // Equal when watch is initialized (AngularJS docs)
 
                 // pass api back to host controller
                 $ctrl.api = $ctrl.grid.api;
-                if ($ctrl.selection) initializeSelectionBind();
+                initializeSelectionBind();
             });
         };
 
         $ctrl.$onDestroy = function () {
             if (dataFilterUpdateHandler) dataFilterUpdateHandler();
+            if (selectionUpdateHandler) selectionUpdateHandler();
         };
 
         function initializeGrid () {
@@ -62,9 +68,15 @@ angular.module('one.widgets').component('zemGridIntegration', {
             };
             if (!zemPermissions.hasPermission('zemauth.bulk_actions_on_all_levels')) {
                 options.selection.callbacks = {
-                    isRowSelectable: function () {
-                        // Allow at most 4 rows to be selected
-                        return $ctrl.api.getSelection().selected.length < 4;
+                    isRowSelectable: function (row) {
+                        if (row.level === zemGridConstants.gridRowLevel.FOOTER) return true;
+
+                        // Allow at most 4 data rows to be selected
+                        var maxSelectedRows = 4;
+                        if (zemSelectionService.isTotalsSelected()) {
+                            maxSelectedRows = 5;
+                        }
+                        return $ctrl.api.getSelection().selected.length < maxSelectedRows;
                     }
                 };
             }
@@ -109,20 +121,12 @@ angular.module('one.widgets').component('zemGridIntegration', {
 
         function initializeSelectionBind () {
             var initialized = false;
-            var canUpdateSelection = true;
 
             $ctrl.grid.api.onDataUpdated($scope, function () {
                 if (initialized) return;
                 initialized = true;
 
                 loadSelection();
-
-                $scope.$watch('$ctrl.selection', function (newValue, oldValue) {
-                    if (newValue === oldValue) return; // Equal when watch is initialized (AngularJS docs)
-                    canUpdateSelection = false;
-                    loadSelection();
-                    canUpdateSelection = true;
-                }, true);
 
                 $ctrl.grid.api.onSelectionUpdated($scope, function () {
                     if (canUpdateSelection) updateSelection();
@@ -131,40 +135,16 @@ angular.module('one.widgets').component('zemGridIntegration', {
         }
 
         function loadSelection () {
-            var selection = $ctrl.grid.api.getSelection();
-            var rows = $ctrl.grid.api.getRows();
-            selection.selected = [];
-            rows.forEach(function (row) {
-                if (row.level === 0 && $ctrl.selection.totals) {
-                    selection.selected.push(row);
-                }
-                if (row.level === 1 && $ctrl.selection.entityIds.indexOf(row.data.breakdownId) >= 0) {
-                    selection.selected.push(row);
-                }
-            });
+            var selection = zemGridIntegrationSelectionService.createGridSelection($ctrl.grid.api);
             $ctrl.grid.api.setSelection(selection);
         }
 
         function updateSelection () {
-            var selectedRows = $ctrl.grid.api.getSelection().selected;
-            var selection = {
-                totals: false,
-                entityIds: [],
-            };
+            // Publisher selection is needed only internally and should not be synchronized with zemSelectionService
+            if ($ctrl.breakdown === constants.breakdown.PUBLISHER) return;
 
-            selectedRows.forEach(function (row) {
-                if (row.level === 0) {
-                    selection.totals = true;
-                }
-                if (row.level === 1) {
-                    selection.entityIds.push(row.data.breakdownId);
-                }
-            });
-
-            if (!angular.equals(selection, $ctrl.selection)) {
-                angular.extend($ctrl.selection, selection);
-                $ctrl.selectionCallback();
-            }
+            var selection = zemGridIntegrationSelectionService.createCoreSelection($ctrl.grid.api);
+            zemSelectionService.setSelection(selection);
         }
     }
 });

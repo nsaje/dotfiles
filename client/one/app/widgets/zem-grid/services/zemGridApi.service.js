@@ -33,9 +33,11 @@ angular.module('one.widgets').factory('zemGridApi', function () { // eslint-disa
         this.updateData = grid.meta.dataService.updateData;
 
         // Selection service API
+        this.isSelectionEmpty = grid.meta.selectionService.isSelectionEmpty;
         this.getSelection = grid.meta.selectionService.getSelection;
         this.clearSelection = grid.meta.selectionService.clearSelection;
         this.setSelection = grid.meta.selectionService.setSelection;
+        this.setSelectionFilter = grid.meta.selectionService.setFilter;
         this.getSelectionOptions = grid.meta.selectionService.getConfig;
         this.setSelectionOptions = grid.meta.selectionService.setConfig;
 
