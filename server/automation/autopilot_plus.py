@@ -56,7 +56,6 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
                                                      is_autopilot_job_run=daily_run)
             changes_data = _get_autopilot_campaign_changes_data(
                 adg, changes_data, cpc_changes, budget_changes)
-            print changes_data
             if not dry_run:
                 k1_helper.update_ad_group(adg.pk, 'run_autopilot')
         except Exception as e:
@@ -83,11 +82,6 @@ def _get_autopilot_predictions(adjust_budgets, adjust_cpcs, adgroup, adgroup_set
         adjust_rtb_sources = is_budget_ap_enabled or not rtb_as_one
         cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(
             adgroup, adgroup_settings, data, budget_changes=budget_changes, adjust_rtb_sources=adjust_rtb_sources)
-    print '###################################'
-    print 'CPC Changes: ', cpc_changes
-    print '###################################'
-    print 'Budget Changes: ', budget_changes
-    print '###################################'
     return cpc_changes, budget_changes
 
 
@@ -248,7 +242,6 @@ def prefetch_autopilot_data(ad_groups_and_settings):
             if ag_source.source.source_type.type == SourceType.B1:
                 data[adg]['b1_sources'] = _populate_b1_sources_data(data[adg][ag_source],
                                                                     data[adg]['b1_sources'], goal_col)
-    print data # TODO DAVORIIIIIIIIIIIIIIIIIIIIIIIIIIN
     return data, campaign_goals
 
 
@@ -267,7 +260,7 @@ def _populate_b1_sources_data(row, current_b1_data, goal_col):
     current_b1_data['yesterdays_clicks'] += row['yesterdays_clicks']
     current_b1_data['yesterdays_spend_cc'] += row['yesterdays_spend_cc']
     current_b1_data['spend_perc'] = current_b1_data['yesterdays_spend_cc'] / current_b1_data['old_budget']
-    current_b1_data[goal_col] = row[goal_col] # DAVORIN TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    current_b1_data[goal_col] = row[goal_col]  # TODO next PR
     return current_b1_data
 
 
@@ -296,7 +289,6 @@ def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterd
 
 def _fetch_data(ad_groups, sources):
     today = dates_helper.local_today()
-    #today = datetime.date(2017, 1, 17) # TODO DAVORIIIIIIIIIIIIIIIIIIIIIIIIIIN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     yesterday = today - datetime.timedelta(days=1)
     campaign_goals, conversion_goals, pixels = _get_autopilot_goals(ad_groups)
 

@@ -68,7 +68,8 @@ def update_ad_group_source_values(ad_group_source, changes, system_user=None, la
 
 
 def update_ad_group_values(ad_group, changes, system_user=None, landing_mode=None):
-    print 'UPDATING ADGROUP SETTINGS: ', changes # TODO DAVORINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+    # TODO next PR
+    logger.warning('Autopilot tried updating adgroup values on adgroup ' + str(ad_group.id))
 
 
 def get_ad_group_sources_minimum_cpc(ad_group_source):
@@ -123,7 +124,6 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
     }
     subject, body, _ = format_email(EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE, **args)
     try:
-        print body # TODO DAVORIN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         send_mail(
             subject,
             body,
