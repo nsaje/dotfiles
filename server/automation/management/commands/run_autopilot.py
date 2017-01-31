@@ -18,7 +18,7 @@ class Command(ExceptionCommand):
     def add_arguments(self, parser):
         parser.add_argument('--dry-run', dest='dry_run', action='store_true',
                             help='Dry run (don\'t update budgets and bids)')
-        parser.add_argument('--daily-run'n dest='daily_run', action='store_true',
+        parser.add_argument('--daily-run', dest='daily_run', action='store_true',
                             help='Designates this as a part of daily job. Warning: This can cause campaigns in '
                                  'landing mode to overspend. Only to be used manually in rare events.')
 
