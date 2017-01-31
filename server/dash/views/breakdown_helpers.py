@@ -237,9 +237,18 @@ def create_all_rtb_source_row(ad_group, ad_group_settings, show_rtb_group_cpc):
 
     daily_budget_edit_enabled = True
     daily_budget_edit_message = None
+    if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        daily_budget_edit_enabled = False
+        daily_budget_edit_message = 'This value cannot be edited because the ad group is on Autopilot.'
     if campaign_settings.landing_mode:
         daily_budget_edit_enabled = False
         daily_budget_edit_message = 'This value cannot be edited because campaign is in landing mode.'
+
+    cpc_edit_message = None
+    cpc_edit_enabled = True
+    if ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
+        cpc_edit_message = 'This value cannot be edited because the ad group is on Autopilot.'
+        cpc_edit_enabled = False
 
     return {
         'breakdown_name': constants.SourceAllRTB.NAME,
@@ -252,6 +261,6 @@ def create_all_rtb_source_row(ad_group, ad_group_settings, show_rtb_group_cpc):
         'editable_fields': {
             'state': {'message': state_edit_message, 'enabled': state_edit_enabled},
             'daily_budget': {'message': daily_budget_edit_message, 'enabled': daily_budget_edit_enabled},
-            'bid_cpc': {'message': None, 'enabled': show_rtb_group_cpc},
+            'bid_cpc': {'message': cpc_edit_message, 'enabled': cpc_edit_enabled and show_rtb_group_cpc},
         }
     }
