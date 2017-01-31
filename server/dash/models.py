@@ -422,9 +422,9 @@ class Account(models.Model):
                                     related_name='+', on_delete=models.PROTECT)
 
     default_whitelist = models.ForeignKey('PublisherGroup', related_name='whitelisted_accounts',
-                                          on_delete=models.PROTECT, null=True)
+                                          on_delete=models.PROTECT, null=True, blank=True)
     default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_accounts',
-                                          on_delete=models.PROTECT, null=True)
+                                          on_delete=models.PROTECT, null=True, blank=True)
 
     objects = QuerySetManager()
     allowed_sources = models.ManyToManyField('Source')
@@ -640,9 +640,9 @@ class Campaign(models.Model, PermissionMixin):
         settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True)
 
     default_whitelist = models.ForeignKey('PublisherGroup', related_name='whitelisted_campaigns',
-                                          on_delete=models.PROTECT, null=True)
+                                          on_delete=models.PROTECT, null=True, blank=True)
     default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_campaigns',
-                                          on_delete=models.PROTECT, null=True)
+                                          on_delete=models.PROTECT, null=True, blank=True)
 
     USERS_FIELD = 'users'
 
@@ -1733,9 +1733,9 @@ class AdGroup(models.Model):
         settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
     default_whitelist = models.ForeignKey('PublisherGroup', related_name='whitelisted_ad_groups',
-                                          on_delete=models.PROTECT, null=True)
+                                          on_delete=models.PROTECT, null=True, blank=True)
     default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_ad_groups',
-                                          on_delete=models.PROTECT, null=True)
+                                          on_delete=models.PROTECT, null=True, blank=True)
 
     objects = QuerySetManager()
 
