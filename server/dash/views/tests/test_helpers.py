@@ -946,7 +946,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         new_campaign_settings.landing_mode = True
         new_campaign_settings.save(None)
 
-        result = helpers._get_editable_fields_bid_cpc(
+        result = helpers._get_editable_fields_daily_budget(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, new_campaign_settings)
 
         self.assertEqual(result, {
