@@ -68,7 +68,7 @@ class AutopilotBudgetsTestCase(test.TestCase):
     @patch('automation.autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET', Decimal('3'))
     def test_get_minimum_autopilot_budget_constraints(self):
         sources = dash.models.AdGroupSource.objects.filter(id__in=[1, 5])
-        max_budgets, min_budgets = autopilot_budgets._get_minimum_autopilot_budget_constraints(sources)
+        max_budgets, min_budgets = autopilot_budgets._get_minimum_autopilot_budget_constraints({s: {} for s in sources})
         self.assertEqual(max_budgets, {
             sources.get(id=1): Decimal('30'),
             sources.get(id=5): Decimal('50')
@@ -83,7 +83,8 @@ class AutopilotBudgetsTestCase(test.TestCase):
     @patch('automation.autopilot_settings.MAX_BUDGET_LOSS', Decimal('0.5'))
     def test_get_optimistic_autopilot_budget_constraints(self):
         sources = dash.models.AdGroupSource.objects.filter(id__in=[1, 5])
-        max_budgets, min_budgets, old_budgets = autopilot_budgets._get_optimistic_autopilot_budget_constraints(sources)
+        data = {s: {} for s in sources}
+        max_budgets, min_budgets, old_budgets = autopilot_budgets._get_optimistic_autopilot_budget_constraints(data)
         self.assertEqual(max_budgets, {
             sources.get(id=1): Decimal('600'),
             sources.get(id=5): Decimal('500')

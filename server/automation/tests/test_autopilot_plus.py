@@ -88,7 +88,7 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertEqual(mock_predict.called, True)
         self.assertEqual(mock_get_changes.called, True)
         mock_set.assert_called_with(
-            {}, {}, dry_run=True
+            {}, {}, dash.models.AdGroup.objects.get(id=4), dry_run=True
         )
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
