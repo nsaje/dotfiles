@@ -1,6 +1,6 @@
-angular.module('one.widgets').service('zemChartParser', function () {
+angular.module('one.widgets').service('zemChartParser', function (zemChartMetricsService) {
 
-    var COMON_Y_AXIS_METRICS = ['clicks', 'visits', 'pageviews'];
+    var COMMON_Y_AXIS_METRICS = ['clicks', 'visits', 'pageviews'];
     var TOTALS_COLORS = ['#3f547f', '#b2bbcc'];
     var GOALS_COLORS = ['#99cc00', '#d6eb99'];
     var DATA_COLORS = [
@@ -103,7 +103,7 @@ angular.module('one.widgets').service('zemChartParser', function () {
 
         commonYAxis = true;
         metricIds.forEach(function (metricId) {
-            if (COMON_Y_AXIS_METRICS.indexOf(metricId) === -1) {
+            if (COMMON_Y_AXIS_METRICS.indexOf(metricId) === -1) {
                 commonYAxis = false;
             }
         });
@@ -112,9 +112,10 @@ angular.module('one.widgets').service('zemChartParser', function () {
             var data = group.seriesData[metricId] || [];
             if (data.length) chart.hasData = true;
 
-            var name = group.name + ' (' + getMetricName(chart, metricId) + ')';
+            var metric = zemChartMetricsService.findMetricByValue(chart.metrics.options, metricId);
+            var name = group.name + ' (' + metric.name + ')';
             var yAxis = commonYAxis ? 0 : index;
-            var pointFormat = getPointFormat(metricId);
+            var pointFormat = getPointFormat(metric);
             addSeries(chart, name, data, color[index], yAxis, pointFormat);
         });
     }
@@ -123,6 +124,7 @@ angular.module('one.widgets').service('zemChartParser', function () {
         var index = 0; // TODO: check this
         var commonYAxis = true;
         metricIds.forEach(function (metricId) {
+            var metric = zemChartMetricsService.findMetricByValue(chart.metrics.options, metricId);
             var goal = fieldGoalMap[metricId],
                 legendGoal = {
                     id: goal.id,
@@ -131,12 +133,12 @@ angular.module('one.widgets').service('zemChartParser', function () {
                 colors = GOALS_COLORS;
             addLegendItem(chart, colors, legendGoal, false, metricIds.indexOf(metricId) + 1);
             campaignGoals[goal.id].forEach(function (data) {
-                if (COMON_Y_AXIS_METRICS.indexOf(metricId) === -1) {
+                if (COMMON_Y_AXIS_METRICS.indexOf(metricId) === -1) {
                     commonYAxis = false;
                 }
                 var name = 'Goal (' + goal.name + ')';
                 var yAxis = commonYAxis ? 0 : index;
-                var pointFormat = getPointFormat(metricId);
+                var pointFormat = getPointFormat(metric);
                 addGoalSeries(chart, name, data, colors[index], yAxis, pointFormat);
             });
 
@@ -197,60 +199,15 @@ angular.module('one.widgets').service('zemChartParser', function () {
     // helpers //
     /////////////
 
-    var metricFormats = {};
-    metricFormats[constants.chartMetric.CPC] = {'type': 'currency', 'fractionSize': 3};
-    metricFormats[constants.chartMetric.CPM] = {'type': 'currency', 'fractionSize': 3};
-    metricFormats[constants.chartMetric.DATA_COST] = {'type': 'currency', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.EFFECTIVE_DATA_COST] = {'type': 'currency', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.MEDIA_COST] = {'type': 'currency', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.EFFECTIVE_MEDIA_COST] = {'type': 'currency', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.BILLING_COST] = {'type': 'currency', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.LICENSE_FEE] = {'type': 'currency', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.PERCENT_NEW_USERS] = {'type': 'percent', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.UNIQUE_USERS] = {};
-    metricFormats[constants.chartMetric.NEW_USERS] = {};
-    metricFormats[constants.chartMetric.RETURNING_USERS] = {};
-    metricFormats[constants.chartMetric.BOUNCE_RATE] = {'type': 'percent', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.PV_PER_VISIT] = {'fractionSize': 2};
-    metricFormats[constants.chartMetric.AVG_TOS] = {'type': 'time', 'fractionSize': 1};
-    metricFormats[constants.chartMetric.CLICK_DISCREPANCY] = {'type': 'percent', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.TOTAL_SECONDS] = {};
-    metricFormats[constants.chartMetric.NON_BOUNCED_VISITS] = {};
-    metricFormats[constants.chartMetric.COST_PER_MINUTE] = {'type': 'currency', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.COST_PER_PAGEVIEW] = {'type': 'currency', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.COST_PER_NON_BOUNCED_VISIT] = {'type': 'currency', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.COST_PER_VISIT] = {'type': 'currency', 'fractionSize': 2};
-    metricFormats[constants.chartMetric.COST_PER_NEW_VISITOR] = {'type': 'currency', 'fractionSize': 2};
-    var AVG_GOAL_COST_FORMAT = {type: 'currency', fractionSize: 2};
-
-    var getMetricName = function (chart, metricId) {
-        var name = null;
-        chart.metrics.options.forEach(function (option) {
-            if (option.value === metricId) {
-                name = option.name;
-            }
-        });
-
-        return name;
+    var getMetricFormat = function (metric) {
+        return {type: metric.type, fractionSize: metric.fractionSize};
     };
 
-    var getMetricFormat = function (metricId) {
-        if (!metricId || metricId.indexOf('avg_cost_per_') < 0) {
-            // NOTE: This will return undefined for pixel and conversion goal metrics
-            // which is fine since they don't have to be formatted
-            return metricFormats[metricId];
-        }
-        return AVG_GOAL_COST_FORMAT;
-    };
-
-    var getPointFormat = function (metricId) {
-        var format = null;
+    var getPointFormat = function (metric) {
+        var format = getMetricFormat(metric);
         var valueSuffix = '';
         var valuePrefix = '';
         var fractionSize = 0;
-
-        format = getMetricFormat(metricId);
 
         if (format !== undefined) {
             fractionSize = format.fractionSize;
@@ -272,7 +229,7 @@ angular.module('one.widgets').service('zemChartParser', function () {
         var axisFormat = null;
 
         metricIds.forEach(function (metricId, index) {
-            format = metricFormats[metricId];
+            format = getMetricFormat(zemChartMetricsService.findMetricByValue(chart.metrics.options, metricId));
             axisFormat = null;
             if (format !== undefined) {
                 if (format.type === 'currency') {

@@ -2,69 +2,114 @@
 'use strict';
 
 angular.module('one.widgets').factory('zemChartMetricsService', function (zemPermissions) {
+    ////////////////////////////////////////////////////////////////////////////////////
+    // Definitions - Metrics, Categories
+    //
+    var TYPE_NUMBER = 'number';
+    var TYPE_CURRENCY = 'currency';
+    var TYPE_TIME = 'time';
 
-    function createMetrics (metricDefinitions, permission) {
-        var isShown = permission ? zemPermissions.hasPermission(permission) : true;
-        if (!isShown) return [];
+    var COSTS_CATEGORY_NAME = 'Costs';
+    var TRAFFIC_CATEGORY_NAME = 'Traffic Acquisition';
+    var AUDIENCE_CATEGORY_NAME = 'Audience Metrics';
+    var CONVERSIONS_CATEGORY_NAME = 'Google & Adobe Analytics Goals';
+    var PIXELS_CATEGORY_NAME = 'Conversions & CPAs';
 
-        var isInternal = permission ? zemPermissions.isPermissionInternal(permission) : false;
-        return metricDefinitions.map(function (metric) {
-            return {
-                name: metric.name,
-                value: metric.value,
-                internal: isInternal
-            };
-        });
-    }
+    var METRICS = { /* eslint-disable max-len */
+        CLICKS: {name: 'Clicks', value: 'clicks', type: TYPE_NUMBER},
+        IMPRESSIONS: {name: 'Impressions', value: 'impressions', type: TYPE_NUMBER},
+        CTR: {name: 'CTR', value: 'ctr', type: 'percent', fractionSize: 2},
+        CPC: {name: 'Avg. CPC', value: 'cpc', type: TYPE_CURRENCY, fractionSize: 3},
+        CPM: {name: 'Avg. CMP', value: 'cpm', type: TYPE_CURRENCY, fractionSize: 3},
+        DATA_COST: {name: 'Actual Data Cost', value: 'data_cost', type: TYPE_CURRENCY, fractionSize: 2, permission: 'zemauth.can_view_actual_costs'},
+        MEDIA_COST: {name: 'Actual Media Cost', value: 'media_cost', type: TYPE_CURRENCY, fractionSize: 2, permission: 'zemauth.can_view_actual_costs'},
+        E_DATA_COST: {name: 'Data Cost', value: 'e_data_cost', type: TYPE_CURRENCY, fractionSize: 2, permission: 'zemauth.can_view_cost_breakdown'},
+        E_MEDIA_COST: {name: 'Media Cost', value: 'e_media_cost', type: TYPE_CURRENCY, fractionSize: 2, permission: 'zemauth.can_view_cost_breakdown'},
+        BILLING_COST: {name: 'Total Spend', value: 'billing_cost', type: TYPE_CURRENCY, fractionSize: 2},
+        LICENSE_FEE: {name: 'License Fee', value: 'license_fee', type: TYPE_CURRENCY, fractionSize: 2},
+        VISITS: {name: 'Visits', value: 'visits', type: TYPE_NUMBER, permission: 'zemauth.aggregate_postclick_acquisition'},
+        PAGEVIEWS: {name: 'Pageviews', value: 'pageviews', type: TYPE_NUMBER, permission: 'zemauth.aggregate_postclick_acquisition'},
+        CLICK_DISCREPANCY: {name: 'Click Discrepancy', value: 'click_discrepancy', type: 'percent', fractionSize: 2, permission: 'zemauth.aggregate_postclick_acquisition'},
+        PERCENT_NEW_USERS: {name: '% New Users', value: 'percent_new_users', type: 'percent', fractionSize: 2},
+        RETURNING_USERS: {name: 'Returning Users', value: 'returning_users', type: TYPE_NUMBER},
+        UNIQUE_USERS: {name: 'Unique Users', value: 'unique_users', type: TYPE_NUMBER},
+        NEW_USERS: {name: 'New Users', value: 'unique_users', type: TYPE_NUMBER},
+        BOUNCE_RATE: {name: 'Bounce Rate', value: 'bounce_rate', type: 'percent', fractionSize: 2},
+        TOTAL_SECONDS: {name: 'Total Seconds', value: 'total_seconds', type: TYPE_NUMBER},
+        BOUNCED_VISITS: {name: 'Bounced Visits', value: 'bounced_visits', type: TYPE_NUMBER},
+        NON_BOUNCED_VISITS: {name: 'Non-Bounced Visits', value: 'non_bounced_visits', type: TYPE_NUMBER},
+        PV_PER_VISIT: {name: 'Pageviews per Visit', value: 'pv_per_visit', type: TYPE_NUMBER, fractionSize: 2},
+        AVG_TOS: {name: 'Time on Site', value: 'avg_tos', type: TYPE_TIME, fractionSize: 1},
+        COST_PER_MINUTE: {name: 'Avg. Cost per Minute', value: 'avg_cost_per_minute', type: TYPE_CURRENCY, fractionSize: 2},
+        COST_PER_PAGEVIEW: {name: 'Avg. Cost for Pageview', value: 'avg_cost_per_pageview', type: TYPE_CURRENCY, fractionSize: 2},
+        COST_PER_VISIT: {name: 'Avg. Cost per Visit', value: 'avg_cost_per_visit', type: TYPE_CURRENCY, fractionSize: 2},
+        COST_PER_NON_BOUNCED_VISIT: {name: 'Avg. Cost per Non-Bounced Visit', value: 'avg_cost_per_non_bounced_visit', type: TYPE_CURRENCY, fractionSize: 2},
+        COST_PER_NEW_VISITOR: {name: 'Avg. Cost for New Visitor', value: 'avg_cost_for_new_visitor', type: TYPE_CURRENCY, fractionSize: 2},
+    }; /* eslint-enable max-len */
 
-    function getEntityChartMetrics (level) {
+    var TRAFFIC_ACQUISITION = [
+        METRICS.IMPRESSIONS,
+        METRICS.CLICKS,
+        METRICS.CTR,
+        METRICS.CPC,
+        METRICS.CPM,
+    ];
 
-        var entityChartMetrics;
-        switch (level) {
-        case constants.level.ALL_ACCOUNTS:
-            entityChartMetrics = options.allAccountsChartMetrics;
-            break;
-        case constants.level.ACCOUNTS:
-            entityChartMetrics = options.accountChartMetrics;
-            break;
-        case constants.level.CAMPAIGNS:
-            entityChartMetrics = options.campaignChartMetrics;
-            break;
-        case constants.level.AD_GROUPS:
-            entityChartMetrics = options.adGroupChartMetrics;
-            break;
-        }
-        return entityChartMetrics;
-    }
+    var COST_METRICS = [
+        METRICS.MEDIA_COST,
+        METRICS.E_MEDIA_COST,
+        METRICS.DATA_COST,
+        METRICS.E_DATA_COST,
+        METRICS.LICENSE_FEE,
+        METRICS.BILLING_COST,
+    ];
 
-    function getChartMetrics (level) {
+    var POST_CLICK_METRICS = [
+        METRICS.VISITS,
+        METRICS.UNIQUE_USERS,
+        METRICS.NEW_USERS,
+        METRICS.RETURNING_USERS,
+        METRICS.PERCENT_NEW_USERS,
+        METRICS.CLICK_DISCREPANCY,
+        METRICS.PAGEVIEWS,
+        METRICS.PV_PER_VISIT,
+        METRICS.BOUNCED_VISITS,
+        METRICS.NON_BOUNCED_VISITS,
+        METRICS.BOUNCE_RATE,
+        METRICS.TOTAL_SECONDS,
+        METRICS.AVG_TOS
+    ];
+
+    var GOAL_METRICS = [
+        METRICS.COST_PER_VISIT,
+        METRICS.COST_PER_NEW_VISITOR,
+        METRICS.COST_PER_PAGEVIEW,
+        METRICS.COST_PER_NON_BOUNCED_VISIT,
+        METRICS.COST_PER_MINUTE
+    ];
+
+    var AUDIENCE_METRICS = [].concat(POST_CLICK_METRICS, GOAL_METRICS);
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    // Service functions
+    //
+    function getChartMetrics () {
         var categories = [];
-
-        // Costs
-        var costMetrics = [].concat(
-            createMetrics(options.platformCostChartMetrics, 'zemauth.can_view_platform_cost_breakdown'),
-            createMetrics(options.billingCostChartMetrics),
-            createMetrics(options.actualCostChartMetrics, 'zemauth.can_view_actual_costs')
-        );
-        categories.push({name: 'Costs', metrics: costMetrics});
-
-        // Traffic Acquisition
-        var entityMetrics = createMetrics(getEntityChartMetrics(level));
-        categories.push({name: 'Traffic Acquisition', metrics: entityMetrics});
-
-        // Audience Metrics
-        var audienceMetrics = [].concat(
-            createMetrics(options.adGroupEngagementChartPostClickMetrics, 'zemauth.aggregate_postclick_engagement'),
-            createMetrics(options.adGroupAcquisitionChartPostClickMetrics, 'zemauth.aggregate_postclick_acquisition'),
-            createMetrics(options.goalChartMetrics)
-        );
-        categories.push({name: 'Audience Metrics', metrics: audienceMetrics});
+        categories.push({name: COSTS_CATEGORY_NAME, metrics: createMetrics(COST_METRICS)});
+        categories.push({name: TRAFFIC_CATEGORY_NAME, metrics: createMetrics(TRAFFIC_ACQUISITION)});
+        categories.push({name: AUDIENCE_CATEGORY_NAME, metrics: createMetrics(AUDIENCE_METRICS)});
 
         return categories;
     }
 
-    var CONVERSIONS_CATEGORY_NAME = 'Google & Adobe Analytics Goals';
-    var PIXELS_CATEGORY_NAME = 'Conversions & CPAs';
+    function createMetrics (metricDefinitions) {
+        return metricDefinitions.map(function (metricDefinition) {
+            var metric = angular.copy(metricDefinition);
+            metric.internal = metric.permission ? zemPermissions.isPermissionInternal(metric.permission) : false;
+            metric.isShown = metric.permission ? zemPermissions.hasPermission(metric.permission) : true;
+            return metric;
+        }).filter(function (metric) { return metric.isShown; });
+    }
 
     function insertDynamicMetrics (categories, pixels, conversionGoals) {
 
@@ -129,6 +174,8 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
             conversionGoalMetrics.push({
                 value: 'avg_cost_per_' + goal.id,
                 name: 'CPA (' + goal.name + ')',
+                type: TYPE_CURRENCY,
+                fractionSize: 2
             });
         });
         categories.push({
@@ -156,6 +203,7 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
     }
 
     return {
+        METRICS: METRICS,
         getChartMetrics: getChartMetrics,
         insertDynamicMetrics: insertDynamicMetrics,
         findMetricByValue: findMetricByValue,

@@ -138,8 +138,10 @@ angular.module('one.widgets').component('zemChart', {
         function loadMetrics () {
             var categories = $ctrl.chart.metrics.options;
             $ctrl.metrics = {
-                metric1: zemChartMetricsService.findMetricByValue(categories, constants.chartMetric.CLICKS),
-                metric2: zemChartMetricsService.findMetricByValue(categories, constants.chartMetric.IMPRESSIONS),
+                metric1: zemChartMetricsService.findMetricByValue(
+                    categories, zemChartMetricsService.METRICS.CLICKS.value),
+                metric2: zemChartMetricsService.findMetricByValue(
+                    categories, zemChartMetricsService.METRICS.IMPRESSIONS.value),
             };
 
             var metrics = zemChartStorageService.loadMetrics($ctrl.level);
