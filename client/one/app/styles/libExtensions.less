@@ -44,7 +44,7 @@
 
         &.select2-container-active {
             &.button--plain {
-                border-color: darken(@border-gray-color, 20%);
+                border-color: darken(@input-border-color, 20%);
             }
 
             &.button--outline {
@@ -152,7 +152,7 @@
 ///////////////////////////
 
 tags-input .host .tags {
-    .form__input-tags();
+    .input-tags();
     margin-bottom: 0;
 
     input {
@@ -167,7 +167,7 @@ tags-input .host .tags {
 
     .tag-item {
         background: none;
-        .input-tag__item();
+        .input-tags__item();
         border: none;
         color: @text-color;
         height: 26px;

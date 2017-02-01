@@ -6,7 +6,7 @@
         <div class="form file-upload-form">
             <div class="form__group" ng-class="{'form--error': !!ctrl.formErrors.batchName}">
                 <label class="form__label" for="batch-name-input">Batch name:</label>
-                <input class="form__input-text" type="text" id="batch-name-input" ng-model="ctrl.formData.batchName"
+                <input class="input-text" type="text" id="batch-name-input" ng-model="ctrl.formData.batchName"
                        ng-focus="ctrl.clearFormErrors('batchName')" />
                 <div class="form__text--small">Batch name is only visible to you as a reference to this uploaded batch. By default it will use current Date and Time.</div>
                 <div class="message message--error" ng-repeat="error in ctrl.formErrors.batchName" for="batch-name-input">{{ error }}</div>
@@ -18,7 +18,7 @@
                             ng-click="ctrl.clearFormErrors('file')" zem-file-input-trigger>Choose file</button>
                 </zem-file-input>
 
-                <input class="form__input-text file-choosen" type="text" id="file-input" readonly
+                <input class="input-text file-choosen" type="text" id="file-input" readonly
                        placeholder="No file chosen" ng-value="ctrl.formData.file.name">
                 <div class="message message--error" ng-repeat="error in ctrl.formErrors.file" for="file-input">{{ error }}</div>
                 <div class="message message--help message--with-icon">

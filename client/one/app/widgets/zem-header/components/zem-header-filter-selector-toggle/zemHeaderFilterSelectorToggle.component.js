@@ -3,5 +3,6 @@ angular.module('one.widgets').component('zemHeaderFilterSelectorToggle', {
     controller: function (zemFilterSelectorSharedService) {
         var $ctrl = this;
         $ctrl.toggleFilterSelector = zemFilterSelectorSharedService.toggleSelector;
+        $ctrl.isSelectorExpanded = zemFilterSelectorSharedService.isSelectorExpanded;
     },
 });

@@ -48,6 +48,8 @@
     height: 60px;
     padding: 0 @default-spacing;
     display: table;
+    background-color: tint(@secondary-color,90%);
+    box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
 }
 
 .zem-settings__footer-cell {
@@ -83,7 +85,7 @@
     margin-bottom: @default-spacing+5;
     position: relative;
 
-    .form__multiselect {
+    .multiselect {
         height: 180px;
     }
 }
@@ -115,7 +117,7 @@
 ///////////////////////////
 
 .zem-settings-component__container--facebook {
-    .form__input-text--facebook {
+    .input-text--facebook {
         input {
             padding-right: 150px;
         }
@@ -270,8 +272,8 @@
         cursor: pointer;
     }
 
-    .form__input-checkbox,
-    .form__checkbox-text {
+    .input-checkbox,
+    .checkbox-text {
         float: none;
     }
 }
@@ -334,11 +336,11 @@
 ///////////////////////////
 
 .zem-settings-component__container--ad-group-general-settings {
-    .form__input-checkbox {
+    .input-checkbox {
         margin: 9px 0 0 20px;
     }
 
-    .form__checkbox-text {
+    .checkbox-text {
         margin-top: 7px;
         font-weight: 400;
     }
@@ -370,7 +372,7 @@
         margin-bottom: 0;
     }
 
-    .form__checkbox-text {
+    .checkbox-text {
 
     }
 

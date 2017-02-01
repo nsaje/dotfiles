@@ -4,7 +4,7 @@
         <div class="content-upload__batch-name-container" ng-if="!ctrl.isEdit">
             <span class="content-upload__batch-name">Batch name:</span>
             <span class="content-upload__batch-title" ng-show="!ctrl.batchNameEdit">{{ ctrl.formData.batchName }}</span>
-            <input class="form__input-text" type="text" ng-show="ctrl.batchNameEdit" ng-model="ctrl.formData.batchName"
+            <input class="input-text" type="text" ng-show="ctrl.batchNameEdit" ng-model="ctrl.formData.batchName"
                    id="batch-name-input" ng-focus="ctrl.clearBatchNameErrors()" ng-class="{'form--error': ctrl.saveErrors.batchName}"/>
             <a href class="button button--small button--with-icon edit-icon" ng-click="ctrl.toggleBatchNameEdit($event)"
                ng-if="!ctrl.batchNameEdit">Edit batch name</a>

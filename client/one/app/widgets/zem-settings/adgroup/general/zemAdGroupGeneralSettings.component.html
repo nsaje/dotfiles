@@ -3,7 +3,7 @@
     <div class="form">
         <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.name}">
             <label class="form__label" for="name-input">Name:</label>
-            <input class="form__input-text" id="name-input" type="text" ng-model="$ctrl.entity.settings.name">
+            <input class="input-text" id="name-input" type="text" ng-model="$ctrl.entity.settings.name">
             <div class="message message--error" ng-repeat="error in $ctrl.errors.name"
                  for="name-input">{{ error }}</div>
         </div>
@@ -13,8 +13,8 @@
                 Start date:
                 <zem-help-popover content="The date when content promotion commenced." placement="top"></zem-help-popover>
             </label>
-            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
-                <input class="form__input-text" id="start-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
+            <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
+                <input class="input-text" id="start-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
                        ng-model="$ctrl.entity.settings.startDate" is-open="$ctrl.startDatePicker.isOpen"
                        ng-click="$ctrl.openDatePicker('startDate')">
             </div>
@@ -27,15 +27,15 @@
                 End date:
                 <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>
             </label>
-            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
-                <input class="form__input-text" id="end-date-input" ng-disabled="$ctrl.entity.warnings.endDate !== undefined"
+            <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon m-r">
+                <input class="input-text" id="end-date-input" ng-disabled="$ctrl.entity.warnings.endDate !== undefined"
                        type="text" uib-datepicker-popup="MM/dd/yyyy" datepicker-options="$ctrl.endDatePickerOptions"
                        ng-model="$ctrl.entity.settings.endDate" is-open="$ctrl.endDatePicker.isOpen"
                        ng-click="$ctrl.openDatePicker('endDate')">
             </div>
-            <input class="form__input-checkbox" ng-disabled="$ctrl.entity.warnings.endDate !== undefined" type="checkbox"
+            <input class="input-checkbox" ng-disabled="$ctrl.entity.warnings.endDate !== undefined" type="checkbox"
                    id="manual-stop-cb" ng-model="$ctrl.entity.settings.manualStop">
-            <label class="form__checkbox-text" for="manual-stop-cb">I'll stop it myself</label>
+            <label class="checkbox-text" for="manual-stop-cb">I'll stop it myself</label>
             <div class="message message--error" ng-if="$ctrl.entity.warnings.endDate === undefined"
                  ng-repeat="error in $ctrl.errors.endDate" for="end-date-input">{{ error }}</div>
             <div class="message message--warning message--with-icon" ng-if="$ctrl.entity.warnings.endDate !== undefined">
@@ -49,9 +49,9 @@
                 Maximum CPC:
                 <zem-help-popover content="Maximum allowed CPC in this ad group." placement="top"></zem-help-popover>
             </label>
-            <div class="form__prefixed-field form__prefixed-field--narrow">
-                <span class="form__field-prefix">$</span>
-                <input class="form__input-text" id="cpc-input" type="text" ng-model="$ctrl.entity.settings.cpc"
+            <div class="prefixed-field prefixed-field--narrow">
+                <span class="prefixed-field__prefix">$</span>
+                <input class="input-text" id="cpc-input" type="text" ng-model="$ctrl.entity.settings.cpc"
                        zem-currency-input fraction-size="3" empty-text="No limit">
             </div>
             <div class="message message--error" ng-repeat="error in $ctrl.errors.cpc"
@@ -64,10 +64,10 @@
                 Maximum CPM:
                 <zem-help-popover content="Maximum allowed CPM in this ad group." placement="top"></zem-help-popover>
             </label>
-            <div class="form__prefixed-field form__prefixed-field--narrow">
-                <span class="form__field-prefix">$</span>
+            <div class="prefixed-field prefixed-field--narrow">
+                <span class="prefixed-field__prefix">$</span>
                 <input id="cpm-input"
-                       class="form__input-text"
+                       class="input-text"
                        ng-model="$ctrl.entity.settings.maxCpm"
                        ng-disabled="$ctrl.entity.warnings.maxCpm !== undefined"
                        type="text"

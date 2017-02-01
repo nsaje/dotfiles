@@ -5,7 +5,7 @@
     <div class="form">
         <div class="form__group" ng-class="{'form--error': !!ctrl.errors.name}">
             <label class="form__label" for="zem-custom-audiences-modal-name">Audience Name</label>
-            <input class="form__input-text" type="text" id="zem-custom-audiences-modal-name" ng-model="ctrl.selectedName"
+            <input class="input-text" type="text" id="zem-custom-audiences-modal-name" ng-model="ctrl.selectedName"
                    ng-change="ctrl.removeError('name')" />
             <div class="message message--error" ng-repeat="error in ctrl.errors.name">{{ error }}</div>
         </div>
@@ -15,7 +15,7 @@
                 Pixel
                 <zem-help-popover content="The pixel that is the source of this traffic." placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
-            <input class="form__input-text" type="text" ng-model="ctrl.pixel.name" ng-readonly="true" />
+            <input class="input-text" type="text" ng-model="ctrl.pixel.name" ng-readonly="true" />
             <div class="message message--error" ng-repeat="error in ctrl.errors.pixelId">{{ error }}</div>
         </div>
 
@@ -63,9 +63,9 @@
                 In the last
                 <zem-help-popover content="<p class='m-b-s'>The number of days people will remain in your audience after they've visited your website. People will be removed from your audience after the set time period, unless they visit your website again.</p><p><strong>Maximum time:</strong> 365 days.</p>" placement="bottom"><span class="help-popover" zem-lazy-popover-html-unsafe="Pixel's name" zem-lazy-popover-placement="bottom" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span></zem-help-popover>
             </label>
-            <div class="form__postfixed-field form__postfixed-field--narrow">
-                <input class="form__input-text" type="text" ng-model="ctrl.selectedTtl" ng-change="ctrl.removeError('ttl')"/>
-                <span class="form__field-postfix" id="basic-addon2">days</span>
+            <div class="postfixed-field postfixed-field--narrow">
+                <input class="input-text" type="text" ng-model="ctrl.selectedTtl" ng-change="ctrl.removeError('ttl')"/>
+                <span class="postfixed-field__postfix" id="basic-addon2">days</span>
             </div>
 
             <div class="message message--error" ng-repeat="error in ctrl.errors.ttl">{{ error }}</div>

@@ -25,7 +25,9 @@
                 <!-- TODO: If possible add class row-error to row that was selected and has insufficient credit amount for selected budget -->
                 <tr ng-repeat="credit in availableCredit" ng-class="{'row--error': !!errors.credit}">
                     <td ng-if="isNew" title="{{ credit.comment }}">
-                        <input type="radio" ng-model="budgetItem.credit" ng-click="checkCreditValues()" ng-value="credit" />
+                        <input class="input-radio" type="radio" ng-model="budgetItem.credit"
+                               ng-click="checkCreditValues()" ng-value="credit" id="{{credit.id}}" />
+                        <label class="radio-text" for="{{credit.id}}"></label>
                     </td>
                     <td>{{ credit.available | decimalCurrency:"$":2  }}</td>
                     <td>{{ credit.total | decimalCurrency:"$":2  }}</td>
@@ -40,8 +42,8 @@
         </table>
         <div class="form__group" ng-class="{'form--error': !!errors.startDate}">
             <label class="form__label" for="start-date-input">Start Date</label>
-            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
-                <input id="start-date-input" type="text" class="form__input-text" uib-datepicker-popup="MM/dd/yyyy"
+            <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
+                <input id="start-date-input" type="text" class="input-text" uib-datepicker-popup="MM/dd/yyyy"
                        ng-disabled="!budgetItem.credit || !budgetItem.isEditable"
                        datepicker-options="{initDate: initStartDate, minDate: minDate, maxDate: maxDate}"
                        ng-model="budgetItem.startDate" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" />
@@ -50,23 +52,23 @@
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.endDate}">
             <label class="form__label" for="end-date-input">End Date</label>
-            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
-                <input class="form__input-text" id="end-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy" ng-disabled="!budgetItem.credit || !(budgetItem.isUpdatable || budgetItem.isEditable)" datepicker-options="{initDate: initEndDate, minDate: minDate, maxDate: maxDate}" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()">
+            <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
+                <input class="input-text" id="end-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy" ng-disabled="!budgetItem.credit || !(budgetItem.isUpdatable || budgetItem.isEditable)" datepicker-options="{initDate: initEndDate, minDate: minDate, maxDate: maxDate}" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()">
             </div>
             <div class="message message--error" ng-repeat="error in errors.endDate" for="end-date-input">{{ error }}</div>
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.amount}">
             <label class="form__label" for="amount-input">Total Budget</label>
-            <div class="form__prefixed-field form__postfixed-field form__prefixed-field--narrow form__postfixed-field--narrow">
-                <span class="form__field-prefix">$</span>
-                <input id="amount-input" ng-disabled="!budgetItem.credit || !(budgetItem.isEditable || budgetItem.isUpdatable)" type="text" class="form__input-text" ng-model="budgetItem.amount" zem-currency-input fraction-size="0" />
-                <span class="form__field-postfix">.00</span>
+            <div class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow">
+                <span class="prefixed-field__prefix">$</span>
+                <input id="amount-input" ng-disabled="!budgetItem.credit || !(budgetItem.isEditable || budgetItem.isUpdatable)" type="text" class="input-text" ng-model="budgetItem.amount" zem-currency-input fraction-size="0" />
+                <span class="postfixed-field__postfix">.00</span>
             </div>
             <div class="message message--error" ng-repeat="error in errors.amount" for="amount">{{ error }}</div>
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.margin}" ng-if="hasPermission('zemauth.can_manage_agency_margin')">
             <label class="form__label" for="margin-input" is-internal="zemauth.can_manage_agency_margin">Margin (%)</label>
-            <ui-select theme="select2" id="margin-select" class="button button--plain button--full-width button--dropdown-toggle-icon"
+            <ui-select theme="select2" id="margin-select" class="button button--plain button--narrow button--dropdown-toggle-icon"
                        ng-model="budgetItem.margin" ng-disabled="!isNew" search-enabled="false">
                 <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
                 <ui-select-choices repeat="fee in getLicenseFees($select.search, budgetItem.margin) | filter: $select.search">
@@ -80,7 +82,7 @@
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.comment}">
             <label class="form__label" for="comment-input">Notes</label>
-            <textarea class="form__textarea" id="comment-input" type="text" ng-model="budgetItem.comment" maxlength="256"></textarea>
+            <textarea class="textarea" id="comment-input" type="text" ng-model="budgetItem.comment" maxlength="256"></textarea>
             <div class="message message--error" ng-repeat="error in errors.comment" for="comment">{{ error }}</div>
         </div>
     </div>

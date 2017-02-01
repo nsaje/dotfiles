@@ -13,7 +13,7 @@
             <input type="text"
                    zem-focus-select
                    id="report-name-input"
-                   class="form__input-text"
+                   class="input-text"
                    ng-model="export.reportName"
                    placeholder="Name of the report" />
             <div class="message message--error" ng-repeat="error in validationErrors.report_name"
@@ -109,8 +109,9 @@
             <input id="by-day-checkbox"
                 type="checkbox"
                 ng-model="export.byDay"
-                class="form__input-checkbox"
+                class="input-checkbox"
                 ng-disabled="breakdownByDayDisabled">
+            <label class="checkbox-text" for="by-day-checkbox"></label>
         </div>
 
         <div class="form__group" ng-if="hasPermission('zemauth.can_include_totals_in_reports')">
@@ -120,7 +121,8 @@
             <input id="include-totals-checkbox"
                    type="checkbox"
                    ng-model="export.includeTotals"
-                   class="form__input-checkbox">
+                   class="input-checkbox">
+            <label class="checkbox-text" for="include-totals-checkbox"></label>
         </div>
 
         <div class="form__group" ng-if="hasPermission('zemauth.can_include_model_ids_in_reports')">
@@ -130,7 +132,8 @@
             <input id="add-ids-checkbox"
                    type="checkbox"
                    ng-model="export.includeIds"
-                   class="form__input-checkbox">
+                   class="input-checkbox">
+            <label class="checkbox-text" for="add-ids-checkbox"></label>
         </div>
 
         <div class="form__group" ng-class="{'form--error': !!validationErrors.recipient_emails}">
@@ -140,7 +143,7 @@
             <textarea
                 ng-model="export.recipientEmails"
                 id="recipient-emails-textarea"
-                class="form__textarea"
+                class="textarea"
                 type="text"
                 placeholder="Comma-separated list of recipient email addresses">
             </textarea>

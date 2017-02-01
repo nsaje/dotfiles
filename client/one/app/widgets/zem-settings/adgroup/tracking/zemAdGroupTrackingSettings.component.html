@@ -12,7 +12,7 @@
             </div>
             <div ng-if="$ctrl.entity.settings.redirectJavascript">
                 <label class="form__label">Javascript</label>
-                <div class="form__textarea--dashed break-long-words">{{$ctrl.entity.settings.redirectJavascript}}</div>
+                <div class="textarea--dashed break-long-words">{{$ctrl.entity.settings.redirectJavascript}}</div>
             </div>
         </div>
     </div>
@@ -21,7 +21,7 @@
     <div class="form form--last" ng-class="{'form--error': !!$ctrl.errors.trackingCode}">
         <div class="form__title">Tracking codes</div>
         <div class="form__text">The tracking code / UTM to be appended to all URLs being promoted.</div>
-        <textarea class="form__textarea" id="tracking-input" type="text"  rows="4" ng-model="$ctrl.entity.settings.trackingCode"></textarea>
+        <textarea class="textarea" id="tracking-input" type="text"  rows="4" ng-model="$ctrl.entity.settings.trackingCode"></textarea>
 
         <div class="message message--error" ng-repeat="error in $ctrl.errors.trackingCode" for="tracking-input">{{ error }}</div>
     </div>

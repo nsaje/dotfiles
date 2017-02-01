@@ -5,89 +5,13 @@
     .button { width: 100%; }
 
     .dropdown-menu {
-        width: 500px;
-
-        max-height: 400px;
-        overflow-y: scroll;
-        overflow-x: hidden;
-
-        border: 1px solid @border-color;
+        margin: 8px 0 20px 0;
+        padding: 0;
+        border: none;
         box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
-        margin-top: 8px;
-
-        .list-wrapper {
-            padding-bottom: @default-spacing;
-
-            > div {
-                margin: 0 0 10px 16px;
-                border-bottom: 1px solid @line-color;
-                padding-bottom: 10px;
-
-                &:last-child {
-                    border: none;
-                    padding-bottom: 0;
-                    margin-bottom: 0;
-                }
-            }
-        }
-
-        .option {
-            padding: 4px 8px;
-            color: @text-color;
-            font-size: @default-font-size;
-            cursor: pointer;
-            border-radius: 4px;
-
-            &:hover {
-                background: @secondary-color;
-                color: white;
-            }
-
-            &--selected {
-                color: @text-color;
-                background: tint(@secondary-color, 90%);
-            }
-        }
-
-        .category-name {
-            color: @secondary-color;
-            font-size: @default-font-size+2;
-            font-weight: bold;
-            margin: 0;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }
-
-        .sub-category-name {
-            font-weight: 400;
-            font-size: 14px;
-        }
-
-        .description {
-            padding: 0;
-            font-size: 13px;
-            font-weight: 300;
-            color: @dark-gray;
-        }
-
-        .condensed {
-            li {
-                position: relative;
-                display: inline-block;
-                font-size: 12px;
-
-                input[type=option] {
-                    margin-top: 1px;
-                }
-
-                .option {
-                    margin-right: 0px;
-                }
-
-                &:not(:first-child) .option {
-                    margin-left: 15px;
-                }
-            }
-        }
+        width: 460px;
+        max-height: 400px;
+        overflow: hidden;
+        box-sizing: border-box;
     }
 }

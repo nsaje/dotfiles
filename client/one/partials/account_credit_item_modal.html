@@ -10,8 +10,8 @@
     <div class="form" id="form-account-credit-item" ng-class="{ 'new': isNew, 'edit': !isNew }" ng-show="!isLoadingInProgress">
         <div class="form__group" ng-class="{'form--error': !!errors.startDate}">
             <label class="form__label" for="start-date-input">Valid From</label>
-            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
-                <input class="form__input-text" id="start-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
+            <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
+                <input class="input-text" id="start-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
                        ng-model="creditItem.startDate" datepicker-options="startDatePickerOptions"
                        is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" ng-disabled="creditItem.isSigned" />
             </div>
@@ -19,8 +19,8 @@
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.endDate}">
             <label class="form__label" for="end-date-input">Valid To</label>
-            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
-                <input class="form__input-text" id="end-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
+            <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
+                <input class="input-text" id="end-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
                        ng-model="creditItem.endDate" datepicker-options="endDatePickerOptions"
                        is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()" />
             </div>
@@ -28,7 +28,7 @@
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.licenseFee}">
             <label class="form__label" for="license-fee-input">License Fee (%)</label>
-            <ui-select class="button button--plain button--full-width button--dropdown-toggle-icon" theme="select2"
+            <ui-select class="button button--plain button--narrow button--dropdown-toggle-icon" theme="select2"
                        id="license-fee-select" ng-model="creditItem.licenseFee" ng-disabled="creditItem.isSigned"
                        search-enabled="false">
                 <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
@@ -40,28 +40,29 @@
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.amount}">
             <label class="form__label" for="amount-input">Credit</label>
-            <div class="form__prefixed-field form__postfixed-field form__prefixed-field--narrow form__postfixed-field--narrow">
-                <span class="form__field-prefix">$</span>
-                <input class="form__input-text" id="amount-input" type="text" ng-model="creditItem.amount" zem-currency-input fraction-size="0">
-                <span class="form__field-postfix">.00</span>
+            <div class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow">
+                <span class="prefixed-field__prefix">$</span>
+                <input class="input-text" id="amount-input" type="text" ng-model="creditItem.amount" zem-currency-input fraction-size="0">
+                <span class="postfixed-field__postfix">.00</span>
             </div>
             <div ng-repeat="error in errors.amount" class="message message--error" for="amount">{{ error }}</div>
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.comment}">
             <label class="form__label" for="comment-input">Custom Notes</label>
-            <textarea class="form__textarea" id="comment-input" type="text" ng-model="creditItem.comment" maxlength="256"></textarea>
+            <textarea class="textarea" id="comment-input" type="text" ng-model="creditItem.comment" maxlength="256"></textarea>
             <div class="message message--error" ng-repeat="error in errors.comment" for="comment">{{ error }}</div>
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.agency}" ng-if="account.agency">
             <label class="form__label">Agency credit</label>
-            <input class="form__input-checkbox" id="is-agency-input" type="checkbox" ng-model="creditItem.isAgency">
+            <input class="input-checkbox" id="is-agency-input" type="checkbox" ng-model="creditItem.isAgency">
+            <label class="checkbox-text" for="is-agency-input"></label>
             <div class="message message--error" ng-repeat="error in errors.agency" for="is-agency-input">{{ error }}</div>
         </div>
         <hr>
         <p>By signing the credit line item, no more future changes to the amount, fee and start date will be possible.</p>
         <div ng-class="{'form--error': !!errors.status}">
-            <input class="form__input-checkbox" id="is-signed-input" type="checkbox" ng-model="creditItem.isSigned" ng-disabled="wasSigned">
-            <label class="form__checkbox-text" for="is-signed-input">Signed</label>
+            <input class="input-checkbox" id="is-signed-input" type="checkbox" ng-model="creditItem.isSigned" ng-disabled="wasSigned">
+            <label class="checkbox-text" for="is-signed-input">Signed</label>
             <div ng-repeat="error in errors.status" class="message message--error" for="is-signed-input">{{ error }}</div>
         </div>
     </div>

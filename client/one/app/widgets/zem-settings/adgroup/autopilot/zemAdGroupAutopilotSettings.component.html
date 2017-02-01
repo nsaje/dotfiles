@@ -7,27 +7,25 @@
         Autopilot is automatically enabled because the campaign is in landing mode.
     </div>
     <div class="form">
-        <div ng-repeat='autopilotState in $ctrl.options.adGroupSettingsAutopilotStates'>
-            <div class="form__group--vertical">
-                <input class="form__input-radio" id="{{ autopilotState.value }}" type="radio" ng-model="$ctrl.entity.settings.autopilotState" ng-value="autopilotState.value" ng-disabled="$ctrl.isInLanding()">
-                <label class="form__radio-text" for="{{ autopilotState.value }}"> {{ autopilotState.name }} <zem-help-popover content="{{autopilotState.help}}" placement="right"></zem-help-popover></label>
-            </div>
+        <div ng-repeat='autopilotState in $ctrl.options.adGroupSettingsAutopilotStates' class="form__group--vertical">
+            <input class="input-radio" id="{{ autopilotState.value }}" type="radio" ng-model="$ctrl.entity.settings.autopilotState" ng-value="autopilotState.value" ng-disabled="$ctrl.isInLanding()">
+            <label class="radio-text" for="{{ autopilotState.value }}"> {{ autopilotState.name }} <zem-help-popover content="{{autopilotState.help}}" placement="right"></zem-help-popover></label>
 
             <div class="form__indented" ng-if="autopilotState.value === $ctrl.constants.adGroupSettingsAutopilotState.INACTIVE && $ctrl.hasPermission('zemauth.can_see_rtb_sources_as_one') && autopilotState.value === $ctrl.entity.settings.autopilotState">
                 <label class="form__label" is-internal="zemauth.can_see_rtb_sources_as_one">Manage Daily Spend Caps of RTB sources:</label>
 
                 <div class="form__group--vertical">
-                    <input class="form__input-radio" type="radio" id="separately"
+                    <input class="input-radio" type="radio" id="separately"
                            ng-model="$ctrl.entity.settings.b1SourcesGroupEnabled" ng-value="false">
-                    <label class="form__radio-text" for="separately">
+                    <label class="radio-text" for="separately">
                         Separately
                         <zem-help-popover content="Set Daily Spend Cap for each of the RTB sources." placement="right"></zem-help-popover>
                     </label>
                 </div>
                 <div class="form__group--vertical">
-                    <input class="form__input-radio" type="radio" id="as-one"
+                    <input class="input-radio" type="radio" id="as-one"
                            ng-model="$ctrl.entity.settings.b1SourcesGroupEnabled" ng-value="true">
-                    <label class="form__radio-text" for="as-one">
+                    <label class="radio-text" for="as-one">
                         As one
                         <zem-help-popover content="Set one Daily Spend Cap for all RTB sources together." placement="right"></zem-help-popover>
                     </label>
@@ -39,9 +37,9 @@
                         Ad Group's Daily Spend Cap
                         <zem-help-popover content="Amount of budget Autopilot can operate with on this Ad Group every day." placement="top"></zem-help-popover>
                     </label>
-                    <div class="form__prefixed-field form__prefixed-field--narrow">
-                        <span class="form__field-prefix">$</span>
-                        <input class="form__input-text" id="autopilot-budget" type="text" ng-model="$ctrl.entity.settings.autopilotBudget" fraction-size="0"
+                    <div class="prefixed-field prefixed-field--narrow">
+                        <span class="prefixed-field__prefix">$</span>
+                        <input class="input-text" id="autopilot-budget" type="text" ng-model="$ctrl.entity.settings.autopilotBudget" fraction-size="0"
                             zem-currency-input ng-disabled="$ctrl.isInLanding()">
                     </div>
                     <div class="message message--error" ng-repeat="error in $ctrl.errors.autopilotBudget" for="autopilot-budget">{{ error }}</div>
@@ -55,7 +53,6 @@
                 </div>
             </div>
         </div>
-
         <div class="message message--error" ng-repeat="error in $ctrl.errors.autopilotState">{{ error }}</div>
     </div>
 </div>

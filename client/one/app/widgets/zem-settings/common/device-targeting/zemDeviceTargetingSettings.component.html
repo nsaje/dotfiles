@@ -14,8 +14,8 @@
                                            'zem-settings-device-targeting__active': device.checked,
                                            }" ng-repeat='device in $ctrl.entity.settings.targetDevices'>
             <label class="form__label" for="{{ device.name }}"></label>
-            <input class="form__input-checkbox" type="checkbox" id="{{ device.name }}" ng-model="device.checked">
-            <label class="form__checkbox-text" for="{{ device.name }}">{{ device.name }}</label>
+            <input class="input-checkbox" type="checkbox" id="{{ device.name }}" ng-model="device.checked">
+            <label class="checkbox-text" for="{{ device.name }}">{{ device.name }}</label>
         </div>
     </div>
     <div class="message message--error" ng-repeat="error in $ctrl.errors.targetDevices">{{ error }}</div>

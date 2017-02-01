@@ -1,3 +1,148 @@
+///////////////////////////
+// Edit-campaign-goal modal //
+///////////////////////////
+
+.modal__body .form__group--meet-or-beat-goal {
+    .postfixed-field,
+    .input-text {
+        width: @form-input-width-modal - 45% - 2%;
+        margin-right: 2%;
+    }
+
+    .postfixed-field {
+        .input-text {
+            width: 100%;
+        }
+    }
+
+    .button {
+        width: 45%;
+    }
+}
+
+///////////////////////////
+// Dropdown //
+///////////////////////////
+
+.dropdown-menu__container {
+    padding: 10px @default-spacing;
+    max-height: 400px;
+    overflow: auto;
+}
+
+.dropdown-menu__category {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid @light-gray;
+    position: relative;
+
+    .clearfix();
+
+    &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+
+    .internal-feature {
+        top: 0px;
+        left: -5px;
+    }
+}
+
+.dropdown-menu__category-name {
+    color: @secondary-color;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.dropdown-menu__category-description {
+    color: @gray;
+}
+
+.dropdown-menu__subcategory {
+    width: 50%;
+    float: left;
+    margin-top: 5px;
+}
+
+.dropdown-menu__subcategory-name {
+    color: @secondary-color;
+    font-weight: 500;
+}
+
+.dropdown-menu__list {
+    margin: 5px 0 0 0;
+    padding: 0;
+
+    .clearfix();
+
+    .internal-feature {
+        top: 1px;
+        left: 0;
+    }
+}
+
+.dropdown-menu__list--two-columns {
+    .dropdown-menu__list-item {
+        width: 50%;
+        float: left;
+    }
+}
+
+.dropdown-menu__list-item {
+    list-style: none;
+    margin: 0 0 5px 0;
+    padding: 0 10px 0 0;
+    position: relative;
+}
+
+.dropdown-menu__list--condensed {
+    .dropdown-menu__list-item {
+        width: auto;
+        float: left;
+        margin-bottom: 0;
+        padding-right: 15px;
+    }
+
+    .dropdown-menu__list-item--option {
+        padding-right: 25px;
+    }
+}
+
+.dropdown-menu__list-item--option {
+    margin-bottom: 0px;
+}
+
+.dropdown-menu__option {
+    cursor: pointer;
+    padding: 3px 5px 2px 5px;
+    margin-left: -5px;
+    border-radius: @border-radius;
+
+    &:hover {
+        background-color: @secondary-color;
+        color: white;
+    }
+
+    .internal-feature {
+        left: -5px;
+        top: 0px;
+    }
+}
+
+.dropdown-menu__option--selected {
+    background-color: fade(@secondary-color,10%);
+}
+
+///////////////////////////
+///////////////////////////
+///////////////////////////
+// Below this comment is old CSS that needs review //
+///////////////////////////
+///////////////////////////
+///////////////////////////
+
 .page {
     h1 {
         margin: -10px 0 -10px 0;
@@ -10,27 +155,22 @@
     }
 }
 
-///////////////////////////
-// Edit-campaign-goal modal //
-///////////////////////////
+.container-fluid, .container {
+    min-height: 100vh;
+    padding-bottom: 52px;
+    position: relative;
 
-.form__group.form__group--meet-or-beat-goal {
-    .form__postfixed-field,
-    .form__input-text {
-        width: @form-input-width-modal - 45% - 2%;
-        margin-right: 2%;
-    }
-
-    .form__postfixed-field {
-        .form__input-text {
-            width: 100%;
-        }
-    }
-
-    .button {
-        width: 45%;
+    .footer {
+        position: absolute;
+        bottom: 0;
     }
 }
+
+.body .content-full {
+
+}
+
+
 
 ///////////////////////////
 // Internal feature //
@@ -90,14 +230,6 @@ zem-internal-feature {
     margin: @default-spacing*1.5+100 0 @default-spacing*1.5 0;
     border: none;
     transition: margin-top @default-animation;
-
-    .section {
-        .alert {
-            margin: -@default-spacing -@default-spacing @default-spacing -@default-spacing;
-            border: none;
-            border-radius: 0;
-        }
-    }
 }
 
 ///////////////////////////
@@ -129,6 +261,11 @@ zem-internal-feature {
 
                 .chart {
                     height: 290px;
+                    margin-left: -10px;
+
+                    .highcharts-background {
+                        fill: none;
+                    }
                 }
 
                 .chart-selector {
@@ -848,13 +985,6 @@ zem-internal-feature {
     }
 }
 
-.zem-grid-column-selector .dropdown-menu,
-.zem-grid-breakdown-selector .dropdown-menu {
-    border: 1px solid @border-color;
-    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
-    margin-top: 8px;
-}
-
 .custom-cols.dropdown {
     .dropdown-menu {
         margin-top: 7px;
@@ -1072,50 +1202,6 @@ zem-internal-feature {
 ///////////////////////////
 // Alerts //
 ///////////////////////////
-
-
-.alert {
-    position: relative;
-    padding: 10px 15px;
-    line-height: 16px;
-    border-radius: 0;
-    margin: 0;
-    width: auto;
-
-    &.alert-icon {
-        padding-left: 40px;
-
-        .icon {
-            position: absolute;
-            top: 50%;
-            left: 10px;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            display: block;
-            background-size: 20px;
-        }
-
-        &.alert-warning {
-            .icon {
-                background-image: url('images/alert-warning.svg');
-            }
-        }
-    }
-
-    .form-alert-exclamation {
-        width: 20px;
-        height: 20px;
-        float: left;
-        display: inline-block;
-        margin-right: 10px;
-    }
-
-    .form-alert-body {
-        display: inline-block;
-        line-height: 20px;
-    }
-}
 
 .page-ad-group-settings #form-ad-group-settings {
     padding-top: 0px;
@@ -1458,6 +1544,7 @@ select.media-source-select {
 
             &.active {
                 background-color: @secondary-color;
+                color: white;
 
                 .text-info {
                     color: @white;
@@ -1506,14 +1593,6 @@ select.media-source-select {
 
 .zem-grid-column-selector,
 .zem-grid-breakdown-selector {
-    zem-internal-feature {
-        left: -5px;
-    }
-
-    .internal {
-        border: none;
-    }
-
     ul.dropdown-menu {
         .list-wrapper {
             padding-bottom: @default-spacing;
@@ -1572,7 +1651,6 @@ select.media-source-select {
             margin: 3px 0 3px 5px;
             label {
                 font-weight: normal;
-                color: @text-color;
                 font-size: @default-font-size;
 
                 &.disabled {
@@ -1595,15 +1673,6 @@ select.media-source-select {
     margin-left: 5px !important;
 }
 
-.settings-option-group {
-    padding-left: 16px;
-    margin: 0 5px;
-    &__header {
-        margin-bottom: 5px;
-    }
-    &__control { }
-}
-
 .splash {
     display: none;
     position: fixed;
@@ -1611,9 +1680,10 @@ select.media-source-select {
     left: 50%;
     text-align: center;
     transform: translate(-50%, -50%);
-    &__loader {
-        &:extend(.loader);
-    }
+}
+
+.splash__loader {
+    &:extend(.loader);
 }
 
 [ng-cloak].splash {

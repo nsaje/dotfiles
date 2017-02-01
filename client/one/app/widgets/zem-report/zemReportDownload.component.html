@@ -40,7 +40,8 @@
         <div class="form__group form__group--informative">
             <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_include_totals_in_reports')" popover-placement="right"></zem-internal-feature>
             <label class="form__label" for="include-totals-checkbox">Include totals</label>
-            <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.includeTotals" class="form__input-checkbox">
+            <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.includeTotals" class="input-checkbox">
+            <label class="checkbox-text" id="include-totals-checkbox"></label>
         </div>
         <hr>
         <div class="form__group">
@@ -51,7 +52,7 @@
         </div>
         <div class="form__group" ng-class="{'form__group--error': $ctrl.errors.details.options.recipients.length > 0}">
             <label class="form__label">Add more recipients</label>
-            <textarea class="form__textarea" ng-model="$ctrl.recipients" placeholder="Comma-separated list of recipient email addresses"></textarea>
+            <textarea class="textarea" ng-model="$ctrl.recipients" placeholder="Comma-separated list of recipient email addresses"></textarea>
             <div ng-repeat="error in $ctrl.errors.details.options.recipients" class="message message--error" for="recipients">{{ error }}</div>
         </div>
     </div>
