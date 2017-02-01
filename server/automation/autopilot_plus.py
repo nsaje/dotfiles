@@ -8,7 +8,7 @@ import influx
 
 import dash
 import dash.campaign_goals
-from dash.constants import CampaignGoalKPI, SourceAllRTB
+from dash.constants import CampaignGoalKPI, SourceAllRTB, AdGroupSourceSettingsState
 from dash import stats_helper
 from automation import models
 from automation import autopilot_budgets
@@ -82,14 +82,15 @@ def _get_autopilot_predictions(adjust_budgets, adjust_cpcs, adgroup, adgroup_set
                                                        data, campaign_goal=campaign_goal,
                                                        rtb_as_one=rtb_as_one)
     if adjust_cpcs:
-        adjust_rtb_sources = is_budget_ap_enabled or not rtb_as_one
+        adjust_rtb_sources = not rtb_as_one
         cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(
             adgroup, adgroup_settings, data, budget_changes=budget_changes, adjust_rtb_sources=adjust_rtb_sources)
     return cpc_changes, budget_changes
 
 
-def initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False):
-    paused_sources_changes = _set_paused_ad_group_sources_to_minimum_values(ad_group)
+def initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False):
+    ad_group = ad_group_settings.ad_group
+    paused_sources_changes = _set_paused_ad_group_sources_to_minimum_values(ad_group_settings)
     autopilot_changes_data = run_autopilot(ad_groups=[ad_group.id], adjust_cpcs=False,
                                            adjust_budgets=True, initialization=True, send_mail=send_mail)
     changed_sources = set()
@@ -103,31 +104,31 @@ def initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False):
     return changed_sources
 
 
-def _set_paused_ad_group_sources_to_minimum_values(ad_group):
-    ad_group_sources = autopilot_helpers.get_autopilot_active_sources_settings([ad_group],
+def _set_paused_ad_group_sources_to_minimum_values(ad_group_settings):
+    ad_group = ad_group_settings.ad_group
+    ad_group_sources = autopilot_helpers.get_autopilot_active_sources_settings({ad_group: ad_group_settings},
                                                                                AdGroupSettingsState.INACTIVE)
+    if ad_group_settings.b1_sources_group_enabled:
+        ad_group_sources = [a for a in ad_group_sources if a.ad_group_source.source.source_type.type != SourceType.B1]
+        if ad_group_settings.b1_sources_group_state == AdGroupSourceSettingsState.INACTIVE:
+            ad_group_sources.append(SourceAllRTB)
+
     new_budgets = {}
-    data = {}
     for ag_source_setting in ad_group_sources:
-        ag_source = ag_source_setting.ad_group_source
+        ag_source = ag_source_setting.ad_group_source if ag_source_setting != SourceAllRTB else SourceAllRTB
+        old_budget = ad_group_settings.b1_sources_group_daily_budget
+        if ag_source != SourceAllRTB:
+            old_budget = ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else\
+                autopilot_helpers.get_ad_group_sources_minimum_cpc(ag_source)
         new_budgets[ag_source] = {
-            'old_budget': ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else
-            autopilot_helpers.get_ad_group_sources_minimum_cpc(ag_source),
+            'old_budget': old_budget,
             'new_budget': autopilot_helpers.get_ad_group_sources_minimum_daily_budget(ag_source),
             'budget_comments': [automation.constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE]
-        }
-        data[ag_source] = {
-            'old_cpc_cc': ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else
-            autopilot_helpers.get_ad_group_sources_minimum_cpc(ag_source),
-            'old_budget': ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else
-            autopilot_helpers.get_ad_group_sources_minimum_daily_budget(ag_source),
-            'yesterdays_spend_cc': None,
-            'yesterdays_clicks': None
         }
     try:
         with transaction.atomic():
             set_autopilot_changes({}, new_budgets, ad_group)
-            persist_autopilot_changes_to_log(ad_group, {}, new_budgets, data,
+            persist_autopilot_changes_to_log(ad_group, {}, new_budgets, new_budgets,
                                              AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
     except Exception as e:
         _report_autopilot_exception(ad_group_sources, e)
@@ -155,7 +156,7 @@ def persist_autopilot_changes_to_log(ad_group, cpc_changes, budget_changes, data
         old_budget = data[ag_source]['old_budget']
         goal_col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
         goal_value = data[ag_source][goal_col] if goal_col in data[ag_source] else 0.0
-        new_cpc_cc = data[ag_source]['old_cpc_cc']
+        new_cpc_cc = data[ag_source].get('old_cpc_cc', None)
         if cpc_changes:
             if ag_source in cpc_changes:
                 new_cpc_cc = cpc_changes[ag_source]['new_cpc_cc']
@@ -179,12 +180,12 @@ def persist_autopilot_changes_to_log(ad_group, cpc_changes, budget_changes, data
             ad_group=ad_group,
             autopilot_type=autopilot_state,
             ad_group_source=ag_source if ag_source != SourceAllRTB else None,
-            previous_cpc_cc=data[ag_source]['old_cpc_cc'],
+            previous_cpc_cc=data[ag_source].get('old_cpc_cc', None),
             new_cpc_cc=new_cpc_cc,
             previous_daily_budget=old_budget,
             new_daily_budget=new_daily_budget,
-            yesterdays_spend_cc=data[ag_source]['yesterdays_spend_cc'],
-            yesterdays_clicks=data[ag_source]['yesterdays_clicks'],
+            yesterdays_spend_cc=data[ag_source].get('yesterdays_spend_cc', None),
+            yesterdays_clicks=data[ag_source].get('yesterdays_clicks', None),
             goal_value=goal_value,
             cpc_comments=', '.join(automation.constants.CpcChangeComment.get_text(c) for c in cpc_comments),
             budget_comments=', '.join(automation.constants.DailyBudgetChangeComment.get_text(b)
@@ -212,7 +213,7 @@ def set_autopilot_changes(cpc_changes={}, budget_changes={}, ad_group=None,
 
 
 def prefetch_autopilot_data(ad_groups_and_settings):
-    enabled_ag_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_settings.keys())
+    enabled_ag_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)
     sources = set(s.ad_group_source.source.id for s in enabled_ag_sources_settings)
     yesterday_data, days_ago_data, conv_days_ago_data, campaign_goals, conv_goals = _fetch_data(
         ad_groups_and_settings.keys(), sources)
@@ -416,15 +417,15 @@ def _report_new_budgets_on_ap_to_influx(ad_group_settings):
     total_budget_on_all_ap = Decimal(0.0)
     num_sources_on_budget_ap = 0
     num_sources_on_cpc_ap = 0
-    ad_groups_and_ap_types = {adgs.ad_group: adgs.autopilot_state for adgs in ad_group_settings}
-    for ag_source_setting in autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_ap_types.keys()):
+    ad_groups_and_settings = {adgs.ad_group: adgs for adgs in ad_group_settings}
+    for ag_source_setting in autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_settings):
         ad_group = ag_source_setting.ad_group_source.ad_group
         daily_budget = ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else Decimal(0)
         total_budget_on_all_ap += daily_budget
-        if ad_groups_and_ap_types.get(ad_group) == AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        if ad_groups_and_settings.get(ad_group).autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             total_budget_on_budget_ap += daily_budget
             num_sources_on_budget_ap += 1
-        elif ad_groups_and_ap_types.get(ad_group) == AdGroupSettingsAutopilotState.ACTIVE_CPC:
+        elif ad_groups_and_settings.get(ad_group).autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC:
             total_budget_on_cpc_ap += daily_budget
             num_sources_on_cpc_ap += 1
 

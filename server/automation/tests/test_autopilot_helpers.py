@@ -52,8 +52,10 @@ class AutopilotHelpersTestCase(test.TestCase):
         self.assertEqual(new_ag_source_settings.cpc_cc, old_cpc+Decimal('0.5'))
 
     def test_get_autopilot_active_sources_settings(self):
-        adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 2, 3])
-        active_enabled_sources = autopilot_helpers.get_autopilot_active_sources_settings(adgroups)
+        adgroups_settings = dash.models.AdGroup.objects.filter(id__in=[1, 2, 3]).group_current_settings()
+        adgroups = [adg for adg in adgroups_settings.ad_group]
+        ad_groups_and_settings = {adgs.ad_group: adgs for adgs in adgroups_settings}
+        active_enabled_sources = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)
         for ag_source_setting in active_enabled_sources:
             self.assertTrue(ag_source_setting.state == AdGroupSettingsState.ACTIVE)
             self.assertTrue(ag_source_setting.ad_group_source.ad_group in adgroups)
@@ -67,4 +69,4 @@ class AutopilotHelpersTestCase(test.TestCase):
         )
         self.assertEqual(source.get_current_settings().state, AdGroupSettingsState.INACTIVE)
         self.assertFalse(source in [setting.ad_group_source for setting in
-                                    autopilot_helpers.get_autopilot_active_sources_settings(adgroups)])
+                                    autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)])

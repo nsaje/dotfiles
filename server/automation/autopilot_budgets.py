@@ -6,7 +6,7 @@ from random import betavariate, random
 
 import dash
 import dash.views.helpers
-from dash.constants import CampaignGoalKPI, SourceType, SourceAllRTB
+from dash.constants import CampaignGoalKPI, SourceType, SourceAllRTB, AdGroupSourceSettingsState
 from automation import autopilot_settings, autopilot_helpers
 from automation.constants import DailyBudgetChangeComment
 
@@ -193,8 +193,14 @@ def _get_campaign_goal_value(campaign_goal_type, data_value, max_value_of_campai
 
 
 def get_adgroup_minimum_daily_budget(adgroup=None):
-    return len(autopilot_helpers.get_autopilot_active_sources_settings([adgroup])) *\
-        autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
+    ad_group_settings = adgroup.get_current_settings()
+    enabled_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings({adgroup: ad_group_settings})
+    if ad_group_settings.b1_sources_group_enabled:
+        enabled_sources_settings = [a for a in enabled_sources_settings if
+                                    a.ad_group_source.source.source_type.type != SourceType.B1]
+        if ad_group_settings.b1_sources_group_state == AdGroupSourceSettingsState.ACTIVE:
+            enabled_sources_settings.append(SourceAllRTB)
+    return len(enabled_sources_settings) * autopilot_settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
 
 
 class BetaBandit(object):

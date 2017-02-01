@@ -85,7 +85,7 @@ class AdGroupSourceState(BaseBulkActionView):
                 )
 
         if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)
+            autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
 
         k1_helper.update_ad_group(ad_group.pk, msg='AdGroupSourceState.post')
 

@@ -5,7 +5,7 @@ import traceback
 from django.core.mail import send_mail
 
 import dash
-from dash.constants import AdGroupSettingsState, EmailTemplateType
+from dash.constants import AdGroupSettingsState, EmailTemplateType, SourceType
 from automation import autopilot_settings
 import automation.helpers
 from automation.constants import DailyBudgetChangeComment, CpcChangeComment
@@ -47,14 +47,32 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
     return ad_groups_on_autopilot, ad_group_settings_on_autopilot
 
 
-def get_autopilot_active_sources_settings(ad_groups, ad_group_setting_state=AdGroupSettingsState.ACTIVE):
-    ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups)
+def get_autopilot_active_sources_settings(ad_groups_and_settings, ad_group_setting_state=AdGroupSettingsState.ACTIVE):
+    ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups_and_settings.keys())
     ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source_id__in=ag_sources).\
         group_current_settings().select_related('ad_group_source__source__source_type')
-    if ad_group_setting_state:
-        return [ag_source_setting for ag_source_setting in ag_sources_settings if
-                ag_source_setting.state == ad_group_setting_state]
-    return ag_sources_settings
+
+    if not ad_group_setting_state:
+        return ag_sources_settings
+
+    ret = []
+    for agss in ag_sources_settings:
+        ad_group_settings = ad_groups_and_settings[agss.ad_group_source.ad_group]
+        if ad_group_setting_state == AdGroupSettingsState.ACTIVE:
+            if (agss.ad_group_source.source.source_type.type == SourceType.B1 and
+                    ad_group_settings.b1_sources_group_enabled and
+                    ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE):
+                continue
+        elif ad_group_setting_state == AdGroupSettingsState.INACTIVE:
+            if (agss.ad_group_source.source.source_type.type == SourceType.B1 and
+                    ad_group_settings.b1_sources_group_enabled and
+                    ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.ACTIVE):
+                continue
+
+        if agss.state == ad_group_setting_state:
+            ret.append(agss)
+
+    return ret
 
 
 def ad_group_source_is_synced(ad_group_source):

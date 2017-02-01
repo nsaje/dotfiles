@@ -209,7 +209,7 @@ class AutopilotPlusTestCase(test.TestCase):
 
             }}
         }
-        changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(adg)
+        changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(adg.get_current_settings())
         self.assertTrue(paused_ad_group_source in changed_sources)
         self.assertTrue(changed_source in changed_sources)
         self.assertTrue(not_changed_source not in changed_sources)
