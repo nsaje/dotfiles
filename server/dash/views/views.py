@@ -44,6 +44,7 @@ from dash import infobox_helpers
 from dash import publisher_helpers
 from dash import history_helpers
 from dash import blacklist
+from dash import cpc_constraints
 
 import reports.api_publishers
 import analytics.projections
@@ -1146,7 +1147,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group_source.get_current_settings_or_none(),
                 campaign_settings,
                 allowed_sources,
-                campaign_stop.can_enable_media_source(ad_group_source, ad_group.campaign, campaign_settings, ad_group_settings)
+                campaign_stop.can_enable_media_source(
+                    ad_group_source, ad_group.campaign, campaign_settings, ad_group_settings)
             ),
             'autopilot_changed_sources': autopilot_changed_sources_text,
             'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings)
@@ -1191,8 +1193,16 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         if select_all:
             publishers = self._query_all_publishers(ad_group, start_date, end_date)
 
-        self._handle_blacklisting(request, ad_group, level, state, publishers, publishers_selected,
-                                  publishers_not_selected)
+        try:
+            self._handle_blacklisting(
+                request, ad_group, level, state, publishers, publishers_selected,
+                publishers_not_selected,
+                enforce_cpc=body.get('enforce_cpc')
+            )
+        except cpc_constraints.CpcValidationError as err:
+            raise exc.ValidationError(errors={
+                'cpc_constraints': list(err)
+            })
 
         response = {
             "success": True,
@@ -1200,11 +1210,10 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def _handle_blacklisting(self, request, ad_group, level, state, publishers, publishers_selected,
-                             publishers_not_selected):
+                             publishers_not_selected, enforce_cpc=False):
         source_domains = self._generate_source_publishers(
             publishers, publishers_selected, publishers_not_selected
         )
-
         constraints = {}
         if level == constants.PublisherBlacklistLevel.ADGROUP:
             constraints['ad_group'] = ad_group
@@ -1217,7 +1226,8 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             source_constraints = {'source': source}
             source_constraints.update(constraints)
             blacklist.update(ad_group, source_constraints, state, domains,
-                             everywhere=level == constants.PublisherBlacklistLevel.GLOBAL)
+                             everywhere=level == constants.PublisherBlacklistLevel.GLOBAL,
+                             enforce_cpc=enforce_cpc)
 
         self._write_history(request, ad_group, state, [
             {'source': source, 'domain': d[0]}

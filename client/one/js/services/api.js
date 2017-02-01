@@ -201,7 +201,7 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterSe
     }
 
     function AdGroupPublishersState () {
-        this.save = function (id, state, level, startDate, endDate, publishersSelected, publishersNotSelected, selectedAll) {
+        this.save = function (id, state, level, startDate, endDate, publishersSelected, publishersNotSelected, selectedAll, enforceCpc) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/publishers/blacklist/';
 
@@ -212,7 +212,8 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterSe
                 end_date: endDate,
                 select_all: selectedAll,
                 publishers_selected: publishersSelected,
-                publishers_not_selected: publishersNotSelected
+                publishers_not_selected: publishersNotSelected,
+                enforce_cpc: enforceCpc
             }).
                 success(function (data) {
                     deferred.resolve(data);

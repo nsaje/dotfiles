@@ -1589,6 +1589,8 @@ class CpcConstraintAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_dt'
 
     def _reason(self, obj):
+        if obj.reason is None:
+            return ''
         if len(obj.reason) > 30:
             return obj.reason[:27] + ' ...'
         return obj.reason
