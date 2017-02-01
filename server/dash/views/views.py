@@ -1125,11 +1125,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource:
             resource['daily_budget_cc'] = decimal.Decimal(resource['daily_budget_cc'])
 
-        if 'cpc_cc' in resource or 'daily_budget_cc' in resource:
-            end_datetime = ad_group_settings.get_utc_end_datetime()
-            if end_datetime is not None and end_datetime <= datetime.datetime.utcnow():
-                raise exc.ValidationError("Ad group end date in the past!")
-
         allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
 
         api.set_ad_group_source_settings(ad_group_source, resource, request)

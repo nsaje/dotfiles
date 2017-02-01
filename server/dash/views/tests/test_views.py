@@ -315,26 +315,6 @@ class AdGroupSourceSettingsTest(TestCase):
         request.user = User.objects.get(id=1)
         new_settings.save(request)
 
-    def test_end_date_past(self):
-        self._set_ad_group_end_date(-1)
-        response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-            data=json.dumps({'cpc_cc': '0.15'})
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
-
-    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
-    @patch('utils.k1_helper.update_ad_group')
-    def test_end_date_future(self, mock_k1_ping):
-        self._set_ad_group_end_date(days_delta=3)
-        response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-            data=json.dumps({'cpc_cc': '0.15'})
-        )
-        self.assertEqual(response.status_code, 200)
-        mock_k1_ping.assert_called_with(1, msg='AdGroupSourceSettings.put')
-
     @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     @patch('utils.k1_helper.update_ad_group')
     def test_cpc_bigger_than_max(self, mock_k1_ping):
@@ -381,15 +361,6 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertFalse(mock_k1_ping.called)
-
-    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
-    def test_set_cpc_landing_mode(self):
-        self._set_campaign_landing_mode()
-        response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-            data=json.dumps({'cpc_cc': '0.15'})
-        )
-        self.assertEqual(response.status_code, 400)
 
     @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     def test_set_daily_budget_landing_mode(self):

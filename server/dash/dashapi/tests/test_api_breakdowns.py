@@ -116,11 +116,11 @@ AD_GROUP_SOURCE_1 = {
             'enabled': False
         },
         'bid_cpc': {
-            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',  # noqa
+            'message': 'This value cannot be edited because the ad group is on Autopilot.',
             'enabled': False
         },
         'daily_budget': {
-            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',  # noqa
+            'message': 'This value cannot be edited because the ad group is on Autopilot.',
             'enabled': False
         }
     },
@@ -139,11 +139,11 @@ AD_GROUP_SOURCE_2 = {
             'enabled': False
         },
         'bid_cpc': {
-            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',  # noqa
+            'message': 'This value cannot be edited because the ad group is on Autopilot.',
             'enabled': False
         },
         'daily_budget': {
-            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',  # noqa
+            'message': 'This value cannot be edited because the ad group is on Autopilot.',
             'enabled': False
         }
     },

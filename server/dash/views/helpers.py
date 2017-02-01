@@ -679,16 +679,6 @@ def copy_stats_to_row(stat, row):
             row[key] = stat[key]
 
 
-def _is_end_date_past(ad_group_settings):
-    end_utc_datetime = ad_group_settings.get_utc_end_datetime()
-
-    if end_utc_datetime is None:  # user will stop adgroup manually
-        return False
-
-    # if end date is in the past then we can't edit cpc and budget
-    return end_utc_datetime < datetime.datetime.utcnow()
-
-
 def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_source_settings,
                         campaign_settings, allowed_sources, can_enable_source):
     editable_fields = {}
@@ -722,7 +712,6 @@ def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, c
     message = None
 
     if not ad_group_source.source.can_update_cpc() or\
-            _is_end_date_past(ad_group_settings) or\
             ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
         message = _get_bid_cpc_daily_budget_disabled_message(
             ad_group, ad_group_source, ad_group_settings, campaign_settings)
@@ -739,7 +728,6 @@ def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settin
     if not ad_group_source.source.can_update_daily_budget_automatic() and\
        not ad_group_source.source.can_update_daily_budget_manual() or\
        campaign_settings.landing_mode or\
-       _is_end_date_past(ad_group_settings) or\
        ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         message = _get_daily_budget_disabled_message(
             ad_group, ad_group_source, ad_group_settings, campaign_settings)
@@ -864,9 +852,6 @@ def _get_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_setti
 def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings, campaign_settings):
     if ad_group_source.source.maintenance:
         return 'This value cannot be edited because the media source is currently in maintenance.'
-
-    if _is_end_date_past(ad_group_settings):
-        return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
 
     if ad_group_settings.autopilot_state in [constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
                                              constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET]:
