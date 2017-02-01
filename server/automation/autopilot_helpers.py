@@ -10,6 +10,7 @@ from automation import autopilot_settings
 import automation.helpers
 from automation.constants import DailyBudgetChangeComment, CpcChangeComment
 from dash import constants
+from dash.constants import SourceAllRTB
 import dash.models
 from utils import pagerduty_helper, url_helper
 from utils.email_helper import format_email, email_manager_list
@@ -78,8 +79,8 @@ def get_ad_group_sources_minimum_cpc(ad_group_source):
 
 def get_ad_group_sources_minimum_daily_budget(ad_group_source,
                                               ap_type=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET):
-    if ad_group_source == 'b1_sources':
-        source_min_daily_budget = constants.SourceAllRTB.MIN_DAILY_BUDGET
+    if ad_group_source == SourceAllRTB:
+        source_min_daily_budget = SourceAllRTB.MIN_DAILY_BUDGET
     else:
         source_min_daily_budget = ad_group_source.source.source_type.min_daily_budget
     if ap_type != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
@@ -109,9 +110,9 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
     changesText = []
     for adgroup, adgroup_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
-        if 'b1_sources' in adgroup_changes:
-            changesText.append(_get_email_source_changes_text('RTB Sources', adgroup_changes['b1_sources']))
-            adgroup_changes.pop('b1_sources', None)
+        if SourceAllRTB in adgroup_changes:
+            changesText.append(_get_email_source_changes_text(SourceAllRTB.NAME, adgroup_changes[SourceAllRTB]))
+            adgroup_changes.pop(SourceAllRTB, None)
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changesText.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
         changesText.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes))
@@ -153,9 +154,9 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
     changesText = []
     for adgroup, adgroup_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
-        if 'b1_sources' in adgroup_changes:
-            changesText.append(_get_email_source_changes_text('RTB Sources', adgroup_changes['b1_sources']))
-            adgroup_changes.pop('b1_sources', None)
+        if SourceAllRTB in adgroup_changes:
+            changesText.append(_get_email_source_changes_text(SourceAllRTB.NAME, adgroup_changes[SourceAllRTB]))
+            adgroup_changes.pop(SourceAllRTB, None)
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changesText.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
 
@@ -223,7 +224,7 @@ def _get_email_adgroup_pausing_suggestions_text(adgroup_changes):
         changes = adgroup_changes[ag_source]
         if all(b in changes for b in ['new_budget', 'old_budget']) and\
                 changes['new_budget'] == get_ad_group_sources_minimum_daily_budget(ag_source):
-            suggested_sources.append(ag_source.source.name if ag_source != 'b1_sources' else 'RTB Sources')
+            suggested_sources.append(ag_source.source.name if ag_source != SourceAllRTB else SourceAllRTB.NAME)
     if suggested_sources:
         return '\n\nTo improve ad group\'s performance, please consider pausing the following media sources: ' +\
                ", ".join(suggested_sources) + '.\n'

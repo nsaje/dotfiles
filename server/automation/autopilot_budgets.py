@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, campaign_goal=None, rtb_as_one=False):
     if rtb_as_one:
         data = {ags: v for ags, v in data.iteritems() if
-                ags == 'b1_sources' or ags.source.source_type.type != SourceType.B1}
+                ags == SourceAllRTB or ags.source.source_type.type != SourceType.B1}
     active_sources = data.keys()
     max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(data, daily_budget)
     comments = []
@@ -54,7 +54,7 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, cam
             new_budgets[s] += Decimal(1)
             bandit.add_result(s, predict_outcome_success(s, data[s], campaign_goal, min_value_of_optimization_goal,
                                                          max_value_of_optimization_goal, new_budget=new_budgets[s]))
-            max_budget = s.source.source_type.max_daily_budget if s != 'b1_sources' else SourceAllRTB.MAX_DAILY_BUDGET
+            max_budget = s.source.source_type.max_daily_budget if s != SourceAllRTB else SourceAllRTB.MAX_DAILY_BUDGET
             if new_budgets[s] >= max_budget:
                 bandit.remove_source(s)
 
@@ -111,11 +111,11 @@ def _get_optimistic_autopilot_budget_constraints(data):
     min_budgets = {}
     old_budgets = {}
     active_sources = data.keys()
-    if 'b1_sources' in active_sources:
+    if SourceAllRTB in active_sources:
         max_budgets, min_budgets, old_budgets = _populate_optimistic_budget_constraints_row(
-            data['b1_sources']['old_budget'], max_budgets, min_budgets, old_budgets,
-            'b1_sources', SourceAllRTB.MIN_DAILY_BUDGET)
-        active_sources.remove('b1_sources')
+            data[SourceAllRTB]['old_budget'], max_budgets, min_budgets, old_budgets,
+            SourceAllRTB, SourceAllRTB.MIN_DAILY_BUDGET)
+        active_sources.remove(SourceAllRTB)
     ags_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__in=active_sources)\
                                                     .group_current_settings().select_related('ad_group_source')
     for source_settings in ags_settings:
@@ -145,11 +145,11 @@ def _get_minimum_autopilot_budget_constraints(data):
     max_budgets = {}
     min_budgets = {}
     active_sources = data.keys()
-    if 'b1_sources' in active_sources:
-        min_budgets['b1_sources'] = autopilot_helpers.get_ad_group_sources_minimum_daily_budget('b1_sources')
-        max_budgets['b1_sources'] = (min_budgets['b1_sources'] * autopilot_settings.MAX_BUDGET_GAIN).\
+    if SourceAllRTB in active_sources:
+        min_budgets[SourceAllRTB] = autopilot_helpers.get_ad_group_sources_minimum_daily_budget(SourceAllRTB)
+        max_budgets[SourceAllRTB] = (min_budgets[SourceAllRTB] * autopilot_settings.MAX_BUDGET_GAIN).\
             to_integral_exact(rounding=ROUND_CEILING)
-        active_sources.remove('b1_sources')
+        active_sources.remove(SourceAllRTB)
     for source in active_sources:
         min_budgets[source] = autopilot_helpers.get_ad_group_sources_minimum_daily_budget(source)
         max_budgets[source] = (min_budgets[source] * autopilot_settings.MAX_BUDGET_GAIN).\
