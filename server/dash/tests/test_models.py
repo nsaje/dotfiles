@@ -75,7 +75,7 @@ class AdGroupSettingsTest(TestCase):
             'b1_sources_group_state': constants.AdGroupSourceSettingsState.ACTIVE,
             'b1_sources_group_cpc_cc': Decimal('0.1'),
             'whitelist_publisher_groups': [1],
-            'blacklist_publisher_groups': [],
+            'blacklist_publisher_groups': [2],
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -148,6 +148,7 @@ class AdGroupSettingsTest(TestCase):
             'Max CPC bid set to "$1.000", '
             'Interest targeting set to "A, B", '
             'Exclusion interest targeting set to "C, D", '
+            'Blacklist publisher groups set to "", '
             'State set to "Enabled", '
             'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg", '
             'Start date set to "2014-06-04", '
@@ -161,13 +162,14 @@ class AdGroupSettingsTest(TestCase):
             'Max CPM set to "$1.60", '
             'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
             'Locations set to "United States", '
-            'Call to action set to "Call to action", '
+            'Display URL set to "example.com", '
             'Device targeting set to "Mobile", '
             'Notes set to "Some note", '
-            'Display URL set to "example.com", '
+            'Call to action set to "Call to action", '
             'Pixel retargeting JavaScript set to "alert(\'a\')", '
             'Group all RTB sources set to "True", '
-            'Ad group name set to "AdGroup name", BlueKai targeting set to "["or", 3, 4]"'
+            'Ad group name set to "AdGroup name", '
+            'BlueKai targeting set to "["or", 3, 4]"'
         )
 
 
@@ -327,6 +329,8 @@ class CampaignSettingsTest(TestCase):
             'ga_tracking_type': 1,
             'enable_adobe_tracking': False,
             'adobe_tracking_param': u'',
+            'whitelist_publisher_groups': [1],
+            'blacklist_publisher_groups': [2],
         }
 
         self.assertEqual(

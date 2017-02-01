@@ -43,6 +43,9 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
 
     for adg_settings in ad_group_settings_on_ap:
         adg = adg_settings.ad_group
+        if adg not in data:  # NOTE: no sources for this ad group were added to data, autopilot doesn't have to be run
+            continue
+
         run_daily_budget_autopilot = adjust_budgets and (daily_run or not adg_settings.landing_mode)
         cpc_changes, budget_changes = _get_autopilot_predictions(
             run_daily_budget_autopilot, adjust_cpcs, adg, adg_settings, data[adg], campaign_goals.get(adg.campaign))

@@ -1,22 +1,17 @@
 angular.module('one.services').service('zemSelectionService', function ($rootScope, $location, zemPubSubService) {
     this.init = init;
     this.getSelection = getSelection;
-    this.isSelectedSet = isSelectedSet;
-    this.isUnselectedSet = isUnselectedSet;
-    this.isIdSelected = isIdSelected;
-    this.isIdUnselected = isIdUnselected;
+    this.isIdInSelected = isIdInSelected;
+    this.isIdInUnselected = isIdInUnselected;
     this.isTotalsSelected = isTotalsSelected;
     this.isAllSelected = isAllSelected;
-    this.toggle = toggle;
-    this.add = add;
+    this.getSelectedBatch = getSelectedBatch;
+    this.setSelection = setSelection;
     this.remove = remove;
-    this.toggleTotals = toggleTotals;
     this.selectTotals = selectTotals;
     this.unselectTotals = unselectTotals;
-    this.toggleAll = toggleAll;
     this.selectAll = selectAll;
     this.unselectAll = unselectAll;
-    this.selectBatch = selectBatch;
 
     this.onSelectionUpdate = onSelectionUpdate;
 
@@ -67,20 +62,11 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
         return angular.copy(selection);
     }
 
-    function isSelectedSet () {
-        return selection[SELECTED].length > 0;
+    function isIdInSelected (id) {
+        return isSelectedSet() && selection[SELECTED].indexOf(parseInt(id)) !== -1;
     }
 
-    function isUnselectedSet () {
-        return selection[UNSELECTED].length > 0;
-    }
-
-    function isIdSelected (id) {
-        id = parseInt(id);
-        return isAllSelected() && !isIdUnselected(id) || isSelectedSet() && selection[SELECTED].indexOf(id) !== -1;
-    }
-
-    function isIdUnselected (id) {
+    function isIdInUnselected (id) {
         return isUnselectedSet() && selection[UNSELECTED].indexOf(parseInt(id)) !== -1;
     }
 
@@ -92,32 +78,14 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
         return selection[ALL];
     }
 
-    function toggle (ids) {
-        ids = convertIdsToArray(ids);
-
-        var idsToAdd = ids.filter(function (id) {
-            return !isIdSelected(id);
-        });
-        var idsToRemove = ids.filter(function (id) {
-            return isIdSelected(id);
-        });
-
-        add(idsToAdd);
-        remove(idsToRemove);
+    function getSelectedBatch () {
+        return selection[BATCH];
     }
 
-    function add (ids) {
-        ids = convertIdsToArray(ids);
-
-        var updated = false;
-        ids.forEach(function (id) {
-            if (selection[SELECTED].indexOf(id) === -1) {
-                selection[SELECTED].push(id);
-                updated = true;
-            }
-        });
-
-        if (updated) {
+    function setSelection (newSelection) {
+        newSelection = angular.extend({}, getEmptySelection(), newSelection);
+        if (!angular.equals(selection, newSelection)) {
+            selection = newSelection;
             setUrlParams(selection);
             pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
         }
@@ -127,14 +95,6 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
         removeFromSelected(ids);
         if (isAllSelected() || selection[BATCH]) {
             addToUnselected(ids);
-        }
-    }
-
-    function toggleTotals () {
-        if (isTotalsSelected()) {
-            unselectTotals();
-        } else {
-            selectTotals();
         }
     }
 
@@ -150,14 +110,6 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
         pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
     }
 
-    function toggleAll () {
-        if (isAllSelected() && !isUnselectedSet()) {
-            unselectAll();
-        } else {
-            selectAll();
-        }
-    }
-
     function selectAll () {
         clear();
         selection[ALL] = true;
@@ -168,14 +120,6 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
 
     function unselectAll () {
         clear();
-        pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
-    }
-
-    function selectBatch (batchId) {
-        clear();
-        batchId = parseInt(batchId);
-        selection[BATCH] = batchId ? batchId : null;
-        setUrlParams(selection);
         pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
     }
 
@@ -194,6 +138,14 @@ angular.module('one.services').service('zemSelectionService', function ($rootSco
     function clear () {
         selection = getEmptySelection();
         setUrlParams(selection);
+    }
+
+    function isSelectedSet () {
+        return selection[SELECTED].length > 0;
+    }
+
+    function isUnselectedSet () {
+        return selection[UNSELECTED].length > 0;
     }
 
     function removeFromSelected (ids) {

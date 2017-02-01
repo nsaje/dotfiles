@@ -28,7 +28,12 @@ angular.module('one.widgets').directive('zemGridHeaderCellCheckbox', function ()
 
             function initialize () {
                 pubsub.register(pubsub.EVENTS.EXT_SELECTION_UPDATED, $scope, function () {
+                    vm.allFilterChecked = false;
                     var selection = selectionService.getSelection();
+                    if (selection.type === zemGridConstants.gridSelectionFilterType.ALL) {
+                        vm.allFilterChecked = true;
+                    }
+
                     var indeterminate =
                         selection.type === zemGridConstants.gridSelectionFilterType.CUSTOM ||
                         selection.selected.length > 0 || selection.unselected.length > 0;
@@ -39,7 +44,7 @@ angular.module('one.widgets').directive('zemGridHeaderCellCheckbox', function ()
                         indeterminate = false;
                     }
 
-                    $element.find('.allFilterCheckbox').prop ('indeterminate', indeterminate);
+                    $element.find('.allFilterCheckbox').prop('indeterminate', indeterminate);
                 });
             }
 

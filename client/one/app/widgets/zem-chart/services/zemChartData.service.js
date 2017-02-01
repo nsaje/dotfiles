@@ -12,11 +12,8 @@ angular.module('one.widgets').service('zemChartDataService', function ($q, zemDa
         this.setMetrics = setMetrics;
         this.getMetrics = getMetrics;
 
-        // TODO: use SelectionService
         var selection = {};
-        var totals = true;
         this.setSelection = setSelection;
-        this.getSelection = getSelection;
 
         function initialize () {
             applyMetaData(getMetaData());
@@ -57,7 +54,7 @@ angular.module('one.widgets').service('zemChartDataService', function ($q, zemDa
                 filteredAccountTypes: zemDataFilterService.getFilteredAccountTypes(),
                 filteredPublisherStatus: zemDataFilterService.getFilteredPublisherStatus(),
                 selection: selection,
-                totals: totals,
+                totals: selection.totals,
             };
         }
 
@@ -90,10 +87,6 @@ angular.module('one.widgets').service('zemChartDataService', function ($q, zemDa
         function setSelection (_selection, fetch) {
             selection = _selection;
             if (fetch) getData();
-        }
-
-        function getSelection () {
-            return getSelection;
         }
     }
 

@@ -54,7 +54,7 @@ angular.module('one.legacy').controller('AdGroupCtrl', function ($scope, $state,
     };
 
     $scope.isInLanding = function () {
-        return $scope.adGroup && $scope.adGroup.landingMode;
+        return $scope.adGroup && $scope.adGroup.landingMode && !$scope.isAdGroupPaused();
     };
 
     $scope.manageBudget = function () {

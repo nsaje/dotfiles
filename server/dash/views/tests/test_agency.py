@@ -2637,6 +2637,8 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': User.objects.get(pk=3),
             'account_type': 4,
             'name': 'changed name',
+            'whitelist_publisher_groups': [],
+            'blacklist_publisher_groups': [],
         })
         self.assertEqual(content['data']['settings']['facebook_page'], 'http://www.facebook.com/dummy_page')
         self.assertEqual(content['data']['settings']['facebook_status'], 'Pending')

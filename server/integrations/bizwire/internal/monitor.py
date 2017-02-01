@@ -78,7 +78,7 @@ def monitor_num_ingested_articles():
     now = dates_helper.utc_now()
     dates = []
     current_date = START_DATE
-    while current_date < now.date():
+    while current_date <= now.date():
         dates.append(current_date)
         current_date += datetime.timedelta(days=1)
     unique_labels = _get_unique_s3_labels(dates)
@@ -91,11 +91,11 @@ def monitor_num_ingested_articles():
 
     s3_count = len(unique_labels)
     db_count = len(content_ad_labels)
-    diff = set(unique_labels - content_ad_labels)
+    diff_count = len(unique_labels - content_ad_labels)
 
     influx.gauge('integrations.bizwire.article_count', s3_count, source='s3')
     influx.gauge('integrations.bizwire.article_count', db_count, source='db')
-    influx.gauge('integrations.bizwire.article_count', diff, source='diff')
+    influx.gauge('integrations.bizwire.article_count', diff_count, source='diff')
 
 
 def monitor_remaining_budget():

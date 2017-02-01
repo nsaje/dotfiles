@@ -15,7 +15,7 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
             grid: '=',
         },
         templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellEditableBaseField.component.html',
-        controller: function ($scope, zemGridConstants, zemGridDataFormatter, zemGridDataValidator, zemGridStateAndStatusHelpers) { // eslint-disable-line max-len
+        controller: function ($scope, zemGridConstants, zemGridDataFormatter, zemGridDataValidator, zemGridStateAndStatusHelpers, zemGridEndpointColumns) { // eslint-disable-line max-len
             var vm = this;
             var initialValue;
             var prevValidInputValue;
@@ -73,6 +73,10 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
                     return false;
                 }
 
+                if (vm.column.field === zemGridEndpointColumns.COLUMNS.bidCpcSetting.field) {
+                    return false;
+                }
+
                 if (!vm.grid.meta.data.adGroupLandingMode) {
                     return false;
                 }
@@ -85,6 +89,10 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
                     return false;
                 }
                 if (vm.grid.meta.data.adGroupAutopilotState === constants.adGroupSettingsAutopilotState.INACTIVE) {
+                    return false;
+                }
+                if (vm.grid.meta.data.adGroupAutopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC &&
+                    vm.column.field === zemGridEndpointColumns.COLUMNS.dailyBudgetSetting.field) {
                     return false;
                 }
                 return isRowActive();

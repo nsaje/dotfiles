@@ -249,6 +249,7 @@
         b1_sources_group_state: 1
         b1_sources_group_cpc_cc: '0.1'
         whitelist_publisher_groups: [1]
+        blacklist_publisher_groups: [2]
     model: dash.adgroupsettings
     pk: 1
 
@@ -307,6 +308,8 @@
         archived: false
         target_devices: ['mobile']
         target_regions: ['CA', '501']
+        whitelist_publisher_groups: [1]
+        blacklist_publisher_groups: [2]
     model: dash.campaignsettings
     pk: 1
 

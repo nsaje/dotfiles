@@ -35,9 +35,13 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
             ad_groups_sources_settings = dash.models.AdGroupSourceSettings.objects.\
                 filter(ad_group_source__ad_group=ad_group).group_current_settings()
 
-            if (ad_group.get_running_status(ags) == constants.AdGroupRunningStatus.ACTIVE and
-               ad_group.get_running_status_by_sources_setting(ags, ad_groups_sources_settings) ==
-               constants.AdGroupRunningStatus.ACTIVE):
+            ad_group_running = ad_group.get_running_status(ags) == constants.AdGroupRunningStatus.ACTIVE
+            ad_group_active = ags.state == constants.AdGroupRunningStatus.ACTIVE
+            sources_running = ad_group.get_running_status_by_sources_setting(
+                ags,
+                ad_groups_sources_settings
+            ) == constants.AdGroupRunningStatus.ACTIVE
+            if ((ad_group_running and sources_running) or (ags.landing_mode and ad_group_active)):
                 ad_groups_on_autopilot.append(ad_group)
                 ad_group_settings_on_autopilot.append(ags)
     return ad_groups_on_autopilot, ad_group_settings_on_autopilot
