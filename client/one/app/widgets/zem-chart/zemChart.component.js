@@ -8,6 +8,7 @@ angular.module('one.widgets').component('zemChart', {
     controller: function ($scope, $window, config, zemDataFilterService, zemChartService, zemChartObject, zemChartStorageService, zemChartMetricsService, zemGridConstants, zemNavigationNewService, zemSelectionService) { //eslint-disable-line max-len
         var $ctrl = this;
 
+        $ctrl.initialized = false;
         $ctrl.onMetricsChanged = onMetricsChanged;
         $ctrl.removeLegendItem = removeLegendItem;
 
@@ -60,7 +61,7 @@ angular.module('one.widgets').component('zemChart', {
         function loadData () {
             updateDataSource();
             $ctrl.chartDataService.getData().then(function () {
-                // Chart is already updated
+                $ctrl.initialized = true;
             });
         }
 
