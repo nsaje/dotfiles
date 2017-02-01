@@ -1847,3 +1847,17 @@ class CpcConstraintType(ConstantBase):
         MANUAL: 'Manual',
         OUTBRAIN_BLACKLIST: 'Outbrain blacklist',
     }
+
+
+class Service(ConstantBase):
+    Z1 = 'z1'
+    K1 = 'k1'
+    R1 = 'r1'
+    B1 = 'b1'
+
+    _VALUES = {
+        Z1: 'Zemanta One',
+        K1: 'Konsistency One',
+        R1: 'Redirector',
+        B1: 'Bidder',
+    }
