@@ -545,6 +545,24 @@ class K1ApiTest(TestCase):
              'publisher_group_id': 1, 'source_slug': None, 'account_id': 1},
         ])
 
+    def test_get_publisher_groups_source_slug(self):
+        account_id = 1
+        source_slug = 'adblade'
+
+        response = self.client.get(
+            reverse('k1api.publisher_groups'),
+            {'account_id': account_id, 'source_slug': source_slug, 'offset': 0, 'limit': 10}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        self.assertEqual(data, [
+            {'outbrain_publisher_id': '', 'publisher': 'pub1',
+             'publisher_group_id': 1, 'source_slug': 'adblade', 'account_id': 1},
+        ])
+
     def test_get_publisher_groups_limit(self):
         account_id = 1
 
