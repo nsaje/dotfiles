@@ -69,7 +69,7 @@ class AdGroupSettings(api_common.BaseApiView):
         if request.user.has_perm('zemauth.can_see_backend_hacks'):
             response['hacks'] = models.CustomHack.objects.all().filter_applied(
                 ad_group=ad_group
-            ).to_dict_list()
+            ).filter_active(True).to_dict_list()
 
         return self.create_api_response(response)
 
@@ -561,7 +561,7 @@ class CampaignSettings(api_common.BaseApiView):
         if request.user.has_perm('zemauth.can_see_backend_hacks'):
             response['hacks'] = models.CustomHack.objects.all().filter_applied(
                 campaign=campaign
-            ).to_dict_list()
+            ).filter_active(True).to_dict_list()
 
         return self.create_api_response(response)
 
@@ -986,7 +986,7 @@ class AccountSettings(api_common.BaseApiView):
         if request.user.has_perm('zemauth.can_see_backend_hacks'):
             response['hacks'] = models.CustomHack.objects.all().filter_applied(
                 account=account
-            ).to_dict_list()
+            ).filter_active(True).to_dict_list()
 
         return self.create_api_response(response)
 

@@ -1,6 +1,7 @@
 import json
 import logging
 import urllib
+import datetime
 
 from django.contrib import admin
 from django.contrib import messages
@@ -1653,6 +1654,7 @@ class CustomHackAdmin(admin.ModelAdmin):
     model = models.CustomHack
     list_display = (
         'summary',
+        '_active',
         'source',
         'rtb_only',
         '_agency',
@@ -1661,11 +1663,10 @@ class CustomHackAdmin(admin.ModelAdmin):
         'ad_group',
         'service',
         'created_dt',
-        'created_by',
     )
 
     list_filter = (
-        'summary', 'service', CustomHackStatusFilter,
+        CustomHackStatusFilter, 'summary', 'service', 'source',
     )
 
     search_fields = (
@@ -1677,6 +1678,7 @@ class CustomHackAdmin(admin.ModelAdmin):
         'campaign__id',
         'ad_group__name',
         'ad_group__id',
+        'source',
     )
 
     readonly_fields = ('created_dt', 'created_by')
@@ -1684,6 +1686,12 @@ class CustomHackAdmin(admin.ModelAdmin):
 
     ordering = ('-created_dt', )
     date_hierarchy = 'created_dt'
+
+    def mark_removed(self, request, queryset):
+        queryset.update(removed_dt=datetime.datetime.now())
+
+    mark_removed.short_description = "Mark removed"
+    actions = (mark_removed, )
 
     def get_queryset(self, request):
         qs = super(CustomHackAdmin, self).get_queryset(request)
@@ -1697,6 +1705,12 @@ class CustomHackAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         obj.save(request)
+
+    def _active(self, obj):
+        return (
+            obj.removed_dt is None or obj.removed_dt > datetime.datetime.now()
+        )
+    _active.boolean = True
 
     def _agency(self, obj):
         return (
