@@ -176,7 +176,7 @@ class AutopilotPlusTestCase(test.TestCase):
         paused_ad_group_source = paused_ad_group_source_setting.ad_group_source
         active_ad_group_source = dash.models.AdGroupSource.objects.get(id=6)
         active_ad_group_source_old_budget = active_ad_group_source.get_current_settings().daily_budget_cc
-        new_budgets = autopilot_plus._set_paused_ad_group_sources_to_minimum_values(adg)
+        new_budgets = autopilot_plus._set_paused_ad_group_sources_to_minimum_values(adg.get_current_settings())
         self.assertEqual(new_budgets.get(paused_ad_group_source)['old_budget'], Decimal('100.'))
         self.assertEqual(new_budgets.get(paused_ad_group_source)['new_budget'], Decimal('5'))
         self.assertEqual(new_budgets.get(paused_ad_group_source)['budget_comments'],

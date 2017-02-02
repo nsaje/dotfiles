@@ -471,7 +471,7 @@ class AdGroupSourceSettingsTest(TestCase):
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '4', 'source_id': '1'}),
             data=json.dumps({'state': '2'})
         )
-        mock_budget_ap.assert_called_with(models.AdGroup.objects.get(id=4), send_mail=False)
+        mock_budget_ap.assert_called_with(models.AdGroup.objects.get(id=4).get_current_settings(), send_mail=False)
         self.assertEqual(response.status_code, 200)
 
     @patch('automation.campaign_stop.can_enable_media_source')
