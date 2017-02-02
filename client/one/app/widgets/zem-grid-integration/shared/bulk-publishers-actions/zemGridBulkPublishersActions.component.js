@@ -133,7 +133,9 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
         }
 
         function convertRows (collection) {
-            return collection.map(function (row) {
+            return collection.filter(function (row) {
+                return row.level === zemGridConstants.gridRowLevel.BASE;
+            }).map(function (row) {
                 return {
                     source_id: row.data.stats[COLUMNS.sourceId.field].value,
                     domain: row.data.stats[COLUMNS.domain.field].value,
