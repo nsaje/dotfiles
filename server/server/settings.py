@@ -173,6 +173,8 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 RESTAPI_REPORTS_BUCKET = 'z1-rest-reports'
 
+GLOBAL_BLACKLIST_ID = 1
+
 from localsettings import *
 
 if ENABLE_DJANGO_EXTENSIONS:

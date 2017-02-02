@@ -1640,3 +1640,63 @@ class AudienceUpdateForm(forms.Form):
             'max_length': 'Name is too long (max %(limit_value)d characters)',
         }
     )
+
+
+class PublisherGroupEntryForm(forms.Form):
+    # id = forms.IntegerField(required=False)
+    publisher = forms.CharField(required=True, max_length=127)
+    source = forms.ModelChoiceField(queryset=models.Source.objects.all(), required=False)
+    include_subdomains = forms.BooleanField(required=False)
+
+
+class PublisherTargetingForm(forms.Form):
+    entries = forms.Field(required=False)
+    status = forms.TypedChoiceField(choices=constants.PublisherTargetingStatus.get_choices(), required=True, coerce=int)
+    ad_group = forms.ModelChoiceField(queryset=None, required=False)
+    campaign = forms.ModelChoiceField(queryset=None, required=False)
+    account = forms.ModelChoiceField(queryset=None, required=False)
+
+    def __init__(self, user, *args, **kwargs):
+        super(PublisherTargetingForm, self).__init__(*args, **kwargs)
+
+        self.fields['ad_group'].queryset = models.AdGroup.objects.all().filter_by_user(user)
+        self.fields['campaign'].queryset = models.Campaign.objects.all().filter_by_user(user)
+        self.fields['account'].queryset = models.Account.objects.all().filter_by_user(user)
+
+    def clean_entries(self):
+        entries = self.cleaned_data['entries']
+
+        clean_entries = []
+        for entry in entries:
+            entry_form = PublisherGroupEntryForm(entry)
+            if not entry_form.is_valid():
+                for key, error in entry_form.errors.iteritems():
+                    raise forms.ValidationError(error, code=key)
+                return
+            clean_entries.append(entry_form.cleaned_data)
+
+        return clean_entries
+
+    def clean(self):
+        provided_objs = [
+            self.cleaned_data.get('ad_group'),
+            self.cleaned_data.get('campaign'),
+            self.cleaned_data.get('account'),
+        ]
+        if len([x for x in provided_objs if x]) > 1:
+            raise forms.ValidationError('Provide only one of the following constraints: ad group, campaign or account')
+
+        return self.cleaned_data
+
+    def get_publisher_group_level_obj(self):
+        """
+        Returns the lowest non-null object in the adgroup-campaign-account hierarchy
+        """
+
+        if self.cleaned_data.get('ad_group'):
+            return self.cleaned_data['ad_group']
+        elif self.cleaned_data.get('campaign'):
+            return self.cleaned_data['campaign']
+        elif self.cleaned_data.get('account'):
+            return self.cleaned_data['account']
+        return None

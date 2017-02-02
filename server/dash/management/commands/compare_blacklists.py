@@ -1,0 +1,64 @@
+import datetime
+import influx
+import logging
+
+from django.db.models import Q
+from utils.command_helpers import ExceptionCommand
+
+from dash import models
+from dash import publisher_group_helpers
+
+logger = logging.getLogger(__name__)
+
+
+class Command(ExceptionCommand):
+
+    help = "Compare the old and the new blacklists"
+
+    def add_arguments(self, parser):
+        parser.add_argument('--ad_group_id', type=int)
+
+    def handle(self, *args, **options):
+        ad_groups = models.AdGroup.objects.all().exclude_archived()\
+                                                .select_related('campaign', 'campaign__account')\
+                                                .order_by('-pk')
+
+        if options.get('ad_group_id'):
+            ad_groups = ad_groups.filter(pk=options['ad_group_id'])
+
+        ad_groups_settings = {x.ad_group_id: x for x
+                              in models.AdGroupSettings.objects.filter(ad_group__in=ad_groups).group_current_settings()}
+        campaigns_settings = {x.campaign_id: x for x
+                              in models.CampaignSettings.objects.filter(
+                                  campaign_id__in=ad_groups.values_list('campaign_id', flat=True).distinct())}
+        accounts_settings = {x.account_id: x for x
+                             in models.AccountSettings.objects.filter(
+                                 account_id__in=ad_groups.values_list('campaign__account_id', flat=True).distinct())}
+
+        nr_not_matching = 0
+        for ad_group in ad_groups:
+            blacklist_groups, whitelist_groups = publisher_group_helpers.concat_publisher_group_targeting(
+                ad_group, ad_groups_settings[ad_group.id],
+                ad_group.campaign, campaigns_settings[ad_group.campaign_id],
+                ad_group.campaign.account, accounts_settings[ad_group.campaign.account_id]
+            )
+
+            blacklisted_entries = models.PublisherGroupEntry.objects.filter(publisher_group_id__in=blacklist_groups)\
+                                                                    .order_by('publisher')\
+                                                                    .values_list('publisher', 'source_id')
+
+            old_blacklist = models.PublisherBlacklist.objects.filter(Q(ad_group=ad_group) |
+                                                                     Q(campaign=ad_group.campaign) |
+                                                                     Q(account=ad_group.campaign.account) |
+                                                                     Q(everywhere=True))\
+                                                             .order_by('name')\
+                                                             .values_list('name', 'source_id')
+
+            matching = set(blacklisted_entries) == set(old_blacklist)
+            nr_not_matching += 0 if matching else 1
+
+            print 'Ad Group {} matching {}, new count {}, old count {}, blacklisted groups {}'.format(
+                ad_group.id, matching, blacklisted_entries.count(), old_blacklist.count(),
+                ",".join(str(x) for x in blacklist_groups))
+
+        influx.gauge('blacklisting.old_new_ad_groups_not_matching', nr_not_matching)

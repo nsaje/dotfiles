@@ -19,6 +19,7 @@ from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
+from django.http.request import HttpRequest
 from django.views.decorators.csrf import csrf_exempt
 
 import influx
@@ -45,6 +46,7 @@ from dash import publisher_helpers
 from dash import history_helpers
 from dash import blacklist
 from dash import cpc_constraints
+from dash.views import publishers as view_publishers
 
 import reports.api_publishers
 import analytics.projections
@@ -1222,6 +1224,8 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         elif level == constants.PublisherBlacklistLevel.ACCOUNT:
             constraints['account'] = ad_group.campaign.account
 
+        self._call_new_blacklisting(request, ad_group, level, state, source_domains)
+
         for source, domains in source_domains.iteritems():
             source_constraints = {'source': source}
             source_constraints.update(constraints)
@@ -1234,6 +1238,41 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             for source, domains in source_domains.iteritems()
             for d in domains
         ], level)
+
+    def _call_new_blacklisting(self, request, ad_group, level, state, source_domains):
+        entries = []
+        payload = {
+            'entries': entries,
+            'status': (constants.PublisherTargetingStatus.BLACKLISTED if constants.PublisherStatus.BLACKLISTED
+                       else constants.PublisherTargetingStatus.UNLISTED),
+        }
+
+        # setup level
+        if level == constants.PublisherBlacklistLevel.ADGROUP:
+            payload['ad_group'] = ad_group.id
+        elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            payload['campaign'] = ad_group.campaign_id
+        elif level == constants.PublisherBlacklistLevel.ACCOUNT:
+            payload['account'] = ad_group.campaign.account_id
+        else:
+            # global level
+            pass
+
+        for source, domains in source_domains.iteritems():
+            for domain in domains:
+                entries.append({
+                    'publisher': domain[0],
+                    'source': source.id,
+                    'include_subdomains': True,
+                })
+
+        new_request = HttpRequest()
+        new_request.user = request.user
+        new_request._body = json.dumps(payload)
+
+        view = view_publishers.PublisherTargeting(rest_proxy=True)
+        _, status_code = view.post(new_request)
+        logger.error('Publisher group targeting endpoint failed when it should not, status code %s', status_code)
 
     def _generate_source_publishers(self, pubs, pubs_selected, pubs_ignored):
         source_publishers = {}

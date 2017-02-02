@@ -29,6 +29,7 @@ import dash.views.grid
 import dash.views.audiences
 import dash.views.alerts
 import dash.views.bulk_actions
+import dash.views.publishers
 
 
 admin.site.login = login_required(admin.site.login)
@@ -640,6 +641,11 @@ urlpatterns += [
         r'^api/callbacks/content-upload/$',
         dash.views.callbacks.content_upload,
         name='callbacks.content_upload',
+    ),
+    url(
+        r'^api/publishers/targeting/',
+        login_required(dash.views.publishers.PublisherTargeting.as_view()),
+        name='publisher_targeting'
     ),
 ]
 
