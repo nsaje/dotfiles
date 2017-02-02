@@ -173,6 +173,12 @@
     model: dash.sourcetype
     pk: 2
 
+-   fields:
+        type: 'b1'
+        min_daily_budget: '1'
+    model: dash.sourcetype
+    pk: 3
+
 # Sources
 -   fields:
         created_dt: '2014-06-04T00:00:00'

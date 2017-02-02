@@ -10,12 +10,13 @@ logger = logging.getLogger(__name__)
 
 
 def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_changes=None, adjust_rtb_sources=True):
-    if not adjust_rtb_sources:
-        data = {ags: v for ags, v in data.iteritems() if
-                ags == SourceAllRTB or ags.source.source_type.type != SourceType.B1}
-    active_sources = data.keys()
     recommended_changes = {}
-    for ag_source in active_sources:
+    ag_sources = data.keys()
+    for ag_source in ag_sources:
+        source_type = ag_source.source.source_type if ag_source != SourceAllRTB else SourceAllRTB
+        if not adjust_rtb_sources and source_type != SourceAllRTB and source_type.type == SourceType.B1:
+            continue
+
         recommended_changes[ag_source] = {}
         cpc_change_comments = []
         daily_budget = budget_changes[ag_source]['new_budget'] if budget_changes else data[ag_source]['old_budget']
@@ -32,11 +33,10 @@ def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_c
         proposed_cpc = _round_cpc(proposed_cpc, decimal_places=max_decimal_places)
         proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments,
                                                        max_decimal_places)
-        ''' # TODO DAVORIN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        proposed_cpc = _threshold_cpc_constraints(ad_group, ag_source.source, proposed_cpc,
-                                                  cpc_change_comments)
-        '''
-        source_type = ag_source.source.source_type if ag_source != SourceAllRTB else SourceAllRTB
+        proposed_cpc = _threshold_cpc_constraints(ad_group,
+                                                  ag_source.source if ag_source != SourceAllRTB else SourceAllRTB,
+                                                  old_cpc_cc, proposed_cpc, cpc_change_comments,
+                                                  [s.source if s != SourceAllRTB else SourceAllRTB for s in ag_sources])
         proposed_cpc = _threshold_source_constraints(proposed_cpc, source_type, adgroup_settings, cpc_change_comments)
 
         new_cpc_cc = proposed_cpc
@@ -124,8 +124,18 @@ def _threshold_increasing_cpc(current_cpc, new_cpc):
     return new_cpc
 
 
-def _threshold_cpc_constraints(ad_group, source, proposed_cpc, cpc_change_comments):
-    new_cpc = cpc_constraints.adjust_cpc(proposed_cpc, ad_group=ad_group, source=source)
+def _threshold_cpc_constraints(ad_group, source, old_cpc, proposed_cpc, cpc_change_comments, sources):
+    new_cpc = proposed_cpc
+    if source == SourceAllRTB:
+        constrained_cpcs = set()
+        for s in sources:
+            if s != SourceAllRTB and s.source_type.type == SourceType.B1:
+                constrained_cpcs.add(cpc_constraints.adjust_cpc(proposed_cpc, ad_group=ad_group, source=s))
+        print constrained_cpcs
+        new_cpc = min(constrained_cpcs) if old_cpc < proposed_cpc else max(constrained_cpcs)
+    else:
+        new_cpc = cpc_constraints.adjust_cpc(proposed_cpc, ad_group=ad_group, source=source)
+
     if new_cpc != proposed_cpc:
         cpc_change_comments += [CpcChangeComment.CPC_CONSTRAINT_APPLIED]
     return new_cpc
