@@ -1655,8 +1655,7 @@ class CustomHackAdmin(admin.ModelAdmin):
     list_display = (
         'summary',
         '_active',
-        'source',
-        'rtb_only',
+        '_source',
         '_agency',
         '_account',
         '_campaign',
@@ -1666,7 +1665,7 @@ class CustomHackAdmin(admin.ModelAdmin):
     )
 
     list_filter = (
-        CustomHackStatusFilter, 'summary', 'service', 'source',
+        CustomHackStatusFilter, 'summary', 'service', 'source', 'rtb_only'
     )
 
     search_fields = (
@@ -1711,6 +1710,11 @@ class CustomHackAdmin(admin.ModelAdmin):
             obj.removed_dt is None or obj.removed_dt > datetime.datetime.now()
         )
     _active.boolean = True
+
+    def _source(self, obj):
+        if obj.rtb_only:
+            return 'RTB'
+        return obj.source
 
     def _agency(self, obj):
         return (
