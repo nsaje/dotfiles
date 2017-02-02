@@ -66,6 +66,11 @@ class AdGroupSettings(api_common.BaseApiView):
             'can_restore': ad_group.can_restore(),
             'archived': settings.archived,
         }
+        if request.user.has_perm('zemauth.can_see_backend_hacks'):
+            response['hacks'] = models.CustomHack.objects.all().filter_applied(
+                ad_group=ad_group
+            ).to_dict_list()
+
         return self.create_api_response(response)
 
     def put(self, request, ad_group_id):
@@ -184,12 +189,12 @@ class AdGroupSettings(api_common.BaseApiView):
             )
             if max_daily_budget is not None and new_daily_budget > max_daily_budget:
                 raise exc.ValidationError(errors={
-                        'daily_budget_cc': [
-                            'Daily Spend Cap is too high. Maximum daily spend '
-                            'cap can be up to ${max_daily_budget}.'.format(
-                                max_daily_budget=max_daily_budget
-                            )
-                        ]
+                    'daily_budget_cc': [
+                        'Daily Spend Cap is too high. Maximum daily spend '
+                        'cap can be up to ${max_daily_budget}.'.format(
+                            max_daily_budget=max_daily_budget
+                        )
+                    ]
                 })
 
         if 'b1_sources_group_state' in changes:
@@ -553,6 +558,10 @@ class CampaignSettings(api_common.BaseApiView):
             response['goals'] = self.get_campaign_goals(
                 campaign
             )
+        if request.user.has_perm('zemauth.can_see_backend_hacks'):
+            response['hacks'] = models.CustomHack.objects.all().filter_applied(
+                campaign=campaign
+            ).to_dict_list()
 
         return self.create_api_response(response)
 
@@ -974,6 +983,11 @@ class AccountSettings(api_common.BaseApiView):
 
         if request.user.has_perm('zemauth.can_set_account_sales_representative'):
             response['sales_reps'] = self.get_sales_representatives()
+        if request.user.has_perm('zemauth.can_see_backend_hacks'):
+            response['hacks'] = models.CustomHack.objects.all().filter_applied(
+                account=account
+            ).to_dict_list()
+
         return self.create_api_response(response)
 
     def put(self, request, account_id):

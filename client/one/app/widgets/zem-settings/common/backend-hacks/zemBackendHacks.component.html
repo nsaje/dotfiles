@@ -1,0 +1,19 @@
+<div class="zem-settings-component__container zem-settings-component__container--backend-hacks" ng-if="$ctrl.hasPermission('zemauth.can_see_backend_hacks')">
+    <div class="zem-settings-component__header" is-internal="zemauth.can_see_backend_hacks">
+        Backend hacks
+    </div>
+    <div ng-if="!$ctrl.entity.hacks.length">No backend hacks set.</div>
+    <table ng-if="$ctrl.entity.hacks.length">
+        <tr>
+            <th>Level</th>
+            <th>Source</th>
+            <th>Description</th>
+        </tr>
+        <tr ng-repeat="hack in $ctrl.entity.hacks">
+            <td>{{ hack.level }}</td>
+            <td>{{ hack.source || 'all' }}</td>
+            <td>{{ hack.summary }}: {{ hack.details }}</td>
+        </tr>
+    </table>
+</div>
+

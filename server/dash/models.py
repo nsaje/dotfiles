@@ -4547,13 +4547,15 @@ class CustomHack(models.Model):
             self.created_by = request.user
         super(CustomHack, self).save(*args, **kwargs)
 
-    def __str__(self):
-        level = (
+    def get_level(self):
+        return (
             self.agency and 'Agency' or
             self.account and 'Account' or
             self.campaign and 'Campaign' or
             self.ad_group and 'Ad group'
         )
+
+    def __str__(self):
         desc = '{level} level hack'
         if self.source:
             desc += ' on source {source}'
@@ -4561,7 +4563,7 @@ class CustomHack(models.Model):
             desc += ' on all RTB sources'
         desc += ': {summary}'
         return desc.format(
-            level=level,
+            level=self.get_level(),
             source=self.source,
             summary=self.summary
         )
@@ -4584,3 +4586,14 @@ class CustomHack(models.Model):
             if source:
                 queryset = queryset.filter(models.Q(source=source) | models.Q(source=None))
             return queryset
+
+        def to_dict_list(self):
+            return [
+                {
+                    'summary': obj.summary,
+                    'details': obj.details,
+                    'level': obj.get_level(),
+                    'source': obj.source and obj.source.name or obj.rtb_only and 'RTB' or None
+                }
+                for obj in self
+            ]
