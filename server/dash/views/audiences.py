@@ -71,7 +71,7 @@ class AudiencesView(api_common.BaseApiView):
 
             redirector_helper.upsert_audience(audience)
 
-        k1_helper.update_account(account_id)
+        k1_helper.update_account(account_id, msg="audience.create")
 
         response = self._get_response_dict(audience, [rule])
 
@@ -110,7 +110,7 @@ class AudiencesView(api_common.BaseApiView):
                 )
                 redirector_helper.upsert_audience(audience)
 
-            k1_helper.update_account(account_id)
+            k1_helper.update_account(account_id, msg="audience.update")
 
         rules = models.AudienceRule.objects.filter(audience=audience)
 

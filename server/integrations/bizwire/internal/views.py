@@ -46,7 +46,7 @@ def click_capping(request):
             content_ad_source.state = dash.constants.ContentAdSourceState.INACTIVE
             content_ad_source.save()
 
-    k1_helper.update_content_ad(content_ad.ad_group.id, content_ad.id)
+    k1_helper.update_content_ad(content_ad.ad_group.id, content_ad.id, msg="bizwire.click_capping")
     return JsonResponse({
         "status": 'ok'
     })

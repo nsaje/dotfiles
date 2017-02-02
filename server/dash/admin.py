@@ -20,7 +20,6 @@ from import_export.admin import ExportMixin
 
 from zemauth.models import User as ZemUser
 
-from dash import api
 from dash import constants
 from dash import models
 from dash import forms as dash_forms
@@ -1053,7 +1052,8 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     def save_model(self, request, content_ad_source, form, change):
         content_ad_source.save()
         utils.k1_helper.update_content_ad(content_ad_source.content_ad.ad_group_id,
-                                          content_ad_source.content_ad_id)
+                                          content_ad_source.content_ad_id,
+                                          msg="admin.content_ad_source")
 
     def __init__(self, *args, **kwargs):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)

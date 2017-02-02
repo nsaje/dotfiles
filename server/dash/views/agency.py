@@ -838,7 +838,7 @@ class ConversionPixel(api_common.BaseApiView):
                     ).format(audience_pixels[0].name)
                     raise exc.ValidationError(errors={'audience_enabled': msg})
 
-                k1_helper.update_account(account_id)
+                k1_helper.update_account(account_id, msg="conversion_pixel.create")
 
             changes_text = u'Added conversion pixel named {}.'.format(name)
             account.write_history(
@@ -902,7 +902,7 @@ class ConversionPixel(api_common.BaseApiView):
                                                                                                                                       0].name)
                     raise exc.ValidationError(errors={'audience_enabled': msg})
 
-                k1_helper.update_account(conversion_pixel.account.id)
+                k1_helper.update_account(conversion_pixel.account.id, msg="conversion_pixel.update")
                 self._r1_upsert_audiences(conversion_pixel)
 
         return self.create_api_response(self._format_pixel(conversion_pixel, request.user))

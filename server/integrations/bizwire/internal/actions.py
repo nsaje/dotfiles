@@ -54,7 +54,7 @@ def check_pacific_midnight_and_stop_ads():
     dash.api.update_content_ads_state(content_ads, dash.constants.ContentAdSourceState.INACTIVE, None)
 
     ad_group_ids = set(ca.ad_group_id for ca in content_ads)
-    k1_helper.update_ad_groups(ad_group_ids)
+    k1_helper.update_ad_groups(ad_group_ids, msg="bizwire.rotate_adgroup")
 
 
 def check_time_and_create_new_ad_groups():
@@ -156,7 +156,7 @@ def _create_ad_group(name, start_date):
     _set_custom_cpcs(ad_group_id)
     _set_all_rtb_default_cpc(ad_group_id)
 
-    k1_helper.update_ad_group(ad_group_id)
+    k1_helper.update_ad_group(ad_group_id, msg="bizwire.create_adgroup")
     return ad_group_id
 
 

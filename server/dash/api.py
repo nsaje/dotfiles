@@ -404,7 +404,7 @@ def set_ad_group_source_settings(
     )
 
     if ping_k1:
-        k1_helper.update_ad_group(ad_group_source.ad_group_id)
+        k1_helper.update_ad_group(ad_group_source.ad_group_id, msg="dash.api.set_ad_group_source_settings")
 
 
 def _has_any_ad_group_source_setting_changed(latest_settings, state, cpc_cc, daily_budget_cc, landing_mode):

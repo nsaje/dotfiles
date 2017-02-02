@@ -1343,7 +1343,7 @@ class ConversionPixelTestCase(TestCase):
             u'success': True
         }, json.loads(response.content))
 
-        ping_mock.assert_called_with(1)
+        ping_mock.assert_called_with(1, msg='conversion_pixel.create')
         self.assertFalse(redirector_mock.called)
 
     @patch('utils.redirector_helper.upsert_audience')
@@ -1442,7 +1442,7 @@ class ConversionPixelTestCase(TestCase):
             u'success': True
         }, json.loads(response.content))
 
-        ping_mock.assert_called_with(1)
+        ping_mock.assert_called_with(1, msg='conversion_pixel.update')
         self.assertEqual(redirector_mock.call_count, 4)
 
     @patch('utils.redirector_helper.upsert_audience')

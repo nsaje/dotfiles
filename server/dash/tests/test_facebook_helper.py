@@ -447,7 +447,7 @@ class FacebookStopMediaSourcesTest(TestCase):
         facebook_helper.stop_facebook_media_sources(account)
 
         save_mock.assert_called_once_with(None)
-        k1_update_mock.assert_called_once_with({100})
+        k1_update_mock.assert_called_once_with({100}, msg="facebook.stop_media_source")
 
     @patch('utils.k1_helper.update_ad_groups')
     @patch('dash.models.AdGroupSourceSettings.save')

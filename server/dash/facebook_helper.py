@@ -176,7 +176,7 @@ def stop_facebook_media_sources(account):
 
         ad_groups_to_ping.add(new_settings.ad_group_source.ad_group.id)
 
-    k1_helper.update_ad_groups(ad_groups_to_ping)
+    k1_helper.update_ad_groups(ad_groups_to_ping, msg="facebook.stop_media_source")
 
 
 def get_ad_account_status(ad_account_id, access_token):
