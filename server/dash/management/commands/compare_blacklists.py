@@ -23,8 +23,10 @@ class Command(ExceptionCommand):
                                                 .select_related('campaign', 'campaign__account')\
                                                 .order_by('-pk')
 
+        filtered_by_adgroup = False
         if options.get('ad_group_id'):
             ad_groups = ad_groups.filter(pk=options['ad_group_id'])
+            filtered_by_adgroup = True
 
         ad_groups_settings = {x.ad_group_id: x for x
                               in models.AdGroupSettings.objects.filter(ad_group__in=ad_groups).group_current_settings()}
@@ -37,11 +39,15 @@ class Command(ExceptionCommand):
 
         nr_not_matching = 0
         for ad_group in ad_groups:
+            ad_group_settings = ad_groups_settings.get(ad_group.id)
+            campaign_settings = campaigns_settings.get(ad_group.campaign_id)
+            account_settings = accounts_settings.get(ad_group.campaign.account_id)
+            if not ad_group_settings or not campaign_settings or not account_settings:
+                continue
+
             blacklist_groups, whitelist_groups = publisher_group_helpers.concat_publisher_group_targeting(
-                ad_group, ad_groups_settings[ad_group.id],
-                ad_group.campaign, campaigns_settings[ad_group.campaign_id],
-                ad_group.campaign.account, accounts_settings[ad_group.campaign.account_id]
-            )
+                ad_group, ad_group_settings, ad_group.campaign, campaign_settings,
+                ad_group.campaign.account, account_settings)
 
             blacklisted_entries = models.PublisherGroupEntry.objects.filter(publisher_group_id__in=blacklist_groups)\
                                                                     .order_by('publisher')\
@@ -61,4 +67,5 @@ class Command(ExceptionCommand):
                 ad_group.id, matching, blacklisted_entries.count(), old_blacklist.count(),
                 ",".join(str(x) for x in blacklist_groups))
 
-        influx.gauge('blacklisting.old_new_ad_groups_not_matching', nr_not_matching)
+        if not filtered_by_adgroup:
+            influx.gauge('blacklisting.old_new_ad_groups_not_matching', nr_not_matching)
