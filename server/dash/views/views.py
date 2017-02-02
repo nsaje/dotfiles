@@ -1243,7 +1243,8 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         entries = []
         payload = {
             'entries': entries,
-            'status': (constants.PublisherTargetingStatus.BLACKLISTED if constants.PublisherStatus.BLACKLISTED
+            'status': (constants.PublisherTargetingStatus.BLACKLISTED
+                       if state == constants.PublisherTargetingStatus.BLACKLISTED
                        else constants.PublisherTargetingStatus.UNLISTED),
         }
 
