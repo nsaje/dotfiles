@@ -228,7 +228,6 @@ def prefetch_autopilot_data(ad_groups_and_settings):
             data[adg] = {}
         data[adg][ag_source] = _populate_prefetch_adgroup_source_data(ag_source, source_setting,
                                                                       yesterdays_spend_cc, yesterdays_clicks)
-        data[adg][ag_source]['b1'] = ag_source.source.source_type.type == SourceType.B1
         campaign_goal = campaign_goals.get(adg.campaign)
         goal_col = autopilot_helpers.get_campaign_goal_column(campaign_goal)
         if campaign_goal:
@@ -240,7 +239,8 @@ def prefetch_autopilot_data(ad_groups_and_settings):
                 goal_value = row[goal_col]
             data[adg][ag_source][goal_col] = goal_value
 
-        if adg_settings.b1_sources_group_enabled:
+        if (adg_settings.b1_sources_group_enabled and
+                adg_settings.b1_sources_group_state == AdGroupSourceSettingsState.ACTIVE):
             if SourceAllRTB not in data[adg]:
                 data[adg][SourceAllRTB] = _init_b1_sources_data(adg_settings, goal_col)
             if ag_source.source.source_type.type == SourceType.B1:

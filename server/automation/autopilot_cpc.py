@@ -131,7 +131,6 @@ def _threshold_cpc_constraints(ad_group, source, old_cpc, proposed_cpc, cpc_chan
         for s in sources:
             if s != SourceAllRTB and s.source_type.type == SourceType.B1:
                 constrained_cpcs.add(cpc_constraints.adjust_cpc(proposed_cpc, ad_group=ad_group, source=s))
-        print constrained_cpcs
         new_cpc = min(constrained_cpcs) if old_cpc < proposed_cpc else max(constrained_cpcs)
     else:
         new_cpc = cpc_constraints.adjust_cpc(proposed_cpc, ad_group=ad_group, source=source)
