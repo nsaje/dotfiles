@@ -4537,6 +4537,7 @@ class CustomHack(models.Model):
     )
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    removed_dt = models.DateTimeField(null=True, blank=True, verbose_name='Removed at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
                                    related_name='+', on_delete=models.PROTECT)
 
@@ -4586,6 +4587,17 @@ class CustomHack(models.Model):
             if source:
                 queryset = queryset.filter(models.Q(source=source) | models.Q(source=None))
             return queryset
+
+        def filter_active(self, is_active):
+            now = datetime.datetime.now()
+            if is_active:
+                return self.queryset.filter(
+                    models.Q(removed_dt__isnull=True) | models.Q(removed_dt__gt=now)
+                )
+            else:
+                return self.queryset.filter(
+                    removed_dt__lte=now
+                )
 
         def to_dict_list(self):
             return [

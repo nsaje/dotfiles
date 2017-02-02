@@ -1635,6 +1635,21 @@ class CpcConstraintAdmin(admin.ModelAdmin):
         return obj.campaign or (obj.ad_group and obj.ad_group.campaign) or None
 
 
+class CustomHackStatusFilter(SimpleListFilter):
+    title = 'Status'
+    parameter_name = 'removed_dt'
+
+    def lookups(self, request, model_admin):
+        return [('active', 'Active'),
+                ('removed', 'Removed'),
+                ('all', 'All')]
+
+    def queryset(self, request, queryset):
+        if self.value() == 'all':
+            return queryset
+        return queryset.is_active(self.value() == 'active')
+
+
 class CustomHackAdmin(admin.ModelAdmin):
     model = models.CustomHack
     list_display = (
@@ -1651,7 +1666,7 @@ class CustomHackAdmin(admin.ModelAdmin):
     )
 
     list_filter = (
-        'summary', 'service',
+        'summary', 'service', CustomHackStatusFilter,
     )
 
     search_fields = (
