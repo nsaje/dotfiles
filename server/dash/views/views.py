@@ -1272,7 +1272,8 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
         view = view_publishers.PublisherTargeting(rest_proxy=True)
         _, status_code = view.post(new_request)
-        logger.error('Publisher group targeting endpoint failed when it should not, status code %s', status_code)
+        if status_code != 200:
+            logger.error('Publisher group targeting endpoint failed when it should not, status code %s', status_code)
 
     def _generate_source_publishers(self, pubs, pubs_selected, pubs_ignored):
         source_publishers = {}
