@@ -58,12 +58,13 @@ def can_user_handle_publishers(user, obj):
 
 
 def concat_publisher_group_targeting(ad_group, ad_group_settings, campaign,
-                                     campaign_settings, account, account_settings):
+                                     campaign_settings, account, account_settings, include_global=True):
     blacklist = set([ad_group.default_blacklist_id, campaign.default_blacklist_id, account.default_blacklist_id])
     blacklist |= set(ad_group_settings.blacklist_publisher_groups)
     blacklist |= set(campaign_settings.blacklist_publisher_groups)
     blacklist |= set(account_settings.blacklist_publisher_groups)
-    blacklist |= set([get_global_blacklist().id])
+    if include_global:
+        blacklist |= set([get_global_blacklist().id])
     blacklist = [x for x in blacklist if x]
 
     whitelist = set([ad_group.default_whitelist_id, campaign.default_whitelist_id, account.default_whitelist_id])

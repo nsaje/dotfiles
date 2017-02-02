@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 import dash.constants
 import dash.models
-from dash import constants, publisher_helpers
+from dash import constants, publisher_helpers, publisher_group_helpers
 from utils import redirector_helper, email_helper
 from utils import url_helper, request_signer, converters
 from redshiftapi import quickstats
@@ -471,15 +471,30 @@ class AdGroupsView(K1APIView):
         if slugs:
             slugs = slugs.split(',')
 
-        ad_groups_settings, campaigns_settings_map = \
-            self._get_ad_groups_and_campaigns_settings(ad_group_ids, source_types, slugs)
+        ad_groups_settings, campaigns_settings_map, accounts_settings_map = \
+            self._get_settings_maps(ad_group_ids, source_types, slugs)
         campaign_goal_types = self._get_campaign_goal_types(campaigns_settings_map.keys())
 
         ad_groups = []
         for ad_group_settings in ad_groups_settings:
+            campaign_settings = campaigns_settings_map[ad_group_settings.ad_group.campaign_id]
+            account_settings = accounts_settings_map[ad_group_settings.ad_group.campaign.account_id]
+
+            blacklist = ad_group_settings.blacklist_publisher_groups
+            whitelist = ad_group_settings.whitelist_publisher_groups
+
+            ad_group = ad_group_settings.ad_group
+            if ad_group.id == 6906:
+                    blacklist, whitelist = publisher_group_helpers.concat_publisher_group_targeting(
+                        ad_group, ad_group_settings,
+                        ad_group.campaign, campaign_settings,
+                        ad_group.campaign.account, account_settings,
+                        include_global=False  # global blacklist is handled separately by the bidder, no need to duplicate work
+                    )
+
             ad_group = {
-                'id': ad_group_settings.ad_group.id,
-                'name': ad_group_settings.ad_group.get_external_name(),
+                'id': ad_group.id,
+                'name': ad_group.get_external_name(),
                 'start_date': ad_group_settings.start_date,
                 'end_date': ad_group_settings.end_date,
                 'time_zone': settings.DEFAULT_TIME_ZONE,
@@ -488,15 +503,15 @@ class AdGroupsView(K1APIView):
                 'tracking_codes': ad_group_settings.get_tracking_codes(),
                 'target_devices': ad_group_settings.target_devices,
                 'target_regions': ad_group_settings.target_regions,
-                'iab_category': campaigns_settings_map[ad_group_settings.ad_group.campaign.id]['iab_category'],
+                'iab_category': campaign_settings.iab_category,
                 'retargeting': self._get_retargeting(ad_group_settings),
                 'demographic_targeting': ad_group_settings.bluekai_targeting,
                 'interest_targeting': ad_group_settings.interest_targeting,
                 'exclusion_interest_targeting': ad_group_settings.exclusion_interest_targeting,
-                'campaign_id': ad_group_settings.ad_group.campaign.id,
-                'account_id': ad_group_settings.ad_group.campaign.account.id,
-                'agency_id': ad_group_settings.ad_group.campaign.account.agency_id,
-                'goal_types': campaign_goal_types[ad_group_settings.ad_group.campaign.id],
+                'campaign_id': ad_group.campaign.id,
+                'account_id': ad_group.campaign.account.id,
+                'agency_id': ad_group.campaign.account.agency_id,
+                'goal_types': campaign_goal_types[ad_group.campaign.id],
                 'dayparting': ad_group_settings.dayparting,
                 'max_cpm': ad_group_settings.max_cpm,
                 'b1_sources_group': {
@@ -504,8 +519,8 @@ class AdGroupsView(K1APIView):
                     'daily_budget': ad_group_settings.b1_sources_group_daily_budget,
                     'state': ad_group_settings.b1_sources_group_state,
                 },
-                'whitelist_publisher_groups': ad_group_settings.whitelist_publisher_groups,
-                'blacklist_publisher_groups': ad_group_settings.blacklist_publisher_groups,
+                'whitelist_publisher_groups': whitelist,
+                'blacklist_publisher_groups': blacklist,
             }
 
             ad_groups.append(ad_group)
@@ -546,7 +561,7 @@ class AdGroupsView(K1APIView):
         return campaign_goals
 
     @staticmethod
-    def _get_ad_groups_and_campaigns_settings(ad_group_ids, source_types, slugs):
+    def _get_settings_maps(ad_group_ids, source_types, slugs):
         current_ad_groups_settings = dash.models.AdGroupSettings.objects.all().group_current_settings()
 
         if ad_group_ids:
@@ -570,10 +585,16 @@ class AdGroupsView(K1APIView):
         campaigns_settings = (dash.models.CampaignSettings.objects
                               .filter(campaign_id__in=set([ag.ad_group.campaign_id for ag in ad_groups_settings]))
                               .group_current_settings()
-                              .values('campaign_id', 'iab_category'))
-        campaigns_settings_map = {cs['campaign_id']: cs for cs in campaigns_settings}
+                              .only('campaign_id', 'iab_category', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
+        campaigns_settings_map = {cs.campaign_id: cs for cs in campaigns_settings}
 
-        return ad_groups_settings, campaigns_settings_map
+        accounts_settings = (dash.models.AccountSettings.objects
+                             .filter(account_id__in=campaigns_settings_map.keys())
+                             .group_current_settings()
+                             .only('account_id', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
+        accounts_settings_map = {accs.account_id: accs for accs in accounts_settings}
+
+        return ad_groups_settings, campaigns_settings_map, accounts_settings_map
 
 
 class AdGroupStatsView(K1APIView):

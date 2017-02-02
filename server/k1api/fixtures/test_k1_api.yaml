@@ -75,6 +75,23 @@
     model: dash.account
     pk: 3
 
+# test account settings
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by_id: 1
+        account: 1
+        whitelist_publisher_groups: [9, 10]
+        blacklist_publisher_groups: [11, 12]
+    model: dash.accountsettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by_id: 1
+        account: 2
+    model: dash.accountsettings
+    pk: 2
+
 # test agencies
 
 -   fields:
@@ -134,6 +151,8 @@
         enable_ga_tracking: true
         ga_tracking_type: 2
         ga_property_id: 'UA-123-2'
+        whitelist_publisher_groups: [5, 6]
+        blacklist_publisher_groups: [7, 8]
     model: dash.campaignsettings
     pk: 1
 
@@ -447,6 +466,7 @@
         dayparting: {"timezone": "CET", "monday": [1, 2, 3]}
         max_cpm: '1.6'
         whitelist_publisher_groups: [1, 2]
+        blacklist_publisher_groups: [3, 4]
     model: dash.adgroupsettings
     pk: 1
 
