@@ -47,7 +47,7 @@ describe('component: zemGridBulkPublishersActions', function () {
         var selection = {
             type: zemGridConstants.gridSelectionFilterType.NONE,
             selected: [{
-                level: 0, data: {
+                level: 1, data: {
                     stats: {
                         'source_id': {value: 1},
                         'external_id': {value: 2},
