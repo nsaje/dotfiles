@@ -31,8 +31,8 @@ zem-grid {
         display: block;
     }
 
-    .button--report .button {
-        width: 90px;
+    .report-dropdown .button {
+        width: 95px;
     }
 }
 
@@ -147,26 +147,24 @@ zem-grid {
             background-size: 20px 10px;
         }
 
-        .zem-grid-sticky {
-            &__container {
-                height: 45px;
-            }
+        .zem-grid-sticky__container {
+            height: 45px;
+        }
 
-            &__header, &__footer {
-                z-index: 900;
-                overflow: hidden;
-            }
+        .zem-grid-sticky__header, .zem-grid-sticky__footer {
+            z-index: 900;
+            overflow: hidden;
+        }
 
-            &__scroller-container {
-                display: none;
-                height: 15px;
-                overflow-x: auto;
-                overflow-y: hidden;
-            }
+        .zem-grid-sticky__scroller-container {
+            display: none;
+            height: 15px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
 
-            &__scroller-content {
-                height: 15px;
-            }
+        .zem-grid-sticky__scroller-content {
+            height: 15px;
         }
 
         .zem-grid-header, .zem-grid-footer {
@@ -228,7 +226,7 @@ zem-grid {
                 height: 14px;
                 display: inline-block;
                 background-size: 14px;
-                background-image: url(images/smiley-blue.svg);
+                background-image: url(images/emoticon-happy-blue.svg);
                 vertical-align: text-bottom;
             }
         }
@@ -690,12 +688,12 @@ zem-grid {
         margin-top: 3px;
         z-index: 999;
 
-        .message, .button, .form__prefixed-field {
+        .message, .button, .prefixed-field {
             float: left;
             margin-left: 10px;
         }
 
-        .form__prefixed-field {
+        .prefixed-field {
             margin-left: 0;
             width: 100px;
         }

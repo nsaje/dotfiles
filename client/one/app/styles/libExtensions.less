@@ -44,7 +44,7 @@
 
         &.select2-container-active {
             &.button--plain {
-                border-color: darken(@border-gray-color, 20%);
+                border-color: darken(@input-border-color, 20%);
             }
 
             &.button--outline {
@@ -57,7 +57,6 @@
         }
     }
 }
-
 .select2-drop,
 .select2-drop.select2-drop-above {
     border: 1px solid @border-color;
@@ -91,6 +90,10 @@
             }
         }
     }
+}
+
+.select2-drop.select2-drop-above.select2-drop-active {
+    border-top: none;
 }
 
 .select2-with-searchbox {
@@ -148,11 +151,19 @@
 }
 
 ///////////////////////////
+// Form elements //
+///////////////////////////
+
+label {
+    margin-bottom: 0;
+}
+
+///////////////////////////
 // Tags //
 ///////////////////////////
 
 tags-input .host .tags {
-    .form__input-tags();
+    .input-tags();
     margin-bottom: 0;
 
     input {
@@ -167,7 +178,7 @@ tags-input .host .tags {
 
     .tag-item {
         background: none;
-        .input-tag__item();
+        .input-tags__item();
         border: none;
         color: @text-color;
         height: 26px;

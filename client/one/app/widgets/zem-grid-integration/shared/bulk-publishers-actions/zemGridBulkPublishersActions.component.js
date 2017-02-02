@@ -226,19 +226,28 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
         }
 
         function bulkUpdatePublishers (selection, state, level) {
-            var dateRange = zemDataFilterService.getDateRange();
-            api.adGroupPublishersState.save(
-                selection.id,
-                state,
-                level,
-                dateRange.startDate,
-                dateRange.endDate,
-                selection.selectedPublishers,
-                selection.unselectedPublishers,
-                selection.filterAll
-            ).then(function () {
-                refreshData();
-            });
+            var dateRange = zemDataFilterService.getDateRange(),
+                savePublisherState = function (enforceCpc) {
+                    return api.adGroupPublishersState.save(
+                        selection.id,
+                        state,
+                        level,
+                        dateRange.startDate,
+                        dateRange.endDate,
+                        selection.selectedPublishers,
+                        selection.unselectedPublishers,
+                        selection.filterAll,
+                        enforceCpc
+                    );
+                },
+                trySaveWithEnforcedCpc = function (err) {
+                    if (!err.data.errors || !err.data.errors.cpc_constraints) { return; }
+                    if (!confirm('If you want to blacklist more than 30 Outbrain publishers, Outbrain bid CPC will be automatically set to at least $0.65 in all ad groups within this account. Are you sure you want to proceed with blaklisting?')) { // eslint-disable-line max-len
+                        return;
+                    }
+                    savePublisherState(true).then(refreshData);
+                };
+            savePublisherState(false).then(refreshData).catch(trySaveWithEnforcedCpc);
         }
     }
 });

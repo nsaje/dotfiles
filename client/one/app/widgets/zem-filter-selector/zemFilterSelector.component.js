@@ -9,6 +9,7 @@ angular.module('one.widgets').component('zemFilterSelector', {
         $ctrl.clearFilter = zemDataFilterService.resetAllConditions;
         $ctrl.toggleSelectAll = zemFilterSelectorService.toggleSelectAll;
         $ctrl.applyFilter = applyFilter;
+        $ctrl.closeFilter = zemFilterSelectorSharedService.toggleSelector;
         $ctrl.getVisibleSectionsClasses = getVisibleSectionsClasses;
         $ctrl.scrollAppliedConditionsList = scrollAppliedConditionsList;
 

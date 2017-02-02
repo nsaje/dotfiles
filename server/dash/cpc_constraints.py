@@ -7,6 +7,10 @@ import dash.constants
 from utils import lc_helper
 
 
+class CpcValidationError(ValidationError):
+    pass
+
+
 def validate_cpc(cpc, **levels):
     rules = dash.models.CpcConstraint.objects.all().filter_applied(cpc, **levels)
     if not rules:
@@ -81,13 +85,23 @@ def validate_source_settings(min_cpc=None, max_cpc=None, **levels):
             msg += 'under {} '.format(
                 lc_helper.default_currency(max_cpc),
             )
-        raise ValidationError(msg + 'on all ad groups')
+        raise CpcValidationError(msg + 'on all ad groups')
 
 
-def create(constraint_type=dash.constants.CpcConstraintType.MANUAL, min_cpc=None, max_cpc=None,
+def create(constraint_type=dash.constants.CpcConstraintType.MANUAL,
+           min_cpc=None, max_cpc=None, enforce_cpc_settings=False,
            **levels):
     assert levels
-    validate_source_settings(min_cpc, max_cpc, **levels)
+    if dash.models.CpcConstraint.objects.filter(
+            constraint_type=constraint_type,
+            min_cpc=min_cpc,
+            max_cpc=max_cpc,
+            **levels).exists():
+        return
+    if enforce_cpc_settings:
+        enforce_rule(min_cpc, max_cpc, **levels)
+    else:
+        validate_source_settings(min_cpc, max_cpc, **levels)
     dash.models.CpcConstraint.objects.create(
         constraint_type=constraint_type,
         min_cpc=min_cpc,

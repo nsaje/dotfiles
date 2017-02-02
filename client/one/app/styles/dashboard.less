@@ -1,3 +1,33 @@
+///////////////////////////
+// Edit-campaign-goal modal //
+///////////////////////////
+
+.modal__body .form__group--meet-or-beat-goal {
+    .postfixed-field,
+    .input-text {
+        width: @form-input-width-modal - 45% - 2%;
+        margin-right: 2%;
+    }
+
+    .postfixed-field {
+        .input-text {
+            width: 100%;
+        }
+    }
+
+    .button {
+        width: 45%;
+    }
+}
+
+///////////////////////////
+///////////////////////////
+///////////////////////////
+// Below this comment is old CSS that needs review //
+///////////////////////////
+///////////////////////////
+///////////////////////////
+
 .page {
     h1 {
         margin: -10px 0 -10px 0;
@@ -10,27 +40,24 @@
     }
 }
 
-///////////////////////////
-// Edit-campaign-goal modal //
-///////////////////////////
+.container-fluid, .container {
+    min-height: 100vh;
+    padding-bottom: 52px;
+    position: relative;
 
-.form__group.form__group--meet-or-beat-goal {
-    .form__postfixed-field,
-    .form__input-text {
-        width: @form-input-width-modal - 45% - 2%;
-        margin-right: 2%;
-    }
-
-    .form__postfixed-field {
-        .form__input-text {
-            width: 100%;
-        }
-    }
-
-    .button {
-        width: 45%;
+    .footer {
+        position: absolute;
+        bottom: 0;
+        left: @default-spacing;
+        right: @default-spacing;
     }
 }
+
+.body .content-full {
+
+}
+
+
 
 ///////////////////////////
 // Internal feature //
@@ -90,14 +117,6 @@ zem-internal-feature {
     margin: @default-spacing*1.5+100 0 @default-spacing*1.5 0;
     border: none;
     transition: margin-top @default-animation;
-
-    .section {
-        .alert {
-            margin: -@default-spacing -@default-spacing @default-spacing -@default-spacing;
-            border: none;
-            border-radius: 0;
-        }
-    }
 }
 
 ///////////////////////////
@@ -129,6 +148,11 @@ zem-internal-feature {
 
                 .chart {
                     height: 290px;
+                    margin-left: -10px;
+
+                    .highcharts-background {
+                        fill: none;
+                    }
                 }
 
                 .chart-selector {
@@ -848,13 +872,6 @@ zem-internal-feature {
     }
 }
 
-.zem-grid-column-selector .dropdown-menu,
-.zem-grid-breakdown-selector .dropdown-menu {
-    border: 1px solid @border-color;
-    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
-    margin-top: 8px;
-}
-
 .custom-cols.dropdown {
     .dropdown-menu {
         margin-top: 7px;
@@ -903,6 +920,7 @@ zem-internal-feature {
                 color: @secondary-color;
                 font-weight: 500;
                 font-size: (@default-font-size)-1;
+                position: relative;
 
                 a {
                     color: @secondary-color;
@@ -920,6 +938,7 @@ zem-internal-feature {
             border-top: none;
             border-bottom: 1px solid tint(@secondary-color, 90%);
             vertical-align: middle;
+            position: relative;
 
             a {
                 font-weight: 500;
@@ -1072,50 +1091,6 @@ zem-internal-feature {
 ///////////////////////////
 // Alerts //
 ///////////////////////////
-
-
-.alert {
-    position: relative;
-    padding: 10px 15px;
-    line-height: 16px;
-    border-radius: 0;
-    margin: 0;
-    width: auto;
-
-    &.alert-icon {
-        padding-left: 40px;
-
-        .icon {
-            position: absolute;
-            top: 50%;
-            left: 10px;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            display: block;
-            background-size: 20px;
-        }
-
-        &.alert-warning {
-            .icon {
-                background-image: url('images/alert-warning.svg');
-            }
-        }
-    }
-
-    .form-alert-exclamation {
-        width: 20px;
-        height: 20px;
-        float: left;
-        display: inline-block;
-        margin-right: 10px;
-    }
-
-    .form-alert-body {
-        display: inline-block;
-        line-height: 20px;
-    }
-}
 
 .page-ad-group-settings #form-ad-group-settings {
     padding-top: 0px;
@@ -1458,6 +1433,7 @@ select.media-source-select {
 
             &.active {
                 background-color: @secondary-color;
+                color: white;
 
                 .text-info {
                     color: @white;
@@ -1506,14 +1482,6 @@ select.media-source-select {
 
 .zem-grid-column-selector,
 .zem-grid-breakdown-selector {
-    zem-internal-feature {
-        left: -5px;
-    }
-
-    .internal {
-        border: none;
-    }
-
     ul.dropdown-menu {
         .list-wrapper {
             padding-bottom: @default-spacing;
@@ -1572,7 +1540,6 @@ select.media-source-select {
             margin: 3px 0 3px 5px;
             label {
                 font-weight: normal;
-                color: @text-color;
                 font-size: @default-font-size;
 
                 &.disabled {
@@ -1595,15 +1562,6 @@ select.media-source-select {
     margin-left: 5px !important;
 }
 
-.settings-option-group {
-    padding-left: 16px;
-    margin: 0 5px;
-    &__header {
-        margin-bottom: 5px;
-    }
-    &__control { }
-}
-
 .splash {
     display: none;
     position: fixed;
@@ -1611,9 +1569,10 @@ select.media-source-select {
     left: 50%;
     text-align: center;
     transform: translate(-50%, -50%);
-    &__loader {
-        &:extend(.loader);
-    }
+}
+
+.splash__loader {
+    &:extend(.loader);
 }
 
 [ng-cloak].splash {

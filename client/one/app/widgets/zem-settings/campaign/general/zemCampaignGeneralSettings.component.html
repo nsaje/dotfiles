@@ -4,7 +4,7 @@
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_modify_account_name')"
              ng-class="{'form--error': !!$ctrl.errors.name}">
             <label class="form__label" for="name-input">Name:</label>
-            <input class="form__input-text" id="name-input" type="text" ng-model="$ctrl.entity.settings.name">
+            <input class="input-text" id="name-input" type="text" ng-model="$ctrl.entity.settings.name">
             <div class="message message--error" ng-repeat="error in $ctrl.errors.name"
                  for="name-input">{{ error }}</div>
         </div>

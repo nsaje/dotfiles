@@ -468,11 +468,11 @@ class AdGroupSourcesLoaderTest(TestCase):
                         'enabled': False
                     },
                     'bid_cpc': {
-                        'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
+                        'message': 'This value cannot be edited because the ad group is on Autopilot.',
                         'enabled': False
                     },
                     'daily_budget': {
-                        'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
+                        'message': 'This value cannot be edited because the ad group is on Autopilot.',
                         'enabled': False
                     }
                 },
@@ -491,11 +491,11 @@ class AdGroupSourcesLoaderTest(TestCase):
                         'enabled': False
                     },
                     'bid_cpc': {
-                        'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
+                        'message': 'This value cannot be edited because the ad group is on Autopilot.',
                         'enabled': False
                     },
                     'daily_budget': {
-                        'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.',
+                        'message': 'This value cannot be edited because the ad group is on Autopilot.',
                         'enabled': False
                     }
                 },

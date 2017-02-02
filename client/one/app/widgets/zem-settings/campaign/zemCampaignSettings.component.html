@@ -30,6 +30,19 @@
                 errors="$container.errors"
                 api="$container.childApi"
         ></zem-performance-tracking-settings>
+        <zem-campaign-budgets-settings
+                class="zem-settings-component"
+                entity="$container.entity"
+                errors="$container.errors"
+                api="$container.childApi"
+                ng-if="$ctrl.hasPermission('zemauth.can_see_new_budgets')"
+        ></zem-campaign-budgets-settings>
+        <zem-backend-hacks
+                class="zem-settings-component"
+                entity="$container.entity"
+                errors="$container.errors"
+                api="$container.childApi"
+        ></zem-backend-hacks>
     </settings>
 
     <custom>

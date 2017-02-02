@@ -8,6 +8,7 @@ angular.module('one.widgets').component('zemAlerts', {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.alertTypes = constants.notificationType;
 
         $ctrl.$onInit = function () {
             zemAlertsService.refreshAlerts($ctrl.level, $ctrl.entityId);

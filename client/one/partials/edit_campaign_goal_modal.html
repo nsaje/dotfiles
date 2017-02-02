@@ -7,10 +7,10 @@
         <!-- TODO: When opening modal and clicking Add goal without entering and selecting anything nothing happens, no errors -->
         <div class="form__group form__group--meet-or-beat-goal">
             <label class="form__label" for="goal-type-select">Meet or beat the goal of</label>
-            <div ng-class="{'form__postfixed-field': !!unit}" ng-class="{'form--error': errors.type}">
-                <input class="form__input-text" id="goal-value" type="text" zem-focus-select zem-numeric-validator
+            <div ng-class="{'postfixed-field': !!unit}" ng-class="{'form--error': errors.type}">
+                <input class="input-text" id="goal-value" type="text" zem-focus-select zem-numeric-validator
                        ng-model="campaignGoal.value" placeholder="0.00" maxlength="5" />
-                <span class="form__field-postfix" ng-show="!!unit">{{ unit }}</span>
+                <span class="postfixed-field__postfix" ng-show="!!unit">{{ unit }}</span>
             </div>
             <ui-select ng-disabled="!!campaignGoal.id" theme="select2" search-enabled="false" id="goal-type-select"
                        class="button button--plain button--full-width button--dropdown-toggle-icon"
@@ -70,7 +70,7 @@
             <div class="form__group" ng-if="campaignGoal.conversionGoal.goalId === '___new___'"
                  ng-class="{'form--error': !!errors.conversionGoal.pixel}">
                 <label class="form__label">Pixel name</label>
-                <input class="form__input-text" type="text" id="goal-new-pixel-input" ng-model="pixel.name" placeholder="Pixel name" />
+                <input class="input-text" type="text" id="goal-new-pixel-input" ng-model="pixel.name" placeholder="Pixel name" />
                 <div class="message message--error" ng-repeat="error in errors.conversionGoal.pixel" for="pixel-name-select">{{ error }}</div>
             </div>
 
@@ -99,7 +99,7 @@
                     Choose Goal
                     <zem-help-popover content="The name or id of Google Analytics goal that is tracking the conversions. Can be left empty in case of unnumbered or unnamed goal." placement="top"></zem-help-popover>
                 </label>
-                <input class="form__input-text" type="text" placeholder="Goal name" id="ga-goal-input"
+                <input class="input-text" type="text" placeholder="Goal name" id="ga-goal-input"
                        ng-model="campaignGoal.conversionGoal.goalId" ng-focus="clearErrors('conversionGoal')"
                        ng-disabled="!!campaignGoal.id" />
                 <div class="message message--error" ng-repeat="error in errors.conversionGoal.goalId" for="ga-goal-input">{{ error }}</div>
@@ -110,7 +110,7 @@
                     Choose Event
                     <zem-help-popover content="The Adobe Analytics event that is tracking the conversions." placement="top"></zem-help-popover>
                 </label>
-                <input class="form__input-text" type="text" placeholder="Event name" id="omniture-event-input"
+                <input class="input-text" type="text" placeholder="Event name" id="omniture-event-input"
                        ng-model="campaignGoal.conversionGoal.goalId" ng-focus="clearErrors('conversionGoal')"
                        ng-disabled="!!campaignGoal.id" />
                 <div class="message message--error" ng-repeat="error in errors.conversionGoal.goalId"

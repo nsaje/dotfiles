@@ -35,7 +35,7 @@ class BlacklistException(Exception):
 
 
 def update(ad_group, constraints, status, domains, everywhere=False,
-           all_sources=False, all_b1_sources=False, request=None):
+           all_sources=False, all_b1_sources=False, request=None, enforce_cpc=False):
     external_map = dict(domains)
     domain_names = external_map.keys()
     if everywhere:
@@ -56,10 +56,10 @@ def update(ad_group, constraints, status, domains, everywhere=False,
                 source_constraints = {'source': source}
                 source_constraints.update(constraints)
                 _update_source(source_constraints, status, domain_names, external_map,
-                               request=request, ad_group=ad_group)
+                               request=request, ad_group=ad_group, enforce_cpc=False)
         else:
             _update_source(constraints, status, domain_names, external_map,
-                           request=request, ad_group=ad_group)
+                           request=request, ad_group=ad_group, enforce_cpc=enforce_cpc)
 
     if 'ad_group' in constraints:
         utils.k1_helper.update_blacklist(
@@ -103,7 +103,8 @@ def _handle_all(constraints, status, domain_names, external_map, request=None,
         )
 
 
-def _update_source(constraints, status, domain_names, external_map, request=None, ad_group=None):
+def _update_source(constraints, status, domain_names, external_map, request=None,
+                   ad_group=None, enforce_cpc=False):
     source = constraints['source']
 
     if not source.can_modify_publisher_blacklist_automatically():
@@ -112,7 +113,7 @@ def _update_source(constraints, status, domain_names, external_map, request=None
         if 'account' not in constraints:
             return
         _handle_outbrain_account_constraints(
-            constraints['account'], source, set(domain_names), status
+            constraints['account'], source, set(domain_names), status, enforce_cpc
         )
 
     _handle_all(constraints, status, domain_names, external_map, request=request, ad_group=ad_group)
@@ -153,7 +154,7 @@ def _global_blacklist(constraints, status, domain_names, external_map):
         )
 
 
-def _handle_outbrain_account_constraints(account, source, blacklist_addition, status):
+def _handle_outbrain_account_constraints(account, source, blacklist_addition, status, enforce_cpc):
     blacklist_current = set(item.name for item in dash.models.PublisherBlacklist.objects.filter(
         source=source,
         account=account,
@@ -166,8 +167,9 @@ def _handle_outbrain_account_constraints(account, source, blacklist_addition, st
         dash.cpc_constraints.create(
             min_cpc=OUTBRAIN_CPC_CONSTRAINT_MIN,
             constraint_type=dash.constants.CpcConstraintType.OUTBRAIN_BLACKLIST,
+            enforce_cpc_settings=enforce_cpc,
             source=source,
-            account=account,
+            account=account
         )
     else:
         dash.cpc_constraints.clear(

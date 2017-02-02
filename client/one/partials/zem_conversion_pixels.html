@@ -11,13 +11,11 @@
                         <a href class="order" ng-click="orderField = 'name'; orderReverse = !orderReverse">Name</a>
                         <zem-help-popover content="Pixel's name" placement="top"></zem-help-popover>
                     </th>
-                    <th ng-if="hasPermission('zemauth.can_see_pixel_traffic')">
-                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_see_pixel_traffic')" popover-placement="top"></zem-internal-feature>
+                    <th ng-if="hasPermission('zemauth.can_see_pixel_traffic')" is-internal="zemauth.can_see_pixel_traffic">
                         Last Triggered
                         <zem-help-popover content="Synchronized every 24 hours." placement="top"></zem-help-popover>
                     </th>
-                    <th ng-if="hasPermission('zemauth.can_see_pixel_traffic')">
-                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_see_pixel_traffic')" popover-placement="top"></zem-internal-feature>
+                    <th ng-if="hasPermission('zemauth.can_see_pixel_traffic')" is-internal="zemauth.can_see_pixel_traffic">
                         Traffic Yesterday
                         <zem-help-popover content="Number of times pixel triggered yesterday. Synchronized every 24 hours." placement="top"></zem-help-popover>
                     </th>

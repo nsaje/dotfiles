@@ -391,7 +391,6 @@ def set_ad_group_source_settings(
 
     if not _has_any_ad_group_source_setting_changed(latest_settings, state, cpc_cc, daily_budget_cc, landing_mode):
         return
-
     _update_ad_group_source_setting(
         ad_group_source,
         request,

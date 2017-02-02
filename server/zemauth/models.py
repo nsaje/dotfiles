@@ -246,6 +246,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_set_rtb_sources_as_one_cpc', 'User can see and set the bid CPC for RTB Sources grouped as one'),
             ('can_see_new_chart', 'User can see new chart component'),
             ('can_see_new_content_insights', 'User can see new content insights component'),
+            ('can_see_new_budgets', 'User can see new campaing budget component'),
+            ('can_see_backend_hacks', 'User can see backend hacks'),
         )
 
     def get_full_name(self):

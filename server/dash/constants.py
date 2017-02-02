@@ -1847,3 +1847,29 @@ class CpcConstraintType(ConstantBase):
         MANUAL: 'Manual',
         OUTBRAIN_BLACKLIST: 'Outbrain blacklist',
     }
+
+
+class PublisherTargetingStatus(ConstantBase):
+    WHITELISTED = 1
+    BLACKLISTED = 2
+    UNLISTED = 3
+
+    _VALUES = {
+        WHITELISTED: 'Whitelisted',
+        BLACKLISTED: 'Blacklisted',
+        UNLISTED: 'Active',
+    }
+
+
+class Service(ConstantBase):
+    Z1 = 'z1'
+    K1 = 'k1'
+    R1 = 'r1'
+    B1 = 'b1'
+
+    _VALUES = {
+        Z1: 'Zemanta One',
+        K1: 'Konsistency One',
+        R1: 'Redirector',
+        B1: 'Bidder',
+    }

@@ -1556,9 +1556,9 @@ class CpcConstraintAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'source',
-        'agency',
-        'account',
-        'campaign',
+        '_agency',
+        '_account',
+        '_campaign',
         'ad_group',
         'min_cpc',
         'max_cpc',
@@ -1589,6 +1589,8 @@ class CpcConstraintAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_dt'
 
     def _reason(self, obj):
+        if obj.reason is None:
+            return ''
         if len(obj.reason) > 30:
             return obj.reason[:27] + ' ...'
         return obj.reason
@@ -1601,6 +1603,121 @@ class CpcConstraintAdmin(admin.ModelAdmin):
         })
         obj.save()
 
+    def get_queryset(self, request):
+        qs = super(CpcConstraintAdmin, self).get_queryset(request)
+        return qs.select_related(
+            'ad_group__campaign__account__agency',
+            'campaign__account__agency',
+            'account__agency',
+            'agency',
+            'source'
+        )
+
+    def _agency(self, obj):
+        return (
+            obj.agency or
+            (obj.account and obj.account.agency) or
+            (obj.campaign and obj.campaign.account and obj.campaign.account.agency) or
+            (obj.ad_group and obj.ad_group.campaign and
+                obj.ad_group.campaign.account and obj.ad_group.campaign.account.agency) or
+            None
+        )
+
+    def _account(self, obj):
+        return (
+            obj.account or
+            (obj.campaign and obj.campaign.account) or
+            (obj.ad_group and obj.ad_group.campaign and obj.ad_group.campaign.account) or
+            None
+        )
+
+    def _campaign(self, obj):
+        return obj.campaign or (obj.ad_group and obj.ad_group.campaign) or None
+
+
+class CustomHackStatusFilter(SimpleListFilter):
+    title = 'Status'
+    parameter_name = 'removed_dt'
+
+    def lookups(self, request, model_admin):
+        return [('active', 'Active'),
+                ('removed', 'Removed')]
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+        return queryset.filter_active(self.value() == 'active')
+
+
+class CustomHackAdmin(admin.ModelAdmin):
+    model = models.CustomHack
+    list_display = (
+        'summary',
+        'source',
+        'rtb_only',
+        '_agency',
+        '_account',
+        '_campaign',
+        'ad_group',
+        'service',
+        'created_dt',
+        'created_by',
+    )
+
+    list_filter = (
+        'summary', 'service', CustomHackStatusFilter,
+    )
+
+    search_fields = (
+        'agency__id',
+        'agency__name',
+        'account__name',
+        'account__id',
+        'campaign__name',
+        'campaign__id',
+        'ad_group__name',
+        'ad_group__id',
+    )
+
+    readonly_fields = ('created_dt', 'created_by')
+    raw_id_fields = ('agency', 'account', 'campaign', 'ad_group')
+
+    ordering = ('-created_dt', )
+    date_hierarchy = 'created_dt'
+
+    def get_queryset(self, request):
+        qs = super(CustomHackAdmin, self).get_queryset(request)
+        return qs.select_related(
+            'ad_group__campaign__account__agency',
+            'campaign__account__agency',
+            'account__agency',
+            'agency',
+            'source'
+        )
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
+
+    def _agency(self, obj):
+        return (
+            obj.agency or
+            (obj.account and obj.account.agency) or
+            (obj.campaign and obj.campaign.account and obj.campaign.account.agency) or
+            (obj.ad_group and obj.ad_group.campaign and
+             obj.ad_group.campaign.account and obj.ad_group.campaign.account.agency) or
+            None
+        )
+
+    def _account(self, obj):
+        return (
+            obj.account or
+            (obj.campaign and obj.campaign.account) or
+            (obj.ad_group and obj.ad_group.campaign and obj.ad_group.campaign.account) or
+            None
+        )
+
+    def _campaign(self, obj):
+        return obj.campaign or (obj.ad_group and obj.ad_group.campaign) or ''
 
 admin.site.register(models.Agency, AgencyAdmin)
 admin.site.register(models.Account, AccountAdmin)
@@ -1630,3 +1747,4 @@ admin.site.register(models.History, HistoryAdmin)
 admin.site.register(models.Audience, AudienceAdmin)
 admin.site.register(models.PublisherGroup, PublisherGroupAdmin)
 admin.site.register(models.CpcConstraint, CpcConstraintAdmin)
+admin.site.register(models.CustomHack, CustomHackAdmin)

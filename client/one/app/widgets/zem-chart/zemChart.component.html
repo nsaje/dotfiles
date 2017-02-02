@@ -1,5 +1,5 @@
 <div is-internal="zemauth.can_see_new_chart" class="chart-container loader-container">
-    <div class="loader" ng-show="$ctrl.chart.isLoading"></div>
+    <div class="loader" ng-show="!$ctrl.initialized || $ctrl.chart.isLoading"></div>
     <div class="chart-selector">
         <zem-chart-metric-selector class="zem-chart-metrics-selector"
                 chart="$ctrl.chart"
@@ -23,6 +23,6 @@
             </div>
         </li>
     </ul>
-    <div class="no-data" ng-show="!$ctrl.chart.hasData"><span>No data</span></div>
-    <div highchart config="$ctrl.chart.config" class="chart"></div>
+    <div class="no-data" ng-if="$ctrl.initialized && !$ctrl.chart.hasData"><span>No data</span></div>
+    <div ng-if="$ctrl.initialized" highchart config="$ctrl.chart.config" class="chart"></div>
 </div>

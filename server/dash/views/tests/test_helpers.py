@@ -884,24 +884,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             'message': 'This value cannot be edited because the media source is currently in maintenance.'
         })
 
-    @patch('datetime.datetime', DatetimeMock)
-    def test_get_editable_fields_bid_cpc_end_date_past(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.end_date = datetime.datetime(2015, 1, 1)
-        campaign_settings = ad_group_source.ad_group.campaign.get_current_settings()
-
-        ad_group_source.source.source_type.available_actions = []
-
-        result = helpers._get_editable_fields_bid_cpc(
-            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings)
-
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
-        })
-
     def test_get_editable_fields_daily_budget_enabled(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
@@ -1008,24 +990,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         self.assertEqual(result, {
             'enabled': False,
             'message': 'This value cannot be edited because the media source is currently in maintenance.'
-        })
-
-    @patch('datetime.datetime', DatetimeMock)
-    def test_get_editable_fields_daily_budget_end_date_past(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.end_date = datetime.datetime(2015, 1, 1)
-        campaign_settings = ad_group_source.ad_group.campaign.get_current_settings()
-
-        ad_group_source.source.source_type.available_actions = []
-
-        result = helpers._get_editable_fields_daily_budget(
-            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings)
-
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
         })
 
 

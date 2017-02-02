@@ -2,11 +2,13 @@
     <div class="zem-settings-component__header">Performance tracking</div>
     <div class="zem-settings-component__description">Connect your Google/Adobe Analytics account to better track your campaign performance.</div>
     <div class="form">
-        <div class="form__group--vertical">
-            <input class="form__input-checkbox" type="checkbox" id="enable-ga-tracking" ng-model="$ctrl.entity.settings.enableGaTracking">
-            <label class="form__checkbox-text" for="enable-ga-tracking">
-                Enable Google Analytics performance tracking
-                <zem-help-popover content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs." placement="top"></zem-help-popover>
+        <div class="form__checkbox">
+            <label>
+                <input class="input-checkbox" type="checkbox" id="enable-ga-tracking" ng-model="$ctrl.entity.settings.enableGaTracking">
+                <span class="checkbox-text">
+                    Enable Google Analytics performance tracking
+                    <zem-help-popover content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs." placement="top"></zem-help-popover>
+                </span>
             </label>
         </div>
 
@@ -45,7 +47,7 @@
                     Web property ID
                     <zem-help-popover content="Google Analytics web property ID." placement="top"></zem-help-popover>
                 </label>
-                <input class="form__input-text" id="ga-property-id-input" type="text"
+                <input class="input-text" id="ga-property-id-input" type="text"
                        ng-model="$ctrl.entity.settings.gaPropertyId" placeholder="UA-xxxxxxx-yy">
                 <div class="message" ng-if="!$ctrl.errors.gaPropertyId.length && $ctrl.entity.settings.gaPropertyReadable !== undefined"
                      ng-class="$ctrl.entity.settings.gaPropertyReadable ? 'ga-connected' : 'ga-pending'">
@@ -56,12 +58,14 @@
             </div>
         </div>
 
-        <div class="form__group--vertical">
-            <input class="form__input-checkbox" type="checkbox" id="enable-adobe-tracking"
-                   ng-model="$ctrl.entity.settings.enableAdobeTracking">
-            <label class="form__checkbox-text" for="enable-adobe-tracking">
-                Enable Adobe Analytics performance tracking
-                <zem-help-popover content="This adds performance tracking codes to all URLs." placement="top"></zem-help-popover>
+        <div class="form__checkbox">
+            <label>
+                <input class="input-checkbox" type="checkbox" id="enable-adobe-tracking"
+                       ng-model="$ctrl.entity.settings.enableAdobeTracking">
+                <span class="checkbox-text" for="enable-adobe-tracking">
+                    Enable Adobe Analytics performance tracking
+                    <zem-help-popover content="This adds performance tracking codes to all URLs." placement="top"></zem-help-popover>
+                </span>
             </label>
         </div>
 
@@ -72,7 +76,7 @@
                     <zem-help-popover content="Name of the tracking parameter used for Adobe Analytics."
                                       placement="top"></zem-help-popover>
                 </label>
-                <input class="form__input-text" id="adobe-tracking-param-input" type="text"
+                <input class="input-text" id="adobe-tracking-param-input" type="text"
                        ng-model="$ctrl.entity.settings.adobeTrackingParam">
                 <div class="message m-t-xs">
                     <a href="http://help.zemanta.com/article/show/12524-setting-up-automated-adobe-analytics-reports"

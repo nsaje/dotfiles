@@ -10,6 +10,7 @@ from django.test.utils import override_settings
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
+from django.conf import settings
 
 from zemauth.models import User
 
@@ -315,26 +316,6 @@ class AdGroupSourceSettingsTest(TestCase):
         request.user = User.objects.get(id=1)
         new_settings.save(request)
 
-    def test_end_date_past(self):
-        self._set_ad_group_end_date(-1)
-        response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-            data=json.dumps({'cpc_cc': '0.15'})
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
-
-    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
-    @patch('utils.k1_helper.update_ad_group')
-    def test_end_date_future(self, mock_k1_ping):
-        self._set_ad_group_end_date(days_delta=3)
-        response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-            data=json.dumps({'cpc_cc': '0.15'})
-        )
-        self.assertEqual(response.status_code, 200)
-        mock_k1_ping.assert_called_with(1, msg='AdGroupSourceSettings.put')
-
     @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     @patch('utils.k1_helper.update_ad_group')
     def test_cpc_bigger_than_max(self, mock_k1_ping):
@@ -381,15 +362,6 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertFalse(mock_k1_ping.called)
-
-    @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
-    def test_set_cpc_landing_mode(self):
-        self._set_campaign_landing_mode()
-        response = self.client.put(
-            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
-            data=json.dumps({'cpc_cc': '0.15'})
-        )
-        self.assertEqual(response.status_code, 400)
 
     @patch('dash.views.views.api.set_ad_group_source_settings', Mock)
     def test_set_daily_budget_landing_mode(self):
@@ -1008,6 +980,10 @@ class PublishersBlacklistStatusTest(TestCase):
             s.available_actions.append(constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC)
             s.save()
 
+        self.global_blacklist = models.PublisherGroup(name='imglobal')
+        self.global_blacklist.save(None)
+        settings.GLOBAL_BLACKLIST_ID = self.global_blacklist.id
+
     def _post_publisher_blacklist(self, ad_group_id, data, user_id=3, with_status=False):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password='secret')
@@ -1175,6 +1151,16 @@ class PublishersBlacklistStatusTest(TestCase):
         self.assertEqual(1, publisher_blacklist.ad_group.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual(u'掌上留园－6park', publisher_blacklist.name)
+
+        # check the new endpoint get called successfully
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertEqual(
+            list(ad_group.default_blacklist.entries.all().values('publisher', 'source', 'include_subdomains')),
+            [{
+                'publisher': u'掌上留园－6park',
+                'source': publisher_blacklist.source_id,
+                'include_subdomains': True,
+            }])
 
     @patch('reports.redshift.get_cursor')
     @patch('utils.k1_helper.update_blacklist')

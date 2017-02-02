@@ -19,6 +19,7 @@ from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
+from django.http.request import HttpRequest
 from django.views.decorators.csrf import csrf_exempt
 
 import influx
@@ -44,6 +45,8 @@ from dash import infobox_helpers
 from dash import publisher_helpers
 from dash import history_helpers
 from dash import blacklist
+from dash import cpc_constraints
+from dash.views import publishers as view_publishers
 
 import reports.api_publishers
 import analytics.projections
@@ -1125,11 +1128,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource:
             resource['daily_budget_cc'] = decimal.Decimal(resource['daily_budget_cc'])
 
-        if 'cpc_cc' in resource or 'daily_budget_cc' in resource:
-            end_datetime = ad_group_settings.get_utc_end_datetime()
-            if end_datetime is not None and end_datetime <= datetime.datetime.utcnow():
-                raise exc.ValidationError("Ad group end date in the past!")
-
         allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
 
         api.set_ad_group_source_settings(ad_group_source, resource, request)
@@ -1152,7 +1150,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group_source.get_current_settings_or_none(),
                 campaign_settings,
                 allowed_sources,
-                campaign_stop.can_enable_media_source(ad_group_source, ad_group.campaign, campaign_settings, ad_group_settings)
+                campaign_stop.can_enable_media_source(
+                    ad_group_source, ad_group.campaign, campaign_settings, ad_group_settings)
             ),
             'autopilot_changed_sources': autopilot_changed_sources_text,
             'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings)
@@ -1197,8 +1196,16 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         if select_all:
             publishers = self._query_all_publishers(ad_group, start_date, end_date)
 
-        self._handle_blacklisting(request, ad_group, level, state, publishers, publishers_selected,
-                                  publishers_not_selected)
+        try:
+            self._handle_blacklisting(
+                request, ad_group, level, state, publishers, publishers_selected,
+                publishers_not_selected,
+                enforce_cpc=body.get('enforce_cpc')
+            )
+        except cpc_constraints.CpcValidationError as err:
+            raise exc.ValidationError(errors={
+                'cpc_constraints': list(err)
+            })
 
         response = {
             "success": True,
@@ -1206,11 +1213,10 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def _handle_blacklisting(self, request, ad_group, level, state, publishers, publishers_selected,
-                             publishers_not_selected):
+                             publishers_not_selected, enforce_cpc=False):
         source_domains = self._generate_source_publishers(
             publishers, publishers_selected, publishers_not_selected
         )
-
         constraints = {}
         if level == constants.PublisherBlacklistLevel.ADGROUP:
             constraints['ad_group'] = ad_group
@@ -1219,17 +1225,56 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         elif level == constants.PublisherBlacklistLevel.ACCOUNT:
             constraints['account'] = ad_group.campaign.account
 
+        self._call_new_blacklisting(request, ad_group, level, state, source_domains)
+
         for source, domains in source_domains.iteritems():
             source_constraints = {'source': source}
             source_constraints.update(constraints)
             blacklist.update(ad_group, source_constraints, state, domains,
-                             everywhere=level == constants.PublisherBlacklistLevel.GLOBAL)
+                             everywhere=level == constants.PublisherBlacklistLevel.GLOBAL,
+                             enforce_cpc=enforce_cpc)
 
         self._write_history(request, ad_group, state, [
             {'source': source, 'domain': d[0]}
             for source, domains in source_domains.iteritems()
             for d in domains
         ], level)
+
+    def _call_new_blacklisting(self, request, ad_group, level, state, source_domains):
+        entries = []
+        payload = {
+            'entries': entries,
+            'status': (constants.PublisherTargetingStatus.BLACKLISTED if constants.PublisherStatus.BLACKLISTED
+                       else constants.PublisherTargetingStatus.UNLISTED),
+        }
+
+        # setup level
+        if level == constants.PublisherBlacklistLevel.ADGROUP:
+            payload['ad_group'] = ad_group.id
+        elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            payload['campaign'] = ad_group.campaign_id
+        elif level == constants.PublisherBlacklistLevel.ACCOUNT:
+            payload['account'] = ad_group.campaign.account_id
+        else:
+            # global level
+            pass
+
+        for source, domains in source_domains.iteritems():
+            for domain in domains:
+                entries.append({
+                    'publisher': domain[0],
+                    'source': source.id,
+                    'include_subdomains': True,
+                })
+
+        new_request = HttpRequest()
+        new_request.user = request.user
+        new_request._body = json.dumps(payload)
+
+        view = view_publishers.PublisherTargeting(rest_proxy=True)
+        _, status_code = view.post(new_request)
+        if status_code != 200:
+            logger.error('Publisher group targeting endpoint failed when it should not, status code %s', status_code)
 
     def _generate_source_publishers(self, pubs, pubs_selected, pubs_ignored):
         source_publishers = {}

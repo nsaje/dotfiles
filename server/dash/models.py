@@ -533,6 +533,15 @@ class Account(models.Model):
             'http://', 'https://')
         return campaign_settings_url
 
+    def get_default_blacklist_name(self):
+        return u"Default blacklist for account {}({})".format(self.name, self.id)
+
+    def get_default_whitelist_name(self):
+        return u"Default whitelist for account {}({})".format(self.name, self.id)
+
+    def get_account(self):
+        return self
+
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
@@ -764,6 +773,15 @@ class Campaign(models.Model, PermissionMixin):
             level=constants.HistoryLevel.CAMPAIGN,
             action_type=action_type
         )
+
+    def get_default_blacklist_name(self):
+        return u"Default blacklist for campaign {}({})".format(self.name, self.id)
+
+    def get_default_whitelist_name(self):
+        return u"Default whitelist for campaign {}({})".format(self.name, self.id)
+
+    def get_account(self):
+        return self.account
 
     def save(self, request, *args, **kwargs):
         self.modified_by = None
@@ -1918,6 +1936,15 @@ class AdGroup(models.Model):
             return True
 
         return False
+
+    def get_default_blacklist_name(self):
+        return u"Default blacklist for ad group {}({})".format(self.name, self.id)
+
+    def get_default_whitelist_name(self):
+        return u"Default whitelist for ad group {}({})".format(self.name, self.id)
+
+    def get_account(self):
+        return self.campaign.account
 
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,
@@ -4457,10 +4484,12 @@ class PublisherGroup(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT,
+                                    null=True, blank=True)
 
     def save(self, request, *args, **kwargs):
-        self.modified_by = request.user
+        if request and request.user:
+            self.modified_by = request.user
         super(PublisherGroup, self).save(*args, **kwargs)
 
     objects = QuerySetManager()
@@ -4512,3 +4541,100 @@ class PublisherGroupEntry(models.Model):
 
     def __str__(self):
         return unicode(self).encode('ascii', 'ignore')
+
+
+class CustomHack(models.Model):
+    id = models.AutoField(primary_key=True)
+    agency = models.ForeignKey(Agency, null=True, blank=True, related_name='hacks',
+                               on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, null=True, blank=True, related_name='hacks',
+                                on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, null=True, blank=True, related_name='hacks',
+                                 on_delete=models.PROTECT)
+    ad_group = models.ForeignKey(AdGroup, null=True, blank=True, related_name='hacks',
+                                 on_delete=models.PROTECT)
+    source = models.ForeignKey(Source, null=True, blank=True, related_name='hacks',
+                               on_delete=models.PROTECT)
+    rtb_only = models.BooleanField(default=False)
+
+    summary = models.CharField(null=True, blank=True, max_length=255)
+    details = models.TextField(null=True, blank=True)
+    service = models.CharField(
+        default=constants.Service.Z1,
+        choices=constants.Service.get_choices(),
+        max_length=255
+    )
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    removed_dt = models.DateTimeField(null=True, blank=True, verbose_name='Removed at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
+                                   related_name='+', on_delete=models.PROTECT)
+
+    objects = QuerySetManager()
+
+    def save(self, request=None, *args, **kwargs):
+        if self.pk is None and request:
+            self.created_by = request.user
+        super(CustomHack, self).save(*args, **kwargs)
+
+    def get_level(self):
+        return (
+            self.agency and 'Agency' or
+            self.account and 'Account' or
+            self.campaign and 'Campaign' or
+            self.ad_group and 'Ad group'
+        )
+
+    def __str__(self):
+        desc = '{level} level hack'
+        if self.source:
+            desc += ' on source {source}'
+        if self.rtb_only:
+            desc += ' on all RTB sources'
+        desc += ': {summary}'
+        return desc.format(
+            level=self.get_level(),
+            source=self.source,
+            summary=self.summary
+        )
+
+    class QuerySet(models.QuerySet):
+
+        def filter_applied(self, source=None, **levels):
+            ad_group = levels.get('ad_group')
+            campaign, account, agency = _generate_parents(**levels)
+            rules = models.Q()
+            if agency:
+                rules |= models.Q(agency=agency)
+            if account:
+                rules |= models.Q(account=account)
+            if campaign:
+                rules |= models.Q(campaign=campaign)
+            if ad_group:
+                rules |= models.Q(ad_group=ad_group)
+            queryset = self.filter(rules)
+            if source:
+                queryset = queryset.filter(models.Q(source=source) | models.Q(source=None))
+            return queryset
+
+        def filter_active(self, is_active):
+            now = datetime.datetime.now()
+            if is_active:
+                return self.filter(
+                    models.Q(removed_dt__isnull=True) | models.Q(removed_dt__gt=now)
+                )
+            else:
+                return self.filter(
+                    removed_dt__lte=now
+                )
+
+        def to_dict_list(self):
+            return [
+                {
+                    'summary': obj.summary,
+                    'details': obj.details,
+                    'level': obj.get_level(),
+                    'source': obj.source and obj.source.name or obj.rtb_only and 'RTB' or None
+                }
+                for obj in self
+            ]

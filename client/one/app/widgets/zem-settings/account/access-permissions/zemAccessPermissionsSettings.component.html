@@ -75,20 +75,20 @@
                     <div class="form">
                         <div class="form__group" ng-class="{'form--error': !!$ctrl.addUserErrors.errors.firstName}">
                             <label class="form__label" for="first-name-input">Name:</label>
-                            <input class="form__input-text" id="first-name-input" type="text" placeholder="Name"
+                            <input class="input-text" id="first-name-input" type="text" placeholder="Name"
                                    ng-model="$ctrl.addUserData.firstName">
                         </div>
                         <div class="form__group" ng-class="{'form--error': !!$ctrl.addUserErrors.errors.lastName}">
                             <label class="form__label" for="last-name-input">Last name:</label>
-                            <input class="form__input-text" id="last-name-input" type="text"
+                            <input class="input-text" id="last-name-input" type="text"
                                    placeholder="Last name" ng-model="$ctrl.addUserData.lastName">
                         </div>
                         <div class="form__group" ng-class="{'form--error': !!$ctrl.addUserErrors.errors.email}">
                             <label class="form__label" for="email-input">Email:</label>
-                            <input class="form__input-text" id="email-input" type="text" placeholder="Email"
+                            <input class="input-text" id="email-input" type="text" placeholder="Email"
                                    ng-model="$ctrl.addUserData.email">
                         </div>
-                        <div class="form__group--indented buttons-panel">
+                        <div class="form__indented-group buttons-panel">
                             <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.addUser()">Add new user</button>
                             <div class="loader" ng-show="$ctrl.addUserRequestInProgress"></div>
                             <div class="message message--error" ng-show="$ctrl.addUserErrors">

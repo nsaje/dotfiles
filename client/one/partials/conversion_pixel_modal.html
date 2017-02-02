@@ -5,7 +5,7 @@
     <div class="form" id="conversion-pixel-form">
         <div class="form__group" ng-class="{'form--error': !!error && !!errorMessage}">
             <label class="form__label" for="name-input">Name</label>
-            <input class="form__input-text" type="text" zem-focus-select id="name-input" ng-model="pixel.name"
+            <input class="input-text" type="text" zem-focus-select id="name-input" ng-model="pixel.name"
                    ng-focus="clearError()" ng-change="clearError()" />
         </div>
 
@@ -14,12 +14,17 @@
             <label class="form__label" for="audience-enabled-input" is-internal="zemauth.account_custom_audiences_view">
                 Build custom audiences from this pixel
             </label>
-            <input class="form__input-checkbox" type="checkbox" id="audience-enabled-input" ng-model="pixel.audienceEnabled"
-                   ng-disabled="!!audiencePixel" ng-focus="clearError()" ng-change="clearError()" />
+            <div class="form__checkbox">
+                <label>
+                    <input class="input-checkbox" type="checkbox" id="audience-enabled-input" ng-model="pixel.audienceEnabled"
+                           ng-disabled="!!audiencePixel" ng-focus="clearError()" ng-change="clearError()" />
+                    <label class="checkbox-text" for="audience-enabled-input"></label>
+                </label>
+            </div>
         </div>
     </div>
 
-    <div ng-if="hasPermission('zemauth.account_custom_audiences_view')">
+    <div ng-if="hasPermission('zemauth.account_custom_audiences_view')" class="m-b">
         <div class="message message--info message--with-icon" ng-if="!audiencePixel">
             Only one pixel can be used for building custom audiences. This choice is permanent. If you want to change this, please contact your Account Manager.
         </div>
@@ -29,10 +34,12 @@
         </div>
     </div>
 
+    <hr>
+
     <h3>Where do I place my pixel on my site?</h3>
     <p>Pixels need to be properly placed in order to measure goals effectively. We recommend placing your pixel on the confirmation page which is shown to a person after the desired action is performed.</p>
 </div>
-<div class="modal-footer buttons-panel">
+<div class="modal__footer buttons-panel">
     <button type="submit" class="button button--highlight button--with-icon check-icon" ng-click="submit()" ng-class="{'disabled': !!inProgress}">{{buttonText}}</button>
     <button type="button" class="button button--outline" ng-click="$dismiss()">Cancel</button>
     <div class="loader" ng-show="inProgress"></div>

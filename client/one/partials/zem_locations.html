@@ -1,8 +1,8 @@
-<div ng-show="selectedLocationCodes" class="form__input-tags custom-scroller">
-    <div class="input-tag__item" ng-if="!selectedLocationCodes.length"><span class="input-tag__name">Worldwide</span></div>
-    <div class="input-tag__item input-tag__item--with-remove" ng-repeat="location in selectedLocations()" ng-click="removeSelectedLocation(location)">
-        <span ng-if="regions.isDMA(location) || regions.isUSState(location)" class="input-tag__prefix">US</span>
-        <span class="input-tag__name input-tag__name--with-remove">
+<div ng-show="selectedLocationCodes" class="input-tags custom-scroller">
+    <div class="input-tags__item" ng-if="!selectedLocationCodes.length"><span class="input-tags__name">Worldwide</span></div>
+    <div class="input-tags__item input-tags__item--with-remove" ng-repeat="location in selectedLocations()" ng-click="removeSelectedLocation(location)">
+        <span ng-if="regions.isDMA(location) || regions.isUSState(location)" class="input-tags__prefix">US</span>
+        <span class="input-tags__name input-tags__name--with-remove">
             {{location.name}}
         </span>
     </div>

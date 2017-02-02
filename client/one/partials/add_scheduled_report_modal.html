@@ -13,7 +13,7 @@
             <input type="text"
                    zem-focus-select
                    id="report-name-input"
-                   class="form__input-text"
+                   class="input-text"
                    ng-model="export.reportName"
                    placeholder="Name of the report" />
             <div class="message message--error" ng-repeat="error in validationErrors.report_name"
@@ -106,31 +106,46 @@
 
         <div class="form__group">
             <label class="form__label" for="by-day-checkbox">Breakdown by day</label>
-            <input id="by-day-checkbox"
-                type="checkbox"
-                ng-model="export.byDay"
-                class="form__input-checkbox"
-                ng-disabled="breakdownByDayDisabled">
+            <div class="form__checkbox">
+                <label>
+                    <input id="by-day-checkbox"
+                        type="checkbox"
+                        ng-model="export.byDay"
+                        class="input-checkbox"
+                        ng-disabled="breakdownByDayDisabled">
+                    <span class="checkbox-text"></span>
+                </label>
+            </div>
         </div>
 
         <div class="form__group" ng-if="hasPermission('zemauth.can_include_totals_in_reports')">
             <label class="form__label" for="include-totals-checkbox" is-internal="zemauth.can_include_totals_in_reports">
                 Include totals
             </label>
-            <input id="include-totals-checkbox"
-                   type="checkbox"
-                   ng-model="export.includeTotals"
-                   class="form__input-checkbox">
+            <div class="form__checkbox">
+                <label>
+                    <input id="include-totals-checkbox"
+                           type="checkbox"
+                           ng-model="export.includeTotals"
+                           class="input-checkbox">
+                    <span class="checkbox-text"></span>
+                </label>
+            </div>
         </div>
 
         <div class="form__group" ng-if="hasPermission('zemauth.can_include_model_ids_in_reports')">
             <label class="form__label" for="add-ids-checkbox" is-internal="zemauth.can_include_model_ids_in_reports">
                 Add IDs to report
             </label>
-            <input id="add-ids-checkbox"
-                   type="checkbox"
-                   ng-model="export.includeIds"
-                   class="form__input-checkbox">
+            <div class="form__checkbox">
+                <label>
+                    <input id="add-ids-checkbox"
+                           type="checkbox"
+                           ng-model="export.includeIds"
+                           class="input-checkbox">
+                    <span class="checkbox-text"></span>
+                </label>
+            </div>
         </div>
 
         <div class="form__group" ng-class="{'form--error': !!validationErrors.recipient_emails}">
@@ -140,7 +155,7 @@
             <textarea
                 ng-model="export.recipientEmails"
                 id="recipient-emails-textarea"
-                class="form__textarea"
+                class="textarea"
                 type="text"
                 placeholder="Comma-separated list of recipient email addresses">
             </textarea>

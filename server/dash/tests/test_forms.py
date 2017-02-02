@@ -13,6 +13,7 @@ from mock import patch, Mock
 from dash import constants
 from dash import forms
 from dash import models
+from utils import test_helper
 from zemauth.models import User
 
 EXAMPLE_CSV_CONTENT = [
@@ -1537,3 +1538,43 @@ class AudienceFormTestCase(TestCase):
         data['rules'] = [{'type': constants.AudienceRuleType.VISIT, 'value': None}]
         f = forms.AudienceForm(self.account, self.user, data)
         self.assertTrue(f.is_valid())
+
+
+class PublisherTargetingFormTestCase(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def setUp(self):
+        self.account = models.Account.objects.get(pk=1)
+        self.user = User.objects.get(pk=1)
+
+    def test_form(self):
+        f = forms.PublisherTargetingForm(self.user, {
+            'entries': [{
+                'publisher': 'cnn.com',
+                'source': None,
+                'include_subdomains': False,
+            }, {
+                'publisher': 'cnn2.com',
+                'source': 1,
+                'include_subdomains': True,
+            }],
+            'status': constants.PublisherTargetingStatus.BLACKLISTED,
+            'ad_group': 1,
+        })
+
+        self.assertTrue(f.is_valid())
+        self.assertEqual(f.cleaned_data, {
+            'entries': test_helper.ListMatcher([{
+                'publisher': 'cnn.com',
+                'source': None,
+                'include_subdomains': False,
+            }, {
+                'publisher': 'cnn2.com',
+                'source': models.Source.objects.get(pk=1),
+                'include_subdomains': True,
+            }]),
+            'status': constants.PublisherTargetingStatus.BLACKLISTED,
+            'ad_group': models.AdGroup.objects.get(pk=1),
+            'campaign': None,
+            'account': None,
+        })

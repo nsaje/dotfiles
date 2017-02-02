@@ -189,16 +189,31 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
     }
 
     function findMetricByValue (categories, metricValue) {
+        // Find metric by value in given categories and subcategories
+        var metric;
         for (var i = 0; i < categories.length; ++i) {
             var category = categories[i];
-            for (var j = 0; j < category.metrics.length; ++j) {
-                var metric = category.metrics[j];
-                if (metric.value === metricValue) {
-                    return metric;
+            metric = findMetricInCategoryByValue(category, metricValue);
+            if (metric) return metric;
+
+            if (category.subcategories) {
+                for (var j = 0; j < category.subcategories.length; ++j) {
+                    var subcategory = category.subcategories[j];
+                    metric = findMetricInCategoryByValue(subcategory, metricValue);
+                    if (metric) return metric;
                 }
             }
         }
+        return null;
+    }
 
+    function findMetricInCategoryByValue (category, metricValue) {
+        for (var j = 0; j < category.metrics.length; ++j) {
+            var metric = category.metrics[j];
+            if (metric.value === metricValue) {
+                return metric;
+            }
+        }
         return null;
     }
 
