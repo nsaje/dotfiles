@@ -21,7 +21,9 @@ def get_blacklist_publisher_group(obj, create_if_none=False, request=None):
     publisher_group = obj.default_blacklist
     if publisher_group is None and create_if_none:
         with transaction.atomic():
-            publisher_group = models.PublisherGroup(name=obj.get_default_blacklist_name())
+            publisher_group = models.PublisherGroup(
+                name=obj.get_default_blacklist_name(),
+                account=obj.get_account())
             publisher_group.save(request)
             obj.default_blacklist = publisher_group
             obj.save(request)
@@ -36,7 +38,9 @@ def get_whitelist_publisher_group(obj, create_if_none=False, request=None):
     with transaction.atomic():
         publisher_group = obj.default_whitelist
         if publisher_group is None and create_if_none:
-            publisher_group = models.PublisherGroup(name=obj.get_default_whitelist_name())
+            publisher_group = models.PublisherGroup(
+                name=obj.get_default_whitelist_name(),
+                account=obj.get_account())
             publisher_group.save(request)
             obj.default_whitelist = publisher_group
             obj.save(request)

@@ -539,6 +539,9 @@ class Account(models.Model):
     def get_default_whitelist_name(self):
         return u"Default whitelist for account {}({})".format(self.name, self.id)
 
+    def get_account(self):
+        return self
+
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
@@ -776,6 +779,9 @@ class Campaign(models.Model, PermissionMixin):
 
     def get_default_whitelist_name(self):
         return u"Default whitelist for campaign {}({})".format(self.name, self.id)
+
+    def get_account(self):
+        return self.account
 
     def save(self, request, *args, **kwargs):
         self.modified_by = None
@@ -1936,6 +1942,9 @@ class AdGroup(models.Model):
 
     def get_default_whitelist_name(self):
         return u"Default whitelist for ad group {}({})".format(self.name, self.id)
+
+    def get_account(self):
+        return self.campaign.account
 
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,

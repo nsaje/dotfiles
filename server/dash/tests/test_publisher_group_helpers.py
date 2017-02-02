@@ -29,10 +29,12 @@ class PublisherGroupHelpersTest(TestCase):
     def assertWhitelistCreated(self, obj):
         self.assertIsNotNone(obj.default_whitelist)
         self.assertEqual(obj.default_whitelist.name, obj.get_default_whitelist_name())
+        self.assertEqual(obj.get_account(), obj.default_whitelist.account)
 
     def assertBlacklistCreated(self, obj):
         self.assertIsNotNone(obj.default_blacklist)
         self.assertEqual(obj.default_blacklist.name, obj.get_default_blacklist_name())
+        self.assertEqual(obj.get_account(), obj.default_blacklist.account)
 
     def test_blacklist_publisher_ad_group(self):
         obj = models.AdGroup.objects.get(pk=1)
