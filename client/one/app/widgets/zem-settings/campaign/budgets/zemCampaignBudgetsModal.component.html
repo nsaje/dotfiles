@@ -1,0 +1,97 @@
+<div class="modal__header">
+    <div class="modal__title" ng-if="$ctrl.isNew">Add Budget</div>
+    <div class="modal__title" ng-if="!$ctrl.isNew">Edit Budget Item #{{ $ctrl.budgetItem.id }}</div>
+</div>
+<div class="modal__body">
+    <p ng-if="!$ctrl.isNew">Created by <strong>{{ $ctrl.budgetItem.createdBy }}</strong> on <strong>{{ $ctrl.budgetItem.createdOn }}</strong></p>
+    <p ng-if="$ctrl.isNew">Created by <strong>{{ $ctrl.user.name }}</strong> on <strong>{{ $ctrl.today }}</strong></p>
+    <hr>
+    <div class="form" id="form-campaign-budget-budgetItem" ng-class="{ 'new': $ctrl.isNew, 'edit': !$ctrl.isNew }">
+        <label class="form__label" ng-if="$ctrl.isNew">Select Credit Line</label>
+        <label class="form__label" ng-if="!$ctrl.isNew">Selected Credit Line</label>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th ng-if="$ctrl.isNew"></th>
+                    <th>Available credit</th>
+                    <th>Total Credit</th>
+                    <th>License Fee</th>
+                    <th>Valid From</th>
+                    <th>Valid To</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- TODO: If possible add class row-error to row that was selected and has insufficient credit amount for selected budget -->
+                <tr ng-repeat="credit in $ctrl.availableCredit" ng-class="{'row--error': !!$ctrl.errors.credit}">
+                    <td ng-if="$ctrl.isNew" title="{{ $ctrl.credit.comment }}">
+                        <input type="radio" ng-model="$ctrl.budgetItem.credit" ng-click="$ctrl.checkCreditValues()" ng-value="credit" />
+                    </td>
+                    <td>{{ credit.available | decimalCurrency:"$":2  }}</td>
+                    <td>{{ credit.total | decimalCurrency:"$":2  }}</td>
+                    <td>{{ credit.licenseFee }}%</td>
+                    <td>{{ credit.startDate }}</td>
+                    <td>{{ credit.endDate }}</td>
+                    <td>
+                        <zem-note-popover content="{{ credit.isAgency ? 'Agency credit; ' : '' }}{{ credit.comment }}" placement="top"></zem-note-popover>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.startDate}">
+            <label class="form__label" for="start-date-input">Start Date</label>
+            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
+                <input id="start-date-input" type="text" class="form__input-text" uib-datepicker-popup="MM/dd/yyyy"
+                       ng-disabled="!$ctrl.budgetItem.credit || !$ctrl.budgetItem.isEditable"
+                       datepicker-options="{initDate: $ctrl.initStartDate, minDate: $ctrl.minDate, maxDate: $ctrl.maxDate}"
+                       ng-model="$ctrl.budgetItem.startDate" is-open="$ctrl.startDatePicker.isOpen" ng-click="$ctrl.openStartDatePicker()" />
+            </div>
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.startDate" for="start-date-input">{{ error }}</div>
+        </div>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.endDate}">
+            <label class="form__label" for="end-date-input">End Date</label>
+            <div class="form__prefixed-field form__prefixed-field--narrow form__prefixed-field--with-icon calendar-icon">
+                <input class="form__input-text" id="end-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy" ng-disabled="!$ctrl.budgetItem.credit || !($ctrl.budgetItem.isUpdatable || $ctrl.budgetItem.isEditable)" datepicker-options="{initDate: $ctrl.initEndDate, minDate: $ctrl.minDate, maxDate: $ctrl.maxDate}" ng-model="$ctrl.budgetItem.endDate" is-open="$ctrl.endDatePicker.isOpen" ng-click="$ctrl.openEndDatePicker()">
+            </div>
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.endDate" for="end-date-input">{{ error }}</div>
+        </div>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.amount}">
+            <label class="form__label" for="amount-input">Total Budget</label>
+            <div class="form__prefixed-field form__postfixed-field form__prefixed-field--narrow form__postfixed-field--narrow">
+                <span class="form__field-prefix">$</span>
+                <input id="amount-input" ng-disabled="!$ctrl.budgetItem.credit || !($ctrl.budgetItem.isEditable || $ctrl.budgetItem.isUpdatable)" type="text" class="form__input-text" ng-model="$ctrl.budgetItem.amount" zem-currency-input fraction-size="0" />
+                <span class="form__field-postfix">.00</span>
+            </div>
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.amount" for="amount">{{ error }}</div>
+        </div>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.margin}" ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')">
+            <label class="form__label" for="margin-input" is-internal="zemauth.can_manage_agency_margin">Margin (%)</label>
+            <ui-select theme="select2" id="margin-select" class="button button--plain button--full-width button--dropdown-toggle-icon"
+                       ng-model="$ctrl.budgetItem.margin" ng-disabled="!$ctrl.isNew" search-enabled="false">
+                <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
+                <ui-select-choices repeat="fee in $ctrl.getLicenseFees($select.search, $ctrl.budgetItem.margin) | filter: $select.search">
+                    <span ng-bind-html="fee"></span>%
+                </ui-select-choices>
+            </ui-select>
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.margin" for="margin-input">{{ error }}</div>
+        </div>
+        <div class="message message--info message--with-icon" ng-if="$ctrl.isInLanding()">
+            Add at least ${{ minAmount | number:2 }} to adjust media sources by your needs.
+        </div>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.comment}">
+            <label class="form__label" for="comment-input">Notes</label>
+            <textarea class="form__textarea" id="comment-input" type="text" ng-model="$ctrl.budgetItem.comment" maxlength="256"></textarea>
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.comment" for="comment">{{ error }}</div>
+        </div>
+    </div>
+</div>
+<div class="modal__footer buttons-panel">
+    <button type="button" class="button button--highlight button--with-icon check-icon" ng-click="$ctrl.upsertBudgetItem()" ng-disabled="$ctrl.saveRequestInProgress">Save</button>
+    <button type="button" class="button button--outline" ng-click="$ctrl.discardBudgetItem()" ng-disabled="$ctrl.saveRequestInProgress"><span class="text">Discard</span></button>
+    <button type="button" class="button button--outline button--with-icon remove-icon pull-right" ng-click="$ctrl.deleteBudgetItem()" ng-disabled="$ctrl.isNew || $ctrl.saveRequestInProgress">Delete</button>
+
+    <div class="loader" ng-show="$ctrl.saveRequestInProgress"></div>
+    <span ng-show="$ctrl.saved" class="message message--success">Your updates have been saved.</span>
+    <span ng-show="$ctrl.saved === false" class="message message--error">An error occurred while saving. Please correct the marked fields and save again.</span>
+    <span ng-show="$ctrl.discarded" class="message">Your updates have been discarded.</span>
+</div>

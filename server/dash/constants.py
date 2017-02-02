@@ -1849,6 +1849,18 @@ class CpcConstraintType(ConstantBase):
     }
 
 
+class PublisherTargetingStatus(ConstantBase):
+    WHITELISTED = 1
+    BLACKLISTED = 2
+    UNLISTED = 3
+
+    _VALUES = {
+        WHITELISTED: 'Whitelisted',
+        BLACKLISTED: 'Blacklisted',
+        UNLISTED: 'Active',
+    }
+
+
 class Service(ConstantBase):
     Z1 = 'z1'
     K1 = 'k1'

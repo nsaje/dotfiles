@@ -27,3 +27,4 @@
 0 0 * * *           /home/ubuntu/docker-manage-py.sh cleartokens
 0 10 * * 1          /home/ubuntu/docker-manage-py.sh release_ob_accounts
 0 5 * * *          /home/ubuntu/docker-manage-py.sh get_pixel_traffic
+50 6 * * *          /home/ubuntu/docker-manage-py.sh compare_blacklists

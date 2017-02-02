@@ -533,6 +533,15 @@ class Account(models.Model):
             'http://', 'https://')
         return campaign_settings_url
 
+    def get_default_blacklist_name(self):
+        return u"Default blacklist for account {}({})".format(self.name, self.id)
+
+    def get_default_whitelist_name(self):
+        return u"Default whitelist for account {}({})".format(self.name, self.id)
+
+    def get_account(self):
+        return self
+
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
@@ -764,6 +773,15 @@ class Campaign(models.Model, PermissionMixin):
             level=constants.HistoryLevel.CAMPAIGN,
             action_type=action_type
         )
+
+    def get_default_blacklist_name(self):
+        return u"Default blacklist for campaign {}({})".format(self.name, self.id)
+
+    def get_default_whitelist_name(self):
+        return u"Default whitelist for campaign {}({})".format(self.name, self.id)
+
+    def get_account(self):
+        return self.account
 
     def save(self, request, *args, **kwargs):
         self.modified_by = None
@@ -1918,6 +1936,15 @@ class AdGroup(models.Model):
             return True
 
         return False
+
+    def get_default_blacklist_name(self):
+        return u"Default blacklist for ad group {}({})".format(self.name, self.id)
+
+    def get_default_whitelist_name(self):
+        return u"Default whitelist for ad group {}({})".format(self.name, self.id)
+
+    def get_account(self):
+        return self.campaign.account
 
     def write_history(self, changes_text, changes=None,
                       user=None, system_user=None,
@@ -4457,10 +4484,12 @@ class PublisherGroup(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT,
+                                    null=True, blank=True)
 
     def save(self, request, *args, **kwargs):
-        self.modified_by = request.user
+        if request and request.user:
+            self.modified_by = request.user
         super(PublisherGroup, self).save(*args, **kwargs)
 
     objects = QuerySetManager()

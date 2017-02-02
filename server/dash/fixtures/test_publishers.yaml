@@ -46,7 +46,7 @@
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
-    users: [1]
+    users: [1, 2]
     allowed_sources: [1,2]
     agency: 1
   model: dash.account
@@ -62,6 +62,60 @@
     agency: 1
   model: dash.account
   pk: 2
+
+# accountsettings
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: False
+        name: 'test account 1 settings'
+        account: 1
+        account_type: 5
+    model: dash.accountsettings
+    pk: 1
+
+# campaign
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 1 # test account 1
+        name: 'test campaign 1'
+    model: dash.campaign
+    pk: 1
+
+# campaignsettings
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        campaign_manager: NULL
+        iab_category: 'IAB24'
+        target_devices: ['mobile']
+        target_regions: ['US']
+        campaign: 1
+    model: dash.campaignsettings
+    pk: 1
+
+# adgroup
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 1'
+        default_whitelist: 4
+        default_blacklist: 5
+    model: dash.adgroup
+    pk: 1
+
+# adgroupsettings
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: False
+        ad_group: 1
+    model: dash.adgroupsettings
+    pk: 1
 
 # source types
 - fields:
@@ -132,6 +186,26 @@
     modified_by: 1
   model: dash.publishergroup
   pk: 3
+
+- fields:
+    name: 'pg 4 default whitelist for adgroup 1'
+    account: !!null
+    agency: 1
+    created_dt: '2015-09-23T09:57:22'
+    modified_dt: '2015-09-23T09:57:22'
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 4
+
+- fields:
+    name: 'pg 5 default blacklist for adgroup 1'
+    account: !!null
+    agency: 1
+    created_dt: '2015-09-23T09:57:22'
+    modified_dt: '2015-09-23T09:57:22'
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 5
 
 # publisher group entries
 - fields:
