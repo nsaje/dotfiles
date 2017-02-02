@@ -189,10 +189,14 @@
                 <div class="message message--error" for="label-input" ng-repeat="error in ctrl.selectedCandidate.errors.label">{{ error }}</div>
             </div>
 
-            <div class="form__group--indented">
-                <input class="input-checkbox" type="checkbox" ng-model="ctrl.selectedCandidate.useTrackers"
-                       ng-change="ctrl.toggleUseTrackers()" id="use-impression-trackers" />
-                <label class="checkbox-text" for="use-impression-trackers">Use impression trackers</label>
+            <div class="form__indented-group">
+                <div class="form__checkbox">
+                    <label>
+                        <input class="input-checkbox" type="checkbox" ng-model="ctrl.selectedCandidate.useTrackers"
+                               ng-change="ctrl.toggleUseTrackers()" id="use-impression-trackers" />
+                        <span class="checkbox-text">Use impression trackers</span>
+                    </label>
+                </div>
             </div>
 
             <div class="form__group" ng-class="{'form--error': ctrl.fieldsHaveErrors('primaryTrackerUrl')}" ng-if="ctrl.selectedCandidate.useTrackers">
@@ -230,7 +234,7 @@
                 <div class="message message--error" for="secondary-tracker-input" ng-repeat="error in ctrl.selectedCandidate.errors.secondaryTrackerUrl">{{ error }}</div>
             </div>
 
-            <div class="form__group--indented" ng-if="!ctrl.selectedCandidate.useSecondaryTracker && ctrl.selectedCandidate.useTrackers">
+            <div class="form__indented-group" ng-if="!ctrl.selectedCandidate.useSecondaryTracker && ctrl.selectedCandidate.useTrackers">
                 <a href class="inline-link" ng-click="ctrl.addSecondaryTracker(ctrl.selectedCandidate)" tabindex="-1">
                     Add secondary tracker
                 </a>

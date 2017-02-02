@@ -28,10 +28,14 @@
             <ul class="filter-sections__options-list">
                 <li ng-repeat="option in section.options" class="filter-sections__option">
                     <span ng-switch="section.condition.type">
-                        <input ng-switch-when="list" class="input-checkbox" type="checkbox" name="{{section.condition.name}}" id="{{section.condition.name}}-{{option.value}}" ng-model="option.enabled">
-                        <label ng-switch-when="list" class="checkbox-text" for="{{section.condition.name}}-{{option.value}}">{{option.text}}</label>
-                        <input ng-switch-when="value" class="input-radio" type="radio" name="{{section.condition.name}}" id="{{section.condition.name}}-{{option.value}}" ng-model="section.value" ng-value="option.value">
-                        <label ng-switch-when="value" class="radio-text" for="{{section.condition.name}}-{{option.value}}">{{option.text}}</label>
+                        <label ng-switch-when="list">
+                            <input class="input-checkbox" type="checkbox" name="{{section.condition.name}}" ng-model="option.enabled">
+                            <span class="checkbox-text">{{option.text}}</span>
+                        </label>
+                        <label ng-switch-when="value">
+                            <input class="input-radio" type="radio" name="{{section.condition.name}}" ng-model="section.value" ng-value="option.value">
+                            <span class="radio-text">{{option.text}}</span>
+                        </label>
                     </span>
                 </li>
             </ul>

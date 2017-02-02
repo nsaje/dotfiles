@@ -3,8 +3,8 @@
 @form-additional-info-width-content-upload: 14%;
 
 .content-upload .modal-dialog {
-    margin-top: 10vh !important;
     width: @modal-content-width;
+    margin: 30px auto 90px auto;
     box-sizing: border-box;
     max-height: 70vh;
 
@@ -47,7 +47,14 @@
     .modal__body {
         overflow: hidden;
         position: relative;
-		margin-bottom: 0 !important;
+		margin-bottom: 60px !important;
+    }
+
+    .modal__footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
     }
 }
 
@@ -322,7 +329,7 @@
         right: 0;
     }
 
-    .form__group--indented {
+    .form__indented-group {
         width: @form-input-width-content-upload;
         margin-left: 100 - @form-input-width-content-upload - @form-additional-info-width-content-upload;
     }

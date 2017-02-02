@@ -8,9 +8,11 @@
                 <ul class="dropdown-menu__list">
                     <li class="dropdown-menu__list-item" ng-repeat="breakdown in group.breakdowns"
                         is-internal="{{breakdown.internal}}">
-                        <input class="input-checkbox" type="checkbox" ng-model="breakdown.checked"
-                               ng-change="$ctrl.onChecked(breakdown, group)" id="{{ breakdown.query }}">
-                        <label class="checkbox-text" for="{{ breakdown.query }}">{{ breakdown.name }}</label>
+                        <label>
+                            <input class="input-checkbox" type="checkbox" ng-model="breakdown.checked"
+                                   ng-change="$ctrl.onChecked(breakdown, group)">
+                            <span class="checkbox-text">{{ breakdown.name }}</span>
+                        </label>
                     </li>
                 </ul>
             </div>

@@ -34,7 +34,7 @@
             </ui-select>
         </div>
 
-        <div class="form__group--indented" ng-if="ctrl.showRefererRules()">
+        <div class="form__indented-group" ng-if="ctrl.showRefererRules()">
             <label class="form__label">Include traffic that meets the following conditions:</label>
             <ui-select theme="select2" search-enabled="false" id="zem-custom-audience-modal-referer-rule-select" class="button button--plain button--full-width button--dropdown-toggle-icon" ng-model="ctrl.selectedRefererRuleId" ng-disabled="ctrl.readonly" ng-change="ctrl.removeError('rules')">
                 <ui-select-match placeholder="Select Criteria">{{ $select.selected.name }}</ui-select-match>
@@ -43,14 +43,14 @@
                 </ui-select-choices>
             </ui-select>
         </div>
-        <div class="form__group--indented" ng-if="ctrl.selectedRefererRuleId=='startsWith'">
+        <div class="form__indented-group" ng-if="ctrl.selectedRefererRuleId=='startsWith'">
             <tags-input placeholder="Add URLs" ng-model="ctrl.selectedRefererRuleStartsWithValue" ng-readonly="ctrl.readonly"
                         on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')"
                         ng-disabled="ctrl.readonly" min-length="1">
             </tags-input>
             <div class="form__text--small">Confirm URL with ENTER or delete previously added URL with double BACKSPACE or by clicking X.</div>
         </div>
-        <div class="form__group--indented" ng-if="ctrl.selectedRefererRuleId=='contains'">
+        <div class="form__indented-group" ng-if="ctrl.selectedRefererRuleId=='contains'">
             <tags-input placeholder="Add tags" ng-model="ctrl.selectedRefererRuleContainsValue" ng-readonly="ctrl.readonly"
                         on-tag-added="ctrl.removeError('rules')" on-tag-removed="ctrl.removeError('rules')"
                         ng-disabled="ctrl.readonly" min-length="1">

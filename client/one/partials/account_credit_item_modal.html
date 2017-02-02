@@ -54,15 +54,21 @@
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.agency}" ng-if="account.agency">
             <label class="form__label">Agency credit</label>
-            <input class="input-checkbox" id="is-agency-input" type="checkbox" ng-model="creditItem.isAgency">
-            <label class="checkbox-text" for="is-agency-input"></label>
+            <div class="form__checkbox">
+                <label>
+                    <input class="input-checkbox" id="is-agency-input" type="checkbox" ng-model="creditItem.isAgency">
+                    <span class="checkbox-text"></span>
+                </label>
+            </div>
             <div class="message message--error" ng-repeat="error in errors.agency" for="is-agency-input">{{ error }}</div>
         </div>
         <hr>
         <p>By signing the credit line item, no more future changes to the amount, fee and start date will be possible.</p>
-        <div ng-class="{'form--error': !!errors.status}">
-            <input class="input-checkbox" id="is-signed-input" type="checkbox" ng-model="creditItem.isSigned" ng-disabled="wasSigned">
-            <label class="checkbox-text" for="is-signed-input">Signed</label>
+        <div class="form__checkbox" ng-class="{'form--error': !!errors.status}">
+            <label>
+                <input class="input-checkbox" id="is-signed-input" type="checkbox" ng-model="creditItem.isSigned" ng-disabled="wasSigned">
+                <span class="checkbox-text">Signed</span>
+            </label>
             <div ng-repeat="error in errors.status" class="message message--error" for="is-signed-input">{{ error }}</div>
         </div>
     </div>

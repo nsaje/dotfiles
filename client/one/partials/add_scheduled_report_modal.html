@@ -106,34 +106,46 @@
 
         <div class="form__group">
             <label class="form__label" for="by-day-checkbox">Breakdown by day</label>
-            <input id="by-day-checkbox"
-                type="checkbox"
-                ng-model="export.byDay"
-                class="input-checkbox"
-                ng-disabled="breakdownByDayDisabled">
-            <label class="checkbox-text" for="by-day-checkbox"></label>
+            <div class="form__checkbox">
+                <label>
+                    <input id="by-day-checkbox"
+                        type="checkbox"
+                        ng-model="export.byDay"
+                        class="input-checkbox"
+                        ng-disabled="breakdownByDayDisabled">
+                    <span class="checkbox-text"></span>
+                </label>
+            </div>
         </div>
 
         <div class="form__group" ng-if="hasPermission('zemauth.can_include_totals_in_reports')">
             <label class="form__label" for="include-totals-checkbox" is-internal="zemauth.can_include_totals_in_reports">
                 Include totals
             </label>
-            <input id="include-totals-checkbox"
-                   type="checkbox"
-                   ng-model="export.includeTotals"
-                   class="input-checkbox">
-            <label class="checkbox-text" for="include-totals-checkbox"></label>
+            <div class="form__checkbox">
+                <label>
+                    <input id="include-totals-checkbox"
+                           type="checkbox"
+                           ng-model="export.includeTotals"
+                           class="input-checkbox">
+                    <span class="checkbox-text"></span>
+                </label>
+            </div>
         </div>
 
         <div class="form__group" ng-if="hasPermission('zemauth.can_include_model_ids_in_reports')">
             <label class="form__label" for="add-ids-checkbox" is-internal="zemauth.can_include_model_ids_in_reports">
                 Add IDs to report
             </label>
-            <input id="add-ids-checkbox"
-                   type="checkbox"
-                   ng-model="export.includeIds"
-                   class="input-checkbox">
-            <label class="checkbox-text" for="add-ids-checkbox"></label>
+            <div class="form__checkbox">
+                <label>
+                    <input id="add-ids-checkbox"
+                           type="checkbox"
+                           ng-model="export.includeIds"
+                           class="input-checkbox">
+                    <span class="checkbox-text"></span>
+                </label>
+            </div>
         </div>
 
         <div class="form__group" ng-class="{'form--error': !!validationErrors.recipient_emails}">

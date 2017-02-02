@@ -14,9 +14,13 @@
             <label class="form__label" for="audience-enabled-input" is-internal="zemauth.account_custom_audiences_view">
                 Build custom audiences from this pixel
             </label>
-            <input class="input-checkbox" type="checkbox" id="audience-enabled-input" ng-model="pixel.audienceEnabled"
-                   ng-disabled="!!audiencePixel" ng-focus="clearError()" ng-change="clearError()" />
-            <label class="checkbox-text" for="audience-enabled-input"></label>
+            <div class="form__checkbox">
+                <label>
+                    <input class="input-checkbox" type="checkbox" id="audience-enabled-input" ng-model="pixel.audienceEnabled"
+                           ng-disabled="!!audiencePixel" ng-focus="clearError()" ng-change="clearError()" />
+                    <label class="checkbox-text" for="audience-enabled-input"></label>
+                </label>
+            </div>
         </div>
     </div>
 

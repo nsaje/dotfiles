@@ -61,7 +61,7 @@ def get_account_landing_mode_alerts(request, account):
                   u'don’t take any actions, the system will automatically turn on the landing mode to hit your '\
                   u'budget. <a href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
                   u'target="_blank">Learn more ...</a></p>'\
-                  u'<ul>{campaigns}</ul>'
+                  u'<ul class="list-with-bullets">{campaigns}</ul>'
 
         depleting_budget_campaign_items = _construct_depleting_items(request, depleting_budget_campaigns)
         alerts.append({
@@ -77,7 +77,7 @@ def get_account_landing_mode_alerts(request, account):
                   u'your campaigns will end in a few days. <a '\
                   u'href="http://help.zemanta.com/article/show/12922-campaign-stop-with-landing-mode" '\
                   u'target="_blank">Learn more ...</a></p>'\
-                  u'<ul>{campaigns}</ul>'
+                  u'<ul class="list-with-bullets">{campaigns}</ul>'
 
         landing_campaign_items = _construct_landing_items(request, landing_campaigns)
         alerts.append({

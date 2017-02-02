@@ -13,18 +13,22 @@
                         zem-lazy-popover-animation-class="fade"
                         zem-lazy-popover-append-to-body="true"
                         is-internal="{{column.data.internal}}">
-                        <input class="input-checkbox" ng-disabled="column.disabled" type="checkbox"
-                               ng-model="column.visible" ng-change="$ctrl.columnChecked(column)" id="{{column.data.field}}"/>
-                        <label class="checkbox-text" ng-class="{disabled: column.disabled}" for="{{column.data.field}}">{{ column.data.name }}</label>
+                        <label>
+                            <input class="input-checkbox" ng-disabled="column.disabled" type="checkbox"
+                                   ng-model="column.visible" ng-change="$ctrl.columnChecked(column)"/>
+                            <span class="checkbox-text" ng-class="{disabled: column.disabled}">{{ column.data.name }}</span>
+                        </label>
                     </li>
                 </ul>
                 <div class="dropdown-menu__subcategory" ng-repeat="subcategory in category.subcategories">
                     <div class="dropdown-menu__subcategory-name">{{ subcategory.name }}</div>
                     <ul ng-if="subcategory.type === 'condensed'" class="dropdown-menu__list dropdown-menu__list--condensed">
                         <li class="dropdown-menu__list-item" ng-repeat="column in subcategory.columns">
-                            <input class="input-checkbox" type="checkbox" ng-model="column.visible"
-                                   ng-change="$ctrl.columnChecked(column)" id="{{column.data.field}}"/>
-                            <label class="checkbox-text" for="{{column.data.field}}">{{ column.data.shortName }}</label>
+                            <label>
+                                <input class="input-checkbox" type="checkbox" ng-model="column.visible"
+                                       ng-change="$ctrl.columnChecked(column)"/>
+                                <span class="checkbox-text">{{ column.data.shortName }}</span>
+                            </label>
                         </li>
                     </ul>
                 </div>

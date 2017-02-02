@@ -7,27 +7,35 @@
         Autopilot is automatically enabled because the campaign is in landing mode.
     </div>
     <div class="form">
-        <div ng-repeat='autopilotState in $ctrl.options.adGroupSettingsAutopilotStates' class="form__group--vertical">
-            <input class="input-radio" id="{{ autopilotState.value }}" type="radio" ng-model="$ctrl.entity.settings.autopilotState" ng-value="autopilotState.value" ng-disabled="$ctrl.isInLanding()">
-            <label class="radio-text" for="{{ autopilotState.value }}"> {{ autopilotState.name }} <zem-help-popover content="{{autopilotState.help}}" placement="right"></zem-help-popover></label>
+        <div ng-repeat='autopilotState in $ctrl.options.adGroupSettingsAutopilotStates'>
+            <div class="form__radio m-b-xs">
+                <label>
+                    <input class="input-radio" id="{{ autopilotState.value }}" type="radio" ng-model="$ctrl.entity.settings.autopilotState" ng-value="autopilotState.value" ng-disabled="$ctrl.isInLanding()">
+                    <span class="radio-text">{{ autopilotState.name }} <zem-help-popover content="{{autopilotState.help}}" placement="right"></zem-help-popover></span>
+                </label>
+            </div>
 
             <div class="form__indented" ng-if="autopilotState.value === $ctrl.constants.adGroupSettingsAutopilotState.INACTIVE && $ctrl.hasPermission('zemauth.can_see_rtb_sources_as_one') && autopilotState.value === $ctrl.entity.settings.autopilotState">
                 <label class="form__label" is-internal="zemauth.can_see_rtb_sources_as_one">Manage Daily Spend Caps of RTB sources:</label>
 
-                <div class="form__group--vertical">
-                    <input class="input-radio" type="radio" id="separately"
-                           ng-model="$ctrl.entity.settings.b1SourcesGroupEnabled" ng-value="false">
-                    <label class="radio-text" for="separately">
-                        Separately
-                        <zem-help-popover content="Set Daily Spend Cap for each of the RTB sources." placement="right"></zem-help-popover>
+                <div class="form__radio">
+                    <label>
+                        <input class="input-radio" type="radio" id="separately"
+                               ng-model="$ctrl.entity.settings.b1SourcesGroupEnabled" ng-value="false">
+                        <span class="radio-text" for="separately">
+                            Separately
+                            <zem-help-popover content="Set Daily Spend Cap for each of the RTB sources." placement="right"></zem-help-popover>
+                        </span>
                     </label>
                 </div>
-                <div class="form__group--vertical">
-                    <input class="input-radio" type="radio" id="as-one"
-                           ng-model="$ctrl.entity.settings.b1SourcesGroupEnabled" ng-value="true">
-                    <label class="radio-text" for="as-one">
-                        As one
-                        <zem-help-popover content="Set one Daily Spend Cap for all RTB sources together." placement="right"></zem-help-popover>
+                <div class="form__radio">
+                    <label>
+                        <input class="input-radio" type="radio" id="as-one"
+                               ng-model="$ctrl.entity.settings.b1SourcesGroupEnabled" ng-value="true">
+                        <span class="radio-text" for="as-one">
+                            As one
+                            <zem-help-popover content="Set one Daily Spend Cap for all RTB sources together." placement="right"></zem-help-popover>
+                        </span>
                     </label>
                 </div>
             </div>
@@ -45,7 +53,7 @@
                     <div class="message message--error" ng-repeat="error in $ctrl.errors.autopilotBudget" for="autopilot-budget">{{ error }}</div>
                 </div>
 
-                <div class="message">
+                <div class="message message--info message--with-icon">
                     Autopilot will optimize media sources' daily spend caps for <b>{{$ctrl.getBudgetAutopilotOptimizationGoalText()}}</b>
                     and try to hit the ad group's daily spend cap. To change optimization objective please change
                     Primary Campaign Goal in Campaign Settings.<br/>

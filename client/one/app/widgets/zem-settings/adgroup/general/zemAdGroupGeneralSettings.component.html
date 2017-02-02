@@ -33,9 +33,13 @@
                        ng-model="$ctrl.entity.settings.endDate" is-open="$ctrl.endDatePicker.isOpen"
                        ng-click="$ctrl.openDatePicker('endDate')">
             </div>
-            <input class="input-checkbox" ng-disabled="$ctrl.entity.warnings.endDate !== undefined" type="checkbox"
-                   id="manual-stop-cb" ng-model="$ctrl.entity.settings.manualStop">
-            <label class="checkbox-text" for="manual-stop-cb">I'll stop it myself</label>
+            <div class="form__checkbox">
+                <label>
+                    <input class="input-checkbox" ng-disabled="$ctrl.entity.warnings.endDate !== undefined" type="checkbox"
+                           id="manual-stop-cb" ng-model="$ctrl.entity.settings.manualStop">
+                    <span class="checkbox-text" for="manual-stop-cb">I'll stop it myself</span>
+                </label>
+            </div>
             <div class="message message--error" ng-if="$ctrl.entity.warnings.endDate === undefined"
                  ng-repeat="error in $ctrl.errors.endDate" for="end-date-input">{{ error }}</div>
             <div class="message message--warning message--with-icon" ng-if="$ctrl.entity.warnings.endDate !== undefined">

@@ -40,8 +40,12 @@
         <div class="form__group form__group--informative">
             <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_include_totals_in_reports')" popover-placement="right"></zem-internal-feature>
             <label class="form__label" for="include-totals-checkbox">Include totals</label>
-            <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.includeTotals" class="input-checkbox">
-            <label class="checkbox-text" id="include-totals-checkbox"></label>
+            <div class="form__checkbox">
+                <label>
+                    <input id="include-totals-checkbox" type="checkbox" ng-model="$ctrl.includeTotals" class="input-checkbox">
+                    <span class="checkbox-text"></span>
+                </label>
+            </div>
         </div>
         <hr>
         <div class="form__group">

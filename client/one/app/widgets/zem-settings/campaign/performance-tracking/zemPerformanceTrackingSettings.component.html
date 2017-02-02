@@ -2,11 +2,13 @@
     <div class="zem-settings-component__header">Performance tracking</div>
     <div class="zem-settings-component__description">Connect your Google/Adobe Analytics account to better track your campaign performance.</div>
     <div class="form">
-        <div class="form__group--vertical">
-            <input class="input-checkbox" type="checkbox" id="enable-ga-tracking" ng-model="$ctrl.entity.settings.enableGaTracking">
-            <label class="checkbox-text" for="enable-ga-tracking">
-                Enable Google Analytics performance tracking
-                <zem-help-popover content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs." placement="top"></zem-help-popover>
+        <div class="form__checkbox">
+            <label>
+                <input class="input-checkbox" type="checkbox" id="enable-ga-tracking" ng-model="$ctrl.entity.settings.enableGaTracking">
+                <span class="checkbox-text">
+                    Enable Google Analytics performance tracking
+                    <zem-help-popover content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs." placement="top"></zem-help-popover>
+                </span>
             </label>
         </div>
 
@@ -56,12 +58,14 @@
             </div>
         </div>
 
-        <div class="form__group--vertical">
-            <input class="input-checkbox" type="checkbox" id="enable-adobe-tracking"
-                   ng-model="$ctrl.entity.settings.enableAdobeTracking">
-            <label class="checkbox-text" for="enable-adobe-tracking">
-                Enable Adobe Analytics performance tracking
-                <zem-help-popover content="This adds performance tracking codes to all URLs." placement="top"></zem-help-popover>
+        <div class="form__checkbox">
+            <label>
+                <input class="input-checkbox" type="checkbox" id="enable-adobe-tracking"
+                       ng-model="$ctrl.entity.settings.enableAdobeTracking">
+                <span class="checkbox-text" for="enable-adobe-tracking">
+                    Enable Adobe Analytics performance tracking
+                    <zem-help-popover content="This adds performance tracking codes to all URLs." placement="top"></zem-help-popover>
+                </span>
             </label>
         </div>
 

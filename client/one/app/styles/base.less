@@ -603,7 +603,7 @@ h3 {
         display: inline-block;
     }
 
-    &.form__group--indented,
+    &.form__indented-group,
     &.form__group {
         padding: 0;
         background-color: transparent;
@@ -877,6 +877,16 @@ h3 {
     }
 }
 
+.form__checkbox {
+    width: 100%;
+    position: relative;
+    margin-bottom: 5px;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
 .input-checkbox {
     position: absolute;
     left: -9999px;
@@ -895,11 +905,11 @@ h3 {
     }
 
     + .checkbox-text::after {
-        background: url('images/checkbox-blue.svg') no-repeat;
+        background-image: url('images/checkbox-blue.svg');
         position: absolute;
         content: "";
         display: block;
-        top: 8px;
+        top: 7px;
         left: 7px;
         width: 0px;
         height: 0px;
@@ -949,8 +959,18 @@ h3 {
         }
 
         + .checkbox-text::after {
-            background: url('images/checkbox-gray.svg') no-repeat;
+            background-image: url('images/checkbox-gray.svg');
         }
+    }
+}
+
+.form__radio {
+    width: 100%;
+    position: relative;
+    margin-bottom: 5px;
+
+    &:last-child {
+        margin-bottom: 0;
     }
 }
 
@@ -1175,6 +1195,10 @@ h3 {
         width: @form-input-width;
     }
 
+    .textarea {
+        max-width: @form-input-width;
+    }
+
     .prefixed-field,
     .postfixed-field {
         .input-text {
@@ -1195,18 +1219,20 @@ h3 {
         margin-left: 10px;
     }
 
-    .input-checkbox {
-        float: left;
-        margin-top: 9px;
+    .form__checkbox {
+        float: right;
+        width: @form-input-width;
+        padding-top: 7px;
     }
 
-    .checkbox-text {
-        float: left;
-        margin-top: 7px;
+    .form__radio {
+        float: right;
+        width: @form-input-width;
+        padding-top: 9px;
     }
 }
 
-.form__group--vertical {
+.form__vertical-group {
     margin-bottom: 10px;
 
     &:last-child {
@@ -1214,7 +1240,7 @@ h3 {
     }
 }
 
-.form__group--indented {
+.form__indented-group {
     margin: 10px 0 10px 100-@form-input-width;
 }
 
@@ -1246,6 +1272,141 @@ h3 {
     .postfixed-field .input-text {
         border-color: @red;
     }
+
+    &.form__checkbox {
+        .checkbox-text {
+            color: @red;
+
+            &::before {
+                border-color: @red;
+            }
+        }
+    }
+
+    &.form__radio {
+        .radio-text {
+            color: @red;
+
+            &::before {
+                border-color: @red;
+            }
+        }
+    }
+}
+
+///////////////////////////
+// Dropdown menu //
+///////////////////////////
+
+.dropdown-menu__container {
+    padding: 10px @default-spacing;
+    max-height: 400px;
+    overflow: auto;
+}
+
+.dropdown-menu__category {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid @light-gray;
+    position: relative;
+
+    .clearfix();
+
+    &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+
+    .internal-feature {
+        top: 0px;
+        left: -5px;
+    }
+}
+
+.dropdown-menu__category-name {
+    color: @secondary-color;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.dropdown-menu__category-description {
+    color: @gray;
+}
+
+.dropdown-menu__subcategory {
+    width: 50%;
+    float: left;
+    margin-top: 5px;
+}
+
+.dropdown-menu__subcategory-name {
+    color: @secondary-color;
+    font-weight: 500;
+}
+
+.dropdown-menu__list {
+    margin: 5px 0 0 0;
+    padding: 0;
+
+    .clearfix();
+
+    .internal-feature {
+        top: 2px;
+        left: 0;
+    }
+}
+
+.dropdown-menu__list--two-columns {
+    .dropdown-menu__list-item {
+        width: 50%;
+        float: left;
+    }
+}
+
+.dropdown-menu__list-item {
+    list-style: none;
+    margin: 0 0 5px 0;
+    padding: 0 10px 0 0;
+    position: relative;
+}
+
+.dropdown-menu__list--condensed {
+    .dropdown-menu__list-item {
+        width: auto;
+        float: left;
+        margin-bottom: 0;
+        padding-right: 15px;
+    }
+
+    .dropdown-menu__list-item--option {
+        padding-right: 25px;
+    }
+}
+
+.dropdown-menu__list-item--option {
+    margin-bottom: 0px;
+}
+
+.dropdown-menu__option {
+    cursor: pointer;
+    padding: 3px 5px 2px 5px;
+    margin-left: -5px;
+    border-radius: @border-radius;
+
+    &:hover {
+        background-color: @secondary-color;
+        color: white;
+    }
+
+    .internal-feature {
+        left: -5px;
+        top: 0px;
+    }
+}
+
+.dropdown-menu__option--selected {
+    background-color: fade(@secondary-color,10%);
 }
 
 ////////////////////////////
@@ -1310,6 +1471,10 @@ h3 {
             width: @form-input-width-modal;
         }
 
+        .textarea {
+            max-width: @form-input-width-modal;
+        }
+
         .prefixed-field,
         .postfixed-field {
             .input-text {
@@ -1317,9 +1482,14 @@ h3 {
                 width: 100%;
             }
         }
+
+        .form__checkbox,
+        .form__radio {
+            width: @form-input-width-modal;
+        }
     }
 
-    .form__group--indented {
+    .form__indented-group {
         margin-left: 100-@form-input-width-modal;
     }
 }
@@ -1388,11 +1558,22 @@ h3 {
     p:last-child {
         margin-bottom: 0px;
     }
+
+    ul:last-child {
+        margin-bottom: 0;
+    }
 }
 
-.message--success,
-.message--success a {
+.message--success {
     color: @green;
+
+    a {
+        color: @green;
+    }
+
+    .list-with-bullets li::before {
+        background-color: tint(@green, 50%);
+    }
 }
 
 .message--success-box {
@@ -1400,11 +1581,22 @@ h3 {
     border: 1px solid tint(@green, 85%);
     padding: 8px 10px;
     border-radius: @border-radius;
+
+    .list-with-bullets li::before {
+        background-color: tint(@green, 50%);
+    }
 }
 
-.message--error,
-.message--error a {
+.message--error {
     color: @red;
+
+    a {
+        color: @red;
+    }
+
+    .list-with-bullets li::before {
+        background-color: tint(@red, 50%);
+    }
 }
 
 .message--error-box {
@@ -1412,6 +1604,10 @@ h3 {
     border: 1px solid tint(@red, 85%);
     padding: 8px 10px;
     border-radius: @border-radius;
+
+    .list-with-bullets li::before {
+        background-color: tint(@red, 50%);
+    }
 }
 
 .message--warning {
@@ -1419,6 +1615,10 @@ h3 {
     border: 1px solid tint(@orange, 85%);
     padding: 8px 10px;
     border-radius: @border-radius;
+
+    .list-with-bullets li::before {
+        background-color: tint(@orange, 50%);
+    }
 }
 
 .message--info {
@@ -1426,6 +1626,10 @@ h3 {
     border: 1px solid tint(@blue, 85%);
     padding: 8px 10px;
     border-radius: @border-radius;
+
+    .list-with-bullets li::before {
+        background-color: tint(@blue, 50%);
+    }
 }
 
 .message--help {
