@@ -1641,13 +1641,12 @@ class CustomHackStatusFilter(SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return [('active', 'Active'),
-                ('removed', 'Removed'),
-                ('all', 'All')]
+                ('removed', 'Removed')]
 
     def queryset(self, request, queryset):
-        if self.value() == 'all':
+        if self.value() is None:
             return queryset
-        return queryset.is_active(self.value() == 'active')
+        return queryset.filter_active(self.value() == 'active')
 
 
 class CustomHackAdmin(admin.ModelAdmin):

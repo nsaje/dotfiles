@@ -4620,11 +4620,11 @@ class CustomHack(models.Model):
         def filter_active(self, is_active):
             now = datetime.datetime.now()
             if is_active:
-                return self.queryset.filter(
+                return self.filter(
                     models.Q(removed_dt__isnull=True) | models.Q(removed_dt__gt=now)
                 )
             else:
-                return self.queryset.filter(
+                return self.filter(
                     removed_dt__lte=now
                 )
 
