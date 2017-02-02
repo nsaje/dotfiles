@@ -108,7 +108,7 @@ class RotateAdGroupsTestCase(TestCase):
         )
         self.assertEqual(['US'], ad_group_settings.target_regions)
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
-        self.assertEqual(config.DAILY_BUDGET_INITIAL, ad_group_settings.b1_sources_group_daily_budget)
+        self.assertEqual(config.DAILY_BUDGET_RTB_INITIAL, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(config.DEFAULT_CPC, ad_group_settings.b1_sources_group_cpc_cc)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
@@ -120,4 +120,4 @@ class RotateAdGroupsTestCase(TestCase):
                 self.assertEqual(config.CUSTOM_CPC_SETTINGS[ad_group_source.source_id], ad_group_source_settings.cpc_cc)
             else:
                 self.assertEqual(config.DEFAULT_CPC, ad_group_source_settings.cpc_cc)
-            self.assertEqual(config.DAILY_BUDGET_INITIAL, ad_group_source_settings.daily_budget_cc)
+            self.assertEqual(config.DAILY_BUDGET_OB_INITIAL, ad_group_source_settings.daily_budget_cc)

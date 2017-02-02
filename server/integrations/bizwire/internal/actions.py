@@ -104,20 +104,17 @@ def recalculate_and_set_new_daily_budgets(ad_group_id):
         created_dt__lt=utc_end,
     ).count()
 
-    num_candidates = dash.models.ContentAdCandidate.objects.filter(
+    num_content_ads += dash.models.ContentAdCandidate.objects.filter(
         ad_group_id=ad_group_id,
         created_dt__gte=utc_start,
         created_dt__lt=utc_end,
-    ).count()  # assume they're getting processed successfully
+    ).count()  # assume candidates are getting processed successfully
 
-    new_rtb_daily_budget = max(
-        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT),
-        config.DAILY_BUDGET_INITIAL,
-    )
-    new_ob_daily_budget = max(
-        (num_content_ads + num_candidates) * config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT,
-        config.DAILY_BUDGET_INITIAL,
-    )
+    rtb_cost_per_article = config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT)
+    new_rtb_daily_budget = config.DAILY_BUDGET_RTB_INITIAL + num_content_ads * rtb_cost_per_article
+
+    ob_cost_per_article = config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT
+    new_ob_daily_budget = config.DAILY_BUDGET_OB_INITIAL + num_content_ads * ob_cost_per_article
 
     _set_rtb_daily_budget(ad_group_id, math.ceil(new_rtb_daily_budget))
     _set_source_daily_budget(ad_group_id, 'outbrain', math.ceil(new_ob_daily_budget))
@@ -200,14 +197,14 @@ def _list_ad_group_sources(ad_group_id):
 
 
 def _set_initial_rtb_settings(ad_group_id):
-    return _set_rtb_daily_budget(ad_group_id, config.DAILY_BUDGET_INITIAL)
+    return _set_rtb_daily_budget(ad_group_id, config.DAILY_BUDGET_RTB_INITIAL)
 
 
 def _set_initial_sources_settings(ad_group_id):
     sources = _list_ad_group_sources(ad_group_id)
     data = [{
         'source': source['source'],
-        'dailyBudget': config.DAILY_BUDGET_INITIAL,
+        'dailyBudget': config.DAILY_BUDGET_OB_INITIAL,
         'cpc': config.DEFAULT_CPC,
         'state': 'ACTIVE',
     } for source in sources]
