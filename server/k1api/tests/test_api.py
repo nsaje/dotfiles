@@ -176,13 +176,22 @@ class K1ApiTest(TestCase):
             u'id': 1,
             u'name': u'test account 1',
             u'outbrain_marketer_id': u'abcde',
-            u'custom_audiences': [{u'pixel_id': 1, u'rules': [{u'type': 1, u'values': u'dummy', u'id': 1},
-                                                              {u'type': 2, u'values': u'dummy2', u'id': 2}],
-                                   u'name': 'Audience 1', u'id': 1, u'ttl': 90},
-                                  {u'pixel_id': 2, u'rules': [{u'type': 1, u'values': u'dummy3', u'id': 3},
-                                                              {u'type': 2, u'values': u'dummy4', u'id': 4}],
-                                   u'name': 'Audience 2', u'id': 2, u'ttl': 60}],
-            u'pixels': [
+            u'custom_audiences': ListMatcher([
+                {u'pixel_id': 1,
+                 u'rules': [
+                     {u'type': 1, u'values': u'dummy', u'id': 1},
+                     {u'type': 2, u'values': u'dummy2', u'id': 2}],
+                 u'name': 'Audience 1',
+                 u'id': 1,
+                 u'ttl': 90},
+                {u'pixel_id': 2,
+                 u'rules': [
+                     {u'type': 1, u'values': u'dummy3', u'id': 3},
+                     {u'type': 2, u'values': u'dummy4', u'id': 4}],
+                 u'name': 'Audience 2',
+                 u'id': 2,
+                 u'ttl': 60}]),
+            u'pixels': ListMatcher([
                 {u'id': 1,
                  u'name': u'Pixel 1',
                  u'slug': u'testslug1',
@@ -221,7 +230,7 @@ class K1ApiTest(TestCase):
                       u'source_type': u'facebook',
                       },
                  ])},
-            ]})
+            ])})
 
     def test_get_default_source_credentials(self):
         response = self.client.get(
@@ -248,7 +257,7 @@ class K1ApiTest(TestCase):
         data = accounts_data[0]['custom_audiences']
 
         self.assertEqual(2, len(data))
-        self.assertDictEqual(data[0], {
+        self.assertEqual(data, ListMatcher([{
             u'id': 1,
             u'name': u'Audience 1',
             u'pixel_id': 1,
@@ -263,8 +272,7 @@ class K1ApiTest(TestCase):
                  },
             ]),
             u'ttl': 90,
-        })
-        self.assertDictEqual(data[1], {
+        }, {
             u'id': 2,
             u'name': u'Audience 2',
             u'pixel_id': 2,
@@ -279,7 +287,7 @@ class K1ApiTest(TestCase):
                  },
             ]),
             u'ttl': 60,
-        })
+        }]))
 
     @patch('utils.redirector_helper.upsert_audience')
     def test_update_source_pixel_with_existing(self, redirector_mock):

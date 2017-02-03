@@ -204,6 +204,21 @@ def get_pixel_traffic(timeout=300):
     raise Exception('Pixel traffic timeout')
 
 
+def update_pixel(conversion_pixel):
+    try:
+        data = json.dumps({
+            'redirecturl': conversion_pixel.redirect_url,
+        })
+
+        return _call_api_retry(settings.R1_PIXEL_URL.format(
+            account_id=conversion_pixel.account_id,
+            slug=conversion_pixel.slug,
+        ), data, method='PUT')
+    except Exception:
+        logger.exception('Exception in update_pixel')
+        raise
+
+
 def _call_api_paginated(url, data=None, method='POST'):
     result = _call_api_retry(url, data, method)
     if result is None:

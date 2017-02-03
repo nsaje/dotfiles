@@ -804,24 +804,27 @@ class ConversionPixel(api_common.BaseApiView):
         except ValueError:
             raise exc.ValidationError()
 
-        name = data.get('name')
-        resource = {'name': name, 'audience_enabled': data.get('audience_enabled')}
-
-        form = forms.ConversionPixelForm(resource)
+        form = forms.ConversionPixelForm(data)
         if not form.is_valid():
-            raise exc.ValidationError(message=' '.join(dict(form.errors)['name']))
+            raise exc.ValidationError(errors=dict(form.errors))
 
         try:
-            models.ConversionPixel.objects.get(account_id=account_id, name=name)
-            raise exc.ValidationError(message='Conversion pixel with this name already exists.')
+            models.ConversionPixel.objects.get(account_id=account_id, name=form.cleaned_data['name'])
+            form.add_error('name', 'Conversion pixel with this name already exists.')
+            raise exc.ValidationError(errors=dict(form.errors))
         except models.ConversionPixel.DoesNotExist:
             pass
+
+        redirect_url = ''
+        if request.user.has_perm('zemauth.can_redirect_pixels'):
+            redirect_url = form.cleaned_data['redirect_url']
 
         with transaction.atomic():
             conversion_pixel = models.ConversionPixel.objects.create(
                 account_id=account_id,
-                name=name,
-                audience_enabled=form.cleaned_data['audience_enabled'] or False
+                name=form.cleaned_data['name'],
+                audience_enabled=form.cleaned_data['audience_enabled'] or False,
+                redirect_url=redirect_url,
             )
 
             # This check is done after insertion because we use READ COMMITED
@@ -840,11 +843,14 @@ class ConversionPixel(api_common.BaseApiView):
 
                 k1_helper.update_account(account_id, msg="conversion_pixel.create")
 
-            changes_text = u'Added conversion pixel named {}.'.format(name)
+            changes_text = u'Added conversion pixel named {}.'.format(conversion_pixel.name)
             account.write_history(
                 changes_text,
                 user=request.user,
                 action_type=constants.HistoryActionType.CONVERSION_PIXEL_CREATE)
+
+        if redirect_url:
+            redirector_helper.update_pixel(conversion_pixel)
 
         email_helper.send_account_pixel_notification(account, request)
 
@@ -884,10 +890,15 @@ class ConversionPixel(api_common.BaseApiView):
                     raise exc.ValidationError(
                         errors={'audience_enabled': 'Cannot archive pixel used for building custom audiences.'})
 
+            if request.user.has_perm('zemauth.can_redirect_pixels'):
+                self._write_redirect_change_to_history(request, account, conversion_pixel, form.cleaned_data)
+                conversion_pixel.redirect_url = form.cleaned_data['redirect_url']
+                redirector_helper.update_pixel(conversion_pixel)
+
             self._write_name_change_to_history(
                 request, account, conversion_pixel, form.cleaned_data)
-
             conversion_pixel.name = form.cleaned_data['name']
+
             conversion_pixel.save()
 
             # This check is done after insertion because we use READ COMMITED
@@ -949,6 +960,23 @@ class ConversionPixel(api_common.BaseApiView):
                                   user=request.user,
                                   action_type=constants.HistoryActionType.CONVERSION_PIXEL_AUDIENCE_ENABLED)
 
+    def _write_redirect_change_to_history(self, request, account, conversion_pixel, data):
+        if data['redirect_url'] == conversion_pixel.redirect_url:
+            return
+
+        if data['redirect_url']:
+            changes_text = u'Set redirect url of pixel named {} to {}.'.format(
+                conversion_pixel.name,
+                data['redirect_url']
+            )
+        else:
+            changes_text = u'Removed redirect url of pixel named {}.'.format(conversion_pixel.name)
+        account.write_history(
+            changes_text,
+            user=request.user,
+            action_type=constants.HistoryActionType.CONVERSION_PIXEL_SET_REDIRECT_URL,
+        )
+
     def _format_pixel(self, pixel, user):
         data = {
             'id': pixel.id,
@@ -960,6 +988,8 @@ class ConversionPixel(api_common.BaseApiView):
         if user.has_perm('zemauth.can_see_pixel_traffic'):
             data['last_triggered'] = pixel.last_triggered
             data['impressions'] = pixel.impressions
+        if user.has_perm('zemauth.can_redirect_pixels'):
+            data['redirect_url'] = pixel.redirect_url
         return data
 
 

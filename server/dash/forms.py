@@ -555,6 +555,10 @@ class ConversionPixelForm(forms.Form):
         }
     )
     audience_enabled = forms.BooleanField(required=False)
+    redirect_url = forms.URLField(
+        max_length=2048,
+        required=False,
+    )
 
 
 class ConversionGoalForm(forms.Form):

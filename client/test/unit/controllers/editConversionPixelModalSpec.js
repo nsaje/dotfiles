@@ -28,7 +28,7 @@ describe('EditConversionPixelModalCtrl', function () {
 
         api = {
             conversionPixel: {
-                edit: mockApiFunc
+                put: mockApiFunc
             }
         };
 
@@ -54,7 +54,7 @@ describe('EditConversionPixelModalCtrl', function () {
         it('updates error message on failure', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'edit').and.callFake(function () {
+            spyOn(api.conversionPixel, 'put').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -63,25 +63,27 @@ describe('EditConversionPixelModalCtrl', function () {
             $scope.submit();
             $scope.$digest();
 
-            expect(api.conversionPixel.edit).toHaveBeenCalled();
+            expect(api.conversionPixel.put).toHaveBeenCalled();
             expect($scope.inProgress).toBe(true);
             expect($scope.$close).not.toHaveBeenCalled();
-            expect($scope.error).toEqual(false);
-            expect($scope.errorMessage).toEqual('');
+            expect($scope.hasErrors).toEqual(false);
+            expect($scope.validationErrors).toEqual({});
 
-            deferred.reject({errors: {name: ['error message', 'another message']}});
+            var errors = {name: ['error message', 'another message']};
+
+            deferred.reject({errors: errors});
             $scope.$digest();
 
             expect($scope.inProgress).toBe(false);
             expect($scope.$close).not.toHaveBeenCalled();
-            expect($scope.error).toEqual(true);
-            expect($scope.errorMessage).toEqual('error message another message');
+            expect($scope.hasErrors).toEqual(false);
+            expect($scope.validationErrors).toEqual(errors);
         });
 
         it('closes the modal window on success', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'edit').and.callFake(function () {
+            spyOn(api.conversionPixel, 'put').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -90,7 +92,7 @@ describe('EditConversionPixelModalCtrl', function () {
             $scope.submit();
             $scope.$digest();
 
-            expect(api.conversionPixel.edit).toHaveBeenCalled();
+            expect(api.conversionPixel.put).toHaveBeenCalled();
             expect($scope.inProgress).toBe(true);
             expect($scope.$close).not.toHaveBeenCalled();
 

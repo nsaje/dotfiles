@@ -3167,6 +3167,7 @@ class ConversionPixel(models.Model):
     audience_enabled = models.BooleanField(default=False)
     last_triggered = models.DateTimeField(blank=True, null=True)
     impressions = models.PositiveIntegerField(default=0)
+    redirect_url = models.CharField(max_length=2048, blank=True, null=True)
 
     # TODO matijav 19.16.2016 a hack to allow multiple audience pixels
     additional_pixel = models.BooleanField(default=False)

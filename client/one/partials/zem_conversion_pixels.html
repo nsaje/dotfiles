@@ -19,6 +19,10 @@
                         Traffic Yesterday
                         <zem-help-popover content="Number of times pixel triggered yesterday. Synchronized every 24 hours." placement="top"></zem-help-popover>
                     </th>
+                    <th ng-if="hasPermission('zemauth.can_redirect_pixels')">
+                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_redirect_pixels')" popover-placement="top"></zem-internal-feature>
+                        Redirected
+                    </th>
                     <th></th>
                     <th></th>
                 </tr>
@@ -34,6 +38,9 @@
                     </td>
                     <td ng-if="hasPermission('zemauth.can_see_pixel_traffic')">
                         {{ item.impressions }}
+                    </td>
+                    <td ng-if="hasPermission('zemauth.can_redirect_pixels')">
+                        {{ item.redirectUrl ? 'Yes' : 'No' }}
                     </td>
                     <td>
                         <span class="loader" ng-if="item.requestInProgress"></span>

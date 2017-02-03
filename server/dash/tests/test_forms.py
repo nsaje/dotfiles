@@ -15,6 +15,7 @@ from dash import forms
 from dash import models
 from utils import test_helper
 from zemauth.models import User
+from utils.test_helper import ListMatcher
 
 EXAMPLE_CSV_CONTENT = [
     forms.EXAMPLE_CSV_CONTENT['url'],
@@ -381,8 +382,8 @@ class AdGroupSettingsFormTest(TestCase):
             'exclusion_retargeting_ad_groups': [5],
             'interest_targeting': ['fun', 'games'],
             'exclusion_interest_targeting': ['science', 'religion'],
-            'audience_targeting': [1, 2],
-            'exclusion_audience_targeting': [3, 4],
+            'audience_targeting': ListMatcher([1, 2]),
+            'exclusion_audience_targeting': ListMatcher([3, 4]),
             'bluekai_targeting': ['and', 'bluekai:123', ['or', 'liveramp:123', 'outbrain:321']],
             'autopilot_state': 2,
             'autopilot_daily_budget': Decimal('100.00'),

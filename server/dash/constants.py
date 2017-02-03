@@ -1718,6 +1718,8 @@ class HistoryActionType(ConstantBase):
     AUDIENCE_RESTORE = 20
     AUDIENCE_UPDATE = 22
     CONVERSION_PIXEL_AUDIENCE_ENABLED = 21
+    CONVERSION_PIXEL_SET_REDIRECT_URL = 23
+    CONVERSION_PIXEL_REMOVE_REDIRECT_URL = 24
 
     _VALUES = {
         GOAL_CHANGE: 'Change Campaign Goal',
@@ -1742,6 +1744,8 @@ class HistoryActionType(ConstantBase):
         AUDIENCE_RESTORE: 'Restore custom audience',
         AUDIENCE_UPDATE: 'Update custom audience',
         CONVERSION_PIXEL_AUDIENCE_ENABLED: 'Enable pixel for building audiences',
+        CONVERSION_PIXEL_SET_REDIRECT_URL: 'Set redirect url for pixel',
+        CONVERSION_PIXEL_REMOVE_REDIRECT_URL: 'Remove redirect url for pixel',
     }
 
 

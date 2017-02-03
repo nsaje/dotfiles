@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 'use strict';
 
-angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterService, zemPermissions) {
+angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterService, zemPermissions, zemUtils) {
     function createAbortableDefer () {
         var deferred = $q.defer();
         var deferredAbort = $q.defer();
@@ -808,18 +808,6 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterSe
     }
 
     function ConversionPixel () {
-        function convertFromApi (conversionPixel) {
-            return {
-                id: conversionPixel.id,
-                name: conversionPixel.name,
-                url: conversionPixel.url,
-                archived: conversionPixel.archived,
-                audienceEnabled: conversionPixel.audience_enabled,
-                lastTriggered: conversionPixel.last_triggered,
-                impressions: conversionPixel.impressions,
-            };
-        }
-
         this.list = function (accountId, audienceEnabledOnly) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/conversion_pixels/';
@@ -829,12 +817,7 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterSe
 
             $http.get(url).
                 success(function (data, status) {
-                    var ret = {
-                        rows: data.data.rows.map(convertFromApi),
-                        conversionPixelTagPrefix: data.data.conversion_pixel_tag_prefix
-                    };
-
-                    deferred.resolve(ret);
+                    deferred.resolve(zemUtils.convertToCamelCase(data.data));
                 }).
                 error(function (data, status) {
                     deferred.reject();
@@ -843,17 +826,13 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterSe
             return deferred.promise;
         };
 
-        this.post = function (accountId, name, audienceEnabled) {
+        this.post = function (accountId, data) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/conversion_pixels/';
-            var config = {
-                name: name,
-                audience_enabled: audienceEnabled,
-            };
 
-            $http.post(url, config).
+            $http.post(url, zemUtils.convertToUnderscore(data)).
                 success(function (data, status) {
-                    deferred.resolve(convertFromApi(data.data));
+                    deferred.resolve(zemUtils.convertToCamelCase(data.data));
                 }).
                 error(function (data, status) {
                     var ret = null;
@@ -871,9 +850,9 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterSe
             var deferred = $q.defer();
             var url = '/api/conversion_pixel/' + conversionPixelId + '/';
 
-            $http.put(url, data).
+            $http.put(url, zemUtils.convertToUnderscore(data)).
                 success(function (data, status) {
-                    deferred.resolve(convertFromApi(data.data));
+                    deferred.resolve(zemUtils.convertToCamelCase(data.data));
                 }).
                 error(function (data, status) {
                     var ret = null;
@@ -885,15 +864,6 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterSe
                 });
 
             return deferred.promise;
-        };
-
-        this.edit = function (conversionPixel) {
-            var data = {
-                name: conversionPixel.name,
-                audience_enabled: conversionPixel.audienceEnabled,
-            };
-
-            return this.put(conversionPixel.id, data);
         };
 
         this.archive = function (conversionPixel) {

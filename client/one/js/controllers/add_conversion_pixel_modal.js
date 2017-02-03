@@ -3,14 +3,14 @@ angular.module('one.legacy').controller('AddConversionPixelModalCtrl', function 
     $scope.inProgress = false;
     $scope.pixel = {name: '', audienceEnabled: false};
     $scope.audiencePixel = audiencePixel;
-    $scope.error = false;
-    $scope.errorMessage = '';
+    $scope.validationErrors = {};
+    $scope.hasErrors = false;
     $scope.title = 'Add a New Pixel';
     $scope.buttonText = 'Add Pixel';
 
     $scope.submit = function () {
         $scope.inProgress = true;
-        api.conversionPixel.post($scope.account.id, $scope.pixel.name, $scope.pixel.audienceEnabled).then(
+        api.conversionPixel.post($scope.account.id, $scope.pixel).then(
             function (data) {
                 if (data.audienceEnabled) {
                     $scope.$emit('pixelAudienceEnabled', {pixel: data});
@@ -18,9 +18,10 @@ angular.module('one.legacy').controller('AddConversionPixelModalCtrl', function 
                 $scope.$close(data);
             },
             function (data) {
-                $scope.error = true;
-                if (data && data.message) {
-                    $scope.errorMessage = data.message;
+                if (data && data.errors) {
+                    $scope.validationErrors = data.errors;
+                } else {
+                    $scope.hasErrors = true;
                 }
             }
         ).finally(function () {
@@ -29,7 +30,7 @@ angular.module('one.legacy').controller('AddConversionPixelModalCtrl', function 
     };
 
     $scope.clearError = function () {
-        $scope.error = false;
-        $scope.errorMessage = '';
+        $scope.hasErrors = false;
+        $scope.validationErrors = {};
     };
 });

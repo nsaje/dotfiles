@@ -71,6 +71,10 @@ class ListMatcher():
     def __eq__(self, other):
         return sorted(self.obj) == sorted(other)
 
+    def __iter__(self):
+        for i in self.obj:
+            yield i
+
 
 class TypeMatcher():
     def __init__(self, expected_type):

@@ -82,16 +82,16 @@ describe('zemConversionPixels', function () {
 
         it('updates conversion pixels', function () {
             isolate.conversionPixels = [
-                {id: 3, name: 'Old Name', archived: true}
+                {id: 3, name: 'Old Name', archived: true, redirectUrl: 'http://test.com'}
             ];
 
             spyOn($uibModal, 'open').and.returnValue(fakeModal);
 
             var modalInstance = isolate.editConversionPixel(isolate.conversionPixels[0]);
-            modalInstance.close({id: 3, name: 'New Name', audienceEnabled: true});
+            modalInstance.close({id: 3, name: 'New Name', audienceEnabled: true, redirectUrl: 'http://newurl.com'});
 
             expect(isolate.conversionPixels).toEqual([
-                {id: 3, name: 'New Name', archived: true, audienceEnabled: true}
+                {id: 3, name: 'New Name', archived: true, audienceEnabled: true, redirectUrl: 'http://newurl.com'}
             ]);
         });
     });

@@ -248,6 +248,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_new_content_insights', 'User can see new content insights component'),
             ('can_see_new_budgets', 'User can see new campaing budget component'),
             ('can_see_backend_hacks', 'User can see backend hacks'),
+            ('can_redirect_pixels', 'User can set redirect url for pixels'),
         )
 
     def get_full_name(self):
