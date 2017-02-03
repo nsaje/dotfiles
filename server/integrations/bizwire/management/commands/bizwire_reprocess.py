@@ -30,6 +30,7 @@ class Command(ExceptionCommand):
         parser.add_argument('--date', dest='date', nargs=1, type=str)
         parser.add_argument('--missing', dest='missing', action='store_true')
         parser.add_argument('--dry-run', dest='dry_run', action='store_true')
+        parser.add_argument('--purge-candidates', dest='purge_candidates', action='store_true')
 
     def _get_keys_to_reprocess(options):
         if options.get('key'):
