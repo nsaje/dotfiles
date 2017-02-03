@@ -1,6 +1,6 @@
 import logging
-import sys
 import json
+import sys
 
 import boto3
 import dateutil
@@ -32,7 +32,7 @@ class Command(ExceptionCommand):
         parser.add_argument('--dry-run', dest='dry_run', action='store_true')
         parser.add_argument('--purge-candidates', dest='purge_candidates', action='store_true')
 
-    def _get_keys_to_reprocess(options):
+    def _get_keys_to_reprocess(self, options):
         if options.get('key'):
             return [options['key']]
 
@@ -67,11 +67,14 @@ class Command(ExceptionCommand):
                 ).values_list('label', flat=True)
             )
 
+            if len(candidate_labels):
+                logger.warning('Candidates for {} missing labels exist. Use --purge-candidates to remove them.')
+
             to_reprocess = to_reprocess - candidate_labels
             reprocess_keys = [labels_keys[label] for label in to_reprocess]
             return reprocess_keys
 
-        sys.stderr.write('Specify what to reprocess.')
+        logger.error('Specify what to reprocess.')
         sys.exit(1)
 
     def handle(self, *args, **options):
@@ -79,10 +82,10 @@ class Command(ExceptionCommand):
         self.purge_candidates = options.get('purge_candidates')
 
         keys = self._get_keys_to_reprocess(options)
-        self.purge_candidates(keys)
-        self.invoke_lambdas(keys)
+        self._purge_candidates(keys)
+        self._invoke_lambdas(keys)
 
-    def purge_candidates(self, keys):
+    def _purge_candidates(self, keys):
         if not self.purge_candidates:
             return
 
@@ -94,24 +97,22 @@ class Command(ExceptionCommand):
 
         num_candidates = candidates.count()
         if self.dry_run:
-            sys.stdout.write('{} candidates would be removed.\n'.format(num_candidates))
+            logger.info('{} candidates would be removed.\n'.format(num_candidates))
             return
         else:
-            sys.stdout.write('Removing {} candidates.\n'.format(num_candidates))
+            logger.info('Removing {} candidates.\n'.format(num_candidates))
 
         candidates.delete()
 
-    def invoke_lambdas(self, keys):
+    def _invoke_lambdas(self, keys):
         if self.dry_run:
-            sys.stdout.write('The following keys would be reprocessed:\n')
-            sys.stdout.writelines(keys)
+            for key in keys:
+                logger.info('{} would be reprocessed'.format(key))
             return
-        else:
-            sys.stdout.write('The following keys will be reprocessed:\n')
-            sys.stdout.writelines(keys)
 
         lambda_client = boto3.client('lambda', region_name=settings.LAMBDA_REGION)
         for key in keys:
+            logger.info('Reprocessing {}.'.format(key))
             payload = {
                 'Records': [{
                     's3': {
@@ -125,7 +126,6 @@ class Command(ExceptionCommand):
                 }]
             }
 
-            sys.stdout.write('Invoking lambda for key: {}\n'.format(key))
             lambda_client.invoke(
                 FunctionName='z1-businesswire-articles',
                 InvocationType='Event',  # async
