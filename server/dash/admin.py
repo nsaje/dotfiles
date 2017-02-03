@@ -1687,7 +1687,7 @@ class CustomHackAdmin(admin.ModelAdmin):
         'campaign__id',
         'ad_group__name',
         'ad_group__id',
-        'source',
+        'source__name',
     )
 
     readonly_fields = ('created_dt', 'created_by', 'confirmed_by', 'confirmed_dt')
