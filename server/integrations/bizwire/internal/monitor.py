@@ -17,8 +17,6 @@ from utils import dates_helper, email_helper
 
 logger = logging.getLogger(__name__)
 
-START_DATE = datetime.date(2016, 12, 3)
-
 
 def run_hourly_job():
     monitor_num_ingested_articles()
@@ -28,56 +26,25 @@ def run_hourly_job():
     monitor_remaining_budget()
 
 
-def _get_s3_keys_for_date(s3, date):
-    prefix = 'uploads/{}/{:02d}/{:02d}'.format(date.year, date.month, date.day)
-    objects = s3.list_objects(Bucket='businesswire-articles', Prefix=prefix)
-
-    keys = []
-    while 'Contents' in objects and len(objects['Contents']) > 0:
-        keys.extend(k['Key'] for k in objects['Contents'])
-        objects = s3.list_objects(Bucket='businesswire-articles', Prefix=prefix, Marker=objects['Contents'][-1]['Key'])
-    return keys
-
-
 def _get_unique_s3_labels(dates):
-    s3 = boto3.client('s3')
-
     now = dates_helper.utc_now()
+
+    keys = helpers.get_s3_keys_for_dates(dates)
     unique_labels = set()
-    for date in dates:
-        re_compiled = re.compile(
-            # example: 'uploads/2016/11/29/16:00/20161012006323r1.xml'
-            r'.*/(?P<year>\d+)/(?P<month>\d+)/(?P<day>\d+)/'
-            r'(?P<hour>\d+)(?::|%3[aA])(?P<minute>\d+)/(?P<news_item_id>\d+)r.\.xml'
-        )
+    for key in keys:
+        key_dt = helpers.get_s3_key_dt(key)
+        if (now - key_dt).total_seconds() < 5 * 60:
+            # ignore articles less than five minutes old
+            continue
 
-        for key in _get_s3_keys_for_date(s3, date):
-            m = re_compiled.match(key)
-            if not m:
-                continue
-
-            parts = m.groupdict()
-            label = parts['news_item_id']
-            key_day = datetime.datetime(
-                int(parts['year']),
-                int(parts['month']),
-                int(parts['day']),
-                int(parts['hour']),
-                int(parts['minute']),
-            )
-
-            if (now - key_day).total_seconds() < 5 * 60:
-                # ignore articles less than five minutes old
-                continue
-
-            unique_labels.add(label)
+        unique_labels.add(helpers.get_s3_key_label(key))
     return unique_labels
 
 
 def monitor_num_ingested_articles():
     now = dates_helper.utc_now()
     dates = []
-    current_date = START_DATE
+    current_date = config.START_DATE
     while current_date <= now.date():
         dates.append(current_date)
         current_date += datetime.timedelta(days=1)

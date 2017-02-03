@@ -7,6 +7,8 @@ import dateutil
 
 from django.conf import settings
 
+import dash.models
+from integrations.bizwire.internal import helpers, config
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
@@ -19,35 +21,62 @@ class Command(ExceptionCommand):
     Available options:
       --date - date for which to import articles in isoformat
       --key - article s3 key
+      --missing - find and reprocess missing articles
     """
 
     def add_arguments(self, parser):
         parser.add_argument('--key', dest='key', nargs=1, type=str)
         parser.add_argument('--date', dest='date', nargs=1, type=str)
+        parser.add_argument('--missing', dest='missing', nargs=1, type=bool)
+        parser.add_argument('--purge-candidates', dest='--purge-candidates', nargs=1, type=bool)
 
     def handle(self, *args, **options):
         date = options.get('date')
         key = options.get('key')
-
-        if not key and not date:
-            sys.stderr.write('Missing date or key argument')
-            sys.exit(1)
+        missing = options.get('missing')
 
         if key:
             self.invoke_lambdas(key)
             return
 
-        date = dateutil.parser.parse(date[0]).date()
-        keys = self.get_all_keys(date)
-        self.invoke_lambdas(keys)
+        if date:
+            date = dateutil.parser.parse(date[0]).date()
+            keys = helpers.get_s3_keys(date=date)
+            self.invoke_lambdas(keys)
+            return
 
-    def get_all_keys(self, date):
-        s3_client = boto3.client('s3')
-        keys = []
-        prefix = 'uploads/{}/{:02d}/{:02d}'.format(date.year, date.month, date.day)
-        for obj in s3_client.list_objects(Bucket='businesswire-articles', Prefix=prefix)['Contents']:
-            keys.append(obj['Key'])
-        return keys
+        if missing:
+            keys = helpers.get_s3_keys(date=date)
+            labels_keys = {
+                helpers.get_s3_key_label(key): key
+                for key in keys
+            }
+
+            content_ad_labels = set(
+                dash.models.ContentAd.objects.filter(
+                    ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+                    label__in=labels_keys.keys(),
+                ).values_list('label', flat=True)
+            )
+
+            to_reprocess = set([
+                l for l in labels_keys.keys() if l not in content_ad_labels
+            ])
+            candidate_labels = set(
+                dash.models.ContentAd.objects.filter(
+                    ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+                    label__in=to_reprocess,
+                ).values_list('label', flat=True)
+            )
+
+            logger.info('Skipping {} keys - candidates exist'.format(len(candidate_labels)))
+            to_reprocess = to_reprocess - candidate_labels
+            reprocess_keys = [labels_keys[label] for label in to_reprocess]
+            self.invoke_lambdas(reprocess_keys)
+            return
+
+        sys.stderr.write('Specify what to reprocess.')
+        sys.exit(1)
 
     def invoke_lambdas(self, keys):
         lambda_client = boto3.client('lambda', region_name=settings.LAMBDA_REGION)
@@ -65,6 +94,7 @@ class Command(ExceptionCommand):
                 }]
             }
 
+            sys.stdout.write('Invoking lambda for key: {}'.format(key))
             lambda_client.invoke(
                 FunctionName='z1-businesswire-articles',
                 InvocationType='Event',  # async
