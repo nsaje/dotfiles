@@ -488,7 +488,7 @@ class AdGroupsView(K1APIView):
                     blacklist, whitelist = publisher_group_helpers.concat_publisher_group_targeting(
                         ad_group, ad_group_settings,
                         ad_group.campaign, campaign_settings,
-                        ad_group.campaign.account, ,
+                        ad_group.campaign.account, account_settings,
                         include_global=False  # global blacklist is handled separately by the bidder, no need to duplicate work
                     )
 
