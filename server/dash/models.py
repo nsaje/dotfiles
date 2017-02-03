@@ -4567,9 +4567,14 @@ class CustomHack(models.Model):
     )
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    removed_dt = models.DateTimeField(null=True, blank=True, verbose_name='Removed at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
                                    related_name='+', on_delete=models.PROTECT)
+
+    removed_dt = models.DateTimeField(null=True, blank=True, verbose_name='Removed at')
+
+    confirmed_dt = models.DateTimeField(null=True, blank=True, verbose_name='Confirmed at')
+    confirmed_by = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
+                                     related_name='+', on_delete=models.PROTECT)
 
     objects = QuerySetManager()
 
@@ -4635,7 +4640,8 @@ class CustomHack(models.Model):
                     'summary': obj.summary,
                     'details': obj.details,
                     'level': obj.get_level(),
-                    'source': obj.source and obj.source.name or obj.rtb_only and 'RTB' or None
+                    'source': obj.source and obj.source.name or obj.rtb_only and 'RTB' or None,
+                    'confirmed': obj.confirmed_by is not None,
                 }
                 for obj in self
             ]

@@ -1642,12 +1642,22 @@ class CustomHackStatusFilter(SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return [('active', 'Active'),
+                ('confirmed', 'Confirmed'),
+                ('unconfirmed', 'Unconfirmed'),
                 ('removed', 'Removed')]
 
     def queryset(self, request, queryset):
         if self.value() is None:
             return queryset
-        return queryset.filter_active(self.value() == 'active')
+        elif self.value() == 'confirmed':
+            queryset = queryset.filter(
+                confirmed_by__isnull=False
+            )
+        elif self.value() == 'unconfirmed':
+            queryset = queryset.filter(
+                confirmed_by__isnull=True
+            )
+        return queryset.filter_active(self.value() != 'removed')
 
 
 class CustomHackAdmin(admin.ModelAdmin):
@@ -1680,7 +1690,7 @@ class CustomHackAdmin(admin.ModelAdmin):
         'source',
     )
 
-    readonly_fields = ('created_dt', 'created_by')
+    readonly_fields = ('created_dt', 'created_by', 'confirmed_by', 'confirmed_dt')
     raw_id_fields = ('agency', 'account', 'campaign', 'ad_group')
 
     ordering = ('-created_dt', )
@@ -1688,9 +1698,16 @@ class CustomHackAdmin(admin.ModelAdmin):
 
     def mark_removed(self, request, queryset):
         queryset.update(removed_dt=datetime.datetime.now())
-
     mark_removed.short_description = "Mark removed"
-    actions = (mark_removed, )
+
+    def mark_confirmed(self, request, queryset):
+        queryset.update(
+            confirmed_dt=datetime.datetime.now(),
+            confirmed_by=request.user,
+        )
+    mark_confirmed.short_description = "Mark confirmed"
+
+    actions = (mark_removed, mark_confirmed)
 
     def get_queryset(self, request):
         qs = super(CustomHackAdmin, self).get_queryset(request)
