@@ -68,13 +68,13 @@ class Command(ExceptionCommand):
             )
 
             if len(candidate_labels):
-                logger.warning('Candidates for {} missing labels exist. Use --purge-candidates to remove them.')
+                logger.info('Candidates for {} missing labels exist. Use --purge-candidates to remove them.')
 
             to_reprocess = to_reprocess - candidate_labels
             reprocess_keys = [labels_keys[label] for label in to_reprocess]
             return reprocess_keys
 
-        logger.error('Specify what to reprocess.')
+        logger.info('Specify what to reprocess.')
         sys.exit(1)
 
     def handle(self, *args, **options):
