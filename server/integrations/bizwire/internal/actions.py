@@ -120,10 +120,6 @@ def recalculate_and_set_new_daily_budgets(ad_group_id):
     _set_source_daily_budget(ad_group_id, 'outbrain', math.ceil(new_ob_daily_budget))
 
 
-def find_and_reprocess_missing_articles():
-    pass
-
-
 @transaction.atomic
 def _rotate_ad_groups(start_date):
     ad_group_name = AD_GROUP_NAME_TEMPLATE.format(
