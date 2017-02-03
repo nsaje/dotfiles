@@ -15,12 +15,17 @@ angular.module('one.widgets').component('zemSidePanel', {
 
         $ctrl.$onInit = function () {
             hotkeys.add({combo: 'esc', callback: function () {
-                if (isVisible()) $ctrl.requestClose();
+                if (isVisible() && !isModalOpened()) $ctrl.requestClose();
             }});
         };
 
         function isVisible () {
             return $ctrl.visible;
+        }
+
+        function isModalOpened () {
+            // when uib modal opened, special class (.modal-open) is added to body
+            return $('body').hasClass('modal-open');
         }
 
         function open () {
