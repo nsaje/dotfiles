@@ -56,7 +56,7 @@ def get_s3_keys_for_dates(dates):
 
 def get_s3_key_dt(key):
     parts = _parse_key(key)
-    return datetime.date(
+    return datetime.datetime(
         int(parts['year']),
         int(parts['month']),
         int(parts['day']),

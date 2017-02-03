@@ -8,7 +8,8 @@ import dateutil
 from django.conf import settings
 
 import dash.models
-from integrations.bizwire.internal import helpers, config
+from integrations.bizwire import config
+from integrations.bizwire.internal import helpers
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
@@ -27,26 +28,22 @@ class Command(ExceptionCommand):
     def add_arguments(self, parser):
         parser.add_argument('--key', dest='key', nargs=1, type=str)
         parser.add_argument('--date', dest='date', nargs=1, type=str)
-        parser.add_argument('--missing', dest='missing', nargs=1, type=bool)
-        parser.add_argument('--purge-candidates', dest='--purge-candidates', nargs=1, type=bool)
+        parser.add_argument('--missing', dest='missing', action='store_true')
+        parser.add_argument('--dry-run', dest='dry_run', action='store_true')
 
-    def handle(self, *args, **options):
+    def _get_keys_to_reprocess(options):
+        if options.get('key'):
+            return [options['key']]
+
         date = options.get('date')
-        key = options.get('key')
-        missing = options.get('missing')
-
-        if key:
-            self.invoke_lambdas(key)
-            return
-
         if date:
             date = dateutil.parser.parse(date[0]).date()
-            keys = helpers.get_s3_keys(date=date)
-            self.invoke_lambdas(keys)
-            return
+            return helpers.get_s3_keys(date=date)
 
+        missing = options.get('missing')
         if missing:
-            keys = helpers.get_s3_keys(date=date)
+            keys = [k for k in helpers.get_s3_keys(date=date)
+                    if helpers.get_s3_key_dt(k).date() >= config.START_DATE]
             labels_keys = {
                 helpers.get_s3_key_label(key): key
                 for key in keys
@@ -69,16 +66,49 @@ class Command(ExceptionCommand):
                 ).values_list('label', flat=True)
             )
 
-            logger.info('Skipping {} keys - candidates exist'.format(len(candidate_labels)))
             to_reprocess = to_reprocess - candidate_labels
             reprocess_keys = [labels_keys[label] for label in to_reprocess]
-            self.invoke_lambdas(reprocess_keys)
-            return
+            return reprocess_keys
 
         sys.stderr.write('Specify what to reprocess.')
         sys.exit(1)
 
+    def handle(self, *args, **options):
+        self.dry_run = options.get('dry_run')
+        self.purge_candidates = options.get('purge_candidates')
+
+        keys = self._get_keys_to_reprocess(options)
+        self.purge_candidates(keys)
+        self.invoke_lambdas(keys)
+
+    def purge_candidates(self, keys):
+        if not self.purge_candidates:
+            return
+
+        labels = [helpers.get_s3_key_label(key) for key in keys]
+        candidates = dash.models.ContentAdCandidate.objects(
+            ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+            label__in=labels,
+        )
+
+        num_candidates = candidates.count()
+        if self.dry_run:
+            sys.stdout.write('{} candidates would be removed.\n'.format(num_candidates))
+            return
+        else:
+            sys.stdout.write('Removing {} candidates.\n'.format(num_candidates))
+
+        candidates.delete()
+
     def invoke_lambdas(self, keys):
+        if self.dry_run:
+            sys.stdout.write('The following keys would be reprocessed:\n')
+            sys.stdout.writelines(keys)
+            return
+        else:
+            sys.stdout.write('The following keys will be reprocessed:\n')
+            sys.stdout.writelines(keys)
+
         lambda_client = boto3.client('lambda', region_name=settings.LAMBDA_REGION)
         for key in keys:
             payload = {
@@ -94,7 +124,7 @@ class Command(ExceptionCommand):
                 }]
             }
 
-            sys.stdout.write('Invoking lambda for key: {}'.format(key))
+            sys.stdout.write('Invoking lambda for key: {}\n'.format(key))
             lambda_client.invoke(
                 FunctionName='z1-businesswire-articles',
                 InvocationType='Event',  # async
