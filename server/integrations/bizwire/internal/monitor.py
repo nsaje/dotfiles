@@ -200,7 +200,7 @@ def monitor_duplicate_articles():
 
 
 def _send_unexpected_spend_email_alert(expected_spend, actual_spend):
-    if dates_helper.utc_now().hour != 12:
+    if dates_helper.utc_now().hour != 14:
         return
 
     if expected_spend * 0.8 < actual_spend < expected_spend:
@@ -215,7 +215,7 @@ Yesterday's expected spend was {} and actual spend was {}.'''.format(expected_sp
 
 
 def _send_missing_clicks_email_alert(missing_clicks):
-    if dates_helper.utc_now().hour != 12:
+    if dates_helper.utc_now().hour != 14:
         return
 
     if missing_clicks < 1:
