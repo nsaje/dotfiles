@@ -478,6 +478,7 @@ class AdGroupsView(K1APIView):
         ad_groups = []
         for ad_group_settings in ad_groups_settings:
             campaign_settings = campaigns_settings_map[ad_group_settings.ad_group.campaign_id]
+            account_settings = accounts_settings_map[ad_group_settings.ad_group.campaign.account_id]
 
             blacklist = ad_group_settings.blacklist_publisher_groups
             whitelist = ad_group_settings.whitelist_publisher_groups
@@ -487,7 +488,7 @@ class AdGroupsView(K1APIView):
                     blacklist, whitelist = publisher_group_helpers.concat_publisher_group_targeting(
                         ad_group, ad_group_settings,
                         ad_group.campaign, campaign_settings,
-                        ad_group.campaign.account, accounts_settings_map[ad_group_settings.ad_group.campaign.account_id],
+                        ad_group.campaign.account, ,
                         include_global=False  # global blacklist is handled separately by the bidder, no need to duplicate work
                     )
 
@@ -588,7 +589,7 @@ class AdGroupsView(K1APIView):
         campaigns_settings_map = {cs.campaign_id: cs for cs in campaigns_settings}
 
         accounts_settings = (dash.models.AccountSettings.objects
-                             .filter(account_id__in=campaigns_settings_map.keys())
+                             .filter(account_id__in=set([ag.ad_group.campaign.account_id for ag in ad_groups_settings]))
                              .group_current_settings()
                              .only('account_id', 'whitelist_publisher_groups', 'blacklist_publisher_groups'))
         accounts_settings_map = {accs.account_id: accs for accs in accounts_settings}
