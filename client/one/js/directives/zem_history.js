@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemHistory', function () {
+angular.module('one.legacy').directive('zemLegacyHistory', function () {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_history.html',

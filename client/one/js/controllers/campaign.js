@@ -50,7 +50,8 @@ angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state
                 route: 'main.campaigns.history',
                 active: false,
                 hidden: $scope.campaign && $scope.campaign.archived === true ||
-                    !$scope.hasPermission('zemauth.campaign_history_view'),
+                    !$scope.hasPermission('zemauth.campaign_history_view') ||
+                    $scope.hasPermission('zemauth.can_see_history_in_drawer'),
                 internal: $scope.isPermissionInternal('zemauth.campaign_history_view'),
             },
             {

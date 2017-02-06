@@ -27,7 +27,8 @@ angular.module('one.legacy').controller('AdGroupCtrl', function ($scope, $state,
             route: 'main.adGroups.history',
             active: false,
             hidden: !$scope.hasPermission('zemauth.ad_group_history_view') ||
-                ($scope.adGroup && $scope.adGroup.archived === true),
+                ($scope.adGroup && $scope.adGroup.archived === true) ||
+                $scope.hasPermission('zemauth.can_see_history_in_drawer'),
             internal: $scope.isPermissionInternal('zemauth.ad_group_history_view'),
         }];
 

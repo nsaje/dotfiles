@@ -1,0 +1,34 @@
+.zem-history {
+    display: block;
+}
+
+.zem-history__header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: @header-height;
+    padding: 0 @default-spacing;
+    border-bottom: 1px solid darken(@light-gray,5%);
+}
+
+.zem-history__header-title {
+    line-height: 24px;
+    margin: 18px 0;
+    color: @secondary-color;
+    font-weight: 400;
+    font-size: 24px;
+}
+
+.zem-history__body {
+    position: absolute;
+    .position-properties(@header-height + @default-spacing, 0, @default-spacing, @default-spacing);
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+.zem-history__section {
+    padding: @default-spacing;
+    background-color: @white;
+    box-shadow: 0px 0px 5px 0px fade(black, 10%);
+}

@@ -1,6 +1,5 @@
 <div class="container-fluid">
     <zem-header class="zem-header row"></zem-header>
-    <zem-settings class="zem-settings"></zem-settings>
     <zem-filter-selector class="zem-filter-selector row"></zem-filter-selector>
 
     <div class="row body">
@@ -12,4 +11,8 @@
     </div>
 
     <div class="row footer" ng-include src="'/partials/footer.html'"></div>
+
+    <!-- Widgets used in drawer -->
+    <zem-settings class="zem-settings"></zem-settings>
+    <zem-history ng-if="hasPermission('zemauth.can_see_history_in_drawer')" class="zem-history"></zem-history>
 </div>

@@ -1,7 +1,9 @@
 angular.module('one.widgets').component('zemInfobox', {
     templateUrl: '/app/widgets/zem-infobox/zemInfobox.component.html',
-    controller: function (zemInfoboxService, zemNavigationNewService, zemDataFilterService, zemEntityService) {
+    controller: function (zemInfoboxService, zemNavigationNewService, zemDataFilterService, zemEntityService, zemHistoryService, zemPermissions) { // eslint-disable-line max-len
         var $ctrl = this;
+        $ctrl.hasPermission = zemPermissions.hasPermission;
+        $ctrl.openHistory = zemHistoryService.open;
 
         var activeEntityUpdateHandler;
         var hierarchyUpdateHandler;
