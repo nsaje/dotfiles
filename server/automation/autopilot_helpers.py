@@ -5,14 +5,12 @@ import traceback
 from django.core.mail import send_mail
 
 import dash
-from dash.constants import AdGroupSettingsState, EmailTemplateType, SourceType
+import dash.constants
+import dash.models
 from automation import autopilot_settings
 import automation.helpers
 from automation.constants import DailyBudgetChangeComment, CpcChangeComment
-from dash import constants
-from dash.constants import SourceAllRTB
-import dash.models
-from utils import pagerduty_helper, url_helper
+from utils import pagerduty_helper, url_helper, k1_helper
 from utils.email_helper import format_email, email_manager_list
 
 logger = logging.getLogger(__name__)
@@ -21,8 +19,8 @@ logger = logging.getLogger(__name__)
 def get_active_ad_groups_on_autopilot(autopilot_state=None):
     states = [autopilot_state]
     if not autopilot_state:
-        states = [constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
-                  constants.AdGroupSettingsAutopilotState.ACTIVE_CPC]
+        states = [dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+                  dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC]
 
     ad_groups_on_autopilot = []
     ad_group_settings_on_autopilot = []
@@ -35,19 +33,20 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
             ad_groups_sources_settings = dash.models.AdGroupSourceSettings.objects.\
                 filter(ad_group_source__ad_group=ad_group).group_current_settings()
 
-            ad_group_running = ad_group.get_running_status(ags) == constants.AdGroupRunningStatus.ACTIVE
-            ad_group_active = ags.state == constants.AdGroupRunningStatus.ACTIVE
+            ad_group_running = ad_group.get_running_status(ags) == dash.constants.AdGroupRunningStatus.ACTIVE
+            ad_group_active = ags.state == dash.constants.AdGroupRunningStatus.ACTIVE
             sources_running = ad_group.get_running_status_by_sources_setting(
                 ags,
                 ad_groups_sources_settings
-            ) == constants.AdGroupRunningStatus.ACTIVE
+            ) == dash.constants.AdGroupRunningStatus.ACTIVE
             if ((ad_group_running and sources_running) or (ags.landing_mode and ad_group_active)):
                 ad_groups_on_autopilot.append(ad_group)
                 ad_group_settings_on_autopilot.append(ags)
     return ad_groups_on_autopilot, ad_group_settings_on_autopilot
 
 
-def get_autopilot_active_sources_settings(ad_groups_and_settings, ad_group_setting_state=AdGroupSettingsState.ACTIVE):
+def get_autopilot_active_sources_settings(ad_groups_and_settings,
+                                          ad_group_setting_state=dash.constants.AdGroupSettingsState.ACTIVE):
     ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups_and_settings.keys())
     ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source_id__in=ag_sources).\
         group_current_settings().select_related('ad_group_source__source__source_type')
@@ -58,15 +57,15 @@ def get_autopilot_active_sources_settings(ad_groups_and_settings, ad_group_setti
     ret = []
     for agss in ag_sources_settings:
         ad_group_settings = ad_groups_and_settings[agss.ad_group_source.ad_group]
-        if ad_group_setting_state == AdGroupSettingsState.ACTIVE:
-            if (agss.ad_group_source.source.source_type.type == SourceType.B1 and
+        if ad_group_setting_state == dash.constants.AdGroupSettingsState.ACTIVE:
+            if (agss.ad_group_source.source.source_type.type == dash.constants.SourceType.B1 and
                     ad_group_settings.b1_sources_group_enabled and
-                    ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE):
+                    ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.INACTIVE):
                 continue
-        elif ad_group_setting_state == AdGroupSettingsState.INACTIVE:
-            if (agss.ad_group_source.source.source_type.type == SourceType.B1 and
+        elif ad_group_setting_state == dash.constants.AdGroupSettingsState.INACTIVE:
+            if (agss.ad_group_source.source.source_type.type == dash.constants.SourceType.B1 and
                     ad_group_settings.b1_sources_group_enabled and
-                    ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.ACTIVE):
+                    ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE):
                 continue
 
         if agss.state == ad_group_setting_state:
@@ -90,7 +89,7 @@ def update_ad_group_source_values(ad_group_source, changes, system_user=None, la
         ad_group_source, changes, None, system_user=system_user, landing_mode=landing_mode, ping_k1=False)
 
 
-def update_ad_group_values(ad_group, changes, system_user=None, landing_mode=None):
+def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None):
     # TODO next PR
     logger.warning('Autopilot tried updating adgroup values on adgroup ' + str(ad_group.id))
 
@@ -100,12 +99,12 @@ def get_ad_group_sources_minimum_cpc(ad_group_source):
 
 
 def get_ad_group_sources_minimum_daily_budget(ad_group_source,
-                                              ap_type=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET):
-    if ad_group_source == SourceAllRTB:
-        source_min_daily_budget = SourceAllRTB.MIN_DAILY_BUDGET
+                                              ap_type=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET):
+    if ad_group_source == dash.constants.SourceAllRTB:
+        source_min_daily_budget = dash.constants.SourceAllRTB.MIN_DAILY_BUDGET
     else:
         source_min_daily_budget = ad_group_source.source.source_type.min_daily_budget
-    if ap_type != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+    if ap_type != dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         return source_min_daily_budget
     return max(autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
 
@@ -132,9 +131,10 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
     changesText = []
     for adgroup, adgroup_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
-        if SourceAllRTB in adgroup_changes:
-            changesText.append(_get_email_source_changes_text(SourceAllRTB.NAME, adgroup_changes[SourceAllRTB]))
-            adgroup_changes.pop(SourceAllRTB, None)
+        if dash.constants.SourceAllRTB in adgroup_changes:
+            changesText.append(_get_email_source_changes_text(dash.constants.SourceAllRTB.NAME,
+                                                              adgroup_changes[dash.constants.SourceAllRTB]))
+            adgroup_changes.pop(dash.constants.SourceAllRTB, None)
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changesText.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
         changesText.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes))
@@ -145,7 +145,7 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
         'link_url': url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign.id)),
         'changes': ''.join(changesText)
     }
-    subject, body, _ = format_email(EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE, **args)
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE, **args)
     try:
         send_mail(
             subject,
@@ -176,9 +176,10 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
     changesText = []
     for adgroup, adgroup_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
-        if SourceAllRTB in adgroup_changes:
-            changesText.append(_get_email_source_changes_text(SourceAllRTB.NAME, adgroup_changes[SourceAllRTB]))
-            adgroup_changes.pop(SourceAllRTB, None)
+        if dash.constants.SourceAllRTB in adgroup_changes:
+            changesText.append(_get_email_source_changes_text(dash.constants.SourceAllRTB.NAME,
+                                                              adgroup_changes[dash.constants.SourceAllRTB]))
+            adgroup_changes.pop(dash.constants.SourceAllRTB, None)
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changesText.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
 
@@ -188,7 +189,7 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
         'link_url': url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign.id)),
         'changes': ''.join(changesText)
     }
-    subject, body, _ = format_email(EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT, **args)
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT, **args)
     try:
         send_mail(
             subject,
@@ -246,7 +247,8 @@ def _get_email_adgroup_pausing_suggestions_text(adgroup_changes):
         changes = adgroup_changes[ag_source]
         if all(b in changes for b in ['new_budget', 'old_budget']) and\
                 changes['new_budget'] == get_ad_group_sources_minimum_daily_budget(ag_source):
-            suggested_sources.append(ag_source.source.name if ag_source != SourceAllRTB else SourceAllRTB.NAME)
+            suggested_sources.append(ag_source.source.name if
+                                     ag_source != dash.constants.SourceAllRTB else dash.constants.SourceAllRTB.NAME)
     if suggested_sources:
         return '\n\nTo improve ad group\'s performance, please consider pausing the following media sources: ' +\
                ", ".join(suggested_sources) + '.\n'

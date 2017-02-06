@@ -7,7 +7,7 @@ from django import test
 from automation import autopilot_cpc
 from automation.constants import CpcChangeComment
 import dash.models
-from dash.constants import SourceAllRTB
+import dash.constants
 from reports import refresh
 
 
@@ -118,7 +118,7 @@ class AutopilotCpcTestCase(test.TestCase):
     @patch('automation.autopilot_cpc._get_source_type_min_max_cpc')
     def test_threshold_source_constraints(self, mock_source_type_min_max_cpc):
         mock_source_type_min_max_cpc.return_value = (Decimal('0.1'), Decimal('1.0'))
-        ags = dash.models.AdGroupSource.objects.get(id=1).source
+        ags_type = dash.models.AdGroupSource.objects.get(id=1).source.source_type
         ag_settings = dash.models.AdGroup.objects.get(id=1).get_current_settings()
         test_cases = (
             # proposed_cpc, returned_cpc, returned_comments
@@ -131,9 +131,25 @@ class AutopilotCpcTestCase(test.TestCase):
         for test_case in test_cases:
             comments = []
             self.assertEqual(autopilot_cpc._threshold_source_constraints(
-                Decimal(test_case[0]), ags, ag_settings, comments),
+                Decimal(test_case[0]), ags_type, ag_settings, comments),
                 Decimal(test_case[1]))
             self.assertEqual(comments, test_case[2])
+
+    @patch('dash.models.SourceType.get_min_cpc')
+    def test_get_source_type_min_max_cpc(self, mock_get_min_cpc):
+        mock_get_min_cpc.return_value = Decimal('0.123')
+        ags_type = dash.models.AdGroupSource.objects.get(id=1).source.source_type
+        ags_type.max_cpc = Decimal('5.123')
+        ags_type.save()
+        ag_settings = dash.models.AdGroup.objects.get(id=1).get_current_settings()
+        test_cases = (
+            (ags_type, '0.123', '5.123'),
+            (dash.constants.SourceAllRTB, dash.constants.SourceAllRTB.MIN_CPC, dash.constants.SourceAllRTB.MAX_CPC),
+        )
+
+        for test_case in test_cases:
+            self.assertEqual(autopilot_cpc._get_source_type_min_max_cpc(test_case[0], ag_settings),
+                             (Decimal(test_case[1]), Decimal(test_case[2])))
 
     def test_threshold_cpc_constraints(self):
         s1 = dash.models.Source.objects.get(pk=1)
@@ -143,7 +159,7 @@ class AutopilotCpcTestCase(test.TestCase):
         s1.save()
         s2.source_type = b1
         s2.save()
-        rtb = SourceAllRTB
+        rtb = dash.constants.SourceAllRTB
         dash.models.CpcConstraint.objects.create(
             ad_group_id=3,
             max_cpc=Decimal('1.5'),

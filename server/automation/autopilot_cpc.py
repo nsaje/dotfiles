@@ -4,7 +4,7 @@ import logging
 from automation.constants import CpcChangeComment
 from automation import autopilot_settings
 from dash import cpc_constraints
-from dash.constants import SourceType, SourceAllRTB
+import dash.constants
 
 logger = logging.getLogger(__name__)
 
@@ -12,9 +12,10 @@ logger = logging.getLogger(__name__)
 def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_changes=None, adjust_rtb_sources=True):
     recommended_changes = {}
     ag_sources = data.keys()
+    SourceAllRTB = dash.constants.SourceAllRTB
     for ag_source in ag_sources:
         source_type = ag_source.source.source_type if ag_source != SourceAllRTB else SourceAllRTB
-        if not adjust_rtb_sources and source_type != SourceAllRTB and source_type.type == SourceType.B1:
+        if not adjust_rtb_sources and source_type != SourceAllRTB and source_type.type == dash.constants.SourceType.B1:
             continue
 
         recommended_changes[ag_source] = {}
@@ -126,10 +127,10 @@ def _threshold_increasing_cpc(current_cpc, new_cpc):
 
 def _threshold_cpc_constraints(ad_group, source, old_cpc, proposed_cpc, cpc_change_comments, sources):
     new_cpc = proposed_cpc
-    if source == SourceAllRTB:
+    if source == dash.constants.SourceAllRTB:
         constrained_cpcs = set()
         for s in sources:
-            if s != SourceAllRTB and s.source_type.type == SourceType.B1:
+            if s != dash.constants.SourceAllRTB and s.source_type.type == dash.constants.SourceType.B1:
                 constrained_cpcs.add(cpc_constraints.adjust_cpc(proposed_cpc, ad_group=ad_group, source=s))
         new_cpc = min(constrained_cpcs) if old_cpc < proposed_cpc else max(constrained_cpcs)
     else:
@@ -157,8 +158,8 @@ def _get_cpc_max_decimal_places(source_dec_places):
 
 
 def _get_source_type_min_max_cpc(source_type, adgroup_settings):
-    if source_type == SourceAllRTB:
-        return SourceAllRTB.MIN_CPC, SourceAllRTB.MAX_CPC
+    if source_type == dash.constants.SourceAllRTB:
+        return dash.constants.SourceAllRTB.MIN_CPC, dash.constants.SourceAllRTB.MAX_CPC
     return source_type.get_min_cpc(adgroup_settings), source_type.max_cpc
 
 

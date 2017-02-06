@@ -6,6 +6,7 @@ from django import test
 
 from automation import autopilot_budgets
 import dash.models
+import dash.constants
 from reports import refresh
 
 
@@ -78,6 +79,25 @@ class AutopilotBudgetsTestCase(test.TestCase):
             sources.get(id=5): Decimal('5')
         })
 
+    @patch('dash.constants.SourceAllRTB.MIN_DAILY_BUDGET', Decimal('6'))
+    @patch('automation.autopilot_settings.MAX_BUDGET_GAIN', Decimal('10'))
+    @patch('automation.autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET', Decimal('3'))
+    def test_get_minimum_autopilot_budget_constraints_rtb_as_one(self):
+        sources = dash.models.AdGroupSource.objects.filter(id__in=[1, 5])
+        data = {s: {} for s in sources}
+        data[dash.constants.SourceAllRTB] = {'old_budget': Decimal(40.0)}
+        max_budgets, min_budgets = autopilot_budgets._get_minimum_autopilot_budget_constraints(data)
+        self.assertEqual(max_budgets, {
+            sources.get(id=1): Decimal('30'),
+            sources.get(id=5): Decimal('50'),
+            dash.constants.SourceAllRTB: Decimal('60'),
+        })
+        self.assertEqual(min_budgets, {
+            sources.get(id=1): Decimal('3'),
+            sources.get(id=5): Decimal('5'),
+            dash.constants.SourceAllRTB: Decimal('6'),
+        })
+
     @patch('automation.autopilot_settings.MAX_BUDGET_GAIN', Decimal('10'))
     @patch('automation.autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET', Decimal('3'))
     @patch('automation.autopilot_settings.MAX_BUDGET_LOSS', Decimal('0.5'))
@@ -96,4 +116,30 @@ class AutopilotBudgetsTestCase(test.TestCase):
         self.assertEqual(old_budgets, {
             sources.get(id=1): Decimal('60'),
             sources.get(id=5): Decimal('50')
+        })
+
+    @patch('automation.autopilot_settings.MAX_BUDGET_GAIN', Decimal('10'))
+    @patch('automation.autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET', Decimal('3'))
+    @patch('automation.autopilot_settings.MAX_BUDGET_LOSS', Decimal('0.5'))
+    @patch('dash.constants.SourceAllRTB.MAX_DAILY_BUDGET', Decimal('100'))
+    @patch('dash.constants.SourceAllRTB.MIN_DAILY_BUDGET', Decimal('10'))
+    def test_get_optimistic_autopilot_budget_constraints_rtb_as_one(self):
+        sources = dash.models.AdGroupSource.objects.filter(id__in=[1, 5])
+        data = {s: {} for s in sources}
+        data[dash.constants.SourceAllRTB] = {'old_budget': Decimal(40.0)}
+        max_budgets, min_budgets, old_budgets = autopilot_budgets._get_optimistic_autopilot_budget_constraints(data)
+        self.assertEqual(max_budgets, {
+            sources.get(id=1): Decimal('600'),
+            sources.get(id=5): Decimal('500'),
+            dash.constants.SourceAllRTB: Decimal('400'),
+        })
+        self.assertEqual(min_budgets, {
+            sources.get(id=1): Decimal('30'),
+            sources.get(id=5): Decimal('25'),
+            dash.constants.SourceAllRTB: Decimal('20'),
+        })
+        self.assertEqual(old_budgets, {
+            sources.get(id=1): Decimal('60'),
+            sources.get(id=5): Decimal('50'),
+            dash.constants.SourceAllRTB: Decimal('40'),
         })
