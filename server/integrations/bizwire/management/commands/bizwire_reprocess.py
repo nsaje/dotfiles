@@ -32,6 +32,14 @@ class Command(ExceptionCommand):
         parser.add_argument('--dry-run', dest='dry_run', action='store_true')
         parser.add_argument('--purge-candidates', dest='purge_candidates', action='store_true')
 
+    def handle(self, *args, **options):
+        self.dry_run = options.get('dry_run')
+        self.purge_candidates = options.get('purge_candidates')
+
+        keys = self._get_keys_to_reprocess(options)
+        self._purge_candidates(keys)
+        self._invoke_lambdas(keys)
+
     def _get_keys_to_reprocess(self, options):
         if options.get('key'):
             return [options['key']]
@@ -43,52 +51,41 @@ class Command(ExceptionCommand):
 
         missing = options.get('missing')
         if missing:
-            keys = [k for k in helpers.get_s3_keys(date=date)
-                    if helpers.get_s3_key_dt(k).date() >= config.START_DATE]
-            labels_keys = {
-                helpers.get_s3_key_label(key): key
-                for key in keys
-            }
-
-            content_ad_labels = set(
-                dash.models.ContentAd.objects.filter(
-                    ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-                    label__in=labels_keys.keys(),
-                ).values_list('label', flat=True)
-            )
-
-            to_reprocess = set([
-                l for l in labels_keys.keys() if l not in content_ad_labels
-            ])
-            candidate_labels = set(
-                dash.models.ContentAd.objects.filter(
-                    ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-                    label__in=to_reprocess,
-                ).values_list('label', flat=True)
-            )
-
-            if len(candidate_labels):
-                logger.info('Candidates for {} missing labels exist. Use --purge-candidates to remove them.')
-
-            to_reprocess = to_reprocess - candidate_labels
-            reprocess_keys = [labels_keys[label] for label in to_reprocess]
-            return reprocess_keys
+            return self._get_missing_keys(options)
 
         logger.info('Specify what to reprocess.')
         sys.exit(1)
 
-    def handle(self, *args, **options):
-        self.dry_run = options.get('dry_run')
-        self.purge_candidates = options.get('purge_candidates')
+    def _get_missing_keys(self, options):
+        keys = [k for k in helpers.get_s3_keys()
+                if helpers.get_s3_key_dt(k).date() >= config.START_DATE]
+        labels_keys = {
+            helpers.get_s3_key_label(key): key
+            for key in keys
+        }
 
-        keys = self._get_keys_to_reprocess(options)
-        self._purge_candidates(keys)
-        self._invoke_lambdas(keys)
+        content_ad_labels = set(
+            dash.models.ContentAd.objects.filter(
+                ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+                label__in=labels_keys.keys(),
+            ).values_list('label', flat=True)
+        )
+
+        to_reprocess = set([
+            l for l in labels_keys.keys() if l not in content_ad_labels
+        ])
+        candidate_labels = set(
+            dash.models.ContentAd.objects.filter(
+                ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+                label__in=to_reprocess,
+            ).values_list('label', flat=True)
+        )
+
+        to_reprocess = to_reprocess - candidate_labels
+        reprocess_keys = [labels_keys[label] for label in to_reprocess]
+        return reprocess_keys
 
     def _purge_candidates(self, keys):
-        if not self.purge_candidates:
-            return
-
         labels = [helpers.get_s3_key_label(key) for key in keys]
         candidates = dash.models.ContentAdCandidate.objects(
             ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
@@ -96,23 +93,25 @@ class Command(ExceptionCommand):
         )
 
         num_candidates = candidates.count()
-        if self.dry_run:
-            logger.info('{} candidates would be removed.\n'.format(num_candidates))
+        if not self.purge_candidates:
+            logger.info('%s candidates exist. Use --purge-candidates to remove them.', num_candidates)
             return
-        else:
-            logger.info('Removing {} candidates.\n'.format(num_candidates))
+        elif self.dry_run:
+            logger.info('%s candidates would be removed.', num_candidates)
+            return
 
+        logger.info('Removing %s candidates.', num_candidates)
         candidates.delete()
 
     def _invoke_lambdas(self, keys):
         if self.dry_run:
             for key in keys:
-                logger.info('{} would be reprocessed'.format(key))
+                logger.info('%s would be reprocessed', key)
             return
 
         lambda_client = boto3.client('lambda', region_name=settings.LAMBDA_REGION)
         for key in keys:
-            logger.info('Reprocessing {}.'.format(key))
+            logger.info('Reprocessing %s.', key)
             payload = {
                 'Records': [{
                     's3': {
