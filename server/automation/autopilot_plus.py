@@ -428,7 +428,7 @@ def _report_new_budgets_on_ap_to_influx(ad_group_settings):
         daily_budget = ag_source_setting.daily_budget_cc or Decimal('0')
         if (ag_settings.b1_sources_group_enabled and
                 ag_settings.b1_sources_group_state == active and
-                ag_source_setting.source.source_type.type == dash.constants.SourceType.B1):
+                ag_source_setting.ad_group_source.source.source_type.type == dash.constants.SourceType.B1):
             if ad_group.id in rtb_as_one_budget_counted_adgroups:
                 continue
             daily_budget = ag_settings.b1_sources_group_daily_budget or Decimal('0')
