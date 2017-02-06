@@ -98,7 +98,7 @@ def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None)
         new_settings.b1_sources_group_cpc_cc = changes['cpc_cc']
         dash.views.helpers.adjust_adgroup_sources_cpcs(ad_group, new_settings, True, True)
 
-    if 'daily_budget_cc' in changes and new_settings.b1_sources_group_cpc_cc != changes['daily_budget_cc']:
+    if 'daily_budget_cc' in changes and new_settings.b1_sources_group_daily_budget != changes['daily_budget_cc']:
         changed = True
         new_settings.b1_sources_group_daily_budget = changes['daily_budget_cc']
 
