@@ -148,8 +148,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
             email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
             if (('autopilot_daily_budget' in changes or 'autopilot_state' in changes and
-                 changes['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
-                or (new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and
+                 changes['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET) or
+                (new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and
                     'b1_sources_group_state' in changes)):
                 autopilot_plus.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
 
