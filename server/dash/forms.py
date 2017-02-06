@@ -559,6 +559,9 @@ class ConversionPixelForm(forms.Form):
         max_length=2048,
         required=False,
     )
+    notes = forms.CharField(
+        required=False,
+    )
 
 
 class ConversionGoalForm(forms.Form):

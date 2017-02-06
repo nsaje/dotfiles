@@ -1306,6 +1306,41 @@ class ConversionPixelTestCase(TestCase):
             'redirect_url': None,
         }], decoded_response['data']['rows'])
 
+    def test_get_notes(self):
+        account = models.Account.objects.get(pk=1)
+        account.users.add(self.user)
+
+        pixel = models.ConversionPixel.objects.get(pk=1)
+        pixel.notes = 'test note'
+        pixel.save()
+
+        permission = authmodels.Permission.objects.get(codename='can_see_pixel_notes')
+        self.user.user_permissions.add(permission)
+
+        response = self.client.get(
+            reverse('account_conversion_pixels', kwargs={'account_id': account.id}),
+            follow=True
+        )
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(decoded_response['success'])
+        self.assertItemsEqual([{
+            'id': 1,
+            'name': 'test',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+            'archived': False,
+            'audience_enabled': True,
+            'notes': 'test note',
+        }, {
+            'id': 2,
+            'name': 'test2',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test2/',
+            'archived': False,
+            'audience_enabled': False,
+            'notes': '',
+        }], decoded_response['data']['rows'])
+
     @patch('utils.redirector_helper.upsert_audience')
     @patch('utils.k1_helper.update_account')
     def test_post(self, ping_mock, redirector_mock):
@@ -1430,9 +1465,9 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertTrue(decoded_response['success'])
         self.assertDictEqual({
-            'id': 6,
+            'id': 7,
             'name': 'name',
-            'url': settings.CONVERSION_PIXEL_PREFIX + '1/6/',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/7/',
             'archived': False,
             'audience_enabled': False,
             'redirect_url': 'http://test.com'
@@ -1493,6 +1528,45 @@ class ConversionPixelTestCase(TestCase):
 
         self.assertEqual(400, response.status_code)
         self.assertEqual(list(models.ConversionPixel.objects.all()), pixels_before)
+
+    @patch('utils.redirector_helper.update_pixel')
+    @patch('utils.redirector_helper.upsert_audience')
+    @patch('utils.k1_helper.update_account')
+    def test_post_notes(self, ping_mock, redirector_mock, update_pixel_mock):
+        permission = authmodels.Permission.objects.get(codename='can_see_pixel_notes')
+        self.user.user_permissions.add(permission)
+
+        response = self.client.post(
+            reverse('account_conversion_pixels', kwargs={'account_id': 1}),
+            json.dumps({'name': 'name', 'notes': 'test notes'}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(decoded_response['success'])
+        self.assertDictEqual({
+            'id': 6,
+            'name': 'name',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/6/',
+            'archived': False,
+            'audience_enabled': False,
+            'notes': 'test notes'
+        }, decoded_response['data'])
+
+        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
+        self.assertEqual(
+            constants.HistoryActionType.CONVERSION_PIXEL_CREATE,
+            hist.action_type)
+        self.assertEqual('Added conversion pixel named name.',
+                         hist.changes_text)
+        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
+        self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
+
+        self.assertFalse(ping_mock.called)
+        self.assertFalse(redirector_mock.called)
+        self.assertFalse(update_pixel_mock.called)
 
     @patch('utils.redirector_helper.upsert_audience')
     @patch('utils.k1_helper.update_account')
@@ -1824,6 +1898,33 @@ class ConversionPixelTestCase(TestCase):
         decoded_response = json.loads(response.content)
 
         self.assertEqual(['Enter a valid URL.'], decoded_response['data']['errors']['redirect_url'])
+
+    @patch('utils.redirector_helper.upsert_audience')
+    @patch('utils.redirector_helper.update_pixel')
+    def test_put_notes(self, update_pixel_mock, upsert_audience_mock):
+        add_permissions(self.user, ['can_see_pixel_notes'])
+        conversion_pixel = models.ConversionPixel.objects.get(pk=1)
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
+            json.dumps({'name': 'test', 'audience_enabled': False, 'notes': 'test notes'}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual({
+            'id': 1,
+            'archived': conversion_pixel.archived,
+            'name': 'test',
+            'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+            'audience_enabled': False,
+            'notes': 'test notes',
+        }, decoded_response['data'])
+
+        self.assertEqual(upsert_audience_mock.call_count, 0)
+        self.assertEqual(update_pixel_mock.call_count, 0)
 
 
 class UserActivationTest(TestCase):

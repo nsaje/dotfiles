@@ -74,7 +74,13 @@ angular.module('one.legacy').directive('zemConversionPixels', function (config, 
                     keyboard: false,
                     resolve: {
                         pixel: function () {
-                            return {id: pixel.id, name: pixel.name, audienceEnabled: pixel.audienceEnabled, redirectUrl: pixel.redirectUrl};
+                            return {
+                                id: pixel.id,
+                                name: pixel.name,
+                                audienceEnabled: pixel.audienceEnabled,
+                                redirectUrl: pixel.redirectUrl,
+                                notes: pixel.notes,
+                            };
                         },
                         audiencePixel: function () {
                             var pixies = $scope.conversionPixels.filter(function (pixie) {
@@ -91,6 +97,7 @@ angular.module('one.legacy').directive('zemConversionPixels', function (config, 
                             pixel.name = conversionPixel.name;
                             pixel.audienceEnabled = conversionPixel.audienceEnabled;
                             pixel.redirectUrl = conversionPixel.redirectUrl;
+                            pixel.notes = conversionPixel.notes;
                         }
                     });
                 });

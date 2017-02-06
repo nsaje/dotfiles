@@ -819,12 +819,17 @@ class ConversionPixel(api_common.BaseApiView):
         if request.user.has_perm('zemauth.can_redirect_pixels'):
             redirect_url = form.cleaned_data['redirect_url']
 
+        notes = ''
+        if request.user.has_perm('zemauth.can_see_pixel_notes'):
+            notes = form.cleaned_data['notes']
+
         with transaction.atomic():
             conversion_pixel = models.ConversionPixel.objects.create(
                 account_id=account_id,
                 name=form.cleaned_data['name'],
                 audience_enabled=form.cleaned_data['audience_enabled'] or False,
                 redirect_url=redirect_url,
+                notes=notes,
             )
 
             # This check is done after insertion because we use READ COMMITED
@@ -894,6 +899,9 @@ class ConversionPixel(api_common.BaseApiView):
                 self._write_redirect_change_to_history(request, account, conversion_pixel, form.cleaned_data)
                 conversion_pixel.redirect_url = form.cleaned_data['redirect_url']
                 redirector_helper.update_pixel(conversion_pixel)
+
+            if request.user.has_perm('zemauth.can_see_pixel_notes'):
+                conversion_pixel.notes = form.cleaned_data['notes']
 
             self._write_name_change_to_history(
                 request, account, conversion_pixel, form.cleaned_data)
@@ -990,6 +998,8 @@ class ConversionPixel(api_common.BaseApiView):
             data['impressions'] = pixel.impressions
         if user.has_perm('zemauth.can_redirect_pixels'):
             data['redirect_url'] = pixel.redirect_url
+        if user.has_perm('zemauth.can_see_pixel_notes'):
+            data['notes'] = pixel.notes
         return data
 
 
