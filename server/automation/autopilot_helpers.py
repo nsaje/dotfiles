@@ -90,8 +90,24 @@ def update_ad_group_source_values(ad_group_source, changes, system_user=None, la
 
 
 def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None):
-    # TODO next PR
-    logger.warning('Autopilot tried updating adgroup values on adgroup ' + str(ad_group.id))
+    new_settings = ad_group.get_current_settings().copy_settings()
+    changed = False
+
+    if 'cpc_cc' in changes and new_settings.b1_sources_group_cpc_cc != changes['cpc_cc']:
+        changed = True
+        new_settings.b1_sources_group_cpc_cc = changes['cpc_cc']
+        dash.views.helpers.adjust_adgroup_sources_cpcs(ad_group, new_settings, True, True)
+
+    if 'daily_budget_cc' in changes and new_settings.b1_sources_group_cpc_cc != changes['daily_budget_cc']:
+        changed = True
+        new_settings.b1_sources_group_daily_budget = changes['daily_budget_cc']
+
+    if not changed:
+        return
+
+    k1_helper.update_ad_group(ad_group.pk, msg='AutopilotUpdateAdGroupB1SourcesGroupValues')
+    new_settings.system_user = system_user
+    new_settings.save(None)
 
 
 def get_ad_group_sources_minimum_cpc(ad_group_source):
@@ -128,22 +144,22 @@ def send_autopilot_changes_emails(email_changes_data, data, initialization):
 
 
 def send_autopilot_changes_email(campaign, emails, changes_data):
-    changesText = []
+    changes_text = []
     for adgroup, adgroup_changes in changes_data.iteritems():
-        changesText.append(_get_email_adgroup_text(adgroup))
+        changes_text.append(_get_email_adgroup_text(adgroup))
         if dash.constants.SourceAllRTB in adgroup_changes:
-            changesText.append(_get_email_source_changes_text(dash.constants.SourceAllRTB.NAME,
-                                                              adgroup_changes[dash.constants.SourceAllRTB]))
+            changes_text.append(_get_email_source_changes_text(dash.constants.SourceAllRTB.NAME,
+                                                               adgroup_changes[dash.constants.SourceAllRTB]))
             adgroup_changes.pop(dash.constants.SourceAllRTB, None)
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
-            changesText.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
-        changesText.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes))
+            changes_text.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
+        changes_text.append(_get_email_adgroup_pausing_suggestions_text(adgroup_changes))
 
     args = {
         'campaign': campaign,
         'account': campaign.account,
         'link_url': url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign.id)),
-        'changes': ''.join(changesText)
+        'changes': ''.join(changes_text)
     }
     subject, body, _ = format_email(dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE, **args)
     try:
@@ -173,21 +189,21 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
 
 
 def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
-    changesText = []
+    changes_text = []
     for adgroup, adgroup_changes in changes_data.iteritems():
-        changesText.append(_get_email_adgroup_text(adgroup))
+        changes_text.append(_get_email_adgroup_text(adgroup))
         if dash.constants.SourceAllRTB in adgroup_changes:
-            changesText.append(_get_email_source_changes_text(dash.constants.SourceAllRTB.NAME,
-                                                              adgroup_changes[dash.constants.SourceAllRTB]))
+            changes_text.append(_get_email_source_changes_text(dash.constants.SourceAllRTB.NAME,
+                                                               adgroup_changes[dash.constants.SourceAllRTB]))
             adgroup_changes.pop(dash.constants.SourceAllRTB, None)
         for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
-            changesText.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
+            changes_text.append(_get_email_source_changes_text(ag_source.source.name, adgroup_changes[ag_source]))
 
     args = {
         'campaign': campaign,
         'account': campaign.account,
         'link_url': url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign.id)),
-        'changes': ''.join(changesText)
+        'changes': ''.join(changes_text)
     }
     subject, body, _ = format_email(dash.constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT, **args)
     try:
