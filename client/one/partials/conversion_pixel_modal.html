@@ -33,7 +33,7 @@
         </div>
 
         <div class="form__group" ng-class="{'form--error': !!validationErrors.notes}" ng-if="hasPermission('zemauth.can_see_pixel_notes')">
-            <label class="form__label" for="notes-input" is-internal="zemauth.can_see_pixel_notes">Notes</label>
+            <label class="form__label" for="notes-input" is-internal="zemauth.can_see_pixel_notes">Notes<zem-help-popover content="Add a note describing where the pixel is placed on your website and what it tracks." placement="top"></zem-help-popover></label>
             <textarea class="textarea" id="notes-input" type="text" ng-model="pixel.notes"></textarea>
             <div class="message message--error" ng-repeat="error in validationErrors.notes" for="notes-input">{{ error }}</div>
         </div>

@@ -11,7 +11,7 @@ import automation.models
 import analytics.projections
 import etl.refresh_k1
 from automation import autopilot_helpers
-
+from utils import converters
 import redshiftapi.db
 
 logger = logging.getLogger('stats.monitor')
@@ -21,6 +21,16 @@ SPEND_INTEGRITY_QUERY = """SELECT sum(effective_cost_nano) as media, sum(effecti
 FROM {tbl}
 WHERE date = '{d}'{additional}
 """
+
+AD_GROUP_SPEND_QUERY = """SELECT ad_group_id
+FROM mv_master
+WHERE date = '{d}'
+GROUP BY ad_group_id
+HAVING SUM(effective_cost_nano) >= {threshold}"""
+
+API_ACCOUNTS = (
+    293, 305,
+)
 
 
 def _get_rs_spend(table_name, date, account_id=None):
@@ -220,3 +230,37 @@ def audit_autopilot_budget_changes(date=None, error=Decimal('0.001')):
         if abs(budget_changes) > error:
             alarms[ad_group] = budget_changes
     return alarms
+
+
+def audit_running_ad_groups(min_spend=Decimal('50.0')):
+    """
+    Audit ad groups spend of non API active ad groups of types:
+    - PILOT
+    - ACTIVATED
+    - MANAGED
+    """
+    yesterday = datetime.date.today() - datetime.timedelta(1)
+    running_ad_group_ids = set(dash.models.AdGroup.objects.all().filter_running(
+        date=yesterday
+    ).filter_by_account_types((
+        dash.constants.AccountType.PILOT,
+        dash.constants.AccountType.ACTIVATED,
+        dash.constants.AccountType.MANAGED,
+    )).values_list(
+        'pk', flat=True
+    ))
+    api_ad_groups = set(dash.models.AdGroup.objects.filter(
+        campaign__account_id__in=API_ACCOUNTS
+    ).values_list(
+        'pk', flat=True
+    ))
+
+    with redshiftapi.db.get_stats_cursor() as c:
+        c.execute(AD_GROUP_SPEND_QUERY.format(
+            d=str(yesterday),
+            threshold=str(int(min_spend * converters.DOLAR_TO_NANO))
+        ))
+        spending_ad_group_ids = set(int(row[0]) for row in c.fetchall())
+    return dash.models.AdGroup.objects.filter(
+        pk__in=((running_ad_group_ids - spending_ad_group_ids) - api_ad_groups)
+    )

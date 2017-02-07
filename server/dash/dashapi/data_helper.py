@@ -50,7 +50,7 @@ def get_ad_group_source_notification(ad_group_source, ad_group_settings, ad_grou
     if not models.AdGroup.is_ad_group_active(ad_group_settings):
         if ad_group_source_settings and ad_group_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
             notification['message'] = ('This media source is enabled but will not run until'
-                                       ' you enable ad group in Ad groups tab on Campaign level.')
+                                       ' you enable ad group.')
             notification['important'] = True
 
     if ad_group_source.blockers:

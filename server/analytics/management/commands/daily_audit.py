@@ -33,6 +33,8 @@ class Command(utils.command_helpers.ExceptionCommand):
                             help='Date checked (default yesterday)')
         parser.add_argument('--min-pacing', dest='max_pacing', default=Decimal('50.0'),
                             help='Threshold for alarm (default 0.8)')
+        parser.add_argument('--min-ad-group-spend', dest='min_ag_spend', default=Decimal('10.0'),
+                            help='Threshold for alarm (default 0.8)')
         parser.add_argument('--max-pacing', dest='min_pacing', default=Decimal('200.0'),
                             help='Threshold for alarm on first of month (default 0.6)')
         parser.add_argument('--days-running', dest='days_running', default=7,
@@ -52,6 +54,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.audit_iab_categories(options)
         self.audit_campaign_pacing(options)
         self.audit_autopilot(options)
+        self.audit_running_ad_groups(options)
 
         if self.alarms and self.send_emails:
             email = utils.email_helper.EmailMessage(
@@ -61,6 +64,21 @@ class Command(utils.command_helpers.ExceptionCommand):
                     settings.FROM_EMAIL
                 ), RECIPIANTS)
             email.send()
+
+    def audit_running_ad_groups(self, options):
+        alarms = analytics.monitor.audit_running_ad_groups(options['min_ag_spend'])
+        if not alarms:
+            return
+        self.alarms = True
+        title = 'Running ad groups with spend bellow ${}:'.format(options['min_ag_spend'])
+        self._print(title)
+        self.email_body += title + '\n'
+        for ad_group in alarms:
+            self._print(u'- {} {}'.format(ad_group.name, ad_group.pk))
+            self.email_body += u' - {} {}\n'.format(
+                ad_group.name,
+                u'https://one.zemanta.com/ad_groups/{}/ads'.format(ad_group.pk)
+            )
 
     def audit_autopilot(self, options):
         ap_alarms = analytics.monitor.audit_autopilot_ad_groups()
@@ -155,3 +173,4 @@ class Command(utils.command_helpers.ExceptionCommand):
             )
             self._print(text)
             self.email_body += text + '\n'
+        self.email_body += '\n'

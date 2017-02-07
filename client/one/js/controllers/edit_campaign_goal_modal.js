@@ -146,7 +146,7 @@ angular.module('one.legacy').controller('EditCampaignGoalModalCtrl', function ($
         if ($scope.campaignGoal.conversionGoal &&
             ($scope.campaignGoal.conversionGoal.type === constants.conversionGoalType.PIXEL) &&
             ($scope.campaignGoal.conversionGoal.goalId === '___new___')) {
-            api.conversionPixel.post($scope.account.id, $scope.pixel.name).then(
+            api.conversionPixel.post($scope.account.id, $scope.pixel).then(
                 function (data) {
                     $scope.campaignGoal.conversionGoal.goalId = data.id;
                     $scope.campaignGoal.conversionGoal.pixelUrl = data.url;

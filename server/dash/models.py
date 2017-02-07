@@ -2030,7 +2030,7 @@ class AdGroup(models.Model):
 
             return self.exclude(pk__in=archived_adgroups)
 
-        def filter_running(self):
+        def filter_running(self, date=None):
             """
             This function checks if adgroup is running on arbitrary number of adgroups
             with a fixed amount of queries.
@@ -2038,7 +2038,8 @@ class AdGroup(models.Model):
                 - it was set as active(adgroupsettings)
                 - current date is between start and stop(flight time)
             """
-            now = dates_helper.local_today()
+            if not date:
+                date = dates_helper.local_today()
             latest_ad_group_settings = AdGroupSettings.objects.filter(
                 ad_group__in=self
             ).group_current_settings()
@@ -2047,10 +2048,10 @@ class AdGroup(models.Model):
                 pk__in=latest_ad_group_settings
             ).filter(
                 state=constants.AdGroupSettingsState.ACTIVE,
-                start_date__lte=now
+                start_date__lte=date
             ).exclude(
                 end_date__isnull=False,
-                end_date__lt=now
+                end_date__lt=date
             ).values_list('ad_group__id', flat=True)
 
             ids = set(ad_group_settings)

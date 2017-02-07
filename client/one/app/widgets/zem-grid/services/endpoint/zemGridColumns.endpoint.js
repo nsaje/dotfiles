@@ -922,12 +922,12 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         COLUMNS.state,
         COLUMNS.editButton,
         COLUMNS.name,
+        COLUMNS.exchange,
         COLUMNS.status,
         COLUMNS.submissionStatus,
         COLUMNS.performance,
         COLUMNS.bidCpcSetting,
         COLUMNS.dailyBudgetSetting,
-        COLUMNS.exchange,
     ];
 
     // Default columns - columns present by default (non permanent can be hidden)

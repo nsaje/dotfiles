@@ -112,7 +112,9 @@ describe('EditCampaignGoalModalCtrl', function () {
             $scope.save();
 
             expect($scope.validate).toHaveBeenCalled();
-            expect(api.conversionPixel.post).toHaveBeenCalledWith(1, 'awesome pixel');
+            expect(api.conversionPixel.post).toHaveBeenCalledWith(1, {
+                name: 'awesome pixel'
+            });
 
             $timeout(function () {
                 expect($scope.$close).toHaveBeenCalled();

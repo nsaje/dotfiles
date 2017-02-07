@@ -50,7 +50,7 @@
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_max_cpc')"
              ng-class="{'form--error': !!$ctrl.errors.cpc}">
             <label class="form__label" for="cpc-input" is-internal="zemauth.can_set_ad_group_max_cpc">
-                Maximum CPC:
+                Maximum Bid CPC:
                 <zem-help-popover content="Maximum allowed CPC in this ad group." placement="top"></zem-help-popover>
             </label>
             <div class="prefixed-field prefixed-field--narrow">
@@ -65,7 +65,7 @@
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_max_cpm')"
              ng-class="{'form--error': !!$ctrl.errors.maxCpm}">
             <label class="form__label" for="cpm-input" is-internal="zemauth.can_set_ad_group_max_cpm">
-                Maximum CPM:
+                Maximum Bid CPM:
                 <zem-help-popover content="Maximum allowed CPM in this ad group." placement="top"></zem-help-popover>
             </label>
             <div class="prefixed-field prefixed-field--narrow">
