@@ -69,3 +69,31 @@ class AutopilotHelpersTestCase(test.TestCase):
         self.assertEqual(source.get_current_settings().state, AdGroupSettingsState.INACTIVE)
         self.assertFalse(source in [setting.ad_group_source for setting in
                                     autopilot_helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)])
+
+    @patch('utils.k1_helper.update_ad_group')
+    @patch('dash.models.AdGroupSettings.copy_settings')
+    @patch('dash.views.helpers.adjust_adgroup_sources_cpcs')
+    def test_update_ad_group_b1_sources_group_values(self, mock_adjust_adgroup_sources_cpcs,
+                                                     mock_copy_settings, mock_k1_update_ad_group):
+        ag = dash.models.AdGroup.objects.get(id=1)
+
+        current_ag_settings = ag.get_current_settings().copy_settings()
+        mock_copy_settings.return_value = current_ag_settings
+
+        changes = {
+            'cpc_cc': Decimal('0.123'),
+            'daily_budget_cc': Decimal('123')
+        }
+        ap = dash.constants.SystemUserType.AUTOPILOT
+        autopilot_helpers.update_ad_group_b1_sources_group_values(ag, changes, system_user=ap)
+
+        mock_copy_settings.assert_called_once()
+
+        mock_adjust_adgroup_sources_cpcs.assert_called_with(ag, current_ag_settings, True, True)
+        mock_adjust_adgroup_sources_cpcs.assert_called_once()
+
+        mock_k1_update_ad_group.assert_called_once()
+
+        self.assertEqual(current_ag_settings.b1_sources_group_cpc_cc, Decimal('0.123'))
+        self.assertEqual(current_ag_settings.b1_sources_group_daily_budget, Decimal('123'))
+        self.assertEqual(current_ag_settings.system_user, ap)

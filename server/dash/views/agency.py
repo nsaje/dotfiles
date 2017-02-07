@@ -126,7 +126,10 @@ class AdGroupSettings(api_common.BaseApiView):
         try:
             change_b1_rtb_sources_cpcs = ('b1_sources_group_cpc_cc' in changes or
                                           changes.get('b1_sources_group_enabled'))
-            self._adjust_adgroup_sources(ad_group, new_settings, request, change_b1_rtb_sources_cpcs)
+            helpers.adjust_adgroup_sources_cpcs(
+                ad_group, new_settings,
+                request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc'),
+                change_b1_rtb_sources_cpcs)
         except cpc_constraints.ValidationError as err:
             raise exc.ValidationError(errors={
                 'b1_sources_group_cpc_cc': list(err)
@@ -144,8 +147,10 @@ class AdGroupSettings(api_common.BaseApiView):
                 current_settings, new_settings, request.user, separator='\n')
 
             email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
-            if 'autopilot_daily_budget' in changes or 'autopilot_state' in changes and \
-                    changes['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            if (('autopilot_daily_budget' in changes or 'autopilot_state' in changes and
+                 changes['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET) or
+                (new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and
+                    'b1_sources_group_state' in changes)):
                 autopilot_plus.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
 
         response = {
@@ -385,32 +390,6 @@ class AdGroupSettings(api_common.BaseApiView):
 
         if user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
             settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
-
-    @transaction.atomic
-    def _adjust_adgroup_sources(self, ad_group, ad_group_settings, request, change_b1_rtb_sources_cpcs):
-        for ags in ad_group.adgroupsource_set.all().select_related('source__source_type'):
-            curr_ags_settings = ags.get_current_settings()
-            proposed_cpc = curr_ags_settings.cpc_cc
-            if (change_b1_rtb_sources_cpcs and
-                    request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and
-                    ad_group_settings.b1_sources_group_enabled and
-                    ags.source.source_type.type == constants.SourceType.B1):
-                proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
-            if ad_group_settings.cpc_cc and proposed_cpc > ad_group_settings.cpc_cc:
-                proposed_cpc = ad_group_settings.cpc_cc
-
-            if proposed_cpc == curr_ags_settings.cpc_cc:
-                continue
-            if proposed_cpc:
-                cpc_constraints.validate_cpc(proposed_cpc, ad_group=ad_group, source=ags.source)
-            api.set_ad_group_source_settings(
-                ags,
-                {
-                    'cpc_cc': proposed_cpc
-                },
-                request=None,
-                ping_k1=False
-            )
 
     def get_default_settings_dict(self, ad_group):
         settings = ad_group.campaign.get_current_settings()

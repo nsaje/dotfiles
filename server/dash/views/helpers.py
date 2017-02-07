@@ -16,6 +16,7 @@ import automation
 from dash import models
 from dash import constants
 from dash import api
+from dash import cpc_constraints
 
 from dash.dashapi import data_helper
 
@@ -877,6 +878,34 @@ def add_source_to_ad_group(default_source_settings, ad_group):
     )
 
     return ad_group_source
+
+
+@transaction.atomic
+def adjust_adgroup_sources_cpcs(ad_group, ad_group_settings,
+                                user_can_set_rtb_sources_as_one_cpc, change_b1_rtb_sources_cpcs):
+    for ags in ad_group.adgroupsource_set.all().select_related('source__source_type'):
+        curr_ags_settings = ags.get_current_settings()
+        proposed_cpc = curr_ags_settings.cpc_cc
+        if (change_b1_rtb_sources_cpcs and
+                user_can_set_rtb_sources_as_one_cpc and
+                ad_group_settings.b1_sources_group_enabled and
+                ags.source.source_type.type == constants.SourceType.B1):
+            proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
+        if ad_group_settings.cpc_cc and proposed_cpc > ad_group_settings.cpc_cc:
+            proposed_cpc = ad_group_settings.cpc_cc
+
+        if proposed_cpc == curr_ags_settings.cpc_cc:
+            continue
+        if proposed_cpc:
+            cpc_constraints.validate_cpc(proposed_cpc, ad_group=ad_group, source=ags.source)
+        api.set_ad_group_source_settings(
+            ags,
+            {
+                'cpc_cc': proposed_cpc
+            },
+            request=None,
+            ping_k1=False
+        )
 
 
 def set_ad_group_source_settings(
