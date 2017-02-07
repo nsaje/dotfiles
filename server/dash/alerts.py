@@ -4,7 +4,7 @@ from automation import campaign_stop
 from dash import constants
 
 
-def _get_campaign_link(request, campaign, tab, query_string):
+def _get_campaign_link(request, campaign, tab, query_string=None):
         link = '/campaigns/{}/{}'.format(campaign.id, tab)
         if query_string:
             link += '?' + query_string
