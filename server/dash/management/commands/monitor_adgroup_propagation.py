@@ -11,7 +11,7 @@ import influx
 logger = logging.getLogger(__name__)
 
 
-KEYS_TO_CHECK_ADGROUP = ('tracking_code')
+KEYS_TO_CHECK_ADGROUP = ('tracking_code',)
 KEYS_TO_CHECK_CAMPAIGN = ('enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param')
 
 
@@ -84,14 +84,23 @@ class Command(ExceptionCommand):
                 continue
 
             ad_group_settings_dict = ad_group_settings.get_settings_dict()
+            ad_group_settings_dict['tracking_code'] = ad_group_settings.get_tracking_codes()
             campaign_settings_dict = campaign_settings.get_settings_dict()
 
             diff = []
             for diff_key in KEYS_TO_CHECK_ADGROUP:
-                if redirector_adgroup_data.get(diff_key) != ad_group_settings_dict.get(diff_key):
+                redirector = redirector_adgroup_data.get(diff_key)
+                eins = ad_group_settings_dict.get(diff_key)
+                if not redirector and not eins:  # in case of omitempty on r1 fields with empty strings will be stored as None
+                    continue
+                if redirector != eins:
                     diff.append(diff_key)
             for diff_key in KEYS_TO_CHECK_CAMPAIGN:
-                if redirector_adgroup_data.get(diff_key) != campaign_settings_dict.get(diff_key):
+                redirector = redirector_adgroup_data.get(diff_key)
+                eins = campaign_settings_dict.get(diff_key)
+                if not redirector and not eins:  # in case of omitempty on r1 fields with empty strings will be stored as None
+                    continue
+                if redirector != eins:
                     diff.append(diff_key)
 
             if diff:
