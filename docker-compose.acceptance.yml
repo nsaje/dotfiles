@@ -14,7 +14,7 @@ memcached:
 eins:
     restart: always
     hostname: eins
-    image: 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1
+    image: $ACCEPTANCE_IMAGE
     expose:
       - "8123"
     links:

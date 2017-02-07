@@ -33,11 +33,12 @@ jenkins_test:
 	docker-compose -f docker-compose.yml -f docker-compose.jenkins.yml run --entrypoint=/entrypoint_dev.sh eins bash -x ./run_tests.sh
 
 test_acceptance:	## runs tests against a running server in a container
-	bash -c 'PWD=`pwd` export COMPOSE_PROJECT_NAME=acceptance-`basename ${PWD}`; \
-	echo "compose project name ${COMPOSE_PROJECT_NAME}"; \
-	docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml up --force-recreate -d; \
-	docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml run --rm dredd ./restapi-acceptance-tests.sh; \
-	docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml stop;'
+ifdef GIT_BRANCH
+	export ACCEPTANCE_IMAGE=$(GIT_BRANCH).$(BUILD_NUM)
+else
+	export ACCEPTANCE_IMAGE=$(ECR_BASE)/z1
+endif
+	./scripts/docker_test_acceptance.sh
 
 ####################
 # image management #

@@ -1486,7 +1486,7 @@ name         | string              | name of the publisher group
                 {
                     "id": "111",
                     "accountId": "186",
-                    "name": "Default whitelist",
+                    "name": "Default whitelist"
                 }
             ]
         }
@@ -1508,7 +1508,7 @@ name         | string              | name of the publisher group
             "data": {
                   "id": "153",
                   "accountId": "186",
-                  "name": "Secondary whitelist",
+                  "name": "Secondary whitelist"
             }
         }
 
@@ -1524,7 +1524,7 @@ name         | string              | name of the publisher group
             "data": {
                   "id": "153",
                   "accountId": "186",
-                  "name": "Secondary whitelist",
+                  "name": "Secondary whitelist"
             }
         }
         
@@ -1546,7 +1546,7 @@ name         | string              | name of the publisher group
             "data": {
                   "id": "153",
                   "accountId": "186",
-                  "name": "Mobile campaigns whitelist",
+                  "name": "Mobile campaigns whitelist"
             }
         }
         
@@ -1556,9 +1556,9 @@ Publisher groups can be deleted when they are not referenced by any Ad Group.
 
 + Parameters
     + accountId: 186 (required)
-    + publisherGroupId: 153 (required)
+    + publisherGroupId: 154 (required)
 
-+ Response 204 (application/json)
++ Response 204
 
 ## Publisher Groups Entries [/rest/v1/publishergroups/{publisherGroupId}/entries/] ##
 
@@ -1572,7 +1572,7 @@ source             | string              | source identifier, if not set it refe
 ### List publisher group entries [GET /rest/v1/publishergroups/{publisherGroupId}/entries/{?offset,limit}] ###
 
 + Parameters
-    + publisherGroupId: 154 (required)
+    + publisherGroupId: 153 (required)
     + offset: 0 (optional, int) - 0-based starting index
     + limit: 100 (required, int) - Maximum number of entries to return, up to `1000`, defaults to `100`
 
@@ -1602,7 +1602,7 @@ source             | string              | source identifier, if not set it refe
 This endpoint supports creating multiple entries at once that are all appended to the same publisher group.
 
 + Parameters
-    + publisherGroupId: 154 (required)
+    + publisherGroupId: 153 (required)
     
 + Request (application/json)
 
@@ -1685,7 +1685,7 @@ This endpoint supports creating multiple entries at once that are all appended t
     + publisherGroupId: 153 (required)
     + entryId: 622 (required)
 
-+ Response 204 (application/json)
++ Response 204
 
 # Group Reporting
 <a name='reporting'></a>

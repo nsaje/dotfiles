@@ -35,6 +35,11 @@ node('master') {
         sh "tar -xf ${CACHE_DIR}/node_modules.tar || tar -xf ${CACHE_DIR}/../master/node_modules.tar || (echo 'No cache'; true)"
     }
 
+    stage ('Prepare containers') {
+        sh 'make rebuild_if_differ'
+        sh 'make build'
+    }
+
     stage('Run tests') {
         // login to ECR
         sh 'make login'
@@ -44,33 +49,39 @@ node('master') {
 
         parallel(
             server: {
-                sh 'make rebuild_if_differ'
-                sh 'make build'
-                sh 'make jenkins_test | stdbuf -i0 -o0 -e0 tee /dev/stderr | tail -n 10 | grep "PASSED"'
+                try {
+                    sh 'make jenkins_test | stdbuf -i0 -o0 -e0 tee /dev/stderr | tail -n 10 | grep "PASSED"'
+                } finally {
+                    junit 'server/.junit_xml/*.xml'
+                }
             },
             client: {
-                sh """docker run \
-                    --rm \
-                    -u 1000 \
-                    -e DISPLAY=:99 \
-                    -v ${WORKSPACE}/client:/data \
-                    -e CHROME_BIN=/run-chrome.sh \
-                    zemanta/z1-static \
-                    bash -c "Xvfb :99 -screen 0 1280x1024x24 & npm prune && npm install && bower install && grunt prod --build-number ${BUILD_NUMBER}"
-                    """
+                try {
+                    sh """docker run \
+                        --rm \
+                        -u 1000 \
+                        -e DISPLAY=:99 \
+                        -v ${WORKSPACE}/client:/data \
+                        -e CHROME_BIN=/run-chrome.sh \
+                        zemanta/z1-static \
+                        bash -c "Xvfb :99 -screen 0 1280x1024x24 & npm prune && npm install && bower install && grunt prod --build-number ${BUILD_NUMBER}"
+                        """
+                } finally {
+                    junit 'client/test-results.xml'
+                }
             },
             acceptance: {
-                sh 'make test_acceptance'
+                try {
+                    sh 'make test_acceptance'
+                } finally {
+                    junit 'server/.junit_acceptance.xml'
+                }
             },
             linter: {
                 sh 'bash ./scripts/jenkins_lint_check.sh'
-            }
+            },
+            failFast: true  // if one of the parallel branches fails, fail the build right away
         )
-    }
-
-    stage('Collect reports') {
-        junit 'server/.junit_xml/*.xml'
-        junit 'client/test-results.xml'
     }
 
     stage('Collect artifacts') {
