@@ -42,7 +42,7 @@ class Command(ExceptionCommand):
 
     def _get_keys_to_reprocess(self, options):
         if options.get('key'):
-            return [options['key']]
+            return options['key']
 
         date = options.get('date')
         if date:
