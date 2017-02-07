@@ -8,16 +8,21 @@
             <tr>
                 <th>Level</th>
                 <th>Source</th>
-                <th>Confirmed</th>
                 <th>Description</th>
+                <th class="text-right">Confirmed</th>
             </tr>
         </thead>
         <tbody>
             <tr ng-repeat="hack in $ctrl.entity.hacks">
                 <td>{{ hack.level }}</td>
                 <td>{{ hack.source || 'all' }}</td>
-                <td>{{ hack.confirmed && 'yes' || 'no' }}</td>
-                <td>{{ hack.summary }}: {{ hack.details }}</td>
+                <td>
+                    <strong>{{ hack.summary }}</strong><span ng-if="hack.details.length"><strong>:</strong> {{ hack.details }}</span>
+                </td>
+                <td class="text-right">
+                    <span class="icon check-icon" ng-if="hack.confirmed"></span>
+                    <span class="icon remove-icon" ng-if="!hack.confirmed"></span>
+                </td>
             </tr>
         </tbody>
     </table>

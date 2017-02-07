@@ -355,6 +355,22 @@ h3 {
 // Icons //
 ////////////////////////////
 
+.icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    position: relative;
+
+    &::before {
+        content: "";
+        display: block;
+        width: 14px;
+        height: 14px;
+        position: absolute;
+        top: 2px;
+    }
+}
+
 .check-icon {
     &::before {
         background-image: url('images/check-blue.svg');
@@ -370,6 +386,10 @@ h3 {
 
     &.button--dark-backgrounds::before {
         background-image: url('images/check-white.svg');
+    }
+
+    &.icon::before {
+        background-image: url('images/check-green.svg');
     }
 }
 
@@ -397,6 +417,10 @@ h3 {
         &:before {
             background-image: url('images/remove-white.svg');
         }
+    }
+
+    &.icon::before {
+        background-image: url('images/remove-red.svg');
     }
 }
 
