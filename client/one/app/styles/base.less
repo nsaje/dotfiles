@@ -16,12 +16,35 @@ a:hover,
 a:active {
     color: @primary-color;
     cursor: pointer;
+    position: relative;
+
+    .internal-feature {
+        left: -5px;
+        top: -1px;
+    }
 }
 
 a.alternative-link,
 a.alternative-link:hover,
 a.alternative-link:active {
     color: @secondary-color;
+}
+
+a.link-with-icon {
+    padding-left: 22px;
+
+    &::before {
+        position: absolute;
+        display: block;
+        content: "";
+        width: 16px;
+        height: 16px;
+        left: 0px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+
 }
 
 h1 {
@@ -43,6 +66,14 @@ h3 {
     font-size: 16px;
     font-weight: 500;
     margin: 0 0 @default-spacing 0;
+}
+
+.loader {
+    display: inline-block;
+    width: 50px;
+    height: 20px;
+    background: transparent url('images/loader.gif') no-repeat center center;
+    vertical-align: middle;
 }
 
 ////////////////////////////
@@ -580,6 +611,16 @@ h3 {
         background-position: 4px center;
         width: 29px;
         height: auto;
+    }
+}
+
+.history-icon {
+    &.link-with-icon.alternative-link::before {
+        background-image: url('images/history-blue.svg');
+    }
+
+    &.link-with-icon::before {
+        background-image: url('images/history-orange.svg');
     }
 }
 

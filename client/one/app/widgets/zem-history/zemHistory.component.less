@@ -21,14 +21,30 @@
 }
 
 .zem-history__body {
+    padding: @default-spacing+5 @default-spacing 0 @default-spacing;
     position: absolute;
-    .position-properties(@header-height + @default-spacing, 0, @default-spacing, @default-spacing);
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 60px;
     overflow-x: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;
+}
+
+.zem-history__footer {
+    position: absolute;
+    width: 100%;
+    bottom: 0px;
+    left: 0;
+    height: 60px;
+    padding: @default-spacing;
+    background-color: tint(@secondary-color,90%);
+    box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
 }
 
 .zem-history__section {
     padding: @default-spacing;
     background-color: @white;
     box-shadow: 0px 0px 5px 0px fade(black, 10%);
+    margin-bottom: @default-spacing;
 }

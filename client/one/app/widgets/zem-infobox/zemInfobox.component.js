@@ -44,12 +44,18 @@ angular.module('one.widgets').component('zemInfobox', {
         };
 
         function updateHandler () {
-            zemInfoboxService.reloadInfoboxData(zemNavigationNewService.getActiveEntity()).then(updateView);
+            $ctrl.loadRequestInProgress = true;
+            zemInfoboxService.reloadInfoboxData(zemNavigationNewService.getActiveEntity())
+            .then(updateView)
+            .finally(function () {
+                $ctrl.loadRequestInProgress = false;
+            });
         }
 
         function updateView (data) {
             if (!data) {
                 delete $ctrl.entity;
+                delete $ctrl.isEntityAvailable;
                 delete $ctrl.delivery;
                 delete $ctrl.basicSettings;
                 delete $ctrl.performanceSettings;
@@ -57,6 +63,7 @@ angular.module('one.widgets').component('zemInfobox', {
             }
 
             $ctrl.entity = zemNavigationNewService.getActiveEntity();
+            $ctrl.isEntityAvailable = $ctrl.entity ? true : false;
             $ctrl.delivery = data.delivery;
             $ctrl.basicSettings = data.basicSettings;
             $ctrl.performanceSettings = data.performanceSettings;

@@ -1,11 +1,8 @@
+<div class="loader" ng-show="$ctrl.loadRequestInProgress"></div>
+
 <zem-infobox-header class="zem-infobox-header" entity="$ctrl.entity"></zem-infobox-header>
 
 <div class="zem-infobox__content custom-scroller">
-    <button ng-if="$ctrl.hasPermission('zemauth.can_see_history_in_drawer')"
-            class="button"
-            ng-click="$ctrl.openHistory()">
-        History
-    </button>
     <div ng-if="$ctrl.delivery" class="zem-infobox__delivery zem-infobox-data-row"
         ng-class="{
             'zem-infobox__delivery--active': $ctrl.delivery.status === 'active',
@@ -31,4 +28,7 @@
                           row="row"
                           is-internal="{{row.internal}}">
     </zem-infobox-data-row>
+    <hr ng-if="$ctrl.hasPermission('zemauth.can_see_history_in_drawer') && $ctrl.isEntityAvailable" class="zem-infobox__content-separator" />
+    <a ng-if="$ctrl.hasPermission('zemauth.can_see_history_in_drawer') && $ctrl.isEntityAvailable" class="alternative-link link-with-icon history-icon"
+       ng-click="$ctrl.openHistory()" is-internal="zemauth.can_see_history_in_drawer">View history</a>
 </div>
