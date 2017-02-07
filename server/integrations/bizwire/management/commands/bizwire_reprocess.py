@@ -87,7 +87,7 @@ class Command(ExceptionCommand):
 
     def _purge_candidates(self, keys):
         labels = [helpers.get_s3_key_label(key) for key in keys]
-        candidates = dash.models.ContentAdCandidate.objects(
+        candidates = dash.models.ContentAdCandidate.objects.filter(
             ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
             label__in=labels,
         )
