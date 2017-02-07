@@ -7,6 +7,7 @@ from django import test
 from automation import autopilot_cpc
 from automation.constants import CpcChangeComment
 import dash.models
+import dash.constants
 from reports import refresh
 
 
@@ -117,7 +118,7 @@ class AutopilotCpcTestCase(test.TestCase):
     @patch('automation.autopilot_cpc._get_source_type_min_max_cpc')
     def test_threshold_source_constraints(self, mock_source_type_min_max_cpc):
         mock_source_type_min_max_cpc.return_value = (Decimal('0.1'), Decimal('1.0'))
-        ags = dash.models.AdGroupSource.objects.get(id=1).source
+        ags_type = dash.models.AdGroupSource.objects.get(id=1).source.source_type
         ag_settings = dash.models.AdGroup.objects.get(id=1).get_current_settings()
         test_cases = (
             # proposed_cpc, returned_cpc, returned_comments
@@ -130,13 +131,35 @@ class AutopilotCpcTestCase(test.TestCase):
         for test_case in test_cases:
             comments = []
             self.assertEqual(autopilot_cpc._threshold_source_constraints(
-                Decimal(test_case[0]), ags, ag_settings, comments),
+                Decimal(test_case[0]), ags_type, ag_settings, comments),
                 Decimal(test_case[1]))
             self.assertEqual(comments, test_case[2])
+
+    @patch('dash.models.SourceType.get_min_cpc')
+    def test_get_source_type_min_max_cpc(self, mock_get_min_cpc):
+        mock_get_min_cpc.return_value = Decimal('0.123')
+        ags_type = dash.models.AdGroupSource.objects.get(id=1).source.source_type
+        ags_type.max_cpc = Decimal('5.123')
+        ags_type.save()
+        ag_settings = dash.models.AdGroup.objects.get(id=1).get_current_settings()
+        test_cases = (
+            (ags_type, '0.123', '5.123'),
+            (dash.constants.SourceAllRTB, dash.constants.SourceAllRTB.MIN_CPC, dash.constants.SourceAllRTB.MAX_CPC),
+        )
+
+        for test_case in test_cases:
+            self.assertEqual(autopilot_cpc._get_source_type_min_max_cpc(test_case[0], ag_settings),
+                             (Decimal(test_case[1]), Decimal(test_case[2])))
 
     def test_threshold_cpc_constraints(self):
         s1 = dash.models.Source.objects.get(pk=1)
         s2 = dash.models.Source.objects.get(pk=2)
+        b1 = dash.models.SourceType.objects.get(pk=3)
+        s1.source_type = b1
+        s1.save()
+        s2.source_type = b1
+        s2.save()
+        rtb = dash.constants.SourceAllRTB
         dash.models.CpcConstraint.objects.create(
             ad_group_id=3,
             max_cpc=Decimal('1.5'),
@@ -159,26 +182,32 @@ class AutopilotCpcTestCase(test.TestCase):
         )
 
         test_cases = (
-            (1, s2, '1.5', '1.5', []),
-            (1, s2, '0.01', '0.01', []),
-            (1, s1, '0.01', '0.65', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
-            (1, s1, '2.00', '1.65', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
-            (2, s1, '0.1', '0.65', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
-            (2, s2, '0.1', '0.1', []),
-            (3, s1, '0.5', '0.5', []),
-            (3, s1, '2.5', '1.5', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
-            (3, s1, '0.1', '0.1', []),
-            (3, s2, '1.6', '1.5', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
-            (3, s2, '0.1', '0.5', [CpcChangeComment.CPC_CONSTRAINT_APPLIED]),
+            (1, s2, '0.01', '1.5', '1.5', [], []),
+            (1, s2, '0.01', '0.01', '0.01', [], []),
+            (1, s1, '0.01', '0.01', '0.65', [CpcChangeComment.CPC_CONSTRAINT_APPLIED], []),
+            (1, s1, '0.01', '2.00', '1.65', [CpcChangeComment.CPC_CONSTRAINT_APPLIED], []),
+            (2, s1, '0.01', '0.1', '0.65', [CpcChangeComment.CPC_CONSTRAINT_APPLIED], []),
+            (2, s2, '0.01', '0.1', '0.1', [], []),
+            (3, s1, '0.01', '0.5', '0.5', [], []),
+            (3, s1, '0.01', '2.5', '1.5', [CpcChangeComment.CPC_CONSTRAINT_APPLIED], []),
+            (3, s1, '0.01', '0.1', '0.1', [], []),
+            (3, s2, '0.01', '1.6', '1.5', [CpcChangeComment.CPC_CONSTRAINT_APPLIED], []),
+            (3, s2, '0.01', '0.1', '0.5', [CpcChangeComment.CPC_CONSTRAINT_APPLIED], []),
+            (1, rtb, '0.65', '1.0', '1.0', [], [rtb, s1, s2]),
+            (1, rtb, '0.65', '2.0', '1.65', [CpcChangeComment.CPC_CONSTRAINT_APPLIED], [rtb, s1, s2]),
+            (1, rtb, '0.75', '0.1', '0.65', [CpcChangeComment.CPC_CONSTRAINT_APPLIED], [rtb, s1, s2]),
+            (3, rtb, '0.75', '3.1', '1.5', [CpcChangeComment.CPC_CONSTRAINT_APPLIED], [rtb, s1, s2]),
         )
-        for ad_group_id, source, proposed_cpc, expected_cpc, expected_comment in test_cases:
+        for ad_group_id, source, old_cpc, proposed_cpc, expected_cpc, expected_comment, sources in test_cases:
             comments = []
             adjusted_cpc = autopilot_cpc._threshold_cpc_constraints(
                 dash.models.AdGroup.objects.get(pk=ad_group_id),
                 source,
+                Decimal(old_cpc),
                 Decimal(proposed_cpc),
                 comments,
-            )
+                sources)
+
             self.assertEqual(adjusted_cpc, Decimal(expected_cpc))
             self.assertEqual(comments, expected_comment)
 

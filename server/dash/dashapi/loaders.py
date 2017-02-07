@@ -532,12 +532,16 @@ class AdGroupSourcesLoader(Loader):
             # MVP for all-RTB-sources-as-one
             if self.ad_group_settings.b1_sources_group_enabled and source.source_type.type == constants.SourceType.B1:
                 can_edit_cpc = not self.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc')
+                cpc_message = None
+                if self.ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
+                    cpc_message = 'This value cannot be edited because the ad group is on Autopilot.'
+                elif not can_edit_cpc:
+                    cpc_message = 'Please edit RTB Sources\' Bid CPC.'
                 result[source_id]['daily_budget'] = None
                 result[source_id]['editable_fields']['daily_budget']['enabled'] = False
                 result[source_id]['editable_fields']['daily_budget']['message'] = None
                 result[source_id]['editable_fields']['bid_cpc']['enabled'] = can_edit_cpc
-                result[source_id]['editable_fields']['bid_cpc']['message'] = 'Please edit RTB Sources\' Bid CPC.' if\
-                    not can_edit_cpc else ''
+                result[source_id]['editable_fields']['bid_cpc']['message'] = cpc_message
                 if self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE and \
                    result[source_id]['status'] == constants.AdGroupSourceSettingsState.ACTIVE:
                     result[source_id]['status'] = constants.AdGroupSourceSettingsState.INACTIVE

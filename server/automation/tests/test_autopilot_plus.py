@@ -88,7 +88,7 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertEqual(mock_predict.called, True)
         self.assertEqual(mock_get_changes.called, True)
         mock_set.assert_called_with(
-            {}, {}, dry_run=True
+            {}, {}, dash.models.AdGroup.objects.get(id=4), dry_run=True
         )
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
@@ -101,6 +101,19 @@ class AutopilotPlusTestCase(test.TestCase):
         autopilot_plus.set_autopilot_changes(cpc_changes=cpc_changes)
         mock_update_values.assert_called_with(ag_source, {'cpc_cc': Decimal('0.2')},
                                               dash.constants.SystemUserType.AUTOPILOT, None)
+        mock_update_values.assert_called_once()
+
+    @patch('automation.autopilot_helpers.update_ad_group_b1_sources_group_values')
+    def test_set_autopilot_changes_only_cpc_rtb_as_one(self, mock_update_values):
+        ag = dash.models.AdGroup.objects.get(id=1)
+        ag_source = dash.constants.SourceAllRTB
+        cpc_changes = {ag_source: {
+            'old_cpc_cc': Decimal('0.1'),
+            'new_cpc_cc': Decimal('0.2')
+        }}
+        autopilot_plus.set_autopilot_changes(cpc_changes=cpc_changes, ad_group=ag)
+        mock_update_values.assert_called_with(ag, {'cpc_cc': Decimal('0.2')},
+                                              dash.constants.SystemUserType.AUTOPILOT)
         mock_update_values.assert_called_once()
 
     @patch('automation.autopilot_helpers.update_ad_group_source_values')
@@ -146,6 +159,37 @@ class AutopilotPlusTestCase(test.TestCase):
         autopilot_plus.set_autopilot_changes(cpc_changes=cpc_changes, budget_changes=budget_changes)
         self.assertEqual(mock_update_values.called, False)
 
+    @patch('automation.autopilot_helpers.update_ad_group_b1_sources_group_values')
+    @patch('automation.autopilot_helpers.update_ad_group_source_values')
+    def test_set_autopilot_changes_budget_and_cpc_rtb_as_one(self, mock_update_values, mock_update_rtb):
+        ag_source = dash.models.AdGroupSource.objects.get(id=1)
+        ag_source_rtb = dash.constants.SourceAllRTB
+        ag = dash.models.AdGroup.objects.get(id=1)
+        budget_changes = {
+            ag_source: {
+                'old_budget': Decimal('100'),
+                'new_budget': Decimal('200')
+            }, ag_source_rtb: {
+                'old_budget': Decimal('10'),
+                'new_budget': Decimal('20')
+            }}
+        cpc_changes = {
+            ag_source: {
+                'old_cpc_cc': Decimal('0.1'),
+                'new_cpc_cc': Decimal('0.2')
+            }, ag_source_rtb: {
+                'old_cpc_cc': Decimal('0.11'),
+                'new_cpc_cc': Decimal('0.22')
+            }}
+        ap = dash.constants.SystemUserType.AUTOPILOT
+        autopilot_plus.set_autopilot_changes(cpc_changes=cpc_changes, budget_changes=budget_changes, ad_group=ag)
+        mock_update_values.assert_called_with(
+            ag_source, {'cpc_cc': Decimal('0.2'), 'daily_budget_cc': Decimal('200')}, ap, None)
+        mock_update_values.assert_called_once()
+        mock_update_rtb.assert_called_with(
+            ag, {'cpc_cc': Decimal('0.22'), 'daily_budget_cc': Decimal('20')}, ap)
+        mock_update_rtb.assert_called_once()
+
     def test_find_corresponding_source_data(self):
         source1 = dash.models.AdGroupSource.objects.get(id=1)
         source2 = dash.models.AdGroupSource.objects.get(id=2)
@@ -176,7 +220,7 @@ class AutopilotPlusTestCase(test.TestCase):
         paused_ad_group_source = paused_ad_group_source_setting.ad_group_source
         active_ad_group_source = dash.models.AdGroupSource.objects.get(id=6)
         active_ad_group_source_old_budget = active_ad_group_source.get_current_settings().daily_budget_cc
-        new_budgets = autopilot_plus._set_paused_ad_group_sources_to_minimum_values(adg)
+        new_budgets = autopilot_plus._set_paused_ad_group_sources_to_minimum_values(adg.get_current_settings())
         self.assertEqual(new_budgets.get(paused_ad_group_source)['old_budget'], Decimal('100.'))
         self.assertEqual(new_budgets.get(paused_ad_group_source)['new_budget'], Decimal('5'))
         self.assertEqual(new_budgets.get(paused_ad_group_source)['budget_comments'],
@@ -209,7 +253,7 @@ class AutopilotPlusTestCase(test.TestCase):
 
             }}
         }
-        changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(adg)
+        changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(adg.get_current_settings())
         self.assertTrue(paused_ad_group_source in changed_sources)
         self.assertTrue(changed_source in changed_sources)
         self.assertTrue(not_changed_source not in changed_sources)

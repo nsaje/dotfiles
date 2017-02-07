@@ -85,6 +85,9 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
             }
 
             function isAutopilotIconShown () {
+                if (vm.data && !vm.data.value) {
+                    return false;
+                }
                 if (vm.grid.meta.data.adGroupAutopilotState === constants.adGroupSettingsAutopilotState.INACTIVE) {
                     return false;
                 }

@@ -117,7 +117,8 @@ class AutopilotLog(models.Model):
     ad_group_source = models.ForeignKey(
         dash.models.AdGroupSource,
         related_name='+',
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
+        null=True
     )
     autopilot_type = models.IntegerField(
         default=dash.constants.AdGroupSettingsAutopilotState.INACTIVE,
@@ -183,6 +184,7 @@ class AutopilotLog(models.Model):
     cpc_comments = models.CharField(max_length=1024, null=True, blank=True)
     budget_comments = models.CharField(max_length=1024, null=True, blank=True)
     is_autopilot_job_run = models.NullBooleanField(default=False, null=True, blank=True)
+    is_rtb_as_one = models.NullBooleanField(default=False, null=True, blank=True)
 
     def __unicode__(self):
         return '{0} {1}'.format(

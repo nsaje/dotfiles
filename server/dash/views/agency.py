@@ -146,7 +146,7 @@ class AdGroupSettings(api_common.BaseApiView):
             email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
             if 'autopilot_daily_budget' in changes or 'autopilot_state' in changes and \
                     changes['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-                autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group=ad_group, send_mail=True)
+                autopilot_plus.initialize_budget_autopilot_on_ad_group(new_settings, send_mail=True)
 
         response = {
             'settings': self.get_dict(request, new_settings, ad_group),
