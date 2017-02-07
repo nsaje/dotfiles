@@ -449,6 +449,7 @@ class AccountSettingsForm(forms.Form):
     # this is a dict with custom validation
     allowed_sources = forms.Field(required=False)
     facebook_page = forms.CharField(max_length=255, required=False)
+    salesforce_url = forms.CharField(max_length=255, required=False)
 
     def clean_name(self):
         name = self.cleaned_data.get('name')

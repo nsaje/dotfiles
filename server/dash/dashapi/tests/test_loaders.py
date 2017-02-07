@@ -54,6 +54,7 @@ class AccountsLoaderTest(TestCase):
             'default_sales_representative': 'supertestuser@test.com',
             'account_type': constants.AccountType.get_text(constants.AccountType.ACTIVATED),
             'settings_id': 1,
+            'salesforce_url': '',
         }})
 
     def test_status_map_filtered_sources(self):
@@ -69,6 +70,7 @@ class AccountsLoaderTest(TestCase):
             'default_sales_representative': 'supertestuser@test.com',
             'account_type': constants.AccountType.get_text(constants.AccountType.ACTIVATED),
             'settings_id': 1,
+            'salesforce_url': '',
         }})
 
 

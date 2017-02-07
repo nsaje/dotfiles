@@ -60,6 +60,7 @@ FIELD_PERMISSION_MAPPING = {
 
     'campaign_manager': ('zemauth.can_see_managers_in_campaigns_table',),
     'account_type':     ('zemauth.can_see_account_type',),
+    'salesforce_url':   ('zemauth.can_see_salesforce_url',),
     'agency':           ('zemauth.can_view_account_agency_information',),
 
     'performance':      ('zemauth.campaign_goal_performance',),

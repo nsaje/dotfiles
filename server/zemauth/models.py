@@ -251,6 +251,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_backend_hacks', 'User can see backend hacks'),
             ('can_redirect_pixels', 'User can set redirect url for pixels'),
             ('can_see_pixel_notes', 'User can see pixel notes'),
+            ('can_see_salesforce_url', 'User can see SalesForce URL'),
         )
 
     def get_full_name(self):

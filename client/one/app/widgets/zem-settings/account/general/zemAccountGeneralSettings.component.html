@@ -76,6 +76,17 @@
             <div class="message message--error" ng-repeat="error in $ctrl.errors.agency"
                  for="agency-select">{{ error }}</div>
         </div>
+        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_see_salesforce_url')"
+             ng-class="{'form--error': !!$ctrl.errors.salesforceUrl}">
+            <label class="form__label" for="name-input" is-internal="zemauth.can_see_salesforce_url">
+                SalesForce:
+                <zem-help-popover content="URL of this account in SalesForce"
+                                  placement="top"></zem-help-popover>
+            </label>
+            <input class="input-text" id="name-input" type="text" ng-model="$ctrl.entity.settings.salesforceUrl">
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.salesforceUrl"
+                 for="name-input">{{ error }}</div>
+        </div>
     </div>
 </div>
 <div class="zem-settings-component__container zem-settings-component__container--media-sources">

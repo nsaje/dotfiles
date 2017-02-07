@@ -138,6 +138,17 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             internal: 'zemauth.can_see_account_type',
             shown: 'zemauth.can_see_account_type',
         },
+        salesforceUrl: {
+            name: 'SalesForce Link',
+            field: 'salesforce_url',
+            type: zemGridConstants.gridColumnTypes.ICON_LINK,
+            totalRow: false,
+            help: 'URL of this account in SalesForce',
+            order: false,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            internal: 'zemauth.can_see_salesforce_url',
+            shown: 'zemauth.can_see_salesforce_url',
+        },
 
         // Media source
         supplyDashUrl: {
@@ -936,6 +947,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         COLUMNS.accountType,
         COLUMNS.defaultSalesRepresentative,
         COLUMNS.defaultAccountManager,
+        COLUMNS.salesforceUrl,
     ];
 
     var CAMPAIGN_MANAGEMENT_GROUP = [

@@ -943,6 +943,7 @@ class AccountSettings(SettingsBase):
         'account_type',
         'whitelist_publisher_groups',
         'blacklist_publisher_groups',
+        'salesforce_url',
     ]
     history_fields = list(_settings_fields)
 
@@ -975,6 +976,8 @@ class AccountSettings(SettingsBase):
     whitelist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
     blacklist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
 
+    salesforce_url = models.URLField(null=True, blank=True, max_length=255)
+
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(
@@ -994,6 +997,7 @@ class AccountSettings(SettingsBase):
             'account_type': 'Account Type',
             'whitelist_publisher_groups': 'Whitelist publisher groups',
             'blacklist_publisher_groups': 'Blacklist publisher groups',
+            'salesforce_url': 'SalesForce',
         }
         return NAMES[prop_name]
 

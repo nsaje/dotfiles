@@ -119,6 +119,7 @@ class AccountsLoader(Loader):
                 'default_sales_representative': None,
                 'account_type': constants.AccountType.get_text(constants.AccountType.UNKNOWN),
                 'settings_id': None,  # for debugging purposes, isn't used in production code
+                'salesforce_url': '',
             }
             if settings is not None:
                 settings_dict.update({
@@ -129,8 +130,8 @@ class AccountsLoader(Loader):
                         user_map.get(settings.default_account_manager_id), default_value=None),
                     'default_sales_representative': view_helpers.get_user_full_name_or_email(
                         user_map.get(settings.default_sales_representative_id), default_value=None),
+                    'salesforce_url': settings.salesforce_url or ''
                 })
-
             settings_map[account_id] = settings_dict
 
         return settings_map

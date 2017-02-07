@@ -2514,6 +2514,7 @@ class AccountSettingsTest(TestCase):
             'can_modify_account_name',
             'can_modify_account_manager',
             'can_modify_account_type',
+            'can_see_salesforce_url',
             'can_modify_facebook_page',
         ])
 
@@ -2528,6 +2529,7 @@ class AccountSettingsTest(TestCase):
             'name': 'test account 1',
             'default_account_manager': '2',
             'account_type': 3,
+            'salesforce_url': None,
             'id': '1',
             'archived': False,
             'facebook_status': 'Empty',
@@ -2607,6 +2609,28 @@ class AccountSettingsTest(TestCase):
                                 u'200': {u'name': u'Facebook', u'released': True}
                                 },
             'account_type': constants.AccountType.UNKNOWN,
+            'id': '1000',
+            'archived': False,
+        })
+
+        add_permissions(user, ['can_see_salesforce_url'])
+
+        response = client.get(
+            reverse('account_settings', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
+            'name': 'Chuck ads',
+            'default_account_manager': None,
+            'default_sales_representative': None,
+            'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True},
+                                u'100': {u'name': u'AdsNative', u'released': True},
+                                u'200': {u'name': u'Facebook', u'released': True}
+                                },
+            'account_type': constants.AccountType.UNKNOWN,
+            'salesforce_url': None,
             'id': '1000',
             'archived': False,
         })
@@ -2882,6 +2906,7 @@ class AccountSettingsTest(TestCase):
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
                     'account_type': '4',
+                    'salesforce_url': '',
                     'id': '1',
                     'allowed_sources': {
                         '1': {'allowed': True}
@@ -2908,6 +2933,7 @@ class AccountSettingsTest(TestCase):
             'default_account_manager': User.objects.get(pk=3),
             'account_type': 4,
             'name': 'changed name',
+            'salesforce_url': None,
             'whitelist_publisher_groups': [],
             'blacklist_publisher_groups': [],
         })

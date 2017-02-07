@@ -27,6 +27,7 @@ FIELDNAMES = {
     'content_ad_id': 'Content Ad Id',
     'account': 'Account',
     'account_type': 'Account Type',
+    'salesforce_url': 'SalesForce Link',
     'agency': 'Agency',
     'agency_id': 'Agency Id',
     'ad_group': 'Ad Group',
@@ -615,6 +616,7 @@ def _populate_ad_group_stat(stat, ad_group, statuses, settings=None,
     if account_settings and ad_group.campaign.account.id in account_settings:
         account_setting = account_settings[ad_group.campaign.account.id]
         stat['account_type'] = constants.AccountType.get_text(account_setting.account_type)
+        stat['salesforce_url'] = account_setting.salesforce_url
     stat['status'] = statuses[ad_group.id]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
@@ -647,6 +649,7 @@ def _populate_campaign_stat(stat, campaign, statuses,
     if account_settings and campaign.account.id in account_settings:
         account_setting = account_settings[campaign.account.id]
         stat['account_type'] = constants.AccountType.get_text(account_setting.account_type)
+        stat['salesforce_url'] = account_setting.salesforce_url
     if settings and campaign.id in settings:
         setting = settings[campaign.id]
         stat['campaign_manager'] = helpers.get_user_full_name_or_email(setting.campaign_manager, default_value=None)
@@ -688,6 +691,7 @@ def _populate_account_stat(stat, account, statuses, settings=None, projections=N
         stat['default_sales_representative'] = \
             helpers.get_user_full_name_or_email(setting.default_sales_representative, default_value=None)
         stat['account_type'] = constants.AccountType.get_text(setting.account_type)
+        stat['salesforce_url'] = setting.salesforce_url
         stat['archived'] = setting.archived
     if include_projections:
         stat['allocated_budgets'] = projections.row(account.pk, 'allocated_media_budget')
@@ -1122,11 +1126,15 @@ class AllAccountsExport(object):
         if not include_account_settings:
             exclude_fields.extend(supported_settings_fields)
 
-        # Only include account type field in reports for the following breakdowns: account, campaign, ad group
+        # Only include account type and salesforce url fields in reports for the following breakdowns: account, campaign, ad group
         if breakdown and 'account_type' in additional_fields:
             include_account_settings = True
         else:
             exclude_fields.extend(['account_type'])
+        if breakdown and 'salesforce_url' in additional_fields:
+            include_account_settings = True
+        else:
+            exclude_fields.extend(['salesforce_url'])
 
         include_settings = False
         if 'status' in required_fields:
@@ -1328,6 +1336,7 @@ def filter_allowed_fields(user, fields):
     can_see_managers_in_accounts_table = user.has_perm('zemauth.can_see_managers_in_accounts_table')
     can_see_managers_in_campaigns_table = user.has_perm('zemauth.can_see_managers_in_campaigns_table')
     can_see_account_type = user.has_perm('zemauth.can_see_account_type')
+    can_see_salesforce_url = user.has_perm('zemauth.can_see_salesforce_url')
     can_view_agency_margin = user.has_perm('zemauth.can_view_agency_margin')
 
     for f in fields:
@@ -1350,6 +1359,8 @@ def filter_allowed_fields(user, fields):
         if f in ('campaign_manager',) and not can_see_managers_in_campaigns_table:
             continue
         if f in ('account_type',) and not can_see_account_type:
+            continue
+        if f in ('salesforce_url',) and not can_see_salesforce_url:
             continue
         allowed_fields.append(f)
     return allowed_fields

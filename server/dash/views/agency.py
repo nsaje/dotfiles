@@ -1057,6 +1057,11 @@ class AccountSettings(api_common.BaseApiView):
                     raise exc.AuthorizationError()
                 settings.account_type = form.cleaned_data['account_type']
 
+            if 'salesforce_url' in form.cleaned_data and form.cleaned_data['salesforce_url']:
+                if not request.user.has_perm('zemauth.can_see_salesforce_url'):
+                    raise exc.AuthorizationError()
+                settings.salesforce_url = form.cleaned_data['salesforce_url']
+
             # FIXME: changes_text should be part of account settings comparison in
             # dash.models and not in views
             changes_text = None
@@ -1290,6 +1295,8 @@ class AccountSettings(api_common.BaseApiView):
                 result['agency'] = account.agency.name
             else:
                 result['agency'] = ''
+        if request.user.has_perm('zemauth.can_see_salesforce_url'):
+            result['salesforce_url'] = settings.salesforce_url
         return result
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):

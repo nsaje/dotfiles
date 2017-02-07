@@ -32,7 +32,7 @@ SOURCE_2 = {'archived': False, 'maintenance': False, 'name': 'Gravity', 'source_
 
 ACCOUNT_1 = {
     'account_id': 1, 'archived': False, 'name': 'test account 1', 'status': 1,
-    'default_account_manager': 'mad.max@zemanta.com', 'default_sales_representative': 'supertestuser@test.com',
+    'default_account_manager': 'mad.max@zemanta.com', 'default_sales_representative': 'supertestuser@test.com', 'salesforce_url': '',
     'agency': '', 'account_type': 'Activated',
     'pacing': None, 'allocated_budgets': Decimal('0'), 'spend_projection': Decimal('0'),
     'license_fee_projection': Decimal('0'), 'flat_fee': 0, 'total_fee': 0, 'total_fee_projection': Decimal('0'),
