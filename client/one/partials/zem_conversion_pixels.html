@@ -33,7 +33,7 @@
             <tbody>
                 <tr ng-class="{'archived': item.archived}" ng-repeat="item in conversionPixels | orderBy:orderField:orderReverse | filter: filterConversionPixels">
                     <td class="pixel-name">
-                        {{ item.name }}
+                        {{ item.name }} <span ng-if="item.audienceEnabled" class="text-gray">(Custom audience pixel)</span>
 
                     </td>
                     <td ng-if="hasPermission('zemauth.can_see_pixel_traffic')">
