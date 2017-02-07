@@ -232,21 +232,23 @@ def audit_autopilot_budget_changes(date=None, error=Decimal('0.001')):
     return alarms
 
 
-def audit_running_ad_groups(min_spend=Decimal('50.0')):
+def audit_running_ad_groups(min_spend=Decimal('50.0'), account_types=None):
     """
     Audit ad groups spend of non API active ad groups of types:
     - PILOT
     - ACTIVATED
     - MANAGED
     """
+    if not account_types:
+        account_types = (
+            dash.constants.AccountType.PILOT,
+            dash.constants.AccountType.ACTIVATED,
+            dash.constants.AccountType.MANAGED,
+        )
     yesterday = datetime.date.today() - datetime.timedelta(1)
     running_ad_group_ids = set(dash.models.AdGroup.objects.all().filter_running(
         date=yesterday
-    ).filter_by_account_types((
-        dash.constants.AccountType.PILOT,
-        dash.constants.AccountType.ACTIVATED,
-        dash.constants.AccountType.MANAGED,
-    )).values_list(
+    ).filter_by_account_types(account_types).values_list(
         'pk', flat=True
     ))
     api_ad_groups = set(dash.models.AdGroup.objects.filter(

@@ -54,7 +54,8 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.audit_iab_categories(options)
         self.audit_campaign_pacing(options)
         self.audit_autopilot(options)
-        self.audit_running_ad_groups(options)
+        self.audit_activated_running_ad_groups(options)
+        self.audit_pilot_managed_running_ad_groups(options)
 
         if self.alarms and self.send_emails:
             email = utils.email_helper.EmailMessage(
@@ -65,12 +66,15 @@ class Command(utils.command_helpers.ExceptionCommand):
                 ), RECIPIANTS)
             email.send()
 
-    def audit_running_ad_groups(self, options):
-        alarms = analytics.monitor.audit_running_ad_groups(options['min_ag_spend'])
+    def audit_activated_running_ad_groups(self, options):
+        alarms = analytics.monitor.audit_running_ad_groups(
+            options['min_ag_spend'],
+            (dash.constants.AccountType.ACTIVATED, )
+        )
         if not alarms:
             return
         self.alarms = True
-        title = 'Running ad groups with spend bellow ${}:'.format(options['min_ag_spend'])
+        title = 'Running activated ad groups with spend bellow ${}:'.format(options['min_ag_spend'])
         self._print(title)
         self.email_body += title + '\n'
         for ad_group in alarms:
@@ -79,6 +83,29 @@ class Command(utils.command_helpers.ExceptionCommand):
                 ad_group.name,
                 u'https://one.zemanta.com/ad_groups/{}/ads'.format(ad_group.pk)
             )
+        self.email_body += '\n'
+
+    def audit_pilot_managed_running_ad_groups(self, options):
+        alarms = analytics.monitor.audit_running_ad_groups(
+            options['min_ag_spend'],
+            (dash.constants.AccountType.MANAGED,
+             dash.constants.AccountType.PILOT,)
+        )
+        if not alarms:
+            return
+        self.alarms = True
+        title = 'Running pilot or managed ad groups with spend bellow ${}:'.format(
+            options['min_ag_spend']
+        )
+        self._print(title)
+        self.email_body += title + '\n'
+        for ad_group in alarms:
+            self._print(u'- {} {}'.format(ad_group.name, ad_group.pk))
+            self.email_body += u' - {} {}\n'.format(
+                ad_group.name,
+                u'https://one.zemanta.com/ad_groups/{}/ads'.format(ad_group.pk)
+            )
+        self.email_body += '\n'
 
     def audit_autopilot(self, options):
         ap_alarms = analytics.monitor.audit_autopilot_ad_groups()
