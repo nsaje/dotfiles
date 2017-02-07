@@ -8,7 +8,7 @@ angular.module('one.widgets').component('zemHistory', {
         $ctrl.$onInit = function () {
             $ctrl.sidePanel = {};
             $ctrl.orderField = 'datetime';
-            $ctrl.orderReversed = false;
+            $ctrl.orderReversed = true;
 
             zemHistoryService.onOpen(open);
             zemHistoryService.onClose(close);
