@@ -58,7 +58,8 @@ angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state
                 heading: 'Budget',
                 route: 'main.campaigns.budget',
                 active: false,
-                hidden: $scope.campaign && $scope.campaign.archived === true,
+                hidden: $scope.campaign && $scope.campaign.archived === true ||
+                    $scope.hasPermission('zemauth.can_see_new_budgets'),
                 internal: false,
             },
         ];
