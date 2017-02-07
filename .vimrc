@@ -16,9 +16,14 @@ Plugin 'kien/ctrlp.vim'
 Plugin 'vim-airline/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
 Plugin 'altercation/vim-colors-solarized'
+Plugin 'qpkorr/vim-bufkill'
+"Plugin 'morhetz/gruvbox'
 Plugin 'fatih/vim-go'
 Plugin 'scrooloose/syntastic'
-" Plugin 'valloric/youcompleteme'
+ "Plugin 'valloric/youcompleteme'
+Plugin 'Shougo/deoplete.nvim'
+Plugin 'zchee/deoplete-go'
+Plugin 'zchee/deoplete-jedi'
 " Plugin 'dkprice/vim-easygrep'
 Plugin 'nvie/vim-flake8'
 Plugin 'avakhov/vim-yaml'
@@ -62,17 +67,22 @@ set mouse=a
 " display numbers
 set nu
 
+" fugitive options
+" open quickfix after grep
+autocmd QuickFixCmdPost *grep* cwindow
+
 " nerdtree binding
 map <C-\> :NERDTreeToggle<CR>
 let NERDTreeIgnore = ['\.pyc$']
 
 " ctags ctrlp binding
-nnoremap <A-p> :CtrlPTag<cr>
+nnoremap <A-p> :CtrlPBuffer<cr>
+nnoremap <C-A-p> :CtrlPTag<cr>
 
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*.pyc     " MacOSX/Linux
 
 " close buffer
-nnoremap <C-k> :bd<cr>
+nnoremap <C-k> :BD<cr>
 
 " theme
 syntax enable
@@ -87,10 +97,14 @@ set laststatus=2
 if !exists('g:airline_symbols')
 	let g:airline_symbols = {}
 endif
-let g:airline_left_sep = ''
-let g:airline_left_alt_sep = ''
-let g:airline_right_sep = ''
-let g:airline_right_alt_sep = ''
+"let g:airline_left_sep = ''
+"let g:airline_left_alt_sep = ''
+"let g:airline_right_sep = ''
+"let g:airline_right_alt_sep = ''
+let g:airline_left_sep = ''
+let g:airline_left_alt_sep = '<'
+let g:airline_right_sep = ''
+let g:airline_right_alt_sep = '>'
 let g:airline_symbols.branch = ''
 let g:airline_symbols.readonly = ''
 let g:airline_symbols.linenr = ''
@@ -116,3 +130,21 @@ augroup pencil
 augroup END
 
 let g:vim_markdown_folding_disabled = 1
+
+let g:go_fmt_command = "goimports"
+let g:syntastic_go_checkers = ['golint', 'govet', 'errcheck']
+let g:syntastic_mode_map = { 'mode': 'active', 'passive_filetypes': ['go'] }
+
+" youcompleteme
+"let g:ycm_add_preview_to_completeopt = 1
+"let g:ycm_autoclose_preview_window_after_completion = 1
+
+" deoplete
+let g:deoplete#enable_at_startup = 1
+
+" AUTO-CLOSE PREVIEW WINDOW (scratch)
+" If you prefer the Omni-Completion tip window to close when a selection is
+" made, these lines close it on movement in insert mode or when leaving
+" insert mode
+"autocmd CursorMovedI * if pumvisible() == 0|silent! pclose|endif
+autocmd InsertLeave * if pumvisible() == 0|silent! pclose|endif
