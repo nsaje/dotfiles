@@ -1,5 +1,5 @@
 /* globals angular, constants */
-angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state, $location, zemNavigationService, campaignData, api, zemDataFilterService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state, $location, zemNavigationService, zemPermissions, campaignData, api, zemDataFilterService, zemSettingsService) { // eslint-disable-line max-len
     $scope.level = constants.level.CAMPAIGNS;
     $scope.contentInsights = {
         summary: null,
@@ -100,7 +100,11 @@ angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state
     };
 
     $scope.manageBudget = function () {
-        $state.go('main.campaigns.budget', {id: $scope.campaign.id});
+        if (zemPermissions.hasPermission('zemauth.can_see_new_budgets')) {
+            zemSettingsService.open();
+        } else {
+            $state.go('main.campaigns.budget', {id: $scope.campaign.id});
+        }
     };
 
     $scope.$on('$stateChangeStart', function () {

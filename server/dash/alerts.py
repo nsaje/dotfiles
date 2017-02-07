@@ -4,11 +4,16 @@ from automation import campaign_stop
 from dash import constants
 
 
-def _get_campaign_link(request, campaign, tab):
-        return request.build_absolute_uri('/campaigns/{}/{}'.format(campaign.id, tab))
+def _get_campaign_link(request, campaign, tab, query_string):
+        link = '/campaigns/{}/{}'.format(campaign.id, tab)
+        if query_string:
+            link += '?' + query_string
+        return request.build_absolute_uri(link)
 
 
 def _get_campaign_budget_link(request, campaign):
+        if request.user.has_perm('zemauth.can_see_new_budgets'):
+            return _get_campaign_link(request, campaign, 'ad_groups', 'settings')
         return _get_campaign_link(request, campaign, 'budget')
 
 
