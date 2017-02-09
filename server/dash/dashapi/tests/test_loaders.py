@@ -463,7 +463,7 @@ class AdGroupSourcesLoaderTest(TestCase):
                 'status': 1,
                 'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
                 'daily_budget': Decimal('10.0000'),
-                'cpc': Decimal('0.5010'),
+                'bid_cpc': Decimal('0.5010'),
                 'editable_fields': {
                     'state': {
                         'message': 'This source must be managed manually.',
@@ -486,7 +486,7 @@ class AdGroupSourcesLoaderTest(TestCase):
                 'status': 2,
                 'supply_dash_disabled_message': "This media source doesn't have a dashboard of its own. All campaign management is done through Zemanta One dashboard.",
                 'daily_budget': Decimal('20.0000'),
-                'cpc': Decimal('0.5020'),
+                'bid_cpc': Decimal('0.5020'),
                 'editable_fields': {
                     'state': {
                         'message': 'Please add additional budget to your campaign to make changes.',

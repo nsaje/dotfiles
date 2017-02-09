@@ -242,10 +242,10 @@ def augment_row_source(row, source=None, settings=None):
             'notifications',
         ], settings, row)
 
-        if 'cpc' in settings:
+        if 'bid_cpc' in settings:
             row.update({
-                'bid_cpc': settings['cpc'],
-                'current_bid_cpc': settings['cpc'],
+                'bid_cpc': settings['bid_cpc'],
+                'current_bid_cpc': settings['bid_cpc'],
                 'current_daily_budget': settings['daily_budget'],
             })
 

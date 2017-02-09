@@ -518,7 +518,7 @@ class AdGroupSourcesLoader(Loader):
             result[source_id] = {
                 'state': state,
                 'status': data_helper.get_source_status(ad_group_source, state, self.ad_group_settings.state),
-                'cpc': source_settings.cpc_cc if source_settings else None,
+                'bid_cpc': source_settings.cpc_cc if source_settings else None,
                 'daily_budget': source_settings.daily_budget_cc if source_settings else None,
 
                 'supply_dash_url': ad_group_source.get_supply_dash_url(),
