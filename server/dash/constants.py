@@ -1836,7 +1836,7 @@ class SourceAllRTB(object):
     NAME = 'RTB Sources'
     MAX_CPC = Decimal('7.0')
     MIN_CPC = Decimal('0.01')
-    DECIMAL_PLACES = 3
+    DECIMAL_PLACES = 4
     DEFAULT_DAILY_BUDGET = Decimal('50.00')
     DEFAULT_CPC_CC = Decimal('0.4500')
     MIN_DAILY_BUDGET = Decimal('1.00')
