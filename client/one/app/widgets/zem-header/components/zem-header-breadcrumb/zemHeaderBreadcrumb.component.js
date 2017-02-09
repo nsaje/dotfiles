@@ -1,21 +1,22 @@
 angular.module('one.widgets').component('zemHeaderBreadcrumb', {
     templateUrl: '/app/widgets/zem-header/components/zem-header-breadcrumb/zemHeaderBreadcrumb.component.html',
-    controller: function ($document, config, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
+    controller: function ($rootScope, $state, $location, $document, config, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
 
         var $ctrl = this;
         $ctrl.config = config;
         $ctrl.getHomeHref = getHomeHref;
-        $ctrl.getItemHref = getItemHref;
 
         $ctrl.$onInit = function () {
             $ctrl.userCanSeeAllAccounts = zemPermissions.hasPermission('dash.group_account_automatically_add');
-            zemNavigationNewService.onActiveEntityChange(onEntityChange);
+
+            $rootScope.$on('$stateChangeSuccess', update);
+            zemNavigationNewService.onActiveEntityChange(update);
 
             // FIXME: Use Entity services for name changes
-            zemNavigationNewService.onHierarchyUpdate(onEntityChange);
+            zemNavigationNewService.onHierarchyUpdate(update);
         };
 
-        function onEntityChange () {
+        function update () {
             var activeEntity = zemNavigationNewService.getActiveEntity();
             updateTitle(activeEntity);
             updateBreadcrumb(activeEntity);
@@ -40,10 +41,13 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                 $ctrl.breadcrumb.unshift({
                     name: entity.name,
                     typeName: getTypeName(entity.type),
-                    entity: entity,
+                    href: zemNavigationNewService.getEntityHref(entity, true),
                 });
                 entity = entity.parent;
             }
+
+            var administrationPage = getAdministrationPage();
+            if (administrationPage) $ctrl.breadcrumb.push(administrationPage);
         }
 
         function getTypeName (type) {
@@ -52,12 +56,15 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             if (type === constants.entityType.AD_GROUP) return 'Ad Group';
         }
 
-        function getHomeHref () {
-            return zemNavigationNewService.getHomeHref();
+        function getAdministrationPage () {
+            if ($state.includes('**.users')) {
+                return {typeName: 'Administration', name: 'User privileges', href: $location.absUrl()};
+            }
+            return null;
         }
 
-        function getItemHref (item) {
-            return zemNavigationNewService.getEntityHref(item.entity, true);
+        function getHomeHref () {
+            return zemNavigationNewService.getHomeHref();
         }
     }
 });

@@ -1,4 +1,4 @@
-angular.module('one.widgets').service('zemHeaderMenuService', function ($window, $uibModal, zemPermissions, zemFullStoryService) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemHeaderMenuService', function ($window, $uibModal, $state, zemPermissions, zemNavigationNewService, zemFullStoryService) { // eslint-disable-line max-len
     this.getAvailableActions = getAvailableActions;
 
     var ACTIONS = [
@@ -12,6 +12,12 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
             text: 'Allow livestream',
             callback: zemFullStoryService.allowLivestream,
             isAvailable: isAllowLivestreamActionAvailable,
+        },
+        {
+            text: 'User permissions',
+            callback: navigateToUserPermissions,
+            isAvailable: isUserPermissionsAvailable,
+            isInternalFeature: zemPermissions.isPermissionInternal('can_see_new_user_permissions'),
         },
         {
             text: 'Sign out',
@@ -51,5 +57,17 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
             keyboard: false,
             windowClass: 'modal-default',
         });
+    }
+
+    function isUserPermissionsAvailable () {
+        if (!zemPermissions.hasPermission('can_see_new_user_permissions')) return false;
+        return zemNavigationNewService.getActiveAccount() !== null;
+    }
+
+    function navigateToUserPermissions () {
+        var account = zemNavigationNewService.getActiveAccount();
+        var state = 'main.accounts.users';
+        var params = {id: account.id};
+        $state.go(state, params);
     }
 });

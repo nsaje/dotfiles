@@ -54,11 +54,13 @@ describe('component: zemHeaderBreadcrumb', function () {
             expect(ctrl.breadcrumb).toEqual([]);
 
             var account = {
+                id: 10,
                 name: 'Account XY',
                 type: constants.entityType.ACCOUNT,
             };
 
             var campaign = {
+                id: 20,
                 name: 'Campaign XY',
                 type: constants.entityType.CAMPAIGN,
                 parent: account,
@@ -69,7 +71,7 @@ describe('component: zemHeaderBreadcrumb', function () {
             expect(ctrl.breadcrumb).toEqual([{
                 name: 'Account XY',
                 typeName: 'Account',
-                entity: jasmine.any(Object),
+                href: '/accounts/10'
             }]);
 
             zemNavigationNewService.getActiveEntity.and.returnValue(campaign);
@@ -77,11 +79,11 @@ describe('component: zemHeaderBreadcrumb', function () {
             expect(ctrl.breadcrumb).toEqual([{
                 name: 'Account XY',
                 typeName: 'Account',
-                entity: jasmine.any(Object),
+                href: '/accounts/10'
             }, {
                 name: 'Campaign XY',
                 typeName: 'Campaign',
-                entity: jasmine.any(Object),
+                href: '/campaigns/20'
             }]);
         });
     });

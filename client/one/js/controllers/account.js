@@ -14,7 +14,7 @@ angular.module('one.legacy').controller('AccountCtrl', function ($scope, $state,
         ];
     };
     $scope.setActiveTab = function () {
-        $scope.activeTab = 0;
+        $scope.activeTab = -1;
         $scope.tabs.filter(function (tab) {
             return !tab.hidden;
         }).forEach(function (tab, index) {

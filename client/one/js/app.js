@@ -94,6 +94,10 @@ angular.module('one.legacy').config(function ($stateProvider) {
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',
             controller: 'ScheduledReportsCtrl',
+        }).state('main.accounts.users', {
+            url: '/users',
+            templateUrl: '/app/views/users/zemUsersView.partial.html',
+            controller: 'zemUsersView',
         });
 
     $stateProvider
