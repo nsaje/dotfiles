@@ -90,6 +90,41 @@
     }
 }
 
+.zem-settings-component__collapsed {
+    margin: 20px -@default-spacing -@default-spacing -@default-spacing;
+    padding: @default-spacing @default-spacing 20px @default-spacing;
+    background-color: @very-light-gray;
+
+    .table {
+        tr td {
+            border-bottom: 1px solid tint(@secondary-color, 80%);
+        }
+    }
+}
+
+.zem-settings-component__show-collapsed {
+    display: block;
+    text-align: center;
+    margin: 20px -@default-spacing -@default-spacing -@default-spacing;
+    padding: 10px @default-spacing;
+    background-color: @very-light-gray;
+    color: @secondary-color;
+
+    &:hover {
+        color: @secondary-color;
+    }
+}
+
+.zem-settings-component__hide-collapsed {
+    &:extend(.zem-settings-component__show-collapsed);
+    margin-top: 0;
+    background-color: darken(@very-light-gray,3%);
+
+    &:hover {
+        color: @secondary-color;
+    }
+}
+
 .zem-settings-component__header {
     margin: -@default-spacing -@default-spacing @default-spacing -@default-spacing;
     padding: 10px @default-spacing 8px @default-spacing;
@@ -97,6 +132,13 @@
     font-size: 18px;
     font-weight: 500;
     border-bottom: 1px solid @border-color;
+}
+
+.zem-settings-component__sub-header {
+    font-size: @default-font-size+4;
+    color: @secondary-color;
+    position: relative;
+    margin-bottom: 10px;
 }
 
 .zem-settings-component__description {
@@ -521,11 +563,59 @@
 }
 
 ///////////////////////////
-// Backend hacks //
+// Bakcend hacks //
 ///////////////////////////
 
 .zem-settings-component__container--backend-hacks {
-    .table tr td strong {
+    .table strong {
         color: @text-color;
+    }
+}
+
+///////////////////////////
+// Campaign goals //
+///////////////////////////
+
+.zem-settings-component__container--campaign-budget {
+
+}
+
+.zem-settings-campaign-budget__budget-overview {
+    padding: @default-spacing 0;
+    margin-bottom: @default-spacing;
+    border-top: 1px solid @light-gray;
+    border-bottom: 1px solid @light-gray;
+    display: table;
+    width: 100%;
+
+    .clearfix();
+}
+
+.zem-settings-campaign-budget__budget-overview-box {
+    display: table-cell;
+    border-right: 1px solid @light-gray;
+    text-align: center;
+    position: relative;
+    vertical-align: middle;
+
+    &:last-child {
+        border-right: none;
+    }
+}
+
+.budget-overview__name {
+    font-size: @default-font-size;
+}
+
+.budget-overview__value {
+    display: block;
+}
+
+.zem-settings-campaign-budget__budget-overview-box--exposed {
+    color: @secondary-color;
+
+    .budget-overview__value {
+        font-weight: 500;
+        font-size: 18px;
     }
 }

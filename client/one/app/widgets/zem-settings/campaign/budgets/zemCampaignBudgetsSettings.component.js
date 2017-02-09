@@ -16,6 +16,7 @@ angular.module('one.widgets').component('zemCampaignBudgetsSettings', {
                 validate: null, // TODO
                 onSuccess: null, // TODO
             });
+            $ctrl.showCollapsed = false;
         };
 
         $ctrl.$onChanges = function () {

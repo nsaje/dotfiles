@@ -1,92 +1,94 @@
-<div class="zem-settings-component__container" is-internal="zemauth.can_see_new_budgets">
+<div class="zem-settings-component__container zem-settings-component__container--campaign-budget" is-internal="zemauth.can_see_new_budgets">
     <div class="zem-settings-component__header">Budget</div>
-    <div>
-        <h2>Overview</h2>
-        <div class="section named-data">
-            <div class="name">Campaign Spend</div>
-            <div class="value">{{ $ctrl.budgets.totals.lifetimeCampaignSpend | decimalCurrency:"$":2 }}</div>
-            <div class="clear"></div>
-            <div class="name">Media Spend</div>
-            <div class="value">{{ $ctrl.budgets.totals.lifetimeMediaSpend | decimalCurrency:"$":2 }}</div>
-            <div class="clear"></div>
-            <div class="name">Data Spend</div>
-            <div class="value">{{ $ctrl.budgets.totals.lifetimeDataSpend | decimalCurrency:"$":2 }}</div>
-            <div class="clear"></div>
-            <div class="name">License Fee</div>
-            <div class="value">{{ $ctrl.budgets.totals.lifetimeLicenseFee | decimalCurrency:"$":2 }}</div>
-            <div class="clear"></div>
-            <div ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')">
-                <div class="name">
-                    <zem-internal-feature
-                            ng-if="$ctrl.isPermissionInternal('zemauth.can_manage_agency_margin')"></zem-internal-feature>
-                    Margin
-                </div>
-                <div class="value">{{ $ctrl.budgets.totals.lifetimeMargin | decimalCurrency:"$":2 }}</div>
-                <div class="clear"></div>
-            </div>
-            <div class="name exposed topborder">Available Budget</div>
-            <div class="value exposed topborder">{{ $ctrl.budgets.totals.currentAvailable | decimalCurrency:"$":2 }}</div>
-            <div class="clear"></div>
-            <div class="name exposed">Unallocated Credit</div>
-            <div class="value exposed">
+    <div class="zem-settings-component__description">Once Zemanta's Customer Success team assigns a credit line to your account you have the ability to create budget items and associate them with campaigns you're planning. Budget represents the amount of money you're willing to pay to have ads from your campaign shown over the period you set it to run. You set a budget for each campaign you create.</div>
+    <div class="zem-settings-campaign-budget__budget-overview">
+        <div class="zem-settings-campaign-budget__budget-overview-box">
+            <span class="budget-overview__name">Campaign Spend</span>
+            <span class="budget-overview__value">{{ $ctrl.budgets.totals.lifetimeCampaignSpend | decimalCurrency:"$":2 }}</span>
+        </div>
+        <div class="zem-settings-campaign-budget__budget-overview-box">
+            <span class="budget-overview__name">Media Spend</span>
+            <span class="budget-overview__value">{{ $ctrl.budgets.totals.lifetimeMediaSpend | decimalCurrency:"$":2 }}</span>
+        </div>
+        <div class="zem-settings-campaign-budget__budget-overview-box">
+            <span class="budget-overview__name">Data Spend</span>
+            <span class="budget-overview__value">{{ $ctrl.budgets.totals.lifetimeDataSpend | decimalCurrency:"$":2 }}</span>
+        </div>
+        <div class="zem-settings-campaign-budget__budget-overview-box">
+            <span class="budget-overview__name">License Fee</span>
+            <span class="budget-overview__value">{{ $ctrl.budgets.totals.lifetimeLicenseFee | decimalCurrency:"$":2 }}</span>
+        </div>
+        <!-- TODO: is-internal doesn't work -->
+        <div class="zem-settings-campaign-budget__budget-overview-box" ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')" is-internal="zemauth.can_manage_agency_margin">
+            <span class="budget-overview__name">Margin</span>
+            <span class="budget-overview__value">{{ $ctrl.budgets.totals.lifetimeMargin | decimalCurrency:"$":2 }}</span>
+        </div>
+        <div class="zem-settings-campaign-budget__budget-overview-box zem-settings-campaign-budget__budget-overview-box--exposed">
+            <span class="budget-overview__name">Available Budget</span>
+            <span class="budget-overview__value">{{ $ctrl.budgets.totals.currentAvailable | decimalCurrency:"$":2 }}</span>
+        </div>
+        <div class="zem-settings-campaign-budget__budget-overview-box zem-settings-campaign-budget__budget-overview-box--exposed">
+            <span class="budget-overview__name">Unallocated Credit</span>
+            <span class="budget-overview__value">
                 {{ $ctrl.budgets.totals.currentUnallocated | decimalCurrency:"$":2 }}
-            </div>
-            <div class="clear"></div>
+            </span>
         </div>
     </div>
-    <div>
-        <h2>Active Budget items</h2>
-        <table class="table">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Budget</th>
-                <th>License Fee</th>
-                <th ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')">
-                    <zem-internal-feature
-                            ng-if="$ctrl.isPermissionInternal('zemauth.can_manage_agency_margin')"></zem-internal-feature>
-                    Margin
-                </th>
-                <th>Total Spend</th>
-                <th>Available Budget</th>
-                <th class="notes">Notes</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr ng-repeat="item in $ctrl.budgets.active" ng-class="{ 'row-updated': item.id == $ctrl.updatedId }">
-                <td>{{ item.id }}</td>
-                <td>{{ item.startDate }}</td>
-                <td>{{ item.endDate }}</td>
-                <td>{{ item.total | decimalCurrency:"$":2 }}</td>
-                <td>{{ item.licenseFee }}</td>
-                <td ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')">
-                    {{ item.margin }}
-                </td>
-                <td>{{ item.spend | decimalCurrency:"$":2 }}</td>
-                <td>{{ item.available | decimalCurrency:"$":2 }}</td>
-                <td class="notes">{{ item.comment }}</td>
-                <td class="action-buttons">
-                    <a class="button button--small button--with-icon edit-icon" ng-click="$ctrl.editBudgetItem(item.id)"
-                       ng-if="item.isEditable || item.isUpdatable">Edit</a>
-                    <a class="button button--small button--with-icon remove-icon" ng-click="$ctrl.deleteBudgetItem(item.id)"
-                       ng-if="item.isEditable || item.isUpdatable" ng-disabled="$ctrl.deleteRequestInProgress">Delete</a>
-                </td>
-            </tr>
-            <tr ng-show="!$ctrl.budgets.active.length">
-                <td colspan="10">No active budget items.</td>
-            </tr>
-            </tbody>
-        </table>
-        <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.addBudgetItem()"
-                ng-disabled="!$ctrl.getAvailableCredit().length">Add Budget Item
-        </button>
-    </div>
 
-    <div>
-        <h2>Depleted Budget Items</h2>
+    <div class="zem-settings-component__sub-header">Active Budget items</div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Budget</th>
+            <th>License Fee</th>
+            <th ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')" is-internal="zemauth.can_manage_agency_margin">
+                Margin
+            </th>
+            <th>Total Spend</th>
+            <th>Available Budget</th>
+            <th class="notes">Notes</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="item in $ctrl.budgets.active" ng-class="{ 'row-updated': item.id == $ctrl.updatedId }">
+            <td>{{ item.id }}</td>
+            <td>{{ item.startDate }}</td>
+            <td>{{ item.endDate }}</td>
+            <td>{{ item.total | decimalCurrency:"$":2 }}</td>
+            <td>{{ item.licenseFee }}</td>
+            <td ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')">
+                {{ item.margin }}
+            </td>
+            <td>{{ item.spend | decimalCurrency:"$":2 }}</td>
+            <td>{{ item.available | decimalCurrency:"$":2 }}</td>
+            <td class="notes">
+                <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
+                                  class="note-popover"></zem-note-popover>
+            </td>
+            <td class="action-buttons">
+                <a class="button button--small button--with-icon button--only-icon edit-icon" ng-click="$ctrl.editBudgetItem(item.id)"
+                   ng-if="item.isEditable || item.isUpdatable"></a>
+                <a class="button button--small button--with-icon button--only-icon remove-icon" ng-click="$ctrl.deleteBudgetItem(item.id)"
+                   ng-if="item.isEditable || item.isUpdatable" ng-disabled="$ctrl.deleteRequestInProgress"></a>
+            </td>
+        </tr>
+        <tr ng-show="!$ctrl.budgets.active.length">
+            <td colspan="10">No active budget items.</td>
+        </tr>
+        </tbody>
+    </table>
+    <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.addBudgetItem()"
+            ng-disabled="!$ctrl.getAvailableCredit().length">Add Budget Item
+    </button>
+
+    <a href="" class="zem-settings-component__show-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Show depleted budget items</a>
+
+    <div class="zem-settings-component__collapsed" ng-show="$ctrl.showCollapsed">
+        <div class="zem-settings-component__sub-header">Depleted Budget Items</div>
         <table class="table">
             <thead>
             <tr>
@@ -120,16 +122,20 @@
                 <td>{{ item.spend | decimalCurrency:"$":2 }}</td>
                 <td>{{ item.available | decimalCurrency:"$":2 }}</td>
 
-                <td class="notes">{{ item.comment }}</td>
+                <td class="notes">
+                    <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
+                                      class="note-popover"></zem-note-popover>
+                </td>
                 <td class="text-right">
                     <a class="button button--small button--with-icon edit-icon" ng-click="$ctrl.editBudgetItem(item.id)"
                        ng-if="item.isEditable">Edit</a>
                 </td>
             </tr>
             <tr ng-show="!$ctrl.budgets.past.length" class="message">
-                <td colspan="9">No depleted budget items.</td>
+                <td colspan="10">No depleted budget items.</td>
             </tr>
             </tbody>
         </table>
     </div>
+    <a href="" class="zem-settings-component__hide-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Hide depleted budget items</a>
 </div>

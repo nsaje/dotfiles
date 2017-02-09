@@ -25,9 +25,11 @@
                 <!-- TODO: If possible add class row-error to row that was selected and has insufficient credit amount for selected budget -->
                 <tr ng-repeat="credit in availableCredit" ng-class="{'row--error': !!errors.credit}">
                     <td ng-if="isNew" title="{{ credit.comment }}">
-                        <input class="input-radio" type="radio" ng-model="budgetItem.credit"
+                        <label>
+                            <input class="input-radio" type="radio" ng-model="budgetItem.credit"
                                ng-click="checkCreditValues()" ng-value="credit" id="{{credit.id}}" />
-                        <label class="radio-text" for="{{credit.id}}"></label>
+                            <span class="radio-text"></span>
+                        </label>
                     </td>
                     <td>{{ credit.available | decimalCurrency:"$":2  }}</td>
                     <td>{{ credit.total | decimalCurrency:"$":2  }}</td>
@@ -35,7 +37,8 @@
                     <td>{{ credit.startDate }}</td>
                     <td>{{ credit.endDate }}</td>
                     <td>
-                        <zem-note-popover content="{{ credit.isAgency ? 'Agency credit; ' : '' }}{{ credit.comment }}" placement="top"></zem-note-popover>
+                        <zem-note-popover content="{{ credit.isAgency ? 'Agency credit; ' : '' }}{{ credit.comment }}"
+                                          ng-if="credit.comment.length > 0" placement="top" class="note-popover"></zem-note-popover>
                     </td>
                 </tr>
             </tbody>
