@@ -249,7 +249,8 @@ def extract_order_field(order, target_dimension, primary_goals=None):
     if target_dimension != 'content_ad_id' and order_field in CONTENT_ADS_FIELDS:
         order_field = 'name'
 
-    if target_dimension != 'source_id' and order_field in SOURCE_FIELDS:
+    # cpc is also in redshift for non source fields (avg. cpc)
+    if target_dimension != 'source_id' and order_field in SOURCE_FIELDS and order_field != 'cpc':
         order_field = 'clicks'
 
     if order_field == 'performance':
