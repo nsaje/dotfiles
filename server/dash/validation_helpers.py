@@ -91,6 +91,7 @@ def _validate_cpc_decimal_places(cpc_cc, decimal_places, source_name):
         raise forms.ValidationError(
             'CPC on {} cannot exceed {} decimal place{}.'.format(
                 source_name,
+                decimal_places,
                 's' if decimal_places != 1 else ''))
 
 
