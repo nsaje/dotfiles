@@ -13,12 +13,6 @@ angular.module('one.widgets').component('zemSidePanel', {
         $ctrl.api.close = close;
         $ctrl.api.isVisible = isVisible;
 
-        $ctrl.$onInit = function () {
-            hotkeys.add({combo: 'esc', callback: function () {
-                if (isVisible() && !isModalOpened()) $ctrl.requestClose();
-            }});
-        };
-
         function isVisible () {
             return $ctrl.visible;
         }
@@ -32,11 +26,16 @@ angular.module('one.widgets').component('zemSidePanel', {
             $ctrl.visible = true;
             $window.scrollTo(0, 0);
             $('body').addClass('no-scroll');
+
+            hotkeys.add({combo: 'esc', callback: function () {
+                if (!isModalOpened()) $ctrl.requestClose();
+            }});
         }
 
         function close () {
             $ctrl.visible = false;
             $('body').removeClass('no-scroll');
+            hotkeys.del('esc');
         }
     }
 });
