@@ -948,14 +948,16 @@ class OutbrainMarketerSyncView(K1APIView):
     def put(self, request):
 
         marketer_id = request.GET.get('marketer_id')
+        marketer_name = request.GET.get('marketer_name')
         if not marketer_id:
             return self.response_error('Marketer id parameter is missing', status=400)
-
         try:
             ob_account = dash.models.OutbrainAccount.objects.get(marketer_id=marketer_id)
+            if marketer_name and ob_account.marketer_name != marketer_name:
+                ob_account.marketer_name = marketer_name
+                ob_account.save()
             created = False
         except dash.models.OutbrainAccount.DoesNotExist:
-            marketer_name = request.GET.get('marketer_name')
             if not marketer_name:
                 return self.response_error('Marketer name parameter is missing', status=400)
             ob_account = dash.models.OutbrainAccount.objects.create(
