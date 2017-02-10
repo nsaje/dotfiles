@@ -35,7 +35,7 @@ angular.module('one.widgets').component('zemChart', {
 
             initializeWindowResizeListeners();
             subscribeToEvents();
-            loadMetrics();
+            loadMetrics(true); // Initially use placeholder fallback for dynamic metrics
             loadData();
         }
 
@@ -61,7 +61,17 @@ angular.module('one.widgets').component('zemChart', {
         function loadData () {
             updateDataSource();
             $ctrl.chartDataService.getData().then(function () {
-                $ctrl.initialized = true;
+                if (!$ctrl.initialized) {
+                    // First request
+                    $ctrl.initialized = true;
+
+                    // Update Dynamic metrics - re-fetch if metrics are not available anymore (use default metrics)
+                    loadMetrics();
+                    var metrics = $ctrl.chartDataService.getMetrics();
+                    if (metrics[0] !== $ctrl.metrics.metric1.value || metrics[1] !== $ctrl.metrics.metric2.value) {
+                        loadData();
+                    }
+                }
             });
         }
 
@@ -124,7 +134,7 @@ angular.module('one.widgets').component('zemChart', {
             );
         }
 
-        function loadMetrics () {
+        function loadMetrics (usePlaceholderFallback) {
             var categories = $ctrl.chart.metrics.options;
             $ctrl.metrics = {
                 metric1: zemChartMetricsService.findMetricByValue(
@@ -138,8 +148,17 @@ angular.module('one.widgets').component('zemChart', {
                 var metric1 = zemChartMetricsService.findMetricByValue(categories, metrics.metric1);
                 var metric2 = zemChartMetricsService.findMetricByValue(categories, metrics.metric2);
 
-                if (metric1) $ctrl.metrics.metric1 = metric1;
-                if (metric2) $ctrl.metrics.metric2 = metric2;
+                if (metric1) {
+                    $ctrl.metrics.metric1 = metric1;
+                } else if (usePlaceholderFallback) {
+                    $ctrl.metrics.metric1 = zemChartMetricsService.createPlaceholderMetric(metrics.metric1);
+                }
+
+                if (metric2) {
+                    $ctrl.metrics.metric2 = metric2;
+                } else if (usePlaceholderFallback) {
+                    $ctrl.metrics.metric2 = zemChartMetricsService.createPlaceholderMetric(metrics.metric2);
+                }
             }
         }
     }

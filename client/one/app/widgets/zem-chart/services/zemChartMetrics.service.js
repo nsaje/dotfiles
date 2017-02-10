@@ -217,11 +217,31 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         return null;
     }
 
+    function createPlaceholderMetric (pixelValue) {
+        var metric = {
+            name: '<Dynamic metric>',
+            value: pixelValue,
+            placeholder: true,
+
+        };
+
+        if (pixelValue.indexOf('pixel_') === 0) {
+            metric.name = '<Pixel metric>';
+        }
+
+        if (pixelValue.indexOf('avg_cost_per_pixel_') === 0) {
+            metric.name = 'CPA (<Pixel metric>)';
+        }
+
+        return metric;
+    }
+
     return {
         METRICS: METRICS,
         getChartMetrics: getChartMetrics,
         insertDynamicMetrics: insertDynamicMetrics,
         findMetricByValue: findMetricByValue,
-        findCategoryByName: findCategoryByName
+        findCategoryByName: findCategoryByName,
+        createPlaceholderMetric: createPlaceholderMetric,
     };
 });
