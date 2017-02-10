@@ -19,6 +19,15 @@ AUTOPILOT_CPC_CHANGE_TABLE = (
     {'underspend_upper_limit': -0.05, 'underspend_lower_limit': -0.01, 'bid_cpc_proc_increase': Decimal('-0.1')},
     {'underspend_upper_limit': -0.01, 'underspend_lower_limit': 100.00, 'bid_cpc_proc_increase': Decimal('-0.15')}
 )
+
+AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE = (
+    {'performance_upper_limit': 1.0, 'performance_lower_limit': 0.75, 'performance_factor': Decimal('1.0')},
+    {'performance_upper_limit': 0.75, 'performance_lower_limit': 0.6, 'performance_factor': Decimal('0.98')},
+    {'performance_upper_limit': 0.6, 'performance_lower_limit': 0.4, 'performance_factor': Decimal('0.95')},
+    {'performance_upper_limit': 0.4, 'performance_lower_limit': 0.2, 'performance_factor': Decimal('0.90')},
+    {'performance_upper_limit': 0.2, 'performance_lower_limit': 0.0, 'performance_factor': Decimal('0.80')},
+)
+
 AUTOPILOT_MIN_CPC = Decimal('0.03')
 AUTOPILOT_MAX_CPC = Decimal('10.0')
 AUTOPILOT_MIN_REDUCING_CPC_CHANGE = Decimal('0.001')
@@ -45,7 +54,7 @@ GOALS_COLUMNS = {
     CampaignGoalKPI.MAX_BOUNCE_RATE: {'col': ['bounce_rate', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.TIME_ON_SITE: {'col': ['avg_tos', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.PAGES_PER_SESSION: {'col': ['pv_per_visit', 0.7], 'spend_perc': Decimal(0.3)},
-    CampaignGoalKPI.CPA: {'col': ['conversions', 0.8], 'spend_perc': Decimal(0.2)},
+    CampaignGoalKPI.CPA: {'col': ['conversions', 0.8], 'spend_perc': Decimal(0.2)},  # actions per cost
     CampaignGoalKPI.CPC: {'col': ['cpc', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.NEW_UNIQUE_VISITORS: {'col': ['percent_new_users', 0.7], 'spend_perc': Decimal(0.3)},
     CampaignGoalKPI.CPV: {'col': ['avg_cost_per_visit', 0.7], 'spend_perc': Decimal(0.3)},
@@ -60,6 +69,17 @@ GOALS_WORST_VALUE = {
     'avg_cost_per_visit': None,
     'percent_new_users': 0.0,
     'conversions': 0
+}
+GOALS_CALC_COLS = {
+    CampaignGoalKPI.MAX_BOUNCE_RATE:      {'dividend': 'bounced_visits', 'divisor': 'visits', 'high_is_good': False},
+    CampaignGoalKPI.TIME_ON_SITE:         {'dividend': 'total_seconds', 'divisor': 'visits', 'high_is_good': True},
+    CampaignGoalKPI.PAGES_PER_SESSION:    {'dividend': 'pageviews', 'divisor': 'visits', 'high_is_good': True},
+    CampaignGoalKPI.CPA:                  {'dividend': 'conversions', 'divisor': 'media_cost', 'high_is_good': True},
+    CampaignGoalKPI.CPC:                  {'dividend': 'clicks', 'divisor': 'media_cost', 'high_is_good': False},
+    CampaignGoalKPI.NEW_UNIQUE_VISITORS:  {'dividend': 'new_users', 'divisor': 'visits', 'high_is_good': True},
+    CampaignGoalKPI.CPV:                  {'dividend': 'visits', 'divisor': 'media_cost', 'high_is_good': False},
+    CampaignGoalKPI.CP_NON_BOUNCED_VISIT: {'dividend': 'non_bounced_visits', 'divisor': 'media_cost',
+                                           'high_is_good': False}
 }
 SPEND_PERC_LOWERING_THRESHOLD = 1.0
 LOW_SPEND_PROB_LOWERING_FACTOR = 0.25

@@ -200,7 +200,7 @@ def get_ad_group_sources_extras(ad_group):
 
 
 # MVP for all-RTB-sources-as-one
-def insert_all_rtb_source_row(constraints, rows, show_rtb_group_cpc):
+def insert_all_rtb_source_row(constraints, rows, can_show_rtb_group_cpc):
     ad_group = constraints['ad_group']
     settings = ad_group.get_current_settings()
     if not settings.b1_sources_group_enabled:
@@ -212,7 +212,9 @@ def insert_all_rtb_source_row(constraints, rows, show_rtb_group_cpc):
     rtb_source_ids = map(str, rtb_source_ids)
 
     # Create All RTB Source row using rtb_source_ids for newly created group
-    all_rtb_source_row = create_all_rtb_source_row(ad_group, settings, show_rtb_group_cpc)
+    all_rtb_source_row = create_all_rtb_source_row(
+        ad_group, settings, can_show_rtb_group_cpc and
+        settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
     all_rtb_source_row['group'] = {'ids': rtb_source_ids}
     rows.append(all_rtb_source_row)
 

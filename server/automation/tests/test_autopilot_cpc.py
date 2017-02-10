@@ -59,6 +59,61 @@ class AutopilotCpcTestCase(test.TestCase):
                 Decimal(test_case[2])),
                 (Decimal(test_case[3]), test_case[4]))
 
+    @patch('automation.autopilot_settings.AUTOPILOT_CPC_CHANGE_TABLE', (
+        {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5,
+            'bid_cpc_proc_increase': Decimal('0.1')},
+        {'underspend_upper_limit': -0.5, 'underspend_lower_limit': -0.1,
+            'bid_cpc_proc_increase': Decimal('0.5')},
+        {'underspend_upper_limit': -0.1, 'underspend_lower_limit': 0,
+            'bid_cpc_proc_increase': Decimal('-0.5')}
+    ))
+    @patch('automation.autopilot_settings.AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE', (
+        {'performance_upper_limit': 1.0, 'performance_lower_limit': 0.95, 'performance_factor': Decimal('1.0')},
+        {'performance_upper_limit': 0.95, 'performance_lower_limit': 0.5, 'performance_factor': Decimal('0.5')},
+        {'performance_upper_limit': 0.5, 'performance_lower_limit': 0.0, 'performance_factor': Decimal('0.1')},
+    ))
+    @patch('automation.autopilot_settings.AUTOPILOT_MIN_CPC', Decimal('0.01'))
+    @patch('automation.autopilot_settings.AUTOPILOT_MAX_CPC', Decimal('3'))
+    @patch('automation.autopilot_settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE', Decimal('0.2'))
+    @patch('automation.autopilot_settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE', Decimal('0.3'))
+    @patch('automation.autopilot_settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE', Decimal('0.05'))
+    @patch('automation.autopilot_settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE', Decimal('0.25'))
+    def test_calculate_new_autopilot_cpc_automatic_mode_rtb(self):
+        test_cases = (
+            #  cpc, rtb_daily_budget, rtb_yesterday_spend, source_performance, new_cpc, comments
+            ('0', '10', '5', 1.0, '0.1', [CpcChangeComment.CPC_NOT_SET,
+                                          CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('0.5', '10', '8', 1.0, '0.75', []),
+            ('2.5', '10', '8', 1.0, '2.75', []),
+            ('0.5', '10', '10', 1.0, '0.25', []),
+            ('0.5', '10', '2', 1.0, '0.55', []),
+            ('0.5', '10', '0', 1.0, '0.55', []),  # no yesterday spend
+            ('0.5', '10', '5', 1.0, '0.55', []),
+            ('0.5', '-10', '5', 1.0, '0.5', [CpcChangeComment.BUDGET_NOT_SET]),
+            ('0.5', '10', '-5', 1.0, '0.55', []),
+            ('-0.5', '10', '5', 1.0, '0.1', [CpcChangeComment.CPC_NOT_SET,
+                                             CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('0.35', '10', '9.96', 1.0, '0.15', []),
+            ('2.8', '10', '9.96', 1.0, '2.5', []),
+            ('3.5', '10', '1', 1.0, '3', [CpcChangeComment.CURRENT_CPC_TOO_HIGH]),
+            ('0.05', '10', '1', 1.0, '0.01', [CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('1.0', '10', '10', 0.2, '0.7', []),
+            ('0.5', '10', '10', 0.7, '0.2', []),
+            ('1.0', '10', '7', 0.2, '0.7', [])
+        )
+        for test_case in test_cases:
+            new_cpc, comments = autopilot_cpc.calculate_new_autopilot_cpc_automatic_mode_rtb(
+                Decimal(test_case[0]),
+                Decimal(test_case[1]),
+                Decimal(test_case[2]),
+                test_case[3])
+            self.assertEqual(
+                (new_cpc, comments),
+                (Decimal(test_case[4]), test_case[5]),
+                msg=('Expected cpc: '+test_case[4]+' Actual: '+str(new_cpc) +
+                     ' | Expected Comments: "'+','.join(test_case[5])+'" Actual: "'+str(comments)+'"'
+                     ))
+
     @patch('automation.autopilot_settings.AUTOPILOT_MIN_CPC', Decimal('0.1'))
     @patch('automation.autopilot_settings.AUTOPILOT_MAX_CPC', Decimal('3'))
     def test_get_calculate_cpc_comments(self):

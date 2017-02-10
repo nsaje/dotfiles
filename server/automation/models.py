@@ -130,6 +130,13 @@ class AutopilotLog(models.Model):
         null=True,
         choices=dash.constants.CampaignGoalKPI.get_choices()
     )
+    campaign_goal_optimal_value = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Goal\'s optimal value'
+    )
     goal_value = models.DecimalField(
         max_digits=10,
         decimal_places=4,

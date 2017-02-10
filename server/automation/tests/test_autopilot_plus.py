@@ -230,6 +230,42 @@ class AutopilotPlusTestCase(test.TestCase):
                          active_ad_group_source_old_budget)
         self.assertTrue(active_ad_group_source not in new_budgets)
 
+    @patch('automation.autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET', Decimal('10'))
+    def test_set_paused_ad_group_sources_to_minimum_values_rtb_as_one(self):
+        adg = dash.models.AdGroup.objects.get(id=4)
+        adg_settings = adg.get_current_settings().copy_settings()
+        adg_settings.b1_sources_group_enabled = True
+        adg_settings.b1_sources_group_state = dash.constants.AdGroupSourceSettingsState.INACTIVE
+        adg_settings.b1_sources_group_daily_budget = Decimal('30.00')
+        adg_settings.autopilot_state = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        adg_settings.save(None)
+
+        paused_ad_group_source_setting = dash.models.AdGroupSourceSettings.objects.get(id=6).copy_settings()
+        paused_ad_group_source_setting.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
+        paused_ad_group_source_setting.daily_budget_cc = Decimal('100.')
+        paused_ad_group_source_setting.save(None)
+        paused_ad_group_source = paused_ad_group_source_setting.ad_group_source
+
+        s = paused_ad_group_source.source
+        s.source_type = dash.models.SourceType.objects.get(id=3)
+        s.save()
+
+        active_ad_group_source = dash.models.AdGroupSource.objects.get(id=6)
+
+        active_ad_group_source_old_budget = active_ad_group_source.get_current_settings().daily_budget_cc
+        new_budgets = autopilot_plus._set_paused_ad_group_sources_to_minimum_values(adg.get_current_settings())
+
+        self.assertTrue(paused_ad_group_source not in new_budgets)
+        self.assertTrue(active_ad_group_source not in new_budgets)
+        self.assertEqual(new_budgets.get(dash.constants.SourceAllRTB)['old_budget'], Decimal('30.'))
+        self.assertEqual(new_budgets.get(dash.constants.SourceAllRTB)['new_budget'], Decimal('10.0'))
+        self.assertEqual(new_budgets.get(dash.constants.SourceAllRTB)['budget_comments'],
+                         [automation.constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE])
+        self.assertEqual(paused_ad_group_source.get_current_settings().daily_budget_cc, Decimal('100.0'))
+        self.assertEqual(active_ad_group_source.get_current_settings().daily_budget_cc,
+                         active_ad_group_source_old_budget)
+        self.assertEqual(adg.get_current_settings().b1_sources_group_daily_budget, Decimal('10.0'))
+
     @patch('automation.autopilot_plus.run_autopilot')
     def test_initialize_budget_autopilot_on_ad_group(self, mock_run_autopilot):
         adg = dash.models.AdGroup.objects.get(id=4)
