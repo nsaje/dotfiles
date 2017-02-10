@@ -293,12 +293,7 @@ class OutbrainPublishersBlacklistView(K1APIView):
     def get(self, request):
         marketer_id = request.GET.get('marketer_id')
         account = {}
-        blacklisted_publishers = (
-            dash.models.PublisherBlacklist.objects
-                .filter(account__outbrain_marketer_id=marketer_id)
-                .filter(source__source_type__type='outbrain')
-                .values('name', 'external_id')
-        )
+        blacklisted_publishers = []
         for acc in dash.models.Account.objects.filter(outbrain_marketer_id=marketer_id):
             # NOTE(sigi): sadly, we have some accounts with the same marketer id
             if acc.is_archived():
@@ -308,8 +303,14 @@ class OutbrainPublishersBlacklistView(K1APIView):
                 'name': acc.name,
                 'outbrain_marketer_id': acc.outbrain_marketer_id,
             }
-            break
-
+            current_settings = acc.get_current_settings()
+            blacklisted_publishers = (
+                dash.models.PublisherGroupEntry.objects
+                    .filter(publisher_group_id__in=(current_settings.blacklist_publisher_groups + [acc.default_blacklist_id]))
+                    .filter(source__bidder_slug='outbrain')
+                    .annotate(name=F('publisher'))
+                    .values('name')
+            )
         return self.response_ok({
             'blacklist': list(blacklisted_publishers),
             'account': account
@@ -436,6 +437,8 @@ class PublisherGroupsView(K1APIView):
 
         if not limit:
             return self.response_error('Limit parameter is missing', status=400)
+        offset = int(offset)
+        limit = int(limit)
 
         # ensure unique order
         entries = dash.models.PublisherGroupEntry.objects.all().order_by('pk')

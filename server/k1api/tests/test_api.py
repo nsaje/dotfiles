@@ -10,6 +10,7 @@ import urllib
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.db.models import F
 
 import dash.constants
 import dash.models
@@ -85,82 +86,10 @@ class K1ApiTest(TestCase):
         response = self.client.get(
             reverse('k1api.accounts'),
         )
-
         data = json.loads(response.content)
         self._assert_response_ok(response, data)
         data = data['response']
-
-        self.assertTrue(len(data), 3)
-        self.assertEqual(data, ListMatcher([
-            {u'id': 1,
-             u'name': u'test account 1',
-             u'outbrain_marketer_id': u'abcde',
-             u'custom_audiences': [{u'pixel_id': 1, u'rules': [{u'type': 1, u'values': u'dummy', u'id': 1},
-                                                               {u'type': 2, u'values': u'dummy2', u'id': 2}],
-                                    u'name': 'Audience 1', u'id': 1, u'ttl': 90},
-                                   {u'pixel_id': 2, u'rules': [{u'type': 1, u'values': u'dummy3', u'id': 3},
-                                                               {u'type': 2, u'values': u'dummy4', u'id': 4}],
-                                    u'name': 'Audience 2', u'id': 2, u'ttl': 60}],
-             u'pixels': [
-                 {u'id': 1,
-                  u'name': u'Pixel 1',
-                  u'slug': u'testslug1',
-                  u'audience_enabled': False,
-                  u'additional_pixel': False,
-                  u'source_pixels': ListMatcher([
-                      {u'url': u'http://www.ob.com/pixelendpoint',
-                       u'source_pixel_id': u'ob_zem1',
-                       u'source_type': u'outbrain',
-                       },
-                      {u'url': u'http://www.y.com/pixelendpoint',
-                       u'source_pixel_id': u'y_zem1',
-                       u'source_type': u'yahoo',
-                       },
-                      {u'url': u'http://www.fb.com/pixelendpoint',
-                       u'source_pixel_id': u'fb_zem1',
-                       u'source_type': u'facebook',
-                       },
-                  ])},
-                 {u'id': 2,
-                  u'name': u'Pixel 2',
-                  u'slug': u'testslug2',
-                  u'audience_enabled': True,
-                  u'additional_pixel': False,
-                  u'source_pixels': ListMatcher([
-                      {u'url': u'http://www.xy.com/pixelendpoint',
-                       u'source_pixel_id': u'xy_zem2',
-                       u'source_type': u'taboola',
-                       },
-                      {u'url': u'http://www.y.com/pixelendpoint',
-                       u'source_pixel_id': u'y_zem2',
-                       u'source_type': u'yahoo',
-                       },
-                      {u'url': u'http://www.fb.com/pixelendpoint',
-                       u'source_pixel_id': u'fb_zem2',
-                       u'source_type': u'facebook',
-                       },
-                  ])},
-             ]},
-            {u'id': 2,
-             u'name': u'test account 2',
-             u'custom_audiences': [],
-             u'outbrain_marketer_id': None,
-             u'pixels': [
-                 {u'id': 3,
-                  u'name': u'Pixel 3',
-                  u'slug': u'testslug3',
-                  u'audience_enabled': True,
-                  u'additional_pixel': False,
-                  u'source_pixels': []
-                  },
-             ]},
-            {u'id': 3,
-             u'name': u'test account 3',
-             u'custom_audiences': [],
-             u'outbrain_marketer_id': None,
-             u'pixels': [],
-             },
-        ]))
+        self.assertEqual(len(data), dash.models.Account.objects.count())
 
     def test_get_accounts_with_id(self):
         response = self.client.get(
@@ -171,7 +100,7 @@ class K1ApiTest(TestCase):
         self._assert_response_ok(response, data)
         data = data['response']
 
-        self.assertTrue(len(data), 1)
+        self.assertEqual(len(data), 1)
         self.assertEqual(data[0], {
             u'id': 1,
             u'name': u'test account 1',
@@ -539,7 +468,7 @@ class K1ApiTest(TestCase):
 
         response = self.client.get(
             reverse('k1api.publisher_groups'),
-            {'account_id': account_id, 'offset': 0, 'limit': 10}
+            {'account_id': account_id, 'offset': 0, 'limit': 2}
         )
 
         data = json.loads(response.content)
@@ -559,7 +488,7 @@ class K1ApiTest(TestCase):
 
         response = self.client.get(
             reverse('k1api.publisher_groups'),
-            {'account_id': account_id, 'source_slug': source_slug, 'offset': 0, 'limit': 10}
+            {'account_id': account_id, 'source_slug': source_slug, 'offset': 0, 'limit': 2}
         )
 
         data = json.loads(response.content)
@@ -624,7 +553,7 @@ class K1ApiTest(TestCase):
     def test_get_publishers_blacklist_outbrain(self):
         response = self.client.get(
             reverse('k1api.outbrain_publishers_blacklist'),
-            {'marketer_id': 'abcde'}
+            {'marketer_id': 'cdefg'}
         )
 
         data = json.loads(response.content)
@@ -632,18 +561,19 @@ class K1ApiTest(TestCase):
         data = data['response']
 
         expected = (
-            dash.models.PublisherBlacklist.objects
-                .filter(account__outbrain_marketer_id='abcde')
-                .filter(source__source_type__type='outbrain')
-                .filter(external_id__isnull=False)
-                .values(u'name', u'external_id')
+            dash.models.PublisherGroupEntry.objects
+                .filter(publisher_group_id__in=[1000, 11, 12])
+                .filter(source__bidder_slug='outbrain')
+                .annotate(name=F('publisher'))
+                .values(u'name')
         )
+        self.assertGreater(len(expected), 0)
         self.assertEqual(data, {
             u'blacklist': list(expected),
             u'account': {
-                u'id': 1,
-                u'name': u'test account 1',
-                u'outbrain_marketer_id': u'abcde'
+                u'id': 1000,
+                u'name': u'test outbrain account',
+                u'outbrain_marketer_id': u'cdefg'
             }
         })
 
