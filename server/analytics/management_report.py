@@ -31,10 +31,14 @@ LIST_REPORT_DISPLAY = {
         _url(['accounts', obj.pk, 'campaigns']),
         obj.get_long_name()
     ).as_html(),
-    'credits': lambda obj: '{} ({})'.format(Url(
-        obj.account and _url(['accounts', obj.account_id, 'campaigns']) or '#',
-        str(obj)
-    ).as_html(), _get_bcm_changes('credit', obj)),
+    'credits': lambda obj: '{} ({})'.format(
+        Url(
+            obj.account and _url(['accounts', obj.account_id, 'campaigns']) or
+            obj.agency and _url(['accounts', obj.agency.account_set.all().first().pk, 'campaigns']) or
+            '#',
+            str(obj)
+        ).as_html(), _get_bcm_changes('credit', obj)
+    ),
     'budgets': lambda obj: '{} ({})'.format(Url(
         _url(['campaigns', obj.campaign_id, 'ad_groups']),
         '{}, {}'.format(str(obj), obj.campaign.account.get_long_name())
