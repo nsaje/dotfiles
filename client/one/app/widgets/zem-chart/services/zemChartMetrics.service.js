@@ -139,7 +139,8 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
                 pixelGoalMetrics.push({
                     value: 'avg_cost_per_' + metricValue,
                     shortName: conversionWindow.value / 24,
-                    name: 'CPA(' + pixel.name + ' ' + conversionWindow.name + ')'
+                    name: 'CPA(' + pixel.name + ' ' + conversionWindow.name + ')',
+                    type: TYPE_CURRENCY
                 });
             });
 
