@@ -81,8 +81,8 @@ class AutopilotCpcTestCase(test.TestCase):
     def test_calculate_new_autopilot_cpc_automatic_mode_rtb(self):
         test_cases = (
             #  cpc, rtb_daily_budget, rtb_yesterday_spend, source_performance, new_cpc, comments
-            ('0', '10', '5', 1.0, '0.1', [CpcChangeComment.CPC_NOT_SET,
-                                          CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('0', '10', '5', 1.0, '0.01', [CpcChangeComment.CPC_NOT_SET,
+                                           CpcChangeComment.CURRENT_CPC_TOO_LOW]),
             ('0.5', '10', '8', 1.0, '0.75', []),
             ('2.5', '10', '8', 1.0, '2.75', []),
             ('0.5', '10', '10', 1.0, '0.25', []),
@@ -91,12 +91,12 @@ class AutopilotCpcTestCase(test.TestCase):
             ('0.5', '10', '5', 1.0, '0.55', []),
             ('0.5', '-10', '5', 1.0, '0.5', [CpcChangeComment.BUDGET_NOT_SET]),
             ('0.5', '10', '-5', 1.0, '0.55', []),
-            ('-0.5', '10', '5', 1.0, '0.1', [CpcChangeComment.CPC_NOT_SET,
-                                             CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('-0.5', '10', '5', 1.0, '0.01', [CpcChangeComment.CPC_NOT_SET,
+                                              CpcChangeComment.CURRENT_CPC_TOO_LOW]),
             ('0.35', '10', '9.96', 1.0, '0.15', []),
             ('2.8', '10', '9.96', 1.0, '2.5', []),
             ('3.5', '10', '1', 1.0, '3', [CpcChangeComment.CURRENT_CPC_TOO_HIGH]),
-            ('0.05', '10', '1', 1.0, '0.01', [CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('0.005', '10', '1', 1.0, '0.01', [CpcChangeComment.CURRENT_CPC_TOO_LOW]),
             ('1.0', '10', '10', 0.2, '0.7', []),
             ('0.5', '10', '10', 0.7, '0.2', []),
             ('1.0', '10', '7', 0.2, '0.7', [])
@@ -111,7 +111,7 @@ class AutopilotCpcTestCase(test.TestCase):
                 (new_cpc, comments),
                 (Decimal(test_case[4]), test_case[5]),
                 msg=('Expected cpc: '+test_case[4]+' Actual: '+str(new_cpc) +
-                     ' | Expected Comments: "'+','.join(test_case[5])+'" Actual: "'+str(comments)+'"'
+                     ' | Expected Comments: "'+str(test_case[5])+'" Actual: "'+str(comments)+'"'
                      ))
 
     @patch('automation.autopilot_settings.AUTOPILOT_MIN_CPC', Decimal('0.1'))
