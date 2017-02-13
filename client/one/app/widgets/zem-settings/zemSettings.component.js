@@ -26,10 +26,10 @@ angular.module('one.widgets').component('zemSettings', {
             $ctrl.currentContainerType = type;
         }
 
-        function open () {
+        function open (event, payload) {
             var entity = null;
             var visible = false;
-            $ctrl.entity = zemSettingsService.getCurrentEntity();
+            $ctrl.entity = payload.entity;
 
             // Make side-panel animation smooth
             // At first wait for initial render (empty settings)
@@ -41,6 +41,7 @@ angular.module('one.widgets').component('zemSettings', {
                     visible = true;
                     if (entity) {
                         $ctrl.currentContainer.load(entity);
+                        if (payload.scrollToComponent) $ctrl.currentContainer.scrollTo(payload.scrollToComponent);
                     }
                 }, 400);
             }, 0);
@@ -50,6 +51,7 @@ angular.module('one.widgets').component('zemSettings', {
                 e.type = $ctrl.entity.type;
                 if (visible) {
                     $ctrl.currentContainer.load(e);
+                    if (payload.scrollToComponent) $ctrl.currentContainer.scrollTo(payload.scrollToComponent);
                 } else {
                     entity = e;
                 }

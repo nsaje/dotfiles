@@ -2,6 +2,7 @@ angular.module('one.services').service('zemUtils', function ($q) { // eslint-dis
 
     this.convertToCamelCase = convertToCamelCase;
     this.convertToUnderscore = convertToUnderscore;
+    this.convertToElementName = convertToElementName;
     this.createAbortableDefer = createAbortableDefer;
 
     function convertToCamelCase (obj) {
@@ -45,6 +46,13 @@ angular.module('one.services').service('zemUtils', function ($q) { // eslint-dis
 
         deferred.abortPromise = deferredAbort.promise;
         return deferred;
+    }
+
+    function convertToElementName (componentName) {
+        // zemSomeComponent --> zem-some-component
+        var tagName = componentName.replace(/([A-Z])/g, function ($1) { return '-' + $1.toLowerCase(); });
+        if (tagName[0] === '-') tagName = tagName.substring(1);
+        return tagName;
     }
 
 });

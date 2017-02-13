@@ -101,7 +101,9 @@ angular.module('one.legacy').controller('CampaignCtrl', function ($scope, $state
 
     $scope.manageBudget = function () {
         if (zemPermissions.hasPermission('zemauth.can_see_new_budgets')) {
-            zemSettingsService.open();
+            var entity = undefined; /* Use default (active entity) */
+            var scrollToComponent = 'zemCampaignBudgetsSettings';
+            zemSettingsService.open(entity, scrollToComponent);
         } else {
             $state.go('main.campaigns.budget', {id: $scope.campaign.id});
         }

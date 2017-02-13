@@ -39,11 +39,14 @@ angular.module('one.widgets').service('zemSettingsService', function ($rootScope
         }
     }
 
-    function open (entity) {
+    function open (entity, scrollToComponent) {
         areSettingsOpen = true;
         $location.search(QUERY_PARAM, true);
         currentEntity = entity || zemNavigationNewService.getActiveEntity();
-        if (currentEntity !== null) pubsub.notify(EVENTS.ON_OPEN, currentEntity);
+        if (currentEntity !== null) pubsub.notify(EVENTS.ON_OPEN, {
+            entity: currentEntity,
+            scrollToComponent: scrollToComponent,
+        });
     }
 
     function close () {

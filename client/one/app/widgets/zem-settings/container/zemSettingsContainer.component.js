@@ -9,7 +9,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/container/zemSettingsContainer.component.html',
-    controller: function ($transclude, $element, $q, zemPermissions, zemPubSubService, zemEntityService, zemNavigationService, zemNavigationNewService) { // eslint-disable-line max-len
+    controller: function ($transclude, $timeout, $element, $q, zemPermissions, zemUtils, zemPubSubService, zemEntityService, zemNavigationService, zemNavigationNewService) { // eslint-disable-line max-len
         var STATUS_CODE_NONE = 0;
         var STATUS_CODE_IN_PROGRESS = 1;
         var STATUS_CODE_ERROR = 2;
@@ -46,6 +46,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
             $ctrl.api.register($ctrl.entityType, {
                 save: save,
                 load: load,
+                scrollTo: scrollTo,
                 isDirty: isDirty,
             });
         };
@@ -137,6 +138,18 @@ angular.module('one.widgets').component('zemSettingsContainer', {
 
         function close () {
             $ctrl.api.close();
+        }
+
+        function scrollTo (componentName) {
+            var elementName = zemUtils.convertToElementName(componentName);
+            var element = $('.zem-settings__body ' + elementName);
+            if (element.length !== 1) return;
+
+            $timeout(function () {
+                $('.zem-settings__body').animate ({
+                    scrollTop: element.offset().top,
+                }, 500);
+            });
         }
 
         //
