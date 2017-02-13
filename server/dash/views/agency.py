@@ -369,6 +369,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'b1_sources_group_cpc_cc': settings.b1_sources_group_cpc_cc,
             'b1_sources_group_state': settings.b1_sources_group_state,
             'whitelist_publisher_groups': settings.whitelist_publisher_groups,
+            'blacklist_publisher_groups': settings.blacklist_publisher_groups,
             'landing_mode': settings.landing_mode,
         }
 
@@ -428,6 +429,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         if user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
             settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
+            settings.blacklist_publisher_groups = resource['blacklist_publisher_groups']
 
     def _set_ad_group_mode_settings(self, user, settings, resource):
         if settings.landing_mode:
@@ -609,7 +611,7 @@ class CampaignSettings(api_common.BaseApiView):
         current_settings = campaign.get_current_settings()
         new_settings = current_settings.copy_settings()
 
-        settings_form = forms.CampaignSettingsForm(settings_dict)
+        settings_form = forms.CampaignSettingsForm(campaign, settings_dict)
         errors = {}
         if not settings_form.is_valid():
             errors.update(dict(settings_form.errors))
@@ -762,6 +764,8 @@ class CampaignSettings(api_common.BaseApiView):
             'ga_tracking_type': settings.ga_tracking_type,
             'enable_adobe_tracking': settings.enable_adobe_tracking,
             'adobe_tracking_param': settings.adobe_tracking_param,
+            'whitelist_publisher_groups': settings.whitelist_publisher_groups,
+            'blacklist_publisher_groups': settings.blacklist_publisher_groups,
         }
 
         result['target_devices'] = settings.target_devices
@@ -800,6 +804,10 @@ class CampaignSettings(api_common.BaseApiView):
 
             if settings.ga_tracking_type == constants.GATrackingType.API:
                 settings.ga_property_id = resource['ga_property_id']
+
+        if request.user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
+            settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
+            settings.blacklist_publisher_groups = resource['blacklist_publisher_groups']
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
@@ -1069,7 +1077,7 @@ class AccountSettings(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         resource = json.loads(request.body)
 
-        form = forms.AccountSettingsForm(resource.get('settings', {}))
+        form = forms.AccountSettingsForm(account, resource.get('settings', {}))
         settings = self.save_settings(request, account, form)
         response = {
             'settings': self.get_dict(request, settings, account),
@@ -1136,6 +1144,12 @@ class AccountSettings(api_common.BaseApiView):
                 facebook_account = self.get_or_create_facebook_account(account)
                 self.set_facebook_page(facebook_account, form)
                 facebook_account.save()
+
+            if request.user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
+                if 'whitelist_publisher_groups' in form.cleaned_data:
+                    settings.whitelist_publisher_groups = form.cleaned_data['whitelist_publisher_groups']
+                if 'blacklist_publisher_groups' in form.cleaned_data:
+                    settings.blacklist_publisher_groups = form.cleaned_data['blacklist_publisher_groups']
 
             account.save(request)
             settings.save(
@@ -1353,6 +1367,10 @@ class AccountSettings(api_common.BaseApiView):
                 result['agency'] = ''
         if request.user.has_perm('zemauth.can_see_salesforce_url'):
             result['salesforce_url'] = settings.salesforce_url
+
+        result['whitelist_publisher_groups'] = settings.whitelist_publisher_groups
+        result['blacklist_publisher_groups'] = settings.blacklist_publisher_groups
+
         return result
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):

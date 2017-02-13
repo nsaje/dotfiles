@@ -61,6 +61,7 @@ class AdGroupSettingsTest(TestCase):
                 'b1_sources_group_state': 1,
                 'b1_sources_group_cpc_cc': '0.0100',
                 'whitelist_publisher_groups': [1],
+                'blacklist_publisher_groups': [1],
             }
         }
 
@@ -185,6 +186,7 @@ class AdGroupSettingsTest(TestCase):
                     'b1_sources_group_state': 1,
                     'b1_sources_group_cpc_cc': '0.0100',
                     'whitelist_publisher_groups': [],
+                    'blacklist_publisher_groups': [],
                     'landing_mode': False,
                     'ad_group_mode': constants.AdGroupSettingsMode.AUTOMATIC,
                     'price_discovery': constants.AdGroupSettingsPriceDiscovery.AUTOMATIC,
@@ -343,6 +345,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.0100',
                         'whitelist_publisher_groups': [1],
+                        'blacklist_publisher_groups': [1],
                         'landing_mode': False,
                         'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
                         'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
@@ -435,6 +438,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.0100',
                         'whitelist_publisher_groups': [],  # no permission to set
+                        'blacklist_publisher_groups': [],  # no permission to set
                         'landing_mode': False,
                         'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
                         'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
@@ -604,6 +608,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.3000',
                         'whitelist_publisher_groups': [1],
+                        'blacklist_publisher_groups': [1],
                         'landing_mode': False,
                         'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
                         'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
@@ -692,6 +697,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.1',
                         'whitelist_publisher_groups': [],  # no permission to set
+                        'blacklist_publisher_groups': [],  # no permission to set
                         'landing_mode': False,
                         'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
                         'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
@@ -767,6 +773,7 @@ class AdGroupSettingsTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         self.settings_dict['settings']['whitelist_publisher_groups'] = ['2']
+        self.settings_dict['settings']['blacklist_publisher_groups'] = ['2']
 
         add_permissions(self.user, ['settings_view'])
         response = self.client.put(
@@ -778,6 +785,7 @@ class AdGroupSettingsTest(TestCase):
         response_dict = json.loads(response.content)
         self.assertFalse(response_dict['success'])
         self.assertIn('whitelist_publisher_groups', response_dict['data']['errors'])
+        self.assertIn('blacklist_publisher_groups', response_dict['data']['errors'])
 
     @patch('utils.redirector_helper.insert_adgroup')
     def test_end_date_in_the_past(self, mock_redirector_insert_adgroup):
@@ -2087,6 +2095,8 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['ga_tracking_type'], 1)
         self.assertEqual(content['data']['settings']['ga_property_id'], '')
         self.assertEqual(content['data']['settings']['adobe_tracking_param'], '')
+        self.assertEqual(content['data']['settings']['whitelist_publisher_groups'], [1])
+        self.assertEqual(content['data']['settings']['blacklist_publisher_groups'], [1])
 
     @patch('dash.views.agency.ga_helper.is_readable')
     @patch('utils.redirector_helper.insert_adgroup')
@@ -2100,6 +2110,7 @@ class CampaignSettingsTest(TestCase):
             'can_modify_campaign_manager',
             'can_modify_campaign_iab_category',
             'can_set_ga_api_tracking',
+            'can_set_white_blacklist_publisher_groups',
         ])
         campaign = models.Campaign.objects.get(pk=1)
 
@@ -2137,6 +2148,8 @@ class CampaignSettingsTest(TestCase):
                     'ga_tracking_type': 2,
                     'ga_property_id': 'UA-123456789-3',
                     'adobe_tracking_param': 'cid',
+                    'whitelist_publisher_groups': [1, 3],
+                    'blacklist_publisher_groups': [1, 3],
                 }
             }),
             content_type='application/json',
@@ -2161,6 +2174,8 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.ga_property_id, 'UA-123456789-3')
         self.assertEqual(settings.enable_adobe_tracking, True)
         self.assertEqual(settings.adobe_tracking_param, 'cid')
+        self.assertEqual(settings.whitelist_publisher_groups, [1, 3])
+        self.assertEqual(settings.blacklist_publisher_groups, [1, 3])
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
         mock_send_ga_email.assert_called_with(self.user)
@@ -2540,6 +2555,7 @@ class AccountSettingsTest(TestCase):
         account = models.Account.objects.get(pk=1)
         account.allowed_sources.clear()
         account.allowed_sources.add(1, 2)
+        self.account = account
 
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
@@ -2554,7 +2570,7 @@ class AccountSettingsTest(TestCase):
         return client
 
     def _get_form_with_allowed_sources_dict(self, allowed_sources_dict):
-        form = forms.AccountSettingsForm()
+        form = forms.AccountSettingsForm(self.account)
         form.cleaned_data = {'allowed_sources': allowed_sources_dict}
         return form
 
@@ -2602,6 +2618,8 @@ class AccountSettingsTest(TestCase):
             'id': '1',
             'archived': False,
             'facebook_status': 'Empty',
+            'whitelist_publisher_groups': [1],
+            'blacklist_publisher_groups': [1],
         })
 
     def test_get_as_agency_manager(self):
@@ -2609,6 +2627,7 @@ class AccountSettingsTest(TestCase):
             'can_modify_account_name',
             'can_modify_account_manager',
         ])
+        self.maxDiff = None
         user = User.objects.get(pk=2)
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(user)
@@ -2622,7 +2641,9 @@ class AccountSettingsTest(TestCase):
             'name': 'Chuck ads',
             'default_account_manager': None,
             'id': '1000',
-            'archived': False
+            'archived': False,
+            'whitelist_publisher_groups': [],
+            'blacklist_publisher_groups': [],
         })
 
         add_permissions(user, ['can_set_account_sales_representative'])
@@ -2639,6 +2660,8 @@ class AccountSettingsTest(TestCase):
             'default_sales_representative': None,
             'id': '1000',
             'archived': False,
+            'whitelist_publisher_groups': [],
+            'blacklist_publisher_groups': [],
         })
 
         add_permissions(user, ['can_modify_allowed_sources'])
@@ -2659,6 +2682,8 @@ class AccountSettingsTest(TestCase):
                                 },
             'id': '1000',
             'archived': False,
+            'whitelist_publisher_groups': [],
+            'blacklist_publisher_groups': [],
         })
 
         add_permissions(user, ['can_modify_account_type'])
@@ -2680,6 +2705,8 @@ class AccountSettingsTest(TestCase):
             'account_type': constants.AccountType.UNKNOWN,
             'id': '1000',
             'archived': False,
+            'whitelist_publisher_groups': [],
+            'blacklist_publisher_groups': [],
         })
 
         add_permissions(user, ['can_see_salesforce_url'])
@@ -2702,6 +2729,8 @@ class AccountSettingsTest(TestCase):
             'salesforce_url': None,
             'id': '1000',
             'archived': False,
+            'whitelist_publisher_groups': [],
+            'blacklist_publisher_groups': [],
         })
 
     def test_get_can_set_agency(self):
@@ -2726,6 +2755,8 @@ class AccountSettingsTest(TestCase):
             'id': '1000',
             'archived': False,
             'agency': u'Alfa&Omega',
+            'whitelist_publisher_groups': [],
+            'blacklist_publisher_groups': [],
         })
         agencies = [{
             u'name': u'Alfa&Omega',
@@ -2946,7 +2977,9 @@ class AccountSettingsTest(TestCase):
         self.assertTrue(response['success'])
         self.assertDictEqual(response['data']['settings'], {
             'id': '1',
-            'archived': False
+            'archived': False,
+            'whitelist_publisher_groups': [1],
+            'blacklist_publisher_groups': [1],
         })
 
     @patch('requests.get')
@@ -3003,8 +3036,8 @@ class AccountSettingsTest(TestCase):
             'account_type': 4,
             'name': 'changed name',
             'salesforce_url': None,
-            'whitelist_publisher_groups': [],
-            'blacklist_publisher_groups': [],
+            'whitelist_publisher_groups': [1],
+            'blacklist_publisher_groups': [1],
         })
         self.assertEqual(content['data']['settings']['facebook_page'], 'http://www.facebook.com/dummy_page')
         self.assertEqual(content['data']['settings']['facebook_status'], 'Pending')

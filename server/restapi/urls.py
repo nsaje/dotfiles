@@ -4,6 +4,16 @@ import views
 
 urlpatterns = [
     url(
+        r'^accounts/(?P<entity_id>\d+)$',
+        views.AccountViewDetails.as_view(),
+        name='accounts_details'
+    ),
+    url(
+        r'^accounts/$',
+        views.AccountViewList.as_view(),
+        name='accounts_list'
+    ),
+    url(
         r'^accounts/(?P<account_id>\d+)/credits/$',
         views.AccountCreditViewList.as_view(),
         name='accounts_credits_list'

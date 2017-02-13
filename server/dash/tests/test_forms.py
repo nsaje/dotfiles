@@ -29,6 +29,9 @@ EXAMPLE_CSV_CONTENT = [
 class AccountSettingsFormTest(TestCase):
     fixtures = ['test_views.yaml']
 
+    def setUp(self):
+        self.account = models.Account.objects.get(pk=1)
+
     @classmethod
     def setUpClass(cls):
         super(AccountSettingsFormTest, cls).setUpClass()  # loads fixtures
@@ -38,7 +41,7 @@ class AccountSettingsFormTest(TestCase):
         user.save()
 
     def test_invalid_sales_rep(self):
-        form = forms.AccountSettingsForm({
+        form = forms.AccountSettingsForm(self.account, {
             'id': 1,
             'name': 'Name',
             'default_account_manager': 2,
@@ -53,7 +56,7 @@ class AccountSettingsFormTest(TestCase):
         with self.assertRaises(User.DoesNotExist):
             User.objects.get(pk=account_manager_id)
 
-        form = forms.AccountSettingsForm({
+        form = forms.AccountSettingsForm(self.account, {
             'id': 1,
             'name': 'Name',
             'default_account_manager': account_manager_id,
@@ -64,7 +67,7 @@ class AccountSettingsFormTest(TestCase):
         self.assertTrue(form.has_error('default_account_manager'))
 
     def test_invalid_account_type(self):
-        form = forms.AccountSettingsForm({
+        form = forms.AccountSettingsForm(self.account, {
             'id': 1,
             'name': 'Name',
             'account_type': 'invalid'
@@ -73,7 +76,7 @@ class AccountSettingsFormTest(TestCase):
         self.assertTrue(form.has_error('account_type'))
 
     def test_allowed_sources(self):
-        form = forms.AccountSettingsForm({
+        form = forms.AccountSettingsForm(self.account, {
             'id': 1,
             'name': 'Name',
             'default_account_manager': 3,
@@ -85,8 +88,21 @@ class AccountSettingsFormTest(TestCase):
                          {1: {'name': 'Source name', 'allowed': False}}
                          )
 
+    def test_publisher_groups(self):
+        form = forms.AccountSettingsForm(self.account, {
+            'id': 1,
+            'name': 'Name',
+            'default_account_manager': 3,
+            'default_sales_representative': 2,
+            'whitelist_publisher_groups': [1],
+            'blacklist_publisher_groups': [1],
+        })
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['whitelist_publisher_groups'], [1])
+        self.assertEqual(form.cleaned_data['blacklist_publisher_groups'], [1])
+
     def _gen_allowed_sources_form(self, allowed_sources_dict):
-        return forms.AccountSettingsForm({
+        return forms.AccountSettingsForm(self.account, {
             'id': 1,
             'name': 'Name',
             'default_account_manager': 3,
@@ -115,7 +131,7 @@ class AccountSettingsFormTest(TestCase):
         self.assertTrue(form.has_error('allowed_sources'))
 
     def test_duplicated_account_name(self):
-        form = forms.AccountSettingsForm({
+        form = forms.AccountSettingsForm(self.account, {
             'id': 1,
             'name': 'test account 1',
             'default_account_manager': 3,
@@ -124,7 +140,7 @@ class AccountSettingsFormTest(TestCase):
         })
         self.assertTrue(form.is_valid(), "Form should be valid as the account id is the same")
 
-        form = forms.AccountSettingsForm({
+        form = forms.AccountSettingsForm(self.account, {
             'id': 2,
             'name': 'test account 1',
             'default_account_manager': 3,
@@ -205,12 +221,14 @@ class CampaignSettingsFormTest(TestCase):
             'enable_ga_tracking': True,
             'ga_tracking_type': 2,
             'ga_property_id': 'UA-123456789-1',
+            'whitelist_publisher_groups': [],
+            'blacklist_publisher_groups': [],
         }
 
     @patch('utils.dates_helper.local_today')
     def test_form(self, mock_today):
         mock_today.return_value = datetime.date(2014, 12, 31)
-        form = forms.CampaignSettingsForm(self.data)
+        form = forms.CampaignSettingsForm(self.campaign, self.data)
 
         self.assertTrue(form.is_valid())
 
@@ -229,12 +247,14 @@ class CampaignSettingsFormTest(TestCase):
             'ga_property_id': 'UA-123456789-1',
             'enable_adobe_tracking': False,
             'adobe_tracking_param': '',
+            'whitelist_publisher_groups': [],
+            'blacklist_publisher_groups': [],
         })
 
     @patch('utils.dates_helper.local_today')
     def test_default_value_enable_ga_tracking(self, mock_today):
         mock_today.return_value = datetime.date(2014, 12, 31)
-        form = forms.CampaignSettingsForm(self.data)
+        form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_ga_tracking', form.cleaned_data)
         self.assertTrue(form.cleaned_data['enable_ga_tracking'])
@@ -242,14 +262,14 @@ class CampaignSettingsFormTest(TestCase):
         del self.data['enable_ga_tracking']
 
         # should be True if not set
-        form = forms.CampaignSettingsForm(self.data)
+        form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_ga_tracking', form.cleaned_data)
         self.assertTrue(form.cleaned_data['enable_ga_tracking'])
 
         self.data['enable_ga_tracking'] = False
 
-        form = forms.CampaignSettingsForm(self.data)
+        form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_ga_tracking', form.cleaned_data)
         self.assertFalse(form.cleaned_data['enable_ga_tracking'])
@@ -258,7 +278,7 @@ class CampaignSettingsFormTest(TestCase):
     def test_default_value_enable_adobe_tracking(self, mock_today):
         mock_today.return_value = datetime.date(2014, 12, 31)
         # should be False if not set
-        form = forms.CampaignSettingsForm(self.data)
+        form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_adobe_tracking', form.cleaned_data)
 
@@ -267,13 +287,13 @@ class CampaignSettingsFormTest(TestCase):
         self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
 
         self.data['enable_adobe_tracking'] = False
-        form = forms.CampaignSettingsForm(self.data)
+        form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_adobe_tracking', form.cleaned_data)
         self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
 
         self.data['enable_adobe_tracking'] = True
-        form = forms.CampaignSettingsForm(self.data)
+        form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_adobe_tracking', form.cleaned_data)
         self.assertEqual(form.cleaned_data['enable_adobe_tracking'], True)
@@ -284,7 +304,7 @@ class CampaignSettingsFormTest(TestCase):
         self.data['ga_tracking_type'] = 1
         self.data['ga_property_id'] = 'abcd'
 
-        form = forms.CampaignSettingsForm(self.data)
+        form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('ga_property_id', form.cleaned_data)
         self.assertIsNone(form.cleaned_data['ga_property_id'])
@@ -296,7 +316,7 @@ class CampaignSettingsFormTest(TestCase):
         self.data['ga_tracking_type'] = 2
         self.data['ga_property_id'] = 'abcd'
 
-        form = forms.CampaignSettingsForm(self.data)
+        form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('ga_property_id', form.cleaned_data)
         self.assertIsNone(form.cleaned_data['ga_property_id'])
@@ -307,7 +327,7 @@ class CampaignSettingsFormTest(TestCase):
         self.data['ga_tracking_type'] = 2
         self.data['ga_property_id'] = ''
 
-        form = forms.CampaignSettingsForm(self.data)
+        form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertFalse(form.is_valid())
         self.assertIn('ga_property_id', form.errors)
         self.assertEqual(form.errors['ga_property_id'], ['Web property ID is required.'])
@@ -318,7 +338,7 @@ class CampaignSettingsFormTest(TestCase):
         self.data['ga_tracking_type'] = 2
         self.data['ga_property_id'] = 'ABC'
 
-        form = forms.CampaignSettingsForm(self.data)
+        form = forms.CampaignSettingsForm(self.campaign, self.data)
         self.assertFalse(form.is_valid())
         self.assertIn('ga_property_id', form.errors)
         self.assertEqual(form.errors['ga_property_id'], ['Web property ID is not valid.'])
@@ -358,6 +378,7 @@ class AdGroupSettingsFormTest(TestCase):
             'b1_sources_group_state': 2,
             'b1_sources_group_cpc_cc': Decimal('0.1'),
             'whitelist_publisher_groups': [1],
+            'blacklist_publisher_groups': [1],
             'ad_group_mode': 2,
             'price_discovery': 2,
         }
@@ -397,6 +418,7 @@ class AdGroupSettingsFormTest(TestCase):
             'b1_sources_group_state': 2,
             'b1_sources_group_cpc_cc': Decimal('0.1'),
             'whitelist_publisher_groups': [1],
+            'blacklist_publisher_groups': [1],
             'ad_group_mode': 2,
             'price_discovery': 2,
         })
@@ -499,6 +521,10 @@ class AdGroupSettingsFormTest(TestCase):
             'whitelist_publisher_groups': [
                 # adgroup 2 belongs to account 2, publisher group 1 to account 1
                 'Invalid whitelist publisher group selection.'
+            ],
+            'blacklist_publisher_groups': [
+                # adgroup 2 belongs to account 2, publisher group 1 to account 1
+                'Invalid blacklist publisher group selection.'
             ],
         }
         self.assertEqual(form.errors, expected)

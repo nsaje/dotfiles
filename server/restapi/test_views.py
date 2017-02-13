@@ -8,6 +8,7 @@ from django.http import Http404
 from rest_framework.test import APIClient
 from zemauth.models import User
 from django.core.urlresolvers import reverse
+from rest_framework import exceptions
 
 import dash.models
 import dash.threads
@@ -51,12 +52,78 @@ class RESTAPITest(TestCase):
         self.maxDiff = None
 
     def assertResponseValid(self, r, status_code=200, data_type=dict):
+        self.assertNotIn('errorCode', r.content)
         self.assertEqual(r.status_code, status_code)
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], data_type)
         if data_type == list:
             self.assertGreater(len(resp_json['data']), 0)
         return resp_json
+
+    def assertResponseError(self, r, error_code):
+        self.assertIn('errorCode', r.content)
+        resp_json = json.loads(r.content)
+        self.assertEqual(resp_json['errorCode'], error_code)
+
+
+class AccountsTest(RESTAPITest):
+
+    @classmethod
+    def account_repr(
+        cls,
+        id=1,
+        name='My test account',
+        whitelist_publisher_groups=[153],
+        blacklist_publisher_groups=[154],
+            ):
+        representation = {
+            'id': str(id),
+            'name': name,
+            'targeting': {
+                'publisherGroups': {
+                    'included': whitelist_publisher_groups,
+                    'excluded': blacklist_publisher_groups,
+                }
+            },
+        }
+        return normalize(representation)
+
+    def validate_against_db(self, account):
+        account_db = dash.models.Account.objects.get(pk=account['id'])
+        settings_db = account_db.get_current_settings()
+        expected = self.account_repr(
+            id=account_db.id,
+            name=account_db.name,
+            whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
+            blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
+        )
+        self.assertEqual(expected, account)
+
+    def test_accounts_list(self):
+        r = self.client.get(reverse('accounts_list'))
+        resp_json = self.assertResponseValid(r, data_type=list)
+        for item in resp_json['data']:
+            self.validate_against_db(item)
+
+    def test_accounts_post(self):
+        r = self.client.post(
+            reverse('accounts_list'),
+            data={'id': 608, 'name': 'new account'}, format='json')
+        self.assertResponseError(r, 'MethodNotAllowed')
+
+    def test_accounts_get(self):
+        r = self.client.get(reverse('accounts_details', kwargs={'entity_id': 186}))
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+
+    def test_accounts_put(self):
+        test_account = self.account_repr(id=186, whitelist_publisher_groups=[153, 154], blacklist_publisher_groups=[153, 154])
+        r = self.client.put(
+            reverse('accounts_details', kwargs={'entity_id': 186}),
+            data=test_account, format='json')
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json['data'])
+        self.assertEqual(resp_json['data'], test_account)
 
 
 class AccountCreditsTest(RESTAPITest):
@@ -115,7 +182,9 @@ class CampaignsTest(RESTAPITest):
         ga_tracking_type=constants.GATrackingType.EMAIL,
         ga_property_id='',
         enable_adobe_tracking=False,
-        adobe_tracking_param='cid'
+        adobe_tracking_param='cid',
+        whitelist_publisher_groups=[153],
+        blacklist_publisher_groups=[154],
             ):
         representation = {
             'id': str(id),
@@ -132,7 +201,13 @@ class CampaignsTest(RESTAPITest):
                     'enabled': enable_adobe_tracking,
                     'trackingParameter': adobe_tracking_param,
                 }
-            }
+            },
+            'targeting': {
+                'publisherGroups': {
+                    'included': whitelist_publisher_groups,
+                    'excluded': blacklist_publisher_groups,
+                }
+            },
         }
         return normalize(representation)
 
@@ -149,6 +224,8 @@ class CampaignsTest(RESTAPITest):
             ga_property_id=settings_db.ga_property_id,
             enable_adobe_tracking=settings_db.enable_adobe_tracking,
             adobe_tracking_param=settings_db.adobe_tracking_param,
+            whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
+            blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
         )
         self.assertEqual(expected, campaign)
 
@@ -413,7 +490,8 @@ class AdGroupsTest(RESTAPITest):
         autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
         autopilot_daily_budget='50.00',
         dayparting={},
-        whitelist_publisher_groups=[],
+        whitelist_publisher_groups=[153],
+        blacklist_publisher_groups=[154],
         price_discovery=constants.AdGroupSettingsPriceDiscovery.MANUAL,
         ad_group_mode=constants.AdGroupSettingsMode.MANUAL,
             ):
@@ -445,6 +523,7 @@ class AdGroupsTest(RESTAPITest):
                 'demographic': demographic_targeting,
                 'publisherGroups': {
                     'included': whitelist_publisher_groups,
+                    'excluded': blacklist_publisher_groups,
                 }
             },
             'autopilot': {
@@ -482,6 +561,7 @@ class AdGroupsTest(RESTAPITest):
             autopilot_daily_budget=settings_db.autopilot_daily_budget.quantize(Decimal('1.00')),
             dayparting=settings_db.dayparting,
             whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
+            blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
         )
 
         if 'state' not in adgroup['autopilot']:

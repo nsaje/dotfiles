@@ -80,6 +80,8 @@
         default_account_manager: 2
         default_sales_representative: 3
         account_type: 3
+        whitelist_publisher_groups: [1]
+        blacklist_publisher_groups: [1]
     model: dash.accountsettings
     pk: 1
 
@@ -95,6 +97,8 @@
         goal_quantity: 0
         target_devices: ['mobile']
         target_regions: ['NC', '501']
+        whitelist_publisher_groups: [1]
+        blacklist_publisher_groups: [1]
     model: dash.campaignsettings
     pk: 1
 
@@ -398,3 +402,13 @@
         modified_by: 1
     model: dash.publishergroup
     pk: 2
+
+-   fields:
+        name: 'pg 3'
+        account: 1
+        agency: !!null
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+    model: dash.publishergroup
+    pk: 3

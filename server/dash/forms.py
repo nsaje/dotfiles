@@ -64,6 +64,40 @@ fbq('init', '531027177051024');
 fbq('track', "PageView");'''
 
 
+class PublisherGroupsFormMixin(forms.Form):
+
+    whitelist_publisher_groups = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=None,
+        error_messages={
+            'invalid_choice': 'Invalid whitelist publisher group selection.'
+        }
+    )
+
+    blacklist_publisher_groups = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=None,
+        error_messages={
+            'invalid_choice': 'Invalid blacklist publisher group selection.'
+        }
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(PublisherGroupsFormMixin, self).__init__(*args, **kwargs)
+        self.fields['whitelist_publisher_groups'].queryset = models.PublisherGroup.objects.all().filter_by_account(
+            self.account)
+        self.fields['blacklist_publisher_groups'].queryset = models.PublisherGroup.objects.all().filter_by_account(
+            self.account)
+
+    def clean_whitelist_publisher_groups(self):
+        publisher_groups = self.cleaned_data.get('whitelist_publisher_groups') or []
+        return [x.id for x in publisher_groups]
+
+    def clean_blacklist_publisher_groups(self):
+        publisher_groups = self.cleaned_data.get('blacklist_publisher_groups') or []
+        return [x.id for x in publisher_groups]
+
+
 class AdGroupAdminForm(forms.ModelForm):
     SETTINGS_FIELDS = [
         'notes',
@@ -117,7 +151,7 @@ class AdGroupAdminForm(forms.ModelForm):
         fields = '__all__'
 
 
-class AdGroupSettingsForm(forms.Form):
+class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
         max_length=127,
@@ -226,14 +260,6 @@ class AdGroupSettingsForm(forms.Form):
         }
     )
 
-    whitelist_publisher_groups = forms.ModelMultipleChoiceField(
-        required=False,
-        queryset=None,
-        error_messages={
-            'invalid_choice': 'Invalid whitelist publisher group selection.'
-        }
-    )
-
     bluekai_targeting = fields.TargetingExpressionField(
         required=False, help_text='Example: ["and", "bluekai:446103", ["not", ["or", "bluekai:510120", "bluekai:510122"]]]')
 
@@ -274,9 +300,11 @@ class AdGroupSettingsForm(forms.Form):
     )
 
     def __init__(self, ad_group, user, *args, **kwargs):
+        self.ad_group = ad_group
+        self.account = ad_group.campaign.account
+
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
-        self.ad_group = ad_group
         self.fields['retargeting_ad_groups'].queryset = models.AdGroup.objects.filter(
             campaign__account=ad_group.campaign.account).filter_by_user(user)
         self.fields['exclusion_retargeting_ad_groups'].queryset = models.AdGroup.objects.filter(
@@ -285,8 +313,6 @@ class AdGroupSettingsForm(forms.Form):
             pixel__account_id=ad_group.campaign.account.pk)
         self.fields['exclusion_audience_targeting'].queryset = models.Audience.objects.filter(
             pixel__account_id=ad_group.campaign.account.pk)
-        self.fields['whitelist_publisher_groups'].queryset = models.PublisherGroup.objects.all().filter_by_account(
-            ad_group.campaign.account)
         self.current_settings = self.ad_group.get_current_settings()
 
     def _clean_autopilot_daily_budget(self, cleaned_data):
@@ -397,10 +423,6 @@ class AdGroupSettingsForm(forms.Form):
             cpc_cc, self.ad_group)
         return cpc_cc
 
-    def clean_whitelist_publisher_groups(self):
-        publisher_groups = self.cleaned_data.get('whitelist_publisher_groups') or []
-        return [x.id for x in publisher_groups]
-
 
 class AdGroupSourceSettingsCpcForm(forms.Form):
     cpc_cc = forms.DecimalField(
@@ -454,7 +476,7 @@ class AdGroupSourceSettingsStateForm(forms.Form):
     )
 
 
-class AccountSettingsForm(forms.Form):
+class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
         max_length=127,
@@ -478,6 +500,10 @@ class AccountSettingsForm(forms.Form):
     allowed_sources = forms.Field(required=False)
     facebook_page = forms.CharField(max_length=255, required=False)
     salesforce_url = forms.CharField(max_length=255, required=False)
+
+    def __init__(self, account, *args, **kwargs):
+        self.account = account
+        super(AccountSettingsForm, self).__init__(*args, **kwargs)
 
     def clean_name(self):
         name = self.cleaned_data.get('name')
@@ -726,7 +752,7 @@ class CampaignAdminForm(forms.ModelForm):
         )
 
 
-class CampaignSettingsForm(forms.Form):
+class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
         max_length=127,
@@ -769,6 +795,10 @@ class CampaignSettingsForm(forms.Form):
     enable_adobe_tracking = forms.NullBooleanField(required=False)
 
     adobe_tracking_param = forms.CharField(max_length=10, required=False)
+
+    def __init__(self, campaign, *args, **kwargs):
+        self.account = campaign.account
+        super(CampaignSettingsForm, self).__init__(*args, **kwargs)
 
     def clean_campaign_manager(self):
         campaign_manager_id = self.cleaned_data.get('campaign_manager')

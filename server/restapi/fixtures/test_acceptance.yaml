@@ -27,6 +27,8 @@
       - ['can_set_adgroup_to_auto_pilot', 'zemauth', 'user']
       - ['can_set_ad_group_max_cpc', 'zemauth', 'user']
       - ['can_set_ad_group_max_cpm', 'zemauth', 'user']
+      - ['can_modify_account_name', 'zemauth', 'user']
+      - ['can_set_white_blacklist_publisher_groups', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1

@@ -222,7 +222,82 @@ Authorization: Basic base64(<client_id>:<client_secret>)
         }
 
 
-# Group Account Credit Management
+# Group Account Management
+
+## Accounts [/rest/v1/accounts/]
+
+Property  | Type                  | Description                                | Update
+----------|-----------------------|--------------------------------------------|-----------|
+id        | string                | the account's id                           | read only
+name      | string                | the name of the account                    | optional
+targeting | [targeting](#account-targeting) | account targeting settings       | optional
+
+
+<a name="account-targeting"></a>
+#### Account Targeting Settings
+
+Targeting        | Property | Property  | Type                                          | Description
+-----------------|----------|-----------|-----------------------------------------------|---------------------------------------------------------------------------------------------|
+publisherGroups  |          |           |                                               | 
+&nbsp;           | included |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
+&nbsp;           | excluded |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs
+
+
+### Get account details [GET /rest/v1/accounts/{accountId}]
+
++ Parameters
+    + accountId: 186 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "186",
+                "name": "My account",
+                "targeting": {
+                    "publisherGroups": {
+                    "included": [],
+                    "excluded": []
+                    }
+                }
+            }
+        }
+
+
+### Update account details [PUT /rest/v1/accounts/{accountId}]
+
++ Parameters
+    + accountId: 186 (required)
+
++ Request (application/json)
+
+        {
+            "name": "My renamed account",
+            "targeting": {
+                "publisherGroups": {
+                    "included": ["153"],
+                    "excluded": ["154"]
+                }
+            }
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "186",
+                "name": "My renamed account",
+                "targeting": {
+                    "publisherGroups": {
+                        "included": ["153"],
+                        "excluded": ["154"]
+                    }
+                }
+            }
+        }
+
+
+## Account Credit [/rest/v1/accounts/{accountId}/credits/]
 <a name="credit"></a>
 
 After your Insertion Order for media spend has been executed Zemanta's Customer Success team
@@ -275,6 +350,7 @@ accountId | string                | id of the account this campaign belongs to |
 name      | string                | the name of the campaign                   | required | optional
 archived  | bool                  | Is the Campaign archived? Set to `true` to archive a Campaign and to `false` to restore it. | optional | optional
 tracking  | [tracking](#tracking) | tracking settings                          | optional | optional
+targeting    | [targeting](#campaign-targeting)   | campaign targeting settings                                                                                                               | optional | optional
 
 
 <a name="tracking"></a>
@@ -291,6 +367,15 @@ ga       |                   |                                       |
 adobe    |                   |                                       |
 &nbsp;   | enabled           | boolean                               | Adobe Analytics integration enabled
 &nbsp;   | trackingParameter | string                                | Adobe Analytics tracking parameter
+
+<a name="campaign-targeting"></a>
+#### Campaign Targeting Settings
+
+Targeting        | Property | Property  | Type                                          | Description
+-----------------|----------|-----------|-----------------------------------------------|---------------------------------------------------------------------------------------------|
+publisherGroups  |          |           |                                               | 
+&nbsp;           | included |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
+&nbsp;           | excluded |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs
 
 
 ### Get campaign details [GET /rest/v1/campaigns/{campaignId}]
@@ -750,6 +835,7 @@ interest         |          |           |
 &nbsp;           | excluded |           | array[[interestCategory](#interest-category)] | interest categories to avoid
 publisherGroups  |          |           |                                               | 
 &nbsp;           | included |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | whitelisted publisher group IDs
+&nbsp;           | excluded |           | array[[publisherGroupId](#publishers-management-publisher-groups)]   | blacklisted publisher group IDs
 
 
 <a name="dayparting"></a>

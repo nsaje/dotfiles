@@ -4536,6 +4536,9 @@ class PublisherGroup(models.Model):
 
     objects = QuerySetManager()
 
+    class Meta:
+        ordering = ('pk',)
+
     class QuerySet(models.QuerySet):
 
         def filter_by_account(self, account):

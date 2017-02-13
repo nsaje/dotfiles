@@ -1,7 +1,6 @@
 import collections
 import logging
 import influx
-from django.conf import settings
 import ipware.ip
 import time
 
@@ -208,6 +207,36 @@ class SettingsSerializer(serializers.BaseSerializer):
         return new_dict
 
 
+class AccountSerializer(SettingsSerializer):
+
+    def update(self, data_internal, validated_data):
+        data_internal_new = super(AccountSerializer, self).update(data_internal, validated_data)
+        return data_internal_new
+
+    def to_representation(self, data_internal):
+        settings = data_internal['data']['settings']
+        return {
+            'id': settings['id'],
+            'name': settings['name'],
+            'targeting': {
+                'publisherGroups': {
+                    'included': settings['whitelist_publisher_groups'],
+                    'excluded': settings['blacklist_publisher_groups'],
+                }
+            }
+        }
+
+    def to_internal_value(self, external_data):
+        data = self._allow_not_provided(external_data)
+        settings = {
+            'id': data['id'],
+            'name': data['name'],
+            'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
+            'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
+        }
+        return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
+
+
 class AccountCreditSerializer(serializers.Serializer):
 
     def to_representation(self, internal_data):
@@ -271,6 +300,12 @@ class CampaignSerializer(SettingsSerializer):
                     'trackingParameter': settings['adobe_tracking_param'],
                 },
             },
+            'targeting': {
+                'publisherGroups': {
+                    'included': settings['whitelist_publisher_groups'],
+                    'excluded': settings['blacklist_publisher_groups'],
+                }
+            }
         }
 
     def to_internal_value(self, external_data):
@@ -285,6 +320,8 @@ class CampaignSerializer(SettingsSerializer):
             'ga_property_id': data['tracking']['ga']['webPropertyId'],
             'enable_adobe_tracking': data['tracking']['adobe']['enabled'],
             'adobe_tracking_param': data['tracking']['adobe']['trackingParameter'],
+            'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
+            'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
         }
         return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
 
@@ -346,6 +383,7 @@ class AdGroupSerializer(SettingsSerializer):
                 'demographic': settings['bluekai_targeting'],
                 'publisherGroups': {
                     'included': settings['whitelist_publisher_groups'],
+                    'excluded': settings['blacklist_publisher_groups'],
                 }
             },
             'autopilot': {
@@ -386,6 +424,7 @@ class AdGroupSerializer(SettingsSerializer):
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
             'dayparting': data['dayparting'],
             'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
+            'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
             'ad_group_mode': DashConstantField(constants.AdGroupSettingsMode).to_internal_value(data['adGroupMode']),
             'price_discovery': DashConstantField(constants.AdGroupSettingsPriceDiscovery).to_internal_value(data['priceDiscovery']),
         }
@@ -446,7 +485,13 @@ class SettingsViewList(RESTAPIBaseView):
         view_internal = self.internal_view_cls(rest_proxy=True)
         settings_list = self._get_settings_list(request)
         data_list_internal = [{'data': {
-                                   'settings': view_internal.get_dict(request, settings, getattr(settings, 'ad_group', None) or getattr(settings, 'campaign')),
+                                   'settings': view_internal.get_dict(
+                                       request,
+                                       settings,
+                                       (getattr(settings, 'ad_group', None) or
+                                           getattr(settings, 'campaign', None) or
+                                           getattr(settings, 'account'))
+                                    ),
                                    'archived': settings.archived
                               }}
                               for settings in settings_list]
@@ -454,6 +499,8 @@ class SettingsViewList(RESTAPIBaseView):
         return self.response_ok(serializer.data)
 
     def post(self, request):
+        if not hasattr(self, 'internal_create_view_cls'):
+            raise exceptions.MethodNotAllowed('POST')
         with transaction.atomic():
             create_view_internal = self.internal_create_view_cls(rest_proxy=True)
             parent_id = request.data.get(self.parent_id_field)
@@ -466,6 +513,22 @@ class SettingsViewList(RESTAPIBaseView):
                 transaction.set_rollback(True)
             response.status_code = 201
             return response
+
+
+class AccountViewDetails(SettingsViewDetails):
+    internal_view_cls = agency.AccountSettings
+    serializer_cls = AccountSerializer
+
+
+class AccountViewList(SettingsViewList):
+    internal_view_cls = agency.AccountSettings
+    serializer_cls = AccountSerializer
+    details_view_cls = AccountViewDetails
+
+    def _get_settings_list(self, request):
+        accounts = dash.models.Account.objects.all().filter_by_user(request.user)
+        account_settings = dash.models.AccountSettings.objects.filter(account__in=accounts).group_current_settings().select_related('account')
+        return account_settings
 
 
 class CampaignViewDetails(SettingsViewDetails):
