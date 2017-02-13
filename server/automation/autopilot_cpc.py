@@ -25,13 +25,12 @@ def get_autopilot_cpc_recommendations(ad_group, adgroup_settings, data, budget_c
         cpc_change_comments = []
         old_cpc_cc = data[ag_source]['old_cpc_cc']
 
-        if not adjust_automatic_mode_rtb_cpcs or (adjust_automatic_mode_rtb_cpcs and
-                                                  source_type.type != dash.constants.SourceType.B1):
+        if not adjust_automatic_mode_rtb_cpcs or source_type.type != dash.constants.SourceType.B1:
             proposed_cpc, calculation_comments = calculate_new_autopilot_cpc(
                 old_cpc_cc,
                 budget_changes[ag_source]['new_budget'] if budget_changes else data[ag_source]['old_budget'],
                 data[ag_source]['yesterdays_spend_cc'])
-        elif adjust_automatic_mode_rtb_cpcs and source_type.type == dash.constants.SourceType.B1:
+        else:
             proposed_cpc, calculation_comments = calculate_new_autopilot_cpc_automatic_mode_rtb(
                 old_cpc_cc,
                 budget_changes[SourceAllRTB]['new_budget'] if budget_changes else data[SourceAllRTB]['old_budget'],

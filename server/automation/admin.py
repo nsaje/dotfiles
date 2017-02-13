@@ -56,6 +56,7 @@ class AutopilotLogAdmin(admin.ModelAdmin):
         'new_daily_budget',
         'yesterdays_spend_cc',
         'goal_value',
+        'campaign_goal_optimal_value',
         'yesterdays_clicks',
         'created_dt',
         'cpc_comments',
