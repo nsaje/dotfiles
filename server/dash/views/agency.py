@@ -106,6 +106,7 @@ class AdGroupSettings(api_common.BaseApiView):
         campaign_settings = ad_group.campaign.get_current_settings()
 
         self.validate_all_rtb_state(current_settings, new_settings)
+        self.validate_state_change(ad_group, current_settings, new_settings, campaign_settings)
         self.validate_yahoo_desktop_targeting(ad_group, current_settings, new_settings)
         self.validate_all_rtb_campaign_stop(ad_group, current_settings, new_settings, campaign_settings)
 
@@ -235,6 +236,17 @@ class AdGroupSettings(api_common.BaseApiView):
 
         return current_settings.get_setting_changes(new_settings), current_settings, new_settings
 
+    def validate_state_change(self, ad_group, current_settings, new_settings, campaign_settings):
+        if current_settings.state == new_settings.state:
+            return
+
+        helpers.validate_ad_groups_state(
+            [ad_group],
+            ad_group.campaign,
+            campaign_settings,
+            new_settings.state,
+        )
+
     @staticmethod
     def validate_yahoo_desktop_targeting(ad_group, settings, new_settings):
         # optimization: only check when targeting is changed to desktop only
@@ -347,6 +359,7 @@ class AdGroupSettings(api_common.BaseApiView):
         ad_group.name = resource['name']
 
     def set_settings(self, ad_group, latest_ad_group_source_settings, settings, resource, user):
+        settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
         settings.daily_budget_cc = resource['daily_budget_cc']

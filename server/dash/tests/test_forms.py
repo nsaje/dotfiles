@@ -332,6 +332,7 @@ class AdGroupSettingsFormTest(TestCase):
 
         self.user = User.objects.get(pk=1)
         self.data = {
+            'state': constants.AdGroupRunningStatus.INACTIVE,
             'cpc_cc': '1.00',
             'max_cpm': '1.50',
             'daily_budget_cc': '10.00',
@@ -368,6 +369,7 @@ class AdGroupSettingsFormTest(TestCase):
 
         self.maxDiff = None
         self.assertEqual(form.cleaned_data, {
+            'state': constants.AdGroupRunningStatus.INACTIVE,
             'cpc_cc': Decimal('1.00'),
             'max_cpm': Decimal('1.50'),
             'daily_budget_cc': Decimal('10.00'),
@@ -426,16 +428,6 @@ class AdGroupSettingsFormTest(TestCase):
 
     def test_max_cpc_setting_min_value(self):
         self.data['cpc_cc'] = 0.01
-        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
-        self.assertFalse(form.is_valid())
-
-    def test_max_cpc_setting_lower_min_source_value(self):
-        source = models.Source.objects.get(pk=1)
-        source.maintenance = False
-        source.deprecated = False
-        source.save()
-
-        self.data['cpc_cc'] = 0.1
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 

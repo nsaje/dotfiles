@@ -34,6 +34,7 @@ class AdGroupSettingsTest(TestCase):
         self.maxDiff = None
         self.settings_dict = {
             'settings': {
+                'state': constants.AdGroupRunningStatus.INACTIVE,
                 'start_date': '2015-05-01',
                 'end_date': str(datetime.date.today()),
                 'cpc_cc': '0.3000',
@@ -775,6 +776,7 @@ class AdGroupSettingsTest(TestCase):
             new_settings.state = constants.AdGroupSettingsState.ACTIVE
             new_settings.save(None)
 
+            self.settings_dict['settings']['state'] = constants.AdGroupSettingsState.ACTIVE
             self.settings_dict['settings']['end_date'] = '2015-05-02'
 
             add_permissions(self.user, ['settings_view'])

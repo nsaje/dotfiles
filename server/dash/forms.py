@@ -123,6 +123,11 @@ class AdGroupSettingsForm(forms.Form):
         max_length=127,
         error_messages={'required': 'Please specify ad group name.'}
     )
+    state = forms.TypedChoiceField(
+        choices=constants.AdGroupSettingsState.get_choices(),
+        coerce=int,
+        empty_value=None,
+    )
     start_date = forms.DateField(
         error_messages={
             'required': 'Please provide start date.',
@@ -287,7 +292,7 @@ class AdGroupSettingsForm(forms.Form):
         return [x.id for x in audiences]
 
     def clean_end_date(self):
-        state = self.current_settings.state
+        state = self.cleaned_data.get('state')
         end_date = self.cleaned_data.get('end_date')
         start_date = self.cleaned_data.get('start_date')
 
