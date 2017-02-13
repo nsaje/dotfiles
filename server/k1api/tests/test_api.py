@@ -682,8 +682,8 @@ class K1ApiTest(TestCase):
             },
             u'dayparting': {u'monday': [1, 2, 3], u'timezone': u'CET'},
             u'max_cpm': u'1.6000',
-            u'whitelist_publisher_groups': [1, 2, 5, 6, 9, 10],
-            u'blacklist_publisher_groups': [3, 4, 7, 8, 11, 12],
+            u'whitelist_publisher_groups': ListMatcher([1, 2, 5, 6, 9, 10]),
+            u'blacklist_publisher_groups': ListMatcher([3, 4, 7, 8, 11, 12]),
         })
 
     def test_get_ad_groups(self):

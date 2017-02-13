@@ -210,12 +210,10 @@
             background-image: url('images/checkbox-orange.svg');
         }
 
-        &:hover {
-            + .checkbox-text {
-                color: @primary-color;
-            }
+        + .checkbox-text:hover {
+            color: @primary-color;
 
-            + .checkbox-text::before {
+            &::before {
                 border: 1px solid @primary-color;
             }
         }
@@ -246,12 +244,10 @@
             background-color: @primary-color;
         }
 
-        &:hover {
-            + .radio-text {
-                color: @primary-color;
-            }
+        + .radio-text:hover {
+            color: @primary-color;
 
-            + .radio-text:before {
+            &::before {
                 border: 1px solid @primary-color;
             }
         }

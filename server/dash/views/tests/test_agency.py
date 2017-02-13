@@ -45,7 +45,6 @@ class AdGroupSettingsTest(TestCase):
                 'name': 'Test ad group name',
                 'id': 1,
                 'campaign_id': '1',
-                'autopilot_state': 2,
                 'autopilot_daily_budget': '150.0000',
                 'retargeting_ad_groups': [2],
                 'exclusion_retargeting_ad_groups': [9],
@@ -88,6 +87,7 @@ class AdGroupSettingsTest(TestCase):
 
         add_permissions(self.user, ['settings_view', 'can_view_retargeting_settings'])
         add_permissions(self.user, ['settings_view', 'can_target_custom_audiences'])
+        add_permissions(self.user, ['settings_view', 'can_set_ad_group_mode'])
         response = self.client.get(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
@@ -165,7 +165,6 @@ class AdGroupSettingsTest(TestCase):
                     'state': 2,
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['GB', 'US', 'CA'],
-                    'autopilot_state': 1,
                     'autopilot_daily_budget': '50.00',
                     'retargeting_ad_groups': [3],
                     'exclusion_retargeting_ad_groups': [4],
@@ -186,6 +185,9 @@ class AdGroupSettingsTest(TestCase):
                     'b1_sources_group_state': 1,
                     'b1_sources_group_cpc_cc': '0.0100',
                     'whitelist_publisher_groups': [],
+                    'landing_mode': False,
+                    'ad_group_mode': constants.AdGroupSettingsMode.AUTOMATIC,
+                    'price_discovery': constants.AdGroupSettingsPriceDiscovery.AUTOMATIC,
                 },
                 'warnings': {}
             },
@@ -292,6 +294,7 @@ class AdGroupSettingsTest(TestCase):
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
                 'can_set_white_blacklist_publisher_groups',
+                'can_set_ad_group_mode',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -320,7 +323,6 @@ class AdGroupSettingsTest(TestCase):
                         'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
-                        'autopilot_state': 2,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
@@ -341,6 +343,9 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.0100',
                         'whitelist_publisher_groups': [1],
+                        'landing_mode': False,
+                        'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
+                        'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
                     }
                 },
                 'success': True
@@ -377,6 +382,7 @@ class AdGroupSettingsTest(TestCase):
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
+                'can_set_ad_group_mode',
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -409,7 +415,6 @@ class AdGroupSettingsTest(TestCase):
                         'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
-                        'autopilot_state': 2,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
@@ -430,6 +435,9 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.0100',
                         'whitelist_publisher_groups': [],  # no permission to set
+                        'landing_mode': False,
+                        'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
+                        'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
                     }
                 },
                 'success': True
@@ -548,6 +556,7 @@ class AdGroupSettingsTest(TestCase):
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
                 'can_set_white_blacklist_publisher_groups',
+                'can_set_ad_group_mode',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -575,7 +584,6 @@ class AdGroupSettingsTest(TestCase):
                         'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
-                        'autopilot_state': 2,
                         'autopilot_daily_budget': '0.00',
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
@@ -596,6 +604,9 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.3000',
                         'whitelist_publisher_groups': [1],
+                        'landing_mode': False,
+                        'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
+                        'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
                     }
                 },
                 'success': True
@@ -627,7 +638,8 @@ class AdGroupSettingsTest(TestCase):
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
-                'can_set_rtb_sources_as_one_cpc'
+                'can_set_rtb_sources_as_one_cpc',
+                'can_set_ad_group_mode'
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -660,7 +672,6 @@ class AdGroupSettingsTest(TestCase):
                         'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
-                        'autopilot_state': 2,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
@@ -681,6 +692,9 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.1',
                         'whitelist_publisher_groups': [],  # no permission to set
+                        'landing_mode': False,
+                        'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
+                        'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
                     }
                 },
                 'success': True
@@ -812,26 +826,52 @@ class AdGroupSettingsTest(TestCase):
             self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
 
-    def test_validate_all_rtb_state(self):
+    def test_validate_ad_group_mode_to_automatic_wo_all_rtb_enabled(self):
+        view = agency.AdGroupSettings()
+        current_settings = models.AdGroupSettings()
+        new_settings = models.AdGroupSettings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        request = HttpRequest()
+        request.user = self.user
+        add_permissions(request.user, ['can_set_ad_group_mode'])
+
+        current_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = False
+
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+
+        with self.assertRaises(exc.ValidationError):
+            view.validate_ad_group_mode(request, current_settings, new_settings)
+
+        new_settings.state = constants.AdGroupSettingsState.INACTIVE
+        with self.assertRaises(exc.ValidationError):
+            view.validate_ad_group_mode(request, current_settings, new_settings)
+
+    def test_validate_all_rtb_state_old(self):
         view = agency.AdGroupSettings()
         settings = models.AdGroupSettings()
         new_settings = models.AdGroupSettings()
         new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        request = HttpRequest()
+        request.user = self.user
 
         settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_enabled = True
         with self.assertRaises(exc.ValidationError):
-            view.validate_all_rtb_state(settings, new_settings)
+            view.validate_all_rtb_state(request, settings, new_settings)
 
         settings.b1_sources_group_enabled = True
         new_settings.b1_sources_group_enabled = True
-        view.validate_all_rtb_state(settings, new_settings)
+        view.validate_all_rtb_state(request, settings, new_settings)
 
         settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
         with self.assertRaises(exc.ValidationError):
-            view.validate_all_rtb_state(settings, new_settings)
+            view.validate_all_rtb_state(request, settings, new_settings)
 
     def test_validate_all_rtb_state_adgroup_inactive(self):
         view = agency.AdGroupSettings()
@@ -839,18 +879,45 @@ class AdGroupSettingsTest(TestCase):
         new_settings = models.AdGroupSettings()
         new_settings.state = constants.AdGroupSettingsState.INACTIVE
 
+        request = HttpRequest()
+        request.user = self.user
+
         settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         settings.b1_sources_group_enabled = False
         new_settings.b1_sources_group_enabled = True
-        view.validate_all_rtb_state(settings, new_settings)
+        view.validate_all_rtb_state(request, settings, new_settings)
 
         settings.b1_sources_group_enabled = True
         new_settings.b1_sources_group_enabled = True
-        view.validate_all_rtb_state(settings, new_settings)
+        view.validate_all_rtb_state(request, settings, new_settings)
 
         settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
-        view.validate_all_rtb_state(settings, new_settings)
+        view.validate_all_rtb_state(request, settings, new_settings)
+
+    def test_validate_all_rtb_state(self):
+        view = agency.AdGroupSettings()
+        current_settings = models.AdGroupSettings()
+        new_settings = models.AdGroupSettings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        request = HttpRequest()
+        request.user = self.user
+        add_permissions(request.user, ['can_set_ad_group_mode'])
+
+        current_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = False
+        with self.assertRaises(exc.ValidationError):
+            view.validate_all_rtb_state(request, current_settings, new_settings)
+
+        current_settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_enabled = True
+        with self.assertRaises(exc.ValidationError):
+            view.validate_all_rtb_state(request, current_settings, new_settings)
+
+        current_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = True
+        view.validate_all_rtb_state(request, current_settings, new_settings)
 
     @patch('automation.campaign_stop.get_max_settable_b1_sources_group_budget')
     def test_validate_all_rtb_campaign_stop_daily_budget(self, mock_get_max_settable_budget):

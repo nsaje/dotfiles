@@ -4,7 +4,7 @@
   fields:
     password: pbkdf2_sha256$24000$MPOVr4rGJSvP$Mb1PIJzFJtfuXTTxggaWTWoIeCH64ImgHjQpsV/4moc=
     last_login: 2016-11-03 07:56:27.433930
-    is_superuser: true
+    is_superuser: false
     email: test@test.com
     username: null
     first_name: ''
@@ -14,7 +14,19 @@
     is_active: true
     is_test_user: false
     groups: []
-    user_permissions: []
+    user_permissions:
+      - ['can_use_restapi', 'zemauth', 'user']
+      - ['settings_view', 'dash', 'adgroupsettings']
+      - ['archive_restore_entity', 'zemauth', 'user']
+      - ['account_campaigns_view', 'zemauth', 'user']
+      - ['can_see_campaign_goals', 'zemauth', 'user']
+      - ['can_modify_publisher_blacklist_status', 'zemauth', 'user']
+      - ['can_edit_publisher_groups', 'zemauth', 'user']
+      - ['can_see_rtb_sources_as_one', 'zemauth', 'user']
+      - ['can_set_rtb_sources_as_one_cpc', 'zemauth', 'user']
+      - ['can_set_adgroup_to_auto_pilot', 'zemauth', 'user']
+      - ['can_set_ad_group_max_cpc', 'zemauth', 'user']
+      - ['can_set_ad_group_max_cpm', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1

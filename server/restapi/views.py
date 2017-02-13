@@ -322,7 +322,7 @@ class AdGroupSerializer(SettingsSerializer):
 
     def to_representation(self, data_internal):
         settings = data_internal['data']['settings']
-        return {
+        ret = {
             'id': settings['id'],
             'archived': data_internal['data']['archived'],
             'campaignId': settings['campaign_id'],
@@ -349,11 +349,20 @@ class AdGroupSerializer(SettingsSerializer):
                 }
             },
             'autopilot': {
-                'state': constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state']),
                 'dailyBudget': settings['autopilot_daily_budget'],
             },
             'dayparting': settings['dayparting'],
         }
+        if 'autopilot_state' in settings:
+            ret['autopilot']['state'] = constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state'])
+
+        if 'ad_group_mode' in settings:
+            ret['adGroupMode'] = constants.AdGroupSettingsMode.get_name(settings['ad_group_mode'])
+
+        if 'price_discovery' in settings:
+            ret['priceDiscovery'] = constants.AdGroupSettingsPriceDiscovery.get_name(settings['price_discovery'])
+
+        return ret
 
     def to_internal_value(self, external_data):
         data = self._allow_not_provided(external_data)
@@ -377,6 +386,8 @@ class AdGroupSerializer(SettingsSerializer):
             'autopilot_daily_budget': data['autopilot']['dailyBudget'],
             'dayparting': data['dayparting'],
             'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
+            'ad_group_mode': DashConstantField(constants.AdGroupSettingsMode).to_internal_value(data['adGroupMode']),
+            'price_discovery': DashConstantField(constants.AdGroupSettingsPriceDiscovery).to_internal_value(data['priceDiscovery']),
         }
         return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
 

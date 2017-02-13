@@ -1,10 +1,10 @@
 <div class="zem-settings-component__container zem-settings-component__container--automatic-mode"
-     ng-if="$ctrl.hasPermission('zemauth.can_set_adgroup_to_auto_pilot')"
+     ng-if="$ctrl.hasPermission('zemauth.can_set_adgroup_to_auto_pilot') && !$ctrl.hasPermission('zemauth.can_set_ad_group_mode')"
      is-internal="zemauth.can_set_adgroup_to_auto_pilot">
     <div class="zem-settings-component__header">Autopilot</div>
     <div class="zem-settings-component__description">Bids and Daily Spend Caps Automation Settings.</div>
     <div class="message message--warning message--with-icon" ng-if="$ctrl.isInLanding()">
-        Autopilot is automatically enabled because the campaign is in landing mode.
+        You can’t change autopilot setting while the campaign is in landing mode.
     </div>
     <div class="form">
         <div ng-repeat='autopilotState in $ctrl.options.adGroupSettingsAutopilotStates'>

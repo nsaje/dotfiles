@@ -59,6 +59,26 @@ class AdGroupSourceSettingsState(ConstantBase):
     }
 
 
+class AdGroupSettingsMode(ConstantBase):
+    AUTOMATIC = 1
+    MANUAL = 2
+
+    _VALUES = {
+        AUTOMATIC: 'Automatic',
+        MANUAL: 'Manual',
+    }
+
+
+class AdGroupSettingsPriceDiscovery(ConstantBase):
+    AUTOMATIC = 1
+    MANUAL = 2
+
+    _VALUES = {
+        AUTOMATIC: 'Automatic',
+        MANUAL: 'Manual',
+    }
+
+
 class ExportStatus(ConstantBase):
     # Generalized constant used for export output formatting. It handles conversion to text for various state classes.
     ACTIVE = 1

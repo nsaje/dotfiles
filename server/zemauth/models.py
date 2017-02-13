@@ -253,6 +253,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_redirect_pixels', 'User can set redirect url for pixels'),
             ('can_see_pixel_notes', 'User can see pixel notes'),
             ('can_see_salesforce_url', 'User can see SalesForce URL'),
+            ('can_set_ad_group_mode', 'User can set and see manual or automatic ad group mode'),
         )
 
     def get_full_name(self):

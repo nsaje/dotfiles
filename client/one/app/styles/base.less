@@ -960,7 +960,7 @@ h3 {
         content: '';
         position: absolute;
         left:0;
-        top: 1px;
+        top: 0px;
         width: 14px;
         height: 14px;
         border: 1px solid darken(@input-border-color,10%);
@@ -982,12 +982,10 @@ h3 {
         transition: all @default-animation;
     }
 
-    &:hover {
-        + .checkbox-text {
-            color: @secondary-color;
-        }
+    + .checkbox-text:hover {
+        color: @secondary-color;
 
-        + .checkbox-text::before {
+        &::before {
             border: 1px solid @secondary-color;
         }
     }
@@ -996,6 +994,10 @@ h3 {
         + .checkbox-text {
             color: @secondary-color;
             font-weight: 500;
+
+            .form__text {
+                font-weight: normal;
+            }
         }
 
         + .checkbox-text::before,
@@ -1004,7 +1006,7 @@ h3 {
         }
 
         + .checkbox-text::after {
-            top: 3px;
+            top: 2px;
             left: 2px;
             width: 10px;
             height: 10px;
@@ -1069,12 +1071,10 @@ h3 {
         transition: all @default-animation;
     }
 
-    &:hover {
-        + .radio-text {
-            color: @secondary-color;
-        }
+    + .radio-text:hover {
+        color: @secondary-color;
 
-        + .radio-text:before {
+        &::before {
             border: 1px solid @secondary-color;
         }
     }
@@ -1083,6 +1083,10 @@ h3 {
         + .radio-text {
             color: @secondary-color;
             font-weight: 500;
+
+            .form__text {
+                font-weight: normal;
+            }
         }
 
         + .radio-text::before,
@@ -1124,6 +1128,8 @@ h3 {
     padding-left: 20px;
     font-weight: 400;
     vertical-align: top;
+    line-height: 16px;
+    display: block;
 
     .clearfix();
 }
@@ -1287,13 +1293,19 @@ h3 {
     .form__checkbox {
         float: right;
         width: @form-input-width;
-        padding-top: 7px;
+
+        &:first-of-type {
+            padding-top: 7px;
+        }
     }
 
     .form__radio {
         float: right;
         width: @form-input-width;
-        padding-top: 9px;
+
+        &:first-of-type {
+            padding-top: 9px;
+        }
     }
 }
 

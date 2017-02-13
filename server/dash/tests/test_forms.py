@@ -358,6 +358,8 @@ class AdGroupSettingsFormTest(TestCase):
             'b1_sources_group_state': 2,
             'b1_sources_group_cpc_cc': Decimal('0.1'),
             'whitelist_publisher_groups': [1],
+            'ad_group_mode': 2,
+            'price_discovery': 2,
         }
 
     @patch('utils.dates_helper.local_today')
@@ -395,6 +397,8 @@ class AdGroupSettingsFormTest(TestCase):
             'b1_sources_group_state': 2,
             'b1_sources_group_cpc_cc': Decimal('0.1'),
             'whitelist_publisher_groups': [1],
+            'ad_group_mode': 2,
+            'price_discovery': 2,
         })
 
     @patch('utils.dates_helper.local_today')

@@ -31,11 +31,15 @@ class AdGroupSettingsTest(TestCase):
             'created_by',
             'created_by_id',
             'changes_text',
-            'system_user'
+            'system_user',
+        ]
+        computed_fields = [
+            'ad_group_mode',
+            'price_discovery',
         ]
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)
-        model_fields = set(models.AdGroupSettings._meta.get_all_field_names())
+        model_fields = set(models.AdGroupSettings._meta.get_all_field_names() + computed_fields)
 
         self.assertEqual(model_fields, all_fields)
 
@@ -66,7 +70,7 @@ class AdGroupSettingsTest(TestCase):
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
             'autopilot_daily_budget': Decimal('0.0000'),
-            'autopilot_state': 2,
+            'autopilot_state': 1,
             'landing_mode': False,
             'dayparting': {"monday": [1, 2, 5], "tuesday": [10, 12], "timezone": "CET"},
             'max_cpm': Decimal('1.6'),
@@ -76,6 +80,8 @@ class AdGroupSettingsTest(TestCase):
             'b1_sources_group_cpc_cc': Decimal('0.1'),
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [2],
+            'ad_group_mode': constants.AdGroupSettingsMode.AUTOMATIC,
+            'price_discovery': constants.AdGroupSettingsPriceDiscovery.AUTOMATIC,
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -134,12 +140,11 @@ class AdGroupSettingsTest(TestCase):
         old_settings = models.AdGroupSettings(ad_group_id=1)
         new_settings = models.AdGroupSettings.objects.get(id=1)
         new_settings.changes_text = None
-
         user = User.objects.get(pk=1)
+        test_helper.add_permissions(user, ['can_set_ad_group_mode'])
 
-        self.maxDiff = None
-        self.assertHTMLEqual(
-            models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
+        actual = models.AdGroupSettings.get_changes_text(old_settings, new_settings, user)
+        expected = (
             'Daily spend cap set to "$50.00", '
             'Whitelist publisher groups set to "pg 1", '
             'Brand name set to "Example", '
@@ -150,7 +155,7 @@ class AdGroupSettingsTest(TestCase):
             'Exclusion interest targeting set to "C, D", '
             'Blacklist publisher groups set to "", '
             'State set to "Enabled", '
-            'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg", '
+            'Exclusion custom audience targeting set to "test audience 3, test audience 4", '
             'Start date set to "2014-06-04", '
             'State of all RTB sources set to "Enabled", '
             'Description set to "Example description", '
@@ -158,7 +163,8 @@ class AdGroupSettingsTest(TestCase):
             'Custom audience targeting set to "test audience 1, test audience 2", '
             'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot", '
             'Dayparting set to "Timezone: CET; Tuesday: 10, 12; Monday: 1, 2, 5", '
-            'Exclusion custom audience targeting set to "test audience 3, test audience 4", '
+            'Ad group mode set to "Automatic", '
+            'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg", '
             'Max CPM set to "$1.60", '
             'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
             'Locations set to "United States", '
@@ -167,10 +173,10 @@ class AdGroupSettingsTest(TestCase):
             'Notes set to "Some note", '
             'Call to action set to "Call to action", '
             'Pixel retargeting JavaScript set to "alert(\'a\')", '
-            'Group all RTB sources set to "True", '
             'Ad group name set to "AdGroup name", '
             'BlueKai targeting set to "["or", 3, 4]"'
         )
+        self.assertHTMLEqual(expected, actual)
 
 
 class AdGroupRunningStatusTest(TestCase):

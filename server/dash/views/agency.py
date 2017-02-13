@@ -105,8 +105,9 @@ class AdGroupSettings(api_common.BaseApiView):
 
         campaign_settings = ad_group.campaign.get_current_settings()
 
-        self.validate_all_rtb_state(current_settings, new_settings)
         self.validate_state_change(ad_group, current_settings, new_settings, campaign_settings)
+        self.validate_ad_group_mode(request, current_settings, new_settings)
+        self.validate_all_rtb_state(request, current_settings, new_settings)
         self.validate_yahoo_desktop_targeting(ad_group, current_settings, new_settings)
         self.validate_all_rtb_campaign_stop(ad_group, current_settings, new_settings, campaign_settings)
 
@@ -163,7 +164,18 @@ class AdGroupSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def validate_all_rtb_state(self, settings, new_settings):
+    def validate_ad_group_mode(self, request, settings, new_settings):
+        if not request.user.has_perm('zemauth.can_set_ad_group_mode'):
+            return
+
+        if new_settings.ad_group_mode == constants.AdGroupSettingsMode.AUTOMATIC and\
+           not new_settings.b1_sources_group_enabled:
+                msg = 'To set Ad Group Mode to Automatic, RTB Sources have to be managed as a group.'
+                raise exc.ValidationError(errors={
+                    'ad_group_mode': msg
+                })
+
+    def validate_all_rtb_state(self, request, settings, new_settings):
         # MVP for all-RTB-sources-as-one
         # Ensure that AdGroup is paused when enabling/disabling All RTB functionality
         # For now this is the easiest solution to avoid conflicts with ad group budgets and state validations
@@ -171,17 +183,24 @@ class AdGroupSettings(api_common.BaseApiView):
         if new_settings.state == constants.AdGroupSettingsState.INACTIVE:
             return
 
-        all_rtb_enabled = settings.b1_sources_group_enabled and \
-            settings.autopilot_state == constants.AdGroupSettingsAutopilotState.INACTIVE
+        if not request.user.has_perm('zemauth.can_set_ad_group_mode'):
+            all_rtb_enabled = settings.b1_sources_group_enabled and \
+                settings.autopilot_state == constants.AdGroupSettingsAutopilotState.INACTIVE
 
-        new_all_rtb_enabled = new_settings.b1_sources_group_enabled and \
-            new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.INACTIVE
+            new_all_rtb_enabled = new_settings.b1_sources_group_enabled and \
+                new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.INACTIVE
 
-        if all_rtb_enabled != new_all_rtb_enabled:
-            msg = 'To manage Daily Spend Cap for All RTB as one, ad group must be paused first.'
-            if not new_all_rtb_enabled:
-                'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
-            raise exc.ValidationError(errors={'autopilot_state': [msg]})
+            if all_rtb_enabled != new_all_rtb_enabled:
+                msg = 'To manage Daily Spend Cap for All RTB as one, ad group must be paused first.'
+                if not new_all_rtb_enabled:
+                    'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
+                raise exc.ValidationError(errors={'autopilot_state': [msg]})
+        else:
+            if settings.b1_sources_group_enabled != new_settings.b1_sources_group_enabled:
+                msg = 'To manage Daily Spend Cap for All RTB as one, ad group must be paused first.'
+                if not new_settings.b1_sources_group_enabled:
+                    'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
+                raise exc.ValidationError(errors={'b1_sources_group_enabled': [msg]})
 
     def validate_all_rtb_campaign_stop(self, ad_group, current_settings, new_settings, campaign_settings):
         changes = current_settings.get_setting_changes(new_settings)
@@ -306,52 +325,58 @@ class AdGroupSettings(api_common.BaseApiView):
         return warnings
 
     def get_dict(self, request, settings, ad_group):
-        result = {}
+        if not settings:
+            return {}
 
-        if settings:
-            primary_campaign_goal = campaign_goals.get_primary_campaign_goal(ad_group.campaign)
-            result = {
-                'id': str(ad_group.pk),
-                'campaign_id': str(ad_group.campaign_id),
-                'name': ad_group.name,
-                'state': settings.state,
-                'start_date': settings.start_date,
-                'end_date': settings.end_date,
-                'cpc_cc':
-                    '{:.3f}'.format(settings.cpc_cc)
-                    if settings.cpc_cc is not None else '',
-                'max_cpm':
-                    '{:.3f}'.format(settings.max_cpm)
-                    if settings.max_cpm is not None else '',
-                'daily_budget_cc':
-                    '{:.2f}'.format(settings.daily_budget_cc)
-                    if settings.daily_budget_cc is not None else '',
-                'target_devices': settings.target_devices,
-                'target_regions': settings.target_regions,
-                'tracking_code': settings.tracking_code,
-                'autopilot_state': settings.autopilot_state,
-                'autopilot_daily_budget':
-                    '{:.2f}'.format(settings.autopilot_daily_budget)
-                    if settings.autopilot_daily_budget is not None else '',
-                'retargeting_ad_groups': settings.retargeting_ad_groups,
-                'exclusion_retargeting_ad_groups': settings.exclusion_retargeting_ad_groups,
-                'notes': settings.notes,
-                'bluekai_targeting': settings.bluekai_targeting,
-                'interest_targeting': settings.interest_targeting,
-                'exclusion_interest_targeting': settings.exclusion_interest_targeting,
-                'audience_targeting': settings.audience_targeting,
-                'exclusion_audience_targeting': settings.exclusion_audience_targeting,
-                'redirect_pixel_urls': settings.redirect_pixel_urls,
-                'redirect_javascript': settings.redirect_javascript,
-                'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
-                'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None,
-                'dayparting': settings.dayparting,
-                'b1_sources_group_enabled': settings.b1_sources_group_enabled,
-                'b1_sources_group_daily_budget': settings.b1_sources_group_daily_budget,
-                'b1_sources_group_cpc_cc': settings.b1_sources_group_cpc_cc,
-                'b1_sources_group_state': settings.b1_sources_group_state,
-                'whitelist_publisher_groups': settings.whitelist_publisher_groups,
-            }
+        primary_campaign_goal = campaign_goals.get_primary_campaign_goal(ad_group.campaign)
+        result = {
+            'id': str(ad_group.pk),
+            'campaign_id': str(ad_group.campaign_id),
+            'name': ad_group.name,
+            'state': settings.state,
+            'start_date': settings.start_date,
+            'end_date': settings.end_date,
+            'cpc_cc':
+                '{:.3f}'.format(settings.cpc_cc)
+                if settings.cpc_cc is not None else '',
+            'max_cpm':
+                '{:.3f}'.format(settings.max_cpm)
+                if settings.max_cpm is not None else '',
+            'daily_budget_cc':
+                '{:.2f}'.format(settings.daily_budget_cc)
+                if settings.daily_budget_cc is not None else '',
+            'target_devices': settings.target_devices,
+            'target_regions': settings.target_regions,
+            'tracking_code': settings.tracking_code,
+            'autopilot_daily_budget':
+                '{:.2f}'.format(settings.autopilot_daily_budget)
+                if settings.autopilot_daily_budget is not None else '',
+            'retargeting_ad_groups': settings.retargeting_ad_groups,
+            'exclusion_retargeting_ad_groups': settings.exclusion_retargeting_ad_groups,
+            'notes': settings.notes,
+            'bluekai_targeting': settings.bluekai_targeting,
+            'interest_targeting': settings.interest_targeting,
+            'exclusion_interest_targeting': settings.exclusion_interest_targeting,
+            'audience_targeting': settings.audience_targeting,
+            'exclusion_audience_targeting': settings.exclusion_audience_targeting,
+            'redirect_pixel_urls': settings.redirect_pixel_urls,
+            'redirect_javascript': settings.redirect_javascript,
+            'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
+            'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None,
+            'dayparting': settings.dayparting,
+            'b1_sources_group_enabled': settings.b1_sources_group_enabled,
+            'b1_sources_group_daily_budget': settings.b1_sources_group_daily_budget,
+            'b1_sources_group_cpc_cc': settings.b1_sources_group_cpc_cc,
+            'b1_sources_group_state': settings.b1_sources_group_state,
+            'whitelist_publisher_groups': settings.whitelist_publisher_groups,
+            'landing_mode': settings.landing_mode,
+        }
+
+        if not request.user.has_perm('zemauth.can_set_ad_group_mode'):
+            result['autopilot_state'] = settings.autopilot_state
+        else:
+            result['ad_group_mode'] = settings.ad_group_mode
+            result['price_discovery'] = settings.price_discovery
 
         return result
 
@@ -392,17 +417,35 @@ class AdGroupSettings(api_common.BaseApiView):
             settings.audience_targeting = resource['audience_targeting']
             settings.exclusion_audience_targeting = resource['exclusion_audience_targeting']
 
-        # TODO(nsaje): protect with permission?
         settings.b1_sources_group_enabled = resource['b1_sources_group_enabled']
         settings.b1_sources_group_daily_budget = resource['b1_sources_group_daily_budget']
         settings.b1_sources_group_state = resource['b1_sources_group_state']
         if user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and settings.b1_sources_group_enabled:
             settings.b1_sources_group_cpc_cc = resource['b1_sources_group_cpc_cc']
 
+        self._set_ad_group_mode_settings(user, settings, resource)
         settings.bluekai_targeting = resource['bluekai_targeting']
 
         if user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
             settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
+
+    def _set_ad_group_mode_settings(self, user, settings, resource):
+        if settings.landing_mode:
+            return
+
+        if not user.has_perm('zemauth.can_set_ad_group_mode'):
+            return
+
+        if resource['ad_group_mode'] == constants.AdGroupSettingsMode.AUTOMATIC:
+            settings.b1_sources_group_enabled = True
+            settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+            settings.autopilot_daily_budget = resource['autopilot_daily_budget']
+        elif resource['ad_group_mode'] == constants.AdGroupSettingsMode.MANUAL:
+            settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        if settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
+           resource['price_discovery'] == constants.AdGroupSettingsPriceDiscovery.AUTOMATIC:
+            settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
 
     def get_default_settings_dict(self, ad_group):
         settings = ad_group.campaign.get_current_settings()
