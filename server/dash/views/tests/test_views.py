@@ -297,6 +297,11 @@ class AdGroupSourceSettingsTest(TestCase):
         self.client.login(username=User.objects.get(pk=1).email, password='secret')
         self.ad_group = models.AdGroup.objects.get(pk=1)
 
+    def _set_autopilot_state(self, autopilot_state):
+        new_settings = self.ad_group.get_current_settings().copy_settings()
+        new_settings.autopilot_state = autopilot_state
+        new_settings.save(None)
+
     def _set_ad_group_end_date(self, days_delta=0):
         current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
@@ -451,6 +456,7 @@ class AdGroupSourceSettingsTest(TestCase):
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
     def test_adgroup_not_on_budget_autopilot_not_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap, mock_campaign_stop):
         self._set_ad_group_end_date(days_delta=3)
+        self._set_autopilot_state(constants.AdGroupSettingsAutopilotState.INACTIVE)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
             data=json.dumps({'state': '2'})
