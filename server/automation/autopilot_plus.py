@@ -52,7 +52,7 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
             with transaction.atomic():
                 set_autopilot_changes(cpc_changes, budget_changes, adg, dry_run=dry_run)
                 if not dry_run:
-                    persist_autopilot_changes_to_log(adg, cpc_changes, budget_changes, data[adg],
+                    persist_autopilot_changes_to_log(adg_settings, cpc_changes, budget_changes, data[adg],
                                                      adg_settings.autopilot_state,
                                                      campaign_goals.get(adg.campaign),
                                                      is_autopilot_job_run=daily_run)
@@ -131,7 +131,7 @@ def _set_paused_ad_group_sources_to_minimum_values(ad_group_settings):
     try:
         with transaction.atomic():
             set_autopilot_changes({}, new_budgets, ad_group)
-            persist_autopilot_changes_to_log(ad_group, {}, new_budgets, new_budgets,
+            persist_autopilot_changes_to_log(ad_group_settings, {}, new_budgets, new_budgets,
                                              dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
     except Exception as e:
         _report_autopilot_exception(ags_settings, e)
@@ -152,9 +152,9 @@ def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_chang
     return email_changes_data
 
 
-def persist_autopilot_changes_to_log(ad_group, cpc_changes, budget_changes, data, autopilot_state,
+def persist_autopilot_changes_to_log(ad_group_settings, cpc_changes, budget_changes, data, autopilot_state,
                                      campaign_goal_data=None, is_autopilot_job_run=False):
-    rtb_as_one = dash.constants.SourceAllRTB in cpc_changes
+    rtb_as_one = ad_group_settings.b1_sources_group_enabled
     for ag_source in data.keys():
         old_budget = data[ag_source]['old_budget']
         goal_c = autopilot_helpers.get_campaign_goal_column(campaign_goal_data['goal']) if campaign_goal_data else None
@@ -163,7 +163,7 @@ def persist_autopilot_changes_to_log(ad_group, cpc_changes, budget_changes, data
         if cpc_changes:
             if ag_source in cpc_changes:
                 new_cpc_cc = cpc_changes[ag_source]['new_cpc_cc']
-            elif rtb_as_one:
+            elif rtb_as_one and dash.constants.SourceAllRTB in cpc_changes:
                 new_cpc_cc = cpc_changes[dash.constants.SourceAllRTB]['new_cpc_cc']
         new_daily_budget = old_budget
         if budget_changes:
@@ -174,13 +174,13 @@ def persist_autopilot_changes_to_log(ad_group, cpc_changes, budget_changes, data
         cpc_comments = []
         if ag_source in cpc_changes:
             cpc_comments = cpc_changes[ag_source]['cpc_comments']
-        elif rtb_as_one:
+        elif rtb_as_one and dash.constants.SourceAllRTB in cpc_changes:
             cpc_comments = cpc_changes[dash.constants.SourceAllRTB]['cpc_comments']
         budget_comments = budget_changes[ag_source]['budget_comments'] if\
             budget_changes and ag_source in budget_changes else []
 
         models.AutopilotLog(
-            ad_group=ad_group,
+            ad_group=ad_group_settings.ad_group,
             autopilot_type=autopilot_state,
             ad_group_source=ag_source if ag_source != dash.constants.SourceAllRTB else None,
             previous_cpc_cc=data[ag_source].get('old_cpc_cc', None),

@@ -68,17 +68,18 @@ GOALS_WORST_VALUE = {
     'cpc': None,
     'avg_cost_per_visit': None,
     'percent_new_users': 0.0,
-    'conversions': 0
+    'conversions': 0,
+    'avg_cost_per_non_bounced_visit': None,
 }
 GOALS_CALC_COLS = {
     CampaignGoalKPI.MAX_BOUNCE_RATE:      {'dividend': 'bounced_visits', 'divisor': 'visits', 'high_is_good': False},
     CampaignGoalKPI.TIME_ON_SITE:         {'dividend': 'total_seconds', 'divisor': 'visits', 'high_is_good': True},
     CampaignGoalKPI.PAGES_PER_SESSION:    {'dividend': 'pageviews', 'divisor': 'visits', 'high_is_good': True},
     CampaignGoalKPI.CPA:                  {'dividend': 'conversions', 'divisor': 'media_cost', 'high_is_good': True},
-    CampaignGoalKPI.CPC:                  {'dividend': 'clicks', 'divisor': 'media_cost', 'high_is_good': False},
+    CampaignGoalKPI.CPC:                  {'dividend': 'media_cost', 'divisor': 'clicks', 'high_is_good': False},
     CampaignGoalKPI.NEW_UNIQUE_VISITORS:  {'dividend': 'new_users', 'divisor': 'visits', 'high_is_good': True},
-    CampaignGoalKPI.CPV:                  {'dividend': 'visits', 'divisor': 'media_cost', 'high_is_good': False},
-    CampaignGoalKPI.CP_NON_BOUNCED_VISIT: {'dividend': 'non_bounced_visits', 'divisor': 'media_cost',
+    CampaignGoalKPI.CPV:                  {'dividend': 'media_cost', 'divisor': 'visits', 'high_is_good': False},
+    CampaignGoalKPI.CP_NON_BOUNCED_VISIT: {'dividend': 'media_cost', 'divisor': 'non_bounced_visits',
                                            'high_is_good': False}
 }
 SPEND_PERC_LOWERING_THRESHOLD = 1.0
