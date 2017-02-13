@@ -1474,81 +1474,8 @@ approvedContentAds | array[[Content Ad](#content-ad)] | An array that contains t
 
 # Group Publishers management
 
-## Blacklisting [/rest/v1/adgroups/{adGroupId}/publishers/]
-
-### Get publisher status [GET /rest/v1/adgroups/{adGroupId}/publishers/]
-
-+ Parameters
-    + adGroupId: 2040 (required)
-    
-+ Response 200 (application/json)
-
-        {
-            "data": [
-                {
-                    "name": "example.com/publisher1",
-                    "status": "ENABLED",
-                    "level": "ADGROUP",
-                    "source": "gumgum"
-                }, 
-                {
-                    "name": "example.com/publisher2",
-                    "status": "ENABLED",
-                    "level": "ADGROUP",
-                    "source": "gumgum"
-                },
-                {
-                    "name": "example.com/publisher3",
-                    "status": "BLACKLISTED",
-                    "level": "ADGROUP",
-                    "source": null
-                }
-            ]
-        }
-
-### Set publisher status [PUT /rest/v1/adgroups/{adGroupId}/publishers/]
-
-+ Parameters
-    + adGroupId: 2040 (required)
-
-+ Request (application/json)
-
-        [
-            {
-                "name": "example.com/publisher1",
-                "status": "BLACKLISTED",
-                "level": "ADGROUP",
-                "source": "gumgum"
-            }, 
-            {
-                "name": "example.com/publisher2",
-                "status": "BLACKLISTED",
-                "level": "ADGROUP",
-                "source": "gumgum"
-            }
-        ]
-    
-+ Response 200 (application/json)
-
-        {
-            "data": [
-                {
-                    "name": "example.com/publisher1",
-                    "status": "BLACKLISTED",
-                    "level": "ADGROUP",
-                    "source": "gumgum"
-                }, 
-                {
-                    "name": "example.com/publisher2",
-                    "status": "BLACKLISTED",
-                    "level": "ADGROUP",
-                    "source": "gumgum"
-                }
-            ]
-        }
-
-
 ## Publisher Groups [/rest/v1/accounts/{accountId}/publishergroups/] ##
+<a name='publisher-groups'></a>
 
 Publisher Groups are named collections of publishers that can be referenced in Ad Group's `publisherGroups` 
 targeting section as whitelists. 
@@ -1772,6 +1699,85 @@ This endpoint supports creating multiple entries at once that are all appended t
     + entryId: 622 (required)
 
 + Response 204
+
+
+## Blacklisting [/rest/v1/adgroups/{adGroupId}/publishers/]
+
+**NOTICE: These endpoints are going to be deprecated in the near future, please use the
+[Publisher Groups](#publisher-groups) functionality for blacklisting.**
+
+### Get publisher status [GET /rest/v1/adgroups/{adGroupId}/publishers/]
+
++ Parameters
+    + adGroupId: 2040 (required)
+    
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "name": "example.com/publisher1",
+                    "status": "ENABLED",
+                    "level": "ADGROUP",
+                    "source": "gumgum"
+                }, 
+                {
+                    "name": "example.com/publisher2",
+                    "status": "ENABLED",
+                    "level": "ADGROUP",
+                    "source": "gumgum"
+                },
+                {
+                    "name": "example.com/publisher3",
+                    "status": "BLACKLISTED",
+                    "level": "ADGROUP",
+                    "source": null
+                }
+            ]
+        }
+
+### Set publisher status [PUT /rest/v1/adgroups/{adGroupId}/publishers/]
+
++ Parameters
+    + adGroupId: 2040 (required)
+
++ Request (application/json)
+
+        [
+            {
+                "name": "example.com/publisher1",
+                "status": "BLACKLISTED",
+                "level": "ADGROUP",
+                "source": "gumgum"
+            }, 
+            {
+                "name": "example.com/publisher2",
+                "status": "BLACKLISTED",
+                "level": "ADGROUP",
+                "source": "gumgum"
+            }
+        ]
+    
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "name": "example.com/publisher1",
+                    "status": "BLACKLISTED",
+                    "level": "ADGROUP",
+                    "source": "gumgum"
+                }, 
+                {
+                    "name": "example.com/publisher2",
+                    "status": "BLACKLISTED",
+                    "level": "ADGROUP",
+                    "source": "gumgum"
+                }
+            ]
+        }
+
+
 
 # Group Reporting
 <a name='reporting'></a>
