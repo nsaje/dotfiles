@@ -29,9 +29,10 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.stdout.write(u'{}\n'.format(msg))
 
     def handle(self, *args, **options):
+        self.verbose = options['verbose']
         alarms = analytics.monitor.audit_account_credits(
             date=options['date'],
-            days=int(options['days'])
+            days=options['days'] and int(options['days'])
         )
         sales = {}
         for account in alarms:
@@ -46,4 +47,5 @@ class Command(utils.command_helpers.ExceptionCommand):
         if not options['send_emails']:
             return
         for sales_user, accounts in sales.iteritems():
+            self._print('{}: {}'.format(sales_user, ', '.join(a.name for a in accounts)))
             utils.email_helper.send_depleting_credits_email(sales_user, accounts)
