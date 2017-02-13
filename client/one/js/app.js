@@ -47,6 +47,11 @@ angular.module('one.legacy').config(function ($stateProvider) {
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',
             controller: 'ScheduledReportsCtrl',
+        })
+        .state('main.allAccounts.scheduled_reports_v2', {
+            url: '/reports_v2',
+            templateUrl: '/app/views/scheduled-reports/zemScheduledReports.partial.html',
+            controller: 'zemScheduledReportsView as $ctrl',
         });
 
     $stateProvider
@@ -94,6 +99,11 @@ angular.module('one.legacy').config(function ($stateProvider) {
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',
             controller: 'ScheduledReportsCtrl',
+        })
+        .state('main.accounts.scheduled_reports_v2', {
+            url: '/reports_v2',
+            templateUrl: '/app/views/scheduled-reports/zemScheduledReports.partial.html',
+            controller: 'zemScheduledReportsView as $ctrl',
         }).state('main.accounts.users', {
             url: '/users',
             templateUrl: '/app/views/users/zemUsersView.partial.html',

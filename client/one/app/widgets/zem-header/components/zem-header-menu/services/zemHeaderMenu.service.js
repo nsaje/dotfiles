@@ -1,7 +1,13 @@
-angular.module('one.widgets').service('zemHeaderMenuService', function ($window, $uibModal, $state, zemPermissions, zemNavigationNewService, zemFullStoryService) { // eslint-disable-line max-len
+angular.module('one.widgets').service('zemHeaderMenuService', function ($window, $state, $uibModal, zemPermissions, zemFullStoryService, zemNavigationNewService) { // eslint-disable-line max-len
     this.getAvailableActions = getAvailableActions;
 
     var ACTIONS = [
+        {
+            text: 'Scheduled reports',
+            callback: navigateToScheduledReportsView,
+            isAvailable: zemPermissions.hasPermission('zemauth.can_see_new_scheduled_reports'),
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_scheduled_reports'),
+        },
         {
             text: 'Request demo',
             callback: requestDemoAction,
@@ -44,6 +50,15 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
 
     function navigate (params) {
         $window.location.href = params.href;
+    }
+
+    function navigateToScheduledReportsView () {
+        var activeAccount = zemNavigationNewService.getActiveAccount();
+        if (activeAccount) {
+            $state.go('main.accounts.scheduled_reports_v2', {id: activeAccount.id});
+        } else if (activeAccount === null) {
+            $state.go('main.allAccounts.scheduled_reports_v2');
+        }
     }
 
     function isAllowLivestreamActionAvailable () {

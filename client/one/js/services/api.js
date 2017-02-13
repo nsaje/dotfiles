@@ -646,6 +646,7 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterSe
             return deferred.promise;
         };
 
+        // TODO: Move to add_scheduled_report_modal's endpoint
         this.addScheduledReport = function (url, data) {
             var deferred = $q.defer();
             $http.put(url, data).
