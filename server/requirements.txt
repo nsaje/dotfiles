@@ -70,3 +70,6 @@ django-ratelimit==1.0.1
 
 # Traceback support for running tests in parallel
 tblib
+
+# terminal colors
+termcolor==1.1.0

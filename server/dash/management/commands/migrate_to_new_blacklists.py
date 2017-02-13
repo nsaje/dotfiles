@@ -18,6 +18,7 @@ class Command(ExceptionCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--ad_group_id', type=int)
+        parser.add_argument('--global', action='store_true')
 
     def handle(self, *args, **options):
         ad_groups = models.AdGroup.objects.all().exclude_archived()\
@@ -37,6 +38,7 @@ class Command(ExceptionCommand):
         for ad_group in ad_groups:
             print "Migrating ad group {}:".format(ad_group.id),
             old_blacklist = models.PublisherBlacklist.objects.filter(ad_group=ad_group)
+            models.PublisherGroupEntry.objects.filter(publisher_group_id=ad_group.default_blacklist_id).delete()
             if not old_blacklist.exists():
                 print "SKIP (no blacklist)"
                 continue
@@ -47,6 +49,7 @@ class Command(ExceptionCommand):
         for campaign in campaigns:
             print "Migrating campaign {}:".format(campaign.id),
             old_blacklist = models.PublisherBlacklist.objects.filter(campaign=campaign)
+            models.PublisherGroupEntry.objects.filter(publisher_group_id=campaign.default_blacklist_id).delete()
             if not old_blacklist.exists():
                 print "SKIP (no blacklist)"
                 continue
@@ -57,6 +60,7 @@ class Command(ExceptionCommand):
         for account in accounts:
             print "Migrating account {}:".format(campaign.id),
             old_blacklist = models.PublisherBlacklist.objects.filter(account=account)
+            models.PublisherGroupEntry.objects.filter(publisher_group_id=account.default_blacklist_id).delete()
             if not old_blacklist.exists():
                 print "SKIP (no blacklist)"
                 continue
@@ -64,9 +68,10 @@ class Command(ExceptionCommand):
             print "SUCCESS ({} blacklisted, {} entries in publisher group)".format(
                 old_blacklist.count(), account.default_blacklist.entries.all().count())
 
-        if not options.get('ad_group_id'):
+        if not options.get('ad_group_id') or options.get('global'):
             print "Migrating global blacklist {}:".format(settings.GLOBAL_BLACKLIST_ID),
             old_blacklist = models.PublisherBlacklist.objects.filter(everywhere=True)
+            publisher_group_helpers.get_global_blacklist().entries.all().delete()
             publisher_group_helpers.blacklist_publishers(request, convert_to_dicts(old_blacklist), None)
             print "SUCCESS ({} blacklisted, {} entries in publisher group)".format(
                 old_blacklist.count(), publisher_group_helpers.get_global_blacklist().entries.all().count())

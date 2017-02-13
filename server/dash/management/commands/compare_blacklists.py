@@ -1,6 +1,7 @@
 import datetime
 import influx
 import logging
+import termcolor
 
 from django.db.models import Q
 from utils.command_helpers import ExceptionCommand
@@ -17,6 +18,8 @@ class Command(ExceptionCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--ad_group_id', type=int)
+        parser.add_argument('--show_publishers', action='store_true')
+        parser.add_argument('--hide_matching', action='store_true')
 
     def handle(self, *args, **options):
         ad_groups = models.AdGroup.objects.all().exclude_archived()\
@@ -63,9 +66,22 @@ class Command(ExceptionCommand):
             matching = set(blacklisted_entries) == set(old_blacklist)
             nr_not_matching += 0 if matching else 1
 
-            print 'Ad Group {} matching {}, new count {}, old count {}, blacklisted groups {}'.format(
-                ad_group.id, matching, blacklisted_entries.count(), old_blacklist.count(),
-                ",".join(str(x) for x in blacklist_groups))
+            if not options.get('hide_matching') or not matching:
+                print 'Ad Group Id {} matching {}, new count {}, old count {}, blacklisted groups {}'.format(
+                    termcolor.colored(ad_group.id, 'blue', 'on_grey'),
+                    termcolor.colored(str(matching), 'green' if matching else 'red'),
+                    blacklisted_entries.count(), old_blacklist.count(),
+                    ",".join(str(x) for x in blacklist_groups)),
+
+                if options.get('show_publishers'):
+                    new_extra = set(blacklisted_entries) - set(old_blacklist)
+                    old_extra = set(old_blacklist) - set(blacklisted_entries)
+                    print u', new extra: {}, old extra: {}'.format(
+                        termcolor.colored(u", ".join(u"{}[{}]".format(*x) for x in new_extra), 'blue'),
+                        termcolor.colored(u", ".join(u"{}[{}]".format(*x) for x in old_extra), 'cyan'))
+                else:
+                    print ''
 
         if not filtered_by_adgroup:
+            print "Logged to influx"
             influx.gauge('blacklisting.old_new_ad_groups_not_matching', nr_not_matching)
