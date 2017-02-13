@@ -15,7 +15,8 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
     var CONVERSIONS_CATEGORY_NAME = 'Google & Adobe Analytics Goals';
     var PIXELS_CATEGORY_NAME = 'Conversions & CPAs';
 
-    var METRICS = { /* eslint-disable max-len */
+    var METRICS = {
+        /* eslint-disable max-len */
         CLICKS: {name: 'Clicks', value: 'clicks', type: TYPE_NUMBER},
         IMPRESSIONS: {name: 'Impressions', value: 'impressions', type: TYPE_NUMBER},
         CTR: {name: 'CTR', value: 'ctr', type: 'percent', fractionSize: 2},
@@ -45,7 +46,8 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         COST_PER_VISIT: {name: 'Avg. Cost per Visit', value: 'avg_cost_per_visit', type: TYPE_CURRENCY, fractionSize: 2},
         COST_PER_NON_BOUNCED_VISIT: {name: 'Avg. Cost per Non-Bounced Visit', value: 'avg_cost_per_non_bounced_visit', type: TYPE_CURRENCY, fractionSize: 2},
         COST_PER_NEW_VISITOR: {name: 'Avg. Cost for New Visitor', value: 'avg_cost_for_new_visitor', type: TYPE_CURRENCY, fractionSize: 2},
-    }; /* eslint-enable max-len */
+    };
+    /* eslint-enable max-len */
 
     var TRAFFIC_ACQUISITION = [
         METRICS.IMPRESSIONS,
@@ -139,8 +141,9 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
                 pixelGoalMetrics.push({
                     value: 'avg_cost_per_' + metricValue,
                     shortName: conversionWindow.value / 24,
-                    name: 'CPA(' + pixel.name + ' ' + conversionWindow.name + ')',
-                    type: TYPE_CURRENCY
+                    name: 'CPA (' + pixel.name + ' ' + conversionWindow.name + ')',
+                    type: TYPE_CURRENCY,
+                    fractionSize: 2
                 });
             });
 
@@ -218,20 +221,26 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         return null;
     }
 
-    function createPlaceholderMetric (pixelValue) {
+    function createPlaceholderMetric (value) {
         var metric = {
             name: '<Dynamic metric>',
-            value: pixelValue,
+            value: value,
             placeholder: true,
 
         };
 
-        if (pixelValue.indexOf('pixel_') === 0) {
+        if (value.indexOf('pixel_') >= 0) {
             metric.name = '<Pixel metric>';
         }
 
-        if (pixelValue.indexOf('avg_cost_per_pixel_') === 0) {
-            metric.name = 'CPA (<Pixel metric>)';
+        if (value.indexOf('goal_') >= 0) {
+            metric.name = '<Goal metric>';
+        }
+
+        if (value.indexOf('avg_cost_per_') === 0) {
+            metric.name = 'CPA (' + metric.name + ')';
+            metric.type = TYPE_CURRENCY;
+            metric.fractionSize = 2;
         }
 
         return metric;
