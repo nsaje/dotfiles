@@ -889,7 +889,8 @@ def adjust_adgroup_sources_cpcs(ad_group, ad_group_settings,
         if (change_b1_rtb_sources_cpcs and
                 user_can_set_rtb_sources_as_one_cpc and
                 ad_group_settings.b1_sources_group_enabled and
-                ags.source.source_type.type == constants.SourceType.B1):
+                ags.source.source_type.type == constants.SourceType.B1 and
+                ad_group_settings.ad_group_mode != constants.AdGroupSettingsMode.AUTOMATIC):
             proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
         if ad_group_settings.cpc_cc and proposed_cpc > ad_group_settings.cpc_cc:
             proposed_cpc = ad_group_settings.cpc_cc
