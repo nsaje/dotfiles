@@ -72,8 +72,6 @@
             <td class="action-buttons">
                 <a class="button button--small button--with-icon button--only-icon edit-icon" ng-click="$ctrl.editBudgetItem(item.id)"
                    ng-if="item.isEditable || item.isUpdatable"></a>
-                <a class="button button--small button--with-icon button--only-icon remove-icon" ng-click="$ctrl.deleteBudgetItem(item.id)"
-                   ng-if="item.isEditable || item.isUpdatable" ng-disabled="$ctrl.deleteRequestInProgress"></a>
             </td>
         </tr>
         <tr ng-show="!$ctrl.budgets.active.length">

@@ -4,7 +4,6 @@ angular.module('one.services').service('zemCampaignBudgetsEndpoint', function ($
     this.create = create;
     this.save = save;
     this.get = get;
-    this.delete = doDelete;
 
     function list (campaignId) {
         var url = '/api/campaigns/' + campaignId + '/budget/';
@@ -63,11 +62,6 @@ angular.module('one.services').service('zemCampaignBudgetsEndpoint', function ($
     function get (campaignId, budgetId) {
         var url = '/api/campaigns/' + campaignId + '/budget/' + budgetId + '/';
         return $http.get(url).then(processResponse).then(convertDataFromApi);
-    }
-
-    function doDelete (campaignId, budgetId) {
-        var url = '/api/campaigns/' + campaignId + '/budget/' + budgetId + '/';
-        return $http.delete(url).then(processResponse).then(convertDataFromApi);
     }
 
     function convertDataFromApi (obj) {

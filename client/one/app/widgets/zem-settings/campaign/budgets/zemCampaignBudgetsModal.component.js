@@ -86,15 +86,6 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
             closeModal();
         };
 
-        $ctrl.deleteBudgetItem = function () {
-            if (!confirm('Are you sure you want to delete the budget line item?')) {
-                return;
-            }
-            zemCampaignBudgetsEndpoint.delete($ctrl.campaign.id, $ctrl.selectedBudgetId).then(function () {
-                closeModal();
-            });
-        };
-
         $ctrl.$onInit = function () {
             $ctrl.saveRequestInProgress = false;
             $ctrl.isNew = $ctrl.selectedBudgetId === null;
