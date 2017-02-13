@@ -266,3 +266,22 @@ def audit_running_ad_groups(min_spend=Decimal('50.0'), account_types=None):
     return dash.models.AdGroup.objects.filter(
         pk__in=((running_ad_group_ids - spending_ad_group_ids) - api_ad_groups)
     )
+
+
+def audit_account_credits(date=None, days=14):
+    if not date:
+        date = datetime.date.today()
+    ending_credit_accounts = set(
+        credit.account or credit.agency.account_set.all().first()
+        for credit in dash.models.CreditLineItem.objects.filter(
+            end_date__gte=date,
+            end_date__lt=date + datetime.timedelta(days)
+        )
+    )
+    future_credit_accounts = set(
+        credit.account or credit.agency.account_set.all().first()
+        for credit in dash.models.CreditLineItem.objects.filter(
+            end_date__gte=date + datetime.timedelta(days)
+        )
+    )
+    return ending_credit_accounts - future_credit_accounts

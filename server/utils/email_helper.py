@@ -425,6 +425,20 @@ def send_async_report(
     email.send(fail_silently=False)
 
 
+def send_depleting_credits_email(user, accounts):
+    accounts_list = ''
+    for account in accounts:
+        accounts_list += ' - {} {}\n'.format(
+            account.get_long_name(),
+            'https://one.zemanta.com/accounts/{}/credit'.format(account.pk)
+        )
+    subject, body, _ = format_email(
+        dash.constants.EmailTemplateType.DEPLETING_CREDITS,
+        accounts_list=accounts_list
+    )
+    user.email_user(subject, body)
+
+
 def _format_changes_text(changes_text):
     lines = changes_text.split('\n')
     for i in range(len(lines)):

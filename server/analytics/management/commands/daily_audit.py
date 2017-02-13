@@ -56,6 +56,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.audit_autopilot(options)
         self.audit_activated_running_ad_groups(options)
         self.audit_pilot_managed_running_ad_groups(options)
+        self.audit_account_credits(options)
 
         if self.alarms and self.send_emails:
             email = utils.email_helper.EmailMessage(
@@ -65,6 +66,22 @@ class Command(utils.command_helpers.ExceptionCommand):
                     settings.FROM_EMAIL
                 ), RECIPIANTS)
             email.send()
+
+    def audit_account_credits(self, options):
+        alarms = analytics.monitor.audit_account_credits()
+        if not alarms:
+            return
+        self.alarms = True
+        title = 'Accounts with depleting credits:'
+        self._print(title)
+        self.email_body += title + '\n'
+        for account in alarms:
+            self._print('- {} {}'.format(account.name, account.pk))
+            self.email_body += u' - {} {}\n'.format(
+                account.get_long_name(),
+                'https://one.zemanta.com/accounts/{}/credit'.format(account.pk),
+            )
+        self.email_body += '\n'
 
     def audit_activated_running_ad_groups(self, options):
         alarms = analytics.monitor.audit_running_ad_groups(

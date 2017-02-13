@@ -1650,6 +1650,7 @@ class EmailTemplateType(ConstantBase):
     OUTBRAIN_ACCOUNTS_RUNNING_OUT = 18
     GA_SETUP_INSTRUCTIONS = 19
     ASYNC_REPORT_RESULTS = 20
+    DEPLETING_CREDITS = 21
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1672,6 +1673,7 @@ class EmailTemplateType(ConstantBase):
         OUTBRAIN_ACCOUNTS_RUNNING_OUT: 'Unused Outbrain accounts running out',
         GA_SETUP_INSTRUCTIONS: 'Google Analytics Setup Instructions',
         ASYNC_REPORT_RESULTS: 'Report results',
+        DEPLETING_CREDITS: 'Depleting credits',
     }
 
 

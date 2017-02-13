@@ -1,5 +1,5 @@
 import datetime
-from mock import patch
+from mock import patch, MagicMock
 
 from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
@@ -301,6 +301,25 @@ Zemanta
         email_helper.send_budget_notification_email(campaign, self.request, 'Test')
 
         self.assertTrue(mock_trigger_event.called)
+
+    def test_send_depleting_credits_email(self):
+        mock = MagicMock()
+        email_helper.send_depleting_credits_email(
+            mock,
+            [dash_models.Account(id=1, name='Test 1'), dash_models.Account(id=2, name='Test 2')]
+        )
+        mock.email_user.assert_called_with(
+            'Depleting credit line items',
+            '''Dear sales representative,
+
+Following accounts have depleting credit line items:
+ - Account Test 1 https://one.zemanta.com/accounts/1/credit
+ - Account Test 2 https://one.zemanta.com/accounts/2/credit
+
+
+Yours truly,
+Zemanta
+    ''')
 
 
 class FormatChangesTextTest(TestCase):
