@@ -202,7 +202,7 @@ class NavigationDataViewTest(TestCase):
                 'state': 1,
                 'status': 1,
                 'autopilot_state': 2,
-                'active': 'active',
+                'active': 'manual',
                 'landingMode': False,
             }
         })
@@ -287,7 +287,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 1,
                     "autopilot_state": 2,
-                    "active": "active",
+                    "active": "manual",
                     "landingMode": False,
                 }, {
                     "archived": False,
@@ -358,7 +358,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 1,
                     "autopilot_state": 2,
-                    "active": "active",
+                    "active": "manual",
                     "landingMode": False,
                 }, {
                     "archived": False,
@@ -427,7 +427,6 @@ class NavigationTreeViewTest(TestCase):
     @patch('datetime.datetime', MockDatetime)
     def test_get_account_filter_agency(self):
         user = User.objects.get(pk=1)
-        self.maxDiff = None
 
         account = models.Account.objects.get(pk=1)
         response = self._get(1)

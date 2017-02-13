@@ -576,17 +576,18 @@ def _retrieve_active_budgetlineitems(campaign, date):
     return qs.filter_active(date)
 
 
-def get_adgroup_running_status(ad_group_settings, filtered_sources=None):
+def get_adgroup_running_status(user, ad_group_settings, filtered_sources=None):
     state = ad_group_settings.state if ad_group_settings else dash.constants.AdGroupSettingsState.INACTIVE
     autopilot_state = (ad_group_settings.autopilot_state if ad_group_settings
                        else dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
     running_status = dash.models.AdGroup.get_running_status(ad_group_settings)
+    ad_group_mode = ad_group_settings.ad_group_mode if ad_group_settings else dash.constants.AdGroupSettingsMode.MANUAL
 
-    return get_adgroup_running_status_class(autopilot_state, running_status, state,
-                                            ad_group_settings.landing_mode)
+    return get_adgroup_running_status_class(user, autopilot_state, running_status, state,
+                                            ad_group_settings.landing_mode, ad_group_mode)
 
 
-def get_adgroup_running_status_class(autopilot_state, running_status, state, is_in_landing):
+def get_adgroup_running_status_class(user, autopilot_state, running_status, state, is_in_landing, ad_group_mode):
     if is_in_landing:
         return dash.constants.InfoboxStatus.LANDING_MODE
 
@@ -600,8 +601,11 @@ def get_adgroup_running_status_class(autopilot_state, running_status, state, is_
              state == dash.constants.AdGroupSettingsState.INACTIVE):
         return dash.constants.InfoboxStatus.INACTIVE
 
-    if autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or\
-            autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
+    if user.has_perm('zemauth.can_set_ad_group_mode'):
+        if ad_group_mode == dash.constants.AdGroupSettingsMode.AUTOMATIC:
+            return dash.constants.InfoboxStatus.AUTOMATIC
+        return dash.constants.InfoboxStatus.MANUAL
+    elif autopilot_state != dash.constants.AdGroupSettingsAutopilotState.INACTIVE:
         return dash.constants.InfoboxStatus.AUTOPILOT
 
     return dash.constants.InfoboxStatus.ACTIVE
@@ -643,6 +647,10 @@ def get_entity_delivery_text(status):
         return 'Active - Autopilot mode'
     if status == dash.constants.InfoboxStatus.LANDING_MODE:
         return 'Active - Landing mode'
+    if status == dash.constants.InfoboxStatus.MANUAL:
+        return 'Active - Manual mode'
+    if status == dash.constants.InfoboxStatus.AUTOMATIC:
+        return 'Active - Automatic mode'
     if status == dash.constants.InfoboxStatus.STOPPED:
         return 'Paused'
     if status == dash.constants.InfoboxStatus.INACTIVE:

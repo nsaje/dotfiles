@@ -3,12 +3,14 @@ from dash import constants
 from dash import infobox_helpers
 
 
-def get_ad_group_dict(ad_group, ad_group_settings, campaign_settings):
+def get_ad_group_dict(user, ad_group, ad_group_settings, campaign_settings):
     running_status = models.AdGroup.get_running_status(ad_group_settings)
     state = ad_group_settings.state if ad_group_settings else constants.AdGroupSettingsState.INACTIVE
     is_in_landing = campaign_settings.landing_mode if campaign_settings else False
     autopilot_state = (ad_group_settings.autopilot_state if ad_group_settings
                        else constants.AdGroupSettingsAutopilotState.INACTIVE)
+    ad_group_mode = (ad_group_settings.ad_group_mode if ad_group_settings
+                     else constants.AdGroupSettingsMode.MANUAL)
     ad_group_dict = {
         'id': ad_group.id,
         'name': ad_group.name,
@@ -16,8 +18,8 @@ def get_ad_group_dict(ad_group, ad_group_settings, campaign_settings):
         'state': state,
         'archived': ad_group_settings.archived if ad_group_settings else False,
         'autopilot_state': autopilot_state,
-        'active': infobox_helpers.get_adgroup_running_status_class(autopilot_state, running_status,
-                                                                   state, is_in_landing),
+        'active': infobox_helpers.get_adgroup_running_status_class(user, autopilot_state, running_status,
+                                                                   state, is_in_landing, ad_group_mode),
         'landingMode': ad_group_settings.landing_mode if ad_group_settings else False,
     }
     return ad_group_dict

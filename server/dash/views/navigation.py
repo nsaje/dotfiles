@@ -40,6 +40,7 @@ class NavigationDataView(api_common.BaseApiView):
 
         if ad_group:
             response['ad_group'] = navigation_helpers.get_ad_group_dict(
+                request.user,
                 ad_group,
                 ad_group.get_current_settings(),
                 ad_group.campaign.get_current_settings()
@@ -107,6 +108,7 @@ class NavigationTreeView(api_common.BaseApiView):
             ad_group_settings = map_ad_groups_settings.get(ad_group.id)
 
             ad_group_dict = navigation_helpers.get_ad_group_dict(
+                user,
                 ad_group,
                 ad_group_settings,
                 map_campaign_settings.get(ad_group.campaign_id))
