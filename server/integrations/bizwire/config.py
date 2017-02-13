@@ -15,7 +15,7 @@ DAILY_BUDGET_PER_ARTICLE = 3.375
 OB_DAILY_BUDGET_PCT = 0.1
 
 CUSTOM_CPC_SETTINGS = {
-    38: Decimal('0.15'),
+    38: Decimal('0.2'),
     39: Decimal('0.1'),
     62: Decimal('0.1'),
 }
