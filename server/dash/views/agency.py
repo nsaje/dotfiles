@@ -237,6 +237,8 @@ class AdGroupSettings(api_common.BaseApiView):
     def b1_sources_group_adjustments(self, changes, current_settings, new_settings):
         # Turning on RTB-as-one
         if 'b1_sources_group_enabled' in changes and changes['b1_sources_group_enabled']:
+            new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.ACTIVE
+
             new_b1_sources_group_cpc = constants.SourceAllRTB.DEFAULT_CPC_CC
             if changes.get('b1_sources_group_cpc_cc'):
                 new_b1_sources_group_cpc = changes['b1_sources_group_cpc_cc']
