@@ -387,6 +387,7 @@ class AdGroupSerializer(SettingsSerializer):
                 }
             },
             'autopilot': {
+                'state': None,
                 'dailyBudget': settings['autopilot_daily_budget'],
             },
             'dayparting': settings['dayparting'],
@@ -398,6 +399,8 @@ class AdGroupSerializer(SettingsSerializer):
             ret['priceDiscovery'] = constants.AdGroupSettingsPriceDiscovery.get_name(settings['price_discovery'])
             ret['autopilotDailyBudget'] = settings['autopilot_daily_budget']
             del ret['autopilot']
+        else:
+            ret['autopilot']['state'] = constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state'])
 
         return ret
 
