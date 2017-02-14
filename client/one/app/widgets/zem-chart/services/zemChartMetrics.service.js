@@ -246,6 +246,13 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         return metric;
     }
 
+    function createEmptyMetric () {
+        return {
+            value: null,
+            name: 'None'
+        };
+    }
+
     return {
         METRICS: METRICS,
         getChartMetrics: getChartMetrics,
@@ -253,5 +260,6 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         findMetricByValue: findMetricByValue,
         findCategoryByName: findCategoryByName,
         createPlaceholderMetric: createPlaceholderMetric,
+        createEmptyMetric: createEmptyMetric,
     };
 });

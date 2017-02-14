@@ -53,7 +53,7 @@ angular.module('one.widgets').component('zemChart', {
 
         function updateDataSource () {
             var metrics = [$ctrl.metrics.metric1.value];
-            if ($ctrl.metrics.metric2) metrics.push($ctrl.metrics.metric2.value);
+            if ($ctrl.metrics.metric2.value) metrics.push($ctrl.metrics.metric2.value);
             $ctrl.chartDataService.setMetrics(metrics);
             $ctrl.chartDataService.setSelection(getSelection());
         }
@@ -119,8 +119,8 @@ angular.module('one.widgets').component('zemChart', {
         // Metrics selection
         //
         function onMetricsChanged (metric1, metric2) {
-            $ctrl.metrics.metric1 = metric1;
-            $ctrl.metrics.metric2 = metric2;
+            $ctrl.metrics.metric1 = metric1 ? metric1 : zemChartMetricsService.createEmptyMetric();
+            $ctrl.metrics.metric2 = metric2 ? metric2 : zemChartMetricsService.createEmptyMetric();
             saveMetrics();
             loadData();
         }
@@ -145,21 +145,22 @@ angular.module('one.widgets').component('zemChart', {
 
             var metrics = zemChartStorageService.loadMetrics($ctrl.level);
             if (metrics) {
-                var metric1 = zemChartMetricsService.findMetricByValue(categories, metrics.metric1);
-                var metric2 = zemChartMetricsService.findMetricByValue(categories, metrics.metric2);
-
-                if (metric1) {
-                    $ctrl.metrics.metric1 = metric1;
-                } else if (usePlaceholderFallback) {
-                    $ctrl.metrics.metric1 = zemChartMetricsService.createPlaceholderMetric(metrics.metric1);
-                }
-
-                if (metric2) {
-                    $ctrl.metrics.metric2 = metric2;
-                } else if (usePlaceholderFallback) {
-                    $ctrl.metrics.metric2 = zemChartMetricsService.createPlaceholderMetric(metrics.metric2);
-                }
+                $ctrl.metrics.metric1 = getMetric(metrics.metric1, usePlaceholderFallback);
+                $ctrl.metrics.metric2 = getMetric(metrics.metric2, usePlaceholderFallback);
             }
+        }
+
+        function getMetric (metricValue, usePlaceholderFallback) {
+            if (!metricValue) return zemChartMetricsService.createEmptyMetric();
+
+            var metric = zemChartMetricsService.findMetricByValue($ctrl.chart.metrics.options, metricValue);
+            if (metric) {
+                return metric;
+            } else if (usePlaceholderFallback) {
+                return zemChartMetricsService.createPlaceholderMetric(metricValue);
+            }
+
+            return null;
         }
     }
 });

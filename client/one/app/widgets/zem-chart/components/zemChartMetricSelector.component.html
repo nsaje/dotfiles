@@ -1,6 +1,5 @@
 <span class="dropdown" uib-dropdown>
-    <a href class="button button--dropdown-toggle-icon" uib-dropdown-toggle title="{{$ctrl.metric.name}}">{{$ctrl.metric
-        ? $ctrl.metric.name : 'None'}}</a>
+    <a href class="button button--dropdown-toggle-icon" uib-dropdown-toggle title="{{$ctrl.metric.name}}">{{$ctrl.metric.name}}</a>
     <div class="dropdown-menu" uib-dropdown-menu>
         <div class="dropdown-menu__container custom-scroller">
             <div class="dropdown-menu__category" ng-repeat="category in $ctrl.chart.metrics.options">
@@ -33,7 +32,7 @@
             </div>
             <div ng-if="$ctrl.nullable" class="dropdown-menu__list">
                 <span class="dropdown-menu__option" ng-click="$ctrl.onChanged(null)"
-                      ng-class="{'dropdown-menu__option--selected': !$ctrl.metric}">
+                      ng-class="{'dropdown-menu__option--selected': !$ctrl.metric.value}">
                   None
                 </span>
             </div>
