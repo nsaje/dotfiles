@@ -1405,6 +1405,9 @@ h3 {
     color: @secondary-color;
     font-weight: 500;
     font-size: 16px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
 .dropdown-menu__category-description {
@@ -1414,12 +1417,28 @@ h3 {
 .dropdown-menu__subcategory {
     width: 50%;
     float: left;
-    margin-top: 5px;
+    margin: 5px 0;
+    padding-right: 10px;
+
+    &:nth-child(even) {
+        padding-right: 0;
+    }
+
+    &:nth-child(odd) {
+        clear: both;
+    }
+
+    .dropdown-menu__list {
+        margin-top: 0;
+    }
 }
 
 .dropdown-menu__subcategory-name {
     color: @secondary-color;
     font-weight: 500;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
 .dropdown-menu__list {

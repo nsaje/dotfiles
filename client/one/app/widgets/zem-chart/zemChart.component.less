@@ -2,7 +2,13 @@
     display: inline-block;
     width: 300px;
     margin-right: 10px;
-    .button { width: 100%; }
+
+    .button {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 
     .dropdown-menu {
         margin: 8px 0 20px 0;
