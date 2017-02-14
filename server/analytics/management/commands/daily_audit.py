@@ -57,6 +57,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.audit_activated_running_ad_groups(options)
         self.audit_pilot_managed_running_ad_groups(options)
         self.audit_account_credits(options)
+        self.audit_click_discrepancy(options)
 
         if self.alarms and self.send_emails:
             email = utils.email_helper.EmailMultiAlternatives(
@@ -70,6 +71,24 @@ class Command(utils.command_helpers.ExceptionCommand):
                 "text/html"
             )
             email.send()
+
+    def audit_click_discrepancy(self, options):
+        alarms = analytics.monitor.audit_click_discrepancy()
+        if not alarms:
+            return
+        self.alarms = True
+        title = 'Campaigns with increased click discrepancy:'
+        self._print(title)
+        self.email_body += title + '\n'
+        for campaign, base, new in alarms:
+            text = ' - {} ({}% -> {}%): {}'.format(
+                campaign.get_long_name(),
+                base,
+                new,
+                'https://one.zemanta.com/campaigns/{}/ad_groups?page=1'.format(campaign.pk)
+            )
+            self._print(text)
+            self.email_body += text + '\n'
 
     def audit_account_credits(self, options):
         alarms = analytics.monitor.audit_account_credits()
@@ -95,7 +114,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         if not alarms:
             return
         self.alarms = True
-        title = 'Running activated ad groups with spend bellow ${}:'.format(options['min_ag_spend'])
+        title = 'Running activated ad groups with spend below ${}:'.format(options['min_ag_spend'])
         self._print(title)
         self.email_body += title + '\n'
         for ad_group in alarms:
@@ -115,7 +134,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         if not alarms:
             return
         self.alarms = True
-        title = 'Running pilot or managed ad groups with spend bellow ${}:'.format(
+        title = 'Running pilot or managed ad groups with spend below ${}:'.format(
             options['min_ag_spend']
         )
         self._print(title)

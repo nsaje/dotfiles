@@ -28,6 +28,15 @@ WHERE date = '{d}'
 GROUP BY ad_group_id
 HAVING SUM(effective_cost_nano) >= {threshold}"""
 
+CLICK_DISCREPANCY_QUERY = """SELECT campaign_id, (CASE
+  WHEN SUM(clicks) = 0 THEN NULL
+  WHEN SUM(visits) = 0 THEN 1
+  WHEN SUM(clicks) < SUM(visits) THEN 0
+  ELSE (SUM(CAST(clicks AS FLOAT)) - SUM(visits)) / SUM(clicks) END)*100.0 cd
+FROM mv_master
+WHERE date >= '{from_date}' AND date <= '{till_date}' AND campaign_id IN ({campaigns})
+GROUP BY campaign_id"""
+
 API_ACCOUNTS = (
     293, 305,
 )
@@ -285,3 +294,52 @@ def audit_account_credits(date=None, days=14):
         )
     )
     return ending_credit_accounts - future_credit_accounts
+
+
+def audit_click_discrepancy(date=None, days=30, threshold=20):
+    if date is None:
+        date = datetime.date.today() - datetime.timedelta(1)
+    from_date = date - datetime.timedelta(days + 1)
+    till_date = date - datetime.timedelta(1)
+
+    campaigns = {
+        c.pk: c for c in dash.models.Campaign.objects.filter(
+            pk__in=dash.models.CampaignGoal.objects.filter(
+                type__in=(
+                    dash.constants.CampaignGoalKPI.TIME_ON_SITE,
+                    dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE,
+                    dash.constants.CampaignGoalKPI.PAGES_PER_SESSION,
+                    dash.constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS,
+                    dash.constants.CampaignGoalKPI.CPV,
+                    dash.constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
+                )
+            ).values_list('campaign_id', flat=True)
+        )
+    }
+
+    data_base, data_test = {}, {}
+    with redshiftapi.db.get_stats_cursor() as c:
+        c.execute(CLICK_DISCREPANCY_QUERY.format(
+            campaigns=','.join(map(str, campaigns.keys())),
+            from_date=from_date,
+            till_date=till_date,
+        ))
+        data_base = {int(r[0]): r[1] for r in c.fetchall()}
+        c.execute(CLICK_DISCREPANCY_QUERY.format(
+            campaigns=','.join(map(str, campaigns.keys())),
+            from_date=date,
+            till_date=date,
+        ))
+        data_test = {int(r[0]): r[1] for r in c.fetchall()}
+
+    alarms = []
+    for campaign_id in data_test.keys():
+        campaign = campaigns.get(campaign_id)
+        test = data_test.get(campaign_id)
+        base = data_base.get(campaign_id)
+        if not campaign or test is None or base is None:
+            continue
+        change = int(test) - int(base)
+        if change > threshold:
+            alarms.append((campaign, base, test))
+    return alarms
