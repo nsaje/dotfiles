@@ -1044,6 +1044,8 @@ class AccountSettings(SettingsBase):
         # this is a temporary state until cleaning up of settings changes text
         if not changes and not self.post_init_newly_created:
             return
+        if 'salesforce_url' in changes:
+            return
 
         changes_text = history_changes_text or self.get_changes_text_from_dict(
             changes)
