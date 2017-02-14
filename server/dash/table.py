@@ -1797,7 +1797,8 @@ class PublishersTable(object):
                         publisher_data['blacklisted'] = 'Pending'
                     level = blacklisted_pub.get_blacklist_level()
                     publisher_data['blacklisted_level'] = level
-                    publisher_data['blacklisted_level_description'] = constants.PublisherBlacklistLevel.verbose(level)
+                    publisher_data['blacklisted_level_description'] = constants.PublisherBlacklistLevel.verbose(
+                        level, constants.PublisherTargetingStatus.BLACKLISTED)
                     if blacklisted_pub.external_id is not None:
                         publisher_data['external_id'] = blacklisted_pub.external_id
 

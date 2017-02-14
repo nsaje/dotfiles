@@ -121,14 +121,17 @@ def extract_stats_constraints(constraints, breakdown):
         new_constraints['content_ad_id'] = list(
             constraints['allowed_content_ads'].values_list('pk', flat=True).order_by('pk'))
 
-    if 'publisher_id' in breakdown and constraints['publisher_blacklist_filter'] in \
-       (PublisherBlacklistFilter.SHOW_ACTIVE, PublisherBlacklistFilter.SHOW_BLACKLISTED):
-        publisher_constraints = [create_publisher_id(x.name, x.source_id) for x in constraints['publisher_blacklist']]
-
+    if 'publisher_id' in breakdown and \
+       constraints['publisher_blacklist_filter'] != PublisherBlacklistFilter.SHOW_ALL:
         if constraints['publisher_blacklist_filter'] == PublisherBlacklistFilter.SHOW_ACTIVE:
-            new_constraints['publisher_id__neq'] = publisher_constraints
+            new_constraints['publisher_id__neq'] = list(
+                constraints['publisher_blacklist'].annotate_publisher_id().values_list('publisher_id', flat=True))
         elif constraints['publisher_blacklist_filter'] == PublisherBlacklistFilter.SHOW_BLACKLISTED:
-            new_constraints['publisher_id'] = publisher_constraints
+            new_constraints['publisher_id'] = list(
+                constraints['publisher_blacklist'].annotate_publisher_id().values_list('publisher_id', flat=True))
+        elif constraints['publisher_blacklist_filter'] == PublisherBlacklistFilter.SHOW_WHITELISTED:
+            new_constraints['publisher_id'] = list(
+                constraints['publisher_whitelist'].annotate_publisher_id().values_list('publisher_id', flat=True))
 
     return new_constraints
 
@@ -207,7 +210,8 @@ def check_constraints_are_supported(constraints):
     """
 
     query_set_keys = ['filtered_sources', 'filtered_agencies', 'allowed_accounts',
-                      'allowed_campaigns', 'allowed_ad_groups', 'allowed_content_ads', 'publisher_blacklist']
+                      'allowed_campaigns', 'allowed_ad_groups', 'allowed_content_ads',
+                      'publisher_blacklist', 'publisher_whitelist']
 
     if 'filtered_sources' not in constraints:
         raise exc.UnknownFieldBreakdownError("Missing filtered sources")
@@ -224,7 +228,8 @@ def check_constraints_are_supported(constraints):
         if key in constraints and not isinstance(constraints[key], Model):
             raise exc.UnknownFieldBreakdownError("Value of '{}' should be a django Model".format(key))
 
-    other_keys = ['show_archived', 'filtered_account_types', 'date__gte', 'date__lte', 'publisher_blacklist_filter']
+    other_keys = ['show_archived', 'filtered_account_types', 'date__gte', 'date__lte',
+                  'publisher_blacklist_filter', 'publisher_group_targeting']
     unknown_keys = set(constraints.keys()) - set(query_set_keys) - set(model_keys) - set(other_keys)
 
     if unknown_keys:
@@ -360,15 +365,6 @@ def merge_row(row_a, row_b):
     row.update(row_a)
     row.update(row_b)
     return row
-
-
-def create_publisher_id(domain, source_id):
-    return u'__'.join((domain, unicode(source_id or '')))
-
-
-def dissect_publisher_id(publisher):
-    domain, source_id = publisher.rsplit(u'__', 1)
-    return domain, int(source_id) if source_id else None
 
 
 def log_user_query_request(user, breakdown, constraints, order, offset, limit):

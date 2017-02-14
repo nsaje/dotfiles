@@ -5,6 +5,8 @@ import dash.constants
 import stats.constants
 import stats.helpers
 
+from dash import publisher_group_helpers
+
 from redshiftapi import api_breakdowns
 from redshiftapi import postprocess
 
@@ -50,14 +52,16 @@ def extract_constraints(constraints):
         if constraints.get(key) is not None:
             new_constraints[column] = queryset_helper.get_pk_list(constraints[key])
 
-    if 'publisher_blacklist_filter' in constraints and constraints['publisher_blacklist_filter'] in \
-       (dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE, dash.constants.PublisherBlacklistFilter.SHOW_BLACKLISTED):
-        publisher_constraints = [
-            stats.helpers.create_publisher_id(x.name, x.source_id) for x in constraints['publisher_blacklist']]
-
+    if 'publisher_blacklist_filter' in constraints and \
+       constraints['publisher_blacklist_filter'] != dash.constants.PublisherBlacklistFilter.SHOW_ALL:
         if constraints['publisher_blacklist_filter'] == dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE:
-            new_constraints['publisher_id__neq'] = publisher_constraints
+            new_constraints['publisher_id__neq'] = list(
+                constraints['publisher_blacklist'].annotate_publisher_id().values_list('publisher_id', flat=True))
         elif constraints['publisher_blacklist_filter'] == dash.constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
-            new_constraints['publisher_id'] = publisher_constraints
+            new_constraints['publisher_id'] = list(
+                constraints['publisher_blacklist'].annotate_publisher_id().values_list('publisher_id', flat=True))
+        elif constraints['publisher_blacklist_filter'] == dash.constants.PublisherBlacklistFilter.SHOW_WHITELISTED:
+            new_constraints['publisher_id'] = list(
+                constraints['publisher_whitelist'].annotate_publisher_id().values_list('publisher_id', flat=True))
 
     return new_constraints

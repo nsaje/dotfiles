@@ -46,6 +46,11 @@ var constants = {
         BLACKLISTED: 2,
         PENDING: 3,
     },
+    publisherTargetingStatus: {
+        WHITELISTED: 1,
+        BLACKLISTED: 2,
+        UNLISTED: 3,
+    },
     notificationType: {
         info: 'info',
         success: 'success',

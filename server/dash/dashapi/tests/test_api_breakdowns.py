@@ -9,7 +9,7 @@ from zemauth.models import User
 
 from dash import models
 from dash import threads
-from dash.constants import Level, PublisherBlacklistLevel
+from dash.constants import Level, PublisherBlacklistLevel, PublisherTargetingStatus
 from dash.dashapi import api_breakdowns
 from dash.dashapi import helpers
 from dash.dashapi import augmenter
@@ -174,52 +174,42 @@ SOURCE_1__CONTENT_AD_1 = {
 PUBLISHER_1__SOURCE_1 = {
     'publisher_id': 'pub1.com__1', 'publisher': 'pub1.com', 'domain': 'pub1.com', 'name': 'pub1.com', 'domain_link': 'http://pub1.com',  # noqa
     'source_id': 1, 'source_name': 'AdsNative', 'exchange': 'AdsNative', 'source_slug': 'adsnative',
-    'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.ADGROUP,
-    'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.ADGROUP),
-    'can_blacklist_publisher': True,
-    'notifications': {
-        'message': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.ADGROUP)
-    },
+    'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': 'global',
+    'blacklisted_level_description': 'Blacklisted globally',
+    'can_blacklist_publisher': True, 'notifications': {'message': 'Blacklisted globally'},
 }
 PUBLISHER_2__SOURCE_1 = {
     'publisher_id': 'pub2.com__1', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'name': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
     'source_id': 1, 'source_name': 'AdsNative', 'exchange': 'AdsNative', 'source_slug': 'adsnative',
-    'status': 1, 'blacklisted': 'Active', 'can_blacklist_publisher': True,
+    'status': 3, 'blacklisted': 'Active', 'can_blacklist_publisher': True,
 }
 PUBLISHER_2__SOURCE_2 = {
-    'publisher_id': 'pub2.com__2', 'publisher': 'pub2.com', 'domain': 'pub2.com', 'name': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
+    'publisher_id': 'pub2.com__2', 'publisher': 'pub2.com', 'name': 'pub2.com', 'domain': 'pub2.com', 'domain_link': 'http://pub2.com',  # noqa
     'source_id': 2, 'source_name': 'Gravity', 'exchange': 'Gravity', 'source_slug': 'gravity',
-    'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.CAMPAIGN,
-    'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.CAMPAIGN),
-    'can_blacklist_publisher': False,
-    'notifications': {
-        'message': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.CAMPAIGN)
-    },
-}
-PUBLISHER_3__SOURCE_1 = {
-    'publisher_id': 'pub3.com__1', 'publisher': 'pub3.com', 'name': 'pub3.com', 'domain': 'pub3.com', 'domain_link': 'http://pub3.com',  # noqa
-    'source_id': 1, 'source_name': 'AdsNative', 'exchange': 'AdsNative', 'source_slug': 'adsnative',
-    'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.ACCOUNT,
-    'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.ACCOUNT),
-    'can_blacklist_publisher': True,
-    'notifications': {
-        'message': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.ACCOUNT)
-    },
+    'status': 1, 'blacklisted': 'Whitelisted', 'blacklisted_level': 'adgroup',
+    'blacklisted_level_description': 'Whitelisted in this ad group',
+    'can_blacklist_publisher': False, 'notifications': {'message': 'Whitelisted in this ad group'},
 }
 PUBLISHER_3__SOURCE_2 = {
-    'publisher_id': 'pub3.com__2', 'publisher': 'pub3.com', 'name': 'pub3.com', 'domain': 'pub3.com', 'domain_link': 'http://pub3.com',  # noqa
+    'publisher_id': 'pub3.com__2', 'publisher': 'pub3.com', 'domain': 'pub3.com', 'name': 'pub3.com', 'domain_link': 'http://pub3.com',  # noqa
     'source_id': 2, 'source_name': 'Gravity', 'exchange': 'Gravity', 'source_slug': 'gravity',
-    'status': 1, 'blacklisted': 'Active', 'can_blacklist_publisher': False,
+    'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': 'adgroup',
+    'blacklisted_level_description': 'Blacklisted in this ad group',
+    'can_blacklist_publisher': False, 'notifications': {'message': 'Blacklisted in this ad group'},
 }
 PUBLISHER_4__SOURCE_2 = {
     'publisher_id': 'pub4.com__2', 'publisher': 'pub4.com', 'name': 'pub4.com', 'domain': 'pub4.com', 'domain_link': 'http://pub4.com',  # noqa
     'source_id': 2, 'source_name': 'Gravity', 'exchange': 'Gravity', 'source_slug': 'gravity',
-    'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.GLOBAL,
-    'blacklisted_level_description': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.GLOBAL),
-    'can_blacklist_publisher': False,
-    'notifications': {
-        'message': PublisherBlacklistLevel.verbose(PublisherBlacklistLevel.GLOBAL)
-    },
+    'status': 1, 'blacklisted': 'Whitelisted', 'blacklisted_level': 'campaign',
+    'blacklisted_level_description': 'Whitelisted in this campaign',
+    'can_blacklist_publisher': False, 'notifications': {'message': 'Whitelisted in this campaign'},
+}
+PUBLISHER_5__SOURCE_2 = {
+    'publisher_id': 'pub5.com__2', 'publisher': 'pub5.com', 'name': 'pub5.com', 'domain': 'pub5.com', 'domain_link': 'http://pub5.com',  # noqa
+    'source_id': 2, 'source_name': 'Gravity', 'exchange': 'Gravity', 'source_slug': 'gravity',
+    'status': 2, 'blacklisted': 'Blacklisted', 'blacklisted_level': PublisherBlacklistLevel.ACCOUNT,
+    'blacklisted_level_description': 'Blacklisted in this account',
+    'can_blacklist_publisher': False, 'notifications': {'message': 'Blacklisted in this account'},
 }
 
 
@@ -655,13 +645,22 @@ class QueryTest(TestCase):
                 'allowed_content_ads': models.ContentAd.objects.filter(ad_group=1),
                 'show_archived': True,
                 'filtered_sources': models.Source.objects.all(),
-                'publisher_blacklist': models.PublisherBlacklist.objects.all(),
+                'publisher_blacklist': models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 3, 5]),
+                'publisher_whitelist': models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[2, 4]),
+                'publisher_group_targeting': {
+                    'ad_group': {'included': set([2]), 'excluded': set([3])},
+                    'campaign': {'included': set([4]), 'excluded': set()},
+                    'account': {'included': set(), 'excluded': set([5])},
+                    'global': {'excluded': set([1])},
+                },
             },
             None,
             'name', 0, 4
         )
 
-        self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_2, PUBLISHER_3__SOURCE_1, PUBLISHER_4__SOURCE_2])
+        self.maxDiff = None
+        print [x['publisher_id'] for x in rows]
+        self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_2, PUBLISHER_5__SOURCE_2])
 
 
 @patch('dash.threads.AsyncFunction', threads.MockAsyncFunction)
@@ -685,7 +684,7 @@ class QueryOrderTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [AD_GROUP_BASE_1, AD_GROUP_BASE_2])
+        self.assertEqual(rows, [AD_GROUP_BASE_1, AD_GROUP_BASE_2])
 
         rows = api_breakdowns.query(
             Level.CAMPAIGNS,
@@ -701,7 +700,7 @@ class QueryOrderTest(TestCase):
             '-name', 0, 2
         )
 
-        self.assertEqual(rows,  [AD_GROUP_BASE_2, AD_GROUP_BASE_1])
+        self.assertEqual(rows, [AD_GROUP_BASE_2, AD_GROUP_BASE_1])
 
     def test_query_campaigns_break_source(self):
         rows = api_breakdowns.query(
@@ -718,7 +717,7 @@ class QueryOrderTest(TestCase):
             'name', 0, 2
         )
 
-        self.assertEqual(rows,  [SOURCE_1, SOURCE_2])
+        self.assertEqual(rows, [SOURCE_1, SOURCE_2])
 
         rows = api_breakdowns.query(
             Level.CAMPAIGNS,
@@ -734,7 +733,7 @@ class QueryOrderTest(TestCase):
             '-name', 0, 2
         )
 
-        self.assertEqual(rows,  [SOURCE_2, SOURCE_1])
+        self.assertEqual(rows, [SOURCE_2, SOURCE_1])
 
 
 @patch('dash.threads.AsyncFunction', threads.MockAsyncFunction)
@@ -1359,10 +1358,11 @@ class QueryForRowsTest(TestCase):
     def test_query_for_rows_ad_groups_break_publisher(self):
         rows = api_breakdowns.query_for_rows(
             [
-                {'publisher_id': 'pub1.com__1', 'clicks': 11},
-                {'publisher_id': 'pub2.com__1', 'clicks': 22},  # this one is not blacklisted
-                {'publisher_id': 'pub3.com__2', 'clicks': 33},  # this one is not blacklisted
-                {'publisher_id': 'pub4.com__2', 'clicks': 44},
+                {'publisher_id': 'pub1.com__1', 'clicks': 11},  # blacklisted globaly
+                {'publisher_id': 'pub2.com__1', 'clicks': 22},  # unlisted
+                {'publisher_id': 'pub3.com__2', 'clicks': 33},  # blacklisted ad group (all sources)
+                {'publisher_id': 'pub4.com__2', 'clicks': 44},  # whitelisted campaign (all sources)
+                {'publisher_id': 'pub5.com__2', 'clicks': 55},  # blacklisted account
             ],
             Level.AD_GROUPS,
             User.objects.get(pk=1),
@@ -1372,13 +1372,21 @@ class QueryForRowsTest(TestCase):
                 'allowed_content_ads': models.ContentAd.objects.filter(ad_group_id=1),
                 'show_archived': True,
                 'filtered_sources': models.Source.objects.all(),
-                'publisher_blacklist': models.PublisherBlacklist.objects.all(),
+                'publisher_blacklist': models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 3, 5]),
+                'publisher_whitelist': models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[2, 4]),
+                'publisher_group_targeting': {
+                    'ad_group': {'included': set([2]), 'excluded': set([3])},
+                    'campaign': {'included': set([4]), 'excluded': set()},
+                    'account': {'included': set(), 'excluded': set([5])},
+                    'global': {'excluded': set([1])},
+                },
             },
             None, 'clicks', 0, 2,
             []
         )
 
-        self.assertEqual(rows,  [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_1, PUBLISHER_3__SOURCE_2, PUBLISHER_4__SOURCE_2])
+        self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_1, PUBLISHER_3__SOURCE_2,
+                                PUBLISHER_4__SOURCE_2, PUBLISHER_5__SOURCE_2])
 
 
 class HelpersTest(TestCase):

@@ -1,11 +1,11 @@
 import copy
 
-from django.db.models import Q
 from utils.queryset_helper import simplify_query
 
 import newrelic.agent
 
 from dash import models
+from dash import publisher_group_helpers
 
 from stats import constants
 import dash.constants
@@ -127,30 +127,28 @@ def prepare_ad_group_constraints(user, ad_group, breakdown, start_date, end_date
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group_id=ad_group.id)
         filtered_sources = narrow_filtered_sources(filtered_sources, ad_group_sources)
 
-    if models.should_filter_by_sources(filtered_sources):
-        blacklisted_publishers = models.PublisherBlacklist.objects.filter(
-            Q(ad_group=ad_group) |
-            Q(campaign=ad_group.campaign) |
-            Q(account=ad_group.campaign.account) |
-            Q(everywhere=True)
-        ).filter_by_sources(filtered_sources)
+    ad_group_settings = ad_group.get_current_settings()
+    campaign_settings = ad_group.campaign.get_current_settings()
+    account_settings = ad_group.campaign.account.get_current_settings()
 
-        # include those that do not have source_id specified as they blacklist also filtered sources
-        blacklisted_publishers |= models.PublisherBlacklist.objects.filter(
-            Q(ad_group=ad_group, source_id__isnull=True) |
-            Q(campaign=ad_group.campaign, source_id__isnull=True) |
-            Q(account=ad_group.campaign.account, source_id__isnull=True) |
-            Q(everywhere=True, source_id__isnull=True)
-        )
-    else:
-        blacklisted_publishers = models.PublisherBlacklist.objects.filter(
-            Q(ad_group=ad_group) |
-            Q(campaign=ad_group.campaign) |
-            Q(account=ad_group.campaign.account) |
-            Q(everywhere=True)
-        )
+    blacklists, whitelists = publisher_group_helpers.concat_publisher_group_targeting(
+        ad_group, ad_group_settings, ad_group.campaign, campaign_settings,
+        ad_group.campaign.account, account_settings
+    )
 
-    constraints['publisher_blacklist'] = blacklisted_publishers
+    publisher_group_targeting = publisher_group_helpers.get_publisher_group_targeting_dict(
+        ad_group, ad_group_settings, ad_group.campaign, campaign_settings,
+        ad_group.campaign.account, account_settings
+    )
+
+    blacklisted_entries = models.PublisherGroupEntry.objects.filter(publisher_group_id__in=blacklists)\
+                                                            .filter_by_sources(filtered_sources, include_wo_source=True)
+    whitelisted_entries = models.PublisherGroupEntry.objects.filter(publisher_group_id__in=whitelists)\
+                                                            .filter_by_sources(filtered_sources, include_wo_source=True)
+
+    constraints['publisher_blacklist'] = blacklisted_entries
+    constraints['publisher_whitelist'] = whitelisted_entries
+    constraints['publisher_group_targeting'] = publisher_group_targeting
     constraints['publisher_blacklist_filter'] = show_blacklisted_publishers
 
     constraints.update(_get_basic_constraints(

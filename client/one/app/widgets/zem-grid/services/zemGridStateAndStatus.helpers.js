@@ -100,14 +100,14 @@ angular.module('one.widgets').factory('zemGridStateAndStatusHelpers', function (
         }
         if (level === constants.level.AD_GROUPS && breakdown === constants.breakdown.PUBLISHER) {
             statusTexts = {};
-            statusTexts[constants.publisherStatus.ENABLED] = 'Active';
-            statusTexts[constants.publisherStatus.BLACKLISTED] = 'Blacklisted';
-            statusTexts[constants.publisherStatus.PENDING] = 'Pending';
+            statusTexts[constants.publisherTargetingStatus.UNLISTED] = 'Active';
+            statusTexts[constants.publisherTargetingStatus.BLACKLISTED] = 'Blacklisted';
+            statusTexts[constants.publisherTargetingStatus.WHITELISTED] = 'Whitelisted';
 
             return {
-                enabled: constants.publisherStatus.ENABLED,
-                blacklisted: constants.publisherStatus.BLACKLISTED,
-                pending: constants.publisherStatus.PENDING,
+                unlisted: constants.publisherTargetingStatus.UNLISTED,
+                blacklisted: constants.publisherTargetingStatus.BLACKLISTED,
+                whitelisted: constants.publisherTargetingStatus.WHITELISTED,
                 statusTexts: statusTexts,
             };
         }

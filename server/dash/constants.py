@@ -224,14 +224,22 @@ class PublisherBlacklistLevel(ConstantBase):
     }
 
     @classmethod
-    def verbose(cls, level):
-        level_verbose = "Blacklisted in this ad group"
-        if level == PublisherBlacklistLevel.CAMPAIGN:
-            level_verbose = "Blacklisted in this campaign"
-        elif level == PublisherBlacklistLevel.ACCOUNT:
-            level_verbose = "Blacklisted in this account"
-        elif level == PublisherBlacklistLevel.GLOBAL:
-            level_verbose = "Blacklisted globally"
+    def verbose(cls, level, status):
+        level_verbose = ''
+        if status == PublisherTargetingStatus.BLACKLISTED:
+            level_verbose = "Blacklisted in this ad group"
+            if level == PublisherBlacklistLevel.CAMPAIGN:
+                level_verbose = "Blacklisted in this campaign"
+            elif level == PublisherBlacklistLevel.ACCOUNT:
+                level_verbose = "Blacklisted in this account"
+            elif level == PublisherBlacklistLevel.GLOBAL:
+                level_verbose = "Blacklisted globally"
+        elif status == PublisherTargetingStatus.WHITELISTED:
+            level_verbose = "Whitelisted in this ad group"
+            if level == PublisherBlacklistLevel.CAMPAIGN:
+                level_verbose = "Whitelisted in this campaign"
+            elif level == PublisherBlacklistLevel.ACCOUNT:
+                level_verbose = "Whitelisted in this account"
         return level_verbose
 
     @classmethod
@@ -244,11 +252,13 @@ class PublisherBlacklistFilter(ConstantBase):
     SHOW_ALL = 'all'
     SHOW_ACTIVE = 'active'
     SHOW_BLACKLISTED = 'blacklisted'
+    SHOW_WHITELISTED = 'whitelisted'
 
     _VALUES = {
         SHOW_ALL: 'All',
         SHOW_ACTIVE: 'Active',
-        SHOW_BLACKLISTED: 'Blacklisted'
+        SHOW_BLACKLISTED: 'Blacklisted',
+        SHOW_WHITELISTED: 'Whitelisted',
     }
 
 
@@ -1880,6 +1890,8 @@ class CpcConstraintType(ConstantBase):
 
 
 class PublisherTargetingStatus(ConstantBase):
+    # a replacement for PublisherStatus
+
     WHITELISTED = 1
     BLACKLISTED = 2
     UNLISTED = 3

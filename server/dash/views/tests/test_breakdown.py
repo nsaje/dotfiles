@@ -12,6 +12,7 @@ from stats.helpers import Goals
 
 from dash import models
 from dash import constants
+from dash import publisher_group_helpers
 from dash.views import breakdown
 from dash.views import breakdown_helpers
 from dash import table
@@ -508,7 +509,9 @@ class AdGroupBreakdownTestCase(TestCase):
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
                 'publisher_blacklist_filter': constants.PublisherBlacklistFilter.SHOW_ALL,
-                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherBlacklist.objects.all()),
+                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                'publisher_whitelist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                'publisher_group_targeting': publisher_group_helpers.get_default_publisher_group_targeting_dict(),
             },
             ANY,
             ['1-2-33', '1-2-34', '1-3-22'],
@@ -564,7 +567,9 @@ class AdGroupBreakdownTestCase(TestCase):
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
                 'publisher_blacklist_filter': constants.PublisherBlacklistFilter.SHOW_ALL,
-                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherBlacklist.objects.all()),
+                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                'publisher_whitelist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                'publisher_group_targeting': publisher_group_helpers.get_default_publisher_group_targeting_dict(),
             },
             ANY,
             [],
@@ -645,7 +650,9 @@ class AdGroupBreakdownTestCase(TestCase):
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
                 'publisher_blacklist_filter': constants.PublisherBlacklistFilter.SHOW_ALL,
-                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherBlacklist.objects.all()),
+                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                'publisher_whitelist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                'publisher_group_targeting': publisher_group_helpers.get_default_publisher_group_targeting_dict(),
             },
             ANY,
             [],
@@ -748,7 +755,9 @@ class AdGroupBreakdownTestCase(TestCase):
                 'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
                 'show_archived': True,
                 'publisher_blacklist_filter': constants.PublisherBlacklistFilter.SHOW_ALL,
-                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherBlacklist.objects.all()),
+                'publisher_blacklist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                'publisher_whitelist': test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                'publisher_group_targeting': publisher_group_helpers.get_default_publisher_group_targeting_dict(),
             },
             ANY,
             [],

@@ -126,6 +126,7 @@ class PrepareConstraints(TestCase):
         end_date = datetime.date(2016, 2, 1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
 
+        self.maxDiff = None
         self.assertDictEqual(
             constraints_helper.prepare_ad_group_constraints(user, ad_group, ['ad_group_id', 'content_ad_id'],
                                                             start_date, end_date, sources),
@@ -141,7 +142,15 @@ class PrepareConstraints(TestCase):
                     dash.models.ContentAd.objects.filter(ad_group_id=1).exclude_archived()),
                 'publisher_blacklist_filter': dash.constants.PublisherBlacklistFilter.SHOW_ALL,
                 'publisher_blacklist': test_helper.QuerySetMatcher(
-                    dash.models.PublisherBlacklist.objects.all()),
+                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 3, 5])),
+                'publisher_whitelist': test_helper.QuerySetMatcher(
+                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[2, 4])),
+                'publisher_group_targeting': {
+                    'ad_group': {'included': set([2]), 'excluded': set([3])},
+                    'campaign': {'included': set([4]), 'excluded': set()},
+                    'account': {'included': set(), 'excluded': set([5])},
+                    'global': {'excluded': set([1])},
+                },
             }
         )
 
@@ -152,6 +161,7 @@ class PrepareConstraints(TestCase):
         end_date = datetime.date(2016, 2, 1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
 
+        self.maxDiff = None
         self.assertDictEqual(
             constraints_helper.prepare_ad_group_constraints(
                 user, ad_group, ['ad_group_id', 'content_ad_id'], start_date, end_date, sources,
@@ -168,6 +178,14 @@ class PrepareConstraints(TestCase):
                     dash.models.ContentAd.objects.filter(ad_group_id=1).exclude_archived()),
                 'publisher_blacklist_filter': dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE,
                 'publisher_blacklist': test_helper.QuerySetMatcher(
-                    dash.models.PublisherBlacklist.objects.all()),
+                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 3, 5])),
+                'publisher_whitelist': test_helper.QuerySetMatcher(
+                    dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[2, 4])),
+                'publisher_group_targeting': {
+                    'ad_group': {'included': set([2]), 'excluded': set([3])},
+                    'campaign': {'included': set([4]), 'excluded': set()},
+                    'account': {'included': set(), 'excluded': set([5])},
+                    'global': {'excluded': set([1])},
+                },
             }
         )

@@ -116,6 +116,12 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
 
 @newrelic.agent.function_trace()
 def query_section(level, user, breakdown, constraints, parent=None):
+    """
+    Create dash rows for one breakdown section. Eg. if breakdown is campaign_id, ad_group_id
+    a section will be ad groups of a single campaign. When breakdown is 1 level only, a section
+    is whole 1st level.
+    """
+
     target_dimension = get_target_dimension(breakdown)
 
     constraints = stats.constraints_helper.reduce_to_parent(breakdown, constraints, parent)

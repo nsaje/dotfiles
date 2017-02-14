@@ -27,13 +27,13 @@
 # |-------------------+-----------|
 # | Source            | 1  2  2   |
 # 
-# | Publisher blacklist | name     | Source | Ad Group | Campaign | Account | Global |
-# |---------------------+----------+--------+----------+----------+---------+--------|
-# |                   1 | pub1.com |      1 |        1 |          |         |        |
-# |                   2 | pub2.com |      2 |          |        1 |         |        |
-# |                   3 | pub3.com |      1 |          |          |       1 |        |
-# |                   4 | pub4.com |      2 |          |          |         | true   |
-
+# | publisher group |  entry id | publisher | source |ad group 1 | campaign 1 | account 1 | global |
+# |-----------------+-----------+-----------+--------|-----------+------------+-----------+--------|
+# |               1 |         1 | pub1      |      1 |           |            |           | exc    |
+# |               2 |         2 | pub2      |      2 |inc        |            |           |        |
+# |               3 |         3 | pub3      |        |exc        |            |           |        |
+# |               4 |         4 | pub4      |        |           | inc        |           |        |
+# |               5 |         5 | pub5      |      2 |           |            | exc       |        |
 
 # test user
 
@@ -110,6 +110,7 @@
         account_type: 5
         default_account_manager: 2
         default_sales_representative: 3
+        blacklist_publisher_groups: [5]
     model: dash.accountsettings
     pk: 1
 
@@ -150,6 +151,7 @@
         target_devices: ['mobile']
         target_regions: ['US']
         campaign: 1
+        whitelist_publisher_groups: [4]
     model: dash.campaignsettings
     pk: 1
 
@@ -240,6 +242,8 @@
         autopilot_daily_budget: '50.0000'
         retargeting_ad_groups: [3]
         state: 1
+        whitelist_publisher_groups: [2]
+        blacklist_publisher_groups: [3]
     model: dash.adgroupsettings
     pk: 4
 
@@ -575,3 +579,90 @@
         created_dt: '2015-02-23T00:00:00'
     model: dash.publisherblacklist
     pk: 4
+
+# publisher groups
+- fields:
+    name: 'global blacklist'
+    account: !!null
+    agency: !!null
+    created_dt: '2015-09-23T09:57:22'
+    modified_dt: '2015-09-23T09:57:22'
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 1
+
+- fields:
+    name: 'pg2'
+    account: 1
+    agency: !!null
+    created_dt: '2015-09-23T09:57:22'
+    modified_dt: '2015-09-23T09:57:22'
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 2
+
+- fields:
+    name: 'pg3'
+    account: 1
+    agency: !!null
+    created_dt: '2015-09-23T09:57:22'
+    modified_dt: '2015-09-23T09:57:22'
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 3
+
+- fields:
+    name: 'pg4'
+    account: 1
+    agency: !!null
+    created_dt: '2015-09-23T09:57:22'
+    modified_dt: '2015-09-23T09:57:22'
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 4
+
+- fields:
+    name: 'pg5'
+    account: 1
+    agency: !!null
+    created_dt: '2015-09-23T09:57:22'
+    modified_dt: '2015-09-23T09:57:22'
+    modified_by: 1
+  model: dash.publishergroup
+  pk: 5
+
+# publisher group entries
+- fields:
+    publisher_group: 1
+    publisher: 'pub1.com'
+    source: 1
+  model: dash.publishergroupentry
+  pk: 1
+
+- fields:
+    publisher_group: 2
+    publisher: 'pub2.com'
+    source: 2
+  model: dash.publishergroupentry
+  pk: 2
+
+- fields:
+    publisher_group: 3
+    publisher: 'pub3.com'
+    source: !!null
+  model: dash.publishergroupentry
+  pk: 3
+
+- fields:
+    publisher_group: 4
+    publisher: 'pub4.com'
+    source: !!null
+  model: dash.publishergroupentry
+  pk: 4
+
+- fields:
+    publisher_group: 5
+    publisher: 'pub5.com'
+    source: 2
+  model: dash.publishergroupentry
+  pk: 5

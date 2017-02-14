@@ -16,9 +16,9 @@ describe('zemGridStateAndStatusHelpers', function () {
             2: 'Paused',
         };
         var publisherStatusTexts = {
-            1: 'Active',
+            1: 'Whitelisted',
             2: 'Blacklisted',
-            3: 'Pending',
+            3: 'Active',
         };
         tests = [
             {level: 'unknown', breakdown: 'unknown', expectedResult: undefined},
@@ -37,8 +37,8 @@ describe('zemGridStateAndStatusHelpers', function () {
             {level: 'campaigns', breakdown: 'source', expectedResult: {enabled: 1, paused: 2, statusTexts: defaultStatusTexts}}, // eslint-disable-line max-len
             {level: 'ad_groups', breakdown: 'source', expectedResult: {enabled: 1, paused: 2, statusTexts: defaultStatusTexts}}, // eslint-disable-line max-len
             {level: 'ad_groups', breakdown: 'source', expectedResult: {enabled: 1, paused: 2, statusTexts: defaultStatusTexts}}, // eslint-disable-line max-len
-            {level: 'ad_groups', breakdown: 'publisher', expectedResult: {enabled: 1, blacklisted: 2, pending: 3, statusTexts: publisherStatusTexts}}, // eslint-disable-line max-len
-            {level: 'ad_groups', breakdown: 'publisher', expectedResult: {enabled: 1, blacklisted: 2, pending: 3, statusTexts: publisherStatusTexts}}, // eslint-disable-line max-len
+            {level: 'ad_groups', breakdown: 'publisher', expectedResult: {whitelisted: 1, blacklisted: 2, unlisted: 3, statusTexts: publisherStatusTexts}}, // eslint-disable-line max-len
+            {level: 'ad_groups', breakdown: 'publisher', expectedResult: {whitelisted: 1, blacklisted: 2, unlisted: 3, statusTexts: publisherStatusTexts}}, // eslint-disable-line max-len
         ];
 
         tests.forEach(function (test) {

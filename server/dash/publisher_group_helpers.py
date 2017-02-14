@@ -59,6 +59,7 @@ def can_user_handle_publishers(user, obj):
 
 def concat_publisher_group_targeting(ad_group, ad_group_settings, campaign,
                                      campaign_settings, account, account_settings, include_global=True):
+
     blacklist = set([ad_group.default_blacklist_id, campaign.default_blacklist_id, account.default_blacklist_id])
     blacklist |= set(ad_group_settings.blacklist_publisher_groups)
     blacklist |= set(campaign_settings.blacklist_publisher_groups)
@@ -74,6 +75,66 @@ def concat_publisher_group_targeting(ad_group, ad_group_settings, campaign,
     whitelist = [x for x in whitelist if x]
 
     return blacklist, whitelist
+
+
+def get_default_publisher_group_targeting_dict():
+    return {
+        'ad_group': {
+            'included': set(),
+            'excluded': set(),
+        },
+        'campaign': {
+            'included': set(),
+            'excluded': set(),
+        },
+        'account': {
+            'included': set(),
+            'excluded': set(),
+        },
+        'global': {
+            'excluded': set([get_global_blacklist().id]),
+        },
+    }
+
+
+def get_publisher_group_targeting_dict(ad_group, ad_group_settings, campaign,
+                                       campaign_settings, account, account_settings):
+    d = get_default_publisher_group_targeting_dict()
+    d.update({
+        'ad_group': {
+            'included': _get_whitelists(ad_group, ad_group_settings),
+            'excluded': _get_blacklists(ad_group, ad_group_settings),
+        },
+        'campaign': {
+            'included': _get_whitelists(campaign, campaign_settings),
+            'excluded': _get_blacklists(campaign, campaign_settings),
+        },
+        'account': {
+            'included': _get_whitelists(account, account_settings),
+            'excluded': _get_blacklists(account, account_settings),
+        }
+    })
+    return d
+
+
+def get_publisher_list_level(entry, targeting):
+    if entry.publisher_group_id in targeting['ad_group']['included'] | targeting['ad_group']['excluded']:
+        return constants.PublisherBlacklistLevel.ADGROUP
+    elif entry.publisher_group_id in targeting['campaign']['included'] | targeting['campaign']['excluded']:
+        return constants.PublisherBlacklistLevel.CAMPAIGN
+    elif entry.publisher_group_id in targeting['account']['included'] | targeting['account']['excluded']:
+        return constants.PublisherBlacklistLevel.ACCOUNT
+    elif entry.publisher_group_id in targeting['global']['excluded']:
+        return constants.PublisherBlacklistLevel.GLOBAL
+    return None
+
+
+def _get_blacklists(obj, obj_settings):
+    return set(x for x in [obj.default_blacklist_id] + obj_settings.blacklist_publisher_groups if x)
+
+
+def _get_whitelists(obj, obj_settings):
+    return set(x for x in [obj.default_whitelist_id] + obj_settings.whitelist_publisher_groups if x)
 
 
 def handle_publishers(request, entry_dicts, obj, status):
@@ -146,3 +207,12 @@ def _create_domain_constraints(entry_dicts):
     for c in constraints:
         q |= Q(**c)
     return q
+
+
+def create_publisher_id(publisher, source_id):
+    return u'__'.join((publisher, unicode(source_id or '')))
+
+
+def dissect_publisher_id(publisher_id):
+    publisher, source_id = publisher_id.rsplit(u'__', 1)
+    return publisher, int(source_id) if source_id else None

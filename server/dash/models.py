@@ -14,6 +14,7 @@ from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib import auth
 from django.db import models, transaction
+from django.db.models.functions import Concat
 from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
@@ -4580,6 +4581,23 @@ class PublisherGroupEntry(models.Model):
     include_subdomains = models.BooleanField(default=True)
 
     outbrain_publisher_id = models.CharField(max_length=127, blank=True, verbose_name='Special Outbrain publisher ID')
+
+    objects = QuerySetManager()
+
+    class QuerySet(models.QuerySet):
+
+        def filter_by_sources(self, sources, include_wo_source=False):
+            if not should_filter_by_sources(sources):
+                return self
+
+            if not include_wo_source:
+                return self.filter(source__in=sources)
+
+            return self.filter(models.Q(source__in=sources) | models.Q(source__isnull=True))
+
+        def annotate_publisher_id(self):
+            return self.annotate(publisher_id=Concat(
+                'publisher', models.Value('__'), 'source_id', output_field=models.CharField()))
 
     def __unicode__(self):
         return u'{} ({})'.format(self.publisher, self.source if self.source else 'All sources')

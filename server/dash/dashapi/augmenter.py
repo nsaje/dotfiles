@@ -1,8 +1,6 @@
-import stats.helpers
-
-from dash.views import helpers as view_helpers
 from dash import constants
 from dash import publisher_helpers
+from dash import publisher_group_helpers
 
 """
 Applies dash data to rows. No logics, only write data to proper keys.
@@ -108,7 +106,7 @@ def augment_sources_totals(row, loader):
 
 def augment_publishers(rows, loader, is_base_level=False):
     for row in rows:
-        domain, _ = stats.helpers.dissect_publisher_id(row['publisher_id'])
+        domain, _ = publisher_group_helpers.dissect_publisher_id(row['publisher_id'])
         source_id = row['source_id']
         augment_row_publisher(
             row,
@@ -121,7 +119,7 @@ def augment_publishers(rows, loader, is_base_level=False):
 
 def augment_publishers_for_report(rows, loader, is_base_level=False):
     for row in rows:
-        domain, _ = stats.helpers.dissect_publisher_id(row['publisher_id'])
+        domain, _ = publisher_group_helpers.dissect_publisher_id(row['publisher_id'])
         source_id = row['source_id']
         augment_row_report_publisher(
             row,
@@ -250,7 +248,7 @@ def augment_row_source(row, source=None, settings=None):
             })
 
 
-def augment_row_publisher(row, domain, source, blacklist_status, can_blacklist_source):
+def augment_row_publisher(row, domain, source, entry_status, can_blacklist_source):
     row.update({
         'name': domain,
         'source_id': source.id,
@@ -260,31 +258,32 @@ def augment_row_publisher(row, domain, source, blacklist_status, can_blacklist_s
         'domain': domain,
         'domain_link': publisher_helpers.get_publisher_domain_link(domain),
         'can_blacklist_publisher': can_blacklist_source,
-        'status': blacklist_status['status'],
-        'blacklisted': constants.PublisherStatus.get_text(blacklist_status['status']),
+        'status': entry_status['status'],
+        'blacklisted': constants.PublisherTargetingStatus.get_text(entry_status['status']),
     })
 
-    if blacklist_status.get('blacklisted_level'):
+    if entry_status.get('blacklisted_level'):
         row.update({
-            'blacklisted_level': blacklist_status['blacklisted_level'],
+            'blacklisted_level': entry_status['blacklisted_level'],
             'blacklisted_level_description': constants.PublisherBlacklistLevel.verbose(
-                blacklist_status['blacklisted_level']),
+                entry_status['blacklisted_level'], entry_status['status']),
             'notifications': {
-                'message': constants.PublisherBlacklistLevel.verbose(blacklist_status['blacklisted_level']),
+                'message': constants.PublisherBlacklistLevel.verbose(
+                    entry_status['blacklisted_level'], entry_status['status']),
             },
         })
 
 
-def augment_row_report_publisher(row, domain, source, blacklist_status, can_blacklist_source):
-    augment_row_publisher(row, domain, source, blacklist_status, can_blacklist_source)
+def augment_row_report_publisher(row, domain, source, entry_status, can_blacklist_source):
+    augment_row_publisher(row, domain, source, entry_status, can_blacklist_source)
     row['publisher'] = domain
     row.update({
         'publisher': domain,
         'source': source.name,
         'source_slug': source.bidder_slug,
-        'status': constants.PublisherStatus.get_text(blacklist_status['status']).upper(),
+        'status': constants.PublisherTargetingStatus.get_text(entry_status['status']).upper(),
         'blacklisted_level': (constants.PublisherBlacklistLevel.get_text(
-            blacklist_status.get('blacklisted_level', '')) or '').upper()
+            entry_status.get('blacklisted_level', '')) or '').upper()
     })
 
 
@@ -297,7 +296,7 @@ def make_dash_rows(target_dimension, objs_ids, parent):
 def make_publisher_dash_rows(objs_ids, parent):
     rows = []
     for obj_id in objs_ids:
-        publisher, source_id = stats.helpers.dissect_publisher_id(obj_id)
+        publisher, source_id = publisher_group_helpers.dissect_publisher_id(obj_id)
 
         # dont include rows without source_id
         if source_id:
@@ -316,7 +315,7 @@ def make_row(target_dimension, target_id, parent):
         row.update(parent)
 
     if target_dimension == 'publisher_id':
-        publisher, source_id = stats.helpers.dissect_publisher_id(target_id)
+        publisher, source_id = publisher_group_helpers.dissect_publisher_id(target_id)
         row.update({
             'publisher': publisher,
             'source_id': source_id,

@@ -68,8 +68,9 @@ describe('zemGridCellStatusField', function () {
             {level: 'campaigns', breakdown: 'source', value: 2, expectedResult: 'Paused'},
             {level: 'ad_groups', breakdown: 'source', value: 1, expectedResult: 'Active'},
             {level: 'ad_groups', breakdown: 'source', value: 2, expectedResult: 'Paused'},
-            {level: 'ad_groups', breakdown: 'publisher', value: 1, expectedResult: 'Active'},
+            {level: 'ad_groups', breakdown: 'publisher', value: 1, expectedResult: 'Whitelisted'},
             {level: 'ad_groups', breakdown: 'publisher', value: 2, expectedResult: 'Blacklisted'},
+            {level: 'ad_groups', breakdown: 'publisher', value: 3, expectedResult: 'Active'},
             {level: 'unknown', breakdown: 'unknown', value: null, expectedResult: ''},
         ];
 

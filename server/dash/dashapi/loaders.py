@@ -6,10 +6,10 @@ from automation import campaign_stop
 from zemauth.models import User as ZemUser
 
 from analytics.projections import BudgetProjections
-import stats.helpers
 
 from dash import models
 from dash import constants
+from dash import publisher_group_helpers
 from dash.views import helpers as view_helpers
 from dash.dashapi import data_helper
 
@@ -402,43 +402,56 @@ class ContentAdsLoader(Loader):
 
 
 class PublisherBlacklistLoader(Loader):
-    def __init__(self, blacklist_qs, filtered_sources_qs, user, **kwargs):
-        super(PublisherBlacklistLoader, self).__init__(blacklist_qs, **kwargs)
+    def __init__(self, blacklist_qs, whitelist_qs, publisher_group_targeting, filtered_sources_qs, user, **kwargs):
+        super(PublisherBlacklistLoader, self).__init__(blacklist_qs | whitelist_qs, **kwargs)
         self.filtered_sources_qs = filtered_sources_qs.select_related('source_type')
         self.user = user
 
+        self.publisher_group_targeting = publisher_group_targeting
+        self.whitelist_qs = whitelist_qs
+        self.blacklist_qs = blacklist_qs
+
     @classmethod
     def _get_obj_id(cls, obj):
-        return stats.helpers.create_publisher_id(obj.name, obj.source_id)
+        return publisher_group_helpers.create_publisher_id(obj.publisher, obj.source_id)
 
     @classmethod
     def from_constraints(cls, user, constraints):
         return cls(
-            constraints['publisher_blacklist'], constraints['filtered_sources'], user,
+            constraints['publisher_blacklist'], constraints['publisher_whitelist'],
+            constraints['publisher_group_targeting'],
+            constraints['filtered_sources'],
+            user,
             start_date=constraints.get('date__gte'),
-            end_date=constraints.get('date__lte')
-        )
+            end_date=constraints.get('date__lte'))
 
     @cached_property
     def blacklist_status_map(self):
         default = {
-            'status': constants.PublisherStatus.ENABLED
+            'status': constants.PublisherTargetingStatus.UNLISTED
         }
 
+        whitelisted_ids = self.whitelist_qs.values_list('pk', flat=True)
+
         d = collections.defaultdict(lambda: default)
-        for pb in self.objs_qs:
-            if pb.source_id:
-                d[self._get_obj_id(pb)] = {
-                    'status': pb.status,
-                    'blacklisted_level': pb.get_blacklist_level(),
+        for entry in self.objs_qs:
+            status = constants.PublisherTargetingStatus.BLACKLISTED
+            if entry.id in whitelisted_ids:
+                status = constants.PublisherTargetingStatus.WHITELISTED
+
+            level = publisher_group_helpers.get_publisher_list_level(entry, self.publisher_group_targeting)
+
+            if entry.source_id:
+                d[self._get_obj_id(entry)] = {
+                    'status': status,
+                    'blacklisted_level': level,
                 }
             else:
                 for source_id in self.source_map.keys():
-                    d[stats.helpers.create_publisher_id(pb.name, source_id)] = {
-                        'status': pb.status,
-                        'blacklisted_level': pb.get_blacklist_level(),
+                    d[publisher_group_helpers.create_publisher_id(entry.publisher, source_id)] = {
+                        'status': status,
+                        'blacklisted_level': level,
                     }
-
         return d
 
     @cached_property
