@@ -1340,7 +1340,7 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         'subject',
         'recipients',
     )
-    readonly_fields = ('template_type', 'subject', 'body')
+    readonly_fields = ('template_type', )
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
