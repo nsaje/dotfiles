@@ -264,3 +264,87 @@ tags-input .host .tags {
         background: url(images/comment-blue.svg) no-repeat center center;
     }
 }
+
+////////////////////////////
+// EE //
+////////////////////////////
+
+.ee-wrapper {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: 9998;
+    cursor: none;
+}
+
+.ee-box {
+   position: absolute;
+   background: @primary-color;
+   display: none;
+}
+
+.ee-zemanta-square {
+    position: absolute;
+    background: white;
+    z-index: 9999;
+    display: none;
+    pointer-events: none;
+}
+
+.ee-zemanta-square-1 {
+    left: 50px;
+    top: 0;
+}
+
+.ee-zemanta-square-2 {
+    left: 0;
+    top: 50px;
+}
+
+.ee-zemanta-square-3 {
+    left: 150px;
+    top: 0;
+}
+
+.ee-zemanta-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url(images/zemanta-logo-white.svg) no-repeat center center;
+    background-size: 50%;
+    z-index: 9999;
+    display: none;
+    pointer-events: none;
+}
+
+.ee-zemanta-close {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    font-size: 12px;
+    color: fade(@white,50%);
+    text-align: center;
+    z-index: 9999;
+    display: none;
+    pointer-events: none;
+}
+
+.ee-zemanta-dots {
+    width: 20px;
+    height: 10px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 9997;
+}
+
+.fixed-header .ee-zemanta-dots {
+    width: 12px;
+    height: 6px;
+}
