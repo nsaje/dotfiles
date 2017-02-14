@@ -527,7 +527,6 @@ class AdGroupsTest(RESTAPITest):
                 }
             },
             'autopilot': {
-                'state': constants.AdGroupSettingsAutopilotState.get_name(autopilot_state),
                 'dailyBudget': autopilot_daily_budget,
             },
             'dayparting': dayparting,
@@ -563,9 +562,6 @@ class AdGroupsTest(RESTAPITest):
             whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
             blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
         )
-
-        if 'state' not in adgroup['autopilot']:
-            del expected['autopilot']['state']
 
         if 'adGroupMode' not in adgroup:
             del expected['adGroupMode']
