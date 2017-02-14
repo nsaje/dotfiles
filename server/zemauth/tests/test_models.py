@@ -61,7 +61,6 @@ class UserTestCase(test.TestCase):
             "auth_user": None,
             "auth_password": None,
             "connection": None,
-            "html_message": None,
         }
         user = models.User(email='foo@bar.com')
         user.email_user(

@@ -11,7 +11,7 @@ from automation import autopilot_settings
 import automation.helpers
 from automation.constants import DailyBudgetChangeComment, CpcChangeComment
 from utils import pagerduty_helper, url_helper, k1_helper
-from utils.email_helper import format_email, email_manager_list
+from utils.email_helper import format_email, format_template, email_manager_list
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +168,8 @@ def send_autopilot_changes_email(campaign, emails, changes_data):
             body,
             u'Zemanta <{}>'.format(automation.autopilot_settings.AUTOPILOT_EMAIL),
             emails,
-            fail_silently=False
+            fail_silently=False,
+            html_message=format_template(subject, body)
         )
     except Exception as e:
         logger.exception(u'Autopilot e-mail for campaign %s to %s was not sent' +
@@ -212,7 +213,8 @@ def send_budget_autopilot_initialisation_email(campaign, emails, changes_data):
             body,
             u'Zemanta <{}>'.format(automation.autopilot_settings.AUTOPILOT_EMAIL),
             emails,
-            fail_silently=False
+            fail_silently=False,
+            html_message=format_template(subject, body)
         )
     except Exception as e:
         logger.exception(u'Autopilot e-mail for initialising budget autopilot on an adroup in ' +

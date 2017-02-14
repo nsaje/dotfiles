@@ -2176,6 +2176,7 @@ class DemoTest(TestCase):
     def test_get(self, email_helper_mock, send_mail_mock, start_instance_mock):
         start_instance_mock.return_value = {'url': 'test-url', 'password': 'test-password'}
         email_helper_mock.format_email.return_value = ('test-subject', 'test-body', [])
+        email_helper_mock.format_template.return_value = 'html'
 
         reversed_url = reverse('demov3')
         response = self._get_client().get(reversed_url, follow=True)
@@ -2189,6 +2190,7 @@ class DemoTest(TestCase):
             'Zemanta <help-test@zemanta.com>',
             ['mad.max@zemanta.com'],
             fail_silently=False,
+            html_message='html',
         )
 
         data = json.loads(response.content)

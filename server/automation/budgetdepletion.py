@@ -16,7 +16,7 @@ import automation.models
 import automation.settings
 import automation.helpers
 from utils import pagerduty_helper, url_helper
-from utils.email_helper import format_email, email_manager_list
+from utils.email_helper import format_email, format_template, email_manager_list
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +90,8 @@ def _send_depleting_budget_notification_email(
             body,
             'Zemanta <{}>'.format(automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
             emails,
-            fail_silently=False
+            fail_silently=False,
+            html_message=format_template(subject, body)
         )
     except Exception as e:
         logger.exception(u'Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
@@ -132,7 +133,8 @@ def _send_campaign_stopped_notification_email(
             body,
             'Zemanta <{}>'.format(automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL),
             emails,
-            fail_silently=False
+            fail_silently=False,
+            html_message=format_template(subject, body)
         )
     except Exception as e:
         logger.exception('Campaign stop because of budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',

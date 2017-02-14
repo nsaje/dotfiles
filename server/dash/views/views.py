@@ -1559,7 +1559,8 @@ class Demo(api_common.BaseApiView):
             body,
             'Zemanta <{}>'.format(settings.FROM_EMAIL),
             [request.user.email],
-            fail_silently=False
+            fail_silently=False,
+            html_message=email_helper.format_template(subject, body)
         )
 
         return self.create_api_response(instance)

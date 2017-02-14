@@ -7,8 +7,10 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.core import validators
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 import utils.demo_anonymizer
+import utils.email_helper
 
 
 class UserManager(auth_models.BaseUserManager):
@@ -190,11 +192,15 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_modify_facebook_page', 'Can see and modify facebook page.'),
             ('can_modify_account_manager', 'Can view and set account manager on account settings tab.'),
             ('account_history_view', 'Can view account''s history tab.'),
-            ('hide_old_table_on_all_accounts_account_campaign_level', 'Hide old table on all accounts, account and campaign level.'),
+            ('hide_old_table_on_all_accounts_account_campaign_level',
+             'Hide old table on all accounts, account and campaign level.'),
             ('hide_old_table_on_ad_group_level', 'Hide old table on ad group level.'),
-            ('can_access_table_breakdowns_feature', 'Can access table breakdowns feature on all accounts, account and campaign level.'),
-            ('can_access_table_breakdowns_feature_on_ad_group_level', 'Can access table breakdowns feature on ad group level.'),
-            ('can_access_table_breakdowns_feature_on_ad_group_level_publishers', 'Can access table breakdowns feature on ad group level on publishers tab.'),
+            ('can_access_table_breakdowns_feature',
+             'Can access table breakdowns feature on all accounts, account and campaign level.'),
+            ('can_access_table_breakdowns_feature_on_ad_group_level',
+             'Can access table breakdowns feature on ad group level.'),
+            ('can_access_table_breakdowns_feature_on_ad_group_level_publishers',
+             'Can access table breakdowns feature on ad group level on publishers tab.'),
             ('can_view_sidetabs', 'Can view sidetabs.'),
             ('can_view_campaign_content_insights_side_tab', 'Can view content insights side tab on campaign level.'),
             ('can_modify_campaign_manager', 'Can view and set campaign manager on campaign settings tab.'),
@@ -241,7 +247,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_edit_content_ads', 'User can use edit form to edit existing content ads'),
             ('can_edit_publisher_groups', 'User can edit publisher groups'),
             ('can_set_white_blacklist_publisher_groups', 'User can set white or blacklist publisher groups'),
-            ('can_access_additional_outbrain_publisher_settings', 'User can see, set or edit additional Outbrain specific publisher settings'),
+            ('can_access_additional_outbrain_publisher_settings',
+             'User can see, set or edit additional Outbrain specific publisher settings'),
             ('can_see_pixel_traffic', 'User can see pixel traffic in pixels table'),
             ('can_set_rtb_sources_as_one_cpc', 'User can see and set the bid CPC for RTB Sources grouped as one'),
             ('can_see_new_chart', 'User can see new chart component'),
@@ -272,7 +279,14 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         """
         Sends an email to this User.
         """
-        send_mail(subject, message, from_email, [self.email], **kwargs)
+        send_mail(
+            subject,
+            message,
+            from_email or 'Zemanta <{}>'.format(settings.FROM_EMAIL),
+            [self.email],
+            html_message=utils.email_helper.format_template(subject, message),
+            **kwargs
+        )
 
     def __unicode__(self):
         return self.email
@@ -303,7 +317,11 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
             public_permissions_ids = [x.pk for x in public_permissions]
 
-            permissions = {'{}.{}'.format(x.content_type.app_label, x.codename): x.pk in public_permissions_ids for x in perms}
+            permissions = {
+                '{}.{}'.format(
+                    x.content_type.app_label, x.codename
+                ): x.pk in public_permissions_ids for x in perms
+            }
 
             setattr(self, perm_cache_name, permissions)
 

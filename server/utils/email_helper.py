@@ -32,6 +32,13 @@ def format_email(template_type, **kwargs):
     return template.subject.format(**kwargs), template.body.format(**kwargs), prepare_recipients(template.recipients)
 
 
+def format_template(subject, content):
+    return render_to_string('email.html', {
+        'subject': subject,
+        'content': content.replace('\n', '<br />')
+    })
+
+
 def email_manager_list(campaign):
     '''
     Fetch campaign manager and account manager emails if they exist
@@ -53,7 +60,8 @@ def send_notification_mail(to_emails, subject, body, settings_url=None):
             body,
             'Zemanta <{}>'.format(settings.FROM_EMAIL),
             to_emails,
-            fail_silently=False
+            fail_silently=False,
+            html_message=format_template(subject, body),
         )
     except Exception as e:
         logger.exception(
@@ -200,7 +208,7 @@ def _send_email_to_user(user, request, subject, body):
             'Zemanta <{}>'.format(settings.FROM_EMAIL),
             [user.email],
             fail_silently=False,
-            html_message=body
+            html_message=format_template(subject, body)
         )
     except Exception as e:
         if user is None:
@@ -246,7 +254,7 @@ def send_supply_report_email(email, date, impressions, cost, custom_subject=None
         subject = custom_subject.format(date=date)
 
     try:
-        email = EmailMessage(
+        email = EmailMultiAlternatives(
             subject,
             body,
             'Zemanta <{}>'.format(settings.SUPPLY_REPORTS_FROM_EMAIL),
@@ -341,10 +349,11 @@ def send_scheduled_export_report(report_name, frequency, granularity,
 
     if not email_adresses:
         raise Exception('No recipient emails: ' + report_name)
-    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
+    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), email_adresses)
     email.attach(report_filename + '.csv', report_contents, 'text/csv')
+    email.attach_alternative(format_template(subject, body), "text/html")
     email.send(fail_silently=False)
 
 
@@ -354,9 +363,10 @@ def send_livestream_email(user, session_url):
         user=user,
         session_url=session_url,
     )
-    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
+    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), recipients)
+    email.attach_alternative(format_template(subject, body), "text/html")
     email.send(fail_silently=False)
 
 
@@ -374,9 +384,10 @@ def send_outbrain_accounts_running_out_email(n):
         dash.constants.EmailTemplateType.OUTBRAIN_ACCOUNTS_RUNNING_OUT,
         n=n,
     )
-    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(
+    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), recipients)
+    email.attach_alternative(format_template(subject, body), "text/html")
     email.send()
 
 
@@ -419,9 +430,10 @@ def send_async_report(
         include_totals='Yes' if include_totals else 'No',
     )
 
-    email = EmailMessage(subject, plain_body, 'Zemanta <{}>'.format(
+    email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), [user.email] + (recipients or []))
+    email.attach_alternative(format_template(subject, plain_body), "text/html")
     email.send(fail_silently=False)
 
 

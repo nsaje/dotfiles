@@ -59,12 +59,16 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.audit_account_credits(options)
 
         if self.alarms and self.send_emails:
-            email = utils.email_helper.EmailMessage(
+            email = utils.email_helper.EmailMultiAlternatives(
                 'Daily audit',
                 self.email_body,
                 'Zemanta <{}>'.format(
                     settings.FROM_EMAIL
                 ), RECIPIANTS)
+            email.attach_alternative(
+                utils.email_helper.format_template('Daily audit', self.email_body),
+                "text/html"
+            )
             email.send()
 
     def audit_account_credits(self, options):
