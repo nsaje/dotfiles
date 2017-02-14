@@ -398,7 +398,18 @@ class AdGroupSerializer(SettingsSerializer):
             ret['adGroupMode'] = constants.AdGroupSettingsMode.get_name(settings['ad_group_mode'])
             ret['priceDiscovery'] = constants.AdGroupSettingsPriceDiscovery.get_name(settings['price_discovery'])
             ret['autopilotDailyBudget'] = settings['autopilot_daily_budget']
-            del ret['autopilot']
+            if settings['ad_group_mode'] == constants.AdGroupSettingsMode.AUTOMATIC:
+                ret['autopilot']['state'] = constants.AdGroupSettingsAutopilotState.get_name(
+                    constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+                )
+            elif settings['ad_group_mode'] == constants.AdGroupSettingsMode.MANUAL:
+                ret['autopilot']['state'] = constants.AdGroupSettingsAutopilotState.get_name(
+                    constants.AdGroupSettingsAutopilotState.INACTIVE,
+                )
+                if settings['price_discovery'] == constants.AdGroupSettingsPriceDiscovery.AUTOMATIC:
+                    ret['autopilot']['state'] = constants.AdGroupSettingsAutopilotState.get_name(
+                        constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+                    )
         else:
             ret['autopilot']['state'] = constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state'])
 
