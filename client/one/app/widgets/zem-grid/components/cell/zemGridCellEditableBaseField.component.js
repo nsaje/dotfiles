@@ -69,6 +69,10 @@ angular.module('one.widgets').directive('zemGridCellEditableBaseField', function
             }
 
             function isLandingModeIconShown () {
+                if (vm.data && !vm.data.value) {
+                    return false;
+                }
+
                 if (isAutopilotIconShown()) {
                     return false;
                 }
