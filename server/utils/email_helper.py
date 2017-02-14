@@ -55,13 +55,16 @@ def email_manager_list(campaign):
 
 def send_notification_mail(to_emails, subject, body, settings_url=None):
     try:
+        title = subject
+        if ' - ' in title:
+            title = title.split(' - ')[0]
         send_mail(
             subject,
             body,
             'Zemanta <{}>'.format(settings.FROM_EMAIL),
             to_emails,
             fail_silently=False,
-            html_message=format_template(subject, body),
+            html_message=format_template(title, body),
         )
     except Exception as e:
         logger.exception(
