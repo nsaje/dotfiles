@@ -387,7 +387,6 @@ class AdGroupSerializer(SettingsSerializer):
                 }
             },
             'autopilot': {
-                'state': constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state']),
                 'dailyBudget': settings['autopilot_daily_budget'],
             },
             'dayparting': settings['dayparting'],
