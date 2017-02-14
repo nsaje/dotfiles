@@ -94,23 +94,23 @@ angular.module('one.widgets').component('zemAdGroupModeSettings', {
         }
 
         function validate (updateData) {
-            if (updateData.settings.state === constants.settingsState.INACTIVE) {
+            if ($ctrl.origAdGroupModeSettings.b1SourcesGroupEnabled === updateData.settings.b1SourcesGroupEnabled) {
                 return $q.resolve();
             }
 
-            if ($ctrl.origAdGroupModeSettings.b1SourcesGroupEnabled !== updateData.settings.b1SourcesGroupEnabled) {
-                if (updateData.settings.b1SourcesGroupEnabled &&
-                        confirm(MSG_ALL_RTB_ENABLED)) { //eslint-disable-line no-alert
-                    updateData.settings.state = constants.settingsState.INACTIVE;
-                    return $q.resolve();
-                } else if (confirm(MSG_ALL_RTB_DISABLED)) { //eslint-disable-line no-alert
-                    updateData.settings.state = constants.settingsState.INACTIVE;
-                    return $q.resolve();
-                }
-                return $q.reject();
+            if (updateData.settings.b1SourcesGroupEnabled &&
+                    confirm(MSG_ALL_RTB_ENABLED)) { //eslint-disable-line no-alert
+                updateData.settings.state = constants.settingsState.INACTIVE;
+                return $q.resolve();
             }
 
-            return $q.resolve();
+            if (!updateData.settings.b1SourcesGroupEnabled &&
+                    confirm(MSG_ALL_RTB_DISABLED)) { //eslint-disable-line no-alert
+                updateData.settings.state = constants.settingsState.INACTIVE;
+                return $q.resolve();
+            }
+
+            return $q.reject();
         }
     },
 });
