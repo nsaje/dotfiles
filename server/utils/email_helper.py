@@ -35,7 +35,7 @@ def format_email(template_type, **kwargs):
 def format_template(subject, content):
     return render_to_string('email.html', {
         'subject': subject,
-        'content': content.replace('\n', '<br />')
+        'content': content.replace('\n', '<br>')
     })
 
 
