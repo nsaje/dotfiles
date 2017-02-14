@@ -1,5 +1,6 @@
 import logging
 import traceback
+import re
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -35,7 +36,7 @@ def format_email(template_type, **kwargs):
 def format_template(subject, content):
     return render_to_string('email.html', {
         'subject': subject,
-        'content': content.replace('\n', '<br>')
+        'content': '<p>' + '</p><p>'.join(re.split(r'\n+', content)) + '</p>'
     })
 
 
