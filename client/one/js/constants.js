@@ -40,6 +40,9 @@ var constants = {
         STOPPED: 'stopped',
         LANDING_MODE: 'landing-mode',
         AUTOPILOT: 'autopilot',
+        AUTOMATIC: 'automatic',
+        MANUAL: 'manual',
+        MANUAL_PRICE_DISCOVERY: 'manual-price-discovery',
     },
     publisherStatus: {
         ENABLED: 1,

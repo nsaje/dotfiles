@@ -100,7 +100,8 @@ angular.module('one.widgets').component('zemNavigation', {
             if (adGroup.active === constants.infoboxStatus.STOPPED) return 'stopped';
             if (adGroup.active === constants.infoboxStatus.LANDING_MODE) return 'landing';
             if (adGroup.active === constants.infoboxStatus.INACTIVE) return 'inactive';
-            if (adGroup.active === constants.infoboxStatus.AUTOPILOT) return 'autopilot';
+            if (adGroup.active === constants.infoboxStatus.AUTOPILOT ||
+               adGroup.active === constants.infoboxStatus.AUTOMATIC) return 'autopilot';
             return 'active';
         }
 

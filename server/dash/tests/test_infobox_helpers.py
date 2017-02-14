@@ -754,7 +754,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
-            dash.constants.InfoboxStatus.MANUAL,
+            dash.constants.InfoboxStatus.MANUAL_PRICE_DISCOVERY,
             dash.infobox_helpers.get_adgroup_running_status(superuser, ad_group_settings)
         )
         self.assertEqual(

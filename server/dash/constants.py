@@ -190,6 +190,7 @@ class InfoboxStatus(ConstantBase):
     AUTOPILOT = 'autopilot'
     AUTOMATIC = 'automatic'
     MANUAL = 'manual'
+    MANUAL_PRICE_DISCOVERY = 'manual-price-discovery'
 
     _VALUES = {
         ACTIVE: 'Active',
@@ -199,6 +200,7 @@ class InfoboxStatus(ConstantBase):
         AUTOPILOT: 'Autopilot',
         AUTOMATIC: 'Automatic',
         MANUAL: 'Manual',
+        MANUAL_PRICE_DISCOVERY: 'Manual, Price Discovery'
     }
 
 
