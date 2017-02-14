@@ -32,14 +32,15 @@ class Command(ExceptionCommand):
             filtered_by_adgroup = True
 
         ad_groups_settings = {x.ad_group_id: x for x
-                              in models.AdGroupSettings.objects.filter(ad_group__in=ad_groups).group_current_settings()}
+                              in models.AdGroupSettings.objects.filter(ad_group__in=ad_groups)
+                              .group_current_settings()}
         campaigns_settings = {x.campaign_id: x for x
                               in models.CampaignSettings.objects.filter(
-                                  campaign_id__in=ad_groups.values_list('campaign_id', flat=True).distinct())\
+                                  campaign_id__in=ad_groups.values_list('campaign_id', flat=True).distinct())
                               .group_current_settings()}
         accounts_settings = {x.account_id: x for x
                              in models.AccountSettings.objects.filter(
-                                 account_id__in=ad_groups.values_list('campaign__account_id', flat=True).distinct())\
+                                 account_id__in=ad_groups.values_list('campaign__account_id', flat=True).distinct())
                              .group_current_settings()}
 
         nr_not_matching = 0
