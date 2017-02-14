@@ -387,18 +387,18 @@ class AdGroupSerializer(SettingsSerializer):
                 }
             },
             'autopilot': {
+                'state': constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state']),
                 'dailyBudget': settings['autopilot_daily_budget'],
             },
             'dayparting': settings['dayparting'],
         }
-        if 'autopilot_state' in settings:
-            ret['autopilot']['state'] = constants.AdGroupSettingsAutopilotState.get_name(settings['autopilot_state'])
 
-        if 'ad_group_mode' in settings:
+        if self.request.user.has_perm('zemauth.can_set_ad_group_mode'):
+            # TODO(siluka 2017-02-14): Remove at the end of month
             ret['adGroupMode'] = constants.AdGroupSettingsMode.get_name(settings['ad_group_mode'])
-
-        if 'price_discovery' in settings:
             ret['priceDiscovery'] = constants.AdGroupSettingsPriceDiscovery.get_name(settings['price_discovery'])
+            ret['autopilotDailyBudget'] = settings['autopilot_daily_budget']
+            del ret['autopilot']
 
         return ret
 
@@ -421,13 +421,35 @@ class AdGroupSerializer(SettingsSerializer):
             'exclusion_interest_targeting': DashConstantField(constants.InterestCategory).to_internal_value_many(data['targeting']['interest']['excluded']),
             'bluekai_targeting': data['targeting']['demographic'],
             'autopilot_state': DashConstantField(constants.AdGroupSettingsAutopilotState).to_internal_value(data['autopilot']['state']),
-            'autopilot_daily_budget': data['autopilot']['dailyBudget'],
+            'autopilot_daily_budget': data['autopilotDailyBudget'],
             'dayparting': data['dayparting'],
             'whitelist_publisher_groups': data['targeting']['publisherGroups']['included'],
             'blacklist_publisher_groups': data['targeting']['publisherGroups']['excluded'],
             'ad_group_mode': DashConstantField(constants.AdGroupSettingsMode).to_internal_value(data['adGroupMode']),
             'price_discovery': DashConstantField(constants.AdGroupSettingsPriceDiscovery).to_internal_value(data['priceDiscovery']),
         }
+
+        if data['autopilot']['dailyBudget'] != NOT_PROVIDED:
+            # TODO(siluka 2017-02-14): Remove at the end of month
+            # handles both users with or without permission
+            settings['autopilot_daily_budget'] = data['autopilot']['dailyBudget']
+
+        if self.request.user.has_perm('zemauth.can_set_ad_group_mode'):
+            # TODO(siluka 2017-02-14): Remove at the end of month
+            if settings['ad_group_mode'] != NOT_PROVIDED or settings['price_discovery'] != NOT_PROVIDED:
+                # NOTE: if the user is trying to set either ad group mode or price discovery then autopilot
+                # state should be ignored regardless of its value
+                pass
+            elif settings['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+                settings['ad_group_mode'] = constants.AdGroupSettingsMode.AUTOMATIC
+            elif settings['autopilot_state'] == constants.AdGroupSettingsAutopilotState.INACTIVE:
+                settings['ad_group_mode'] = constants.AdGroupSettingsMode.MANUAL
+                settings['price_discovery'] = constants.AdGroupSettingsPriceDiscovery.MANUAL
+            elif settings['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
+                settings['ad_group_mode'] = constants.AdGroupSettingsMode.MANUAL
+                settings['price_discovery'] = constants.AdGroupSettingsPriceDiscovery.AUTOMATIC
+            settings['autopilot_state'] = NOT_PROVIDED
+
         return {'settings': {k: v for k, v in settings.items() if v != NOT_PROVIDED}}
 
     @staticmethod
