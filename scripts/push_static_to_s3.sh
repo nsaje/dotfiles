@@ -16,4 +16,8 @@ if [ -d client/dist ]; then
 
 
 	echo ${BUILD_NUM} | aws s3 cp - s3://z1-static/latest.txt
+
+	# Push styleguides to well-known URL
+	aws s3 cp --acl public-read client/dist/one/zemanta-one.css s3://z1-static/styleguides/
+	aws s3 cp --acl public-read client/dist/one/zemanta-one.lib.min.css s3://z1-static/styleguides/
 fi
