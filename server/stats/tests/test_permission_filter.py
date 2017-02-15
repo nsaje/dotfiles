@@ -30,7 +30,7 @@ class FilterTestCase(TestCase):
             'campaign_stop_inactive': 1, 'campaign_has_available_budget': 1,
             'pacing': 1, 'allocated_budgets': 1, 'spend_projection': 1, 'license_fee_projection': 1,
             'flat_fee': 1, 'total_fee': 1, 'total_fee_projection': 1,
-            'agency': 1, 'default_account_manager': 1, 'default_sales_representative': 1, 'campaign_manager': 1,
+            'agency': 1, 'default_account_manager': 1, 'default_sales_representative': 1, 'campaign_manager': 1, 'default_cs_representative': 1,
             'archived': 1, 'maintenance': 1, 'status_per_source': {1: {
                 'source_id': 1,
                 'source_status': 1,
@@ -195,6 +195,7 @@ class FilterTestCase(TestCase):
 
         self.default_cleaned_rows[0].update({
             'default_account_manager': 1, 'default_sales_representative': 1, 'campaign_manager': 1,
+            'default_cs_representative': 1,
         })
         self.assertItemsEqual(self.rows, self.default_cleaned_rows)
 

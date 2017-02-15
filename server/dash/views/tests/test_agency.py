@@ -2664,6 +2664,25 @@ class AccountSettingsTest(TestCase):
             'blacklist_publisher_groups': [],
         })
 
+        add_permissions(user, ['can_set_account_cs_representative'])
+
+        response = client.get(
+            reverse('account_settings', kwargs={'account_id': 1000}),
+            follow=True
+        ).json()
+
+        self.assertTrue(response['success'])
+        self.assertDictEqual(response['data']['settings'], {
+            'name': 'Chuck ads',
+            'default_account_manager': None,
+            'default_sales_representative': None,
+            'default_cs_representative': None,
+            'id': '1000',
+            'archived': False,
+            'whitelist_publisher_groups': [],
+            'blacklist_publisher_groups': [],
+        })
+
         add_permissions(user, ['can_modify_allowed_sources'])
 
         response = client.get(
@@ -2676,6 +2695,7 @@ class AccountSettingsTest(TestCase):
             'name': 'Chuck ads',
             'default_account_manager': None,
             'default_sales_representative': None,
+            'default_cs_representative': None,
             'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True},
                                 u'100': {u'name': u'AdsNative', u'released': True},
                                 u'200': {u'name': u'Facebook', u'released': True}
@@ -2698,6 +2718,7 @@ class AccountSettingsTest(TestCase):
             'name': 'Chuck ads',
             'default_account_manager': None,
             'default_sales_representative': None,
+            'default_cs_representative': None,
             'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True},
                                 u'100': {u'name': u'AdsNative', u'released': True},
                                 u'200': {u'name': u'Facebook', u'released': True}
@@ -2721,6 +2742,7 @@ class AccountSettingsTest(TestCase):
             'name': 'Chuck ads',
             'default_account_manager': None,
             'default_sales_representative': None,
+            'default_cs_representative': None,
             'allowed_sources': {u'2': {u'name': u'Source 2', u'released': True},
                                 u'100': {u'name': u'AdsNative', u'released': True},
                                 u'200': {u'name': u'Facebook', u'released': True}
@@ -2762,6 +2784,7 @@ class AccountSettingsTest(TestCase):
             u'name': u'Alfa&Omega',
             u'default_account_type': 1,
             u'sales_representative': None,
+            u'cs_representative': None,
         }]
         self.assertEqual(agencies, response['data']['agencies'])
 
@@ -2807,6 +2830,33 @@ class AccountSettingsTest(TestCase):
         self.assertEqual(response.status_code, 401, 'agency manager cannot set sales rep. without permission')
 
         add_permissions(user, ['can_set_account_sales_representative'])
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 200)
+
+    def test_put_as_agency_manager_cs_rep(self):
+        client = self._get_client_with_permissions([
+            'can_modify_account_name',
+            'can_modify_account_manager',
+        ])
+        user = User.objects.get(pk=2)
+        agency = models.Agency.objects.get(pk=1)
+        agency.users.add(user)
+
+        basic_settings = {
+            'id': 1000,
+            'name': 'changed name',
+            'default_account_manager': '3',
+            'default_cs_representative': '3',
+        }
+
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 400, msg='Designated cs rep doesn''t have permission')
+
+        add_permissions(User.objects.get(pk=3), ['campaign_settings_cs_rep'])
+        response, _ = self._put_account_agency(client, basic_settings, 1000)
+        self.assertEqual(response.status_code, 401, 'agency manager cannot set cs rep. without permission')
+
+        add_permissions(user, ['can_set_account_cs_representative'])
         response, _ = self._put_account_agency(client, basic_settings, 1000)
         self.assertEqual(response.status_code, 200)
 
@@ -2991,6 +3041,7 @@ class AccountSettingsTest(TestCase):
             'can_modify_account_type',
             'can_modify_allowed_sources',
             'can_set_account_sales_representative',
+            'can_set_account_cs_representative',
             'can_modify_facebook_page',
         ])
         response = Response()
@@ -3000,12 +3051,15 @@ class AccountSettingsTest(TestCase):
         response._content = '{"id": "1234"}'
         mock_page_id.return_value = response
 
+        add_permissions(User.objects.get(pk=2), ['campaign_settings_cs_rep'])
+
         response = client.put(
             reverse('account_settings', kwargs={'account_id': 1}),
             json.dumps({
                 'settings': {
                     'name': 'changed name',
                     'default_sales_representative': '1',
+                    'default_cs_representative': '2',
                     'default_account_manager': '3',
                     'account_type': '4',
                     'salesforce_url': '',
@@ -3018,7 +3072,6 @@ class AccountSettingsTest(TestCase):
             }),
             content_type='application/json',
         )
-
         content = json.loads(response.content)
         self.assertTrue(content['success'])
 
@@ -3032,6 +3085,7 @@ class AccountSettingsTest(TestCase):
         self.assertDictEqual(account_settings.get_settings_dict(), {
             'archived': False,
             'default_sales_representative': User.objects.get(pk=1),
+            'default_cs_representative': User.objects.get(pk=2),
             'default_account_manager': User.objects.get(pk=3),
             'account_type': 4,
             'name': 'changed name',

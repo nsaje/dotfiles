@@ -57,6 +57,7 @@ FIELD_PERMISSION_MAPPING = {
 
     'default_account_manager':      ('zemauth.can_see_managers_in_accounts_table',),
     'default_sales_representative': ('zemauth.can_see_managers_in_accounts_table',),
+    'default_cs_representative': ('zemauth.can_see_managers_in_accounts_table',),
 
     'campaign_manager': ('zemauth.can_see_managers_in_campaigns_table',),
     'account_type':     ('zemauth.can_see_account_type',),

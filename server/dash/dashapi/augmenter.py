@@ -140,7 +140,8 @@ def augment_row_account(row, account=None, settings=None, projections=None):
     if settings:
         copy_fields_if_exists(
             ['status', 'archived', 'default_account_manager',
-             'default_sales_representative', 'account_type', 'salesforce_url'],
+             'default_sales_representative', 'default_cs_representative',
+             'account_type', 'salesforce_url'],
             settings, row)
 
     if projections is not None:

@@ -33,7 +33,7 @@ PUBLISHER_FIELDS = [
 ]
 
 OTHER_DASH_FIELDS = [
-    'default_account_manager', 'default_sales_representative', 'campaign_manager', 'account_type', 'agency',
+    'default_account_manager', 'default_sales_representative', 'default_cs_representative', 'campaign_manager', 'account_type', 'agency',
     'archived', 'maintenance', 'status_per_source'
 ]
 

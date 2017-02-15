@@ -44,6 +44,10 @@ angular.module('one.widgets').component('zemAccountGeneralSettings', {
                     $ctrl.entity.settings.defaultSalesRepresentative =
                         $ctrl.entity.settings.agency.obj.salesRepresentative.toString();
                 }
+                if (!$ctrl.entity.settings.defaultCsRepresentative) {
+                    $ctrl.entity.settings.defaultCsRepresentative =
+                        $ctrl.entity.settings.agency.obj.csRepresentative.toString();
+                }
             }
         }
 

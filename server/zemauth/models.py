@@ -262,6 +262,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_pixel_notes', 'User can see pixel notes'),
             ('can_see_salesforce_url', 'User can see SalesForce URL'),
             ('can_set_ad_group_mode', 'User can set and see manual or automatic ad group mode'),
+            ('can_set_account_cs_representative', 'Can view and set account CS representative on account settings tab.'),
+            ('campaign_settings_cs_rep', 'Can be chosen as CS representative.'),
         )
 
     def get_full_name(self):

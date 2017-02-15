@@ -348,6 +348,13 @@ class Agency(models.Model):
         related_name="+",
         on_delete=models.PROTECT
     )
+    cs_representative = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        related_name="+",
+        on_delete=models.PROTECT
+    )
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
     created_dt = models.DateTimeField(
         auto_now_add=True, verbose_name='Created at')
@@ -390,6 +397,7 @@ class Agency(models.Model):
             return self.filter(
                 models.Q(users__id=user.id) |
                 models.Q(sales_representative__id=user.id) |
+                models.Q(cs_representative__id=user.id) |
                 models.Q(account__groups__user__id=user.id)
             ).distinct()
 
@@ -687,6 +695,9 @@ class Campaign(models.Model, PermissionMixin):
     def get_sales_representative(self):
         return self.account.get_current_settings().default_sales_representative
 
+    def get_cs_representative(self):
+        return self.account.get_current_settings().default_cs_representative
+
     def get_current_settings(self):
         if not self.pk:
             raise exc.BaseError(
@@ -945,6 +956,7 @@ class AccountSettings(SettingsBase):
         'archived',
         'default_account_manager',
         'default_sales_representative',
+        'default_cs_representative',
         'account_type',
         'whitelist_publisher_groups',
         'blacklist_publisher_groups',
@@ -968,6 +980,12 @@ class AccountSettings(SettingsBase):
         on_delete=models.PROTECT
     )
     default_sales_representative = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        related_name="+",
+        on_delete=models.PROTECT
+    )
+    default_cs_representative = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
         related_name="+",
@@ -999,6 +1017,7 @@ class AccountSettings(SettingsBase):
             'archived': 'Archived',
             'default_account_manager': 'Account Manager',
             'default_sales_representative': 'Sales Representative',
+            'default_cs_representative': 'Customer Success Representative',
             'account_type': 'Account Type',
             'whitelist_publisher_groups': 'Whitelist publisher groups',
             'blacklist_publisher_groups': 'Blacklist publisher groups',
@@ -1010,10 +1029,9 @@ class AccountSettings(SettingsBase):
     def get_human_value(cls, prop_name, value):
         if prop_name == 'archived':
             value = str(value)
-        elif prop_name == 'default_account_manager':
-            value = views.helpers.get_user_full_name_or_email(
-                value).decode('utf-8')
-        elif prop_name == 'default_sales_representative':
+        elif prop_name in ('default_account_manager',
+                           'default_sales_representative',
+                           'default_cs_representative'):
             value = views.helpers.get_user_full_name_or_email(
                 value).decode('utf-8')
         elif prop_name in ('whitelist_publisher_groups', 'blacklist_publisher_groups'):

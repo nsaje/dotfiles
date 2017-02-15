@@ -85,6 +85,22 @@
     model: zemauth.user
     pk: 3
 
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: supercsuser@test.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: true
+        is_superuser: true
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
+        user_permissions: []
+        username: 'gamma2'
+    model: zemauth.user
+    pk: 4
+
 
 # test account
 
@@ -110,6 +126,7 @@
         account_type: 5
         default_account_manager: 2
         default_sales_representative: 3
+        default_cs_representative: 4
         blacklist_publisher_groups: [5]
     model: dash.accountsettings
     pk: 1

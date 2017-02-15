@@ -116,6 +116,17 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             internal: 'zemauth.can_see_managers_in_accounts_table',
             shown: 'zemauth.can_see_managers_in_accounts_table',
         },
+        defaultCsRepresentative: {
+            name: 'CS Representative',
+            field: 'default_cs_representative',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            totalRow: false,
+            help: 'Customer Success representative responsible for the campaign and the communication with the client.',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            internal: 'zemauth.can_see_managers_in_accounts_table',
+            shown: 'zemauth.can_see_managers_in_accounts_table',
+        },
         campaignManager: {
             name: 'Campaign Manager',
             field: 'campaign_manager',
@@ -946,6 +957,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         COLUMNS.agency,
         COLUMNS.accountType,
         COLUMNS.defaultSalesRepresentative,
+        COLUMNS.defaultCsRepresentative,
         COLUMNS.defaultAccountManager,
         COLUMNS.salesforceUrl,
     ];

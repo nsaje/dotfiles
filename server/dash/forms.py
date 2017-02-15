@@ -493,6 +493,9 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
     default_sales_representative = forms.IntegerField(
         required=False
     )
+    default_cs_representative = forms.IntegerField(
+        required=False
+    )
     account_type = forms.IntegerField(
         required=False
     )
@@ -549,6 +552,24 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
             raise forms.ValidationError(err_msg)
 
         return sales_representative
+
+    def clean_default_cs_representative(self):
+        cs_representative_id = self.cleaned_data.get(
+            'default_cs_representative')
+
+        if cs_representative_id is None:
+            return None
+
+        err_msg = 'Invalid CS representative.'
+
+        try:
+            cs_representative = ZemUser.objects.\
+                get_users_with_perm('campaign_settings_cs_rep').\
+                get(pk=cs_representative_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return cs_representative
 
     def clean_account_type(self):
         account_type = self.cleaned_data.get('account_type')

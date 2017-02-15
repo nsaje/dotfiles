@@ -68,6 +68,7 @@ FIELDNAMES = {
     'flat_fee': 'Recognized Flat Fee',
     'default_account_manager': 'Account Manager',
     'default_sales_representative': 'Sales Representative',
+    'default_cs_representative': 'CS Representative',
     'campaign_manager': 'Campaign Manager',
     'allocated_budgets': 'Media Budgets',
     'spend_projection': 'Spend Projection',
@@ -690,6 +691,8 @@ def _populate_account_stat(stat, account, statuses, settings=None, projections=N
             helpers.get_user_full_name_or_email(setting.default_account_manager, default_value=None)
         stat['default_sales_representative'] = \
             helpers.get_user_full_name_or_email(setting.default_sales_representative, default_value=None)
+        stat['default_cs_representative'] = \
+            helpers.get_user_full_name_or_email(setting.default_cs_representative, default_value=None)
         stat['account_type'] = constants.AccountType.get_text(setting.account_type)
         stat['salesforce_url'] = setting.salesforce_url
         stat['archived'] = setting.archived
@@ -887,7 +890,8 @@ def _prefetch_account_data(constraints, include_settings=False, include_account_
         settings_qs = models.AccountSettings.objects \
             .filter(account__in=data.keys()) \
             .group_current_settings() \
-            .select_related('default_account_manager', 'default_sales_representative')
+            .select_related('default_account_manager', 'default_sales_representative',
+                            'default_cs_representative')
         settings = {s.account_id: s for s in settings_qs}
 
     return data, settings
@@ -1120,7 +1124,7 @@ class AllAccountsExport(object):
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
 
-        supported_settings_fields = ['default_account_manager', 'default_sales_representative']
+        supported_settings_fields = ['default_account_manager', 'default_sales_representative', 'default_cs_representative']
         include_account_settings = breakdown == 'account' and \
                                                 any(field in additional_fields for field in supported_settings_fields)
         if not include_account_settings:
@@ -1354,7 +1358,8 @@ def filter_allowed_fields(user, fields):
         if f in ('allocated_budget', 'spend_projection', 'pacing', 'license_fee_projection',
                  'total_fee_projection') and not can_see_projections:
             continue
-        if f in ('default_account_manager', 'default_sales_representative') and not can_see_managers_in_accounts_table:
+        if f in ('default_account_manager', 'default_sales_representative',
+                 'default_cs_representative') and not can_see_managers_in_accounts_table:
             continue
         if f in ('campaign_manager',) and not can_see_managers_in_campaigns_table:
             continue

@@ -241,7 +241,8 @@ class AdGroupOverview(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        ad_group_running_status = infobox_helpers.get_adgroup_running_status(request.user, ad_group_settings, filtered_sources)
+        ad_group_running_status = infobox_helpers.get_adgroup_running_status(
+            request.user, ad_group_settings, filtered_sources)
 
         header = {
             'title': ad_group.name,
@@ -761,14 +762,24 @@ class AccountOverview(api_common.BaseApiView):
         settings.append(account_manager_setting.as_dict())
 
         sales_manager_setting_label = 'Sales Rep.:'
+        cs_manager_setting_label = 'CS Rep.:'
         if user.has_perm('zemauth.can_see_new_infobox'):
             sales_manager_setting_label = 'Sales Representative:'
+            cs_manager_setting_label = 'CS Representative:'
+
         sales_manager_setting = infobox_helpers.OverviewSetting(
             sales_manager_setting_label,
             infobox_helpers.format_username(account_settings.default_sales_representative),
             tooltip='Sales Representative'
         )
         settings.append(sales_manager_setting.as_dict())
+
+        cs_manager_setting = infobox_helpers.OverviewSetting(
+            cs_manager_setting_label,
+            infobox_helpers.format_username(account_settings.default_cs_representative),
+            tooltip='Customer Success Representative'
+        )
+        settings.append(cs_manager_setting.as_dict())
 
         if not user.has_perm('zemauth.can_see_new_infobox'):
             if user.has_perm('zemauth.can_see_account_type'):
@@ -983,6 +994,7 @@ class Account(api_common.BaseApiView):
 
         if managed_agency is not None:
             settings.default_sales_representative = managed_agency.sales_representative
+            settings.default_cs_representative = managed_agency.cs_representative
             settings.account_type = constants.AccountType.ACTIVATED
 
         settings.save(request)

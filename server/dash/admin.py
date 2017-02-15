@@ -321,6 +321,18 @@ class AgencyFormAdmin(forms.ModelForm):
         self.fields['sales_representative'].label_from_instance = lambda obj: u"{} <{}>".format(
             obj.get_full_name(), obj.email or u''
         )
+        self.fields['cs_representative'].queryset =\
+            ZemUser.objects.all().exclude(
+                first_name=''
+        ).exclude(
+                last_name=''
+        ).order_by(
+                'first_name',
+                'last_name',
+        )
+        self.fields['cs_representative'].label_from_instance = lambda obj: u"{} <{}>".format(
+            obj.get_full_name(), obj.email or u''
+        )
 
 
 class AgencyResource(resources.ModelResource):
@@ -329,11 +341,14 @@ class AgencyResource(resources.ModelResource):
 
     class Meta:
         model = models.Agency
-        fields = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative', 'default_account_type']
-        export_order = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative', 'default_account_type']
+        fields = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative', 'cs_representative', 'default_account_type']
+        export_order = ['id', 'name', 'accounts', 'agency_managers', 'sales_representative', 'cs_representative', 'default_account_type']
 
     def dehydrate_sales_representative(self, obj):
         return obj.sales_representative and obj.sales_representative.get_full_name() or ''
+
+    def dehydrate_cs_representative(self, obj):
+        return obj.cs_representative and obj.cs_representative.get_full_name() or ''
 
     def dehydrate_accounts(self, obj):
         return u', '.join([
@@ -359,6 +374,7 @@ class AgencyAdmin(ExportMixin, admin.ModelAdmin):
         '_users',
         '_accounts',
         'sales_representative',
+        'cs_representative',
         'default_account_type',
         'created_dt',
         'modified_dt',

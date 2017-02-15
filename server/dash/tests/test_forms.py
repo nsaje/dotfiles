@@ -51,6 +51,18 @@ class AccountSettingsFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('default_sales_representative'))
 
+    def test_invalid_cs_rep(self):
+        form = forms.AccountSettingsForm(self.account, {
+            'id': 1,
+            'name': 'Name',
+            'default_account_manager': 2,
+            'default_sales_representative': 2,
+            'default_cs_representative': 3,
+            'allowed_sources': {'1': {'name': 'Source name'}}
+        })
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('default_cs_representative'))
+
     def test_invalid_account_manager(self):
         account_manager_id = 123
         with self.assertRaises(User.DoesNotExist):
@@ -549,7 +561,8 @@ class AdGroupSettingsFormTest(TestCase):
     @patch('utils.dates_helper.local_today')
     def test_bluekai_targeting_validation(self, mock_today):
         mock_today.return_value = datetime.date(2014, 12, 31)
-        self.data['bluekai_targeting'] = ["and", "bluekai:446103", ["not", ["or", "liveramp:510120", "outbrain:510122"]]]
+        self.data['bluekai_targeting'] = ["and", "bluekai:446103",
+                                          ["not", ["or", "liveramp:510120", "outbrain:510122"]]]
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
 
         self.assertTrue(form.is_valid())
@@ -684,6 +697,7 @@ class ConversionGoalFormTestCase(TestCase):
 
 
 class AdGroupAdsUploadFormTest(TestCase):
+
     def setUp(self):
         self.batch_name = 'Test batch name'
         self.url = 'http://example.com'
