@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/adgroup/general/zemAdGroupGeneralSettings.component.html',
-    controller: function ($scope, zemPermissions) {
+    controller: function ($scope, $state, zemPermissions, zemNavigationNewService) {
         var $ctrl = this;
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -21,6 +21,7 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
         $ctrl.endDatePicker = {isOpen: false};
         $ctrl.endDatePickerOptions = {minDate: new Date()};
         $ctrl.openDatePicker = openDatePicker;
+        $ctrl.goToBudgets = goToBudgets;
 
         $ctrl.$onInit = function () {
             initializeWatches();
@@ -38,6 +39,19 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
                 '.';
             }
         };
+
+        function goToBudgets () {
+            var campaignId = zemNavigationNewService.getActiveEntity().parent.id;
+            if (zemPermissions.hasPermission('zemauth.can_see_new_budgets')) {
+                $state.go('main.campaigns.ad_groups', {
+                    id: campaignId,
+                    settings: true,
+                    settingsScrollTo: 'zemCampaignBudgetsSettings'
+                });
+            } else {
+                $state.go('main.campaigns.budget', {id: campaignId});
+            }
+        }
 
         function initializeWatches () {
             // TODO: Refactor - remove the need for watches

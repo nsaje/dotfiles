@@ -13,7 +13,9 @@ def _get_campaign_link(request, campaign, tab, query_string=None):
 
 def _get_campaign_budget_link(request, campaign):
         if request.user.has_perm('zemauth.can_see_new_budgets'):
-            return _get_campaign_link(request, campaign, 'ad_groups', 'settings')
+            query_string = 'settings'
+            query_string += '&' + 'settingsScrollTo=zemCampaignBudgetsSettings'
+            return _get_campaign_link(request, campaign, 'ad_groups', query_string)
         return _get_campaign_link(request, campaign, 'budget')
 
 

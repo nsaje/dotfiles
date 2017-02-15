@@ -43,7 +43,7 @@
             <div class="message message--error" ng-if="$ctrl.entity.warnings.endDate === undefined"
                  ng-repeat="error in $ctrl.errors.endDate" for="end-date-input">{{ error }}</div>
             <div class="message message--warning message--with-icon" ng-if="$ctrl.entity.warnings.endDate !== undefined">
-                {{ $ctrl.MESSAGES.WARNING_END_DATE }} <a zem-in-link="main.campaigns.budget({id: {{ $ctrl.entity.warnings.endDate.campaignId }} })">Add budget</a>
+                {{ $ctrl.MESSAGES.WARNING_END_DATE }} <a ng-click="$ctrl.goToBudgets()">Add budget</a>
             </div>
         </div>
 

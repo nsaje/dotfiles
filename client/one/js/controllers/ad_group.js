@@ -1,5 +1,5 @@
 /* globals angular, constants */
-angular.module('one.legacy').controller('AdGroupCtrl', function ($scope, $state, $window, $location, api, zemNavigationService, adGroupData, zemPermissions) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('AdGroupCtrl', function ($scope, $state, $window, $location, api, zemNavigationService, adGroupData, zemPermissions, zemSettingsService) { // eslint-disable-line max-len
     $scope.infoboxHeader = null;
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
@@ -60,7 +60,11 @@ angular.module('one.legacy').controller('AdGroupCtrl', function ($scope, $state,
 
     $scope.manageBudget = function () {
         if (zemPermissions.hasPermission('zemauth.can_see_new_budgets')) {
-            $state.go('main.campaigns.ad_groups', {id: $scope.campaign.id, settings: true});
+            $state.go('main.campaigns.ad_groups', {
+                id: $scope.campaign.id,
+                settings: true,
+                settingsScrollTo: 'zemCampaignBudgetsSettings'
+            });
         } else {
             $state.go('main.campaigns.budget', {id: $scope.campaign.id});
         }
