@@ -16,7 +16,7 @@ eins:
       NEW_RELIC_LICENSE_KEY: "1dfbd7b07a5cbf7bcc6eb18db5003808a058d16f"
       NEW_RELIC_APP_NAME: "Zemanta One"
       NEW_RELIC_PROCESS_HOST_DISPLAY_NAME: "${HOSTNAME}-docker"
-      GUNICORN_TO: "30"
+      GUNICORN_TIMEOUT: "180"
       GUNICORN_WORKERS: "4"
     labels:
       traefik.backend: "one.zemanta.com"
