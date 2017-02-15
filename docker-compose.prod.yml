@@ -16,7 +16,7 @@ eins:
       NEW_RELIC_LICENSE_KEY: "1dfbd7b07a5cbf7bcc6eb18db5003808a058d16f"
       NEW_RELIC_APP_NAME: "Zemanta One"
       NEW_RELIC_PROCESS_HOST_DISPLAY_NAME: "${HOSTNAME}-docker"
-      GUNICORN_TO: "60"
+      GUNICORN_TO: "30"
       GUNICORN_WORKERS: "4"
     labels:
       traefik.backend: "one.zemanta.com"
@@ -27,7 +27,7 @@ eins:
       max-size: "50m"
       max-file: "3"
       labels: "eins"
-    mem_limit: 1g
+    mem_limit: 2g
 
 one_ambassador:
     image: verb/socat
