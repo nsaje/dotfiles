@@ -76,8 +76,7 @@ def get_goals(constraints):
                 primary_goals_by_campaign[cg.campaign_id] = cg
         primary_goals = primary_goals_by_campaign.values()
 
-        for campaign in allowed_campaigns:
-            campaign_goal_values.extend(dash.campaign_goals.get_campaign_goal_values(campaign))
+        campaign_goal_values = dash.campaign_goals.get_campaigns_goal_values(allowed_campaigns)
 
     if account:
         pixels = account.conversionpixel_set.filter(archived=False)

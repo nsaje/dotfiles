@@ -149,6 +149,11 @@ CACHES = {
     'dash_db_cache': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     },
+    'local_memory_cache': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 60,  # 1 min
+    },
 }
 
 try:
@@ -311,6 +316,9 @@ if TESTING:
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
         },
         'bizwire_cache': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+        },
+        'local_memory_cache': {
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
         }
     }

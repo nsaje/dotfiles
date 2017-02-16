@@ -130,7 +130,10 @@ CACHES = {
     },
     'bizwire_cache': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
-    }
+    },
+    'local_memory_cache': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+    },
 }
 
 USE_HASH_CACHE = False

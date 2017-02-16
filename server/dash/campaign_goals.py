@@ -322,8 +322,12 @@ def create_goal_totals(campaign, data):
 
 
 def get_campaign_goal_values(campaign):
+    return get_campaigns_goal_values([campaign])
+
+
+def get_campaigns_goal_values(campaigns):
     return models.CampaignGoalValue.objects.all().filter(
-        campaign_goal__campaign=campaign
+        campaign_goal__campaign__in=campaigns
     ).order_by(
         'campaign_goal',
         '-created_dt'

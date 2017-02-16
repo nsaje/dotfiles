@@ -1500,3 +1500,42 @@ class PublisherGroupTest(TestCase):
         ags.blacklist_publisher_groups = []
         ags.save(None)
         self.assertTrue(pg.can_delete())
+
+
+class ReadOnlyTestCase(TestCase):
+    fixtures = ['test_api_breakdowns.yaml']
+
+    def try_everything_w_queryset(self, cls):
+        with self.assertRaises(AssertionError):
+            cls.objects.bulk_create()
+
+        with self.assertRaises(AssertionError):
+            cls.objects.all().delete()
+
+        with self.assertRaises(AssertionError):
+            cls.objects.all().update()
+
+        with self.assertRaises(AssertionError):
+            cls.objects.all().get_or_create()
+
+        with self.assertRaises(AssertionError):
+            cls.objects.all().create()
+
+    def try_everything_w_obj(self, obj):
+        with self.assertRaises(AssertionError):
+            obj.save()
+
+        with self.assertRaises(AssertionError):
+            obj.delete()
+
+    def test_account_settings(self):
+        obj = models.AccountSettingsReadOnly.objects.get(pk=1)
+
+        self.try_everything_w_queryset(obj.__class__)
+        self.try_everything_w_obj(obj)
+
+    def test_campaign_settings(self):
+        obj = models.CampaignSettingsReadOnly.objects.get(pk=1)
+
+        self.try_everything_w_queryset(obj.__class__)
+        self.try_everything_w_obj(obj)

@@ -20,6 +20,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.core.validators import validate_email
+from django.core.cache import caches
 from django.utils.translation import ugettext_lazy as _
 from timezone_field import TimeZoneField
 
@@ -69,7 +70,14 @@ def should_filter_by_sources(sources):
     if sources is None:
         return False
 
-    return Source.objects.exclude(id__in=[s.id for s in sources]).exists()
+    cache = caches['local_memory_cache']
+    all_source_ids = cache.get('all_source_ids')
+    if not all_source_ids:
+        all_source_ids = Source.objects.all().values_list('id', flat=True)
+        cache.set('all_source_ids', all_source_ids)
+
+    ids = set(s.id for s in sources)
+    return len(set(all_source_ids) - ids) > 0
 
 
 def shorten_name(name):
@@ -125,6 +133,43 @@ class SettingsQuerySet(models.QuerySet):
 
     def delete(self, *args, **kwargs):
         raise AssertionError('Using delete not allowed.')
+
+
+class ReadOnlyQuerySet(models.QuerySet):
+    """
+    QuerySet that only allows reading models from db. It does not allow any
+    update, insert or delete action.
+
+    NOTE: It does not guard models.save() and .delete() methods. To disable those use the
+    ReadOnlyModelMixin mixin.
+    """
+
+    def update(self, *args, **kwargs):
+        raise AssertionError('Read-only queryset, update not allowed.')
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Read-only queryset, delete not allowed.')
+
+    def create(self, *args, **kwargs):
+        raise AssertionError('Read-only queryset, create not allowed.')
+
+    def get_or_create(self, *args, **kwargs):
+        raise AssertionError('Read-only queryset, get_or_create not allowed.')
+
+    def bulk_create(self, *args, **kwargs):
+        raise AssertionError('Read-only queryset, bulk_create not allowed.')
+
+
+class ReadOnlyModelMixin(object):
+    """
+    Mixin that disables models.save() and .delete() methods
+    """
+
+    def save(self, *args, **kwargs):
+        raise AssertionError('Read-only model, save not allowed')
+
+    def delete(self, *args, **kwargs):
+        raise AssertionError('Read-only model, delete not allowed')
 
 
 class CopySettingsMixin(object):
@@ -202,6 +247,12 @@ class FootprintModel(models.Model):
 class HistoryMixin(object):
     _snapshot_on_setattr = False
 
+    # In some cases we want to disable snapshots because they can be heavy.
+    # One case where this happens is when we snapshot a model with related models -
+    # in that case snapshot will be created and data will be fetched before any
+    # `select_related` is applied. Use only when you are sure no data will be modified.
+    SNAPSHOT_HISTORY = True
+
     def __init__(self):
         self.snapshotted_state = None
         # signifies whether this particular history object is created anew
@@ -218,6 +269,9 @@ class HistoryMixin(object):
         super(HistoryMixin, self).__setattr__(name, value)
 
     def snapshot(self, previous=None):
+        if not self.SNAPSHOT_HISTORY:
+            return
+
         # first, turn off the setattr snapshot trigger
         self.__dict__['_snapshot_on_setattr'] = False
         if previous:
@@ -227,10 +281,16 @@ class HistoryMixin(object):
 
         self.snapshotted_state = self.get_history_dict()
 
+    def _check_history_snapshot_allowed(self):
+        if not self.SNAPSHOT_HISTORY:
+            raise Exception("Editing and snapshotting not allowed")
+
     def get_history_dict(self):
+        self._check_history_snapshot_allowed()
         return {settings_key: getattr(self, settings_key) for settings_key in self.history_fields}
 
     def get_model_state_changes(self, new_dict, current_dict=None):
+        self._check_history_snapshot_allowed()
         if not self.snapshotted_state:
             self.snapshot()
         current_dict = current_dict or self.snapshotted_state
@@ -256,6 +316,8 @@ class HistoryMixin(object):
         return changes
 
     def get_history_changes_text(self, changes, separator=', '):
+        self._check_history_snapshot_allowed()
+
         change_strings = []
         for key, value in changes.iteritems():
             prop = self.get_human_prop_name(key)
@@ -281,6 +343,8 @@ class HistoryMixin(object):
             return u'{} set to "{}"'.format(prop, val)
 
     def get_changes_text_from_dict(self, changes, separator=', '):
+        self._check_history_snapshot_allowed()
+
         statements = []
         if not changes or self.post_init_newly_created and changes:
             statements.append('Created settings')
@@ -295,6 +359,8 @@ class HistoryMixin(object):
         Created text of form - (created_text) created_text_id (changes)
         Values in braces are situational.
         '''
+        self._check_history_snapshot_allowed()
+
         parts = []
         if self.post_init_newly_created:
             parts.append(created_text)
@@ -578,7 +644,6 @@ class Account(models.Model):
         super(Account, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
-
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(users__id=user.id) |
@@ -1083,6 +1148,21 @@ class AccountSettings(SettingsBase):
             return self.order_by('account_id', '-created_dt').distinct('account')
 
 
+class AccountSettingsReadOnly(ReadOnlyModelMixin, AccountSettings):
+    """
+    Read-only proxy for account settings that disables unnecessary history snapshots because
+    they are not needed we can guarantee no data will be modified.
+    """
+
+    SNAPSHOT_HISTORY = False
+
+    class Meta(AccountSettings.Meta):
+        proxy = True
+
+    class QuerySet(ReadOnlyQuerySet, AccountSettings.QuerySet):
+        pass
+
+
 class CampaignSettings(SettingsBase):
     _demo_fields = {
         'name': utils.demo_anonymizer.campaign_name_from_pool
@@ -1279,6 +1359,21 @@ class CampaignSettings(SettingsBase):
                 value = ', '.join(names)
 
         return value
+
+
+class CampaignSettingsReadOnly(ReadOnlyModelMixin, CampaignSettings):
+    """
+    Read-only proxy for campaign settings that disables unnecessary history snapshots because
+    they are not needed where we can guarantee no data will be modified.
+    """
+
+    SNAPSHOT_HISTORY = False
+
+    class Meta(CampaignSettings.Meta):
+        proxy = True
+
+    class QuerySet(ReadOnlyQuerySet, CampaignSettings.QuerySet):
+        pass
 
 
 class CampaignGoal(models.Model):

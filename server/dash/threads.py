@@ -7,6 +7,14 @@ logger = logging.getLogger(__name__)
 
 TRANSACTION_END_WAIT = 3
 
+"""
+Both classes implement the same API. Whenever you want to replace async execution with
+in-sync execution just uncomment the last line of this module.
+
+This is useful when debugging or investigating performance problems (django debug toolbar won't
+record SQL statements executed in other than main thread).
+"""
+
 
 class MockAsyncFunction(object):
     """
@@ -71,3 +79,6 @@ class AsyncFunction(Thread):
     def join_and_get_result(self):
         self.join()
         return self.get_result()
+
+
+# AsyncFunction = MockAsyncFunction

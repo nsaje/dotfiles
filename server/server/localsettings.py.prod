@@ -158,7 +158,12 @@ CACHES = {
         'OPTIONS': {
             'MAX_ENTRIES': 10000,
         }
-    }
+    },
+    'local_memory_cache': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 60,  # 1 min
+    },
 }
 
 USE_HASH_CACHE = True

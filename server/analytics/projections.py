@@ -102,12 +102,13 @@ class BudgetProjections(object):
 
     def _prepare_account_types(self):
         self.account_types = {
-            sett.account_id: sett.account_type
-            for sett in dash.models.AccountSettings.objects.all().group_current_settings()
+            sett['account_id']: sett['account_type']
+            for sett in dash.models.AccountSettings.objects.all().group_current_settings().values(
+                'account_id', 'account_type')
         }
         self.campaign_types = {
-            c.pk: self.account_types.get(c.account_id, dash.constants.AccountType.UNKNOWN)
-            for c in dash.models.Campaign.objects.all()
+            c['pk']: self.account_types.get(c['account_id'], dash.constants.AccountType.UNKNOWN)
+            for c in dash.models.Campaign.objects.all().values('pk', 'account_id')
         }
 
     def _is_managed(self, key):
