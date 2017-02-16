@@ -2,7 +2,7 @@
     <div class="modal__title" ng-if="$ctrl.isNew">Add Budget</div>
     <div class="modal__title" ng-if="!$ctrl.isNew">Edit Budget Item #{{ $ctrl.budgetItem.id }}</div>
 </div>
-<div class="modal__body">
+<div class="modal__body zem-settings-campaign-budget__modal-body">
     <p ng-if="!$ctrl.isNew">Created by <strong>{{ $ctrl.budgetItem.createdBy }}</strong> on <strong>{{ $ctrl.budgetItem.createdOn }}</strong></p>
     <p ng-if="$ctrl.isNew">Created by <strong>{{ $ctrl.user.name }}</strong> on <strong>{{ $ctrl.today }}</strong></p>
     <hr>
@@ -24,7 +24,7 @@
             <tbody>
                 <!-- TODO: If possible add class row-error to row that was selected and has insufficient credit amount for selected budget -->
                 <tr ng-repeat="credit in $ctrl.availableCredit" ng-class="{'row--error': !!$ctrl.errors.credit}">
-                    <td ng-if="$ctrl.isNew" title="{{ $ctrl.credit.comment }}">
+                    <td class="zem-settings-campaign-budget__select-credit" ng-if="$ctrl.isNew" title="{{ $ctrl.credit.comment }}">
                         <label>
                             <input class="input-radio" type="radio" ng-model="$ctrl.budgetItem.credit"
                                ng-click="$ctrl.checkCreditValues()" ng-value="credit"/>
@@ -70,14 +70,11 @@
             <div class="message message--error" ng-repeat="error in $ctrl.errors.amount" for="amount">{{ error }}</div>
         </div>
         <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.margin}" ng-if="$ctrl.hasPermission('zemauth.can_manage_agency_margin')">
-            <label class="form__label" for="margin-input" is-internal="zemauth.can_manage_agency_margin">Margin (%)</label>
-            <ui-select theme="select2" id="margin-select" class="button button--plain button--narrow button--dropdown-toggle-icon"
-                       ng-model="$ctrl.budgetItem.margin" ng-disabled="!$ctrl.isNew" search-enabled="false">
-                <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
-                <ui-select-choices repeat="fee in $ctrl.getLicenseFees($select.search, $ctrl.budgetItem.margin) | filter: $select.search">
-                    <span ng-bind-html="fee"></span>%
-                </ui-select-choices>
-            </ui-select>
+            <label class="form__label" for="margin-input" is-internal="zemauth.can_manage_agency_margin">Margin</label>
+            <div class="postfixed-field postfixed-field--narrow">
+                <input id="margin-select" class="input-text" ng-model="$ctrl.budgetItem.margin" ng-disabled="!$ctrl.isNew"/>
+                <span class="postfixed-field__postfix">%</span>
+            </div>
             <div class="message message--error" ng-repeat="error in $ctrl.errors.margin" for="margin-input">{{ error }}</div>
         </div>
         <div class="message message--info message--with-icon" ng-if="$ctrl.isInLanding()">

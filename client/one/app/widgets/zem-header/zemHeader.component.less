@@ -44,7 +44,7 @@
         visibility: hidden;
         overflow: hidden;
         border: none !important;
-        background-color: @white;
+        background-color: white;
         display: block;
         z-index: 999;
         border-radius: 0;
@@ -56,7 +56,7 @@
         transform: translateZ(0);
 
         .shadow {
-            background: linear-gradient(to bottom, fade(@black,20%), fade(@black,0%));
+            background: linear-gradient(to bottom, fade(black,20%), fade(black,0%));
             position: absolute;
             top: 0;
             width: 100%;
@@ -71,15 +71,15 @@
         transition: all @default-animation;
 
         &:hover {
-            background-color: fade(@white, 10%);
+            background-color: fade(white, 10%);
         }
     }
 
     .zem-header-navigation {
         display: block;
         margin: 10px 0;
-        border-right: 1px solid fade(@white, 20%);
-        border-left: 1px solid fade(@white, 20%);
+        border-right: 1px solid fade(white, 20%);
+        border-left: 1px solid fade(white, 20%);
         transition: all @default-animation;
 
         .dropdown-toggle img {
@@ -107,7 +107,7 @@
         display: block;
         height: 40px;
         margin: 10px 0 10px 12px;
-        color: @white;
+        color: white;
         line-height: 16px;
         font-size: 12px;
         transition: all @default-animation;
@@ -122,7 +122,7 @@
 
             .slash {
                 padding: 0 2px;
-                color: fade(@white, 20%);
+                color: fade(white, 20%);
                 font-size: 34px;
                 line-height: 40px;
                 font-weight: 100;
@@ -137,7 +137,7 @@
                 a {
                     padding: 4px 8px;
                     line-height: 16px;
-                    color: @white;
+                    color: white;
                     font-size: 14px;
                     max-width: 115px;
                     display: block;
@@ -147,7 +147,7 @@
                     transition: padding @default-animation;
 
                     .type-name {
-                        color: fade(@white, 50%);
+                        color: fade(white, 50%);
                         display: block;
                         font-size: 12px;
                         height: 16px;
@@ -156,8 +156,8 @@
                     }
 
                     &:hover {
-                        color: @white;
-                        background-color: fade(@white, 10%);
+                        color: white;
+                        background-color: fade(white, 10%);
                         text-decoration: none;
                     }
 
@@ -229,10 +229,10 @@
 
         .button {
             height: 40px;
-            background-color: fade(@white,20%);
+            background-color: fade(white,20%);
             border: none;
-            border-left: 1px solid fade(@white,0%);
-            color: @white !important;
+            border-left: 1px solid fade(white,0%);
+            color: white !important;
             transition: all @default-animation;
 
             &::before {
@@ -241,9 +241,9 @@
             }
 
             &:hover {
-                background-color: fade(@white, 50%);
-                border-left: 1px solid fade(@white,0%);
-                color: @white !important;
+                background-color: fade(white, 50%);
+                border-left: 1px solid fade(white,0%);
+                color: white !important;
             }
 
             &.zem-header__filter-active {
@@ -293,7 +293,7 @@
         display: block;
 
         .date-range-picker-container {
-            border-left: 1px solid fade(@white, 0%);
+            border-left: 1px solid fade(white, 0%);
             position: relative;
             height: 40px;
             margin: 10px 20px 10px 0;
@@ -322,11 +322,11 @@
                 cursor: pointer;
                 padding-left: 45px;
                 padding-right: 35px;
-                background-color: fade(@white, 20%);
+                background-color: fade(white, 20%);
                 height: 100%;
                 width: 255px;
                 border: none;
-                color: @white;
+                color: white;
                 border-radius: @border-radius;
                 box-shadow: none;
                 font-size: 14px;
@@ -337,7 +337,7 @@
                 }
 
                 &:hover {
-                    background-color: fade(@white, 40%);
+                    background-color: fade(white, 40%);
                 }
             }
 
@@ -355,7 +355,7 @@
     .zem-header-menu {
         display: block;
         margin: 10px 0;
-        border-left: 1px solid fade(@white, 20%);
+        border-left: 1px solid fade(white, 20%);
         transition: all @default-animation;
 
         .dropdown-toggle img {
@@ -374,44 +374,6 @@
             zem-navigation {
                 height: 100%;
             }
-
-            li {
-                position: relative;
-                padding: 0;
-
-                a {
-                    color: @white;
-                    padding: 8px 20px;
-                    transition: background-color @default-animation;
-                    display: block;
-
-                    &.internal {
-                        position: absolute;
-                        border-top: 7px solid @internal-color;
-                        border-right: 7px solid transparent;
-                        z-index: 1;
-                        top: 0px;
-                        left: 0px;
-                        padding: 0px;
-                    }
-                }
-
-                a:hover {
-                    background-color: fade(@white, 10%);
-                }
-
-                &.logged-user {
-                    color: fade(@white, 50%);
-                    padding: @default-spacing;
-                    border-bottom: 1px solid fade(@white, 20%);
-                    line-height: 16px;
-                    background-color: fade(@black, 5%);
-
-                    span {
-                        color: fade(@white, 25%);
-                    }
-                }
-            }
         }
 
         .dropdown.open .dropdown-menu {
@@ -419,6 +381,51 @@
             visibility: visible;
         }
     }
+}
+
+.dropdown-menu__logged-in-user {
+    background-color: fade(black, 10%);
+    color: fade(white, 50%);
+    margin: 0;
+    padding: @default-spacing;
+    border-bottom: none;
+    line-height: 16px;
+}
+
+.logged-in-user__title {
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.dropdown-menu__group {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    a {
+        color: white;
+        padding: 8px @default-spacing;
+        transition: background-color @default-animation;
+        display: block;
+
+        .internal-feature {
+            top: 0px;
+            left: 0px;
+        }
+    }
+
+    a:hover {
+        background-color: fade(white, 10%);
+        text-decoration: none;
+    }
+}
+
+.dropdown-menu-group__title {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: fade(white,50%);
+    padding: 10px @default-spacing 2px @default-spacing;
+    border-bottom: 1px solid fade(white, 10%);
 }
 
 @media only screen and (min-width: @min-app-width) {
@@ -452,7 +459,7 @@
                     padding: 5px 20px;
 
                     &:hover {
-                        background-color: fade(@white, 10%);
+                        background-color: fade(white, 10%);
                     }
                 }
 
@@ -519,11 +526,11 @@
                     line-height: 30px;
                     padding: 0 10px;
                     background-color: transparent;
-                    border-left: 1px solid fade(@white, 20%);
+                    border-left: 1px solid fade(white, 20%);
                     border-radius: 0;
 
                     &:hover, &:focus, &:active {
-                        background-color: fade(@white, 10%);
+                        background-color: fade(white, 10%);
                     }
 
                     .filter-icon {
@@ -534,13 +541,13 @@
 
                 .button {
                     height: 30px;
-                    background-color: fade(@white, 0%);
-                    border-left: 1px solid fade(@white, 20%);
-                    color: @white;
+                    background-color: fade(white, 0%);
+                    border-left: 1px solid fade(white, 20%);
+                    color: white;
                     border-radius: 0;
 
                     &:hover {
-                        background-color: fade(@white, 10%);
+                        background-color: fade(white, 10%);
                     }
 
                     &::before {
@@ -574,7 +581,7 @@
             .zem-header-date-range-picker .date-range-picker-container {
                 height: 30px;
                 margin: 0;
-                border-left: 1px solid fade(@white, 20%);
+                border-left: 1px solid fade(white, 20%);
 
                 .date-range-picker-input {
                     padding-left: 42px;
@@ -584,7 +591,7 @@
                     border-radius: 0;
 
                     &:hover {
-                        background-color: fade(@white, 10%);
+                        background-color: fade(white, 10%);
                     }
                 }
 
@@ -642,7 +649,7 @@
     }
 
     .ranges:before {
-        background: linear-gradient(to bottom, fade(@black,20%), fade(@black,0%));
+        background: linear-gradient(to bottom, fade(black,20%), fade(black,0%));
         position: absolute;
         top: 0;
         left: 0;

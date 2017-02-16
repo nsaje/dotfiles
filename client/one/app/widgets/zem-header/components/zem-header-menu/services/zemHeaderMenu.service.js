@@ -1,13 +1,7 @@
 angular.module('one.widgets').service('zemHeaderMenuService', function ($window, $state, $uibModal, zemPermissions, zemFullStoryService, zemNavigationNewService) { // eslint-disable-line max-len
     this.getAvailableActions = getAvailableActions;
 
-    var ACTIONS = [
-        {
-            text: 'Scheduled reports',
-            callback: navigateToScheduledReportsView,
-            isAvailable: zemPermissions.hasPermission('zemauth.can_see_new_scheduled_reports'),
-            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_scheduled_reports'),
-        },
+    var USERACTIONS = [
         {
             text: 'Request demo',
             callback: requestDemoAction,
@@ -20,32 +14,59 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
             isAvailable: isAllowLivestreamActionAvailable,
         },
         {
-            text: 'User permissions',
-            callback: navigateToUserPermissions,
-            isAvailable: isUserPermissionsAvailable,
-            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_user_permissions'),
-        },
-        {
             text: 'Sign out',
             callback: navigate,
             params: {href: '/signout'},
         },
     ];
 
-    function getAvailableActions () {
-        return ACTIONS.filter(function (action) {
-            if (action.isAvailable === undefined) {
-                // Include action if no constraint is provided
-                return true;
-            }
-            if (typeof action.isAvailable === 'boolean') {
-                return action.isAvailable;
-            }
-            if (typeof action.isAvailable === 'function') {
-                return action.isAvailable();
-            }
-            return false;
-        });
+    var ACCOUNTACTIONS = [
+        {
+            text: 'Reports',
+            callback: navigateToScheduledReportsView,
+            isAvailable: zemPermissions.hasPermission('zemauth.can_see_new_scheduled_reports'),
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_scheduled_reports'),
+        },
+        {
+            text: 'User permissions',
+            callback: navigateToUserPermissions,
+            isAvailable: isUserPermissionsAvailable,
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_user_permissions'),
+        },
+    ];
+
+    function getAvailableActions (navigationGroup) {
+        if (navigationGroup === 'user') {
+            return USERACTIONS.filter(function (action) {
+                if (action.isAvailable === undefined) {
+                    // Include action if no constraint is provided
+                    return true;
+                }
+                if (typeof action.isAvailable === 'boolean') {
+                    return action.isAvailable;
+                }
+                if (typeof action.isAvailable === 'function') {
+                    return action.isAvailable();
+                }
+                return false;
+            });
+        } else if (navigationGroup === 'account') {
+            return ACCOUNTACTIONS.filter(function (action) {
+                if (action.isAvailable === undefined) {
+                    // Include action if no constraint is provided
+                    return true;
+                }
+                if (typeof action.isAvailable === 'boolean') {
+                    return action.isAvailable;
+                }
+                if (typeof action.isAvailable === 'function') {
+                    return action.isAvailable();
+                }
+                return false;
+            });
+        }
+
+        return false;
     }
 
     function navigate (params) {

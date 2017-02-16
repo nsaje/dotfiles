@@ -1294,6 +1294,10 @@ h3 {
         float: right;
         width: @form-input-width;
 
+        label {
+            display: block;
+        }
+
         &:first-of-type {
             padding-top: 7px;
         }
@@ -1302,6 +1306,10 @@ h3 {
     .form__radio {
         float: right;
         width: @form-input-width;
+
+        label {
+            display: block;
+        }
 
         &:first-of-type {
             padding-top: 9px;
@@ -1379,6 +1387,14 @@ h3 {
     padding: 10px @default-spacing;
     max-height: 400px;
     overflow: auto;
+}
+
+.dropdown-menu__shadow {
+    background: linear-gradient(to bottom, fade(@black,20%), fade(@black,0%));
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 6px;
 }
 
 .dropdown-menu__category {

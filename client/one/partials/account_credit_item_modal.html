@@ -27,15 +27,11 @@
             <div ng-repeat="error in errors.endDate" class="message message--error" for="end-date-input">{{ error }}</div>
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.licenseFee}">
-            <label class="form__label" for="license-fee-input">License Fee (%)</label>
-            <ui-select class="button button--plain button--narrow button--dropdown-toggle-icon" theme="select2"
-                       id="license-fee-select" ng-model="creditItem.licenseFee" ng-disabled="creditItem.isSigned"
-                       search-enabled="false">
-                <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
-                <ui-select-choices repeat="fee in getLicenseFees($select.search, creditItem.licenseFee) | filter: $select.search">
-                    <span ng-bind-html="fee"></span>%
-                </ui-select-choices>
-            </ui-select>
+            <label class="form__label" for="license-fee-input">License Fee</label>
+            <div class="postfixed-field postfixed-field--narrow">
+                <input class="input-text" id="license-fee-select" ng-model="creditItem.licenseFee" ng-disabled="creditItem.isSigned"/>
+                <span class="postfixed-field__postfix">%</span>
+            </div>
             <div class="message message--error" ng-repeat="error in errors.licenseFee" for="license-fee">{{ error }}</div>
         </div>
         <div class="form__group" ng-class="{'form--error': !!errors.amount}">

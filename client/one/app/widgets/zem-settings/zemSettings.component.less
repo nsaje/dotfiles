@@ -323,6 +323,10 @@
     .form__checkbox {
         width: 100%;
         float: none;
+
+        label {
+            display: inline-block;
+        }
     }
 }
 
@@ -579,7 +583,7 @@
 }
 
 ///////////////////////////
-// Campaign goals //
+// Budget //
 ///////////////////////////
 
 .zem-settings-component__container--campaign-budget {
@@ -625,3 +629,15 @@
         font-size: 18px;
     }
 }
+
+.zem-settings-campaign-budget__modal-body {
+    .zem-settings-campaign-budget__select-credit {
+        vertical-align: top;
+
+        label {
+            display: block;
+            margin-top: 2px;
+        }
+    }
+}
+
