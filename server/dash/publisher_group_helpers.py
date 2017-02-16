@@ -77,7 +77,43 @@ def concat_publisher_group_targeting(ad_group, ad_group_settings, campaign,
     return blacklist, whitelist
 
 
-def get_default_publisher_group_targeting_dict():
+def load_settings_and_concat_publisher_group_targeting(accounts, campaigns, ad_groups, include_global=True):
+    accounts_settings = models.AccountSettings.objects.filter(
+        account__in=accounts
+    ).group_current_settings().prefetch_related('account')
+    campaigns_settings = models.CampaignSettings.objects.filter(
+        Q(campaign__in=campaigns) | Q(campaign__account__in=accounts)
+    ).group_current_settings().prefetch_related('campaign')
+    ad_groups_settings = models.AdGroupSettings.objects.filter(
+        Q(ad_group__in=ad_groups) | Q(ad_group__campaign__in=campaigns) | Q(ad_group__campaign__account__in=accounts)
+    ).group_current_settings().prefetch_related('ad_group')
+
+    whitelist = set()
+    blacklist = set()
+    targeting = get_default_publisher_group_targeting_dict()
+    if include_global:
+        blacklist = set([get_global_blacklist().id])
+
+    def fill_up(any_settings, related_field):
+        for x in any_settings:
+            current = set(x.blacklist_publisher_groups) | set([getattr(x, related_field).default_blacklist_id])
+            current = set(x for x in current if x)
+            blacklist.update(current)
+            targeting[related_field]['excluded'] = current
+
+            current = set(x.whitelist_publisher_groups) | set([getattr(x, related_field).default_whitelist_id])
+            current = set(x for x in current if x)
+            whitelist.update(current)
+            targeting[related_field]['included'] = current
+
+    fill_up(accounts_settings, 'account')
+    fill_up(campaigns_settings, 'campaign')
+    fill_up(ad_groups_settings, 'ad_group')
+
+    return blacklist, whitelist, targeting
+
+
+def get_default_publisher_group_targeting_dict(include_global=True):
     return {
         'ad_group': {
             'included': set(),
@@ -92,7 +128,7 @@ def get_default_publisher_group_targeting_dict():
             'excluded': set(),
         },
         'global': {
-            'excluded': set([get_global_blacklist().id]),
+            'excluded': set([get_global_blacklist().id]) if include_global else set(),
         },
     }
 

@@ -4,6 +4,7 @@ from django.db.models import Q
 
 import dash.constants
 import dash.models
+from dash import publisher_group_helpers
 import stats.constraints_helper
 import stats.constants
 
@@ -83,28 +84,15 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
     if only_used_sources:
         filtered_sources = stats.constraints_helper.narrow_filtered_sources(filtered_sources, ad_group_sources)
 
-    if dash.models.should_filter_by_sources(filtered_sources):
-        publisher_blacklist = dash.models.PublisherBlacklist.objects.filter(
-            Q(ad_group__in=allowed_ad_groups) |
-            Q(campaign__in=allowed_campaigns) |
-            Q(account__in=allowed_accounts) |
-            Q(everywhere=True)
-        ).filter_by_sources(filtered_sources)
+    blacklists, whitelists, pg_targeting = publisher_group_helpers.load_settings_and_concat_publisher_group_targeting(
+        allowed_accounts, allowed_campaigns, allowed_ad_groups)
 
-        # include those that do not have source_id specified as they blacklist also filtered sources
-        publisher_blacklist |= dash.models.PublisherBlacklist.objects.filter(
-            Q(ad_group__in=allowed_ad_groups, source_id__isnull=True) |
-            Q(campaign__in=allowed_campaigns, source_id__isnull=True) |
-            Q(account__in=allowed_accounts, source_id__isnull=True) |
-            Q(everywhere=True, source_id__isnull=True)
-        )
-    else:
-        publisher_blacklist = dash.models.PublisherBlacklist.objects.filter(
-            Q(ad_group=allowed_ad_groups) |
-            Q(campaign=allowed_campaigns) |
-            Q(account=allowed_accounts) |
-            Q(everywhere=True)
-        )
+    blacklisted_entries = dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=blacklists)\
+                                                                 .filter_by_sources(
+                                                                     filtered_sources, include_wo_source=True)
+    whitelisted_entries = dash.models.PublisherGroupEntry.objects.filter(publisher_group_id__in=whitelists)\
+                                                                 .filter_by_sources(
+                                                                     filtered_sources, include_wo_source=True)
 
     constraints = {
         'show_archived': show_archived,
@@ -112,7 +100,9 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
         'allowed_ad_groups': allowed_ad_groups if constrain_ad_group else None,
         'allowed_campaigns': allowed_campaigns if constrain_campaigns else None,
         'allowed_accounts': allowed_accounts,
-        'publisher_blacklist': publisher_blacklist if stats.constants.PUBLISHER in breakdown else None,
+        'publisher_blacklist': blacklisted_entries if stats.constants.PUBLISHER in breakdown else None,
+        'publisher_whitelist': whitelisted_entries if stats.constants.PUBLISHER in breakdown else None,
+        'publisher_group_targeting': pg_targeting if stats.constants.PUBLISHER in breakdown else None,
         'publisher_blacklist_filter': show_blacklisted_publishers if stats.constants.PUBLISHER in breakdown else None,
         'filtered_sources': filtered_sources,
         'date__gte': start_date,
