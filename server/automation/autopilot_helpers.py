@@ -39,7 +39,8 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
                 ags,
                 ad_groups_sources_settings
             ) == dash.constants.AdGroupRunningStatus.ACTIVE
-            if ((ad_group_running and sources_running) or (ags.landing_mode and ad_group_active)):
+            if ((ad_group_running and sources_running) or
+                    (ags.landing_mode and ad_group_active and sources_running)):
                 ad_groups_on_autopilot.append(ad_group)
                 ad_group_settings_on_autopilot.append(ags)
     return ad_groups_on_autopilot, ad_group_settings_on_autopilot
