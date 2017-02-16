@@ -5,6 +5,7 @@ import utils.command_helpers
 import utils.email_helper
 
 import zemauth.models
+import dash.models
 import analytics.monitor
 
 
@@ -16,9 +17,9 @@ class Command(utils.command_helpers.ExceptionCommand):
                             help='Display output')
         parser.add_argument('--send-emails', dest='send_emails', action='store_true',
                             help='Send emails')
-        parser.add_argument('--min-pacing', dest='min_pacing', default='50.0'
+        parser.add_argument('--min-pacing', dest='min_pacing', default='50.0',
                             help='Min pacing threshold (default 50%)')
-        parser.add_argument('--max-pacing', dest='max_pacing', default='150.0'
+        parser.add_argument('--max-pacing', dest='max_pacing', default='150.0',
                             help='Max pacing threshold (default 150%)')
 
     def _print(self, msg):
@@ -43,7 +44,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         )}
 
         for campaign_id, pacing, alert in alarms:
-            campaign = campaigns[camapign_id]
+            campaign = campaigns[campaign_id]
             emails = set(utils.email_helper.email_manager_list(campaign)) & valid_emails
             self._print('Campaign {} ({}) has {} pacing {}: send to {}'.format(
                 campaign.pk,
