@@ -1156,7 +1156,7 @@ class PublisherGroupSerializer(DataNodeSerializerMixin, serializers.ModelSeriali
 class PublisherGroupEntrySerializer(DataNodeSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = dash.models.PublisherGroupEntry
-        fields = ('id', 'publisher', 'publisher_group_id', 'source')
+        fields = ('id', 'publisher', 'publisher_group_id', 'source', 'include_subdomains')
         list_serializer_class = DataNodeListSerializer
 
     id = IdField(read_only=True)
@@ -1167,7 +1167,7 @@ class PublisherGroupEntrySerializer(DataNodeSerializerMixin, serializers.ModelSe
 class OutbrainPublisherGroupEntrySerializer(PublisherGroupEntrySerializer):
     class Meta:
         model = dash.models.PublisherGroupEntry
-        fields = ('id', 'publisher', 'publisher_group_id', 'source', 'outbrain_publisher_id')
+        fields = ('id', 'publisher', 'publisher_group_id', 'source', 'include_subdomains', 'outbrain_publisher_id')
         list_serializer_class = DataNodeListSerializer
 
 

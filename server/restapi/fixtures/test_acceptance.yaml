@@ -408,6 +408,14 @@
     model: dash.publishergroup
     pk: 154
 
+-   fields:
+        created_dt: '2015-02-21T00:00:00'
+        modified_dt: '2015-02-21T00:00:00'
+        name: 'Whitelist 3'
+        account: 186
+    model: dash.publishergroup
+    pk: 155
+
 # test publisher group entries
 
 -   fields:

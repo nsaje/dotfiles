@@ -401,6 +401,12 @@ publisherGroups  |          |           |                                       
                         "enabled": true,
                         "trackingParameter": "cid"
                     }
+                },
+                "targeting": {
+                    "publisherGroups": {
+                        "included": ["153"],
+                        "excluded": ["154"]
+                    }
                 }
             }
         }
@@ -426,6 +432,12 @@ publisherGroups  |          |           |                                       
                     "enabled": true,
                     "trackingParameter": "cid"
                 }
+            },
+            "targeting": {
+                "publisherGroups": {
+                    "included": ["153"],
+                    "excluded": ["154"]
+                }
             }
         }
 
@@ -446,6 +458,12 @@ publisherGroups  |          |           |                                       
                     "adobe": {
                         "enabled": true,
                         "trackingParameter": "cid"
+                    }
+                },
+                "targeting": {
+                    "publisherGroups": {
+                        "included": ["153"],
+                        "excluded": ["154"]
                     }
                 }
             }
@@ -472,6 +490,12 @@ publisherGroups  |          |           |                                       
                             "enabled": true,
                             "trackingParameter": "cid"
                         }
+                    },
+                    "targeting": {
+                        "publisherGroups": {
+                            "included": ["153"],
+                            "excluded": ["154"]
+                        }
                     }
                 }
             ]
@@ -497,6 +521,12 @@ publisherGroups  |          |           |                                       
                     "enabled": true,
                     "trackingParameter": "cid"
                 }
+            },
+            "targeting": {
+                "publisherGroups": {
+                    "included": ["153"],
+                    "excluded": ["154"]
+                }
             }
         }
 
@@ -516,6 +546,12 @@ publisherGroups  |          |           |                                       
                     "adobe": {
                         "enabled": true,
                         "trackingParameter": "cid"
+                    }
+                },
+                "targeting": {
+                    "publisherGroups": {
+                        "included": ["153"],
+                        "excluded": ["154"]
                     }
                 }
             }
@@ -899,6 +935,10 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                     "interest": {
                         "included": ["WOMEN", "FASHION"],
                         "excluded": ["POLITICS"]
+                    },
+                    "publisherGroups": {
+                        "included": ["153"],
+                        "excluded": ["154"]
                     }
                 },
                 "trackingCode": "this=1&that=2",
@@ -943,6 +983,10 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                 "interest": {
                     "included": ["WOMEN", "FASHION"],
                     "excluded": ["POLITICS"]
+                },
+                "publisherGroups": {
+                    "included": ["153"],
+                    "excluded": ["154"]
                 }
             },
             "trackingCode": "this=1&that=2",
@@ -983,6 +1027,10 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                     "interest": {
                         "included": ["WOMEN", "FASHION"],
                         "excluded": ["POLITICS"]
+                    },
+                    "publisherGroups": {
+                        "included": ["153"],
+                        "excluded": ["154"]
                     }
                 },
                 "trackingCode": "this=1&that=2",
@@ -1030,6 +1078,10 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                         "interest": {
                             "included": ["WOMEN", "FASHION"],
                             "excluded": ["POLITICS"]
+                        },
+                        "publisherGroups": {
+                            "included": ["153"],
+                            "excluded": ["154"]
                         }
                     },
                     "trackingCode": "this=1&that=2",
@@ -1073,8 +1125,11 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                 "interest": {
                     "included": ["WOMEN", "FASHION"],
                     "excluded": ["POLITICS"]
+                },
+                "publisherGroups": {
+                    "included": ["153"],
+                    "excluded": ["154"]
                 }
-
             },
             "trackingCode": "this=1&that=2",
             "autopilot": {
@@ -1114,6 +1169,10 @@ dailyBudget | dailyBudget                         | autopilot daily budget
                     "interest": {
                         "included": ["WOMEN", "FASHION"],
                         "excluded": ["POLITICS"]
+                    },
+                    "publisherGroups": {
+                        "included": ["153"],
+                        "excluded": ["154"]
                     }
                 },
                 "trackingCode": "this=1&that=2",
@@ -1569,7 +1628,7 @@ Publisher groups can be deleted when they are not referenced by any Ad Group.
 
 + Parameters
     + accountId: 186 (required)
-    + publisherGroupId: 154 (required)
+    + publisherGroupId: 155 (required)
 
 + Response 204
 
@@ -1579,8 +1638,9 @@ Property           | Type                | Description                          
 -------------------|---------------------|-----------------------------------------------------------------------|----------------|
 id                 | string              | id of the entry                                                       | N/A            | 
 publisherGroupId   | string              | id of the publisher group                                             | required       |
-publisher          | string              | publisher's domain (or name), strict matching                        | required       |
+publisher          | string              | publisher's domain (or name), strict matching                         | required       |
 source             | string              | source identifier, if not set it refers to all sources                | optional       |
+includeSubdomains  | boolean             | if true, the publisher's subdomains will also be included in the group | optional, defaults to true      |
 
 ### List publisher group entries [GET /rest/v1/publishergroups/{publisherGroupId}/entries/{?offset,limit}] ###
 
