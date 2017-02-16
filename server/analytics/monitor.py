@@ -234,27 +234,14 @@ def audit_autopilot_budget_changes(date=None, error=Decimal('0.001')):
             []
         ).append(log.new_daily_budget - log.previous_daily_budget)
     alarms = {}
-
-    ad_groups_settings = {}
-    for ags in dash.models.AdGroupSettings.objects.filter(
-            ad_group__in=total_changes.keys(),
-    ).group_current_settings():
-        ad_groups_settings[ags.ad_group_id] = ags
-
-    ad_group_sources_settings = {}
-    for agss in dash.models.AdGroupSourceSettings.objects.filter(
-            ad_group_source__ad_group__in=total_changes.keys(),
-    ).select_related('ad_group_source').group_current_settings():
-        ad_group_id = agss.ad_group_source.ad_group_id
-        ad_group_sources_settings.setdefault(ad_group_id, [])
-        ad_group_sources_settings[ad_group_id].append(agss)
-
-    for ad_group, changes in total_changes.iteritems():
-        running_status = ad_group.get_running_status_by_flight_time(
-            ad_groups_settings[ad_group.id],
-            ad_group_sources_settings[ad_group.id],
+    ad_group_settings = {
+        ags.ad_group: ags
+        for ags in dash.models.AdGroupSettings.objects.filter(
+                ad_group__in=total_changes.keys()
         )
-        if running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
+    }
+    for ad_group, changes in total_changes.iteritems():
+        if ad_group.get_running_status(ad_group_settings[ad_group]) == dash.constants.AdGroupRunningStatus.INACTIVE:
             continue
         budget_changes = sum(changes)
         if abs(budget_changes) > error:
