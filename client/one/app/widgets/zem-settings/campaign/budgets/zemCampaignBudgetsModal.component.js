@@ -5,12 +5,15 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
         resolve: '<',
         modalInstance: '<',
     },
-    controller: function ($filter, $timeout, zemCampaignBudgetsEndpoint, zemNavigationService, zemPermissions) {
+    controller: function ($filter, $timeout, zemCampaignBudgetsEndpoint, zemNavigationService, zemNavigationNewService, zemPermissions) { // eslint-disable-line max-len
         var $ctrl = this;
 
         $ctrl.campaign = $ctrl.resolve.campaign;
         $ctrl.selectedBudgetId = $ctrl.resolve.selectedBudgetId;
-        $ctrl.credits = $ctrl.resolve.credits;
+        $ctrl.budgets = $ctrl.resolve.budgets;
+
+        // FIXME: This information needs to be retrieved through budgets or resolved entity
+        $ctrl.isInLandingMode = zemNavigationNewService.getActiveEntity().data.landingMode;
 
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
@@ -147,7 +150,7 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
         }
 
         function getAvailableCredit (all, include) {
-            return all ? $ctrl.credits : $ctrl.credits.filter(function (obj) {
+            return all ? $ctrl.budgets.credits : $ctrl.budgets.credits.filter(function (obj) {
                 return include && obj.id === include || !include && obj.isAvailable;
             });
         }

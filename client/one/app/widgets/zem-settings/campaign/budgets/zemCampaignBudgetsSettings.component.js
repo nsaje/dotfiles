@@ -53,9 +53,9 @@ angular.module('one.widgets').component('zemCampaignBudgetsSettings', {
                     campaign: function () {
                         return $ctrl.entity;
                     },
-                    credits: function () {
-                        return $ctrl.budgets.credits;
-                    }
+                    budgets: function () {
+                        return $ctrl.budgets;
+                    },
                 }
             });
 
