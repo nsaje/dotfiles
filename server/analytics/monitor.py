@@ -234,15 +234,7 @@ def audit_autopilot_budget_changes(date=None, error=Decimal('0.001')):
             []
         ).append(log.new_daily_budget - log.previous_daily_budget)
     alarms = {}
-    ad_group_settings = {
-        ags.ad_group: ags
-        for ags in dash.models.AdGroupSettings.objects.filter(
-                ad_group__in=total_changes.keys()
-        )
-    }
     for ad_group, changes in total_changes.iteritems():
-        if ad_group.get_running_status(ad_group_settings[ad_group]) == dash.constants.AdGroupRunningStatus.INACTIVE:
-            continue
         budget_changes = sum(changes)
         if abs(budget_changes) > error:
             alarms[ad_group] = budget_changes
