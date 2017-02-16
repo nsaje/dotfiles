@@ -1,12 +1,8 @@
 import datetime
-from decimal import Decimal
-
-from django.conf import settings
 
 import utils.command_helpers
 import utils.email_helper
 import analytics.monitor
-import dash.models
 
 
 class Command(utils.command_helpers.ExceptionCommand):
@@ -31,7 +27,7 @@ class Command(utils.command_helpers.ExceptionCommand):
     def handle(self, *args, **options):
         self.verbose = options['verbose']
         alarms = analytics.monitor.audit_account_credits(
-            date=options['date'],
+            date=options['date'] and datetime.datetime.strptime(options['date'], "%Y-%m-%d").date(),
             days=options['days'] and int(options['days'])
         )
         sales = {}

@@ -1668,6 +1668,7 @@ class EmailTemplateType(ConstantBase):
     ASYNC_REPORT_RESULTS = 20
     DEPLETING_CREDITS = 21
     WEEKLY_CLIENT_REPORT = 23
+    PACING_NOTIFICATION = 24
 
     _VALUES = {
         ADGROUP_CHANGE: 'Ad group settings change',
@@ -1692,6 +1693,7 @@ class EmailTemplateType(ConstantBase):
         ASYNC_REPORT_RESULTS: 'Report results',
         DEPLETING_CREDITS: 'Depleting credits',
         WEEKLY_CLIENT_REPORT: 'Weekly client report',
+        PACING_NOTIFICATION: 'Pacing notification',
     }
 
 

@@ -1,6 +1,7 @@
 import logging
 import traceback
 import re
+from decimal import Decimal
 
 from django.core.mail import send_mail
 from django.conf import settings
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def prepare_recipients(email_text):
-    return (email.strip() for email in email_text.split(','))
+    return (email.strip() for email in email_text.split(',') if email)
 
 
 def format_email(template_type, **kwargs):
@@ -56,6 +57,8 @@ def email_manager_list(campaign):
 
 
 def send_notification_mail(to_emails, subject, body, settings_url=None):
+    if not to_emails:
+        return
     try:
         send_mail(
             subject,
@@ -82,6 +85,21 @@ def send_notification_mail(to_emails, subject, body, settings_url=None):
             'an exception was raised: {}'.format(traceback.format_exc(e)),
             details=desc,
         )
+
+
+def send_pacing_notification_email(campaign, emails, pacing, alert):
+    subject, body, additional_emails = format_email(
+        dash.constants.EmailTemplateType.PACING_NOTIFICATION,
+        campaign=campaign,
+        account=campaign.account,
+        pacing=pacing.quantize(Decimal('.01')),
+        alert=alert == 'low' and 'underpacing' or 'overpacing',
+    )
+    send_notification_mail(
+        list(set(emails) | set(additional_emails)),
+        subject,
+        body,
+    )
 
 
 def send_ad_group_notification_email(ad_group, request, changes_text):
