@@ -220,10 +220,15 @@ angular.module('one.widgets').factory('zemGridDebugEndpoint', function ($rootSco
     //
 
     var mockedColumns = getMockedColumns();
-    var TEST_BREAKDOWNS_BASE_LEVEL = ['General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft', 'General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft', 'General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft', 'General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft', 'General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft', 'General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft', 'General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft']; // eslint-disable-line max-len
+
     var TEST_BREAKDOWNS_AGES = ['<18', '18-21', '21-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80-90', '99+'];
     var TEST_BREAKDOWNS_SEX = ['man', 'woman'];
+    var TEST_BREAKDOWNS_BASE_LEVEL = ['General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft', 'Happy Feet Dragons', 'Fishy Mishy Mu']; // eslint-disable-line max-len
     var TEST_BREAKDOWNS_DATES = [];
+
+    while(TEST_BREAKDOWNS_BASE_LEVEL.length < 100) {
+        TEST_BREAKDOWNS_BASE_LEVEL = TEST_BREAKDOWNS_BASE_LEVEL.concat(TEST_BREAKDOWNS_BASE_LEVEL);
+    }
     for (var i = 0; i < 30; ++i) {
         var d = '2015-03-' + (i + 1);
         TEST_BREAKDOWNS_DATES.push(d);
@@ -310,6 +315,7 @@ angular.module('one.widgets').factory('zemGridDebugEndpoint', function ($rootSco
             breakdown.level = level;
             breakdown.breakdownId = JSON.stringify(position);
 
+            console.log(JSON.stringify(keys))
             keys.forEach(function (k, idx) {
                 var childPosition = position.slice(0);
                 childPosition.push(pagination.offset + idx);

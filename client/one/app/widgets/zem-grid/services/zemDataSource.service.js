@@ -62,7 +62,7 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
         // Define default pagination (limits) for all levels when
         // size is not passed when requesting new data
         // TODO: default values will be defined by Breakdown selector (TBD)
-        var defaultPagination = [50, 4, 5, 7];
+        var defaultPagination = [60, 4, 5, 7];
 
         initializeRoot();
 
