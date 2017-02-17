@@ -1283,6 +1283,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         new_request = HttpRequest()
         new_request.user = request.user
         new_request._body = json.dumps(payload)
+        new_request.META = request.META.copy()
 
         view = view_publishers.PublisherTargeting(rest_proxy=True)
         _, status_code = view.post(new_request)
