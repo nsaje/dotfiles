@@ -721,7 +721,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
-            dash.constants.InfoboxStatus.MANUAL,
+            dash.constants.InfoboxStatus.ACTIVE,
             dash.infobox_helpers.get_adgroup_running_status(superuser, ad_group_settings)
         )
 
@@ -754,7 +754,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
-            dash.constants.InfoboxStatus.MANUAL_PRICE_DISCOVERY,
+            dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY,
             dash.infobox_helpers.get_adgroup_running_status(superuser, ad_group_settings)
         )
         self.assertEqual(
@@ -777,7 +777,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOMATIC,
+            dash.constants.InfoboxStatus.AUTOPILOT,
             dash.infobox_helpers.get_adgroup_running_status(superuser, ad_group_settings)
         )
         self.assertEqual(
@@ -787,7 +787,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOMATIC,
+            dash.constants.InfoboxStatus.AUTOPILOT,
             dash.infobox_helpers.get_adgroup_running_status(superuser, ad_group_settings)
         )
 

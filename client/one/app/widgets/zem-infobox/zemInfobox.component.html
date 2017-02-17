@@ -5,8 +5,8 @@
 <div class="zem-infobox__content custom-scroller">
     <div ng-if="$ctrl.delivery" class="zem-infobox__delivery zem-infobox-data-row"
         ng-class="{
-            'zem-infobox__delivery--active': $ctrl.delivery.status === 'active' || $ctrl.delivery.status === 'manual' || $ctrl.delivery.status === 'manual-price-discovery',
-            'zem-infobox__delivery--autopilot': $ctrl.delivery.status === 'autopilot' || $ctrl.delivery.status === 'automatic',
+            'zem-infobox__delivery--active': $ctrl.delivery.status === 'active' || $ctrl.delivery.status === 'active-price-discovery',
+            'zem-infobox__delivery--autopilot': $ctrl.delivery.status === 'autopilot',
             'zem-infobox__delivery--inactive': $ctrl.delivery.status === 'inactive',
             'zem-infobox__delivery--paused': $ctrl.delivery.status === 'stopped',
             'zem-infobox__delivery--landing-mode': $ctrl.delivery.status === 'landing-mode',

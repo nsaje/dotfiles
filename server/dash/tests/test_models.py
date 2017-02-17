@@ -33,13 +33,9 @@ class AdGroupSettingsTest(TestCase):
             'changes_text',
             'system_user',
         ]
-        computed_fields = [
-            'ad_group_mode',
-            'price_discovery',
-        ]
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)
-        model_fields = set(models.AdGroupSettings._meta.get_all_field_names() + computed_fields)
+        model_fields = set(models.AdGroupSettings._meta.get_all_field_names())
 
         self.assertEqual(model_fields, all_fields)
 
@@ -80,8 +76,6 @@ class AdGroupSettingsTest(TestCase):
             'b1_sources_group_cpc_cc': Decimal('0.1'),
             'whitelist_publisher_groups': [1],
             'blacklist_publisher_groups': [2],
-            'ad_group_mode': constants.AdGroupSettingsMode.AUTOMATIC,
-            'price_discovery': constants.AdGroupSettingsPriceDiscovery.AUTOMATIC,
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -161,9 +155,9 @@ class AdGroupSettingsTest(TestCase):
             'Description set to "Example description", '
             'End date set to "2014-06-05", '
             'Custom audience targeting set to "test audience 1, test audience 2", '
+            'Autopilot set to "Optimize Bids and Daily Spend Caps", '
             'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot", '
             'Dayparting set to "Timezone: CET; Tuesday: 10, 12; Monday: 1, 2, 5", '
-            'Ad group mode set to "Automatic", '
             'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg", '
             'Max CPM set to "$1.60", '
             'Retargeting ad groups set to "test adgroup 1, test adgroup 2", '
@@ -174,6 +168,7 @@ class AdGroupSettingsTest(TestCase):
             'Call to action set to "Call to action", '
             'Pixel retargeting JavaScript set to "alert(\'a\')", '
             'Ad group name set to "AdGroup name", '
+            'Group all RTB sources set to "True", '
             'BlueKai targeting set to "["or", 3, 4]"'
         )
         self.assertHTMLEqual(expected, actual)

@@ -581,16 +581,17 @@ def get_adgroup_running_status(user, ad_group_settings, filtered_sources=None):
     autopilot_state = (ad_group_settings.autopilot_state if ad_group_settings
                        else dash.constants.AdGroupSettingsAutopilotState.INACTIVE)
     running_status = dash.models.AdGroup.get_running_status(ad_group_settings)
-    ad_group_mode = ad_group_settings.ad_group_mode if ad_group_settings else dash.constants.AdGroupSettingsMode.MANUAL
-    price_discovery = (ad_group_settings.price_discovery if ad_group_settings
-                       else dash.constants.AdGroupSettingsPriceDiscovery.MANUAL)
 
-    return get_adgroup_running_status_class(user, autopilot_state, running_status, state,
-                                            ad_group_settings.landing_mode, ad_group_mode, price_discovery)
+    return get_adgroup_running_status_class(
+        user,
+        autopilot_state,
+        running_status,
+        state,
+        ad_group_settings.landing_mode
+    )
 
 
-def get_adgroup_running_status_class(user, autopilot_state, running_status, state,
-                                     is_in_landing, ad_group_mode, price_discovery):
+def get_adgroup_running_status_class(user, autopilot_state, running_status, state, is_in_landing):
     if is_in_landing:
         return dash.constants.InfoboxStatus.LANDING_MODE
 
@@ -605,11 +606,12 @@ def get_adgroup_running_status_class(user, autopilot_state, running_status, stat
         return dash.constants.InfoboxStatus.INACTIVE
 
     if user.has_perm('zemauth.can_set_ad_group_mode'):
-        if ad_group_mode == dash.constants.AdGroupSettingsMode.AUTOMATIC:
-            return dash.constants.InfoboxStatus.AUTOMATIC
-        elif price_discovery == dash.constants.AdGroupSettingsPriceDiscovery.AUTOMATIC:
-            return dash.constants.InfoboxStatus.MANUAL_PRICE_DISCOVERY
-        return dash.constants.InfoboxStatus.MANUAL
+        if autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            return dash.constants.InfoboxStatus.AUTOPILOT
+        elif autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
+            return dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY
+        return dash.constants.InfoboxStatus.ACTIVE
+
     elif autopilot_state != dash.constants.AdGroupSettingsAutopilotState.INACTIVE:
         return dash.constants.InfoboxStatus.AUTOPILOT
 
@@ -652,12 +654,8 @@ def get_entity_delivery_text(status):
         return 'Active - Autopilot mode'
     if status == dash.constants.InfoboxStatus.LANDING_MODE:
         return 'Active - Landing mode'
-    if status == dash.constants.InfoboxStatus.MANUAL:
-        return 'Active - Manual mode'
-    if status == dash.constants.InfoboxStatus.MANUAL_PRICE_DISCOVERY:
-        return 'Active - Manual mode, Price Discovery'
-    if status == dash.constants.InfoboxStatus.AUTOMATIC:
-        return 'Active - Autopilot mode'
+    if status == dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY:
+        return 'Active - Price Discovery'
     if status == dash.constants.InfoboxStatus.STOPPED:
         return 'Paused'
     if status == dash.constants.InfoboxStatus.INACTIVE:

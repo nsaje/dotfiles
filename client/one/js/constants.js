@@ -18,10 +18,6 @@ var constants = {
         ACTIVE: 1,
         INACTIVE: 2,
     },
-    adGroupMode: {
-        AUTOMATIC: 1,
-        MANUAL: 2,
-    },
     priceDiscovery: {
         AUTOMATIC: 1,
         MANUAL: 2,
@@ -36,13 +32,11 @@ var constants = {
     },
     infoboxStatus: {
         ACTIVE: 'active',
+        ACTIVE_PRICE_DISCOVERY: 'active-price-discovery',
         INACTIVE: 'inactive',
         STOPPED: 'stopped',
         LANDING_MODE: 'landing-mode',
         AUTOPILOT: 'autopilot',
-        AUTOMATIC: 'automatic',
-        MANUAL: 'manual',
-        MANUAL_PRICE_DISCOVERY: 'manual-price-discovery',
     },
     publisherStatus: {
         ENABLED: 1,
@@ -766,10 +760,6 @@ var options = {
         help: 'Both Bids and Daily Spend Caps will be optimized on active Media Sources in this Ad Group.',
         value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
     },
-    ],
-    adGroupModes: [
-        {name: 'Automatic', value: constants.adGroupMode.AUTOMATIC},
-        {name: 'Manual', value: constants.adGroupMode.MANUAL},
     ],
     priceDiscoveryOptions: [
         {name: 'Automatic', value: constants.priceDiscovery.AUTOMATIC},

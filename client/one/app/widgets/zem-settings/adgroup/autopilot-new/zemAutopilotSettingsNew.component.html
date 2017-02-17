@@ -1,4 +1,4 @@
-<div class="zem-settings-component__container zem-settings-component__container--ad-group-mode"
+<div class="zem-settings-component__container zem-settings-component__container--autopilot"
      ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_mode')" is-internal="zemauth.can_set_ad_group_mode">
     <div class="zem-settings-component__header">Autopilot</div>
 
@@ -9,14 +9,14 @@
     <div class="form">
         <div class="form__radio">
             <label>
-                <input class="input-radio" id="ad-group-mode-automatic" type="radio" ng-model="$ctrl.entity.settings.adGroupMode" ng-value="{{ $ctrl.constants.adGroupMode.AUTOMATIC }}" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
+                <input class="input-radio" id="autopilot-on" type="radio" ng-model="$ctrl.autopilotEnabled" ng-value="{{ true }}" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
                 <span class="radio-text">
                     ON <span class="form__text">- Let Zemanta One automatically optimize towards your campaign goal.</span>
                 </span>
             </label>
         </div>
 
-        <div class="form__indented" ng-class="{'form--disabled': !$ctrl.isAutomaticMode()}">
+        <div class="form__indented" ng-class="{'form--disabled': !$ctrl.autopilotEnabled}">
             <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.autopilotBudget}">
                 <label class="form__label" for="autopilot-budget">
                     Ad Group's Daily Spend Cap
@@ -26,7 +26,7 @@
                 <div class="prefixed-field prefixed-field--narrow">
                     <span class="prefixed-field__prefix">$</span>
                     <input class="input-text" id="autopilot-budget" type="text" ng-model="$ctrl.entity.settings.autopilotBudget" fraction-size="0"
-                           zem-currency-input ng-disabled="!$ctrl.isAutomaticMode() || $ctrl.isInLanding()">
+                           zem-currency-input ng-disabled="!$ctrl.autopilotEnabled || $ctrl.isInLanding()">
                 </div>
 
                 <div class="message message--error" ng-repeat="error in $ctrl.errors.autopilotBudget" for="autopilot-budget">{{ error }}</div>
@@ -42,7 +42,7 @@
 
         <div class="form__radio">
             <label>
-                <input class="input-radio" id="ad-group-mode-manual" type="radio" ng-model="$ctrl.entity.settings.adGroupMode" ng-value="{{ $ctrl.constants.adGroupMode.MANUAL }}" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
+                <input class="input-radio" id="autopilot-off" type="radio" ng-model="$ctrl.autopilotEnabled" ng-value="{{ false }}" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
                 <span class="radio-text">
                     OFF <span class="form__text">- Manually manage Media Sources.</span>
                 </span>
@@ -59,7 +59,7 @@
                 <div class="form__radio">
                     <label>
                         <input class="input-radio" type="radio" id="rtb-sources-as-group"
-                               ng-model="$ctrl.b1SourcesGroupEnabled" ng-value="true" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
+                               ng-model="$ctrl.b1SourcesGroupEnabled" ng-value="true" ng-disabled="$ctrl.autopilotEnabled || $ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
                         <span class="radio-text">
                             As a group <span class="form__text">- Set one Bid CPC and Daily Spend Cap for all RTB sources together.</span>
                         </span>
@@ -69,7 +69,7 @@
                 <div class="form__radio">
                     <label>
                         <input class="input-radio" type="radio" id="rtb-sources-separately"
-                               ng-model="$ctrl.b1SourcesGroupEnabled" ng-value="false" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
+                               ng-model="$ctrl.b1SourcesGroupEnabled" ng-value="false" ng-disabled="$ctrl.autopilotEnabled || $ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
                         <span class="radio-text">
                             Separately <span class="form__text">- Set Bid CPC and Daily Spend Cap for each of the RTB sources.</span>
                         </span>
@@ -89,7 +89,7 @@
                 <div class="form__radio">
                     <label>
                         <input class="input-radio" type="radio" id="price-discovery-automatic"
-                            ng-model="$ctrl.priceDiscovery" ng-value="{{ $ctrl.constants.priceDiscovery.AUTOMATIC }}" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
+                            ng-model="$ctrl.priceDiscovery" ng-value="{{ true }}" ng-disabled="$ctrl.autopilotEnabled || $ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
                         <span class="radio-text">
                             Automatic <span class="form__text">- Let Zemanta One discover the Bid CPCs in order to hit Daily Spend Caps of Media Sources.</span>
                         </span>
@@ -99,7 +99,7 @@
                 <div class="form__radio">
                     <label>
                         <input class="input-radio" type="radio" id="price-discovery-manual"
-                            ng-model="$ctrl.priceDiscovery" ng-value="{{ $ctrl.constants.priceDiscovery.MANUAL }}" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
+                            ng-model="$ctrl.priceDiscovery" ng-value="{{  false }}" ng-disabled="$ctrl.autopilotEnabled || $ctrl.isInLanding()" ng-change="$ctrl.updateAutopilotSettings()">
                         <span class="radio-text">
                             Manual <span class="form__text">- Take full control of bid CPCs.</span>
                         </span>

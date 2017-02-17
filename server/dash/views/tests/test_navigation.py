@@ -202,7 +202,7 @@ class NavigationDataViewTest(TestCase):
                 'state': 1,
                 'status': 1,
                 'autopilot_state': 2,
-                'active': 'manual',
+                'active': 'active',
                 'landingMode': False,
             }
         })
@@ -287,7 +287,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 1,
                     "autopilot_state": 2,
-                    "active": "manual",
+                    "active": "active",
                     "landingMode": False,
                 }, {
                     "archived": False,
@@ -358,7 +358,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": 1,
                     "status": 1,
                     "autopilot_state": 2,
-                    "active": "manual",
+                    "active": "active",
                     "landingMode": False,
                 }, {
                     "archived": False,

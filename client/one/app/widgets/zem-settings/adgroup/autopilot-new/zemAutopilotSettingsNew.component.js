@@ -1,10 +1,10 @@
-angular.module('one.widgets').component('zemAdGroupModeSettings', {
+angular.module('one.widgets').component('zemAutopilotSettingsNew', {
     bindings: {
         entity: '<',
         errors: '<',
         api: '<',
     },
-    templateUrl: '/app/widgets/zem-settings/adgroup/mode/zemAdGroupModeSettings.component.html',
+    templateUrl: '/app/widgets/zem-settings/adgroup/autopilot-new/zemAutopilotSettingsNew.component.html',
     controller: function ($q, $state, config, zemPermissions) {
         var MSG_ALL_RTB_ENABLED_AD_GROUP_INACTIVE = 'One joint Bid CPC and Daily Spend Cap for will be set for all ' +
             'RTB sources. Please check it in the Media Sources tab before enabling the ad group.';
@@ -25,9 +25,7 @@ angular.module('one.widgets').component('zemAdGroupModeSettings', {
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
         $ctrl.isInLanding = isInLanding;
-        $ctrl.isAutomaticMode = isAutomaticMode;
-        $ctrl.setToManualMode = setToManualMode;
-        $ctrl.updateModeSettings = updateModeSettings;
+        $ctrl.updateAutopilotSettings = updateAutopilotSettings;
 
         $ctrl.getBudgetAutopilotOptimizationGoalText = getBudgetAutopilotOptimizationGoalText;
         $ctrl.getBudgetAutopilotOptimizationCPAGoalText = getBudgetAutopilotOptimizationCPAGoalText;
@@ -35,6 +33,7 @@ angular.module('one.widgets').component('zemAdGroupModeSettings', {
         $ctrl.getPriceDiscoveryPopoverText = getPriceDiscoveryPopoverText;
         $ctrl.getRTBSourcesPopoverText = getRTBSourcesPopoverText;
 
+        $ctrl.autopilotEnabled = null;
         $ctrl.b1SourcesGroupEnabled = null;
         $ctrl.priceDiscovery = null;
 
@@ -45,13 +44,16 @@ angular.module('one.widgets').component('zemAdGroupModeSettings', {
         };
 
         $ctrl.$onChanges = function () {
-            if (!$ctrl.entity || $ctrl.origAdGroupModeSettings) return;
-            $ctrl.origAdGroupModeSettings = {
+            if (!$ctrl.entity || $ctrl.origAutopilotSettings) return;
+            $ctrl.origAutopilotSettings = {
                 b1SourcesGroupEnabled: $ctrl.entity.settings.b1SourcesGroupEnabled,
             };
 
             $ctrl.b1SourcesGroupEnabled = $ctrl.entity.settings.b1SourcesGroupEnabled;
-            $ctrl.priceDiscovery = $ctrl.entity.settings.priceDiscovery;
+            $ctrl.autopilotEnabled =
+                $ctrl.entity.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
+            $ctrl.priceDiscovery = $ctrl.autopilotEnabled ||
+                $ctrl.entity.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC;
         };
 
         function isInLanding () {
@@ -59,25 +61,15 @@ angular.module('one.widgets').component('zemAdGroupModeSettings', {
             return $ctrl.entity.settings.landingMode;
         }
 
-        function isAutomaticMode () {
-            if (!$ctrl.entity) return false;
-            return $ctrl.entity.settings.adGroupMode === constants.adGroupMode.AUTOMATIC;
-        }
+        function updateAutopilotSettings () {
+            $ctrl.entity.settings.b1SourcesGroupEnabled = $ctrl.b1SourcesGroupEnabled;
+            $ctrl.entity.settings.autopilotState = constants.adGroupSettingsAutopilotState.INACTIVE;
 
-        function setToManualMode () {
-            $ctrl.entity.settings.adGroupMode = constants.adGroupMode.MANUAL;
-            $ctrl.updateModeSettings();
-        }
-
-        function updateModeSettings () {
-            if ($ctrl.entity.settings.adGroupMode === constants.adGroupMode.AUTOMATIC) {
+            if ($ctrl.autopilotEnabled) {
                 $ctrl.entity.settings.b1SourcesGroupEnabled = true;
-                $ctrl.entity.settings.priceDiscovery = constants.priceDiscovery.AUTOMATIC;
-            } else {
-                // NOTE: these variables are set on $ctrl so that their values
-                // don't change when switching to autopilot on or off
-                $ctrl.entity.settings.b1SourcesGroupEnabled = $ctrl.b1SourcesGroupEnabled;
-                $ctrl.entity.settings.priceDiscovery = $ctrl.priceDiscovery;
+                $ctrl.entity.settings.autopilotState = constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
+            } else if ($ctrl.priceDiscovery) {
+                $ctrl.entity.settings.autopilotState = constants.adGroupSettingsAutopilotState.ACTIVE_CPC;
             }
         }
 
@@ -102,7 +94,11 @@ angular.module('one.widgets').component('zemAdGroupModeSettings', {
         }
 
         function validate (updateData) {
-            if ($ctrl.origAdGroupModeSettings.b1SourcesGroupEnabled === updateData.settings.b1SourcesGroupEnabled) {
+            if (!zemPermissions.hasPermission('zemauth.can_set_ad_group_mode')) {
+                return $q.resolve();
+            }
+
+            if ($ctrl.origAutopilotSettings.b1SourcesGroupEnabled === updateData.settings.b1SourcesGroupEnabled) {
                 return $q.resolve();
             }
 
@@ -130,7 +126,7 @@ angular.module('one.widgets').component('zemAdGroupModeSettings', {
 
         function getPriceDiscoveryPopoverText () {
             if (!$ctrl.entity) return '';
-            if ($ctrl.entity.settings.adGroupMode === constants.adGroupMode.AUTOMATIC) {
+            if ($ctrl.autopilotEnabled) {
                 return 'You can\'t change Price Discovery while Ad Group is set to Autopilot mode.';
             }
 
@@ -139,7 +135,7 @@ angular.module('one.widgets').component('zemAdGroupModeSettings', {
 
         function getRTBSourcesPopoverText () {
             if (!$ctrl.entity) return '';
-            if ($ctrl.entity.settings.adGroupMode === constants.adGroupMode.AUTOMATIC) {
+            if ($ctrl.autopilotEnabled) {
                 return 'You can\'t manage RTB Sources while Ad Group is set to Autopilot mode.';
             }
 

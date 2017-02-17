@@ -492,9 +492,7 @@ class AdGroupsTest(RESTAPITest):
         dayparting={},
         whitelist_publisher_groups=[153],
         blacklist_publisher_groups=[154],
-        price_discovery=constants.AdGroupSettingsPriceDiscovery.MANUAL,
-        ad_group_mode=constants.AdGroupSettingsMode.MANUAL,
-            ):
+    ):
         representation = {
             'id': str(id),
             'campaignId': str(campaign_id),
@@ -531,8 +529,6 @@ class AdGroupsTest(RESTAPITest):
                 'dailyBudget': autopilot_daily_budget,
             },
             'dayparting': dayparting,
-            'adGroupMode': constants.AdGroupSettingsMode.get_name(ad_group_mode),
-            'priceDiscovery': constants.AdGroupSettingsPriceDiscovery.get_name(price_discovery),
         }
 
         return normalize(representation)
@@ -563,16 +559,6 @@ class AdGroupsTest(RESTAPITest):
             whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
             blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
         )
-
-        if 'state' not in adgroup['autopilot']:
-            del expected['autopilot']['state']
-
-        if 'adGroupMode' not in adgroup:
-            del expected['adGroupMode']
-
-        if 'priceDiscovery' not in adgroup:
-            del expected['priceDiscovery']
-
         self.assertEqual(expected, adgroup)
 
     def test_adgroups_list(self):
@@ -601,8 +587,6 @@ class AdGroupsTest(RESTAPITest):
             data=test_adgroup, format='json')
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json['data'])
-        del test_adgroup['priceDiscovery']
-        del test_adgroup['adGroupMode']
         self.assertEqual(resp_json['data'], test_adgroup)
 
     def test_adgroups_put_state(self):

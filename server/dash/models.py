@@ -2379,8 +2379,6 @@ class AdGroupSettings(SettingsBase):
         'b1_sources_group_state',
         'dayparting',
         'max_cpm',
-        'ad_group_mode',
-        'price_discovery',
     ]
     history_fields = list(_settings_fields)
 
@@ -2589,8 +2587,6 @@ class AdGroupSettings(SettingsBase):
             'b1_sources_group_daily_budget': 'Daily budget for all RTB sources',
             'b1_sources_group_cpc_cc': 'Bid CPC for all RTB sources',
             'b1_sources_group_state': 'State of all RTB sources',
-            'ad_group_mode': 'Ad group mode',
-            'price_discovery': 'Price discovery',
         }
 
         return NAMES[prop_name]
@@ -2657,10 +2653,6 @@ class AdGroupSettings(SettingsBase):
             value = lc_helper.default_currency(Decimal(value))
         elif prop_name == 'b1_sources_group_cpc_cc' and value is not None:
             value = lc_helper.default_currency(Decimal(value), places=3)
-        elif prop_name == 'ad_group_mode':
-            value = constants.AdGroupSettingsMode.get_text(value)
-        elif prop_name == 'price_discovery':
-            value = constants.AdGroupSettingsPriceDiscovery.get_text(value)
 
         return value
 
@@ -2684,13 +2676,6 @@ class AdGroupSettings(SettingsBase):
             return 'Created settings'
 
         excluded_keys = set()
-        if user.has_perm('zemauth.can_set_ad_group_mode'):
-            excluded_keys.add('autopilot_state')
-            if changes.get('ad_group_mode') == constants.AdGroupSettingsMode.AUTOMATIC:
-                excluded_keys.update(['b1_sources_group_enabled', 'price_discovery'])
-        else:
-            excluded_keys.update(['ad_group_mode', 'price_discovery'])
-
         if not user.has_perm('zemauth.can_view_retargeting_settings'):
             excluded_keys.update(['retargeting_ad_groups', 'exclusion_retargeting_ad_groups'])
 
@@ -2709,21 +2694,6 @@ class AdGroupSettings(SettingsBase):
         # Strip the first '?' as we don't want to send it as a part of query
         # string
         return self.tracking_code.lstrip('?')
-
-    @property
-    def ad_group_mode(self):
-        if self.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            return constants.AdGroupSettingsMode.AUTOMATIC
-        return constants.AdGroupSettingsMode.MANUAL
-
-    @property
-    def price_discovery(self):
-        if self.autopilot_state in (
-                constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
-                constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
-        ):
-            return constants.AdGroupSettingsPriceDiscovery.AUTOMATIC
-        return constants.AdGroupSettingsPriceDiscovery.MANUAL
 
     def save(self,
              request,

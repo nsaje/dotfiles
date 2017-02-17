@@ -45,6 +45,7 @@ class AdGroupSettingsTest(TestCase):
                 'name': 'Test ad group name',
                 'id': 1,
                 'campaign_id': '1',
+                'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
                 'autopilot_daily_budget': '150.0000',
                 'retargeting_ad_groups': [2],
                 'exclusion_retargeting_ad_groups': [9],
@@ -166,6 +167,7 @@ class AdGroupSettingsTest(TestCase):
                     'state': 2,
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['GB', 'US', 'CA'],
+                    'autopilot_state': constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
                     'autopilot_daily_budget': '50.00',
                     'retargeting_ad_groups': [3],
                     'exclusion_retargeting_ad_groups': [4],
@@ -188,8 +190,6 @@ class AdGroupSettingsTest(TestCase):
                     'whitelist_publisher_groups': [],
                     'blacklist_publisher_groups': [],
                     'landing_mode': False,
-                    'ad_group_mode': constants.AdGroupSettingsMode.AUTOMATIC,
-                    'price_discovery': constants.AdGroupSettingsPriceDiscovery.AUTOMATIC,
                 },
                 'warnings': {}
             },
@@ -332,6 +332,7 @@ class AdGroupSettingsTest(TestCase):
                         'exclusion_audience_targeting': [4],
                         'bluekai_targeting': ['and', 'bluekai:123', ['or', 'liveramp:123', 'outbrain:321']],
                         'tracking_code': 'def=123',
+                        'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
                         'autopilot_min_budget': '10',
                         'autopilot_optimization_goal': None,
                         'notes': 'Some note',
@@ -347,8 +348,6 @@ class AdGroupSettingsTest(TestCase):
                         'whitelist_publisher_groups': [1],
                         'blacklist_publisher_groups': [1],
                         'landing_mode': False,
-                        'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
-                        'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
                     }
                 },
                 'success': True
@@ -422,6 +421,7 @@ class AdGroupSettingsTest(TestCase):
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
                         'tracking_code': 'def=123',
+                        'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
                         'autopilot_min_budget': '10',
                         'autopilot_optimization_goal': None,
                         'notes': 'Some note',
@@ -440,8 +440,6 @@ class AdGroupSettingsTest(TestCase):
                         'whitelist_publisher_groups': [],  # no permission to set
                         'blacklist_publisher_groups': [],  # no permission to set
                         'landing_mode': False,
-                        'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
-                        'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
                     }
                 },
                 'success': True
@@ -588,6 +586,7 @@ class AdGroupSettingsTest(TestCase):
                         'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
+                        'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
                         'autopilot_daily_budget': '0.00',
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
@@ -610,8 +609,6 @@ class AdGroupSettingsTest(TestCase):
                         'whitelist_publisher_groups': [1],
                         'blacklist_publisher_groups': [1],
                         'landing_mode': False,
-                        'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
-                        'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
                     }
                 },
                 'success': True
@@ -677,6 +674,7 @@ class AdGroupSettingsTest(TestCase):
                         'state': 2,
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
+                        'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
                         'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
@@ -699,8 +697,6 @@ class AdGroupSettingsTest(TestCase):
                         'whitelist_publisher_groups': [],  # no permission to set
                         'blacklist_publisher_groups': [],  # no permission to set
                         'landing_mode': False,
-                        'ad_group_mode': constants.AdGroupSettingsMode.MANUAL,
-                        'price_discovery': constants.AdGroupSettingsPriceDiscovery.MANUAL,
                     }
                 },
                 'success': True
@@ -834,7 +830,7 @@ class AdGroupSettingsTest(TestCase):
             self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
 
-    def test_validate_ad_group_mode_to_automatic_wo_all_rtb_enabled(self):
+    def test_validate_autopilot_settings_to_full_ap_wo_all_rtb_enabled(self):
         view = agency.AdGroupSettings()
         current_settings = models.AdGroupSettings()
         new_settings = models.AdGroupSettings()
@@ -851,11 +847,11 @@ class AdGroupSettingsTest(TestCase):
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
 
         with self.assertRaises(exc.ValidationError):
-            view.validate_ad_group_mode(request, current_settings, new_settings)
+            view.validate_autopilot_settings(request, current_settings, new_settings)
 
         new_settings.state = constants.AdGroupSettingsState.INACTIVE
         with self.assertRaises(exc.ValidationError):
-            view.validate_ad_group_mode(request, current_settings, new_settings)
+            view.validate_autopilot_settings(request, current_settings, new_settings)
 
     def test_validate_all_rtb_state_old(self):
         view = agency.AdGroupSettings()

@@ -59,26 +59,6 @@ class AdGroupSourceSettingsState(ConstantBase):
     }
 
 
-class AdGroupSettingsMode(ConstantBase):
-    AUTOMATIC = 1
-    MANUAL = 2
-
-    _VALUES = {
-        AUTOMATIC: 'Automatic',
-        MANUAL: 'Manual',
-    }
-
-
-class AdGroupSettingsPriceDiscovery(ConstantBase):
-    AUTOMATIC = 1
-    MANUAL = 2
-
-    _VALUES = {
-        AUTOMATIC: 'Automatic',
-        MANUAL: 'Manual',
-    }
-
-
 class ExportStatus(ConstantBase):
     # Generalized constant used for export output formatting. It handles conversion to text for various state classes.
     ACTIVE = 1
@@ -184,23 +164,19 @@ class InfoboxLevel(ConstantBase):
 
 class InfoboxStatus(ConstantBase):
     ACTIVE = 'active'
+    ACTIVE_PRICE_DISCOVERY = 'active-price-discovery'
     INACTIVE = 'inactive'
     STOPPED = 'stopped'
     LANDING_MODE = 'landing-mode'
     AUTOPILOT = 'autopilot'
-    AUTOMATIC = 'automatic'
-    MANUAL = 'manual'
-    MANUAL_PRICE_DISCOVERY = 'manual-price-discovery'
 
     _VALUES = {
         ACTIVE: 'Active',
+        ACTIVE_PRICE_DISCOVERY: 'Active - Price Discovery',
         INACTIVE: 'Inactive',
         STOPPED: 'Stopped',
         LANDING_MODE: 'Landing Mode',
         AUTOPILOT: 'Autopilot',
-        AUTOMATIC: 'Automatic',
-        MANUAL: 'Manual',
-        MANUAL_PRICE_DISCOVERY: 'Manual, Price Discovery'
     }
 
 

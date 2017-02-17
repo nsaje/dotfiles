@@ -285,20 +285,6 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
         empty_value=None
     )
 
-    ad_group_mode = forms.TypedChoiceField(
-        required=False,
-        choices=constants.AdGroupSettingsMode.get_choices(),
-        coerce=int,
-        empty_value=None,
-    )
-
-    price_discovery = forms.TypedChoiceField(
-        required=False,
-        choices=constants.AdGroupSettingsPriceDiscovery.get_choices(),
-        coerce=int,
-        empty_value=None,
-    )
-
     def __init__(self, ad_group, user, *args, **kwargs):
         self.ad_group = ad_group
         self.account = ad_group.campaign.account
@@ -318,9 +304,7 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, forms.Form):
     def _clean_autopilot_daily_budget(self, cleaned_data):
         budget = cleaned_data.get('autopilot_daily_budget', 0)
         ap_state = cleaned_data.get('autopilot_state')
-        ag_mode = cleaned_data.get('ad_group_mode')
-        budget_ap_is_active = ap_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or\
-            ag_mode == constants.AdGroupSettingsMode.AUTOMATIC
+        budget_ap_is_active = ap_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         budget_insufficient = budget < autopilot_budgets.get_adgroup_minimum_daily_budget(
             self.ad_group)
         if budget_ap_is_active and budget_insufficient:

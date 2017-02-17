@@ -106,7 +106,7 @@ class AdGroupSettings(api_common.BaseApiView):
         campaign_settings = ad_group.campaign.get_current_settings()
 
         self.validate_state_change(ad_group, current_settings, new_settings, campaign_settings)
-        self.validate_ad_group_mode(request, current_settings, new_settings)
+        self.validate_autopilot_settings(request, current_settings, new_settings)
         self.validate_all_rtb_state(request, current_settings, new_settings)
         self.validate_yahoo_desktop_targeting(ad_group, current_settings, new_settings)
         self.validate_all_rtb_campaign_stop(ad_group, current_settings, new_settings, campaign_settings)
@@ -164,15 +164,15 @@ class AdGroupSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def validate_ad_group_mode(self, request, settings, new_settings):
+    def validate_autopilot_settings(self, request, settings, new_settings):
         if not request.user.has_perm('zemauth.can_set_ad_group_mode'):
             return
 
-        if new_settings.ad_group_mode == constants.AdGroupSettingsMode.AUTOMATIC and\
+        if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
            not new_settings.b1_sources_group_enabled:
-                msg = 'To set Ad Group Mode to Automatic, RTB Sources have to be managed as a group.'
+                msg = 'To enable Daily Cap Autopilot, RTB Sources have to be managed as a group.'
                 raise exc.ValidationError(errors={
-                    'ad_group_mode': msg
+                    'autopilot_state': msg
                 })
 
     def validate_all_rtb_state(self, request, settings, new_settings):
@@ -363,6 +363,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'exclusion_audience_targeting': settings.exclusion_audience_targeting,
             'redirect_pixel_urls': settings.redirect_pixel_urls,
             'redirect_javascript': settings.redirect_javascript,
+            'autopilot_state': settings.autopilot_state,
             'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group),
             'autopilot_optimization_goal': primary_campaign_goal.type if primary_campaign_goal else None,
             'dayparting': settings.dayparting,
@@ -374,12 +375,6 @@ class AdGroupSettings(api_common.BaseApiView):
             'blacklist_publisher_groups': settings.blacklist_publisher_groups,
             'landing_mode': settings.landing_mode,
         }
-
-        if not request.user.has_perm('zemauth.can_set_ad_group_mode'):
-            result['autopilot_state'] = settings.autopilot_state
-        else:
-            result['ad_group_mode'] = settings.ad_group_mode
-            result['price_discovery'] = settings.price_discovery
 
         return result
 
@@ -426,30 +421,11 @@ class AdGroupSettings(api_common.BaseApiView):
         if user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc') and settings.b1_sources_group_enabled:
             settings.b1_sources_group_cpc_cc = resource['b1_sources_group_cpc_cc']
 
-        self._set_ad_group_mode_settings(user, settings, resource)
         settings.bluekai_targeting = resource['bluekai_targeting']
 
         if user.has_perm('zemauth.can_set_white_blacklist_publisher_groups'):
             settings.whitelist_publisher_groups = resource['whitelist_publisher_groups']
             settings.blacklist_publisher_groups = resource['blacklist_publisher_groups']
-
-    def _set_ad_group_mode_settings(self, user, settings, resource):
-        if settings.landing_mode:
-            return
-
-        if not user.has_perm('zemauth.can_set_ad_group_mode'):
-            return
-
-        if resource['ad_group_mode'] == constants.AdGroupSettingsMode.AUTOMATIC:
-            settings.b1_sources_group_enabled = True
-            settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-            settings.autopilot_daily_budget = resource['autopilot_daily_budget']
-        elif resource['ad_group_mode'] == constants.AdGroupSettingsMode.MANUAL:
-            settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-
-        if settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
-           resource['price_discovery'] == constants.AdGroupSettingsPriceDiscovery.AUTOMATIC:
-            settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
 
     def get_default_settings_dict(self, ad_group):
         settings = ad_group.campaign.get_current_settings()

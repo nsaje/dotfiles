@@ -9,10 +9,6 @@ def get_ad_group_dict(user, ad_group, ad_group_settings, campaign_settings):
     is_in_landing = campaign_settings.landing_mode if campaign_settings else False
     autopilot_state = (ad_group_settings.autopilot_state if ad_group_settings
                        else constants.AdGroupSettingsAutopilotState.INACTIVE)
-    ad_group_mode = (ad_group_settings.ad_group_mode if ad_group_settings
-                     else constants.AdGroupSettingsMode.MANUAL)
-    price_discovery = (ad_group_settings.price_discovery if ad_group_settings
-                       else constants.AdGroupSettingsPriceDiscovery.MANUAL)
     ad_group_dict = {
         'id': ad_group.id,
         'name': ad_group.name,
@@ -20,8 +16,8 @@ def get_ad_group_dict(user, ad_group, ad_group_settings, campaign_settings):
         'state': state,
         'archived': ad_group_settings.archived if ad_group_settings else False,
         'autopilot_state': autopilot_state,
-        'active': infobox_helpers.get_adgroup_running_status_class(user, autopilot_state, running_status, state,
-                                                                   is_in_landing, ad_group_mode, price_discovery),
+        'active': infobox_helpers.get_adgroup_running_status_class(
+            user, autopilot_state, running_status, state, is_in_landing),
         'landingMode': ad_group_settings.landing_mode if ad_group_settings else False,
     }
     return ad_group_dict
