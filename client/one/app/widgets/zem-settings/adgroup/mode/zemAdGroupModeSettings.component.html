@@ -1,31 +1,34 @@
 <div class="zem-settings-component__container zem-settings-component__container--ad-group-mode"
      ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_mode')" is-internal="zemauth.can_set_ad_group_mode">
-    <div class="zem-settings-component__header">Ad Group Mode</div>
-    <div class="zem-settings-component__description">Choose how you want to manage your ad group.</div>
+    <div class="zem-settings-component__header">Autopilot</div>
+
     <div class="message message--warning message--with-icon m-b-s" ng-if="$ctrl.isInLanding()">
-        You can’t change ad group mode while campaign is in landing mode.
+        You can’t change Autopilot setting while the Campaign is in landing mode.
     </div>
+
     <div class="form">
         <div class="form__radio">
             <label>
                 <input class="input-radio" id="ad-group-mode-automatic" type="radio" ng-model="$ctrl.entity.settings.adGroupMode" ng-value="{{ $ctrl.constants.adGroupMode.AUTOMATIC }}" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
                 <span class="radio-text">
-                    Automatic<br>
-                    <span class="form__text">Let Zemanta One automatically adjust Bid CPCs and Daily Spend Caps in order to optimize towards your campaign goal.</span>
+                    ON <span class="form__text">- Let Zemanta One automatically optimize towards your campaign goal.</span>
                 </span>
             </label>
         </div>
-        <div class="form__indented" ng-if="$ctrl.entity.settings.adGroupMode == $ctrl.constants.adGroupMode.AUTOMATIC">
+
+        <div class="form__indented" ng-class="{'form--disabled': !$ctrl.isAutomaticMode()}">
             <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.autopilotBudget}">
                 <label class="form__label" for="autopilot-budget">
                     Ad Group's Daily Spend Cap
                     <zem-help-popover content="Amount of budget Autopilot can operate with on this Ad Group every day." placement="top"></zem-help-popover>
                 </label>
+
                 <div class="prefixed-field prefixed-field--narrow">
                     <span class="prefixed-field__prefix">$</span>
                     <input class="input-text" id="autopilot-budget" type="text" ng-model="$ctrl.entity.settings.autopilotBudget" fraction-size="0"
-                           zem-currency-input ng-disabled="$ctrl.isInLanding()">
+                           zem-currency-input ng-disabled="!$ctrl.isAutomaticMode() || $ctrl.isInLanding()">
                 </div>
+
                 <div class="message message--error" ng-repeat="error in $ctrl.errors.autopilotBudget" for="autopilot-budget">{{ error }}</div>
             </div>
 
@@ -36,80 +39,74 @@
                 <i>{{$ctrl.getBudgetAutopilotOptimizationCPAGoalText()}}</i>
             </div>
         </div>
+
         <div class="form__radio">
             <label>
                 <input class="input-radio" id="ad-group-mode-manual" type="radio" ng-model="$ctrl.entity.settings.adGroupMode" ng-value="{{ $ctrl.constants.adGroupMode.MANUAL }}" ng-disabled="$ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
                 <span class="radio-text">
-                    Manual<br>
-                    <span class="form__text">Manually set Bid CPCs and Daily Spend Caps across all media sources.</span>
+                    OFF <span class="form__text">- Manually manage Media Sources.</span>
                 </span>
             </label>
         </div>
-    </div>
-</div>
 
-<div class="zem-settings-component__container"
-     ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_mode')" ng-class="{'zem-settings-component__container--disabled': $ctrl.isAutomaticMode()}"
-     is-internal="zemauth.can_set_ad_group_mode">
-    <div class="zem-settings-component__header">Manage RTB Sources</div>
-    <div class="zem-settings-component__description">Choose how you would like to manage Daily Spend Caps of RTB sources.</div>
-    <div class="message message--warning message--with-icon m-b-s" ng-if="$ctrl.isInLanding()">
-        You can’t manage RTB Sources while ad group is in landing mode.
-    </div>
-    <div class="message message--warning message--with-icon m-b-s" ng-if="$ctrl.isAutomaticMode() && !$ctrl.isInLanding()">
-        You can’t manage RTB Sources while ad group is set to Automatic mode. <a href ng-click="$ctrl.setToManualMode()">Set it to manual.</a>
-    </div>
-    <div class="form__radio">
-        <label>
-            <input class="input-radio" type="radio" id="rtb-sources-as-group"
-                   ng-model="$ctrl.entity.settings.b1SourcesGroupEnabled" ng-value="true" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()">
-            <span class="radio-text">
-                As a group<br>
-                <span class="form__text">Set one Daily Spend Cap for all RTB sources together.</span>
-            </span>
-        </label>
-    </div>
-    <div class="form__radio">
-        <label>
-            <input class="input-radio" type="radio" id="rtb-sources-separately"
-                    ng-model="$ctrl.entity.settings.b1SourcesGroupEnabled" ng-value="false" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()">
-            <span class="radio-text">
-                Separately<br>
-                <span class="form__text">Set Daily Spend Cap for each of the RTB sources.</span>
-            </span>
-        </label>
-    </div>
-</div>
+        <div class="form__indented">
+            <div class="form__title">Manage RTB sources:</div>
 
-<div class="zem-settings-component__container"
-     ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_mode')" ng-class="{'zem-settings-component__container--disabled': $ctrl.isAutomaticMode()}"
-     is-internal="zemauth.can_set_ad_group_mode">
-    <div class="zem-settings-component__header">Price Discovery</div>
-    <div class="zem-settings-component__description">Choose how you would like to manage Bid CPCs of media sources.</div>
-    <div class="message message--warning message--with-icon m-b-s" ng-if="$ctrl.isInLanding()">
-        You can’t change price discovery while campaign is in landing mode.
-    </div>
-    <div class="message message--warning message--with-icon m-b-s" ng-if="$ctrl.isAutomaticMode() && !$ctrl.isInLanding()">
-        You can’t change price discovery while ad group is set to Automatic mode. <a href ng-click="$ctrl.setToManualMode()">Set it to manual.</a>
-    </div>
-    <div class="form__radio">
-        <label>
-            <input class="input-radio" type="radio" id="price-discovery-automatic"
-                ng-model="$ctrl.entity.settings.priceDiscovery" ng-value="{{ $ctrl.constants.priceDiscovery.AUTOMATIC }}" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()">
-            <span class="radio-text">
-                Automatic<br>
-                <span class="form__text">Let Zemanta One set the bid CPCs that help you reach your goal.</span>
-            </span>
-        </label>
-    </div>
-    <div class="form__radio">
-        <label>
-            <input class="input-radio" type="radio" id="price-discovery-manual"
-                    ng-model="$ctrl.entity.settings.priceDiscovery" ng-value="{{ $ctrl.constants.priceDiscovery.MANUAL }}" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()">
-            <span class="radio-text">
-                Manual<br>
-                <span class="form__text">Take full control of bid CPCs.</span>
-            </span>
-        </label>
+            <div zem-lazy-popover-html-unsafe="{{ $ctrl.getRTBSourcesPopoverText() }}"
+                zem-lazy-popover-placement="top"
+                zem-lazy-popover-append-to-body="true"
+                zem-lazy-popover-animation-class="fade">
+                <div class="form__radio">
+                    <label>
+                        <input class="input-radio" type="radio" id="rtb-sources-as-group"
+                               ng-model="$ctrl.b1SourcesGroupEnabled" ng-value="true" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
+                        <span class="radio-text">
+                            As a group <span class="form__text">- Set one Bid CPC and Daily Spend Cap for all RTB sources together.</span>
+                        </span>
+                    </label>
+                </div>
+
+                <div class="form__radio">
+                    <label>
+                        <input class="input-radio" type="radio" id="rtb-sources-separately"
+                               ng-model="$ctrl.b1SourcesGroupEnabled" ng-value="false" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
+                        <span class="radio-text">
+                            Separately <span class="form__text">- Set Bid CPC and Daily Spend Cap for each of the RTB sources.</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="form__title">Price Discovery:</div>
+
+            <div zem-lazy-popover-html-unsafe="{{ $ctrl.getPriceDiscoveryPopoverText() }}"
+                zem-lazy-popover-placement="top"
+                zem-lazy-popover-append-to-body="true"
+                zem-lazy-popover-animation-class="fade">
+
+                <div class="form__radio">
+                    <label>
+                        <input class="input-radio" type="radio" id="price-discovery-automatic"
+                            ng-model="$ctrl.priceDiscovery" ng-value="{{ $ctrl.constants.priceDiscovery.AUTOMATIC }}" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
+                        <span class="radio-text">
+                            Automatic <span class="form__text">- Let Zemanta One discover the Bid CPCs in order to hit Daily Spend Caps of Media Sources.</span>
+                        </span>
+                    </label>
+                </div>
+
+                <div class="form__radio">
+                    <label>
+                        <input class="input-radio" type="radio" id="price-discovery-manual"
+                            ng-model="$ctrl.priceDiscovery" ng-value="{{ $ctrl.constants.priceDiscovery.MANUAL }}" ng-disabled="$ctrl.isAutomaticMode() || $ctrl.isInLanding()" ng-change="$ctrl.updateModeSettings()">
+                        <span class="radio-text">
+                            Manual <span class="form__text">- Take full control of bid CPCs.</span>
+                        </span>
+                    </label>
+                </div>
+
+            </div>
+        </div>
     </div>
 </div>

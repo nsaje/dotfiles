@@ -657,7 +657,7 @@ def get_entity_delivery_text(status):
     if status == dash.constants.InfoboxStatus.MANUAL_PRICE_DISCOVERY:
         return 'Active - Manual mode, Price Discovery'
     if status == dash.constants.InfoboxStatus.AUTOMATIC:
-        return 'Active - Automatic mode'
+        return 'Active - Autopilot mode'
     if status == dash.constants.InfoboxStatus.STOPPED:
         return 'Paused'
     if status == dash.constants.InfoboxStatus.INACTIVE:

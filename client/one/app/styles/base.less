@@ -1336,10 +1336,72 @@ h3 {
 .form__indented {
     margin: 5px 0 20px 22px;
     border-left: 3px solid @light-gray;
-    padding-left: 20px;
+    padding: 5px 0 5px 20px;
 
     .form__group:first-child {
         margin-top: 0px;
+    }
+
+    .form__title {
+        color: @text-color;
+        font-size: @default-font-size;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+
+    .form__group {
+        .message,
+        .form__text,
+        .form__text--small {
+            margin-left: 100-@form-input-width + 2%;
+        }
+
+        .form__text,
+        .form__text--small {
+            width: @form-input-width - 2%;
+        }
+
+        .message--error,
+        .form__text,
+        .form__text--small {
+            margin-left: 100-@form-input-width + 2%;
+        }
+
+        .button--full-width {
+            width: @form-input-width - 2%;
+        }
+
+        .form__label {
+            width: 100-2-@form-input-width + 2%;
+        }
+
+        .textarea,
+        .input-text,
+        .multiselect,
+        .form__information,
+        .prefixed-field,
+        .postfixed-field {
+            width: @form-input-width - 2%;
+        }
+
+        .textarea {
+            max-width: @form-input-width - 2%;
+        }
+
+        .prefixed-field,
+        .postfixed-field {
+            .input-text {
+                width: 100%;
+            }
+        }
+
+        .form__checkbox {
+            width: @form-input-width - 2%;
+        }
+
+        .form__radio {
+            width: @form-input-width - 2%;
+        }
     }
 }
 
@@ -1377,6 +1439,10 @@ h3 {
             }
         }
     }
+}
+
+.form--disabled {
+    filter: grayscale(100%);
 }
 
 ///////////////////////////
