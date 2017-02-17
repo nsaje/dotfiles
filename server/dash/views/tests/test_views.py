@@ -1567,7 +1567,7 @@ class PublishersBlacklistStatusTest(TestCase):
                 "publishers_not_selected": []
             }
             res = self._post_publisher_blacklist(1, payload)
-            self.assertTrue(res['success'])
+            self.assertFalse(res['success'])  # the new endpoint does not allow such input
 
     @patch('reports.redshift.get_cursor')
     def test_post_outbrain_manual(self, cursor):

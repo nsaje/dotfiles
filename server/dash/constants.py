@@ -219,7 +219,7 @@ class PublisherBlacklistLevel(ConstantBase):
     }
 
     _VALUES = {
-        ADGROUP: 'Adgroup',
+        ADGROUP: 'Ad group',
         CAMPAIGN: 'Campaign',
         ACCOUNT: 'Account',
         GLOBAL: 'Global'
@@ -1667,6 +1667,7 @@ class EmailTemplateType(ConstantBase):
     GA_SETUP_INSTRUCTIONS = 19
     ASYNC_REPORT_RESULTS = 20
     DEPLETING_CREDITS = 21
+    ACCOUNT_CHANGE = 22
     WEEKLY_CLIENT_REPORT = 23
     PACING_NOTIFICATION = 24
 

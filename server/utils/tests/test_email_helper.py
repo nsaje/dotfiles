@@ -167,6 +167,28 @@ class EmailHelperTestCase(TestCase):
 
         self.assertEqual(len(mail.outbox), 1)
 
+    def test_send_account_notification_email(self):
+        account = dash_models.Account()
+        account.save(self.request)
+
+        account_manager = User.objects.create_user('accountmanager@user.com')
+        account_settings = dash_models.AccountSettings(
+            account=account,
+            default_account_manager=account_manager
+        )
+        account_settings.save(self.request)
+
+        email_helper.send_account_notification_email(account, self.request, 'Something changed, yo')
+
+        subject = 'Settings change - account '
+        body = 'Hi account manager of account \n\nWe\'d like to notify you that test@user.com has made the following change in the settings of the account :\n\n- Something changed, yo.\n\nPlease check https://testserver/accounts/{}/history for further details.\n\nYours truly,\nZemanta\n    '.format(account.pk)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, subject)
+        self.assertEqual(mail.outbox[0].body, body)
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
+        self.assertEqual(mail.outbox[0].to, [account_manager.email])
+
     def test_send_async_report_email(self):
         user = User.objects.create_user('manager@user.com')
 
@@ -377,6 +399,21 @@ Following accounts have depleting credit line items:
 Yours truly,
 Zemanta
     ''')
+
+    @patch('utils.email_helper.send_account_notification_email')
+    def test_send_obj_notification_email_account(self, mock_email):
+        email_helper.send_obj_changes_notification_email(dash_models.Account(), self.request, "")
+        self.assertTrue(mock_email.called)
+
+    @patch('utils.email_helper.send_campaign_notification_email')
+    def test_send_obj_notification_email_campaign(self, mock_email):
+        email_helper.send_obj_changes_notification_email(dash_models.Campaign(), self.request, "")
+        self.assertTrue(mock_email.called)
+
+    @patch('utils.email_helper.send_ad_group_notification_email')
+    def test_send_obj_notification_email_account(self, mock_email):
+        email_helper.send_obj_changes_notification_email(dash_models.AdGroup(), self.request, "")
+        self.assertTrue(mock_email.called)
 
 
 class FormatChangesTextTest(TestCase):

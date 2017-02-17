@@ -1743,18 +1743,26 @@ class PublisherTargetingForm(forms.Form):
     campaign = forms.ModelChoiceField(queryset=None, required=False)
     account = forms.ModelChoiceField(queryset=None, required=False)
 
+    enforce_cpc = forms.BooleanField(required=False)
+
+    # bulk selection fields
+    start_date = forms.DateField(required=False)
+    end_date = forms.DateField(required=False)
+    select_all = forms.BooleanField(required=False)
+    entries_not_selected = forms.Field(required=False)
+    filtered_sources = TypedMultipleAnyChoiceField(required=False, coerce=str)
+
     def __init__(self, user, *args, **kwargs):
         super(PublisherTargetingForm, self).__init__(*args, **kwargs)
+        self.user = user
 
         self.fields['ad_group'].queryset = models.AdGroup.objects.all().filter_by_user(user)
         self.fields['campaign'].queryset = models.Campaign.objects.all().filter_by_user(user)
         self.fields['account'].queryset = models.Account.objects.all().filter_by_user(user)
 
-    def clean_entries(self):
-        entries = self.cleaned_data['entries']
-
+    def _clean_entries(self, entries):
         clean_entries = []
-        for entry in entries:
+        for entry in entries if entries else []:
             entry_form = PublisherGroupEntryForm(entry)
             if not entry_form.is_valid():
                 for key, error in entry_form.errors.iteritems():
@@ -1763,6 +1771,20 @@ class PublisherTargetingForm(forms.Form):
             clean_entries.append(entry_form.cleaned_data)
 
         return clean_entries
+
+    def clean_entries(self):
+        entries = self.cleaned_data['entries']
+        return self._clean_entries(entries)
+
+    def clean_entries_not_selected(self):
+        entries = self.cleaned_data['entries_not_selected']
+        return self._clean_entries(entries)
+
+    def clean_select_all(self):
+        if self.cleaned_data['select_all'] and not (
+                self.cleaned_data.get('start_date') and self.cleaned_data.get('end_date')):
+            raise forms.ValidationError('Please specify start and end date when selecting all publishers')
+        return self.cleaned_data['select_all']
 
     def clean(self):
         provided_objs = [
@@ -1787,3 +1809,6 @@ class PublisherTargetingForm(forms.Form):
         elif self.cleaned_data.get('account'):
             return self.cleaned_data['account']
         return None
+
+    def clean_filtered_sources(self):
+        return helpers.get_filtered_sources(self.user, ','.join(self.cleaned_data.get('filtered_sources')))

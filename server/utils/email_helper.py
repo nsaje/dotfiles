@@ -18,7 +18,6 @@ import analytics.client_report
 
 from utils import pagerduty_helper
 from utils import dates_helper
-from utils import url_helper
 
 
 logger = logging.getLogger(__name__)
@@ -102,6 +101,17 @@ def send_pacing_notification_email(campaign, emails, pacing, alert):
     )
 
 
+def send_obj_changes_notification_email(obj, request, changes_text):
+    if isinstance(obj, dash.models.AdGroup):
+        send_ad_group_notification_email(obj, request, changes_text)
+    elif isinstance(obj, dash.models.Campaign):
+        send_campaign_notification_email(obj, request, changes_text)
+    elif isinstance(obj, dash.models.Account):
+        send_account_notification_email(obj, request, changes_text)
+    else:
+        raise Exception('Object {} (pk: {}) does not have a notification email method set'.format(obj, obj.pk))
+
+
 def send_ad_group_notification_email(ad_group, request, changes_text):
     if not should_send_notification_mail(ad_group.campaign, request.user, request):
         return
@@ -146,6 +156,26 @@ def send_campaign_notification_email(campaign, request, changes_text):
         return
     send_notification_mail(
         emails, subject, body, campaign.get_campaign_url(request))
+
+
+def send_account_notification_email(account, request, changes_text):
+    if not should_send_account_notification_mail(account, request.user, request):
+        return
+
+    link_url = request.build_absolute_uri('/accounts/{}/history'.format(account.pk))
+    link_url = link_url.replace('http://', 'https://')
+
+    args = {
+        'user': request.user,
+        'account': account,
+        'link_url': link_url,
+        'changes_text': _format_changes_text(changes_text)
+    }
+
+    subject, body, _ = format_email(dash.constants.EmailTemplateType.ACCOUNT_CHANGE, **args)
+    send_notification_mail(
+        [account.get_current_settings().default_account_manager.email],
+        subject, body, account.get_account_url(request))
 
 
 def send_budget_notification_email(campaign, request, changes_text):

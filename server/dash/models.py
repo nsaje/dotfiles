@@ -618,6 +618,9 @@ class Account(models.Model):
     def get_default_whitelist_name(self):
         return u"Default whitelist for account {}({})".format(self.name, self.id)
 
+    def get_publisher_level(self):
+        return constants.PublisherBlacklistLevel.ACCOUNT
+
     def get_account(self):
         return self
 
@@ -860,6 +863,9 @@ class Campaign(models.Model, PermissionMixin):
 
     def get_default_whitelist_name(self):
         return u"Default whitelist for campaign {}({})".format(self.name, self.id)
+
+    def get_publisher_level(self):
+        return constants.PublisherBlacklistLevel.CAMPAIGN
 
     def get_account(self):
         return self.account
@@ -2066,6 +2072,9 @@ class AdGroup(models.Model):
 
     def get_default_whitelist_name(self):
         return u"Default whitelist for ad group {}({})".format(self.name, self.id)
+
+    def get_publisher_level(self):
+        return constants.PublisherBlacklistLevel.ADGROUP
 
     def get_account(self):
         return self.campaign.account
@@ -4709,6 +4718,12 @@ class PublisherGroupEntry(models.Model):
                 return self.filter(source__in=sources)
 
             return self.filter(models.Q(source__in=sources) | models.Q(source__isnull=True))
+
+        def filter_by_publisher_source(self, publisher_source_dicts):
+            q = models.Q()
+            for entry in publisher_source_dicts:
+                q |= models.Q(publisher=entry['publisher'], source=entry['source'])
+            return self.filter(q)
 
         def annotate_publisher_id(self):
             return self.annotate(publisher_id=Concat(

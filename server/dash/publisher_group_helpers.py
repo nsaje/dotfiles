@@ -1,8 +1,19 @@
+import logging
+from decimal import Decimal
+
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q
-from dash import models
+
 from dash import constants
+from dash import cpc_constraints
+from dash import history_helpers
+from dash import models
+from utils import email_helper
+
+logger = logging.getLogger(__name__)
+
+OUTBRAIN_CPC_CONSTRAINT_LIMIT = 30
+OUTBRAIN_CPC_CONSTRAINT_MIN = Decimal('0.65')
 
 
 class PublisherGroupTargetingException(Exception):
@@ -15,6 +26,10 @@ def get_global_blacklist():
 
 
 def get_blacklist_publisher_group(obj, create_if_none=False, request=None):
+    """
+    Gets default blacklist publisher group or (optionally) creates a new one.
+    """
+
     if obj is None:
         return get_global_blacklist()
 
@@ -32,6 +47,10 @@ def get_blacklist_publisher_group(obj, create_if_none=False, request=None):
 
 
 def get_whitelist_publisher_group(obj, create_if_none=False, request=None):
+    """
+    Gets default whitelist publisher group or (optionally) creates a new one.
+    """
+
     if obj is None:
         raise PublisherGroupTargetingException("Whitelisting not supported on global level")
 
@@ -48,7 +67,7 @@ def get_whitelist_publisher_group(obj, create_if_none=False, request=None):
     return publisher_group
 
 
-def can_user_handle_publishers(user, obj):
+def can_user_handle_publisher_listing_level(user, obj):
     if (isinstance(obj, models.Account) or isinstance(obj, models.Campaign)) and \
        not user.has_perm('zemauth.can_access_campaign_account_publisher_blacklist_status'):
         return False
@@ -153,7 +172,7 @@ def get_publisher_group_targeting_dict(ad_group, ad_group_settings, campaign,
     return d
 
 
-def get_publisher_list_level(entry, targeting):
+def get_publisher_entry_list_level(entry, targeting):
     if entry.publisher_group_id in targeting['ad_group']['included'] | targeting['ad_group']['excluded']:
         return constants.PublisherBlacklistLevel.ADGROUP
     elif entry.publisher_group_id in targeting['campaign']['included'] | targeting['campaign']['excluded']:
@@ -162,18 +181,26 @@ def get_publisher_list_level(entry, targeting):
         return constants.PublisherBlacklistLevel.ACCOUNT
     elif entry.publisher_group_id in targeting['global']['excluded']:
         return constants.PublisherBlacklistLevel.GLOBAL
-    return None
+    raise PublisherGroupTargetingException("Publisher entry does not belong to specified targeting configuration")
 
 
 def _get_blacklists(obj, obj_settings):
+    """
+    Concats default blacklist and publisher group targeting
+    """
+
     return set(x for x in [obj.default_blacklist_id] + obj_settings.blacklist_publisher_groups if x)
 
 
 def _get_whitelists(obj, obj_settings):
+    """
+    Concats default whitelist and publisher group targeting
+    """
+
     return set(x for x in [obj.default_whitelist_id] + obj_settings.whitelist_publisher_groups if x)
 
 
-def handle_publishers(request, entry_dicts, obj, status):
+def handle_publishers(request, entry_dicts, obj, status, enforce_cpc):
     if status == constants.PublisherTargetingStatus.BLACKLISTED:
         blacklist_publishers(request, entry_dicts, obj)
     elif status == constants.PublisherTargetingStatus.WHITELISTED:
@@ -183,45 +210,127 @@ def handle_publishers(request, entry_dicts, obj, status):
 
 
 @transaction.atomic
-def blacklist_publishers(request, entry_dicts, obj):
+def blacklist_publishers(request, entry_dicts, obj, enforce_cpc=False):
     publisher_group = get_blacklist_publisher_group(obj, create_if_none=True, request=request)
 
-    unlist_publishers(request, entry_dicts, obj)
+    # cpc constraints and history will be handled separately
+    unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=False)
 
-    entries = _create_entries(entry_dicts, publisher_group)
+    entries = _prepare_entries(entry_dicts, publisher_group)
+
+    for entry in entries:
+        validate_blacklist_entry(obj, entry)
+
     models.PublisherGroupEntry.objects.bulk_create(entries)
+
+    apply_outbrain_account_constraints_if_needed(obj, enforce_cpc)
+
+    ping_k1(obj)
+    write_history(request, obj, entries, constants.PublisherTargetingStatus.BLACKLISTED)
 
 
 @transaction.atomic
-def whitelist_publishers(request, entry_dicts, obj):
+def whitelist_publishers(request, entry_dicts, obj, enforce_cpc=False):
     publisher_group = get_whitelist_publisher_group(obj, create_if_none=True, request=request)
 
-    unlist_publishers(request, entry_dicts, obj)
+    # cpc constraints and history will be handled separately
+    unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=False)
 
-    entries = _create_entries(entry_dicts, publisher_group)
+    entries = _prepare_entries(entry_dicts, publisher_group)
     models.PublisherGroupEntry.objects.bulk_create(entries)
+
+    apply_outbrain_account_constraints_if_needed(obj, enforce_cpc)
+
+    ping_k1(obj)
+    write_history(request, obj, entries, constants.PublisherTargetingStatus.WHITELISTED)
 
 
 @transaction.atomic
-def unlist_publishers(request, entry_dicts, obj):
+def unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=True):
     publisher_group = get_blacklist_publisher_group(obj)
     selected_entries = models.PublisherGroupEntry.objects.filter(publisher_group=publisher_group)\
-                                                         .filter(_create_domain_constraints(entry_dicts))
+                                                         .filter_by_publisher_source(entry_dicts)
+    if history and selected_entries.exists():
+        write_history(request, obj, selected_entries,
+                      constants.PublisherTargetingStatus.UNLISTED,
+                      constants.PublisherTargetingStatus.BLACKLISTED)
+
     selected_entries.delete()
 
     try:
         publisher_group = get_whitelist_publisher_group(obj)
         selected_entries = models.PublisherGroupEntry.objects.filter(publisher_group=publisher_group)\
-                                                             .filter(_create_domain_constraints(entry_dicts))
+                                                             .filter_by_publisher_source(entry_dicts)
+        if history and selected_entries.exists():
+            write_history(request, obj, selected_entries,
+                          constants.PublisherTargetingStatus.UNLISTED,
+                          constants.PublisherTargetingStatus.WHITELISTED)
+
         selected_entries.delete()
+        ping_k1(obj)
     except PublisherGroupTargetingException:
         # pass if global level
         pass
 
+    apply_outbrain_account_constraints_if_needed(obj, enforce_cpc)
 
-def _create_entries(entry_dicts, publisher_group):
+
+def write_history(request, obj, entries, status, previous_status=None):
+    if status == constants.PublisherTargetingStatus.UNLISTED and previous_status is None:
+        raise Exception("Previous status required")
+
+    action = {
+        constants.PublisherTargetingStatus.WHITELISTED: 'Whitelisted',
+        constants.PublisherTargetingStatus.BLACKLISTED: 'Blacklisted',
+        constants.PublisherTargetingStatus.UNLISTED: ('Enabled' if previous_status ==
+                                                      constants.PublisherTargetingStatus.BLACKLISTED else 'Disabled'),
+    }[status]
+
+    if obj is None:
+        level_description = 'globally'
+        history_actiontype = constants.HistoryActionType.GLOBAL_PUBLISHER_BLACKLIST_CHANGE
+    else:
+        level_description = 'on {} level'.format(
+            constants.PublisherBlacklistLevel.get_text(obj.get_publisher_level()).lower())
+        history_actiontype = constants.HistoryActionType.PUBLISHER_BLACKLIST_CHANGE
+
+    pubs_string = u", ".join(u"{} on {}".format(
+        x.publisher, x.source.name if x.source else "all sources") for x in entries)
+
+    changes_text = u'{action} the following publishers {level_description}: {pubs}.'.format(
+        action=action,
+        level_description=level_description,
+        pubs=pubs_string
+    )
+
+    if obj is None:
+        history_helpers.write_global_history(changes_text, user=request.user, action_type=history_actiontype)
+    else:
+        obj.write_history(changes_text, user=request.user, action_type=history_actiontype)
+        email_helper.send_obj_changes_notification_email(obj, request, changes_text)
+
+
+def ping_k1(obj):
+    # ping if need be
+    pass
+
+
+def _prepare_entries(entry_dicts, publisher_group):
+    """
+    Creates publisher group entries from entry dicts. Does __not__ save them to the database.
+    """
+
     entries = []
+    added = set()
+
+    # remove duplicates
     for entry in entry_dicts:
+        key = frozenset(entry.values())
+        if key in added:
+            continue
+
+        added.add(key)
+
         entries.append(models.PublisherGroupEntry(
             publisher=entry['publisher'],
             source=entry['source'],
@@ -231,20 +340,6 @@ def _create_entries(entry_dicts, publisher_group):
     return entries
 
 
-def _create_domain_constraints(entry_dicts):
-    constraints = []
-    for entry in entry_dicts:
-        constraints.append({
-            'publisher': entry['publisher'],
-            'source': entry['source']
-        })
-
-    q = Q(**constraints.pop())
-    for c in constraints:
-        q |= Q(**c)
-    return q
-
-
 def create_publisher_id(publisher, source_id):
     return u'__'.join((publisher, unicode(source_id or '')))
 
@@ -252,3 +347,40 @@ def create_publisher_id(publisher, source_id):
 def dissect_publisher_id(publisher_id):
     publisher, source_id = publisher_id.rsplit(u'__', 1)
     return publisher, int(source_id) if source_id else None
+
+
+def validate_blacklist_entry(obj, entry):
+    if (entry.source and entry.source.source_type.type == constants.SourceType.OUTBRAIN and
+       ((obj and obj.get_publisher_level() != constants.PublisherBlacklistLevel.ACCOUNT) or not obj)):
+        raise PublisherGroupTargetingException("Outbrain specific blacklisting is only available on account level")
+
+
+def apply_outbrain_account_constraints_if_needed(obj, enforce_cpc):
+    outbrain = models.Source.objects.filter(source_type__type=constants.SourceType.OUTBRAIN)
+    if not outbrain.exists():
+        # some tests do not need to test outbrain and as such do not include it in fixtures
+        return
+
+    if obj is None:
+        # no need to handle when we do global blacklisting:
+        return
+
+    outbrain = outbrain.first()
+    account = obj.get_account()
+
+    blacklist_ids = _get_blacklists(account, account.get_current_settings())
+    entries = models.PublisherGroupEntry.objects.filter(publisher_group_id__in=blacklist_ids, source=outbrain)
+
+    if entries.count() >= OUTBRAIN_CPC_CONSTRAINT_LIMIT:
+        cpc_constraints.create(
+            min_cpc=OUTBRAIN_CPC_CONSTRAINT_MIN,
+            constraint_type=constants.CpcConstraintType.OUTBRAIN_BLACKLIST,
+            enforce_cpc_settings=enforce_cpc,
+            source=outbrain,
+            account=account)
+    else:
+        cpc_constraints.clear(
+            min_cpc=OUTBRAIN_CPC_CONSTRAINT_MIN,
+            constraint_type=constants.CpcConstraintType.OUTBRAIN_BLACKLIST,
+            source=outbrain,
+            account=account)

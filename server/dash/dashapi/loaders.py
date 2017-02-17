@@ -443,7 +443,7 @@ class PublisherBlacklistLoader(Loader):
             if entry.id in whitelisted_ids:
                 status = constants.PublisherTargetingStatus.WHITELISTED
 
-            level = publisher_group_helpers.get_publisher_list_level(entry, self.publisher_group_targeting)
+            level = publisher_group_helpers.get_publisher_entry_list_level(entry, self.publisher_group_targeting)
 
             if entry.source_id:
                 d[self._get_obj_id(entry)] = {

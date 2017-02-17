@@ -1341,6 +1341,10 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         return publishers
 
     def _write_history(self, request, ad_group, state, blacklist, level):
+        if True:
+            # this is now written by publisher groups
+            return
+
         action_string = "Blacklisted" if state == constants.PublisherStatus.BLACKLISTED \
                         else "Enabled"
 
