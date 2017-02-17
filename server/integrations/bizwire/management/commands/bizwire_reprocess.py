@@ -26,11 +26,10 @@ class Command(ExceptionCommand):
     """
 
     def add_arguments(self, parser):
-        parser.add_argument('--key', dest='key', nargs=1, type=str)
-        parser.add_argument('--date', dest='date', nargs=1, type=str)
-        parser.add_argument('--missing', dest='missing', action='store_true')
-        parser.add_argument('--dry-run', dest='dry_run', action='store_true')
-        parser.add_argument('--purge-candidates', dest='purge_candidates', action='store_true')
+        parser.add_argument('--key', '-k', dest='key', nargs=1, type=str)
+        parser.add_argument('--missing', '-m', dest='missing', action='store_true')
+        parser.add_argument('--dry-run', '-d', dest='dry_run', action='store_true')
+        parser.add_argument('--purge-candidates', '-p', dest='purge_candidates', action='store_true')
 
     def handle(self, *args, **options):
         self.dry_run = options.get('dry_run')
@@ -43,11 +42,6 @@ class Command(ExceptionCommand):
     def _get_keys_to_reprocess(self, options):
         if options.get('key'):
             return options['key']
-
-        date = options.get('date')
-        if date:
-            date = dateutil.parser.parse(date[0]).date()
-            return helpers.get_s3_keys(date=date)
 
         missing = options.get('missing')
         if missing:
