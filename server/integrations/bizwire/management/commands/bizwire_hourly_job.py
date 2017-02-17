@@ -1,6 +1,6 @@
 import logging
 
-from integrations.bizwire.internal import actions, monitor
+from integrations.bizwire.internal import actions
 from utils.command_helpers import ExceptionCommand
 from utils import pagerduty_helper
 
@@ -22,5 +22,3 @@ class Command(ExceptionCommand):
                 incident_key='bizwire_hourly_job_exception',
                 description='Exception in bizwire hourly job',
             )
-
-        monitor.run_hourly_job()
