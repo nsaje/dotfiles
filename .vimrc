@@ -12,6 +12,7 @@ Plugin 'VundleVim/Vundle.vim'
 
 Plugin 'tpope/vim-fugitive' " Git
 Plugin 'scrooloose/nerdtree' " file tree
+Plugin 'majutsushi/tagbar' " tag bar
 Plugin 'kien/ctrlp.vim' " fuzzy search
 Plugin 'scrooloose/nerdcommenter' " comment/uncomment
 Plugin 'junegunn/goyo.vim' " zen writing mode
@@ -24,6 +25,10 @@ Plugin 'avakhov/vim-yaml' " yaml support
 Plugin 'airblade/vim-gitgutter' " git status in gutter
 Plugin 'tpope/vim-surround' " surrounding
 
+" snippets
+Plugin 'SirVer/ultisnips'
+Plugin 'honza/vim-snippets'
+
 " status bar
 Plugin 'vim-airline/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
@@ -35,7 +40,9 @@ Plugin 'qpkorr/vim-bufkill' " kill buffer with shortcut
 Plugin 'fatih/vim-go'
 
 " python
-Plugin 'nvie/vim-flake8'
+"Plugin 'nvie/vim-flake8'
+Plugin 'klen/python-mode'
+let g:pymode_rope_goto_definition_bind = "<C-]>"
 
 " code completion
  "Plugin 'valloric/youcompleteme'
@@ -83,6 +90,11 @@ autocmd QuickFixCmdPost *grep* cwindow
 " nerdtree binding
 map <C-\> :NERDTreeToggle<CR>
 let NERDTreeIgnore = ['\.pyc$']
+
+" tagbar binding
+nmap <F8> :TagbarToggle<CR>
+"let g:tagbar_foldlevel = 0
+"let g:tagbar_compact = 1
 
 " ctags ctrlp binding
 nnoremap <A-p> :CtrlPBuffer<cr>
@@ -156,3 +168,11 @@ let g:deoplete#enable_at_startup = 1
 " insert mode
 "autocmd CursorMovedI * if pumvisible() == 0|silent! pclose|endif
 autocmd InsertLeave * if pumvisible() == 0|silent! pclose|endif
+
+" snippets config
+" Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+
+set nofoldenable
