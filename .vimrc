@@ -10,30 +10,39 @@ call vundle#begin()
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
 
-Plugin 'tpope/vim-fugitive'
-Plugin 'scrooloose/nerdtree'
-Plugin 'kien/ctrlp.vim'
+Plugin 'tpope/vim-fugitive' " Git
+Plugin 'scrooloose/nerdtree' " file tree
+Plugin 'kien/ctrlp.vim' " fuzzy search
+Plugin 'scrooloose/nerdcommenter' " comment/uncomment
+Plugin 'junegunn/goyo.vim' " zen writing mode
+Plugin 'reedes/vim-pencil' " writing
+Plugin 'scrooloose/syntastic' " syntax checking
+Plugin 'avakhov/vim-yaml' " yaml support
+"Plugin 'tpope/vim-sleuth' " automatic indentation settings
+"Plugin 'godlygeek/tabular' " aligning things
+"Plugin 'plasticboy/vim-markdown' " markdown (mostly for tables: :TableFormat)
+Plugin 'airblade/vim-gitgutter' " git status in gutter
+Plugin 'tpope/vim-surround' " surrounding
+
+" status bar
 Plugin 'vim-airline/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
-Plugin 'altercation/vim-colors-solarized'
-Plugin 'qpkorr/vim-bufkill'
-"Plugin 'morhetz/gruvbox'
+
+Plugin 'altercation/vim-colors-solarized' " themes
+Plugin 'qpkorr/vim-bufkill' " kill buffer with shortcut
+
+" go
 Plugin 'fatih/vim-go'
-Plugin 'scrooloose/syntastic'
+
+" python
+Plugin 'nvie/vim-flake8'
+
+" code completion
  "Plugin 'valloric/youcompleteme'
 Plugin 'Shougo/deoplete.nvim'
 Plugin 'zchee/deoplete-go'
 Plugin 'zchee/deoplete-jedi'
-" Plugin 'dkprice/vim-easygrep'
-Plugin 'nvie/vim-flake8'
-Plugin 'avakhov/vim-yaml'
-Plugin 'scrooloose/nerdcommenter'
-Plugin 'junegunn/goyo.vim'
-Plugin 'reedes/vim-pencil'
-"Plugin 'tpope/vim-sleuth' " automatic indentation settings
-"Plugin 'godlygeek/tabular' " aligning things
-"Plugin 'plasticboy/vim-markdown' " markdown (mostly for tables: :TableFormat)
-Plugin 'airblade/vim-gitgutter'
+
 
 
 " allow changing buffer without saving
@@ -126,7 +135,6 @@ set nocompatible
 augroup pencil
   autocmd!
   autocmd FileType markdown,mkd call pencil#init()
-  autocmd FileType text         call pencil#init()
 augroup END
 
 let g:vim_markdown_folding_disabled = 1
