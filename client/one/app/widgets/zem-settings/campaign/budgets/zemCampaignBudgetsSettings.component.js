@@ -10,11 +10,13 @@ angular.module('one.widgets').component('zemCampaignBudgetsSettings', {
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.stateReloadNeeded = false;
 
         $ctrl.$onInit = function () {
             $ctrl.api.register({
-                validate: null, // TODO
-                onSuccess: null, // TODO
+                isStateReloadNeeded: function () {
+                    return $ctrl.stateReloadNeeded;
+                }
             });
             $ctrl.showCollapsed = false;
         };
@@ -59,8 +61,11 @@ angular.module('one.widgets').component('zemCampaignBudgetsSettings', {
                 }
             });
 
-            modal.result.then(function () {
-                refresh();
+            modal.result.then(function (data) {
+                if (data) {
+                    refresh();
+                    $ctrl.stateReloadNeeded = true;
+                }
             });
         }
 

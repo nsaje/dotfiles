@@ -1,6 +1,6 @@
 angular.module('one.widgets').component('zemSettings', {
     templateUrl: '/app/widgets/zem-settings/zemSettings.component.html',
-    controller: function ($timeout, hotkeys, zemSettingsService, zemEntityService) {
+    controller: function ($timeout, $state, hotkeys, zemSettingsService, zemEntityService) {
         var $ctrl = this;
         $ctrl.currentContainer = null;
         $ctrl.currentContainerType = null;
@@ -64,11 +64,15 @@ angular.module('one.widgets').component('zemSettings', {
                 if (!close) return;
             }
 
+            var stateReloadNeeded = $ctrl.currentContainer.isStateReloadNeeded();
+
             $ctrl.sidePanel.close();
             $timeout(function () {
                 if (!$ctrl.sidePanel.isVisible()) {
                     $ctrl.entity = null;
                 }
+
+                if (stateReloadNeeded) $state.reload();
             }, 500);
         }
     }

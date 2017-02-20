@@ -48,6 +48,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
                 load: load,
                 scrollTo: scrollTo,
                 isDirty: isDirty,
+                isStateReloadNeeded: isStateReloadNeeded,
             });
         };
 
@@ -117,6 +118,16 @@ angular.module('one.widgets').component('zemSettingsContainer', {
 
         function isDirty () {
             return !angular.equals($ctrl.origEntity, $ctrl.entity);
+        }
+
+        function isStateReloadNeeded () {
+            for (var i = 0; i < settingsComponents.length; ++i) {
+                var component = settingsComponents[i];
+                if (component.isStateReloadNeeded && component.isStateReloadNeeded()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         function archive () {

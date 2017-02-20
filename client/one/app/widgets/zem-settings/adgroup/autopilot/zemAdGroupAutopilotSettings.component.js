@@ -17,6 +17,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.stateReloadNeeded = false;
 
         $ctrl.isInLanding = isInLanding;
         $ctrl.showAutoPilotDailyBudgetInput = showAutoPilotDailyBudgetInput;
@@ -27,6 +28,9 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
             $ctrl.api.register({
                 onSuccess: function () {
                     notifyAllRtbUpdates();
+                },
+                isStateReloadNeeded: function () {
+                    return $ctrl.stateReloadNeeded;
                 }
             });
         };
@@ -55,7 +59,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
 
             if (allRtbAsOne !== origAllRtbAsOne) {
                 alert(allRtbAsOne ? MSG_ALL_RTB_ENABLED : MSG_ALL_RTB_DISABLED); //eslint-disable-line no-alert
-                $state.reload();
+                $ctrl.stateReloadNeeded = true;
             }
         }
 
