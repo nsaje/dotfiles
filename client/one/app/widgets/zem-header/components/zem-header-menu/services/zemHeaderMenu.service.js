@@ -34,7 +34,7 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
             isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_pixels_view'),
         },
         {
-            text: 'Reports',
+            text: 'Scheduled reports',
             callback: navigateToScheduledReportsView,
             isAvailable: zemPermissions.hasPermission('zemauth.can_see_new_scheduled_reports'),
             isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_scheduled_reports'),
