@@ -450,7 +450,7 @@ def send_weekly_inventory_report_email():
     email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), recipients)
-    email.attach_alternative(analytics.client_report.get_weekly_report_html(), "text/html")
+    email.attach_alternative(format_template(subject, body), "text/html")
     email.send(fail_silently=False)
 
 

@@ -3,12 +3,14 @@
 from mock import patch
 import datetime
 import slugify
+import urllib
 import json
 import time
 
 from django import test
 from django import http
 from django.contrib.auth.models import Permission
+from django.core.urlresolvers import reverse
 
 from dash.views import export
 import dash.models
@@ -19,11 +21,13 @@ from utils.test_helper import add_permissions
 from zemauth import models
 from utils import exc
 from utils import test_helper
+from analytics import statements
 
 from django.test.client import RequestFactory
 
 
 class AssertRowMixin(object):
+
     def _assert_row(self, worksheet, row_num, row_cell_list):
         for cell_num, cell_value in enumerate(row_cell_list):
             self.assertEqual(worksheet.cell_value(row_num, cell_num), cell_value)
@@ -1735,3 +1739,54 @@ class ScheduledReportsTest(test.TestCase):
             dash.models.ScheduledExportReport.objects.get(id=1).state,
             constants.ScheduledReportState.ACTIVE
         )
+
+
+@patch.object(statements.s3helpers.S3Helper, 'get')
+@patch.object(statements.s3helpers.S3Helper, '__init__', lambda *args: None)
+class CustomReporTestCase(test.TestCase):
+    fixtures = ['test_api']
+
+    def setUp(self):
+        self.user = models.User.objects.get(pk=2)
+
+    def _get_url(self, **kwargs):
+        return reverse('custom_report_download') + '?' + urllib.urlencode(kwargs)
+
+    def _add_perm(self):
+        permission = Permission.objects.get(codename='can_download_custom_reports')
+        self.user.user_permissions.add(permission)
+
+    def test_anonymous(self, mock_get):
+        mock_get.return_value = 'content'
+        response = self.client.get(self._get_url(path='test.csv'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_no_path(self, mock_get):
+        mock_get.return_value = 'content'
+
+        self._add_perm()
+        client = test.Client()
+        client.login(username=self.user.username, password='secret')
+
+        response = client.get(self._get_url())
+        self.assertEqual(response.status_code, 400)
+
+    def test_no_permission(self, mock_get):
+        mock_get.return_value = 'content'
+
+        client = test.Client()
+        client.login(username=self.user.username, password='secret')
+
+        response = client.get(self._get_url(path='test.csv'))
+        self.assertEqual(response.status_code, 401)
+
+    def test_ok(self, mock_get):
+        mock_get.return_value = 'content'
+
+        self._add_perm()
+        client = test.Client()
+        client.login(username=self.user.username, password='secret')
+
+        response = client.get(self._get_url(path='test.csv'))
+        self.assertEqual(response.status_code, 200)
+        mock_get.assert_called_with('test.csv')
