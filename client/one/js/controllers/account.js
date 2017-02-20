@@ -9,7 +9,7 @@ angular.module('one.legacy').controller('AccountCtrl', function ($scope, $state,
             {heading: 'History', route: 'main.accounts.history', active: false, hidden: $scope.hasPermission('zemauth.can_see_history_in_drawer') || !$scope.hasPermission('zemauth.account_history_view') || ($scope.account && $scope.account.archived === true), internal: $scope.isPermissionInternal('zemauth.account_history_view')},
             {heading: 'Settings', route: 'main.accounts.archived', active: false, hidden: $scope.hasPermission('zemauth.account_account_view') || !$scope.account || !$scope.account.archived === true, internal: false},
             {heading: 'Pixels & Audiences', route: 'main.accounts.customAudiences', active: false, hidden: !$scope.hasPermission('zemauth.account_custom_audiences_view'), internal: $scope.isPermissionInternal('zemauth.account_custom_audiences_view')},
-            {heading: 'Credit', route: 'main.accounts.credit', active: false, hidden: !$scope.hasPermission('zemauth.account_credit_view') || ($scope.account && $scope.account.archived === true), internal: true},
+            {heading: 'Credit', route: 'main.accounts.credit', active: false, hidden: $scope.hasPermission('zemauth.can_see_new_account_credit') || !$scope.hasPermission('zemauth.account_credit_view') || ($scope.account && $scope.account.archived === true), internal: true},
             {heading: 'Reports', route: 'main.accounts.scheduled_reports', active: false, hidden: $scope.hasPermission('zemauth.can_see_new_scheduled_reports') || ($scope.account && $scope.account.archived === true), internal: false},
         ];
     };

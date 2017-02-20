@@ -255,6 +255,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_new_user_permissions', 'User can see new user permissions page'),
             ('can_see_new_content_insights', 'User can see new content insights component'),
             ('can_see_history_in_drawer', 'User can see history in drawer'),
+            ('can_see_new_account_credit', 'User can see new account credit component'),
             ('can_see_new_budgets', 'User can see new campaing budget component'),
             ('can_see_new_scheduled_reports', 'User can see new scheduled reports component'),
             ('can_see_backend_hacks', 'User can see backend hacks'),

@@ -60,6 +60,9 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             if ($state.includes('**.users')) {
                 return {typeName: 'Administration', name: 'User permissions', href: $location.absUrl()};
             }
+            if ($state.includes('**.credit_v2')) {
+                return {typeName: 'Administration', name: 'Account credit', href: $location.absUrl()};
+            }
             if ($state.includes('**.scheduled_reports_v2')) {
                 return {typeName: 'Administration', name: 'Scheduled reports', href: $location.absUrl()};
             }

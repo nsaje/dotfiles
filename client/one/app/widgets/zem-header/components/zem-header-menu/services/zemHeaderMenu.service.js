@@ -1,7 +1,7 @@
 angular.module('one.widgets').service('zemHeaderMenuService', function ($window, $state, $uibModal, zemPermissions, zemFullStoryService, zemNavigationNewService) { // eslint-disable-line max-len
     this.getAvailableActions = getAvailableActions;
 
-    var USERACTIONS = [
+    var USER_ACTIONS = [
         {
             text: 'Request demo',
             callback: requestDemoAction,
@@ -20,7 +20,13 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
         },
     ];
 
-    var ACCOUNTACTIONS = [
+    var ACCOUNT_ACTIONS = [
+        {
+            text: 'Account credit',
+            callback: navigateToAccountCreditView,
+            isAvailable: isAccountCreditActionAvailable,
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.account_credit_view'),
+        },
         {
             text: 'Reports',
             callback: navigateToScheduledReportsView,
@@ -37,40 +43,43 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
 
     function getAvailableActions (navigationGroup) {
         if (navigationGroup === 'user') {
-            return USERACTIONS.filter(function (action) {
-                if (action.isAvailable === undefined) {
-                    // Include action if no constraint is provided
-                    return true;
-                }
-                if (typeof action.isAvailable === 'boolean') {
-                    return action.isAvailable;
-                }
-                if (typeof action.isAvailable === 'function') {
-                    return action.isAvailable();
-                }
-                return false;
-            });
+            return USER_ACTIONS.filter(filterActions);
         } else if (navigationGroup === 'account') {
-            return ACCOUNTACTIONS.filter(function (action) {
-                if (action.isAvailable === undefined) {
-                    // Include action if no constraint is provided
-                    return true;
-                }
-                if (typeof action.isAvailable === 'boolean') {
-                    return action.isAvailable;
-                }
-                if (typeof action.isAvailable === 'function') {
-                    return action.isAvailable();
-                }
-                return false;
-            });
+            return ACCOUNT_ACTIONS.filter(filterActions);
         }
+        return false;
+    }
 
+    function filterActions (action) {
+        if (action.isAvailable === undefined) {
+            // Include action if no constraint is provided
+            return true;
+        }
+        if (typeof action.isAvailable === 'boolean') {
+            return action.isAvailable;
+        }
+        if (typeof action.isAvailable === 'function') {
+            return action.isAvailable();
+        }
         return false;
     }
 
     function navigate (params) {
         $window.location.href = params.href;
+    }
+
+    function isAccountCreditActionAvailable () {
+        var activeAccount = zemNavigationNewService.getActiveAccount();
+        return activeAccount &&
+               zemPermissions.hasPermission('zemauth.can_see_new_account_credit') &&
+               zemPermissions.hasPermission('zemauth.account_credit_view');
+    }
+
+    function navigateToAccountCreditView () {
+        var activeAccount = zemNavigationNewService.getActiveAccount();
+        if (activeAccount) {
+            $state.go('main.accounts.credit_v2', {id: activeAccount.id});
+        }
     }
 
     function navigateToScheduledReportsView () {

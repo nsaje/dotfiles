@@ -95,6 +95,10 @@ angular.module('one.legacy').config(function ($stateProvider) {
             url: '/credit',
             templateUrl: '/partials/account_credit.html',
             controller: 'AccountCreditCtrl',
+        }).state('main.accounts.credit_v2', {
+            url: '/credit_v2',
+            templateUrl: '/app/views/account-credit/zemAccountCreditView.partial.html',
+            controller: 'zemAccountCreditView as $ctrl',
         }).state('main.accounts.scheduled_reports', {
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',

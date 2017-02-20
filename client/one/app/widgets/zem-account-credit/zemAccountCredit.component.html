@@ -1,0 +1,130 @@
+<h1>Credit</h1>
+<div class="section white-background" ng-show="!$ctrl.state.requests.reloadCredit.inProgress">
+    <h2>Overview</h2>
+    <div class="description">
+        Account credit is the basis of allocating any budget to any campaign. Valid credit items are used by campaign budget items in the order they are listed.
+    </div>
+    <div class="loader" ng-show="$ctrl.state.requests.reloadCredit.inProgress"></div>
+    <div class="named-data">
+        <div class="name">Total Account Value</div>
+        <div class="value">{{ $ctrl.state.credit.totals.total | decimalCurrency:"$":2 }}</div>
+        <div class="clear"></div>
+        <div class="name">Allocated To Budget Items</div>
+        <div class="value">{{ $ctrl.state.credit.totals.allocated | decimalCurrency:"$":2  }}</div>
+        <div class="clear"></div>
+        <div class="name">Past Credit</div>
+        <div class="value">{{ $ctrl.state.credit.totals.past | decimalCurrency:"$":2  }}</div>
+        <div class="clear"></div>
+        <div class="name exposed topborder">Available Account Credit</div>
+        <div class="value exposed topborder">{{ $ctrl.state.credit.totals.available | decimalCurrency:"$":2  }}</div>
+        <div class="clear"></div>
+    </div>
+</div>
+<div class="section active-credits white-background" ng-show="!$ctrl.state.requests.reloadCredit.inProgress">
+    <h2>Active Credit Items</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Created by</th>
+                <th>Valid From</th>
+                <th>Valid To</th>
+                <th>Signed</th>
+                <th>License Fee</th>
+                <th>Flat Fee</th>
+                <th>Credit Amount</th>
+                <th>Allocated Budgets</th>
+                <th>Available Credit</th>
+                <th ng-if="$ctrl.account.agency">Agency Credit</th>
+                <th class="notes">Notes</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="item in $ctrl.state.credit.active">
+                <td>{{ item.id }}</td>
+                <td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
+                <td>{{ item.startDate }}</td>
+                <td>{{ item.endDate }}</td>
+                <td>{{ item.isSigned ? 'yes' : 'no' }}</td>
+                <td>{{ item.licenseFee  }}</td>
+                <td>{{ item.flatFee | decimalCurrency:"$":2 }}</td>
+                <td>{{ item.total | decimalCurrency:"$":2  }}</td>
+                <td>
+                    {{ item.allocated | decimalCurrency:"$":2  }}<br>
+                    ({{ item.numOfBudgets }} budget <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
+                </td>
+                <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+                <td ng-if="$ctrl.account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
+                <td class="notes">{{ item.comment }}</td>
+                <td class="action-buttons">
+                    <button class="button button--small button--with-icon edit-icon"
+                            ng-click="$ctrl.openCreditItemModal(item.id)"
+                            ng-if="!item.isCanceled">
+                        Edit
+                    </button>
+                    <button class="button button--small button--with-icon remove-icon"
+                            ng-click="$ctrl.cancelCreditItem(item.id)"
+                            ng-if="item.isSigned">
+                        Cancel
+                    </button>
+                </td>
+            </tr>
+            <tr ng-show="!$ctrl.state.credit.active.length">
+                <td colspan="13">No active credit items.</td>
+            </tr>
+        </tbody>
+    </table>
+    <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.openCreditItemModal()">Add Credit Item</button>
+</div>
+<div class="section active-credits white-background" ng-show="!$ctrl.state.requests.reloadCredit.inProgress">
+    <h2>Past Credit Items</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Created by</th>
+                <th>Valid From</th>
+                <th>Valid To</th>
+                <th>Signed</th>
+                <th>License Fee</th>
+                <th>Flat Fee</th>
+                <th>Total Credit Amount</th>
+                <th>Allocated Budgets</th>
+                <th>Available Credit</th>
+                <th ng-if="$ctrl.account.agency">Agency Credit</th>
+                <th class="notes">Notes</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="item in $ctrl.state.credit.past">
+                <td>{{ item.id }}</td>
+                <td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
+                <td>{{ item.startDate }}</td>
+                <td>{{ item.endDate }}</td>
+                <td>{{ item.isSigned ? 'yes' : 'no' }}</td>
+                <td>{{ item.licenseFee }}</td>
+                <td>{{ item.flatFee | decimalCurrency:"$":2 }}</td>
+                <td>{{ item.total | decimalCurrency:"$":2  }}</td>
+                <td>
+                    {{ item.allocated | decimalCurrency:"$":2  }}<br>
+                    ({{ item.numOfBudgets }} budget <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
+                </td>
+                <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+                <td ng-if="$ctrl.account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
+                <td class="notes">{{ item.comment }}</td>
+                <td class="action-buttons">
+                    <button class="button button--small button--with-icon edit-icon"
+                            ng-click="$ctrl.openCreditItemModal(item.id)"
+                            ng-if="!item.isCanceled">
+                        Edit
+                    </button>
+                </td>
+            </tr>
+            <tr ng-show="!$ctrl.state.credit.past.length" class="message">
+                <td colspan="12">No past credit items.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
