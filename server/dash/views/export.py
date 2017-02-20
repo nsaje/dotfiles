@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import json
+import logging
 
 import influx
 
 from django.db.models import Q
+from django.conf import settings
 
 from dash.views import helpers
 from dash import models
@@ -15,9 +17,13 @@ from dash import scheduled_report
 from dash import history_helpers
 from utils import api_common
 from utils import exc
+from utils import s3helpers
+
+logger = logging.getLogger(__name__)
 
 
 class ExportApiView(api_common.BaseApiView):
+
     def dispatch(self, request, *args, **kwargs):
         try:
             return super(api_common.BaseApiView, self).dispatch(request, *args, **kwargs)
@@ -190,6 +196,7 @@ class SourcesExportAllowed(api_common.BaseApiView):
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
+
     @influx.timer('dash.export_plus.account', type='campaigns')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
@@ -215,6 +222,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
 
 
 class CampaignAdGroupsExport(ExportApiView):
+
     @influx.timer('dash.export_plus.campaign', type='ad_group')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -240,6 +248,7 @@ class CampaignAdGroupsExport(ExportApiView):
 
 
 class AdGroupAdsExport(ExportApiView):
+
     @influx.timer('dash.export_plus.ad_group', type='ads')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -265,6 +274,7 @@ class AdGroupAdsExport(ExportApiView):
 
 
 class AllAccountsSourcesExport(ExportApiView):
+
     @influx.timer('dash.export_plus.all_accounts', type='sources')
     def get(self, request):
         content, filename = export.get_report_from_request(request, by_source=True)
@@ -288,6 +298,7 @@ class AllAccountsSourcesExport(ExportApiView):
 
 
 class AccountSourcesExport(ExportApiView):
+
     @influx.timer('dash.export_plus.account', type='sources')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
@@ -313,6 +324,7 @@ class AccountSourcesExport(ExportApiView):
 
 
 class CampaignSourcesExport(ExportApiView):
+
     @influx.timer('dash.export_plus.campaign', type='sources')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -338,6 +350,7 @@ class CampaignSourcesExport(ExportApiView):
 
 
 class AdGroupSourcesExport(ExportApiView):
+
     @influx.timer('dash.export_plus.ad_group', type='sources')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -363,6 +376,7 @@ class AdGroupSourcesExport(ExportApiView):
 
 
 class AllAccountsExport(ExportApiView):
+
     @influx.timer('dash.export_plus.all_accounts', type='default')
     def get(self, request):
         content, filename = export.get_report_from_request(request)
@@ -423,6 +437,7 @@ def _add_scheduled_report_from_request(request, by_source=False, ad_group=None, 
 
 
 class ScheduledReports(api_common.BaseApiView):
+
     def get(self, request, account_id=None):
         if account_id:
             account = helpers.get_account(request.user, account_id)
@@ -576,3 +591,21 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
             'allowed': row_count <= self.MAX_ROWS,
             'max_days': max_days
         })
+
+
+class CustomReportDownload(ExportApiView):
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_download_custom_reports'):
+            raise exc.AuthorizationError()
+        path = request.GET.get('path')
+        if not path:
+            raise exc.ValidationError('Path not specified.')
+        filename = path.split('/')[-1]
+        s3 = s3helpers.S3Helper(settings.S3_BUCKET_CUSTOM_REPORTS)
+        try:
+            content = s3.get(path)
+        except:
+            logger.exception('Failed to fetch {} from s3.'.format(path))
+            raise exc.MissingDataError()
+        return self.create_csv_response(filename, content=content)

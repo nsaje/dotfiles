@@ -633,6 +633,11 @@ urlpatterns += [
         login_required(dash.views.alerts.AllAccountsAlerts.as_view()),
         name='all_account_alerts',
     ),
+    url(
+        r'^api/custom_report_download/',
+        login_required(dash.views.export.CustomReportDownload.as_view()),
+        name='custom_report_download'
+    ),
 ]
 
 # Lambdas

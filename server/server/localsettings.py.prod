@@ -120,6 +120,7 @@ S3_BUCKET = 'zemantaone'
 S3_BUCKET_STATS = 'z1-stats'
 S3_BUCKET_DEMO = 'z1-demo'
 S3_BUCKET_THUMBNAILER = 'zemthumbnailer'
+S3_BUCKET_CUSTOM_REPORTS = 'z1-custom-reports'
 USE_S3 = True
 
 # adgroup-level reports aggregations

@@ -264,6 +264,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_set_ad_group_mode', 'User can set and see manual or automatic ad group mode'),
             ('can_set_account_cs_representative', 'Can view and set account CS representative on account settings tab.'),
             ('campaign_settings_cs_rep', 'Can be chosen as CS representative.'),
+            ('can_download_custom_reports', 'Can download custom reports.'),
             ('can_receive_pacing_email', 'Can receive pacing emails.'),
         )
 

@@ -15,6 +15,7 @@ import dash.constants
 import dash.models
 import analytics.management_report
 import analytics.client_report
+import analytics.statements
 
 from utils import pagerduty_helper
 from utils import dates_helper
@@ -431,6 +432,21 @@ def send_daily_management_report_email():
 
 def send_weekly_client_report_email():
     subject, body, recipients = format_email(dash.constants.EmailTemplateType.WEEKLY_CLIENT_REPORT)
+    email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL
+    ), recipients)
+    email.attach_alternative(analytics.client_report.get_weekly_report_html(), "text/html")
+    email.send(fail_silently=False)
+
+
+def send_weekly_inventory_report_email():
+    subject, body, recipients = format_email(
+        dash.constants.EmailTemplateType.WEEKLY_INVENTORY_REPORT,
+        report_url=analytics.statements.generate_csv(
+            'inventory-report/{}.csv'.format(str(dates_helper.local_today())),
+            analytics.statements.inventory_report_csv
+        )
+    )
     email = EmailMultiAlternatives(subject, body, 'Zemanta <{}>'.format(
         settings.FROM_EMAIL
     ), recipients)
