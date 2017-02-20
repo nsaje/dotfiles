@@ -1,7 +1,7 @@
 /*globals angular,constants*/
 'use strict';
 
-angular.module('one.legacy').component('zemCustomAudiencesModal', {
+angular.module('one.legacy').component('zemCustomAudiencesModalLegacy', {
     templateUrl: '/components/zem-custom-audiences-modal/zemCustomAudiencesModal.component.html',
     bindings: {
         resolve: '<',

@@ -1,7 +1,7 @@
 /* globals it, angular, describe, inject, module, expect, spyOn, beforeEach */
 'use strict';
 
-describe('zemConversionPixels', function () {
+describe('zemConversionPixelsLegacy', function () {
     var $scope, $q, element, isolate, $uibModal;
 
     var mockApiFunc = function () {
@@ -50,7 +50,7 @@ describe('zemConversionPixels', function () {
         $q =  _$q_;
         $uibModal = _$uibModal_;
 
-        var template = '<zem-conversion-pixels zem-account="account" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-conversion-pixels>';
+        var template = '<zem-conversion-pixels-legacy zem-account="account" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-conversion-pixels-legacy>';
 
         $scope = $rootScope.$new();
         $scope.isPermissionInternal = function () { return true; };

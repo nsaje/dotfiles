@@ -28,6 +28,12 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
             isInternalFeature: zemPermissions.isPermissionInternal('zemauth.account_credit_view'),
         },
         {
+            text: 'Pixels',
+            callback: navigateToPixelsView,
+            isAvailable: isPixelsViewAvailable,
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_pixels_view'),
+        },
+        {
             text: 'Reports',
             callback: navigateToScheduledReportsView,
             isAvailable: zemPermissions.hasPermission('zemauth.can_see_new_scheduled_reports'),
@@ -115,4 +121,17 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
         var params = {id: account.id};
         $state.go(state, params);
     }
+
+    function isPixelsViewAvailable () {
+        if (!zemPermissions.hasPermission('zemauth.can_see_new_pixels_view')) return false;
+        return zemNavigationNewService.getActiveAccount() !== null;
+    }
+
+    function navigateToPixelsView () {
+        var account = zemNavigationNewService.getActiveAccount();
+        var state = 'main.accounts.pixels';
+        var params = {id: account.id};
+        $state.go(state, params);
+    }
+
 });

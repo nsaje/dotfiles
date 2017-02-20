@@ -1,7 +1,7 @@
 <div class="page page-account-custom-audiences">
     <h1>Pixels & Audiences</h1>
     <div>
-        <zem-conversion-pixels
+        <zem-conversion-pixels-legacy
             zem-account="account"
             zem-has-permission="hasPermission"
             zem-is-permission-internal="isPermissionInternal" />
@@ -9,7 +9,7 @@
     <div class="white-background">
         <h2>Audiences</h2>
         <div class="description">Custom audiences allow you to target your ads to a specific set of people with whom you have already established a relationship. Audiences can be defined by a combination of rules used to identify users who took specific actions on your website.</div>
-        <div><zem-custom-audiences-list account-id="accountId" api="api"></zem-custo-audiences-list></div>
+        <div><zem-custom-audiences-list-legacy account-id="accountId" api="api"></zem-custo-audiences-list-legacy></div>
         <button type="button"
                 class="button button--with-icon add-icon"
                 ng-class="{'disabled': !audiencePixel}"

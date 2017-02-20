@@ -1,7 +1,7 @@
 /*globals angular*/
 'use strict';
 
-angular.module('one.legacy').directive('zemCustomAudiencesList', function () { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemCustomAudiencesListLegacy', function () { // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -88,7 +88,7 @@ angular.module('one.legacy').controller('ZemCustomAudiencesListCtrl', function (
 
     vm.openAudienceModal = function (audienceId) {
         var modal = $uibModal.open({
-            component: 'zemCustomAudiencesModal',
+            component: 'zemCustomAudiencesModalLegacy',
             backdrop: 'static',
             keyboard: false,
             resolve: {

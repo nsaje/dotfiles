@@ -1,6 +1,6 @@
-<div class="zem-custom-audiences-list-legacy">
+<div class="zem-custom-audiences-list">
     <div class="loader-container">
-        <span class="loader" ng-if="ctrl.listRequestInProgress && ctrl.audiences.length"></span>
+        <span class="loader" ng-if="$ctrl.state.requests.list.inProgress && $ctrl.state.audiencesList.length"></span>
         <table class="table table-hover middle-alignment">
             <thead>
                 <tr>
@@ -26,16 +26,16 @@
             </thead>
             <tbody>
                 <tr>
-                    <td colspan="6" class="loader-row" ng-if="ctrl.listRequestInProgress && !ctrl.audiences.length">
+                    <td colspan="6" class="loader-row" ng-if="$ctrl.state.requests.list.inProgress && !$ctrl.state.audiencesList.length">
                         <span class="loader"></span>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="6" class="text-center" ng-if="!ctrl.listRequestInProgress && !ctrl.audiences.length">
+                    <td colspan="6" class="text-center" ng-if="!$ctrl.state.requests.list.inProgress && !$ctrl.state.audiencesList.length">
                         No Audiences
                     </td>
                 </tr>
-                <tr ng-class="{'archived': audience.archived}" ng-repeat="audience in ctrl.audiences">
+                <tr ng-class="{'archived': audience.archived}" ng-repeat="audience in $ctrl.state.audiencesList">
                     <td class="audience-name">
                         {{ audience.name }}
                     </td>
@@ -52,9 +52,9 @@
                         {{ audience.createdDt | date:'MMM d, y h:mm:ss a' }}
                     </td>
                     <td class="action-buttons">
-                        <a tabindex="-1" ng-click="ctrl.openAudienceModal(audience.id)" href="#" class="button button--small button--with-icon edit-icon">Edit</a>
-                        <a tabindex="-1" ng-click="ctrl.archiveAudience(audience.id)" ng-if="!audience.archived" href="#" class="button button--small button--with-icon archive-icon" ng-class="{'disabled': ctrl.archiveRequestInProgress[audience.id]}">Archive</a>
-                        <a tabindex="-1" ng-click="ctrl.restoreAudience(audience.id)" ng-if="audience.archived" href="#" class="button button--small button--with-icon archive-icon" ng-class="{'disabled': ctrl.restoreRequestInProgress[audience.id]}">Restore</a>
+                        <a tabindex="-1" ng-click="$ctrl.openAudienceModal(audience)" href="#" class="button button--small button--with-icon edit-icon">Edit</a>
+                        <a tabindex="-1" ng-click="$ctrl.archiveAudience(audience)" ng-if="!audience.archived" href="#" class="button button--small button--with-icon archive-icon" ng-class="{'disabled': $ctrl.state.requests.archive[audience.id].inProgress}">Archive</a>
+                        <a tabindex="-1" ng-click="$ctrl.restoreAudience(audience)" ng-if="audience.archived" href="#" class="button button--small button--with-icon archive-icon" ng-class="{'disabled': $ctrl.state.requests.restore[audience.id].inProgress}">Restore</a>
                     </td>
                 </tr>
             </tbody>

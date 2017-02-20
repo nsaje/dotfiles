@@ -66,6 +66,9 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             if ($state.includes('**.scheduled_reports_v2')) {
                 return {typeName: 'Administration', name: 'Scheduled reports', href: $location.absUrl()};
             }
+            if ($state.includes('**.pixels')) {
+                return {typeName: 'Administration', name: 'Pixels', href: $location.absUrl()};
+            }
             return null;
         }
 

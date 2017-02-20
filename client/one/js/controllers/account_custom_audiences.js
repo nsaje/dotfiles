@@ -20,7 +20,7 @@ angular.module('one.legacy').controller('AccountCustomAudiencesCtrl', function (
             return;
         }
         var modal = $uibModal.open({
-            component: 'zemCustomAudiencesModal',
+            component: 'zemCustomAudiencesModalLegacy',
             backdrop: 'static',
             keyboard: false,
             resolve: {

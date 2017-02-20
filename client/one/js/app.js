@@ -112,6 +112,10 @@ angular.module('one.legacy').config(function ($stateProvider) {
             url: '/users',
             templateUrl: '/app/views/users/zemUsersView.partial.html',
             controller: 'zemUsersView',
+        }).state('main.accounts.pixels', {
+            url: '/pixels',
+            templateUrl: '/app/views/pixels/zemPixelsView.partial.html',
+            controller: 'zemPixelsView',
         });
 
     $stateProvider
