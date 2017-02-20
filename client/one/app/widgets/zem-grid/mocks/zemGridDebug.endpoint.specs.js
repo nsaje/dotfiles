@@ -226,7 +226,7 @@ angular.module('one.widgets').factory('zemGridDebugEndpoint', function ($rootSco
     var TEST_BREAKDOWNS_BASE_LEVEL = ['General Mills', 'BuildDirect', 'Allstate', 'Clean Energy Experts (Home Solar Programs)', 'Quicken', 'Cresco Labs', 'Macadamia Professional LLC', 'Microsoft', 'Happy Feet Dragons', 'Fishy Mishy Mu']; // eslint-disable-line max-len
     var TEST_BREAKDOWNS_DATES = [];
 
-    while(TEST_BREAKDOWNS_BASE_LEVEL.length < 100) {
+    while (TEST_BREAKDOWNS_BASE_LEVEL.length < 100) {
         TEST_BREAKDOWNS_BASE_LEVEL = TEST_BREAKDOWNS_BASE_LEVEL.concat(TEST_BREAKDOWNS_BASE_LEVEL);
     }
     for (var i = 0; i < 30; ++i) {
@@ -315,7 +315,6 @@ angular.module('one.widgets').factory('zemGridDebugEndpoint', function ($rootSco
             breakdown.level = level;
             breakdown.breakdownId = JSON.stringify(position);
 
-            console.log(JSON.stringify(keys))
             keys.forEach(function (k, idx) {
                 var childPosition = position.slice(0);
                 childPosition.push(pagination.offset + idx);
