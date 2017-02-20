@@ -1,5 +1,5 @@
 from decimal import Decimal
-from mock import patch
+from mock import patch, MagicMock
 
 from django import test
 
@@ -77,7 +77,7 @@ class AutopilotHelpersTestCase(test.TestCase):
                                                      mock_copy_settings, mock_k1_update_ad_group):
         ag = dash.models.AdGroup.objects.get(id=1)
 
-        current_ag_settings = ag.get_current_settings().copy_settings()
+        current_ag_settings = MagicMock()
         mock_copy_settings.return_value = current_ag_settings
 
         changes = {

@@ -1,10 +1,11 @@
+import io
 import re
 import httplib2
 
 import googleapiclient.discovery
 from django.conf import settings
 from googleapiclient.errors import HttpError
-from oauth2client.client import SignedJwtAssertionCredentials
+from oauth2client.service_account import ServiceAccountCredentials
 
 from dash import constants
 
@@ -42,7 +43,8 @@ def _get_service():
     if _management_service:
         return _management_service
 
-    credentials = SignedJwtAssertionCredentials(settings.GA_CLIENT_EMAIL, settings.GA_PRIVATE_KEY, scope=GA_SCOPE)
+    key_buffer = io.BytesIO(settings.GA_PRIVATE_KEY)
+    credentials = ServiceAccountCredentials(settings.GA_CLIENT_EMAIL, key_buffer, scope=GA_SCOPE)
     http = credentials.authorize(httplib2.Http())
     # Build the GA service object.
     _management_service = googleapiclient.discovery.build(MANAGEMENT_API_NAME, MANAGEMENT_API_VERSION, http=http,

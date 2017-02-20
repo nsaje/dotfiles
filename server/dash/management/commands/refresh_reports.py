@@ -3,9 +3,7 @@ import logging
 import datetime
 
 from dateutil import rrule
-from optparse import make_option
 from utils.command_helpers import parse_id_list, parse_date
-from django.core.management.base import BaseCommand
 
 from reports import refresh
 from dash import models
@@ -16,12 +14,11 @@ logger = logging.getLogger(__name__)
 
 class Command(ExceptionCommand):
 
-    option_list = BaseCommand.option_list + (
-        make_option('--campaigns', help='Comma separated list of campaign ids.'),
-        make_option('--from', help='Date from iso format'),
-        make_option('--to', help='Date to iso format'),
-        make_option('--verbose', help='Write out as much information as possible.', action='store_true'),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('--campaigns', help='Comma separated list of campaign ids.')
+        parser.add_argument('--from', help='Date from iso format')
+        parser.add_argument('--to', help='Date to iso format')
+        parser.add_argument('--verbose', help='Write out as much information as possible.', action='store_true')
 
     def handle(self, *args, **options):
         campaign_ids = parse_id_list(options, 'campaigns') if options['campaigns'] is not None else []

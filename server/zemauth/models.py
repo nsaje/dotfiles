@@ -301,7 +301,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             raise ValidationError({'email': 'User with this e-mail already exists.'})
 
     def get_all_permissions_with_access_levels(self):
-        if not self.is_active or self.is_anonymous():
+        if not self.is_active or self.is_anonymous:
             return {}
 
         perm_cache_name = '_zemauth_permission_cache'
