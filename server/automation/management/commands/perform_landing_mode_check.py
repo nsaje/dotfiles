@@ -1,6 +1,8 @@
 import logging
 import sys
 
+from optparse import make_option
+
 from automation import campaign_stop
 import dash.models
 from utils.command_helpers import ExceptionCommand
@@ -9,9 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
-
-    def add_arguments(self, parser):
-        parser.add_argument('-c', '--campaign', help='campaign id')
+    option_list = ExceptionCommand.option_list + (
+        make_option('-c', '--campaign', help='campaign id'),
+    )
 
     def handle(self, *args, **options):
 

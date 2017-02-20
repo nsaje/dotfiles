@@ -4,6 +4,9 @@ import dateutil.parser
 
 import influx
 
+from optparse import make_option
+from django.core.management.base import BaseCommand
+
 import reports.api_publishers
 import dash.constants
 import dash.models
@@ -18,11 +21,12 @@ class Command(ExceptionCommand):
 
     help = "Monitor blacklisted publishers by checking for publisher statistics in Redshift that should not exist."
 
-    def add_arguments(self, parser):
-        parser.add_argument(
+    option_list = BaseCommand.option_list + (
+        make_option(
             '--blacklisted_before',
             help='Iso formatted date. All pub. blacklist entries after this date will be ignored'
-        )
+        ),
+    )
 
     def handle(self, *args, **options):
         logger.info('Monitor publisher blacklisting.')

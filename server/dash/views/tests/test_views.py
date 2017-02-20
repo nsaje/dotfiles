@@ -988,11 +988,7 @@ class PublishersBlacklistStatusTest(TestCase):
 
         self.global_blacklist = models.PublisherGroup(name='imglobal')
         self.global_blacklist.save(None)
-        self.global_blacklist_id_orig = settings.GLOBAL_BLACKLIST_ID
         settings.GLOBAL_BLACKLIST_ID = self.global_blacklist.id
-
-    def tearDown(self):
-        settings.GLOBAL_BLACKLIST_ID = self.global_blacklist_id_orig
 
     def _post_publisher_blacklist(self, ad_group_id, data, user_id=3, with_status=False):
         user = User.objects.get(pk=user_id)

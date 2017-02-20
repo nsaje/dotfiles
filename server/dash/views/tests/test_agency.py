@@ -28,7 +28,7 @@ from utils.test_helper import add_permissions, fake_request
 
 
 class AdGroupSettingsTest(TestCase):
-    fixtures = ['test_api', 'test_views', 'test_non_superuser']
+    fixtures = ['test_api.yaml', 'test_views.yaml', 'test_non_superuser.yaml']
 
     def setUp(self):
         self.maxDiff = None
@@ -1848,7 +1848,7 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual('Conversion pixel does not exist', decoded_response['data']['message'])
 
     def test_put_invalid_account(self):
-        new_conversion_pixel = models.ConversionPixel.objects.create(account_id=4, name='abcd')
+        new_conversion_pixel = models.ConversionPixel.objects.create(account_id=20, name='abcd')
 
         add_permissions(self.user, ['archive_restore_entity'])
         response = self.client.put(

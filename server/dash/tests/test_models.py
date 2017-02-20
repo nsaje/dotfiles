@@ -13,6 +13,7 @@ from django.conf import settings
 from django.forms.models import model_to_dict
 
 from dash import models, constants
+from dash.constants import GATrackingType
 from zemauth import models as zemauthmodels
 from zemauth.models import User
 from utils import exc, test_helper
@@ -25,14 +26,16 @@ class AdGroupSettingsTest(TestCase):
         meta_fields = [
             'id',
             'ad_group',
+            'ad_group_id',
             'created_dt',
             'created_by',
+            'created_by_id',
             'changes_text',
             'system_user',
         ]
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)
-        model_fields = set(f.name for f in models.AdGroupSettings._meta.get_fields())
+        model_fields = set(models.AdGroupSettings._meta.get_all_field_names())
 
         self.assertEqual(model_fields, all_fields)
 
@@ -295,14 +298,17 @@ class CampaignSettingsTest(TestCase):
         meta_fields = [
             'id',
             'campaign',
+            'campaign_id',
             'created_dt',
             'created_by',
+            'created_by_id',
             'changes_text',
+            'campaign_manager_id',
             'system_user',
         ]
 
         all_fields = set(models.CampaignSettings._settings_fields + meta_fields)
-        model_fields = set(f.name for f in models.CampaignSettings._meta.get_fields())
+        model_fields = set(models.CampaignSettings._meta.get_all_field_names())
 
         self.assertEqual(model_fields, all_fields)
 

@@ -66,7 +66,7 @@ urlpatterns = [
         name='set_password'),
     url(r'^admin$', AdminRedirectView.as_view(url='/admin/')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^oauth2callback', zemauth.views.google_callback, name='zemauth.views.google_callback'),
+    url(r'^oauth2callback', zemauth.views.google_callback),
     url(r'^supply_dash/', dash.views.views.supply_dash_redirect),
 ]
 

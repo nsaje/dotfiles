@@ -342,17 +342,15 @@ class DailyStatementsK1TestCase(TestCase):
         dates = daily_statements._get_dates(update_from, self.campaign1)
         self.assertItemsEqual([update_from], dates)
 
-    @patch('etl.daily_statements_k1._generate_statements')
+    @patch('reports.daily_statements._generate_statements')
     def test_daily_statements_already_exist(self, mock_generate_statements, mock_campaign_with_spend,
                                             mock_ad_group_stats, mock_datetime):
         return_values = {}
         self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 30, 12))
 
-        campaigns = dash.models.Campaign.objects.filter(account_id=1)
-
         for date in [datetime.date(2015, 11, 1) + datetime.timedelta(days=i) for i in range(30)]:
-            for budget in dash.models.BudgetLineItem.objects.filter(campaign__in=campaigns):
+            for budget in dash.models.BudgetLineItem.objects.filter(campaign_id=self.campaign1.id):
                 if budget.start_date <= date and budget.end_date >= date:
                     reports.models.BudgetDailyStatement.objects.create(
                         budget_id=budget.id,
@@ -364,12 +362,11 @@ class DailyStatementsK1TestCase(TestCase):
                     )
 
         update_from = datetime.date(2015, 11, 30)
-        for campaign in campaigns:
-            dates = daily_statements._get_dates(update_from, campaign)
-            self.assertItemsEqual([datetime.date(2015, 11, 30)], dates)
+        dates = daily_statements._get_dates(update_from, self.campaign1)
+        self.assertItemsEqual([datetime.date(2015, 11, 30)], dates)
 
-        daily_statements.reprocess_daily_statements(update_from, account_id=1)
-        self.assertEqual(mock_generate_statements.call_count, len(campaigns))
+        daily_statements.reprocess_daily_statements(update_from)
+        mock_generate_statements.assert_called_once()
 
 
 class EffectiveSpendPctsK1TestCase(TestCase):

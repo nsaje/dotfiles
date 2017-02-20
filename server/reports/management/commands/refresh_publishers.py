@@ -1,8 +1,10 @@
 import logging
+from optparse import make_option
 
 import sys
 
 import datetime
+from django.core.management import BaseCommand
 
 from reports import exc
 import reports.refresh
@@ -14,10 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
-
-    def add_arguments(self, parser):
-        parser.add_argument('-s', '--start-date', help='Start date for the publishers import', dest='start_date')
-        parser.add_argument('-e', '--end-date', help='End date for the publishers import', dest='end_date')
+    option_list = BaseCommand.option_list + (
+        make_option('-s', '--start-date', help='Start date for the publishers import', dest='start_date'),
+        make_option('-e', '--end-date', help='End date for the publishers import', dest='end_date')
+    )
 
     def handle(self, *args, **options):
         yesterday = datetime.date.today() - datetime.timedelta(days=1)

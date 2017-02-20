@@ -127,6 +127,13 @@ class UserTestCase(test.TestCase):
 
         self.assertEqual(permissions, {})
 
+    def test_anonymous_user_permissions(self):
+        user = models.User.objects.get(pk=2)
+        user.is_anonymous = lambda: True
+        permissions = user.get_all_permissions_with_access_levels()
+
+        self.assertEqual(permissions, {})
+
     def test_user_permissions_cache(self):
         user = models.User.objects.get(pk=1)
         permissions = user.get_all_permissions_with_access_levels()
