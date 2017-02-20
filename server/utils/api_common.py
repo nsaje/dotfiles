@@ -27,6 +27,11 @@ class BaseApiView(View):
             }
         })
 
+    def _set_default_reponse_headers(self, response):
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+
     def create_api_response(
             self,
             data=None,
@@ -51,7 +56,7 @@ class BaseApiView(View):
             content_type='application/json',
             status=status_code
         )
-
+        self._set_default_reponse_headers(response)
         return response
 
     def create_file_response(self, content_type, filename, status_code=200, content=''):
@@ -60,7 +65,7 @@ class BaseApiView(View):
             content_type=content_type,
             status=status_code
         )
-
+        self._set_default_reponse_headers(response)
         response['Content-Disposition'] = 'attachment; filename="%s"' % filename
 
         return response
