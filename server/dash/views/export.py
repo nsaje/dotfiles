@@ -597,7 +597,7 @@ class CustomReportDownload(ExportApiView):
 
     def get(self, request):
         if not request.user.has_perm('zemauth.can_download_custom_reports'):
-            raise exc.AuthorizationError()
+            raise exc.MissingDataError()
 
         path = request.GET.get('path')
         if not path:

@@ -1778,7 +1778,7 @@ class CustomReporTestCase(test.TestCase):
         client.login(username=self.user.username, password='secret')
 
         response = client.get(self._get_url(path='test.csv'))
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 404)
 
     def test_ok(self, mock_get):
         mock_get.return_value = 'content'
