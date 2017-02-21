@@ -65,7 +65,27 @@ class EncryptionHelperTestCase(unittest.TestCase):
             **{header_sig: self.signature, header_ts: str(mock_time())}
         )
 
-        request_signer.verify_wsgi_request(request, self.secret_key)
+        request_signer.verify_wsgi_request(request, ['my-deprecated-key', self.secret_key])
+
+    @mock.patch('time.time')
+    def test_verify_invalid_timestamp(self, mock_time):
+        mock_time.return_value = 987654321
+        header_sig = request_signer._get_wsgi_header_field_name(
+            request_signer.SIGNATURE_HEADER,
+        )
+        header_ts = request_signer._get_wsgi_header_field_name(
+            request_signer.TS_HEADER,
+        )
+
+        request = self.factory.post(
+            self.url,
+            data=self.data,
+            content_type='application/json',
+            **{header_sig: self.signature, header_ts: '123456789'}
+        )
+
+        with self.assertRaises(request_signer.SignatureError):
+            request_signer.verify_wsgi_request(request, self.secret_key)
 
     def test_missing_signature(self):
         request = self.factory.post(

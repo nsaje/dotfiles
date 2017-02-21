@@ -19,6 +19,7 @@ TS_HEADER = 'Zapi-auth-ts'
 SIGNATURE_HEADER = 'Zapi-auth-signature'
 
 SIGNATURE_KEY_MIN_LEN = 16
+MAX_TS_SKEW = 60 * 15  # disallow requests with clock skew of more than 15 minutes
 CA_CERT_FILE = os.path.join(os.path.dirname(__file__), 'zemanta_ca_cert.pem')
 
 LOCAL_HOSTS = ['localhost', '127.0.0.1']
@@ -91,7 +92,7 @@ def _normalize_signature(signature):
     return signature.replace('+', '-').replace('/', '_')
 
 
-def verify_wsgi_request(wsgi_request, secret_key):
+def verify_wsgi_request(wsgi_request, secret_keys):
     '''
     Verfies if header with signature matches calculated signature.
     Otherwise SignatureError is raised.
@@ -106,17 +107,30 @@ def verify_wsgi_request(wsgi_request, secret_key):
     if not header_signature:
         raise SignatureError('Missing signature')
 
-    header_signature = _normalize_signature(header_signature)
-    calc_signature = _get_signature(
-        header_ts,
-        wsgi_request.META.get('PATH_INFO'),
-        wsgi_request.META.get('QUERY_STRING'),
-        wsgi_request.body,
-        secret_key,
-    )
+    ts_now = time.time()
+    try:
+        ts_seconds = int(header_ts)
+    except:
+        raise SignatureError('Invalid timestamp')
+    if not ts_now - MAX_TS_SKEW < ts_seconds < ts_now + MAX_TS_SKEW:
+        raise SignatureError('Request out of timestamp boundaries')
 
-    if calc_signature != header_signature:
-        raise SignatureError('Invalid signature')
+    header_signature = _normalize_signature(header_signature)
+
+    if isinstance(secret_keys, basestring):
+        secret_keys = [secret_keys]
+    for secret_key in secret_keys:
+        calc_signature = _get_signature(
+            header_ts,
+            wsgi_request.META.get('PATH_INFO'),
+            wsgi_request.META.get('QUERY_STRING'),
+            wsgi_request.body,
+            secret_key,
+        )
+
+        if calc_signature == header_signature:
+            return
+    raise SignatureError('Invalid signature')
 
 
 class _ValidHTTPSConnection(httplib.HTTPConnection):
