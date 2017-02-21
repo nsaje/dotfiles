@@ -212,14 +212,14 @@ def create_all_rtb_source_row(constraints, can_show_rtb_group_cpc):
     rtb_source_ids = map(str, rtb_source_ids)
 
     # Create All RTB Source row using rtb_source_ids for newly created group
-    all_rtb_source_row = _create_all_rtb_source_row_data(
+    all_rtb_source_row = create_all_rtb_source_row_data(
         ad_group, settings, can_show_rtb_group_cpc and
         settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
     all_rtb_source_row['group'] = {'ids': rtb_source_ids}
     return all_rtb_source_row
 
 
-def _create_all_rtb_source_row_data(ad_group, ad_group_settings, show_rtb_group_cpc):
+def create_all_rtb_source_row_data(ad_group, ad_group_settings, show_rtb_group_cpc):
     status = {'value': ad_group_settings.b1_sources_group_state}
     notifications = {}
     if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE and \
