@@ -24,7 +24,7 @@ echo "Waiting for server"
 retval=1
 n=0
 while true; do
-    wget -S "$SERVER_ENDPOINT" 2> /dev/null
+    wget --spider "$SERVER_ENDPOINT" 2> /dev/null
     retval=$?
     case "$retval" in
         0)  # connection successful
