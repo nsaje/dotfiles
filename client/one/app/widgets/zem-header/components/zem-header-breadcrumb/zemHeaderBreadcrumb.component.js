@@ -58,16 +58,16 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
 
         function getAdministrationPage () {
             if ($state.includes('**.users')) {
-                return {typeName: 'Administration', name: 'User permissions', href: $location.absUrl()};
+                return {typeName: 'Account Settings', name: 'User permissions', href: $location.absUrl()};
             }
             if ($state.includes('**.credit_v2')) {
-                return {typeName: 'Administration', name: 'Account credit', href: $location.absUrl()};
+                return {typeName: 'Account Settings', name: 'Account credit', href: $location.absUrl()};
             }
             if ($state.includes('**.scheduled_reports_v2')) {
-                return {typeName: 'Administration', name: 'Scheduled reports', href: $location.absUrl()};
+                return {typeName: 'Account Settings', name: 'Scheduled reports', href: $location.absUrl()};
             }
             if ($state.includes('**.pixels')) {
-                return {typeName: 'Administration', name: 'Pixels', href: $location.absUrl()};
+                return {typeName: 'Account Settings', name: 'Pixels & Audiences', href: $location.absUrl()};
             }
             return null;
         }
