@@ -184,7 +184,7 @@ class AdGroupSettingsTest(TestCase):
                     'redirect_javascript': "alert('a')",
                     'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 23], "timezone": "America/New_York"},
                     'b1_sources_group_enabled': True,
-                    'b1_sources_group_daily_budget': '5.0000',
+                    'b1_sources_group_daily_budget': '500.0000',
                     'b1_sources_group_state': 1,
                     'b1_sources_group_cpc_cc': '0.0100',
                     'whitelist_publisher_groups': [],

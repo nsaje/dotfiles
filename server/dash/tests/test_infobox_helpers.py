@@ -326,10 +326,11 @@ class InfoBoxHelpersTest(TestCase):
         new_settings.save(None)
 
         campaign = dash.models.Campaign.objects.get(pk=1)
-        self.assertEqual(250, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
+        self.assertEqual(550, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
         # use raw sql to bypass model restrictions
-        q = 'DELETE FROM dash_adgroupsourcestate; DELETE FROM dash_adgroupsourcesettings'
+        q = 'DELETE FROM dash_adgroupsourcestate; DELETE FROM dash_adgroupsourcesettings; '\
+            'DELETE FROM dash_adgroupsettings'
         cursor = connection.cursor()
         cursor.execute(q, [])
 

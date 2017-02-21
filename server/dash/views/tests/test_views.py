@@ -1700,7 +1700,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('03/02 - 04/02', flight_setting['value'])
 
         flight_setting = self._get_setting(settings, 'daily')
-        self.assertEqual('$50.00', flight_setting['value'])
+        self.assertEqual('$500.00', flight_setting['value'])
 
         device_setting = self._get_setting(settings, 'targeting')
         self.assertEqual('Device: Desktop, Mobile', device_setting['value'])
@@ -1717,7 +1717,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertIsNone(yesterday_spend, 'no permission')
 
         budget_setting = self._get_setting(settings, 'daily spend cap')
-        self.assertEqual('$50.00', budget_setting['value'])
+        self.assertEqual('$500.00', budget_setting['value'])
 
         budget_setting = self._get_setting(settings, 'campaign budget')
         self.assertIsNone(budget_setting, 'no permission')
@@ -1839,7 +1839,7 @@ class AdGroupOverviewTest(TestCase):
         ), flight_setting['value'])
 
         flight_setting = self._get_setting(settings, 'daily')
-        self.assertEqual('$50.00', flight_setting['value'])
+        self.assertEqual('$500.00', flight_setting['value'])
         yesterday_setting = self._get_setting(settings, 'yesterday')
         self.assertIsNone(yesterday_setting, 'no permission')
 
@@ -1853,7 +1853,7 @@ class AdGroupOverviewTest(TestCase):
 
         yesterday_setting = self._get_setting(settings, 'yesterday')
         self.assertEqual('$60.00', yesterday_setting['value'])
-        self.assertEqual('120.00% of $50.00 Daily Spend Cap', yesterday_setting['description'])
+        self.assertEqual('12.00% of $500.00 Daily Spend Cap', yesterday_setting['description'])
 
 
 class CampaignOverviewTest(TestCase):
@@ -1959,7 +1959,7 @@ class CampaignOverviewTest(TestCase):
         ), flight_setting['value'])
 
         budget_setting = self._get_setting(settings, 'daily spend cap')
-        self.assertEqual('$100.00', budget_setting['value'])
+        self.assertEqual('$550.00', budget_setting['value'])
 
         budget_setting = self._get_setting(settings, 'campaign budget')
         self.assertIsNone(budget_setting)

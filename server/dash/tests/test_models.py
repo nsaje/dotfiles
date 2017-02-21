@@ -68,7 +68,7 @@ class AdGroupSettingsTest(TestCase):
             'dayparting': {"monday": [1, 2, 5], "tuesday": [10, 12], "timezone": "CET"},
             'max_cpm': Decimal('1.6'),
             'b1_sources_group_enabled': True,
-            'b1_sources_group_daily_budget': Decimal('5.0000'),
+            'b1_sources_group_daily_budget': Decimal('500.0000'),
             'b1_sources_group_state': constants.AdGroupSourceSettingsState.ACTIVE,
             'b1_sources_group_cpc_cc': Decimal('0.1'),
             'whitelist_publisher_groups': [1],
@@ -140,7 +140,7 @@ class AdGroupSettingsTest(TestCase):
             'Whitelist publisher groups set to "pg 1", '
             'Brand name set to "Example", '
             'Bid CPC for all RTB sources set to "$0.100", '
-            'Daily budget for all RTB sources set to "$5.00", '
+            'Daily budget for all RTB sources set to "$500.00", '
             'Max CPC bid set to "$1.000", '
             'Interest targeting set to "A, B", '
             'Exclusion interest targeting set to "C, D", '

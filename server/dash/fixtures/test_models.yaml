@@ -118,13 +118,13 @@
     pk: 1
 
 -   fields:
-        type: 'bidder'
+        type: 'b1'
         available_actions: [19, 20]
     model: dash.sourcetype
     pk: 2
 
 -   fields:
-        type: 'b1'
+        type: 'outbrain'
         min_cpc: 0.01
         max_cpc: 7.0
     model: dash.sourcetype
@@ -255,7 +255,7 @@
         dayparting: {"monday": [1,2,5], "tuesday": [10, 12], "timezone": "CET"}
         max_cpm: '1.6'
         b1_sources_group_enabled: true
-        b1_sources_group_daily_budget: '5.0000'
+        b1_sources_group_daily_budget: '500.0000'
         b1_sources_group_state: 1
         b1_sources_group_cpc_cc: '0.1'
         whitelist_publisher_groups: [1]
