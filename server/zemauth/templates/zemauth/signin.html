@@ -15,7 +15,7 @@
     <div class="container">
         <div class="container__left" id="signin" data-gauth-url="{{ gauth_url }}">
             <img class="logo" src="{% static "img/zemanta-logo-white.svg" %}" alt="Zemanta Logo"/>
-            <form id="signin_form" method="post" action="{% url 'signin' %}">
+            <form id="signin_form" method="post" action="{% url 'signin' %}" novalidate>
                 {% csrf_token %}
 
                 <h1>Sign in</h1>
