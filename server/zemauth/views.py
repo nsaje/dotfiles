@@ -105,7 +105,7 @@ def google_callback(request, *args, **kwargs):
 
     if user and user.is_active:
         auth.login(request, user)
-        return HttpResponseRedirect(request.GET.get('state') or reverse('dash.views.views.index'))
+        return HttpResponseRedirect(request.GET.get('state') or reverse('index'))
     else:
         return _fail_response('Your Google account is not connected with Zemanta.')
 
