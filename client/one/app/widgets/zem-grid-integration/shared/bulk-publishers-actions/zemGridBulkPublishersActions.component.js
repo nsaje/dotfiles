@@ -5,10 +5,8 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
         api: '=',
     },
     templateUrl: '/app/widgets/zem-grid-integration/shared/bulk-publishers-actions/zemGridBulkPublishersActions.component.html', // eslint-disable-line max-len
-    controller: function ($window, api, zemGridConstants, zemGridEndpointColumns, zemDataFilterService) { // eslint-disable-line max-len
-        var COLUMNS = zemGridEndpointColumns.COLUMNS;
+    controller: function ($window, zemGridConstants, zemGridBulkPublishersActionsService, zemAlertsService) { // eslint-disable-line max-len
         var MAX_BLACKLISTED_PUBLISHERS_YAHOO = 0;
-
         var MSG_GLOBAL_UPDATE_ALERT = 'This action will affect all accounts. Are you sure you want to proceed?';
         var MSG_DISABLED_ROW = '' +
             'This publisher can\'t be blacklisted because the media source ' +
@@ -18,12 +16,16 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
 
         var $ctrl = this;
 
-        $ctrl.publisherBlacklistActions = []; // Defined below
-        $ctrl.publisherEnableActions = []; // Defined below
+        $ctrl.blacklistActions = []; // Defined in $onInit
+        $ctrl.unlistActions = []; // Defined in $onInit
         $ctrl.isEnabled = isEnabled;
         $ctrl.execute = execute;
 
+        var actions;
+
         $ctrl.$onInit = function () {
+            $ctrl.service = zemGridBulkPublishersActionsService.createInstance($ctrl.api);
+            initializeActions();
             initializeSelectionConfig();
             $ctrl.api.onSelectionUpdated(null, updateActionStates);
         };
@@ -48,9 +50,19 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
             $ctrl.api.setSelectionOptions(config);
         }
 
+        function initializeActions () {
+            $ctrl.blacklistActions = $ctrl.service.getBlacklistActions();
+            $ctrl.unlistActions = $ctrl.service.getUnlistActions();
+
+            actions = $ctrl.blacklistActions.concat($ctrl.unlistActions).reduce(function (o, action) {
+                o[action.value] = action;
+                return o;
+            }, {});
+        }
+
         function updateActionStates () {
             var supportedLevels = getSupportedLevels();
-            actions.forEach(function (action) {
+            angular.forEach(actions, function (action) {
                 action.disabled = supportedLevels.indexOf(action.level) < 0;
             });
         }
@@ -112,9 +124,7 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
         }
 
         function execute (actionValue) {
-            var metaData = $ctrl.api.getMetaData();
-            var selection = $ctrl.api.getSelection();
-            var action = getActionByValue(actionValue);
+            var action = actions[actionValue];
 
             if (action.level === constants.publisherBlacklistLevel.GLOBAL) {
                 if (!confirm(MSG_GLOBAL_UPDATE_ALERT)) {
@@ -122,134 +132,27 @@ angular.module('one.widgets').component('zemGridBulkPublishersActions', {
                 }
             }
 
-            var convertedSelection = {};
-            convertedSelection.id = metaData.id;
-            convertedSelection.selectedPublishers = convertRows(selection.selected);
-            convertedSelection.unselectedPublishers = convertRows(selection.unselected);
-            convertedSelection.filterAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
-
-            $ctrl.api.clearSelection();
-            action.execute(convertedSelection);
-        }
-
-        function convertRows (collection) {
-            return collection.filter(function (row) {
-                return row.level === zemGridConstants.gridRowLevel.BASE;
-            }).map(function (row) {
-                return {
-                    source_id: row.data.stats[COLUMNS.sourceId.field].value,
-                    domain: row.data.stats[COLUMNS.domain.field].value,
-                    exchange: row.data.stats[COLUMNS.exchange.field].value,
-                    external_id: row.data.stats[COLUMNS.externalId.field].value,
-                };
-            });
+            $ctrl.service
+                .execute(action, false)
+                .then(function () {
+                    refreshData();
+                    $ctrl.api.clearSelection();
+                })
+                .catch(function (err) {
+                    if (!err.data.errors || !err.data.errors.cpc_constraints) { return; }
+                    if (!confirm('If you want to blacklist more than 30 Outbrain publishers, Outbrain bid CPC will be automatically set to at least $0.65 in all ad groups within this account. Are you sure you want to proceed with blaklisting?')) { // eslint-disable-line max-len
+                        return;
+                    }
+                    $ctrl.service.execute(action, true).then(refreshData).catch(function (err) {
+                        if (!err.data.errors || !err.data.errors.cpc_constraints) { return; }
+                        zemAlertsService.notify(constants.notificationType.warning, err.data.errors.cpc_constraints[0], true); // eslint-disable-line max-len
+                    });
+                });
         }
 
         function refreshData () {
             $ctrl.api.loadData();
             $ctrl.api.clearSelection();
-        }
-
-        //
-        // Actions (TODO: create service when this functionallity is expanded)
-        //
-        $ctrl.publisherBlacklistActions = [{
-            name: 'Blacklist in this adgroup',
-            value: 'blacklist-adgroup',
-            level: constants.publisherBlacklistLevel.ADGROUP,
-            state: constants.publisherStatus.BLACKLISTED,
-            hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status')
-        }, {
-            name: 'Blacklist in this campaign',
-            value: 'blacklist-campaign',
-            level: constants.publisherBlacklistLevel.CAMPAIGN,
-            state: constants.publisherStatus.BLACKLISTED,
-            hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-            $ctrl.api.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
-        }, {
-            name: 'Blacklist in this account',
-            value: 'blacklist-account',
-            level: constants.publisherBlacklistLevel.ACCOUNT,
-            state: constants.publisherStatus.BLACKLISTED,
-            hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-            $ctrl.api.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
-        }, {
-            name: 'Blacklist globally on RTB sources',
-            value: 'blacklist-global',
-            internal: $ctrl.api.isPermissionInternal('zemauth.can_access_global_publisher_blacklist_status'),
-            level: constants.publisherBlacklistLevel.GLOBAL,
-            state: constants.publisherStatus.BLACKLISTED,
-            hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-            $ctrl.api.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
-        }];
-
-        $ctrl.publisherEnableActions = [{
-            name: 'Re-enable in this adgroup',
-            value: 'enable-adgroup',
-            level: constants.publisherBlacklistLevel.ADGROUP,
-            state: constants.publisherStatus.ENABLED,
-            hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status')
-        }, {
-            name: 'Re-enable in this campaign',
-            value: 'enable-campaign',
-            level: constants.publisherBlacklistLevel.CAMPAIGN,
-            state: constants.publisherStatus.ENABLED,
-            hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-            $ctrl.api.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
-        }, {
-            name: 'Re-enable in this account',
-            value: 'enable-account',
-            level: constants.publisherBlacklistLevel.ACCOUNT,
-            state: constants.publisherStatus.ENABLED,
-            hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-            $ctrl.api.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
-        }, {
-            name: 'Re-enable globally on RTB sources',
-            value: 'enable-global',
-            level: constants.publisherBlacklistLevel.GLOBAL,
-            state: constants.publisherStatus.ENABLED,
-            hasPermission: $ctrl.api.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-            $ctrl.api.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
-        }];
-
-        var actions = $ctrl.publisherBlacklistActions.concat($ctrl.publisherEnableActions);
-
-        // Create actions' execute functions
-        actions.forEach(function (action) {
-            action.execute = function (selection) {
-                bulkUpdatePublishers(selection, action.state, action.level);
-            };
-        });
-
-        function getActionByValue (value) {
-            return actions.filter(function (action) {
-                return action.value === value;
-            })[0];
-        }
-
-        function bulkUpdatePublishers (selection, state, level) {
-            var dateRange = zemDataFilterService.getDateRange(),
-                savePublisherState = function (enforceCpc) {
-                    return api.adGroupPublishersState.save(
-                        selection.id,
-                        state,
-                        level,
-                        dateRange.startDate,
-                        dateRange.endDate,
-                        selection.selectedPublishers,
-                        selection.unselectedPublishers,
-                        selection.filterAll,
-                        enforceCpc
-                    );
-                },
-                trySaveWithEnforcedCpc = function (err) {
-                    if (!err.data.errors || !err.data.errors.cpc_constraints) { return; }
-                    if (!confirm('If you want to blacklist more than 30 Outbrain publishers, Outbrain bid CPC will be automatically set to at least $0.65 in all ad groups within this account. Are you sure you want to proceed with blaklisting?')) { // eslint-disable-line max-len
-                        return;
-                    }
-                    savePublisherState(true).then(refreshData);
-                };
-            savePublisherState(false).then(refreshData).catch(trySaveWithEnforcedCpc);
         }
     }
 });

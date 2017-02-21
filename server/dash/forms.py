@@ -1727,6 +1727,8 @@ class PublisherTargetingForm(forms.Form):
     campaign = forms.ModelChoiceField(queryset=None, required=False)
     account = forms.ModelChoiceField(queryset=None, required=False)
 
+    level = forms.TypedChoiceField(choices=constants.PublisherBlacklistLevel.get_choices(), required=False)
+
     enforce_cpc = forms.BooleanField(required=False)
 
     # bulk selection fields
@@ -1778,6 +1780,16 @@ class PublisherTargetingForm(forms.Form):
         ]
         if len([x for x in provided_objs if x]) > 1:
             raise forms.ValidationError('Provide only one of the following constraints: ad group, campaign or account')
+
+        # TODO: hierarchy data is currently not easily available on frontend, make it accessible via levels
+        if self.cleaned_data.get('ad_group') and self.cleaned_data.get('level'):
+            level = self.cleaned_data['level']
+            if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+                self.cleaned_data['campaign'] = self.cleaned_data['ad_group'].campaign
+                self.cleaned_data['ad_group'] = None
+            elif level == constants.PublisherBlacklistLevel.ACCOUNT:
+                self.cleaned_data['account'] = self.cleaned_data['ad_group'].campaign.account
+                self.cleaned_data['ad_group'] = None
 
         return self.cleaned_data
 

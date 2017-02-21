@@ -1,6 +1,6 @@
 <zem-dropdown
         zem-placeholder="Manage Blacklist"
-        zem-dropdown-options="$ctrl.publisherBlacklistActions"
+        zem-dropdown-options="$ctrl.blacklistActions"
         zem-on-select="$ctrl.execute(selected)"
         zem-check-disabled="!$ctrl.isEnabled()"
         zem-disabled-title="At least one Publisher has to be selected before using Manage Blacklist and all selected publishers need to be enabled."
@@ -9,7 +9,7 @@
 </zem-dropdown>
 <zem-dropdown
         zem-placeholder="Manage Re-enable"
-        zem-dropdown-options="$ctrl.publisherEnableActions"
+        zem-dropdown-options="$ctrl.unlistActions"
         zem-on-select="$ctrl.execute(selected)"
         zem-check-disabled="!$ctrl.isEnabled()"
         zem-disabled-title="At least one Publisher has to be selected before using Manage Re-enable and all selected publishers need to be blacklisted."

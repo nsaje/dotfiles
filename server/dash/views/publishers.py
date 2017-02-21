@@ -4,6 +4,7 @@ from dash import constants
 from dash import forms
 from dash import publisher_group_helpers
 from dash import models
+from dash import cpc_constraints
 
 import redshiftapi.api_breakdowns
 
@@ -31,10 +32,15 @@ class PublisherTargeting(api_common.BaseApiView):
             entry_dicts = self.get_bulk_selection(form.cleaned_data)
 
         if entry_dicts:
-            publisher_group_helpers.handle_publishers(
-                request, entry_dicts, obj,
-                form.cleaned_data['status'],
-                enforce_cpc=form.cleaned_data['enforce_cpc'])
+            try:
+                publisher_group_helpers.handle_publishers(
+                    request, entry_dicts, obj,
+                    form.cleaned_data['status'],
+                    enforce_cpc=form.cleaned_data['enforce_cpc'])
+            except cpc_constraints.CpcValidationError as e:
+                raise exc.ValidationError(errors={
+                    'cpc_constraints': list(e)
+                })
 
         response = {"success": True}
         return self.create_api_response(response)

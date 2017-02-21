@@ -634,6 +634,11 @@ urlpatterns += [
         name='all_account_alerts',
     ),
     url(
+        r'^api/publishers/targeting/',
+        login_required(dash.views.publishers.PublisherTargeting.as_view()),
+        name='publisher_targeting'
+    ),
+    url(
         r'^api/custom_report_download/',
         login_required(dash.views.export.CustomReportDownload.as_view()),
         name='custom_report_download'
@@ -646,11 +651,6 @@ urlpatterns += [
         r'^api/callbacks/content-upload/$',
         dash.views.callbacks.content_upload,
         name='callbacks.content_upload',
-    ),
-    url(
-        r'^api/publishers/targeting/',
-        login_required(dash.views.publishers.PublisherTargeting.as_view()),
-        name='publisher_targeting'
     ),
 ]
 

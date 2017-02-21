@@ -1616,6 +1616,7 @@ class PublisherTargetingFormTestCase(TestCase):
             'end_date': None,
             'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.all()),
             'enforce_cpc': False,
+            'level': '',
         })
 
     def test_form_select_all_invalid(self):
@@ -1686,4 +1687,26 @@ class PublisherTargetingFormTestCase(TestCase):
             'end_date': datetime.date(2017, 1, 30),
             'filtered_sources': test_helper.QuerySetMatcher(models.Source.objects.all()),
             'enforce_cpc': True,
+            'level': '',
         })
+
+    def test_form_level(self):
+        f = forms.PublisherTargetingForm(self.user, {
+            'entries': [],
+            'status': constants.PublisherTargetingStatus.BLACKLISTED,
+            'ad_group': 1,
+            'start_date': '2017-01-05',
+            'end_date': '2017-01-30',
+            'level': constants.PublisherBlacklistLevel.CAMPAIGN,
+        })
+
+        self.assertTrue(f.is_valid())
+        self.assertDictContainsSubset({
+            'ad_group': None,
+            'campaign': models.Campaign.objects.get(pk=1),
+            'account': None,
+            'level': constants.PublisherBlacklistLevel.CAMPAIGN,
+            'start_date': datetime.date(2017, 1, 5),
+            'end_date': datetime.date(2017, 1, 30),
+            'enforce_cpc': False,
+        }, f.cleaned_data)
