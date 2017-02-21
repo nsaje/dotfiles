@@ -20,8 +20,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'one',
-        'USER': 'eins232',
-        'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwGgUwpFGlqGWGuuQACARCAU5Nsi0cZg4iyY33n5tE4fpuh1h6BN2AQNGNTqA/6M/TD88TRFhh3af/dQkIDAVrj6Yixq4AI8PEU5HyVq7F3ImocBhMbulFLaQe8IG0oIzMV3ulM').get(),
+        'USER': 'eins23',
+        'PASSWORD': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy/sg1ZhDOsF81umbQCARCAU7Stgh5ErF6/k8czOokzRCpB4R+B0alAdbi5EDr8tt/ubGK8SK8Lasq1yDo3cFjw4O6FO5nvOnuRgcrHWeatpPTlKuZwdxOEW2aBY7BhCMRvkL8f').get(),
         'HOST': 'eins.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
         'PORT': 5432,
         'TEST': {
