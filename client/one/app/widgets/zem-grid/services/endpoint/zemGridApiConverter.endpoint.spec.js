@@ -87,6 +87,7 @@ describe('zemGridEndpointApiConverter', function () {
                     supplyDashDisabledMessage: undefined,
                     entity: {type: 'adGroup', id: 3},
                     breakdown: {
+                        breakdownId: '3',
                         group: true, meta: {}, level: 1, rows: [{
                             stats: {
                                 breakdown_name: {

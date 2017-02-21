@@ -318,10 +318,23 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
 
             // Find breakdown by id and apply partial breakdown data
             var current = findBreakdown(breakdown.breakdownId);
-            current.rows = current.rows.concat(breakdown.rows);
+            mergeRows(current.rows, breakdown.rows);
             current.pagination.limit = current.rows.length;
             current.pagination.count = breakdown.pagination.count;
             current.pagination.complete = breakdown.pagination.complete;
+        }
+
+        function mergeRows (rows, newRows) {
+            // Find row by breakdownId and merge it (happens with group updates)
+            // or if not found push it to collection (usual flow)
+            newRows.forEach (function (newRow) {
+                var row = rows.filter(function (r) { return r.breakdownId === newRow.breakdownId; })[0];
+                if (row && row.breakdown) {
+                    applyBreakdown(newRow.breakdown);
+                } else {
+                    rows.push(newRow);
+                }
+            });
         }
 
         function findBreakdown (breakdownId, subtree) {

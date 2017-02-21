@@ -49,7 +49,7 @@ def get_constraints_kwargs(form_data, **overrides):
     return kwargs
 
 
-def format_breakdown_response(report_rows, offset, limit, parents, totals=None, goals=None, **extras):
+def format_breakdown_response(report_rows, offset, parents, totals=None, goals=None, **extras):
     blocks = []
 
     if parents:
@@ -175,7 +175,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             totals_thread.join()
             totals = totals_thread.get_result()
 
-        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
+        report = format_breakdown_response(rows, offset, parents, totals, goals=goals)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
 
         return self.create_api_response(report)
@@ -243,7 +243,7 @@ class AccountBreakdown(api_common.BaseApiView):
             totals_thread.join()
             totals = totals_thread.get_result()
 
-        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
+        report = format_breakdown_response(rows, offset, parents, totals, goals=goals)
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
 
         return self.create_api_response(report)
@@ -312,7 +312,7 @@ class CampaignBreakdown(api_common.BaseApiView):
             totals_thread.join()
             totals = totals_thread.get_result()
 
-        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals=goals)
+        report = format_breakdown_response(rows, offset, parents, totals, goals=goals)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
             report[0]['campaign_goals'] = campaign_goals.get_campaign_goals(
                 campaign, report[0].get('conversion_goals', []))
@@ -392,18 +392,26 @@ class AdGroupBreakdown(api_common.BaseApiView):
 
         if breakdown == ['source_id']:
             extras.update(breakdown_helpers.get_ad_group_sources_extras(ad_group))
-            breakdown_helpers.insert_all_rtb_source_row(
-                constraints, rows, request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc'))
 
         if stats.constants.get_target_dimension(breakdown) == 'publisher_id':
             extras['ob_blacklisted_count'] = publisher_helpers.get_ob_blacklisted_publishers_count(
                 ad_group.campaign.account_id)
 
-        report = format_breakdown_response(rows, offset, limit + REQUEST_LIMIT_OVERFLOW, parents, totals, goals,
+        report = format_breakdown_response(rows, offset, parents, totals, goals,
                                            **extras)
         if len(breakdown) == 1 and request.user.has_perm('zemauth.campaign_goal_optimization'):
             report[0]['campaign_goals'] = campaign_goals.get_campaign_goals(
                 ad_group.campaign, report[0].get('conversion_goals', []))
 
         report = _process_request_overflow(report, limit, REQUEST_LIMIT_OVERFLOW)
+
+        # MVP for all-RTB-sources-as-one
+        # Append ALL_RTB_SOURCE row at the end of the requested page
+        # Frontend REQ: should be present on each page to be able to merge grouped rows
+        if breakdown == ['source_id']:
+            all_rtb_source_row = breakdown_helpers.create_all_rtb_source_row(
+                constraints, request.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc'))
+            if all_rtb_source_row:
+                report[0]['rows'].append(all_rtb_source_row)
+
         return self.create_api_response(report)

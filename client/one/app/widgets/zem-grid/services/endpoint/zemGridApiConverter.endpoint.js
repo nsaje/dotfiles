@@ -67,6 +67,7 @@ angular.module('one.widgets').factory('zemGridEndpointApiConverter', function (z
         });
 
         groupRow.breakdown = {
+            breakdownId: groupRow.breakdownId,
             group: true,
             meta: {},
             level: 1,
