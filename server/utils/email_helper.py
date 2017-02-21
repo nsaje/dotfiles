@@ -95,11 +95,15 @@ def send_pacing_notification_email(campaign, emails, pacing, alert):
         pacing=pacing.quantize(Decimal('.01')),
         alert=alert == 'low' and 'underpacing' or 'overpacing',
     )
-    send_notification_mail(
-        list(set(emails) | set(additional_emails)),
+    email = EmailMultiAlternatives(
         subject,
         body,
+        'Zemanta <{}>'.format(settings.SUPPLY_REPORTS_FROM_EMAIL),
+        emails,
+        bcc=additional_emails
     )
+    email.attach_alternative(format_template(subject, body), "text/html")
+    email.send(fail_silently=False)
 
 
 def send_obj_changes_notification_email(obj, request, changes_text):

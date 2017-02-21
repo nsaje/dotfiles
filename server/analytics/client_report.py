@@ -95,7 +95,11 @@ def _prepare_table_rows(date):
         sum(actions.itervalues()),
         sum(seen.itervalues()),
     ]), row_type=TableRow.TYPE_TOTALS)]
-    return header + rows + totals
+    return header + _sort_rows(rows) + totals
+
+
+def _sort_rows(rows):
+    return list(sorted(rows, key=lambda r: r[2].value, reverse=True))
 
 
 def _generate_table_html(date):
