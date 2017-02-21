@@ -98,7 +98,7 @@ def send_pacing_notification_email(campaign, emails, pacing, alert):
     email = EmailMultiAlternatives(
         subject,
         body,
-        'Zemanta <{}>'.format(settings.SUPPLY_REPORTS_FROM_EMAIL),
+        'Zemanta <{}>'.format(settings.FROM_EMAIL),
         emails,
         bcc=additional_emails
     )
