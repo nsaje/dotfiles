@@ -262,6 +262,12 @@
 # test uploadbatch
 
 -   fields:
+        name: 'batch 1'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.uploadbatch
+    pk: 1
+
+-   fields:
         name: 'Ich bin eine UploadBatch'
         status: 3  # in progress
         created_dt: '2015-09-23T09:57:22'

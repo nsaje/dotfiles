@@ -1,10 +1,7 @@
 import logging
 import dateutil
-from optparse import make_option
 
 from reports import models
-
-from django.core.management import BaseCommand
 
 from utils.command_helpers import ExceptionCommand
 
@@ -15,11 +12,11 @@ BATCH_SIZE = 100000
 
 
 class Command(ExceptionCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--start_id', dest='start_id', default=0, help='Dump ArticleStats starting with id.'),
-        make_option('--end_date', dest='end_date', default=None, help='Dump ArticleStats up to date.'),
-        make_option('--file', dest='filename', default='./articlestats', help='File to which data will be written'),
-    )
+
+    def add_arguments(self, parser):
+        parser.add_argument('--start_id', dest='start_id', default=0, help='Dump ArticleStats starting with id.')
+        parser.add_argument('--end_date', dest='end_date', default=None, help='Dump ArticleStats up to date.')
+        parser.add_argument('--file', dest='filename', default='./articlestats', help='File to which data will be written')
 
     def handle(self, *args, **options):
         start_id = int(options.get('start_id', 0))

@@ -133,7 +133,7 @@ def format_csv_content(content):
 
 @contextmanager
 def disable_auto_now_add(cls, field_name):
-    field = cls._meta.get_field_by_name(field_name)[0]
+    field = cls._meta.get_field(field_name)
     prev_auto_now_add = field.auto_now_add
     field.auto_now_add = False
     yield

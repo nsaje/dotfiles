@@ -1,5 +1,4 @@
 import datetime
-from optparse import make_option
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -11,10 +10,10 @@ from utils import converters
 
 class Command(BaseCommand):
     help = 'Free recently inactive budget assets.'
-    option_list = BaseCommand.option_list + (
-        make_option('--budget-ids', help="Budget line item IDs"),
-        make_option('--verbose', action='store_true', default=False, help="Verbose"),
-    )
+
+    def add_arguments(self, parser):
+        parser.add_argument('--budget-ids', help="Budget line item IDs")
+        parser.add_argument('--verbose', action='store_true', default=False, help="Verbose")
 
     def handle(self, *args, **options):
         today = datetime.date.today()
