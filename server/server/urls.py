@@ -67,7 +67,7 @@ urlpatterns = [
     url(r'^admin$', AdminRedirectView.as_view(url='/admin/')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^oauth2callback', zemauth.views.google_callback, name='zemauth.views.google_callback'),
-    url(r'^supply_dash/', dash.views.views.supply_dash_redirect),
+    url(r'^supply_dash/', login_required(dash.views.views.supply_dash_redirect), name='supply_dash_redirect'),
 ]
 
 # Oauth2 provider
@@ -94,7 +94,7 @@ urlpatterns += [
     url(r'^o/', include(oauth2_urlpatterns, namespace='oauth2_provider')),
 ]
 
-# IO API
+# REST API
 urlpatterns += [
     url(r'^rest/v1/', include('restapi.urls')),
 ]
@@ -756,12 +756,12 @@ urlpatterns += [
 urlpatterns += [
     url(
         r'^source/oauth/authorize/(?P<source_name>yahoo)',
-        dash.views.views.oauth_authorize,
+        login_required(dash.views.views.oauth_authorize),
         name='source.oauth.authorize',
     ),
     url(
         r'^source/oauth/(?P<source_name>yahoo)',
-        dash.views.views.oauth_redirect,
+        dash.views.views.oauth_redirect,  # mustn't have login_required because it's a redirect URI
         name='source.oauth.redirect'
     )
 ]
@@ -780,5 +780,5 @@ urlpatterns += [url(r'^tos/$', TemplateView.as_view(template_name='tos.html'))]
 
 urlpatterns += [
     url(r'^api/', django.views.defaults.page_not_found, {'exception': None}),
-    url(r'^', dash.views.views.index, name='index')
+    url(r'^', login_required(dash.views.views.index), name='index')
 ]

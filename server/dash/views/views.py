@@ -87,12 +87,10 @@ def create_name(objects, name):
     return name
 
 
-@login_required
 def index(request):
     return render(request, 'index.html', {'staticUrl': settings.CLIENT_STATIC_URL, 'debug': settings.DEBUG})
 
 
-@login_required
 def supply_dash_redirect(request):
     # We do not authorization validation here since it only redirects to third-party
     # dashboards and if user can't access them, there is no harm done.
@@ -1604,7 +1602,6 @@ def healthcheck(request):
     return HttpResponse('OK')
 
 
-@login_required
 def oauth_authorize(request, source_name):
     credentials_id = request.GET.get('credentials_id')
 

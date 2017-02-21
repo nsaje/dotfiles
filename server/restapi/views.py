@@ -645,14 +645,16 @@ class CampaignGoalPutSerializer(serializers.Serializer):
 class CampaignGoalsViewDetails(RESTAPIBaseView):
 
     def get(self, request, campaign_id, goal_id):
-        goal = dash.models.CampaignGoal.objects.get(pk=goal_id)
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        goal = dash.models.CampaignGoal.objects.get(pk=goal_id, campaign=campaign)
         return self.response_ok(CampaignGoalsSerializer(goal.to_dict(with_values=True)).data)
 
     def put(self, request, campaign_id, goal_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
         serializer = CampaignGoalPutSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         with transaction.atomic():
-            goal = dash.models.CampaignGoal.objects.get(pk=goal_id)
+            goal = dash.models.CampaignGoal.objects.get(pk=goal_id, campaign=campaign)
             value = serializer.validated_data.get('value', None)
             if value:
                 campaign_goals.add_campaign_goal_value(request, goal, value, goal.campaign)

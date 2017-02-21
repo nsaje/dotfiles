@@ -1543,6 +1543,7 @@ class AccountUserAction(api_common.BaseApiView):
 
         if not request.user.has_perm(self.permissions[action]):
             raise exc.AuthorizationError()
+        account = helpers.get_account(request.user, account_id)
 
         try:
             user = ZemUser.objects.get(pk=user_id)
@@ -1550,8 +1551,8 @@ class AccountUserAction(api_common.BaseApiView):
             raise exc.ValidationError(
                 pretty_message=u'Cannot {action} nonexisting user.'.format(action=action)
             )
-
-        account = helpers.get_account(request.user, account_id)
+        if user not in account.users.all() and (not account.is_agency() or user not in account.agency.users.all()):
+            raise exc.AuthorizationError()
 
         self.actions[action](request, user, account)
 
@@ -1625,7 +1626,7 @@ class History(api_common.BaseApiView):
         # in case somebody wants to fetch entire history disallow it for the
         # moment
         entity_filter = self._extract_entity_filter(request)
-        if not entity_filter:
+        if not set(entity_filter.keys()).intersection({'ad_group', 'campaign', 'account', 'agency'}):
             raise exc.MissingDataError()
         order = self._extract_order(request)
         response = {

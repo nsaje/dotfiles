@@ -377,6 +377,10 @@ class AudienceArchiveTest(TestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
 
+        url = reverse('accounts_audience_archive', kwargs={'account_id': 1, 'audience_id': 5})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 404)
+
     @mock.patch('utils.redirector_helper.upsert_audience')
     def test_archive(self, redirector_upsert_audience_mock):
         url = reverse('accounts_audience_archive', kwargs={'account_id': 1, 'audience_id': 1})

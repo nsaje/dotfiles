@@ -26,6 +26,8 @@ class AdGroupSettings (api_common.BaseApiView):
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.MissingDataError()
+        helpers.get_ad_group(request.user, ad_group_id)
+
         data = json.loads(request.body)
         settings = data['settings']
         state = settings.get('state')
@@ -45,9 +47,10 @@ class ContentAdSettings(api_common.BaseApiView):
     def post(self, request, content_ad_id):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.MissingDataError()
+        content_ad = views.helpers.get_content_ad(request.user, content_ad_id, select_related=True)
+
         data = json.loads(request.body)
         settings = data['settings']
-        content_ad = views.helpers.get_content_ad(request.user, content_ad_id, select_related=True)
         ad_group = content_ad.ad_group
         state = settings.get('state')
         if not state:
@@ -81,6 +84,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
     def post(self, request, ad_group_id, source_id):
         if not request.user.has_perm('zemauth.can_access_table_breakdowns_feature'):
             raise exc.MissingDataError()
+        helpers.get_ad_group(request.user, ad_group_id)
+
         data = json.loads(request.body)
         config = data['config'] if 'config' in data else {}
         settings = data['settings']

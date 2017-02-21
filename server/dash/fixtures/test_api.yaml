@@ -880,6 +880,18 @@
     model: dash.uploadbatch
     pk: 2
 
+-   fields:
+        name: 'batch 3'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.uploadbatch
+    pk: 3
+
+-   fields:
+        name: 'batch 4'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.uploadbatch
+    pk: 4
+
 # test contentad
 
 -   fields:
@@ -929,7 +941,7 @@
         image_hash: '987654321'
         image_width: 200
         image_height: 300
-        batch: 2
+        batch: 4
         archived: True
         url: 'http://testurl.com'
         title: 'Test Article with no content_ad_sources 2'
@@ -980,6 +992,25 @@
         call_to_action: 'Call to action'
     model: dash.contentad
     pk: 5
+
+-   fields:
+        image_id: '123456789'
+        image_hash: '987654321'
+        image_width: 200
+        image_height: 300
+        batch: 3
+        archived: False
+        url: 'http://testurl.com'
+        title: 'Test Article with no content_ad_sources 5'
+        ad_group: 2
+        created_dt: '2015-02-21T00:00:00'
+        state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+    model: dash.contentad
+    pk: 6
 
 # test contentadsource
 

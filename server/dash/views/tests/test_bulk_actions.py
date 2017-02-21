@@ -805,16 +805,16 @@ class AdGroupContentAdCSVTest(TestCase):
     def test_get_batch_ad_selected(self):
         data = {
             'select_batch': 2,
-            'content_ad_ids_selected': '1'
+            'content_ad_ids_selected': '6'
         }
 
-        response = self._get_csv_from_server(data)
+        response = self._get_csv_from_server(data, ad_group_id=2)
 
         expected_content = '\r\n'.join([
-            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary impression tracker URL,Secondary impression tracker URL,Label',  # noqa
-            'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,center,example.com,Example,Call to action,Example description,http://testurl.com,http://testurl2.com,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
-            'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',  # noqa
+            'URL,Title,Image URL,Image crop,Display URL,Brand name,Call to action,Description,Primary impression tracker URL,Secondary impression tracker URL,Label',
+            'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',
+            'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,center,example.com,Example,Call to action,Example description,,,',
+            'http://testurl.com,Test Article with no content_ad_sources 5,123456789.jpg,center,example.com,Example,Call to action,Example description,,,'
         ]) + '\r\n'
 
         self.assertEqual(response.content, expected_content)
@@ -832,11 +832,11 @@ class AdGroupContentAdCSVTest(TestCase):
 
         self.assertEqual(response.content, expected_content)
 
-    def _get_csv_from_server(self, data):
+    def _get_csv_from_server(self, data, ad_group_id=1):
         return self.client.get(
             reverse(
                 'ad_group_content_ad_csv',
-                kwargs={'ad_group_id': 1}),
+                kwargs={'ad_group_id': ad_group_id}),
             data=data,
             follow=True
         )
@@ -869,7 +869,7 @@ class CampaignAdGroupStateTest(TestCase):
     @patch('dash.views.helpers.validate_ad_groups_state')
     def test_enable(self, mock_validate_state, mock_can_enable, mock_has_budget):
         campaign = models.Campaign.objects.get(pk=1)
-        ad_group_id = 2
+        ad_group_id = 9
         state = constants.AdGroupSettingsState.ACTIVE
 
         data = {
@@ -901,7 +901,7 @@ class CampaignAdGroupStateTest(TestCase):
     @patch('dash.views.helpers.validate_ad_groups_state')
     def test_pause(self, mock_validate_state, mock_can_enable, mock_has_budget):
         campaign = models.Campaign.objects.get(pk=1)
-        ad_group_id = 2
+        ad_group_id = 9
         state = constants.AdGroupSettingsState.INACTIVE
 
         ad_group = models.AdGroup.objects.get(pk=ad_group_id)
@@ -954,7 +954,7 @@ class CampaignAdGroupArchiveTest(TestCase):
 
     def test_post(self):
         campaign = models.Campaign.objects.get(pk=1)
-        ad_group_id = 2
+        ad_group_id = 9
 
         data = {
             'selected_ids': [ad_group_id],
@@ -993,7 +993,7 @@ class CampaignAdGroupRestoreTest(TestCase):
 
     def test_post(self):
         campaign = models.Campaign.objects.get(pk=1)
-        ad_group_id = 2
+        ad_group_id = 9
 
         ad_group = models.AdGroup.objects.get(pk=ad_group_id)
         ad_group.archive(None)

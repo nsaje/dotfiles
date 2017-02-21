@@ -585,6 +585,7 @@ class AdGroupBreakdownTestCase(TestCase):
             5 + breakdown.REQUEST_LIMIT_OVERFLOW  # [workaround] see implementation
         )
 
+        self.maxDiff = None
         self.assertDictEqual(json.loads(response.content), {
             "data": [{
                 "pagination": {"count": 33, "limit": 0, "offset": 33},
@@ -592,8 +593,8 @@ class AdGroupBreakdownTestCase(TestCase):
                 "breakdown_id": None,
                 "totals": {"clicks": 123},
                 "batches": [
-                    {"id": 2, "name": "Ich bin eine UploadBatch"},
-                    {"id": 1, "name": "batch 1"}
+                    {"id": 1, "name": "batch 1"},
+                    {"id": 4, "name": "batch 4"},
                 ],
                 "conversion_goals": [
                     {"id": "conversion_goal_2", "name": "test conversion goal 2"},

@@ -187,11 +187,14 @@ class AudienceArchive(api_common.BaseApiView):
         audience_id = int(audience_id)
 
         # This is here to see if user has permissions for this account
-        helpers.get_account(request.user, account_id)
+        account = helpers.get_account(request.user, account_id)
 
         audience = None
         try:
-            audience = models.Audience.objects.get(pk=audience_id)
+            audience = models.Audience.objects.get(
+                pk=audience_id,
+                pixel__account=account
+            )
         except models.Audience.DoesNotExist:
             raise exc.MissingDataError('Audience does not exist')
 
@@ -216,11 +219,14 @@ class AudienceRestore(api_common.BaseApiView):
         audience_id = int(audience_id)
 
         # This is here to see if user has permissions for this account
-        helpers.get_account(request.user, account_id)
+        account = helpers.get_account(request.user, account_id)
 
         audience = None
         try:
-            audience = models.Audience.objects.get(pk=audience_id)
+            audience = models.Audience.objects.get(
+                pk=audience_id,
+                pixel__account=account
+            )
         except models.Audience.DoesNotExist:
             raise exc.MissingDataError('Audience does not exist')
 

@@ -464,11 +464,9 @@ def get_content_ad_data_status(ad_group, content_ads):
 
 
 def get_selected_entities(objects, select_all, selected_ids, not_selected_ids, include_archived, select_batch_id=None, **constraints):
+    objects = objects.filter(Q(**constraints))
     if select_all:
-        if constraints:
-            entities = objects.filter(Q(**constraints) | Q(id__in=selected_ids)).exclude(id__in=not_selected_ids)
-        else:
-            entities = objects.exclude(id__in=not_selected_ids)
+        entities = objects.exclude(id__in=not_selected_ids)
     elif select_batch_id is not None:
         entities = objects.filter(Q(batch__id=select_batch_id) | Q(
             id__in=selected_ids)).exclude(id__in=not_selected_ids)

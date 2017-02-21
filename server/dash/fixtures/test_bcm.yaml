@@ -16,6 +16,22 @@
     model: zemauth.user
     pk: 1
 
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: someone.else@example.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: false
+        is_superuser: false
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: md5$4kOz9CyKkLMC$007d0be660d98888686dcf3c3688262c  # secret
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 10
+
 # test accounts
 
 -   fields:
@@ -41,6 +57,14 @@
         name: 'test account 3'
     model: dash.account
     pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 10
+        name: 'test account non-connected'
+    model: dash.account
+    pk: 10
 
 # test accountsettings
 
@@ -73,6 +97,16 @@
         default_sales_representative: 1
     model: dash.accountsettings
     pk: 3
+
+-   fields:
+        account: 10
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 10
+        archived: False
+        default_account_manager: 10
+        default_sales_representative: 10
+    model: dash.accountsettings
+    pk: 10
   
 # test campaigns
 
@@ -84,6 +118,15 @@
         name: 'test campaign 1'
     model: dash.campaign
     pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 10
+        account: 10 # test account 1
+        name: 'test campaign non-connected'
+    model: dash.campaign
+    pk: 10
 
 
 # test creditlineitems
@@ -116,6 +159,20 @@
     model: dash.creditlineitem
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        created_by: 10
+        account: 10 # test account 1
+        start_date: '2015-10-01'
+        end_date: '2015-11-30'
+        amount: 100000
+        license_fee: 0.2
+        status: 2
+        comment: 'Test case'
+    model: dash.creditlineitem
+    pk: 10
+
 # test budgetlineitems
 
 -   fields:
@@ -131,3 +188,17 @@
         comment: 'Test case'
     model: dash.budgetlineitem
     pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        created_by: 10
+        credit: 10 # test credit 1
+        campaign_id: 10 # test campaign 1
+        start_date: '2015-10-01'
+        end_date: '2015-11-30'
+        margin: 0.15
+        amount: 100000
+        comment: 'Test case'
+    model: dash.budgetlineitem
+    pk: 10

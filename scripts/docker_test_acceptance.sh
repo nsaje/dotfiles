@@ -18,3 +18,4 @@ echo "Compose project name: ${COMPOSE_PROJECT_NAME}"
 echo "Acceptance image: ${ACCEPTANCE_IMAGE}"
 docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml up --force-recreate -d
 docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml run --rm dredd ./restapi-acceptance-tests.sh
+clean_up

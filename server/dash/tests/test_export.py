@@ -1114,12 +1114,12 @@ class ExportTestCase(test.TestCase):
         sources = {obj.ad_group_id: [3, 4] for obj in data.itervalues()}
         export._add_missing_stats(stats, ['content_ad', 'date', 'source'], data, sources,
                                   datetime.date(2014, 7, 1), datetime.date(2014, 7, 5))
-        self.assertEqual(50, len(stats))
+        self.assertEqual(60, len(stats))
         self.assertEqual({
             'account': 1,
             'ad_group': 2,
             'campaign': 2,
-            'content_ad': 5,
+            'content_ad': 6,
             'date': datetime.date(2014, 7, 5),
             'source': 4
         }, stats[len(stats) - 1])

@@ -378,10 +378,14 @@ class CampaignBudgetView(api_common.BaseApiView):
 class CampaignBudgetItemView(api_common.BaseApiView):
 
     def get(self, request, campaign_id, budget_id):
-        item = models.BudgetLineItem.objects.get(
-            campaign_id=campaign_id,
-            pk=budget_id,
-        )
+        helpers.get_campaign(request.user, campaign_id)
+        try:
+            item = models.BudgetLineItem.objects.get(
+                campaign_id=campaign_id,
+                pk=budget_id,
+            )
+        except models.BudgetLineItem.DoesNotExist:
+            raise exc.MissingDataError('Budget does not exist!')
         return self._get_response(request.user, item)
 
     def post(self, request, campaign_id, budget_id):

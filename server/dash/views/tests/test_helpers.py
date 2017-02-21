@@ -368,6 +368,26 @@ class GetSelectedEntityTest(TestCase):
 
         self._assert_content_ads(content_ads, [1, 2])
 
+    def test_only_allowed_entities(self):
+        ad_group_id = 1
+        select_all = False
+        select_batch_id = 2
+        content_ad_ids_selected = [6]
+        content_ad_ids_not_selected = []
+        include_archived = False
+
+        content_ads = helpers.get_selected_entities(
+            models.ContentAd.objects,
+            select_all,
+            content_ad_ids_selected,
+            content_ad_ids_not_selected,
+            include_archived=include_archived,
+            select_batch_id=select_batch_id,
+            ad_group_id=ad_group_id,
+        )
+
+        self._assert_content_ads(content_ads, [])
+
     @patch('dash.views.helpers.get_selected_entities')
     def test_get_selected_entities_post_request(self, mock_get_selected_entities):
         objects = 'test_objects'

@@ -27,7 +27,8 @@ class CreditsTestCase(TestCase):
     fixtures = ['test_bcm.yaml']
 
     def test_creation(self):
-        self.assertEqual(models.CreditLineItem.objects.all().count(), 2)
+        starting_num_credits = models.CreditLineItem.objects.all().count()
+        self.assertEqual(models.CreditLineItem.objects.all().count(), starting_num_credits)
 
         with self.assertRaises(ValidationError) as err:
             create_credit(
@@ -42,7 +43,7 @@ class CreditsTestCase(TestCase):
         self.assertTrue('license_fee' in err.exception.error_dict)
         self.assertFalse('start_date' in err.exception.error_dict)  # we check this in form
         self.assertFalse('end_date' in err.exception.error_dict)  # we check this in form
-        self.assertEqual(models.CreditLineItem.objects.all().count(), 2)
+        self.assertEqual(models.CreditLineItem.objects.all().count(), starting_num_credits)
 
         with self.assertRaises(ValidationError) as err:
             create_credit(
@@ -57,7 +58,7 @@ class CreditsTestCase(TestCase):
         self.assertTrue('license_fee' in err.exception.error_dict)
         self.assertFalse('start_date' in err.exception.error_dict)
         self.assertFalse('end_date' in err.exception.error_dict)
-        self.assertEqual(models.CreditLineItem.objects.all().count(), 2)
+        self.assertEqual(models.CreditLineItem.objects.all().count(), starting_num_credits)
 
         credit = create_credit(
             account_id=1,
@@ -627,7 +628,8 @@ class BudgetsTestCase(TestCase):
     fixtures = ['test_bcm.yaml']
 
     def test_creation(self):
-        self.assertEqual(models.CreditLineItem.objects.all().count(), 2)
+        starting_num_credits = models.CreditLineItem.objects.all().count()
+        self.assertEqual(models.CreditLineItem.objects.all().count(), starting_num_credits)
         c = create_credit(
             account_id=2,
             start_date=TODAY + datetime.timedelta(1),

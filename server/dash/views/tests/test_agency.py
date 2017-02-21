@@ -3614,6 +3614,32 @@ class UserPromoteTest(TestCase):
         self.assertNotIn(user, account.users.all())
         self.assertIn(group, user.groups.all())
 
+    def test_promote_unrelated_user(self):
+        client = self._get_client_with_permissions([
+            'can_promote_agency_managers',
+        ])
+
+        account = models.Account.objects.get(pk=1000)
+        user = User.objects.get(pk=2)
+        permission = authmodels.Permission.objects.get(codename='group_agency_manager_add')
+        group = authmodels.Group()
+        group.save()
+        group.permissions.add(permission)
+        account.users.add(user)
+
+        user2 = User.objects.get(pk=3)
+        account.users.remove(user2)
+
+        response = client.post(
+            reverse('account_user_action', kwargs={'account_id': 1000, 'user_id': 3, 'action': 'promote'}),
+        )
+        self.assertEqual(401, response.status_code)
+        account = models.Account.objects.get(pk=1000)
+        agency = models.Agency.objects.get(pk=1)
+        user = User.objects.get(pk=3)
+        self.assertNotIn(user, agency.users.all())
+        self.assertNotIn(user, account.users.all())
+
 
 class UserDowngradeTest(TestCase):
     fixtures = ['test_views.yaml', 'test_agency.yaml']
@@ -3663,6 +3689,33 @@ class UserDowngradeTest(TestCase):
         self.assertNotIn(user, agency.users.all())
         self.assertIn(user, account.users.all())
         self.assertNotIn(group, user.groups.all())
+
+    def test_downgrade_unrelated_user(self):
+        client = self._get_client_with_permissions([
+            'can_promote_agency_managers',
+        ])
+
+        account = models.Account.objects.get(pk=1000)
+        agency = models.Agency.objects.get(pk=1)
+        user = User.objects.get(pk=2)
+        permission = authmodels.Permission.objects.get(codename='group_agency_manager_add')
+        group = authmodels.Group()
+        group.save()
+        group.permissions.add(permission)
+        agency.users.add(user)
+
+        user2 = User.objects.get(pk=3)
+        account.users.remove(user2)
+
+        response = client.post(
+            reverse('account_user_action', kwargs={'account_id': 1000, 'user_id': 3, 'action': 'downgrade'}),
+        )
+        self.assertEqual(401, response.status_code)
+        account = models.Account.objects.get(pk=1000)
+        agency = models.Agency.objects.get(pk=1)
+        user = User.objects.get(pk=3)
+        self.assertNotIn(user, agency.users.all())
+        self.assertNotIn(user, account.users.all())
 
 
 class CampaignContentInsightsTest(TestCase):
@@ -3947,6 +4000,9 @@ class HistoryTest(TestCase):
 
         response = self.get_history({'campaign': 1})
         self.assertTrue(response['success'])
+
+        response = self.get_history({'level': 0})
+        self.assertFalse(response['success'])
 
     def test_get_ad_group_history(self):
         add_permissions(self.user, ['can_view_new_history_backend'])

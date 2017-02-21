@@ -23,6 +23,7 @@ class BCMViewTestCase(TestCase):
     fixtures = ['test_bcm.yaml', 'test_agency.yaml']
 
     def setUp(self):
+        self.maxDiff = None
         self.user = User.objects.get(pk=1)
 
         self.assertFalse(self.user.is_superuser)
@@ -925,6 +926,17 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             }
         )
 
+    def test_get_not_authorized(self):
+        url = reverse('campaigns_budget_item', kwargs={
+            'campaign_id': 1,
+            'budget_id': 10,
+        })
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 10, 11)
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
     def test_get_with_margin(self):
         url = reverse('campaigns_budget_item', kwargs={
             'campaign_id': 1,
@@ -1308,7 +1320,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     u"margin": u"15%",
                     u"total": "100000.0000",
                     u"spend": u"210.5000",
-                    u"id": 2,
+                    u"id": 11,
                     u"comment": u"Test case",
                     u"start_date": u"2015-10-01",
                 },
@@ -1424,7 +1436,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "is_agency": False,
                     "comment": None,
                     "budgets": [
-                        {"amount": 10000, "id": 2}
+                        {"amount": 10000, "id": 11}
                     ],
                     "start_date": "2015-11-01"
                 },
@@ -1474,7 +1486,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "is_canceled": False,
                     "is_agency": False,
                     "budgets": [
-                        {"amount": 10000, "id": 2}
+                        {"amount": 10000, "id": 11}
                     ],
                     "start_date": "2015-11-01"
                 },
@@ -1523,7 +1535,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "is_canceled": False,
                     "is_agency": False,
                     "budgets": [
-                        {"amount": 10000, "id": 2}
+                        {"amount": 10000, "id": 11}
                     ],
                     "start_date": "2015-11-01"
                 },

@@ -51,19 +51,6 @@ def crossvalidation(request):
     return JsonResponse(response_data)
 
 
-@csrf_exempt
-def generate_reports(request):
-    # TODO AUTH
-    # TODO celery task
-
-    try:
-        etl.refresh_k1.refresh_k1_reports()
-    except Exception as e:
-        logger.exception("Refresh k1 reports error")
-        return _error_response({"error": str(e)}, status=500)
-    return JsonResponse({})
-
-
 def _format_stat(stat, bidder_slugs):
     return {
         'content_ad_id': stat['content_ad'],
