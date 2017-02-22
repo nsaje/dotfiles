@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
@@ -6,7 +6,6 @@ from django.views.generic import RedirectView
 from django.views.generic import TemplateView
 import django.views.defaults
 from django.shortcuts import render
-from django.template import RequestContext
 import oauth2_provider.views
 
 from zemauth.forms import AuthenticationForm
@@ -740,6 +739,11 @@ urlpatterns += [
         r'^k1api/publisher_groups$',
         k1api.views.PublisherGroupsView.as_view(),
         name='k1api.publisher_groups',
+    ),
+    url(
+        r'^k1api/publisher_groups_entries$',
+        k1api.views.PublisherGroupsEntriesView.as_view(),
+        name='k1api.publisher_groups_entries',
     ),
 ]
 

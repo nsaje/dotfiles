@@ -431,6 +431,22 @@ class PublisherGroupsView(K1APIView):
 
     def get(self, request):
         account_id = request.GET.get('account_id')
+
+        publisher_groups = dash.models.PublisherGroup.objects.all()
+        if account_id:
+            publisher_groups = publisher_groups.filter_by_account(
+                dash.models.Account.objects.get(pk=account_id))
+
+        return self.response_ok(list(publisher_groups.values(
+            'id',
+            'account_id'
+        )))
+
+
+class PublisherGroupsEntriesView(K1APIView):
+
+    def get(self, request):
+        account_id = request.GET.get('account_id')
         source_slug = request.GET.get('source_slug')
         offset = request.GET.get('offset') or 0
         limit = request.GET.get('limit')

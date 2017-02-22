@@ -468,6 +468,24 @@ class K1ApiTest(TestCase):
 
         response = self.client.get(
             reverse('k1api.publisher_groups'),
+            {'account_id': account_id}
+        )
+
+        data = json.loads(response.content)
+        self._assert_response_ok(response, data)
+        data = data['response']
+
+        pubgroups = dash.models.PublisherGroup.objects.filter(account_id=account_id)
+
+        self.assertEqual(data, [
+            {'id': pubgroup.id, 'account_id': 1} for pubgroup in pubgroups
+        ])
+
+    def test_get_publisher_groups_entries(self):
+        account_id = 1
+
+        response = self.client.get(
+            reverse('k1api.publisher_groups_entries'),
             {'account_id': account_id, 'offset': 0, 'limit': 2}
         )
 
@@ -482,12 +500,12 @@ class K1ApiTest(TestCase):
              'publisher_group_id': 1, 'source_slug': None, 'account_id': 1},
         ])
 
-    def test_get_publisher_groups_source_slug(self):
+    def test_get_publisher_groups_entries_source_slug(self):
         account_id = 1
         source_slug = 'adblade'
 
         response = self.client.get(
-            reverse('k1api.publisher_groups'),
+            reverse('k1api.publisher_groups_entries'),
             {'account_id': account_id, 'source_slug': source_slug, 'offset': 0, 'limit': 2}
         )
 
@@ -500,11 +518,11 @@ class K1ApiTest(TestCase):
              'publisher_group_id': 1, 'source_slug': 'adblade', 'account_id': 1},
         ])
 
-    def test_get_publisher_groups_limit(self):
+    def test_get_publisher_groups_entries_limit(self):
         account_id = 1
 
         response = self.client.get(
-            reverse('k1api.publisher_groups'),
+            reverse('k1api.publisher_groups_entries'),
             {'account_id': account_id, 'offset': 1, 'limit': 1}
         )
 
@@ -517,11 +535,11 @@ class K1ApiTest(TestCase):
              'publisher_group_id': 1, 'source_slug': None, 'account_id': 1},
         ])
 
-    def test_get_publisher_groups_no_limit_error(self):
+    def test_get_publisher_groups_entries_no_limit_error(self):
         account_id = 1
 
         response = self.client.get(
-            reverse('k1api.publisher_groups'),
+            reverse('k1api.publisher_groups_entries'),
             {'account_id': account_id}
         )
 
