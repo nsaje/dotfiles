@@ -280,8 +280,6 @@
     publisher_group: 1
     publisher: 'pub1'
     source: 1
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 1
 
@@ -290,8 +288,6 @@
     publisher: 'pub2'
     source: !!null
     outbrain_publisher_id: "asd123"
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 2
 
@@ -299,8 +295,6 @@
     publisher_group: 2
     publisher: 'pub3'
     source: 1
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 3
 
@@ -308,8 +302,6 @@
     publisher_group: 3
     publisher: 'pub4'
     source: 1
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 4
 
@@ -317,8 +309,6 @@
     publisher_group: 1000
     publisher: 'pub5'
     source: 3
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 5
 
@@ -326,8 +316,6 @@
     publisher_group: 11
     publisher: 'pub6'
     source: 3
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 6
 
@@ -335,8 +323,6 @@
     publisher_group: 12
     publisher: 'pub7'
     source: 3
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 7
 
@@ -344,7 +330,5 @@
     publisher_group: 12
     publisher: 'non-outbrain-pub8'
     source: 2
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 8
