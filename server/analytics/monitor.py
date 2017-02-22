@@ -201,7 +201,9 @@ def audit_autopilot_budget_totals(date=None, error=Decimal('0.001')):
     alarms = {}
     state = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
     ad_groups, ad_groups_settings = autopilot_helpers.get_active_ad_groups_on_autopilot(state)
-    ad_group_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings(ad_groups)
+    ad_group_sources_settings = autopilot_helpers.get_autopilot_active_sources_settings({
+        ags.ad_group: ags for ags in ad_groups_settings
+    })
     for settings in ad_groups_settings:
         total_ap_budget = Decimal(0)
         filtered_source_settings = filter(
@@ -229,6 +231,8 @@ def audit_autopilot_budget_changes(date=None, error=Decimal('0.001')):
     )
     total_changes = {}
     for log in ap_logs:
+        if not log.new_daily_budget or not log.previous_daily_budget:
+            continue
         total_changes.setdefault(
             log.ad_group,
             []
@@ -236,7 +240,7 @@ def audit_autopilot_budget_changes(date=None, error=Decimal('0.001')):
     alarms = {}
     for ad_group, changes in total_changes.iteritems():
         budget_changes = sum(changes)
-        if abs(budget_changes) > error:
+        if not budget_changes or abs(budget_changes) > error:
             alarms[ad_group] = budget_changes
     return alarms
 

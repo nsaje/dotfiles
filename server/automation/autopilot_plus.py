@@ -42,6 +42,9 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
 
     for adg_settings in ad_group_settings_on_ap:
         adg = adg_settings.ad_group
+        if adg not in data:
+            logger.warning('Data for ad group %s not prefetched in AP', str(adg))
+            continue
 
         run_daily_budget_autopilot = adjust_budgets and (daily_run or not adg_settings.landing_mode)
         cpc_changes, budget_changes = _get_autopilot_predictions(
