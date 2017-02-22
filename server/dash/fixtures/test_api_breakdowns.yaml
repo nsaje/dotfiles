@@ -653,6 +653,8 @@
     publisher_group: 1
     publisher: 'pub1.com'
     source: 1
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 1
 
@@ -660,6 +662,8 @@
     publisher_group: 2
     publisher: 'pub2.com'
     source: 2
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 2
 
@@ -667,6 +671,8 @@
     publisher_group: 3
     publisher: 'pub3.com'
     source: !!null
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 3
 
@@ -674,6 +680,8 @@
     publisher_group: 4
     publisher: 'pub4.com'
     source: !!null
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 4
 
@@ -681,5 +689,7 @@
     publisher_group: 5
     publisher: 'pub5.com'
     source: 2
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
   model: dash.publishergroupentry
   pk: 5

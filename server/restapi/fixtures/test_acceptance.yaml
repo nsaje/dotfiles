@@ -421,11 +421,15 @@
 -   fields:
         publisher_group: 153
         publisher: "example.com"
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
     model: dash.publishergroupentry
     pk: 622
 
 -   fields:
         publisher_group: 153
         publisher: "example2.com"
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
     model: dash.publishergroupentry
     pk: 623
