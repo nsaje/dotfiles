@@ -592,10 +592,10 @@ class AdGroupBreakdownTestCase(TestCase):
                 "rows": {},
                 "breakdown_id": None,
                 "totals": {"clicks": 123},
-                "batches": [
+                "batches": test_helper.ListMatcher([
                     {"id": 1, "name": "batch 1"},
                     {"id": 4, "name": "batch 4"},
-                ],
+                ]),
                 "conversion_goals": [
                     {"id": "conversion_goal_2", "name": "test conversion goal 2"},
                     {"id": "conversion_goal_3", "name": "test conversion goal 3"},

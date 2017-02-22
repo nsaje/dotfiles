@@ -168,11 +168,27 @@ class AdGroupSettings(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_set_ad_group_mode'):
             return
 
-        if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
-           not new_settings.b1_sources_group_enabled:
+        if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            if not new_settings.b1_sources_group_enabled:
                 msg = 'To enable Daily Cap Autopilot, RTB Sources have to be managed as a group.'
                 raise exc.ValidationError(errors={
                     'autopilot_state': msg
+                })
+
+            if settings.b1_sources_group_daily_budget != new_settings.b1_sources_group_daily_budget:
+                msg = 'Autopilot has to be disabled in order to manage Daily Cap of RTB Sources'
+                raise exc.ValidationError(errors={
+                    'b1_sources_group_daily_budget': msg,
+                })
+
+        if new_settings.autopilot_state in (
+                constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+                constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        ):
+            if settings.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
+                msg = 'Autopilot has to be disabled in order to manage Daily Cap of RTB Sources'
+                raise exc.ValidationError(errors={
+                    'b1_sources_group_daily_budget': msg,
                 })
 
     def validate_all_rtb_state(self, request, settings, new_settings):

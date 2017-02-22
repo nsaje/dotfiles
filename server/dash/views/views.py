@@ -447,6 +447,9 @@ class CampaignAdGroups(api_common.BaseApiView):
         ad_group, ad_group_settings, changes_text = self._create_ad_group(campaign, request)
         ad_group_settings.save(None)
 
+        if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group_settings, send_mail=False)
+
         api.update_ad_group_redirector_settings(ad_group, ad_group_settings)
 
         ad_group.write_history(
@@ -485,6 +488,12 @@ class CampaignAdGroups(api_common.BaseApiView):
         new_settings.target_devices = campaign_settings.target_devices
         new_settings.target_regions = campaign_settings.target_regions
         new_settings.ad_group_name = ad_group.name
+
+        if self.rest_proxy:
+            new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+            new_settings.autopilot_daily_budget = 0
+            new_settings.b1_sources_group_enabled = False
+            new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
 
         return new_settings
 

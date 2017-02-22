@@ -1278,6 +1278,9 @@ class HistoryTest(TestCase):
             , Autopilot set to "Disabled"
             , Autopilot\'s Daily Spend Cap set to "$0.00"
             , Landing Mode set to "False"
+            , Group all RTB sources set to "False"
+            , Daily budget for all RTB sources set to "$0.00"
+            , State of all RTB sources set to "Paused"
             ''').replace('\n', ''), history.changes_text)
 
     def test_create_new_campaign_history(self):
@@ -1420,9 +1423,12 @@ class HistoryTest(TestCase):
             , Daily spend cap set to "$10.00"
             , Device targeting set to "Tablet, Mobile, Desktop"
             , Locations set to "United States"
-            , Autopilot set to "Disabled"
-            , Autopilot\'s Daily Spend Cap set to "$0.00"
+            , Autopilot set to "Optimize Bids and Daily Spend Caps"
+            , Autopilot\'s Daily Spend Cap set to "$100.00"
             , Landing Mode set to "False"
+            , Group all RTB sources set to "True"
+            , Daily budget for all RTB sources set to "$10.00"
+            , State of all RTB sources set to "Enabled"
             ''').format(datetime.date.today().isoformat()).replace('\n', ''), hist.changes_text)
 
     def test_create_ad_group_source(self):

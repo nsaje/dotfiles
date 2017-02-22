@@ -58,9 +58,9 @@ class AdGroupSettingsTest(TestCase):
                 'autopilot_min_budget': '10',
                 'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                 'b1_sources_group_enabled': True,
-                'b1_sources_group_daily_budget': '5.0000',
+                'b1_sources_group_daily_budget': '15.0000',
                 'b1_sources_group_state': 1,
-                'b1_sources_group_cpc_cc': '0.0100',
+                'b1_sources_group_cpc_cc': '0.500',
                 'whitelist_publisher_groups': [1],
                 'blacklist_publisher_groups': [1],
             }
@@ -342,7 +342,7 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '5.0000',
+                        'b1_sources_group_daily_budget': '15.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.0100',
                         'whitelist_publisher_groups': [1],
@@ -434,7 +434,7 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '5.0000',
+                        'b1_sources_group_daily_budget': '15.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.0100',
                         'whitelist_publisher_groups': [],  # no permission to set
@@ -587,7 +587,7 @@ class AdGroupSettingsTest(TestCase):
                         'target_devices': ['desktop'],
                         'target_regions': ['693', 'GB'],
                         'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
-                        'autopilot_daily_budget': '0.00',
+                        'autopilot_daily_budget': '100.00',
                         'retargeting_ad_groups': [2],
                         'exclusion_retargeting_ad_groups': [9],
                         'tracking_code': 'def=123',
@@ -603,9 +603,9 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': '',
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '5.0000',
+                        'b1_sources_group_daily_budget': '15.0000',
                         'b1_sources_group_state': 1,
-                        'b1_sources_group_cpc_cc': '0.3000',
+                        'b1_sources_group_cpc_cc': '0.01',
                         'whitelist_publisher_groups': [1],
                         'blacklist_publisher_groups': [1],
                         'landing_mode': False,
@@ -691,7 +691,7 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '5.0000',
+                        'b1_sources_group_daily_budget': '15.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.1',
                         'whitelist_publisher_groups': [],  # no permission to set
@@ -850,6 +850,61 @@ class AdGroupSettingsTest(TestCase):
             view.validate_autopilot_settings(request, current_settings, new_settings)
 
         new_settings.state = constants.AdGroupSettingsState.INACTIVE
+        with self.assertRaises(exc.ValidationError):
+            view.validate_autopilot_settings(request, current_settings, new_settings)
+
+    def test_validate_autopilot_settings_all_rtb_cpc(self):
+        view = agency.AdGroupSettings()
+        current_settings = models.AdGroupSettings()
+        new_settings = models.AdGroupSettings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        request = HttpRequest()
+        request.user = self.user
+        add_permissions(request.user, ['can_set_ad_group_mode'])
+
+        current_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = True
+
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        current_settings.b1_sources_group_cpc_cc = '0.1'
+        new_settings.b1_sources_group_cpc_cc = '0.2'
+        view.validate_autopilot_settings(request, current_settings, new_settings)  # no exception
+
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+
+        current_settings.b1_sources_group_cpc_cc = '0.1'
+        new_settings.b1_sources_group_cpc_cc = '0.2'
+
+        with self.assertRaises(exc.ValidationError):
+            view.validate_autopilot_settings(request, current_settings, new_settings)
+
+    def test_validate_autopilot_settings_all_rtb_daily_budget(self):
+        view = agency.AdGroupSettings()
+        current_settings = models.AdGroupSettings()
+        new_settings = models.AdGroupSettings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        request = HttpRequest()
+        request.user = self.user
+        add_permissions(request.user, ['can_set_ad_group_mode'])
+
+        current_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = True
+
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        current_settings.b1_sources_group_cpc_cc = '100.0'
+        new_settings.b1_sources_group_cpc_cc = '200.0'
+        view.validate_autopilot_settings(request, current_settings, new_settings)  # no exception
+
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+
         with self.assertRaises(exc.ValidationError):
             view.validate_autopilot_settings(request, current_settings, new_settings)
 

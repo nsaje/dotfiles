@@ -1792,39 +1792,44 @@ class GetMatchingPairsTestCase(TestCase):
     def test_many_ad_group_settings(self):
         from django.http.request import HttpRequest
         from zemauth.models import User
-        r = HttpRequest()
-        r.user = User.objects.get(id=1)
+        request = HttpRequest()
+        request.user = User.objects.get(id=1)
 
-        acc = dash.models.Account()
-        acc.save(r)
+        account = dash.models.Account()
+        account.save(request)
 
-        c = dash.models.Campaign()
-        c.account = acc
-        c.save(r)
+        camapaign = dash.models.Campaign()
+        camapaign.account = account
+        camapaign.save(request)
 
         ag = dash.models.AdGroup()
-        ag.campaign = c
-        ag.save(r)
+        ag.campaign = camapaign
+        ag.save(request)
+        new_ag_settings = ag.get_current_settings()
+        new_ag_settings.b1_sources_group_enabled = False
+        new_ag_settings.autopilot_state = dash.constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_ag_settings.save(None)
+
         ags = dash.models.AdGroupSource.objects.create(ad_group=ag, source=dash.models.Source.objects.get(id=1))
 
-        n_ags = ags.get_current_settings().copy_settings()
-        n_ags.state = 2
-        n_ags.daily_budget_cc = Decimal('20')
-        n_ags.save(None)
+        new_ags = ags.get_current_settings().copy_settings()
+        new_ags.state = 2
+        new_ags.daily_budget_cc = Decimal('20')
+        new_ags.save(None)
 
         for i in range(100):
-            n = ag.get_current_settings().copy_settings()
-            n.state = 2
-            n.changes_text = str(i)
-            n.save(None)
+            new_ag_settings = ag.get_current_settings().copy_settings()
+            new_ag_settings.state = 2
+            new_ag_settings.changes_text = str(i)
+            new_ag_settings.save(None)
 
-        n_ags = ags.get_current_settings().copy_settings()
-        n_ags.state = 1
-        n_ags.save(None)
+        new_ags = ags.get_current_settings().copy_settings()
+        new_ags.state = 1
+        new_ags.save(None)
 
-        n = ag.get_current_settings().copy_settings()
-        n.state = 1
-        n.changes_text = str(i)
-        n.save(None)
+        new_ag_settings = ag.get_current_settings().copy_settings()
+        new_ag_settings.state = 1
+        new_ag_settings.changes_text = str(i)
+        new_ag_settings.save(None)
 
         self.assertEqual(Decimal('20'), campaign_stop._get_max_daily_budget(dates_helper.local_today(), ag.campaign))

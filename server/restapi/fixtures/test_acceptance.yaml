@@ -162,6 +162,7 @@
     model: dash.campaigngoalvalue
     pk: 1
 
+
 # source types
 
 -   fields:

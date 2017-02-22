@@ -486,9 +486,10 @@ class CampaignAdGroups(TestCase):
         self.user = user
         self.client.login(username=user.email, password='secret')
 
-    @patch('utils.redirector_helper.insert_adgroup')
-    @patch('utils.k1_helper.update_ad_group')
-    def test_put(self, mock_k1_ping, mock_insert_adgroup):
+    @patch('utils.redirector_helper.insert_adgroup', autospec=True)
+    @patch('utils.k1_helper.update_ad_group', autospec=True)
+    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group', autospec=True)
+    def test_put(self, mock_autopilot, mock_k1_ping, mock_insert_adgroup):
         campaign = models.Campaign.objects.get(pk=1)
 
         response = self.client.put(
@@ -496,6 +497,7 @@ class CampaignAdGroups(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(mock_insert_adgroup.called)
+        self.assertTrue(mock_autopilot.called)
 
         response_dict = json.loads(response.content)
         mock_k1_ping.assert_called_with(response_dict['data']['id'], msg='CampaignAdGroups.put')

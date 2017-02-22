@@ -146,6 +146,9 @@ def _create_ad_group(name, start_date):
             'interest': {
                 'included': [cat.upper() for cat in config.INTEREST_TARGETING]
             },
+        },
+        'autopilot': {
+            'state': 'INACTIVE',
         }
     }
     url = 'rest/v1/adgroups/'

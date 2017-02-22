@@ -59,7 +59,7 @@ class RotateAdGroupsTestCase(TestCase):
 
     def setUp(self):
         permissions = ['can_use_restapi', 'settings_view', 'can_control_ad_group_state_in_table',
-                       'add_media_sources_automatically']
+                       'add_media_sources_automatically', 'can_set_adgroup_to_auto_pilot']
         u = User.objects.get(email='user@test.com')
         for permission in permissions:
             u.user_permissions.add(Permission.objects.get(codename=permission))
