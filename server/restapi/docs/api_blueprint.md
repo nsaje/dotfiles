@@ -898,6 +898,9 @@ timezone  | [TZ timezone](https://en.wikipedia.org/wiki/Tz_database) | Timezone 
 
 Get more information about Zemanta Autopilot in our [knowledge base](http://help.zemanta.com/article/show/12921-autopilot).
 
+In order to set Autopilot state to `ACTIVE_CPC_BUDGET` [all real-time bidding sources](#all-rtb-as-one)
+ `groupEnabled` setting has to be set to `true`.
+
 Property    | Type                                | Description
 ------------|-------------------------------------|------------------------|
 state       | [autopilot state](#autopilot-state) | autopilot state
@@ -1278,6 +1281,7 @@ dailyBudget | [money](#money)     | daily budget for the given source
         }
 
 ## All Real-time bidding sources as one [/rest/v1/adgroups/{adGroupId}/sources/rtb/]
+<a name="all-rtb-as-one"></a>
 
 The sources you can promote your content on come in two flavours: real-time
 bidding (RTB) and non-real-time bidding (Non-RTB) sources. RTB sources are all
@@ -1288,6 +1292,9 @@ you can use this special RTB settings endpoint, which allows you to group
 all RTB sources together and treat them as a single source. This allows you to set
 the state and daily budget of all RTB sources at once. The daily budget set by
 this endpoint will be shared among all RTB sources.
+
+This setting has to be enabled in order to be able to set [autopilot](#autopilot)
+state to `ACTIVE_CPC_BUDGET`.
 
 Property     | Type                | Description
 -------------|---------------------|---------------------------------------------------------------|
