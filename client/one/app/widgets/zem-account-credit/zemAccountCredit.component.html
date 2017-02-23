@@ -35,7 +35,7 @@
                 <th>Credit Amount</th>
                 <th>Allocated Budgets</th>
                 <th>Available Credit</th>
-                <th ng-if="$ctrl.account.agency">Agency Credit</th>
+                <th ng-if="$ctrl.account.data.agency">Agency Credit</th>
                 <th class="notes">Notes</th>
                 <th></th>
             </tr>
@@ -55,7 +55,7 @@
                     ({{ item.numOfBudgets }} budget <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
                 </td>
                 <td>{{ item.available | decimalCurrency:"$":2  }}</td>
-                <td ng-if="$ctrl.account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
+                <td ng-if="$ctrl.account.data.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
                 <td class="notes">{{ item.comment }}</td>
                 <td class="action-buttons">
                     <button class="button button--small button--with-icon edit-icon"
@@ -92,7 +92,7 @@
                 <th>Total Credit Amount</th>
                 <th>Allocated Budgets</th>
                 <th>Available Credit</th>
-                <th ng-if="$ctrl.account.agency">Agency Credit</th>
+                <th ng-if="$ctrl.account.data.agency">Agency Credit</th>
                 <th class="notes">Notes</th>
                 <th></th>
             </tr>
@@ -112,7 +112,7 @@
                     ({{ item.numOfBudgets }} budget <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
                 </td>
                 <td>{{ item.available | decimalCurrency:"$":2  }}</td>
-                <td ng-if="$ctrl.account.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
+                <td ng-if="$ctrl.account.data.agency">{{ item.isAgency ? 'yes' : 'no' }}</td>
                 <td class="notes">{{ item.comment }}</td>
                 <td class="action-buttons">
                     <button class="button button--small button--with-icon edit-icon"

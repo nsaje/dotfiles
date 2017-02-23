@@ -1,12 +1,12 @@
 <div class="modal__header">
-    <div class="modal__title" ng-if="$ctrl.isNew">Add Credit</div>
-    <div class="modal__title" ng-if="!$ctrl.isNew">Edit Credit Item #{{ $ctrl.state.creditItem.id }}</div>
+    <div class="modal__title" ng-if="$ctrl.createMode">Add Credit</div>
+    <div class="modal__title" ng-if="!$ctrl.createMode">Edit Credit Item #{{ $ctrl.state.creditItem.id }}</div>
 </div>
 <div class="modal__body">
     <div class="loader" ng-show="$ctrl.state.requests.reloadCreditItem.inProgress"></div>
     <p>Created by <strong>{{ $ctrl.state.creditItem.createdBy }}</strong> on <strong>{{ $ctrl.state.creditItem.createdOn }}</strong></p>
     <hr>
-    <div class="form" id="form-account-credit-item" ng-class="{ 'new': $ctrl.isNew, 'edit': !$ctrl.isNew }" ng-show="!$ctrl.state.requests.reloadCreditItem.inProgress">
+    <div class="form" id="form-account-credit-item" ng-class="{ 'new': $ctrl.createMode, 'edit': !$ctrl.createMode }" ng-show="!$ctrl.state.requests.reloadCreditItem.inProgress">
         <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.startDate}">
             <label class="form__label" for="start-date-input">Valid From</label>
             <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
@@ -51,7 +51,7 @@
             <textarea class="textarea" id="comment-input" type="text" ng-model="$ctrl.state.creditItem.comment" maxlength="256"></textarea>
             <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.comment" for="comment">{{ error }}</div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.agency}" ng-if="$ctrl.account.agency">
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.agency}" ng-if="$ctrl.account.data.agency">
             <label class="form__label">Agency credit</label>
             <div class="form__checkbox">
                 <label>
@@ -71,7 +71,7 @@
             <div ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.status" class="message message--error" for="is-signed-input">{{ error }}</div>
         </div>
     </div>
-    <div ng-show="!$ctrl.isNew">
+    <div ng-show="!$ctrl.createMode">
         <hr>
         <h3>Allocated budget items</h3>
         <table class="table">
