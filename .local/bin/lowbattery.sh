@@ -12,7 +12,6 @@ do
 		/usr/bin/i3-nagbar -m "Battery low, plug in!" &
 	fi
 	if [[ $(echo "$CAPACITY < $SUSPEND_LIMIT" | bc) -eq 1  && "$STATUS" == "0" ]]; then
-		/usr/bin/i3-nagbar -m "Battery low, suspending!" &
 		systemctl suspend
 	fi
 	sleep 60
