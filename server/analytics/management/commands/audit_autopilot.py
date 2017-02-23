@@ -32,9 +32,9 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.slack = options['slack']
 
         self._audit_autopilot_ad_groups()
-        self._audit_autopilot_budget_totals()
-        self._audit_autopilot_budget_changes()
-        self._audit_autopilot_cpc_changes()
+        # self._audit_autopilot_budget_totals()
+        # self._audit_autopilot_budget_changes()
+        # self._audit_autopilot_cpc_changes()
 
     def _audit_autopilot_ad_groups(self):
         alarms = analytics.monitor.audit_autopilot_ad_groups()
