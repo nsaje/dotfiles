@@ -466,7 +466,6 @@ def get_goals_performance(user, constraints, start_date, end_date,
         end_date=end_date,
         conversion_goals=conversion_goals,
         constraints=constraints,
-        pixels=campaign.account.conversionpixel_set.filter(archived=False)
     )
 
     for campaign_goal in goals:
