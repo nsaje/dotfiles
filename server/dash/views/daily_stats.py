@@ -461,4 +461,7 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                 data[metric].append(
                     (stat['day'], float(stat[metric]) if isinstance(stat.get(metric), Decimal) else stat.get(metric))
                 )
+                # when all values are None we treat this as no data (an empty array)
+                if all(x[1] is None for x in data[metric]):
+                    data[metric] = []
         return data
