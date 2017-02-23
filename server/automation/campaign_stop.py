@@ -33,8 +33,11 @@ def run_job():
     not_landing = list(dash.models.Campaign.objects.all().exclude_landing().iterator())
     in_landing = list(dash.models.Campaign.objects.all().filter_landing().iterator())
 
-    switch_low_budget_campaigns_to_landing_mode(not_landing, pagerduty_on_fail=True)
-    update_campaigns_in_landing(in_landing, pagerduty_on_fail=True)
+    try:
+        switch_low_budget_campaigns_to_landing_mode(not_landing, pagerduty_on_fail=True)
+        update_campaigns_in_landing(in_landing, pagerduty_on_fail=True)
+    except Exception:
+        _trigger_job_pagerduty()
 
 
 def switch_low_budget_campaigns_to_landing_mode(campaigns, pagerduty_on_fail=False):
@@ -53,7 +56,7 @@ def switch_low_budget_campaigns_to_landing_mode(campaigns, pagerduty_on_fail=Fal
                 notes=u'Failed to check non-landing campaign.'
             )
             if pagerduty_on_fail:
-                _trigger_check_pagerduty(campaign)
+                _trigger_check_pagerduty()
             continue
         if changed:
             utils.k1_helper.update_ad_groups(
@@ -186,7 +189,7 @@ def update_campaigns_in_landing(campaigns, pagerduty_on_fail=True):
                 notes=u'Failed to update landing campaign.'
             )
             if pagerduty_on_fail:
-                _trigger_update_pagerduty(campaign)
+                _trigger_update_pagerduty()
             continue
 
         utils.k1_helper.update_ad_groups(
@@ -1578,26 +1581,30 @@ def _get_ad_groups_running_on_date(date, ad_groups):
     return running_ad_groups
 
 
-def _trigger_update_pagerduty(campaign):
+def _trigger_job_pagerduty():
+    incident_key = 'campaign_stop_job_failed'
+    description = 'Exception in campaign stop job'
+    _trigger_pagerduty(incident_key, description)
+
+
+def _trigger_update_pagerduty():
     incident_key = 'campaign_stop_update_failed'
     description = 'Campaign stop update failed'
-    _trigger_pagerduty(campaign, incident_key, description)
+    _trigger_pagerduty(incident_key, description)
 
 
-def _trigger_check_pagerduty(campaign):
+def _trigger_check_pagerduty():
     incident_key = 'campaign_stop_check_failed'
     description = 'Campaign stop check failed'
-    _trigger_pagerduty(campaign, incident_key, description)
+    _trigger_pagerduty(incident_key, description)
 
 
-def _trigger_pagerduty(campaign, incident_key, description):
+def _trigger_pagerduty(incident_key, description):
     pagerduty_helper.trigger(
         event_type=pagerduty_helper.PagerDutyEventType.ENGINEERS,
         incident_key=incident_key,
         description=description,
-        details={
-            'campaign_id': campaign.id,
-        }
+        details={}
     )
 
 
