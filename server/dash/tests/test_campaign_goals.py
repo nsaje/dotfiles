@@ -337,8 +337,9 @@ class CampaignGoalsTestCase(TestCase):
              cgp.AVERAGE, cgp.UNDERPERFORMING, ],
         )
 
+    @patch('reports.api_touchpointconversions.query')
     @patch('reports.api_contentads.query')
-    def test_infobox_campaign(self, mock_contentads_query):
+    def test_infobox_campaign(self, mock_contentads_query, mock_tpc_query):
         start_date, end_date = datetime.date.today() - datetime.timedelta(7), datetime.date.today()
 
         self._add_value(constants.CampaignGoalKPI.MAX_BOUNCE_RATE, 75)
@@ -347,6 +348,8 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.CPA, 10)
         self._add_value(constants.CampaignGoalKPI.CPV, 15)
         self._add_value(constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT, 2)
+
+        mock_tpc_query.return_value = {}
 
         mock_contentads_query.return_value = {
             'bounce_rate': 10,
@@ -383,8 +386,9 @@ class CampaignGoalsTestCase(TestCase):
             }
         ])
 
+    @patch('reports.api_touchpointconversions.query')
     @patch('reports.api_contentads.query')
-    def test_infobox_ad_group(self, mock_contentads_query):
+    def test_infobox_ad_group(self, mock_contentads_query, mock_tpc_query):
         start_date, end_date = datetime.date.today() - datetime.timedelta(7), datetime.date.today()
 
         ad_group = models.AdGroup.objects.filter(campaign=self.campaign)[0]
@@ -396,6 +400,7 @@ class CampaignGoalsTestCase(TestCase):
         self._add_value(constants.CampaignGoalKPI.CPV, 15)
         self._add_value(constants.CampaignGoalKPI.CP_NON_BOUNCED_VISIT, 2)
 
+        mock_tpc_query.return_value = {}
         mock_contentads_query.return_value = {
             'bounce_rate': 10,
             'total_pageviews': 10,
