@@ -69,7 +69,10 @@ def _fill_in_missing_rows(target_dimension, rows, breakdown, parent, all_values)
         parent_br_key = sort_helper.get_breakdown_key(row, parent_breakdown)
         rows_per_parent_breakdown[parent_br_key].append(row)
 
-    for bc in parent:
+    if not parent:
+        assert len(rows_per_parent_breakdown.keys()) == 1
+
+    for bc in parent or [rows_per_parent_breakdown.keys()[0]]:
         parent_br_key = sort_helper.get_breakdown_key(bc, parent_breakdown)
 
         # collect used constants for rows returned

@@ -1,4 +1,5 @@
 from collections import defaultdict
+from decimal import Decimal
 import copy
 
 from dash import stats_helper
@@ -458,6 +459,6 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
         for stat in stats:
             for metric in metrics:
                 data[metric].append(
-                    (stat['day'], stat.get(metric))
+                    (stat['day'], float(stat[metric]) if isinstance(stat.get(metric), Decimal) else stat.get(metric))
                 )
         return data

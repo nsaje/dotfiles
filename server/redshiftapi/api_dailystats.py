@@ -17,6 +17,7 @@ def query(breakdown, metrics, constraints, goals, order, use_publishers_view=Fal
         breakdown_for_name=breakdown, extra_name='dailystats_all',
         metrics=metrics)
     postprocess.set_default_values(breakdown, rows)
+    postprocess.fill_in_missing_rows(rows, breakdown, constraints, None, [order], 0, (constraints['date__lte'] - constraints['date__gte']).days)
     rows = sort_helper.sort_results(rows, [order])
 
     return rows
