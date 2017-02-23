@@ -1067,8 +1067,8 @@ class AccountSettings(SettingsBase):
         choices=constants.AccountType.get_choices()
     )
 
-    whitelist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
-    blacklist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
+    whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
+    blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
 
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
 
@@ -1237,8 +1237,9 @@ class CampaignSettings(SettingsBase):
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
-    whitelist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
-    blacklist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
+
+    whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
+    blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
 
     automatic_campaign_stop = models.BooleanField(default=True)
     landing_mode = models.BooleanField(default=False)
@@ -2422,8 +2423,9 @@ class AdGroupSettings(SettingsBase):
     exclusion_interest_targeting = jsonfield.JSONField(blank=True, default=[])
     audience_targeting = jsonfield.JSONField(blank=True, default=[])
     exclusion_audience_targeting = jsonfield.JSONField(blank=True, default=[])
-    whitelist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
-    blacklist_publisher_groups = jsonfield.JSONField(blank=True, default=[])
+
+    whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
+    blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
 
     redirect_pixel_urls = jsonfield.JSONField(blank=True, default=[])
     redirect_javascript = models.TextField(blank=True)
@@ -4678,6 +4680,9 @@ class PublisherGroupEntry(models.Model):
     include_subdomains = models.BooleanField(default=True)
 
     outbrain_publisher_id = models.CharField(max_length=127, blank=True, verbose_name='Special Outbrain publisher ID')
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
 
     objects = QuerySetManager()
 
