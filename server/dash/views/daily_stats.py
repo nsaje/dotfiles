@@ -1,24 +1,22 @@
 from collections import defaultdict
 import copy
 
-import reports.api
-import reports.api_publishers
-
 from dash import stats_helper
 from dash.views import helpers
 from dash import models
 from dash import constants
-from dash import publisher_helpers
 from dash import campaign_goals
 
 from utils import api_common
 from utils import exc
 
+import stats.constants
+import stats.api_dailystats
+
 MAX_DAILY_STATS_BREAKDOWNS = 3
 
 
 class BaseDailyStatsView(api_common.BaseApiView):
-
     def get_stats(self, request, group_key, objects, constraints, **data):
         metrics = request.GET.getlist('metrics')
         totals = request.GET.get('totals')
@@ -412,94 +410,54 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
     def get(self, request, ad_group_id, ):
         if not request.user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        constraints = {'ad_group': ad_group.id}
+
+        metrics = request.GET.getlist('metrics')
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         show_blacklisted_publishers = request.GET.get(
             'show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL)
+
+        breakdown = ['day']
+        order = 'day'
+
+        constraints = stats.constraints_helper.prepare_ad_group_constraints(
+            request.user, ad_group, breakdown, start_date, end_date, filtered_sources,
+            only_used_sources=False, show_blacklisted_publishers=show_blacklisted_publishers)
+        goals = stats.api_breakdowns.get_goals(constraints)
+
+        chart_data = {
+            "chart_data": [{
+                "id": "totals",
+                "name": "Totals",
+                "series_data": self._format_metric(
+                    stats.api_dailystats.query(
+                        request.user, breakdown, metrics, constraints, goals, order, should_use_publishers_view=True),
+                    metrics
+                ),
+            }]
+        }
 
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
         pixels = ad_group.campaign.account.conversionpixel_set.filter(archived=False)
 
         return self.create_api_response(
             self.merge(
-                self.get_stats(
-                    request,
-                    None,
-                    None,
-                    constraints,
-                    conversion_goals=conversion_goals,
-                    pixels=pixels,
-                    show_blacklisted_publishers=show_blacklisted_publishers,
-                    ad_group=ad_group,
-                ),
-                self.get_goals(
+                chart_data, self.get_goals(
                     request,
                     conversion_goals=conversion_goals,
                     campaign=ad_group.campaign,
                     pixels=pixels,
                 )
-            )
-        )
+            ))
 
-    def _get_selected_objects(self, request, objects):
-        return []
-
-    def _query_stats(self, user, start_date, end_date, breakdown, constraints, conversion_goals=None, pixels=None, show_blacklisted_publishers=None, ad_group=None):
-        publisher_breakdown = breakdown
-        touchpoint_breakdown = breakdown
-
-        if 'source' in constraints:
-            constraints['exchange'] = [s.bidder_slug if s.bidder_slug else s.name.lower() for s in constraints['source']]
-            del constraints['source']
-
-        stats = []
-
-        if not show_blacklisted_publishers or\
-                show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
-            stats = stats_helper.get_publishers_data_and_conversion_goals(
-                user,
-                reports.api_publishers.query,
-                start_date,
-                end_date,
-                constraints,
-                conversion_goals,
-                pixels,
-                publisher_breakdown_fields=publisher_breakdown,
-                touchpoint_breakdown_fields=touchpoint_breakdown,
-                order_fields=['date'])
-
-        elif show_blacklisted_publishers in (
-                constants.PublisherBlacklistFilter.SHOW_ACTIVE,
-                constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
-
-            adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(
-                ad_group
-            )
-
-            query_func = None
-            if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
-                query_func = reports.api_publishers.query_active_publishers
-            else:
-                query_func = reports.api_publishers.query_blacklisted_publishers
-
-            stats = stats_helper.get_publishers_data_and_conversion_goals(
-                user,
-                query_func,
-                start_date,
-                end_date,
-                constraints,
-                conversion_goals,
-                pixels,
-                publisher_breakdown_fields=publisher_breakdown,
-                touchpoint_breakdown_fields=touchpoint_breakdown,
-                order_fields=['date'],
-                show_blacklisted_publishers=show_blacklisted_publishers,
-                adg_blacklisted_publishers=adg_blacklisted_publishers,
-            )
-
-        if user.has_perm('zemauth.campaign_goal_optimization'):
-            stats = campaign_goals.create_goals(ad_group.campaign, stats)
-
-        return stats
+    def _format_metric(self, stats, metrics):
+        data = defaultdict(list)
+        for stat in stats:
+            for metric in metrics:
+                data[metric].append(
+                    (stat['day'], stat.get(metric))
+                )
+        return data

@@ -4,8 +4,24 @@ from redshiftapi import helpers
 from redshiftapi import models
 
 
+def get_master_model_cls(use_publishers_view):
+    return models.MVMasterPublishers() if use_publishers_view else models.MVMaster()
+
+
+def get_master_conversions_model_cls(use_publishers_view):
+    return models.MVConversionsPublishers() if use_publishers_view else models.MVConversions()
+
+
+def get_master_touchpoints_model_cls(use_publishers_view):
+    return models.MVTouchpointConversionsPublishers() if use_publishers_view else models.MVTouchpointConversions()
+
+
+def get_joint_master_model_cls(use_publishers_view):
+    return models.MVJointMasterPublishers() if use_publishers_view else models.MVJointMaster()
+
+
 def prepare_query_all_base(breakdown, constraints, parents, use_publishers_view):
-    model = models.MVMasterPublishers() if use_publishers_view else models.MVMaster()
+    model = get_master_model_cls(use_publishers_view)
     context = model.get_query_all_context(
         breakdown, constraints, parents,
         ['-clicks'] + breakdown,
@@ -14,7 +30,7 @@ def prepare_query_all_base(breakdown, constraints, parents, use_publishers_view)
 
 
 def prepare_query_all_yesterday(breakdown, constraints, parents, use_publishers_view):
-    model = models.MVMasterPublishers() if use_publishers_view else models.MVMaster()
+    model = get_master_model_cls(use_publishers_view)
     context = model.get_query_all_yesterday_context(
         breakdown, constraints, parents,
         ['-yesterday_cost'] + breakdown,
@@ -23,7 +39,7 @@ def prepare_query_all_yesterday(breakdown, constraints, parents, use_publishers_
 
 
 def prepare_query_all_conversions(breakdown, constraints, parents, use_publishers_view):
-    model = models.MVConversionsPublishers() if use_publishers_view else models.MVConversions()
+    model = get_master_conversions_model_cls(use_publishers_view)
     context = model.get_query_all_context(
         breakdown, constraints, parents,
         ['-count'] + breakdown,
@@ -32,7 +48,7 @@ def prepare_query_all_conversions(breakdown, constraints, parents, use_publisher
 
 
 def prepare_query_all_touchpoints(breakdown, constraints, parents, use_publishers_view):
-    model = models.MVTouchpointConversionsPublishers() if use_publishers_view else models.MVTouchpointConversions()
+    model = get_master_touchpoints_model_cls(use_publishers_view)
     context = model.get_query_all_context(
         breakdown, constraints, parents,
         ['-count'] + breakdown,
@@ -46,13 +62,13 @@ def _prepare_query_all_for_model(model, context, template_name='breakdown.sql'):
 
 
 def prepare_query_joint_base(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view):
-    model = models.MVJointMasterPublishers() if use_publishers_view else models.MVJointMaster()
+    model = get_joint_master_model_cls(use_publishers_view)
     context = model.get_query_joint_context(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view)
     return _prepare_query_joint_for_model(context, 'breakdown_joint_base.sql')
 
 
 def prepare_query_joint_levels(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view):
-    model = models.MVJointMasterPublishers() if use_publishers_view else models.MVJointMaster()
+    model = get_joint_master_model_cls(use_publishers_view)
     context = model.get_query_joint_context(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view)
     return _prepare_query_joint_for_model(context, 'breakdown_joint_levels.sql')
 
@@ -74,7 +90,7 @@ def _prepare_query_joint_for_model(context, template_name):
 
 
 def prepare_query_structure_with_stats(breakdown, constraints, use_publishers_view):
-    model = models.MVMasterPublishers() if use_publishers_view else models.MVMaster()
+    model = get_master_model_cls(use_publishers_view)
     context = model.get_query_all_context(
         breakdown, constraints, None, ['-media_cost'] + breakdown,
         use_publishers_view)

@@ -1,4 +1,3 @@
-import backtosql
 from functools import partial
 from dash import threads
 import stats.constants
@@ -37,7 +36,6 @@ def should_query_all(breakdown):
 
 
 def query(breakdown, constraints, parents, goals, order, offset, limit, use_publishers_view=False):
-
     orders = [order, '-media_cost'] + breakdown
 
     target_dimension = stats.constants.get_target_dimension(breakdown)
@@ -100,44 +98,59 @@ def query_totals(breakdown, constraints, goals, use_publishers_view=False):
 
 
 def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
-               breakdown_for_name=[], extra_name=''):
+               breakdown_for_name=[], extra_name='', metrics=None):
 
-    sql, params = queries.prepare_query_all_base(breakdown, constraints, parents, use_publishers_view)
-    t_base = threads.AsyncFunction(
-        partial(db.execute_query, sql, params, helpers.get_query_name(
-            breakdown_for_name, '{}_base'.format(extra_name))))
-    t_base.start()
+    t_base = None
+    t_yesterday = None
+    t_conversions = None
+    t_touchpoints = None
 
-    sql, params = queries.prepare_query_all_yesterday(breakdown, constraints, parents, use_publishers_view)
-    t_yesterday = threads.AsyncFunction(
-        partial(db.execute_query, sql, params, helpers.get_query_name(
-            breakdown_for_name, '{}_yesterday'.format(extra_name))))
-    t_yesterday.start()
+    if not metrics or set(metrics).intersection(set(
+            queries.get_master_model_cls(use_publishers_view).columns_dict.keys())):
+        sql, params = queries.prepare_query_all_base(breakdown, constraints, parents, use_publishers_view)
+        t_base = threads.AsyncFunction(
+            partial(db.execute_query, sql, params, helpers.get_query_name(
+                breakdown_for_name, '{}_base'.format(extra_name))))
+        t_base.start()
+
+    if not metrics or set(metrics).intersection(set(['yesterday_cost', 'e_yesterday_cost'])):
+        sql, params = queries.prepare_query_all_yesterday(breakdown, constraints, parents, use_publishers_view)
+        t_yesterday = threads.AsyncFunction(
+            partial(db.execute_query, sql, params, helpers.get_query_name(
+                breakdown_for_name, '{}_yesterday'.format(extra_name))))
+        t_yesterday.start()
 
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
     support_conversions = view_selector.supports_conversions(needed_dimensions, use_publishers_view)
 
-    t_conversions = None
-    t_touchpoints = None
     if support_conversions:
         if goals.conversion_goals:
-            sql, params = queries.prepare_query_all_conversions(
-                breakdown + ['slug'], constraints, parents, use_publishers_view)
-            t_conversions = threads.AsyncFunction(
-                partial(db.execute_query, sql, params, helpers.get_query_name(
-                    breakdown_for_name, '{}_conversions'.format(extra_name))))
-            t_conversions.start()
+            if not metrics or set(metrics).intersection(
+                    set(queries.get_master_conversions_model_cls(use_publishers_view).columns_dict.keys())):
+                sql, params = queries.prepare_query_all_conversions(
+                    breakdown + ['slug'], constraints, parents, use_publishers_view)
+                t_conversions = threads.AsyncFunction(
+                    partial(db.execute_query, sql, params, helpers.get_query_name(
+                        breakdown_for_name, '{}_conversions'.format(extra_name))))
+                t_conversions.start()
 
         if goals.pixels:
-            sql, params = queries.prepare_query_all_touchpoints(
-                breakdown + ['slug', 'window'], constraints, parents, use_publishers_view)
-            t_touchpoints = threads.AsyncFunction(
-                partial(db.execute_query, sql, params, helpers.get_query_name(
-                    breakdown_for_name, '{}_touchpoints'.format(extra_name))))
-            t_touchpoints.start()
+            if not metrics or set(metrics).intersection(
+                    set(queries.get_master_touchpoints_model_cls(use_publishers_view).columns_dict.keys())):
+                sql, params = queries.prepare_query_all_touchpoints(
+                    breakdown + ['slug', 'window'], constraints, parents, use_publishers_view)
+                t_touchpoints = threads.AsyncFunction(
+                    partial(db.execute_query, sql, params, helpers.get_query_name(
+                        breakdown_for_name, '{}_touchpoints'.format(extra_name))))
+                t_touchpoints.start()
 
-    base_rows = t_base.join_and_get_result()
-    yesterday_rows = t_yesterday.join_and_get_result()
+    base_rows = []
+    if t_base is not None:
+        base_rows = t_base.join_and_get_result()
+
+    yesterday_rows = []
+    if t_yesterday is not None:
+        yesterday_rows = t_yesterday.join_and_get_result()
 
     conversions_rows = []
     if t_conversions is not None:

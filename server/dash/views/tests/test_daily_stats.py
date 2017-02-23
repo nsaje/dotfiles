@@ -995,8 +995,7 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         })
 
 
-@patch('dash.table.reports.api_touchpointconversions.query_publishers')
-@patch('dash.views.daily_stats.reports.api_publishers.query')
+@patch('stats.api_dailystats.query')
 class AdGroupPublishersDailyStatsTest(TestCase):
     fixtures = ['test_views']
 
@@ -1006,48 +1005,20 @@ class AdGroupPublishersDailyStatsTest(TestCase):
 
         self.client.login(username=self.user.email, password=password)
 
-    def test_get(self, mock_query, mock_touchpoint_query):
+    def test_get(self, mock_query):
         start_date = datetime.date(2015, 2, 1)
         end_date = datetime.date(2015, 2, 2)
 
         mock_stats = [{
-            'date': start_date.isoformat(),
+            'day': start_date.isoformat(),
             'cpc': '0.0100',
             'clicks': 1000,
-            'conversions': {},
         }, {
-            'date': end_date.isoformat(),
+            'day': end_date.isoformat(),
             'cpc': '0.0200',
             'clicks': 1500,
-            'conversions': {},
         }]
         mock_query.return_value = mock_stats
-
-        ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = \
-            ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
-        pixels = ad_group.campaign.account.conversionpixel_set.all()
-
-        mock_stats2 = [{
-            'date': start_date.isoformat(),
-            'conversion_count_24': 64,
-            'conversion_count_168': 64,
-            'conversion_count_720': 64,
-            'conversion_count_2160': 64,
-            'slug': 'test_goal',
-            'account': 1,
-            'conversion_window': touchpoint_conversion_goal.conversion_window,
-        }, {
-            'date': start_date.isoformat(),
-            'conversion_count_24': 64,
-            'conversion_count_168': 64,
-            'conversion_count_720': 64,
-            'conversion_count_2160': 64,
-            'slug': 'test_goal',
-            'account': 1,
-            'conversion_window': touchpoint_conversion_goal.conversion_window,
-        }]
-        mock_touchpoint_query.return_value = mock_stats2
 
         params = {
             'metrics': ['cpc', 'clicks'],
@@ -1062,26 +1033,6 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             follow=True
         )
 
-        mock_query.assert_called_with(
-            start_date,
-            end_date,
-            order_fields=['date'],
-            breakdown_fields=['date'],
-            constraints={'ad_group': ad_group.id, 'exchange': []},
-            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
-            constraints_list=[],
-        )
-
-        mock_touchpoint_query.assert_any_call(
-            start_date,
-            end_date,
-            breakdown=['date'],
-            pixels=ListMatcher(pixels),
-            constraints={'source': [], 'ad_group': ad_group.id},
-            constraints_list=[],
-        )
-
-        self.maxDiff = None
         self.assertJSONEqual(response.content, {
             'data': {
                 'goal_fields': {
