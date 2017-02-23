@@ -2,6 +2,7 @@ import json
 
 from dash import constants
 from dash import forms
+from dash import publisher_helpers
 from dash import publisher_group_helpers
 from dash import models
 from dash import cpc_constraints
@@ -65,7 +66,7 @@ class PublisherTargeting(api_common.BaseApiView):
         entries_not_selected = cleaned_data["entries_not_selected"]
         if entries_not_selected:
             constraints['publisher_id__neq'] = [
-                publisher_group_helpers.create_publisher_id(x['publisher'], x['source'].pk if x.get('source') else None)
+                publisher_helpers.create_publisher_id(x['publisher'], x['source'].pk if x.get('source') else None)
                 for x in entries_not_selected]
 
         publishers = redshiftapi.api_breakdowns.query_structure_with_stats(
@@ -74,7 +75,7 @@ class PublisherTargeting(api_common.BaseApiView):
         sources = {x.pk: x for x in models.Source.objects.all()}
         entry_dicts = []
         for publisher_id in publishers:
-            publisher, source_id = publisher_group_helpers.dissect_publisher_id(publisher_id)
+            publisher, source_id = publisher_helpers.dissect_publisher_id(publisher_id)
             entry_dicts.append({
                 'publisher': publisher,
                 'source': sources[source_id] if source_id else None,

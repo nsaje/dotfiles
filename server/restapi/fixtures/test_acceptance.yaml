@@ -249,6 +249,7 @@
         modified_by: 1
         campaign: 608
         name: 'My ad group'
+        default_blacklist_id: 156
     model: dash.adgroup
     pk: 2040
 
@@ -381,16 +382,6 @@
     model: restapi.reportjob
     pk: 27
 
-# test publisher blacklists
-
--   fields:
-        created_dt: '2015-02-21T00:00:00'
-        name: 'www.example.com'
-        status: 2
-        ad_group: 2040
-    model: dash.publisherblacklist
-    pk: 27
-
 # test publisher groups
 
 -   fields:
@@ -417,6 +408,14 @@
     model: dash.publishergroup
     pk: 155
 
+-   fields:
+        created_dt: '2015-02-21T00:00:00'
+        modified_dt: '2015-02-21T00:00:00'
+        name: 'Blacklist'
+        account: 186
+    model: dash.publishergroup
+    pk: 156
+
 # test publisher group entries
 
 -   fields:
@@ -434,3 +433,10 @@
         modified_dt: '2014-06-04T09:58:21'
     model: dash.publishergroupentry
     pk: 623
+
+-   fields:
+        publisher_group: 156
+        publisher: "example3.com"
+        source: 1
+    model: dash.publishergroupentry
+    pk: 624

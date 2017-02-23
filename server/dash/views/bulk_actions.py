@@ -427,9 +427,6 @@ class CampaignAdGroupRestore(BaseBulkActionView):
             for ad_group in ad_groups:
                 ad_group.restore(request)
 
-                for ad_group_source in ad_group.adgroupsource_set.all():
-                    api.refresh_publisher_blacklist(ad_group_source, request)
-
         return self.create_api_response(self.create_rows(ad_groups, archived=False))
 
 

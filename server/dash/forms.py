@@ -1201,42 +1201,6 @@ class ScheduleReportForm(forms.Form):
         super(ScheduleReportForm, self).__init__(*args, **kwargs)
 
 
-class PublisherBlacklistForm(forms.ModelForm):
-    def save(self, commit=True):
-        instance = super(PublisherBlacklistForm, self).save(commit=False)
-
-        instance.status = constants.PublisherStatus.BLACKLISTED
-        instance.everywhere = True
-
-        self._reenable_global(instance.name)
-
-        if commit:
-            instance.save()
-        return instance
-
-    def _reenable_global(self, name):
-        global_blacklist = []
-        # currently only support enabling global blacklist
-        matching_sources = models.Source.objects.filter(
-            deprecated=False
-        )
-        candidate_source = None
-        for source in matching_sources:
-            if source.can_modify_publisher_blacklist_automatically():
-                candidate_source = source
-                break
-
-        global_blacklist.append({
-            'domain': name,
-            'source': candidate_source,
-        })
-
-    class Meta:
-        model = models.PublisherBlacklist
-        exclude = ['everywhere', 'account',
-                   'campaign', 'ad_group', 'source', 'status']
-
-
 class CreditLineItemAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(CreditLineItemAdminForm, self).__init__(*args, **kwargs)

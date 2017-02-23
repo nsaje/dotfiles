@@ -1245,109 +1245,6 @@ class ExportReportAdmin(admin.ModelAdmin):
     _agencies.short_description = 'Filtered Account Types'
 
 
-class PublisherBlacklistAdmin(admin.ModelAdmin):
-    form = dash_forms.PublisherBlacklistForm
-
-    search_fields = ['name']
-    list_display = (
-        'created_dt',
-        'name',
-        'everywhere',
-        'ad_group_',
-        'campaign_',
-        'account_',
-        'source_id',
-        'status'
-    )
-    readonly_fields = [
-        'created_dt',
-        'everywhere',
-        'external_id',
-        'ad_group_id',
-        'campaign_id',
-        'account_id',
-        'status'
-    ]
-    list_filter = ('everywhere', 'status',)
-    ordering = ('-created_dt',)
-
-    def has_add_permission(self, request):
-        return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')
-
-    def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
-
-    def has_change_permission(self, request, obj=None):
-        return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')
-
-    def ad_group_(self, obj):
-        if obj.ad_group is None:
-            return None
-        return u'<a href="{ad_group_url}">{name}</a>'.format(
-            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group.id,)),
-            name=u'{} ({})'.format(
-                obj.ad_group.name,
-                obj.ad_group.id
-            )
-        )
-    ad_group_.allow_tags = True
-    ad_group_.admin_order_field = 'ad_group'
-
-    def account_(self, obj):
-        account = obj.account or (obj.campaign.account if obj.campaign else None)
-
-        if account is None:
-            return ""
-        return '<a href="{account_url}">{account}</a>'.format(
-            account_url=reverse('admin:dash_account_change', args=(account.id,)),
-            account=account
-        )
-    account_.allow_tags = True
-    account_.admin_order_field = 'campaign__account'
-
-    def campaign_(self, obj):
-        if obj.campaign is None:
-            return ""
-        return '<a href="{campaign_url}">{campaign}</a>'.format(
-            campaign_url=reverse('admin:dash_campaign_change', args=(obj.campaign.id,)),
-            campaign=obj.campaign
-        )
-    campaign_.allow_tags = True
-    campaign_.admin_order_field = 'campaign'
-
-    # funky hack that removes site-wide bulk model delete action
-    def get_actions(self, request):
-        actions = super(PublisherBlacklistAdmin, self).get_actions(request)
-        del actions['delete_selected']
-        return actions
-
-    def get_form(self, request, obj=None, **kwargs):
-        form = super(PublisherBlacklistAdmin, self).get_form(request, **kwargs)
-        form.request = request
-        return form
-
-    def reenable_global(modeladmin, request, queryset):
-        user = request.user
-        if not user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):
-            return
-        if not user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
-            return
-
-        # currently only support enabling global blacklist
-        filtered_queryset = queryset.filter(
-            everywhere=True,
-            status=constants.PublisherStatus.BLACKLISTED
-        )
-
-        for pub in filtered_queryset:
-            pub.status = constants.PublisherStatus.ENABLED
-            pub.save()
-
-    reenable_global.short_description = "Re-enable publishers globally"
-
-    actions = [reenable_global]
-
-
 class EmailTemplateAdmin(admin.ModelAdmin):
     actions = None
 
@@ -1791,7 +1688,6 @@ admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)
 admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdmin)
 admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
-admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
 admin.site.register(models.FacebookAccount, FacebookAccount)
 admin.site.register(models.EmailTemplate, EmailTemplateAdmin)
 admin.site.register(models.History, HistoryAdmin)

@@ -827,7 +827,7 @@ class PublisherBlacklistTest(RESTAPITest):
         resp_json = json.loads(r.content)
         self.assertIsInstance(resp_json['data'], list)
         self.assertGreater(len(resp_json['data']), 0)
-        expected_fields = ['status', 'source', 'externalId', 'name', 'level']
+        expected_fields = ['status', 'source', 'name', 'level']
         for item in resp_json['data']:
             self.assertEqual(item.keys(), expected_fields)
 

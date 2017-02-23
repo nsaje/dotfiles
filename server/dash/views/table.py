@@ -169,35 +169,3 @@ class AccountCampaignsTable(api_common.BaseApiView):
         )
 
         return self.create_api_response(response)
-
-
-class PublishersTable(api_common.BaseApiView):
-    def get(self, request, level_, id_=None):
-        newrelic.agent.set_transaction_name('dash.views.table:PublishersTable#%s' % (level_))
-
-        user = request.user
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        page = request.GET.get('page')
-        order = request.GET.get('order') or 'media_cost'
-        size = request.GET.get('size')
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-        show_blacklisted_publishers = request.GET.get('show_blacklisted_publishers')
-
-        response = dt.PublishersTable().get(
-            user,
-            level_,
-            filtered_sources,
-            show_blacklisted_publishers,
-            start_date,
-            end_date,
-            order,
-            page,
-            size,
-            id_
-        )
-
-        return self.create_api_response(response)

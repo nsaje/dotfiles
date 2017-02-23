@@ -9,6 +9,7 @@ from analytics.projections import BudgetProjections
 
 from dash import models
 from dash import constants
+from dash import publisher_helpers
 from dash import publisher_group_helpers
 from dash.views import helpers as view_helpers
 from dash.dashapi import data_helper
@@ -417,7 +418,7 @@ class PublisherBlacklistLoader(Loader):
 
     @classmethod
     def _get_obj_id(cls, obj):
-        return publisher_group_helpers.create_publisher_id(obj.publisher, obj.source_id)
+        return publisher_helpers.create_publisher_id(obj.publisher, obj.source_id)
 
     @classmethod
     def from_constraints(cls, user, constraints):
@@ -452,7 +453,7 @@ class PublisherBlacklistLoader(Loader):
                 }
             else:
                 for source_id in self.source_map.keys():
-                    d[publisher_group_helpers.create_publisher_id(entry.publisher, source_id)] = {
+                    d[publisher_helpers.create_publisher_id(entry.publisher, source_id)] = {
                         'status': status,
                         'blacklisted_level': level,
                     }

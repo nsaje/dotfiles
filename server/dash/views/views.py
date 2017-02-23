@@ -8,8 +8,6 @@ import httplib
 import urllib
 import urllib2
 import pytz
-import hmac
-import hashlib
 import threading
 
 from django.db import transaction
@@ -19,8 +17,6 @@ from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
-from django.http.request import HttpRequest
-from django.views.decorators.csrf import csrf_exempt
 
 import influx
 
@@ -42,13 +38,7 @@ from dash import constants
 from dash import api
 from dash import forms
 from dash import infobox_helpers
-from dash import publisher_helpers
-from dash import history_helpers
-from dash import blacklist
-from dash import cpc_constraints
-from dash.views import publishers as view_publishers
 
-import reports.api_publishers
 import analytics.projections
 
 logger = logging.getLogger(__name__)
@@ -434,8 +424,6 @@ class AdGroupRestore(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group.restore(request)
 
-        for ad_group_source in ad_group.adgroupsource_set.all():
-            api.refresh_publisher_blacklist(ad_group_source, request)
         return self.create_api_response({})
 
 
@@ -1175,221 +1163,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             'autopilot_changed_sources': autopilot_changed_sources_text,
             'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings)
         })
-
-
-class PublishersBlacklistStatus(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
-    def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
-            raise exc.AuthorizationError()
-
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        body = json.loads(request.body)
-
-        start_date = helpers.parse_datetime(body.get('start_date'))
-        end_date = helpers.parse_datetime(body.get('end_date'))
-
-        state = int(body.get('state'))
-        if state not in constants.PublisherStatus.get_all():
-            raise exc.MissingDataError('Invalid state')
-
-        level = body.get('level')
-        if level not in constants.PublisherBlacklistLevel.get_all():
-            raise exc.MissingDataError('Invalid level')
-
-        if level in (constants.PublisherBlacklistLevel.CAMPAIGN,
-                     constants.PublisherBlacklistLevel.ACCOUNT) and\
-                not request.user.has_perm('zemauth.can_access_campaign_account_publisher_blacklist_status'):
-            raise exc.AuthorizationError()
-
-        if level == constants.PublisherBlacklistLevel.GLOBAL and\
-                not request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):
-            raise exc.AuthorizationError()
-
-        publishers_selected = body["publishers_selected"]
-        publishers_not_selected = body["publishers_not_selected"]
-
-        select_all = body["select_all"]
-        publishers = []
-        if select_all:
-            publishers = self._query_all_publishers(ad_group, start_date, end_date)
-
-        try:
-            self._handle_blacklisting(
-                request, ad_group, level, state, publishers, publishers_selected,
-                publishers_not_selected,
-                enforce_cpc=body.get('enforce_cpc')
-            )
-        except cpc_constraints.CpcValidationError as err:
-            raise exc.ValidationError(errors={
-                'cpc_constraints': list(err)
-            })
-
-        response = {
-            "success": True,
-        }
-        return self.create_api_response(response)
-
-    def _handle_blacklisting(self, request, ad_group, level, state, publishers, publishers_selected,
-                             publishers_not_selected, enforce_cpc=False):
-        source_domains = self._generate_source_publishers(
-            publishers, publishers_selected, publishers_not_selected
-        )
-        constraints = {}
-        if level == constants.PublisherBlacklistLevel.ADGROUP:
-            constraints['ad_group'] = ad_group
-        elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
-            constraints['campaign'] = ad_group.campaign
-        elif level == constants.PublisherBlacklistLevel.ACCOUNT:
-            constraints['account'] = ad_group.campaign.account
-
-        self._call_new_blacklisting(request, ad_group, level, state, source_domains)
-
-        for source, domains in source_domains.iteritems():
-            source_constraints = {'source': source}
-            source_constraints.update(constraints)
-            blacklist.update(ad_group, source_constraints, state, domains,
-                             everywhere=level == constants.PublisherBlacklistLevel.GLOBAL,
-                             enforce_cpc=enforce_cpc)
-
-        self._write_history(request, ad_group, state, [
-            {'source': source, 'domain': d[0]}
-            for source, domains in source_domains.iteritems()
-            for d in domains
-        ], level)
-
-    def _call_new_blacklisting(self, request, ad_group, level, state, source_domains):
-        entries = []
-        payload = {
-            'entries': entries,
-            'status': (constants.PublisherTargetingStatus.BLACKLISTED
-                       if state == constants.PublisherTargetingStatus.BLACKLISTED
-                       else constants.PublisherTargetingStatus.UNLISTED),
-        }
-
-        # setup level
-        if level == constants.PublisherBlacklistLevel.ADGROUP:
-            payload['ad_group'] = ad_group.id
-        elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
-            payload['campaign'] = ad_group.campaign_id
-        elif level == constants.PublisherBlacklistLevel.ACCOUNT:
-            payload['account'] = ad_group.campaign.account_id
-        else:
-            # global level
-            pass
-
-        for source, domains in source_domains.iteritems():
-            for domain in domains:
-                entries.append({
-                    'publisher': domain[0],
-                    'source': source.id,
-                    'include_subdomains': True,
-                })
-
-        new_request = HttpRequest()
-        new_request.user = request.user
-        new_request._body = json.dumps(payload)
-        new_request.META = request.META.copy()
-
-        view = view_publishers.PublisherTargeting(rest_proxy=True)
-        _, status_code = view.post(new_request)
-        if status_code != 200:
-            logger.error('Publisher group targeting endpoint failed when it should not, status code %s', status_code)
-
-    def _generate_source_publishers(self, pubs, pubs_selected, pubs_ignored):
-        source_publishers = {}
-        source_ids = set()
-
-        pubs_ignored_set = set(
-            (publisher['source_id'], publisher['domain'])
-            for publisher in pubs_ignored
-        )
-
-        for publisher in pubs + pubs_selected:
-            source_id, domain = publisher['source_id'], publisher['domain']
-            external_id = publisher.get('external_id')
-            if (source_id, domain, ) in pubs_ignored_set:
-                continue
-            source_publishers.setdefault(source_id, set()).add((domain, external_id))
-            source_ids.add(source_id)
-
-        sources_map = {
-            source.pk: source for source in models.Source.objects.filter(pk__in=source_ids)
-        }
-
-        return {
-            sources_map[source_id]: domains
-            for source_id, domains in source_publishers.iteritems()
-        }
-
-    def _query_all_publishers(self, ad_group, start_date, end_date):
-        source_cache_by_slug = {
-            'outbrain': models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN)
-        }
-
-        # get all publishers from date range with statistics
-        # (they represent select-all)
-        constraints = {
-            'ad_group': ad_group.id,
-        }
-        breakdown = ['exchange', 'domain']
-        publishers = reports.api_publishers.query_publisher_list(
-            start_date,
-            end_date,
-            breakdown_fields=breakdown,
-            constraints=constraints
-        )
-        for publisher in publishers:
-            source_slug = publisher['exchange']
-            if source_slug not in source_cache_by_slug:
-                source_cache_by_slug[source_slug] =\
-                    models.Source.objects.get(bidder_slug=source_slug)
-            publisher['source_id'] = source_cache_by_slug[source_slug].id
-        return publishers
-
-    def _write_history(self, request, ad_group, state, blacklist, level):
-        if True:
-            # this is now written by publisher groups
-            return
-
-        action_string = "Blacklisted" if state == constants.PublisherStatus.BLACKLISTED \
-                        else "Enabled"
-
-        level_description = ""
-        if level == constants.PublisherBlacklistLevel.GLOBAL:
-            level_description = 'globally'
-        else:
-            level_description = 'on {level} level'.format(
-                level=constants.PublisherBlacklistLevel.get_text(level).lower()
-            )
-
-        pub_strings = [u"{pub} on {slug}".format(
-                       pub=pub_bl['domain'],
-                       slug=pub_bl['source'].name
-                       ) for pub_bl in blacklist]
-        pubs_string = u", ".join(pub_strings)
-
-        changes_text = u'{action} the following publishers {level_description}: {pubs}.'.format(
-            action=action_string,
-            level_description=level_description,
-            pubs=pubs_string
-        )
-        action_type = publisher_helpers.get_historyactiontype(level)
-        entity = publisher_helpers.get_historyentity(ad_group, level)
-        if entity is not None:
-            entity.write_history(
-                changes_text,
-                user=request.user,
-                action_type=action_type
-            )
-        else:
-            history_helpers.write_global_history(
-                changes_text,
-                user=request.user,
-                action_type=action_type
-            )
-        email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
 
 
 class AllAccountsOverview(api_common.BaseApiView):

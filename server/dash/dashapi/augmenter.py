@@ -106,7 +106,7 @@ def augment_sources_totals(row, loader):
 
 def augment_publishers(rows, loader, is_base_level=False):
     for row in rows:
-        domain, _ = publisher_group_helpers.dissect_publisher_id(row['publisher_id'])
+        domain, _ = publisher_helpers.dissect_publisher_id(row['publisher_id'])
         source_id = row['source_id']
         augment_row_publisher(
             row,
@@ -119,7 +119,7 @@ def augment_publishers(rows, loader, is_base_level=False):
 
 def augment_publishers_for_report(rows, loader, is_base_level=False):
     for row in rows:
-        domain, _ = publisher_group_helpers.dissect_publisher_id(row['publisher_id'])
+        domain, _ = publisher_helpers.dissect_publisher_id(row['publisher_id'])
         source_id = row['source_id']
         augment_row_report_publisher(
             row,
@@ -297,7 +297,7 @@ def make_dash_rows(target_dimension, objs_ids, parent):
 def make_publisher_dash_rows(objs_ids, parent):
     rows = []
     for obj_id in objs_ids:
-        publisher, source_id = publisher_group_helpers.dissect_publisher_id(obj_id)
+        publisher, source_id = publisher_helpers.dissect_publisher_id(obj_id)
 
         # dont include rows without source_id
         if source_id:
@@ -316,7 +316,7 @@ def make_row(target_dimension, target_id, parent):
         row.update(parent)
 
     if target_dimension == 'publisher_id':
-        publisher, source_id = publisher_group_helpers.dissect_publisher_id(target_id)
+        publisher, source_id = publisher_helpers.dissect_publisher_id(target_id)
         row.update({
             'publisher': publisher,
             'source_id': source_id,

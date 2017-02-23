@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 
 from dash import constants
 from dash import cpc_constraints
@@ -153,8 +154,8 @@ def get_default_publisher_group_targeting_dict(include_global=True):
 
 
 def get_publisher_group_targeting_dict(ad_group, ad_group_settings, campaign,
-                                       campaign_settings, account, account_settings):
-    d = get_default_publisher_group_targeting_dict()
+                                       campaign_settings, account, account_settings, include_global=True):
+    d = get_default_publisher_group_targeting_dict(include_global)
     d.update({
         'ad_group': {
             'included': _get_whitelists(ad_group, ad_group_settings),
@@ -340,15 +341,6 @@ def _prepare_entries(entry_dicts, publisher_group):
     return entries
 
 
-def create_publisher_id(publisher, source_id):
-    return u'__'.join((publisher, unicode(source_id or '')))
-
-
-def dissect_publisher_id(publisher_id):
-    publisher, source_id = publisher_id.rsplit(u'__', 1)
-    return publisher, int(source_id) if source_id else None
-
-
 def validate_blacklist_entry(obj, entry):
     if (entry.source and entry.source.source_type.type == constants.SourceType.OUTBRAIN and
        ((obj and obj.get_publisher_level() != constants.PublisherBlacklistLevel.ACCOUNT) or not obj)):
@@ -384,3 +376,9 @@ def apply_outbrain_account_constraints_if_needed(obj, enforce_cpc):
             constraint_type=constants.CpcConstraintType.OUTBRAIN_BLACKLIST,
             source=outbrain,
             account=account)
+
+
+def get_ob_blacklisted_publishers_count(account):
+    blacklists = _get_blacklists(account, account.get_current_settings())
+    return models.PublisherGroupEntry.objects.filter(publisher_group_id__in=blacklists,
+                                                     source__source_type__type=constants.SourceType.OUTBRAIN).count()

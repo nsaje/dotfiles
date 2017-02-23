@@ -1079,42 +1079,6 @@ class SetAdGroupSourceTest(TestCase):
 class PublisherHelpersTest(TestCase):
     fixtures = ['test_api']
 
-    def test_get_key(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-
-        self.assertEqual(
-            publisher_helpers.get_key(
-                ad_group,
-                constants.PublisherBlacklistLevel.ACCOUNT
-            ),
-            ad_group.campaign.account
-        )
-        self.assertEqual(
-            publisher_helpers.get_key(
-                ad_group,
-                constants.PublisherBlacklistLevel.CAMPAIGN
-            ),
-            ad_group.campaign
-        )
-        self.assertEqual(
-            publisher_helpers.get_key(
-                ad_group,
-                constants.PublisherBlacklistLevel.ADGROUP
-            ),
-            ad_group
-        )
-
-        with self.assertRaises(Exception):
-            publisher_helpers.get_key(
-                ad_group,
-                constants.PublisherBlacklistLevel.GLOBAL
-            )
-        with self.assertRaises(Exception):
-            publisher_helpers.get_key(
-                ad_group,
-                'rabndom'
-            )
-
     def test_prepare_publishers_for_rs_query(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         source = models.Source.objects.first()

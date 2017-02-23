@@ -3,8 +3,7 @@ import collections
 import copy
 import datetime
 import dateutil
-
-from dash import publisher_group_helpers
+from dash import publisher_helpers
 
 from utils import dates_helper
 from utils import sort_helper
@@ -41,7 +40,7 @@ def inflate_parent_constraints(parents):
             new_parent = copy.copy(parent)
 
             publisher_id = new_parent.pop('publisher_id')
-            publisher, source_id = publisher_group_helpers.dissect_publisher_id(publisher_id)
+            publisher, source_id = publisher_helpers.dissect_publisher_id(publisher_id)
 
             new_parent['publisher'] = publisher
 

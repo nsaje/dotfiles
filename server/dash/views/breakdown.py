@@ -9,6 +9,7 @@ from dash import forms
 from dash import campaign_goals
 from dash import threads
 from dash import publisher_helpers
+from dash import publisher_group_helpers
 from dash.views import helpers
 from dash.views import breakdown_helpers
 
@@ -394,8 +395,8 @@ class AdGroupBreakdown(api_common.BaseApiView):
             extras.update(breakdown_helpers.get_ad_group_sources_extras(ad_group))
 
         if stats.constants.get_target_dimension(breakdown) == 'publisher_id':
-            extras['ob_blacklisted_count'] = publisher_helpers.get_ob_blacklisted_publishers_count(
-                ad_group.campaign.account_id)
+            extras['ob_blacklisted_count'] = publisher_group_helpers.get_ob_blacklisted_publishers_count(
+                ad_group.campaign.account)
 
         report = format_breakdown_response(rows, offset, parents, totals, goals,
                                            **extras)

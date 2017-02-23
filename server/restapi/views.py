@@ -5,7 +5,6 @@ import ipware.ip
 import time
 
 from django.db import transaction
-from django.db.models import Q
 import django.db.models
 from django.http import Http404
 from rest_framework.views import APIView
@@ -19,11 +18,12 @@ from rest_framework import exceptions
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 
-from dash.views import agency, bulk_actions, views, bcm, helpers
+from dash.views import agency, bulk_actions, views, bcm, helpers, publishers
 from dash import regions
 from dash import campaign_goals
 from dash import constants
 from dash import upload
+from dash import publisher_group_helpers
 import dash.models
 import dash.threads
 from utils import json_helper, exc, dates_helper, redirector_helper, bidder_helper
@@ -776,31 +776,37 @@ class SourceIdSlugField(serializers.Field):
 class PublisherSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=127)
     source = SourceIdSlugField()
-    externalId = serializers.CharField(max_length=127, required=False, allow_null=True, source='external_id')
+    externalId = serializers.CharField(max_length=127, required=False, allow_null=True)
     status = DashConstantField(constants.PublisherStatus)
-    level = DashConstantField(constants.PublisherBlacklistLevel, source='get_blacklist_level', label='level')
+    level = DashConstantField(constants.PublisherBlacklistLevel, label='level')
 
     def create(self, validated_data):
         request = validated_data['request']
         ad_group_id = validated_data['ad_group_id']
         del validated_data['request']
         del validated_data['ad_group_id']
+
+        status = (constants.PublisherTargetingStatus.BLACKLISTED if
+                  validated_data['status'] == constants.PublisherStatus.BLACKLISTED else
+                  constants.PublisherTargetingStatus.UNLISTED)
+
         post_data = {
-            'state': validated_data['status'],
-            'publishers_selected': [
-                {
-                    'source_id': validated_data['source'].id,
-                    'domain': validated_data['name'],
-                    'external_id': validated_data.get('external_id')
-                }
-            ],
-            'publishers_not_selected': [],
+            'entries': [{
+                'source_id': validated_data['source'].id,
+                'publisher': validated_data['name'],
+                'include_subdomains': True,  # blacklisting is always True by default, it doesn't matter for unlisting
+            }],
+            'entries_not_selected': [],
+            'status': status,
+            'ad_group': ad_group_id,
+            'level': validated_data['level'],
+            'enforce_cpc': False,
             'select_all': False,
-            'level': validated_data['get_blacklist_level']
         }
-        view_internal = views.PublishersBlacklistStatus(rest_proxy=True)
+
+        view_internal = publishers.PublisherTargeting(rest_proxy=True)
         request.body = RESTAPIJSONRenderer().render(post_data)
-        data_internal, status_code = view_internal.post(request, ad_group_id)
+        data_internal, status_code = view_internal.post(request)
 
 
 class AdGroupRealtimeStatsSerializer(serializers.Serializer):
@@ -829,9 +835,30 @@ class PublishersViewList(RESTAPIBaseView):
 
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        publishers = dash.models.PublisherBlacklist.objects.filter(
-            Q(ad_group=ad_group) | Q(campaign=ad_group.campaign) | Q(account=ad_group.campaign.account)
-        )
+        targeting = publisher_group_helpers.get_publisher_group_targeting_dict(
+            ad_group, ad_group.get_current_settings(),
+            ad_group.campaign, ad_group.campaign.get_current_settings(),
+            ad_group.campaign.account, ad_group.campaign.account.get_current_settings(),
+            include_global=False)
+
+        publishers = []
+
+        def add_entries(entries, level):
+            for entry in entries:
+                publishers.append({
+                    'name': entry.publisher,
+                    'source': entry.source,
+                    'status': constants.PublisherStatus.BLACKLISTED,
+                    'level': level,
+                })
+
+        add_entries(dash.models.PublisherGroupEntry.objects.filter(
+            publisher_group_id__in=targeting['ad_group']['excluded']), constants.PublisherBlacklistLevel.ADGROUP)
+        add_entries(dash.models.PublisherGroupEntry.objects.filter(
+            publisher_group_id__in=targeting['campaign']['excluded']), constants.PublisherBlacklistLevel.CAMPAIGN)
+        add_entries(dash.models.PublisherGroupEntry.objects.filter(
+            publisher_group_id__in=targeting['account']['excluded']), constants.PublisherBlacklistLevel.ACCOUNT)
+
         serializer = PublisherSerializer(publishers, many=True)
         return self.response_ok(serializer.data)
 
