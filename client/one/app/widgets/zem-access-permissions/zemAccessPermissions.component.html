@@ -52,10 +52,10 @@
                 <td class="action-buttons">
                     <div class="loader" ng-show="user.requestInProgress"></div>
                     <div ng-show="!user.requestInProgress">
-                                <span ng-if="$ctrl.entity.settings.agency && !user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')" is-internal="zemauth.can_promote_agency_managers">
+                                <span ng-if="$ctrl.entity.data.agency && !user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')" is-internal="zemauth.can_promote_agency_managers">
                                     <button tabindex="-1" ng-click="$ctrl.promote(user.id)" href="#" class="button button--small" title="Promote to Agency Manager">Promote</button>
                                 </span>
-                                <span ng-if="$ctrl.entity.settings.agency && user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')" is-internal="zemauth.can_promote_agency_managers">
+                                <span ng-if="$ctrl.entity.data.agency && user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')" is-internal="zemauth.can_promote_agency_managers">
                                     <button tabindex="-1" ng-click="$ctrl.downgrade(user.id)" href="#" class="button button--small" title="Downgrade to Normal User">Downgrade</button>
                                 </span>
                         <button ng-show="!user.is_active" tabindex="-1" ng-click="$ctrl.activate(user.id)" href="#" class="button button--small button--with-icon send-icon" title="Resend Activation Mail">Resend</button>
