@@ -774,7 +774,7 @@ def _adjust_source_caps(campaign, daily_caps):
 
         for ags in ad_group_sources:
             ags_settings = current_ad_group_sources_settings[ags.id]
-            spend = yesterday_spends.get((ags.ad_group_id, ags.source_id))
+            spend = yesterday_spends.get((ags.ad_group_id, ags.source_id), DECIMAL_ZERO)
 
             if _is_ags_always_in_budget_group(ags, [ag_settings]):
                 b1_group_spend += decimal.Decimal(spend)
