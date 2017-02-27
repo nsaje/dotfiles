@@ -1,1 +1,1 @@
-(CASE WHEN SUM({{ p }}{{ divisor }}) <> 0 THEN SUM(CAST({{ p }}{{ expr }} AS FLOAT)) / SUM({{ p }}{{ divisor }}) ELSE NULL END)*100.0 {{ alias }}
+(CASE WHEN SUM({{ p }}{{ divisor }}) <> 0 THEN SUM(CASE WHEN {{ p }}{{ divisor }} IS NOT NULL THEN CAST({{ p }}{{ expr }} AS FLOAT) ELSE 0.0 END) / SUM({{ p }}{{ divisor }}) ELSE NULL END)*100.0 {{ alias }}
