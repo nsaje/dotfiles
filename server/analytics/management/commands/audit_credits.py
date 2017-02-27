@@ -40,8 +40,8 @@ class Command(utils.command_helpers.ExceptionCommand):
                 []
             ).append(account)
 
-        if not options['send_emails']:
-            return
         for sales_user, accounts in sales.iteritems():
+            has_permissions = sales_user.has_perm('zemauth.can_receive_sales_credit_email')
             self._print('{}: {}'.format(sales_user, ', '.join(a.name for a in accounts)))
-            utils.email_helper.send_depleting_credits_email(sales_user, accounts)
+            if options['send_emails'] and has_permissions:
+                utils.email_helper.send_depleting_credits_email(sales_user, accounts)

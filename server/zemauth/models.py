@@ -268,6 +268,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_settings_cs_rep', 'Can be chosen as CS representative.'),
             ('can_download_custom_reports', 'Can download custom reports.'),
             ('can_receive_pacing_email', 'Can receive pacing emails.'),
+            ('can_receive_sales_credit_email', 'Can receive depleting credit emails.'),
         )
 
     def get_full_name(self):
