@@ -85,8 +85,10 @@ if BUILD_NUMBER:
     _CLIENT_STATIC_URL = ROOT_STATIC_URL + '/client'
 else:
     _SERVER_STATIC_URL = '/static'
-    _CLIENT_STATIC_URL = 'http://{hostname}:{port}'.format(  hostname=os.environ.get('EINSSTATIC_PORT_9999_TCP_ADDR', 'einsstatic'),
-                                                            port=os.environ.get('EINSSTATIC_PORT_9999_TCP_PORT', '9999'))
+    _CLIENT_STATIC_URL = 'http://{hostname}:{port}'.format(
+        hostname=os.environ.get('EINSSTATIC_PORT_9999_TCP_ADDR', 'einsstatic'),
+        port=os.environ.get('EINSSTATIC_PORT_9999_TCP_PORT', '9999'),
+    )
 SERVER_STATIC_URL = _SERVER_STATIC_URL
 CLIENT_STATIC_URL = _CLIENT_STATIC_URL
 
@@ -125,7 +127,7 @@ S3_BUCKET_CUSTOM_REPORTS = ''
 USE_S3 = False
 
 # adgroup-level reports aggregations
-QUERY_AGGREGATE_REPORTS=False
+QUERY_AGGREGATE_REPORTS = False
 
 # cache settings
 _MEMCACHED_ADDR = os.environ.get('MEMCACHED_PORT_11211_TCP_ADDR', '127.0.0.1')
@@ -134,8 +136,7 @@ _MEMCACHED_PORT = os.environ.get('MEMCACHED_PORT_11211_TCP_PORT', '11211')
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': ['%s:%s' % (_MEMCACHED_ADDR, _MEMCACHED_PORT),
-        ]
+        'LOCATION': ['%s:%s' % (_MEMCACHED_ADDR, _MEMCACHED_PORT), ]
     },
     'breakdowns_rs': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
@@ -233,3 +234,15 @@ GA_CLIENT_EMAIL = Secret('').get()
 BIZWIRE_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
 # path for S3 mock
 FILE_STORAGE_DIR = '/tmp'
+
+INFLUX_DATABASES = {
+    'default': {
+        'database': '',
+        'username': '',
+        'password': '',
+        'host': '',
+        'port': 8086,
+        'ssl': True,
+        'verify_ssl': True,
+    },
+}

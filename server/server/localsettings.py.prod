@@ -261,3 +261,15 @@ GA_CLIENT_EMAIL = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZ
 BIZWIRE_API_SIGN_KEY = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG4wbAYJKoZIhvcNAQcGoF8wXQIBADBYBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDDtsszs9Y8ta5B7PEgIBEIArKhoNTUqBrzTjjwQs2BgvaOyvQXbHdnS1C6vY4V/QBYR3+rrlGrWZSproTA==').get()
 # path for S3 mock
 FILE_STORAGE_DIR = ''
+
+INFLUX_DATABASES = {
+    'default': {
+        'database': 'bi',
+        'username': 'bi',
+        'password': Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAHkwdwYJKoZIhvcNAQcGoGowaAIBADBjBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDArQ5KyU5tGC3LI8hgIBEIA2HwXsw6l3dA2GQ4QmurQYw5Nfr9r28XFxJ0/j2jdKKdRvmcSmfhnNe5wB09T2cIDQZ8spRXe5').get(),
+        'host': 'marty.zemanta.com',
+        'port': 8086,
+        'ssl': True,
+        'verify_ssl': True,
+    },
+}

@@ -49,6 +49,8 @@ secretcrypt==0.4.2
 # Influx
 git+https://github.com/Zemanta/django-statsd-influx.git@v0.1.5
 django-ipware==1.1.6
+# for bi_to_influx
+influxdb
 
 # Demo anonymization
 Faker==0.7.7
