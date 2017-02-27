@@ -21,7 +21,7 @@ angular.module('one.widgets').factory('zemChartMetricsService', function (zemPer
         IMPRESSIONS: {name: 'Impressions', value: 'impressions', type: TYPE_NUMBER},
         CTR: {name: 'CTR', value: 'ctr', type: 'percent', fractionSize: 2},
         CPC: {name: 'Avg. CPC', value: 'cpc', type: TYPE_CURRENCY, fractionSize: 3},
-        CPM: {name: 'Avg. CMP', value: 'cpm', type: TYPE_CURRENCY, fractionSize: 3},
+        CPM: {name: 'Avg. CPM', value: 'cpm', type: TYPE_CURRENCY, fractionSize: 3},
         DATA_COST: {name: 'Actual Data Cost', value: 'data_cost', type: TYPE_CURRENCY, fractionSize: 2, permission: 'zemauth.can_view_actual_costs'},
         MEDIA_COST: {name: 'Actual Media Spend', value: 'media_cost', type: TYPE_CURRENCY, fractionSize: 2, permission: 'zemauth.can_view_actual_costs'},
         E_DATA_COST: {name: 'Data Cost', value: 'e_data_cost', type: TYPE_CURRENCY, fractionSize: 2, permission: 'zemauth.can_view_platform_cost_breakdown'},
