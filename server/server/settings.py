@@ -127,7 +127,9 @@ AUTHENTICATION_BACKENDS = (
     'zemauth.backends.EmailOrUsernameModelBackend',
 )
 
-TEST_RUNNER = 'utils.test_runner.CustomRunner'
+TEST_RUNNER = 'utils.test_runner.SplitTestsRunner'
+if os.environ.get('CI_TEST'):
+    TEST_RUNNER = 'utils.test_runner.CustomRunner'
 
 TEST_OUTPUT_DIR = os.path.join(BASE_DIR, '.junit_xml')
 
