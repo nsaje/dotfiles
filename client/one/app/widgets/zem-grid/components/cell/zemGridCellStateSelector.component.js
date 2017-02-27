@@ -33,9 +33,11 @@ angular.module('one.widgets').directive('zemGridCellStateSelector', function () 
                 vm.showLoader = false;
                 vm.active = false;
                 vm.isEditable = false;
-                vm.enablingAutopilotSourcesAllowed = vm.grid.meta.data.ext.enablingAutopilotSourcesAllowed;
+                vm.enablingAutopilotSourcesAllowed = true;
 
                 if (vm.row) {
+                    vm.enablingAutopilotSourcesAllowed = vm.row.inGroup ||
+                        vm.grid.meta.data.ext.enablingAutopilotSourcesAllowed;
                     vm.isFieldVisible = isFieldVisible(vm.row.level);
                     vm.isRowArchived = vm.row.data.archived;
                 }

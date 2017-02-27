@@ -171,7 +171,7 @@ class AdGroupSourceState(BaseBulkActionView):
         if state == constants.AdGroupSourceSettingsState.ACTIVE:
             enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
                 ad_group_settings,
-                number_of_sources_to_enable=len(ad_group_sources)
+                ad_group_sources
             )
             if not enabling_autopilot_sources_allowed:
                 raise exc.ValidationError('Please increase Autopilot Daily Spend Cap to enable these sources.')

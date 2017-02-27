@@ -26,6 +26,9 @@ describe('zemGridCellStateSelector', function () {
                 },
             },
         };
+        scope.ctrl.row = {
+            data: {},
+        };
     }));
 
     it('should set undefined available state values for invalid level or breakdown', function () {
@@ -162,6 +165,30 @@ describe('zemGridCellStateSelector', function () {
         element.isolateScope().ctrl.setState(2);
 
         expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).not.toHaveBeenCalled();
+    });
+
+    it('should make a save request if source is in group', function () {
+        scope.ctrl.grid.meta.dataService.saveData = function () {};
+        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(function () {
+            var deferred = $q.defer();
+            deferred.resolve(false);
+            return deferred.promise;
+        });
+        scope.ctrl.data = {
+            value: 1,
+            isEditable: true,
+        };
+        scope.ctrl.grid.meta.data.enablingAutopilotSourcesAllowed = false;
+        scope.ctrl.row.inGroup = true;
+
+        element = $compile(template)(scope);
+        scope.$digest();
+
+        element.isolateScope().ctrl.active = false;
+        element.isolateScope().ctrl.modal = null;
+        element.isolateScope().ctrl.setState(2);
+
+        expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).toHaveBeenCalled();
     });
 
     it('should not make a save request if field is not editable', function () {

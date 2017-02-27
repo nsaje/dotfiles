@@ -1117,7 +1117,10 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     })
 
                 if resource['state'] == constants.AdGroupSourceSettingsState.ACTIVE:
-                    enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(ad_group_settings)
+                    enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
+                        ad_group_settings,
+                        [ad_group_source],
+                    )
                     if not enabling_autopilot_sources_allowed:
                         errors.update({
                             'state': ['Please increase Autopilot Daily Spend Cap to enable this source.']
@@ -1157,7 +1160,9 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     ad_group_source, ad_group.campaign, campaign_settings, ad_group_settings)
             ),
             'autopilot_changed_sources': autopilot_changed_sources_text,
-            'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_sources_allowed(ad_group_settings)
+            'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_single_source_allowed(
+                ad_group_settings,
+            )
         })
 
 
