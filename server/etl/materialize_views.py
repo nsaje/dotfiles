@@ -504,11 +504,6 @@ class MasterPublishersView(Materialize):
                                                               self.account_id)
                 c.execute(sql, params)
 
-                logger.info('Creating temp table "mvh_ad_group_cpcs" for date range %s - %s, job %s',
-                            self.date_from, self.date_to, self.job_id)
-                sql, params = self.prepare_temp_table_ad_group_cpcs()
-                c.execute(sql, params)
-
                 logger.info('Inserting non-Outbrain data into table "%s" for date range %s - %s, job %s',
                             self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
                 sql, params = self.prepare_select_insert_mv_pubs_master()
@@ -518,17 +513,6 @@ class MasterPublishersView(Materialize):
                             self.TABLE_NAME, self.date_from, self.date_to, self.job_id)
                 sql, params = self.prepare_select_insert_outbrain_to_mv_pubs_master()
                 c.execute(sql, params)
-
-    def prepare_temp_table_ad_group_cpcs(self):
-        sql = backtosql.generate_sql('etl_create_temp_table_mvh_ad_group_cpcs.sql', {
-            'account_id': self.account_id,
-        })
-
-        return sql, self._add_ad_group_id_param({
-            'date_from': self.date_from,
-            'date_to': self.date_to,
-            'source_name': self.outbrain.name,
-        })
 
     def prepare_select_insert_mv_pubs_master(self):
         sql = backtosql.generate_sql('etl_select_insert_mv_pubs_master.sql', {

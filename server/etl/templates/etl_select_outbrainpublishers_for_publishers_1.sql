@@ -5,7 +5,9 @@ SELECT
      ad_group_id,
      publisher_id,
      publisher_name,
-     clicks
+     clicks,
+     impressions,
+     spend
 FROM outbrainpublisherstats
 WHERE date=%(date)s
       {% if account_id %}

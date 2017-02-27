@@ -21,9 +21,9 @@ INSERT INTO mv_pubs_master(
       null as gender,
       null as age_gender,
 
-      null as impressions,
+      a.impressions as impressions,
       a.clicks as clicks,
-      a.clicks::bigint * ad_cpc.cpc * 1000 as cost_nano,
+      a.spend * 1000 as cost_nano,
       0 as data_cost_nano,
 
       SUM(b.visits) as visits,
@@ -33,18 +33,18 @@ INSERT INTO mv_pubs_master(
       SUM(b.total_time_on_site) as total_time_on_site,
 
       round(
-            a.clicks * ad_cpc.cpc * cf.pct_actual_spend::decimal(10, 8)
+            a.spend * cf.pct_actual_spend::decimal(10, 8)
           * 1000
       ) as effective_cost_nano,
       0 as effective_data_cost_nano,
       round(
           (
-             (nvl(a.clicks, 0) * ad_cpc.cpc * cf.pct_actual_spend::decimal(10, 8))
+             (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8))
           ) * cf.pct_license_fee::decimal(10, 8) * 1000
       ) as license_fee_nano,
       round(
           (
-             (nvl(a.clicks, 0) * ad_cpc.cpc * cf.pct_actual_spend::decimal(10, 8)) * (1 + cf.pct_license_fee::decimal(10, 8))
+             (nvl(a.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) * (1 + cf.pct_license_fee::decimal(10, 8))
           ) * cf.pct_margin::decimal(10, 8) * 1000
       ) as margin_nano,
 
@@ -52,14 +52,13 @@ INSERT INTO mv_pubs_master(
       SUM(b.users - b.new_visits) as returning_users
   FROM
     (
-      SELECT date, ad_group_id, publisher_id, publisher_name, SUM(clicks) as clicks FROM outbrainpublisherstats
+      SELECT date, ad_group_id, publisher_id, publisher_name, SUM(clicks) as clicks, SUM(impressions) as impressions, SUM(spend) as spend FROM outbrainpublisherstats
       WHERE date BETWEEN %(date_from)s AND %(date_to)s
             {% if account_id %}
                 AND ad_group_id=ANY(%(ad_group_id)s)
             {% endif %}
       GROUP BY 1, 2, 3, 4
     ) as a
-    left outer join mvh_ad_group_cost_per_click ad_cpc on a.ad_group_id=ad_cpc.ad_group_id and a.date=ad_cpc.date
     full outer join (
       SELECT * FROM postclickstats
       WHERE source='outbrain' AND date BETWEEN %(date_from)s AND %(date_to)s

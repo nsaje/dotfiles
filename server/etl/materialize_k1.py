@@ -2,7 +2,6 @@ import backtosql
 import logging
 import json
 from collections import defaultdict
-from decimal import Decimal
 from functools import partial
 
 import dash.models
@@ -296,21 +295,6 @@ class Publishers(materialize_views.Materialize):
         params = {'date': date}
         return _query_rows(sql, self._add_ad_group_id_param(params))
 
-    def _outbrain_cpc(self, date):
-        sql = backtosql.generate_sql('etl_select_outbrain_cpc_for_publishers_1.sql', {
-            'account_id': self.account_id,
-        })
-        params = self._add_ad_group_id_param({
-            'date': date,
-            'media_source_slug': 'outbrain',
-        })
-        cpcs = {}
-        for line in _query_rows(sql, params):
-            if line[1] != 0 and line[2] != 0:
-                cpcs[line[0]] = Decimal(line[1]) / line[2]
-
-        return cpcs
-
     def _get_post_click_data(self, content_ad_postclick, ad_group_id, media_source, publisher):
         post_click_list = content_ad_postclick.pop((ad_group_id, media_source, publisher.lower()), None)
         if not post_click_list:
@@ -404,7 +388,6 @@ class Publishers(materialize_views.Materialize):
             )
 
         source = dash.models.Source.objects.get(source_type__type=dash.constants.SourceType.OUTBRAIN)
-        outbrain_cpcs = self._outbrain_cpc(date)
 
         for row in self._stats_outbrain_publishers(date):
             ad_group_id = row[0]
@@ -414,7 +397,8 @@ class Publishers(materialize_views.Materialize):
                 continue
 
             clicks = row[3]
-            cost = converters.decimal_to_int(outbrain_cpcs.get(ad_group_id, 0) * clicks)
+            impressions = row[4]
+            cost = row[5]
             data_cost = 0
 
             effective_cost, effective_data_cost, license_fee, margin = helpers.calculate_effective_cost(
@@ -432,7 +416,7 @@ class Publishers(materialize_views.Materialize):
                 row[1],
 
                 clicks,
-                0,
+                impressions,
 
                 cost * converters.MICRO_TO_NANO,
                 data_cost * converters.MICRO_TO_NANO,
