@@ -8,8 +8,9 @@ RUN apt-get update && \
         libmemcached-dev \
         libmagic-dev \
         nano \
+        vim-tiny \
+        less \
         git \
-        dropbear \
         openssh-server \
         postgresql-client \
         curl \
