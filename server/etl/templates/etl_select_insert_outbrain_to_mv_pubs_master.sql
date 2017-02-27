@@ -75,7 +75,7 @@ INSERT INTO mv_pubs_master(
         AND (a.ad_group_id=ANY(%(ad_group_id)s) OR b.ad_group_id=ANY(%(ad_group_id)s))
     {% endif %}
 
-  GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, clicks, cost_nano, effective_cost_nano, effective_data_cost_nano, license_fee_nano, margin_nano
+  GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, impressions, clicks, cost_nano, effective_cost_nano, effective_data_cost_nano, license_fee_nano, margin_nano
 )
 
 {% endautoescape %}
