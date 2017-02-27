@@ -1454,6 +1454,7 @@ def _get_b1_group_max_daily_budget(date, ad_group_settings, ad_group_sources_set
     return max(s.b1_sources_group_daily_budget
                for s in ad_group_settings if
                s.state == dash.constants.AdGroupSettingsState.ACTIVE and
+               (s.end_date is None or s.end_date >= date) and
                s.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE)
 
 
