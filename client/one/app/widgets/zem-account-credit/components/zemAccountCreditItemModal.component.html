@@ -29,7 +29,7 @@
             <label class="form__label" for="license-fee-input">License Fee (%)</label>
             <ui-select class="button button--plain button--narrow button--dropdown-toggle-icon" theme="select2"
                        id="license-fee-select" ng-model="$ctrl.state.creditItem.licenseFee" ng-disabled="$ctrl.state.creditItem.isSigned"
-                       search-enabled="false">
+                       search-enabled="true">
                 <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
                 <ui-select-choices repeat="fee in $ctrl.getLicenseFees($select.search, $ctrl.state.creditItem.licenseFee) | filter: $select.search">
                     <span ng-bind-html="fee"></span>%
