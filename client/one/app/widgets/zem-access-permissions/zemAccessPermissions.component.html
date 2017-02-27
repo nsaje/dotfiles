@@ -6,13 +6,13 @@
             <zem-help-popover content="Users who are members of account's agency and have access to the account you're currently on." placement="top"></zem-help-popover>
         </label>
         <div class="col-xs-8">
-            <div ng-if="$ctrl.dataObject.agencyManagers.length === 0" class="form-group existing-user-row">
+            <div ng-if="$ctrl.state.agencyManagers.length === 0" class="form-group existing-user-row">
                 <div class="col-xs-8 user-name-col">
                     <p class="control-label">Not defined</p>
                 </div>
             </div>
 
-            <div ng-repeat="user in $ctrl.dataObject.agencyManagers" class="form-group existing-user-row">
+            <div ng-repeat="user in $ctrl.state.agencyManagers" class="form-group existing-user-row">
                 <div class="col-xs-8 user-name-col">
                     <p class="control-label"><b>{{user.name}} </b>({{user.email}})</p>
                 </div>
@@ -33,7 +33,7 @@
                 <th></th>
             </tr>
             </thead>
-            <tbody ng-repeat="user in $ctrl.dataObject.users">
+            <tbody ng-repeat="user in $ctrl.state.users">
             <tr ng-if="user.removed">
                 <td colspan="4">
                     The user was removed. <a ng-show="!user.requestInProgress" ng-click="$ctrl.undo(user.id)">Undo?</a>
@@ -69,27 +69,27 @@
                 <td colspan="4">
                     <h3>Add new user</h3>
                     <div class="form">
-                        <div class="form__group" ng-class="{'form--error': !!$ctrl.dataObject.addUserErrors.errors.firstName}">
+                        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.addUserErrors.errors.firstName}">
                             <label class="form__label" for="first-name-input">Name:</label>
                             <input class="form__input-text" id="first-name-input" type="text" placeholder="Name"
                                    ng-model="$ctrl.createUserData.firstName">
                         </div>
-                        <div class="form__group" ng-class="{'form--error': !!$ctrl.dataObject.addUserErrors.errors.lastName}">
+                        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.addUserErrors.errors.lastName}">
                             <label class="form__label" for="last-name-input">Last name:</label>
                             <input class="form__input-text" id="last-name-input" type="text"
                                    placeholder="Last name" ng-model="$ctrl.createUserData.lastName">
                         </div>
-                        <div class="form__group" ng-class="{'form--error': !!$ctrl.dataObject.addUserErrors.errors.email}">
+                        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.addUserErrors.errors.email}">
                             <label class="form__label" for="email-input">Email:</label>
                             <input class="form__input-text" id="email-input" type="text" placeholder="Email"
                                    ng-model="$ctrl.createUserData.email">
                         </div>
                         <div class="form__group--indented buttons-panel">
                             <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.create($ctrl.createUserData)">Add new user</button>
-                            <div class="loader" ng-show="$ctrl.dataObject.addUserRequestInProgress"></div>
-                            <div class="message message--error" ng-show="$ctrl.dataObject.addUserErrors">
-                                <span class="error">{{$ctrl.dataObject.addUserErrors.message}}</span>
-                                <span ng-show="$ctrl.dataObject.addUserErrors.conflict"></span>
+                            <div class="loader" ng-show="$ctrl.state.addUserRequestInProgress"></div>
+                            <div class="message message--error" ng-show="$ctrl.state.addUserErrors">
+                                <span class="error">{{$ctrl.state.addUserErrors.message}}</span>
+                                <span ng-show="$ctrl.state.addUserErrors.conflict"></span>
                             </div>
                         </div>
                     </div>

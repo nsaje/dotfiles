@@ -1,10 +1,10 @@
-angular.module('one.widgets').service('zemAccessPermissionsDataService', function ($q, $http, zemUserService, zemAccessPermissionsEndpoint) { //eslint-disable-line max-len
+angular.module('one.widgets').service('zemAccessPermissionsStateService', function ($q, $http, zemUserService, zemAccessPermissionsEndpoint) { //eslint-disable-line max-len
 
-    function PermissionsDataService (account) {
-        var dataObject = {};
+    function StateService (account) {
+        var state = {};
 
         // Public API
-        this.getDataObject = getDataObject;
+        this.getState = getState;
         this.initialize = initialize;
         this.create = create;
         this.remove = remove;
@@ -16,9 +16,9 @@ angular.module('one.widgets').service('zemAccessPermissionsDataService', functio
         function initialize () {
             zemUserService.list(account.id).then(
                 function (data) {
-                    dataObject.users = data.users;
-                    dataObject.agencyManagers = data.agency_managers;
-                    dataObject.users.forEach(function (user) {
+                    state.users = data.users;
+                    state.agencyManagers = data.agency_managers;
+                    state.users.forEach(function (user) {
                         user.action = null;
                         user.emailResent = false;
                     });
@@ -26,18 +26,18 @@ angular.module('one.widgets').service('zemAccessPermissionsDataService', functio
             );
         }
 
-        function getDataObject () {
-            return dataObject;
+        function getState () {
+            return state;
         }
 
         function create (userData) {
-            zemUserService.create(account.id, userData).then(
+            return zemUserService.create(account.id, userData).then(
                 function (data) {
                     var user = getUser(data.user.id);
 
                     if (!user) {
                         user = data.user;
-                        dataObject.users.push(user);
+                        state.users.push(user);
                     } else {
                         user.name = data.user.name;
                     }
@@ -46,11 +46,12 @@ angular.module('one.widgets').service('zemAccessPermissionsDataService', functio
                     user.removed = false;
                     user.emailSent = data.created;
                     user.action = null;
-                    dataObject.addUserErrors = null;
-                    dataObject.addUserData = {};
+                    state.addUserErrors = null;
+                    state.addUserData = {};
                 },
                 function (data) {
-                    dataObject.addUserErrors = data;
+                    state.addUserErrors = data;
+                    return $q.reject(data);
                 }
             );
         }
@@ -59,12 +60,15 @@ angular.module('one.widgets').service('zemAccessPermissionsDataService', functio
             var user = getUser(userId);
             user.requestInProgress = true;
 
-            zemUserService.remove(account.id, user.id).then(
+            return zemUserService.remove(account.id, user.id).then(
                 function () {
                     if (user) {
                         user.removed = true;
                         user.saved = false;
                     }
+                },
+                function () {
+                    return $q.reject();
                 }
             ).finally(function () {
                 user.requestInProgress = false;
@@ -75,7 +79,7 @@ angular.module('one.widgets').service('zemAccessPermissionsDataService', functio
             var user = getUser(userId);
             user.requestInProgress = true;
 
-            zemAccessPermissionsEndpoint.post(account.id, userId, 'activate').then(
+            return zemAccessPermissionsEndpoint.post(account.id, userId, 'activate').then(
                 function () {
                     user.saved = true;
                     user.emailResent = true;
@@ -83,6 +87,7 @@ angular.module('one.widgets').service('zemAccessPermissionsDataService', functio
                 function () {
                     user.saved = false;
                     user.emailResent = false;
+                    return $q.reject();
                 }
             ).finally(function () {
                 user.requestInProgress = false;
@@ -93,9 +98,12 @@ angular.module('one.widgets').service('zemAccessPermissionsDataService', functio
             var user = getUser(userId);
             user.requestInProgress = true;
 
-            zemUserService.create(account.id, {email: user.email}).then(
+            return zemUserService.create(account.id, {email: user.email}).then(
                 function () {
                     user.removed = false;
+                },
+                function () {
+                    return $q.reject();
                 }
             ).finally(function () {
                 user.requestInProgress = false;
@@ -106,9 +114,12 @@ angular.module('one.widgets').service('zemAccessPermissionsDataService', functio
             var user = getUser(userId);
             user.requestInProgress = true;
 
-            zemAccessPermissionsEndpoint.post(account.id, user.id, 'promote').then(
+            return zemAccessPermissionsEndpoint.post(account.id, user.id, 'promote').then(
                 function () {
                     user.is_agency_manager = true;
+                },
+                function () {
+                    return $q.reject();
                 }
             ).finally(function () {
                 user.requestInProgress = false;
@@ -118,9 +129,12 @@ angular.module('one.widgets').service('zemAccessPermissionsDataService', functio
         function downgrade (user) {
             user.requestInProgress = true;
 
-            zemAccessPermissionsEndpoint.post(account.id, user.id, 'downgrade').then(
+            return zemAccessPermissionsEndpoint.post(account.id, user.id, 'downgrade').then(
                 function () {
                     user.is_agency_manager = false;
+                },
+                function () {
+                    return $q.reject();
                 }
             ).finally(function () {
                 user.requestInProgress = false;
@@ -128,13 +142,13 @@ angular.module('one.widgets').service('zemAccessPermissionsDataService', functio
         }
 
         function getUser (userId) {
-            return dataObject.users.filter(function (user) { return user.id === userId; })[0];
+            return state.users.filter(function (user) { return user.id === userId; })[0];
         }
     }
 
     return {
         getInstance: function (account) {
-            return new PermissionsDataService(account);
+            return new StateService(account);
         }
     };
 });
