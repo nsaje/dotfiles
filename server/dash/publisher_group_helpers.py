@@ -10,6 +10,7 @@ from dash import cpc_constraints
 from dash import history_helpers
 from dash import models
 from utils import email_helper
+from utils import list_helper
 
 logger = logging.getLogger(__name__)
 

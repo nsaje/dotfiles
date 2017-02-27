@@ -1079,31 +1079,6 @@ class SetAdGroupSourceTest(TestCase):
 class PublisherHelpersTest(TestCase):
     fixtures = ['test_api']
 
-    def test_prepare_publishers_for_rs_query(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        source = models.Source.objects.first()
-
-        models.PublisherBlacklist.objects.create(
-            name='test.com',
-            ad_group=ad_group,
-            source=source,
-            status=constants.PublisherStatus.BLACKLISTED
-        )
-        models.PublisherBlacklist.objects.create(
-            name='test.com',
-            campaign=ad_group.campaign,
-            source=source,
-            status=constants.PublisherStatus.BLACKLISTED
-        )
-        models.PublisherBlacklist.objects.create(
-            name='test.com',
-            campaign=ad_group.campaign,
-            source=source,
-            status=constants.PublisherStatus.BLACKLISTED
-        )
-        prepared_pubs = publisher_helpers.prepare_publishers_for_rs_query(ad_group)
-        self.assertEqual(3, len(prepared_pubs))
-
     def test_publisher_exchange(self):
         adiant_source = models.Source.objects.get(pk=7)
         self.assertEqual('b1_adiant', adiant_source.tracking_slug)

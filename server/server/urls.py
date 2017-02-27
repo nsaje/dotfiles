@@ -701,11 +701,6 @@ urlpatterns += [
         name='k1api.r1_mapping',
     ),
     url(
-        r'^k1api/publishers_blacklist$',
-        k1api.views.PublishersBlacklistView.as_view(),
-        name='k1api.publishers_blacklist',
-    ),
-    url(
         r'^k1api/outbrain/publishers_blacklist$',
         k1api.views.OutbrainPublishersBlacklistView.as_view(),
         name='k1api.outbrain_publishers_blacklist',

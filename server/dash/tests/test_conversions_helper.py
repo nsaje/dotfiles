@@ -129,63 +129,6 @@ class ConversionHelperTestCase(test.TestCase):
             'conversion_goal_4': 5,
         })
 
-    def test_empty_merge_touchpoint_convertions(self):
-        publisher_data = [{'dummy': 'dummy'}]
-
-        merged_data, reorder = conversions_helper.merge_touchpoint_conversions_to_publishers_data(
-            publisher_data, [], [], [])
-        self.assertEqual(merged_data, publisher_data)
-        self.assertFalse(reorder)
-
-    def test_merge_touchpoint_conversions_to_publishers_data(self):
-        publishers_data = self._get_publishers_data()
-        touchpoint_data = self._get_touchpoint_data()
-        publisher_breakdown_fields = ['domain', 'exchange']
-        touchpoint_breakdown_fields = ['publisher', 'source']
-
-        merged_data, reorder = conversions_helper.merge_touchpoint_conversions_to_publishers_data(
-            publishers_data,
-            touchpoint_data,
-            publisher_breakdown_fields,
-            touchpoint_breakdown_fields)
-
-        self.assertDictEqual(merged_data[0], {
-            'domain': 'dummy_domain',
-            'exchange': 'adiant',
-            'dummy_info': -100,
-            'conversions': {
-                ('goal_1', 1, 24): 20,
-                ('goal_1', 1, 168): 50,
-                ('goal_1', 1, 720): 80,
-                ('goal_1', 1, 2160): 100,
-            }
-        })
-        self.assertDictEqual(merged_data[1], {
-            'domain': 'dummy_domain_2',
-            'exchange': 'adiant',
-            'dummy_info_2': -200,
-        })
-        self.assertFalse(reorder)
-
-    def test_convert_touchpoint_source_id_field_to_bidder_slug(self):
-        touchpoint_data = self._get_touchpoint_data()
-
-        touchpoint_data = conversions_helper.convert_touchpoint_source_id_field_to_publisher_exchange(touchpoint_data)
-
-        self.assertEqual(len(touchpoint_data), 1)
-        self.assertDictEqual(touchpoint_data[0], {
-            'source': 'adiant',
-            'publisher': 'dummy_domain',
-            'slug': 'goal_1',
-            'conversion_count_24': 20,
-            'conversion_count_168': 50,
-            'conversion_count_720': 80,
-            'conversion_count_2160': 100,
-            'dummy_info': -1000,
-            'conversion_window': 10,
-            'account': 1,
-        })
-
     def test_empty_convert_constraint_exchange_to_source_id(self):
         constraints = {'ad_group_id': 1}
         results = conversions_helper.convert_constraint_exchanges_to_source_ids(constraints)

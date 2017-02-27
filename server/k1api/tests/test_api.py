@@ -68,7 +68,6 @@ class K1ApiTest(TestCase):
             'k1api.sources',
             'k1api.source_pixels',
             'k1api.ga_accounts',
-            'k1api.publishers_blacklist',
             'k1api.facebook_accounts',
             'k1api.publisher_groups',
         ]
@@ -593,68 +592,6 @@ class K1ApiTest(TestCase):
                 u'name': u'test outbrain account',
                 u'outbrain_marketer_id': u'cdefg'
             }
-        })
-
-    def test_get_publishers_blacklist(self):
-        response = self.client.get(
-            reverse('k1api.publishers_blacklist'),
-        )
-
-        data = json.loads(response.content)
-        self._assert_response_ok(response, data)
-        data = data['response']
-        self.assertEqual(len(data['blacklist']), 3)
-        sorted_blacklist = sorted(data['blacklist'],
-                                  key=lambda b: (b.get('ad_group_id'), b['domain']))
-        self.assertDictEqual(sorted_blacklist[0], {
-            'ad_group_ids': [1, 2],
-            'domain': 'pub5.com',
-            'exchange': 'google',
-            'external_id': u'',
-        })
-        self.assertDictEqual(sorted_blacklist[1], {
-            'ad_group_ids': [1, 2],
-            'domain': 'pub6.com',
-            'exchange': 'google',
-            'external_id': '',
-        })
-        self.assertDictEqual(sorted_blacklist[2], {
-            'ad_group_id': 1,
-            'domain': 'pub2.com',
-            'exchange': 'google',
-            'external_id': '',
-        })
-
-    def test_get_publishers_blacklist_with_ad_group_id(self):
-        response = self.client.get(
-            reverse('k1api.publishers_blacklist'),
-            {'ad_group_id': 1},
-        )
-
-        data = json.loads(response.content)
-        self._assert_response_ok(response, data)
-        data = data['response']
-
-        self.assertEqual(len(data['blacklist']), 3)
-
-        sorted_blacklist = sorted(data['blacklist'], key=lambda b: b['domain'])
-        self.assertDictEqual(sorted_blacklist[0], {
-            'ad_group_id': 1,
-            'domain': 'pub2.com',
-            'exchange': 'google',
-            'external_id': '',
-        })
-        self.assertDictEqual(sorted_blacklist[1], {
-            'ad_group_id': 1,
-            'domain': 'pub5.com',
-            'exchange': 'google',
-            'external_id': '',
-        })
-        self.assertDictEqual(sorted_blacklist[2], {
-            'ad_group_id': 1,
-            'domain': 'pub6.com',
-            'exchange': 'google',
-            'external_id': '',
         })
 
     def test_get_ad_groups_with_id(self):

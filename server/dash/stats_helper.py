@@ -5,9 +5,7 @@ import reports.api_contentads
 import reports.api_helpers
 import utils.sort_helper
 from dash import conversions_helper, constants
-from reports import api_touchpointconversions, api_publishers
-from utils import sort_helper
-from utils import exc
+from reports import api_touchpointconversions
 
 
 def get_reports_api_module(can_see_redshift_stats):
@@ -74,125 +72,6 @@ def get_content_ad_stats_with_conversions(
         pixels=pixels,
         constraints=constraints
     )
-
-
-def get_publishers_data_and_conversion_goals(
-        user,
-        query_func,
-        start_date,
-        end_date,
-        constraints,
-        conversion_goals,
-        pixels,
-        publisher_breakdown_fields=[],
-        touchpoint_breakdown_fields=[],
-        order_fields=[],
-        show_blacklisted_publishers=None,
-        adg_blacklisted_publishers=None):
-
-    report_conversion_goals = [cg for cg in conversion_goals if cg.type in conversions_helper.REPORT_GOAL_TYPES]
-
-    publishers_data = _get_publishers_data(query_func,
-                                           start_date,
-                                           end_date,
-                                           publisher_breakdown_fields,
-                                           order_fields,
-                                           report_conversion_goals,
-                                           constraints,
-                                           show_blacklisted_publishers,
-                                           adg_blacklisted_publishers)
-
-    if publishers_data:
-        touchpoint_data = _get_publishers_touchpoint_data(
-            start_date,
-            end_date,
-            touchpoint_breakdown_fields,
-            pixels,
-            constraints,
-            show_blacklisted_publishers,
-            adg_blacklisted_publishers)
-        publishers_data = _transform_and_merge_conversion_goals(
-            publishers_data,
-            touchpoint_data,
-            publisher_breakdown_fields,
-            touchpoint_breakdown_fields,
-            conversion_goals,
-            pixels,
-            order_fields)
-    return publishers_data
-
-
-def _get_publishers_data(query_func,
-                         start_date,
-                         end_date,
-                         publisher_breakdown_fields,
-                         order_fields,
-                         report_conversion_goals,
-                         constraints,
-                         show_blacklisted_publishers,
-                         adg_blacklisted_publishers):
-    publisher_constraints_list = []
-    if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
-        publisher_constraints_list = reports.api_publishers.prepare_active_publishers_constraint_list(
-            adg_blacklisted_publishers, False)
-    elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
-        publisher_constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(
-            adg_blacklisted_publishers, publisher_breakdown_fields, False)
-
-    publishers_data = query_func(
-        start_date, end_date,
-        breakdown_fields=publisher_breakdown_fields,
-        order_fields=order_fields,
-        conversion_goals=[cg.get_stats_key() for cg in report_conversion_goals],
-        constraints=constraints,
-        constraints_list=publisher_constraints_list,
-    )
-    return publishers_data
-
-
-def _get_publishers_touchpoint_data(start_date,
-                                    end_date,
-                                    touchpoint_breakdown_fields,
-                                    pixels,
-                                    constraints,
-                                    show_blacklisted_publishers,
-                                    adg_blacklisted_publishers):
-    touchpoint_constraints_list = []
-    if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
-        touchpoint_constraints_list = reports.api_publishers.prepare_active_publishers_constraint_list(
-            adg_blacklisted_publishers, True)
-    elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
-        touchpoint_constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(
-            adg_blacklisted_publishers, touchpoint_breakdown_fields, True)
-
-    constraints = conversions_helper.convert_constraint_exchanges_to_source_ids(constraints)
-    touchpoint_data = api_touchpointconversions.query_publishers(
-        start_date, end_date,
-        breakdown=touchpoint_breakdown_fields,
-        pixels=pixels,
-        constraints=constraints,
-        constraints_list=touchpoint_constraints_list,
-    )
-    return touchpoint_data
-
-
-def _transform_and_merge_conversion_goals(publishers_data,
-                                          touchpoint_data,
-                                          publisher_breakdown_fields,
-                                          touchpoint_breakdown_fields,
-                                          conversion_goals,
-                                          pixels,
-                                          order_fields):
-    merged_data, reorder = conversions_helper.merge_touchpoint_conversions_to_publishers_data(
-        publishers_data,
-        touchpoint_data,
-        publisher_breakdown_fields,
-        touchpoint_breakdown_fields)
-    conversions_helper.transform_to_conversion_goals(merged_data, conversion_goals, pixels)
-
-    if reorder:
-        merged_data = sort_helper.sort_results(merged_data, order_fields)
-    return merged_data
 
 
 def _get_stats_with_conversions(
