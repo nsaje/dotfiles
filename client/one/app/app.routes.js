@@ -7,7 +7,7 @@ angular.module('one').config(function ($urlRouterProvider) {
 
     $urlRouterProvider.when('/ad_groups/:adGroupId/ads_plus', '/ad_groups/:adGroupId/ads');
 
-    $urlRouterProvider.when('/campaigns/:campaignId/budgets', ['$state', '$match', function ($state, $match) {
+    $urlRouterProvider.when('/campaigns/:campaignId/budget', ['$state', '$match', function ($state, $match) {
         $state.go('main.campaigns.ad_groups', {
             id: $match.campaignId,
             settings: true,
