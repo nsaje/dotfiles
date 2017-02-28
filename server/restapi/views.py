@@ -1147,7 +1147,7 @@ class PublisherGroupEntrySerializer(DataNodeSerializerMixin, serializers.ModelSe
 
     id = IdField(read_only=True)
     publisher_group_id = IdField(read_only=True)
-    source = SourceIdSlugField(required=False)
+    source = SourceIdSlugField(required=False, allow_null=True)
 
 
 class OutbrainPublisherGroupEntrySerializer(PublisherGroupEntrySerializer):
