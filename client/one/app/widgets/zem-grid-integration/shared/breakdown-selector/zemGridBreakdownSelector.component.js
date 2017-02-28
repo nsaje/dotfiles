@@ -13,6 +13,11 @@ angular.module('one.widgets').component('zemGridBreakdownSelector', {
         $ctrl.applyBreakdown = applyBreakdown;
 
         $ctrl.$onInit = function () {
+            initializeSelector();
+            $ctrl.api.onMetaDataUpdated(null, initializeSelector);
+        };
+
+        function initializeSelector () {
             // Skip base level breakdown selection
             $ctrl.breakdownGroups = [
                 $ctrl.api.getMetaData().breakdownGroups.structure,
@@ -22,7 +27,7 @@ angular.module('one.widgets').component('zemGridBreakdownSelector', {
 
             setDefaultBreakdowns(constants.level.ACCOUNTS, constants.breakdown.CAMPAIGN,
                 [constants.breakdown.AD_GROUP]);
-        };
+        }
 
         function setDefaultBreakdowns (level, breakdown, defaultBreakdowns) {
             // Set which breakdowns to load by default for different level/breakdown combinations

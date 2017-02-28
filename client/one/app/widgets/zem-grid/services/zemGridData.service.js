@@ -11,36 +11,44 @@ angular.module('one.widgets').factory('zemGridDataService', function ($q, $timeo
         // Last notification cached to close it when new arrives (e.g. saving data)
         var lastNotification = null;
 
+        var onStatsUpdatedHandler;
+        var onDataUpdatedHandler;
+
         //
         // Public API
         //
         this.initialize = initialize;
-        this.reload = reload;
+        this.reload = initializeData;
         this.loadData = loadData;
         this.loadMetaData = loadMetaData;
         this.saveData = saveData;
         this.editRow = editRow;
+        this.replaceDataSource = replaceDataSource;
 
-        this.isSaveRequestInProgress = dataSource.isSaveRequestInProgress;
-
-        this.DS_FILTER = dataSource.FILTER;
-        this.setBreakdown = dataSource.setBreakdown;
-        this.getBreakdown = dataSource.getBreakdown;
-        this.getBreakdownLevel = dataSource.getBreakdownLevel;
-        this.setOrder = dataSource.setOrder;
-        this.getOrder = dataSource.getOrder;
-        this.setFilter = dataSource.setFilter;
-        this.getFilter = dataSource.getFilter;
-        this.updateData = dataSource.updateData;
-
+        //
+        // Rewire calls to dataSource
+        // DataSource can be replaced and this pattern is used to always access correct object
+        //
+        this.DS_FILTER = function () { return dataSource.FILTER; };
+        this.setBreakdown = function () { return dataSource.setBreakdown.apply(dataSource, arguments); };
+        this.getBreakdown = function () { return dataSource.getBreakdown.apply(dataSource, arguments); };
+        this.getBreakdownLevel = function () { return dataSource.getBreakdownLevel.apply(dataSource, arguments); };
+        this.setOrder = function () { return dataSource.setOrder.apply(dataSource, arguments); };
+        this.getOrder = function () { return dataSource.getOrder.apply(dataSource, arguments); };
+        this.setFilter = function () { return dataSource.setFilter.apply(dataSource, arguments); };
+        this.getFilter = function () { return dataSource.getFilter.apply(dataSource, arguments); };
+        this.updateData = function () { return dataSource.updateData.apply(dataSource, arguments); };
+        this.isSaveRequestInProgress = function () {
+            return dataSource.isSaveRequestInProgress.apply(dataSource, arguments);
+        };
 
         function initialize () {
-            dataSource.onStatsUpdated(grid.meta.scope, handleSourceStatsUpdate);
-            dataSource.onDataUpdated(grid.meta.scope, handleSourceDataUpdate);
-            reload();
+            initializeData();
+            onStatsUpdatedHandler = dataSource.onStatsUpdated(grid.meta.scope, handleSourceStatsUpdate);
+            onDataUpdatedHandler = dataSource.onDataUpdated(grid.meta.scope, handleSourceDataUpdate);
         }
 
-        function reload () {
+        function initializeData () {
             return loadMetaData().then(function () {
                 grid.meta.initialized = true;
                 loadData().then(function () {
@@ -50,9 +58,29 @@ angular.module('one.widgets').factory('zemGridDataService', function ($q, $timeo
             });
         }
 
+        function replaceDataSource (_dataSource) {
+            dataSource = _dataSource;
+
+            // Rewire DataSource listeners
+            onStatsUpdatedHandler();
+            onDataUpdatedHandler();
+            onStatsUpdatedHandler = dataSource.onStatsUpdated(grid.meta.scope, handleSourceStatsUpdate);
+            onDataUpdatedHandler = dataSource.onDataUpdated(grid.meta.scope, handleSourceDataUpdate);
+
+            if (dataSource.getData()) {
+                // If data already initialized use it
+                zemGridParser.parseMetaData(grid, dataSource.getMetaData());
+                zemGridParser.parse(grid, dataSource.getData());
+                grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
+                grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.DATA_UPDATED);
+            } else {
+                initializeData();
+            }
+        }
+
         function loadMetaData () {
             var deferred = $q.defer();
-            dataSource.getMetaData(true).then(
+            dataSource.loadMetaData(true).then(
                 function (data) {
                     zemGridParser.parseMetaData(grid, data);
                     grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
@@ -70,7 +98,7 @@ angular.module('one.widgets').factory('zemGridDataService', function ($q, $timeo
                 breakdown = row.data;
             }
             var deferred = $q.defer();
-            dataSource.getData(breakdown, size).then(
+            dataSource.loadData(breakdown, size).then(
                 function () {
                     // Data is already been processed
                     // on source data update event
@@ -133,6 +161,7 @@ angular.module('one.widgets').factory('zemGridDataService', function ($q, $timeo
         // are deferring this for 1s
         var metaDataLoadTime;
         var dataLoadTime;
+
         function delayInitialDataUpdate (data) {
             if (!metaDataLoadTime) {
                 metaDataLoadTime = new Date().getTime();

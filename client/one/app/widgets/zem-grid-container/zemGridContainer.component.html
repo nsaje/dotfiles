@@ -1,0 +1,22 @@
+<zem-grid-container-tabs
+        options="$ctrl.tabOptions"
+        on-selected="$ctrl.onTabSelected(option)"
+        class="zem-grid-container-tabs"
+></zem-grid-container-tabs>
+
+<zem-alerts level="$ctrl.entity.level"
+            entity-id="$ctrl.entity.id"
+></zem-alerts>
+
+<zem-grid-container-actions
+        entity="$ctrl.entity"
+        breakdown="$ctrl.breakdown"
+        grid-api="$ctrl.grid.api"
+        class="zem-grid-container-actions"
+></zem-grid-container-actions>
+
+<zem-grid data-data-source="$ctrl.grid.dataSource"
+          options="$ctrl.grid.options"
+          on-initialized="$ctrl.onGridInitialized(api)"
+></zem-grid>
+

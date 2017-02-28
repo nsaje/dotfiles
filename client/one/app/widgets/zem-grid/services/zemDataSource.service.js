@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.widgets').factory('zemDataSourceService', function ($rootScope, $http, $q, zemDataFilterService, zemAdGroupService) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemDataSourceService', function ($rootScope, $http, $q) { // eslint-disable-line max-len
 
     //
     // DataSource is responsible for fetching data with help of passed Endpoint and
@@ -48,10 +48,7 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
         var activeLoadRequests = [];
         var saveRequestInProgress = false;
 
-        var dateRange = zemDataFilterService.getDateRange();
         var config = {
-            startDate: dateRange.startDate,
-            endDate: dateRange.endDate,
             order: '-clicks',
         };
 
@@ -72,6 +69,8 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
         this.FILTER = FILTER;
         this.getData = getData;
         this.getMetaData = getMetaData;
+        this.loadData = loadData;
+        this.loadMetaData = loadMetaData;
         this.saveData = saveData;
         this.updateData = updateData;
         this.editRow = editRow;
@@ -80,9 +79,11 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
 
         this.setOrder = setOrder;
         this.setFilter = setFilter;
+        this.setDateRange = setDateRange;
         this.setBreakdown = setBreakdown;
         this.getOrder = getOrder;
         this.getFilter = getFilter;
+        this.getDateRange = getDateRange;
         this.getBreakdown = getBreakdown;
         this.getBreakdownLevel = getBreakdownLevel;
 
@@ -90,24 +91,18 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
         this.onStatsUpdated = onStatsUpdated;
         this.onDataUpdated = onDataUpdated;
 
-        var dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(function (event, newDateRange) {
-            config.startDate = newDateRange.startDate;
-            config.endDate = newDateRange.endDate;
-            getData();
-        });
-
-        var adGroupEntityUpdateHandler = zemAdGroupService.onEntityUpdated(function () {
-            getData();
-        });
-        $scope.$on('$destroy', function () {
-            dateRangeUpdateHandler();
-            adGroupEntityUpdateHandler();
-        });
-
         //
         // Definitions
         //
-        function getMetaData (forceFetch) {
+        function getData () {
+            return data;
+        }
+
+        function getMetaData () {
+            return metaData;
+        }
+
+        function loadMetaData (forceFetch) {
             if (metaData && !forceFetch) return $q.resolve(metaData);
 
             var deferred = $q.defer();
@@ -124,7 +119,7 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
             return deferred.promise;
         }
 
-        function getData (breakdown, size) {
+        function loadData (breakdown, size) {
             var level = 1;
             var offset, limit;
             var breakdowns = [];
@@ -139,7 +134,7 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
             }
 
             // First make sure that meta-data is initialized and then fetch the requested data
-            return getMetaData().then(function () {
+            return loadMetaData().then(function () {
                 return getDataByLevel(level, breakdowns, offset, limit);
             });
         }
@@ -327,7 +322,7 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
         function mergeRows (rows, newRows) {
             // Find row by breakdownId and merge it (happens with group updates)
             // or if not found push it to collection (usual flow)
-            newRows.forEach (function (newRow) {
+            newRows.forEach(function (newRow) {
                 var row = rows.filter(function (r) { return r.breakdownId === newRow.breakdownId; })[0];
                 if (row && row.breakdown) {
                     applyBreakdown(newRow.breakdown);
@@ -408,8 +403,13 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
         function setOrder (order, fetch) {
             config.order = order;
             if (fetch) {
-                return getData();
+                return loadData();
             }
+        }
+
+        function setDateRange (dateRange) {
+            config.startDate = dateRange.startDate;
+            config.endDate = dateRange.endDate;
         }
 
         function setFilter (filter, value, fetch) {
@@ -422,7 +422,7 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
             }
 
             if (fetch) {
-                return getData();
+                return loadData();
             }
         }
 
@@ -507,6 +507,13 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
             return config.order;
         }
 
+        function getDateRange () {
+            return {
+                startDate: config.startDate,
+                endDate: config.endDate
+            };
+        }
+
         function getFilter (filter) {
             switch (filter) {
             case FILTER.FILTERED_AGENCIES: return config.filteredAgencies;
@@ -544,20 +551,21 @@ angular.module('one.widgets').factory('zemDataSourceService', function ($rootSco
         }
 
         function onLoad (scope, callback) {
-            registerListener(EVENTS.ON_LOAD, scope, callback);
+            return registerListener(EVENTS.ON_LOAD, scope, callback);
         }
 
         function onStatsUpdated (scope, callback) {
-            registerListener(EVENTS.ON_STATS_UPDATED, scope, callback);
+            return registerListener(EVENTS.ON_STATS_UPDATED, scope, callback);
         }
 
         function onDataUpdated (scope, callback) {
-            registerListener(EVENTS.ON_DATA_UPDATED, scope, callback);
+            return registerListener(EVENTS.ON_DATA_UPDATED, scope, callback);
         }
 
         function registerListener (event, scope, callback) {
             var handler = $scope.$on(event, callback);
             scope.$on('$destroy', handler);
+            return handler;
         }
 
         function notifyListeners (event, data) {

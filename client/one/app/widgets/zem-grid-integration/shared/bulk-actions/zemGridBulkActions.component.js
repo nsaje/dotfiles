@@ -18,9 +18,13 @@ angular.module('one.widgets').component('zemGridBulkActions', {
 
         $ctrl.$onInit = function () {
             service = zemGridBulkActionsService.createInstance($ctrl.api);
+            initializeActions();
+        };
+
+        function initializeActions () {
             service.setSelectionConfig();
             $ctrl.actions = service.getActions();
-        };
+        }
 
         function isEnabled () {
             var selection = $ctrl.api.getSelection();

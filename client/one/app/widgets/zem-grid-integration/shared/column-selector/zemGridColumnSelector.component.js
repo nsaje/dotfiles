@@ -14,8 +14,8 @@ angular.module('one.widgets').component('zemGridColumnSelector', {
         $ctrl.columnChecked = columnChecked;
 
         $ctrl.$onInit = function () {
-            initCategories();
-            $ctrl.api.onColumnsUpdated(null, initCategories);
+            initializeCategories();
+            $ctrl.api.onColumnsUpdated(null, initializeCategories);
         };
 
         function columnChecked (column) {
@@ -62,7 +62,7 @@ angular.module('one.widgets').component('zemGridColumnSelector', {
             };
         }
 
-        function initCategories () {
+        function initializeCategories () {
             // Place columns in a corresponding category
             // If column is un-selectable (always visible) or not shown skip it
             var columns = $ctrl.api.getColumns();

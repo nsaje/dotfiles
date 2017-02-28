@@ -1,0 +1,35 @@
+<div class="button-bar" ng-if="$ctrl.gridApi">
+    <zem-create-entity-action
+            ng-if="$ctrl.isCreateEntityActionVisible()"
+            parent-entity="$ctrl.entity"
+            class="button-bar-item"
+    ></zem-create-entity-action>
+
+    <zem-create-ad-group-source-action
+            ng-if="$ctrl.isCreateAdGroupSourceActionVisible()"
+            parent-entity="$ctrl.entity"
+            class="button-bar-item"
+    ></zem-create-ad-group-source-action>
+
+    <zem-grid-bulk-actions
+            ng-show="$ctrl.isGridBulkActionsVisible()"
+            api="$ctrl.gridApi"
+            class="button-bar-item"
+    ></zem-grid-bulk-actions>
+
+    <zem-grid-bulk-publishers-actions
+            ng-if="$ctrl.isGridBulkPublishersActionsVisible()"
+            api="$ctrl.gridApi"
+            class="button-bar-item"
+    ></zem-grid-bulk-publishers-actions>
+
+    <zem-grid-export
+            ng-if="$ctrl.isGridExportVisible()"
+            api="$ctrl.gridApi"
+            class="pull-right report-dropdown"
+    ></zem-grid-export>
+
+    <!-- All levels & breakdowns -->
+    <zem-grid-column-selector api="$ctrl.gridApi" class="pull-right"></zem-grid-column-selector>
+    <zem-grid-breakdown-selector api="$ctrl.gridApi" class="pull-right"></zem-grid-breakdown-selector>
+</div>

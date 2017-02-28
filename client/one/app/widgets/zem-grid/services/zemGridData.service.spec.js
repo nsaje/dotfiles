@@ -38,26 +38,26 @@ describe('zemGridDataService', function () {
     }));
 
     it('should load meta data on initialization', function () {
-        spyOn(dataSource, 'getMetaData').and.callThrough();
+        spyOn(dataSource, 'loadMetaData').and.callThrough();
 
         expect(grid.meta.initialized).toBeFalsy();
         grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
-        expect(dataSource.getMetaData).toHaveBeenCalled();
+        expect(dataSource.loadMetaData).toHaveBeenCalled();
         expect(grid.meta.initialized).toBe(true);
     });
 
     it('should load meta data (twice)on initialization to update ' +
         'metadata that can be changed after first data retrieval', function () {
-        spyOn(dataSource, 'getMetaData').and.callThrough();
-        spyOn(dataSource, 'getData').and.callThrough();
+        spyOn(dataSource, 'loadMetaData').and.callThrough();
+        spyOn(dataSource, 'loadData').and.callThrough();
 
         grid.meta.dataService.initialize();
         grid.meta.scope.$apply();
         $timeout.flush();
 
-        expect(dataSource.getData).toHaveBeenCalled();
-        expect(dataSource.getMetaData.calls.count()).toBe(2);
+        expect(dataSource.loadData).toHaveBeenCalled();
+        expect(dataSource.loadMetaData.calls.count()).toBe(2);
     });
 
     it('should register to datasource events on initialization', function () {
@@ -114,7 +114,7 @@ describe('zemGridDataService', function () {
         grid.meta.scope.$apply();
         $timeout.flush(); // Grid data load delay
 
-        spyOn(dataSource, 'getData').and.callThrough();
+        spyOn(dataSource, 'loadData').and.callThrough();
         var rowsCount = grid.body.rows.length;
         var row = grid.body.rows[grid.body.rows.length - 1]; // Breakdown row
 
@@ -122,7 +122,7 @@ describe('zemGridDataService', function () {
         grid.meta.scope.$apply();
         $timeout.flush();
 
-        expect(dataSource.getData).toHaveBeenCalledWith (row.data, 5);
+        expect(dataSource.loadData).toHaveBeenCalledWith (row.data, 5);
         expect(grid.body.rows.length).toBeGreaterThan(rowsCount);
     });
 
