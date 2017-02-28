@@ -16,13 +16,13 @@ angular.module('one.widgets').service('zemChartParser', function (zemChartMetric
         chart.metrics.options = metaData.metrics;
     }
 
-    function parseData (chart, data, metrics, dateRange) {
+    function parseData (chart, chartData, metrics, dateRange) {
         updateDateRange(chart, dateRange);
         updateAxisFormats(chart, metrics);
-        clearUsedColors(chart, data);
+        clearUsedColors(chart, chartData.groups);
 
-        applySeries(chart, data, metrics);
-        applyGoals(chart, data, metrics);
+        applySeries(chart, chartData.groups, metrics);
+        applyGoals(chart, chartData, metrics);
         checkEmptyData(chart);
     }
 
@@ -79,15 +79,15 @@ angular.module('one.widgets').service('zemChartParser', function (zemChartMetric
         if (!data.campaignGoals || !data.goalFields) {
             return;
         }
+
         var goal1 = data.goalFields[metrics[0]];
         var goal2 = data.goalFields[metrics[1]];
         var metricIds = [];
 
         if (goal1 && metrics[0] && data.campaignGoals[goal1.id]) {
             metricIds.push(metrics[0]);
-        } else {
-            //index += 1; // TODO: check this index - colors
         }
+
         if (goal2 && metrics[1] && data.campaignGoals[goal2.id]) {
             if (metrics[0] !== metrics[1]) {
                 metricIds.push(metrics[1]);
@@ -121,7 +121,7 @@ angular.module('one.widgets').service('zemChartParser', function (zemChartMetric
     }
 
     function updateCampaignGoals (chart, metricIds, campaignGoals, fieldGoalMap) {
-        var index = 0; // TODO: check this
+        var index = 0;
         var commonYAxis = true;
         metricIds.forEach(function (metricId) {
             var metric = zemChartMetricsService.findMetricByValue(chart.metrics.options, metricId);
