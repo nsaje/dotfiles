@@ -775,7 +775,7 @@ class SourceIdSlugField(serializers.Field):
 
 class PublisherSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=127)
-    source = SourceIdSlugField()
+    source = SourceIdSlugField(required=False, allow_null=True)
     externalId = serializers.CharField(max_length=127, required=False, allow_null=True)
     status = DashConstantField(constants.PublisherStatus)
     level = DashConstantField(constants.PublisherBlacklistLevel, label='level')
@@ -792,7 +792,7 @@ class PublisherSerializer(serializers.Serializer):
 
         post_data = {
             'entries': [{
-                'source_id': validated_data['source'].id,
+                'source': validated_data['source'].id if validated_data.get('source') else None,
                 'publisher': validated_data['name'],
                 'include_subdomains': True,  # blacklisting is always True by default, it doesn't matter for unlisting
             }],
