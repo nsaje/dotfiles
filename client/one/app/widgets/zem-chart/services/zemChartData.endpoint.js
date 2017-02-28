@@ -28,6 +28,13 @@ angular.module('one.widgets').service('zemChartEndpoint', function ($q, $http, z
                                 campaignGoals: data.campaign_goals,
                                 goalFields: data.goal_fields,
                             };
+
+                            if (chartData.groups.length > 1
+                                && chartData.groups[0].id === 'totals' && !config.params.totals) {
+                                // WORKAROUND: if 'totals' stats wat not requested and
+                                // there is more data available remove it from the result
+                                chartData.groups.shift();
+                            }
                         }
                         zemChartMetricsService.insertDynamicMetrics(
                             metaData.metrics, data.pixels, data.conversion_goals);
