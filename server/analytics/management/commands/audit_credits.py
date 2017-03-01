@@ -28,7 +28,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.verbose = options['verbose']
         alarms = analytics.monitor.audit_account_credits(
             date=options['date'] and datetime.datetime.strptime(options['date'], "%Y-%m-%d").date(),
-            days=options['days'] and int(options['days'])
+            days=options['days'] and int(options['days']) or 14
         )
         sales = {}
         for account in alarms:
