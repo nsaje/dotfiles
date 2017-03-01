@@ -383,7 +383,6 @@ class ProjectionsTestCase(test.TestCase):
             stats = analytics.projections.BudgetProjections(start_date, end_date, 'account')
 
         row = stats.row(1)
-        print(row)
         self.assertEqual(row['total_fee_projection'],
                          row['allocated_total_budget'] - row['allocated_media_budget'])
         self.assertEqual(row['license_fee_projection'],

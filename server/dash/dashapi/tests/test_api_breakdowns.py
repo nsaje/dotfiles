@@ -659,8 +659,6 @@ class QueryTest(TestCase):
             'name', 0, 4
         )
 
-        self.maxDiff = None
-        print [x['publisher_id'] for x in rows]
         self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_2, PUBLISHER_5__SOURCE_2])
 
 

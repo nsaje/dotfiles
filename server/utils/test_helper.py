@@ -52,12 +52,6 @@ class QuerySetMatcher():
     def __eq__(self, other):
         a = sorted(list(self.obj), key=lambda x: x.pk)
         b = sorted(list(other), key=lambda x: x.pk)
-
-        if a != b:
-            print a
-            print '  !=   '
-            print b
-
         return a == b
 
 
