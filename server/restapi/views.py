@@ -592,7 +592,7 @@ class CampaignGoalsSerializer(serializers.BaseSerializer):
             return {
                 'primary': data_external['primary'],
                 'type': DashConstantField(constants.CampaignGoalKPI).to_internal_value(data_external['type']),
-                'conversion_goal': self._conversion_goal_to_internal_value(data_external['conversionGoal']),
+                'conversion_goal': self._conversion_goal_to_internal_value(data_external.get('conversionGoal')),
                 'value': data_external['value']
             }
         except KeyError as e:

@@ -362,6 +362,7 @@ class CampaignGoalsTest(RESTAPITest):
         )
         post_data = test_campaigngoal.copy()
         del post_data['id']
+        del post_data['conversionGoal']
         r = self.client.post(
             reverse('campaigngoals_list', kwargs={'campaign_id': 608}),
             data=post_data, format='json')
