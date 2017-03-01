@@ -691,13 +691,12 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
         adgs.save(None)
 
-        superuser = zemauth.models.User.objects.get(id=1)
         normal_user = zemauth.models.User.objects.get(id=2)
 
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.STOPPED,
-            dash.infobox_helpers.get_adgroup_running_status(superuser, ad_group_settings)
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
         )
 
         # adgroup is active and sources are active
@@ -723,7 +722,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
-            dash.infobox_helpers.get_adgroup_running_status(superuser, ad_group_settings)
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
         )
 
         # adgroup is in landing mode and active, sources are active
@@ -733,7 +732,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.LANDING_MODE,
-            dash.infobox_helpers.get_adgroup_running_status(superuser, new_ad_group_settings)
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, new_ad_group_settings)
         )
 
         new_ad_group_settings = ad_group.get_current_settings().copy_settings()
@@ -756,10 +755,6 @@ class InfoBoxAccountHelpersTest(TestCase):
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY,
-            dash.infobox_helpers.get_adgroup_running_status(superuser, ad_group_settings)
-        )
-        self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOPILOT,
             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
         )
 
@@ -779,17 +774,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.AUTOPILOT,
-            dash.infobox_helpers.get_adgroup_running_status(superuser, ad_group_settings)
-        )
-        self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOPILOT,
             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group_settings)
-        )
-
-        ad_group_settings = ad_group.get_current_settings()
-        self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOPILOT,
-            dash.infobox_helpers.get_adgroup_running_status(superuser, ad_group_settings)
         )
 
         # adgroup is active but sources are inactive

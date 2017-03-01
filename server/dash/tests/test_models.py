@@ -132,7 +132,6 @@ class AdGroupSettingsTest(TestCase):
         new_settings = models.AdGroupSettings.objects.get(id=1)
         new_settings.changes_text = None
         user = User.objects.get(pk=1)
-        test_helper.add_permissions(user, ['can_set_ad_group_mode'])
 
         actual = models.AdGroupSettings.get_changes_text(old_settings, new_settings, user)
         expected = (

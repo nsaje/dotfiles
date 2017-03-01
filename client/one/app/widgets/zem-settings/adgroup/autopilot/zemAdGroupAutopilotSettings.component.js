@@ -5,72 +5,70 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         api: '<',
     },
     templateUrl: '/app/widgets/zem-settings/adgroup/autopilot/zemAdGroupAutopilotSettings.component.html',
-    controller: function ($q, $state, config, zemPermissions) {
-        var MSG_ALL_RTB_ENABLED = 'All RTB source will now use one joint Daily Spend Cap.\n\n' +
-            'Please check it in the Media Sources tab before you enable the ad group.\n';
-        var MSG_ALL_RTB_DISABLED = 'We have reset the Daily Spend Caps of your RTB sources.\n\n' +
-            'Please check them in the Media Sources tab before you enable the ad group.\n';
+    controller: function ($q, $state, config) {
+        var MSG_ALL_RTB_ENABLED_AD_GROUP_INACTIVE = 'One joint Bid CPC and Daily Spend Cap for will be set for all ' +
+            'RTB sources. Please check it in the Media Sources tab before enabling the ad group.';
+        var MSG_ALL_RTB_ENABLED_AD_GROUP_ACTIVE = 'This ad group will be automatically paused to set one joint Bid ' +
+            'CPC and Daily Spend Cap for all RTB sources. Please check it in the Media Sources tab before enabling ' +
+            'the ad group.';
+        var MSG_ALL_RTB_DISABLED_AD_GROUP_INACTIVE = 'Bid CPCs and Daily Spend Caps of all RTB sources will be ' +
+            'reset. Please check them in the Media Sources tab before you enable the ad group.';
+        var MSG_ALL_RTB_DISABLED_AD_GROUP_ACTIVE = 'This ad group will be automatically paused to reset the Bid CPCs ' +
+            'and Daily Spend Caps of all RTB sources. Please check them in the Media Sources tab before you enable ' +
+            'the ad group.';
 
         var $ctrl = this;
         $ctrl.constants = constants;
         $ctrl.config = config;
         $ctrl.options = options;
-        $ctrl.hasPermission = zemPermissions.hasPermission;
-        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
-        $ctrl.stateReloadNeeded = false;
 
         $ctrl.isInLanding = isInLanding;
-        $ctrl.showAutoPilotDailyBudgetInput = showAutoPilotDailyBudgetInput;
+        $ctrl.updateAutopilotSettings = updateAutopilotSettings;
+
         $ctrl.getBudgetAutopilotOptimizationGoalText = getBudgetAutopilotOptimizationGoalText;
         $ctrl.getBudgetAutopilotOptimizationCPAGoalText = getBudgetAutopilotOptimizationCPAGoalText;
 
+        $ctrl.getPriceDiscoveryPopoverText = getPriceDiscoveryPopoverText;
+        $ctrl.getRTBSourcesPopoverText = getRTBSourcesPopoverText;
+
+        $ctrl.autopilotEnabled = null;
+        $ctrl.b1SourcesGroupEnabled = null;
+        $ctrl.priceDiscovery = null;
+
         $ctrl.$onInit = function () {
             $ctrl.api.register({
-                onSuccess: function () {
-                    notifyAllRtbUpdates();
-                },
-                isStateReloadNeeded: function () {
-                    return $ctrl.stateReloadNeeded;
-                }
+                validate: validate,
             });
         };
 
         $ctrl.$onChanges = function () {
-            if ($ctrl.entity) {
-                $ctrl.origAutopilotSettings = {
-                    b1SourcesGroupEnabled: $ctrl.entity.settings.b1SourcesGroupEnabled,
-                    autopilotState: $ctrl.entity.settings.autopilotState,
-                    autopilotBudget: $ctrl.entity.settings.autopilotBudget,
-                };
-            }
+            if (!$ctrl.entity || $ctrl.origAutopilotSettings) return;
+            $ctrl.origAutopilotSettings = {
+                b1SourcesGroupEnabled: $ctrl.entity.settings.b1SourcesGroupEnabled,
+            };
+
+            $ctrl.b1SourcesGroupEnabled = $ctrl.entity.settings.b1SourcesGroupEnabled;
+            $ctrl.autopilotEnabled =
+                $ctrl.entity.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
+            $ctrl.priceDiscovery = $ctrl.autopilotEnabled ||
+                $ctrl.entity.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC;
         };
-
-        function notifyAllRtbUpdates () {
-            // MVP for all-RTB-sources-as-one
-            // Reload state when all-rtb-as-one setting is changed (grid data representation changes)
-            var allRtbAsOne = $ctrl.entity.settings.b1SourcesGroupEnabled &&
-                      $ctrl.entity.settings.autopilotState ===
-                      constants.adGroupSettingsAutopilotState.INACTIVE;
-
-            var origAllRtbAsOne = $ctrl.origAutopilotSettings.b1SourcesGroupEnabled &&
-                       $ctrl.origAutopilotSettings.autopilotState ===
-                       constants.adGroupSettingsAutopilotState.INACTIVE;
-
-
-            if (allRtbAsOne !== origAllRtbAsOne) {
-                alert(allRtbAsOne ? MSG_ALL_RTB_ENABLED : MSG_ALL_RTB_DISABLED); //eslint-disable-line no-alert
-                $ctrl.stateReloadNeeded = true;
-            }
-        }
 
         function isInLanding () {
             if (!$ctrl.entity) return false;
             return $ctrl.entity.settings.landingMode;
         }
 
-        function showAutoPilotDailyBudgetInput () {
-            if (!$ctrl.entity) return false;
-            return $ctrl.entity.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
+        function updateAutopilotSettings () {
+            $ctrl.entity.settings.b1SourcesGroupEnabled = $ctrl.b1SourcesGroupEnabled;
+            $ctrl.entity.settings.autopilotState = constants.adGroupSettingsAutopilotState.INACTIVE;
+
+            if ($ctrl.autopilotEnabled) {
+                $ctrl.entity.settings.b1SourcesGroupEnabled = true;
+                $ctrl.entity.settings.autopilotState = constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
+            } else if ($ctrl.priceDiscovery) {
+                $ctrl.entity.settings.autopilotState = constants.adGroupSettingsAutopilotState.ACTIVE_CPC;
+            }
         }
 
         function getBudgetAutopilotOptimizationGoalText () {
@@ -91,6 +89,51 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
             }
             return 'Note: CPA optimization works best when at least ' +
                 '20 conversions have occurred in the past two weeks.';
+        }
+
+        function validate (updateData) {
+            if ($ctrl.origAutopilotSettings.b1SourcesGroupEnabled === updateData.settings.b1SourcesGroupEnabled) {
+                return $q.resolve();
+            }
+
+            var msg;
+            if (updateData.settings.b1SourcesGroupEnabled &&
+                $ctrl.entity.settings.state === constants.settingsState.INACTIVE)
+                msg = MSG_ALL_RTB_ENABLED_AD_GROUP_INACTIVE;
+            else if (updateData.settings.b1SourcesGroupEnabled &&
+                     $ctrl.entity.settings.state === constants.settingsState.ACTIVE)
+                msg = MSG_ALL_RTB_ENABLED_AD_GROUP_ACTIVE;
+            else if (!updateData.settings.b1SourcesGroupEnabled &&
+                     $ctrl.entity.settings.state === constants.settingsState.INACTIVE)
+                msg = MSG_ALL_RTB_DISABLED_AD_GROUP_INACTIVE;
+            else if (!updateData.settings.b1SourcesGroupEnabled
+                     && $ctrl.entity.settings.state === constants.settingsState.ACTIVE)
+                msg = MSG_ALL_RTB_DISABLED_AD_GROUP_ACTIVE;
+
+            if (confirm(msg)) { //eslint-disable-line no-alert
+                updateData.settings.state = constants.settingsState.INACTIVE;
+                return $q.resolve();
+            }
+
+            return $q.reject();
+        }
+
+        function getPriceDiscoveryPopoverText () {
+            if (!$ctrl.entity) return '';
+            if ($ctrl.autopilotEnabled) {
+                return 'You can\'t change Price Discovery while Ad Group is set to Autopilot mode.';
+            }
+
+            return '';
+        }
+
+        function getRTBSourcesPopoverText () {
+            if (!$ctrl.entity) return '';
+            if ($ctrl.autopilotEnabled) {
+                return 'You can\'t manage RTB Sources while Ad Group is set to Autopilot mode.';
+            }
+
+            return '';
         }
     },
 });

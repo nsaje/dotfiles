@@ -605,15 +605,10 @@ def get_adgroup_running_status_class(user, autopilot_state, running_status, stat
              state == dash.constants.AdGroupSettingsState.INACTIVE):
         return dash.constants.InfoboxStatus.INACTIVE
 
-    if user.has_perm('zemauth.can_set_ad_group_mode'):
-        if autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            return dash.constants.InfoboxStatus.AUTOPILOT
-        elif autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
-            return dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY
-        return dash.constants.InfoboxStatus.ACTIVE
-
-    elif autopilot_state != dash.constants.AdGroupSettingsAutopilotState.INACTIVE:
+    if autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         return dash.constants.InfoboxStatus.AUTOPILOT
+    elif autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
+        return dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY
 
     return dash.constants.InfoboxStatus.ACTIVE
 

@@ -58,7 +58,7 @@ class AdGroupSettingsTest(TestCase):
                 'autopilot_min_budget': '10',
                 'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                 'b1_sources_group_enabled': True,
-                'b1_sources_group_daily_budget': '15.0000',
+                'b1_sources_group_daily_budget': '500.0000',
                 'b1_sources_group_state': 1,
                 'b1_sources_group_cpc_cc': '0.500',
                 'whitelist_publisher_groups': [1],
@@ -89,7 +89,6 @@ class AdGroupSettingsTest(TestCase):
 
         add_permissions(self.user, ['settings_view', 'can_view_retargeting_settings'])
         add_permissions(self.user, ['settings_view', 'can_target_custom_audiences'])
-        add_permissions(self.user, ['settings_view', 'can_set_ad_group_mode'])
         response = self.client.get(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
             follow=True
@@ -296,7 +295,6 @@ class AdGroupSettingsTest(TestCase):
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
                 'can_set_white_blacklist_publisher_groups',
-                'can_set_ad_group_mode',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -342,7 +340,7 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '15.0000',
+                        'b1_sources_group_daily_budget': '500.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.0100',
                         'whitelist_publisher_groups': [1],
@@ -384,7 +382,6 @@ class AdGroupSettingsTest(TestCase):
                 'can_set_adgroup_to_auto_pilot',
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
-                'can_set_ad_group_mode',
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -434,7 +431,7 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '15.0000',
+                        'b1_sources_group_daily_budget': '500.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.0100',
                         'whitelist_publisher_groups': [],  # no permission to set
@@ -558,7 +555,6 @@ class AdGroupSettingsTest(TestCase):
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
                 'can_set_white_blacklist_publisher_groups',
-                'can_set_ad_group_mode',
             ])
             response = self.client.put(
                 reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -603,7 +599,7 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': '',
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '15.0000',
+                        'b1_sources_group_daily_budget': '500.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.01',
                         'whitelist_publisher_groups': [1],
@@ -641,7 +637,6 @@ class AdGroupSettingsTest(TestCase):
                 'can_view_retargeting_settings',
                 'can_target_custom_audiences',
                 'can_set_rtb_sources_as_one_cpc',
-                'can_set_ad_group_mode'
             ])
             new_settings = {}
             new_settings.update(self.settings_dict)
@@ -691,7 +686,7 @@ class AdGroupSettingsTest(TestCase):
                         'redirect_javascript': "alert('a')",
                         'dayparting': {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
                         'b1_sources_group_enabled': True,
-                        'b1_sources_group_daily_budget': '15.0000',
+                        'b1_sources_group_daily_budget': '500.0000',
                         'b1_sources_group_state': 1,
                         'b1_sources_group_cpc_cc': '0.1',
                         'whitelist_publisher_groups': [],  # no permission to set
@@ -838,7 +833,6 @@ class AdGroupSettingsTest(TestCase):
 
         request = HttpRequest()
         request.user = self.user
-        add_permissions(request.user, ['can_set_ad_group_mode'])
 
         current_settings.b1_sources_group_enabled = True
         new_settings.b1_sources_group_enabled = False
@@ -861,7 +855,6 @@ class AdGroupSettingsTest(TestCase):
 
         request = HttpRequest()
         request.user = self.user
-        add_permissions(request.user, ['can_set_ad_group_mode'])
 
         current_settings.b1_sources_group_enabled = True
         new_settings.b1_sources_group_enabled = True
@@ -890,7 +883,6 @@ class AdGroupSettingsTest(TestCase):
 
         request = HttpRequest()
         request.user = self.user
-        add_permissions(request.user, ['can_set_ad_group_mode'])
 
         current_settings.b1_sources_group_enabled = True
         new_settings.b1_sources_group_enabled = True
@@ -907,30 +899,6 @@ class AdGroupSettingsTest(TestCase):
 
         with self.assertRaises(exc.ValidationError):
             view.validate_autopilot_settings(request, current_settings, new_settings)
-
-    def test_validate_all_rtb_state_old(self):
-        view = agency.AdGroupSettings()
-        settings = models.AdGroupSettings()
-        new_settings = models.AdGroupSettings()
-        new_settings.state = constants.AdGroupSettingsState.ACTIVE
-
-        request = HttpRequest()
-        request.user = self.user
-
-        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-        settings.b1_sources_group_enabled = False
-        new_settings.b1_sources_group_enabled = True
-        with self.assertRaises(exc.ValidationError):
-            view.validate_all_rtb_state(request, settings, new_settings)
-
-        settings.b1_sources_group_enabled = True
-        new_settings.b1_sources_group_enabled = True
-        view.validate_all_rtb_state(request, settings, new_settings)
-
-        settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
-        with self.assertRaises(exc.ValidationError):
-            view.validate_all_rtb_state(request, settings, new_settings)
 
     def test_validate_all_rtb_state_adgroup_inactive(self):
         view = agency.AdGroupSettings()
@@ -962,7 +930,6 @@ class AdGroupSettingsTest(TestCase):
 
         request = HttpRequest()
         request.user = self.user
-        add_permissions(request.user, ['can_set_ad_group_mode'])
 
         current_settings.b1_sources_group_enabled = True
         new_settings.b1_sources_group_enabled = False

@@ -165,9 +165,6 @@ class AdGroupSettings(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def validate_autopilot_settings(self, request, settings, new_settings):
-        if not request.user.has_perm('zemauth.can_set_ad_group_mode'):
-            return
-
         if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             if not new_settings.b1_sources_group_enabled:
                 msg = 'To enable Daily Cap Autopilot, RTB Sources have to be managed as a group.'
@@ -195,28 +192,14 @@ class AdGroupSettings(api_common.BaseApiView):
         # MVP for all-RTB-sources-as-one
         # Ensure that AdGroup is paused when enabling/disabling All RTB functionality
         # For now this is the easiest solution to avoid conflicts with ad group budgets and state validations
-
         if new_settings.state == constants.AdGroupSettingsState.INACTIVE:
             return
 
-        if not request.user.has_perm('zemauth.can_set_ad_group_mode'):
-            all_rtb_enabled = settings.b1_sources_group_enabled and \
-                settings.autopilot_state == constants.AdGroupSettingsAutopilotState.INACTIVE
-
-            new_all_rtb_enabled = new_settings.b1_sources_group_enabled and \
-                new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.INACTIVE
-
-            if all_rtb_enabled != new_all_rtb_enabled:
-                msg = 'To manage Daily Spend Cap for All RTB as one, ad group must be paused first.'
-                if not new_all_rtb_enabled:
-                    'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
-                raise exc.ValidationError(errors={'autopilot_state': [msg]})
-        else:
-            if settings.b1_sources_group_enabled != new_settings.b1_sources_group_enabled:
-                msg = 'To manage Daily Spend Cap for All RTB as one, ad group must be paused first.'
-                if not new_settings.b1_sources_group_enabled:
-                    'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
-                raise exc.ValidationError(errors={'b1_sources_group_enabled': [msg]})
+        if settings.b1_sources_group_enabled != new_settings.b1_sources_group_enabled:
+            msg = 'To manage Daily Spend Cap for All RTB as one, ad group must be paused first.'
+            if not new_settings.b1_sources_group_enabled:
+                'To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first.'
+            raise exc.ValidationError(errors={'b1_sources_group_enabled': [msg]})
 
     def validate_all_rtb_campaign_stop(self, ad_group, current_settings, new_settings, campaign_settings):
         changes = current_settings.get_setting_changes(new_settings)
