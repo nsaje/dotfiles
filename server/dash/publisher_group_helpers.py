@@ -10,7 +10,6 @@ from dash import cpc_constraints
 from dash import history_helpers
 from dash import models
 from utils import email_helper
-from utils import list_helper
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +39,8 @@ def get_blacklist_publisher_group(obj, create_if_none=False, request=None):
         with transaction.atomic():
             publisher_group = models.PublisherGroup(
                 name=obj.get_default_blacklist_name(),
-                account=obj.get_account())
+                account=obj.get_account(),
+                implicit=True)
             publisher_group.save(request)
             obj.default_blacklist = publisher_group
             obj.save(request)
@@ -61,7 +61,8 @@ def get_whitelist_publisher_group(obj, create_if_none=False, request=None):
         if publisher_group is None and create_if_none:
             publisher_group = models.PublisherGroup(
                 name=obj.get_default_whitelist_name(),
-                account=obj.get_account())
+                account=obj.get_account(),
+                implicit=True)
             publisher_group.save(request)
             obj.default_whitelist = publisher_group
             obj.save(request)

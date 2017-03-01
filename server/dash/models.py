@@ -4629,6 +4629,8 @@ class PublisherGroup(models.Model):
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT,
                                     null=True, blank=True)
 
+    implicit = models.BooleanField(default=False)
+
     def save(self, request, *args, **kwargs):
         if request and request.user:
             self.modified_by = request.user

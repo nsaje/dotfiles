@@ -25,11 +25,13 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertIsNotNone(obj.default_whitelist)
         self.assertEqual(obj.default_whitelist.name, obj.get_default_whitelist_name())
         self.assertEqual(obj.get_account(), obj.default_whitelist.account)
+        self.assertTrue(obj.default_whitelist.implicit)
 
     def assertBlacklistCreated(self, obj):
         self.assertIsNotNone(obj.default_blacklist)
         self.assertEqual(obj.default_blacklist.name, obj.get_default_blacklist_name())
         self.assertEqual(obj.get_account(), obj.default_blacklist.account)
+        self.assertTrue(obj.default_blacklist.implicit)
 
     def assertHistoryWritten(self, history, changes_text, default_list_created):
         self.assertEqual(history.count(), 2 if default_list_created else 1)
