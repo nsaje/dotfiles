@@ -1445,24 +1445,28 @@ class AudienceAdmin(admin.ModelAdmin):
     exclude = ('ad_group_settings',)
 
 
-class PublisherGroupEntryAdmin(admin.TabularInline):
-    model = models.PublisherGroupEntry
-    extra = 3
-
-    def get_formset(self, request, obj=None, **kwargs):
-        f = super(PublisherGroupEntryAdmin, self).get_formset(request, obj=obj, **kwargs)
-        f.form.base_fields['source'].required = False
-        return f
-
-
 class PublisherGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'account', 'agency', 'created_dt', 'modified_dt')
     readonly_fields = ('modified_by',)
 
-    inlines = [PublisherGroupEntryAdmin]
-
     def save_model(self, request, obj, form, change):
         obj.save(request)
+
+
+class PublisherGroupEntryAdmin(admin.ModelAdmin):
+    list_display = ('publisher_group', 'publisher', 'source', 'include_subdomains', 'created_dt', 'modified_dt')
+    readonly_fields = ('created_dt', 'modified_dt')
+    search_fields = ['publisher_group__name', 'publisher_group__id', 'publisher', 'source__name']
+
+    list_filter = (
+        ('created_dt', admin.DateFieldListFilter),
+        'source',
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return self.readonly_fields + ('publisher_group',)
+        return self.readonly_fields
 
 
 class CpcConstraintAdmin(admin.ModelAdmin):
@@ -1693,5 +1697,6 @@ admin.site.register(models.EmailTemplate, EmailTemplateAdmin)
 admin.site.register(models.History, HistoryAdmin)
 admin.site.register(models.Audience, AudienceAdmin)
 admin.site.register(models.PublisherGroup, PublisherGroupAdmin)
+admin.site.register(models.PublisherGroupEntry, PublisherGroupEntryAdmin)
 admin.site.register(models.CpcConstraint, CpcConstraintAdmin)
 admin.site.register(models.CustomHack, CustomHackAdmin)
