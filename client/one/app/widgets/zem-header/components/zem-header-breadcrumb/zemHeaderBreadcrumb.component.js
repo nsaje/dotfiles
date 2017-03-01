@@ -69,6 +69,9 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
             if ($state.includes('**.pixels')) {
                 return {typeName: 'Account Settings', name: 'Pixels & Audiences', href: $location.absUrl()};
             }
+            if ($state.includes('**.publisherGroups')) {
+                return {typeName: 'Account Settings', name: 'Publisher groups', href: $location.absUrl()};
+            }
             return null;
         }
 
