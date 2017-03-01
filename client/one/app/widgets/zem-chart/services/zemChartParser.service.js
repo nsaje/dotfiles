@@ -82,18 +82,47 @@ angular.module('one.widgets').service('zemChartParser', function (zemChartMetric
 
         var goal1 = data.goalFields[metrics[0]];
         var goal2 = data.goalFields[metrics[1]];
-        var metricIds = [];
+        var goals = [];
 
         if (goal1 && metrics[0] && data.campaignGoals[goal1.id]) {
-            metricIds.push(metrics[0]);
+            goals.push(createGoal(chart, data, metrics[0]));
         }
 
         if (goal2 && metrics[1] && data.campaignGoals[goal2.id]) {
             if (metrics[0] !== metrics[1]) {
-                metricIds.push(metrics[1]);
+                goals.push(createGoal(chart, data, metrics[1]));
             }
         }
-        updateCampaignGoals(chart, metricIds, data.campaignGoals, data.goalFields);
+
+        updateCampaignGoals(chart, goals, data.campaignGoals);
+    }
+
+    function createGoal (chart, data, metricId) {
+        var metric = zemChartMetricsService.findMetricByValue(chart.metrics.options, metricId);
+        var field = data.goalFields[metricId];
+        return {metric: metric, field: field, index: 1};
+    }
+
+    function updateCampaignGoals (chart, goals, campaignGoals) {
+        var commonYAxis = true;
+        goals.forEach(function (goal) {
+            var metric = goal.metric;
+            var goalField = goal.field;
+            var legendGoal = {
+                id: goalField.id,
+                name: 'Goals',
+            };
+            addLegendItem(chart, GOALS_COLORS, legendGoal, false, goals.indexOf(goal) + 1);
+            campaignGoals[goalField.id].forEach(function (data) {
+                if (COMMON_Y_AXIS_METRICS.indexOf(goal.metric.id) === -1) {
+                    commonYAxis = false;
+                }
+                var name = 'Goal (' + goalField.name + ')';
+                var yAxis = commonYAxis ? 0 : goal.index;
+                var pointFormat = getPointFormat(metric);
+                addGoalSeries(chart, name, data, GOALS_COLORS[goal.index], yAxis, pointFormat);
+            });
+        });
     }
 
     function updateSeries (chart, group, metricIds) {
@@ -117,32 +146,6 @@ angular.module('one.widgets').service('zemChartParser', function (zemChartMetric
             var yAxis = commonYAxis ? 0 : index;
             var pointFormat = getPointFormat(metric);
             addSeries(chart, name, data, color[index], yAxis, pointFormat);
-        });
-    }
-
-    function updateCampaignGoals (chart, metricIds, campaignGoals, fieldGoalMap) {
-        var index = 0;
-        var commonYAxis = true;
-        metricIds.forEach(function (metricId) {
-            var metric = zemChartMetricsService.findMetricByValue(chart.metrics.options, metricId);
-            var goal = fieldGoalMap[metricId],
-                legendGoal = {
-                    id: goal.id,
-                    name: 'Goals',
-                },
-                colors = GOALS_COLORS;
-            addLegendItem(chart, colors, legendGoal, false, metricIds.indexOf(metricId) + 1);
-            campaignGoals[goal.id].forEach(function (data) {
-                if (COMMON_Y_AXIS_METRICS.indexOf(metricId) === -1) {
-                    commonYAxis = false;
-                }
-                var name = 'Goal (' + goal.name + ')';
-                var yAxis = commonYAxis ? 0 : index;
-                var pointFormat = getPointFormat(metric);
-                addGoalSeries(chart, name, data, colors[index], yAxis, pointFormat);
-            });
-
-            index += 1;
         });
     }
 
