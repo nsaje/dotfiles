@@ -1,4 +1,5 @@
 import datetime
+import signal
 import collections
 import itertools
 import json
@@ -11,6 +12,7 @@ import sys
 import StringIO
 
 import faker
+import influx
 
 from django.db import models, transaction, connections
 from django.db.models.signals import pre_save
@@ -28,6 +30,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 demo_anonymizer.set_fake_factory(faker.Faker())
+
+TIMEOUT = 10 * 60
+
+IGNORE_FIELDS = {
+    dash.models.PublisherGroup: {'account'},  # due to cyclical foreign key dependency, we want to ignore the account field
+}
 
 ACCOUNT_DUMP_SETTINGS = {
     'primary': 'dash.account',  # This is our reference model.
@@ -85,6 +93,10 @@ ACCOUNT_DUMP_SETTINGS = {
 MAX_PER_FILE = 1000
 
 
+def alarm_handler(*args, **kwargs):
+    raise Exception("Create demo snapshot timed out!")
+
+
 def _postgres_read_only(using='default'):
     def decorator(func):
         @functools.wraps(func)
@@ -110,6 +122,15 @@ class Command(ExceptionCommand):
     # put connection in read-only mode
     @_postgres_read_only(using='default')
     def handle(self, *args, **options):
+        if options.get('verbosity') > 1:
+            logger.setLevel(logging.DEBUG)
+            ch = logging.StreamHandler()
+            ch.setLevel(logging.DEBUG)
+            logger.addHandler(ch)
+
+        signal.signal(signal.SIGALRM, alarm_handler)
+        signal.alarm(TIMEOUT)
+
         # prevent explicit model saves
         pre_save.connect(_pre_save_handler)
 
@@ -159,6 +180,7 @@ class Command(ExceptionCommand):
         s3_helper.put(os.path.join(snapshot_id, 'build.txt'), build)
 
         s3_helper.put('latest.txt', snapshot_id)
+        influx.incr('create_demo_dump_to_s3', 1, status='success')
 
         _deploykitty_prepare(snapshot_id)
 
@@ -203,10 +225,13 @@ def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
         # create fake credit so each account has at least some
         fake_credit = _create_fake_credit(account)
 
+        # create fake global blacklist
+        fake_global_blacklist = _create_global_blacklist()
+
         # extract dependencies and anonymize
         start_extracting_at = len(serialize_list)
         _add_explicit_object_dependents(serialize_list, account, ACCOUNT_DUMP_SETTINGS['dependents'])
-        _add_to_serialize_list(serialize_list, [fake_credit])
+        _add_to_serialize_list(serialize_list, [fake_credit, fake_global_blacklist])
         _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_extracting_at)
 
 
@@ -220,6 +245,15 @@ def _create_fake_credit(account):
         status=constants.CreditLineItemStatus.SIGNED,
         created_dt=datetime.datetime.utcnow(),
         modified_dt=datetime.datetime.utcnow(),
+    )
+
+
+def _create_global_blacklist():
+    return dash.models.PublisherGroup(
+        id=settings.GLOBAL_BLACKLIST_ID,
+        name='Global blacklist',
+        created_dt=datetime.datetime.now(),
+        modified_dt=datetime.datetime.now()
     )
 
 
@@ -279,15 +313,17 @@ def _add_explicit_object_dependents(serialize_list, obj, dependencies):
 
 def _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects, start_at=0):
     for obj in itertools.islice(serialize_list, start_at, None):
+        logger.debug('%s %s' % (obj.__class__, obj))
         anonymize = getattr(obj, '_demo_fields', {})
         if obj in demo_users_set or obj in anonymized_objects:  # don't anonymize demo users
             anonymize = {}
 
+        ignore_fields = IGNORE_FIELDS.get(obj.__class__, set())
         for field in _get_fields(obj):
             if field.name in anonymize:
                 setattr(obj, field.name, anonymize[field.name]())
                 anonymized_objects.add(obj)
-            if isinstance(field, models.ForeignKey):
+            if (field.name not in ignore_fields) and isinstance(field, models.ForeignKey):
                 _add_to_serialize_list(serialize_list, [obj.__getattribute__(field.name)])
         for field in _get_many_to_many_fields(obj):
             _add_to_serialize_list(serialize_list, obj.__getattribute__(field.name).all())
