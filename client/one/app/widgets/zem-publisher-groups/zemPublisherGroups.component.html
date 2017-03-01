@@ -1,0 +1,71 @@
+<div class="white-background">
+    <h2>User defined publisher groups</h2>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Number of publishers</th>
+                <th>Modified</th>
+                <th>Created</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="5" class="loader-row" ng-if="$ctrl.loading">
+                    <span class="loader"></span>
+                </td>
+            </tr>
+            <tr ng-repeat="item in $ctrl.publisherGroups | filter: {implicit: false}">
+                <td>{{ item.name }}</td>
+                <td>{{ item.size }}</td>
+                <td>{{ item.modified }}</td>
+                <td>{{ item.created }}</td>
+                <td class="action-buttons">
+                    <a class="button button--small button--with-icon button--only-icon download-icon" ng-click="$ctrl.download(item.id)"></a>
+                    <a class="button button--small button--with-icon button--only-icon upload-icon"></a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<a href="" class="zem-publisher-groups-component__show-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Show background publisher groups</a>
+
+<div class="white-background zem-publisher-groups-component__collapsed" ng-show="$ctrl.showCollapsed">
+    <h2>Background Publisher Groups</h2>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Number of publishers</th>
+                <th>Modified</th>
+                <th>Created</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="5" class="loader-row" ng-if="$ctrl.loading">
+                    <span class="loader"></span>
+                </td>
+            </tr>
+            <tr ng-repeat="item in $ctrl.publisherGroups | filter: {implicit: true}">
+                <td>{{ item.name }}</td>
+                <td>{{ item.size }}</td>
+                <td>{{ item.modified }}</td>
+                <td>{{ item.created }}</td>
+                <td class="action-buttons">
+                    <a class="button button--small button--with-icon button--only-icon download-icon" ng-click="$ctrl.download(item.id)"></a>
+                    <a class="button button--small button--with-icon button--only-icon upload-icon"></a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<a href="" class="zem-publisher-groups-component__hide-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Hide background publisher groups</a>

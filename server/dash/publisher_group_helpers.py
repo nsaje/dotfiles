@@ -1,5 +1,7 @@
 import logging
 from decimal import Decimal
+import StringIO
+import unicodecsv
 
 from django.conf import settings
 from django.db import transaction
@@ -384,3 +386,13 @@ def get_ob_blacklisted_publishers_count(account):
     blacklists = _get_blacklists(account, account.get_current_settings())
     return models.PublisherGroupEntry.objects.filter(publisher_group_id__in=blacklists,
                                                      source__source_type__type=constants.SourceType.OUTBRAIN).count()
+
+
+def get_csv_content(publisher_group_entries):
+    output = StringIO.StringIO()
+    writer = unicodecsv.writer(output, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
+    writer.writerow(('Publisher', 'Source'))
+    for entry in publisher_group_entries.order_by('publisher'):
+        writer.writerow((entry.publisher, entry.source))
+
+    return output.getvalue()

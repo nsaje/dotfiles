@@ -628,6 +628,16 @@ urlpatterns += [
         name='publisher_targeting'
     ),
     url(
+        r'^api/accounts/(?P<account_id>\d+)/publisher_groups/(?P<publisher_group_id>\d+)/download/',
+        login_required(dash.views.publishers.PublisherGroupsDownload.as_view()),
+        name='download_publisher_groups'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/publisher_groups/',
+        login_required(dash.views.publishers.PublisherGroups.as_view()),
+        name='accounts_publisher_groups'
+    ),
+    url(
         r'^api/custom_report_download/',
         login_required(dash.views.export.CustomReportDownload.as_view()),
         name='custom_report_download'

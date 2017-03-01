@@ -1,6 +1,7 @@
 import mock
 from django.http.request import HttpRequest
 from django.test import TestCase, override_settings
+import textwrap
 
 import zemauth.models
 from dash import history_helpers
@@ -426,3 +427,12 @@ class PublisherGroupHelpersTest(TestCase):
         with self.assertRaisesMessage(Exception, "Outbrain specific blacklisting is only available on account level"):
             publisher_group_helpers.blacklist_publishers(
                 self.request, entries, None, enforce_cpc=False)
+
+    def test_get_csv_content(self):
+        self.assertEquals(
+            publisher_group_helpers.get_csv_content(models.PublisherGroup.objects.get(pk=1).entries.all()),
+            textwrap.dedent('''\
+            "Publisher","Source"\r
+            "pub1","AdsNative"\r
+            "pub2",""\r
+            '''))

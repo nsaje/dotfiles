@@ -1,4 +1,5 @@
 import json
+import slugify
 
 from dash import constants
 from dash import forms
@@ -6,6 +7,7 @@ from dash import publisher_helpers
 from dash import publisher_group_helpers
 from dash import models
 from dash import cpc_constraints
+from dash.views import helpers
 
 import redshiftapi.api_breakdowns
 
@@ -82,3 +84,42 @@ class PublisherTargeting(api_common.BaseApiView):
                 'include_subdomains': cleaned_data['status'] == constants.PublisherTargetingStatus.BLACKLISTED,
             })
         return entry_dicts
+
+
+class PublisherGroups(api_common.BaseApiView):
+
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.can_edit_publisher_groups'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
+
+        publisher_groups = []
+        for pg in models.PublisherGroup.objects.all().filter_by_account(account):
+            publisher_groups.append({
+                'name': pg.name,
+                'implicit': pg.implicit,
+                'size': pg.entries.all().count(),
+                'modified': pg.modified_dt,
+                'created': pg.created_dt,
+            })
+
+        return self.create_api_response({
+            "publisher_groups": publisher_groups,
+            "success": True,
+        })
+
+
+class PublisherGroupsDownload(api_common.BaseApiView):
+
+    def get(self, request, account_id, publisher_group_id):
+        if not request.user.has_perm('zemauth.can_edit_publisher_groups'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
+        publisher_group = models.PublisherGroup.objects.filter(pk=publisher_group_id).filter_by_account(account).first()
+        if not publisher_group:
+            raise exc.MissingDataError()
+
+        return self.create_csv_response('publisher_group_{}'.format(slugify.slugify(publisher_group.name)),
+                                        content=publisher_group_helpers.get_csv_content(publisher_group.entries.all()))

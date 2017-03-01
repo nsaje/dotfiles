@@ -98,6 +98,10 @@ angular.module('one.legacy').config(function ($stateProvider) {
             url: '/reports',
             templateUrl: '/partials/scheduled_reports.html',
             controller: 'ScheduledReportsCtrl',
+        }).state('main.accounts.publisherGroups', {
+            url: '/publishergroups',
+            templateUrl: '/app/views/publisher-groups/zemPublisherGroupsView.partial.html',
+            controller: 'zemPublisherGroupsView as $ctrl',
         })
         .state('main.accounts.scheduled_reports_v2', {
             url: '/reports_v2',

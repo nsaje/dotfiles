@@ -45,6 +45,12 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
             isAvailable: isUserPermissionsAvailable,
             isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_new_user_permissions'),
         },
+        {
+            text: 'Publisher groups',
+            callback: navigateToPublisherGroupsView,
+            isAvailable: isPublisherGroupsActionAvailable,
+            isInternalFeature: zemPermissions.isPermissionInternal('zemauth.can_see_publisher_groups_ui'),
+        }
     ];
 
     function getAvailableActions (navigationGroup) {
@@ -79,6 +85,20 @@ angular.module('one.widgets').service('zemHeaderMenuService', function ($window,
         return activeAccount &&
                zemPermissions.hasPermission('zemauth.can_see_new_account_credit') &&
                zemPermissions.hasPermission('zemauth.account_credit_view');
+    }
+
+    function isPublisherGroupsActionAvailable () {
+        var activeAccount = zemNavigationNewService.getActiveAccount();
+        return activeAccount &&
+            zemPermissions.hasPermission('zemauth.can_see_publisher_groups_ui') &&
+            zemPermissions.hasPermission('zemauth.can_edit_publisher_groups');
+    }
+
+    function navigateToPublisherGroupsView () {
+        var account = zemNavigationNewService.getActiveAccount();
+        var state = 'main.accounts.publisherGroups';
+        var params = {id: account.id};
+        $state.go(state, params);
     }
 
     function navigateToAccountCreditView () {
