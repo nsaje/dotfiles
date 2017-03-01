@@ -633,7 +633,7 @@ urlpatterns += [
         name='download_publisher_groups'
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/publisher_groups/',
+        r'^api/accounts/(?P<account_id>\d+)/publisher_groups/$',
         login_required(dash.views.publishers.PublisherGroups.as_view()),
         name='accounts_publisher_groups'
     ),

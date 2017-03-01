@@ -97,6 +97,7 @@ class PublisherGroups(api_common.BaseApiView):
         publisher_groups = []
         for pg in models.PublisherGroup.objects.all().filter_by_account(account):
             publisher_groups.append({
+                'id': pg.id,
                 'name': pg.name,
                 'implicit': pg.implicit,
                 'size': pg.entries.all().count(),
