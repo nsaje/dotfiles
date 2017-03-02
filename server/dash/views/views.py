@@ -503,12 +503,12 @@ class CampaignAdGroups(api_common.BaseApiView):
 
     def _create_ad_group_source(self, request, source_settings, ad_group_settings):
         ad_group = ad_group_settings.ad_group
-
         ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
         ad_group_source.save(None)
         helpers.set_ad_group_source_settings(
             None,
             ad_group_source,
+            active=True,
             mobile_only=ad_group_settings.is_mobile_only()
         )
         return ad_group_source

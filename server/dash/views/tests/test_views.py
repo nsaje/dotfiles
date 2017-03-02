@@ -569,7 +569,7 @@ class CampaignAdGroups(TestCase):
             ad_group_source__ad_group=ad_group
         ).group_current_settings()
         self.assertTrue(all(
-            [adgss.state == constants.AdGroupSourceSettingsState.INACTIVE for adgss in ad_group_source_settings]
+            [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
         ))
 
     def test_add_media_sources_with_retargeting(self):
@@ -593,7 +593,7 @@ class CampaignAdGroups(TestCase):
             ad_group_source__ad_group=ad_group
         ).group_current_settings()
         self.assertTrue(all(
-            [adgss.state == constants.AdGroupSourceSettingsState.INACTIVE for adgss in ad_group_source_settings]
+            [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
         ))
 
     @patch('dash.views.helpers.set_ad_group_source_settings')
