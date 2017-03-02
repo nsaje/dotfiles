@@ -217,11 +217,7 @@ def get_campaign(user, campaign_id, sources=None):
 
 def get_user_agency(user):
     try:
-        # WORKAROUND - using first() instead of get()
-        # There is a possibility that user can become member of more
-        # then one agency, which would throw error here and in turn
-        # make application unreachable for that user
-        return user.agency_set.first()
+        return user.agency_set.get()
     except models.Agency.DoesNotExist:
         pass
     return None
