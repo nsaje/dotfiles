@@ -56,8 +56,7 @@ angular.module('one.widgets').service('zemAccessPermissionsStateService', functi
             );
         }
 
-        function remove (userId) {
-            var user = getUser(userId);
+        function remove (user) {
             user.requestInProgress = true;
 
             return zemUserService.remove(account.id, user.id).then(
@@ -75,11 +74,10 @@ angular.module('one.widgets').service('zemAccessPermissionsStateService', functi
             });
         }
 
-        function activate (userId) {
-            var user = getUser(userId);
+        function activate (user) {
             user.requestInProgress = true;
 
-            return zemAccessPermissionsEndpoint.post(account.id, userId, 'activate').then(
+            return zemAccessPermissionsEndpoint.post(account.id, user.id, 'activate').then(
                 function () {
                     user.saved = true;
                     user.emailResent = true;
@@ -94,8 +92,7 @@ angular.module('one.widgets').service('zemAccessPermissionsStateService', functi
             });
         }
 
-        function undo (userId) {
-            var user = getUser(userId);
+        function undo (user) {
             user.requestInProgress = true;
 
             return zemUserService.create(account.id, {email: user.email}).then(
@@ -110,8 +107,7 @@ angular.module('one.widgets').service('zemAccessPermissionsStateService', functi
             });
         }
 
-        function promote (userId) {
-            var user = getUser(userId);
+        function promote (user) {
             user.requestInProgress = true;
 
             return zemAccessPermissionsEndpoint.post(account.id, user.id, 'promote').then(

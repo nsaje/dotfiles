@@ -36,7 +36,7 @@
             <tbody ng-repeat="user in $ctrl.state.users">
             <tr ng-if="user.removed">
                 <td colspan="4">
-                    The user was removed. <a ng-show="!user.requestInProgress" ng-click="$ctrl.undo(user.id)">Undo?</a>
+                    The user was removed. <a ng-show="!user.requestInProgress" ng-click="$ctrl.undo(user)">Undo?</a>
                     <div class="loader" ng-show="user.requestInProgress"></div>
                 </td>
             </tr>
@@ -53,13 +53,13 @@
                     <div class="loader" ng-show="user.requestInProgress"></div>
                     <div ng-show="!user.requestInProgress">
                                 <span ng-if="$ctrl.entity.data.agency && !user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')" is-internal="zemauth.can_promote_agency_managers">
-                                    <button tabindex="-1" ng-click="$ctrl.promote(user.id)" href="#" class="button button--small" title="Promote to Agency Manager">Promote</button>
+                                    <button tabindex="-1" ng-click="$ctrl.promote(user)" href="#" class="button button--small" title="Promote to Agency Manager">Promote</button>
                                 </span>
                                 <span ng-if="$ctrl.entity.data.agency && user.is_agency_manager && $ctrl.hasPermission('zemauth.can_promote_agency_managers')" is-internal="zemauth.can_promote_agency_managers">
-                                    <button tabindex="-1" ng-click="$ctrl.downgrade(user.id)" href="#" class="button button--small" title="Downgrade to Normal User">Downgrade</button>
+                                    <button tabindex="-1" ng-click="$ctrl.downgrade(user)" href="#" class="button button--small" title="Downgrade to Normal User">Downgrade</button>
                                 </span>
-                        <button ng-show="!user.is_active" tabindex="-1" ng-click="$ctrl.activate(user.id)" href="#" class="button button--small button--with-icon send-icon" title="Resend Activation Mail">Resend</button>
-                        <button tabindex="-1" ng-click="$ctrl.remove(user.id)" href="#" class="button button--small button--with-icon remove-icon">Remove</button>
+                        <button ng-show="!user.is_active" tabindex="-1" ng-click="$ctrl.activate(user)" href="#" class="button button--small button--with-icon send-icon" title="Resend Activation Mail">Resend</button>
+                        <button tabindex="-1" ng-click="$ctrl.remove(user)" href="#" class="button button--small button--with-icon remove-icon">Remove</button>
                     </div>
                 </td>
             </tr>
