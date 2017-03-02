@@ -537,7 +537,7 @@ class GetMaxSettableB1SourcesGroupDailyBudgetTest(TestCase):
     fixtures = ['test_campaign_stop.yaml', 'test_campaign_stop_b1_sources_group.yaml']
 
     def setUp(self):
-        self.ad_group = dash.models.AdGroup.objects.get(id=222001)
+        self.ad_group = dash.models.AdGroup.objects.get(id=200001)
 
         utc_now_patcher = patch('utils.dates_helper.utc_now')
         self.mock_utc_now = utc_now_patcher.start()
@@ -596,7 +596,7 @@ class GetMaxSettableB1SourcesGroupDailyBudgetTest(TestCase):
         )
 
     def test_ad_group_not_running(self):
-        ad_group = dash.models.AdGroup.objects.get(id=222002)
+        ad_group = dash.models.AdGroup.objects.get(id=200002)
         self.assertEqual(
             None,
             campaign_stop.get_max_settable_b1_sources_group_budget(
@@ -634,6 +634,115 @@ class GetMaxSettableB1SourcesGroupDailyBudgetTest(TestCase):
                 self.ad_group.campaign,
                 self.ad_group.get_current_settings(),
                 self.ad_group.campaign.get_current_settings(),
+            )
+        )
+
+
+class GetMaxSettableAutopilotDailyBudgetTest(TestCase):
+
+    fixtures = ['test_campaign_stop.yaml', 'test_campaign_stop_autopilot.yaml']
+
+    def setUp(self):
+        utc_now_patcher = patch('utils.dates_helper.utc_now')
+        self.mock_utc_now = utc_now_patcher.start()
+        self.mock_utc_now.return_value = datetime.datetime(2017, 1, 1, 12, 5)  # campaign stop job already ran today
+        self.addCleanup(utc_now_patcher.stop)
+
+    def test_get_max_settable_autopilot_daily_budget(self):
+        ad_group = dash.models.AdGroup.objects.get(id=201002)
+        self.assertEqual(
+            Decimal('730'),
+            campaign_stop.get_max_settable_autopilot_budget(
+                ad_group,
+                ad_group.campaign,
+                ad_group.get_current_settings(),
+                ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    def test_more_available_budget_tomorrow(self):
+        self.mock_utc_now.return_value = datetime.datetime(2017, 1, 2, 12, 5)
+
+        ad_group = dash.models.AdGroup.objects.get(id=201002)
+        self.assertEqual(
+            Decimal('900'),
+            campaign_stop.get_max_settable_autopilot_budget(
+                ad_group,
+                ad_group.campaign,
+                ad_group.get_current_settings(),
+                ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    def test_no_available_budget_tomorrow(self):
+        self.mock_utc_now.return_value = datetime.datetime(2017, 1, 31, 12, 5)
+
+        ad_group = dash.models.AdGroup.objects.get(id=201002)
+        self.assertEqual(
+            Decimal('170'),  # daily budget already set today (b1 group + other sources)
+            campaign_stop.get_max_settable_autopilot_budget(
+                ad_group,
+                ad_group.campaign,
+                ad_group.get_current_settings(),
+                ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    def test_no_available_budget_tomorrow_before_job_runs(self):
+        self.mock_utc_now.return_value = datetime.datetime(2017, 1, 31, 11, 55)
+
+        ad_group = dash.models.AdGroup.objects.get(id=201002)
+        self.assertEqual(
+            Decimal('900'),
+            campaign_stop.get_max_settable_autopilot_budget(
+                ad_group,
+                ad_group.campaign,
+                ad_group.get_current_settings(),
+                ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    def test_ad_group_inactive(self):
+        ad_group = dash.models.AdGroup.objects.get(id=201001)
+        self.assertEqual(
+            None,
+            campaign_stop.get_max_settable_autopilot_budget(
+                ad_group,
+                ad_group.campaign,
+                ad_group.get_current_settings(),
+                ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    def test_automatic_campaign_stop_disabled(self):
+        ad_group = dash.models.AdGroup.objects.get(id=201002)
+        campaign_settings = ad_group.campaign.get_current_settings()
+        campaign_settings.automatic_campaign_stop = False
+        campaign_settings.save(None)
+
+        self.assertEqual(
+            None,
+            campaign_stop.get_max_settable_b1_sources_group_budget(
+                ad_group,
+                ad_group.campaign,
+                ad_group.get_current_settings(),
+                ad_group.campaign.get_current_settings(),
+            )
+        )
+
+    def test_campaign_in_landing(self):
+        ad_group = dash.models.AdGroup.objects.get(id=201002)
+        campaign_settings = ad_group.campaign.get_current_settings()
+        campaign_settings.landing_mode = True
+        campaign_settings.save(None)
+
+        self.assertEqual(
+            0,
+            campaign_stop.get_max_settable_b1_sources_group_budget(
+                ad_group,
+                ad_group.campaign,
+                ad_group.get_current_settings(),
+                ad_group.campaign.get_current_settings(),
             )
         )
 
@@ -806,7 +915,7 @@ class CanEnableB1SourceGroupTestCase(TestCase):
     fixtures = ['test_campaign_stop.yaml', 'test_campaign_stop_b1_sources_group.yaml']
 
     def setUp(self):
-        self.ad_group = dash.models.AdGroup.objects.get(id=222001)
+        self.ad_group = dash.models.AdGroup.objects.get(id=200001)
         get_max_daily_budget_patcher = patch('automation.campaign_stop._get_max_daily_budget_per_ags')
         mock_get_max_daily_budget = get_max_daily_budget_patcher.start()
         mock_get_max_daily_budget.return_value = {}, {self.ad_group.id: Decimal('55')}

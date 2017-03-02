@@ -1,224 +1,196 @@
 # Accounts
+
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
-    name: 'Test B1 Sources Group'
+    name: 'Test Autopilot Account'
   model: dash.account
-  pk: 200001
+  pk: 201001
 
 # Campaigns
-- fields:
-    created_dt: '2014-06-04T09:58:21'
-    modified_dt: '2014-06-04T09:58:21'
-    modified_by: 1
-    account: 200001
-    name: 'Test B1 Sources Group Campaign'
-  model: dash.campaign
-  pk: 200001
 
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
-    account: 200001
-    name: 'Test B1 Sources Group Campaign'
+    account: 201001
+    name: 'Test Autopilot Campaign'
   model: dash.campaign
-  pk: 200002
+  pk: 201001
 
-  # Ad groups
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 201001
+    name: 'Test Autopilot Campaign'
+  model: dash.campaign
+  pk: 201002
+
+# Ad groups
+
 - fields:
     created_dt: '2017-01-01T09:00:00'
     modified_dt: '2017-01-01T09:00:00'
     modified_by: 1
-    campaign: 200001
-    name: 'Test B1 Sources Group Ad Group'
+    campaign: 201001
+    name: 'Test Ad Group Without Autopilot'
   model: dash.adgroup
-  pk: 200001
+  pk: 201001
 
 - fields:
     created_dt: '2017-01-01T09:00:00'
     modified_dt: '2017-01-01T09:00:00'
     modified_by: 1
-    campaign: 200002
-    name: 'Test B1 Sources Group Ad Group 2'
+    campaign: 201002
+    name: 'Test Ad Group with Autopilot and without B1 Sources Group'
   model: dash.adgroup
-  pk: 200002
+  pk: 201002
+
+- fields:
+    created_dt: '2017-01-01T09:00:00'
+    modified_dt: '2017-01-01T09:00:00'
+    modified_by: 1
+    campaign: 201002
+    name: 'Test Ad Group With Autopilot and with B1 Sources Group'
+  model: dash.adgroup
+  pk: 201003
 
 # Ad Group Settings
-- fields:
-    ad_group_id: 200001
-    created_dt: '2017-01-01T09:00:00'
-    created_by: 1
-    state: 2
-    cpc_cc: 100.00
-    b1_sources_group_enabled: true
-    b1_sources_group_daily_budget: 300
-    b1_sources_group_state: 1
-  model: dash.adgroupsettings
-  pk: 200001
 
 - fields:
-    ad_group_id: 200001
-    created_dt: '2017-01-01T09:10:00'
+    ad_group_id: 201001
+    created_dt: '2017-01-01T09:00:00'
     created_by: 1
     state: 1
     cpc_cc: 100.00
+    autopilot_state: 2  # INACTIVE
     b1_sources_group_enabled: true
-    b1_sources_group_daily_budget: 300
+    b1_sources_group_daily_budget: 100
     b1_sources_group_state: 1
   model: dash.adgroupsettings
-  pk: 200002
+  pk: 201001
 
 - fields:
-    ad_group_id: 200002
+    ad_group_id: 201002
     created_dt: '2017-01-01T09:00:00'
     created_by: 1
-    state: 2
+    state: 1
     cpc_cc: 100.00
+    autopilot_state: 1  # ACTIVE_BUDGET_CPC
+    autopilot_daily_budget: 100
     b1_sources_group_enabled: true
-    b1_sources_group_daily_budget: 300
     b1_sources_group_state: 1
+    b1_sources_group_daily_budget: 100
   model: dash.adgroupsettings
-  pk: 200003
+  pk: 201002
 
 # Ad Group Sources
-- fields:
-    source: 1  # b1 source type
-    ad_group: 200001
-    source_campaign_key: '["fake"]'
-  model: dash.adgroupsource
-  pk: 200001
-
-- fields:
-    source: 2  # not b1
-    ad_group: 200001
-    source_campaign_key: '["fake"]'
-  model: dash.adgroupsource
-  pk: 200002
-
-- fields:
-    source: 3  # b1 source type
-    ad_group: 200001
-    source_campaign_key: '["fake"]'
-  model: dash.adgroupsource
-  pk: 200003
 
 - fields:
     source: 1  # b1 source type
-    ad_group: 200002
+    ad_group: 201002
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
-  pk: 200004
+  pk: 201001
 
 - fields:
-    source: 2  # not b1
-    ad_group: 200002
+    source: 2  # not b1 source type
+    ad_group: 201002
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
-  pk: 200005
+  pk: 201002
 
 - fields:
     source: 3  # b1 source type
-    ad_group: 200002
+    ad_group: 201002
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
-  pk: 200006
+  pk: 201003
 
 # Ad Group Source Settings
-- fields:
-    created_dt: '2017-01-01T09:00:00'
-    ad_group_source: 200001
-    cpc_cc: '0.12'
-    daily_budget_cc: '50.00'
-    state: 1
-  model: dash.adgroupsourcesettings
-  pk: 200001
 
 - fields:
     created_dt: '2017-01-01T09:00:00'
-    ad_group_source: 200002
+    ad_group_source: 201001
     cpc_cc: '0.12'
-    daily_budget_cc: '50.00'
+    daily_budget_cc: '80.00'
     state: 1
   model: dash.adgroupsourcesettings
-  pk: 200002
+  pk: 201001
 
 - fields:
     created_dt: '2017-01-01T09:00:00'
-    ad_group_source: 200003
+    ad_group_source: 201002
     cpc_cc: '0.12'
-    daily_budget_cc: '50.00'
+    daily_budget_cc: '70.00'
     state: 1
   model: dash.adgroupsourcesettings
-  pk: 200003
+  pk: 201002
 
 - fields:
     created_dt: '2017-01-01T09:00:00'
-    ad_group_source: 200004
+    ad_group_source: 201003
     cpc_cc: '0.12'
-    daily_budget_cc: '50.00'
+    daily_budget_cc: '60.00'
     state: 1
   model: dash.adgroupsourcesettings
-  pk: 200004
-
-- fields:
-    created_dt: '2017-01-01T09:00:00'
-    ad_group_source: 200005
-    cpc_cc: '0.12'
-    daily_budget_cc: '50.00'
-    state: 1
-  model: dash.adgroupsourcesettings
-  pk: 200005
-
-- fields:
-    created_dt: '2017-01-01T09:00:00'
-    ad_group_source: 200006
-    cpc_cc: '0.12'
-    daily_budget_cc: '50.00'
-    state: 1
-  model: dash.adgroupsourcesettings
-  pk: 200006
-
+  pk: 201003
 
 # Credit line items
+
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     created_by: 1
-    account: 200001
+    account: 201001
     start_date: '2017-01-01'
     end_date: '2017-12-31'
     amount: 100000
     license_fee: 0.1
     status: 2
-    comment: 'B1 Sources Group Credit'
+    comment: 'Autopilot Account Credit'
   model: dash.creditlineitem
-  pk: 200001
+  pk: 201001
 
 # Budget line items
-- fields:
-    created_dt: '2016-01-01T00:00:00'
-    modified_dt: '2016-01-01T00:00:00'
-    created_by: 1
-    credit: 200001 # test credit 1
-    campaign: 200001
-    start_date: '2017-01-01'
-    end_date: '2017-01-31'
-    amount: 1000
-    comment: 'B1 Sources Group Budget'
-  model: dash.budgetlineitem
-  pk: 200001
 
 - fields:
     created_dt: '2016-01-01T00:00:00'
     modified_dt: '2016-01-01T00:00:00'
     created_by: 1
-    credit: 200001 # test credit 1
-    campaign: 200002
+    credit: 201001 # test credit 1
+    campaign: 201001
     start_date: '2017-01-01'
     end_date: '2017-01-31'
     amount: 1000
-    comment: 'B1 Sources Group Budget'
+    comment: 'Autopilot Campaign Budget'
   model: dash.budgetlineitem
-  pk: 200002
+  pk: 201001
+
+- fields:
+    created_dt: '2016-01-01T00:00:00'
+    modified_dt: '2016-01-01T00:00:00'
+    created_by: 1
+    credit: 201001 # test credit 1
+    campaign: 201002
+    start_date: '2017-01-01'
+    end_date: '2017-01-31'
+    amount: 1000
+    comment: 'Autopilot Campaign Budget'
+  model: dash.budgetlineitem
+  pk: 201002
+
+- fields:
+    created_dt: '2016-01-01T00:00:00'
+    modified_dt: '2016-01-01T00:00:00'
+    created_by: 1
+    credit: 201001 # test credit 1
+    campaign: 201002
+    start_date: '2017-01-03'
+    end_date: '2017-01-04'
+    amount: 1000
+    comment: 'Autopilot Campaign Budget'
+  model: dash.budgetlineitem
+  pk: 201003

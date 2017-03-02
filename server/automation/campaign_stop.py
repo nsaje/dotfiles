@@ -468,6 +468,41 @@ def get_max_settable_b1_sources_group_budget(
     )
 
 
+def get_max_settable_autopilot_budget(
+        ad_group,
+        campaign,
+        ad_group_settings,
+        campaign_settings,
+):
+    if not campaign_settings.automatic_campaign_stop:
+        return None
+
+    if campaign_settings.landing_mode:
+        return DECIMAL_ZERO
+
+    if ad_group_settings.state != dash.constants.AdGroupSettingsState.ACTIVE:
+        return None
+
+    if ad_group_settings.autopilot_state != dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        return None
+
+    today = dates_helper.local_today()
+    max_daily_budgets = _get_max_daily_budget_per_ags(today, campaign)
+    user_daily_budgets = _get_user_daily_budget_per_ags(today, campaign)
+
+    # NOTE: takes sums of all max and user daily budgets because autopilot is potentially
+    # changing all budgets
+    return _get_max_settable_daily_budget(
+        campaign,
+        _sum_daily_budget(*max_daily_budgets),
+        _sum_daily_budget(*user_daily_budgets),
+        max_daily_budgets[0],
+        user_daily_budgets[0],
+        max_daily_budgets[1],
+        user_daily_budgets[1],
+    )
+
+
 def _get_max_settable_daily_budget(campaign,
                                    max_budget_today,
                                    user_budget_today,

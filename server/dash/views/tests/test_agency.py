@@ -498,11 +498,13 @@ class AdGroupSettingsTest(TestCase):
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+    @patch('automation.campaign_stop.get_max_settable_autopilot_budget', autospec=True)
     def test_put_set_budget_autopilot_triggers_budget_reallocation(
-            self, mock_redirector_insert_adgroup, mock_init_autopilot):
+            self, mock_get_max_budget, mock_redirector_insert_adgroup, mock_init_autopilot):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
+            mock_get_max_budget.return_value = 1000
 
             ad_group = models.AdGroup.objects.get(pk=1)
             old_settings = ad_group.get_current_settings()
@@ -1002,6 +1004,45 @@ class AdGroupSettingsTest(TestCase):
         mock_can_enable.return_value = False
         with self.assertRaises(exc.ValidationError):
             view.validate_all_rtb_campaign_stop(
+                ad_group,
+                current_settings,
+                new_settings,
+                ad_group.campaign.get_current_settings()
+            )
+
+    @patch('automation.campaign_stop.get_max_settable_autopilot_budget')
+    def test_validate_autopilot_campaign(self, mock_get_max_settable_budget, autospec=True):
+        view = agency.AdGroupSettings()
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        current_settings = ad_group.get_current_settings()
+
+        new_settings = current_settings.copy_settings()
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+
+        current_settings.autopilot_daily_budget = Decimal('200')
+        new_settings.autopilot_daily_budget = Decimal('400')
+
+        mock_get_max_settable_budget.return_value = None
+        view.validate_autopilot_campaign_stop(
+            ad_group,
+            current_settings,
+            new_settings,
+            ad_group.campaign.get_current_settings()
+        )  # no exception should be raised
+
+        mock_get_max_settable_budget.return_value = Decimal('400')
+        view.validate_autopilot_campaign_stop(
+            ad_group,
+            current_settings,
+            new_settings,
+            ad_group.campaign.get_current_settings()
+        )  # no exception should be raised
+
+        mock_get_max_settable_budget.return_value = Decimal('399')
+        with self.assertRaises(exc.ValidationError):
+            view.validate_autopilot_campaign_stop(
                 ad_group,
                 current_settings,
                 new_settings,

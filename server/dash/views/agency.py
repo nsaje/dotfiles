@@ -110,6 +110,7 @@ class AdGroupSettings(api_common.BaseApiView):
         self.validate_all_rtb_state(request, current_settings, new_settings)
         self.validate_yahoo_desktop_targeting(ad_group, current_settings, new_settings)
         self.validate_all_rtb_campaign_stop(ad_group, current_settings, new_settings, campaign_settings)
+        self.validate_autopilot_campaign_stop(ad_group, current_settings, new_settings, campaign_settings)
 
         # update ad group name
         current_settings.ad_group_name = previous_ad_group_name
@@ -187,6 +188,25 @@ class AdGroupSettings(api_common.BaseApiView):
                 raise exc.ValidationError(errors={
                     'b1_sources_group_daily_budget': msg,
                 })
+
+    def validate_autopilot_campaign_stop(self, ad_group, current_settings, new_settings, campaign_settings):
+        if new_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            return
+
+        if current_settings.autopilot_daily_budget >= new_settings.autopilot_daily_budget:
+            return
+
+        max_settable = campaign_stop.get_max_settable_autopilot_budget(
+            ad_group,
+            ad_group.campaign,
+            new_settings,
+            campaign_settings,
+        )
+        if max_settable is not None and new_settings.autopilot_daily_budget > max_settable:
+            msg = 'Total Daily Spend Cap is too high. Maximum daily spend can be up to ${}'.format(max_settable)
+            raise exc.ValidationError(errors={
+                'autopilot_daily_budget': msg
+            })
 
     def validate_all_rtb_state(self, request, settings, new_settings):
         # MVP for all-RTB-sources-as-one
