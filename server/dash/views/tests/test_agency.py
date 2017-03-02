@@ -601,7 +601,7 @@ class AdGroupSettingsTest(TestCase):
                         'b1_sources_group_enabled': True,
                         'b1_sources_group_daily_budget': '500.0000',
                         'b1_sources_group_state': 1,
-                        'b1_sources_group_cpc_cc': '0.01',
+                        'b1_sources_group_cpc_cc': '0.3000',
                         'whitelist_publisher_groups': [1],
                         'blacklist_publisher_groups': [1],
                         'landing_mode': False,

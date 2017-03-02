@@ -1279,6 +1279,7 @@ class HistoryTest(TestCase):
             , Landing Mode set to "False"
             , Group all RTB sources set to "False"
             , Daily budget for all RTB sources set to "$0.00"
+            , Bid CPC for all RTB sources set to "$0.010"
             , State of all RTB sources set to "Paused"
             ''').replace('\n', ''), history.changes_text)
 
@@ -1426,7 +1427,8 @@ class HistoryTest(TestCase):
             , Autopilot\'s Daily Spend Cap set to "$100.00"
             , Landing Mode set to "False"
             , Group all RTB sources set to "True"
-            , Daily budget for all RTB sources set to "$10.00"
+            , Daily budget for all RTB sources set to "$50.00"
+            , Bid CPC for all RTB sources set to "$0.450"
             , State of all RTB sources set to "Enabled"
             ''').format(datetime.date.today().isoformat()).replace('\n', ''), hist.changes_text)
 

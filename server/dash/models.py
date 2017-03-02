@@ -2550,7 +2550,8 @@ class AdGroupSettings(SettingsBase):
             ('autopilot_daily_budget', Decimal('100.00')),
             ('b1_sources_group_enabled', True),
             ('b1_sources_group_state', constants.AdGroupSourceSettingsState.ACTIVE),
-            ('b1_sources_group_daily_budget', Decimal('10.00')),
+            ('b1_sources_group_daily_budget', Decimal('50.00')),
+            ('b1_sources_group_cpc_cc', Decimal('0.45')),
             ('landing_mode', False),
         ])
 
