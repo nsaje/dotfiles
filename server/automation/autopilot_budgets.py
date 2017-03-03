@@ -87,6 +87,7 @@ def _uniformly_redistribute_remaining_budget(sources, budget_left, min_budgets):
     while budget_left >= 1:
         for s in sources:
             if any(b < min_budgets[s] for b in min_budgets.values()) and\
+               s != dash.constants.SourceAllRTB and\
                min_budgets[s] == s.source.source_type.min_daily_budget:
                 continue
             budget_left -= Decimal(1.0)
