@@ -17,20 +17,32 @@ class AutopilotBudgetsTestCase(test.TestCase):
         refresh.refresh_adgroup_stats()
 
     def test_uniformly_redistribute_remaining_budget(self):
-        sources = [0, 1, 2]
+        sources = [
+            dash.models.AdGroupSource.objects.get(id=4),
+            dash.models.AdGroupSource.objects.get(id=5),
+            dash.models.AdGroupSource.objects.get(id=6),
+            dash.models.AdGroupSource.objects.get(id=7),
+        ]
 
         test_cases = (
             # min_budgets, returned_budgets, returned_comments
-            (['0.0', '0.0', '0.0'], 6, ['2.0', '2.0', '2.0']),
-            (['5.0', '3.0', '0.0'], 6, ['7.0', '5.0', '2.0']),
-            (['2.0', '2.0', '2.0'], 0, ['2.0', '2.0', '2.0']),
-            (['1.0', '1.0', '1.0'], 2, ['2.0', '2.0', '1.0'])
+            ({sources[0]: '0.0', sources[1]: '0.0', sources[2]: '0.0', sources[3]: '10.0'}, 6,
+             {sources[0]: '2.0', sources[1]: '2.0', sources[2]: '2.0', sources[3]: '10.0'}),
+            ({sources[0]: '5.0', sources[1]: '3.0', sources[2]: '0.0', sources[3]: '10.0'}, 6,
+             {sources[0]: '7.0', sources[1]: '5.0', sources[2]: '2.0', sources[3]: '10.0'}),
+            ({sources[0]: '2.0', sources[1]: '2.0', sources[2]: '2.0', sources[3]: '10.0'}, 0,
+             {sources[0]: '2.0', sources[1]: '2.0', sources[2]: '2.0', sources[3]: '10.0'}),
+            ({sources[0]: '1.0', sources[1]: '1.0', sources[2]: '1.0', sources[3]: '10.0'}, 2,
+             {sources[0]: '2.0', sources[1]: '2.0', sources[2]: '1.0', sources[3]: '10.0'})
         )
 
         for test_case in test_cases:
-            self.assertEqual(autopilot_budgets._uniformly_redistribute_remaining_budget(
-                sources, Decimal(test_case[1]), [Decimal(b) for b in test_case[0]]),
-                [Decimal(b) for b in test_case[2]])
+            self.assertEqual(
+                autopilot_budgets._uniformly_redistribute_remaining_budget(
+                    sources, Decimal(test_case[1]),
+                    {k: Decimal(v) for k, v in test_case[0].items()}),
+                {k: Decimal(v) for k, v in test_case[2].items()}
+            )
 
     @patch('automation.autopilot_settings.AUTOPILOT_MIN_SPEND_PERC', 0.2)
     def test_get_active_sources_with_spend(self):

@@ -86,6 +86,9 @@ def _get_min_max_values_of_optimization_goal(data, campaign_goal):
 def _uniformly_redistribute_remaining_budget(sources, budget_left, min_budgets):
     while budget_left >= 1:
         for s in sources:
+            if any(b < min_budgets[s] for b in min_budgets.values()) and\
+               min_budgets[s] == s.source.source_type.min_daily_budget:
+                continue
             budget_left -= Decimal(1.0)
             min_budgets[s] += Decimal(1)
             if budget_left <= 0:

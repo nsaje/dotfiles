@@ -179,6 +179,12 @@
     model: dash.sourcetype
     pk: 3
 
+-   fields:
+        type: 'outbrain'
+        min_daily_budget: '10'
+    model: dash.sourcetype
+    pk: 4
+
 # Sources
 -   fields:
         created_dt: '2014-06-04T00:00:00'
@@ -205,6 +211,15 @@
         tracking_slug: '["fake2"]'
     model: dash.source
     pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Outbrain
+        source_type: 4
+        tracking_slug: '["fake3"]'
+    model: dash.source
+    pk: 4
 
 
 # Ad Group Sources
@@ -249,6 +264,14 @@
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
   pk: 6
+
+- fields:
+    source: 4
+    ad_group: 4
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 7
+
 
 # Ad Group Source Settings
 - fields:

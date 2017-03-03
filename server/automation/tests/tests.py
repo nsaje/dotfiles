@@ -188,7 +188,7 @@ class BetaBanditTestCase(test.TestCase):
 
     def test_naiive(self):
         ags = models.AdGroupSource.objects.filter(ad_group=4)
-        self.assertEqual(ags.count(), 3)
+        self.assertEqual(ags.count(), 4)
 
         bandit = automation.autopilot_budgets.BetaBandit([a for a in ags])
 
