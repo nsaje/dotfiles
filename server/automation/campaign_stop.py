@@ -794,6 +794,8 @@ def _adjust_source_caps(campaign, daily_caps):
     }
 
     yesterday_spends = _get_yesterday_source_spends(active_ad_groups)
+    user_daily_budget_per_ags, user_group_daily_budget_per_ag = _get_user_daily_budget_per_ags(
+        dates_helper.local_today(), campaign)
 
     for ad_group, ad_group_sources in active_sources.iteritems():
         ag_settings = current_ad_group_settings[ad_group.id]
@@ -830,12 +832,14 @@ def _adjust_source_caps(campaign, daily_caps):
         sources_to_stop, sources_new_cap, b1_group_stop, b1_group_new_cap = _calculate_daily_source_caps(
             ag_settings,
             current_ad_group_sources_settings,
+            user_daily_budget_per_ags,
+            user_group_daily_budget_per_ag,
             active_ad_group_sources,
             sources_to_stop,
             b1_group_stop,
             yesterday_spends,
+            b1_group_spend,
             ag_daily_cap,
-            current_daily_cap,
         )
 
         if len(sources_new_cap) == 0 and b1_group_stop:
@@ -903,19 +907,27 @@ def _adjust_source_caps(campaign, daily_caps):
 def _calculate_daily_source_caps(
         ad_group_settings,
         ad_group_sources_settings,
+        user_daily_budget_per_ags,
+        user_group_daily_budget_per_ag,
         active_ad_group_sources,
         sources_to_stop,
         b1_group_stop,
         yesterday_spends,
-        available_daily_cap,
-        current_daily_cap):
+        b1_group_yesterday_spend,
+        available_daily_cap):
 
     sorted_ad_group_sources = sorted(
         active_ad_group_sources,
         key=lambda x: yesterday_spends.get((x.ad_group_id, x.source_id), DECIMAL_ZERO),
     )
 
-    sources_new_cap = []
+    total_yesterday_spend = sum(
+        yesterday_spends.get((ags.ad_group_id, ags.source_id), DECIMAL_ZERO)
+        for ags in active_ad_group_sources if ags.ad_group_id == ad_group_settings.ad_group_id
+    ) + b1_group_yesterday_spend
+    user_daily_budgets_sum = _sum_daily_budget(user_daily_budget_per_ags, user_group_daily_budget_per_ag)
+
+    sources_new_cap = {}
     for ags in sorted_ad_group_sources:
 
         if ags in sources_to_stop:
@@ -925,34 +937,40 @@ def _calculate_daily_source_caps(
         if ags.source.source_type.min_daily_budget:
             min_source_cap = max(min_source_cap, ags.source.source_type.min_daily_budget)
 
-        daily_budget = ad_group_sources_settings[ags.id].daily_budget_cc
-        cap = daily_budget * min(decimal.Decimal(1), available_daily_cap / current_daily_cap)
+        source_yesterday_spend = yesterday_spends.get((ags.ad_group_id, ags.source_id), DECIMAL_ZERO)
+        user_source_daily_budget = user_daily_budget_per_ags.get(ags.id)
+
+        if total_yesterday_spend:
+            cap_ratio = source_yesterday_spend / total_yesterday_spend
+        else:
+            cap_ratio = user_source_daily_budget / user_daily_budgets_sum
+        cap = min(cap_ratio * available_daily_cap, user_source_daily_budget)
         cap = cap.to_integral_exact(rounding=decimal.ROUND_FLOOR)
 
         if cap < min_source_cap:
             sources_to_stop.add(ags)
+            total_yesterday_spend -= source_yesterday_spend
         else:
-            available_daily_cap -= cap
-            sources_new_cap.append((ags, cap))
-
-        current_daily_cap -= daily_budget
+            sources_new_cap[ags] = cap
 
     b1_group_new_cap = None
-
     if _is_b1_group_enabled(ad_group_settings) and not b1_group_stop:
         min_group_cap = autopilot_settings.BUDGET_AP_MIN_SOURCE_BUDGET
-        cap = ad_group_settings.b1_sources_group_daily_budget * min(decimal.Decimal(1), available_daily_cap / current_daily_cap)
+
+        user_group_daily_budget = user_group_daily_budget_per_ag.get(ad_group_settings.ad_group_id, DECIMAL_ZERO)
+        if total_yesterday_spend:
+            cap_ratio = b1_group_yesterday_spend / total_yesterday_spend
+        else:
+            cap_ratio = user_group_daily_budget / user_daily_budgets_sum
+        cap = min(cap_ratio * available_daily_cap, user_group_daily_budget)
         cap = cap.to_integral_exact(rounding=decimal.ROUND_FLOOR)
 
         if cap < min_group_cap:
             b1_group_stop = True
         else:
-            available_daily_cap -= cap
             b1_group_new_cap = cap
 
-        current_daily_cap -= ad_group_settings.b1_sources_group_daily_budget
-
-    return sources_to_stop, sources_new_cap, b1_group_stop, b1_group_new_cap
+    return sources_to_stop, sources_new_cap.items(), b1_group_stop, b1_group_new_cap
 
 
 def _switch_campaign_to_landing_mode(campaign):
@@ -1159,7 +1177,7 @@ def _get_active_ad_group_sources(campaign):
     active_ad_groups = campaign.adgroup_set.all().filter_active()
     active_sources = dash.models.AdGroupSource.objects.filter(
         ad_group__in=active_ad_groups
-    ).filter_active().select_related('ad_group', 'source')
+    ).filter_active().select_related('ad_group', 'source__source_type')
     active_sources_dict = defaultdict(set)
     for ags in active_sources:
         active_sources_dict[ags.ad_group].add(ags)

@@ -1739,7 +1739,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
             (1, 1): Decimal('55'),  # db=55
             (1, 2): Decimal('30'),  # db=30
             (1, 4): Decimal('20'),  # db=20
-            (1, 5): Decimal('10'),  # db=80
+            (1, 5): Decimal('40'),  # db=80
             (2, 1): Decimal('80'),  # db=80
         }
 
@@ -1757,7 +1757,7 @@ class UpdateCampaignsInLandingTestCase(TestCase):
         age_budget_sum = sum(
             s.get_current_settings().daily_budget_cc for s in ag1.adgroupsource_set.all().filter_active()
         )
-        self.assertEqual(age_budget_sum, 12)
+        self.assertEqual(age_budget_sum, 11)
 
         self.assertEqual(12, ag2.get_current_settings().b1_sources_group_daily_budget)
         self.assertEqual(0, ag2.adgroupsource_set.exclude(source__source_type__type=constants.SourceType.B1).filter_active().count())
