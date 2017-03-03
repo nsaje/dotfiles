@@ -161,6 +161,15 @@ def get_additional_columns(additional_columns):
     return []
 
 
+def get_publisher_group(user, account_id, publisher_group_id):
+    try:
+        account = get_account(user, account_id)
+        return models.PublisherGroup.objects.all().filter_by_account(account)\
+                                                  .get(pk=publisher_group_id)
+    except models.PublisherGroup.DoesNotExist:
+        raise exc.MissingDataError('Publisher group does not exist')
+
+
 def get_account(user, account_id, sources=None):
     try:
         account = models.Account.objects.all().filter_by_user(user)

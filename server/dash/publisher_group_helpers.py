@@ -1,16 +1,11 @@
 import logging
 from decimal import Decimal
-import StringIO
-import unicodecsv
 
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 
-from dash import constants
-from dash import cpc_constraints
-from dash import history_helpers
-from dash import models
+from dash import constants, cpc_constraints, history_helpers, models
 from utils import email_helper
 
 logger = logging.getLogger(__name__)
@@ -209,11 +204,11 @@ def _get_whitelists(obj, obj_settings):
 
 def handle_publishers(request, entry_dicts, obj, status, enforce_cpc):
     if status == constants.PublisherTargetingStatus.BLACKLISTED:
-        blacklist_publishers(request, entry_dicts, obj)
+        blacklist_publishers(request, entry_dicts, obj, enforce_cpc)
     elif status == constants.PublisherTargetingStatus.WHITELISTED:
-        whitelist_publishers(request, entry_dicts, obj)
+        whitelist_publishers(request, entry_dicts, obj, enforce_cpc)
     else:
-        unlist_publishers(request, entry_dicts, obj)
+        unlist_publishers(request, entry_dicts, obj, enforce_cpc)
 
 
 @transaction.atomic
@@ -280,6 +275,15 @@ def unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=True
         pass
 
     apply_outbrain_account_constraints_if_needed(obj, enforce_cpc)
+
+
+@transaction.atomic
+def replace_publishers(publisher_group, entry_dicts):
+    selected_entries = models.PublisherGroupEntry.objects.filter(publisher_group=publisher_group)
+    selected_entries.delete()
+
+    entries = _prepare_entries(entry_dicts, publisher_group)
+    models.PublisherGroupEntry.objects.bulk_create(entries)
 
 
 def write_history(request, obj, entries, status, previous_status=None):
@@ -388,13 +392,3 @@ def get_ob_blacklisted_publishers_count(account):
     blacklists = _get_blacklists(account, account.get_current_settings())
     return models.PublisherGroupEntry.objects.filter(publisher_group_id__in=blacklists,
                                                      source__source_type__type=constants.SourceType.OUTBRAIN).count()
-
-
-def get_csv_content(publisher_group_entries):
-    output = StringIO.StringIO()
-    writer = unicodecsv.writer(output, encoding='utf-8', dialect='excel', quoting=unicodecsv.QUOTE_ALL)
-    writer.writerow(('Publisher', 'Source'))
-    for entry in publisher_group_entries.order_by('publisher'):
-        writer.writerow((entry.publisher, entry.source))
-
-    return output.getvalue()

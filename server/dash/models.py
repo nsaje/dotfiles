@@ -1695,6 +1695,9 @@ class Source(models.Model):
     default_daily_budget_cc = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('10.00'),
                                                   verbose_name='Default daily spend cap')
 
+    def get_clean_slug(self):
+        return self.bidder_slug[3:] if self.bidder_slug.startswith('b1_') else self.bidder_slug
+
     def can_update_state(self):
         return self.source_type.can_update_state() and not self.maintenance and not self.deprecated
 

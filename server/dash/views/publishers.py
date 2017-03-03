@@ -1,10 +1,15 @@
 import json
 import slugify
+import os
+
+from django.db import transaction
+from django.conf import settings
 
 from dash import constants
 from dash import forms
 from dash import publisher_helpers
 from dash import publisher_group_helpers
+from dash import publisher_group_csv_helpers
 from dash import models
 from dash import cpc_constraints
 from dash.views import helpers
@@ -13,6 +18,7 @@ import redshiftapi.api_breakdowns
 
 from utils import api_common
 from utils import exc
+from utils import s3helpers
 
 
 class PublisherTargeting(api_common.BaseApiView):
@@ -111,16 +117,81 @@ class PublisherGroups(api_common.BaseApiView):
         })
 
 
+class PublisherGroupsUpload(api_common.BaseApiView):
+
+    def get(self, request, account_id, csv_key):
+        # download errors csv
+        if not request.user.has_perm('zemauth.can_edit_publisher_groups'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
+
+        s3_helper = s3helpers.S3Helper(settings.PUBLISHER_GROUPS_ERRORS_BUCKET)
+        content = s3_helper.get(os.path.join('account_{}'.format(account.id), csv_key + '.csv'))
+
+        return self.create_csv_response('publisher_group_errors', content=content)
+
+    def post(self, request, account_id):
+        if not request.user.has_perm('zemauth.can_edit_publisher_groups'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)
+
+        form = forms.PublisherGroupUploadForm(request.POST, request.FILES)
+        if not form.is_valid():
+            raise exc.ValidationError(errors=form.errors)
+
+        entries = form.cleaned_data.get('entries')
+        if entries:
+            validated_entries = publisher_group_csv_helpers.validate_entries(entries)
+            if any('error' in entry for entry in validated_entries):
+                errors_csv_key = publisher_group_csv_helpers.save_entries_errors_csv(account.id, validated_entries)
+                raise exc.ValidationError(errors={
+                    'errors_csv_key': errors_csv_key,
+                })
+
+            publisher_group_csv_helpers.clean_entry_sources(entries)
+
+        with transaction.atomic():
+            if form.cleaned_data.get('id'):
+                publisher_group = helpers.get_publisher_group(request.user, account_id, form.cleaned_data['id'])
+            else:
+                publisher_group = models.PublisherGroup(
+                    account=account,
+                    implicit=False)
+
+            publisher_group.name = form.cleaned_data['name']
+            publisher_group.save(request)
+
+            if entries:
+                publisher_group_helpers.replace_publishers(publisher_group, entries)
+
+        return self.create_api_response({
+            'success': True,
+            'nr_entries': len(form.cleaned_data.get('entries') or []),
+        })
+
+
 class PublisherGroupsDownload(api_common.BaseApiView):
 
     def get(self, request, account_id, publisher_group_id):
         if not request.user.has_perm('zemauth.can_edit_publisher_groups'):
             raise exc.MissingDataError()
 
-        account = helpers.get_account(request.user, account_id)
-        publisher_group = models.PublisherGroup.objects.filter(pk=publisher_group_id).filter_by_account(account).first()
+        helpers.get_account(request.user, account_id)
+        publisher_group = helpers.get_publisher_group(request.user, account_id, publisher_group_id)
         if not publisher_group:
             raise exc.MissingDataError()
 
         return self.create_csv_response('publisher_group_{}'.format(slugify.slugify(publisher_group.name)),
-                                        content=publisher_group_helpers.get_csv_content(publisher_group.entries.all()))
+                                        content=publisher_group_csv_helpers.get_csv_content(publisher_group.entries.all()))
+
+
+class PublisherGroupsExampleDownload(api_common.BaseApiView):
+
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_edit_publisher_groups'):
+            raise exc.MissingDataError()
+
+        return self.create_csv_response('publisher_group_example',
+                                        content=publisher_group_csv_helpers.get_example_csv_content())

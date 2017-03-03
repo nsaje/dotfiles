@@ -20,16 +20,17 @@
             <tr ng-repeat="item in $ctrl.publisherGroups | filter: {implicit: false}">
                 <td>{{ item.name }}</td>
                 <td>{{ item.size }}</td>
-                <td>{{ item.modified }}</td>
-                <td>{{ item.created }}</td>
+                <td>{{ (item.modified | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                <td>{{ (item.created | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                 <td class="action-buttons">
                     <a class="button button--small button--with-icon button--only-icon download-icon" ng-click="$ctrl.download(item.id)"></a>
-                    <a class="button button--small button--with-icon button--only-icon upload-icon"></a>
+                    <a class="button button--small button--with-icon button--only-icon upload-icon" ng-click="$ctrl.edit(item.id)"></a>
                 </td>
             </tr>
         </tbody>
     </table>
 
+    <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.createNew()">Add Publisher group</button>
 </div>
 
 <a href="" class="zem-publisher-groups-component__show-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Show background publisher groups</a>
@@ -56,11 +57,10 @@
             <tr ng-repeat="item in $ctrl.publisherGroups | filter: {implicit: true}">
                 <td>{{ item.name }}</td>
                 <td>{{ item.size }}</td>
-                <td>{{ item.modified }}</td>
-                <td>{{ item.created }}</td>
+                <td>{{ (item.modified | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                <td>{{ (item.created | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                 <td class="action-buttons">
                     <a class="button button--small button--with-icon button--only-icon download-icon" ng-click="$ctrl.download(item.id)"></a>
-                    <a class="button button--small button--with-icon button--only-icon upload-icon"></a>
                 </td>
             </tr>
         </tbody>
