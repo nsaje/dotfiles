@@ -269,7 +269,7 @@ In this case tests are executed in 7 browsers, defined in test/karma.conf-sauce.
 
 Karma can also auto-watch files and run test on every change:
 ```bash
-karma start test/karma.conf.js
+npm run watch-test
 ```
 
 ### Server
@@ -455,7 +455,7 @@ $delegate.accountCampaigns.create = function demo(id) {
 
 Because we want demo to work a little bit differently, there is some demo code hidden in controllers and other services. You can find it by greping for `$window.isDemo`.
 
-### Pingdom transaction monitor 
+### Pingdom transaction monitor
 
 Always check if your changes affect demo transaction monitors. Be careful when changing demo defaults.
 Current monitors:

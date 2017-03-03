@@ -7,6 +7,7 @@
     "codeclimate-test-reporter": "~0.1.1",
     "grunt": "~0.4.2",
     "grunt-bower-concat": "~0.4.0",
+    "grunt-cli": "~0.1.0",
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-concat": "~0.4.0",
     "grunt-contrib-connect": "~0.7.1",
@@ -30,5 +31,9 @@
     "karma-junit-reporter": "~0.2.2",
     "karma-sauce-launcher": "~0.2.9",
     "load-grunt-tasks": "~0.4.0"
+  },
+  "scripts": {
+    "dev": "grunt dev",
+    "watch-test": "karma start test/karma.conf.js"
   }
 }
