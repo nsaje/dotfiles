@@ -15,10 +15,10 @@ describe('component: zemPublisherGroups', function () {
     }));
 
     it('should initialize without errors', function () {
-        spyOn(zemPublisherGroupsEndpoint, 'get').and.callThrough();
+        spyOn(zemPublisherGroupsEndpoint, 'list').and.callThrough();
         $ctrl.$onInit();
 
-        expect(zemPublisherGroupsEndpoint.get).toHaveBeenCalled();
+        expect(zemPublisherGroupsEndpoint.list).toHaveBeenCalled();
     });
 
     it('should call download', function () {

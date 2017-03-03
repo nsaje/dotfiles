@@ -180,6 +180,8 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 RESTAPI_REPORTS_BUCKET = 'z1-rest-reports'
 
+PUBLISHER_GROUPS_ERRORS_BUCKET = 'z1-publisher-groups-errors'
+
 GLOBAL_BLACKLIST_ID = 1
 
 from localsettings import *

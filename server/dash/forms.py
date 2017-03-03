@@ -927,51 +927,7 @@ EXCEL_MIMETYPES = ('application/vnd.ms-excel',
                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
-class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
-    candidates = forms.FileField(
-        error_messages={'required': 'Please choose a file to upload.'}
-    )
-
-    def _get_column_names(self, header):
-        # this function maps original CSV column names to internal, normalized
-        # ones that are then used across the application
-        column_names = [col.strip(" _").lower().replace(' ', '_')
-                        for col in header]
-
-        if len(column_names) < 1 or column_names[0] != 'url':
-            raise forms.ValidationError(
-                'First column in header should be URL.')
-
-        if len(column_names) < 2 or column_names[1] != 'title':
-            raise forms.ValidationError(
-                'Second column in header should be Title.')
-
-        if len(column_names) < 3 or column_names[2] != 'image_url':
-            raise forms.ValidationError(
-                'Third column in header should be Image URL.')
-
-        for n, field in enumerate(column_names):
-            # We accept "(optional)" in the names of optional columns.
-            # That's how those columns are presented in our csv template (that user can download)
-            # If the user downloads the template, fills it in and uploades, it
-            # immediately works.
-            field = re.sub("_*\(optional\)", "", field)
-            field = EXPRESSIVE_FIELD_NAME_MAPPING.get(field, field)
-            if n >= 3 and field not in OPTIONAL_CSV_FIELDS and field not in IGNORED_CSV_FIELDS:
-                raise forms.ValidationError(
-                    'Unrecognized column name "{0}".'.format(header[n]))
-            column_names[n] = field
-
-        # Make sure each column_name appears only once
-        for column_name, count in Counter(column_names).iteritems():
-            expr_column_name = INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING.get(
-                column_name, column_name)
-            formatted_name = expr_column_name.replace('_', ' ').capitalize()
-            if count > 1:
-                raise forms.ValidationError(
-                    "Column \"{0}\" appears multiple times ({1}) in the CSV file.".format(formatted_name, count))
-
-        return column_names
+class ParseCSVExcelFile(object):
 
     def _parse_file(self, candidates_file):
         content = candidates_file.read()
@@ -1030,7 +986,7 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
         return [self._get_sheet_row(sheet, i) for i in range(sheet.nrows)]
 
     def _is_example_row(self, row):
-        return all(row[example_key] == example_value for example_key, example_value in EXAMPLE_CSV_CONTENT.iteritems())
+        return False
 
     def _remove_unnecessary_fields(self, row):
         # unicodecsv stores values of all unneeded columns
@@ -1043,6 +999,56 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm):
             row.pop(ignored_field, None)
 
         return row
+
+
+class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
+    candidates = forms.FileField(
+        error_messages={'required': 'Please choose a file to upload.'}
+    )
+
+    def _get_column_names(self, header):
+        # this function maps original CSV column names to internal, normalized
+        # ones that are then used across the application
+        column_names = [col.strip(" _").lower().replace(' ', '_')
+                        for col in header]
+
+        if len(column_names) < 1 or column_names[0] != 'url':
+            raise forms.ValidationError(
+                'First column in header should be URL.')
+
+        if len(column_names) < 2 or column_names[1] != 'title':
+            raise forms.ValidationError(
+                'Second column in header should be Title.')
+
+        if len(column_names) < 3 or column_names[2] != 'image_url':
+            raise forms.ValidationError(
+                'Third column in header should be Image URL.')
+
+        for n, field in enumerate(column_names):
+            # We accept "(optional)" in the names of optional columns.
+            # That's how those columns are presented in our csv template (that user can download)
+            # If the user downloads the template, fills it in and uploades, it
+            # immediately works.
+            field = re.sub("_*\(optional\)", "", field)
+            field = EXPRESSIVE_FIELD_NAME_MAPPING.get(field, field)
+            if n >= 3 and field not in OPTIONAL_CSV_FIELDS and field not in IGNORED_CSV_FIELDS:
+                raise forms.ValidationError(
+                    'Unrecognized column name "{0}".'.format(header[n]))
+            column_names[n] = field
+
+        # Make sure each column_name appears only once
+        for column_name, count in Counter(column_names).iteritems():
+            expr_column_name = INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING.get(
+                column_name, column_name)
+            formatted_name = expr_column_name.replace('_', ' ').capitalize()
+            if count > 1:
+                raise forms.ValidationError(
+                    "Column \"{0}\" appears multiple times ({1}) in the CSV file.".format(formatted_name, count))
+
+        return column_names
+
+    def _is_example_row(self, row):
+        return all(row[example_key] == example_value for example_key, example_value in EXAMPLE_CSV_CONTENT.iteritems())
 
     def clean_candidates(self):
         candidates_file = self.cleaned_data['candidates']
@@ -1678,7 +1684,6 @@ class AudienceUpdateForm(forms.Form):
 
 
 class PublisherGroupEntryForm(forms.Form):
-    # id = forms.IntegerField(required=False)
     publisher = forms.CharField(required=True, max_length=127)
     source = forms.ModelChoiceField(queryset=models.Source.objects.all(), required=False)
     include_subdomains = forms.BooleanField(required=False)
@@ -1772,3 +1777,57 @@ class PublisherTargetingForm(forms.Form):
 
     def clean_filtered_sources(self):
         return helpers.get_filtered_sources(self.user, ','.join(self.cleaned_data.get('filtered_sources')))
+
+
+class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
+    id = forms.IntegerField(
+        required=False
+    )
+    name = forms.CharField(required=True, max_length=127, error_messages={
+        'required': 'Please enter a name for this publisher group',
+        'max_length': 'Publisher group name is too long (%(show_value)d/%(limit_value)d).',
+    })
+    include_subdomains = forms.BooleanField(required=False)
+    entries = forms.FileField(required=False)
+
+    def _get_column_names(self, header):
+        # this function maps original CSV column names to internal, normalized
+        # ones that are then used across the application
+        column_names = [col.strip(" _").lower().replace(' ', '_')
+                        for col in header]
+
+        if len(column_names) < 1 or column_names[0] != 'publisher':
+            raise forms.ValidationError(
+                'First column in header should be Publisher.')
+
+        if len(column_names) < 2 or column_names[1] != 'source':
+            raise forms.ValidationError(
+                'Second column in header should be Source.')
+
+        return column_names
+
+    def clean_entries(self):
+        entries_file = self.cleaned_data.get('entries')
+
+        if not entries_file:
+            if not self.cleaned_data.get('id'):
+                raise forms.ValidationError('Please choose a file to upload')
+            return entries_file
+
+        rows = self._parse_file(entries_file)
+        if len(rows) < 1:
+            raise forms.ValidationError('Uploaded file is empty.')
+
+        column_names = self._get_column_names(rows[0])
+
+        data = (dict(zip(column_names, row)) for row in rows[1:])
+        data = [self._remove_unnecessary_fields(
+            row) for row in data if not self._is_example_row(row)]
+
+        if len(data) < 1:
+            raise forms.ValidationError('Uploaded file is empty.')
+
+        for row in data:
+            row['include_subdomains'] = bool(self.cleaned_data.get('include_subdomains'))
+
+        return data

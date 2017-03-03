@@ -638,6 +638,21 @@ urlpatterns += [
         name='accounts_publisher_groups'
     ),
     url(
+        r'^api/accounts/(?P<account_id>\d+)/publisher_groups/upload/$',
+        login_required(dash.views.publishers.PublisherGroupsUpload.as_view()),
+        name='accounts_publisher_groups_upload'
+    ),
+    url(
+        r'^api/publisher_groups/download/example/$',
+        login_required(dash.views.publishers.PublisherGroupsExampleDownload.as_view()),
+        name='publisher_groups_example'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/publisher_groups/errors/(?P<csv_key>[a-zA-Z0-9]+)$',
+        login_required(dash.views.publishers.PublisherGroupsUpload.as_view()),
+        name='accounts_publisher_groups_upload'
+    ),
+    url(
         r'^api/custom_report_download/',
         login_required(dash.views.export.CustomReportDownload.as_view()),
         name='custom_report_download'

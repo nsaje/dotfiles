@@ -7,6 +7,7 @@ import zemauth.models
 from dash import history_helpers
 from dash import models
 from dash import publisher_group_helpers
+from dash import publisher_group_csv_helpers
 
 
 class PublisherGroupHelpersTest(TestCase):
@@ -428,11 +429,87 @@ class PublisherGroupHelpersTest(TestCase):
             publisher_group_helpers.blacklist_publishers(
                 self.request, entries, None, enforce_cpc=False)
 
+
+class PublisherGroupCSVHelpersTest(TestCase):
+    fixtures = ['test_publishers.yaml']
+
     def test_get_csv_content(self):
         self.assertEquals(
-            publisher_group_helpers.get_csv_content(models.PublisherGroup.objects.get(pk=1).entries.all()),
+            publisher_group_csv_helpers.get_csv_content(models.PublisherGroup.objects.get(pk=1).entries.all()),
             textwrap.dedent('''\
             "Publisher","Source"\r
             "pub1","AdsNative"\r
             "pub2",""\r
             '''))
+
+    def test_get_example_csv_content(self):
+        self.assertEquals(
+            publisher_group_csv_helpers.get_example_csv_content(),
+            textwrap.dedent('''\
+            "Publisher","Source"\r
+            "example.com","mopub"\r
+            "examplenosource.com",""\r
+            '''))
+
+    def test_validate_entries(self):
+        self.assertEquals(
+            publisher_group_csv_helpers.validate_entries([
+                {
+                    'publisher': 'pub1.com',
+                    'source': 'AdsNative',
+                    'include_subdomains': True,
+                },
+                {
+                    'publisher': 'https://pub1.com',
+                    'source': '',
+                    'include_subdomains': True,
+                },
+                {
+                    'publisher': 'https://pub1.com',
+                    'source': 'asd',
+                    'include_subdomains': False,
+                },
+            ]),
+            [
+                {
+                    'publisher': 'pub1.com',
+                    'source': 'AdsNative',
+                    'include_subdomains': True,
+                },
+                {
+                    'publisher': 'https://pub1.com',
+                    'source': None,
+                    'include_subdomains': True,
+                    'error': 'When including subdomains omit the following prefixes: http, https, www',
+                },
+                {
+                    'publisher': 'https://pub1.com',
+                    'source': 'asd',
+                    'include_subdomains': False,
+                    'error': 'Unknown source',
+                },
+            ]
+        )
+
+    def test_clean_entry_sources(self):
+        entries = [{
+            'publisher': 'pub1.com',
+            'source': 'AdsNative',
+            'include_subdomains': True,
+        }, {
+            'publisher': 'https://pub1.com',
+            'source': '',
+            'include_subdomains': True,
+        }]
+
+        publisher_group_csv_helpers.clean_entry_sources(entries)
+
+        self.assertEquals(entries, [{
+            'publisher': 'pub1.com',
+            'source': models.Source.objects.get(pk=1),
+            'include_subdomains': True,
+        }, {
+            'publisher': 'https://pub1.com',
+            'source': None,
+            'include_subdomains': True,
+        }])
