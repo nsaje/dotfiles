@@ -12,7 +12,7 @@ angular.module('one.widgets').service('zemPublisherGroupsEndpoint', function ($q
         var deferred = $q.defer();
         $http.get(url, config).
             then(function (data) {
-                deferred.resolve(data.data.publisher_groups);
+                deferred.resolve(data.data.data.publisher_groups);
             }).
             catch(function (data) {
                 deferred.reject(data);
