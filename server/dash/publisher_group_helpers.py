@@ -106,15 +106,15 @@ def load_settings_and_concat_publisher_group_targeting(accounts, campaigns, ad_g
         account__in=accounts
     ).group_current_settings().prefetch_related('account')
     campaigns_settings = models.CampaignSettings.objects.filter(
-        Q(campaign__in=campaigns) | Q(campaign__account__in=accounts)
+        campaign__in=campaigns
     ).group_current_settings().prefetch_related('campaign')
     ad_groups_settings = models.AdGroupSettings.objects.filter(
-        Q(ad_group__in=ad_groups) | Q(ad_group__campaign__in=campaigns) | Q(ad_group__campaign__account__in=accounts)
+        ad_group__in=ad_groups
     ).group_current_settings().prefetch_related('ad_group')
 
     whitelist = set()
     blacklist = set()
-    targeting = get_default_publisher_group_targeting_dict()
+    targeting = get_default_publisher_group_targeting_dict(include_global)
     if include_global:
         blacklist = set([get_global_blacklist().id])
 
@@ -122,11 +122,13 @@ def load_settings_and_concat_publisher_group_targeting(accounts, campaigns, ad_g
         for x in any_settings:
             current = set(x.blacklist_publisher_groups) | set([getattr(x, related_field).default_blacklist_id])
             current = set(x for x in current if x)
+
             blacklist.update(current)
             targeting[related_field]['excluded'] = current
 
             current = set(x.whitelist_publisher_groups) | set([getattr(x, related_field).default_whitelist_id])
             current = set(x for x in current if x)
+
             whitelist.update(current)
             targeting[related_field]['included'] = current
 
