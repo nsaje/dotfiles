@@ -523,11 +523,15 @@ def send_depleting_credits_email(user, accounts):
             account.get_long_name(),
             'https://one.zemanta.com/accounts/{}/credit'.format(account.pk)
         )
-    subject, body, _ = format_email(
+    subject, plain_body, recipients = format_email(
         dash.constants.EmailTemplateType.DEPLETING_CREDITS,
         accounts_list=accounts_list
     )
-    user.email_user(subject, body)
+    email = EmailMultiAlternatives(subject, plain_body, 'Zemanta <{}>'.format(
+        settings.FROM_EMAIL
+    ), [user.email], bcc=recipients or [])
+    email.attach_alternative(format_template(subject, plain_body), "text/html")
+    email.send(fail_silently=False)
 
 
 def _format_changes_text(changes_text):
