@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemGridCellEditButton', function () {
             grid: '=',
         },
         templateUrl: '/app/widgets/zem-grid/components/cell/zemGridCellEditButton.component.html',
-        controller: function ($scope, zemGridConstants, zemUploadTriggerService, zemUploadApiConverter) { // eslint-disable-line max-len
+        controller: function ($scope, zemGridConstants, zemUploadService, zemUploadApiConverter) { // eslint-disable-line max-len
             var vm = this;
             vm.editRow = editRow;
             vm.isFieldVisible = false;
@@ -26,7 +26,7 @@ angular.module('one.widgets').directive('zemGridCellEditButton', function () {
 
             function editRow () {
                 vm.grid.meta.dataService.editRow(vm.row).then(function (response) {
-                    zemUploadTriggerService.openEditModal(
+                    zemUploadService.openEditModal(
                         vm.grid.meta.data.id,
                         response.data.batch_id,
                         zemUploadApiConverter.convertCandidatesFromApi(response.data.candidates),

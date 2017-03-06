@@ -1,7 +1,7 @@
 /* globals angular, constants */
 'use strict';
 
-angular.module('one.widgets').factory('zemGridBulkActionsService', function ($window, api, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadTriggerService, zemUploadApiConverter) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridBulkActionsService', function ($window, api, zemEntityService, zemContentAdService, zemGridEndpointColumns, zemGridConstants, zemAlertsService, zemUploadService, zemUploadApiConverter) { // eslint-disable-line max-len
 
     function BulkActionsService (gridApi) {
         this.getActions = getActions;
@@ -213,7 +213,7 @@ angular.module('one.widgets').factory('zemGridBulkActionsService', function ($wi
                 metaData.id,
                 selection
             ).then(function (data) {
-                zemUploadTriggerService.openEditModal(
+                zemUploadService.openEditModal(
                     metaData.id,
                     data.data.batch_id,
                     zemUploadApiConverter.convertCandidatesFromApi(data.data.candidates),

@@ -1,5 +1,5 @@
 describe('zemGridCellEditButton', function () {
-    var scope, element, $compile, $q, zemUploadTriggerService;
+    var scope, element, $compile, $q, zemUploadService;
 
     var template = '<zem-grid-cell-edit-button data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid">' +
         '</zem-grid-cell-edit-button>';
@@ -7,8 +7,8 @@ describe('zemGridCellEditButton', function () {
     beforeEach(module('one'));
     beforeEach(module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($rootScope, _$compile_, _$q_, _zemUploadTriggerService_) {
-        zemUploadTriggerService = _zemUploadTriggerService_;
+    beforeEach(inject(function ($rootScope, _$compile_, _$q_, _zemUploadService_) {
+        zemUploadService = _zemUploadService_;
         $compile = _$compile_;
         $q = _$q_;
 
@@ -72,12 +72,12 @@ describe('zemGridCellEditButton', function () {
             });
             return deferred.promise;
         });
-        spyOn(zemUploadTriggerService, 'openEditModal').and.stub();
+        spyOn(zemUploadService, 'openEditModal').and.stub();
 
         element = $compile(template)(scope);
         scope.$digest();
 
         element.find('button').click();
-        expect(zemUploadTriggerService.openEditModal).toHaveBeenCalled();
+        expect(zemUploadService.openEditModal).toHaveBeenCalled();
     });
 });

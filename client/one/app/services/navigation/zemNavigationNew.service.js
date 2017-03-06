@@ -120,67 +120,53 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
         return entity;
     }
 
-    function getAccountEntityState (newState, $state) {
-        if ($state.includes('**.credit')) newState += '.credit';
-        // TODO: support permission checks here
-        // if ($state.includes('**.budget')) state += '.credit';
-        if ($state.includes('**.audiences')) newState += '.audiences';
-        if ($state.includes('**.reports')) newState += '.reports';
-        return newState;
-    }
-
-    function getCampaignEntityState (newState, $state) {
-        if ($state.includes('**.credit')) newState += '.budget';
-        if ($state.includes('**.budget')) newState += '.budget';
-        return newState;
-    }
-
-    function getAdGroupEntityState (newState, $state) {
-        if ($state.includes('**.publishers')) newState += '.publishers';
-        return newState;
-    }
-
-    function getSpecialEntityState (entity, newState, $state) {
-        if (entity.type === constants.entityType.ACCOUNT) {
-            return getAccountEntityState(newState, $state);
-        } else if (entity.type === constants.entityType.CAMPAIGN) {
-            return getCampaignEntityState(newState, $state);
-        } else if (entity.type === constants.entityType.AD_GROUP) {
-            return getAdGroupEntityState(newState, $state);
+    function getEntityState (entity, reuseNestedState) {
+        if (reuseNestedState) {
+            // Try to reuse last nested state (.sources, .users, .pixels, etc.)
+            var currentState = $state.current.name;
+            var nestedState = currentState.substring(currentState.lastIndexOf('.') + 1);
+            var state = getBaseEntityState(entity) + '.' + nestedState;
+            if ($state.get(state)) {
+                return state;
+            }
         }
-        return newState;
+
+        return getDefaultState(entity);
     }
 
-    function getEntityState (entity) {
-        var defaultState = getDefaultState(entity);
-        var state = defaultState;
+    function getBaseEntityState (entity) {
+        var baseState = 'main.allAccounts';
 
-        // keep the same tab if possible
-        // - standard
-        if ($state.includes('**.sources')) state += '.sources';
-        if ($state.includes('**.history')) state += '.history';
-        if ($state.includes('**.settings')) state += '.settings';
-        if ($state.includes('**.insights')) state += '.insights';
-        // - special
-        if (entity) state = getSpecialEntityState(entity, state, $state);
-
-        if (!$state.get(state)) state = defaultState;
-
-        return state;
-    }
-
-    function getDefaultState (entity) {
-        var defaultState = 'main.allAccounts';
         if (entity) {
             switch (entity.type) {
             case constants.entityType.ACCOUNT:
-                defaultState = 'main.accounts';
+                baseState = 'main.accounts';
                 break;
             case constants.entityType.CAMPAIGN:
-                defaultState = 'main.campaigns';
+                baseState = 'main.campaigns';
                 break;
             case constants.entityType.AD_GROUP:
-                defaultState = 'main.adGroups';
+                baseState = 'main.adGroups';
+                break;
+            }
+        }
+
+
+        return baseState;
+    }
+
+    function getDefaultState (entity) {
+        var defaultState = 'main.allAccounts.accounts';
+        if (entity) {
+            switch (entity.type) {
+            case constants.entityType.ACCOUNT:
+                defaultState = 'main.accounts.campaigns';
+                break;
+            case constants.entityType.CAMPAIGN:
+                defaultState = 'main.campaigns.ad_groups';
+                break;
+            case constants.entityType.AD_GROUP:
+                defaultState = 'main.adGroups.ads';
                 break;
             }
         }
@@ -222,12 +208,12 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
         };
     }
 
-    function getEntityHref (entity, includeQueryParams) {
+    function getEntityHref (entity, includeQueryParams, reuseNestedState) {
         var href;
         if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
             href = $state.href('v2.analytics', getTargetStateParams(entity));
         } else {
-            href = $state.href(getEntityState(entity), {id: entity.id});
+            href = $state.href(getEntityState(entity, reuseNestedState), {id: entity.id});
         }
 
         if (includeQueryParams) {
@@ -241,12 +227,15 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
         navigateTo(getActiveEntity());
     }
 
-    function navigateTo (entity) {
+    function navigateTo (entity, params) {
         if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
             return $state.go('v2.analytics', getTargetStateParams(entity));
         }
-        var state = getEntityState(entity);
-        var params = entity ? {id: entity.id} : {};
+        if (!params) params = {};
+        if (entity) params.id = entity.id;
+
+        var reuseNestedState = true;
+        var state = getEntityState(entity, reuseNestedState);
         $state.go(state, params);
     }
 

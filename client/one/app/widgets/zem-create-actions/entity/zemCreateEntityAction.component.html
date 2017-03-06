@@ -1,5 +1,8 @@
 <!-- TODO -->
 <button
+        ng-click="$ctrl.createEntity()"
         type="button"
         class="button button--highlight button--with-icon add-icon"
->Create Entity</button>
+>{{ $ctrl.actionName }}</button>
+
+<div class="loader" ng-show="$ctrl.createInProgress"></div>

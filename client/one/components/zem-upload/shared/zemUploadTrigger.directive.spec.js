@@ -22,7 +22,7 @@ describe('zemUploadTrigger', function () {
     it('should open a modal window on click', function () {
         var element = $compile(template)(scope);
 
-        spyOn($uibModal, 'open').and.stub();
+        spyOn($uibModal, 'open').and.callThrough();
         scope.$digest();
 
         element.click();

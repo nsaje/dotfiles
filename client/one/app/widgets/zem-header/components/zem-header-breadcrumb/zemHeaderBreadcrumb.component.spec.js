@@ -73,7 +73,7 @@ describe('component: zemHeaderBreadcrumb', function () {
             expect(ctrl.breadcrumb).toEqual([{
                 name: 'Account XY',
                 typeName: 'Account',
-                href: '/accounts/10'
+                href: '/accounts/10/campaigns'
             }]);
 
             zemNavigationNewService.getActiveEntity.and.returnValue(campaign);
@@ -81,11 +81,11 @@ describe('component: zemHeaderBreadcrumb', function () {
             expect(ctrl.breadcrumb).toEqual([{
                 name: 'Account XY',
                 typeName: 'Account',
-                href: '/accounts/10'
+                href: '/accounts/10/campaigns'
             }, {
                 name: 'Campaign XY',
                 typeName: 'Campaign',
-                href: '/campaigns/20'
+                href: '/campaigns/20/ad_groups'
             }]);
         });
     });

@@ -1,7 +1,7 @@
 /* globals angular */
 'use strict';
 
-angular.module('one.legacy').directive('zemUploadTrigger', function ($uibModal, $rootScope, zemUploadTriggerService) { // eslint-disable-line max-len
+angular.module('one.legacy').directive('zemUploadTrigger', function ($uibModal, $rootScope, zemUploadService) { // eslint-disable-line max-len
     return {
         restrict: 'A',
         replace: true,
@@ -13,7 +13,7 @@ angular.module('one.legacy').directive('zemUploadTrigger', function ($uibModal, 
         controllerAs: 'ctrl',
         link: function (scope, element, attrs, ctrl) {
             element.on('click', function () {
-                zemUploadTriggerService.openUploadModal(ctrl.adGroup, ctrl.onSave);
+                zemUploadService.openUploadModal(ctrl.adGroup, ctrl.onSave);
             });
         },
         controller: function () {},

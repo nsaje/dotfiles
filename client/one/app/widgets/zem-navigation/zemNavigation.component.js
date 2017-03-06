@@ -182,7 +182,9 @@ angular.module('one.widgets').component('zemNavigation', {
         }
 
         function getItemHref (entity) {
-            return zemNavigationNewService.getEntityHref(entity, true);
+            var includeQueryParams = true;
+            var reuseNestedState = true;
+            return zemNavigationNewService.getEntityHref(entity, includeQueryParams, reuseNestedState);
         }
 
         function navigateTo (entity) {

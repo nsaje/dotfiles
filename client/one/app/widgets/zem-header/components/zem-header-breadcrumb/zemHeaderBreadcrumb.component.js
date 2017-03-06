@@ -46,17 +46,20 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
 
         function updateBreadcrumb (entity) {
             $ctrl.breadcrumb = [];
+
+            var administrationPage = getAdministrationPage();
+            if (administrationPage) $ctrl.breadcrumb.push(administrationPage);
+
+            var includeQueryParmas = true;
+            var reuseNestedState = !administrationPage;
             while (entity) {
                 $ctrl.breadcrumb.unshift({
                     name: entity.name,
                     typeName: getTypeName(entity.type),
-                    href: zemNavigationNewService.getEntityHref(entity, true),
+                    href: zemNavigationNewService.getEntityHref(entity, includeQueryParmas, reuseNestedState),
                 });
                 entity = entity.parent;
             }
-
-            var administrationPage = getAdministrationPage();
-            if (administrationPage) $ctrl.breadcrumb.push(administrationPage);
         }
 
         function getTypeName (type) {

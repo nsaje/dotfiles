@@ -1,5 +1,5 @@
-describe('zemUploadTriggerService', function () {
-    var $uibModal, zemUploadTriggerService;
+describe('zemUploadService', function () {
+    var $uibModal, zemUploadService;
 
     var adGroup = {
         'id': 1,
@@ -10,15 +10,15 @@ describe('zemUploadTriggerService', function () {
     beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $uibModal = $injector.get('$uibModal');
-        zemUploadTriggerService = $injector.get('zemUploadTriggerService');
+        zemUploadService = $injector.get('zemUploadService');
     }));
 
 
     it('should open upload modal', function () {
-        spyOn($uibModal, 'open').and.stub();
+        spyOn($uibModal, 'open').and.callThrough();
 
         var onSave = function () {};
-        zemUploadTriggerService.openUploadModal(adGroup, onSave);
+        zemUploadService.openUploadModal(adGroup, onSave);
 
         expect($uibModal.open).toHaveBeenCalled();
         expect($uibModal.open.calls.mostRecent().args[0].scope.adGroup).toBe(adGroup);
@@ -26,10 +26,10 @@ describe('zemUploadTriggerService', function () {
     });
 
     it('should open edit modal', function () {
-        spyOn($uibModal, 'open').and.stub();
+        spyOn($uibModal, 'open').and.callThrough();
 
         var onSave = function () {};
-        zemUploadTriggerService.openEditModal(adGroup.id, 123, [], onSave);
+        zemUploadService.openEditModal(adGroup.id, 123, [], onSave);
 
         expect($uibModal.open).toHaveBeenCalled();
         expect($uibModal.open.calls.mostRecent().args[0].scope.adGroupId).toBe(adGroup.id);
