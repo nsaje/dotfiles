@@ -57,8 +57,12 @@ angular.module('one.widgets').component('zemSettings', {
             }, 0);
 
             zemEntityService.getEntity($ctrl.entity.type, $ctrl.entity.id).then(function (e) {
+
+                // FIXME: find better solution to merge entity settings
                 e.id = $ctrl.entity.id;
                 e.type = $ctrl.entity.type;
+                copyParents(e, $ctrl.entity);
+
                 if (visible) {
                     $ctrl.currentContainer.load(e);
                     if (payload.scrollToComponent) $ctrl.currentContainer.scrollTo(payload.scrollToComponent);
@@ -66,6 +70,17 @@ angular.module('one.widgets').component('zemSettings', {
                     entity = e;
                 }
             });
+        }
+
+        function copyParents (eDest, eSource) {
+            if (eSource.parent) {
+                eDest.parent = {
+                    id: eSource.parent.id,
+                    type: eSource.parent.type,
+                };
+
+                copyParents(eDest.parent, eSource.parent);
+            }
         }
 
         function close () {

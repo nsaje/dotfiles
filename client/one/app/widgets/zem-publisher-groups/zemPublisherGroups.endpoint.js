@@ -5,9 +5,11 @@ angular.module('one.widgets').service('zemPublisherGroupsEndpoint', function ($q
     this.downloadErrors = downloadErrors;
     this.downloadExample = downloadExample;
 
-    function list (accountId) {
+    function list (accountId, notImplicit) {
         var url = '/api/accounts/' + accountId + '/publisher_groups/';
-        var config = {params: {}};
+        var config = {params: {
+            not_implicit: notImplicit,
+        }};
 
         var deferred = $q.defer();
         $http.get(url, config).

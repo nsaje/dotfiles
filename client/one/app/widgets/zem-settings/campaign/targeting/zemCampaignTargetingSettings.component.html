@@ -1,0 +1,11 @@
+<div class="zem-settings-component__container zem-settings-component__container--targeting"
+     is-internal="zemauth.can_see_publisher_groups_ui">
+
+    <div class="zem-settings-component__header">Targeting</div>
+    <zem-publisher-group-targeting
+        entity="$ctrl.entity"
+        errors="$ctrl.errors"
+        api="$ctrl.api"
+        ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
+    ></zem-publisher-group-targeting>
+</div>

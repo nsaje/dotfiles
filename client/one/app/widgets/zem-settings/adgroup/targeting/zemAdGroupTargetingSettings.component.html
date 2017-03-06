@@ -12,6 +12,12 @@
             errors="$ctrl.errors"
             api="$ctrl.api"
         ></zem-interest-targeting>
+        <zem-publisher-group-targeting
+            entity="$ctrl.entity"
+            errors="$ctrl.errors"
+            api="$ctrl.api"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
+        ></zem-publisher-group-targeting>
         <div class="form">
             <div class="form__title">BlueKai & LiveRamp audience targeting</div>
             <div class="form__text">This is a read-only section. Please contact your Zemanta Account Manager if you want to set up or change BlueKai and LiveRamp audience targeting.</div>

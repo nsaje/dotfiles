@@ -100,8 +100,12 @@ class PublisherGroups(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
 
+        publisher_groups_q = models.PublisherGroup.objects.all().filter_by_account(account)
+        if request.GET.get('not_implicit'):
+            publisher_groups_q = publisher_groups_q.filter(implicit=False)
+
         publisher_groups = []
-        for pg in models.PublisherGroup.objects.all().filter_by_account(account):
+        for pg in publisher_groups_q:
             publisher_groups.append({
                 'id': pg.id,
                 'name': pg.name,

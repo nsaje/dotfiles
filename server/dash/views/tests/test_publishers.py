@@ -150,3 +150,50 @@ class PublisherTargetingViewTest(TestCase):
                 content_type='application/json')
             self.assertEqual(response.status_code, 200)
             self.assertEntriesInserted(global_group)
+
+
+class PublisherGroupsViewTest(TestCase):
+
+    fixtures = ['test_publishers.yaml']
+
+    def setUp(self):
+        self.user = User.objects.get(pk=2)
+        self.client = Client()
+        self.client.login(username=self.user.email, password='secret')
+
+    def test_get_not_allowed(self):
+        response = self.client.get(
+            reverse('accounts_publisher_groups', kwargs={'account_id': 1}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_get(self):
+        test_helper.add_permissions(self.user, ['can_edit_publisher_groups'])
+        account = models.Account.objects.get(pk=1)
+
+        response = self.client.get(
+            reverse('accounts_publisher_groups', kwargs={'account_id': account.id}))
+
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+
+        for pg in content['data']['publisher_groups']:
+            # check user has permission for all the publisher groups returned
+            self.assertEqual(models.PublisherGroup.objects.filter(pk=pg['id']).filter_by_account(account).count(), 1)
+
+    def test_get_not_implicit(self):
+        test_helper.add_permissions(self.user, ['can_edit_publisher_groups'])
+        account = models.Account.objects.get(pk=1)
+
+        response = self.client.get(
+            reverse('accounts_publisher_groups', kwargs={'account_id': account.id}), data={
+                'not_implicit': True,
+            })
+
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+
+        for pg in content['data']['publisher_groups']:
+            # check user has permission for all the publisher groups returned
+            pgs = models.PublisherGroup.objects.filter(pk=pg['id']).filter_by_account(account)
+            self.assertEqual(pgs.count(), 1)
+            self.assertFalse(pgs.first().implicit)

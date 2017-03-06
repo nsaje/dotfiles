@@ -16,7 +16,9 @@ describe('component: zemPublisherGroupsEndpoint', function () {
 
         zemPublisherGroupsEndpoint.list(1);
 
-        expect($http.get).toHaveBeenCalledWith('/api/accounts/1/publisher_groups/', {params: {}});
+        expect($http.get).toHaveBeenCalledWith('/api/accounts/1/publisher_groups/', {params: {
+            not_implicit: undefined,
+        }});
     });
 
     it('should make correct request for create new publisher group', function () {

@@ -24,6 +24,13 @@
                 errors="$container.errors"
                 api="$container.childApi"
         ></zem-region-targeting-settings>
+        <zem-campaign-targeting-settings
+                class="zem-settings-component"
+                entity="$container.entity"
+                errors="$container.errors"
+                api="$container.childApi"
+                ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
+        ></zem-campaign-targeting-settings>
         <zem-performance-tracking-settings
                 class="zem-settings-component"
                 entity="$container.entity"
