@@ -1,4 +1,4 @@
-angular.module('one.services').service('zemNavigationNewService', function ($rootScope, $location, $state, zemNavigationService) { // eslint-disable-line max-len
+angular.module('one.services').service('zemNavigationNewService', function ($rootScope, $location, $state, zemNavigationService, zemPermissions) { // eslint-disable-line max-len
     this.init = init;
     this.navigateTo = navigateTo;
     this.refreshState = refreshState;
@@ -37,9 +37,16 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     function handleStateChange () {
         var id = $state.params.id;
         var type = null;
-        if ($state.includes('main.accounts'))  type = constants.entityType.ACCOUNT;
-        if ($state.includes('main.campaigns')) type = constants.entityType.CAMPAIGN;
-        if ($state.includes('main.adGroups')) type = constants.entityType.AD_GROUP;
+
+        if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2.analytics')) {
+            if ($state.params.level === 'account') type = constants.entityType.ACCOUNT;
+            if ($state.params.level === 'campaign') type = constants.entityType.CAMPAIGN;
+            if ($state.params.level === 'adgroup') type = constants.entityType.AD_GROUP;
+        } else {
+            if ($state.includes('main.accounts'))  type = constants.entityType.ACCOUNT;
+            if ($state.includes('main.campaigns')) type = constants.entityType.CAMPAIGN;
+            if ($state.includes('main.adGroups')) type = constants.entityType.AD_GROUP;
+        }
 
         if (hierarchyRoot) {
             var entity = getEntityById(type, id);
@@ -164,7 +171,6 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
 
     function getDefaultState (entity) {
         var defaultState = 'main.allAccounts';
-
         if (entity) {
             switch (entity.type) {
             case constants.entityType.ACCOUNT:
@@ -178,17 +184,52 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
                 break;
             }
         }
+
         return defaultState;
     }
 
     function getHomeHref () {
-        var state = getEntityState();
-        return $state.href(state, {});
+        var href;
+        if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+            href = $state.href('v2.analytics', getTargetStateParams());
+        } else {
+            href = $state.href(getEntityState(), {});
+        }
+
+        var query = $location.absUrl().split('?')[1];
+        if (query) href += '?' + query;
+
+        return href;
+    }
+
+    function getTargetStateParams (entity) {
+        var level = 'accounts';
+        var id = entity ? entity.id : null;
+
+        var breakdown = $state.params.breakdown;
+        if (breakdown === 'publishers' && !(entity && entity.type === constants.entityType.AD_GROUP)) {
+            breakdown = null;
+        }
+
+        if (entity && entity.type === constants.entityType.ACCOUNT) level = 'account';
+        if (entity && entity.type === constants.entityType.CAMPAIGN) level = 'campaign';
+        if (entity && entity.type === constants.entityType.AD_GROUP) level = 'adgroup';
+
+        return {
+            level: level,
+            id: id,
+            breakdown: breakdown,
+        };
     }
 
     function getEntityHref (entity, includeQueryParams) {
-        var state = getEntityState(entity);
-        var href =  $state.href(state, {id: entity.id});
+        var href;
+        if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+            href = $state.href('v2.analytics', getTargetStateParams(entity));
+        } else {
+            href = $state.href(getEntityState(entity), {id: entity.id});
+        }
+
         if (includeQueryParams) {
             var query = $location.absUrl().split('?')[1];
             if (query) href += '?' + query;
@@ -201,6 +242,9 @@ angular.module('one.services').service('zemNavigationNewService', function ($roo
     }
 
     function navigateTo (entity) {
+        if (zemPermissions.hasPermission('zemauth.can_use_new_routing')) {
+            return $state.go('v2.analytics', getTargetStateParams(entity));
+        }
         var state = getEntityState(entity);
         var params = entity ? {id: entity.id} : {};
         $state.go(state, params);

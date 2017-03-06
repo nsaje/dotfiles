@@ -1,5 +1,5 @@
 /* globals $, angular, constants */
-angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, zemUserService, zemPermissions, api, zemFullStoryService, zemIntercomService, zemSupportHeroService, zemNavigationService, accountsAccess, zemHeaderDateRangePickerService, zemDataFilterService, zemRedesignHelpersService) { // eslint-disable-line max-len
+angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $location, $document, $q, $uibModal, $uibModalStack, $timeout, $window, zemMoment, zemUserService, zemPermissions, api, zemFullStoryService, zemNavigationService, accountsAccess, zemHeaderDateRangePickerService, zemDataFilterService, zemRedesignHelpersService) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
@@ -297,13 +297,4 @@ angular.module('one.legacy').controller('MainCtrl', function ($scope, $state, $l
         filteredAccountTypesUpdateHandler();
         filteredPublisherStatusUpdateHandler();
     });
-
-    $scope.init = function () {
-        zemFullStoryService.identifyUser(zemUserService.current());
-        zemIntercomService.boot(zemUserService.current());
-        zemSupportHeroService.boot(zemUserService.current());
-        zemNavigationService.reload();
-    };
-
-    $scope.init();
 });

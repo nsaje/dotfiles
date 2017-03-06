@@ -9,6 +9,7 @@ describe('zemDataSource', function () {
     var endpoint;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($httpBackend) {
         $httpBackend.when('GET', '/api/users/current/').respond({});

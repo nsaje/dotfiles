@@ -5,6 +5,7 @@ describe('AddConversionPixelModalCtrl', function () {
     var $scope, api, $q, $timeout, openedDeferred, audiencePixel;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
     beforeEach(inject(function ($controller, $rootScope, _$q_, _$timeout_) {

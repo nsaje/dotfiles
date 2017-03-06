@@ -1,12 +1,18 @@
 describe('component: zemGridColumnSelector', function () {
     var $componentController;
-    var $ctrl, api;
+    var $ctrl, api, zemPermissions;
 
-    beforeEach(module('one', function ($provide) {
-        zemSpecsHelper.provideMockedPermissionsService($provide);
-    }));
+    beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(module('one.mocks.zemPermissions'));
+
     beforeEach(inject(function ($injector) {
         $componentController = $injector.get('$componentController');
+        zemPermissions = $injector.get('zemPermissions');
+        zemPermissions.setMockedPermissions([
+            'zemauth.can_view_breakdown_by_delivery',
+            'zemauth.can_see_managers_in_campaigns_table'
+        ]);
 
         var zemGridMocks = $injector.get('zemGridMocks');
         api = zemGridMocks.createApi (constants.level.ACCOUNTS, constants.breakdown.MEDIA_SOURCE);

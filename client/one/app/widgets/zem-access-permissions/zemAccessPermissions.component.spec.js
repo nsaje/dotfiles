@@ -2,9 +2,7 @@ describe('component: zemAccessPermissions', function () {
     var $ctrl;
 
     beforeEach(module('one'));
-    beforeEach(module('one'), function ($provide) {
-        zemSpecsHelper.provideMockedPermissionsService($provide);
-    });
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, $componentController) {
         var bindings = {

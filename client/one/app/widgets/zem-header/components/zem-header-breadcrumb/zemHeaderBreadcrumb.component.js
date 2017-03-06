@@ -6,14 +6,23 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
         $ctrl.config = config;
         $ctrl.getHomeHref = getHomeHref;
 
+        var stateChangeUpdateHandler, activeEntityUpdateHandler, hierarchyUpdateHandler;
+
         $ctrl.$onInit = function () {
             $ctrl.userCanSeeAllAccounts = zemPermissions.hasPermission('dash.group_account_automatically_add');
 
-            $rootScope.$on('$stateChangeSuccess', update);
-            zemNavigationNewService.onActiveEntityChange(update);
+            update();
 
+            stateChangeUpdateHandler = $rootScope.$on('$stateChangeSuccess', update);
+            activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(update);
             // FIXME: Use Entity services for name changes
-            zemNavigationNewService.onHierarchyUpdate(update);
+            hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(update);
+        };
+
+        $ctrl.$onDestroy = function () {
+            if (stateChangeUpdateHandler) stateChangeUpdateHandler();
+            if (activeEntityUpdateHandler) activeEntityUpdateHandler();
+            if (hierarchyUpdateHandler) hierarchyUpdateHandler();
         };
 
         function update () {

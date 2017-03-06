@@ -2,8 +2,7 @@ describe('component: zemSidePanel', function () {
     var $ctrl;
 
     beforeEach(module('one'));
-    beforeEach(module('one'), function () {
-    });
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, $componentController) {
         var bindings = {

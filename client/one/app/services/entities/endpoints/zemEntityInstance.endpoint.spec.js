@@ -3,16 +3,17 @@ describe('zemEntityInstanceEndpoint', function () {
     var $httpBackend;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($injector) {
         $httpBackend = $injector.get('$httpBackend');
         zemEntityInstanceEndpoint = $injector.get('zemEntityInstanceEndpoint');
         zemEntityConverter = $injector.get('zemEntityConverter');
-        zemSpecsHelper.mockUserInitialization($injector);
 
         $httpBackend.whenGET(/.*/).respond(200, {data: {settings: {}}});
         $httpBackend.whenPUT(/.*/).respond(200, {data: {settings: {}, defaultSettings: {}}});
-        $httpBackend.flush();
+        // TODO: Remove when accountAccess resolve is removed from main state in app.js
+        $httpBackend.whenGET(/^\/api\/.*\/nav\//).respond(200, {data: {}});
     }));
 
     afterEach(function () {

@@ -5,15 +5,25 @@ angular.module('one.widgets').component('zemHistory', {
         $ctrl.close = zemHistoryService.close;
         $ctrl.changeOrder = changeOrder;
 
+        var openHistoryHandler, closeHistoryHandler;
+
         $ctrl.$onInit = function () {
+            zemHistoryService.init();
+
             $ctrl.sidePanel = {};
             $ctrl.orderField = 'datetime';
             $ctrl.orderReversed = true;
 
-            zemHistoryService.onOpen(open);
-            zemHistoryService.onClose(close);
+            openHistoryHandler = zemHistoryService.onOpen(open);
+            closeHistoryHandler = zemHistoryService.onClose(close);
 
             hotkeys.add({combo: 'h', callback: function () { zemHistoryService.open(); }});
+        };
+
+        $ctrl.$onDestroy = function () {
+            if (openHistoryHandler) openHistoryHandler();
+            if (closeHistoryHandler) closeHistoryHandler();
+            hotkeys.del('h');
         };
 
         function open () {

@@ -6,6 +6,7 @@ describe('zemInfobox', function () {
     var zemInfoboxService;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_$injector_) {
         $injector = _$injector_;
         $componentController = $injector.get('$componentController');

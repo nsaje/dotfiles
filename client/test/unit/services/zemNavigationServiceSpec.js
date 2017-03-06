@@ -9,6 +9,8 @@ describe('zemNavigationService', function () {
         apiMock,
         mockApiFunc;
 
+    beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(function () {
         mockApiFunc = function () {
             return {
@@ -28,8 +30,6 @@ describe('zemNavigationService', function () {
                 getAccountsAccess: mockApiFunc,
             },
         };
-
-        module('one');
 
         module(function ($provide) {
             $provide.value('api', apiMock);

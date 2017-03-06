@@ -108,7 +108,6 @@ server/static
 
 # Client dist files
 client/dist
-client/test/sauce.json
 
 # Client coverage
 client/coverage

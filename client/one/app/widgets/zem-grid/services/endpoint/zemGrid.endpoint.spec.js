@@ -10,6 +10,7 @@ describe('zemGridEndpointServiceSpec', function () {
     var zemGridEndpointApi;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function (_$httpBackend_) {
         $httpBackend = _$httpBackend_;

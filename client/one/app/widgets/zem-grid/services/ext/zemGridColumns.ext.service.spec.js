@@ -8,6 +8,7 @@ describe('zemGridColumnsService', function () {
     var zemGridStorageService;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(module(function ($provide) {
         $provide.value('zemGridStorageService', {saveColumns: angular.noop, loadColumns: angular.noop});

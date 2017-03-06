@@ -10,6 +10,7 @@ describe('zemPermissions', function () {
     };
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_$rootScope_, $q, zemUserService, _zemPermissions_) {
         zemPermissions = _zemPermissions_;
         spyOn(zemUserService, 'current').and.callFake(function () {

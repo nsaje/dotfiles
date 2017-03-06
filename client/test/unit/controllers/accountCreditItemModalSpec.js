@@ -2,6 +2,7 @@ describe('AccountCreditItemModalCtrl', function () {
     var $scope, api, $q, $window, $timeout, openedDeferred;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
     beforeEach(inject(function ($controller, $rootScope, _$q_, _$timeout_, _$window_) {

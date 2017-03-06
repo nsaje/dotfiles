@@ -6,6 +6,7 @@ describe('zemScheduledReportsStateService', function () {
     var zemScheduledReportsEndpoint;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_$injector_) {
         $injector = _$injector_;
         $rootScope = $injector.get('$rootScope');

@@ -7,6 +7,7 @@ describe('zemContentInsights', function () {
     var template = '<zem-content-insights-legacy summary="contentInsights.summary" metric="contentInsights.metric" best-performer-rows="contentInsights.bestPerformerRows" worst-performer-rows="contentInsights.worstPerformerRows"><div class="insights-container"></div></zem-content-insights-legacy>'; // eslint-disable-line max-len
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($compile, $rootScope, $timeout, $httpBackend) {
         $scope = $rootScope.$new();

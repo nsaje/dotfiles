@@ -7,6 +7,7 @@ describe('zemGridCellStateSelector', function () {
         '</zem-grid-cell-state-selector>';
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, _$compile_, _$q_) {
         $compile = _$compile_;

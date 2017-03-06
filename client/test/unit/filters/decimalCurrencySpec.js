@@ -4,6 +4,7 @@ describe('decimalCurrency', function () {
     var filter;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function (decimalCurrencyFilter) {
         filter = decimalCurrencyFilter;

@@ -54,6 +54,8 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterSe
     function Navigation () {
 
         function convertFromApi (models) {
+            if (!models) return;
+
             if (models.hasOwnProperty('ad_group')) {
                 models.adGroup = models.ad_group;
                 delete models.ad_group;
@@ -69,7 +71,6 @@ angular.module('one.legacy').factory('api', function ($http, $q, zemDataFilterSe
                 models.defaultAccountId = models.default_account_id;
                 delete models.default_account_id;
             }
-
 
             return models;
         }

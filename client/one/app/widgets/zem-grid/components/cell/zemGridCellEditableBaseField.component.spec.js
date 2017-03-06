@@ -20,6 +20,7 @@ describe('zemGridCellEditableBaseField', function () {
     beforeEach(module('one', function (_$compileProvider_) {
         $compileProvider = _$compileProvider_;
     }));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, _$compile_, _$q_) {
         $compile = _$compile_;

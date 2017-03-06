@@ -4,7 +4,7 @@
 module.exports = function (config) {
     config.set({
         // base path that will be used to resolve all patterns (eg. files, exclude)
-        basePath: '..',
+        basePath: '',
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
@@ -17,6 +17,7 @@ module.exports = function (config) {
             'dist/one/zemanta-one.templates.js',
             'one/app/app.module.js',
             'one/app/**/*.module.js',
+            'one/app/test/**/*.js',
             'one/app/**/*.js',
             'one/js/**/*.js',
             'one/components/**/*.js',

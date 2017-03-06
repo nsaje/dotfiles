@@ -37,7 +37,12 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             cssClass: 'agencies',
             getOptions: getAgenciesOptions,
             permissions: ['zemauth.can_filter_by_agency'],
-            isVisible: function () { return $state.includes('main.allAccounts'); },
+            isVisible: function () {
+                if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2')) {
+                    return $state.params.level === 'accounts';
+                }
+                return $state.includes('main.allAccounts');
+            },
         },
         {
             condition: zemDataFilterService.CONDITIONS.accountTypes,
@@ -46,7 +51,12 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             cssClass: 'account-types',
             getOptions: getAccountTypesOptions,
             permissions: ['zemauth.can_filter_by_account_type'],
-            isVisible: function () { return $state.includes('main.allAccounts'); },
+            isVisible: function () {
+                if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2')) {
+                    return $state.params.level === 'accounts';
+                }
+                return $state.includes('main.allAccounts');
+            },
         },
         {
             condition: zemDataFilterService.CONDITIONS.statuses,
@@ -62,7 +72,12 @@ angular.module('one.widgets').service('zemFilterSelectorService', function ($roo
             cssClass: 'publisher-statuses',
             getOptions: getPublisherStatusOptions,
             permissions: ['zemauth.can_see_publisher_blacklist_status'],
-            isVisible: function () { return $state.includes('**.publishers'); },
+            isVisible: function () {
+                if (zemPermissions.hasPermission('zemauth.can_use_new_routing') && $state.includes('v2')) {
+                    return $state.params.breakdown === 'publishers';
+                }
+                return $state.includes('**.publishers');
+            },
         },
     ];
 

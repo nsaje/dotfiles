@@ -6,6 +6,7 @@ describe('component: zemGridBulkPublishersActions', function () {
     var $ctrl, api;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $componentController = $injector.get('$componentController');
         zemGridConstants = $injector.get('zemGridConstants');

@@ -6,6 +6,7 @@ describe('zemGridDataFormatter', function () {
         options;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function (_zemGridDataFormatter_) {
         zemGridDataFormatter = _zemGridDataFormatter_;

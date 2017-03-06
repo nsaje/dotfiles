@@ -4,6 +4,7 @@ describe('ScheduledReportsCtrl', function () {
     var $scope, $state, $q, api;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
     beforeEach(function () {

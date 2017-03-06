@@ -5,6 +5,7 @@ describe('EditCampaignGoalModalCtrl', function () {
     var $timeout, $scope, $state, $q, api, openedDeferred;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
     beforeEach(function () {

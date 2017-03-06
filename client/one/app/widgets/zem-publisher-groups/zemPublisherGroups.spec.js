@@ -3,6 +3,7 @@ describe('component: zemPublisherGroups', function () {
     var zemPublisherGroupsEndpoint;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($componentController, _zemPublisherGroupsEndpoint_) {
         zemPublisherGroupsEndpoint = _zemPublisherGroupsEndpoint_;

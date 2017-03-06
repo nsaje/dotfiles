@@ -7,6 +7,7 @@ describe('zemGridCollapseService', function () {
     var zemGridCollapseService;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function (_$rootScope_, _zemGridObject_, _zemGridPubSub_, _zemGridCollapseService_) {
         $rootScope = _$rootScope_;

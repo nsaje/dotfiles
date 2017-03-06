@@ -5,6 +5,7 @@ describe('ZemUploadEditFormCtrl', function () {
     var scope, api, $q, ctrl, $interval, $timeout;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
     beforeEach(inject(function ($controller, $rootScope, _$q_, _$interval_, _$timeout_) {

@@ -8,6 +8,7 @@ describe('zemRetargeting', function () {
 
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($compile, $rootScope) {
         $scope = $rootScope.$new();

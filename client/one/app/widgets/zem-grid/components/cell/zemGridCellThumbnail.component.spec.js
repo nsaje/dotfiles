@@ -6,6 +6,7 @@ describe('zemGridCellThumbnail', function () {
     var template = '<zem-grid-cell-thumbnail data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid"></zem-grid-cell-thumbnail>'; // eslint-disable-line max-len
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, _$compile_) {
         $compile = _$compile_;

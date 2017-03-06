@@ -5,6 +5,8 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
         $ctrl.config = config;
         $ctrl.isVisible = isVisible;
 
+        var dateRangeUpdateHandler;
+
         $ctrl.$onInit = function () {
             var predefinedRanges = zemHeaderDateRangePickerService.getPredefinedRanges();
 
@@ -42,7 +44,11 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
 
             $ctrl.dateRange = zemDataFilterService.getDateRange();
 
-            zemDataFilterService.onDateRangeUpdate(onDateRangeDataFilterUpdate);
+            dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(onDateRangeDataFilterUpdate);
+        };
+
+        $ctrl.$onDestroy = function () {
+            if (dateRangeUpdateHandler) dateRangeUpdateHandler();
         };
 
         function isVisible () {

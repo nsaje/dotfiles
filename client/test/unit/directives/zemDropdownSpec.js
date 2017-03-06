@@ -7,6 +7,7 @@ describe('zemDropdown', function () {
     var template = '<zem-dropdown zem-placeholder="Test" zem-disabled-title="Disabled title" zem-on-select="onSelectTest(selected)" zem-check-disabled="checkDisabledTest()" zem-dropdown-options="options"></zem-dropdown>';
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($compile, $rootScope) {
         $scope = $rootScope.$new();

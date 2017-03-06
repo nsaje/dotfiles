@@ -5,6 +5,7 @@ describe('zemChartStorageService', function () {
     var zemNavigationNewService;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_$injector_) {
         $injector = _$injector_;
         zemChartStorageService = $injector.get('zemChartStorageService');

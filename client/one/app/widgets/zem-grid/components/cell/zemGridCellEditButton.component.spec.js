@@ -5,6 +5,7 @@ describe('zemGridCellEditButton', function () {
         '</zem-grid-cell-edit-button>';
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, _$compile_, _$q_, _zemUploadTriggerService_) {
         zemUploadTriggerService = _zemUploadTriggerService_;

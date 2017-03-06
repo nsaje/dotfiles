@@ -3,6 +3,7 @@ describe('zemEntityInstance', function () {
     var $rootScope, $q, $httpBackend;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $q = $injector.get('$q');
         $rootScope = $injector.get('$rootScope');
@@ -10,8 +11,8 @@ describe('zemEntityInstance', function () {
         zemEntityInstanceService = $injector.get('zemEntityInstanceService');
         zemEntityInstanceEndpoint = $injector.get('zemEntityInstanceEndpoint');
 
-        zemSpecsHelper.mockUserInitialization($injector);
-        $httpBackend.flush();
+        // TODO: Remove when accountAccess resolve is removed from main state in app.js
+        $httpBackend.whenGET(/^\/api\/.*\/nav\//).respond(200, {data: {}});
     }));
 
     it('should use zemEntityActions endpoint for CRUD operations', function () {

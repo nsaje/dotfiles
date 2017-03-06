@@ -4,6 +4,7 @@ describe('component: zemHeaderNavigation', function () {
     var ctrl;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_$componentController_, _hotkeys_) {
         $componentController = _$componentController_;
         hotkeys = _hotkeys_;

@@ -9,6 +9,7 @@ describe('zemGridEndpointApiConverter', function () {
         expectedResult;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function (_zemGridEndpointApiConverter_) {
         zemGridEndpointApiConverter = _zemGridEndpointApiConverter_;

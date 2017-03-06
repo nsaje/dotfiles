@@ -16,15 +16,17 @@ angular.module('one.widgets').component('zemFilterSelector', {
         var listContainerElement;
         var listElement;
         var listElementWidth;
+        var selectionUpdateHandler;
+        var dataFilterUpdateHandler;
 
         $ctrl.$onInit = function () {
             zemFilterSelectorService.init();
 
-            zemFilterSelectorService.onSectionsUpdate(function () {
+            selectionUpdateHandler = zemFilterSelectorService.onSectionsUpdate(function () {
                 refresh();
                 updateListElementWidth();
             });
-            zemDataFilterService.onDataFilterUpdate(function () {
+            dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(function () {
                 refresh();
                 updateListElementWidth();
             });
@@ -34,6 +36,11 @@ angular.module('one.widgets').component('zemFilterSelector', {
             $ctrl.isListElementOverflowing = false;
 
             updateListElementWidth();
+        };
+
+        $ctrl.$onDestroy = function () {
+            if (selectionUpdateHandler) selectionUpdateHandler();
+            if (dataFilterUpdateHandler) dataFilterUpdateHandler();
         };
 
         $ctrl.$postLink = function () {

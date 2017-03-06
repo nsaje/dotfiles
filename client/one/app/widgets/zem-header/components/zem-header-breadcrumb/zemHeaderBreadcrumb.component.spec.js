@@ -6,6 +6,8 @@ describe('component: zemHeaderBreadcrumb', function () {
     var zemNavigationNewService;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(module('one.mocks.zemPermissions'));
     beforeEach(inject(function (_$document_, _$componentController_, _zemNavigationNewService_, _zemPermissions_) {
         $document = _$document_;
         $componentController = _$componentController_;
@@ -36,7 +38,7 @@ describe('component: zemHeaderBreadcrumb', function () {
             callback(null);
             expect($document[0].title).toEqual('My accounts');
 
-            spyOn(zemPermissions, 'hasPermission').and.returnValue(true);
+            zemPermissions.setMockedPermissions('dash.group_account_automatically_add');
             callback(null);
             expect($document[0].title).toEqual('All accounts');
 

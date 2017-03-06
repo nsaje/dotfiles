@@ -19,6 +19,7 @@ describe('zemCurrencyInput', function () {
     };
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     // $state needs to be mocked because of
     // some strange issues with ui-router

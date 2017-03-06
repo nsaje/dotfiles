@@ -5,13 +5,13 @@ describe('MainCtrl', function () {
     var $scope;
     var ctrl;
     var $state;
-    var zemFullStoryService;
     var user;
     var zemUserServiceMock;
     var zemUserSettings;
     var accountsAccess;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
     beforeEach(function () {
@@ -47,7 +47,6 @@ describe('MainCtrl', function () {
             $scope = $rootScope.$new();
             $state = _$state_;
 
-            zemFullStoryService = {identifyUser: function (user) {}};
             zemUserSettings = {
                 getInstance: function () {
                     return {
@@ -57,7 +56,6 @@ describe('MainCtrl', function () {
                 }
             };
 
-            spyOn(zemFullStoryService, 'identifyUser');
             spyOn(zemUserService, 'current').and.returnValue(user);
 
             accountsAccess = {
@@ -69,7 +67,6 @@ describe('MainCtrl', function () {
                 $state: $state,
                 api: api,
                 accountsAccess: accountsAccess,
-                zemFullStoryService: zemFullStoryService,
                 zemUserSettings: zemUserSettings,
             });
         });
@@ -77,9 +74,5 @@ describe('MainCtrl', function () {
 
     it('should init accounts access properly', function () {
         expect($scope.accountsAccess).toEqual(accountsAccess);
-    });
-
-    it('should identify user with FullStory', function () {
-        expect(zemFullStoryService.identifyUser).toHaveBeenCalledWith(user);
     });
 });

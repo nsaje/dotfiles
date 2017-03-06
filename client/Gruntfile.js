@@ -54,7 +54,8 @@ module.exports = function (grunt) {
                     'one/app/app.module.js',
                     'one/app/**/*.module.js',
                     'one/app/**/*.js',
-                    // Exclude tests
+                    // Exclude tests, test helpers and mocks
+                    '!one/app/test/**/*',
                     '!one/app/**/*.spec.js',
                     // Legacy app bellow
                     'one/js/app.js',
@@ -195,6 +196,7 @@ module.exports = function (grunt) {
             one_js: {
                 files: [
                     'one/**/*.js',
+                    '!one/test/**/*',
                     '!one/**/*.spec.js',
                 ],
                 tasks: ['concat:one_js', 'ngAnnotate:one', 'clean:tmp']
@@ -262,7 +264,7 @@ module.exports = function (grunt) {
         },
         karma: {
             local: {
-                configFile: 'test/karma.conf.js',
+                configFile: 'karma.conf.js',
                 singleRun: true,
             },
         },

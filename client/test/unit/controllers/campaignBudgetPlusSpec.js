@@ -5,6 +5,7 @@ describe('CampaignBudgetCtrl', function () {
     var $scope, $state, api;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
     beforeEach(function () {

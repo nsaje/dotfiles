@@ -6,6 +6,7 @@ describe('zemGridCellInternalLink', function () {
     var template = '<zem-grid-cell-internal-link data="ctrl.data" row="ctrl.row" column="ctrl.column" grid="ctrl.grid"></zem-grid-cell-internal-link>'; // eslint-disable-line max-len
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, _$compile_) {
         $compile = _$compile_;

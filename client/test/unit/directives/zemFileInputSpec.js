@@ -4,6 +4,7 @@ describe('zemFileInput', function () {
     var element, buttonElement, inputElement;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
     beforeEach(inject(function ($compile, $rootScope) {

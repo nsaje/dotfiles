@@ -1,0 +1,16 @@
+<div class="container-fluid">
+    <zem-header class="zem-header row"></zem-header>
+    <zem-filter-selector class="zem-filter-selector row"></zem-filter-selector>
+
+    <div class="row body">
+        <div class="content content-full">
+            <ui-view/>
+        </div>
+    </div>
+
+    <zem-footer class="zem-footer row"></zem-footer>
+
+    <!-- Widgets used in drawer -->
+    <zem-settings class="zem-settings"></zem-settings>
+    <zem-history ng-if="$ctrl.hasPermission('zemauth.can_see_history_in_drawer')" class="zem-history"></zem-history>
+</div>

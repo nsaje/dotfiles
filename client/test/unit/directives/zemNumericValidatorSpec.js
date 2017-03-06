@@ -7,6 +7,7 @@ describe('zemNumericValidator', function () {
         'ng-model="value" placeholder="0.00" maxlength="5" />';
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($compile, $rootScope, $httpBackend) {
         $scope = $rootScope.$new();
         httpBackend = $httpBackend;

@@ -4,6 +4,7 @@ describe('component: zemGridIntegration', function () {
     var $ctrl;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $componentController = $injector.get('$componentController');
         zemGridEndpointService = $injector.get('zemGridEndpointService');

@@ -4,6 +4,7 @@ describe('AccountCreditCtrl', function () {
     var $uibModalStack, $scope, $state, $q, api;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
     beforeEach(function () {

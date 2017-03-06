@@ -4,6 +4,7 @@ describe('zemGridObject', function () {
     var zemGridObject;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function (_zemGridObject_) {
         zemGridObject = _zemGridObject_;

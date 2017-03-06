@@ -5,6 +5,7 @@ describe('zemSideTabset', function () {
     var scope, sideBar, isolate;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($rootScope, $compile) {
         scope = $rootScope.$new();
 

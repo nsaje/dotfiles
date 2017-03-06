@@ -10,7 +10,7 @@ angular.module('one.widgets').component('zemNavigation', {
         var ITEM_HEIGHT_CAMPAIGN = 24; // NOTE: Change in CSS too!
         var ITEM_HEIGHT_AD_GROUP = 24; // NOTE: Change in CSS too!
 
-        var filteredStatusesUpdateHandler;
+        var hierarchyUpdateHandler, activeEntityUpdateHandler, filteredStatusesUpdateHandler;
 
         var $ctrl = this;
         $ctrl.selectedEntity = null;
@@ -27,14 +27,19 @@ angular.module('one.widgets').component('zemNavigation', {
         $ctrl.getItemIconClass = getItemIconClass;
 
         $ctrl.$onInit = function () {
-            zemNavigationNewService.onHierarchyUpdate(initializeList);
-            zemNavigationNewService.onActiveEntityChange(initializeList);
+            initializeList();
+
+            hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(initializeList);
+            activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(initializeList);
             filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(filterList);
             $element.keydown(handleKeyDown);
         };
 
         $ctrl.$onDestroy = function () {
+            if (hierarchyUpdateHandler) hierarchyUpdateHandler();
+            if (activeEntityUpdateHandler) activeEntityUpdateHandler();
             if (filteredStatusesUpdateHandler) filteredStatusesUpdateHandler();
+            $element.unbind();
         };
 
         function handleKeyDown (event) {

@@ -3,9 +3,7 @@ describe('zemEntityService', function () {
     var $httpBackend;
 
     beforeEach(module('one'));
-    beforeEach(module('one'), function ($provide) {
-        zemSpecsHelper.provideMockedPermissionsService($provide);
-    });
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($injector) {
         $httpBackend = $injector.get('$httpBackend');
@@ -15,10 +13,11 @@ describe('zemEntityService', function () {
         zemAdGroupService = $injector.get('zemAdGroupService');
         zemContentAdService = $injector.get('zemContentAdService');
 
-        zemSpecsHelper.mockUserInitialization($injector);
         $httpBackend.whenGET(/.*/).respond(200, {});
         $httpBackend.whenPUT(/.*/).respond(200, {data: {settings: {}, defaultSettings: {}}});
         $httpBackend.whenPOST(/.*/).respond(200, {});
+        // TODO: Remove when accountAccess resolve is removed from main state in app.js
+        $httpBackend.whenGET(/^\/api\/.*\/nav\//).respond(200, {data: {}});
         $httpBackend.flush();
     }));
 

@@ -3,9 +3,9 @@
 describe('AdGroupCtrl', function () {
     var $scope, parentScope, $state, api;
 
+    beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(function () {
-        module('one');
-
         module(function ($provide) {
             var mockApiFunc = function () {
                 return {

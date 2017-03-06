@@ -44,6 +44,7 @@ describe('zemConversionPixelsLegacy', function () {
     });
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('conversionPixelsApiMock'));
 
     beforeEach(inject(function ($compile, $rootScope, _$q_, _$uibModal_) {

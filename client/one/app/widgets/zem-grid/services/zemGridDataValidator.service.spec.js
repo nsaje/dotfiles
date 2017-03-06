@@ -6,6 +6,7 @@ describe('zemGridDataValidator', function () {
         options;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function (_zemGridDataValidator_) {
         zemGridDataValidator = _zemGridDataValidator_;

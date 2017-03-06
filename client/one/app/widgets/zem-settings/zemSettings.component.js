@@ -13,12 +13,22 @@ angular.module('one.widgets').component('zemSettings', {
             close: zemSettingsService.close
         };
 
+        var openSettingsHandler, closeSettingsHandler;
+
         $ctrl.$onInit = function () {
+            zemSettingsService.init();
+
             hotkeys.add({combo: 's', callback: function () { zemSettingsService.open(); }});
 
             $ctrl.onRequestClose = zemSettingsService.close;
-            zemSettingsService.onOpen(open);
-            zemSettingsService.onClose(close);
+            openSettingsHandler = zemSettingsService.onOpen(open);
+            closeSettingsHandler = zemSettingsService.onClose(close);
+        };
+
+        $ctrl.$onDestroy = function () {
+            if (openSettingsHandler) openSettingsHandler();
+            if (closeSettingsHandler) closeSettingsHandler();
+            hotkeys.del('s');
         };
 
         function register (type, entitySettingsComponent) {

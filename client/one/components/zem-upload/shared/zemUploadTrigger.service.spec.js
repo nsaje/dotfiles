@@ -7,6 +7,7 @@ describe('zemUploadTriggerService', function () {
     };
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($injector) {
         $uibModal = $injector.get('$uibModal');
         zemUploadTriggerService = $injector.get('zemUploadTriggerService');

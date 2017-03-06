@@ -4,10 +4,18 @@ describe('zemDataFilterService', function () {
     var zemPermissions;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
+    beforeEach(module('one.mocks.zemPermissions'));
     beforeEach(inject(function (_$location_, _zemDataFilterService_, _zemPermissions_) {
         $location = _$location_;
         zemDataFilterService = _zemDataFilterService_;
         zemPermissions = _zemPermissions_;
+
+        zemPermissions.setMockedPermissions([
+            'zemauth.can_see_publishers',
+            'zemauth.can_filter_by_agency',
+            'zemauth.can_filter_by_account_type'
+        ]);
     }));
 
     it('should init correctly with default values', function () {
@@ -26,7 +34,6 @@ describe('zemDataFilterService', function () {
     });
 
     it('should init correctly with url params', function () {
-        spyOn(zemPermissions, 'hasPermission').and.returnValue(true);
         spyOn($location, 'search').and.returnValue({
             start_date: moment('2016-11-01').format('YYYY-MM-DD'),
             end_date: moment('2016-12-01').format('YYYY-MM-DD'),
@@ -53,10 +60,10 @@ describe('zemDataFilterService', function () {
     });
 
     it('shouldn\'t init with url params if user doesn\'t have permissions', function () {
-        spyOn(zemPermissions, 'hasPermission').and.returnValue(false);
         spyOn($location, 'search').and.returnValue({
             filtered_publisher_status: zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.active,
         });
+        zemPermissions.setMockedPermissions([]);
 
         zemDataFilterService.init();
 
@@ -86,7 +93,6 @@ describe('zemDataFilterService', function () {
     });
 
     it('should correctly return applied conditions and exclude conditions with default values', function () {
-        spyOn(zemPermissions, 'hasPermission').and.returnValue(true);
         zemDataFilterService.init();
 
         var expectedConditions = {};
@@ -96,8 +102,6 @@ describe('zemDataFilterService', function () {
     });
 
     it('should correctly apply conditions', function () {
-        spyOn(zemPermissions, 'hasPermission').and.returnValue(true);
-
         var conditions = [
             {
                 condition: zemDataFilterService.CONDITIONS.sources,
@@ -139,8 +143,6 @@ describe('zemDataFilterService', function () {
     });
 
     it('should reset condition to its default value', function () {
-        spyOn(zemPermissions, 'hasPermission').and.returnValue(true);
-
         var conditions = [
             {
                 condition: zemDataFilterService.CONDITIONS.sources,
@@ -171,8 +173,6 @@ describe('zemDataFilterService', function () {
     });
 
     it('should reset all conditions to their default value', function () {
-        spyOn(zemPermissions, 'hasPermission').and.returnValue(true);
-
         var conditions = [
             {
                 condition: zemDataFilterService.CONDITIONS.sources,
@@ -201,8 +201,6 @@ describe('zemDataFilterService', function () {
     });
 
     it('should remove value from condition\'s list if it exists', function () {
-        spyOn(zemPermissions, 'hasPermission').and.returnValue(true);
-
         var conditions = [
             {
                 condition: zemDataFilterService.CONDITIONS.sources,

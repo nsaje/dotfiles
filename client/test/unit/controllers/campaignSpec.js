@@ -4,9 +4,9 @@
 describe('CampaignCtrl', function () {
     var $scope, parentScope, $state, api, zemServiceMock;
 
+    beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(function () {
-        module('one');
-
         module(function ($provide) {
             var mockApiFunc = function () {
                 return {

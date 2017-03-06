@@ -22,6 +22,7 @@ angular.module('one.widgets').service('zemHistoryService', function ($rootScope,
     //
     function init () {
         $rootScope.$on('$stateChangeSuccess', handleStateChange);
+        $rootScope.$on('$locationChangeSuccess', handleLocationChange);
     }
 
     function open () {
@@ -69,11 +70,21 @@ angular.module('one.widgets').service('zemHistoryService', function ($rootScope,
     // Private methods
     //
     function handleStateChange () {
-        var value = $location.search()[QUERY_PARAM] || $state.params[QUERY_PARAM];
+        // Support for $state params (history)
+        // If settings parameters set when using $state transition pass it to the $location.search
+        // which will trigger change event which is again handled in this service
+        var value = $state.params[QUERY_PARAM];
+        if (value) {
+            $location.search(QUERY_PARAM, true);
+        }
+    }
+
+    function handleLocationChange () {
+        var value = $location.search()[QUERY_PARAM];
         if (value) {
             $timeout(function () {
                 open();
-            }, 2000);
+            });
         }
     }
 

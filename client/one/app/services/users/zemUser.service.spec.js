@@ -7,6 +7,7 @@ describe('zemUserService', function () {
     };
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_$rootScope_, $q, _zemUserService_, zemUserEndpoint) {
         $rootScope = _$rootScope_;
         zemUserService = _zemUserService_;

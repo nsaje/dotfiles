@@ -7,6 +7,8 @@ describe('zemUserSettings', function () {
     var zemLocalStorageServiceMock;
     var $locationMock;
 
+    beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(function () {
         zemLocalStorageServiceMock = (function () {
             var data = {};
@@ -41,8 +43,6 @@ describe('zemUserSettings', function () {
                 url: function () { return ''; }
             };
         })();
-
-        module('one');
 
         module(function ($provide) {
             $provide.value('zemLocalStorageService', zemLocalStorageServiceMock);

@@ -6,9 +6,22 @@ angular.module('one.widgets').component('zemHeaderMenu', {
         $ctrl.getActions = zemHeaderMenuService.getAvailableActions;
         $ctrl.execute = execute;
 
+        var currentUserUpdateHandler;
+
         $ctrl.$onInit = function () {
-            $ctrl.userEmail = zemUserService.current().email;
+            setUserEmail();
+
+            currentUserUpdateHandler = zemUserService.onCurrentUserUpdated(setUserEmail);
         };
+
+        $ctrl.$onDestroy = function () {
+            if (currentUserUpdateHandler) currentUserUpdateHandler();
+        };
+
+        function setUserEmail () {
+            var user = zemUserService.current();
+            $ctrl.userEmail = user ? user.email : null;
+        }
 
         function execute (action) {
             action.callback(action.params);

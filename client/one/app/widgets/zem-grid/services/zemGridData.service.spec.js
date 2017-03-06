@@ -10,6 +10,7 @@ describe('zemGridDataService', function () {
     var endpoint;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(module(function ($provide, zemGridDebugEndpointProvider) {
         $provide.value('zemLocalStorageService', {get: function () {}});

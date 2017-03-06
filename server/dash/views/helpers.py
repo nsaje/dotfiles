@@ -89,8 +89,12 @@ class ViewFilter(object):
         if request.method == 'GET':
             data = request.GET
             filtered_sources = data.get('filtered_sources')
-            filtered_agencies = data.getlist('filtered_agencies')
-            filtered_account_types = data.get('filtered_account_types')
+            filtered_agencies_raw = data.get('filtered_agencies')
+            filtered_agencies = filtered_agencies_raw.split(',') if\
+                filtered_agencies_raw else None
+            filtered_account_types_raw = data.get('filtered_account_types')
+            filtered_account_types = filtered_account_types_raw.split(',') if\
+                filtered_account_types_raw else None
         elif request.method == 'PUT':
             data = json.loads(request.body)
             filtered_sources = data.get('filtered_sources')

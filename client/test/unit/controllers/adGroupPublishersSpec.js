@@ -6,6 +6,7 @@ describe('AdGroupPublishersCtrl', function () {
     var permissions;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
     beforeEach(module(function ($provide) {

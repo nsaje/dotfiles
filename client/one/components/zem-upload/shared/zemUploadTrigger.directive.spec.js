@@ -9,6 +9,7 @@ describe('zemUploadTrigger', function () {
     };
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($rootScope, _$compile_, _$uibModal_) {
         $compile = _$compile_;
         $uibModal = _$uibModal_;

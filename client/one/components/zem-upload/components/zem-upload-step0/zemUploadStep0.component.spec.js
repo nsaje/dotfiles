@@ -5,6 +5,7 @@ describe('ZemUploadStep0Ctrl', function () {
     var scope, $modalInstance, $q, ctrl;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function ($controller, $rootScope, _$q_) {
         $q = _$q_;
         scope = $rootScope.$new();

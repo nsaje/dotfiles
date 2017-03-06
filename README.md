@@ -255,18 +255,6 @@ grunt test
 
 This will run tests in local Chrome browser.
 
-Tests can also be run in SauceLabs cloud. First, copy the sauce.json template:
-```bash
-cp test/sauce.json.template test/sauce.json
-```
-
-and change it as needed. Then run:
-```bash
-grunt test --sauce
-```
-
-In this case tests are executed in 7 browsers, defined in test/karma.conf-sauce.js.
-
 Karma can also auto-watch files and run test on every change:
 ```bash
 npm run watch-test

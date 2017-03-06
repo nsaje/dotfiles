@@ -2,6 +2,7 @@ describe('zemPubSubService', function () {
     var pubSub;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_zemPubSubService_) {
         pubSub = _zemPubSubService_.createInstance();
     }));

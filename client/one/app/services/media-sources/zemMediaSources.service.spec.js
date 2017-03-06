@@ -17,6 +17,7 @@ describe('zemMediaSourcesService', function () {
     ];
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(inject(function (_$rootScope_, $q, _zemMediaSourcesService_, _zemMediaSourcesEndpoint_, _zemDataFilterService_) { // eslint-disable-line max-len
         $rootScope = _$rootScope_;
         zemMediaSourcesService = _zemMediaSourcesService_;

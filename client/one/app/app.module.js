@@ -59,7 +59,7 @@ angular.module('one').run(function ($state, $rootScope, $location, config, zemIn
 
     $rootScope.$on('$stateChangeStart', function () {
         // Save location.search so we can add it back after transition is done
-        locationSearch = $location.search();
+        if (!locationSearch) locationSearch = $location.search();
     });
 
     $rootScope.$on('$stateChangeSuccess', function () {
@@ -68,7 +68,7 @@ angular.module('one').run(function ($state, $rootScope, $location, config, zemIn
         // (e.g. params passed through ui-router $state)
         angular.merge(locationSearch, $location.search());
         $location.search(locationSearch);
-        $rootScope.stateChangeFired = true;
+        locationSearch = null;
     });
 
     $rootScope.$on('$locationChangeSuccess', function () {
@@ -84,4 +84,9 @@ angular.module('one').run(function ($state, $rootScope, $location, config, zemIn
             event.stopPropagation();
         }
     };
+});
+
+
+angular.module('one').run(function (zemInitializationService) {
+    zemInitializationService.initApp();
 });

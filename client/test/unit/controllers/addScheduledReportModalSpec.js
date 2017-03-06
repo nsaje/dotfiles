@@ -4,6 +4,7 @@ describe('AddScheduledReportModalCtrl', function () {
     var $scope, api, $q, openedDeferred;
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
     beforeEach(module('stateMock'));
 
     beforeEach(inject(function ($controller, $rootScope, _$q_, zemDataFilterService) {

@@ -6,6 +6,7 @@ describe('zemGridCellPerformanceIndicator', function () {
     var template = '<zem-grid-cell-performance-indicator data="ctrl.data" row="ctrl.row"></zem-grid-cell-performance-indicator>'; // eslint-disable-line max-len
 
     beforeEach(module('one'));
+    beforeEach(module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function ($rootScope, _$compile_) {
         $compile = _$compile_;
