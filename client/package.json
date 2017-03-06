@@ -5,6 +5,8 @@
   "devDependencies": {
     "autoprefixer": "^6.5.1",
     "codeclimate-test-reporter": "~0.1.1",
+    "eslint": "^3.17.0",
+    "eslint-plugin-jasmine": "^2.2.0",
     "grunt": "~0.4.2",
     "grunt-bower-concat": "~0.4.0",
     "grunt-cli": "~0.1.0",
@@ -35,6 +37,7 @@
   "scripts": {
     "dev": "grunt dev",
     "test": "grunt test",
-    "watch-test": "karma start karma.conf.js"
+    "watch-test": "karma start karma.conf.js",
+    "lint": "eslint one test; exit 0"
   }
 }
