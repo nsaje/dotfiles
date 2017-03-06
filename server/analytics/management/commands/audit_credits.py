@@ -14,9 +14,9 @@ class Command(utils.command_helpers.ExceptionCommand):
         parser.add_argument('--send-emails', dest='send_emails', action='store_true',
                             help='Send emails')
 
-        parser.add_argument('--date', '-d', dest='date',
+        parser.add_argument('--date', '-d', dest='date', default=None,
                             help='Date checked (default today)')
-        parser.add_argument('--days', '-n', dest='days',
+        parser.add_argument('--days', '-n', dest='days', default='14',
                             help='Days in the future to check')
 
     def _print(self, msg):
