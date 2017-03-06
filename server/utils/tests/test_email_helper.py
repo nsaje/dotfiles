@@ -381,25 +381,6 @@ Zemanta''')
 
         self.assertTrue(mock_trigger_event.called)
 
-    def test_send_depleting_credits_email(self):
-        mock = MagicMock()
-        email_helper.send_depleting_credits_email(
-            mock,
-            [dash_models.Account(id=1, name='Test 1'), dash_models.Account(id=2, name='Test 2')]
-        )
-        mock.email_user.assert_called_with(
-            'Depleting credit line items',
-            '''Dear sales representative,
-
-Following accounts have depleting credit line items:
- - Account Test 1 https://one.zemanta.com/accounts/1/credit
- - Account Test 2 https://one.zemanta.com/accounts/2/credit
-
-
-Yours truly,
-Zemanta
-    ''')
-
     @patch('utils.email_helper.send_account_notification_email')
     def test_send_obj_notification_email_account(self, mock_email):
         email_helper.send_obj_changes_notification_email(dash_models.Account(), self.request, "")
