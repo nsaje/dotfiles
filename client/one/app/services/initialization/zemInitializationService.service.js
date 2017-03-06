@@ -22,7 +22,7 @@ angular.module('one.services').service('zemInitializationService', function ($q,
     }
 
     function initSequence () {
-        return initSequence;
+        return sequence;
     }
 
     function initZemUserServiceAndDependantServices () {
