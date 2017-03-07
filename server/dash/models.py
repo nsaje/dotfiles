@@ -4821,3 +4821,19 @@ class CustomHack(models.Model):
                 }
                 for obj in self
             ]
+
+
+class Geolocation(models.Model):
+    key = models.CharField(
+        primary_key=True,
+        max_length=20
+    )
+    type = models.CharField(
+        max_length=3,
+        choices=constants.LocationType.get_choices()
+    )
+    name = models.CharField(
+        max_length=127,
+        blank=False,
+        null=False
+    )

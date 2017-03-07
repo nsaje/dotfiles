@@ -1900,3 +1900,19 @@ class Service(ConstantBase):
         R1: 'Redirector',
         B1: 'Bidder',
     }
+
+
+class LocationType(ConstantBase):
+    COUNTRY = 'co'
+    REGION = 're'
+    CITY = 'ci'
+    DMA = 'dma'
+    ZIP = 'zip'
+
+    _VALUES = {
+        COUNTRY: 'Country',
+        REGION: 'Region',
+        CITY: 'City',
+        DMA: 'DMA',
+        ZIP: 'Postal Code',
+    }
