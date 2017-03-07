@@ -47,6 +47,30 @@
                 </label>
             </div>
         </div>
+        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_include_model_ids_in_reports') && $ctrl.showIncludeIds">
+            <label class="form__label" for="add-ids-checkbox" is-internal="zemauth.can_include_model_ids_in_reports">Add IDs to report</label>
+            <div class="form__checkbox">
+                <label>
+                    <input id="add-ids-checkbox"
+                           type="checkbox"
+                           ng-model="$ctrl.includeIds"
+                           class="input-checkbox">
+                    <span class="checkbox-text" for="add-ids-checkbox"></span>
+                </label>
+            </div>
+        </div>
+        <div class="form__group" ng-if="$ctrl.showIncludeItemsWithNoSpend">
+            <label class="form__label" for="add-missing-checkbox" >Include items with no spend</label>
+            <div class="form__checkbox">
+                <label>
+                    <input id="add-missing-checkbox"
+                           type="checkbox"
+                           ng-model="$ctrl.includeItemsWithNoSpend"
+                           class="input-checkbox">
+                    <span class="checkbox-text" for="add-missing-checkbox"></span>
+                </label>
+            </div>
+        </div>
         <hr>
         <div class="form__group">
             <label class="form__label" for="recipients">Report will be sent to</label>

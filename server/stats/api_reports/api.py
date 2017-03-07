@@ -8,21 +8,28 @@ import dash.export
 
 from stats import api_breakdowns
 from stats import constants
+from stats import helpers
 from stats import permission_filter
 
 from utils import sort_helper
 from utils import columns
 
 
-def query(user, breakdown, constraints, goals, order):
-    rows = redshiftapi.api_reports.query(
+def query(user, breakdown, constraints, goals, order, include_items_with_no_spend=False):
+    stats_rows = redshiftapi.api_reports.query(
         breakdown, constraints, goals, order,
         use_publishers_view=api_breakdowns.should_use_publishers_view(breakdown))
 
-    dash.dashapi.api_reports.annotate(rows, user, breakdown, constraints, goals)
-    annotate(rows)
+    if include_items_with_no_spend:
+        dash_rows = dash.dashapi.api_reports.query(user, breakdown, constraints, goals)
+        rows = helpers.merge_rows(breakdown, dash_rows, stats_rows)
+    else:
+        rows = stats_rows
+        dash.dashapi.api_reports.annotate(rows, user, breakdown, constraints, goals)
 
     rows = sort_helper.sort_results(rows, [order])
+
+    format_values(rows)
 
     permission_filter.filter_columns_by_permission(user, rows, goals)
 
@@ -36,7 +43,7 @@ def totals(user, breakdown, constraints, goals):
 
     assert len(rows) == 1
 
-    annotate(rows)
+    format_values(rows)
 
     permission_filter.filter_columns_by_permission(user, rows, goals)
 
@@ -70,7 +77,7 @@ def get_filename(breakdown, constraints):
     ]))
 
 
-def annotate(rows):
+def format_values(rows):
     for row in rows:
         for column, value in row.items():
             value = dash.export._format_empty_value(value, column)

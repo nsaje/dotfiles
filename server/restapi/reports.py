@@ -37,27 +37,63 @@ OPERATORS = [EQUALS, IN, BETWEEN]
 DEFAULT_ORDER = '-e_media_cost'
 
 SUPPORTED_BREAKDOWNS = {
-    (utils.columns.FieldNames.content_ad_id,),
-    (utils.columns.FieldNames.source_id,),
-    (utils.columns.FieldNames.publisher,),
-    (utils.columns.FieldNames.publisher, utils.columns.FieldNames.day),
-    (utils.columns.FieldNames.publisher, utils.columns.FieldNames.week),
-    (utils.columns.FieldNames.publisher, utils.columns.FieldNames.month),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.day),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.week),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.month),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.day),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.week),
+    (utils.columns.FieldNames.account_id, utils.columns.FieldNames.campaign_id, utils.columns.FieldNames.ad_group_id, utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.month),
+    (utils.columns.FieldNames.content_ad_id, ),
+    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id),
+    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.day),
+    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.week),
+    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.month),
+    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.day),
+    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.week),
+    (utils.columns.FieldNames.content_ad_id, utils.columns.FieldNames.source_id, utils.columns.FieldNames.month),
+    (utils.columns.FieldNames.source_id, ),
+    (utils.columns.FieldNames.publisher_id, ),
+    (utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.day),
+    (utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.week),
+    (utils.columns.FieldNames.publisher_id, utils.columns.FieldNames.month),
 }
 
 DATED_COLUMNS = (
     utils.columns.FieldNames.status,
 )
 
+BREAKDOWN_FIELDS = {
+    utils.columns.FieldNames.content_ad_id,
+    utils.columns.FieldNames.ad_group_id,
+    utils.columns.FieldNames.campaign_id,
+    utils.columns.FieldNames.account_id,
+    utils.columns.FieldNames.content_ad_id,
+    utils.columns.FieldNames.source_id,
+    utils.columns.FieldNames.publisher_id,
+    utils.columns.FieldNames.day,
+    utils.columns.FieldNames.week,
+    utils.columns.FieldNames.month,
+}
+
 
 def get_breakdown_from_fields(fields):
     if not fields:
         raise serializers.ValidationError("Must define fields!")
 
-    breakdown = [utils.columns.FieldNames.from_column_name(fields[0]['field'])]
-    if len(fields) > 1 and fields[1]['field'] in (
-            utils.columns.FieldNames.day, utils.columns.FieldNames.week, utils.columns.FieldNames.month):
-        breakdown.append(utils.columns.FieldNames.from_column_name([fields[1]['field']]))
+    def _dimension_identifier(field):
+        return stats.constants.get_dimension_identifier(utils.columns.FieldNames.from_column_name(field, raise_exception=False))
+
+    dimension_identifiers = [_dimension_identifier(field['field']) for field in fields]
+
+    breakdown = []
+    for di in dimension_identifiers:
+        if di in BREAKDOWN_FIELDS and di not in breakdown:
+            breakdown.append(di)
+
+    if utils.columns.FieldNames.publisher_id in breakdown and utils.columns.FieldNames.source_id in breakdown:
+        breakdown.remove(utils.columns.FieldNames.source_id)
 
     return tuple(breakdown)
 
@@ -106,6 +142,7 @@ def get_options(options):
         'show_blacklisted_publishers': (options.get('show_blacklisted_publishers') or
                                         constants.PublisherBlacklistFilter.SHOW_ALL),
         'include_totals': options.get('include_totals') or False,
+        'include_items_with_no_spend': options.get('include_items_with_no_spend') or False,
         'show_status_date': options.get('show_status_date') or False,
         'recipients': options.get('recipients') or [],
         'order': get_order(options.get('order')),
@@ -141,6 +178,7 @@ class ReportOptionsSerializer(serializers.Serializer):
     show_blacklisted_publishers = serializers.ChoiceField(
         constants.PublisherBlacklistFilter.get_all(), required=False)
     include_totals = serializers.BooleanField(default=False)
+    include_items_with_no_spend = serializers.BooleanField(default=False)
     show_status_date = serializers.BooleanField(default=False)
     recipients = serializers.ListField(child=serializers.EmailField(), required=False)
     order = serializers.CharField(required=False)
@@ -191,11 +229,12 @@ class ReportJobExecutor(JobExecutor):
             return
 
         try:
+            breakdown = list(get_breakdown_from_fields(self.job.query['fields']))
             # temporary switch while new reports are developed
-            if self.job.query['fields'][0]['field'] == 'Publisher':
-                raw_report, goals, filename = self.get_raw_new_report(self.job)
+            if utils.columns.FieldNames.publisher_id in breakdown or utils.columns.FieldNames.content_ad_id in breakdown:
+                raw_report, goals, filename = self.get_raw_new_report(self.job, breakdown)
             else:
-                raw_report, goals, filename = self.get_raw_report(self.job)
+                raw_report, goals, filename = self.get_raw_report(self.job, breakdown)
             csv_report = self.convert_to_csv(self.job, raw_report, goals)
             report_path = self.save_to_s3(csv_report, filename)
             self.send_by_email(self.job, report_path)
@@ -210,10 +249,7 @@ class ReportJobExecutor(JobExecutor):
             self.job.save()
 
     @classmethod
-    def get_raw_new_report(cls, job):
-        breakdown = list(get_breakdown_from_fields(job.query['fields']))
-        breakdown = [stats.constants.get_dimension_identifier(x) for x in breakdown]
-
+    def get_raw_new_report(cls, job, breakdown):
         user = job.user
 
         filter_constraints = get_filter_constraints(job.query['filters'])
@@ -232,8 +268,9 @@ class ReportJobExecutor(JobExecutor):
             ad_group_ids=[ad_group.id])
         goals = stats.api_reports.get_goals(constraints)
 
-        rows = stats.api_reports.query(user, breakdown, constraints, goals, options['order'])
-        cls.remap_columns(rows, breakdown)
+        rows = stats.api_reports.query(
+            user, breakdown, constraints, goals, options['order'],
+            include_items_with_no_spend=options['include_items_with_no_spend'])
 
         if options['include_totals']:
             totals = stats.api_reports.totals(user, breakdown, constraints, goals)
@@ -242,10 +279,7 @@ class ReportJobExecutor(JobExecutor):
         return rows, goals, stats.api_reports.get_filename(breakdown, constraints)
 
     @classmethod
-    def get_raw_report(cls, job):
-        breakdown = list(get_breakdown_from_fields(job.query['fields']))
-        breakdown = [stats.constants.get_dimension_identifier(x) for x in breakdown]
-
+    def get_raw_report(cls, job, breakdown):
         filter_constraints = get_filter_constraints(job.query['filters'])
         ad_group_id = filter_constraints['ad_group_id']
         start_date = filter_constraints['start_date']
@@ -316,7 +350,7 @@ class ReportJobExecutor(JobExecutor):
             if breakdown == ['source_id']:
                 row['source'] = row['breakdown_name']
             if breakdown == ['content_ad_id']:
-                row['content_ad'] = row['breakdown_name']
+                row['content_ad'] = row.get('breakdown_name', row['title'])
             if breakdown == ['publisher_id']:
                 row['publisher'] = row.get('breakdown_name', row['domain'])
 

@@ -269,6 +269,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_receive_pacing_email', 'Can receive pacing emails.'),
             ('can_see_publisher_groups_ui', 'Can see publisher groups UI'),
             ('can_receive_sales_credit_email', 'Can receive depleting credit emails.'),
+            ('can_see_new_report_download', 'User can see new report download.'),
         )
 
     def get_full_name(self):

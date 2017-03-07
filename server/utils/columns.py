@@ -11,6 +11,12 @@ _FIELD_MAPPING = {
     'week': ('Week',),
     'month': ('Month',),
 
+    'agency': ('Agency',),
+    'agency_id': ('Agency Id',),
+    'account_id': ('Account Id',),
+    'account': ('Account',),
+    'campaign_id': ('Campaign Id',),
+    'campaign': ('Campaign',),
     'ad_group_id': ('Ad Group Id',),
     'ad_group': ('Ad Group',),
 
@@ -22,6 +28,8 @@ _FIELD_MAPPING = {
     'description': ('Description',),
     'display_url': ('Display URL',),
     'image_urls': ('Thumbnail',),
+    'image_hash': ('Image Hash',),
+    'image_url': ('Image URL',),
     'label': ('Label',),
     'upload_time': ('Uploaded',),
     'url': ('URL',),
@@ -37,7 +45,8 @@ _FIELD_MAPPING = {
     'source_slug': ('Media Source Slug',),
     'bid_cpc': ('Bid CPC',),
     'daily_budget': ('Daily Spend Cap',),
-    'supply_dash_url': ('Link',),
+    # TODO: Fix fields with same names
+    #  'supply_dash_url': ('Link',),
 
     'status': ('Status',),
 

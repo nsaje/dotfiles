@@ -80,7 +80,8 @@ class ReportViewsTest(TestCase):
             ['publisher_id'],
             mock.ANY,
             mock.ANY,
-            '-e_media_cost'
+            '-e_media_cost',
+            include_items_with_no_spend=False,
         )
 
         self.assertFalse(mock_totals.called)
@@ -101,6 +102,7 @@ class ReportViewsTest(TestCase):
                 'showArchived': True,
                 'showBlacklistedPublishers': 'active',
                 'includeTotals': True,
+                'includeItemsWithNoSpend': True,
                 'order': 'Clicks'
             }
         }
@@ -122,7 +124,8 @@ class ReportViewsTest(TestCase):
             ['publisher_id'],
             mock.ANY,
             mock.ANY,
-            'clicks'
+            'clicks',
+            include_items_with_no_spend=True,
         )
         self.assertTrue(mock_totals.called)
 

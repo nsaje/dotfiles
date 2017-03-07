@@ -13,7 +13,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
         var filteredPublisherStatus = zemDataFilterService.getFilteredPublisherStatus();
 
         var config = {
-            fields: getFields(selectedFields),
+            fields: getFields(selectedFields, includeConfig),
             filters: [
                 {
                     field: 'Date',
@@ -32,6 +32,7 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
                 recipients: includeConfig.recipients,
                 showArchived: showArchived,
                 includeTotals: includeConfig.includeTotals || false,
+                includeItemsWithNoSpend: includeConfig.includeItemsWithNoSpend || false,
                 showStatusDate: true,
                 order: getOrder(gridApi),
             },
@@ -61,9 +62,15 @@ angular.module('one.widgets').service('zemReportService', function ($q, zemRepor
         return deferred.promise;
     }
 
-    function getFields (selectedFieldNames) {
+    function getFields (selectedFieldNames, includeConfig) {
+        var fieldsWithIds = ['Content Ad', 'Ad Group', 'Campaign', 'Account', 'Agency'];
         var fields = [];
         for (var i = 0; i < selectedFieldNames.length; i++) {
+            if (includeConfig.includeIds && fieldsWithIds.indexOf(selectedFieldNames[i]) >= 0) {
+                fields.push({
+                    field: selectedFieldNames[i] + ' Id',
+                });
+            }
             fields.push({
                 field: selectedFieldNames[i],
             });

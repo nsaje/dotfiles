@@ -145,16 +145,16 @@ def get_time_dimension_constraints(time_dimension, constraints, offset, limit):
 
     if time_dimension == constants.TimeDimension.DAY:
         start_date = start_date + datetime.timedelta(days=offset)
-        end_date = start_date + datetime.timedelta(days=limit)
+        end_date = _safe_date_add(start_date, datetime.timedelta(days=limit))
 
     elif time_dimension == constants.TimeDimension.WEEK:
         start_date = start_date + datetime.timedelta(days=7 * offset)
-        end_date = start_date + datetime.timedelta(days=7 * limit)
+        end_date = _safe_date_add(start_date, datetime.timedelta(days=7 * limit))
 
     else:
         start_date = start_date.replace(day=1)
         start_date = start_date + dateutil.relativedelta.relativedelta(months=offset)
-        end_date = start_date + dateutil.relativedelta.relativedelta(months=limit)
+        end_date = _safe_date_add(start_date, dateutil.relativedelta.relativedelta(months=limit))
 
     constraints['date__gte'] = max(start_date, constraints['date__gte'])
     if min(end_date, constraints['date__lte']) == constraints['date__lte']:
@@ -165,6 +165,13 @@ def get_time_dimension_constraints(time_dimension, constraints, offset, limit):
         del constraints['date__lte']
         constraints['date__lte'] = end_date - datetime.timedelta(days=1)
     return constraints
+
+
+def _safe_date_add(date, timedelta):
+    try:
+        return date + timedelta
+    except OverflowError:
+        return datetime.date.max
 
 
 def get_query_name(breakdown, extra_name=''):

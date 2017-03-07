@@ -1,7 +1,3 @@
-import copy
-
-from django.db.models import Q
-
 import dash.constants
 import dash.models
 from dash import publisher_group_helpers
@@ -61,6 +57,7 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
 
     if ad_group_ids:
         allowed_ad_groups = allowed_ad_groups.filter(pk__in=ad_group_ids)
+        allowed_content_ads = allowed_content_ads.filter(ad_group_id__in=ad_group_ids)
         campaign_ids = _intersection(campaign_ids, _distinct_key(allowed_ad_groups, 'campaign_id'))
         ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__in=allowed_ad_groups)
 
@@ -69,6 +66,8 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
 
     if campaign_ids:
         allowed_campaigns = allowed_campaigns.filter(pk__in=campaign_ids)
+        allowed_ad_groups = allowed_ad_groups.filter(campaign_id__in=campaign_ids)
+        allowed_content_ads = allowed_content_ads.filter(ad_group__in=allowed_ad_groups)
         account_ids = _intersection(account_ids, _distinct_key(allowed_campaigns, 'account_id'))
         if ad_group_sources is None:
             ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group__campaign__in=allowed_campaigns)
@@ -77,6 +76,9 @@ def prepare_constraints(user, breakdown, start_date, end_date, filtered_sources,
 
     if account_ids:
         allowed_accounts = allowed_accounts.filter(pk__in=account_ids)
+        allowed_campaigns = allowed_campaigns.filter(account_id__in=account_ids)
+        allowed_ad_groups = allowed_ad_groups.filter(campaign__in=allowed_campaigns)
+        allowed_content_ads = allowed_content_ads.filter(ad_group__in=allowed_ad_groups)
         if ad_group_sources is None:
             ad_group_sources = dash.models.AdGroupSource.objects.filter(
                 ad_group__campaign__account__in=allowed_accounts)

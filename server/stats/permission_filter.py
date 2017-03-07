@@ -14,6 +14,7 @@ from stats.constants import StructureDimension, DeliveryDimension, TimeDimension
 DIMENSION_FIELDS = set(StructureDimension._ALL) | set(DeliveryDimension._ALL) | set(TimeDimension._ALL)
 DIMENSION_FIELDS |= set([
     'name', 'status', 'state', 'archived',
+    'account', 'campaign', 'ad_group', 'content_ad', 'source', 'publisher',
     'breakdown_name', 'breakdown_id', 'parent_breakdown_id',
 ])
 
