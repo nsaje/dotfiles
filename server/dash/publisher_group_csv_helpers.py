@@ -92,7 +92,7 @@ def save_entries_errors_csv(account_id, entry_dicts):
     for entry in entry_dicts:
         writer.writerow((
             entry['publisher'],
-            entry['source'].get_bidder_slug() if entry.get('source') else None,
+            entry['source'],
             entry.get('error'))
         )
 
