@@ -59,7 +59,7 @@ angular.module('one.widgets').service('zemPublisherGroupsEndpoint', function ($q
                     'success': false,
                 };
             }
-            deferred.reject(data.data.errors);
+            deferred.reject(data.data.data.errors);
         });
 
         return deferred.promise;
